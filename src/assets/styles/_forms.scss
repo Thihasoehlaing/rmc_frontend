@@ -1,0 +1,355 @@
+// Global reusable form classes using CSS custom properties
+
+// 1. Text Inputs, Selects, and Textareas
+.input--text,
+.input--select,
+.input--textarea {
+  width: 100%;
+  height: var(--input-height-sm);
+  font-family: var(--font-family-system);
+  font-size: var(--fs-base);
+  line-height: var(--lh-normal);
+  color: var(--color-label);
+  background: var(--input-bg-editable);
+  padding: var(--size-input-padding);
+  border: 1px solid var(--input-border-default);
+  border-radius: var(--radius-md);
+  box-sizing: border-box;
+  transition: all var(--transition-fast) var(--ease-default);
+  outline: none;
+  appearance: none;
+
+  &::placeholder {
+    color: var(--color-letter-counter);
+    opacity: 0.8;
+  }
+
+  &:hover:not(:disabled):not(.has-error):not(.is-invalid) {
+    border-color: var(--color-primary);
+  }
+
+  &:focus,
+  &:focus-visible {
+    border-color: var(--input-border-focus);
+    box-shadow: var(--input-shadow-focus);
+    outline: none;
+  }
+
+  // Disabled state
+  &:disabled,
+  &.is-disabled {
+    background: var(--input-bg-readonly);
+    opacity: var(--disabled-opacity);
+    cursor: not-allowed;
+    border-color: var(--border-default);
+  }
+
+  // Error/Invalid state
+  &.has-error,
+  &.is-invalid {
+    border-color: var(--color-error);
+
+    &:focus {
+      box-shadow: var(--input-shadow-error);
+    }
+  }
+}
+
+.input--textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.input--select {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right var(--space-3) center;
+  background-size: 16px 12px;
+  padding-right: var(--space-9);
+}
+
+// 2. Form Labels & Layout
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.form-label {
+  font-family: var(--font-family-system);
+  color: var(--color-label);
+  font-weight: var(--fw-semibold);
+  font-size: var(--fs-sm);
+  display: inline-flex;
+  align-items: center;
+
+  &.is-required::after {
+    content: '*';
+    color: var(--color-error);
+    margin-left: 0.25rem;
+    font-size: 1.1em;
+  }
+}
+
+// 3. Feedback & Indicators
+.form-hint {
+  font-size: var(--fs-xs);
+  color: var(--color-text-secondary);
+  margin-top: var(--space-1);
+}
+
+.form-error-msg {
+  font-size: var(--fs-xs);
+  color: var(--color-error);
+  font-weight: var(--fw-medium);
+  margin-top: var(--space-1);
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.form-counter {
+  font-size: var(--fs-xs);
+  color: var(--color-letter-counter);
+  text-align: right;
+}
+
+// 4. Enhanced Button System
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--input-height-sm);
+  padding: var(--size-input-padding);
+  border-radius: var(--radius-md);
+  font-weight: var(--fw-semibold);
+  font-size: var(--fs-base);
+  cursor: pointer;
+  transition: all var(--transition-fast) var(--ease-default);
+  border: 1px solid transparent;
+  gap: var(--space-2);
+  text-decoration: none;
+  white-space: nowrap;
+
+  &:disabled {
+    opacity: var(--disabled-opacity);
+    cursor: not-allowed;
+  }
+
+  &:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+
+  &:focus-visible {
+    box-shadow: var(--input-shadow-focus);
+    outline: none;
+  }
+}
+
+.btn-primary {
+  background-color: var(--button-bg-primary);
+  color: var(--button-color-primary);
+  box-shadow: var(--shadow-sm);
+
+  &:hover:not(:disabled) {
+    background-color: var(--color-primary-hover);
+    box-shadow: var(--shadow-md);
+  }
+}
+
+.btn-secondary {
+  background-color: var(--button-bg-secondary);
+  color: var(--button-color-secondary);
+
+  &:hover:not(:disabled) {
+    background-color: var(--color-secondary-hover);
+  }
+}
+
+.btn-success {
+  background-color: var(--color-success);
+  color: white;
+
+  &:hover:not(:disabled) {
+    background-color: var(--color-success-dark);
+  }
+}
+
+.btn-warning {
+  background-color: var(--color-warning);
+  color: #000;
+
+  &:hover:not(:disabled) {
+    background-color: var(--color-warning-dark);
+  }
+}
+
+.btn-large {
+  width: var(--button-large-width);
+  height: var(--button-large-height);
+  padding: 0;
+}
+
+.btn-list {
+  width: var(--button-list-width);
+  height: var(--button-list-height);
+  padding: 0;
+}
+
+.btn-ghost {
+  background: transparent;
+  border-color: var(--border-hover);
+  color: var(--color-label);
+
+  &:hover:not(:disabled) {
+    background: var(--color-surface-hover);
+  }
+}
+
+// 5. Status Badge System
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25em 0.75em;
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-bold);
+  line-height: 1;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: baseline;
+  border-radius: var(--radius-full);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.badge-success {
+  background-color: var(--color-success-light);
+  color: var(--color-success-dark);
+}
+
+.badge-warning {
+  background-color: var(--color-warning-light);
+  color: var(--color-warning-dark);
+}
+
+.badge-danger {
+  background-color: var(--color-error-light);
+  color: var(--color-error-dark);
+}
+
+.badge-info {
+  background-color: var(--color-info-light);
+  color: var(--color-info-dark);
+}
+
+.badge--success {
+  background-color: var(--color-success-light);
+  color: var(--color-success-dark);
+}
+
+.badge--danger {
+  background-color: var(--color-error-light);
+  color: var(--color-error-dark);
+}
+
+// 6. Card System
+.card {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-default);
+  // NOTE: overflow:hidden intentionally omitted — tooltips/dropdowns must escape
+
+  &__header {
+    padding: var(--space-4) var(--space-5);
+    background: var(--color-surface-nested);
+    border-bottom: 1px solid var(--border-default);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  }
+
+  &__title {
+    font-size: var(--fs-base);
+    font-weight: var(--fw-bold);
+    color: var(--color-heading);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+
+    .material-icons {
+      color: var(--color-primary);
+      font-size: 20px;
+    }
+  }
+
+  &__content {
+    padding: var(--space-5);
+  }
+}
+
+// 7. Section & Row Utilities
+.section-fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.row--2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-5);
+}
+
+.row--3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: var(--space-5);
+}
+
+// 8. Button Size Variants
+.btn-sm {
+  height: var(--input-height-sm);
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--fs-sm);
+  border-radius: var(--radius-md);
+  gap: var(--space-1);
+
+  .material-icons {
+    font-size: 16px;
+  }
+}
+
+// 9. Number Input — hide spinners
+input[type="number"] {
+  -moz-appearance: textfield;
+
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+}
+
+// 10. Label with inline tooltip note
+.label-with-note {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin-bottom: var(--space-1);
+
+  .form-label {
+    margin-bottom: 0;
+  }
+}
+
+// 11. Keyword counter
+.keyword-counter {
+  font-size: var(--fs-xs);
+  color: var(--color-text-muted);
+  text-align: right;
+  margin-top: var(--space-1);
+
+  &--over {
+    color: var(--color-error);
+    font-weight: 600;
+  }
+}

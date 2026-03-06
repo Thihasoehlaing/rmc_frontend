@@ -1,0 +1,21 @@
+@if (isOpen()) {
+<div class="modal-overlay" (click)="close()">
+  <div class="modal-container" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{title}}</h2>
+      <button class="btn-close" (click)="close()">&times;</button>
+    </div>
+
+    <div class="modal-body">
+      @if (isLoading()) {
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <p>Loading guidelines...</p>
+      </div>
+      } @else {
+      <div [innerHTML]="content()"></div>
+      }
+    </div>
+  </div>
+</div>
+}

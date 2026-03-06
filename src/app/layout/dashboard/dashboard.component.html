@@ -1,0 +1,108 @@
+<div class="dashboard">
+  <header class="dashboard__header">
+    <div class="header-content">
+      <h1>Welcome back, {{ username }}</h1>
+      <p class="subtitle">Here is what's happening with your grants today.</p>
+    </div>
+    <div class="dashboard__actions">
+      <button class="btn btn--outline">
+        <span class="material-icons">file_download</span>
+        Export Report
+      </button>
+      <button class="btn btn--primary">
+        <span class="material-icons">add</span>
+        New Application
+      </button>
+    </div>
+  </header>
+
+  <!-- KPI Grid -->
+  <section class="kpi-grid">
+    @for (stat of stats; track stat.label) {
+    <div class="kpi-card">
+      <div class="kpi-card__icon" [style.background-color]="stat.color + '15'" [style.color]="stat.color">
+        <span class="material-icons">{{ stat.icon }}</span>
+      </div>
+      <div class="kpi-card__content">
+        <div class="kpi-card__label">{{ stat.label }}</div>
+        <div class="kpi-card__value">{{ stat.value }}</div>
+        <div class="kpi-card__trend" [class.up]="stat.trend > 0" [class.down]="stat.trend < 0">
+          <span class="material-icons">{{ stat.trend > 0 ? 'trending_up' : 'trending_down' }}</span>
+          {{ stat.trend }}% since last month
+        </div>
+      </div>
+    </div>
+    }
+  </section>
+
+  <!-- Main Section: Recent Activity & Quick Links -->
+  <div class="dashboard__main-grid">
+    <section class="card recent-activity">
+      <div class="card__header">
+        <h2 class="card__title">Recent Applications</h2>
+        <a href="#" class="card__link">View All</a>
+      </div>
+      <div class="card__content">
+        <div class="activity-list">
+          @for (app of recentApps; track app.id) {
+          <div class="activity-item">
+            <div class="activity-item__details">
+              <div class="app-title">{{ app.title }}</div>
+              <div class="app-meta">{{ app.id }} • {{ app.date | date }}</div>
+            </div>
+            <div class="activity-item__status">
+              <span class="status-badge" [class]="'status--' + app.status.toLowerCase()">
+                {{ app.status }}
+              </span>
+            </div>
+          </div>
+          }
+        </div>
+      </div>
+    </section>
+
+    <section class="quick-links">
+      <h2 class="section-title">Quick Actions</h2>
+      <div class="link-grid">
+        <a routerLink="/rdig" class="link-tile">
+          <span class="material-icons">description</span>
+          <span>Apply for RDIG</span>
+        </a>
+        <a routerLink="/conference" class="link-tile">
+          <span class="material-icons">event</span>
+          <span>Conference Funding</span>
+        </a>
+        <a routerLink="/profile" class="link-tile">
+          <span class="material-icons">person</span>
+          <span>Update Profile</span>
+        </a>
+        <a routerLink="/showcase" class="link-tile">
+          <span class="material-icons">palette</span>
+          <span>UI Showcase</span>
+        </a>
+      </div>
+
+      <div class="card stats-card" style="margin-top: 24px;">
+        <div class="card__header">
+          <h2 class="card__title">System Status</h2>
+        </div>
+        <div class="card__content">
+          <div class="system-status">
+            <div class="status-line">
+              <span>API Gateway</span>
+              <span class="dot online"></span>
+            </div>
+            <div class="status-line">
+              <span>Database Cluster</span>
+              <span class="dot online"></span>
+            </div>
+            <div class="status-line">
+              <span>Submission Engine</span>
+              <span class="dot delayed"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>

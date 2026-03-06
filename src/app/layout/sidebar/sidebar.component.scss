@@ -1,0 +1,339 @@
+@use '../../../assets/styles/index' as *;
+
+:host {
+  display: block;
+  z-index: 1000;
+}
+
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  background: var(--color-surface);
+  border-right: 1px solid var(--border-default);
+  display: flex;
+  flex-direction: column;
+  transition: width var(--transition-normal);
+  width: var(--sidebar-collapsed-width); // Dynamic width based on calculation
+  overflow-x: hidden;
+  box-shadow: var(--shadow-sm);
+
+  &--expanded,
+  &--fixed {
+    width: var(--sidebar-width); // Standard width token
+    box-shadow: var(--shadow-lg);
+  }
+
+  &--fixed {
+    box-shadow: none;
+  }
+}
+
+.sidebar__header {
+  height: var(--header-height);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--space-4) 0 var(--space-3);
+  border-bottom: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+  overflow: hidden;
+  // Keep header layout stable by reversing order: pin left, logo right
+  flex-direction: row-reverse;
+}
+
+.sidebar__logo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  overflow: hidden;
+
+  .logo-img {
+    height: 36px;
+    width: auto;
+    object-fit: contain;
+    flex-shrink: 0;
+    display: block;
+  }
+
+  .logo-text {
+    font-weight: var(--fw-bold);
+    color: var(--color-heading);
+    white-space: nowrap;
+    font-size: var(--fs-base);
+    overflow: hidden;
+    opacity: 1;
+    transition: opacity var(--transition-fast);
+  }
+}
+
+.sidebar__pin-btn {
+  background: transparent;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  padding: var(--space-1);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  // Always keep pin at its fixed position — no opacity hidden
+  transition: color var(--transition-fast), background var(--transition-fast);
+
+  &:hover {
+    background: var(--color-surface-hover);
+    color: var(--color-primary);
+  }
+
+  &.active {
+    color: var(--color-primary);
+  }
+
+  .material-icons {
+    font-size: var(--icon-size);
+  }
+}
+
+// --- Profile ---
+.sidebar__profile {
+  padding: var(--space-3) var(--space-3);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  background: var(--color-surface-hover);
+  margin: var(--space-2) var(--space-2) 0;
+  border-radius: var(--radius-lg);
+  transition: background var(--transition-fast);
+  cursor: pointer;
+  user-select: none;
+
+  &--expanded {
+    background: var(--color-surface-nested);
+  }
+
+  &--open {
+    background: var(--color-primary-light);
+  }
+
+  &:hover {
+    background: var(--color-surface-hover);
+  }
+}
+
+.profile-avatar {
+  width: 36px; // no token: specific avatar circle size
+  height: 36px; // no token: specific avatar circle size
+  min-width: 36px; // no token: prevent flex shrink below avatar size
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: var(--fw-bold);
+  font-size: var(--fs-sm);
+  flex-shrink: 0;
+}
+
+.profile-info {
+  flex: 1;
+  overflow: hidden;
+  min-width: 0;
+
+  .profile-name {
+    font-weight: var(--fw-semibold);
+    color: var(--color-heading);
+    font-size: var(--fs-sm);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .profile-email {
+    font-size: var(--fs-xs);
+    color: var(--color-text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+.profile-chevron {
+  font-size: var(--fs-lg); // ~18px — chevron icon scale
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+  transition: transform var(--transition-fast);
+
+  &.rotated {
+    transform: rotate(180deg);
+  }
+}
+
+// Profile dropdown (actions section)
+.profile-dropdown {
+  margin: var(--space-1) var(--space-2) var(--space-2);
+  background: var(--color-surface-nested);
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  border: 1px solid var(--border-default);
+  border-top: none;
+  overflow: hidden;
+
+  &__item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-2) var(--space-4);
+    font-size: var(--fs-sm);
+    font-weight: var(--fw-medium);
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    background: none;
+    border: none;
+    width: 100%;
+    cursor: pointer;
+    transition: background var(--transition-fast), color var(--transition-fast);
+    font-family: inherit;
+
+    .material-icons {
+      font-size: 18px;
+    }
+
+    &:hover {
+      background: var(--color-surface-hover);
+      color: var(--color-primary);
+    }
+
+    &--danger {
+      color: var(--color-error);
+
+      &:hover {
+        background: color-mix(in srgb, var(--color-error) 8%, transparent);
+        color: var(--color-error);
+      }
+    }
+  }
+}
+
+// --- Navigation ---
+.sidebar__nav {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 var(--space-2) var(--space-4);
+
+  &::-webkit-scrollbar {
+    width: 4px; // no token: scrollbar width — visual exception per rules
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--border-subtle);
+    border-radius: 2px; // no token: scrollbar thumb radius — visual exception per rules
+  }
+}
+
+.nav-group {
+  margin-bottom: var(--space-4);
+
+  &__title {
+    padding: var(--space-2) var(--space-3);
+    font-size: var(--fs-xs);
+    text-transform: uppercase;
+    font-weight: var(--fw-black);
+    color: var(--color-text-muted);
+    letter-spacing: 1px; // no token: uppercase label letter-spacing
+  }
+}
+
+.nav-item,
+.nav-folder__trigger {
+  display: flex;
+  align-items: center;
+  min-height: var(--header-height); // Use consistent height defined in tokens
+  height: auto;
+  padding: var(--space-2) var(--space-4); // Perfect left/right padding that matches standard sizes
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  transition: all var(--transition-fast);
+  cursor: pointer;
+  width: 100%;
+  background: transparent;
+  border: none;
+  font-family: inherit;
+  font-size: var(--fs-sm);
+
+  .nav-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--sidebar-icon-size);
+    color: var(--color-text-muted);
+    transition: color var(--transition-fast);
+    width: var(--sidebar-icon-size); // Hard constraint so bad icon strings don't push the layout!
+    height: var(--sidebar-icon-size);
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+
+  // The label container must fill the rest of the available space,
+  // but it needs a gap to push away from the icon correctly, without hardcoded margins
+  .nav-label {
+    flex: 1;
+    display: block; // important for text layout
+    white-space: normal; // Enable wrapped text
+    text-align: left;
+    font-weight: var(--fw-medium);
+    margin-left: var(--space-4);
+    line-height: var(--lh-tight);
+  }
+
+  &:hover {
+    background: var(--color-surface-hover);
+    color: var(--color-primary);
+    border-radius: var(--radius-md);
+
+    .nav-icon {
+      color: var(--color-primary);
+    }
+  }
+
+  &.active {
+    background: var(--color-primary-light);
+    color: var(--color-primary);
+    border-radius: var(--radius-md);
+
+    .nav-icon {
+      color: var(--color-primary);
+    }
+  }
+}
+
+.nav-folder {
+  .chevron {
+    font-size: var(--fs-lg); // ~18px — chevron icon scale
+    transition: transform var(--transition-fast);
+    color: var(--color-text-muted);
+    flex-shrink: 0;
+  }
+
+  &--open {
+    .chevron {
+      transform: rotate(180deg);
+    }
+  }
+}
+
+.nav-folder__children {
+  margin-left: var(--space-3);
+  padding-left: var(--space-3);
+  border-left: 1px solid var(--border-subtle);
+  margin-top: var(--space-1);
+  margin-bottom: var(--space-1);
+}
+
+.nav-item--child {
+  min-height: 36px; // no token: child nav item tap target — compact sub-item
+  height: auto;
+  font-size: var(--fs-sm);
+  padding: var(--space-1) var(--space-4);
+  margin-bottom: 2px; // no token: 2px sub-space between child items
+}

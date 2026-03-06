@@ -1,0 +1,45 @@
+@use '../../assets/styles/index' as *;
+
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+  background: var(--color-surface-hover);
+
+  &__main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    margin-left: var(--sidebar-collapsed-width);
+    transition: margin-left var(--transition-normal);
+  }
+
+  &--sidebar-pinned {
+    .app-shell__main {
+      margin-left: var(--sidebar-width);
+    }
+  }
+
+  &__content {
+    flex: 1;
+    padding: var(--space-6) var(--space-8);
+    max-width: var(--page-max-width);
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  &__footer {
+    padding: var(--space-3) var(--space-8);
+    background: var(--color-surface);
+    border-top: 1px solid var(--border-subtle);
+    text-align: center;
+    font-size: var(--fs-xs);
+    color: var(--color-text-muted);
+  }
+}
+
+@media (max-width: 1024px) {
+  .app-shell__main {
+    margin-left: 0 !important;
+  }
+}

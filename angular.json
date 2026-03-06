@@ -6,7 +6,7 @@
   },
   "newProjectRoot": "projects",
   "projects": {
-    "rmc-frontend-github": {
+    "RMC_project": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -27,6 +27,11 @@
               {
                 "glob": "**/*",
                 "input": "public"
+              },
+              {
+                "glob": "**/*",
+                "input": "src/assets",
+                "output": "assets"
               }
             ],
             "styles": [
@@ -61,10 +66,10 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "rmc-frontend-github:build:production"
+              "buildTarget": "RMC_project:build:production"
             },
             "development": {
-              "buildTarget": "rmc-frontend-github:build:development"
+              "buildTarget": "RMC_project:build:development"
             }
           },
           "defaultConfiguration": "development"

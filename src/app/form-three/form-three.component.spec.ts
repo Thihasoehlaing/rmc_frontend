@@ -1,0 +1,22 @@
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+
+import { FormThreeComponent } from './form-three.component';
+
+describe('FormThreeComponent', () => {
+  let component: FormThreeComponent;
+  let fixture: ComponentFixture<FormThreeComponent>;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [FormThreeComponent],
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(FormThreeComponent);
+    component = fixture.componentInstance;
+    await fixture.whenStable();
+  });
+
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
+});

@@ -1,0 +1,703 @@
+<div class="showcase-container">
+
+  <!-- ══════════════════════════════════════════════════════════════
+       PAGE HEADER
+  ══════════════════════════════════════════════════════════════ -->
+  <app-form-main-title title="Design System Reference"></app-form-main-title>
+
+  <p class="page-intro">
+    Single source of truth for the RMC design system — all global CSS classes, design tokens, and
+    shared Angular components available to every form. Use it to build consistent UIs without guessing
+    class names or hardcoding values.
+  </p>
+
+
+  <!-- ══════════════════════════════════════════════════════════════
+       1 · COLOR TOKENS
+  ══════════════════════════════════════════════════════════════ -->
+  <section class="showcase-section">
+    <app-custom-header title="Color Tokens" icon="palette"></app-custom-header>
+
+    <div class="swatch-grid">
+      @for (t of colorTokens; track t.token) {
+        <div class="swatch">
+          <div class="swatch__color" [style.background]="t.value"></div>
+          <div class="swatch__info">
+            <span class="swatch__name">{{ t.token }}</span>
+            <span class="swatch__value">{{ t.value }}</span>
+            <span class="swatch__desc">{{ t.desc }}</span>
+          </div>
+        </div>
+      }
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════════════════════════════
+       2 · TYPOGRAPHY
+  ══════════════════════════════════════════════════════════════ -->
+  <section class="showcase-section">
+    <app-custom-header title="Typography Scale" icon="text_fields"></app-custom-header>
+
+    <div class="type-scale-table">
+      @for (t of typeScale; track t.token) {
+        <div class="type-row">
+          <div class="type-meta">
+            <code>{{ t.token }}</code>
+            <span class="type-meta__size">{{ t.rem }}</span>
+          </div>
+          <div class="type-sample"
+               [style.font-size]="'var(' + t.token + ')'"
+               [style.font-weight]="t.weight"
+               [style.text-transform]="t.uppercase ? 'uppercase' : 'none'"
+               [style.letter-spacing]="t.uppercase ? '0.08em' : 'normal'">
+            {{ t.demo }}
+          </div>
+        </div>
+      }
+    </div>
+
+    <div class="subsection-heading">Font Weight Scale</div>
+    <div class="weight-row">
+      @for (w of [['300','Light'],['400','Regular'],['500','Medium'],['600','Semibold'],['700','Bold'],['900','Black']]; track w[0]) {
+        <div class="weight-swatch">
+          <span [style.font-weight]="w[0]" class="weight-demo">Ag</span>
+          <code>{{ w[0] }}</code>
+          <span class="weight-label">{{ w[1] }}</span>
+        </div>
+      }
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════════════════════════════
+       3 · SPACING
+  ══════════════════════════════════════════════════════════════ -->
+  <section class="showcase-section">
+    <app-custom-header title="Spacing Scale" icon="space_bar"></app-custom-header>
+
+    <div class="spacing-list">
+      @for (s of spacingTokens; track s.token) {
+        <div class="space-row">
+          <code class="space-token">{{ s.token }}</code>
+          <div class="space-bar" [style.width]="s.px"></div>
+          <span class="space-px">{{ s.px }}</span>
+        </div>
+      }
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════════════════════════════
+       4 · BORDER RADIUS
+  ══════════════════════════════════════════════════════════════ -->
+  <section class="showcase-section">
+    <app-custom-header title="Border Radius" icon="rounded_corner"></app-custom-header>
+
+    <div class="radius-grid">
+      @for (r of [['--radius-sm','4px'],['--radius-md','6px'],['--radius-lg','8px'],['--radius-xl','12px'],['--radius-full','9999px']]; track r[0]) {
+        <div class="radius-swatch">
+          <div class="radius-box" [style.border-radius]="'var(' + r[0] + ')'"></div>
+          <code>{{ r[0] }}</code>
+          <span class="radius-label">{{ r[1] }}</span>
+        </div>
+      }
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════════════════════════════
+       5 · ELEVATION / SHADOWS
+  ══════════════════════════════════════════════════════════════ -->
+  <section class="showcase-section">
+    <app-custom-header title="Elevation &amp; Shadows" icon="layers"></app-custom-header>
+
+    <div class="shadow-grid">
+      @for (s of [['--shadow-xs','xs'],['--shadow-sm','sm'],['--shadow-md','md'],['--shadow-lg','lg'],['--shadow-xl','xl']]; track s[0]) {
+        <div class="shadow-box" [style.box-shadow]="'var(' + s[0] + ')'">
+          <code>{{ s[0] }}</code>
+          <span>{{ s[1] }}</span>
+        </div>
+      }
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════════════════════════════
+       6 · BUTTONS
+  ══════════════════════════════════════════════════════════════ -->
+  <section class="showcase-section">
+    <app-custom-header title="Buttons — .btn" icon="smart_button"></app-custom-header>
+
+    <div class="demo-strip">
+      <button class="btn btn-primary">Primary</button>
+      <button class="btn btn-secondary">Secondary</button>
+      <button class="btn btn-success">Success</button>
+      <button class="btn btn-warning">Warning</button>
+      <button class="btn btn-ghost">Ghost</button>
+      <button class="btn btn-primary btn-sm">Primary SM</button>
+      <button class="btn btn-primary" disabled>Disabled</button>
+    </div>
+
+    <table class="ref-table">
+      <thead><tr><th>Class</th><th>Purpose</th><th>Usage</th></tr></thead>
+      <tbody>
+        @for (c of globalClasses | slice:0:8; track c.cls) {
+          <tr>
+            <td><code>{{ c.cls }}</code></td>
+            <td>{{ c.purpose }}</td>
+            <td><code>{{ c.usage }}</code></td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </section>
+
+
+  <!-- ══════════════════════════════════════════════════════════════
+       7 · FORM INPUTS
+  ══════════════════════════════════════════════════════════════ -->
+  <section class="showcase-section">
+    <app-custom-header title="Form Inputs &amp; Labels" icon="edit_note"></app-custom-header>
+
+    <div class="demo-grid">
+      <div class="form-field">
+        <label class="form-label">Default Input</label>
+        <input class="input--text" placeholder="Type something…">
+        <span class="form-hint">Helper text below the field</span>
+      </div>
+      <div class="form-field">
+        <label class="form-label is-required">Required Field</label>
+        <input class="input--text" placeholder="Required…">
+      </div>
+      <div class="form-field">
+        <label class="form-label">Input with Error</label>
+        <input class="input--text input--error" value="bad@">
+        <span class="form-error-msg">Please enter a valid email address.</span>
+      </div>
+      <div class="form-field">
+        <label class="form-label">Disabled Input</label>
+        <input class="input--text" disabled value="Read only value">
+      </div>
+      <div class="form-field">
+        <label class="form-label">Native Select</label>
+        <select class="input--select">
+          <option>Option A</option>
+          <option>Option B</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label class="form-label">Textarea with Counter</label>
+        <textarea class="input--textarea" rows="3" placeholder="Enter text…"></textarea>
+        <div class="form-counter">0 / 300</div>
+      </div>
+    </div>
+
+    <table class="ref-table">
+      <thead><tr><th>Class</th><th>Purpose</th><th>Usage</th></tr></thead>
+      <tbody>
+        @for (c of globalClasses | slice:8:20; track c.cls) {
+          <tr>
+            <td><code>{{ c.cls }}</code></td>
+            <td>{{ c.purpose }}</td>
+            <td><code>{{ c.usage }}</code></td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </section>
+
+
+  <!-- ══════════════════════════════════════════════════════════════
+       8 · BADGES
+  ══════════════════════════════════════════════════════════════ -->
+  <section class="showcase-section">
+    <app-custom-header title="Badges — .badge" icon="label"></app-custom-header>
+
+    <div class="demo-strip">
+      <span class="badge badge-success">Approved</span>
+      <span class="badge badge-warning">In Progress</span>
+      <span class="badge badge-danger">Rejected</span>
+      <span class="badge badge-info">Under Review</span>
+    </div>
+
+    <table class="ref-table">
+      <thead><tr><th>Class</th><th>Purpose</th><th>Usage</th></tr></thead>
+      <tbody>
+        @for (c of globalClasses | slice:20:25; track c.cls) {
+          <tr>
+            <td><code>{{ c.cls }}</code></td>
+            <td>{{ c.purpose }}</td>
+            <td><code>{{ c.usage }}</code></td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </section>
+
+
+  <!-- ══════════════════════════════════════════════════════════════
+       9 · CARDS
+  ══════════════════════════════════════════════════════════════ -->
+  <section class="showcase-section">
+    <app-custom-header title="Cards — .card" icon="credit_card"></app-custom-header>
+
+    <div class="card" style="max-width: 480px;">
+      <div class="card__header">
+        <h2 class="card__title">Card Title</h2>
+      </div>
+      <div class="card__content">
+        <p>Card body content lives inside <code>.card__content</code>. Place form fields, text, or tables as needed.</p>
+      </div>
+    </div>
+
+    <table class="ref-table" style="margin-top: var(--space-5);">
+      <thead><tr><th>Class</th><th>Purpose</th><th>Usage</th></tr></thead>
+      <tbody>
+        @for (c of globalClasses | slice:25:29; track c.cls) {
+          <tr>
+            <td><code>{{ c.cls }}</code></td>
+            <td>{{ c.purpose }}</td>
+            <td><code>{{ c.usage }}</code></td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </section>
+
+
+  <!-- ══════════════════════════════════════════════════════════════
+       10 · LAYOUT UTILITIES
+  ══════════════════════════════════════════════════════════════ -->
+  <section class="showcase-section">
+    <app-custom-header title="Layout Utilities" icon="grid_view"></app-custom-header>
+
+    <div class="subsection-heading">.row--2 — 2-column grid</div>
+    <div class="row--2 demo-layout-preview">
+      <div class="demo-col-box">Column 1</div>
+      <div class="demo-col-box">Column 2</div>
+    </div>
+
+    <div class="subsection-heading" style="margin-top: var(--space-6);">.row--3 — 3-column grid</div>
+    <div class="row--3 demo-layout-preview">
+      <div class="demo-col-box">Column 1</div>
+      <div class="demo-col-box">Column 2</div>
+      <div class="demo-col-box">Column 3</div>
+    </div>
+
+    <table class="ref-table" style="margin-top: var(--space-6);">
+      <thead><tr><th>Class</th><th>Purpose</th><th>Usage</th></tr></thead>
+      <tbody>
+        @for (c of globalClasses | slice:29; track c.cls) {
+          <tr>
+            <td><code>{{ c.cls }}</code></td>
+            <td>{{ c.purpose }}</td>
+            <td><code>{{ c.usage }}</code></td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </section>
+
+
+  <!-- ══════════════════════════════════════════════════════════════
+       11 · SHARED ANGULAR COMPONENTS
+  ══════════════════════════════════════════════════════════════ -->
+  <section class="showcase-section">
+    <app-custom-header title="Shared Angular Components" icon="widgets"></app-custom-header>
+
+    <!-- ── FormMainTitle ─────────────────────────────────────────── -->
+    <div class="component-block">
+      <div class="component-block__header">
+        <span class="comp-name">FormMainTitle</span>
+        <code class="comp-selector">&lt;app-form-main-title&gt;</code>
+        <p class="comp-desc">Standardized H1 page title. The help icon opens a guidelines modal fetched from an API endpoint.</p>
+      </div>
+      <div class="component-block__demo">
+        <app-form-main-title title="Example Form Page Title"></app-form-main-title>
+      </div>
+      <table class="props-table">
+        <thead><tr><th>Input</th><th>Type</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>title</code></td><td>string</td><td>Page heading text</td></tr>
+          <tr><td><code>modalTitle</code></td><td>string</td><td>Title shown inside the guidelines modal</td></tr>
+          <tr><td><code>endpoint</code></td><td>string</td><td>API endpoint to fetch guidelines content</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ── CustomHeader ──────────────────────────────────────────── -->
+    <div class="component-block">
+      <div class="component-block__header">
+        <span class="comp-name">CustomHeader</span>
+        <code class="comp-selector">&lt;app-custom-header&gt;</code>
+        <p class="comp-desc">Standardized H2 section heading with an optional icon to the left.</p>
+      </div>
+      <div class="component-block__demo">
+        <app-custom-header title="Section Heading Example" [iconSvg]="beakerIcon"></app-custom-header>
+      </div>
+      <table class="props-table">
+        <thead><tr><th>Input</th><th>Type</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>title</code></td><td>string</td><td>Section heading text</td></tr>
+          <tr><td><code>iconSvg</code></td><td>string</td><td>Raw SVG string rendered as icon. Optional.</td></tr>
+          <tr><td><code>icon</code></td><td>string</td><td>Material Icons name. Optional.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ── CustomSubheader ───────────────────────────────────────── -->
+    <div class="component-block">
+      <div class="component-block__header">
+        <span class="comp-name">CustomSubheader</span>
+        <code class="comp-selector">&lt;app-custom-subheader&gt;</code>
+        <p class="comp-desc">Standardized H3 sub-section heading with optional icon and inline tooltip.</p>
+      </div>
+      <div class="component-block__demo">
+        <app-custom-subheader title="Sub-Section with Tooltip" icon="info"
+          tooltip="This tooltip appears when hovering the note icon.">
+        </app-custom-subheader>
+      </div>
+      <table class="props-table">
+        <thead><tr><th>Input</th><th>Type</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>title</code></td><td>string</td><td>Sub-section heading text</td></tr>
+          <tr><td><code>iconSvg</code></td><td>string</td><td>Raw SVG string icon. Optional.</td></tr>
+          <tr><td><code>icon</code></td><td>string</td><td>Material Icons name. Optional.</td></tr>
+          <tr><td><code>tooltip</code></td><td>string</td><td>When set, renders a NoteComponent tooltip icon.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ── Note ──────────────────────────────────────────────────── -->
+    <div class="component-block">
+      <div class="component-block__header">
+        <span class="comp-name">Note</span>
+        <code class="comp-selector">&lt;app-note&gt;</code>
+        <p class="comp-desc"><strong>Inline</strong> = amber banner with caution icon. <strong>Tooltip</strong> = "!" icon with message on hover. Use isTooltip inside label rows.</p>
+      </div>
+      <div class="component-block__demo">
+        <p class="demo-label">isTooltip: false — inline banner</p>
+        <app-note [isTooltip]="false"
+          text="RA/GRA Allowance — RM 500 per month per RA/GRA. Please state the number of months and students.">
+        </app-note>
+        <p class="demo-label" style="margin-top:var(--space-5)">isTooltip: true — hover icon inside a label</p>
+        <div class="label-with-note">
+          <label class="form-label">Requested Amount</label>
+          <app-note [isTooltip]="true"
+            text="Please ensure the amount does not exceed the ceiling of RM 50,000 for this category.">
+          </app-note>
+        </div>
+      </div>
+      <table class="props-table">
+        <thead><tr><th>Input</th><th>Type</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>text</code></td><td>string</td><td>The message to display</td></tr>
+          <tr><td><code>isTooltip</code></td><td>boolean</td><td>false = inline banner, true = hover tooltip. Default: false</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ── ValidationMessage ─────────────────────────────────────── -->
+    <div class="component-block">
+      <div class="component-block__header">
+        <span class="comp-name">ValidationMessage</span>
+        <code class="comp-selector">&lt;app-validation-message&gt;</code>
+        <p class="comp-desc">Standardised error message display. Auto-resolves messages from a reactive FormControl's errors, or shows a fixed string via <code>message</code>.</p>
+      </div>
+      <div class="component-block__demo">
+        <div class="form-field" style="max-width: 360px;">
+          <label class="form-label is-required">Field with Error</label>
+          <input class="input--text input--error" value="test">
+          <app-validation-message message="This field contains an invalid value."></app-validation-message>
+        </div>
+      </div>
+      <table class="props-table">
+        <thead><tr><th>Input</th><th>Type</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>control</code></td><td>AbstractControl</td><td>Reactive form control — auto-resolves required, email, maxlength errors</td></tr>
+          <tr><td><code>message</code></td><td>string</td><td>Override: display a fixed error message</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ── CharacterCounter ──────────────────────────────────────── -->
+    <div class="component-block">
+      <div class="component-block__header">
+        <span class="comp-name">CharacterCounter</span>
+        <code class="comp-selector">&lt;app-character-counter&gt;</code>
+        <p class="comp-desc">Character count display for textareas. Turns red when <code>current &gt;= max</code>. Always place below a textarea inside a <code>.form-field</code>.</p>
+      </div>
+      <div class="component-block__demo">
+        <div class="form-field" style="max-width: 480px;">
+          <label class="form-label">Description (type to test)</label>
+          <textarea class="input--textarea" rows="3" [(ngModel)]="textareaVal" maxlength="200"></textarea>
+          <app-character-counter [current]="charCurrent" [max]="charMax"></app-character-counter>
+        </div>
+      </div>
+      <table class="props-table">
+        <thead><tr><th>Input</th><th>Type</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>current</code></td><td>number</td><td>Current character count (bind to control.value?.length)</td></tr>
+          <tr><td><code>max</code></td><td>number</td><td>Maximum allowed characters</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ── SearchableDropdown ─────────────────────────────────────── -->
+    <div class="component-block">
+      <div class="component-block__header">
+        <span class="comp-name">SearchableDropdown</span>
+        <code class="comp-selector">&lt;app-searchable-dropdown&gt;</code>
+        <p class="comp-desc">Dropdown with built-in search. Supports single and multi-select with chip display. Implements <code>ControlValueAccessor</code> — works directly with <code>[formControl]</code> or <code>formControlName</code>.</p>
+      </div>
+      <div class="component-block__demo">
+        <div class="row--2">
+          <div class="form-field">
+            <app-searchable-dropdown
+              label="Single Select"
+              [options]="fruits"
+              placeholder="Pick a fruit…"
+              [formControl]="dropdownForm.controls.single">
+            </app-searchable-dropdown>
+          </div>
+          <div class="form-field">
+            <app-searchable-dropdown
+              label="Multi Select (chips)"
+              [options]="fruits"
+              [isMulti]="true"
+              placeholder="Choose fruits…"
+              [formControl]="dropdownForm.controls.multi">
+            </app-searchable-dropdown>
+          </div>
+        </div>
+      </div>
+      <table class="props-table">
+        <thead><tr><th>Input</th><th>Type</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>options</code></td><td>DropdownOption[]</td><td>Array of <code>&#123; value, label, disabled? &#125;</code></td></tr>
+          <tr><td><code>label</code></td><td>string</td><td>Label shown above the trigger</td></tr>
+          <tr><td><code>placeholder</code></td><td>string</td><td>Placeholder when nothing is selected</td></tr>
+          <tr><td><code>isMulti</code></td><td>boolean</td><td>Enable multi-selection (chip mode). Default: false</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ── StepIndicator ─────────────────────────────────────────── -->
+    <div class="component-block">
+      <div class="component-block__header">
+        <span class="comp-name">StepIndicator</span>
+        <code class="comp-selector">&lt;app-step-indicator&gt;</code>
+        <p class="comp-desc">Horizontal progress bar. Step states: complete (green), warning (amber — visited but invalid), active (blue), pending (grey). Clickable steps emit the step number.</p>
+      </div>
+      <div class="component-block__demo">
+        <app-step-indicator
+          [steps]="demoSteps"
+          [currentStep]="demoCurrentStep()"
+          [stepStatuses]="demoStatuses"
+          (stepClick)="demoCurrentStep.set($event)">
+        </app-step-indicator>
+        <p class="demo-label" style="margin-top:var(--space-3)">Active: step {{ demoCurrentStep() }} — click a bubble to navigate</p>
+      </div>
+      <table class="props-table">
+        <thead><tr><th>Input</th><th>Type</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>steps</code></td><td>WizardStep[]</td><td><code>&#123; label, icon &#125;</code> — icon is a Material Icons name</td></tr>
+          <tr><td><code>currentStep</code></td><td>number</td><td>1-based active step index</td></tr>
+          <tr><td><code>stepStatuses</code></td><td>StepStatus[]</td><td><code>&#123; visited, valid, missingFields[] &#125;</code></td></tr>
+        </tbody>
+      </table>
+      <table class="props-table" style="margin-top:var(--space-3)">
+        <thead><tr><th>Output</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>stepClick</code></td><td>Emits 1-based step number when user clicks a bubble</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ── FormWizardNav ─────────────────────────────────────────── -->
+    <div class="component-block">
+      <div class="component-block__header">
+        <span class="comp-name">FormWizardNav</span>
+        <code class="comp-selector">&lt;app-form-wizard-nav&gt;</code>
+        <p class="comp-desc">Multi-step navigation footer. Shows Previous when step &gt; 1, Submit only on the last step. Supports loading spinners on Save Draft and Submit.</p>
+      </div>
+      <div class="component-block__demo">
+        <div class="demo-nav-context">
+          <app-form-wizard-nav
+            [currentStep]="navStep()"
+            [totalSteps]="navTotal"
+            [isSaving]="false"
+            [isSubmitting]="false"
+            (prev)="navStep.set(navStep() - 1)"
+            (next)="navStep.set(navStep() + 1)">
+          </app-form-wizard-nav>
+          <p class="demo-label">Step {{ navStep() }} / {{ navTotal }} — use the buttons to navigate</p>
+        </div>
+      </div>
+      <table class="props-table">
+        <thead><tr><th>Input</th><th>Type</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>currentStep</code></td><td>number</td><td>1-based active step index</td></tr>
+          <tr><td><code>totalSteps</code></td><td>number</td><td>Total number of steps</td></tr>
+          <tr><td><code>isSaving</code></td><td>boolean</td><td>Disables Save Draft, shows spinner</td></tr>
+          <tr><td><code>isSubmitting</code></td><td>boolean</td><td>Disables Submit, shows spinner</td></tr>
+        </tbody>
+      </table>
+      <table class="props-table" style="margin-top:var(--space-3)">
+        <thead><tr><th>Output</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>prev</code></td><td>Go to previous step</td></tr>
+          <tr><td><code>next</code></td><td>Go to next step</td></tr>
+          <tr><td><code>saveDraft</code></td><td>Trigger save draft</td></tr>
+          <tr><td><code>submitForm</code></td><td>Trigger final submit</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ── FormCommentPanel ──────────────────────────────────────── -->
+    <div class="component-block">
+      <div class="component-block__header">
+        <span class="comp-name">FormCommentPanel</span>
+        <code class="comp-selector">&lt;app-form-comment-panel&gt;</code>
+        <p class="comp-desc">Reviewer comment accordion for the 6 standard roles. Each role toggles to reveal their comment. Has a Toggle All button. Empty comments show a "no comment" placeholder.</p>
+      </div>
+      <div class="component-block__demo">
+        <app-form-comment-panel [comments]="demoComments"></app-form-comment-panel>
+      </div>
+      <table class="props-table">
+        <thead><tr><th>Input</th><th>Type</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>comments</code></td><td>CommentItem[]</td><td><code>&#123; key, label, content? &#125;</code> — keys: hos_comment, rmc_comment, reviewer1_comment, reviewer2_comment, rdig_chair_comment, vc_comment</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ── FileUpload ─────────────────────────────────────────────── -->
+    <div class="component-block">
+      <div class="component-block__header">
+        <span class="comp-name">FileUpload</span>
+        <code class="comp-selector">&lt;app-file-upload&gt;</code>
+        <p class="comp-desc">Drag-and-drop (or click-to-browse) file upload zone. Validates accepted types and max file size before emitting the File object. Shows the filename on success and an error message on rejection.</p>
+      </div>
+      <div class="component-block__demo">
+        <div class="row--2">
+          <div class="form-field">
+            <app-file-upload
+              label="Upload Support Letter"
+              accept=".pdf"
+              [maxSizeMB]="10"
+              placeholder="Upload PDF support letter (max 10 MB)"
+              (fileSelected)="onFileSelected($event)">
+            </app-file-upload>
+          </div>
+          <div class="form-field">
+            <app-file-upload
+              label="Upload Any Document"
+              accept=".pdf,.docx,.xlsx"
+              [maxSizeMB]="5"
+              (fileSelected)="onFileSelected($event)">
+            </app-file-upload>
+          </div>
+        </div>
+        @if (lastUploadedFile()) {
+          <p class="demo-label" style="margin-top:var(--space-4)">
+            Last selected: <strong>{{ lastUploadedFile()!.name }}</strong>
+            ({{ (lastUploadedFile()!.size / 1024).toFixed(1) }} KB)
+          </p>
+        }
+      </div>
+      <table class="props-table">
+        <thead><tr><th>Input</th><th>Type</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>label</code></td><td>string</td><td>Label shown above the upload zone</td></tr>
+          <tr><td><code>accept</code></td><td>string</td><td>Accepted MIME/extension filter, e.g. <code>.pdf,.docx</code>. Default: any</td></tr>
+          <tr><td><code>maxSizeMB</code></td><td>number</td><td>Maximum file size in MB. Default: 10</td></tr>
+          <tr><td><code>placeholder</code></td><td>string</td><td>Instruction text inside the drop zone</td></tr>
+        </tbody>
+      </table>
+      <table class="props-table" style="margin-top:var(--space-3)">
+        <thead><tr><th>Output</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>fileSelected</code></td><td>Emits the validated <code>File</code> object after type + size checks pass</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ── Dialog ─────────────────────────────────────────────────── -->
+    <div class="component-block">
+      <div class="component-block__header">
+        <span class="comp-name">Dialog</span>
+        <code class="comp-selector">&lt;app-dialog&gt;</code>
+        <p class="comp-desc">Reusable modal dialog. Provides the full-screen backdrop, centred card, header with title and close button, scrollable body, and footer. Project body content via default <code>&lt;ng-content&gt;</code> and footer buttons via the <code>[dialog-footer]</code> attribute.</p>
+      </div>
+      <div class="component-block__demo">
+        <button class="btn btn-primary" (click)="showDialog.set(true)">Open Demo Dialog</button>
+        @if (showDialog()) {
+          <app-dialog title="Demo Dialog" [isOpen]="true" (close)="showDialog.set(false)">
+            <div class="section-fields">
+              <p>This is the dialog body. Project any content here — it is scrollable when it overflows.</p>
+              <div class="form-field">
+                <label class="form-label">Example Field</label>
+                <input class="input--text" placeholder="Type something…">
+              </div>
+            </div>
+            <div dialog-footer>
+              <button class="btn btn-ghost" (click)="showDialog.set(false)">Cancel</button>
+              <button class="btn btn-primary" (click)="showDialog.set(false)">Confirm</button>
+            </div>
+          </app-dialog>
+        }
+      </div>
+      <table class="props-table">
+        <thead><tr><th>Input</th><th>Type</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>title</code></td><td>string</td><td>Heading text in the dialog header</td></tr>
+          <tr><td><code>isOpen</code></td><td>boolean</td><td>Controls visibility — wrap with <code>&#64;if</code> for create/destroy behaviour</td></tr>
+          <tr><td><code>width</code></td><td>string</td><td>Optional max-width override, e.g. <code>"900px"</code>. Default: 680px</td></tr>
+        </tbody>
+      </table>
+      <table class="props-table" style="margin-top:var(--space-3)">
+        <thead><tr><th>Output / Slot</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>close</code></td><td>Emitted when the ✕ button or backdrop is clicked</td></tr>
+          <tr><td><code>&lt;ng-content&gt;</code></td><td>Default slot — projected into the scrollable dialog body</td></tr>
+          <tr><td><code>[dialog-footer]</code></td><td>Named slot — projected into the action footer row</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </section>
+
+
+  <!-- ══════════════════════════════════════════════════════════════
+       12 · ZERO-HARDCODING CONTRACT
+  ══════════════════════════════════════════════════════════════ -->
+  <section class="showcase-section">
+    <app-custom-header title="Zero-Hardcoding Contract" icon="gavel"></app-custom-header>
+    <app-note [isTooltip]="false"
+      text="This rule is strictly enforced. All developers must use the token system below. Any hardcoded values will be flagged in code review.">
+    </app-note>
+
+    <table class="ref-table" style="margin-top: var(--space-5);">
+      <thead>
+        <tr>
+          <th>❌ Forbidden</th>
+          <th>✅ Required</th>
+          <th>Reason</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><code>#2A83FF</code>, <code>rgba(...)</code></td><td><code>var(--color-primary)</code></td><td>Brand colour can change app-wide from one token</td></tr>
+        <tr><td><code>font-size: 14px</code></td><td><code>font-size: var(--fs-sm)</code></td><td>Type scale must be consistent and overridable</td></tr>
+        <tr><td><code>padding: 16px</code></td><td><code>padding: var(--space-4)</code></td><td>All spacing must come from the spacing scale</td></tr>
+        <tr><td><code>border-radius: 6px</code></td><td><code>border-radius: var(--radius-md)</code></td><td>Radius system enables design-wide consistency</td></tr>
+        <tr><td><code>box-shadow: 0 2px 8px ...</code></td><td><code>box-shadow: var(--shadow-sm)</code></td><td>Elevation hierarchy must come from the shadow scale</td></tr>
+        <tr><td><code>font-weight: 600</code></td><td><code>font-weight: var(--fw-semibold)</code></td><td>Weight values are named for semantic clarity</td></tr>
+        <tr><td><code>color: #6c757d</code></td><td><code>color: var(--color-text-muted)</code></td><td>All text colours must trace to a semantic token</td></tr>
+        <tr><td><code>border: 1px solid #eee</code></td><td><code>border: 1px solid var(--border-default)</code></td><td>Borders must use the border token scale</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+</div>

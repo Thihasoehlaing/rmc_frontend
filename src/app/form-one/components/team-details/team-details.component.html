@@ -1,0 +1,345 @@
+<div class="team-section" [formGroup]="teamDetails">
+
+  <!-- ── Page header ─────────────────────────────────────────── -->
+  <app-custom-header title="Project Team Members Details" icon="group">
+  </app-custom-header>
+
+  <!-- ── Section 1: Project Leader ───────────────────────────── -->
+  <section class="card">
+    <app-custom-subheader title="Project Leader Information"></app-custom-subheader>
+    <div class="card__content">
+      <div class="row row--3">
+        <div class="form-field">
+          <label class="form-label is-required">Project Leader Name</label>
+          <input type="text" class="input--text" formControlName="leaderName" readonly>
+        </div>
+        <div class="form-field">
+          <label class="form-label is-required">Project Leader's Email</label>
+          <input type="email" class="input--text" formControlName="leaderEmail" readonly>
+        </div>
+        <div class="form-field">
+          <label class="form-label is-required">Project Leader's School / Department</label>
+          <input type="text" class="input--text" formControlName="department" readonly>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Section 2: Cluster + Leader Roles ─────────────────── -->
+  <section class="card">
+    <app-custom-subheader title="Research Cluster & Role"></app-custom-subheader>
+    <div class="card__content section-fields">
+      <div class="form-field">
+        <label class="form-label is-required">Research Cluster</label>
+        <app-searchable-dropdown [options]="clusters" [isMulti]="false" placeholder="Select research cluster..."
+          formControlName="researchCluster">
+        </app-searchable-dropdown>
+        <app-validation-message [control]="teamDetails.get('researchCluster')"></app-validation-message>
+      </div>
+
+      <div class="form-field">
+        <label class="form-label is-required">Roles of Project Leader</label>
+        <textarea class="input--textarea" formControlName="leaderRoles" [maxlength]="600"
+          placeholder="Describe your specific roles and contributions in this project...">
+        </textarea>
+        <app-character-counter [current]="teamDetails.get('leaderRoles')?.value?.length || 0" [max]="600">
+        </app-character-counter>
+        <app-validation-message [control]="teamDetails.get('leaderRoles')"></app-validation-message>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Section 3: APU Co-Researchers (Internal) ──────────── -->
+  <section class="card">
+    <div class="list-section-header">
+      <app-custom-subheader title="APU Co-Researchers (Internal)"
+        tooltip="Minimum 1, Maximum 2 internal co-researchers"></app-custom-subheader>
+      <button type="button" class="btn btn-primary btn-sm" [disabled]="internalResearchers.length >= 2"
+        (click)="openInternalModal()">
+        <span class="material-icons">add</span> Add Member
+      </button>
+    </div>
+
+    <div class="card__content">
+      @if (internalResearchers.length === 0) {
+      <div class="empty-state">
+        <span class="material-icons">group_add</span>
+        <p>No internal co-researchers added yet. Add at least 1.</p>
+      </div>
+      } @else {
+      <table class="list-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Staff Name / Department</th>
+            <th>Area of Expertise</th>
+            <th>Roles in Project</th>
+            <th class="col-actions"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of internalResearchers.controls; track item; let i = $index) {
+          <tr>
+            <td class="col-index">{{ i + 1 }}</td>
+            <td>
+              <strong>{{ item.value.staffName }}</strong>
+              <br><small class="text-muted">{{ item.value.department }}</small>
+            </td>
+            <td>{{ item.value.expertise }}</td>
+            <td class="col-roles">{{ item.value.roles }}</td>
+            <td class="col-actions">
+              <div class="row-actions">
+                <button type="button" class="btn-icon btn-icon--edit" title="Edit" (click)="openEditInternalModal(i)">
+                  <span class="material-icons">edit</span>
+                </button>
+                <button type="button" class="btn-icon btn-icon--delete" title="Remove" (click)="removeInternal(i)">
+                  <span class="material-icons">delete</span>
+                </button>
+              </div>
+            </td>
+          </tr>
+          }
+        </tbody>
+      </table>
+      }
+    </div>
+  </section>
+
+  <!-- ── Section 4: External Co-Researchers ────────────────── -->
+  <section class="card">
+    <div class="list-section-header">
+      <app-custom-subheader title="External Co-Researchers / Collaborators"
+        tooltip="Minimum 2, Maximum 10 external collaborators"></app-custom-subheader>
+      <button type="button" class="btn btn-primary btn-sm" [disabled]="externalResearchers.length >= 10"
+        (click)="openExternalModal()">
+        <span class="material-icons">add</span> Add Collaborator
+      </button>
+    </div>
+
+    <div class="card__content">
+      @if (externalResearchers.length === 0) {
+      <div class="empty-state">
+        <span class="material-icons">public</span>
+        <p>No external collaborators added yet. Add at least 2.</p>
+      </div>
+      } @else {
+      <table class="list-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Collaborator</th>
+            <th>Institution</th>
+            <th>Country</th>
+            <th>Matched Funding</th>
+            <th class="col-actions"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of externalResearchers.controls; track item; let i = $index) {
+          <tr>
+            <td class="col-index">{{ i + 1 }}</td>
+            <td>
+              <strong>{{ item.value.title }} {{ item.value.fullName }}</strong>
+              <br><small class="text-muted">{{ item.value.email }}</small>
+              <br><small class="badge badge-info">{{ item.value.position }}</small>
+            </td>
+            <td>{{ item.value.institution }}<br><small class="text-muted">{{ item.value.orgType }}</small></td>
+            <td>{{ item.value.country }}</td>
+            <td>RM {{ item.value.funding | number }}</td>
+            <td class="col-actions">
+              <div class="row-actions">
+                <button type="button" class="btn-icon btn-icon--edit" title="Edit" (click)="openEditExternalModal(i)">
+                  <span class="material-icons">edit</span>
+                </button>
+                <button type="button" class="btn-icon btn-icon--delete" title="Remove" (click)="removeExternal(i)">
+                  <span class="material-icons">delete</span>
+                </button>
+              </div>
+            </td>
+          </tr>
+          }
+        </tbody>
+      </table>
+      }
+    </div>
+  </section>
+
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<!-- INTERNAL CO-RESEARCHER MODAL                                   -->
+<!-- ══════════════════════════════════════════════════════════════ -->
+@if (showInternalModal()) {
+  <app-dialog
+    [title]="(editingInternalIdx() !== null ? 'Edit' : 'Add') + ' Internal Co-Researcher'"
+    [isOpen]="true"
+    (close)="showInternalModal.set(false)">
+
+    <div class="section-fields" [formGroup]="internalForm">
+      <div class="row row--2">
+        <div class="form-field">
+          <label class="form-label is-required">Staff Name</label>
+          <input type="text" class="input--text" formControlName="staffName" placeholder="Enter staff full name...">
+          <app-validation-message [control]="internalForm.get('staffName')"></app-validation-message>
+        </div>
+        <div class="form-field">
+          <label class="form-label">School / Department</label>
+          <input type="text" class="input--text" formControlName="department" readonly>
+        </div>
+      </div>
+
+      <div class="form-field">
+        <label class="form-label is-required">Area of Expertise</label>
+        <input type="text" class="input--text" formControlName="expertise" [maxlength]="200"
+          placeholder="e.g. Machine Learning, Renewable Energy...">
+        <app-character-counter [current]="internalForm.get('expertise')?.value?.length || 0" [max]="200">
+        </app-character-counter>
+        <app-validation-message [control]="internalForm.get('expertise')"></app-validation-message>
+      </div>
+
+      <div class="form-field">
+        <label class="form-label is-required">Roles in Project</label>
+        <textarea class="input--textarea" formControlName="roles" [maxlength]="600"
+          placeholder="Describe the specific roles and responsibilities...">
+          </textarea>
+        <app-character-counter [current]="internalForm.get('roles')?.value?.length || 0" [max]="600">
+        </app-character-counter>
+        <app-validation-message [control]="internalForm.get('roles')"></app-validation-message>
+      </div>
+    </div>
+
+    <div dialog-footer>
+      <button type="button" class="btn btn-ghost" (click)="showInternalModal.set(false)">Cancel</button>
+      <button type="button" class="btn btn-primary" [disabled]="internalForm.invalid" (click)="saveInternal()">
+        <span class="material-icons">check</span>
+        {{ editingInternalIdx() !== null ? 'Save Changes' : 'Add Member' }}
+      </button>
+    </div>
+
+  </app-dialog>
+}
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<!-- EXTERNAL CO-RESEARCHER MODAL                                   -->
+<!-- ══════════════════════════════════════════════════════════════ -->
+@if (showExternalModal()) {
+  <app-dialog
+    [title]="(editingExternalIdx() !== null ? 'Edit' : 'Add') + ' External Collaborator'"
+    [isOpen]="true"
+    width="900px"
+    (close)="showExternalModal.set(false)">
+
+    <div class="section-fields" [formGroup]="externalForm">
+
+      <!-- Row 1: Title + Full Name -->
+      <div class="row row--2">
+        <div class="form-field">
+          <label class="form-label is-required">Title</label>
+          <select class="input--select" formControlName="title">
+            <option value="" disabled>Select title...</option>
+            @for (t of titles; track t.value) {
+            <option [value]="t.value">{{ t.label }}</option>
+            }
+          </select>
+          <app-validation-message [control]="externalForm.get('title')"></app-validation-message>
+        </div>
+        <div class="form-field">
+          <label class="form-label is-required">Full Name</label>
+          <input type="text" class="input--text" formControlName="fullName" placeholder="Enter full name...">
+          <app-validation-message [control]="externalForm.get('fullName')"></app-validation-message>
+        </div>
+      </div>
+
+      <!-- Row 2: Email + Institution -->
+      <div class="row row--2">
+        <div class="form-field">
+          <label class="form-label is-required">Email Address</label>
+          <input type="email" class="input--text" formControlName="email" placeholder="name@institution.edu">
+          <app-validation-message [control]="externalForm.get('email')"></app-validation-message>
+        </div>
+        <div class="form-field">
+          <label class="form-label is-required">Institution / Company</label>
+          <input type="text" class="input--text" formControlName="institution"
+            placeholder="Enter institution or company name...">
+          <app-validation-message [control]="externalForm.get('institution')"></app-validation-message>
+        </div>
+      </div>
+
+      <!-- Row 3: Org Type + Position -->
+      <div class="row row--2">
+        <div class="form-field">
+          <label class="form-label is-required">Type of Organisation</label>
+          <select class="input--select" formControlName="orgType">
+            <option value="" disabled>Select type...</option>
+            @for (o of orgTypes; track o.value) {
+            <option [value]="o.value">{{ o.label }}</option>
+            }
+          </select>
+          <app-validation-message [control]="externalForm.get('orgType')"></app-validation-message>
+        </div>
+        <div class="form-field">
+          <label class="form-label is-required">Position / Designation</label>
+          <input type="text" class="input--text" formControlName="position"
+            placeholder="e.g. Senior Researcher, Director...">
+          <app-validation-message [control]="externalForm.get('position')"></app-validation-message>
+        </div>
+      </div>
+
+      <!-- Row 4: Department + Country -->
+      <div class="row row--2">
+        <div class="form-field">
+          <label class="form-label is-required">School / Department / Faculty</label>
+          <input type="text" class="input--text" formControlName="department"
+            placeholder="e.g. Faculty of Engineering...">
+          <app-validation-message [control]="externalForm.get('department')"></app-validation-message>
+        </div>
+        <div class="form-field">
+          <label class="form-label is-required">Country</label>
+          <input type="text" class="input--text" formControlName="country"
+            placeholder="e.g. Malaysia, United Kingdom...">
+          <app-validation-message [control]="externalForm.get('country')"></app-validation-message>
+        </div>
+      </div>
+
+      <!-- Full width: Matched Funding -->
+      <div class="form-field">
+        <label class="form-label is-required">Matched Funding (RM equivalent)</label>
+        <input type="text" class="input--text" formControlName="funding" placeholder="Numeric value only, e.g. 5000">
+        <app-validation-message [control]="externalForm.get('funding')"></app-validation-message>
+      </div>
+
+      <!-- Full width: Roles -->
+      <div class="form-field">
+        <label class="form-label is-required">Roles of Collaborator</label>
+        <textarea class="input--textarea" formControlName="roles" [maxlength]="600"
+          placeholder="Describe the collaborator's specific roles...">
+          </textarea>
+        <app-character-counter [current]="externalForm.get('roles')?.value?.length || 0" [max]="600">
+        </app-character-counter>
+        <app-validation-message [control]="externalForm.get('roles')"></app-validation-message>
+      </div>
+
+      <!-- Full width: Support Letter -->
+      <div class="form-field">
+        <app-file-upload
+          label="Support Letter"
+          accept=".pdf"
+          [maxSizeMB]="10"
+          placeholder="Upload PDF support letter (max 10 MB)"
+          (fileSelected)="onFileSelected($event)">
+        </app-file-upload>
+        <app-validation-message [control]="externalForm.get('supportLetter')"></app-validation-message>
+      </div>
+
+    </div>
+
+    <div dialog-footer>
+      <button type="button" class="btn btn-ghost" (click)="showExternalModal.set(false)">Cancel</button>
+      <button type="button" class="btn btn-primary" [disabled]="externalForm.invalid" (click)="saveExternal()">
+        <span class="material-icons">check</span>
+        {{ editingExternalIdx() !== null ? 'Save Changes' : 'Add Collaborator' }}
+      </button>
+    </div>
+
+  </app-dialog>
+}

@@ -1,0 +1,286 @@
+<section class="project-section" [formGroup]="projectDetails">
+
+  <!-- Page Header -->
+  <app-custom-header icon="description" title="Project Details"></app-custom-header>
+
+  <!-- ── Block 1: Application Type & Declarations ─────────────── -->
+  <div class="card">
+    <app-custom-subheader title="Application Type & Declarations"></app-custom-subheader>
+    <div class="card__content section-fields">
+
+      <div class="form-field">
+        <label class="form-label is-required">Application Type</label>
+        <div class="radio-group">
+          <label class="radio-option">
+            <input type="radio" value="New" formControlName="applicationType">
+            <span>New Application — First-time submission for this research project</span>
+          </label>
+          <label class="radio-option">
+            <input type="radio" value="Resubmission" formControlName="applicationType">
+            <span>Resubmission — Previously submitted and returned for revision</span>
+          </label>
+        </div>
+        <app-validation-message [control]="projectDetails.get('applicationType')"></app-validation-message>
+      </div>
+
+      <div class="form-field" formGroupName="declarations">
+        <label class="form-label is-required">Declarations</label>
+        <div class="checkbox-group">
+          <label class="checkbox-option">
+            <input type="checkbox" formControlName="ethics">
+            <span>I declare that this project does not involve human or animal subjects, or that ethics approval will be
+              sought if required.</span>
+          </label>
+          <label class="checkbox-option">
+            <input type="checkbox" formControlName="conflict">
+            <span>I declare that there is no conflict of interest regarding this application.</span>
+          </label>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── Block 2: Category, Duration & Project Title ─────────── -->
+  <div class="card">
+    <app-custom-subheader title="Project Classification"></app-custom-subheader>
+    <div class="card__content section-fields">
+      <div class="row row--2">
+        <div class="form-field">
+          <label class="form-label is-required">Project Category</label>
+          <div class="radio-group">
+            <label class="radio-option">
+              <input type="radio" value="S&T" formControlName="category">
+              <span>Science & Technology (S&amp;T)</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" value="Non S&T" formControlName="category">
+              <span>Non-Science (Non S&amp;T)</span>
+            </label>
+          </div>
+        </div>
+        <div class="form-field">
+          <label class="form-label is-required">Project Duration</label>
+          <div class="radio-group">
+            <label class="radio-option"><input type="radio" value="12" formControlName="duration"><span>12
+                Months</span></label>
+            <label class="radio-option"><input type="radio" value="18" formControlName="duration"><span>18
+                Months</span></label>
+            <label class="radio-option"><input type="radio" value="24" formControlName="duration"><span>24
+                Months</span></label>
+          </div>
+          <app-validation-message [control]="projectDetails.get('duration')"></app-validation-message>
+        </div>
+      </div>
+
+      <div class="form-field">
+        <label class="form-label is-required">Project Title</label>
+        <input type="text" class="input--text" formControlName="title" placeholder="Enter full project title...">
+        <app-character-counter [current]="projectDetails.get('title')?.value?.length ?? 0"
+          [max]="200"></app-character-counter>
+        <app-validation-message [control]="projectDetails.get('title')"></app-validation-message>
+      </div>
+
+      <div class="form-field">
+        <label class="form-label is-required">Research Area</label>
+        <input type="text" class="input--text" formControlName="researchArea"
+          placeholder="e.g. Sustainable Energy Systems">
+        <app-character-counter [current]="projectDetails.get('researchArea')?.value?.length ?? 0"
+          [max]="100"></app-character-counter>
+        <app-validation-message [control]="projectDetails.get('researchArea')"></app-validation-message>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Block 3: Domain & Sub-Domain ──────────────────────────── -->
+  <div class="card">
+    <app-custom-subheader title="Research Domain"></app-custom-subheader>
+    <div class="card__content section-fields">
+      <div class="row row--2">
+        <div class="form-field">
+          <label class="form-label is-required">Research Domain</label>
+          <app-searchable-dropdown [options]="domains" formControlName="domain"></app-searchable-dropdown>
+          <app-validation-message [control]="projectDetails.get('domain')"></app-validation-message>
+        </div>
+        <div class="form-field">
+          <label class="form-label is-required">Sub-Research Domain</label>
+          <app-searchable-dropdown [options]="filteredSubDomains" formControlName="subDomain"></app-searchable-dropdown>
+          <app-validation-message [control]="projectDetails.get('subDomain')"></app-validation-message>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Block 4: ESG & SDG ─────────────────────────────────────── -->
+  <div class="card">
+    <app-custom-subheader title="ESG & SDG Alignment"></app-custom-subheader>
+    <div class="card__content section-fields">
+      <div class="row row--2">
+        <div class="form-field">
+          <div class="label-with-note">
+            <label class="form-label is-required">ESG Factors</label>
+            <app-note text="Min 1, Max 3" [isTooltip]="true"></app-note>
+          </div>
+          <app-searchable-dropdown [options]="esgs" [isMulti]="true" formControlName="esgs"></app-searchable-dropdown>
+          <app-validation-message [control]="projectDetails.get('esgs')"></app-validation-message>
+        </div>
+        <div class="form-field">
+          <div class="label-with-note">
+            <label class="form-label is-required">SDG Alignment</label>
+            <app-note text="Min 1, Max 3" [isTooltip]="true"></app-note>
+          </div>
+          <app-searchable-dropdown [options]="sdgs" [isMulti]="true" formControlName="sdgs"></app-searchable-dropdown>
+          <app-validation-message [control]="projectDetails.get('sdgs')"></app-validation-message>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Block 5: Project Proposal Narrative ───────────────────── -->
+  <div class="card">
+    <app-custom-subheader title="Project Proposal Narrative"></app-custom-subheader>
+    <div class="card__content section-fields">
+
+      <div class="row row--2">
+        <div class="form-field">
+          <label class="form-label is-required">Executive Summary</label>
+          <textarea class="input--textarea" formControlName="executiveSummary"
+            placeholder="Summarise the research in 1–2 paragraphs..."></textarea>
+          <app-character-counter [current]="projectDetails.get('executiveSummary')?.value?.length ?? 0"
+            [max]="1500"></app-character-counter>
+          <app-validation-message [control]="projectDetails.get('executiveSummary')"></app-validation-message>
+        </div>
+        <div class="form-field">
+          <div class="label-with-note">
+            <label class="form-label is-required">Keywords</label>
+            <app-note text="Maximum 5 keywords, separated by commas" [isTooltip]="true"></app-note>
+          </div>
+          <textarea class="input--textarea" formControlName="keywords"
+            placeholder="keyword1, keyword2, keyword3..."></textarea>
+          <div class="keyword-counter" [class.keyword-counter--over]="keywordCount > 5">{{ keywordCount }} / 5 keywords
+          </div>
+          <app-validation-message [control]="projectDetails.get('keywords')"></app-validation-message>
+        </div>
+      </div>
+
+      <div class="row row--2">
+        <div class="form-field">
+          <label class="form-label is-required">Introduction</label>
+          <textarea class="input--textarea" formControlName="introduction"></textarea>
+          <app-character-counter [current]="projectDetails.get('introduction')?.value?.length ?? 0"
+            [max]="3000"></app-character-counter>
+          <app-validation-message [control]="projectDetails.get('introduction')"></app-validation-message>
+        </div>
+        <div class="form-field">
+          <label class="form-label is-required">Problem Statement</label>
+          <textarea class="input--textarea" formControlName="problemStatement"></textarea>
+          <app-character-counter [current]="projectDetails.get('problemStatement')?.value?.length ?? 0"
+            [max]="3000"></app-character-counter>
+          <app-validation-message [control]="projectDetails.get('problemStatement')"></app-validation-message>
+        </div>
+      </div>
+
+      <div class="row row--2">
+        <div class="form-field">
+          <label class="form-label is-required">Research Aim</label>
+          <textarea class="input--textarea" formControlName="researchAim"
+            placeholder="State the primary aim of this research..."></textarea>
+          <app-character-counter [current]="projectDetails.get('researchAim')?.value?.length ?? 0"
+            [max]="1000"></app-character-counter>
+          <app-validation-message [control]="projectDetails.get('researchAim')"></app-validation-message>
+        </div>
+        <div class="form-field">
+          <label class="form-label is-required">Research Questions / Objectives</label>
+          <textarea class="input--textarea" formControlName="researchQuestions"
+            placeholder="List the key research questions or objectives..."></textarea>
+          <app-character-counter [current]="projectDetails.get('researchQuestions')?.value?.length ?? 0"
+            [max]="1000"></app-character-counter>
+          <app-validation-message [control]="projectDetails.get('researchQuestions')"></app-validation-message>
+        </div>
+      </div>
+
+      <div class="form-field">
+        <label class="form-label is-required">Hypothesis</label>
+        <textarea class="input--textarea" formControlName="hypothesis"
+          placeholder="State the hypothesis or expected outcomes..."></textarea>
+        <app-character-counter [current]="projectDetails.get('hypothesis')?.value?.length ?? 0"
+          [max]="1000"></app-character-counter>
+        <app-validation-message [control]="projectDetails.get('hypothesis')"></app-validation-message>
+      </div>
+
+      <div class="row row--2">
+        <div class="form-field">
+          <label class="form-label is-required">Literature Review</label>
+          <textarea class="input--textarea" formControlName="literatureReview"></textarea>
+          <app-character-counter [current]="projectDetails.get('literatureReview')?.value?.length ?? 0"
+            [max]="5000"></app-character-counter>
+          <app-validation-message [control]="projectDetails.get('literatureReview')"></app-validation-message>
+        </div>
+        <div class="form-field">
+          <label class="form-label is-required">Methodology</label>
+          <textarea class="input--textarea" formControlName="methodology"></textarea>
+          <app-character-counter [current]="projectDetails.get('methodology')?.value?.length ?? 0"
+            [max]="3000"></app-character-counter>
+          <app-validation-message [control]="projectDetails.get('methodology')"></app-validation-message>
+        </div>
+      </div>
+
+      <div class="form-field">
+        <label class="form-label is-required">References</label>
+        <textarea class="input--textarea" formControlName="references"
+          placeholder="List all references in APA format..."></textarea>
+        <app-character-counter [current]="projectDetails.get('references')?.value?.length ?? 0"
+          [max]="3000"></app-character-counter>
+        <app-validation-message [control]="projectDetails.get('references')"></app-validation-message>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── Block 6: Benefits ─────────────────────────────────────── -->
+  <div class="card" formGroupName="benefits">
+    <app-custom-subheader title="Grant Utilisation & Benefits"></app-custom-subheader>
+    <div class="card__content section-fields">
+      <p class="form-hint">How will this grant benefit APU, students and wider stakeholders?</p>
+      <div class="row row--3">
+        <div class="form-field">
+          <label class="form-label is-required">APU Benefit</label>
+          <textarea class="input--textarea" formControlName="apu"></textarea>
+          <app-character-counter [current]="projectDetails.get('benefits.apu')?.value?.length ?? 0"
+            [max]="300"></app-character-counter>
+          <app-validation-message [control]="projectDetails.get('benefits.apu')"></app-validation-message>
+        </div>
+        <div class="form-field">
+          <label class="form-label is-required">Students Benefit</label>
+          <textarea class="input--textarea" formControlName="students"></textarea>
+          <app-character-counter [current]="projectDetails.get('benefits.students')?.value?.length ?? 0"
+            [max]="300"></app-character-counter>
+          <app-validation-message [control]="projectDetails.get('benefits.students')"></app-validation-message>
+        </div>
+        <div class="form-field">
+          <label class="form-label is-required">Stakeholders Benefit</label>
+          <textarea class="input--textarea" formControlName="stakeholders"></textarea>
+          <app-character-counter [current]="projectDetails.get('benefits.stakeholders')?.value?.length ?? 0"
+            [max]="300"></app-character-counter>
+          <app-validation-message [control]="projectDetails.get('benefits.stakeholders')"></app-validation-message>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Block 7: Vision & Mission ─────────────────────────────── -->
+  <div class="card">
+    <app-custom-subheader title="Alignment with APU Vision & Mission"></app-custom-subheader>
+    <div class="card__content section-fields">
+      <div class="form-field">
+        <label class="form-label is-required">How does this research align with APU's vision and mission?</label>
+        <textarea class="input--textarea" formControlName="visionMission"
+          placeholder="Describe the alignment..."></textarea>
+        <app-character-counter [current]="projectDetails.get('visionMission')?.value?.length ?? 0"
+          [max]="300"></app-character-counter>
+        <app-validation-message [control]="projectDetails.get('visionMission')"></app-validation-message>
+      </div>
+    </div>
+  </div>
+
+</section>

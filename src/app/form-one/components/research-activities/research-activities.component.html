@@ -1,0 +1,141 @@
+<section class="activities-section">
+
+  <!-- Page Header -->
+  <app-custom-header
+    icon="event_note"
+    title="Research Activities"
+  ></app-custom-header>
+
+  <!-- Activities Table -->
+  <div class="card">
+    <div class="card__content">
+
+      <div class="list-section-header">
+        <span class="list-count">{{ activities.length }} {{ activities.length === 1 ? 'Activity' : 'Activities' }} · Duration: {{ projectDuration() }} Months</span>
+        <button type="button" class="btn btn-primary btn-sm" (click)="addActivity()">
+          <span class="material-icons">add</span> Add Activity
+        </button>
+      </div>
+
+      @if (validationWarnings().length > 0) {
+        <div class="validation-warnings">
+          <span class="material-icons">info_outline</span>
+          <ul>
+            @for (w of validationWarnings(); track w) {
+              <li>{{ w }}</li>
+            }
+          </ul>
+        </div>
+      }
+
+      @if (activities.length > 0) {
+        <div class="table-scroll">
+          <table class="list-table">
+            <thead>
+              <tr>
+                <th class="col-no">#</th>
+                <th>Activity Description</th>
+                <th class="col-month">Start (Mo)</th>
+                <th class="col-month">End (Mo)</th>
+                <th class="col-duration">Duration</th>
+                <th class="col-timeline">Timeline (Month 1 – {{ projectDuration() }})</th>
+                <th class="col-actions"></th>
+              </tr>
+            </thead>
+            <tbody [formGroup]="parentForm">
+              <ng-container formArrayName="activities">
+                @for (activity of activities.controls; track $index; let i = $index) {
+                  <tr [formGroupName]="i">
+                    <td class="col-no text-muted">{{ i + 1 }}</td>
+                    <td>
+                      <input type="text" class="input--text" formControlName="name"
+                        placeholder="Describe the activity...">
+                      <app-validation-message [control]="activity.get('name')"></app-validation-message>
+                    </td>
+                    <td class="col-month">
+                      <select class="input--select" formControlName="startMonth">
+                        @for (m of months(); track m) {
+                          <option [value]="m">{{ m }}</option>
+                        }
+                      </select>
+                    </td>
+                    <td class="col-month">
+                      <select class="input--select" formControlName="endMonth">
+                        @for (m of months(); track m) {
+                          <option [value]="m">{{ m }}</option>
+                        }
+                      </select>
+                    </td>
+                    <td class="col-duration">
+                      <span class="duration-badge">{{ activity.get('duration')?.value }} Mo</span>
+                      @if (activity.get('endMonth')?.value < activity.get('startMonth')?.value) {
+                        <p class="text-danger text-xs">End &lt; Start</p>
+                      }
+                    </td>
+                    <td class="col-timeline">
+                      <div class="timeline-grid">
+                        @for (cell of getTimeline(activity.get('startMonth')?.value, activity.get('endMonth')?.value); track $index) {
+                          <div class="month-cell" [class.active]="cell"></div>
+                        }
+                      </div>
+                    </td>
+                    <td class="col-actions">
+                      @if (activities.length > 1) {
+                        <button type="button" class="btn-icon btn-icon--delete"
+                          (click)="removeActivity(i)" aria-label="Remove activity">
+                          <span class="material-icons">delete</span>
+                        </button>
+                      }
+                    </td>
+                  </tr>
+                }
+              </ng-container>
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <div class="empty-state">
+          <span class="material-icons">event_note</span>
+          <p>No activities added yet. Click <strong>Add Activity</strong> to start planning.</p>
+        </div>
+      }
+
+      <app-note text="Duration is auto-calculated. End Month must be ≥ Start Month. Activities must cover the full project duration with no gaps." [isTooltip]="true"></app-note>
+    </div>
+  </div>
+
+  <!-- ── Gantt Chart Preview ─────────────────────────────────── -->
+  @if (activities.length > 0) {
+    <div class="card gantt-card">
+      <app-custom-subheader icon="bar_chart" title="Gantt Chart Preview"></app-custom-subheader>
+      <div class="card__content gantt-content">
+        <div class="gantt-scroll">
+          <div class="gantt-chart">
+
+            <!-- Month header row -->
+            <div class="gantt-row gantt-row--header">
+              <div class="gantt-label gantt-label--header">Activity</div>
+              @for (m of months(); track m) {
+                <div class="gantt-month-cell gantt-month-cell--header">{{ m }}</div>
+              }
+            </div>
+
+            <!-- Activity rows -->
+            @for (activity of activities.controls; track $index; let i = $index) {
+              <div class="gantt-row">
+                <div class="gantt-label" [title]="activity.get('name')?.value">
+                  {{ activity.get('name')?.value || ('Activity ' + (i + 1)) }}
+                </div>
+                @for (active of getTimeline(activity.get('startMonth')?.value, activity.get('endMonth')?.value); track $index) {
+                  <div class="gantt-month-cell" [class.gantt-month-cell--active]="active"></div>
+                }
+              </div>
+            }
+
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+</section>

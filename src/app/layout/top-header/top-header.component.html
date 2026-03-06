@@ -1,0 +1,125 @@
+<header class="top-header">
+
+    <!-- Left: Dynamic Breadcrumb -->
+    <nav class="top-header__left" aria-label="Breadcrumb">
+        <ol class="breadcrumb">
+            @for (crumb of breadcrumbs(); track crumb.route; let last = $last) {
+                <li class="breadcrumb__item" [class.breadcrumb__item--active]="last">
+                    @if (!last) {
+                        <a [routerLink]="crumb.route" class="breadcrumb__link">{{ crumb.label }}</a>
+                        <span class="material-icons breadcrumb__separator">chevron_right</span>
+                    } @else {
+                        <span class="breadcrumb__current">{{ crumb.label }}</span>
+                    }
+                </li>
+            }
+        </ol>
+    </nav>
+
+    <!-- Right: Search, Notifications, Date -->
+    <div class="top-header__right">
+
+        <!-- Global Search -->
+        <div class="top-header__search" [class.top-header__search--focused]="searchFocused()">
+            <span class="material-icons search-icon">search</span>
+            <input
+                type="text"
+                placeholder="Search pages..."
+                [value]="searchQuery()"
+                (input)="onSearchInput($event)"
+                (focus)="searchFocused.set(true)"
+                autocomplete="off">
+
+            @if (searchFocused() && searchQuery().length > 0) {
+                <div class="search-dropdown" (mousedown)="$event.preventDefault()">
+                    @if (searchResults().length > 0) {
+                        @for (result of searchResults(); track result.route) {
+                            <button class="search-dropdown__item" (mousedown)="navigateToResult(result)">
+                                <span class="material-icons">{{ result.icon }}</span>
+                                <div class="search-dropdown__text">
+                                    <span class="search-dropdown__label">{{ result.label }}</span>
+                                    <span class="search-dropdown__group">{{ result.group }}</span>
+                                </div>
+                            </button>
+                        }
+                    } @else {
+                        <div class="search-dropdown__empty">
+                            <span class="material-icons">search_off</span>
+                            <span>No matching pages found</span>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+
+        <div class="top-header__actions">
+
+            <!-- Notifications -->
+            <div class="notification-wrapper">
+                <button class="action-btn" title="Notifications"
+                    (click)="toggleNotifications()"
+                    [class.action-btn--active]="notificationsOpen()">
+                    <span class="material-icons">notifications_none</span>
+                    @if (unreadCount() > 0) {
+                        <span class="notification-badge">{{ unreadCount() }}</span>
+                    }
+                </button>
+
+                @if (notificationsOpen()) {
+                    <div class="notification-dropdown">
+                        <div class="notification-dropdown__header">
+                            <h3>Notifications</h3>
+                            @if (unreadCount() > 0) {
+                                <button class="notification-dropdown__mark-all" (click)="markAllRead()">
+                                    Mark all read
+                                </button>
+                            }
+                        </div>
+
+                        <div class="notification-dropdown__search">
+                            <span class="material-icons">search</span>
+                            <input
+                                type="text"
+                                placeholder="Search notifications..."
+                                [value]="notificationSearch()"
+                                (input)="onNotificationSearchInput($event)">
+                        </div>
+
+                        <div class="notification-dropdown__list">
+                            @for (notification of filteredNotifications(); track notification.id) {
+                                <button class="notification-item"
+                                    [class.notification-item--unread]="!notification.read"
+                                    (click)="markAsRead(notification)">
+                                    <div class="notification-item__icon" [attr.data-type]="notification.type">
+                                        <span class="material-icons">{{ getNotificationIcon(notification.type) }}</span>
+                                    </div>
+                                    <div class="notification-item__content">
+                                        <div class="notification-item__title">{{ notification.title }}</div>
+                                        <div class="notification-item__message">{{ notification.message }}</div>
+                                        <div class="notification-item__time">{{ notification.time }}</div>
+                                    </div>
+                                    @if (!notification.read) {
+                                        <div class="notification-item__dot"></div>
+                                    }
+                                </button>
+                            }
+                            @if (filteredNotifications().length === 0) {
+                                <div class="notification-dropdown__empty">No notifications found</div>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <!-- Divider -->
+            <div class="divider"></div>
+
+            <!-- Date Display -->
+            <div class="date-display">
+                <span class="date-display__day">{{ currentDate | date:'EEEE' }}</span>
+                <span class="date-display__date">{{ currentDate | date:'MMM d, yyyy' }}</span>
+            </div>
+
+        </div>
+    </div>
+</header>

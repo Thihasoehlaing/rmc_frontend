@@ -1,0 +1,52 @@
+<div class="comment-panel">
+
+  <!-- ── Toggle buttons (multi-select) ───────────────────────── -->
+  <div class="comment-panel__actions">
+    <button
+      type="button"
+      class="btn btn--comment btn--comment-toggle-all"
+      [class.btn--comment-active]="allActive"
+      (click)="toggleAll()">
+      <span class="material-icons">{{ allActive ? 'visibility_off' : 'visibility' }}</span>
+      {{ allActive ? 'Hide All' : 'Show All' }}
+    </button>
+
+    @for (item of comments; track item.key) {
+      <button
+        type="button"
+        class="btn btn--comment"
+        [class.btn--comment-active]="isActive(item.key)"
+        [attr.aria-pressed]="isActive(item.key)"
+        (click)="toggle(item.key)">
+        <span class="material-icons">comment</span>
+        {{ item.label }}
+      </button>
+    }
+  </div>
+
+  <!-- ── Active panels (multiple can be open) ─────────────────── -->
+  @for (active of activeComments(); track active.key) {
+    <div
+      class="comment-panel__body"
+      [id]="active.key"
+      [attr.data-comment-type]="active.key"
+      role="region"
+      [attr.aria-label]="active.label">
+
+      <div class="comment-panel__label">
+        <span class="material-icons">chat_bubble_outline</span>
+        {{ active.label }}
+      </div>
+
+      <div class="comment-panel__content">
+        @if (active.content) {
+          <p>{{ active.content }}</p>
+        } @else {
+          <p class="comment-panel__empty">No comments have been submitted for this section yet.</p>
+        }
+      </div>
+
+    </div>
+  }
+
+</div>

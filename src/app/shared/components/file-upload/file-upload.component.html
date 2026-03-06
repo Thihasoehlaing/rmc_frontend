@@ -1,0 +1,33 @@
+<div class="file-upload-field">
+
+  @if (label) {
+    <label class="form-label">{{ label }}</label>
+  }
+
+  <div class="file-upload-zone"
+       [class.file-upload-zone--drag]="isDragOver()"
+       [class.file-upload-zone--error]="errorMsg()"
+       (dragover)="onDragOver($event)"
+       (dragleave)="onDragLeave()"
+       (drop)="onDrop($event)">
+
+    <span class="material-icons">upload_file</span>
+    <p class="upload-primary">{{ placeholder || 'Drag &amp; drop or click to upload' }}</p>
+    <p class="upload-hint">Accepted: {{ accept === '*' ? 'Any file' : accept }} &middot; Max {{ maxSizeMB }} MB</p>
+
+    <!-- Hidden native file input — fills entire zone so the whole zone is clickable -->
+    <input type="file" [accept]="accept" (change)="onChange($event)">
+  </div>
+
+  @if (selectedFileName()) {
+    <div class="file-selected">
+      <span class="material-icons">check_circle</span>
+      {{ selectedFileName() }}
+    </div>
+  }
+
+  @if (errorMsg()) {
+    <span class="form-error-msg">{{ errorMsg() }}</span>
+  }
+
+</div>

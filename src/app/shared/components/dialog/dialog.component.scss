@@ -1,0 +1,68 @@
+@use '../../../../assets/styles/index' as *;
+
+// ── Backdrop ────────────────────────────────────────────────────────
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--color-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-modal);
+  backdrop-filter: blur(3px);
+  padding: var(--space-4);
+}
+
+// ── Dialog card ─────────────────────────────────────────────────────
+.modal-dialog {
+  background: var(--color-surface);
+  width: 100%;
+  max-width: 680px;       // default; overridden by [style.max-width] binding
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl);
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+  overflow: hidden;
+}
+
+// ── Header ──────────────────────────────────────────────────────────
+.modal-dialog__header {
+  padding: var(--space-4) var(--space-6);
+  background: var(--color-surface-nested);
+  border-bottom: 1px solid var(--border-default);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+
+  h4 {
+    font-weight: var(--fw-bold);
+    font-size: var(--fs-base);
+    color: var(--color-heading);
+    margin: 0;
+  }
+}
+
+// ── Scrollable body ─────────────────────────────────────────────────
+.modal-dialog__body {
+  padding: var(--space-6);
+  overflow-y: auto;
+  flex: 1;
+}
+
+// ── Footer ──────────────────────────────────────────────────────────
+.modal-dialog__footer {
+  padding: var(--space-4) var(--space-6);
+  background: var(--color-surface-nested);
+  border-top: 1px solid var(--border-default);
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  flex-shrink: 0;
+
+  // Hide footer bar entirely when no content is projected into it
+  &:empty {
+    display: none;
+  }
+}

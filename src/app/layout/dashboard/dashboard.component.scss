@@ -1,0 +1,284 @@
+@use '../../../assets/styles/index' as *;
+
+.dashboard {
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: var(--space-8);
+
+    h1 {
+      font-size: var(--fs-3xl);
+      color: var(--color-heading);
+      margin-bottom: var(--space-1);
+    }
+
+    .subtitle {
+      color: var(--color-text-secondary);
+      font-size: var(--fs-base);
+    }
+  }
+
+  &__actions {
+    display: flex;
+    gap: var(--space-3);
+  }
+
+  &__main-grid {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: var(--space-8);
+  }
+}
+
+// --- KPI Cards ---
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--space-6);
+  margin-bottom: var(--space-10);
+}
+
+.kpi-card {
+  background: var(--color-surface);
+  padding: var(--space-5);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border-subtle);
+  display: flex;
+  gap: var(--space-4);
+  transition: transform var(--transition-normal);
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-md);
+  }
+
+  &__icon {
+    width: 48px; // no token: component-specific icon container size
+    height: 48px; // no token: component-specific icon container size
+    border-radius: var(--radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .material-icons {
+      font-size: 24px; // no token: material icon pixel size
+    }
+  }
+
+  &__label {
+    font-size: var(--fs-xs);
+    text-transform: uppercase;
+    font-weight: var(--fw-black);
+    color: var(--color-text-muted);
+    letter-spacing: 0.5px; // no token: tight tracking for uppercase micro-labels
+    margin-bottom: var(--space-1);
+  }
+
+  &__value {
+    font-size: var(--fs-2xl);
+    font-weight: var(--fw-bold);
+    color: var(--color-heading);
+    line-height: 1;
+    margin-bottom: var(--space-2);
+  }
+
+  &__trend {
+    font-size: var(--fs-xs);
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+
+    .material-icons {
+      font-size: 14px; // no token: material icon pixel size for trend indicator
+    }
+
+    &.up {
+      color: var(--color-success);
+    }
+
+    &.down {
+      color: var(--color-error);
+    }
+  }
+}
+
+// --- Cards ---
+// Extends global .card with dashboard-specific overrides
+.card {
+  // Override global radius/border: dashboard uses xl radius + subtle border
+  border-radius: var(--radius-xl);
+  border-color: var(--border-subtle);
+  overflow: hidden; // Clip activity list items at card edge
+
+  &__header {
+    padding: var(--space-5) var(--space-6);
+    border-bottom: 1px solid var(--border-subtle);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  &__title {
+    font-size: var(--fs-lg);
+    font-weight: var(--fw-bold);
+    color: var(--color-heading);
+  }
+
+  &__link {
+    font-size: var(--fs-xs);
+    color: var(--color-primary);
+    font-weight: var(--fw-bold);
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  &__content {
+    padding: var(--space-2) 0;
+  }
+}
+
+// --- Activity List ---
+.activity-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4) var(--space-6);
+  border-bottom: 1px solid var(--border-nested);
+  transition: background var(--transition-fast);
+
+  &:hover {
+    background: var(--color-surface-hover);
+  }
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  .app-title {
+    font-weight: var(--fw-semibold);
+    color: var(--color-text);
+    margin-bottom: 2px; // no token: 2px sub-space between title and meta
+  }
+
+  .app-meta {
+    font-size: var(--fs-xs);
+    color: var(--color-text-muted);
+  }
+}
+
+.status-badge {
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-black);
+  text-transform: uppercase;
+  letter-spacing: 0.5px; // no token: tight tracking for badge labels
+
+  &.status--approved {
+    background: var(--color-success-light);
+    color: var(--color-success-dark);
+  }
+
+  &.status--pending {
+    background: var(--color-warning-light);
+    color: var(--color-warning-dark);
+  }
+
+  &.status--in-review {
+    background: var(--color-primary-light);
+    color: var(--color-primary-dark);
+  }
+
+  &.status--rejected {
+    background: var(--color-error-light);
+    color: var(--color-error-dark);
+  }
+}
+
+// --- Quick Links ---
+.section-title {
+  font-size: var(--fs-sm);
+  text-transform: uppercase;
+  font-weight: var(--fw-black);
+  color: var(--color-text-muted);
+  letter-spacing: 1px;
+  margin-bottom: var(--space-4);
+}
+
+.link-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}
+
+.link-tile {
+  background: var(--color-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  text-decoration: none;
+  color: var(--color-text);
+  transition: all var(--transition-normal);
+
+  .material-icons {
+    font-size: 24px;
+    color: var(--color-primary);
+  }
+
+  span:last-child {
+    font-size: var(--fs-xs);
+    font-weight: var(--fw-bold);
+  }
+
+  &:hover {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: white;
+
+    .material-icons {
+      color: white;
+    }
+  }
+}
+
+// --- System Status ---
+.system-status {
+  padding: var(--space-4) var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.status-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: var(--fs-xs);
+  color: var(--color-text-secondary);
+  font-weight: var(--fw-medium);
+
+  .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+
+    &.online {
+      background: var(--color-success);
+      box-shadow: 0 0 8px var(--color-success);
+    }
+
+    &.delayed {
+      background: var(--color-warning);
+      box-shadow: 0 0 8px var(--color-warning);
+    }
+  }
+}
+
+// .btn — uses global class from _forms.scss; no local override needed

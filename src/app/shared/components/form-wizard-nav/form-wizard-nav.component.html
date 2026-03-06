@@ -1,0 +1,48 @@
+<footer class="form-wizard-nav">
+
+  <!-- ── Left: Back / Forward navigation ─────────────────────── -->
+  <div class="nav-group nav-group--left">
+    <button
+      type="button"
+      class="btn btn-secondary btn--nav"
+      [disabled]="isFirstStep"
+      (click)="prev.emit()">
+      <span class="material-icons">arrow_back</span>
+      Previous
+    </button>
+
+    @if (!isLastStep) {
+      <button
+        type="button"
+        class="btn btn-secondary btn--nav"
+        (click)="next.emit()">
+        Next
+        <span class="material-icons">arrow_forward</span>
+      </button>
+    }
+  </div>
+
+  <!-- ── Right: Persist / Submit actions ──────────────────────── -->
+  <div class="nav-group nav-group--right">
+    <button
+      type="button"
+      class="btn btn-ghost btn--action"
+      [disabled]="isSaving"
+      (click)="saveDraft.emit()">
+      <span class="material-icons">save_alt</span>
+      @if (isSaving) { Saving… } @else { Save as Draft }
+    </button>
+
+    @if (isLastStep) {
+      <button
+        type="submit"
+        class="btn btn-primary btn--action"
+        [disabled]="isSubmitting"
+        (click)="submitForm.emit()">
+        <span class="material-icons">send</span>
+        @if (isSubmitting) { Submitting… } @else { Submit Application }
+      </button>
+    }
+  </div>
+
+</footer>

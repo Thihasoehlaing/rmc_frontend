@@ -1,0 +1,71 @@
+<div class="rdig-app">
+
+  <!-- ── 1. Page Title ─────────────────────────────────────────── -->
+  <app-form-main-title
+    title="APU Research and Development Internal Grant (RDIG) Application Form"
+    modalTitle="RDIG Applicant Guidelines"
+    endpoint="/api/guidelines/rdig">
+  </app-form-main-title>
+
+  <!-- ── 2. Step Indicator (clickable) ─────────────────────────── -->
+  <app-step-indicator
+    [currentStep]="currentStep()"
+    [steps]="steps"
+    [stepStatuses]="getStepStatuses()"
+    (stepClick)="goToStep($event)">
+  </app-step-indicator>
+
+  <!-- ── 3. Comment Panel (all reviewer roles) ─────────────────── -->
+  <app-form-comment-panel></app-form-comment-panel>
+
+  <!-- ── 4. Main Form ──────────────────────────────────────────── -->
+  <form [formGroup]="rdigForm" (ngSubmit)="onSubmit()" novalidate>
+
+    <!-- Hidden metadata — always present, never visible -->
+    <div formGroupName="metadata" hidden aria-hidden="true">
+      <input formControlName="batchNumber"   readonly>
+      <input formControlName="applicationId" readonly>
+      <input formControlName="version"       readonly>
+    </div>
+
+    <!-- ── Form Container ─────────────────────────────────────── -->
+    <div class="form-container">
+
+      <!-- ── Wizard step content ──────────────────────────────── -->
+      <div class="rdig-app__content">
+
+        @if (currentStep() === 1) {
+          <app-team-details [parentForm]="rdigForm"></app-team-details>
+        }
+        @if (currentStep() === 2) {
+          <app-project-details [parentForm]="rdigForm"></app-project-details>
+          <app-research-activities [parentForm]="rdigForm"></app-research-activities>
+        }
+        @if (currentStep() === 3) {
+          <app-output-details [parentForm]="rdigForm"></app-output-details>
+        }
+        @if (currentStep() === 4) {
+          <app-budget-summary [parentForm]="rdigForm"></app-budget-summary>
+        }
+        @if (currentStep() === 5) {
+          <app-final-declaration [parentForm]="rdigForm"></app-final-declaration>
+        }
+
+      </div>
+    </div>
+
+    <!-- ── Shared wizard navigation footer ───────────────────── -->
+    <app-form-wizard-nav
+      [currentStep]="currentStep()"
+      [totalSteps]="totalSteps"
+      [isSaving]="isSaving()"
+      [isSubmitting]="isSubmitting()"
+      (prev)="onPrev()"
+      (next)="onNext()"
+      (saveDraft)="onSaveDraft()"
+      (submitForm)="onSubmit()">
+    </app-form-wizard-nav>
+
+  </form>
+
+</div>

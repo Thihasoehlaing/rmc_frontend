@@ -1,0 +1,40 @@
+@use '../../../../assets/styles/index' as *;
+
+.custom-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-5);
+  background-color: var(--color-surface-hover);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--space-4);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.header-icon {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+
+  ::ng-deep svg {
+    width: var(--icon-lg);
+    height: var(--icon-lg);
+    fill: var(--color-primary);
+  }
+}
+
+.header-icon--material {
+  font-size: var(--icon-lg);
+  color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.header-text {
+  margin: 0;
+  font-size: var(--fs-base);
+  font-weight: var(--fw-bold);
+  color: var(--color-heading);
+  line-height: var(--lh-tight);
+}

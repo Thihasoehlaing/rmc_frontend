@@ -1,0 +1,112 @@
+@use '../../../../assets/styles/index' as *;
+
+.step-indicator {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0;
+  padding: var(--space-5) var(--space-4);
+  background: var(--color-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-xl);
+}
+
+// ── Individual step (now a button) ──────────────────────────────
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  padding: var(--space-2);
+  border-radius: var(--radius-md);
+  transition: background var(--transition-fast);
+
+  &:hover {
+    background: var(--color-surface-hover);
+  }
+
+  &__bubble {
+    width: 40px; // no token: step bubble circle size
+    height: 40px; // no token: step bubble circle size
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: var(--fw-bold);
+    transition: all var(--transition-fast);
+    border: 2px solid var(--border-default);
+    background: var(--color-surface-nested);
+    color: var(--color-text-secondary);
+
+    .material-icons { font-size: 18px; }
+  }
+
+  &__label {
+    font-size: var(--fs-xs);
+    font-weight: var(--fw-medium);
+    color: var(--color-text-secondary);
+    text-align: center;
+    max-width: 80px;
+    line-height: var(--lh-tight);
+    transition: color var(--transition-fast);
+  }
+
+  // ── Complete ───────────────────────────────────────────────────
+  &--complete {
+    .step__bubble {
+      background: var(--color-success);
+      border-color: var(--color-success);
+      color: #fff;
+      box-shadow: 0 0 0 3px var(--color-success-light);
+    }
+    .step__label { color: var(--color-success-dark); }
+  }
+
+  // ── Warning (visited but incomplete) ──────────────────────────
+  &--warning {
+    .step__bubble {
+      background: var(--color-warning, #f59e0b);
+      border-color: var(--color-warning, #f59e0b);
+      color: #fff;
+      box-shadow: 0 0 0 3px var(--color-warning-light, #fef3c7);
+    }
+    .step__label {
+      color: var(--color-warning-dark, #92400e);
+      font-weight: var(--fw-medium);
+    }
+  }
+
+  // ── Active ─────────────────────────────────────────────────────
+  &--active {
+    .step__bubble {
+      background: var(--color-primary);
+      border-color: var(--color-primary);
+      color: #fff;
+      box-shadow: 0 0 0 3px var(--color-primary-light);
+    }
+    .step__label {
+      color: var(--color-primary);
+      font-weight: var(--fw-bold);
+    }
+  }
+}
+
+// ── Connector line ────────────────────────────────────────────────
+.step-connector {
+  flex: 1;
+  height: 2px;
+  background: var(--border-default);
+  margin-top: 22px; // no token: aligns connector to horizontal center of 40px bubble
+  min-width: var(--space-6);
+  transition: background var(--transition-fast);
+
+  &--filled {
+    background: var(--color-success);
+  }
+}

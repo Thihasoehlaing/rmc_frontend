@@ -1,0 +1,209 @@
+<section class="budget-section" [formGroup]="budgetForm">
+
+  <!-- Page Header -->
+  <app-custom-header
+    icon="account_balance_wallet"
+    title="Budget Summary"
+  ></app-custom-header>
+
+  <!-- ── Budget Totals Banner ────────────────────────────────── -->
+  <div class="budget-banner" [class.budget-banner--invalid]="isBudgetInvalidRange">
+    <div class="budget-total">
+      <span class="total-label">Total Amount Requested</span>
+      <span class="total-amount">RM {{ budgetForm.get('totalRequest')?.value | number:'1.2-2' }}</span>
+    </div>
+  @if (category === 'S&T' || category === 'Non S&T') {
+    <span class="badge" [class.badge--success]="!isBudgetInvalidRange" [class.badge--danger]="isBudgetInvalidRange">
+      Requirement: {{ budgetRangeMessage }}
+    </span>
+  }
+  </div>
+
+  @if (isBudgetInvalidRange) {
+    <div class="warning-box">
+      <span class="material-icons">warning_amber</span>
+      <span><strong>Budget Limit Alert:</strong> Total must be {{ budgetRangeMessage }} for {{ category }} projects.</span>
+    </div>
+  }
+
+  <!-- ── V11000: Student Allowances ────────────────────────── -->
+  <div class="card">
+    <app-custom-subheader title="V11000 — Student Allowances (Graduate Research Assistants)"></app-custom-subheader>
+    <div class="card__content">
+      <div class="category-header">
+        <button type="button" class="btn btn-primary" (click)="addBudgetRow(studentAllowances)">
+          <span class="material-icons">add</span> Add Item
+        </button>
+      </div>
+      @if (studentAllowances.length > 0) {
+        <table class="budget-table" formArrayName="studentAllowances">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Description of Expense</th>
+              <th class="col-amount">Amount (RM)</th>
+              <th>Proposed Remarks</th>
+              <th class="col-del"></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of studentAllowances.controls; track $index; let i = $index) {
+              <tr [formGroupName]="i">
+                <td class="col-idx text-muted">{{ i + 1 }}</td>
+                <td><input type="text" class="input--text" formControlName="description" placeholder="e.g. Master's Student GRA (6 months)"></td>
+                <td class="col-amount"><input type="number" lang="en" class="input--text" formControlName="amount" min="0"></td>
+                <td>
+                  <textarea class="input--textarea" formControlName="remarks" [maxlength]="300"></textarea>
+                  <app-character-counter [current]="row.get('remarks')?.value?.length ?? 0" [max]="300"></app-character-counter>
+                </td>
+                <td>
+                  <button type="button" class="btn-icon btn-icon--delete" (click)="removeBudgetRow(studentAllowances, i)">
+                    <span class="material-icons">delete</span>
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      } @else {
+        <p class="empty-state">No items added. Click <strong>Add Item</strong> to begin.</p>
+      }
+    </div>
+  </div>
+
+  <!-- ── V21000: Travel & Accommodation ────────────────────── -->
+  <div class="card">
+    <app-custom-subheader title="V21000 — Travelling and Accommodation"></app-custom-subheader>
+    <div class="card__content">
+      <div class="category-header">
+        <button type="button" class="btn btn-primary" (click)="addBudgetRow(travelAccommodation)">
+          <span class="material-icons">add</span> Add Item
+        </button>
+      </div>
+      @if (travelAccommodation.length > 0) {
+        <table class="budget-table" formArrayName="travelAccommodation">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Description</th>
+              <th class="col-amount">Amount (RM)</th>
+              <th>Remarks</th>
+              <th class="col-del"></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of travelAccommodation.controls; track $index; let i = $index) {
+              <tr [formGroupName]="i">
+                <td class="col-idx text-muted">{{ i + 1 }}</td>
+                <td><input type="text" class="input--text" formControlName="description" placeholder="e.g. Conference travel — international"></td>
+                <td class="col-amount"><input type="number" lang="en" class="input--text" formControlName="amount" min="0"></td>
+                <td>
+                  <textarea class="input--textarea" formControlName="remarks" [maxlength]="300"></textarea>
+                  <app-character-counter [current]="row.get('remarks')?.value?.length ?? 0" [max]="300"></app-character-counter>
+                </td>
+                <td>
+                  <button type="button" class="btn-icon btn-icon--delete" (click)="removeBudgetRow(travelAccommodation, i)">
+                    <span class="material-icons">delete</span>
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      } @else {
+        <p class="empty-state">No items added.</p>
+      }
+    </div>
+  </div>
+
+  <!-- ── V27000: Research Materials & Supplies ─────────────── -->
+  <div class="card">
+    <app-custom-subheader title="V27000 — Research Materials &amp; Supplies"></app-custom-subheader>
+    <div class="card__content">
+      <div class="category-header">
+        <button type="button" class="btn btn-primary" (click)="addBudgetRow(materialsSupplies)">
+          <span class="material-icons">add</span> Add Item
+        </button>
+      </div>
+      @if (materialsSupplies.length > 0) {
+        <table class="budget-table" formArrayName="materialsSupplies">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Description</th>
+              <th class="col-amount">Amount (RM)</th>
+              <th>Remarks</th>
+              <th class="col-del"></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of materialsSupplies.controls; track $index; let i = $index) {
+              <tr [formGroupName]="i">
+                <td class="col-idx text-muted">{{ i + 1 }}</td>
+                <td><input type="text" class="input--text" formControlName="description" placeholder="e.g. Lab consumables, survey tools"></td>
+                <td class="col-amount"><input type="number" lang="en" class="input--text" formControlName="amount" min="0"></td>
+                <td>
+                  <textarea class="input--textarea" formControlName="remarks" [maxlength]="300"></textarea>
+                  <app-character-counter [current]="row.get('remarks')?.value?.length ?? 0" [max]="300"></app-character-counter>
+                </td>
+                <td>
+                  <button type="button" class="btn-icon btn-icon--delete" (click)="removeBudgetRow(materialsSupplies, i)">
+                    <span class="material-icons">delete</span>
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      } @else {
+        <p class="empty-state">No items added.</p>
+      }
+    </div>
+  </div>
+
+  <!-- ── V29000: Special Services ──────────────────────────── -->
+  <div class="card">
+    <app-custom-subheader title="V29000 — Special Services"></app-custom-subheader>
+    <div class="card__content">
+      <div class="category-header">
+        <button type="button" class="btn btn-primary" (click)="addBudgetRow(specialServices)">
+          <span class="material-icons">add</span> Add Item
+        </button>
+      </div>
+      @if (specialServices.length > 0) {
+        <table class="budget-table" formArrayName="specialServices">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Description</th>
+              <th class="col-amount">Amount (RM)</th>
+              <th>Remarks</th>
+              <th class="col-del"></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of specialServices.controls; track $index; let i = $index) {
+              <tr [formGroupName]="i">
+                <td class="col-idx text-muted">{{ i + 1 }}</td>
+                <td><input type="text" class="input--text" formControlName="description" placeholder="e.g. Statistical consultancy, software license"></td>
+                <td class="col-amount"><input type="number" lang="en" class="input--text" formControlName="amount" min="0"></td>
+                <td>
+                  <textarea class="input--textarea" formControlName="remarks" [maxlength]="300"></textarea>
+                  <app-character-counter [current]="row.get('remarks')?.value?.length ?? 0" [max]="300"></app-character-counter>
+                </td>
+                <td>
+                  <button type="button" class="btn-icon btn-icon--delete" (click)="removeBudgetRow(specialServices, i)">
+                    <span class="material-icons">delete</span>
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      } @else {
+        <p class="empty-state">No items added.</p>
+      }
+    </div>
+  </div>
+
+</section>

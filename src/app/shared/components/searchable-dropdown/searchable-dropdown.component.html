@@ -1,0 +1,65 @@
+<div class="searchable-dropdown" [class.is-open]="isOpen()">
+  @if (label) {
+  <label class="form-label" [class.is-required]="false">{{label}}</label>
+  }
+
+  <div class="dropdown-trigger" (click)="toggleDropdown()" [class.has-value]="selectedValues().length > 0">
+    <div class="display-container">
+      @if (selectedValues().length === 0) {
+      <span class="placeholder">{{placeholder}}</span>
+      } @else {
+      @if (isMulti) {
+      <div class="chips-container">
+        @for (val of selectedValues(); track val) {
+        <div class="chip" (click)="$event.stopPropagation()">
+          <span class="chip-label">{{(options.find(o => o.value === val))?.label}}</span>
+          <span class="chip-remove" (click)="selectOption({value: val, label: ''})">&times;</span>
+        </div>
+        }
+      </div>
+      } @else {
+      <span class="value-text">{{displayValue}}</span>
+      }
+      }
+    </div>
+    <div class="trigger-actions">
+      @if (selectedValues().length > 0) {
+      <span class="clear-btn" (click)="clearSelection($event)">&times;</span>
+      }
+      <span class="arrow-icon"></span>
+    </div>
+  </div>
+
+  @if (isOpen()) {
+  <div class="dropdown-panel">
+    @if (searchable) {
+    <div class="search-container">
+      <input [formControl]="searchCtrl" class="input--text" placeholder="Search..."
+        (click)="$event.stopPropagation()" />
+    </div>
+    }
+
+    <div class="options-list">
+      @for (opt of filteredOptions; track opt.value) {
+      <div class="option-item" [class.selected]="isSelected(opt.value)" [class.disabled]="opt.disabled"
+        (click)="selectOption(opt); $event.stopPropagation()">
+        @if (isMulti) {
+        <div class="checkbox-box">
+          @if (isSelected(opt.value)) {
+          <span class="check-mark"></span>
+          }
+        </div>
+        }
+        <span class="option-label">{{opt.label}}</span>
+        @if (!isMulti && isSelected(opt.value)) {
+        <span class="check-mark-single"></span>
+        }
+      </div>
+      } @empty {
+      <div class="no-results">No options found</div>
+      }
+    </div>
+  </div>
+
+  }
+</div>

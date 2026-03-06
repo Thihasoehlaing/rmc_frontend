@@ -1,1 +1,12 @@
-/* You can add global styles to this file, and also import other style files */
+@use './assets/styles/styles.scss';
+
+/* Global app-level overrides using CSS custom properties */
+body {
+  background: var(--color-page-bg);
+  font-family: var(--font-family-system);
+  font-size: var(--fs-base);
+  line-height: var(--lh-normal);
+  color: var(--color-label);
+  margin: 0;
+  padding: 0;
+}

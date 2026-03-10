@@ -14,15 +14,15 @@ export const routes: Routes = [
       // Lazy-loaded form modules
       {
         path: 'rdig',
-        loadComponent: () => import('./form-one/form-one.component').then(m => m.RdigApplicationComponent)
+        loadComponent: () => import('./rdig_form/rdig_form.component').then(m => m.RdigApplicationComponent)
       },
       {
         path: 'conference',
-        loadComponent: () => import('./form-two/form-two.component').then(m => m.FormTwoComponent)
+        loadChildren: () => import('./conference_form/conference_form.routes').then(m => m.conferenceFormRoutes)
       },
       {
         path: 'journal',
-        loadComponent: () => import('./form-three/form-three.component').then(m => m.FormThreeComponent)
+        loadChildren: () => import('./journal_publication_form/journal_publication_form.routes').then(m => m.journalPublicationFormRoutes)
       },
       {
         path: 'ragra',

@@ -24,7 +24,7 @@ import { DialogComponent } from '../../../shared/components/dialog/dialog.compon
     DialogComponent,
   ],
   templateUrl: './team-details.component.html',
-  styleUrls: ['./team-details.component.scss']
+  styleUrl: './team-details.component.scss'
 })
 export class TeamDetailsComponent {
   @Input({ required: true }) parentForm!: FormGroup;
@@ -46,51 +46,51 @@ export class TeamDetailsComponent {
 
   // ── Reference data (API-driven in production) ─────────────────
   clusters = [
-    { label: 'Socio-Economic Impact',       value: 'sei' },
-    { label: 'Technology & Innovation',     value: 'ti' },
-    { label: 'Environmental Sustainability',value: 'es' },
-    { label: 'Health & Biomedical Sciences',value: 'hbs' },
-    { label: 'Digital Transformation',      value: 'dt' }
+    { label: 'Socio-Economic Impact', value: 'sei' },
+    { label: 'Technology & Innovation', value: 'ti' },
+    { label: 'Environmental Sustainability', value: 'es' },
+    { label: 'Health & Biomedical Sciences', value: 'hbs' },
+    { label: 'Digital Transformation', value: 'dt' }
   ];
 
   titles = [
-    { label: 'Prof.',       value: 'Prof.' },
-    { label: 'Assoc. Prof.',value: 'Assoc. Prof.' },
-    { label: 'Dr.',         value: 'Dr.' },
-    { label: 'Mr.',         value: 'Mr.' },
-    { label: 'Ms.',         value: 'Ms.' },
-    { label: 'Ts.',         value: 'Ts.' },
-    { label: 'Ir.',         value: 'Ir.' },
-    { label: 'Dato\'',      value: 'Dato\'' }
+    { label: 'Prof.', value: 'Prof.' },
+    { label: 'Assoc. Prof.', value: 'Assoc. Prof.' },
+    { label: 'Dr.', value: 'Dr.' },
+    { label: 'Mr.', value: 'Mr.' },
+    { label: 'Ms.', value: 'Ms.' },
+    { label: 'Ts.', value: 'Ts.' },
+    { label: 'Ir.', value: 'Ir.' },
+    { label: 'Dato\'', value: 'Dato\'' }
   ];
 
   orgTypes = [
     { label: 'University / Higher Education', value: 'university' },
-    { label: 'Research Institute',            value: 'research' },
-    { label: 'Private Company',               value: 'private' },
-    { label: 'Government Agency',             value: 'government' },
-    { label: 'NGO / Non-Profit',              value: 'ngo' }
+    { label: 'Research Institute', value: 'research' },
+    { label: 'Private Company', value: 'private' },
+    { label: 'Government Agency', value: 'government' },
+    { label: 'NGO / Non-Profit', value: 'ngo' }
   ];
 
   constructor(private fb: FormBuilder) {
     this.internalForm = this.fb.group({
-      staffName:  ['', Validators.required],
+      staffName: ['', Validators.required],
       department: [{ value: '', disabled: true }],
-      expertise:  ['', [Validators.required, Validators.maxLength(200)]],
-      roles:      ['', [Validators.required, Validators.maxLength(600)]]
+      expertise: ['', [Validators.required, Validators.maxLength(200)]],
+      roles: ['', [Validators.required, Validators.maxLength(600)]]
     });
 
     this.externalForm = this.fb.group({
-      title:       ['', Validators.required],
-      fullName:    ['', Validators.required],
-      email:       ['', [Validators.required, Validators.email]],
+      title: ['', Validators.required],
+      fullName: ['', Validators.required],
+      email: ['', [Validators.required, Validators.email]],
       institution: ['', Validators.required],
-      orgType:     ['', Validators.required],
-      position:    ['', Validators.required],
-      department:  ['', Validators.required],
-      country:     ['', Validators.required],
-      funding:     ['', [Validators.required, Validators.pattern('^[0-9]+(\\.[0-9]{1,2})?$')]],
-      roles:       ['', [Validators.required, Validators.maxLength(600)]],
+      orgType: ['', Validators.required],
+      position: ['', Validators.required],
+      department: ['', Validators.required],
+      country: ['', Validators.required],
+      funding: ['', [Validators.required, Validators.pattern('^[0-9]+(\\.[0-9]{1,2})?$')]],
+      roles: ['', [Validators.required, Validators.maxLength(600)]],
       supportLetter: [null, Validators.required]
     });
   }

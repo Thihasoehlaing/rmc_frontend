@@ -10,7 +10,7 @@ import { CharacterCounterComponent } from '../../../shared/components/character-
     standalone: true,
     imports: [DecimalPipe, ReactiveFormsModule, CustomHeaderComponent, CustomSubheaderComponent, CharacterCounterComponent],
     templateUrl: './budget-summary.component.html',
-    styleUrls: ['./budget-summary.component.scss']
+    styleUrl: './budget-summary.component.scss'
 })
 export class BudgetSummaryComponent implements OnInit {
     @Input({ required: true }) parentForm!: FormGroup;

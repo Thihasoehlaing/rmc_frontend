@@ -1,17 +1,17 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ProjectDetails } from './project-details';
+import { RdigApplicationComponent } from './rdig_form.component';
 
-describe('ProjectDetails', () => {
-  let component: ProjectDetails;
-  let fixture: ComponentFixture<ProjectDetails>;
+describe('RdigApplicationComponent', () => {
+  let component: RdigApplicationComponent;
+  let fixture: ComponentFixture<RdigApplicationComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ProjectDetails],
+      imports: [RdigApplicationComponent],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(ProjectDetails);
+    fixture = TestBed.createComponent(RdigApplicationComponent);
     component = fixture.componentInstance;
     await fixture.whenStable();
   });

@@ -9,7 +9,7 @@ import { CharacterCounterComponent } from '../../../shared/components/character-
     standalone: true,
     imports: [ReactiveFormsModule, CustomHeaderComponent, ValidationMessageComponent, CharacterCounterComponent],
     templateUrl: './final-declaration.component.html',
-    styleUrls: ['./final-declaration.component.scss']
+    styleUrl: './final-declaration.component.scss'
 })
 export class FinalDeclarationComponent {
     @Input({ required: true }) parentForm!: FormGroup;

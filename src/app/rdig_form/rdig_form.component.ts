@@ -31,8 +31,8 @@ import { FinalDeclarationComponent } from './components/final-declaration/final-
     BudgetSummaryComponent,
     FinalDeclarationComponent
   ],
-  templateUrl: './form-one.component.html',
-  styleUrl: './form-one.component.scss',
+  templateUrl: './rdig_form.component.html',
+  styleUrl: './rdig_form.component.scss',
 })
 export class RdigApplicationComponent {
 
@@ -40,7 +40,7 @@ export class RdigApplicationComponent {
   currentStep = signal<number>(1);
   readonly totalSteps = 5;
 
-  isSaving     = signal(false);
+  isSaving = signal(false);
   isSubmitting = signal(false);
 
   /** Tracks which steps the user has visited */
@@ -48,49 +48,49 @@ export class RdigApplicationComponent {
 
   // ── Step metadata ──────────────────────────────────────────────
   readonly steps: WizardStep[] = [
-    { label: 'Team Members',    icon: 'group' },
+    { label: 'Team Members', icon: 'group' },
     { label: 'Project Details', icon: 'description' },
     { label: 'Research Output', icon: 'science' },
-    { label: 'Budget',          icon: 'account_balance_wallet' },
-    { label: 'Declaration',     icon: 'verified' }
+    { label: 'Budget', icon: 'account_balance_wallet' },
+    { label: 'Declaration', icon: 'verified' }
   ];
 
   /** Field paths & labels per step for validation tooltip */
-  readonly stepFieldChecks: Array<Array<{path: string; label: string}>> = [
+  readonly stepFieldChecks: Array<Array<{ path: string; label: string }>> = [
     // Step 1: Team Members
     [
-      { path: 'teamDetails.leaderName',      label: 'Project Leader Name' },
-      { path: 'teamDetails.leaderEmail',     label: "Project Leader's Email" },
-      { path: 'teamDetails.department',      label: "School / Department" },
+      { path: 'teamDetails.leaderName', label: 'Project Leader Name' },
+      { path: 'teamDetails.leaderEmail', label: "Project Leader's Email" },
+      { path: 'teamDetails.department', label: "School / Department" },
       { path: 'teamDetails.researchCluster', label: 'Research Cluster' },
-      { path: 'teamDetails.leaderRoles',     label: 'Roles of Project Leader' },
+      { path: 'teamDetails.leaderRoles', label: 'Roles of Project Leader' },
     ],
     // Step 2: Project Details
     [
-      { path: 'projectDetails.applicationType',        label: 'Application Type' },
-      { path: 'projectDetails.declarations.ethics',    label: 'Ethics Declaration' },
-      { path: 'projectDetails.declarations.conflict',  label: 'Conflict of Interest' },
-      { path: 'projectDetails.duration',               label: 'Project Duration' },
-      { path: 'projectDetails.title',                  label: 'Project Title' },
-      { path: 'projectDetails.researchArea',           label: 'Research Area' },
-      { path: 'projectDetails.domain',                 label: 'Research Domain' },
-      { path: 'projectDetails.subDomain',              label: 'Sub-Research Domain' },
-      { path: 'projectDetails.esgs',                   label: 'ESG Factors' },
-      { path: 'projectDetails.sdgs',                   label: 'SDG Alignment' },
-      { path: 'projectDetails.executiveSummary',       label: 'Executive Summary' },
-      { path: 'projectDetails.keywords',               label: 'Keywords' },
-      { path: 'projectDetails.introduction',           label: 'Introduction' },
-      { path: 'projectDetails.problemStatement',       label: 'Problem Statement' },
-      { path: 'projectDetails.researchAim',            label: 'Research Aim' },
-      { path: 'projectDetails.researchQuestions',      label: 'Research Questions' },
-      { path: 'projectDetails.hypothesis',             label: 'Hypothesis' },
-      { path: 'projectDetails.literatureReview',       label: 'Literature Review' },
-      { path: 'projectDetails.methodology',            label: 'Methodology' },
-      { path: 'projectDetails.references',             label: 'References' },
-      { path: 'projectDetails.benefits.apu',           label: 'APU Benefit' },
-      { path: 'projectDetails.benefits.students',      label: 'Students Benefit' },
-      { path: 'projectDetails.benefits.stakeholders',  label: 'Stakeholders Benefit' },
-      { path: 'projectDetails.visionMission',          label: 'Vision & Mission Alignment' },
+      { path: 'projectDetails.applicationType', label: 'Application Type' },
+      { path: 'projectDetails.declarations.ethics', label: 'Ethics Declaration' },
+      { path: 'projectDetails.declarations.conflict', label: 'Conflict of Interest' },
+      { path: 'projectDetails.duration', label: 'Project Duration' },
+      { path: 'projectDetails.title', label: 'Project Title' },
+      { path: 'projectDetails.researchArea', label: 'Research Area' },
+      { path: 'projectDetails.domain', label: 'Research Domain' },
+      { path: 'projectDetails.subDomain', label: 'Sub-Research Domain' },
+      { path: 'projectDetails.esgs', label: 'ESG Factors' },
+      { path: 'projectDetails.sdgs', label: 'SDG Alignment' },
+      { path: 'projectDetails.executiveSummary', label: 'Executive Summary' },
+      { path: 'projectDetails.keywords', label: 'Keywords' },
+      { path: 'projectDetails.introduction', label: 'Introduction' },
+      { path: 'projectDetails.problemStatement', label: 'Problem Statement' },
+      { path: 'projectDetails.researchAim', label: 'Research Aim' },
+      { path: 'projectDetails.researchQuestions', label: 'Research Questions' },
+      { path: 'projectDetails.hypothesis', label: 'Hypothesis' },
+      { path: 'projectDetails.literatureReview', label: 'Literature Review' },
+      { path: 'projectDetails.methodology', label: 'Methodology' },
+      { path: 'projectDetails.references', label: 'References' },
+      { path: 'projectDetails.benefits.apu', label: 'APU Benefit' },
+      { path: 'projectDetails.benefits.students', label: 'Students Benefit' },
+      { path: 'projectDetails.benefits.stakeholders', label: 'Stakeholders Benefit' },
+      { path: 'projectDetails.visionMission', label: 'Vision & Mission Alignment' },
     ],
     // Step 3: Research Activities (FormArray check handled separately)
     [],
@@ -99,7 +99,7 @@ export class RdigApplicationComponent {
     // Step 5: Budget + Declaration
     [
       { path: 'finalDeclaration.noveltyJustification', label: 'Novelty Justification' },
-      { path: 'finalDeclaration.agreed',               label: 'Declaration Agreement' },
+      { path: 'finalDeclaration.agreed', label: 'Declaration Agreement' },
     ]
   ];
 
@@ -130,18 +130,18 @@ export class RdigApplicationComponent {
 
       // 1. Hidden metadata (system-managed)
       metadata: this.fb.group({
-        batchNumber:   [''],
+        batchNumber: [''],
         applicationId: [''],
-        version:       [1]
+        version: [1]
       }),
 
       // 2. Subpage 1 — Team Members
       teamDetails: this.fb.group({
-        leaderName:          ['', Validators.required],
-        leaderEmail:         ['', [Validators.required, Validators.email]],
-        department:          ['', Validators.required],
-        researchCluster:     [null, Validators.required],
-        leaderRoles:         ['', [Validators.required, Validators.maxLength(600)]],
+        leaderName: ['', Validators.required],
+        leaderEmail: ['', [Validators.required, Validators.email]],
+        department: ['', Validators.required],
+        researchCluster: [null, Validators.required],
+        leaderRoles: ['', [Validators.required, Validators.maxLength(600)]],
         internalResearchers: this.fb.array([]),
         externalResearchers: this.fb.array([])
       }),
@@ -150,30 +150,30 @@ export class RdigApplicationComponent {
       projectDetails: this.fb.group({
         applicationType: ['', Validators.required],
         declarations: this.fb.group({
-          ethics:   [false, Validators.requiredTrue],
+          ethics: [false, Validators.requiredTrue],
           conflict: [false, Validators.requiredTrue]
         }),
-        category:      ['S&T'],
-        duration:      ['', Validators.required],
-        title:         ['', [Validators.required, Validators.maxLength(200)]],
-        researchArea:  ['', [Validators.required, Validators.maxLength(100)]],
-        domain:        ['', Validators.required],
-        subDomain:     ['', Validators.required],
-        esgs:          [[], Validators.required],
-        sdgs:          [[], Validators.required],
-        executiveSummary:  ['', [Validators.required, Validators.maxLength(1500)]],
-        keywords:          ['', [Validators.required, Validators.maxLength(200)]],
-        introduction:      ['', [Validators.required, Validators.maxLength(3000)]],
-        problemStatement:  ['', [Validators.required, Validators.maxLength(3000)]],
-        researchAim:       ['', [Validators.required, Validators.maxLength(1000)]],
+        category: ['S&T'],
+        duration: ['', Validators.required],
+        title: ['', [Validators.required, Validators.maxLength(200)]],
+        researchArea: ['', [Validators.required, Validators.maxLength(100)]],
+        domain: ['', Validators.required],
+        subDomain: ['', Validators.required],
+        esgs: [[], Validators.required],
+        sdgs: [[], Validators.required],
+        executiveSummary: ['', [Validators.required, Validators.maxLength(1500)]],
+        keywords: ['', [Validators.required, Validators.maxLength(200)]],
+        introduction: ['', [Validators.required, Validators.maxLength(3000)]],
+        problemStatement: ['', [Validators.required, Validators.maxLength(3000)]],
+        researchAim: ['', [Validators.required, Validators.maxLength(1000)]],
         researchQuestions: ['', [Validators.required, Validators.maxLength(1000)]],
-        hypothesis:        ['', [Validators.required, Validators.maxLength(1000)]],
-        literatureReview:  ['', [Validators.required, Validators.maxLength(5000)]],
-        methodology:       ['', [Validators.required, Validators.maxLength(3000)]],
-        references:        ['', [Validators.required, Validators.maxLength(3000)]],
+        hypothesis: ['', [Validators.required, Validators.maxLength(1000)]],
+        literatureReview: ['', [Validators.required, Validators.maxLength(5000)]],
+        methodology: ['', [Validators.required, Validators.maxLength(3000)]],
+        references: ['', [Validators.required, Validators.maxLength(3000)]],
         benefits: this.fb.group({
-          apu:          ['', [Validators.required, Validators.maxLength(300)]],
-          students:     ['', [Validators.required, Validators.maxLength(300)]],
+          apu: ['', [Validators.required, Validators.maxLength(300)]],
+          students: ['', [Validators.required, Validators.maxLength(300)]],
           stakeholders: ['', [Validators.required, Validators.maxLength(300)]]
         }),
         visionMission: ['', [Validators.required, Validators.maxLength(300)]]
@@ -185,17 +185,17 @@ export class RdigApplicationComponent {
       // 5. Subpage 4 — Research Output
       outputs: this.fb.group({
         journal: this.fb.group({
-          checked:  [false],
+          checked: [false],
           quantity: [null]
         }),
         conceptualDesign: [false],
         knowledgeTransfer: this.fb.group({
-          checked:   [false],
+          checked: [false],
           community: ['']
         }),
         externalGrant: this.fb.group({
           checked: [false],
-          scheme:  ['']
+          scheme: ['']
         }),
         others: this.fb.group({
           checked: [false],
@@ -205,17 +205,17 @@ export class RdigApplicationComponent {
 
       // 6. Subpage 5 — Budget
       budget: this.fb.group({
-        studentAllowances:   this.fb.array([]),
+        studentAllowances: this.fb.array([]),
         travelAccommodation: this.fb.array([]),
-        materialsSupplies:   this.fb.array([]),
-        specialServices:     this.fb.array([]),
-        totalRequest:        [{ value: 0, disabled: true }]
+        materialsSupplies: this.fb.array([]),
+        specialServices: this.fb.array([]),
+        totalRequest: [{ value: 0, disabled: true }]
       }),
 
       // 7. Final Declaration
       finalDeclaration: this.fb.group({
         noveltyJustification: ['', [Validators.required, Validators.maxLength(1000)]],
-        agreed:               [false, Validators.requiredTrue]
+        agreed: [false, Validators.requiredTrue]
       })
     });
   }

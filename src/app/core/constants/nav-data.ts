@@ -47,12 +47,16 @@ export const NAVIGATION_DATA: NavGroup[] = [
             {
                 label: 'Conference Funding Application Form',
                 icon: 'event',
-                children: []
+                children: [
+                    { label: 'Conference Application', route: '/conference/application' }
+                ]
             },
             {
                 label: 'Journal Publication Funding Application Form',
                 icon: 'menu_book',
-                children: []
+                children: [
+                    { label: 'Journal Publication Application', route: '/journal/application' }
+                ]
             },
             {
                 label: 'External Project Data Entry',

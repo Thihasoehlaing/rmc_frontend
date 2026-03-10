@@ -1,17 +1,17 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { FormThreeComponent } from './form-three.component';
+import { ConferenceFormComponent } from './conference-form.component';
 
-describe('FormThreeComponent', () => {
-  let component: FormThreeComponent;
-  let fixture: ComponentFixture<FormThreeComponent>;
+describe('ConferenceFormComponent', () => {
+  let component: ConferenceFormComponent;
+  let fixture: ComponentFixture<ConferenceFormComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [FormThreeComponent],
+      imports: [ConferenceFormComponent],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(FormThreeComponent);
+    fixture = TestBed.createComponent(ConferenceFormComponent);
     component = fixture.componentInstance;
     await fixture.whenStable();
   });

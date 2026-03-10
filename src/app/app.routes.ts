@@ -26,7 +26,7 @@ export const routes: Routes = [
       },
       {
         path: 'ragra',
-        loadComponent: () => import('./form-four/form-four.component').then(m => m.FormFourComponent)
+        loadComponent: () => import('./ragra_form/ragra-form.component').then(m => m.RagraFormComponent)
       },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]

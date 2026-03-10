@@ -1,17 +1,17 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { FormFourComponent } from './form-four.component';
+import { RagraFormComponent } from './ragra-form.component';
 
-describe('FormFourComponent', () => {
-  let component: FormFourComponent;
-  let fixture: ComponentFixture<FormFourComponent>;
+describe('RagraFormComponent', () => {
+  let component: RagraFormComponent;
+  let fixture: ComponentFixture<RagraFormComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [FormFourComponent],
+      imports: [RagraFormComponent],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(FormFourComponent);
+    fixture = TestBed.createComponent(RagraFormComponent);
     component = fixture.componentInstance;
     await fixture.whenStable();
   });

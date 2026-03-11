@@ -21,11 +21,11 @@
   <!-- User Profile Section -->
   <div class="sidebar__profile" [class.sidebar__profile--open]="profileOpen() && isExpanded()" (click)="toggleProfile()"
     [class.sidebar__profile--expanded]="isExpanded()">
-    <div class="profile-avatar">{{ user.name.charAt(0) }}</div>
+    <div class="profile-avatar">{{ currentUser()?.name?.charAt(0) ?? '?' }}</div>
     @if (isExpanded()) {
     <div class="profile-info">
-      <div class="profile-name">{{ user.name }}</div>
-      <div class="profile-email">{{ user.email }}</div>
+      <div class="profile-name">{{ currentUser()?.name }}</div>
+      <div class="profile-email">{{ currentUser()?.email }}</div>
     </div>
     <span class="material-icons profile-chevron" [class.rotated]="profileOpen()">expand_more</span>
     }
@@ -38,7 +38,7 @@
       <span class="material-icons">person</span>
       <span>Profile</span>
     </a>
-    <button class="profile-dropdown__item profile-dropdown__item--danger">
+    <button class="profile-dropdown__item profile-dropdown__item--danger" (click)="logout()">
       <span class="material-icons">logout</span>
       <span>Logout</span>
     </button>
@@ -47,9 +47,9 @@
 
   <!-- Navigation -->
   <nav class="sidebar__nav">
-    @for (group of navGroups; track group.groupName) {
+    @for (group of filteredNavGroups(); track group.groupName) {
     <div class="nav-group">
-      @if (isExpanded()) {
+      @if (isExpanded() && group.groupName) {
       <div class="nav-group__title">{{ group.groupName }}</div>
       }
 
@@ -69,7 +69,9 @@
           @if (isFolderExpanded(element) && isExpanded()) {
           <div class="nav-folder__children">
             @for (child of element.children; track child.label) {
-            <a [routerLink]="asItem(child).route" routerLinkActive="active" class="nav-item nav-item--child">
+            <a [routerLink]="asItem(child).route" routerLinkActive="active"
+              class="nav-item nav-item--child" [title]="child.label">
+              <span class="material-icons nav-icon">{{ asItem(child).icon || 'chevron_right' }}</span>
               <span class="nav-label">{{ child.label }}</span>
             </a>
             }

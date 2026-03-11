@@ -219,15 +219,17 @@
 .sidebar__nav {
   flex: 1;
   overflow-y: auto;
-  padding: 0 var(--space-2) var(--space-4);
+  /* Remove horizontal padding here — nav items carry their own margin so the
+     hover background is inset and icons align with the profile avatar above. */
+  padding: 0 0 var(--space-4);
 
   &::-webkit-scrollbar {
-    width: 4px; // no token: scrollbar width — visual exception per rules
+    width: 4px;
   }
 
   &::-webkit-scrollbar-thumb {
     background: var(--border-subtle);
-    border-radius: 2px; // no token: scrollbar thumb radius — visual exception per rules
+    border-radius: 2px;
   }
 }
 
@@ -240,7 +242,7 @@
     text-transform: uppercase;
     font-weight: var(--fw-black);
     color: var(--color-text-muted);
-    letter-spacing: 1px; // no token: uppercase label letter-spacing
+    letter-spacing: 1px;
   }
 }
 
@@ -248,14 +250,25 @@
 .nav-folder__trigger {
   display: flex;
   align-items: center;
-  min-height: var(--header-height); // Use consistent height defined in tokens
-  height: auto;
-  padding: var(--space-2) var(--space-4); // Perfect left/right padding that matches standard sizes
+  /*
+   * 40 px ensures readable tap targets while staying compact.
+   * Keep top/bottom padding equal (--space-2 = 8 px each side) so rows are
+   * vertically balanced; horizontal padding aligns icon with the profile avatar.
+   *
+   * Alignment math:
+   *   sidebar edge → margin-left (8 px) → padding-left (12 px) → icon at 20 px ✓
+   *   profile avatar: margin(8) + padding(12) = 20 px                          ✓
+   */
+  min-height: 2.5rem;  // 40 px — compact, consistent row height
+  width: 100%;         // stretch full width so chevron reaches the right edge
+  margin: 2px var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  box-sizing: border-box;
+  border-radius: var(--radius-md);
   color: var(--color-text-secondary);
   text-decoration: none;
-  transition: all var(--transition-fast);
+  transition: background var(--transition-fast), color var(--transition-fast);
   cursor: pointer;
-  width: 100%;
   background: transparent;
   border: none;
   font-family: inherit;
@@ -268,28 +281,27 @@
     font-size: var(--sidebar-icon-size);
     color: var(--color-text-muted);
     transition: color var(--transition-fast);
-    width: var(--sidebar-icon-size); // Hard constraint so bad icon strings don't push the layout!
+    width: var(--sidebar-icon-size);
     height: var(--sidebar-icon-size);
     flex-shrink: 0;
     overflow: hidden;
   }
 
-  // The label container must fill the rest of the available space,
-  // but it needs a gap to push away from the icon correctly, without hardcoded margins
+  // Label sits between the icon and the chevron; flex:1 pushes chevron to far right
   .nav-label {
     flex: 1;
-    display: block; // important for text layout
-    white-space: normal; // Enable wrapped text
+    display: block;
+    white-space: normal;
     text-align: left;
     font-weight: var(--fw-medium);
-    margin-left: var(--space-4);
+    margin-left: var(--space-3);
     line-height: var(--lh-tight);
   }
 
   &:hover {
     background: var(--color-surface-hover);
     color: var(--color-primary);
-    border-radius: var(--radius-md);
+    /* border-radius already set in base — no need to repeat */
 
     .nav-icon {
       color: var(--color-primary);
@@ -299,7 +311,6 @@
   &.active {
     background: var(--color-primary-light);
     color: var(--color-primary);
-    border-radius: var(--radius-md);
 
     .nav-icon {
       color: var(--color-primary);
@@ -308,11 +319,15 @@
 }
 
 .nav-folder {
+  // The trigger takes up full available width inside the folder div
+  width: 100%;
+
   .chevron {
-    font-size: var(--fs-lg); // ~18px — chevron icon scale
+    font-size: var(--fs-lg);
     transition: transform var(--transition-fast);
     color: var(--color-text-muted);
     flex-shrink: 0;
+    margin-left: auto; // extra safety — pushes chevron to far right
   }
 
   &--open {
@@ -331,9 +346,22 @@
 }
 
 .nav-item--child {
-  min-height: 36px; // no token: child nav item tap target — compact sub-item
+  min-height: 36px;
   height: auto;
   font-size: var(--fs-sm);
-  padding: var(--space-1) var(--space-4);
-  margin-bottom: 2px; // no token: 2px sub-space between child items
+  padding: var(--space-1) var(--space-3);
+  margin: 2px var(--space-1);
+  border-radius: var(--radius-sm);
+
+  // Smaller icons for nested items — keeps visual weight proportional to hierarchy level
+  .nav-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+
+  // Tighter gap after the smaller icon
+  .nav-label {
+    margin-left: var(--space-2);
+  }
 }

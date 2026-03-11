@@ -1,7 +1,7 @@
 <div class="dashboard">
   <header class="dashboard__header">
     <div class="header-content">
-      <h1>Welcome back, {{ username }}</h1>
+      <h1>Welcome back, {{ username() }}</h1>
       <p class="subtitle">Here is what's happening with your grants today.</p>
     </div>
     <div class="dashboard__actions">
@@ -64,14 +64,18 @@
     <section class="quick-links">
       <h2 class="section-title">Quick Actions</h2>
       <div class="link-grid">
+        @if (canApplyRdig()) {
         <a routerLink="/rdig" class="link-tile">
           <span class="material-icons">description</span>
           <span>Apply for RDIG</span>
         </a>
+        }
+        @if (canApplyConference()) {
         <a routerLink="/conference" class="link-tile">
           <span class="material-icons">event</span>
           <span>Conference Funding</span>
         </a>
+        }
         <a routerLink="/profile" class="link-tile">
           <span class="material-icons">person</span>
           <span>Update Profile</span>

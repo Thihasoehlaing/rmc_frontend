@@ -1,6 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { AuthService } from '../../services/auth.service';
+import { PermissionService } from '../../services/permission.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -10,7 +12,30 @@ import { RouterLink } from '@angular/router';
   styleUrls: ['./dashboard.component.scss']
 })
 export class DashboardComponent {
-  username = 'RMC_Admin';
+  private auth = inject(AuthService);
+  private perm = inject(PermissionService);
+
+  /** Display name of the logged-in user. */
+  username = computed(() => this.auth.currentUser()?.name ?? 'Guest');
+
+  /** Quick-action visibility — mirrors the ABAC rules in nav-data and app.routes.ts */
+  canApplyRdig = computed(() =>
+    this.perm.canAccess({
+      anyOf: ['full_time', 'contract'],
+      allOf: ['academic'],
+      excludeGroups: ['Reviewer', 'HOS'],
+    })
+  );
+
+  canApplyConference = computed(() =>
+    this.perm.canAccess({
+      anyCondition: [
+        { anyOf: ['full_time', 'contract'], allOf: ['academic'] },
+        { anyOf: ['HOS'] },
+        { anyOf: ['VC'] },
+      ],
+    })
+  );
 
   stats = [
     { label: 'Total Applications', value: '1,284', icon: 'description', trend: +12, color: '#3b82f6' },

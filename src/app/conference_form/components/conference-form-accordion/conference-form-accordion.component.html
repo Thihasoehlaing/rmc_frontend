@@ -1,0 +1,91 @@
+<div class="conference-form-container">
+  <app-conference-guidelines-modal></app-conference-guidelines-modal>
+
+  <div class="form-header">
+    <h1 class="form-title">Conference Funding Application</h1>
+    <p class="form-subtitle">Complete all sections below to submit your request for conference presentation funding</p>
+  </div>
+
+  <div class="accordion-container">
+    <div class="accordion-item" [class.active]="isActive('conference-details')">
+      <button
+        class="accordion-header"
+        (click)="toggleSection('conference-details')"
+        [attr.aria-expanded]="isActive('conference-details')">
+        <div class="header-content">
+          <span class="section-icon">📋</span>
+          <span class="section-title">Conference Details</span>
+        </div>
+        <span class="toggle-icon" [class.open]="isActive('conference-details')">›</span>
+      </button>
+
+      @if (isActive('conference-details')) {
+        <div class="accordion-content">
+          <app-conference-details-form></app-conference-details-form>
+        </div>
+      }
+    </div>
+
+    <div class="accordion-item" [class.active]="isActive('author-details')">
+      <button
+        class="accordion-header"
+        (click)="toggleSection('author-details')"
+        [attr.aria-expanded]="isActive('author-details')">
+        <div class="header-content">
+          <span class="section-icon">👤</span>
+          <span class="section-title">Author Details</span>
+        </div>
+        <span class="toggle-icon" [class.open]="isActive('author-details')">›</span>
+      </button>
+
+      @if (isActive('author-details')) {
+        <div class="accordion-content">
+          <app-author-details-form></app-author-details-form>
+        </div>
+      }
+    </div>
+
+    <div class="accordion-item" [class.active]="isActive('supporting-documents')">
+      <button
+        class="accordion-header"
+        (click)="toggleSection('supporting-documents')"
+        [attr.aria-expanded]="isActive('supporting-documents')">
+        <div class="header-content">
+          <span class="section-icon">📄</span>
+          <span class="section-title">Supporting Documents / Manuscript Details</span>
+        </div>
+        <span class="toggle-icon" [class.open]="isActive('supporting-documents')">›</span>
+      </button>
+
+      @if (isActive('supporting-documents')) {
+        <div class="accordion-content">
+          <app-supporting-documents-form></app-supporting-documents-form>
+        </div>
+      }
+    </div>
+
+    <div class="accordion-item" [class.active]="isActive('declaration')">
+      <button
+        class="accordion-header"
+        (click)="toggleSection('declaration')"
+        [attr.aria-expanded]="isActive('declaration')">
+        <div class="header-content">
+          <span class="section-icon">✓</span>
+          <span class="section-title">Declaration</span>
+        </div>
+        <span class="toggle-icon" [class.open]="isActive('declaration')">›</span>
+      </button>
+
+      @if (isActive('declaration')) {
+        <div class="accordion-content">
+          <app-declaration-form></app-declaration-form>
+        </div>
+      }
+    </div>
+  </div>
+
+  <div class="form-actions">
+    <button class="btn btn-secondary">Save as Draft</button>
+    <button class="btn btn-primary">Submit Application</button>
+  </div>
+</div>

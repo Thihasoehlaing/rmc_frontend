@@ -12,6 +12,5 @@ export class CustomSubheaderComponent {
   @Input() iconSvg = '';
   @Input() icon = '';
   @Input() title = '';
-  /** Optional tooltip text shown as info icon next to the title */
   @Input() tooltip = '';
 }

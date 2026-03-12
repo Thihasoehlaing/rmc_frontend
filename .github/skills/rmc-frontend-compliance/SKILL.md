@@ -1,6 +1,6 @@
 ---
-name: rmc-frontend-compliance
-description: '**WORKFLOW SKILL** — Enforce RMC project UI system guidelines and development rules for consistent, maintainable Angular frontend development. USE FOR: implementing new components with shared elements; styling with design tokens; validating SCSS against zero-hardcoding policy; ensuring component architecture compliance. DO NOT USE FOR: general Angular development; non-RMC projects; runtime issues. INVOKES: file system tools for reading guidelines, subagents for code review and validation.'
+name: rmc-frontend-compliance (How to survive)
+description: 'WORKFLOW SKILL — Enforce RMC project UI system guidelines and development rules for consistent, maintainable Angular frontend development. USE FOR: implementing new components with shared elements; styling with design tokens; validating SCSS against zero-hardcoding policy; ensuring component architecture compliance. DO NOT USE FOR: general Angular development; non-RMC projects; runtime issues. INVOKES: file system tools for reading guidelines, subagents for code review and validation.'
 ---
 
 # RMC Frontend Compliance

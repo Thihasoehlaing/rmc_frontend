@@ -6,7 +6,7 @@
     title="Budget Summary"
   ></app-custom-header>
 
-  <!-- ── Budget Totals Banner ────────────────────────────────── -->
+  <!-- ?? Budget Totals Banner ?????????????????????????????????? -->
   <div class="budget-banner" [class.budget-banner--invalid]="isBudgetInvalidRange">
     <div class="budget-total">
       <span class="total-label">Total Amount Requested</span>
@@ -26,9 +26,9 @@
     </div>
   }
 
-  <!-- ── V11000: Student Allowances ────────────────────────── -->
+  <!-- ?? V11000: Student Allowances ?????????????????????????? -->
   <div class="card">
-    <app-custom-subheader title="V11000 — Student Allowances (Graduate Research Assistants)"></app-custom-subheader>
+    <app-custom-subheader title="V11000 � Student Allowances (Graduate Research Assistants)"></app-custom-subheader>
     <div class="card__content">
       <div class="category-header">
         <button type="button" class="btn btn-primary" (click)="addBudgetRow(studentAllowances)">
@@ -67,13 +67,22 @@
         </table>
       } @else {
         <p class="empty-state">No items added. Click <strong>Add Item</strong> to begin.</p>
+      }      @if (showAnyComments) {
+        <div class="row row--2">
+          <app-review-block label="Reviewer 1 � Student Allowances" icon="rate_review"
+            [visible]="showR1Comments" [readonly]="!workflow.isReviewer1Editable()"
+            [commentControl]="fc('reviewer1StudentComment')"></app-review-block>
+          <app-review-block label="Reviewer 2 � Student Allowances" icon="rate_review"
+            [visible]="showR2Comments" [readonly]="!workflow.isReviewer2Editable()"
+            [commentControl]="fc('reviewer2StudentComment')"></app-review-block>
+        </div>
       }
     </div>
   </div>
 
-  <!-- ── V21000: Travel & Accommodation ────────────────────── -->
+  <!-- ?? V21000: Travel & Accommodation ?????????????????????? -->
   <div class="card">
-    <app-custom-subheader title="V21000 — Travelling and Accommodation"></app-custom-subheader>
+    <app-custom-subheader title="V21000 � Travelling and Accommodation"></app-custom-subheader>
     <div class="card__content">
       <div class="category-header">
         <button type="button" class="btn btn-primary" (click)="addBudgetRow(travelAccommodation)">
@@ -95,7 +104,7 @@
             @for (row of travelAccommodation.controls; track $index; let i = $index) {
               <tr [formGroupName]="i">
                 <td class="col-idx text-muted">{{ i + 1 }}</td>
-                <td><input type="text" class="input--text" formControlName="description" placeholder="e.g. Conference travel — international"></td>
+                <td><input type="text" class="input--text" formControlName="description" placeholder="e.g. Conference travel � international"></td>
                 <td class="col-amount"><input type="number" lang="en" class="input--text" formControlName="amount" min="0"></td>
                 <td>
                   <textarea class="input--textarea" formControlName="remarks" [maxlength]="300"></textarea>
@@ -112,13 +121,22 @@
         </table>
       } @else {
         <p class="empty-state">No items added.</p>
+      }      @if (showAnyComments) {
+        <div class="row row--2">
+          <app-review-block label="Reviewer 1 � Travel & Accommodation" icon="rate_review"
+            [visible]="showR1Comments" [readonly]="!workflow.isReviewer1Editable()"
+            [commentControl]="fc('reviewer1TravelComment')"></app-review-block>
+          <app-review-block label="Reviewer 2 � Travel & Accommodation" icon="rate_review"
+            [visible]="showR2Comments" [readonly]="!workflow.isReviewer2Editable()"
+            [commentControl]="fc('reviewer2TravelComment')"></app-review-block>
+        </div>
       }
     </div>
   </div>
 
-  <!-- ── V27000: Research Materials & Supplies ─────────────── -->
+  <!-- ?? V27000: Research Materials & Supplies ??????????????? -->
   <div class="card">
-    <app-custom-subheader title="V27000 — Research Materials &amp; Supplies"></app-custom-subheader>
+    <app-custom-subheader title="V27000 � Research Materials &amp; Supplies"></app-custom-subheader>
     <div class="card__content">
       <div class="category-header">
         <button type="button" class="btn btn-primary" (click)="addBudgetRow(materialsSupplies)">
@@ -158,12 +176,22 @@
       } @else {
         <p class="empty-state">No items added.</p>
       }
+      @if (showAnyComments) {
+        <div class="row row--2">
+          <app-review-block label="Reviewer 1 � Materials & Supplies" icon="rate_review"
+            [visible]="showR1Comments" [readonly]="!workflow.isReviewer1Editable()"
+            [commentControl]="fc('reviewer1MaterialsComment')"></app-review-block>
+          <app-review-block label="Reviewer 2 � Materials & Supplies" icon="rate_review"
+            [visible]="showR2Comments" [readonly]="!workflow.isReviewer2Editable()"
+            [commentControl]="fc('reviewer2MaterialsComment')"></app-review-block>
+        </div>
+      }
     </div>
   </div>
 
-  <!-- ── V29000: Special Services ──────────────────────────── -->
+  <!-- ?? V29000: Special Services ???????????????????????????? -->
   <div class="card">
-    <app-custom-subheader title="V29000 — Special Services"></app-custom-subheader>
+    <app-custom-subheader title="V29000 � Special Services"></app-custom-subheader>
     <div class="card__content">
       <div class="category-header">
         <button type="button" class="btn btn-primary" (click)="addBudgetRow(specialServices)">
@@ -202,8 +230,46 @@
         </table>
       } @else {
         <p class="empty-state">No items added.</p>
+      }      @if (showAnyComments) {
+        <div class="row row--2">
+          <app-review-block label="Reviewer 1 � Special Services" icon="rate_review"
+            [visible]="showR1Comments" [readonly]="!workflow.isReviewer1Editable()"
+            [commentControl]="fc('reviewer1ServicesComment')"></app-review-block>
+          <app-review-block label="Reviewer 2 � Special Services" icon="rate_review"
+            [visible]="showR2Comments" [readonly]="!workflow.isReviewer2Editable()"
+            [commentControl]="fc('reviewer2ServicesComment')"></app-review-block>
+        </div>
       }
     </div>
   </div>
+
+  <!-- ?? Budget Review Comments ????????????????????????????????? -->
+  @if (showAnyComments) {
+    <div class="card">
+      <app-custom-subheader title="Budget Review"></app-custom-subheader>
+      <div class="card__content section-fields">
+
+        <!-- Final budget review: HOS, RMC, R1+score, R2+score -->
+        <app-review-block label="HOS � Budget Summary" icon="supervisor_account"
+          [visible]="showHosComments" [readonly]="!workflow.isHosEditable()"
+          [commentControl]="fc('hosComment')"></app-review-block>
+
+        <app-review-block label="RMC � Budget Summary" icon="verified"
+          [visible]="showRmcComments" [readonly]="!workflow.isRmcEditable()"
+          [commentControl]="fc('rmcComment')"></app-review-block>
+
+        <div class="row row--2">
+          <app-review-block label="Reviewer 1 � Budget Overall" icon="rate_review"
+            [visible]="showR1Comments" [readonly]="!workflow.isReviewer1Editable()"
+            [showScore]="true" [maxScore]="10" [scoreDisabled]="!workflow.isScoreEditable()"
+            [commentControl]="fc('reviewer1Comment')" [scoreControl]="fc('reviewer1Score')"></app-review-block>
+          <app-review-block label="Reviewer 2 � Budget Overall" icon="rate_review"
+            [visible]="showR2Comments" [readonly]="!workflow.isReviewer2Editable()"
+            [showScore]="true" [maxScore]="10" [scoreDisabled]="!workflow.isScoreEditable()"
+            [commentControl]="fc('reviewer2Comment')" [scoreControl]="fc('reviewer2Score')"></app-review-block>
+        </div>
+      </div>
+    </div>
+  }
 
 </section>

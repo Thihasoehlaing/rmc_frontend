@@ -13,6 +13,10 @@
  *   RMC                  — RMC staff — system managers and reviewers
  *   Admin                — System administrators (full system access)
  *   Reviewer             — Application reviewers (may overlap with RMC)
+ *   Reviewer1            — Assigned Reviewer 1 for an application
+ *   Reviewer2            — Assigned Reviewer 2 for an application
+ *   RDIG_Chair           — RDIG Committee Chair
+ *   CEO                  — Chief Executive Officer level approval
  */
 export type UserGroup =
   | 'full_time'
@@ -24,7 +28,11 @@ export type UserGroup =
   | 'blocked_hos_rdig'
   | 'RMC'
   | 'Admin'
-  | 'Reviewer';
+  | 'Reviewer'
+  | 'Reviewer1'
+  | 'Reviewer2'
+  | 'RDIG_Chair'
+  | 'CEO';
 
 export interface User {
   id: string;

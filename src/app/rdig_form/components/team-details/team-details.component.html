@@ -164,6 +164,54 @@
     </div>
   </section>
 
+  <!-- ── Review Comments (end of Page 1) ───────────────────── -->
+  @if (showAnyComments) {
+    <section class="card review-comments-section">
+      <app-custom-subheader title="Review Comments — Team Members"></app-custom-subheader>
+      <div class="card__content section-fields">
+        <app-review-block
+          label="HOS Comment"
+          icon="supervisor_account"
+          [visible]="showHosComments"
+          [readonly]="!workflow.isHosEditable()"
+          [commentControl]="fc('hosComment')">
+        </app-review-block>
+
+        <div class="row row--2">
+          <app-review-block
+            label="Reviewer 1 Comment"
+            icon="rate_review"
+            [visible]="showR1Comments"
+            [readonly]="!workflow.isReviewer1Editable()"
+            [showScore]="true"
+            [maxScore]="10" [scoreDisabled]="!workflow.isScoreEditable()"
+            [commentControl]="fc('reviewer1Comment')"
+            [scoreControl]="fc('reviewer1Score')">
+          </app-review-block>
+
+          <app-review-block
+            label="Reviewer 2 Comment"
+            icon="rate_review"
+            [visible]="showR2Comments"
+            [readonly]="!workflow.isReviewer2Editable()"
+            [showScore]="true"
+            [maxScore]="10" [scoreDisabled]="!workflow.isScoreEditable()"
+            [commentControl]="fc('reviewer2Comment')"
+            [scoreControl]="fc('reviewer2Score')">
+          </app-review-block>
+        </div>
+
+        <app-review-block
+          label="RMC Comment"
+          icon="admin_panel_settings"
+          [visible]="showRmcComments"
+          [readonly]="!workflow.isRmcEditable()"
+          [commentControl]="fc('rmcComment')">
+        </app-review-block>
+      </div>
+    </section>
+  }
+
 </div>
 
 <!-- ══════════════════════════════════════════════════════════════ -->

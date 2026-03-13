@@ -139,4 +139,9 @@ export class AuthService {
       groups: u.groups.join(', '),
     }));
   }
+
+  /** Returns all users as potential reviewers for assignment dropdowns. */
+  getPotentialReviewers(): { id: string; name: string }[] {
+    return DUMMY_USERS.map(u => ({ id: u.id, name: u.name }));
+  }
 }

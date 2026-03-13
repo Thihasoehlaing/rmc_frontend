@@ -1,0 +1,636 @@
+<form [formGroup]="form" class="form-section">
+  <div class="section-fields">
+
+    <div class="form-container">
+
+      <div class="row--2">
+        <div class="form-field">
+          <label class="form-label is-required">Conference Funding Request Type</label>
+          <div class="radio-group">
+            <label class="radio-label">
+              <input type="radio" value="with-paper" formControlName="fundingRequestType">
+              <span>Conference (with paper presentation)</span>
+            </label>
+            <label class="radio-label">
+              <input type="radio" value="without-paper" formControlName="fundingRequestType">
+              <span>Conference (without paper presentation)</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label class="form-label is-required">Select conference type for current application</label>
+          <div class="radio-group">
+            <label class="radio-label">
+              <input type="radio" value="international" formControlName="conferenceType">
+              <span>International Conference</span>
+            </label>
+            <label class="radio-label">
+              <input type="radio" value="national" formControlName="conferenceType">
+              <span>National Conference</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="row--2">
+        <div class="form-field">
+          <label class="form-label is-required">Is Travelling Required?</label>
+          <div class="radio-group">
+            <label class="radio-label">
+              <input type="radio" value="yes" formControlName="travelRequired">
+              <span>Yes</span>
+            </label>
+            <label class="radio-label">
+              <input type="radio" value="no" formControlName="travelRequired">
+              <span>No</span>
+            </label>
+          </div>
+          <div class="label-with-note">
+            <app-note text="Tick Yes for Conference outside of APU" [isTooltip]="true"></app-note>
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label class="form-label is-required">Please select whether you are the "First Author" or "Corresponding Author"</label>
+          <div class="radio-group">
+            <label class="radio-label">
+              <input type="radio" value="first-author" formControlName="authorshipType">
+              <span>First Author</span>
+            </label>
+            <label class="radio-label">
+              <input type="radio" value="corresponding-author" formControlName="authorshipType">
+              <span>Corresponding Author</span>
+            </label>
+            <label class="radio-label">
+              <input type="radio" value="both" formControlName="authorshipType">
+              <span>First and Corresponding Author</span>
+            </label>
+          </div>
+          <div class="label-with-note">
+            <app-note text="Applicant must be either first or corresponding author" [isTooltip]="true"></app-note>
+          </div>
+        </div>
+      </div>
+
+    <!-- SCOPUS Publication Guaranteed -->
+    <div class="form-field">
+      <label class="form-label is-required">Select Conference Proceeding with Guaranteed Publication in SCOPUS-Indexed</label>
+      <div class="radio-group">
+        <label class="radio-label">
+          <input type="radio" value="yes" formControlName="scopusPublicationGuaranteed">
+          <span>Yes</span>
+        </label>
+        <label class="radio-label">
+          <input type="radio" value="no" formControlName="scopusPublicationGuaranteed">
+          <span>No</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="form-field">
+      <label class="form-label is-required">Is the publisher of your conference one of the restricted publishers (e.g., MDPI, Common Ground, Hindawi, or Frontier)?</label>
+      <div class="radio-group">
+        <label class="radio-label">
+          <input type="radio" value="yes" formControlName="restrictedPublisher">
+          <span>Yes</span>
+        </label>
+        <label class="radio-label">
+          <input type="radio" value="no" formControlName="restrictedPublisher">
+          <span>No</span>
+        </label>
+      </div>
+      <div class="label-with-note">
+        <app-note text="Expected Answer for Approval: No" [isTooltip]="true"></app-note>
+      </div>
+    </div>
+
+    <!-- SDG Keywords -->
+    <div class="form-field">
+      <label class="form-label is-required">Please key in 3 SDG keywords in abstract</label>
+      <div class="keywords-group">
+        <div class="keyword-input">
+          <input type="text" class="input--text" formControlName="sdgKeyword1" placeholder="Keyword 1">
+        </div>
+        <div class="keyword-input">
+          <input type="text" class="input--text" formControlName="sdgKeyword2" placeholder="Keyword 2">
+        </div>
+        <div class="keyword-input">
+          <input type="text" class="input--text" formControlName="sdgKeyword3" placeholder="Keyword 3">
+        </div>
+      </div>
+    </div>
+
+    <div class="form-field">
+      <label class="form-label is-required">Conference Name</label>
+      <textarea
+        class="input--textarea shrink-input"
+        formControlName="conferenceName"
+        placeholder="Enter conference name"
+        rows="2"></textarea>
+      <div class="form-counter">{{ getCharacterCount('conferenceName') }} / 200 characters</div>
+    </div>
+
+    <!-- Conference Dates -->
+    <div class="row--2">
+      <div class="form-field">
+        <label class="form-label is-required">Conference Start Date</label>
+        <input
+          type="date"
+          class="input--text"
+          formControlName="conferenceStartDate">
+        <div class="label-with-note">
+          <app-note text="Please select end date first" [isTooltip]="true"></app-note>
+        </div>
+      </div>
+
+      <div class="form-field">
+        <label class="form-label is-required">Conference End Date</label>
+        <input
+          type="date"
+          class="input--text"
+          formControlName="conferenceEndDate">
+      </div>
+    </div>
+
+    <div class="row--2">
+      <!-- Local or Overseas -->
+      <div class="form-field">
+        <label class="form-label is-required">Select Local or Overseas</label>
+        <div class="radio-group">
+          <label class="radio-label">
+            <input type="radio" value="klang-valley" formControlName="localOrOverseas">
+            <span>Klang Valley</span>
+          </label>
+          <label class="radio-label">
+            <input type="radio" value="local-except-kl" formControlName="localOrOverseas">
+            <span>Local (Except Klang Valley)</span>
+          </label>
+          <label class="radio-label">
+            <input type="radio" value="overseas" formControlName="localOrOverseas">
+            <span>Overseas</span>
+          </label>
+          <label class="radio-label">
+            <input type="radio" value="not-required" formControlName="localOrOverseas">
+            <span>Not Required</span>
+          </label>
+        </div>
+        <div class="label-with-note">
+          <app-note text="Klang Valley includes Kuala Lumpur, Selangor, Cyberjaya & Putrajaya" [isTooltip]="true"></app-note>
+        </div>
+      </div>
+
+      <div class="form-field">
+        <label class="form-label is-required">Select Research or Non-Research Project</label>
+        <div class="radio-group">
+          <label class="radio-label">
+            <input type="radio" value="external-research" formControlName="researchType">
+            <span>External Research Project</span>
+          </label>
+          <label class="radio-label">
+            <input type="radio" value="internal-research" formControlName="researchType">
+            <span>Internal Research Project</span>
+          </label>
+          <label class="radio-label">
+            <input type="radio" value="non-research" formControlName="researchType">
+            <span>Non-Research Project</span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-field">
+      <label class="form-label is-required">Conference Location</label>
+      <textarea
+        class="input--textarea shrink-input"
+        formControlName="conferenceLocation"
+        placeholder="Enter conference location"
+        rows="2"></textarea>
+      <div class="form-counter">{{ getCharacterCount('conferenceLocation') }} / 200 characters</div>
+    </div>
+
+    <div class="form-field">
+      <label class="form-label is-required">Paper Title</label>
+      <textarea
+        class="input--textarea shrink-input"
+        formControlName="paperTitle"
+        placeholder="Enter paper title"
+        rows="2"></textarea>
+      <div class="form-counter">{{ getCharacterCount('paperTitle') }} / 200 characters</div>
+    </div>
+
+    <div class="form-field">
+      <label class="form-label is-required">Select Region</label>
+      <select class="input--select" formControlName="selectedRegion">
+        <option value="">-- Select a Region --</option>
+        <option *ngFor="let region of regions" [value]="region">{{ region }}</option>
+      </select>
+    </div>
+
+    @if (selectedRegion) {
+      <div class="region-subsection">
+        <h3 class="subsection-title">Region Funding Details</h3>
+        <div class="region-details-grid">
+          <div class="form-field">
+            <label class="form-label">Region Name</label>
+            <input
+              type="text"
+              class="input--text"
+              formControlName="regionName"
+              [value]="selectedRegion">
+          </div>
+
+          <div class="form-field">
+            <label class="form-label">Percentage</label>
+            <input
+              type="text"
+              class="input--text"
+              formControlName="percentage"
+              placeholder="percentage heree~">
+          </div>
+
+          <div class="form-field">
+            <label class="form-label">Limit</label>
+            <input
+              type="text"
+              class="input--text"
+              formControlName="limit"
+              placeholder="Delulu">
+          </div>
+
+          <div class="form-field">
+            <label class="form-label">Description</label>
+            <textarea
+              class="input--textarea"
+              formControlName="regionDescription"
+              placeholder="Additional funding details for this region"
+              rows="2"></textarea>
+          </div>
+        </div>
+      </div>
+    }
+    </div>
+
+    <div class="costing-section">
+      <h3 class="section-header">Costing</h3>
+      <div class="costing-content">
+
+        <!-- Research Section - Shows when Local or Overseas is selected AND Internal Research Project is selected -->
+        @if (selectedLocalOrOverseas && researchType === 'internal-research') {
+          <div class="research-subsection">
+            <h4 class="research-title"><b>Research</b></h4>
+
+            <!-- Project Account Code -->
+            <div class="form-field">
+              <label class="form-label is-required">Project Account Code</label>
+              <input
+                type="text"
+                class="input--text"
+                formControlName="projectAccountCode"
+                placeholder="Enter project account code">
+            </div>
+
+            <!-- Disclaimer -->
+            <div class="form-field disclaimer-field">
+              <p class="disclaimer-text">
+                <b style="color: var(--color-error-dark);">Detailed Breakdown for Research</b>
+              </p>
+            </div>
+
+            <!-- Sponsored Amount by External & Sponsored by -->
+            <div class="row--2">
+              <!-- Sponsored Amount by External -->
+              <div class="form-field">
+                <label class="form-label is-required">Sponsored Amount by External (RM)</label>
+                <input
+                  type="number"
+                  class="input--text"
+                  formControlName="sponsoredAmountExternal">
+              </div>
+
+              <!-- Sponsored by -->
+              <div class="form-field">
+                <label class="form-label is-required">Sponsored by</label>
+                <input
+                  type="text"
+                  class="input--text"
+                  formControlName="sponsoredBy">
+              </div>
+            </div>
+
+            <!-- Sponsorship Amount by APU, Cost to be borne by Applicant & Sponsorship Percentage -->
+            <div class="row--3">
+              <!-- Sponsorship Amount by APU -->
+              <div class="form-field">
+                <label class="form-label">Sponsorship Amount by APU</label>
+                <input
+                  type="number"
+                  class="input--text"
+                  formControlName="sponsorshipAmountAPU"
+                  readonly>
+              </div>
+
+              <!-- Cost to be borne by Applicant -->
+              <div class="form-field">
+                <label class="form-label is-required">Cost to be borne by Applicant (RM)</label>
+                <input
+                  type="number"
+                  class="input--text"
+                  formControlName="costByApplicant">
+              </div>
+
+              <!-- Sponsorship Percentage Requested -->
+              <div class="form-field">
+                <label class="form-label is-required">Sponsorship Percentage Requested (%)</label>
+                <input
+                  type="number"
+                  class="input--text"
+                  formControlName="sponsorshipPercentage"
+                  min="0"
+                  max="100">
+              </div>
+            </div>
+
+            <!-- Total in RM - Grand Total -->
+            <div class="form-field grand-total">
+              <label class="form-label">Total in RM</label>
+              <div class="total-value">{{ form.get('totalRM')?.value || 0 | number: '1.2-2' }}</div>
+            </div>
+            <div class="form-field">
+              <label class="form-label">Remarks (Optional)</label>
+              <textarea
+                class="input--textarea"
+                formControlName="costingRemarks"
+                placeholder="Enter any additional remarks"
+                rows="3"></textarea>
+            </div>
+          </div>
+        }
+
+        @if (selectedLocalOrOverseas && researchType === 'external-research') {
+          <div class="research-subsection">
+            <h4 class="research-title"><b>External Research Project</b></h4>
+
+            <!-- Project Account Code -->
+            <div class="form-field">
+              <label class="form-label is-required">Project Account Code</label>
+              <input
+                type="text"
+                class="input--text"
+                formControlName="externalProjectAccountCode"
+                placeholder="Enter project account code">
+            </div>
+
+            <!-- Disclaimer -->
+            <div class="form-field disclaimer-field">
+              <p class="disclaimer-text">
+                <b style="color: var(--color-error-dark);">Detailed Breakdown for External Research Project</b>
+              </p>
+            </div>
+
+            <div class="row--2">
+              <!-- Sponsored Amount by External -->
+              <div class="form-field">
+                <label class="form-label is-required">Sponsored Amount by External (RM)</label>
+                <input
+                  type="number"
+                  class="input--text"
+                  formControlName="externalSponsoredAmountExternal">
+              </div>
+
+              <!-- Sponsored by -->
+              <div class="form-field">
+                <label class="form-label is-required">Sponsored by</label>
+                <input
+                  type="text"
+                  class="input--text"
+                  formControlName="externalSponsoredBy">
+              </div>
+            </div>
+
+            <div class="row--3">
+              <!-- Sponsorship Amount by APU -->
+              <div class="form-field">
+                <label class="form-label">Sponsorship Amount by APU</label>
+                <input
+                  type="number"
+                  class="input--text"
+                  formControlName="externalSponsorshipAmountAPU"
+                  readonly>
+              </div>
+
+              <!-- Cost to be borne by Applicant -->
+              <div class="form-field">
+                <label class="form-label is-required">Cost to be borne by Applicant (RM)</label>
+                <input
+                  type="number"
+                  class="input--text"
+                  formControlName="externalCostByApplicant">
+              </div>
+
+              <div class="form-field">
+                <label class="form-label is-required">Sponsorship Percentage Requested (%)</label>
+                <input
+                  type="number"
+                  class="input--text"
+                  formControlName="externalSponsorshipPercentage"
+                  min="0"
+                  max="100">
+              </div>
+            </div>
+
+            <!-- Total in RM - Grand Total -->
+            <div class="form-field grand-total">
+              <label class="form-label">Total in RM</label>
+              <div class="total-value">{{ form.get('externalTotalRM')?.value || 0 | number: '1.2-2' }}</div>
+            </div>
+            <div class="form-field">
+              <label class="form-label">Remarks (Optional)</label>
+              <textarea
+                class="input--textarea"
+                formControlName="externalCostingRemarks"
+                placeholder="Enter any additional remarks"
+                rows="3"></textarea>
+            </div>
+          </div>
+        }
+
+        @if ((selectedLocalOrOverseas === 'klang-valley' || selectedLocalOrOverseas === 'local-except-kl' || selectedLocalOrOverseas === 'not-required') && researchType === 'non-research') {
+          <div class="research-subsection">
+            <h4 class="research-title"><b>Local</b></h4>
+
+            <!-- Project Account Code -->
+            <div class="form-field">
+              <label class="form-label is-required">Project Account Code</label>
+              <input
+                type="text"
+                class="input--text"
+                formControlName="localProjectAccountCode"
+                placeholder="Enter project account code">
+            </div>
+
+            <!-- Disclaimer -->
+            <div class="form-field disclaimer-field">
+              <p class="disclaimer-text">
+                <b style="color: var(--color-error-dark);">Detailed Breakdown for Local</b>
+              </p>
+            </div>
+
+            <div class="row--2">
+              <!-- Sponsored Amount by External -->
+              <div class="form-field">
+                <label class="form-label is-required">Sponsored Amount by External (RM)</label>
+                <input
+                  type="number"
+                  class="input--text"
+                  formControlName="localSponsoredAmountExternal">
+              </div>
+
+              <!-- Sponsored by -->
+              <div class="form-field">
+                <label class="form-label is-required">Sponsored by</label>
+                <input
+                  type="text"
+                  class="input--text"
+                  formControlName="localSponsoredBy">
+              </div>
+            </div>
+
+            <!-- Sponsorship Amount by APU, Cost to be borne by Applicant & Sponsorship Percentage -->
+            <div class="row--3">
+              <!-- Sponsorship Amount by APU -->
+              <div class="form-field">
+                <label class="form-label">Sponsorship Amount by APU</label>
+                <input
+                  type="number"
+                  class="input--text"
+                  formControlName="localSponsorshipAmountAPU"
+                  readonly>
+              </div>
+
+              <!-- Cost to be borne by Applicant -->
+              <div class="form-field">
+                <label class="form-label is-required">Cost to be borne by Applicant (RM)</label>
+                <input
+                  type="number"
+                  class="input--text"
+                  formControlName="localCostByApplicant">
+              </div>
+
+              <!-- Sponsorship Percentage Requested -->
+              <div class="form-field">
+                <label class="form-label is-required">Sponsorship Percentage Requested (%)</label>
+                <input
+                  type="number"
+                  class="input--text"
+                  formControlName="localSponsorshipPercentage"
+                  min="0"
+                  max="100">
+              </div>
+            </div>
+
+            <!-- Total in RM - Grand Total -->
+            <div class="form-field grand-total">
+              <label class="form-label">Total in RM</label>
+              <div class="total-value">{{ form.get('localTotalRM')?.value || 0 | number: '1.2-2' }}</div>
+            </div>
+            <div class="form-field">
+              <label class="form-label">Remarks (Optional)</label>
+              <textarea
+                class="input--textarea"
+                formControlName="localCostingRemarks"
+                placeholder="Enter any additional remarks"
+                rows="3"></textarea>
+            </div>
+          </div>
+        }
+
+        @if (selectedLocalOrOverseas === 'overseas' && researchType === 'non-research') {
+          <div class="research-subsection">
+            <h4 class="research-title"><b>Overseas</b></h4>
+
+            <div class="form-field">
+              <label class="form-label is-required">Project Account Code</label>
+              <input
+                type="text"
+                class="input--text"
+                formControlName="overseasProjectAccountCode"
+                placeholder="Enter project account code">
+            </div>
+
+            <!-- Disclaimer -->
+            <div class="form-field disclaimer-field">
+              <p class="disclaimer-text">
+                <b style="color: var(--color-error-dark);">Detailed Breakdown for Overseas</b>
+              </p>
+            </div>
+
+            <div class="row--2">
+              <div class="form-field">
+                <label class="form-label is-required">Sponsored Amount by External (RM)</label>
+                <input
+                  type="number"
+                  class="input--text"
+                  formControlName="overseasSponsoredAmountExternal">
+              </div>
+
+              <!-- Sponsored by -->
+              <div class="form-field">
+                <label class="form-label is-required">Sponsored by</label>
+                <input
+                  type="text"
+                  class="input--text"
+                  formControlName="overseasSponsoredBy">
+              </div>
+            </div>
+
+            <div class="row--3">
+              <!-- Sponsorship Amount by APU -->
+              <div class="form-field">
+                <label class="form-label">Sponsorship Amount by APU</label>
+                <input
+                  type="number"
+                  class="input--text"
+                  formControlName="overseasSponsorshipAmountAPU"
+                  readonly>
+              </div>
+
+              <!-- Cost to be borne by Applicant -->
+              <div class="form-field">
+                <label class="form-label is-required">Cost to be borne by Applicant (RM)</label>
+                <input
+                  type="number"
+                  class="input--text"
+                  formControlName="overseasCostByApplicant">
+              </div>
+
+              <div class="form-field">
+                <label class="form-label is-required">Sponsorship Percentage Requested (%)</label>
+                <input
+                  type="number"
+                  class="input--text"
+                  formControlName="overseasSponsorshipPercentage"
+                  min="0"
+                  max="100">
+              </div>
+            </div>
+
+            <div class="form-field grand-total">
+              <label class="form-label">Total in RM</label>
+              <div class="total-value">{{ form.get('overseasTotalRM')?.value || 0 | number: '1.2-2' }}</div>
+            </div>
+            <div class="form-field">
+              <label class="form-label">Remarks (Optional)</label>
+              <textarea
+                class="input--textarea"
+                formControlName="overseasCostingRemarks"
+                placeholder="Enter any additional remarks"
+                rows="3"></textarea>
+            </div>
+          </div>
+        }
+
+      </div>
+    </div>
+  </div>
+</form>

@@ -1,0 +1,40 @@
+<form [formGroup]="form" class="form-section">
+  <div class="card">
+    <div class="card__header">
+      <h2 class="card__title declaration-title">Declaration and Agreement</h2>
+    </div>
+
+    <div class="card__content">
+      <div class="section-fields">
+        <div class="declaration-text">
+          <p>I hereby declare and confirm that my Scopus ID affiliation is Asia Pacific University of Technology & Innovation. I hereby confirm and agree that I shall submit evidence of publication such as Digital Object Identifier (DOI) of the article, a softcopy of the paper published and/or conference proceeding to the monthly return for retention and record within a month of publication. I shall also conduct a sharing session in the Academic Development Programme within 3 months of publication or upon returning from conference. The Scopus paper shall be recognised based on the latest indexed list released by Scopus. Should I fail to do so within the stipulated time and unless good reason(s) in writing could be furnished for the delay thereafter, I agree that I shall be liable to reimburse the University the full amount of the cost incurred for the publication fee. I confirm that I shall submit all expenses claim for conference presentation or participation within 7 days upon return from conference.</p>
+
+          <p>Furthermore, under such omission or default by me, I do hereby authorise the University to deduct the amount sponsored being the cost incurred of the said fee from my monthly salary whenever due to me by monthly instalments of not more than RM300.00 per month until the full due amount has been settled or that I shall pay in full the outstanding amount, if I resign from the services of the University before the full and final payment.</p>
+        </div>
+
+        <!-- Mandatory Agreement Checkboxes -->
+        <div class="form-field checkbox-field">
+          <label class="checkbox-label">
+            <input
+              type="checkbox"
+              class="checkbox-input"
+              formControlName="agreeToTerms"
+              required>
+            <span class="is-required">I have read and agree to the terms and conditions outlined in the Declaration and Agreement for Conference Funding.</span>
+          </label>
+        </div>
+
+        <div class="form-field checkbox-field">
+          <label class="checkbox-label">
+            <input
+              type="checkbox"
+              class="checkbox-input"
+              formControlName="acknowledgeGrantFunder"
+              required>
+            <span class="is-required">I certify that the grant funder(s) has/have been appropriately acknowledged in the publication.</span>
+          </label>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>

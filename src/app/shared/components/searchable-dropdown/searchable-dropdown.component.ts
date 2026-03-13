@@ -29,6 +29,7 @@ export class SearchableDropdownComponent implements ControlValueAccessor {
   searchCtrl = new FormControl('');
   isOpen = signal(false);
   selectedValues = signal<any[]>([]);
+  isDisabled = signal(false);
 
   // ControlValueAccessor methods
   onChange: any = () => { };
@@ -44,9 +45,14 @@ export class SearchableDropdownComponent implements ControlValueAccessor {
 
   registerOnChange(fn: any): void { this.onChange = fn; }
   registerOnTouched(fn: any): void { this.onTouched = fn; }
-  setDisabledState?(isDisabled: boolean): void {
-    if (isDisabled) this.searchCtrl.disable();
-    else this.searchCtrl.enable();
+  setDisabledState(isDisabled: boolean): void {
+    this.isDisabled.set(isDisabled);
+    if (isDisabled) {
+      this.searchCtrl.disable();
+      this.isOpen.set(false);
+    } else {
+      this.searchCtrl.enable();
+    }
   }
 
   get filteredOptions() {
@@ -63,6 +69,7 @@ export class SearchableDropdownComponent implements ControlValueAccessor {
   }
 
   toggleDropdown() {
+    if (this.isDisabled()) return;
     this.isOpen.update(v => !v);
     if (this.isOpen()) {
       this.onTouched();
@@ -93,6 +100,7 @@ export class SearchableDropdownComponent implements ControlValueAccessor {
   }
 
   clearSelection(event: Event) {
+    if (this.isDisabled()) return;
     event.stopPropagation();
     this.selectedValues.set([]);
     this.onChange(this.isMulti ? [] : null);

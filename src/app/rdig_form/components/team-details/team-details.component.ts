@@ -1,6 +1,6 @@
 import { Component, Input, signal } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
-import { ReactiveFormsModule, FormGroup, FormArray, FormBuilder, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormGroup, FormArray, FormBuilder, FormControl, Validators } from '@angular/forms';
 import { SearchableDropdownComponent } from '../../../shared/components/searchable-dropdown/searchable-dropdown.component';
 import { CharacterCounterComponent } from '../../../shared/components/character-counter/character-counter.component';
 import { ValidationMessageComponent } from '../../../shared/components/validation-message/validation-message.component';
@@ -8,6 +8,8 @@ import { CustomHeaderComponent } from '../../../shared/components/custom-header/
 import { CustomSubheaderComponent } from '../../../shared/components/custom-subheader/custom-subheader.component';
 import { FileUploadComponent } from '../../../shared/components/file-upload/file-upload.component';
 import { DialogComponent } from '../../../shared/components/dialog/dialog.component';
+import { ReviewBlockComponent } from '../review-block/review-block.component';
+import { RdigWorkflowService } from '../../services/rdig-workflow.service';
 
 @Component({
   selector: 'app-team-details',
@@ -22,17 +24,36 @@ import { DialogComponent } from '../../../shared/components/dialog/dialog.compon
     CustomSubheaderComponent,
     FileUploadComponent,
     DialogComponent,
+    ReviewBlockComponent,
   ],
   templateUrl: './team-details.component.html',
   styleUrl: './team-details.component.scss'
 })
 export class TeamDetailsComponent {
   @Input({ required: true }) parentForm!: FormGroup;
+  @Input() showHosComments = false;
+  @Input() showRmcComments = false;
+  @Input() showR1Comments = false;
+  @Input() showR2Comments = false;
+  @Input() showRdigChairComments = false;
+  @Input() showVcComments = false;
+  @Input() showCeoComments = false;
+
+  get showAnyComments(): boolean {
+    return this.showHosComments || this.showRmcComments ||
+           this.showR1Comments || this.showR2Comments ||
+           this.showRdigChairComments || this.showVcComments || this.showCeoComments;
+  }
+  @Input() workflow!: RdigWorkflowService;
 
   // ── Section accessors ──────────────────────────────────────────
   get teamDetails() { return this.parentForm.get('teamDetails') as FormGroup; }
   get internalResearchers() { return this.teamDetails.get('internalResearchers') as FormArray; }
   get externalResearchers() { return this.teamDetails.get('externalResearchers') as FormArray; }
+
+  // ── Review form controls ───────────────────────────────────────
+  get reviewTeam() { return this.parentForm.get('reviewTeam') as FormGroup; }
+  fc(name: string): FormControl { return this.reviewTeam.get(name) as FormControl; }
 
   // ── Modal open/edit state ──────────────────────────────────────
   showInternalModal = signal(false);

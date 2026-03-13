@@ -305,6 +305,8 @@ $error-color:     #dc3545;
     display: flex;
     flex-direction: column;
     gap: 0.4rem;
+    max-height: 280px;
+    overflow-y: auto;
   }
 
   &__note {

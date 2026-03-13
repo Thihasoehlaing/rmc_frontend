@@ -1,19 +1,35 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
-import { ReactiveFormsModule, FormGroup, FormArray, FormBuilder, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormGroup, FormArray, FormBuilder, FormControl, Validators } from '@angular/forms';
 import { CustomHeaderComponent } from '../../../shared/components/custom-header/custom-header.component';
 import { CustomSubheaderComponent } from '../../../shared/components/custom-subheader/custom-subheader.component';
 import { CharacterCounterComponent } from '../../../shared/components/character-counter/character-counter.component';
+import { ReviewBlockComponent } from '../review-block/review-block.component';
+import { RdigWorkflowService } from '../../services/rdig-workflow.service';
 
 @Component({
     selector: 'app-budget-summary',
     standalone: true,
-    imports: [DecimalPipe, ReactiveFormsModule, CustomHeaderComponent, CustomSubheaderComponent, CharacterCounterComponent],
+    imports: [DecimalPipe, ReactiveFormsModule, CustomHeaderComponent, CustomSubheaderComponent, CharacterCounterComponent, ReviewBlockComponent],
     templateUrl: './budget-summary.component.html',
     styleUrl: './budget-summary.component.scss'
 })
 export class BudgetSummaryComponent implements OnInit {
     @Input({ required: true }) parentForm!: FormGroup;
+    @Input() showHosComments = false;
+    @Input() showRmcComments = false;
+    @Input() showR1Comments = false;
+    @Input() showR2Comments = false;
+    @Input() showRdigChairComments = false;
+    @Input() showVcComments = false;
+    @Input() showCeoComments = false;
+
+    get showAnyComments(): boolean {
+      return this.showHosComments || this.showRmcComments ||
+             this.showR1Comments || this.showR2Comments ||
+             this.showRdigChairComments || this.showVcComments || this.showCeoComments;
+    }
+    @Input() workflow!: RdigWorkflowService;
 
     get budgetForm() {
         return this.parentForm.get('budget') as FormGroup;
@@ -74,5 +90,13 @@ export class BudgetSummaryComponent implements OnInit {
         if (this.category === 'S&T') return 'RM 20,000 – RM 30,000';
         if (this.category === 'Non S&T') return 'RM 5,000 – RM 10,000';
         return '';
+    }
+
+    private get reviewBudget(): FormGroup {
+        return this.parentForm.get('reviewBudget') as FormGroup;
+    }
+
+    fc(name: string): FormControl {
+        return this.reviewBudget.get(name) as FormControl;
     }
 }

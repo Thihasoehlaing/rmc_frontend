@@ -1,9 +1,9 @@
-<div class="searchable-dropdown" [class.is-open]="isOpen()">
+<div class="searchable-dropdown" [class.is-open]="isOpen()" [class.is-disabled]="isDisabled()">
   @if (label) {
   <label class="form-label" [class.is-required]="false">{{label}}</label>
   }
 
-  <div class="dropdown-trigger" (click)="toggleDropdown()" [class.has-value]="selectedValues().length > 0">
+  <div class="dropdown-trigger" (click)="toggleDropdown()" [class.has-value]="selectedValues().length > 0" [class.is-disabled]="isDisabled()">
     <div class="display-container">
       @if (selectedValues().length === 0) {
       <span class="placeholder">{{placeholder}}</span>

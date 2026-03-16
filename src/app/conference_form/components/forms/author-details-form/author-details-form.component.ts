@@ -34,15 +34,9 @@ export class AuthorDetailsFormComponent implements OnInit {
       phoneNumber: ['', [Validators.required]],
       coAuthors: [''],
       isPresenter: [true],
-      testSubsections: this.fb.array([
-        this.createTestSubsection()
-      ]),
-      studentCoAuthors: this.fb.array([
-        this.createStudentCoAuthor()
-      ]),
-      nonApuCoAuthors: this.fb.array([
-        this.createNonApuCoAuthor()
-      ])
+      testSubsections: this.fb.array([]),
+      studentCoAuthors: this.fb.array([]),
+      nonApuCoAuthors: this.fb.array([])
     });
   }
 

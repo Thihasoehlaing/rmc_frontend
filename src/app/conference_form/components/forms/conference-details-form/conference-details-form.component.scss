@@ -10,8 +10,6 @@
   gap: var(--space-6);
 }
 
-// Note: .form-field, .form-label, .form-hint are defined globally in _forms.scss
-// Use global classes directly; do not redefine locally
 
 .form-counter {
   font-size: var(--fs-xs);
@@ -19,9 +17,6 @@
   text-align: left;
   margin-top: var(--space-1);
 }
-
-// Note: .input--text, .input--textarea, .input--select are defined globally in _forms.scss
-// Use global classes directly; do not redefine locally
 
 .row--2 {
   display: grid;
@@ -55,6 +50,56 @@
   font-weight: var(--fw-bold);
   color: var(--color-text);
   padding: var(--space-2) 0;
+}
+
+.form-field {
+  margin-bottom: var(--space-7);
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.funding-warning-box {
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  margin-bottom: var(--space-6);
+  background-color: #fef3c7;
+  border: 1px solid #fbbf24;
+  border-radius: var(--radius-md);
+  align-items: flex-start;
+}
+
+.warning-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #d97706;
+  font-size: 24px;
+}
+
+.warning-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.warning-title {
+  font-weight: var(--fw-semibold);
+  color: #92400e;
+  font-size: var(--fs-sm);
+  margin: 0;
+  padding: 0;
+}
+
+.warning-text {
+  color: #78350f;
+  font-size: var(--fs-sm);
+  margin: 0;
+  padding: 0;
+  line-height: 1.5;
 }
 
 .radio-group {
@@ -189,7 +234,7 @@
 .disclaimer-field {
   padding: var(--space-3);
   background: var(--bg-rejected);
-  border-left: 2px solid var(--color-error-dark); // 2px sub-space
+  border-left: 2px solid var(--color-error-dark);
   border-radius: var(--radius-sm);
   margin-bottom: var(--space-2);
 }
@@ -201,16 +246,13 @@
   line-height: 1.5;
 }
 
-// Note: .btn, .btn-primary, .btn-secondary, .btn-sm are defined globally in _forms.scss
-// Do not redefine them locally
 
-// Icon buttons
 .btn-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: var(--space-8); // no token: icon button size
-  height: var(--space-8); // no token: icon button size
+  width: var(--space-8);
+  height: var(--space-8);
   padding: 0;
   border: none;
   border-radius: var(--radius-sm);
@@ -220,7 +262,7 @@
   color: var(--color-text);
 
   .material-icons {
-    font-size: 18px; // no token: material icon pixel size
+    font-size: 18px;
   }
 
   &:hover {
@@ -277,12 +319,12 @@
     text-align: left;
     font-weight: var(--fw-semibold);
     color: var(--color-heading);
-    border-bottom: 2px solid var(--border-default); // 2px sub-space
+    border-bottom: 2px solid var(--border-default);
   }
 
   td {
     padding: var(--space-3);
-    border-bottom: 1px solid var(--border-default); // 1px border — allowed exception
+    border-bottom: 1px solid var(--border-default);
     color: var(--color-label);
 
     &.col-no {
@@ -385,7 +427,7 @@
   align-items: center;
   justify-content: space-between;
   padding: var(--space-3) var(--space-4);
-  border-bottom: 1px solid var(--border-default); // 1px border — allowed exception
+  border-bottom: 1px solid var(--border-default);
   gap: var(--space-2);
   flex-shrink: 0;
 
@@ -440,7 +482,6 @@
   flex-direction: column;
   gap: var(--space-2);
 
-  // Full width for larger fields like Item Description and Description
   &:nth-child(1),
   &:nth-child(8) {
     grid-column: 1 / -1;

@@ -1,11 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
+import { SearchableDropdownComponent } from '../../../../shared/components/searchable-dropdown/searchable-dropdown.component';
+import { DropdownOption } from '../../../../interfaces/components.interface';
 
 @Component({
   selector: 'app-author-details-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, SearchableDropdownComponent],
   templateUrl: './author-details-form.component.html',
   styleUrl: './author-details-form.component.scss'
 })
@@ -17,6 +19,28 @@ export class AuthorDetailsFormComponent implements OnInit {
   isModalOpen = false;
   editingIndex: number | null = null;
   modalType: 'apu-staff' | 'student' | 'non-apu' | null = null;
+
+  // Staff dropdown options
+  staffOptions: DropdownOption[] = [
+    { value: 'Vivian Banshee', label: 'Vivian Banshee' },
+    { value: 'John Smith', label: 'John Smith' },
+    { value: 'Sarah Johnson', label: 'Sarah Johnson' },
+    { value: 'Michael Brown', label: 'Michael Brown' },
+    { value: 'Emily Davis', label: 'Emily Davis' },
+    { value: 'Robert Wilson', label: 'Robert Wilson' },
+    { value: 'Jessica Taylor', label: 'Jessica Taylor' },
+    { value: 'James Anderson', label: 'James Anderson' }
+  ];
+
+  // Organisation type dropdown options
+  organisationTypeOptions: DropdownOption[] = [
+    { value: 'University', label: 'University' },
+    { value: 'Research Institute', label: 'Research Institute' },
+    { value: 'Company', label: 'Company' },
+    { value: 'Government Agency', label: 'Government Agency' },
+    { value: 'Non-Profit Organization', label: 'Non-Profit Organization' },
+    { value: 'Other', label: 'Other' }
+  ];
 
   constructor(private fb: FormBuilder) {}
 
@@ -216,13 +240,4 @@ export class AuthorDetailsFormComponent implements OnInit {
     };
     return titles[this.modalType];
   }
-
-  organisationTypes = [
-    'University',
-    'Research Institute',
-    'Company',
-    'Government Agency',
-    'Non-Profit Organization',
-    'Other'
-  ];
 }

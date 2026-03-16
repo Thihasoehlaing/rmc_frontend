@@ -2,11 +2,13 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { NoteComponent } from '../../../../shared/components/note/note.component';
+import { SearchableDropdownComponent } from '../../../../shared/components/searchable-dropdown/searchable-dropdown.component';
+import { DropdownOption } from '../../../../interfaces/components.interface';
 
 @Component({
   selector: 'app-conference-details-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, NoteComponent],
+  imports: [CommonModule, ReactiveFormsModule, NoteComponent, SearchableDropdownComponent],
   templateUrl: './conference-details-form.component.html',
   styleUrl: './conference-details-form.component.scss'
 })
@@ -28,12 +30,63 @@ export class ConferenceDetailsFormComponent implements OnInit {
   regions = [
     'Americas',
     'ASEAN',
-    'Australia',
+    'Asia',
+    'Australasia',
     'Europe',
     'Malaysia',
-    'MEA (Middle East & Africa)',
-    'Pacific Islands'
+    'MEA',
+    'Pacific'
   ];
+
+  regionOptions: DropdownOption[] = this.regions.map(region => ({
+    value: region,
+    label: region
+  }));
+
+  researchBreakdownOptions: DropdownOption[] = [
+    { value: 'airfare', label: 'Airfare' },
+    { value: 'accommodation', label: 'Accommodation' },
+    { value: 'registration', label: 'Registration Fee' },
+    { value: 'other', label: 'Other' }
+  ];
+
+  localBreakdownOptions: DropdownOption[] = [
+    { value: 'venue-transport', label: 'Venue & Transport' },
+    { value: 'accommodation', label: 'Accommodation' },
+    { value: 'registration', label: 'Registration Fee' },
+    { value: 'meals', label: 'Meals & Allowance' },
+    { value: 'other', label: 'Other' }
+  ];
+
+  overseasBreakdownOptions: DropdownOption[] = [
+    { value: 'airfare', label: 'Airfare' },
+    { value: 'accommodation', label: 'Accommodation' },
+    { value: 'registration', label: 'Registration Fee' },
+    { value: 'visa', label: 'Visa & Travel Insurance' },
+    { value: 'other', label: 'Other' }
+  ];
+
+  regionFundingInfo: Record<string, string> = {
+    'Americas': '50% & limit to a maximum of RM5,000',
+    'ASEAN': '85% & limit to a maximum of RM5,000',
+    'Asia': '70% & limit to a maximum of RM5,000',
+    'Australasia': '70% & limit to a maximum of RM5,000',
+    'Europe': '50% & limit to a maximum of RM5,000',
+    'Malaysia': '85% & limit to a maximum of RM5,000',
+    'MEA': '60% & limit to a maximum of RM5,000',
+    'Pacific': '70% & limit to a maximum of RM5,000'
+  };
+
+  regionFullNames: Record<string, string> = {
+    'Americas': 'The Americas (USA, Canada, Mexico and other parts of South America)',
+    'ASEAN': 'ASEAN Countries',
+    'Asia': 'Asia (Japan, China, Korea, Central Asia, India, Sri Lanka, Pakistan)',
+    'Australasia': 'Australasia (Australia, New Zealand, PNG, Timor Leste)',
+    'Europe': 'Europe',
+    'Malaysia': 'Throughout Malaysia',
+    'MEA': 'Middle East and Africa',
+    'Pacific': 'Pacific Islands (Maldives etc.)'
+  };
 
   restrictedPublishers = [
     'MDPI',
@@ -45,6 +98,23 @@ export class ConferenceDetailsFormComponent implements OnInit {
 
   constructor(private fb: FormBuilder) {}
 
+  getFullRegionName(regionShort: string): string {
+    return this.regionFullNames[regionShort] || regionShort;
+  }
+
+  getBreakdownOptionsForType(): DropdownOption[] {
+    if (this.breakdownType === 'research' || this.breakdownType === 'external-research') {
+      return this.researchBreakdownOptions;
+    }
+    if (this.breakdownType === 'local') {
+      return this.localBreakdownOptions;
+    }
+    if (this.breakdownType === 'overseas') {
+      return this.overseasBreakdownOptions;
+    }
+    return [];
+  }
+
   ngOnInit() {
     this.initializeForm();
     this.initializeBreakdownForm();
@@ -52,7 +122,6 @@ export class ConferenceDetailsFormComponent implements OnInit {
   }
 
   setupBreakdownFormWatchers() {
-    // Watch for changes to cost and exchangeRate to update costInRM
     this.breakdownForm.get('cost')?.valueChanges.subscribe(() => this.updateCostInRM());
     this.breakdownForm.get('exchangeRate')?.valueChanges.subscribe(() => this.updateCostInRM());
   }

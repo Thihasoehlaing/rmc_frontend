@@ -196,9 +196,13 @@
         <!-- APU Staff Form -->
         @if (modalType === 'apu-staff') {
           <div class="form-group">
-            <label for="staffName">Staff Name *</label>
-            <input type="text" id="staffName" class="form-control" formControlName="staffName"
-              placeholder="Ex. Vivian Banshee">
+            <app-searchable-dropdown
+              label="Staff Name *"
+              [options]="staffOptions"
+              [searchable]="true"
+              placeholder="Search staff..."
+              formControlName="staffName">
+            </app-searchable-dropdown>
             @if (editForm.get('staffName')?.invalid && editForm.get('staffName')?.touched) {
               <span class="error-message">Staff name is required</span>
             }
@@ -292,13 +296,13 @@
           </div>
 
           <div class="form-group">
-            <label for="orgType">Type of Organisation *</label>
-            <select id="orgType" class="form-control" formControlName="organisationType">
-              <option value="">-- Select One --</option>
-              @for (type of organisationTypes; track type) {
-                <option [value]="type">{{ type }}</option>
-              }
-            </select>
+            <app-searchable-dropdown
+              label="Type of Organisation *"
+              [options]="organisationTypeOptions"
+              [searchable]="true"
+              placeholder="Search organisation type..."
+              formControlName="organisationType">
+            </app-searchable-dropdown>
             @if (editForm.get('organisationType')?.invalid && editForm.get('organisationType')?.touched) {
               <span class="error-message">Organisation type is required</span>
             }

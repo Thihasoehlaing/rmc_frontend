@@ -4,6 +4,14 @@
   padding: var(--space-4);
 }
 
+.card {
+  margin-top: var(--space-6);
+
+  &:first-of-type {
+    margin-top: 0;
+  }
+}
+
 .section-header {
   margin-bottom: var(--space-4);
 }

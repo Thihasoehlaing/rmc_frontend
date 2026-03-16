@@ -227,16 +227,29 @@
     </div>
 
     <div class="form-field">
-      <label class="form-label is-required">Select Region</label>
-      <select class="input--select" formControlName="selectedRegion">
-        <option value="">-- Select a Region --</option>
-        <option *ngFor="let region of regions" [value]="region">{{ region }}</option>
-      </select>
+      <app-searchable-dropdown
+        label="Select Region *"
+        [options]="regionOptions"
+        placeholder="[--SELECT REGION--]"
+        formControlName="selectedRegion">
+      </app-searchable-dropdown>
     </div>
 
     @if (selectedRegion) {
       <div class="region-subsection">
         <h3 class="subsection-title">Region Funding Details</h3>
+
+        <!-- Funding Warning Box -->
+        <div class="funding-warning-box">
+          <div class="warning-icon">
+            <span class="material-icons">warning</span>
+          </div>
+          <div class="warning-content">
+            <p class="warning-title">Funding Limit for {{ getFullRegionName(selectedRegion) }}</p>
+            <p class="warning-text">A maximum of {{ regionFundingInfo[selectedRegion] }}, whichever is lower.</p>
+          </div>
+        </div>
+
         <div class="region-details-grid">
           <div class="form-field">
             <label class="form-label">Region Name</label>
@@ -871,33 +884,16 @@
         <!-- Select Item Description -->
         <div class="form-group">
           <label for="itemDescription">Select Item Description *</label>
-          <select id="itemDescription" class="form-control" formControlName="itemDescription">
-            <option value="">-- Select Item --</option>
-            @if (breakdownType === 'research' || breakdownType === 'external-research') {
-              <option value="airfare">Airfare</option>
-              <option value="accommodation">Accommodation</option>
-              <option value="registration">Registration Fee</option>
-              <option value="other">Other</option>
-            }
-            @if (breakdownType === 'local') {
-              <option value="venue-transport">Venue & Transport</option>
-              <option value="accommodation">Accommodation</option>
-              <option value="registration">Registration Fee</option>
-              <option value="meals">Meals & Allowance</option>
-              <option value="other">Other</option>
-            }
-            @if (breakdownType === 'overseas') {
-              <option value="airfare">Airfare</option>
-              <option value="accommodation">Accommodation</option>
-              <option value="registration">Registration Fee</option>
-              <option value="visa">Visa & Travel Insurance</option>
-              <option value="other">Other</option>
-            }
-          </select>
+          <app-searchable-dropdown
+            [options]="getBreakdownOptionsForType()"
+            placeholder="Search and select item"
+            formControlName="itemDescription">
+          </app-searchable-dropdown>
+        </div>
+
           @if (breakdownForm.get('itemDescription')?.invalid && breakdownForm.get('itemDescription')?.touched) {
             <span class="error-message">Item description is required</span>
           }
-        </div>
 
         <!-- Vote Number or Account Code -->
         <div class="form-group">

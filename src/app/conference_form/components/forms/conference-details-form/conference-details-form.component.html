@@ -108,30 +108,32 @@
       </div>
     </div>
 
-    <!-- SDG Keywords -->
-    <div class="form-field">
-      <label class="form-label is-required">Please key in 3 SDG keywords in abstract</label>
-      <div class="keywords-group">
-        <div class="keyword-input">
-          <input type="text" class="input--text" formControlName="sdgKeyword1" placeholder="Keyword 1">
-        </div>
-        <div class="keyword-input">
-          <input type="text" class="input--text" formControlName="sdgKeyword2" placeholder="Keyword 2">
-        </div>
-        <div class="keyword-input">
-          <input type="text" class="input--text" formControlName="sdgKeyword3" placeholder="Keyword 3">
+    <!-- SDG Keywords and Conference Name -->
+    <div class="row--2">
+      <div class="form-field">
+        <label class="form-label is-required">Please key in 3 SDG keywords in abstract</label>
+        <div class="keywords-group">
+          <div class="keyword-input">
+            <input type="text" class="input--text" formControlName="sdgKeyword1" placeholder="Keyword 1">
+          </div>
+          <div class="keyword-input">
+            <input type="text" class="input--text" formControlName="sdgKeyword2" placeholder="Keyword 2">
+          </div>
+          <div class="keyword-input">
+            <input type="text" class="input--text" formControlName="sdgKeyword3" placeholder="Keyword 3">
+          </div>
         </div>
       </div>
-    </div>
 
-    <div class="form-field">
-      <label class="form-label is-required">Conference Name</label>
-      <textarea
-        class="input--textarea shrink-input"
-        formControlName="conferenceName"
-        placeholder="Enter conference name"
-        rows="2"></textarea>
-      <div class="form-counter">{{ getCharacterCount('conferenceName') }} / 200 characters</div>
+      <div class="form-field">
+        <label class="form-label is-required">Conference Name</label>
+        <textarea
+          class="input--textarea shrink-input"
+          formControlName="conferenceName"
+          placeholder="Enter conference name"
+          rows="2"></textarea>
+        <div class="form-counter">{{ getCharacterCount('conferenceName') }} / 200 characters</div>
+      </div>
     </div>
 
     <!-- Conference Dates -->
@@ -202,24 +204,26 @@
       </div>
     </div>
 
-    <div class="form-field">
-      <label class="form-label is-required">Conference Location</label>
-      <textarea
-        class="input--textarea shrink-input"
-        formControlName="conferenceLocation"
-        placeholder="Enter conference location"
-        rows="2"></textarea>
-      <div class="form-counter">{{ getCharacterCount('conferenceLocation') }} / 200 characters</div>
-    </div>
+    <div class="row--2">
+      <div class="form-field">
+        <label class="form-label is-required">Conference Location</label>
+        <textarea
+          class="input--textarea shrink-input"
+          formControlName="conferenceLocation"
+          placeholder="Enter conference location"
+          rows="2"></textarea>
+        <div class="form-counter">{{ getCharacterCount('conferenceLocation') }} / 200 characters</div>
+      </div>
 
-    <div class="form-field">
-      <label class="form-label is-required">Paper Title</label>
-      <textarea
-        class="input--textarea shrink-input"
-        formControlName="paperTitle"
-        placeholder="Enter paper title"
-        rows="2"></textarea>
-      <div class="form-counter">{{ getCharacterCount('paperTitle') }} / 200 characters</div>
+      <div class="form-field">
+        <label class="form-label is-required">Paper Title</label>
+        <textarea
+          class="input--textarea shrink-input"
+          formControlName="paperTitle"
+          placeholder="Enter paper title"
+          rows="2"></textarea>
+        <div class="form-counter">{{ getCharacterCount('paperTitle') }} / 200 characters</div>
+      </div>
     </div>
 
     <div class="form-field">
@@ -296,11 +300,64 @@
                 placeholder="Enter project account code">
             </div>
 
-            <!-- Disclaimer -->
-            <div class="form-field disclaimer-field">
-              <p class="disclaimer-text">
-                <b style="color: var(--color-error-dark);">Detailed Breakdown for Research</b>
-              </p>
+            <!-- Detailed Breakdown for Research -->
+            <div class="form-field">
+              <label class="form-label">Detailed Breakdown for Research</label>
+              <div class="costing-breakdown">
+                <div class="list-section-header">
+                  <span class="list-count">{{ researchBreakdowns.length }} {{ researchBreakdowns.length === 1 ? 'Entry' : 'Entries' }}</span>
+                  <button type="button" class="btn btn-primary btn-sm" (click)="openBreakdownModal('research')">
+                    <span class="material-icons">add</span> Add Entry
+                  </button>
+                </div>
+
+                @if (researchBreakdowns.length > 0) {
+                  <div class="table-scroll">
+                    <table class="list-table">
+                      <thead>
+                        <tr>
+                          <th class="col-no">#</th>
+                          <th>Item Description</th>
+                          <th>Vote Number</th>
+                          <th>Cost (Foreign/MYR)</th>
+                          <th>Exchange Rate</th>
+                          <th>Cost in RM</th>
+                          <th class="col-actions">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @for (item of researchBreakdowns; track $index; let i = $index) {
+                          <tr>
+                            <td class="col-no text-muted">{{ i + 1 }}</td>
+                            <td>{{ item.itemDescription }}</td>
+                            <td>{{ item.voteNumber }}</td>
+                            <td>{{ item.cost | number: '1.2-2' }}</td>
+                            <td>{{ item.exchangeRate | number: '1.2-2' }}</td>
+                            <td>{{ item.costInRM | number: '1.2-2' }}</td>
+                            <td class="col-actions">
+                              <button type="button" class="btn-icon btn-icon--edit"
+                                (click)="openBreakdownModal('research', i)" aria-label="Edit entry">
+                                <span class="material-icons">edit</span>
+                              </button>
+                              @if (researchBreakdowns.length > 1) {
+                                <button type="button" class="btn-icon btn-icon--delete"
+                                  (click)="deleteBreakdown('research', i)" aria-label="Remove entry">
+                                  <span class="material-icons">delete</span>
+                                </button>
+                              }
+                            </td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  </div>
+                } @else {
+                  <div class="empty-state">
+                    <span class="material-icons">receipt</span>
+                    <p>No breakdown entries added yet. Click <strong>Add Entry</strong> to start adding items.</p>
+                  </div>
+                }
+              </div>
             </div>
 
             <!-- Sponsored Amount by External & Sponsored by -->
@@ -387,11 +444,64 @@
                 placeholder="Enter project account code">
             </div>
 
-            <!-- Disclaimer -->
-            <div class="form-field disclaimer-field">
-              <p class="disclaimer-text">
-                <b style="color: var(--color-error-dark);">Detailed Breakdown for External Research Project</b>
-              </p>
+            <!-- Detailed Breakdown for External Research Project -->
+            <div class="form-field">
+              <label class="form-label">Detailed Breakdown for External Research Project</label>
+              <div class="costing-breakdown">
+                <div class="list-section-header">
+                  <span class="list-count">{{ externalBreakdowns.length }} {{ externalBreakdowns.length === 1 ? 'Entry' : 'Entries' }}</span>
+                  <button type="button" class="btn btn-primary btn-sm" (click)="openBreakdownModal('external-research')">
+                    <span class="material-icons">add</span> Add Entry
+                  </button>
+                </div>
+
+                @if (externalBreakdowns.length > 0) {
+                  <div class="table-scroll">
+                    <table class="list-table">
+                      <thead>
+                        <tr>
+                          <th class="col-no">#</th>
+                          <th>Item Description</th>
+                          <th>Vote Number</th>
+                          <th>Cost (Foreign/MYR)</th>
+                          <th>Exchange Rate</th>
+                          <th>Cost in RM</th>
+                          <th class="col-actions">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @for (item of externalBreakdowns; track $index; let i = $index) {
+                          <tr>
+                            <td class="col-no text-muted">{{ i + 1 }}</td>
+                            <td>{{ item.itemDescription }}</td>
+                            <td>{{ item.voteNumber }}</td>
+                            <td>{{ item.cost | number: '1.2-2' }}</td>
+                            <td>{{ item.exchangeRate | number: '1.2-2' }}</td>
+                            <td>{{ item.costInRM | number: '1.2-2' }}</td>
+                            <td class="col-actions">
+                              <button type="button" class="btn-icon btn-icon--edit"
+                                (click)="openBreakdownModal('external-research', i)" aria-label="Edit entry">
+                                <span class="material-icons">edit</span>
+                              </button>
+                              @if (externalBreakdowns.length > 1) {
+                                <button type="button" class="btn-icon btn-icon--delete"
+                                  (click)="deleteBreakdown('external-research', i)" aria-label="Remove entry">
+                                  <span class="material-icons">delete</span>
+                                </button>
+                              }
+                            </td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  </div>
+                } @else {
+                  <div class="empty-state">
+                    <span class="material-icons">receipt</span>
+                    <p>No breakdown entries added yet. Click <strong>Add Entry</strong> to start adding items.</p>
+                  </div>
+                }
+              </div>
             </div>
 
             <div class="row--2">
@@ -475,11 +585,64 @@
                 placeholder="Enter project account code">
             </div>
 
-            <!-- Disclaimer -->
-            <div class="form-field disclaimer-field">
-              <p class="disclaimer-text">
-                <b style="color: var(--color-error-dark);">Detailed Breakdown for Local</b>
-              </p>
+            <!-- Detailed Breakdown for Local -->
+            <div class="form-field">
+              <label class="form-label">Detailed Breakdown for Local</label>
+              <div class="costing-breakdown">
+                <div class="list-section-header">
+                  <span class="list-count">{{ localBreakdowns.length }} {{ localBreakdowns.length === 1 ? 'Entry' : 'Entries' }}</span>
+                  <button type="button" class="btn btn-primary btn-sm" (click)="openBreakdownModal('local')">
+                    <span class="material-icons">add</span> Add Entry
+                  </button>
+                </div>
+
+                @if (localBreakdowns.length > 0) {
+                  <div class="table-scroll">
+                    <table class="list-table">
+                      <thead>
+                        <tr>
+                          <th class="col-no">#</th>
+                          <th>Item Description</th>
+                          <th>Account Code</th>
+                          <th>Cost (Foreign/MYR)</th>
+                          <th>Exchange Rate</th>
+                          <th>Cost in RM</th>
+                          <th class="col-actions">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @for (item of localBreakdowns; track $index; let i = $index) {
+                          <tr>
+                            <td class="col-no text-muted">{{ i + 1 }}</td>
+                            <td>{{ item.itemDescription }}</td>
+                            <td>{{ item.voteNumber }}</td>
+                            <td>{{ item.cost | number: '1.2-2' }}</td>
+                            <td>{{ item.exchangeRate | number: '1.2-2' }}</td>
+                            <td>{{ item.costInRM | number: '1.2-2' }}</td>
+                            <td class="col-actions">
+                              <button type="button" class="btn-icon btn-icon--edit"
+                                (click)="openBreakdownModal('local', i)" aria-label="Edit entry">
+                                <span class="material-icons">edit</span>
+                              </button>
+                              @if (localBreakdowns.length > 1) {
+                                <button type="button" class="btn-icon btn-icon--delete"
+                                  (click)="deleteBreakdown('local', i)" aria-label="Remove entry">
+                                  <span class="material-icons">delete</span>
+                                </button>
+                              }
+                            </td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  </div>
+                } @else {
+                  <div class="empty-state">
+                    <span class="material-icons">receipt</span>
+                    <p>No breakdown entries added yet. Click <strong>Add Entry</strong> to start adding items.</p>
+                  </div>
+                }
+              </div>
             </div>
 
             <div class="row--2">
@@ -565,10 +728,64 @@
             </div>
 
             <!-- Disclaimer -->
-            <div class="form-field disclaimer-field">
-              <p class="disclaimer-text">
-                <b style="color: var(--color-error-dark);">Detailed Breakdown for Overseas</b>
-              </p>
+            <!-- Detailed Breakdown for Overseas -->
+            <div class="form-field">
+              <label class="form-label">Detailed Breakdown for Overseas</label>
+              <div class="costing-breakdown">
+                <div class="list-section-header">
+                  <span class="list-count">{{ overseasBreakdowns.length }} {{ overseasBreakdowns.length === 1 ? 'Entry' : 'Entries' }}</span>
+                  <button type="button" class="btn btn-primary btn-sm" (click)="openBreakdownModal('overseas')">
+                    <span class="material-icons">add</span> Add Entry
+                  </button>
+                </div>
+
+                @if (overseasBreakdowns.length > 0) {
+                  <div class="table-scroll">
+                    <table class="list-table">
+                      <thead>
+                        <tr>
+                          <th class="col-no">#</th>
+                          <th>Item Description</th>
+                          <th>Account Code</th>
+                          <th>Cost (Foreign/MYR)</th>
+                          <th>Exchange Rate</th>
+                          <th>Cost in RM</th>
+                          <th class="col-actions">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @for (item of overseasBreakdowns; track $index; let i = $index) {
+                          <tr>
+                            <td class="col-no text-muted">{{ i + 1 }}</td>
+                            <td>{{ item.itemDescription }}</td>
+                            <td>{{ item.voteNumber }}</td>
+                            <td>{{ item.cost | number: '1.2-2' }}</td>
+                            <td>{{ item.exchangeRate | number: '1.2-2' }}</td>
+                            <td>{{ item.costInRM | number: '1.2-2' }}</td>
+                            <td class="col-actions">
+                              <button type="button" class="btn-icon btn-icon--edit"
+                                (click)="openBreakdownModal('overseas', i)" aria-label="Edit entry">
+                                <span class="material-icons">edit</span>
+                              </button>
+                              @if (overseasBreakdowns.length > 1) {
+                                <button type="button" class="btn-icon btn-icon--delete"
+                                  (click)="deleteBreakdown('overseas', i)" aria-label="Remove entry">
+                                  <span class="material-icons">delete</span>
+                                </button>
+                              }
+                            </td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  </div>
+                } @else {
+                  <div class="empty-state">
+                    <span class="material-icons">receipt</span>
+                    <p>No breakdown entries added yet. Click <strong>Add Entry</strong> to start adding items.</p>
+                  </div>
+                }
+              </div>
             </div>
 
             <div class="row--2">
@@ -638,5 +855,159 @@
 
       </div>
     </section>
+
+<!-- Breakdown Modal Overlays -->
+@if (isBreakdownModalOpen) {
+  <div class="modal-overlay" (click)="closeBreakdownModal()">
+    <div class="modal-dialog" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>{{ getBreakdownModalTitle() }}</h3>
+        <button type="button" class="btn-close" (click)="closeBreakdownModal()" aria-label="Close">
+          <span class="material-icons">close</span>
+        </button>
+      </div>
+
+      <form [formGroup]="breakdownForm" (ngSubmit)="submitBreakdownModal()" class="modal-body">
+        <!-- Select Item Description -->
+        <div class="form-group">
+          <label for="itemDescription">Select Item Description *</label>
+          <select id="itemDescription" class="form-control" formControlName="itemDescription">
+            <option value="">-- Select Item --</option>
+            @if (breakdownType === 'research' || breakdownType === 'external-research') {
+              <option value="airfare">Airfare</option>
+              <option value="accommodation">Accommodation</option>
+              <option value="registration">Registration Fee</option>
+              <option value="other">Other</option>
+            }
+            @if (breakdownType === 'local') {
+              <option value="venue-transport">Venue & Transport</option>
+              <option value="accommodation">Accommodation</option>
+              <option value="registration">Registration Fee</option>
+              <option value="meals">Meals & Allowance</option>
+              <option value="other">Other</option>
+            }
+            @if (breakdownType === 'overseas') {
+              <option value="airfare">Airfare</option>
+              <option value="accommodation">Accommodation</option>
+              <option value="registration">Registration Fee</option>
+              <option value="visa">Visa & Travel Insurance</option>
+              <option value="other">Other</option>
+            }
+          </select>
+          @if (breakdownForm.get('itemDescription')?.invalid && breakdownForm.get('itemDescription')?.touched) {
+            <span class="error-message">Item description is required</span>
+          }
+        </div>
+
+        <!-- Vote Number or Account Code -->
+        <div class="form-group">
+          <label [for]="breakdownType === 'local' || breakdownType === 'overseas' ? 'accountCode' : 'voteNumber'">
+            {{ (breakdownType === 'local' || breakdownType === 'overseas') ? 'Account Code' : 'Vote Number' }}
+          </label>
+          <input
+            [id]="breakdownType === 'local' || breakdownType === 'overseas' ? 'accountCode' : 'voteNumber'"
+            type="text"
+            class="form-control"
+            formControlName="voteNumber"
+            [placeholder]="(breakdownType === 'local' || breakdownType === 'overseas') ? 'V29000' : 'V29000'">
+          @if (breakdownForm.get('voteNumber')?.invalid && breakdownForm.get('voteNumber')?.touched) {
+            <span class="error-message">{{ (breakdownType === 'local' || breakdownType === 'overseas') ? 'Account code' : 'Vote number' }} is required</span>
+          }
+        </div>
+
+        <!-- Cost in Foreign Currency / MYR -->
+        <div class="form-group">
+          <label for="cost">
+            {{ (breakdownType === 'local') ? 'Cost in Foreign Currency / MYR (RM)' : 'Cost in Foreign Currency / MYR' }} *
+          </label>
+          <input
+            id="cost"
+            type="number"
+            class="form-control"
+            formControlName="cost"
+            placeholder="Enter cost"
+            step="0.01">
+          @if (breakdownForm.get('cost')?.invalid && breakdownForm.get('cost')?.touched) {
+            <span class="error-message">Cost is required</span>
+          }
+        </div>
+
+        <!-- Exchange Rate -->
+        <div class="form-group">
+          <div class="label-with-note">
+            <label for="exchangeRate">Exchange Rate *</label>
+            <app-note text="For Malaysia Ringgit/MYR, please put 1 as the exchange rate." [isTooltip]="true"></app-note>
+          </div>
+          <input
+            id="exchangeRate"
+            type="number"
+            class="form-control"
+            formControlName="exchangeRate"
+            placeholder="1.0"
+            step="0.01">
+          @if (breakdownForm.get('exchangeRate')?.invalid && breakdownForm.get('exchangeRate')?.touched) {
+            <span class="error-message">Exchange rate is required</span>
+          }
+        </div>
+
+        <!-- Cost in RM (Read-only calculated field) -->
+        <div class="form-group">
+          <label for="costInRM">Cost in RM (approximate) [Auto-calculated: Cost × Exchange Rate]</label>
+          <input
+            id="costInRM"
+            type="number"
+            class="form-control"
+            formControlName="costInRM"
+            readonly
+            placeholder="Auto-calculated"
+            step="0.01">
+        </div>
+
+        <!-- Description -->
+        <div class="form-group">
+          <label for="description">Description</label>
+          <textarea
+            id="description"
+            class="form-control"
+            formControlName="description"
+            placeholder="Enter description (optional)"
+            rows="3"></textarea>
+        </div>
+
+        <!-- Supporting Documents Note -->
+        <div class="form-group">
+          <label>Supporting Documents</label>
+          <p class="form-hint">Max file size: 10MB. Allowed file types: PDF only.</p>
+          <div class="file-upload-wrapper">
+            <input
+              type="file"
+              id="supportingDoc"
+              class="file-input"
+              accept=".pdf"
+              (change)="onFileSelected($event)"
+              aria-label="Upload supporting document">
+            <label for="supportingDoc" class="file-upload-label">
+              <span class="material-icons">cloud_upload</span>
+              <span class="file-text">Click to upload or drag and drop</span>
+              <span class="file-hint">PDF up to 10MB</span>
+            </label>
+            @if (selectedFileName) {
+              <div class="file-selected">
+                <span class="material-icons">description</span>
+                <span class="file-name">{{ selectedFileName }}</span>
+                <button type="button" class="btn-remove" (click)="removeFile()" aria-label="Remove file">
+                  <span class="material-icons">close</span>
+                </button>
+              </div>
+            }
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeBreakdownModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="breakdownForm.invalid">Save</button>
+        </div>
+      </form>
+    </div>
   </div>
-</form>
+}

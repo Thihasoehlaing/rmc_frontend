@@ -21,7 +21,7 @@
 }
 
 .upload-container {
-  border: 1px solid var(--border-default);
+  border: 1px solid var(--border-default); // 1px border — allowed exception
   border-radius: var(--radius-md);
   padding: var(--space-6);
   background: var(--color-surface);
@@ -37,11 +37,8 @@
   }
 }
 
-.form-field {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
+// Note: .form-field is defined globally in _forms.scss
+// Use global class directly; do not redefine locally
 
 .upload-field-header {
   display: flex;
@@ -85,55 +82,22 @@
   width: fit-content;
 }
 
-.form-label {
-  font-size: var(--fs-sm);
-  font-weight: var(--fw-semibold);
-  color: var(--color-text);
-  margin: 0;
-
-  &.is-required::after {
-    content: ' *';
-    color: var(--color-required);
-  }
-}
+// Note: .form-label is defined globally in _forms.scss
+// Use global class directly; do not redefine locally
 
 .form-hint {
-  font-size: var(--fs-xs);
-  color: var(--color-text-muted);
+  // Note: base .form-hint is defined globally; this component uses default styles
 }
 
 .form-error-msg {
-  font-size: var(--fs-xs);
-  color: var(--color-error);
-  font-weight: var(--fw-medium);
+  // Note: base .form-error-msg is defined globally; this component uses default styles
 }
 
-.input--text,
-.input--textarea {
-  padding: var(--space-2) var(--space-3);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-sm);
-  font-size: var(--fs-sm);
-  background: var(--input-bg-editable);
-  color: var(--color-label);
-  font-family: var(--font-family-system);
-  transition: all var(--transition-fast);
-
-  &:focus {
-    outline: none;
-    border-color: var(--input-border-focus);
-    box-shadow: var(--input-shadow-focus);
-  }
-
-  &:disabled {
-    background: var(--input-bg-readonly);
-    cursor: not-allowed;
-    opacity: var(--disabled-opacity);
-  }
-}
+// NOTE: .input--text, .input--textarea are defined globally in _forms.scss
+// Do not redefine locally
 
 .divider {
-  height: 1px;
+  height: 1px; // 1px border — allowed exception
   background: var(--border-default);
   margin: var(--space-4) 0;
 }
@@ -147,7 +111,7 @@
 
 .file-upload-area {
   position: relative;
-  border: 2px dashed var(--border-default);
+  border: 2px dashed var(--border-default); // 2px sub-space
   border-radius: var(--radius-md);
   padding: var(--space-6);
   background: var(--color-surface-hover);
@@ -208,8 +172,8 @@
   cursor: pointer;
 
   input[type="radio"] {
-    width: 18px;
-    height: 18px;
+    width: 18px; // no token: material icon pixel size
+    height: 18px; // no token: material icon pixel size
     cursor: pointer;
     accent-color: var(--color-primary);
     flex-shrink: 0;

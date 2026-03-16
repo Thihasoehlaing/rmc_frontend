@@ -1,8 +1,11 @@
 <form [formGroup]="form" class="form-section">
   <div class="section-fields">
 
-    <div class="form-container">
-
+    <section class="card">
+      <div class="card__header">
+        <h2 class="card__title">Conference Details</h2>
+      </div>
+      <div class="card__content">
       <div class="row--2">
         <div class="form-field">
           <label class="form-label is-required">Conference Funding Request Type</label>
@@ -35,7 +38,10 @@
 
       <div class="row--2">
         <div class="form-field">
-          <label class="form-label is-required">Is Travelling Required?</label>
+          <div class="label-with-note">
+            <label class="form-label is-required">Is Travelling Required?</label>
+            <app-note text="Tick Yes for Conference outside of APU" [isTooltip]="true"></app-note>
+          </div>
           <div class="radio-group">
             <label class="radio-label">
               <input type="radio" value="yes" formControlName="travelRequired">
@@ -46,13 +52,13 @@
               <span>No</span>
             </label>
           </div>
-          <div class="label-with-note">
-            <app-note text="Tick Yes for Conference outside of APU" [isTooltip]="true"></app-note>
-          </div>
         </div>
 
         <div class="form-field">
-          <label class="form-label is-required">Please select whether you are the "First Author" or "Corresponding Author"</label>
+          <div class="label-with-note">
+            <label class="form-label is-required">Please select whether you are the "First Author" or "Corresponding Author"</label>
+            <app-note text="Applicant must be either first or corresponding author" [isTooltip]="true"></app-note>
+          </div>
           <div class="radio-group">
             <label class="radio-label">
               <input type="radio" value="first-author" formControlName="authorshipType">
@@ -66,9 +72,6 @@
               <input type="radio" value="both" formControlName="authorshipType">
               <span>First and Corresponding Author</span>
             </label>
-          </div>
-          <div class="label-with-note">
-            <app-note text="Applicant must be either first or corresponding author" [isTooltip]="true"></app-note>
           </div>
         </div>
       </div>
@@ -89,7 +92,10 @@
     </div>
 
     <div class="form-field">
-      <label class="form-label is-required">Is the publisher of your conference one of the restricted publishers (e.g., MDPI, Common Ground, Hindawi, or Frontier)?</label>
+      <div class="label-with-note">
+        <label class="form-label is-required">Is the publisher of your conference one of the restricted publishers (e.g., MDPI, Common Ground, Hindawi, or Frontier)?</label>
+        <app-note text="Expected Answer for Approval: No" [isTooltip]="true"></app-note>
+      </div>
       <div class="radio-group">
         <label class="radio-label">
           <input type="radio" value="yes" formControlName="restrictedPublisher">
@@ -99,9 +105,6 @@
           <input type="radio" value="no" formControlName="restrictedPublisher">
           <span>No</span>
         </label>
-      </div>
-      <div class="label-with-note">
-        <app-note text="Expected Answer for Approval: No" [isTooltip]="true"></app-note>
       </div>
     </div>
 
@@ -134,14 +137,14 @@
     <!-- Conference Dates -->
     <div class="row--2">
       <div class="form-field">
-        <label class="form-label is-required">Conference Start Date</label>
+        <div class="label-with-note">
+          <label class="form-label is-required">Conference Start Date</label>
+          <app-note text="Please select end date first" [isTooltip]="true"></app-note>
+        </div>
         <input
           type="date"
           class="input--text"
           formControlName="conferenceStartDate">
-        <div class="label-with-note">
-          <app-note text="Please select end date first" [isTooltip]="true"></app-note>
-        </div>
       </div>
 
       <div class="form-field">
@@ -156,7 +159,10 @@
     <div class="row--2">
       <!-- Local or Overseas -->
       <div class="form-field">
-        <label class="form-label is-required">Select Local or Overseas</label>
+        <div class="label-with-note">
+          <label class="form-label is-required">Select Local or Overseas</label>
+          <app-note text="Klang Valley includes Kuala Lumpur, Selangor, Cyberjaya & Putrajaya" [isTooltip]="true"></app-note>
+        </div>
         <div class="radio-group">
           <label class="radio-label">
             <input type="radio" value="klang-valley" formControlName="localOrOverseas">
@@ -174,9 +180,6 @@
             <input type="radio" value="not-required" formControlName="localOrOverseas">
             <span>Not Required</span>
           </label>
-        </div>
-        <div class="label-with-note">
-          <app-note text="Klang Valley includes Kuala Lumpur, Selangor, Cyberjaya & Putrajaya" [isTooltip]="true"></app-note>
         </div>
       </div>
 
@@ -269,11 +272,14 @@
         </div>
       </div>
     }
-    </div>
+      </div>
+    </section>
 
-    <div class="costing-section">
-      <h3 class="section-header">Costing</h3>
-      <div class="costing-content">
+    <section class="card">
+      <div class="card__header">
+        <h2 class="card__title">Costing</h2>
+      </div>
+      <div class="card__content">
 
         <!-- Research Section - Shows when Local or Overseas is selected AND Internal Research Project is selected -->
         @if (selectedLocalOrOverseas && researchType === 'internal-research') {
@@ -631,6 +637,6 @@
         }
 
       </div>
-    </div>
+    </section>
   </div>
 </form>

@@ -18,14 +18,14 @@
   label {
     font-size: var(--fs-sm);
     font-weight: var(--fw-semibold);
-    color: var(--color-heading);
+    color: var(--color-text);
   }
 }
 
 .form-label {
   font-size: var(--fs-sm);
   font-weight: var(--fw-semibold);
-  color: var(--color-heading);
+  color: var(--color-text);
 
   &.is-required::after {
     content: ' *';
@@ -173,7 +173,7 @@
 .subsection-title {
   font-size: var(--fs-md);
   font-weight: var(--fw-bold);
-  color: var(--color-heading);
+  color: var(--color-text);
   margin: 0 0 var(--space-4) 0;
 }
 
@@ -206,7 +206,7 @@
 }
 
 .section-header {
-  font-size: var(--fs-md);
+  font-size: var(--fs-lg);
   font-weight: var(--fw-bold);
   color: var(--color-heading);
   margin: 0 0 var(--space-4) 0;
@@ -231,7 +231,7 @@
 .research-title {
   font-size: var(--fs-md);
   font-weight: var(--fw-bold);
-  color: var(--color-heading);
+  color: var(--color-text);
   margin: 0 0 var(--space-2) 0;
 }
 

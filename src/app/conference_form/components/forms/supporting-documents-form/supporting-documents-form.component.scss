@@ -11,9 +11,13 @@
 .section-title {
   font-size: var(--fs-lg);
   font-weight: var(--fw-bold);
-  color: var(--color-heading);
+  color: var(--color-text);
   margin: 0;
   padding: 0;
+}
+
+.section-title--blue {
+  color: var(--color-heading);
 }
 
 .upload-container {
@@ -48,7 +52,7 @@
 .upload-field-title {
   font-size: var(--fs-md);
   font-weight: var(--fw-semibold);
-  color: var(--color-heading);
+  color: var(--color-text);
   margin: 0;
   padding: 0;
   display: flex;
@@ -84,7 +88,7 @@
 .form-label {
   font-size: var(--fs-sm);
   font-weight: var(--fw-semibold);
-  color: var(--color-heading);
+  color: var(--color-text);
   margin: 0;
 
   &.is-required::after {
@@ -137,7 +141,7 @@
 .document-section-title {
   font-size: var(--fs-lg);
   font-weight: var(--fw-bold);
-  color: var(--color-heading);
+  color: var(--color-text);
   margin: var(--space-2) 0;
 }
 

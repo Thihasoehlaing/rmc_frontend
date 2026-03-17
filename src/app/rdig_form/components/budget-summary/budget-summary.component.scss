@@ -52,42 +52,87 @@
   border-radius: var(--radius-md);
   color: var(--color-error);
   font-size: var(--fs-sm);
+
+  &--yellow {
+    background: color-mix(in srgb, var(--color-warning) 8%, var(--color-surface));
+    border-color: var(--color-warning);
+    color: var(--color-warning-dark, #b58000);
+  }
+  
+  &--red {
+    background: color-mix(in srgb, var(--color-error) 8%, var(--color-surface));
+    border-color: var(--color-error);
+    color: var(--color-error);
+  }
+  text-align: right;
 }
 
-// ── Budget table ──────────────────────────────────────────────
-.category-header {
-  display: flex;
+.data-table__actions {
   justify-content: flex-end;
-  margin-bottom: var(--space-4);
+  gap: 8px;
 }
 
-.budget-table {
-  width: 100%;
-  border-collapse: collapse;
+.amount-cell {
+  text-align: right;
+  font-weight: var(--fw-semibold);
+  color: var(--color-primary);
+  padding-right: 16px;
+}
 
-  th {
-    background: var(--color-surface-nested);
-    padding: var(--space-3) var(--space-4);
-    text-align: left;
-    font-size: var(--fs-xs);
-    text-transform: uppercase;
-    font-weight: var(--fw-bold);
-    color: var(--color-text-secondary);
-    border-bottom: 2px solid var(--border-default);
-    white-space: nowrap;
+.action-cell {
+  padding-right: 16px;
+}
+
+.btn-icon {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  border-radius: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+
+  .material-icons {
+    font-size: 20px;
+    line-height: 1;
   }
 
-  td {
-    padding: var(--space-3) var(--space-4);
-    border-bottom: 1px solid var(--border-default);
-    vertical-align: top;
+  &--edit {
+    color: #2f80ed;
+  }
+
+  &--delete {
+    color: #e63946;
+  }
+
+  &:hover:not(:disabled) {
+    opacity: 0.85;
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
   }
 }
 
-.col-idx    { width: 40px; text-align: center; }
-.col-amount { width: 160px; }
-.col-del    { width: 50px; text-align: center; }
-.text-muted { color: var(--color-text-muted); font-size: var(--fs-sm); }
+.modal-note {
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid color-mix(in srgb, var(--color-info) 24%, transparent);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--color-info) 8%, var(--color-surface));
+  color: var(--color-info-dark);
+  font-size: var(--fs-sm);
+}
+
+.section-fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
 
 // ── Empty state ───────────────────────────────────────────────
 .empty-state {
@@ -100,23 +145,4 @@
   border: 1px dashed var(--border-default);
 }
 
-// ── Delete button ─────────────────────────────────────────────
-.btn-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: var(--input-height-sm);
-  height: var(--input-height-sm);
-  border-radius: var(--radius-md);
-  border: none;
-  cursor: pointer;
-  background: transparent;
-  transition: background 0.15s;
-
-  .material-icons { font-size: 18px; }
-
-  &--delete {
-    color: var(--color-error);
-    &:hover { background: color-mix(in srgb, var(--color-error) 10%, transparent); }
-  }
-}
+// Action buttons styled via shared data-table component

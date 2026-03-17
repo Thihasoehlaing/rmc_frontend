@@ -10,6 +10,8 @@ import { FileUploadComponent } from '../../../shared/components/file-upload/file
 import { DialogComponent } from '../../../shared/components/dialog/dialog.component';
 import { ReviewBlockComponent } from '../review-block/review-block.component';
 import { RdigWorkflowService } from '../../services/rdig-workflow.service';
+import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
+import type { DataTableColumn } from '../../../shared/components/data-table/data-table.component';
 
 @Component({
   selector: 'app-team-details',
@@ -25,6 +27,7 @@ import { RdigWorkflowService } from '../../services/rdig-workflow.service';
     FileUploadComponent,
     DialogComponent,
     ReviewBlockComponent,
+    DataTableComponent,
   ],
   templateUrl: './team-details.component.html',
   styleUrl: './team-details.component.scss'
@@ -41,31 +44,45 @@ export class TeamDetailsComponent {
 
   get showAnyComments(): boolean {
     return this.showHosComments || this.showRmcComments ||
-           this.showR1Comments || this.showR2Comments ||
-           this.showRdigChairComments || this.showVcComments || this.showCeoComments;
+      this.showR1Comments || this.showR2Comments ||
+      this.showRdigChairComments || this.showVcComments || this.showCeoComments;
   }
   @Input() workflow!: RdigWorkflowService;
 
-  // ── Section accessors ──────────────────────────────────────────
   get teamDetails() { return this.parentForm.get('teamDetails') as FormGroup; }
   get internalResearchers() { return this.teamDetails.get('internalResearchers') as FormArray; }
   get externalResearchers() { return this.teamDetails.get('externalResearchers') as FormArray; }
 
-  // ── Review form controls ───────────────────────────────────────
   get reviewTeam() { return this.parentForm.get('reviewTeam') as FormGroup; }
   fc(name: string): FormControl { return this.reviewTeam.get(name) as FormControl; }
 
-  // ── Modal open/edit state ──────────────────────────────────────
+  readonly internalColumns: DataTableColumn[] = [
+    { key: 'index', label: '#', width: '52px', align: 'center', headerAlign: 'center' },
+    { key: 'staff', label: 'Staff Name / Department', width: '32%' },
+    { key: 'expertise', label: 'Area of Expertise', width: '26%' },
+    { key: 'roles', label: 'Role in Project', width: '26%' },
+    { key: 'actions', label: 'Actions', width: '96px', align: 'center', headerAlign: 'center' }
+  ];
+
+  readonly externalColumns: DataTableColumn[] = [
+    { key: 'index', label: '#', width: '52px', align: 'center', headerAlign: 'center' },
+    { key: 'collaborator', label: 'Collaborator', width: '32%' },
+    { key: 'institution', label: 'Institution', width: '24%' },
+    { key: 'country', label: 'Country', width: '14%', align: 'center', headerAlign: 'center' },
+    { key: 'funding', label: 'Matched Funding', width: '16%', align: 'right', headerAlign: 'right' },
+    { key: 'actions', label: 'Actions', width: '96px', align: 'center', headerAlign: 'center' }
+  ];
+
+  readonly trackByIndex = (index: number) => index;
+
   showInternalModal = signal(false);
   showExternalModal = signal(false);
   editingInternalIdx = signal<number | null>(null);
   editingExternalIdx = signal<number | null>(null);
 
-  // ── Temp modal forms ───────────────────────────────────────────
   internalForm: FormGroup;
   externalForm: FormGroup;
 
-  // ── Reference data (API-driven in production) ─────────────────
   clusters = [
     { label: 'Socio-Economic Impact', value: 'sei' },
     { label: 'Technology & Innovation', value: 'ti' },
@@ -116,7 +133,15 @@ export class TeamDetailsComponent {
     });
   }
 
-  // ── Internal researchers ────────────────────────────────────────
+  getInitials(value: string): string {
+    if (!value) return '--';
+    return value
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0].toUpperCase())
+      .join('');
+  }
 
   openInternalModal(): void {
     if (this.internalResearchers.length >= 2) return;
@@ -152,8 +177,6 @@ export class TeamDetailsComponent {
     this.internalResearchers.removeAt(index);
   }
 
-  // ── External researchers ────────────────────────────────────────
-
   openExternalModal(): void {
     if (this.externalResearchers.length >= 10) return;
     this.editingExternalIdx.set(null);
@@ -165,7 +188,6 @@ export class TeamDetailsComponent {
     const row = this.externalResearchers.at(index).getRawValue();
     this.editingExternalIdx.set(index);
     this.externalForm.patchValue(row);
-    // File control keeps previous value on edit
     this.externalForm.get('supportLetter')?.clearValidators();
     this.externalForm.get('supportLetter')?.updateValueAndValidity();
     this.showExternalModal.set(true);
@@ -191,8 +213,6 @@ export class TeamDetailsComponent {
     this.externalResearchers.removeAt(index);
   }
 
-  // ── File upload helper ─────────────────────────────────────────
-  /** Called by <app-file-upload> after type+size validation passes. */
   onFileSelected(file: File): void {
     this.externalForm.get('supportLetter')?.setValue(file);
   }

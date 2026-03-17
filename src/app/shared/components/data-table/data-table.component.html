@@ -1,0 +1,49 @@
+<div class="data-table" [class.data-table--dense]="dense" [class.data-table--striped]="striped">
+  <div class="data-table__frame">
+    <div class="data-table__scroll">
+      <table>
+        <colgroup>
+          @for (column of columns; track column.key) {
+            <col [style.width]="column.width || 'auto'">
+          }
+        </colgroup>
+
+        @if (showHeader) {
+          <thead>
+            <tr>
+              @for (column of columns; track column.key) {
+                <th
+                  scope="col"
+                  [class.is-align-center]="headerAlign(column) === 'center'"
+                  [class.is-align-right]="headerAlign(column) === 'right'">
+                  {{ column.label }}
+                </th>
+              }
+            </tr>
+          </thead>
+        }
+
+        <tbody>
+          @for (row of rows; track trackRow($index, row); let i = $index) {
+            @if (rowTemplate) {
+              <ng-container
+                [ngTemplateOutlet]="rowTemplate"
+                [ngTemplateOutletContext]="{ $implicit: row, row: row, index: i, columns: columns }">
+              </ng-container>
+            } @else {
+              <tr [class.is-hoverable]="hoverable">
+                @for (column of columns; track column.key) {
+                  <td
+                    [class.is-align-center]="cellAlign(column) === 'center'"
+                    [class.is-align-right]="cellAlign(column) === 'right'">
+                    {{ resolveValue(row, column.key) ?? '—' }}
+                  </td>
+                }
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

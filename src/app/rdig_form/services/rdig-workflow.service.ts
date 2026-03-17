@@ -60,7 +60,7 @@ export class RdigWorkflowService {
   // ── Dynamic reviewer identity (set by parent component from form values) ──
 
   /** User ID of the assigned Reviewer 1 for this application */
-  reviewer1UserId = signal<string>('');
+  reviewer1UserId = signal<string>('4');
   /** User ID of the assigned Reviewer 2 for this application */
   reviewer2UserId = signal<string>('');
 
@@ -98,7 +98,7 @@ export class RdigWorkflowService {
 
   /** RDIG Chair comment/approval editable only during pending_rdig_chair */
   isRdigChairEditable = computed(() => this.status() === 'pending_rdig_chair');
-
+ 
   /** VC comment/approval editable only during pending_vc */
   isVcEditable = computed(() => this.status() === 'pending_vc');
 
@@ -154,28 +154,40 @@ export class RdigWorkflowService {
    * - Applicant reviews HOS feedback (pending_applicant_resubmission_hos)
    * - HOS is actively reviewing (pending_hos / pending_hos_review)
    * - Downstream stages where prior HOS comments are visible
+   * - Any rejected_* stage (show history up to that rejection point)
    */
   showHosToggle = computed(() =>
     [
       'pending_applicant_resubmission_hos',
       'pending_hos',
       'pending_hos_review',
+      'rejected_hos',
       'pending_rmc',
       'pending_rmc_review',
+      'rejected_rmc',
+      'pending_reviewers',
       'pending_rdig_chair',
+      'rejected_rdig_chair',
       'pending_vc',
+      'rejected_vc',
       'pending_ceo',
+      'rejected_ceo',
     ].includes(this.status())
   );
 
-  /** Show RMC toggle from pending_rmc onward */
+  /** Show RMC toggle from pending_rmc onward (and at rejected_rmc/chair/vc/ceo) */
   showRmcToggle = computed(() =>
     [
       'pending_rmc',
       'pending_rmc_review',
+      'rejected_rmc',
+      'pending_reviewers',
       'pending_rdig_chair',
+      'rejected_rdig_chair',
       'pending_vc',
+      'rejected_vc',
       'pending_ceo',
+      'rejected_ceo',
     ].includes(this.status())
   );
 
@@ -194,6 +206,10 @@ export class RdigWorkflowService {
       'pending_rdig_chair',
       'pending_vc',
       'pending_ceo',
+      'rejected_rmc',
+      'rejected_rdig_chair',
+      'rejected_vc',
+      'rejected_ceo',
     ].includes(this.status())
   );
 
@@ -219,18 +235,18 @@ export class RdigWorkflowService {
     return true;
   });
 
-  /** Show RDIG Chair toggle from pending_rdig_chair onward */
+  /** Show RDIG Chair toggle from pending_rdig_chair onward (and at rejected_rdig_chair/vc/ceo) */
   showRdigChairToggle = computed(() =>
-    ['pending_rdig_chair', 'pending_vc', 'pending_ceo'].includes(this.status())
+    ['pending_rdig_chair', 'rejected_rdig_chair', 'pending_vc', 'rejected_vc', 'pending_ceo', 'rejected_ceo'].includes(this.status())
   );
 
-  /** Show VC toggle from pending_vc onward */
+  /** Show VC toggle from pending_vc onward (and at rejected_vc/ceo) */
   showVcToggle = computed(() =>
-    ['pending_vc', 'pending_ceo'].includes(this.status())
+    ['pending_vc', 'rejected_vc', 'pending_ceo', 'rejected_ceo'].includes(this.status())
   );
 
-  /** Show CEO toggle only at pending_ceo */
-  showCeoToggle = computed(() => this.status() === 'pending_ceo');
+  /** Show CEO toggle only at pending_ceo or rejected_ceo */
+  showCeoToggle = computed(() => this.status() === 'pending_ceo' || this.status() === 'rejected_ceo');
 
   // ── Approval card visibility (each stage only exposes the current actor's approval) ─
 

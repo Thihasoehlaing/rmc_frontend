@@ -341,12 +341,7 @@
         </div>
       }
 
-      <!-- RMC comment on Aim section -->
-      @if (showAnyComments) {
-        <app-review-block label="RMC — Research Aim & Questions" icon="verified"
-          [visible]="showRmcComments" [readonly]="!workflow.isRmcEditable()"
-          [commentControl]="fc('rmcAimComment')"></app-review-block>
-      }
+      <!-- RMC comment on Aim section has been moved to after Research Activities -->
 
       <div class="form-field">
         <label class="form-label is-required">Hypothesis</label>
@@ -512,14 +507,6 @@
     </div>
   </div>
 
-  <!-- ── HOS page-level comment (covers all of Project Details) ── -->
-  @if (showAnyComments) {
-    <div class="card review-comments-section">
-      <app-review-block label="HOS — Project Details Review" icon="supervisor_account"
-        [visible]="showHosComments" [readonly]="!workflow.isHosEditable()"
-        [commentControl]="fc('hosPageComment')">
-      </app-review-block>
-    </div>
-  }
+  <!-- HOS page-level comment moved to after Research Activities -->
 
 </section>

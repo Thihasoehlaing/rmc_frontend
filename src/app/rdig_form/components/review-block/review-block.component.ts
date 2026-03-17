@@ -1,5 +1,5 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { ReactiveFormsModule, FormControl } from '@angular/forms';
+import { ReactiveFormsModule, FormControl, Validators } from '@angular/forms';
 import { CharacterCounterComponent } from '../../../shared/components/character-counter/character-counter.component';
 
 /**
@@ -168,6 +168,15 @@ export class ReviewBlockComponent implements OnChanges {
       disabled
         ? this.scoreControl.disable({ emitEvent: false })
         : this.scoreControl.enable({ emitEvent: false });
+    }
+    // When editable, make the comment field required; remove when read-only
+    if ('readonly' in changes || 'commentControl' in changes) {
+      if (!this.readonly) {
+        this.commentControl.addValidators(Validators.required);
+      } else {
+        this.commentControl.removeValidators(Validators.required);
+      }
+      this.commentControl.updateValueAndValidity({ emitEvent: false });
     }
   }
 }

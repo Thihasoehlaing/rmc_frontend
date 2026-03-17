@@ -1,0 +1,177 @@
+<form [formGroup]="form" class="form-section">
+  <section class="card">
+    <div class="card__header">
+      <h2 class="card__title">Upload Supporting Documents</h2>
+    </div>
+    <div class="card__content">
+    <div class="section-fields">
+      <div class="form-field">
+        <div class="upload-field-header">
+          <h3 class="upload-field-title is-required">Acceptance Notification</h3>
+          <p class="upload-field-subtitle">Max file size: 10 MB. PDF ONLY</p>
+        </div>
+        <app-file-upload
+          #acceptanceNotificationUpload
+          label="Acceptance Notification"
+          [accept]="PDF_ACCEPT"
+          [maxSizeMB]="MAX_FILE_SIZE_MB"
+          placeholder="Upload acceptance notification PDF"
+          (fileSelected)="onFileSelected('acceptanceNotification', $any($event))">
+        </app-file-upload>
+        @if (form.get('acceptanceNotification')?.invalid && form.get('acceptanceNotification')?.touched) {
+          <span class="form-error-msg">Acceptance Notification is required</span>
+        }
+      </div>
+
+      <div class="form-field">
+        <div class="upload-field-header">
+          <h3 class="upload-field-title is-required">Reviewers' Feedback</h3>
+          <p class="upload-field-subtitle">Max file size: 10 MB. PDF ONLY</p>
+        </div>
+        <app-file-upload
+          #reviewersFeedbackUpload
+          label="Reviewers' Feedback"
+          [accept]="PDF_ACCEPT"
+          [maxSizeMB]="MAX_FILE_SIZE_MB"
+          placeholder="Upload reviewers' feedback PDF"
+          (fileSelected)="onFileSelected('reviewersFeedback', $any($event))">
+        </app-file-upload>
+        @if (form.get('reviewersFeedback')?.invalid && form.get('reviewersFeedback')?.touched) {
+          <span class="form-error-msg">Reviewers' Feedback is required</span>
+        }
+      </div>
+
+      <div class="form-field">
+        <div class="upload-field-header">
+          <h3 class="upload-field-title is-required">Evidence of Guaranteed SCOPUS Indexed Publication</h3>
+          <p class="upload-field-subtitle">Max file size: 10 MB. PDF ONLY</p>
+        </div>
+        <app-file-upload
+          #scopusEvidenceUpload
+          label="Evidence of Guaranteed SCOPUS Indexed Publication"
+          [accept]="PDF_ACCEPT"
+          [maxSizeMB]="MAX_FILE_SIZE_MB"
+          placeholder="Upload SCOPUS publication evidence PDF"
+          (fileSelected)="onFileSelected('scopusEvidencePublication', $any($event))">
+        </app-file-upload>
+        @if (form.get('scopusEvidencePublication')?.invalid && form.get('scopusEvidencePublication')?.touched) {
+          <span class="form-error-msg">Evidence of Guaranteed SCOPUS Indexed Publication is required</span>
+        }
+      </div>
+
+      <!-- Turnitin Report -->
+      <div class="form-field">
+        <div class="upload-field-header">
+          <h3 class="upload-field-title is-required">Turnitin Report</h3>
+          <p class="upload-field-subtitle">Max file size: 10 MB. PDF ONLY</p>
+        </div>
+        <app-file-upload
+          #turnitinReportUpload
+          label="Turnitin Report"
+          [accept]="PDF_ACCEPT"
+          [maxSizeMB]="MAX_FILE_SIZE_MB"
+          placeholder="Upload Turnitin report PDF"
+          (fileSelected)="onFileSelected('turnitinReport', $any($event))">
+        </app-file-upload>
+        @if (form.get('turnitinReport')?.invalid && form.get('turnitinReport')?.touched) {
+          <span class="form-error-msg">Turnitin Report is required</span>
+        }
+      </div>
+
+      <!-- Final Paper Draft -->
+      <div class="form-field">
+        <div class="upload-field-header">
+          <h3 class="upload-field-title is-required">Final Paper Draft</h3>
+          <p class="upload-field-subtitle">Max file size: 10 MB. PDF ONLY</p>
+        </div>
+        <app-file-upload
+          #finalPaperUpload
+          label="Final Paper Draft"
+          [accept]="PDF_ACCEPT"
+          [maxSizeMB]="MAX_FILE_SIZE_MB"
+          placeholder="Upload final paper draft PDF"
+          (fileSelected)="onFileSelected('finalPaperDraft', $any($event))">
+        </app-file-upload>
+        @if (form.get('finalPaperDraft')?.invalid && form.get('finalPaperDraft')?.touched) {
+          <span class="form-error-msg">Final Paper Draft is required</span>
+        }
+      </div>
+
+      <!-- Conference Invoice -->
+      <div class="form-field">
+        <div class="upload-field-header">
+          <div class="title-with-tooltip">
+            <h3 class="upload-field-title is-required">Conference Invoice</h3>
+            <app-note
+              text="Please ensure billing name is: Asia Pacific University Sdn. Bhd."
+              [isTooltip]="true">
+            </app-note>
+          </div>
+          <p class="upload-field-subtitle">Max file size: 10 MB. PDF ONLY</p>
+        </div>
+        <app-file-upload
+          #conferenceInvoiceUpload
+          label="Conference Invoice"
+          [accept]="PDF_ACCEPT"
+          [maxSizeMB]="MAX_FILE_SIZE_MB"
+          placeholder="Upload conference invoice PDF"
+          (fileSelected)="onFileSelected('conferenceInvoice', $any($event))">
+        </app-file-upload>
+        @if (form.get('conferenceInvoice')?.invalid && form.get('conferenceInvoice')?.touched) {
+          <span class="form-error-msg">Conference Invoice is required</span>
+        }
+      </div>
+    </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card__header">
+      <h2 class="card__title">Manuscript Details</h2>
+    </div>
+    <div class="card__content">
+    <div class="section-fields">
+      <!-- Internal Review -->
+      <div class="form-field">
+        <label class="form-label is-required">The manuscript has been internally reviewed for the quality of content and English.</label>
+        <div class="radio-group">
+          <label class="radio-label">
+            <input type="radio" value="yes" formControlName="manuscriptInternallyReviewed">
+            <span>Yes</span>
+          </label>
+          <label class="radio-label">
+            <input type="radio" value="no" formControlName="manuscriptInternallyReviewed">
+            <span>No</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="form-field">
+        <label class="form-label is-required">Name of Reviewer</label>
+        <input
+          type="text"
+          class="input--text"
+          formControlName="reviewerName"
+          placeholder="Enter reviewer name">
+      </div>
+
+      <div class="form-field">
+        <div class="label-with-note">
+          <label class="form-label is-required">Has the manuscript and content been published in another journal or conference etc.?</label>
+          <app-note text=" Manuscript must not be published previously" [isTooltip]="true"></app-note>
+        </div>
+        <div class="radio-group">
+          <label class="radio-label">
+            <input type="radio" value="yes" formControlName="manuscriptPreviouslyPublished">
+            <span>Yes</span>
+          </label>
+          <label class="radio-label">
+            <input type="radio" value="no" formControlName="manuscriptPreviouslyPublished">
+            <span>No</span>
+          </label>
+        </div>
+      </div>
+    </div>
+    </div>
+  </section>
+</form>

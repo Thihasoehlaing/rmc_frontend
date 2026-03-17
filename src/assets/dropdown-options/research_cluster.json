@@ -1,0 +1,4 @@
+[
+  { "id": 1, "value": "Cluster A", "isActive": true },
+  { "id": 2, "value": "Cluster B", "isActive": true }
+]

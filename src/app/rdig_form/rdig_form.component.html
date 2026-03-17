@@ -7,6 +7,42 @@
     endpoint="/api/guidelines/rdig">
   </app-form-main-title>
 
+    <!-- DEV TEST START: Application Status Override -->
+    <div style="margin: 16px 0; padding: 8px; background: #fffbe6; border: 1px solid #ffe58f; border-radius: 6px;">
+      <label style="font-weight: bold; color: #ad8b00;">DEV TEST: Application Status</label>
+      <select
+        [formControl]="fc('metadata.applicationStatus')"
+        (change)="onTestStatusChange($any($event.target).value)"
+        style="margin-left: 12px; width: 340px; padding: 4px 8px; border: 1px solid #ffe58f; border-radius: 4px;">
+        <option value="fill_application">fill_application</option>
+        <option value="pending_applicant_resubmission_hos">pending_applicant_resubmission_hos</option>
+        <option value="pending_applicant_resubmission_reviewers">pending_applicant_resubmission_reviewers</option>
+        <option value="pending_hos">pending_hos</option>
+        <option value="pending_hos_review">pending_hos_review</option>
+        <option value="rejected_hos">rejected_hos</option>
+        <option value="pending_rmc">pending_rmc</option>
+        <option value="pending_rmc_review">pending_rmc_review</option>
+        <option value="rejected_rmc">rejected_rmc</option>
+        <option value="pending_reviewers">pending_reviewers</option>
+        <option value="pending_rdig_chair">pending_rdig_chair</option>
+        <option value="rejected_rdig_chair">rejected_rdig_chair</option>
+        <option value="pending_vc">pending_vc</option>
+        <option value="rejected_vc">rejected_vc</option>
+        <option value="pending_ceo">pending_ceo</option>
+        <option value="rejected_ceo">rejected_ceo</option>
+      </select>
+      <span style="margin-left: 12px; color: #ad8b00; font-size: 12px;">(Live ABAC override for developer testing)</span>
+    </div>
+    <!-- DEV TEST END -->
+
+  <!-- ── 1b. Score Summary (visible based on ABAC status + reviewers_version) ── -->
+  @if (workflow.isScoreSummaryVisible()) {
+    <app-score-summary
+      [reviewer1Total]="reviewer1Total"
+      [reviewer2Total]="reviewer2Total">
+    </app-score-summary>
+  }
+
   <!-- ── 2. Step Indicator (clickable) ─────────────────────────── -->
   <app-step-indicator
     [currentStep]="currentStep()"
@@ -15,44 +51,208 @@
     (stepClick)="goToStep($event)">
   </app-step-indicator>
 
-  <!-- ── 3. Comment Panel (all reviewer roles) ─────────────────── -->
-  <app-form-comment-panel></app-form-comment-panel>
+  <!-- ── 3. Comment Toggle Buttons (shown per ABAC status) ──────── -->
+  @if (workflow.showHosToggle() || workflow.showRmcToggle() ||
+       workflow.showReviewerToggles() || workflow.showRdigChairToggle() ||
+       workflow.showVcToggle() || workflow.showCeoToggle()) {
+    <div class="comment-toggle-bar">
+
+      @if (workflow.showHosToggle()) {
+        <button type="button"
+          class="btn btn--comment-toggle"
+          [class.btn--comment-toggle-active]="showHosComments()"
+          (click)="toggleHosComments()">
+          <span class="material-icons">supervisor_account</span>
+          {{ showHosComments() ? 'Hide HOS Comments' : 'HOS Comments' }}
+        </button>
+      }
+
+      @if (workflow.showRmcToggle()) {
+        <button type="button"
+          class="btn btn--comment-toggle"
+          [class.btn--comment-toggle-active]="showRmcComments()"
+          (click)="toggleRmcComments()">
+          <span class="material-icons">verified</span>
+          {{ showRmcComments() ? 'Hide RMC Comments' : 'RMC Comments' }}
+        </button>
+      }
+
+      @if (workflow.showReviewerToggles()) {
+        @if (workflow.showR1Toggle()) {
+          <button type="button"
+            class="btn btn--comment-toggle"
+            [class.btn--comment-toggle-active]="showR1Comments()"
+            (click)="toggleR1Comments()">
+            <span class="material-icons">rate_review</span>
+            {{ showR1Comments() ? 'Hide Reviewer 1' : 'Reviewer 1 Comments' }}
+          </button>
+        }
+        @if (workflow.showR2Toggle()) {
+          <button type="button"
+            class="btn btn--comment-toggle"
+            [class.btn--comment-toggle-active]="showR2Comments()"
+            (click)="toggleR2Comments()">
+            <span class="material-icons">rate_review</span>
+            {{ showR2Comments() ? 'Hide Reviewer 2' : 'Reviewer 2 Comments' }}
+          </button>
+        }
+      }
+
+      @if (workflow.showRdigChairToggle()) {
+        <button type="button"
+          class="btn btn--comment-toggle"
+          [class.btn--comment-toggle-active]="showRdigChairComments()"
+          (click)="toggleRdigChairComments()">
+          <span class="material-icons">admin_panel_settings</span>
+          {{ showRdigChairComments() ? 'Hide RDIG Chair Comments' : 'RDIG Chair Comments' }}
+        </button>
+      }
+
+      @if (workflow.showVcToggle()) {
+        <button type="button"
+          class="btn btn--comment-toggle"
+          [class.btn--comment-toggle-active]="showVcComments()"
+          (click)="toggleVcComments()">
+          <span class="material-icons">account_balance</span>
+          {{ showVcComments() ? 'Hide VC Comments' : 'VC Comments' }}
+        </button>
+      }
+
+      @if (workflow.showCeoToggle()) {
+        <button type="button"
+          class="btn btn--comment-toggle"
+          [class.btn--comment-toggle-active]="showCeoComments()"
+          (click)="toggleCeoComments()">
+          <span class="material-icons">business</span>
+          {{ showCeoComments() ? 'Hide CEO Comments' : 'CEO Comments' }}
+        </button>
+      }
+
+    </div>
+  }
 
   <!-- ── 4. Main Form ──────────────────────────────────────────── -->
   <form [formGroup]="rdigForm" (ngSubmit)="onSubmit()" novalidate>
 
     <!-- Hidden metadata — always present, never visible -->
     <div formGroupName="metadata" hidden aria-hidden="true">
-      <input formControlName="batchNumber"   readonly>
-      <input formControlName="applicationId" readonly>
-      <input formControlName="version"       readonly>
+      <input formControlName="batchNumber"       readonly>
+      <input formControlName="applicationId"     readonly>
+      <input formControlName="version"           readonly>
+      <input formControlName="applicationStatus" readonly>
+      <input formControlName="applicationVersion" readonly>
+      <input formControlName="reviewers_version" readonly>
     </div>
 
     <!-- ── Form Container ─────────────────────────────────────── -->
-    <div class="form-container">
+    <fieldset class="form-container">
 
       <!-- ── Wizard step content ──────────────────────────────── -->
       <div class="rdig-app__content">
 
         @if (currentStep() === 1) {
-          <app-team-details [parentForm]="rdigForm"></app-team-details>
+          <app-team-details
+            [parentForm]="rdigForm"
+            [showHosComments]="showHosComments()"
+            [showRmcComments]="showRmcComments()"
+            [showR1Comments]="showR1Comments()"
+            [showR2Comments]="showR2Comments()"
+            [showRdigChairComments]="showRdigChairComments()"
+            [showVcComments]="showVcComments()"
+            [showCeoComments]="showCeoComments()"
+            [workflow]="workflow">
+          </app-team-details>
         }
         @if (currentStep() === 2) {
-          <app-project-details [parentForm]="rdigForm"></app-project-details>
-          <app-research-activities [parentForm]="rdigForm"></app-research-activities>
+          <app-project-details
+            [parentForm]="rdigForm"
+            [showHosComments]="showHosComments()"
+            [showRmcComments]="showRmcComments()"
+            [showR1Comments]="showR1Comments()"
+            [showR2Comments]="showR2Comments()"
+            [showRdigChairComments]="showRdigChairComments()"
+            [showVcComments]="showVcComments()"
+            [showCeoComments]="showCeoComments()"
+            [workflow]="workflow">
+          </app-project-details>
+          <app-research-activities
+            [parentForm]="rdigForm"
+            [showHosComments]="showHosComments()"
+            [showRmcComments]="showRmcComments()"
+            [showR1Comments]="showR1Comments()"
+            [showR2Comments]="showR2Comments()"
+            [showRdigChairComments]="showRdigChairComments()"
+            [showVcComments]="showVcComments()"
+            [showCeoComments]="showCeoComments()"
+            [workflow]="workflow">
+          </app-research-activities>
+
+          <!-- ── HOS and RMC page-level comments (after Research Activities) ── -->
+          @if (showHosComments() || showRmcComments()) {
+            <div class="card review-comments-section">
+              <div class="card__content section-fields">
+                <app-review-block
+                  label="HOS — Project Details Review"
+                  icon="supervisor_account"
+                  [visible]="showHosComments()"
+                  [readonly]="!workflow.isHosEditable()"
+                  [commentControl]="rfcProject('hosPageComment')">
+                </app-review-block>
+                <app-review-block
+                  label="RMC — Research Aim & Questions"
+                  icon="verified"
+                  [visible]="showRmcComments()"
+                  [readonly]="!workflow.isRmcEditable()"
+                  [commentControl]="rfcProject('rmcAimComment')">
+                </app-review-block>
+              </div>
+            </div>
+          }
         }
         @if (currentStep() === 3) {
-          <app-output-details [parentForm]="rdigForm"></app-output-details>
+          <app-output-details
+            [parentForm]="rdigForm"
+            [showHosComments]="showHosComments()"
+            [showRmcComments]="showRmcComments()"
+            [showR1Comments]="showR1Comments()"
+            [showR2Comments]="showR2Comments()"
+            [showRdigChairComments]="showRdigChairComments()"
+            [showVcComments]="showVcComments()"
+            [showCeoComments]="showCeoComments()"
+            [workflow]="workflow">
+          </app-output-details>
         }
         @if (currentStep() === 4) {
-          <app-budget-summary [parentForm]="rdigForm"></app-budget-summary>
+          <app-budget-summary
+            [parentForm]="rdigForm"
+            [showHosComments]="showHosComments()"
+            [showRmcComments]="showRmcComments()"
+            [showR1Comments]="showR1Comments()"
+            [showR2Comments]="showR2Comments()"
+            [showRdigChairComments]="showRdigChairComments()"
+            [showVcComments]="showVcComments()"
+            [showCeoComments]="showCeoComments()"
+            [workflow]="workflow">
+          </app-budget-summary>
         }
         @if (currentStep() === 5) {
-          <app-final-declaration [parentForm]="rdigForm"></app-final-declaration>
+          <app-final-declaration
+            [parentForm]="rdigForm"
+            [showHosComments]="showHosComments()"
+            [showRmcComments]="showRmcComments()"
+            [showR1Comments]="showR1Comments()"
+            [showR2Comments]="showR2Comments()"
+            [showRdigChairComments]="showRdigChairComments()"
+            [showVcComments]="showVcComments()"
+            [showCeoComments]="showCeoComments()"
+            [workflow]="workflow"
+            [reviewer1Total]="reviewer1Total"
+            [reviewer2Total]="reviewer2Total">
+          </app-final-declaration>
         }
 
       </div>
-    </div>
+    </fieldset>
 
     <!-- ── Shared wizard navigation footer ───────────────────── -->
     <app-form-wizard-nav

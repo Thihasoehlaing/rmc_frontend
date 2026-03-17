@@ -1,0 +1,337 @@
+<form [formGroup]="form" class="form-section">
+  <div class="section-fields">
+    <section class="card">
+      <div class="card__header">
+        <h2 class="card__title">APU Staff Co-Author Details</h2>
+      </div>
+      <div class="card__content">
+        <div class="list-section-header">
+          <span class="list-count">{{ testSubsections.length }} {{ testSubsections.length === 1 ? 'Entry' : 'Entries' }}</span>
+          <button type="button" class="btn btn-primary btn-sm" (click)="openEditModal('apu-staff')">
+            <span class="material-icons">add</span> Add Entry
+          </button>
+        </div>
+
+        @if (testSubsections.length > 0) {
+          <div class="table-scroll">
+            <table class="list-table">
+              <thead>
+                <tr>
+                  <th class="col-no">#</th>
+                  <th>Please select Staff Name</th>
+                  <th>School/Department</th>
+                  <th>Affiliation</th>
+                  <th class="col-actions">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (subsection of testSubsections.controls; track $index; let i = $index) {
+                  <tr>
+                    <td class="col-no text-muted">{{ i + 1 }}</td>
+                    <td>{{ subsection.value.staffName }}</td>
+                    <td>{{ subsection.value.schoolDepartment }}</td>
+                    <td>{{ subsection.value.affiliation }}</td>
+                    <td class="col-actions">
+                      <button type="button" class="btn-icon btn-icon--edit"
+                        (click)="openEditModal('apu-staff', i)" aria-label="Edit entry">
+                        <span class="material-icons">edit</span>
+                      </button>
+                      @if (testSubsections.length > 1) {
+                        <button type="button" class="btn-icon btn-icon--delete"
+                          (click)="deleteTestSubsection(i)" aria-label="Remove entry">
+                          <span class="material-icons">delete</span>
+                        </button>
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        } @else {
+          <div class="empty-state">
+            <span class="material-icons">receipt</span>
+            <p>No entries added yet. Click <strong>Add Entry</strong> to start adding items.</p>
+          </div>
+        }
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card__header">
+        <h2 class="card__title">APU Student Co-Authors</h2>
+      </div>
+      <div class="card__content">
+        <div class="list-section-header">
+          <span class="list-count">{{ studentCoAuthors.length }} {{ studentCoAuthors.length === 1 ? 'Entry' : 'Entries' }}</span>
+          <button type="button" class="btn btn-primary btn-sm" (click)="openEditModal('student')">
+            <span class="material-icons">add</span> Add Entry
+          </button>
+        </div>
+
+        @if (studentCoAuthors.length > 0) {
+          <div class="table-scroll">
+            <table class="list-table">
+              <thead>
+                <tr>
+                  <th class="col-no">#</th>
+                  <th>TP Number</th>
+                  <th>Full Name (as per IC/Passport)</th>
+                  <th>School/Department</th>
+                  <th>Affiliation</th>
+                  <th class="col-actions">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (subsection of studentCoAuthors.controls; track $index; let i = $index) {
+                  <tr>
+                    <td class="col-no text-muted">{{ i + 1 }}</td>
+                    <td>{{ subsection.value.tpNumber }}</td>
+                    <td>{{ subsection.value.fullName }}</td>
+                    <td>{{ subsection.value.schoolDepartment }}</td>
+                    <td>{{ subsection.value.affiliation }}</td>
+                    <td class="col-actions">
+                      <button type="button" class="btn-icon btn-icon--edit"
+                        (click)="openEditModal('student', i)" aria-label="Edit entry">
+                        <span class="material-icons">edit</span>
+                      </button>
+                      @if (studentCoAuthors.length > 1) {
+                        <button type="button" class="btn-icon btn-icon--delete"
+                          (click)="deleteStudentCoAuthor(i)" aria-label="Remove entry">
+                          <span class="material-icons">delete</span>
+                        </button>
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        } @else {
+          <div class="empty-state">
+            <span class="material-icons">receipt</span>
+            <p>No entries added yet. Click <strong>Add Entry</strong> to start adding items.</p>
+          </div>
+        }
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card__header">
+        <h2 class="card__title">Non-APU Co-Authors</h2>
+      </div>
+      <div class="card__content">
+        <div class="list-section-header">
+          <span class="list-count">{{ nonApuCoAuthors.length }} {{ nonApuCoAuthors.length === 1 ? 'Entry' : 'Entries' }}</span>
+          <button type="button" class="btn btn-primary btn-sm" (click)="openEditModal('non-apu')">
+            <span class="material-icons">add</span> Add Entry
+          </button>
+        </div>
+
+        @if (nonApuCoAuthors.length > 0) {
+          <div class="table-scroll">
+            <table class="list-table">
+              <thead>
+                <tr>
+                  <th class="col-no">#</th>
+                  <th>Full Name (as per IC/Passport)</th>
+                  <th>Country</th>
+                  <th>Email</th>
+                  <th>Type of Organisation</th>
+                  <th>School/Department</th>
+                  <th>Institution/Company Name</th>
+                  <th class="col-actions">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (subsection of nonApuCoAuthors.controls; track $index; let i = $index) {
+                  <tr>
+                    <td class="col-no text-muted">{{ i + 1 }}</td>
+                    <td>{{ subsection.value.fullName }}</td>
+                    <td>{{ subsection.value.country }}</td>
+                    <td>{{ subsection.value.email }}</td>
+                    <td>{{ subsection.value.organisationType }}</td>
+                    <td>{{ subsection.value.schoolDepartment }}</td>
+                    <td>{{ subsection.value.institutionName }}</td>
+                    <td class="col-actions">
+                      <button type="button" class="btn-icon btn-icon--edit"
+                        (click)="openEditModal('non-apu', i)" aria-label="Edit entry">
+                        <span class="material-icons">edit</span>
+                      </button>
+                      @if (nonApuCoAuthors.length > 1) {
+                        <button type="button" class="btn-icon btn-icon--delete"
+                          (click)="deleteNonApuCoAuthor(i)" aria-label="Remove entry">
+                          <span class="material-icons">delete</span>
+                        </button>
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        } @else {
+          <div class="empty-state">
+            <span class="material-icons">receipt</span>
+            <p>No entries added yet. Click <strong>Add Entry</strong> to start adding items.</p>
+          </div>
+        }
+      </div>
+    </section>
+  </div>
+</form>
+
+<!-- Modal Overlay -->
+@if (isModalOpen) {
+  <div class="modal-overlay" (click)="closeModal()">
+    <div class="modal-dialog" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>{{ getModalTitle() }}</h3>
+        <button type="button" class="btn-close" (click)="closeModal()" aria-label="Close">
+          <span class="material-icons">close</span>
+        </button>
+      </div>
+
+      <form [formGroup]="editForm" (ngSubmit)="submitModal()" class="modal-body">
+        <!-- APU Staff Form -->
+        @if (modalType === 'apu-staff') {
+          <div class="form-group">
+            <app-searchable-dropdown
+              label="Staff Name *"
+              [options]="staffOptions"
+              [searchable]="true"
+              placeholder="Search staff..."
+              formControlName="staffName">
+            </app-searchable-dropdown>
+            @if (editForm.get('staffName')?.invalid && editForm.get('staffName')?.touched) {
+              <span class="error-message">Staff name is required</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="schoolDept1">School/Department *</label>
+            <input type="text" id="schoolDept1" class="form-control" formControlName="schoolDepartment"
+              placeholder="Ex. School of Culinary Arts and Hospitality">
+            @if (editForm.get('schoolDepartment')?.invalid && editForm.get('schoolDepartment')?.touched) {
+              <span class="error-message">School/Department is required</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="affiliation1">Affiliation *</label>
+            <input type="text" id="affiliation1" class="form-control" formControlName="affiliation"
+              placeholder="Ex. Taylor's University">
+            @if (editForm.get('affiliation')?.invalid && editForm.get('affiliation')?.touched) {
+              <span class="error-message">Affiliation is required</span>
+            }
+          </div>
+        }
+
+        <!-- Student Form -->
+        @if (modalType === 'student') {
+          <div class="form-group">
+            <label for="tpNumber">TP Number *</label>
+            <input type="text" id="tpNumber" class="form-control" formControlName="tpNumber"
+              placeholder="Ex. TPXXXXXX">
+            @if (editForm.get('tpNumber')?.invalid && editForm.get('tpNumber')?.touched) {
+              <span class="error-message">TP Number is required</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="fullNameStudent">Full Name (as per IC/Passport) *</label>
+            <input type="text" id="fullNameStudent" class="form-control" formControlName="fullName"
+              placeholder="Ex. Jessica Teh Sze Hui">
+            @if (editForm.get('fullName')?.invalid && editForm.get('fullName')?.touched) {
+              <span class="error-message">Full name is required</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="schoolDept2">School/Department *</label>
+            <input type="text" id="schoolDept2" class="form-control" formControlName="schoolDepartment"
+              placeholder="Ex. School of Culinary Arts and Hospitality">
+            @if (editForm.get('schoolDepartment')?.invalid && editForm.get('schoolDepartment')?.touched) {
+              <span class="error-message">School/Department is required</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="affiliation2">Affiliation *</label>
+            <input type="text" id="affiliation2" class="form-control" formControlName="affiliation"
+              placeholder="Ex. Taylor's University">
+            @if (editForm.get('affiliation')?.invalid && editForm.get('affiliation')?.touched) {
+              <span class="error-message">Affiliation is required</span>
+            }
+          </div>
+        }
+
+        <!-- Non-APU Form -->
+        @if (modalType === 'non-apu') {
+          <div class="form-group">
+            <label for="fullNameNonApu">Full Name (as per IC/Passport) *</label>
+            <input type="text" id="fullNameNonApu" class="form-control" formControlName="fullName"
+              placeholder="Ex. Jessica Teh Sze Hui">
+            @if (editForm.get('fullName')?.invalid && editForm.get('fullName')?.touched) {
+              <span class="error-message">Full name is required</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="country">Country *</label>
+            <input type="text" id="country" class="form-control" formControlName="country"
+              placeholder="Ex. Jordan">
+            @if (editForm.get('country')?.invalid && editForm.get('country')?.touched) {
+              <span class="error-message">Country is required</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="email">Email *</label>
+            <input type="email" id="email" class="form-control" formControlName="email"
+              placeholder="Ex. user@example.com">
+            @if (editForm.get('email')?.invalid && editForm.get('email')?.touched) {
+              <span class="error-message">Valid email is required</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <app-searchable-dropdown
+              label="Type of Organisation *"
+              [options]="organisationTypeOptions"
+              [searchable]="true"
+              placeholder="Search organisation type..."
+              formControlName="organisationType">
+            </app-searchable-dropdown>
+            @if (editForm.get('organisationType')?.invalid && editForm.get('organisationType')?.touched) {
+              <span class="error-message">Organisation type is required</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="schoolDept3">School/Department *</label>
+            <input type="text" id="schoolDept3" class="form-control" formControlName="schoolDepartment"
+              placeholder="Ex. School of Culinary Arts and Hospitality">
+            @if (editForm.get('schoolDepartment')?.invalid && editForm.get('schoolDepartment')?.touched) {
+              <span class="error-message">School/Department is required</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="institutionName">Institution/Company Name *</label>
+            <input type="text" id="institutionName" class="form-control" formControlName="institutionName"
+              placeholder="Ex. Shanghai Hypergryph Network Technology Co., Ltd.">
+            @if (editForm.get('institutionName')?.invalid && editForm.get('institutionName')?.touched) {
+              <span class="error-message">Institution/Company name is required</span>
+            }
+          </div>
+        }
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="editForm.invalid">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

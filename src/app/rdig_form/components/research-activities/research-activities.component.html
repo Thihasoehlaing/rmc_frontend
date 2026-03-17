@@ -12,7 +12,10 @@
 
       <div class="list-section-header">
         <span class="list-count">{{ activities.length }} {{ activities.length === 1 ? 'Activity' : 'Activities' }} · Duration: {{ projectDuration() }} Months</span>
-        <button type="button" class="btn btn-primary btn-sm" (click)="addActivity()">
+        <button type="button" class="btn btn-primary btn-sm"
+          [disabled]="!projectDuration() || workflow.isFormReadOnly()"
+          [title]="!projectDuration() ? 'Select a Project Duration first' : ''"
+          (click)="addActivity()">
           <span class="material-icons">add</span> Add Activity
         </button>
       </div>
@@ -62,14 +65,14 @@
                     <td class="col-month">
                       <select class="input--select" formControlName="endMonth">
                         @for (m of months(); track m) {
-                          <option [value]="m">{{ m }}</option>
+                          <option [value]="m" [disabled]="m < activity.get('startMonth')?.value">{{ m }}</option>
                         }
                       </select>
                     </td>
                     <td class="col-duration">
                       <span class="duration-badge">{{ activity.get('duration')?.value }} Mo</span>
-                      @if (activity.get('endMonth')?.value < activity.get('startMonth')?.value) {
-                        <p class="text-danger text-xs">End &lt; Start</p>
+                      @if (activity.get('endMonth')?.value <= activity.get('startMonth')?.value) {
+                        <p class="text-danger text-xs">End ≤ Start</p>
                       }
                     </td>
                     <td class="col-timeline">
@@ -82,6 +85,7 @@
                     <td class="col-actions">
                       @if (activities.length > 1) {
                         <button type="button" class="btn-icon btn-icon--delete"
+                          [disabled]="workflow.isFormReadOnly()"
                           (click)="removeActivity(i)" aria-label="Remove activity">
                           <span class="material-icons">delete</span>
                         </button>
@@ -100,15 +104,20 @@
         </div>
       }
 
-      <app-note text="Duration is auto-calculated. End Month must be ≥ Start Month. Activities must cover the full project duration with no gaps." [isTooltip]="true"></app-note>
+      <app-note text="Duration is auto-calculated. End Month must be after Start Month. Each activity starts where the previous one ended (continuous timeline)." [isTooltip]="true"></app-note>
     </div>
   </div>
 
-  <!-- ── Gantt Chart Preview ─────────────────────────────────── -->
-  @if (activities.length > 0) {
-    <div class="card gantt-card">
-      <app-custom-subheader icon="bar_chart" title="Gantt Chart Preview"></app-custom-subheader>
-      <div class="card__content gantt-content">
+  <!-- ── Gantt Chart Preview (always visible) ──────────────── -->
+  <div class="card gantt-card">
+    <app-custom-subheader icon="bar_chart" title="Gantt Chart Preview"></app-custom-subheader>
+    <div class="card__content gantt-content">
+      @if (activities.length === 0) {
+        <div class="empty-state empty-state--gantt">
+          <span class="material-icons">bar_chart</span>
+          <p>No activities added yet. Add an activity above to see the Gantt chart.</p>
+        </div>
+      } @else {
         <div class="gantt-scroll">
           <div class="gantt-chart">
 
@@ -133,6 +142,22 @@
             }
 
           </div>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- ── Review Comments on Activities ──────────────────────── -->
+  @if (showAnyComments) {
+    <div class="card">
+      <div class="card__content section-fields">
+        <div class="row row--2">
+          <app-review-block label="Reviewer 1 — Research Activities" icon="rate_review"
+            [visible]="showR1Comments" [readonly]="!workflow.isReviewer1Editable()"
+            [commentControl]="fc('reviewer1ActivitiesComment')"></app-review-block>
+          <app-review-block label="Reviewer 2 — Research Activities" icon="rate_review"
+            [visible]="showR2Comments" [readonly]="!workflow.isReviewer2Editable()"
+            [commentControl]="fc('reviewer2ActivitiesComment')"></app-review-block>
         </div>
       </div>
     </div>

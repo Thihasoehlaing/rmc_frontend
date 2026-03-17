@@ -6,9 +6,8 @@
     title="Research Outputs"
   ></app-custom-header>
 
-  <app-custom-subheader title="Proposed Research Outputs (Select all that apply)"></app-custom-subheader>
-
   <div class="card">
+    <app-custom-subheader title="Proposed Research Outputs (Select all that apply)"></app-custom-subheader>
     <div class="card__content output-list">
 
       <!-- ── Indexed Journal ──────────────────────────────────── -->
@@ -103,3 +102,29 @@
 
     </div>
   </div>
+
+  <!-- ── Review Comments ──────────────────────────────────────── -->
+  @if (showAnyComments) {
+    <div class="card">
+      <div class="card__content section-fields">
+        <app-review-block label="HOS — Research Outputs" icon="supervisor_account"
+          [visible]="showHosComments" [readonly]="!workflow.isHosEditable()"
+          [commentControl]="fc('hosComment')"></app-review-block>
+
+        <div class="row row--2">
+          <app-review-block label="Reviewer 1 — Research Outputs" icon="rate_review"
+            [visible]="showR1Comments" [readonly]="!workflow.isReviewer1Editable()"
+            [commentControl]="fc('reviewer1Comment')"></app-review-block>
+          <app-review-block label="Reviewer 2 — Research Outputs" icon="rate_review"
+            [visible]="showR2Comments" [readonly]="!workflow.isReviewer2Editable()"
+            [commentControl]="fc('reviewer2Comment')"></app-review-block>
+        </div>
+
+        <app-review-block label="RMC — Research Outputs" icon="verified"
+          [visible]="showRmcComments" [readonly]="!workflow.isRmcEditable()"
+          [commentControl]="fc('rmcComment')"></app-review-block>
+      </div>
+    </div>
+  }
+
+</section>

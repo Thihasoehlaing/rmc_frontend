@@ -1,11 +1,13 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { ReactiveFormsModule, FormGroup } from '@angular/forms';
+import { ReactiveFormsModule, FormGroup, FormControl } from '@angular/forms';
 import { CustomHeaderComponent } from '../../../shared/components/custom-header/custom-header.component';
 import { CustomSubheaderComponent } from '../../../shared/components/custom-subheader/custom-subheader.component';
 import { SearchableDropdownComponent } from '../../../shared/components/searchable-dropdown/searchable-dropdown.component';
 import { CharacterCounterComponent } from '../../../shared/components/character-counter/character-counter.component';
 import { ValidationMessageComponent } from '../../../shared/components/validation-message/validation-message.component';
 import { NoteComponent } from '../../../shared/components/note/note.component';
+import { ReviewBlockComponent } from '../review-block/review-block.component';
+import { RdigWorkflowService } from '../../services/rdig-workflow.service';
 
 @Component({
     selector: 'app-project-details',
@@ -17,17 +19,36 @@ import { NoteComponent } from '../../../shared/components/note/note.component';
         SearchableDropdownComponent,
         CharacterCounterComponent,
         ValidationMessageComponent,
-        NoteComponent
+        NoteComponent,
+        ReviewBlockComponent
     ],
     templateUrl: './project-details.component.html',
     styleUrls: ['./project-details.component.scss']
 })
 export class ProjectDetailsComponent implements OnInit {
     @Input({ required: true }) parentForm!: FormGroup;
+    @Input() showHosComments = false;
+    @Input() showRmcComments = false;
+    @Input() showR1Comments = false;
+    @Input() showR2Comments = false;
+    @Input() showRdigChairComments = false;
+    @Input() showVcComments = false;
+    @Input() showCeoComments = false;
+
+    get showAnyComments(): boolean {
+      return this.showHosComments || this.showRmcComments ||
+             this.showR1Comments || this.showR2Comments ||
+             this.showRdigChairComments || this.showVcComments || this.showCeoComments;
+    }
+    @Input() workflow!: RdigWorkflowService;
 
     get projectDetails() {
         return this.parentForm.get('projectDetails') as FormGroup;
     }
+
+    // ── Review form controls ─────────────────────────────────────
+    get reviewProject() { return this.parentForm.get('reviewProject') as FormGroup; }
+    fc(name: string): FormControl { return this.reviewProject.get(name) as FormControl; }
 
     domains = [
         { label: 'Cloud Computing & IoT', value: 'cloud' },

@@ -54,7 +54,8 @@
     <div class="list-section-header">
       <app-custom-subheader title="APU Co-Researchers (Internal)"
         tooltip="Minimum 1, Maximum 2 internal co-researchers"></app-custom-subheader>
-      <button type="button" class="btn btn-primary btn-sm" [disabled]="internalResearchers.length >= 2"
+      <button type="button" class="btn btn-primary btn-sm"
+        [disabled]="internalResearchers.length >= 2 || workflow.isFormReadOnly()"
         (click)="openInternalModal()">
         <span class="material-icons">add</span> Add Member
       </button>
@@ -67,40 +68,45 @@
         <p>No internal co-researchers added yet. Add at least 1.</p>
       </div>
       } @else {
-      <table class="list-table">
-        <thead>
+      <app-data-table
+        [columns]="internalColumns"
+        [rows]="internalResearchers.controls"
+        [rowTrackFn]="trackByIndex">
+        <ng-template #rowTemplate let-row let-index="index">
           <tr>
-            <th>#</th>
-            <th>Staff Name / Department</th>
-            <th>Area of Expertise</th>
-            <th>Roles in Project</th>
-            <th class="col-actions"></th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (item of internalResearchers.controls; track item; let i = $index) {
-          <tr>
-            <td class="col-index">{{ i + 1 }}</td>
+            <td class="text-muted">{{ index + 1 }}</td>
             <td>
-              <strong>{{ item.value.staffName }}</strong>
-              <br><small class="text-muted">{{ item.value.department }}</small>
+              <div class="data-table__stacked">
+                <span class="data-table__avatar">{{ getInitials(row.value.staffName) }}</span>
+                <div>
+                  <div class="data-table__title">{{ row.value.staffName }}</div>
+                  <div class="data-table__subtitle">{{ row.value.department }}</div>
+                </div>
+              </div>
             </td>
-            <td>{{ item.value.expertise }}</td>
-            <td class="col-roles">{{ item.value.roles }}</td>
-            <td class="col-actions">
-              <div class="row-actions">
-                <button type="button" class="btn-icon btn-icon--edit" title="Edit" (click)="openEditInternalModal(i)">
+            <td>
+              <div class="data-table__title data-table__title--small">{{ row.value.expertise }}</div>
+            </td>
+            <td>
+              <div class="data-table__multiline">{{ row.value.roles }}</div>
+            </td>
+            <td>
+              <div class="data-table__actions">
+                <button type="button" class="btn-icon btn-icon--edit" title="Edit"
+                  [disabled]="workflow.isFormReadOnly()"
+                  (click)="openEditInternalModal(index)">
                   <span class="material-icons">edit</span>
                 </button>
-                <button type="button" class="btn-icon btn-icon--delete" title="Remove" (click)="removeInternal(i)">
+                <button type="button" class="btn-icon btn-icon--delete" title="Remove"
+                  [disabled]="workflow.isFormReadOnly()"
+                  (click)="removeInternal(index)">
                   <span class="material-icons">delete</span>
                 </button>
               </div>
             </td>
           </tr>
-          }
-        </tbody>
-      </table>
+        </ng-template>
+      </app-data-table>
       }
     </div>
   </section>
@@ -110,7 +116,8 @@
     <div class="list-section-header">
       <app-custom-subheader title="External Co-Researchers / Collaborators"
         tooltip="Minimum 2, Maximum 10 external collaborators"></app-custom-subheader>
-      <button type="button" class="btn btn-primary btn-sm" [disabled]="externalResearchers.length >= 10"
+      <button type="button" class="btn btn-primary btn-sm"
+        [disabled]="externalResearchers.length >= 10 || workflow.isFormReadOnly()"
         (click)="openExternalModal()">
         <span class="material-icons">add</span> Add Collaborator
       </button>
@@ -123,46 +130,97 @@
         <p>No external collaborators added yet. Add at least 2.</p>
       </div>
       } @else {
-      <table class="list-table">
-        <thead>
+      <app-data-table
+        [columns]="externalColumns"
+        [rows]="externalResearchers.controls"
+        [rowTrackFn]="trackByIndex">
+        <ng-template #rowTemplate let-row let-index="index">
           <tr>
-            <th>#</th>
-            <th>Collaborator</th>
-            <th>Institution</th>
-            <th>Country</th>
-            <th>Matched Funding</th>
-            <th class="col-actions"></th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (item of externalResearchers.controls; track item; let i = $index) {
-          <tr>
-            <td class="col-index">{{ i + 1 }}</td>
+            <td class="text-muted">{{ index + 1 }}</td>
             <td>
-              <strong>{{ item.value.title }} {{ item.value.fullName }}</strong>
-              <br><small class="text-muted">{{ item.value.email }}</small>
-              <br><small class="badge badge-info">{{ item.value.position }}</small>
+              <div class="data-table__stacked">
+                <span class="data-table__avatar">{{ getInitials(row.value.fullName || row.value.title) }}</span>
+                <div>
+                  <div class="data-table__title">{{ row.value.title }} {{ row.value.fullName }}</div>
+                  <div class="data-table__subtitle">{{ row.value.email }}</div>
+                  <span class="data-table__pill">{{ row.value.position }}</span>
+                </div>
+              </div>
             </td>
-            <td>{{ item.value.institution }}<br><small class="text-muted">{{ item.value.orgType }}</small></td>
-            <td>{{ item.value.country }}</td>
-            <td>RM {{ item.value.funding | number }}</td>
-            <td class="col-actions">
-              <div class="row-actions">
-                <button type="button" class="btn-icon btn-icon--edit" title="Edit" (click)="openEditExternalModal(i)">
+            <td>
+              <div class="data-table__title data-table__title--small">{{ row.value.institution }}</div>
+              <div class="data-table__subtitle">{{ row.value.orgType }}</div>
+            </td>
+            <td>{{ row.value.country }}</td>
+            <td>RM {{ row.value.funding | number:'1.0-0' }}</td>
+            <td>
+              <div class="data-table__actions">
+                <button type="button" class="btn-icon btn-icon--edit" title="Edit"
+                  [disabled]="workflow.isFormReadOnly()"
+                  (click)="openEditExternalModal(index)">
                   <span class="material-icons">edit</span>
                 </button>
-                <button type="button" class="btn-icon btn-icon--delete" title="Remove" (click)="removeExternal(i)">
+                <button type="button" class="btn-icon btn-icon--delete" title="Remove"
+                  [disabled]="workflow.isFormReadOnly()"
+                  (click)="removeExternal(index)">
                   <span class="material-icons">delete</span>
                 </button>
               </div>
             </td>
           </tr>
-          }
-        </tbody>
-      </table>
+        </ng-template>
+      </app-data-table>
       }
     </div>
   </section>
+
+  <!-- ── Review Comments (end of Page 1) ───────────────────── -->
+  @if (showAnyComments) {
+    <section class="card review-comments-section">
+      <app-custom-subheader title="Review Comments — Team Members"></app-custom-subheader>
+      <div class="card__content section-fields">
+        <app-review-block
+          label="HOS Comment"
+          icon="supervisor_account"
+          [visible]="showHosComments"
+          [readonly]="!workflow.isHosEditable()"
+          [commentControl]="fc('hosComment')">
+        </app-review-block>
+
+        <div class="row row--2">
+          <app-review-block
+            label="Reviewer 1 Comment"
+            icon="rate_review"
+            [visible]="showR1Comments"
+            [readonly]="!workflow.isReviewer1Editable()"
+            [showScore]="true"
+            [maxScore]="10" [scoreDisabled]="!workflow.isScoreEditable()"
+            [commentControl]="fc('reviewer1Comment')"
+            [scoreControl]="fc('reviewer1Score')">
+          </app-review-block>
+
+          <app-review-block
+            label="Reviewer 2 Comment"
+            icon="rate_review"
+            [visible]="showR2Comments"
+            [readonly]="!workflow.isReviewer2Editable()"
+            [showScore]="true"
+            [maxScore]="10" [scoreDisabled]="!workflow.isScoreEditable()"
+            [commentControl]="fc('reviewer2Comment')"
+            [scoreControl]="fc('reviewer2Score')">
+          </app-review-block>
+        </div>
+
+        <app-review-block
+          label="RMC Comment"
+          icon="admin_panel_settings"
+          [visible]="showRmcComments"
+          [readonly]="!workflow.isRmcEditable()"
+          [commentControl]="fc('rmcComment')">
+        </app-review-block>
+      </div>
+    </section>
+  }
 
 </div>
 

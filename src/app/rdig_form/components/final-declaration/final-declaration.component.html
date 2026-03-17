@@ -52,4 +52,133 @@
     </div>
   </div>
 
+
+  <!-- ── Reviewer Assignment (only during pending_rmc after RMC approves) ── -->
+  @if (workflow.isReviewerAssignmentVisible() && ac('rmcStatus').value === 'approve') {
+    <div class="card">
+      <div class="card__header">
+        <h3 class="card__title">
+          <span class="material-icons">person_search</span>
+          Reviewer Assignment
+        </h3>
+      </div>
+      <div class="card__content section-fields">
+        <div class="row row--2">
+          <div class="form-field">
+            <label class="form-label">Reviewer 1</label>
+            <select class="input--select"
+              [formControl]="ac('reviewer1Assignment')"
+              [attr.disabled]="!workflow.isRmcEditable() ? '' : null">
+              <option value="">-- Select Reviewer --</option>
+              @for (r of reviewers; track r.id) {
+                <option [value]="r.id">{{ r.name }}</option>
+              }
+            </select>
+          </div>
+          <div class="form-field">
+            <label class="form-label">Reviewer 2</label>
+            <select class="input--select"
+              [formControl]="ac('reviewer2Assignment')"
+              [attr.disabled]="!workflow.isRmcEditable() ? '' : null">
+              <option value="">-- Select Reviewer --</option>
+              @for (r of reviewers; track r.id) {
+                <option [value]="r.id">{{ r.name }}</option>
+              }
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ── RDIG Chair & VC Comments ─────────────────────────────── -->
+  @if (showAnyComments) {
+    <div class="card">
+      <div class="card__content section-fields">
+        <app-review-block label="RDIG Chair — Comment" icon="admin_panel_settings"
+          [visible]="showRdigChairComments" [readonly]="!workflow.isRdigChairEditable()"
+          [commentControl]="fc('rdigChairComment')"></app-review-block>
+
+        <app-review-block label="Vice Chancellor — Comment" icon="account_balance"
+          [visible]="showVcComments" [readonly]="!workflow.isVcEditable()"
+          [commentControl]="fc('vcComment')"></app-review-block>
+      </div>
+    </div>
+  }
+
+  <!-- ── Approval Cards (auto-visible based on status, NOT dependent on toggle) ── -->
+  @if (workflow.isHosApprovalVisible() || workflow.isRmcApprovalVisible() ||
+       workflow.isReviewerApprovalVisible() || workflow.isRdigChairApprovalVisible() ||
+       workflow.isVcApprovalVisible() || workflow.isCeoApprovalVisible()) {
+    <div class="card">
+      <div class="card__header">
+        <h3 class="card__title">
+          <span class="material-icons">how_to_reg</span>
+          Approval Decisions
+        </h3>
+      </div>
+      <div class="card__content section-fields">
+        <app-approval-card
+          title="HOS Approval"
+          fieldLabel="Decision"
+          icon="supervisor_account"
+          [visible]="workflow.isHosApprovalVisible()"
+          [readonly]="!workflow.isHosEditable()"
+          [options]="workflow.hosApprovalOptions()"
+          [control]="ac('hosStatus')">
+        </app-approval-card>
+
+        <app-approval-card
+          title="RMC Approval"
+          fieldLabel="Decision"
+          icon="verified"
+          [visible]="workflow.isRmcApprovalVisible()"
+          [readonly]="!workflow.isRmcEditable()"
+          [options]="workflow.rmcApprovalOptions"
+          [control]="ac('rmcStatus')">
+        </app-approval-card>
+
+        <app-approval-card
+          title="Reviewer 2 Decision"
+          fieldLabel="Recommendation"
+          icon="rate_review"
+          [visible]="workflow.isReviewerApprovalVisible()"
+          [readonly]="!workflow.isReviewer2Editable()"
+          [options]="workflow.reviewer2DecisionOptions(reviewer2Total)"
+          [control]="ac('reviewer2Decision')">
+        </app-approval-card>
+
+        <app-approval-card
+          title="RDIG Chair Approval"
+          fieldLabel="Decision"
+          icon="admin_panel_settings"
+          [visible]="workflow.isRdigChairApprovalVisible()"
+          [readonly]="!workflow.isRdigChairEditable()"
+          [options]="workflow.rmcApprovalOptions"
+          [control]="ac('rdigChairStatus')">
+        </app-approval-card>
+
+        <app-approval-card
+          title="VC Approval"
+          fieldLabel="Decision"
+          icon="account_balance"
+          [visible]="workflow.isVcApprovalVisible()"
+          [readonly]="!workflow.isVcEditable()"
+          [options]="workflow.rmcApprovalOptions"
+          [control]="ac('vcStatus')">
+        </app-approval-card>
+
+        <app-approval-card
+          title="CEO Approval"
+          fieldLabel="Decision"
+          icon="business"
+          [visible]="workflow.isCeoApprovalVisible()"
+          [readonly]="!workflow.isCeoEditable()"
+          [options]="workflow.rmcApprovalOptions"
+          [control]="ac('ceoStatus')">
+        </app-approval-card>
+      </div>
+    </div>
+  }
+
 </section>

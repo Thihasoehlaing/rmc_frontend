@@ -73,6 +73,18 @@
         </div>
       </div>
 
+      <!-- Reviewer comments on Classification (directly after category/duration section) -->
+      @if (showAnyComments) {
+        <div class="row row--2">
+          <app-review-block label="Reviewer 1 — Classification" icon="rate_review"
+            [visible]="showR1Comments" [readonly]="!workflow.isReviewer1Editable()"
+            [commentControl]="fc('reviewer1ClassificationComment')"></app-review-block>
+          <app-review-block label="Reviewer 2 — Classification" icon="rate_review"
+            [visible]="showR2Comments" [readonly]="!workflow.isReviewer2Editable()"
+            [commentControl]="fc('reviewer2ClassificationComment')"></app-review-block>
+        </div>
+      }
+
       <div class="form-field">
         <label class="form-label is-required">Project Title</label>
         <input type="text" class="input--text" formControlName="title" placeholder="Enter full project title...">
@@ -80,6 +92,18 @@
           [max]="200"></app-character-counter>
         <app-validation-message [control]="projectDetails.get('title')"></app-validation-message>
       </div>
+
+      <!-- Reviewer comments on Project Title -->
+      @if (showAnyComments) {
+        <div class="row row--2">
+          <app-review-block label="Reviewer 1 — Project Title" icon="rate_review"
+            [visible]="showR1Comments" [readonly]="!workflow.isReviewer1Editable()"
+            [commentControl]="fc('reviewer1TitleComment')"></app-review-block>
+          <app-review-block label="Reviewer 2 — Project Title" icon="rate_review"
+            [visible]="showR2Comments" [readonly]="!workflow.isReviewer2Editable()"
+            [commentControl]="fc('reviewer2TitleComment')"></app-review-block>
+        </div>
+      }
 
       <div class="form-field">
         <label class="form-label is-required">Research Area</label>
@@ -89,6 +113,18 @@
           [max]="100"></app-character-counter>
         <app-validation-message [control]="projectDetails.get('researchArea')"></app-validation-message>
       </div>
+
+      <!-- Reviewer comments on Research Area -->
+      @if (showAnyComments) {
+        <div class="row row--2">
+          <app-review-block label="Reviewer 1 — Research Area" icon="rate_review"
+            [visible]="showR1Comments" [readonly]="!workflow.isReviewer1Editable()"
+            [commentControl]="fc('reviewer1ResearchAreaComment')"></app-review-block>
+          <app-review-block label="Reviewer 2 — Research Area" icon="rate_review"
+            [visible]="showR2Comments" [readonly]="!workflow.isReviewer2Editable()"
+            [commentControl]="fc('reviewer2ResearchAreaComment')"></app-review-block>
+        </div>
+      }
     </div>
   </div>
 
@@ -133,6 +169,30 @@
           <app-validation-message [control]="projectDetails.get('sdgs')"></app-validation-message>
         </div>
       </div>
+
+      <!-- Reviewer comments on ESG -->
+      @if (showAnyComments) {
+        <div class="row row--2">
+          <app-review-block label="Reviewer 1 — ESG" icon="rate_review"
+            [visible]="showR1Comments" [readonly]="!workflow.isReviewer1Editable()"
+            [commentControl]="fc('reviewer1EsgComment')"></app-review-block>
+          <app-review-block label="Reviewer 2 — ESG" icon="rate_review"
+            [visible]="showR2Comments" [readonly]="!workflow.isReviewer2Editable()"
+            [commentControl]="fc('reviewer2EsgComment')"></app-review-block>
+        </div>
+      }
+
+      <!-- Reviewer comments on SDG -->
+      @if (showAnyComments) {
+        <div class="row row--2">
+          <app-review-block label="Reviewer 1 — SDG" icon="rate_review"
+            [visible]="showR1Comments" [readonly]="!workflow.isReviewer1Editable()"
+            [commentControl]="fc('reviewer1SdgComment')"></app-review-block>
+          <app-review-block label="Reviewer 2 — SDG" icon="rate_review"
+            [visible]="showR2Comments" [readonly]="!workflow.isReviewer2Editable()"
+            [commentControl]="fc('reviewer2SdgComment')"></app-review-block>
+        </div>
+      }
     </div>
   </div>
 
@@ -163,6 +223,32 @@
         </div>
       </div>
 
+      <!-- Reviewer comment + score on Executive Summary (0-10) -->
+      @if (showAnyComments) {
+        <div class="row row--2">
+          <app-review-block label="Reviewer 1 — Executive Summary" icon="rate_review"
+            [visible]="showR1Comments" [readonly]="!workflow.isReviewer1Editable()"
+            [showScore]="true" [maxScore]="10" [scoreDisabled]="!workflow.isScoreEditable()"
+            [commentControl]="fc('reviewer1SummaryComment')" [scoreControl]="fc('reviewer1SummaryScore')"></app-review-block>
+          <app-review-block label="Reviewer 2 — Executive Summary" icon="rate_review"
+            [visible]="showR2Comments" [readonly]="!workflow.isReviewer2Editable()"
+            [showScore]="true" [maxScore]="10" [scoreDisabled]="!workflow.isScoreEditable()"
+            [commentControl]="fc('reviewer2SummaryComment')" [scoreControl]="fc('reviewer2SummaryScore')"></app-review-block>
+        </div>
+      }
+
+      <!-- Reviewer comments on Keywords -->
+      @if (showAnyComments) {
+        <div class="row row--2">
+          <app-review-block label="Reviewer 1 — Keywords" icon="rate_review"
+            [visible]="showR1Comments" [readonly]="!workflow.isReviewer1Editable()"
+            [commentControl]="fc('reviewer1KeywordsComment')"></app-review-block>
+          <app-review-block label="Reviewer 2 — Keywords" icon="rate_review"
+            [visible]="showR2Comments" [readonly]="!workflow.isReviewer2Editable()"
+            [commentControl]="fc('reviewer2KeywordsComment')"></app-review-block>
+        </div>
+      }
+
       <div class="row row--2">
         <div class="form-field">
           <label class="form-label is-required">Introduction</label>
@@ -179,6 +265,34 @@
           <app-validation-message [control]="projectDetails.get('problemStatement')"></app-validation-message>
         </div>
       </div>
+
+      <!-- Reviewer comment + score on Introduction (0-10) -->
+      @if (showAnyComments) {
+        <div class="row row--2">
+          <app-review-block label="Reviewer 1 — Introduction" icon="rate_review"
+            [visible]="showR1Comments" [readonly]="!workflow.isReviewer1Editable()"
+            [showScore]="true" [maxScore]="10" [scoreDisabled]="!workflow.isScoreEditable()"
+            [commentControl]="fc('reviewer1IntroComment')" [scoreControl]="fc('reviewer1IntroScore')"></app-review-block>
+          <app-review-block label="Reviewer 2 — Introduction" icon="rate_review"
+            [visible]="showR2Comments" [readonly]="!workflow.isReviewer2Editable()"
+            [showScore]="true" [maxScore]="10" [scoreDisabled]="!workflow.isScoreEditable()"
+            [commentControl]="fc('reviewer2IntroComment')" [scoreControl]="fc('reviewer2IntroScore')"></app-review-block>
+        </div>
+      }
+
+      <!-- Reviewer comment + score on Problem Statement (0-10) -->
+      @if (showAnyComments) {
+        <div class="row row--2">
+          <app-review-block label="Reviewer 1 — Problem Statement" icon="rate_review"
+            [visible]="showR1Comments" [readonly]="!workflow.isReviewer1Editable()"
+            [showScore]="true" [maxScore]="10" [scoreDisabled]="!workflow.isScoreEditable()"
+            [commentControl]="fc('reviewer1ProblemComment')" [scoreControl]="fc('reviewer1ProblemScore')"></app-review-block>
+          <app-review-block label="Reviewer 2 — Problem Statement" icon="rate_review"
+            [visible]="showR2Comments" [readonly]="!workflow.isReviewer2Editable()"
+            [showScore]="true" [maxScore]="10" [scoreDisabled]="!workflow.isScoreEditable()"
+            [commentControl]="fc('reviewer2ProblemComment')" [scoreControl]="fc('reviewer2ProblemScore')"></app-review-block>
+        </div>
+      }
 
       <div class="row row--2">
         <div class="form-field">
@@ -199,6 +313,36 @@
         </div>
       </div>
 
+      <!-- Reviewer comment + score on Research Aim (0-5) -->
+      @if (showAnyComments) {
+        <div class="row row--2">
+          <app-review-block label="Reviewer 1 — Research Aim" icon="rate_review"
+            [visible]="showR1Comments" [readonly]="!workflow.isReviewer1Editable()"
+            [showScore]="true" [maxScore]="5" [scoreDisabled]="!workflow.isScoreEditable()"
+            [commentControl]="fc('reviewer1AimComment')" [scoreControl]="fc('reviewer1AimScore')"></app-review-block>
+          <app-review-block label="Reviewer 2 — Research Aim" icon="rate_review"
+            [visible]="showR2Comments" [readonly]="!workflow.isReviewer2Editable()"
+            [showScore]="true" [maxScore]="5" [scoreDisabled]="!workflow.isScoreEditable()"
+            [commentControl]="fc('reviewer2AimComment')" [scoreControl]="fc('reviewer2AimScore')"></app-review-block>
+        </div>
+      }
+
+      <!-- Reviewer comment + score on Research Questions (0-5) -->
+      @if (showAnyComments) {
+        <div class="row row--2">
+          <app-review-block label="Reviewer 1 — Research Questions" icon="rate_review"
+            [visible]="showR1Comments" [readonly]="!workflow.isReviewer1Editable()"
+            [showScore]="true" [maxScore]="5" [scoreDisabled]="!workflow.isScoreEditable()"
+            [commentControl]="fc('reviewer1QuestionsComment')" [scoreControl]="fc('reviewer1QuestionsScore')"></app-review-block>
+          <app-review-block label="Reviewer 2 — Research Questions" icon="rate_review"
+            [visible]="showR2Comments" [readonly]="!workflow.isReviewer2Editable()"
+            [showScore]="true" [maxScore]="5" [scoreDisabled]="!workflow.isScoreEditable()"
+            [commentControl]="fc('reviewer2QuestionsComment')" [scoreControl]="fc('reviewer2QuestionsScore')"></app-review-block>
+        </div>
+      }
+
+      <!-- RMC comment on Aim section has been moved to after Research Activities -->
+
       <div class="form-field">
         <label class="form-label is-required">Hypothesis</label>
         <textarea class="input--textarea" formControlName="hypothesis"
@@ -207,6 +351,20 @@
           [max]="1000"></app-character-counter>
         <app-validation-message [control]="projectDetails.get('hypothesis')"></app-validation-message>
       </div>
+
+      <!-- Reviewer comment + score on Hypothesis (0-10) -->
+      @if (showAnyComments) {
+        <div class="row row--2">
+          <app-review-block label="Reviewer 1 — Hypothesis" icon="rate_review"
+            [visible]="showR1Comments" [readonly]="!workflow.isReviewer1Editable()"
+            [showScore]="true" [maxScore]="10" [scoreDisabled]="!workflow.isScoreEditable()"
+            [commentControl]="fc('reviewer1HypothesisComment')" [scoreControl]="fc('reviewer1HypothesisScore')"></app-review-block>
+          <app-review-block label="Reviewer 2 — Hypothesis" icon="rate_review"
+            [visible]="showR2Comments" [readonly]="!workflow.isReviewer2Editable()"
+            [showScore]="true" [maxScore]="10" [scoreDisabled]="!workflow.isScoreEditable()"
+            [commentControl]="fc('reviewer2HypothesisComment')" [scoreControl]="fc('reviewer2HypothesisScore')"></app-review-block>
+        </div>
+      }
 
       <div class="row row--2">
         <div class="form-field">
@@ -225,6 +383,34 @@
         </div>
       </div>
 
+      <!-- Reviewer comment + score on Literature Review (0-10) -->
+      @if (showAnyComments) {
+        <div class="row row--2">
+          <app-review-block label="Reviewer 1 — Literature Review" icon="rate_review"
+            [visible]="showR1Comments" [readonly]="!workflow.isReviewer1Editable()"
+            [showScore]="true" [maxScore]="10" [scoreDisabled]="!workflow.isScoreEditable()"
+            [commentControl]="fc('reviewer1LitReviewComment')" [scoreControl]="fc('reviewer1LitReviewScore')"></app-review-block>
+          <app-review-block label="Reviewer 2 — Literature Review" icon="rate_review"
+            [visible]="showR2Comments" [readonly]="!workflow.isReviewer2Editable()"
+            [showScore]="true" [maxScore]="10" [scoreDisabled]="!workflow.isScoreEditable()"
+            [commentControl]="fc('reviewer2LitReviewComment')" [scoreControl]="fc('reviewer2LitReviewScore')"></app-review-block>
+        </div>
+      }
+
+      <!-- Reviewer comment + score on Methodology (0-10) -->
+      @if (showAnyComments) {
+        <div class="row row--2">
+          <app-review-block label="Reviewer 1 — Methodology" icon="rate_review"
+            [visible]="showR1Comments" [readonly]="!workflow.isReviewer1Editable()"
+            [showScore]="true" [maxScore]="10" [scoreDisabled]="!workflow.isScoreEditable()"
+            [commentControl]="fc('reviewer1MethodComment')" [scoreControl]="fc('reviewer1MethodScore')"></app-review-block>
+          <app-review-block label="Reviewer 2 — Methodology" icon="rate_review"
+            [visible]="showR2Comments" [readonly]="!workflow.isReviewer2Editable()"
+            [showScore]="true" [maxScore]="10" [scoreDisabled]="!workflow.isScoreEditable()"
+            [commentControl]="fc('reviewer2MethodComment')" [scoreControl]="fc('reviewer2MethodScore')"></app-review-block>
+        </div>
+      }
+
       <div class="form-field">
         <label class="form-label is-required">References</label>
         <textarea class="input--textarea" formControlName="references"
@@ -233,6 +419,18 @@
           [max]="3000"></app-character-counter>
         <app-validation-message [control]="projectDetails.get('references')"></app-validation-message>
       </div>
+
+      <!-- Reviewer comments on References -->
+      @if (showAnyComments) {
+        <div class="row row--2">
+          <app-review-block label="Reviewer 1 — References" icon="rate_review"
+            [visible]="showR1Comments" [readonly]="!workflow.isReviewer1Editable()"
+            [commentControl]="fc('reviewer1ReferencesComment')"></app-review-block>
+          <app-review-block label="Reviewer 2 — References" icon="rate_review"
+            [visible]="showR2Comments" [readonly]="!workflow.isReviewer2Editable()"
+            [commentControl]="fc('reviewer2ReferencesComment')"></app-review-block>
+        </div>
+      }
 
     </div>
   </div>
@@ -265,6 +463,20 @@
           <app-validation-message [control]="projectDetails.get('benefits.stakeholders')"></app-validation-message>
         </div>
       </div>
+
+      <!-- Reviewer comment + score on Grant Utilisation & Benefits section (0-10) -->
+      @if (showAnyComments) {
+        <div class="row row--2">
+          <app-review-block label="Reviewer 1 — Grant Utilisation & Benefits" icon="rate_review"
+            [visible]="showR1Comments" [readonly]="!workflow.isReviewer1Editable()"
+            [showScore]="true" [maxScore]="10" [scoreDisabled]="!workflow.isScoreEditable()"
+            [commentControl]="fc('reviewer1StakeholdersComment')" [scoreControl]="fc('reviewer1StakeholdersScore')"></app-review-block>
+          <app-review-block label="Reviewer 2 — Grant Utilisation & Benefits" icon="rate_review"
+            [visible]="showR2Comments" [readonly]="!workflow.isReviewer2Editable()"
+            [showScore]="true" [maxScore]="10" [scoreDisabled]="!workflow.isScoreEditable()"
+            [commentControl]="fc('reviewer2StakeholdersComment')" [scoreControl]="fc('reviewer2StakeholdersScore')"></app-review-block>
+        </div>
+      }
     </div>
   </div>
 
@@ -280,7 +492,21 @@
           [max]="300"></app-character-counter>
         <app-validation-message [control]="projectDetails.get('visionMission')"></app-validation-message>
       </div>
+
+      <!-- Reviewer comments on Vision & Mission -->
+      @if (showAnyComments) {
+        <div class="row row--2">
+          <app-review-block label="Reviewer 1 — Vision & Mission" icon="rate_review"
+            [visible]="showR1Comments" [readonly]="!workflow.isReviewer1Editable()"
+            [commentControl]="fc('reviewer1VisionComment')"></app-review-block>
+          <app-review-block label="Reviewer 2 — Vision & Mission" icon="rate_review"
+            [visible]="showR2Comments" [readonly]="!workflow.isReviewer2Editable()"
+            [commentControl]="fc('reviewer2VisionComment')"></app-review-block>
+        </div>
+      }
     </div>
   </div>
+
+  <!-- HOS page-level comment moved to after Research Activities -->
 
 </section>

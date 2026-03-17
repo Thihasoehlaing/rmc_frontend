@@ -10,58 +10,8 @@
   gap: var(--space-6);
 }
 
-.form-field {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-
-  label {
-    font-size: var(--fs-sm);
-    font-weight: var(--fw-semibold);
-    color: var(--color-heading);
-  }
-}
-
-.form-label {
-  font-size: var(--fs-sm);
-  font-weight: var(--fw-semibold);
-  color: var(--color-heading);
-
-  &.is-required::after {
-    content: ' *';
-    color: var(--color-required);
-  }
-}
-
-.form-hint {
-  font-size: var(--fs-xs);
-  color: var(--color-text-muted);
-}
-
-.input--text,
-.input--textarea,
-.input--select {
-  padding: var(--space-2) var(--space-3);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-sm);
-  font-size: var(--fs-sm);
-  background: var(--input-bg-editable);
-  color: var(--color-label);
-  font-family: var(--font-family-system);
-  transition: all var(--transition-fast);
-
-  &:focus {
-    outline: none;
-    border-color: var(--input-border-focus);
-    box-shadow: var(--input-shadow-focus);
-  }
-
-  &:disabled {
-    background: var(--input-bg-readonly);
-    cursor: not-allowed;
-    opacity: var(--disabled-opacity);
-  }
-}
+// Note: .form-field, .form-label, .form-hint, .input--* are defined globally in _forms.scss
+// Use global classes directly; do not redefine locally
 
 .row--2 {
   display: grid;
@@ -126,10 +76,20 @@
   background: var(--color-surface-hover);
 }
 
+.research-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: var(--fs-md);
+  font-weight: var(--fw-bold);
+  color: var(--color-heading);
+  margin: 0 0 var(--space-2) 0;
+}
+
 .disclaimer-field {
   padding: var(--space-3);
   background: var(--bg-rejected);
-  border-left: 4px solid var(--color-error-dark);
+  border-left: 2px solid var(--color-error-dark); // 2px sub-space
   border-radius: var(--radius-sm);
   margin-bottom: var(--space-2);
 }
@@ -141,3 +101,279 @@
   line-height: 1.5;
 }
 
+// Note: .btn, .btn-primary, .btn-secondary, .btn-sm, .btn--danger are defined globally in _forms.scss
+// Do not redefine them locally
+
+// Icon buttons
+.btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--space-8); // no token: icon button size
+  height: var(--space-8); // no token: icon button size
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  color: var(--color-text);
+
+  .material-icons {
+    font-size: 18px; // no token: material icon pixel size
+  }
+
+  &:hover {
+    background: var(--color-surface-hover);
+  }
+
+  &--edit {
+    color: var(--color-primary);
+
+    &:hover {
+      background: rgba(var(--color-primary-rgb), 0.1);
+    }
+  }
+
+  &--delete {
+    color: var(--color-error);
+
+    &:hover {
+      background: rgba(var(--color-error-rgb), 0.1);
+    }
+  }
+}
+
+// Modal styles
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: var(--space-4);
+}
+
+.modal-dialog {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  max-width: 500px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: slideIn 0.3s ease-out;
+
+  @media (max-width: 640px) {
+    max-width: 100%;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--border-default); // 1px border — allowed exception
+  gap: var(--space-2);
+
+  h3 {
+    margin: 0;
+    font-size: var(--fs-lg);
+    font-weight: var(--fw-bold);
+    color: var(--color-heading);
+  }
+}
+
+.btn-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  transition: all var(--transition-fast);
+  border-radius: var(--radius-sm);
+
+  &:hover {
+    background: var(--color-surface-hover);
+    color: var(--color-text);
+  }
+
+  .material-icons {
+    font-size: 20px;
+  }
+}
+
+.modal-body {
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+
+  label {
+    font-size: var(--fs-sm);
+    font-weight: var(--fw-semibold);
+    color: var(--color-heading);
+  }
+
+  .form-control {
+    padding: var(--space-2) var(--space-3);
+    border: 1px solid var(--border-default); // 1px border — allowed exception
+    border-radius: var(--radius-sm);
+    font-size: var(--fs-sm);
+    background: var(--input-bg-editable);
+    color: var(--color-label);
+    font-family: var(--font-family-system);
+    transition: all var(--transition-fast);
+
+    &:focus {
+      outline: none;
+      border-color: var(--input-border-focus);
+      box-shadow: var(--input-shadow-focus);
+    }
+
+    &:disabled {
+      background: var(--input-bg-readonly);
+      cursor: not-allowed;
+      opacity: var(--disabled-opacity);
+    }
+  }
+
+  .error-message {
+    font-size: var(--fs-xs);
+    color: var(--color-error);
+    margin-top: -var(--space-1);
+  }
+}
+
+.modal-footer {
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-top: 1px solid var(--border-default); // 1px border — allowed exception
+  justify-content: flex-end;
+
+  .btn {
+    min-width: 100px;
+  }
+}
+
+// Table styles
+.list-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-3);
+}
+
+.list-count {
+  font-size: var(--fs-sm);
+  color: var(--color-text-muted);
+  font-weight: var(--fw-medium);
+}
+
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.list-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-sm);
+
+  thead {
+    background: var(--color-surface-hover);
+  }
+
+  th {
+    padding: var(--space-3);
+    text-align: left;
+    font-weight: var(--fw-semibold);
+    color: var(--color-heading);
+    border-bottom: 2px solid var(--border-default); // 2px sub-space
+  }
+
+  td {
+    padding: var(--space-3);
+    border-bottom: 1px solid var(--border-default); // 1px border — allowed exception
+    color: var(--color-label);
+
+    &.col-no {
+      width: 40px;
+      text-align: center;
+    }
+
+    &.col-actions {
+      width: 100px;
+      text-align: center;
+      display: flex;
+      gap: var(--space-2);
+      justify-content: center;
+    }
+  }
+
+  tbody tr {
+    transition: background-color var(--transition-fast);
+
+    &:hover {
+      background: var(--color-surface-hover);
+    }
+
+    &:last-child td {
+      border-bottom: none;
+    }
+  }
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-8) var(--space-4);
+  text-align: center;
+  color: var(--color-text-muted);
+
+  .material-icons {
+    font-size: 48px;
+    margin-bottom: var(--space-2);
+    opacity: 0.5;
+  }
+
+  p {
+    margin: 0;
+    line-height: 1.5;
+  }
+}
+
+.text-muted {
+  color: var(--color-text-muted);
+}

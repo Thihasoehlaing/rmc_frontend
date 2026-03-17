@@ -2,6 +2,7 @@ import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
 import { StepIndicatorComponent, WizardStep, StepStatus } from '../../../shared/components/step-indicator/step-indicator.component';
+import { FormWizardNavComponent } from '../../../shared/components/form-wizard-nav/form-wizard-nav.component';
 import { ConferenceGuidelinesModalComponent } from '../../components/conference-guidelines-modal/conference-guidelines-modal.component';
 import { ConferenceDetailsFormComponent } from '../../components/forms/conference-details-form/conference-details-form.component';
 import { AuthorDetailsFormComponent } from '../../components/forms/author-details-form/author-details-form.component';
@@ -15,6 +16,7 @@ import { DeclarationFormComponent } from '../../components/forms/declaration-for
     CommonModule,
     ReactiveFormsModule,
     StepIndicatorComponent,
+    FormWizardNavComponent,
     ConferenceGuidelinesModalComponent,
     ConferenceDetailsFormComponent,
     AuthorDetailsFormComponent,
@@ -56,46 +58,45 @@ import { DeclarationFormComponent } from '../../components/forms/declaration-for
         </form>
       </div>
 
-      <!-- Step Indicator -->
-      <app-step-indicator
-        [currentStep]="currentStep()"
-        [steps]="wizardSteps"
-        [stepStatuses]="stepStatuses()"
-        (stepClick)="goToStep($event)">
-      </app-step-indicator>
+      <!-- Main Form Section with Shadow -->
+      <div class="main-section">
+        <!-- Step Indicator -->
+        <app-step-indicator
+          [currentStep]="currentStep()"
+          [steps]="wizardSteps"
+          [stepStatuses]="stepStatuses()"
+          (stepClick)="goToStep($event)">
+        </app-step-indicator>
 
-      <!-- Form Content -->
-      <div class="wizard-content">
-        @switch(currentStep()) {
-          @case(1) {
-            <app-conference-details-form></app-conference-details-form>
+        <!-- Form Content -->
+        <div class="wizard-content">
+          @switch(currentStep()) {
+            @case(1) {
+              <app-conference-details-form></app-conference-details-form>
+            }
+            @case(2) {
+              <app-author-details-form></app-author-details-form>
+            }
+            @case(3) {
+              <app-supporting-documents-form></app-supporting-documents-form>
+            }
+            @case(4) {
+              <app-declaration-form></app-declaration-form>
+            }
           }
-          @case(2) {
-            <app-author-details-form></app-author-details-form>
-          }
-          @case(3) {
-            <app-supporting-documents-form></app-supporting-documents-form>
-          }
-          @case(4) {
-            <app-declaration-form></app-declaration-form>
-          }
-        }
-      </div>
+        </div>
 
-      <!-- Navigation Buttons -->
-      <div class="wizard-buttons">
-        <button
-          class="btn btn--secondary"
-          (click)="previousStep()"
-          [disabled]="currentStep() === 1">
-          Previous
-        </button>
-        <button
-          class="btn btn--primary"
-          (click)="nextStep()"
-          [disabled]="currentStep() === wizardSteps.length">
-          Next
-        </button>
+        <!-- Navigation Buttons -->
+        <app-form-wizard-nav
+          [currentStep]="currentStep()"
+          [totalSteps]="wizardSteps.length"
+          [isSaving]="isSaving()"
+          [isSubmitting]="isSubmitting()"
+          (prev)="previousStep()"
+          (next)="nextStep()"
+          (saveDraft)="saveDraft()"
+          (submitForm)="submitForm()">
+        </app-form-wizard-nav>
       </div>
     </div>
   `,
@@ -145,6 +146,14 @@ import { DeclarationFormComponent } from '../../components/forms/declaration-for
       font-size: var(--fs-sm);
     }
 
+    .main-section {
+      background: var(--color-surface);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-xl);
+      display: flex;
+      flex-direction: column;
+    }
+
     .input--text {
       padding: var(--space-2) var(--space-3);
       border: 1px solid var(--border-default);
@@ -172,14 +181,6 @@ import { DeclarationFormComponent } from '../../components/forms/declaration-for
 
     .wizard-content {
       flex: 1;
-    }
-
-    .wizard-buttons {
-      display: flex;
-      justify-content: flex-end;
-      gap: var(--space-3);
-      padding-top: var(--space-4);
-      border-top: 1px solid var(--border-default);
     }
 
     .btn {
@@ -218,6 +219,8 @@ import { DeclarationFormComponent } from '../../components/forms/declaration-for
 })
 export class ConferenceApplication {
   currentStep = signal(1);
+  isSaving = signal(false);
+  isSubmitting = signal(false);
   applicantDetailsForm: FormGroup;
 
   constructor(private fb: FormBuilder) {
@@ -268,5 +271,15 @@ export class ConferenceApplication {
       }
       return updated;
     });
+  }
+
+  saveDraft() {
+    // TODO: Implement save draft functionality
+    console.log('Save draft triggered at step', this.currentStep());
+  }
+
+  submitForm() {
+    // TODO: Implement submit form functionality
+    console.log('Submit form triggered');
   }
 }

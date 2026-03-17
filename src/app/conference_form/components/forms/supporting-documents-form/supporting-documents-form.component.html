@@ -1,11 +1,10 @@
 <form [formGroup]="form" class="form-section">
-  <div class="upload-container">
-    <div class="section-header">
-      <h2 class="section-title">Upload Supporting Documents</h2>
+  <section class="card">
+    <div class="card__header">
+      <h2 class="card__title">Upload Supporting Documents</h2>
     </div>
-
+    <div class="card__content">
     <div class="section-fields">
-      <!-- Acceptance Notification -->
       <div class="form-field">
         <div class="upload-field-header">
           <h3 class="upload-field-title is-required">Acceptance Notification</h3>
@@ -24,7 +23,6 @@
         }
       </div>
 
-      <!-- Reviewers' Feedback -->
       <div class="form-field">
         <div class="upload-field-header">
           <h3 class="upload-field-title is-required">Reviewers' Feedback</h3>
@@ -43,7 +41,6 @@
         }
       </div>
 
-      <!-- Evidence of Guaranteed SCOPUS Indexed Publication -->
       <div class="form-field">
         <div class="upload-field-header">
           <h3 class="upload-field-title is-required">Evidence of Guaranteed SCOPUS Indexed Publication</h3>
@@ -106,7 +103,7 @@
           <div class="title-with-tooltip">
             <h3 class="upload-field-title is-required">Conference Invoice</h3>
             <app-note
-              text="Note: Please ensure billing name is: Asia Pacific University Sdn. Bhd."
+              text="Please ensure billing name is: Asia Pacific University Sdn. Bhd."
               [isTooltip]="true">
             </app-note>
           </div>
@@ -125,14 +122,14 @@
         }
       </div>
     </div>
-  </div>
-
-  <!-- Manuscript Details Section -->
-  <div class="manuscript-section">
-    <div class="section-header">
-      <h2 class="section-title">Manuscript Details</h2>
     </div>
+  </section>
 
+  <section class="card">
+    <div class="card__header">
+      <h2 class="card__title">Manuscript Details</h2>
+    </div>
+    <div class="card__content">
     <div class="section-fields">
       <!-- Internal Review -->
       <div class="form-field">
@@ -149,7 +146,6 @@
         </div>
       </div>
 
-      <!-- Reviewer Name -->
       <div class="form-field">
         <label class="form-label is-required">Name of Reviewer</label>
         <input
@@ -159,9 +155,11 @@
           placeholder="Enter reviewer name">
       </div>
 
-      <!-- Previously Published -->
       <div class="form-field">
-        <label class="form-label is-required">Has the manuscript and content been published in another journal or conference etc.?</label>
+        <div class="label-with-note">
+          <label class="form-label is-required">Has the manuscript and content been published in another journal or conference etc.?</label>
+          <app-note text=" Manuscript must not be published previously" [isTooltip]="true"></app-note>
+        </div>
         <div class="radio-group">
           <label class="radio-label">
             <input type="radio" value="yes" formControlName="manuscriptPreviouslyPublished">
@@ -172,11 +170,8 @@
             <span>No</span>
           </label>
         </div>
-        <app-note
-          text="ℹ Note: Manuscript must not be published previously"
-          [isTooltip]="true">
-        </app-note>
       </div>
     </div>
-  </div>
+    </div>
+  </section>
 </form>

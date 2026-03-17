@@ -16,6 +16,7 @@ import { FinalDeclarationComponent } from './components/final-declaration/final-
 
 // Review & workflow
 import { ScoreSummaryComponent } from './components/score-summary/score-summary.component';
+import { ReviewBlockComponent } from './components/review-block/review-block.component';
 import { RdigWorkflowService } from './services/rdig-workflow.service';
 import { AuthService } from '../services/auth.service';
 
@@ -33,7 +34,8 @@ import { AuthService } from '../services/auth.service';
     OutputDetailsComponent,
     BudgetSummaryComponent,
     FinalDeclarationComponent,
-    ScoreSummaryComponent
+    ScoreSummaryComponent,
+    ReviewBlockComponent
   ],
   templateUrl: './rdig_form.component.html',
   styleUrl: './rdig_form.component.scss',
@@ -441,6 +443,11 @@ export class RdigApplicationComponent implements OnInit {
   /** Helper to get a FormControl from the form */
   fc(path: string): FormControl {
     return this.rdigForm.get(path) as FormControl;
+  }
+
+  /** Helper to get a reviewProject FormControl by name */
+  rfcProject(name: string): FormControl {
+    return this.rdigForm.get('reviewProject')!.get(name) as FormControl;
   }
 
   // ── Comment toggles ────────────────────────────────────────────

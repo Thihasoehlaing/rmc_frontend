@@ -1,0 +1,4 @@
+[
+  { "id": 1, "value": "Domain 1", "isActive": true },
+  { "id": 2, "value": "Domain 2", "isActive": true }
+]

@@ -1,0 +1,8 @@
+[
+  { "id": 7, "parentDomainId": 1, "value": "Sub 7", "isActive": true },
+  { "id": 8, "parentDomainId": 1, "value": "Sub 8", "isActive": true },
+  { "id": 9, "parentDomainId": 1, "value": "Sub 9", "isActive": true },
+  { "id": 10, "parentDomainId": 2, "value": "Sub 10", "isActive": true },
+  { "id": 11, "parentDomainId": 2, "value": "Sub 11", "isActive": true },
+  { "id": 12, "parentDomainId": 2, "value": "Sub 12", "isActive": true }
+]

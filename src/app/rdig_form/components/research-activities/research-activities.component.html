@@ -12,7 +12,10 @@
 
       <div class="list-section-header">
         <span class="list-count">{{ activities.length }} {{ activities.length === 1 ? 'Activity' : 'Activities' }} · Duration: {{ projectDuration() }} Months</span>
-        <button type="button" class="btn btn-primary btn-sm" (click)="addActivity()">
+        <button type="button" class="btn btn-primary btn-sm"
+          [disabled]="!projectDuration() || workflow.isFormReadOnly()"
+          [title]="!projectDuration() ? 'Select a Project Duration first' : ''"
+          (click)="addActivity()">
           <span class="material-icons">add</span> Add Activity
         </button>
       </div>
@@ -62,7 +65,7 @@
                     <td class="col-month">
                       <select class="input--select" formControlName="endMonth">
                         @for (m of months(); track m) {
-                          <option [value]="m">{{ m }}</option>
+                          <option [value]="m" [disabled]="m < activity.get('startMonth')?.value">{{ m }}</option>
                         }
                       </select>
                     </td>
@@ -82,6 +85,7 @@
                     <td class="col-actions">
                       @if (activities.length > 1) {
                         <button type="button" class="btn-icon btn-icon--delete"
+                          [disabled]="workflow.isFormReadOnly()"
                           (click)="removeActivity(i)" aria-label="Remove activity">
                           <span class="material-icons">delete</span>
                         </button>

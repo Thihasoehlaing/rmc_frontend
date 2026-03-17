@@ -32,8 +32,8 @@ export class ResearchActivitiesComponent implements OnInit, OnDestroy {
              this.showRdigChairComments || this.showVcComments || this.showCeoComments;
     }
 
-    /** Project duration (months) — driven by projectDetails.duration */
-    projectDuration = signal<number>(24);
+    /** Project duration (months) — driven by projectDetails.duration; 0 = not set */
+    projectDuration = signal<number>(0);
 
     /** Available months computed from duration */
     months = computed(() => Array.from({ length: this.projectDuration() }, (_, i) => i + 1));
@@ -61,9 +61,12 @@ export class ResearchActivitiesComponent implements OnInit, OnDestroy {
         // Watch project duration from parent form
         const durationCtrl = this.parentForm.get('projectDetails.duration');
         if (durationCtrl) {
-            // Set initial
+            // Set initial — keep 0 if not selected yet
             const initial = parseInt(durationCtrl.value, 10);
-            if (initial > 0) this.projectDuration.set(initial);
+            if (initial > 0) {
+                this.projectDuration.set(initial);
+                if (this.activities.length === 0) this.addActivity();
+            }
 
             this.subs.push(
                 durationCtrl.valueChanges.subscribe(val => {
@@ -77,7 +80,7 @@ export class ResearchActivitiesComponent implements OnInit, OnDestroy {
             );
         }
 
-        if (this.activities.length === 0) {
+        if (this.activities.length === 0 && this.projectDuration() > 0) {
             this.addActivity();
         }
 
@@ -95,6 +98,7 @@ export class ResearchActivitiesComponent implements OnInit, OnDestroy {
     }
 
     addActivity() {
+        if (!this.projectDuration()) return; // guard: no duration set
         const isFirst = this.activities.length === 0;
         const maxMonth = this.projectDuration();
         // First activity: start = 1 (user-editable); subsequent: start = prev end (auto-locked)

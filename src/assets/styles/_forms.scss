@@ -166,6 +166,65 @@
   }
 }
 
+// Reusable pill buttons (used by RDIG settings and available app-wide)
+.btn-primary-pill,
+.btn-secondary-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 40px;
+  padding: 0 var(--space-5);
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-primary);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color var(--transition-fast) var(--ease-default),
+    color var(--transition-fast) var(--ease-default),
+    border-color var(--transition-fast) var(--ease-default),
+    box-shadow var(--transition-fast) var(--ease-default);
+
+  .material-icons,
+  .material-icons-outlined {
+    font-size: 18px;
+    line-height: 1;
+  }
+
+  &:disabled {
+    opacity: var(--disabled-opacity);
+    cursor: not-allowed;
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: var(--input-shadow-focus);
+  }
+}
+
+.btn-primary-pill {
+  background: var(--color-primary);
+  color: #fff;
+
+  &:hover:not(:disabled) {
+    background: #fff;
+    color: var(--color-primary);
+    border-color: var(--color-primary);
+  }
+}
+
+.btn-secondary-pill {
+  background: #fff;
+  color: var(--color-primary);
+
+  &:hover:not(:disabled) {
+    background: var(--color-primary);
+    color: #fff;
+    border-color: var(--color-primary);
+  }
+}
+
 .btn-success {
   background-color: var(--color-success);
   color: white;

@@ -186,6 +186,28 @@
             [showCeoComments]="showCeoComments()"
             [workflow]="workflow">
           </app-research-activities>
+
+          <!-- ── HOS and RMC page-level comments (after Research Activities) ── -->
+          @if (showHosComments() || showRmcComments()) {
+            <div class="card review-comments-section">
+              <div class="card__content section-fields">
+                <app-review-block
+                  label="HOS — Project Details Review"
+                  icon="supervisor_account"
+                  [visible]="showHosComments()"
+                  [readonly]="!workflow.isHosEditable()"
+                  [commentControl]="rfcProject('hosPageComment')">
+                </app-review-block>
+                <app-review-block
+                  label="RMC — Research Aim & Questions"
+                  icon="verified"
+                  [visible]="showRmcComments()"
+                  [readonly]="!workflow.isRmcEditable()"
+                  [commentControl]="rfcProject('rmcAimComment')">
+                </app-review-block>
+              </div>
+            </div>
+          }
         }
         @if (currentStep() === 3) {
           <app-output-details

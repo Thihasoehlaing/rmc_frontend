@@ -103,9 +103,12 @@ export const routes: Routes = [
       // ── RMC Settings —  RMC group only ───────────────────────────────────
       {
         path: 'settings',
-        // Placeholder — replace with a real settings lazy module when available
-        redirectTo: 'dashboard',
-        pathMatch: 'prefix',
+        children: [
+            {
+                path: 'rdig-dropdown-options',
+                loadComponent: () => import('./settings/rdig-dropdown-options/rdig-dropdown-options').then(m => m.RdigDropdownOptions)
+            }
+        ]
       },
 
       // Default redirect

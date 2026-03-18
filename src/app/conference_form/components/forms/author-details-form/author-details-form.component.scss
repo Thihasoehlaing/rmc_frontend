@@ -101,16 +101,13 @@
   line-height: 1.5;
 }
 
-// Note: .btn, .btn-primary, .btn-secondary, .btn-sm, .btn--danger are defined globally in _forms.scss
-// Do not redefine them locally
 
-// Icon buttons
 .btn-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: var(--space-8); // no token: icon button size
-  height: var(--space-8); // no token: icon button size
+  width: var(--space-8);
+  height: var(--space-8);
   padding: 0;
   border: none;
   border-radius: var(--radius-sm);
@@ -120,7 +117,7 @@
   color: var(--color-text);
 
   .material-icons {
-    font-size: 18px; // no token: material icon pixel size
+    font-size: 18px;
   }
 
   &:hover {
@@ -190,7 +187,7 @@
   align-items: center;
   justify-content: space-between;
   padding: var(--space-4);
-  border-bottom: 1px solid var(--border-default); // 1px border — allowed exception
+  border-bottom: 1px solid var(--border-default);
   gap: var(--space-2);
 
   h3 {
@@ -245,7 +242,7 @@
 
   .form-control {
     padding: var(--space-2) var(--space-3);
-    border: 1px solid var(--border-default); // 1px border — allowed exception
+    border: 1px solid var(--border-default);
     border-radius: var(--radius-sm);
     font-size: var(--fs-sm);
     background: var(--input-bg-editable);
@@ -277,7 +274,7 @@
   display: flex;
   gap: var(--space-3);
   padding: var(--space-4);
-  border-top: 1px solid var(--border-default); // 1px border — allowed exception
+  border-top: 1px solid var(--border-default);
   justify-content: flex-end;
 
   .btn {
@@ -318,12 +315,12 @@
     text-align: left;
     font-weight: var(--fw-semibold);
     color: var(--color-heading);
-    border-bottom: 2px solid var(--border-default); // 2px sub-space
+    border-bottom: 2px solid var(--border-default);
   }
 
   td {
     padding: var(--space-3);
-    border-bottom: 1px solid var(--border-default); // 1px border — allowed exception
+    border-bottom: 1px solid var(--border-default);
     color: var(--color-label);
 
     &.col-no {
@@ -377,3 +374,5 @@
 .text-muted {
   color: var(--color-text-muted);
 }
+
+

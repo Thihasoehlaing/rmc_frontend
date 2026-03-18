@@ -1,0 +1,74 @@
+
+// Table styles
+.table-scroll {
+  overflow-x: auto;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-default); // 1px border — allowed exception
+  background: var(--bg-surface);
+}
+.list-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-4);
+  .list-count {
+    font-size: var(--fs-sm);
+    color: var(--color-text-muted);
+    font-weight: var(--fw-medium);
+  }
+}
+.list-table {
+  width: 100%;
+  border-collapse: collapse;
+  th {
+    padding: var(--space-3) var(--space-4);
+    text-align: left;
+    font-size: var(--fs-sm);
+    font-weight: var(--fw-semibold);
+    color: var(--color-heading);
+    background: var(--bg-subtle);
+    border-bottom: 1px solid var(--border-default); // 1px border — allowed exception
+  }
+  td {
+    padding: var(--space-3) var(--space-4);
+    vertical-align: middle;
+    font-size: var(--fs-base);
+    border-bottom: 1px solid var(--border-subtle); // 1px border — allowed exception
+  }
+  .col-no { width: 60px; text-align: center; } // no token: list table column width
+  .col-actions { width: 100px; white-space: nowrap; } // no token: list table column width
+}
+.btn-icon {
+  width: 32px; // no token: fixed action button size
+  height: 32px; // no token: fixed action button size
+  padding: 0;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-muted);
+  transition: all 0.2s ease;
+  .material-icons { font-size: 20px; } // no token: material icon pixel size
+  &--edit:hover { background: var(--bg-primary-subtle); color: var(--color-primary); }
+  &--delete:hover { background: var(--bg-error-subtle); color: var(--color-error); }
+}
+
+.horizontal-layout {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-5);
+  margin-bottom: var(--space-3);
+
+  label {
+    flex: 0 0 35%; // no token: percentage for responsive layout
+    margin-bottom: 0 !important;
+  }
+
+  input, textarea, .total-value {
+    flex: 1;
+  }
+}

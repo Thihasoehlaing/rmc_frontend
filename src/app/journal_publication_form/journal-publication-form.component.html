@@ -1,1 +1,13 @@
-<p>Journal test</p>
+<div class="wizard-container">
+  <div class="wizard-sidebar">
+    <app-step-indicator 
+      [steps]="steps" 
+      [currentStep]="1"
+      [stepStatuses]="stepStatuses">
+    </app-step-indicator>
+  </div>
+
+  <div class="wizard-content">
+    <app-journal-details></app-journal-details>
+  </div>
+</div>

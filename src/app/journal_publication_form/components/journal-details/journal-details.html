@@ -1,1 +1,581 @@
-<p>journal-details works!</p>
+<form class="form-container" [formGroup]="form">
+  
+  <div class="form-section">
+    
+    <!-- Publication Info Section -->
+    <section class="card">
+      <div class="card__header">
+        <h2 class="card__title">
+          <span class="material-icons" >description</span>
+          Journal Details
+        </h2>
+      </div>
+      <div class="card__content">
+        
+        <div class="row row--2" style="align-items: flex-start;">
+          
+          <!-- Left Column -->
+          <div style="display: flex; flex-direction: column; gap: var(--space-5);">
+            <div class="form-field">
+              <label class="form-label is-required">Please select whether you are the “First Author” or “Corresponding Author”</label>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2);">
+                <label class="radio-label">
+                  <input type="radio" class="radio-input" formControlName="authorshipType" value="first-author">
+                  <span class="radio-text">First Author</span>
+                </label>
+                <label class="radio-label">
+                  <input type="radio" class="radio-input" formControlName="authorshipType" value="co-author">
+                  <span class="radio-text">Corresponding Author</span>
+                </label>
+                <label class="radio-label" style="grid-column: span 2;">
+                  <input type="radio" class="radio-input" formControlName="authorshipType" value="corresponding-author">
+                  <span class="radio-text">First and Corresponding Author</span>
+                </label>
+              </div>
+              <div style="color: var(--color-error); font-size: var(--fs-xs); font-weight: var(--fw-medium); margin-top: var(--space-2);">
+                <i style="font-weight: bold; font-style: italic; margin-right: 4px;">i</i>Applicant must be either first or corresponding author
+              </div>
+            </div>
+
+            <div class="form-field">
+              <label class="form-label is-required">Please select Scopus Quartile</label>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2);">
+                <label class="radio-label"><input type="radio" class="radio-input" formControlName="scopusQuartile" value="Q1"><span class="radio-text">Q1</span></label>
+                <label class="radio-label"><input type="radio" class="radio-input" formControlName="scopusQuartile" value="Q2"><span class="radio-text">Q2</span></label>
+                <label class="radio-label" style="grid-column: span 2;"><input type="radio" class="radio-input" formControlName="scopusQuartile" value="Q3"><span class="radio-text">Q3</span></label>
+              </div>
+            </div>
+            
+            <div class="form-field">
+              <label class="form-label is-required">Select Research or Non-Research Project</label>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2);">
+                <label class="radio-label"><input type="radio" class="radio-input" formControlName="researchType" value="external-research"><span class="radio-text">External Research Project</span></label>
+                <label class="radio-label"><input type="radio" class="radio-input" formControlName="researchType" value="internal-research"><span class="radio-text">Internal Research Project</span></label>
+                <label class="radio-label" style="grid-column: span 2;"><input type="radio" class="radio-input" formControlName="researchType" value="non-research"><span class="radio-text">Non-Research Project</span></label>
+              </div>
+            </div>
+
+            <div class="form-field">
+              <label class="form-label is-required">Is the publisher of your journal one of the restricted publishers (e.g., MDPI, Common Ground, Hindawi, or Frontier)?</label>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2);">
+                <label class="radio-label"><input type="radio" class="radio-input" formControlName="restrictedPublisher" value="yes"><span class="radio-text">Yes</span></label>
+                <label class="radio-label"><input type="radio" class="radio-input" formControlName="restrictedPublisher" value="no"><span class="radio-text">No</span></label>
+              </div>
+              <div style="color: var(--color-error); font-size: var(--fs-xs); font-weight: var(--fw-medium); margin-top: var(--space-2);">
+                <i style="font-weight: bold; font-style: italic; margin-right: 4px;">i</i>Expected Answer for Approval: No
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column -->
+          <div style="display: flex; flex-direction: column; gap: var(--space-5);">
+            <div class="form-field" style="margin-bottom: 0;">
+              <label class="form-label is-required">Journal Name</label>
+              <input type="text" class="input--text" formControlName="journalName">
+              <app-character-counter [current]="getCharacterCount('journalName')" [max]="150"></app-character-counter>
+            </div>
+
+            <div class="form-field" style="margin-bottom: 0;">
+              <label class="form-label is-required">Paper Title</label>
+              <input type="text" class="input--text" formControlName="paperTitle">
+              <app-character-counter [current]="getCharacterCount('paperTitle')" [max]="200"></app-character-counter>
+            </div>
+
+            <div class="form-field" style="margin-bottom: 0;">
+              <label class="form-label is-required">Please key in 3 SDG keywords in abstract</label>
+              <input type="text" class="input--text" formControlName="sdgKeyword1">
+            </div>
+            
+            <div class="form-field" style="margin-bottom: 0;">
+              <label class="form-label">Keyword 2</label>
+              <input type="text" class="input--text" formControlName="sdgKeyword2">
+            </div>
+            
+            <div class="form-field" style="margin-bottom: 0;">
+              <label class="form-label">Keyword 3</label>
+              <input type="text" class="input--text" formControlName="sdgKeyword3">
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+    <!-- Costing Section -->
+   <section class="card">
+      <div class="card__header">
+        <h2 class="card__title">
+          <span class="material-icons" style="color: var(--color-primary);">receipt_long</span>
+          Costing
+        </h2>
+      </div>
+      <div class="card__content">
+
+        <!-- Research Section - Shows when Research or Non-Research Project is selected -->
+        @if (selectedResearchnonResearch && researchType === 'internal-research') {
+          <div class="research-subsection">
+            <!-- Project Account Code -->
+            <div class="form-field horizontal-layout">
+              <label class="form-label is-required">Project Account Code</label>
+              <input
+                type="text"
+                class="input--text"
+                formControlName="projectAccountCode"
+                placeholder="Enter project account code">
+            </div>
+
+            <!-- Detailed Breakdown for Research -->
+            <div class="form-field">
+              <label class="form-label is-required">Detailed Breakdown for Internal Research Project</label>
+              <div class="costing-breakdown" style="margin-top: var(--space-2);">
+                <div class="list-section-header">
+                  <span class="list-count">{{ researchBreakdowns.length }} {{ researchBreakdowns.length === 1 ? 'Entry' : 'Entries' }}</span>
+                  <button type="button" class="btn btn-primary btn-sm" (click)="openBreakdownModal('research')" style="background: transparent; border: none; color: var(--color-primary); padding: 0;">
+                    <span class="material-icons">add_circle_outline</span>
+                  </button>
+                </div>
+
+                @if (researchBreakdowns.length > 0) {
+                  <div class="table-scroll">
+                    <table class="list-table">
+                      <thead>
+                        <tr>
+                          <th class="col-no">#</th>
+                          <th>Item Description</th>
+                          <th>Vote Number</th>
+                          <th>Cost (Foreign/MYR)</th>
+                          <th>Exchange Rate</th>
+                          <th>Cost in RM</th>
+                          <th class="col-actions">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @for (item of researchBreakdowns; track $index; let i = $index) {
+                          <tr>
+                            <td class="col-no text-muted">{{ i + 1 }}</td>
+                            <td>{{ item.itemDescription }}</td>
+                            <td>{{ item.voteNumber }}</td>
+                            <td>{{ item.cost | number: '1.2-2' }}</td>
+                            <td>{{ item.exchangeRate | number: '1.2-2' }}</td>
+                            <td>{{ item.costInRM | number: '1.2-2' }}</td>
+                            <td class="col-actions">
+                              <button type="button" class="btn-icon btn-icon--edit"
+                                (click)="openBreakdownModal('research', i)" aria-label="Edit entry">
+                                <span class="material-icons">edit</span>
+                              </button>
+                              @if (researchBreakdowns.length > 1) {
+                                <button type="button" class="btn-icon btn-icon--delete"
+                                  (click)="deleteBreakdown('research', i)" aria-label="Remove entry">
+                                  <span class="material-icons">delete</span>
+                                </button>
+                              }
+                            </td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  </div>
+                } @else {
+                  <div class="empty-state">
+                    <span class="material-icons">receipt</span>
+                    <p>No breakdown entries added yet. Click <strong>Add Entry</strong> to start adding items.</p>
+                  </div>
+                }
+              </div>
+            </div>
+
+            <!-- Sponsored Amount by External & Sponsored by -->
+            <div style="display: flex; flex-direction: column; gap: var(--space-4); margin-top: var(--space-4);">
+              <div class="form-field horizontal-layout" style="margin-bottom: 0;">
+                <label class="form-label">Total in RM</label>
+                <input type="text" class="input--text" style="background: var(--bg-subtle); color: var(--color-text-muted);" readonly [value]="(form.get('totalRM')?.value || 0) | number: '1.2-2'">
+              </div>
+
+              <div class="form-field horizontal-layout" style="margin-bottom: 0;">
+                <label class="form-label is-required">Sponsored Amount by External (RM)</label>
+                <input type="number" class="input--text" formControlName="sponsoredAmountExternal">
+              </div>
+
+              <div class="form-field horizontal-layout" style="margin-bottom: 0;">
+                <label class="form-label is-required">Sponsored by</label>
+                <input type="text" class="input--text" formControlName="sponsoredBy">
+              </div>
+
+              <div class="form-field horizontal-layout" style="margin-bottom: 0;">
+                <label class="form-label is-required">Sponsorship Percentage Requested (%)</label>
+                <input type="number" class="input--text" formControlName="sponsorshipPercentage" min="0" max="100">
+              </div>
+
+              <div class="form-field horizontal-layout" style="margin-bottom: 0;">
+                <label class="form-label">Sponsorship Amount by APU</label>
+                <input type="number" class="input--text" formControlName="sponsorshipAmountAPU" readonly style="background: var(--bg-subtle);">
+              </div>
+
+              <div class="form-field horizontal-layout" style="margin-bottom: 0;">
+                <label class="form-label is-required">Cost to be borne by Applicant (RM)</label>
+                <input type="number" class="input--text" formControlName="costByApplicant">
+              </div>
+            </div>
+
+            <div class="form-field" style="margin-top: var(--space-4);">
+              <label class="form-label">Remarks (Optional)</label>
+              <textarea
+                class="input--textarea"
+                formControlName="costingRemarks"
+                rows="5"></textarea>
+               <app-character-counter [current]="getCharacterCount('costingRemarks')" [max]="500"></app-character-counter>
+            </div>
+          </div>
+        }
+
+        @if (selectedResearchnonResearch && researchType === 'external-research') {
+          <div class="research-subsection">
+            <!-- Project Account Code -->
+            <div class="form-field horizontal-layout">
+              <label class="form-label is-required">Project Account Code</label>
+              <input
+                type="text"
+                class="input--text"
+                formControlName="externalProjectAccountCode"
+                placeholder="Enter project account code">
+            </div>
+
+            <!-- Detailed Breakdown for External Research Project -->
+            <div class="form-field">
+              <label class="form-label is-required">Detailed Breakdown for External Research Project</label>
+              <div class="costing-breakdown" style="margin-top: var(--space-2);">
+                <div class="list-section-header">
+                  <span class="list-count">{{ externalBreakdowns.length }} {{ externalBreakdowns.length === 1 ? 'Entry' : 'Entries' }}</span>
+                  <button type="button" class="btn btn-primary btn-sm" (click)="openBreakdownModal('external-research')">
+                    <span class="material-icons">add</span> Add Entry
+                  </button>
+                </div>
+
+                @if (externalBreakdowns.length > 0) {
+                  <div class="table-scroll">
+                    <table class="list-table">
+                      <thead>
+                        <tr>
+                          <th class="col-no">#</th>
+                          <th>Item Description</th>
+                          <th>Vote Number</th>
+                          <th>Cost (Foreign/MYR)</th>
+                          <th>Exchange Rate</th>
+                          <th>Cost in RM</th>
+                          <th class="col-actions">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @for (item of externalBreakdowns; track $index; let i = $index) {
+                          <tr>
+                            <td class="col-no text-muted">{{ i + 1 }}</td>
+                            <td>{{ item.itemDescription }}</td>
+                            <td>{{ item.voteNumber }}</td>
+                            <td>{{ item.cost | number: '1.2-2' }}</td>
+                            <td>{{ item.exchangeRate | number: '1.2-2' }}</td>
+                            <td>{{ item.costInRM | number: '1.2-2' }}</td>
+                            <td class="col-actions">
+                              <button type="button" class="btn-icon btn-icon--edit"
+                                (click)="openBreakdownModal('external-research', i)" aria-label="Edit entry">
+                                <span class="material-icons">edit</span>
+                              </button>
+                              @if (externalBreakdowns.length > 1) {
+                                <button type="button" class="btn-icon btn-icon--delete"
+                                  (click)="deleteBreakdown('external-research', i)" aria-label="Remove entry">
+                                  <span class="material-icons">delete</span>
+                                </button>
+                              }
+                            </td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  </div>
+                } @else {
+                  <div class="empty-state">
+                    <span class="material-icons">receipt</span>
+                    <p>No breakdown entries added yet. Click <strong>Add Entry</strong> to start adding items.</p>
+                  </div>
+                }
+              </div>
+            </div>
+
+            <!-- Sponsorship Info mapped vertically with horizontal-layout fields like Internal Research Project -->
+            <div class="sponsorship-info" style="margin-top: var(--space-4); display: flex; flex-direction: column; gap: var(--space-4);">
+              <div class="form-field horizontal-layout align-items-center">
+                <label class="form-label is-required" style="min-width: 250px;">Sponsored Amount by External <br> (If any) RM</label>
+                <input type="number" class="input--text" formControlName="externalSponsoredAmountExternal" placeholder="0.00">
+              </div>
+              <div class="form-field horizontal-layout align-items-center">
+                <label class="form-label is-required" style="min-width: 250px;">Sponsored By</label>
+                <input type="text" class="input--text" formControlName="externalSponsoredBy" placeholder="Enter sponsor name">
+              </div>
+              <div class="form-field horizontal-layout align-items-center">
+                <label class="form-label" style="min-width: 250px;">Sponsorship Percentage <br> Requested (%)</label>
+                <input type="number" class="input--text" formControlName="externalSponsorshipPercentage" min="0" max="100" placeholder="0">
+              </div>
+              <div class="form-field horizontal-layout align-items-center">
+                <label class="form-label" style="min-width: 250px;">Sponsorship Amount by APU (RM) <br> (Max up to RM 5,000)</label>
+                <input type="number" class="input--text input--readonly" formControlName="externalSponsorshipAmountAPU" readonly placeholder="0.00">
+              </div>
+              <div class="form-field horizontal-layout align-items-center">
+                <label class="form-label is-required" style="min-width: 250px;">Cost to be Borne by <br> Applicant (RM)</label>
+                <input type="number" class="input--text" formControlName="externalCostByApplicant" placeholder="0.00">
+              </div>
+
+              <!-- Total in RM - Grand Total -->
+              <div class="form-field horizontal-layout align-items-center">
+                <label class="form-label" style="min-width: 250px;">Total in RM</label>
+                <div class="total-value" style="background-color: var(--bg-subtle); padding: var(--space-2) var(--space-3); border-radius: var(--border-radius-sm); font-weight: 500; border: 1px solid var(--border-subtle); flex-grow: 1;">
+                  {{ form.get('externalTotalRM')?.value || 0 | number: '1.2-2' }}
+                </div>
+              </div>
+
+              <div class="form-field horizontal-layout align-items-start">
+                <label class="form-label" style="min-width: 250px;">Remarks (Optional)</label>
+                <div style="flex-grow: 1; display: flex; flex-direction: column;">
+                  <textarea class="input--textarea" formControlName="externalCostingRemarks" placeholder="Enter any additional remarks" rows="3" maxlength="255"></textarea>
+                  <app-character-counter [control]="form.get('externalCostingRemarks')!" [maxLength]="255"></app-character-counter>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+
+        @if (selectedResearchnonResearch && researchType === 'non-research') {
+          <div class="research-subsection">
+            <!-- Project Account Code -->
+            <div class="form-field horizontal-layout">
+              <label class="form-label is-required">Project Account Code</label>
+              <input
+                type="text"
+                class="input--text"
+                formControlName="projectAccountCode"
+                placeholder="Enter project account code">
+            </div>
+             <!-- Detailed Breakdown for Non-Research -->
+            <div class="form-field">
+              <label class="form-label is-required">Detailed Breakdown for Non-Research</label>
+              <div class="costing-breakdown" style="margin-top: var(--space-2);">
+                <div class="list-section-header">
+                  <span class="list-count">{{ NonResearchBreakdowns.length }} {{ NonResearchBreakdowns.length === 1 ? 'Entry' : 'Entries' }}</span>
+                  <button type="button" class="btn btn-primary btn-sm" (click)="openBreakdownModal('non-research')">
+                    <span class="material-icons">add</span> Add Entry
+                  </button>
+                </div>
+
+                @if (NonResearchBreakdowns.length > 0) {
+                  <div class="table-scroll">
+                    <table class="list-table">
+                      <thead>
+                        <tr>
+                          <th class="col-no">#</th>
+                          <th>Item Description</th>
+                          <th>Account Code</th>
+                          <th>Cost (Foreign/MYR)</th>
+                          <th>Exchange Rate</th>
+                          <th>Cost in RM</th>
+                          <th class="col-actions">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @for (item of NonResearchBreakdowns; track $index; let i = $index) {
+                          <tr>
+                            <td class="col-no text-muted">{{ i + 1 }}</td>
+                            <td>{{ item.itemDescription }}</td>
+                            <td>{{ item.voteNumber }}</td>
+                            <td>{{ item.cost | number: '1.2-2' }}</td>
+                            <td>{{ item.exchangeRate | number: '1.2-2' }}</td>
+                            <td>{{ item.costInRM | number: '1.2-2' }}</td>
+                            <td class="col-actions">
+                              <button type="button" class="btn-icon btn-icon--edit"
+                                (click)="openBreakdownModal('non-research', i)" aria-label="Edit entry">
+                                <span class="material-icons">edit</span>
+                              </button>
+                              @if (NonResearchBreakdowns.length > 1) {
+                                <button type="button" class="btn-icon btn-icon--delete"
+                                  (click)="deleteBreakdown('non-research', i)" aria-label="Remove entry">
+                                  <span class="material-icons">delete</span>
+                                </button>
+                              }
+                            </td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  </div>
+                } @else {
+                  <div class="empty-state">
+                    <span class="material-icons">receipt</span>
+                    <p>No breakdown entries added yet. Click <strong>Add Entry</strong> to start adding items.</p>
+                  </div>
+                }
+              </div>
+            </div>
+
+            <!-- Sponsorship Info mapped vertically with horizontal-layout fields like Internal Research Project -->
+            <div class="sponsorship-info" style="margin-top: var(--space-4); display: flex; flex-direction: column; gap: var(--space-4);">
+              <div class="form-field horizontal-layout align-items-center">
+                <label class="form-label is-required" style="min-width: 250px;">Sponsored Amount by External <br> (If any) RM</label>
+                <input type="number" class="input--text" formControlName="non-researchSponsoredAmountExternal" placeholder="0.00">
+              </div>
+              <div class="form-field horizontal-layout align-items-center">
+                <label class="form-label is-required" style="min-width: 250px;">Sponsored By</label>
+                <input type="text" class="input--text" formControlName="non-researchSponsoredBy" placeholder="Enter sponsor name">
+              </div>
+              <div class="form-field horizontal-layout align-items-center">
+                <label class="form-label is-required" style="min-width: 250px;">Sponsorship Percentage <br> Requested (%)</label>
+                <input type="number" class="input--text" formControlName="non-researchSponsorshipPercentage" min="0" max="100" placeholder="0">
+              </div>
+              <div class="form-field horizontal-layout align-items-center">
+                <label class="form-label" style="min-width: 250px;">Sponsorship Amount by APU (RM) <br> (Max up to RM 5,000)</label>
+                <input type="number" class="input--text input--readonly" formControlName="non-researchSponsorshipAmountAPU" readonly placeholder="0.00">
+              </div>
+              <div class="form-field horizontal-layout align-items-center">
+                <label class="form-label is-required" style="min-width: 250px;">Cost to be Borne by <br> Applicant (RM)</label>
+                <input type="number" class="input--text" formControlName="non-researchCostByApplicant" placeholder="0.00">
+              </div>
+
+              <!-- Total in RM - Grand Total -->
+              <div class="form-field horizontal-layout align-items-center">
+                <label class="form-label" style="min-width: 250px;">Total in RM</label>
+                <div class="total-value" style="background-color: var(--bg-subtle); padding: var(--space-2) var(--space-3); border-radius: var(--border-radius-sm); font-weight: 500; border: 1px solid var(--border-subtle); flex-grow: 1;">
+                  {{ form.get('non-researchTotalRM')?.value || 0 | number: '1.2-2' }}
+                </div>
+              </div>
+
+              <div class="form-field horizontal-layout align-items-start">
+                <label class="form-label" style="min-width: 250px;">Remarks (Optional)</label>
+                <div style="flex-grow: 1; display: flex; flex-direction: column;">
+                  <textarea class="input--textarea" formControlName="non-researchRemarks" placeholder="Enter any additional remarks" rows="3" maxlength="255"></textarea>
+                  <app-character-counter [control]="form.get('non-researchRemarks')!" [maxLength]="255"></app-character-counter>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+
+<!-- Breakdown Modal Overlays -->
+<app-dialog
+  [isOpen]="isBreakdownModalOpen"
+  [title]="getBreakdownModalTitle()"
+  (close)="closeBreakdownModal()"
+  width="600px"
+>
+  <form [formGroup]="breakdownForm" (ngSubmit)="submitBreakdownModal()" style="display: flex; flex-direction: column; gap: var(--space-4);">
+    <!-- Select Item Description -->
+    <div style="display: flex; flex-direction: column; gap: var(--space-2);">
+      <label for="itemDescription" style="font-size: var(--fs-sm); font-weight: var(--fw-medium); color: var(--color-text);">Select Item Description *</label>
+      <app-searchable-dropdown
+        [options]="getBreakdownOptionsForType()"
+        placeholder="Search and select item"
+        formControlName="itemDescription">
+      </app-searchable-dropdown>
+    </div>
+
+    @if (breakdownForm.get('itemDescription')?.invalid && breakdownForm.get('itemDescription')?.touched) {
+      <span class="error-message">Item description is required</span>
+    }
+
+    <!-- Vote Number or Account Code -->
+    <div style="display: flex; flex-direction: column; gap: var(--space-2);">
+      <label [for]="breakdownType === 'local' || breakdownType === 'overseas' ? 'accountCode' : 'voteNumber'" style="font-size: var(--fs-sm); font-weight: var(--fw-medium); color: var(--color-text);">
+        {{ (breakdownType === 'local' || breakdownType === 'overseas') ? 'Account Code' : 'Vote Number' }}
+      </label>
+      <input
+        [id]="breakdownType === 'local' || breakdownType === 'overseas' ? 'accountCode' : 'voteNumber'"
+        type="text"
+        class="input--text"
+        formControlName="voteNumber"
+        [placeholder]="(breakdownType === 'local' || breakdownType === 'overseas') ? 'V29000' : 'V29000'">
+      @if (breakdownForm.get('voteNumber')?.invalid && breakdownForm.get('voteNumber')?.touched) {
+        <span class="error-message">{{ (breakdownType === 'local' || breakdownType === 'overseas') ? 'Account code' : 'Vote number' }} is required</span>
+      }
+    </div>
+
+    <!-- Cost in Foreign Currency / MYR -->
+    <div style="display: flex; flex-direction: column; gap: var(--space-2);">
+      <label for="cost" style="font-size: var(--fs-sm); font-weight: var(--fw-medium); color: var(--color-text);">
+        {{ (breakdownType === 'local') ? 'Cost in Foreign Currency / MYR (RM)' : 'Cost in Foreign Currency / MYR' }} *
+      </label>
+      <input
+        id="cost"
+        type="number"
+        class="input--text"
+        formControlName="cost"
+        placeholder="Enter cost"
+        step="0.01">
+      @if (breakdownForm.get('cost')?.invalid && breakdownForm.get('cost')?.touched) {
+        <span class="error-message">Cost is required</span>
+      }
+    </div>
+
+    <!-- Exchange Rate -->
+    <div style="display: flex; flex-direction: column; gap: var(--space-2);">
+      <div style="display: flex; align-items: center; gap: var(--space-2);">
+        <label for="exchangeRate" style="font-size: var(--fs-sm); font-weight: var(--fw-medium); color: var(--color-text);">Exchange Rate *</label>
+        <app-note text="ℹ For Malaysia Ringgit/MYR, please put 1 as the exchange rate." [isTooltip]="true"></app-note>
+      </div>
+      <input
+        id="exchangeRate"
+        type="number"
+        class="input--text"
+        formControlName="exchangeRate"
+        placeholder="1.0"
+        step="0.01">
+      @if (breakdownForm.get('exchangeRate')?.invalid && breakdownForm.get('exchangeRate')?.touched) {
+        <span class="error-message">Exchange rate is required</span>
+      }
+    </div>
+
+    <!-- Cost in RM (Read-only calculated field) -->
+    <div style="display: flex; flex-direction: column; gap: var(--space-2);">
+      <label for="costInRM" style="font-size: var(--fs-sm); font-weight: var(--fw-medium); color: var(--color-text);">Cost in RM (approximate) [Auto-calculated: Cost × Exchange Rate]</label>
+      <input
+        id="costInRM"
+        type="number"
+        class="input--text"
+        formControlName="costInRM"
+        readonly
+        placeholder="Auto-calculated"
+        step="0.01">
+    </div>
+
+    <!-- Description -->
+    <div style="display: flex; flex-direction: column; gap: var(--space-2);">
+      <label for="description" style="font-size: var(--fs-sm); font-weight: var(--fw-medium); color: var(--color-text);">Description</label>
+      <textarea
+        id="description"
+        class="input--textarea"
+        formControlName="description"
+        placeholder="Enter description (optional)"
+        rows="3"></textarea>
+    </div>
+
+    <!-- Supporting Documents -->
+    <div style="display: flex; flex-direction: column; gap: var(--space-2);">
+      <label style="font-size: var(--fs-sm); font-weight: var(--fw-medium); color: var(--color-text);">Supporting Documents</label>
+      <p class="form-hint" style="margin: 0; font-size: var(--fs-sm); color: var(--color-text-muted);">Max file size: 10MB. Allowed file types: PDF only.</p>
+      <app-file-upload
+        [accept]="'.pdf'"
+        [maxSizeMB]="10"
+        (fileSelected)="onFileSelected($event)">
+      </app-file-upload>
+      @if (selectedFileName) {
+        <div style="display: flex; align-items: center; gap: var(--space-2); margin-top: var(--space-2); padding: var(--space-2); background: var(--bg-subtle); border-radius: var(--radius-md);">
+          <span class="material-icons" style="font-size: 20px; color: var(--color-text-muted);">description</span>
+          <span style="font-size: var(--fs-sm); color: var(--color-text); flex: 1;">{{ selectedFileName }}</span>
+          <button type="button" class="btn-icon btn-icon--delete" (click)="removeFile()" aria-label="Remove file">
+            <span class="material-icons">close</span>
+          </button>
+        </div>
+      }
+    </div>
+
+    <div style="display: flex; justify-content: flex-end; gap: var(--space-3); margin-top: var(--space-4); padding-top: var(--space-4); border-top: 1px solid var(--border-default);">
+      <button type="button" class="btn btn-secondary" (click)="closeBreakdownModal()">Cancel</button>
+      <button type="submit" class="btn btn-primary" [disabled]="breakdownForm.invalid">Save</button>
+    </div>
+  </form>
+</app-dialog>
+

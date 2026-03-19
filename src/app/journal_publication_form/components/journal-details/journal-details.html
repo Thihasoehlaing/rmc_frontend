@@ -335,7 +335,7 @@
                 <label class="form-label" style="min-width: 250px;">Remarks (Optional)</label>
                 <div style="flex-grow: 1; display: flex; flex-direction: column;">
                   <textarea class="input--textarea" formControlName="externalCostingRemarks" placeholder="Enter any additional remarks" rows="3" maxlength="255"></textarea>
-                  <app-character-counter [control]="form.get('externalCostingRemarks')!" [maxLength]="255"></app-character-counter>
+                  <app-character-counter [current]="getCharacterCount('externalCostingRemarks')" [max]="255"></app-character-counter>
                 </div>
               </div>
             </div>
@@ -448,7 +448,7 @@
                 <label class="form-label" style="min-width: 250px;">Remarks (Optional)</label>
                 <div style="flex-grow: 1; display: flex; flex-direction: column;">
                   <textarea class="input--textarea" formControlName="non-researchRemarks" placeholder="Enter any additional remarks" rows="3" maxlength="255"></textarea>
-                  <app-character-counter [control]="form.get('non-researchRemarks')!" [maxLength]="255"></app-character-counter>
+                  <app-character-counter [current]="getCharacterCount('non-researchRemarks')" [max]="255"></app-character-counter>
                 </div>
               </div>
             </div>

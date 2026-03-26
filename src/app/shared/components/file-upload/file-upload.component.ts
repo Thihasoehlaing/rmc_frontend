@@ -21,6 +21,9 @@ export class FileUploadComponent {
   /** Instruction text shown inside the zone. */
   @Input() placeholder = '';
 
+  /** Whether file upload is disabled. */
+  @Input() disabled = false;
+
   /** Emits the valid File object after type + size checks pass. */
   @Output() fileSelected = new EventEmitter<File>();
 

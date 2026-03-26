@@ -1,9 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, Input, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { NoteComponent } from '../../../../shared/components/note/note.component';
 import { SearchableDropdownComponent } from '../../../../shared/components/searchable-dropdown/searchable-dropdown.component';
 import { DropdownOption } from '../../../../interfaces/components.interface';
+import { ConferenceWorkflowService } from '../../../services/conference-workflow.service';
+import { ConferenceFormStateService } from '../../../services/conference-form-state.service';
 
 @Component({
   selector: 'app-conference-details-form',
@@ -12,7 +14,10 @@ import { DropdownOption } from '../../../../interfaces/components.interface';
   templateUrl: './conference-details-form.component.html',
   styleUrl: './conference-details-form.component.scss'
 })
-export class ConferenceDetailsFormComponent implements OnInit {
+export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
+  @Input() workflow?: ConferenceWorkflowService;
+  @Input() isFormReadOnly: boolean = false;
+
   form!: FormGroup;
   breakdownForm!: FormGroup;
   isBreakdownModalOpen = false;
@@ -26,6 +31,17 @@ export class ConferenceDetailsFormComponent implements OnInit {
   overseasBreakdowns: any[] = [];
   selectedFileName: string | null = null;
   selectedFile: File | null = null;
+
+  constructor(private fb: FormBuilder, private formStateService: ConferenceFormStateService) {
+    // Apply form read-only effect if workflow is provided
+    effect(() => {
+      if (this.workflow?.isFormReadOnly()) {
+        this.form?.disable({ emitEvent: false });
+      } else {
+        this.form?.enable({ emitEvent: false });
+      }
+    });
+  }
 
   regions = [
     'Americas',
@@ -96,8 +112,6 @@ export class ConferenceDetailsFormComponent implements OnInit {
     'Other'
   ];
 
-  constructor(private fb: FormBuilder) {}
-
   getFullRegionName(regionShort: string): string {
     return this.regionFullNames[regionShort] || regionShort;
   }
@@ -119,6 +133,12 @@ export class ConferenceDetailsFormComponent implements OnInit {
     this.initializeForm();
     this.initializeBreakdownForm();
     this.setupBreakdownFormWatchers();
+    this.loadFormState();
+  }
+
+  ngOnDestroy() {
+    // Save form state before component is destroyed
+    this.saveFormState();
   }
 
   setupBreakdownFormWatchers() {
@@ -131,6 +151,48 @@ export class ConferenceDetailsFormComponent implements OnInit {
     const exchangeRate = parseFloat(this.breakdownForm.get('exchangeRate')?.value) || 1;
     const costInRM = cost * exchangeRate;
     this.breakdownForm.patchValue({ costInRM: costInRM }, { emitEvent: false });
+  }
+
+  /**
+   * Load form state from the state service
+   */
+  private loadFormState() {
+    const savedState = this.formStateService.getFormSection('conferenceDetails');
+    if (savedState) {
+      this.form.patchValue(savedState, { emitEvent: false });
+
+      // Restore breakdown arrays
+      if (savedState.researchBreakdown) {
+        this.researchBreakdowns = [...savedState.researchBreakdown];
+      }
+      if (savedState.externalResearchBreakdown) {
+        this.externalBreakdowns = [...savedState.externalResearchBreakdown];
+      }
+      if (savedState.localBreakdown) {
+        this.localBreakdowns = [...savedState.localBreakdown];
+      }
+      if (savedState.overseasBreakdown) {
+        this.overseasBreakdowns = [...savedState.overseasBreakdown];
+      }
+    }
+  }
+
+  /**
+   * Save form state to the state service
+   */
+  private saveFormState() {
+    if (this.form) {
+      const formData = this.form.getRawValue();
+      // Include breakdown arrays in the saved state
+      const completeState = {
+        ...formData,
+        researchBreakdown: this.researchBreakdowns,
+        externalResearchBreakdown: this.externalBreakdowns,
+        localBreakdown: this.localBreakdowns,
+        overseasBreakdown: this.overseasBreakdowns
+      };
+      this.formStateService.saveFormSection('conferenceDetails', completeState);
+    }
   }
 
   initializeBreakdownForm() {
@@ -244,6 +306,13 @@ export class ConferenceDetailsFormComponent implements OnInit {
         voteNumber: 'V29000'
       });
     }
+
+    // Disable form if user can't add entries
+    if (!this.canAddBreakdownEntries()) {
+      this.breakdownForm.disable({ emitEvent: false });
+    } else {
+      this.breakdownForm.enable({ emitEvent: false });
+    }
   }
 
   closeBreakdownModal() {
@@ -340,6 +409,18 @@ export class ConferenceDetailsFormComponent implements OnInit {
       'overseas': `${isEditing} Overseas Breakdown Entry`
     };
     return titles[this.breakdownType];
+  }
+
+  canAddBreakdownEntries(): boolean {
+    if (!this.workflow) return true;
+    const status = this.workflow.status();
+    const allowedStatuses = [
+      'normal_application',
+      'hos_application',
+      'hos_request_resubmission',
+      'rmc_request_resubmission'
+    ];
+    return allowedStatuses.includes(status);
   }
 }
 

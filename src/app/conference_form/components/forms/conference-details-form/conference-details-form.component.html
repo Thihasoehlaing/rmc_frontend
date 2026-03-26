@@ -319,7 +319,7 @@
               <div class="costing-breakdown">
                 <div class="list-section-header">
                   <span class="list-count">{{ researchBreakdowns.length }} {{ researchBreakdowns.length === 1 ? 'Entry' : 'Entries' }}</span>
-                  <button type="button" class="btn btn-primary btn-sm" (click)="openBreakdownModal('research')">
+                  <button type="button" class="btn btn-primary btn-sm" [disabled]="!canAddBreakdownEntries()" (click)="openBreakdownModal('research')">
                     <span class="material-icons">add</span> Add Entry
                   </button>
                 </div>
@@ -348,12 +348,12 @@
                             <td>{{ item.exchangeRate | number: '1.2-2' }}</td>
                             <td>{{ item.costInRM | number: '1.2-2' }}</td>
                             <td class="col-actions">
-                              <button type="button" class="btn-icon btn-icon--edit"
+                              <button type="button" class="btn-icon btn-icon--edit" [disabled]="!canAddBreakdownEntries()"
                                 (click)="openBreakdownModal('research', i)" aria-label="Edit entry">
                                 <span class="material-icons">edit</span>
                               </button>
                               @if (researchBreakdowns.length > 1) {
-                                <button type="button" class="btn-icon btn-icon--delete"
+                                <button type="button" class="btn-icon btn-icon--delete" [disabled]="!canAddBreakdownEntries()"
                                   (click)="deleteBreakdown('research', i)" aria-label="Remove entry">
                                   <span class="material-icons">delete</span>
                                 </button>
@@ -463,7 +463,7 @@
               <div class="costing-breakdown">
                 <div class="list-section-header">
                   <span class="list-count">{{ externalBreakdowns.length }} {{ externalBreakdowns.length === 1 ? 'Entry' : 'Entries' }}</span>
-                  <button type="button" class="btn btn-primary btn-sm" (click)="openBreakdownModal('external-research')">
+                  <button type="button" class="btn btn-primary btn-sm" [disabled]="!canAddBreakdownEntries()" (click)="openBreakdownModal('external-research')">
                     <span class="material-icons">add</span> Add Entry
                   </button>
                 </div>
@@ -492,12 +492,12 @@
                             <td>{{ item.exchangeRate | number: '1.2-2' }}</td>
                             <td>{{ item.costInRM | number: '1.2-2' }}</td>
                             <td class="col-actions">
-                              <button type="button" class="btn-icon btn-icon--edit"
+                              <button type="button" class="btn-icon btn-icon--edit" [disabled]="!canAddBreakdownEntries()"
                                 (click)="openBreakdownModal('external-research', i)" aria-label="Edit entry">
                                 <span class="material-icons">edit</span>
                               </button>
                               @if (externalBreakdowns.length > 1) {
-                                <button type="button" class="btn-icon btn-icon--delete"
+                                <button type="button" class="btn-icon btn-icon--delete" [disabled]="!canAddBreakdownEntries()"
                                   (click)="deleteBreakdown('external-research', i)" aria-label="Remove entry">
                                   <span class="material-icons">delete</span>
                                 </button>
@@ -604,7 +604,7 @@
               <div class="costing-breakdown">
                 <div class="list-section-header">
                   <span class="list-count">{{ localBreakdowns.length }} {{ localBreakdowns.length === 1 ? 'Entry' : 'Entries' }}</span>
-                  <button type="button" class="btn btn-primary btn-sm" (click)="openBreakdownModal('local')">
+                  <button type="button" class="btn btn-primary btn-sm" [disabled]="!canAddBreakdownEntries()" (click)="openBreakdownModal('local')">
                     <span class="material-icons">add</span> Add Entry
                   </button>
                 </div>
@@ -633,12 +633,12 @@
                             <td>{{ item.exchangeRate | number: '1.2-2' }}</td>
                             <td>{{ item.costInRM | number: '1.2-2' }}</td>
                             <td class="col-actions">
-                              <button type="button" class="btn-icon btn-icon--edit"
+                              <button type="button" class="btn-icon btn-icon--edit" [disabled]="!canAddBreakdownEntries()"
                                 (click)="openBreakdownModal('local', i)" aria-label="Edit entry">
                                 <span class="material-icons">edit</span>
                               </button>
                               @if (localBreakdowns.length > 1) {
-                                <button type="button" class="btn-icon btn-icon--delete"
+                                <button type="button" class="btn-icon btn-icon--delete" [disabled]="!canAddBreakdownEntries()"
                                   (click)="deleteBreakdown('local', i)" aria-label="Remove entry">
                                   <span class="material-icons">delete</span>
                                 </button>
@@ -747,7 +747,7 @@
               <div class="costing-breakdown">
                 <div class="list-section-header">
                   <span class="list-count">{{ overseasBreakdowns.length }} {{ overseasBreakdowns.length === 1 ? 'Entry' : 'Entries' }}</span>
-                  <button type="button" class="btn btn-primary btn-sm" (click)="openBreakdownModal('overseas')">
+                  <button type="button" class="btn btn-primary btn-sm" [disabled]="!canAddBreakdownEntries()" (click)="openBreakdownModal('overseas')">
                     <span class="material-icons">add</span> Add Entry
                   </button>
                 </div>
@@ -776,12 +776,12 @@
                             <td>{{ item.exchangeRate | number: '1.2-2' }}</td>
                             <td>{{ item.costInRM | number: '1.2-2' }}</td>
                             <td class="col-actions">
-                              <button type="button" class="btn-icon btn-icon--edit"
+                              <button type="button" class="btn-icon btn-icon--edit" [disabled]="!canAddBreakdownEntries()"
                                 (click)="openBreakdownModal('overseas', i)" aria-label="Edit entry">
                                 <span class="material-icons">edit</span>
                               </button>
                               @if (overseasBreakdowns.length > 1) {
-                                <button type="button" class="btn-icon btn-icon--delete"
+                                <button type="button" class="btn-icon btn-icon--delete" [disabled]="!canAddBreakdownEntries()"
                                   (click)="deleteBreakdown('overseas', i)" aria-label="Remove entry">
                                   <span class="material-icons">delete</span>
                                 </button>
@@ -1000,7 +1000,7 @@
 
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" (click)="closeBreakdownModal()">Cancel</button>
-          <button type="submit" class="btn btn-primary" [disabled]="breakdownForm.invalid">Save</button>
+          <button type="submit" class="btn btn-primary" [disabled]="breakdownForm.invalid || !canAddBreakdownEntries()">Save</button>
         </div>
       </form>
     </div>

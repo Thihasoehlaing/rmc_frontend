@@ -160,7 +160,7 @@
   background: var(--color-surface);
   border-radius: var(--radius-lg);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-  max-width: 500px;
+  max-width: 500px; // no token: modal dialog fixed width
   width: 100%;
   max-height: 90vh;
   overflow-y: auto;
@@ -202,8 +202,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 32px; // no token: close button fixed size
+  height: 32px; // no token: close button fixed size
   padding: 0;
   border: none;
   background: transparent;
@@ -218,7 +218,7 @@
   }
 
   .material-icons {
-    font-size: 20px;
+    font-size: 20px; // no token: material icon pixel size
   }
 }
 
@@ -324,12 +324,12 @@
     color: var(--color-label);
 
     &.col-no {
-      width: 40px;
+      width: 40px; // no token: table row number column width
       text-align: center;
     }
 
     &.col-actions {
-      width: 100px;
+      width: 100px; // no token: table actions column width
       text-align: center;
       display: flex;
       gap: var(--space-2);
@@ -360,7 +360,7 @@
   color: var(--color-text-muted);
 
   .material-icons {
-    font-size: 48px;
+    font-size: 48px; // no token: empty state large icon size
     margin-bottom: var(--space-2);
     opacity: 0.5;
   }

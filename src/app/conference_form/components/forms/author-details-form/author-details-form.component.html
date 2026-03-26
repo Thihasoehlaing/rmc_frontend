@@ -30,12 +30,12 @@
                     <td>{{ subsection.value.schoolDepartment }}</td>
                     <td>{{ subsection.value.affiliation }}</td>
                     <td class="col-actions">
-                      <button type="button" class="btn-icon btn-icon--edit"
+                      <button type="button" class="btn-icon btn-icon--edit" [disabled]="!canAddCoAuthors()"
                         (click)="openEditModal('apu-staff', i)" aria-label="Edit entry">
                         <span class="material-icons">edit</span>
                       </button>
                       @if (testSubsections.length > 1) {
-                        <button type="button" class="btn-icon btn-icon--delete"
+                        <button type="button" class="btn-icon btn-icon--delete" [disabled]="!canAddCoAuthors()"
                           (click)="deleteTestSubsection(i)" aria-label="Remove entry">
                           <span class="material-icons">delete</span>
                         </button>
@@ -87,12 +87,12 @@
                     <td>{{ subsection.value.schoolDepartment }}</td>
                     <td>{{ subsection.value.affiliation }}</td>
                     <td class="col-actions">
-                      <button type="button" class="btn-icon btn-icon--edit"
+                      <button type="button" class="btn-icon btn-icon--edit" [disabled]="!canAddCoAuthors()"
                         (click)="openEditModal('student', i)" aria-label="Edit entry">
                         <span class="material-icons">edit</span>
                       </button>
                       @if (studentCoAuthors.length > 1) {
-                        <button type="button" class="btn-icon btn-icon--delete"
+                        <button type="button" class="btn-icon btn-icon--delete" [disabled]="!canAddCoAuthors()"
                           (click)="deleteStudentCoAuthor(i)" aria-label="Remove entry">
                           <span class="material-icons">delete</span>
                         </button>
@@ -148,12 +148,12 @@
                     <td>{{ subsection.value.schoolDepartment }}</td>
                     <td>{{ subsection.value.institutionName }}</td>
                     <td class="col-actions">
-                      <button type="button" class="btn-icon btn-icon--edit"
+                      <button type="button" class="btn-icon btn-icon--edit" [disabled]="!canAddCoAuthors()"
                         (click)="openEditModal('non-apu', i)" aria-label="Edit entry">
                         <span class="material-icons">edit</span>
                       </button>
                       @if (nonApuCoAuthors.length > 1) {
-                        <button type="button" class="btn-icon btn-icon--delete"
+                        <button type="button" class="btn-icon btn-icon--delete" [disabled]="!canAddCoAuthors()"
                           (click)="deleteNonApuCoAuthor(i)" aria-label="Remove entry">
                           <span class="material-icons">delete</span>
                         </button>

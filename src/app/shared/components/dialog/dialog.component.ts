@@ -1,6 +1,8 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
+let nextId = 0;
+
 @Component({
   selector: 'app-dialog',
   standalone: true,
@@ -9,6 +11,8 @@ import { CommonModule } from '@angular/common';
   styleUrl: './dialog.component.scss',
 })
 export class DialogComponent {
+  readonly dialogId = ++nextId;
+
   /** Heading text shown in the dialog header. */
   @Input() title = '';
 

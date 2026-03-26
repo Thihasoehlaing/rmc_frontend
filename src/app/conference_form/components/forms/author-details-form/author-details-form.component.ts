@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy, Input, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
 import { SearchableDropdownComponent } from '../../../../shared/components/searchable-dropdown/searchable-dropdown.component';
+import { ActionButtonComponent } from '../../../../shared/components/action-button/action-button.component';
 import { DropdownOption } from '../../../../interfaces/components.interface';
 import { ConferenceWorkflowService } from '../../../services/conference-workflow.service';
 import { ConferenceFormStateService } from '../../../services/conference-form-state.service';
@@ -9,7 +10,7 @@ import { ConferenceFormStateService } from '../../../services/conference-form-st
 @Component({
   selector: 'app-author-details-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, SearchableDropdownComponent],
+  imports: [CommonModule, ReactiveFormsModule, SearchableDropdownComponent, ActionButtonComponent],
   templateUrl: './author-details-form.component.html',
   styleUrl: './author-details-form.component.scss'
 })

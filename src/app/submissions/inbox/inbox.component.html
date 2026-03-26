@@ -1,0 +1,81 @@
+<div class="inbox-page">
+
+  <div class="inbox-header">
+    <h1 class="inbox-title">
+      <span class="material-icons">inbox</span>
+      Inbox
+    </h1>
+    <p class="inbox-subtitle">Applications awaiting your action</p>
+  </div>
+
+  <!-- Loading -->
+  @if (loading()) {
+    <div class="state-message">
+      <span class="material-icons spinning">sync</span>
+      Loading applications…
+    </div>
+  }
+
+  <!-- Error -->
+  @if (!loading() && error()) {
+    <div class="state-message state-error">
+      <span class="material-icons">error_outline</span>
+      {{ error() }}
+    </div>
+  }
+
+  <!-- Empty -->
+  @if (!loading() && !error() && applications().length === 0) {
+    <div class="state-message state-empty">
+      <span class="material-icons">check_circle_outline</span>
+      No applications pending your action.
+    </div>
+  }
+
+  <!-- Applications table -->
+  @if (!loading() && !error() && applications().length > 0) {
+    <div class="inbox-table-wrapper">
+      <table class="inbox-table">
+        <thead>
+          <tr>
+            <th>Project Title</th>
+            <th>Submitted By</th>
+            <th>Status</th>
+            <th>Next Actors</th>
+            <th>Last Action</th>
+            <th class="col-action"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (app of applications(); track app.id) {
+            <tr>
+              <td class="col-title">{{ getTitle(app) }}</td>
+              <td>{{ getSubmittedBy(app) }}</td>
+              <td>
+                <span
+                  class="status-badge"
+                  [style.background]="getStatusColor(app) + '1a'"
+                  [style.color]="getStatusColor(app)"
+                  [style.border-color]="getStatusColor(app) + '55'">
+                  {{ getStatus(app) }}
+                </span>
+              </td>
+              <td>{{ getNextActors(app) }}</td>
+              <td class="col-last-action">{{ getLastAction(app) }}</td>
+              <td class="col-action">
+                <a
+                  class="btn-open"
+                  [routerLink]="['/rdig']"
+                  [queryParams]="{ id: app.id }">
+                  <span class="material-icons">open_in_new</span>
+                  Open
+                </a>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+</div>

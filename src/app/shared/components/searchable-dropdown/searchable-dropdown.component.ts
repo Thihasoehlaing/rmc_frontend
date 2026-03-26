@@ -1,8 +1,34 @@
-import { Component, Input, forwardRef, signal, computed, HostListener, ElementRef, inject } from '@angular/core';
+import {
+  Component, Input, forwardRef, signal, computed,
+  HostListener, ElementRef, inject, DestroyRef
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ControlValueAccessor, NG_VALUE_ACCESSOR, ReactiveFormsModule, FormControl } from '@angular/forms';
+import {
+  ControlValueAccessor, NG_VALUE_ACCESSOR,
+  ReactiveFormsModule, FormControl
+} from '@angular/forms';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { DropdownOption } from '../../../interfaces/components.interface';
 
+/**
+ * Enterprise-grade searchable dropdown — ControlValueAccessor-compatible.
+ *
+ * Generic parameter `T` represents the type of option values.
+ * Defaults to `number` for backward compatibility; set explicitly
+ * when working with strings or objects.
+ *
+ * Features
+ * ────────
+ * • Single and multi-select with chip display
+ * • Debounced search (150 ms) backed by a computed signal
+ * • O(1) label look-up via a precomputed Map
+ * • Keyboard navigation: ↑ ↓ Enter Space Escape Tab
+ * • ARIA: role="combobox/listbox/option", aria-expanded, aria-activedescendant
+ * • compareWith input for object value equality
+ * • valueMode input ('single' | 'array') controls what is emitted for single-select
+ * • loading / empty states
+ */
 @Component({
   selector: 'app-searchable-dropdown',
   standalone: true,
@@ -17,101 +43,279 @@ import { DropdownOption } from '../../../interfaces/components.interface';
     }
   ]
 })
-export class SearchableDropdownComponent implements ControlValueAccessor {
-  private elementRef = inject(ElementRef);
+export class SearchableDropdownComponent<T = number> implements ControlValueAccessor {
+  private readonly elementRef = inject(ElementRef);
+  private readonly destroyRef = inject(DestroyRef);
+
+  // ── Inputs ───────────────────────────────────────────────────────
 
   @Input() label = '';
-  @Input() options: DropdownOption[] = [];
-  @Input() isMulti = false;
   @Input() placeholder = 'Select an option...';
+  @Input() isMulti = false;
   @Input() searchable = true;
 
-  searchCtrl = new FormControl('');
-  isOpen = signal(false);
-  selectedValues = signal<any[]>([]);
-  isDisabled = signal(false);
+  /** Show a spinner and disable interaction while options are loading asynchronously. */
+  @Input() loading = false;
 
-  // ControlValueAccessor methods
-  onChange: any = () => { };
-  onTouched: any = () => { };
+  /**
+   * Controls what is emitted for single-select:
+   * - 'single' (default) → emits T         (e.g. 42)
+   * - 'array'            → emits T[]        (e.g. [42])
+   * Multi-select always emits T[] regardless of valueMode.
+   */
+  @Input() valueMode: 'single' | 'array' = 'single';
 
-  writeValue(value: any): void {
-    if (value === null || value === undefined) {
+  /**
+   * Custom equality comparator for option values.
+   * Required when T is an object. Defaults to strict reference equality.
+   * @example [compareWith]="(a, b) => a.id === b.id"
+   */
+  @Input() compareWith: (a: T, b: T) => boolean = (a, b) => a === b;
+
+  // ── Options (signal-backed so computed can react to changes) ─────
+
+  private readonly _options = signal<DropdownOption<T>[]>([]);
+
+  @Input()
+  set options(val: DropdownOption<T>[]) { this._options.set(val ?? []); }
+  get options(): DropdownOption<T>[] { return this._options(); }
+
+  // ── Internal signals ─────────────────────────────────────────────
+
+  readonly isOpen = signal(false);
+  readonly selectedValues = signal<T[]>([]);
+  readonly isDisabled = signal(false);
+
+  /** Index of the keyboard-focused option inside the open list (-1 = none). */
+  readonly focusedIndex = signal(-1);
+
+  // ── Precomputed label map (O(1) chip look-ups) ────────────────────
+
+  /**
+   * Map rebuilt whenever options change.
+   * Avoids O(n) Array.find() calls during chip and displayValue rendering.
+   */
+  readonly labelMap = computed<Map<T, string>>(() => {
+    const map = new Map<T, string>();
+    for (const opt of this._options()) {
+      map.set(opt.value, opt.label);
+    }
+    return map;
+  });
+
+  // ── Debounced search ─────────────────────────────────────────────
+
+  readonly searchCtrl = new FormControl<string>('', { nonNullable: true });
+
+  /** Debounced, lowercase query — drives filteredOptions computed. */
+  private readonly searchQuery = signal('');
+
+  /** Filtered list recomputed when options or search query change. */
+  readonly filteredOptions = computed<DropdownOption<T>[]>(() => {
+    const q = this.searchQuery().toLowerCase().trim();
+    if (!this.searchable || !q) return this._options();
+    return this._options().filter(o => o.label.toLowerCase().includes(q));
+  });
+
+  // ── ARIA IDs ─────────────────────────────────────────────────────
+
+  private static nextId = 0;
+  /** Unique ID shared between trigger (aria-controls) and listbox (id). */
+  readonly listboxId = `sd-listbox-${++SearchableDropdownComponent.nextId}`;
+
+  // ── CVA callbacks (typed) ─────────────────────────────────────────
+
+  private _onChange: (value: T | T[] | null) => void = () => {};
+  private _onTouched: () => void = () => {};
+
+  constructor() {
+    // Wire the search text-box to the debounced signal
+    this.searchCtrl.valueChanges.pipe(
+      debounceTime(150),
+      distinctUntilChanged(),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe(q => this.searchQuery.set(q));
+
+  }
+
+  // ── ControlValueAccessor ─────────────────────────────────────────
+
+  writeValue(value: T | T[] | null | undefined): void {
+    if (value == null) {
       this.selectedValues.set([]);
     } else {
       this.selectedValues.set(Array.isArray(value) ? value : [value]);
     }
   }
 
-  registerOnChange(fn: any): void { this.onChange = fn; }
-  registerOnTouched(fn: any): void { this.onTouched = fn; }
-  setDisabledState(isDisabled: boolean): void {
-    this.isDisabled.set(isDisabled);
-    if (isDisabled) {
-      this.searchCtrl.disable();
-      this.isOpen.set(false);
-    } else {
-      this.searchCtrl.enable();
+  registerOnChange(fn: (value: T | T[] | null) => void): void {
+    this._onChange = fn;
+  }
+
+  registerOnTouched(fn: () => void): void {
+    this._onTouched = fn;
+  }
+
+  setDisabledState(disabled: boolean): void {
+    this.isDisabled.set(disabled);
+    disabled
+      ? this.searchCtrl.disable({ emitEvent: false })
+      : this.searchCtrl.enable({ emitEvent: false });
+    if (disabled) this.isOpen.set(false);
+  }
+
+  // ── Dropdown open / close ────────────────────────────────────────
+
+  toggleDropdown(): void {
+    if (this.isDisabled() || this.loading) return;
+    this.isOpen() ? this.close() : this.open();
+  }
+
+  open(): void {
+    this.isOpen.set(true);
+    this.focusedIndex.set(-1);
+    this._resetSearch();
+    this._onTouched();
+    if (this.searchable) {
+      requestAnimationFrame(() => {
+        const input = (this.elementRef.nativeElement as Element)
+          .querySelector<HTMLElement>('.sd-search-input');
+        input?.focus();
+      });
     }
   }
 
-  get filteredOptions() {
-    const q = (this.searchCtrl.value || '').toLowerCase();
-    if (!this.searchable || !q) return this.options;
-    return this.options.filter(o => o.label.toLowerCase().includes(q));
+  close(): void {
+    this.isOpen.set(false);
+    this._resetSearch();
   }
 
-  @HostListener('document:click', ['$event'])
-  onClickOutside(event: Event) {
-    if (!this.elementRef.nativeElement.contains(event.target)) {
-      this.isOpen.set(false);
-    }
+  private _resetSearch(): void {
+    this.searchCtrl.setValue('', { emitEvent: false });
+    this.searchQuery.set('');
   }
 
-  toggleDropdown() {
-    if (this.isDisabled()) return;
-    this.isOpen.update(v => !v);
-    if (this.isOpen()) {
-      this.onTouched();
-    }
-  }
+  // ── Selection ─────────────────────────────────────────────────────
 
-  selectOption(option: DropdownOption) {
-    if (option.disabled) return;
+  selectOption(option: DropdownOption<T>): void {
+    if (option.disabled || this.isDisabled()) return;
 
     if (this.isMulti) {
       const current = this.selectedValues();
-      const index = current.indexOf(option.value);
-      if (index === -1) {
-        this.selectedValues.set([...current, option.value]);
-      } else {
-        this.selectedValues.set(current.filter(v => v !== option.value));
-      }
-      this.onChange(this.selectedValues());
+      const existing = current.findIndex(v => this.compareWith(v, option.value));
+      const next = existing === -1
+        ? [...current, option.value]
+        : current.filter((_, i) => i !== existing);
+      this.selectedValues.set(next);
+      this._onChange(next);
     } else {
       this.selectedValues.set([option.value]);
-      this.onChange(option.value);
-      this.isOpen.set(false);
+      this._onChange(this.valueMode === 'array' ? [option.value] : option.value);
+      this.close();
     }
   }
 
-  isSelected(value: any) {
-    return this.selectedValues().includes(value);
+  /** Remove a single chip (multi-select). */
+  removeChip(value: T, event: Event): void {
+    if (this.isDisabled()) return;
+    event.stopPropagation();
+    const next = this.selectedValues().filter(v => !this.compareWith(v, value));
+    this.selectedValues.set(next);
+    this._onChange(next);
   }
 
-  clearSelection(event: Event) {
+  clearSelection(event: Event): void {
     if (this.isDisabled()) return;
     event.stopPropagation();
     this.selectedValues.set([]);
-    this.onChange(this.isMulti ? [] : null);
+    this._onChange(this.isMulti || this.valueMode === 'array' ? [] : null);
     this.isOpen.set(false);
   }
 
-  get displayValue() {
-    const selected = this.selectedValues();
-    if (selected.length === 0) return '';
-    if (this.isMulti) return `${selected.length} items selected`;
-    const option = this.options.find(o => o.value === selected[0]);
-    return option ? option.label : '';
+  isSelected(value: T): boolean {
+    return this.selectedValues().some(v => this.compareWith(v, value));
+  }
+
+  // ── Display helpers ──────────────────────────────────────────────
+
+  get displayValue(): string {
+    const sel = this.selectedValues();
+    if (sel.length === 0) return '';
+    return this.labelMap().get(sel[0]) ?? String(sel[0]);
+  }
+
+  getChipLabel(value: T): string {
+    return this.labelMap().get(value) ?? String(value);
+  }
+
+  /** Returns the DOM element ID for an option at a given list index. */
+  getOptionId(index: number): string {
+    return `${this.listboxId}-opt-${index}`;
+  }
+
+  get activeDescendantId(): string | null {
+    const i = this.focusedIndex();
+    return i >= 0 ? this.getOptionId(i) : null;
+  }
+
+  // ── Keyboard navigation ──────────────────────────────────────────
+
+  @HostListener('keydown', ['$event'])
+  onKeyDown(event: KeyboardEvent): void {
+    if (this.isDisabled() || this.loading) return;
+
+    switch (event.key) {
+      case 'Enter':
+        if (!this.isOpen()) {
+          this.open();
+          event.preventDefault();
+        } else {
+          const opt = this.filteredOptions()[this.focusedIndex()];
+          if (opt) { this.selectOption(opt); event.preventDefault(); }
+        }
+        break;
+
+      case ' ':
+        // Space opens dropdown only when the search input is not the active element
+        if (!this.isOpen()) {
+          this.open();
+          event.preventDefault();
+        }
+        break;
+
+      case 'Escape':
+        if (this.isOpen()) { this.close(); event.preventDefault(); }
+        break;
+
+      case 'ArrowDown':
+        if (!this.isOpen()) {
+          this.open();
+        } else {
+          this.focusedIndex.update(i =>
+            Math.min(i + 1, this.filteredOptions().length - 1));
+        }
+        event.preventDefault();
+        break;
+
+      case 'ArrowUp':
+        if (this.isOpen()) {
+          this.focusedIndex.update(i => Math.max(i - 1, 0));
+          event.preventDefault();
+        }
+        break;
+
+      case 'Tab':
+        if (this.isOpen()) this.close();
+        break;
+    }
+  }
+
+  // ── Close on outside click ────────────────────────────────────────
+
+  @HostListener('document:click', ['$event'])
+  onClickOutside(event: Event): void {
+    if (!this.elementRef.nativeElement.contains(event.target)) {
+      if (this.isOpen()) this.close();
+    }
   }
 }

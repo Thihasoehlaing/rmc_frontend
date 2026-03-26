@@ -1,6 +1,23 @@
 @use '../../../../assets/styles/index' as *;
 
-// ── Backdrop ────────────────────────────────────────────────────────
+// ── Entrance animations ──────────────────────────────────────────────
+@keyframes overlay-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(-28px) scale(0.93);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+// ── Backdrop ─────────────────────────────────────────────────────────
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -9,11 +26,12 @@
   align-items: center;
   justify-content: center;
   z-index: var(--z-modal);
-  backdrop-filter: blur(3px);
+  backdrop-filter: blur(4px);
   padding: var(--space-4);
+  animation: overlay-in var(--transition-normal) var(--ease-out) both;
 }
 
-// ── Dialog card ─────────────────────────────────────────────────────
+// ── Dialog card ──────────────────────────────────────────────────────
 .modal-dialog {
   background: var(--color-surface);
   width: 100%;
@@ -24,41 +42,94 @@
   flex-direction: column;
   max-height: 90vh;
   overflow: hidden;
+  animation: dialog-in 340ms var(--ease-bounce) both;
 }
 
-// ── Header ──────────────────────────────────────────────────────────
+// ── Header ───────────────────────────────────────────────────────────
 .modal-dialog__header {
-  padding: var(--space-4) var(--space-6);
+  padding: var(--space-4) var(--space-4) var(--space-4) var(--space-6);
   background: var(--color-surface-nested);
   border-bottom: 1px solid var(--border-default);
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  gap: var(--space-3);
   flex-shrink: 0;
 
   h4 {
+    flex: 1;
+    min-width: 0;
     font-weight: var(--fw-bold);
-    font-size: var(--fs-base);
+    font-size: var(--fs-md);
     color: var(--color-heading);
     margin: 0;
+    line-height: var(--lh-tight);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 }
 
-// ── Scrollable body ─────────────────────────────────────────────────
+// ── Close button ─────────────────────────────────────────────────────
+.modal-dialog__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  border: none;
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition:
+    background var(--transition-fast) var(--ease-default),
+    color var(--transition-fast) var(--ease-default);
+
+  .material-icons {
+    font-size: 20px;
+    line-height: 1;
+  }
+
+  &:hover {
+    background: var(--color-error-light);
+    color: var(--color-error);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+}
+
+// ── Scrollable body ──────────────────────────────────────────────────
 .modal-dialog__body {
   padding: var(--space-6);
   overflow-y: auto;
   flex: 1;
+
+  // Subtle custom scrollbar
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-hover) transparent;
+
+  &::-webkit-scrollbar       { width: 6px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb {
+    background: var(--border-hover);
+    border-radius: var(--radius-full);
+  }
 }
 
-// ── Footer ──────────────────────────────────────────────────────────
+// ── Footer ───────────────────────────────────────────────────────────
 .modal-dialog__footer {
   padding: var(--space-4) var(--space-6);
   background: var(--color-surface-nested);
   border-top: 1px solid var(--border-default);
   display: flex;
+  align-items: center;
   justify-content: flex-end;
   gap: var(--space-3);
+  flex-wrap: wrap;
   flex-shrink: 0;
 
   // Hide footer bar entirely when no content is projected into it

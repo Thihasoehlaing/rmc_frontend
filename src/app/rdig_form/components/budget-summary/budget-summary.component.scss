@@ -83,41 +83,6 @@
   padding-right: 16px;
 }
 
-.btn-icon {
-  width: 24px;
-  height: 24px;
-  padding: 0;
-  border: none;
-  background: transparent;
-  border-radius: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-
-  .material-icons {
-    font-size: 20px;
-    line-height: 1;
-  }
-
-  &--edit {
-    color: #2f80ed;
-  }
-
-  &--delete {
-    color: #e63946;
-  }
-
-  &:hover:not(:disabled) {
-    opacity: 0.85;
-  }
-
-  &:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-  }
-}
-
 .modal-note {
   margin: 0;
   padding: var(--space-3) var(--space-4);

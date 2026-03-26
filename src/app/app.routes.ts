@@ -29,6 +29,23 @@ export const routes: Routes = [
           import('./shared/components/showcase/showcase').then(m => m.ShowcaseComponent),
       },
 
+      // ── Submissions ──────────────────────────────────────────────────────
+      {
+        path: 'submissions',
+        children: [
+          {
+            path: 'inbox',
+            loadComponent: () =>
+              import('./submissions/inbox/inbox.component').then(m => m.InboxComponent),
+          },
+          // Placeholder — future views
+          { path: 'draft',         redirectTo: '/dashboard' },
+          { path: 'pending',       redirectTo: '/dashboard' },
+          { path: 'history',       redirectTo: '/dashboard' },
+          { path: 'admin-history', redirectTo: '/dashboard' },
+        ],
+      },
+
       // ── RDIG Application ─────────────────────────────────────────────────
       // Rule: (full_time OR contract) AND academic, NOT Reviewer, NOT HOS
       {

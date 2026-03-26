@@ -101,6 +101,46 @@
   line-height: 1.5;
 }
 
+
+.btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--space-8);
+  height: var(--space-8);
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  color: var(--color-text);
+
+  .material-icons {
+    font-size: 18px;
+  }
+
+  &:hover {
+    background: var(--color-surface-hover);
+  }
+
+  &--edit {
+    color: var(--color-primary);
+
+    &:hover {
+      background: rgba(var(--color-primary-rgb), 0.1);
+    }
+  }
+
+  &--delete {
+    color: var(--color-error);
+
+    &:hover {
+      background: rgba(var(--color-error-rgb), 0.1);
+    }
+  }
+}
+
 // Modal styles
 .modal-overlay {
   position: fixed;
@@ -147,7 +187,7 @@
   align-items: center;
   justify-content: space-between;
   padding: var(--space-4);
-  border-bottom: 1px solid var(--border-default); // 1px border — allowed exception
+  border-bottom: 1px solid var(--border-default);
   gap: var(--space-2);
 
   h3 {
@@ -202,7 +242,7 @@
 
   .form-control {
     padding: var(--space-2) var(--space-3);
-    border: 1px solid var(--border-default); // 1px border — allowed exception
+    border: 1px solid var(--border-default);
     border-radius: var(--radius-sm);
     font-size: var(--fs-sm);
     background: var(--input-bg-editable);
@@ -234,7 +274,7 @@
   display: flex;
   gap: var(--space-3);
   padding: var(--space-4);
-  border-top: 1px solid var(--border-default); // 1px border — allowed exception
+  border-top: 1px solid var(--border-default);
   justify-content: flex-end;
 
   .btn {
@@ -275,12 +315,12 @@
     text-align: left;
     font-weight: var(--fw-semibold);
     color: var(--color-heading);
-    border-bottom: 2px solid var(--border-default); // 2px sub-space
+    border-bottom: 2px solid var(--border-default);
   }
 
   td {
     padding: var(--space-3);
-    border-bottom: 1px solid var(--border-default); // 1px border — allowed exception
+    border-bottom: 1px solid var(--border-default);
     color: var(--color-label);
 
     &.col-no {
@@ -334,3 +374,5 @@
 .text-muted {
   color: var(--color-text-muted);
 }
+
+

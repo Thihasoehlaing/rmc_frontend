@@ -1,7 +1,7 @@
 import { Routes } from '@angular/router';
-import { JournalPublicationApplication } from './pages/journal-publication-application/journal-publication-application';
+import { JournalPublicationFormComponent } from './journal-publication-form.component';
 
 export const journalPublicationFormRoutes: Routes = [
-    { path: 'application', component: JournalPublicationApplication },
-    { path: '', redirectTo: 'application', pathMatch: 'full' }
+  { path: 'application', component: JournalPublicationFormComponent },
+  { path: '', redirectTo: 'application', pathMatch: 'full' }
 ];

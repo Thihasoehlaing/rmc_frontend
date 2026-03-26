@@ -1,6 +1,7 @@
 ﻿import { Component, Input, OnInit, OnDestroy, signal, computed } from '@angular/core';
 import { ReactiveFormsModule, FormGroup, FormArray, FormBuilder, FormControl, Validators } from '@angular/forms';
 import { Subscription } from 'rxjs';
+import { ActionButtonComponent } from '../../../shared/components/action-button/action-button.component';
 import { CustomHeaderComponent } from '../../../shared/components/custom-header/custom-header.component';
 import { CustomSubheaderComponent } from '../../../shared/components/custom-subheader/custom-subheader.component';
 import { ValidationMessageComponent } from '../../../shared/components/validation-message/validation-message.component';
@@ -11,7 +12,7 @@ import { RdigWorkflowService } from '../../services/rdig-workflow.service';
 @Component({
     selector: 'app-research-activities',
     standalone: true,
-    imports: [ReactiveFormsModule, CustomHeaderComponent, CustomSubheaderComponent, ValidationMessageComponent, NoteComponent, ReviewBlockComponent],
+    imports: [ReactiveFormsModule, ActionButtonComponent, CustomHeaderComponent, CustomSubheaderComponent, ValidationMessageComponent, NoteComponent, ReviewBlockComponent],
     templateUrl: './research-activities.component.html',
     styleUrls: ['./research-activities.component.scss']
 })

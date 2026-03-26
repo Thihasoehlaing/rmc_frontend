@@ -21,7 +21,8 @@ export type RdigStatus =
   | 'pending_vc'
   | 'rejected_vc'
   | 'pending_ceo'
-  | 'rejected_ceo';
+  | 'rejected_ceo'
+  | 'approved';
 
 /** Statuses where the applicant can edit form fields */
 const APPLICANT_EDITABLE: RdigStatus[] = [
@@ -29,6 +30,182 @@ const APPLICANT_EDITABLE: RdigStatus[] = [
   'pending_applicant_resubmission_hos',
   'pending_applicant_resubmission_reviewers',
 ];
+
+// ── Workflow Configuration ─────────────────────────────────────────────────
+
+/**
+ * Describes a single possible status transition from a given stage.
+ * Decision-based transitions match `approvals[decisionField] === decisionValue`.
+ * Applicant transitions (no decisionField) always fire unconditionally.
+ */
+export interface WorkflowTransition {
+  /** Human-readable action name stored in the history entry */
+  action: string;
+  /** Target status after this transition */
+  nextStatus: RdigStatus;
+  /** The approvals FormGroup field that holds the decision, if applicable */
+  decisionField?: string;
+  /** The value of that field that triggers this transition */
+  decisionValue?: string;
+  /** Increment metadata.applicationVersion (used on HOS resubmission) */
+  incrementVersion?: boolean;
+  /** Increment metadata.reviewers_version (used on reviewer resubmission) */
+  incrementReviewersVersion?: boolean;
+}
+
+/** Per-stage workflow metadata: who acts, what transitions are possible */
+export interface WorkflowStageConfig {
+  /** Human-readable role label for history entries */
+  actorRole: string;
+  /** Roles that must act at the *next* status after a transition */
+  transitions: WorkflowTransition[];
+}
+
+/**
+ * RDIG_WORKFLOW_CONFIG — the single source of truth for all status transitions.
+ *
+ * Flow summary:
+ *   fill_application → pending_hos
+ *   pending_hos → pending_rmc | pending_applicant_resubmission_hos | rejected_hos
+ *   pending_applicant_resubmission_hos → pending_hos_review (version++)
+ *   pending_hos_review → pending_rmc | rejected_hos
+ *   pending_rmc → pending_reviewers | rejected_rmc
+ *   pending_applicant_resubmission_reviewers → pending_rmc_review (reviewersVersion++)
+ *   pending_rmc_review → pending_rdig_chair | rejected_rmc
+ *   pending_reviewers → pending_rdig_chair | pending_applicant_resubmission_reviewers
+ *   pending_rdig_chair → pending_vc | rejected_rdig_chair
+ *   pending_vc → pending_ceo | rejected_vc
+ *   pending_ceo → approved | rejected_ceo
+ */
+export const RDIG_WORKFLOW_CONFIG: Record<RdigStatus, WorkflowStageConfig> = {
+
+  fill_application: {
+    actorRole: 'Applicant',
+    transitions: [
+      { action: 'submit', nextStatus: 'pending_hos' },
+    ],
+  },
+
+  pending_applicant_resubmission_hos: {
+    actorRole: 'Applicant',
+    transitions: [
+      { action: 'resubmit', nextStatus: 'pending_hos_review', incrementVersion: true },
+    ],
+  },
+
+  pending_applicant_resubmission_reviewers: {
+    actorRole: 'Applicant',
+    transitions: [
+      { action: 'resubmit', nextStatus: 'pending_rmc_review', incrementReviewersVersion: true },
+    ],
+  },
+
+  pending_hos: {
+    actorRole: 'HOS',
+    transitions: [
+      { action: 'approve',   nextStatus: 'pending_rmc',                        decisionField: 'hosStatus', decisionValue: 'approve' },
+      { action: 'resubmit',  nextStatus: 'pending_applicant_resubmission_hos', decisionField: 'hosStatus', decisionValue: 'resubmit' },
+      { action: 'reject',    nextStatus: 'rejected_hos',                       decisionField: 'hosStatus', decisionValue: 'reject' },
+    ],
+  },
+
+  pending_hos_review: {
+    actorRole: 'HOS',
+    transitions: [
+      { action: 'approve', nextStatus: 'pending_rmc',  decisionField: 'hosStatus', decisionValue: 'approve' },
+      { action: 'reject',  nextStatus: 'rejected_hos', decisionField: 'hosStatus', decisionValue: 'reject' },
+    ],
+  },
+
+  rejected_hos: { actorRole: 'HOS', transitions: [] },
+
+  pending_rmc: {
+    actorRole: 'RMC',
+    transitions: [
+      { action: 'approve', nextStatus: 'pending_reviewers', decisionField: 'rmcStatus', decisionValue: 'approve' },
+      { action: 'reject',  nextStatus: 'rejected_rmc',      decisionField: 'rmcStatus', decisionValue: 'reject' },
+    ],
+  },
+
+  pending_rmc_review: {
+    actorRole: 'RMC',
+    transitions: [
+      { action: 'approve', nextStatus: 'pending_rdig_chair', decisionField: 'rmcStatus', decisionValue: 'approve' },
+      { action: 'reject',  nextStatus: 'rejected_rmc',       decisionField: 'rmcStatus', decisionValue: 'reject' },
+    ],
+  },
+
+  rejected_rmc: { actorRole: 'RMC', transitions: [] },
+
+  pending_reviewers: {
+    actorRole: 'Reviewer',
+    transitions: [
+      { action: 'approve',   nextStatus: 'pending_rdig_chair',                   decisionField: 'reviewer2Decision', decisionValue: 'approve' },
+      { action: 'resubmit',  nextStatus: 'pending_applicant_resubmission_reviewers', decisionField: 'reviewer2Decision', decisionValue: 'resubmission' },
+    ],
+  },
+
+  pending_rdig_chair: {
+    actorRole: 'RDIG Chair',
+    transitions: [
+      { action: 'approve', nextStatus: 'pending_vc',           decisionField: 'rdigChairStatus', decisionValue: 'approve' },
+      { action: 'reject',  nextStatus: 'rejected_rdig_chair',  decisionField: 'rdigChairStatus', decisionValue: 'reject' },
+    ],
+  },
+
+  rejected_rdig_chair: { actorRole: 'RDIG Chair', transitions: [] },
+
+  pending_vc: {
+    actorRole: 'VC',
+    transitions: [
+      { action: 'approve', nextStatus: 'pending_ceo', decisionField: 'vcStatus', decisionValue: 'approve' },
+      { action: 'reject',  nextStatus: 'rejected_vc', decisionField: 'vcStatus', decisionValue: 'reject' },
+    ],
+  },
+
+  rejected_vc: { actorRole: 'VC', transitions: [] },
+
+  pending_ceo: {
+    actorRole: 'CEO',
+    transitions: [
+      { action: 'approve', nextStatus: 'approved',    decisionField: 'ceoStatus', decisionValue: 'approve' },
+      { action: 'reject',  nextStatus: 'rejected_ceo', decisionField: 'ceoStatus', decisionValue: 'reject' },
+    ],
+  },
+
+  rejected_ceo: { actorRole: 'CEO', transitions: [] },
+
+  approved: { actorRole: 'CEO', transitions: [] },
+};
+
+/**
+ * Maps a target status to the roles that are expected to act next.
+ * Used to populate `WorkflowState.nextRoles` after each transition.
+ */
+export function getNextRoles(status: RdigStatus): string[] {
+  switch (status) {
+    case 'pending_hos':
+    case 'pending_hos_review':
+      return ['HOS'];
+    case 'pending_applicant_resubmission_hos':
+    case 'pending_applicant_resubmission_reviewers':
+    case 'fill_application':
+      return ['Applicant'];
+    case 'pending_rmc':
+    case 'pending_rmc_review':
+      return ['RMC'];
+    case 'pending_reviewers':
+      return ['Reviewer1', 'Reviewer2'];
+    case 'pending_rdig_chair':
+      return ['RDIG_Chair'];
+    case 'pending_vc':
+      return ['VC'];
+    case 'pending_ceo':
+      return ['CEO'];
+    default:
+      return [];
+  }
+}
 
 @Injectable({ providedIn: 'root' })
 export class RdigWorkflowService {
@@ -98,7 +275,7 @@ export class RdigWorkflowService {
 
   /** RDIG Chair comment/approval editable only during pending_rdig_chair */
   isRdigChairEditable = computed(() => this.status() === 'pending_rdig_chair');
- 
+
   /** VC comment/approval editable only during pending_vc */
   isVcEditable = computed(() => this.status() === 'pending_vc');
 
@@ -121,11 +298,10 @@ export class RdigWorkflowService {
    * Score summary:
    *   - Hidden during all applicant/HOS stages and rejections
    *   - Visible at pending_rmc / pending_rmc_review only when reviewers_version > 1
-   *   - Always visible from pending_reviewers onward
+   *   - Always visible from pending_reviewers onward (including approved)
    */
   isScoreSummaryVisible = computed(() => {
     const s = this.status();
-    // Hidden during applicant, HOS, and all rejected stages
     if ([
       'fill_application',
       'pending_applicant_resubmission_hos',
@@ -144,18 +320,12 @@ export class RdigWorkflowService {
       'pending_rdig_chair',
       'pending_vc',
       'pending_ceo',
+      'approved',
     ].includes(s);
   });
 
   // ── Comment toggle button visibility (which buttons appear per status) ─
 
-  /**
-   * Show HOS toggle when:
-   * - Applicant reviews HOS feedback (pending_applicant_resubmission_hos)
-   * - HOS is actively reviewing (pending_hos / pending_hos_review)
-   * - Downstream stages where prior HOS comments are visible
-   * - Any rejected_* stage (show history up to that rejection point)
-   */
   showHosToggle = computed(() =>
     [
       'pending_applicant_resubmission_hos',
@@ -172,10 +342,10 @@ export class RdigWorkflowService {
       'rejected_vc',
       'pending_ceo',
       'rejected_ceo',
+      'approved',
     ].includes(this.status())
   );
 
-  /** Show RMC toggle from pending_rmc onward (and at rejected_rmc/chair/vc/ceo) */
   showRmcToggle = computed(() =>
     [
       'pending_rmc',
@@ -188,16 +358,10 @@ export class RdigWorkflowService {
       'rejected_vc',
       'pending_ceo',
       'rejected_ceo',
+      'approved',
     ].includes(this.status())
   );
 
-  /**
-   * Show reviewer toggles when:
-   * - Applicant reviews reviewer feedback (pending_applicant_resubmission_reviewers)
-   * - RMC second review where reviewer comments are visible (pending_rmc_review)
-   * - Reviewers are actively reviewing (pending_reviewers)
-   * - Downstream stages (chair / vc / ceo)
-   */
   showReviewerToggles = computed(() =>
     [
       'pending_applicant_resubmission_reviewers',
@@ -210,68 +374,52 @@ export class RdigWorkflowService {
       'rejected_rdig_chair',
       'rejected_vc',
       'rejected_ceo',
+      'approved',
     ].includes(this.status())
   );
 
-  /**
-   * Reviewer 1 toggle visibility:
-   * - At pending_reviewers: only the assigned Reviewer 1 sees this button
-   * - At all other stages where reviewer blocks are shown: everyone sees it
-   */
   showR1Toggle = computed(() => {
     if (!this.showReviewerToggles()) return false;
     if (this.status() === 'pending_reviewers') return this.isCurrentUserReviewer1();
     return true;
   });
 
-  /**
-   * Reviewer 2 toggle visibility:
-   * - At pending_reviewers: only the assigned Reviewer 2 sees this button
-   * - At all other stages where reviewer blocks are shown: everyone sees it
-   */
   showR2Toggle = computed(() => {
     if (!this.showReviewerToggles()) return false;
     if (this.status() === 'pending_reviewers') return this.isCurrentUserReviewer2();
     return true;
   });
 
-  /** Show RDIG Chair toggle from pending_rdig_chair onward (and at rejected_rdig_chair/vc/ceo) */
   showRdigChairToggle = computed(() =>
-    ['pending_rdig_chair', 'rejected_rdig_chair', 'pending_vc', 'rejected_vc', 'pending_ceo', 'rejected_ceo'].includes(this.status())
+    ['pending_rdig_chair', 'rejected_rdig_chair', 'pending_vc', 'rejected_vc', 'pending_ceo', 'rejected_ceo', 'approved'].includes(this.status())
   );
 
-  /** Show VC toggle from pending_vc onward (and at rejected_vc/ceo) */
   showVcToggle = computed(() =>
-    ['pending_vc', 'rejected_vc', 'pending_ceo', 'rejected_ceo'].includes(this.status())
+    ['pending_vc', 'rejected_vc', 'pending_ceo', 'rejected_ceo', 'approved'].includes(this.status())
   );
 
-  /** Show CEO toggle only at pending_ceo or rejected_ceo */
-  showCeoToggle = computed(() => this.status() === 'pending_ceo' || this.status() === 'rejected_ceo');
+  showCeoToggle = computed(() =>
+    this.status() === 'pending_ceo' || this.status() === 'rejected_ceo' || this.status() === 'approved'
+  );
 
-  // ── Approval card visibility (each stage only exposes the current actor's approval) ─
+  // ── Approval card visibility ─
 
-  /** HOS approval card — editable only while HOS is the active reviewer */
   isHosApprovalVisible = computed(() =>
     this.status() === 'pending_hos' || this.status() === 'pending_hos_review'
   );
 
-  /** RMC approval card — editable only while RMC is the active reviewer */
   isRmcApprovalVisible = computed(() =>
     this.status() === 'pending_rmc' || this.status() === 'pending_rmc_review'
   );
 
-  /** Reviewer 2 decision card — only visible when current user IS the assigned Reviewer 2 */
   isReviewerApprovalVisible = computed(() =>
     this.status() === 'pending_reviewers' && this.isCurrentUserReviewer2()
   );
 
-  /** RDIG Chair approval card — only the chair sees their own approval */
   isRdigChairApprovalVisible = computed(() => this.status() === 'pending_rdig_chair');
 
-  /** VC approval card — only the VC sees their own approval */
   isVcApprovalVisible = computed(() => this.status() === 'pending_vc');
 
-  /** CEO approval card — only the CEO sees their own approval */
   isCeoApprovalVisible = computed(() => this.status() === 'pending_ceo');
 
   // ── HOS approval options (version-dependent) ──────────────────
@@ -290,13 +438,11 @@ export class RdigWorkflowService {
     ];
   });
 
-  /** RMC approval options */
   readonly rmcApprovalOptions = [
     { label: 'Approve', value: 'approve' },
     { label: 'Reject', value: 'reject' },
   ];
 
-  /** Reviewer 2 decision options based on total score */
   reviewer2DecisionOptions(totalScore: number) {
     if (totalScore >= 70) {
       return [
@@ -307,5 +453,41 @@ export class RdigWorkflowService {
     return [
       { label: 'Resubmission', value: 'resubmission' },
     ];
+  }
+
+  // ── Workflow transition helpers ────────────────────────────────
+
+  /**
+   * Determines the workflow transition to execute for the current submit action.
+   *
+   * For applicant stages (fill_application, resubmission stages) there is only one
+   * unconditional transition. For reviewer stages, the transition is selected by
+   * matching `approvals[decisionField] === decisionValue`.
+   *
+   * Returns null when no matching transition is found (e.g. Reviewer1 saves without
+   * a Reviewer2 decision being set).
+   */
+  determineTransition(
+    currentStatus: RdigStatus,
+    approvals: Record<string, string>,
+  ): (WorkflowTransition & { actorRole: string }) | null {
+    const config = RDIG_WORKFLOW_CONFIG[currentStatus];
+    if (!config || config.transitions.length === 0) return null;
+
+    // Applicant stages have a single unconditional transition
+    const applicantStatuses: RdigStatus[] = [
+      'fill_application',
+      'pending_applicant_resubmission_hos',
+      'pending_applicant_resubmission_reviewers',
+    ];
+    if (applicantStatuses.includes(currentStatus)) {
+      return { ...config.transitions[0], actorRole: config.actorRole };
+    }
+
+    // Reviewer / approver stages: match on decision field value
+    const matched = config.transitions.find(t =>
+      t.decisionField ? approvals[t.decisionField] === t.decisionValue : true,
+    );
+    return matched ? { ...matched, actorRole: config.actorRole } : null;
   }
 }

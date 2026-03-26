@@ -7,9 +7,7 @@
       <div class="card__content">
         <div class="list-section-header">
           <span class="list-count">{{ testSubsections.length }} {{ testSubsections.length === 1 ? 'Entry' : 'Entries' }}</span>
-          <button type="button" class="btn btn-primary btn-sm" (click)="openEditModal('apu-staff')">
-            <span class="material-icons">add</span> Add Entry
-          </button>
+          <app-action-button type="primary" label="Add Entry" icon="add" (clicked)="openEditModal('apu-staff')"></app-action-button>
         </div>
 
         @if (testSubsections.length > 0) {
@@ -64,9 +62,7 @@
       <div class="card__content">
         <div class="list-section-header">
           <span class="list-count">{{ studentCoAuthors.length }} {{ studentCoAuthors.length === 1 ? 'Entry' : 'Entries' }}</span>
-          <button type="button" class="btn btn-primary btn-sm" (click)="openEditModal('student')">
-            <span class="material-icons">add</span> Add Entry
-          </button>
+          <app-action-button type="primary" label="Add Entry" icon="add" (clicked)="openEditModal('student')"></app-action-button>
         </div>
 
         @if (studentCoAuthors.length > 0) {
@@ -123,9 +119,7 @@
       <div class="card__content">
         <div class="list-section-header">
           <span class="list-count">{{ nonApuCoAuthors.length }} {{ nonApuCoAuthors.length === 1 ? 'Entry' : 'Entries' }}</span>
-          <button type="button" class="btn btn-primary btn-sm" (click)="openEditModal('non-apu')">
-            <span class="material-icons">add</span> Add Entry
-          </button>
+          <app-action-button type="primary" label="Add Entry" icon="add" (clicked)="openEditModal('non-apu')"></app-action-button>
         </div>
 
         @if (nonApuCoAuthors.length > 0) {
@@ -327,8 +321,8 @@
         }
 
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancel</button>
-          <button type="submit" class="btn btn-primary" [disabled]="editForm.invalid">Save</button>
+          <app-action-button type="secondary" label="Cancel" (clicked)="closeModal()"></app-action-button>
+          <button type="submit" class="btn-primary-pill" [disabled]="editForm.invalid">Save</button>
         </div>
       </form>
     </div>

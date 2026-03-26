@@ -33,6 +33,10 @@ export const permissionGuard: CanActivateFn = (route, _state) => {
     return router.createUrlTree(['/login']);
   }
 
+  // Opening an existing record by ID — any authenticated user may access it.
+  // The form's internal ABAC controls what they can see or edit.
+  if (route.queryParams['id']) return true;
+
   const permission = route.data?.['permission'] as NavPermission | undefined;
 
   // No restriction on this route — allow all authenticated users.

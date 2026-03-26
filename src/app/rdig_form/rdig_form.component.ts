@@ -1,5 +1,7 @@
 import { Component, signal, computed, inject, OnInit, effect } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, FormControl, Validators } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 
 // Shared layout components
 import { FormMainTitleComponent } from '../shared/components/form-main-title/form-main-title.component';
@@ -17,8 +19,9 @@ import { FinalDeclarationComponent } from './components/final-declaration/final-
 // Review & workflow
 import { ScoreSummaryComponent } from './components/score-summary/score-summary.component';
 import { ReviewBlockComponent } from './components/review-block/review-block.component';
-import { RdigWorkflowService } from './services/rdig-workflow.service';
+import { RdigWorkflowService, RdigStatus, getNextRoles } from './services/rdig-workflow.service';
 import { AuthService } from '../services/auth.service';
+import { WorkflowState, WorkflowHistoryEntry } from '../interfaces/rdig-application.interface';
 
 @Component({
   selector: 'app-rdig-application',
@@ -43,7 +46,9 @@ import { AuthService } from '../services/auth.service';
 export class RdigApplicationComponent implements OnInit {
 
   workflow = inject(RdigWorkflowService);
-  private auth = inject(AuthService);
+  readonly auth = inject(AuthService);
+  private http = inject(HttpClient);
+  private route = inject(ActivatedRoute);
 
   // ── Wizard state ───────────────────────────────────────────────
   currentStep = signal<number>(1);
@@ -51,6 +56,25 @@ export class RdigApplicationComponent implements OnInit {
 
   isSaving = signal(false);
   isSubmitting = signal(false);
+  submitAttempted = signal(false);
+
+  /**
+   * The json-server record ID for the currently loaded application.
+   * null  → no record exists yet (new application, next save will POST)
+   * set   → record exists (next save will PUT to /applications/:id)
+   */
+  private loadedAppId = signal<string | null>(null);
+
+  /** DEV ONLY — bypasses form validation to allow unrestricted navigation and submission. */
+  validationDisabled = signal(false);
+
+  /** Tracks the live workflow state — persisted alongside form data */
+  workflowState = signal<WorkflowState>({
+    currentStatus: 'fill_application',
+    nextRoles: ['Applicant'],
+    nextUsers: [],
+    history: [],
+  });
 
   /** Per-role comment toggles */
   showHosComments = signal(false);
@@ -128,7 +152,46 @@ export class RdigApplicationComponent implements OnInit {
     ]
   ];
 
+  /** Review form groups mapped by step index (0-based) */
+  private readonly reviewGroupByStep = [
+    'reviewTeam',        // Step 1
+    'reviewProject',     // Step 2
+    'reviewOutput',      // Step 3
+    'reviewBudget',      // Step 4
+    'reviewDeclaration', // Step 5
+  ];
+
+  /** Returns labels for required-but-empty controls in a FormGroup */
+  private getRequiredInvalidLabels(groupPath: string): string[] {
+    const group = this.rdigForm.get(groupPath) as FormGroup | null;
+    if (!group) return [];
+    return Object.entries(group.controls)
+      .filter(([, ctrl]) => ctrl.hasError('required'))
+      .map(([key]) => this.fieldKeyToLabel(key));
+  }
+
+  /** Convert camelCase field key to a readable label */
+  private fieldKeyToLabel(key: string): string {
+    return key
+      .replace(/([a-z])([A-Z])/g, '$1 $2')
+      .replace(/^./, s => s.toUpperCase())
+      .replace(/\bHos\b/g, 'HOS')
+      .replace(/\bRmc\b/g, 'RMC')
+      .replace(/\bRdig\b/g, 'RDIG')
+      .replace(/\bVc\b/g, 'VC')
+      .replace(/\bCeo\b/g, 'CEO')
+      .replace(/\bSdg\b/g, 'SDG')
+      .replace(/\bEsg\b/g, 'ESG');
+  }
+
   getStepStatuses(): StepStatus[] {
+    if (this.validationDisabled()) {
+      return this.steps.map((_, i) => ({
+        visited: this.visitedSteps.has(i + 1),
+        valid: true,
+        missingFields: [],
+      }));
+    }
     return this.steps.map((_, i) => {
       const stepNum = i + 1;
       const visited = this.visitedSteps.has(stepNum);
@@ -137,10 +200,29 @@ export class RdigApplicationComponent implements OnInit {
         .filter(c => this.rdigForm.get(c.path)?.invalid)
         .map(c => c.label);
 
-      // Step 3: activities array must have at least 1 valid entry
-      if (stepNum === 3) {
+      // Step 2 also includes Research Activities
+      if (stepNum === 2) {
         const acts = this.rdigForm.get('activities') as FormArray;
-        if (!acts || acts.length === 0) missingFields.push('At least 1 Research Activity');
+        if (!acts || acts.length === 0) {
+          missingFields.push('At least 1 Research Activity');
+        } else {
+          acts.controls.forEach((ctrl, idx) => {
+            if (ctrl.get('name')?.invalid) {
+              missingFields.push(`Activity ${idx + 1} Description`);
+            }
+          });
+        }
+      }
+
+      // Include required-but-empty review fields (set dynamically by ReviewBlockComponent
+      // and ApprovalCardComponent when the current user's role is editable)
+      const reviewGroup = this.reviewGroupByStep[i];
+      if (reviewGroup) {
+        missingFields.push(...this.getRequiredInvalidLabels(reviewGroup));
+      }
+      // Step 5 also includes approval decision controls
+      if (stepNum === 5) {
+        missingFields.push(...this.getRequiredInvalidLabels('approvals'));
       }
 
       return { visited, valid: missingFields.length === 0, missingFields };
@@ -154,20 +236,19 @@ export class RdigApplicationComponent implements OnInit {
     this.rdigForm = this.fb.group({
 
       // 1. Hidden metadata (system-managed)
+      // Status is in workflow.currentStatus (single source of truth).
+      // Record ID is tracked via loadedAppId signal (not stored in the form).
       metadata: this.fb.group({
-        batchNumber: [''],
-        applicationId: [''],
-        version: [1],
-        applicationStatus: ['fill_application'],
+        batchNumber: [null],
         applicationVersion: [1],
-        reviewers_version: [1]
+        reviewers_version: [1],
       }),
 
-      // 2. Subpage 1 — Team Members
+      // 2. Subpage 1 — Team Members (pre-filled from the logged-in user)
       teamDetails: this.fb.group({
-        leaderName: ['', Validators.required],
-        leaderEmail: ['', [Validators.required, Validators.email]],
-        department: ['', Validators.required],
+        leaderName: [this.auth.currentUser()?.name ?? '', Validators.required],
+        leaderEmail: [this.auth.currentUser()?.email ?? '', [Validators.required, Validators.email]],
+        department: [this.auth.currentUser()?.department ?? '', Validators.required],
         researchCluster: [null, Validators.required],
         leaderRoles: ['', [Validators.required, Validators.maxLength(600)]],
         internalResearchers: this.fb.array([]),
@@ -386,14 +467,25 @@ export class RdigApplicationComponent implements OnInit {
     });
   }
 
-    /**
-     * DEV TEST: Live override for applicationStatus (ABAC testing)
-     * Syncs the workflow.status signal whenever the test field changes.
-     * Remove this method and the corresponding HTML when test is no longer needed.
-     */
-    onTestStatusChange(val: string): void {
-      this.workflow.status.set(val as any);
-    }
+  /**
+   * DEV TEST: Live override for applicationStatus (ABAC testing)
+   * Syncs the workflow.status signal and workflowState whenever the test field changes.
+   * Remove this method and the corresponding HTML when test is no longer needed.
+   */
+  onTestStatusChange(val: string): void {
+    const s = val as RdigStatus;
+    this.workflow.status.set(s);
+    this.workflowState.update(ws => ({
+      ...ws,
+      currentStatus: s,
+      nextRoles: getNextRoles(s),
+    }));
+  }
+
+  /** DEV ONLY — toggles validation bypass for testing navigation and submission. */
+  toggleValidation(): void {
+    this.validationDisabled.update(v => !v);
+  }
 
   // ── Score computations ─────────────────────────────────────────
 
@@ -459,24 +551,18 @@ export class RdigApplicationComponent implements OnInit {
   toggleVcComments(): void { this.showVcComments.update(v => !v); }
   toggleCeoComments(): void { this.showCeoComments.update(v => !v); }
 
-  // ── Auto-fill leader info + sync ABAC attributes to workflow ────
+  // ── Loading indicator for when fetching an existing application ──
+  isLoadingApplication = signal(false);
+
+  // ── Sync ABAC attributes to workflow ───────────────────────────
   ngOnInit(): void {
-    const user = this.auth.currentUser();
-    if (user && !this.rdigForm.get('teamDetails.leaderName')?.value) {
-      this.rdigForm.patchValue({
-        teamDetails: {
-          leaderName: user.name,
-          leaderEmail: user.email
-        }
-      });
+    // If a record ID is in the URL (?id=xxx), load and restore that application.
+    const id = this.route.snapshot.queryParamMap.get('id');
+    if (id) {
+      this.loadApplication(id);
+    } else {
+      this.syncWorkflowFromForm();
     }
-
-    // Sync application attributes → workflow service (ABAC)
-    const status = this.rdigForm.get('metadata.applicationStatus')?.value;
-    if (status) this.workflow.status.set(status);
-
-    const rv = parseInt(this.rdigForm.get('metadata.reviewers_version')?.value, 10);
-    if (!isNaN(rv)) this.workflow.reviewersVersion.set(rv);
 
     // Sync reviewer assignment IDs → workflow identity signals (dynamic ABAC)
     const r1Ctrl = this.rdigForm.get('approvals.reviewer1Assignment')!;
@@ -485,6 +571,128 @@ export class RdigApplicationComponent implements OnInit {
     this.workflow.reviewer2UserId.set(r2Ctrl.value ?? '');
     r1Ctrl.valueChanges.subscribe(v => this.workflow.reviewer1UserId.set(v ?? ''));
     r2Ctrl.valueChanges.subscribe(v => this.workflow.reviewer2UserId.set(v ?? ''));
+  }
+
+  /**
+   * Push persisted workflow/version values into the workflow service signals.
+   * Status is read from workflowState (set by patchFormFromSavedData or
+   * defaulting to 'fill_application' for new applications).
+   */
+  private syncWorkflowFromForm(): void {
+    const status = this.workflowState().currentStatus as RdigStatus;
+    this.workflow.status.set(status);
+    this.workflowState.update(ws => ({ ...ws, nextRoles: getNextRoles(status) }));
+
+    const rv = parseInt(this.rdigForm.get('metadata.reviewers_version')?.value, 10);
+    if (!isNaN(rv)) this.workflow.reviewersVersion.set(rv);
+    const ver = parseInt(this.rdigForm.get('metadata.applicationVersion')?.value, 10);
+    if (!isNaN(ver)) this.workflow.version.set(ver);
+  }
+
+  /**
+   * Load an existing application from the JSON server by ID, patch the entire
+   * reactive form, and restore the workflow state signal.
+   */
+  loadApplication(id: string): void {
+    this.isLoadingApplication.set(true);
+    this.http.get<any>(`http://localhost:3000/applications/${id}`).subscribe({
+      next: (data) => {
+        this.patchFormFromSavedData(data);
+        this.isLoadingApplication.set(false);
+      },
+      error: (err) => {
+        console.error('Failed to load application:', err);
+        this.isLoadingApplication.set(false);
+        alert(`Could not load application ${id}. Make sure the JSON server is running (npm run db).`);
+      },
+    });
+  }
+
+  /**
+   * Patch every part of the form from a saved application record, including
+   * all FormArrays. Sync ABAC signals after patching.
+   */
+  private patchFormFromSavedData(data: any): void {
+    // Track the record ID for all subsequent PUT requests
+    this.loadedAppId.set(data.id ?? null);
+
+    // ── Simple groups (patchValue handles nested objects) ────────
+    this.rdigForm.patchValue({
+      metadata:           data.metadata           ?? {},
+      projectDetails:     data.projectDetails     ?? {},
+      outputs:            data.outputs            ?? {},
+      finalDeclaration:   data.finalDeclaration   ?? {},
+      reviewTeam:         data.reviewTeam         ?? {},
+      reviewProject:      data.reviewProject      ?? {},
+      reviewOutput:       data.reviewOutput       ?? {},
+      reviewBudget:       data.reviewBudget       ?? {},
+      reviewDeclaration:  data.reviewDeclaration  ?? {},
+      approvals:          data.approvals          ?? {},
+    });
+
+    // teamDetails scalar fields (exclude the arrays)
+    this.rdigForm.get('teamDetails')?.patchValue({
+      leaderName:      data.teamDetails?.leaderName      ?? '',
+      leaderEmail:     data.teamDetails?.leaderEmail     ?? '',
+      department:      data.teamDetails?.department      ?? '',
+      researchCluster: data.teamDetails?.researchCluster ?? null,
+      leaderRoles:     data.teamDetails?.leaderRoles     ?? '',
+    });
+
+    // budget scalar fields (exclude the arrays)
+    this.rdigForm.get('budget')?.patchValue({
+      totalRequest: data.budget?.totalRequest ?? 0,
+    });
+
+    // ── FormArrays ───────────────────────────────────────────────
+    this.rebuildArray(
+      this.rdigForm.get('teamDetails.internalResearchers') as FormArray,
+      data.teamDetails?.internalResearchers ?? [],
+    );
+    this.rebuildArray(
+      this.rdigForm.get('teamDetails.externalResearchers') as FormArray,
+      data.teamDetails?.externalResearchers ?? [],
+    );
+    this.rebuildArray(
+      this.rdigForm.get('activities') as FormArray,
+      data.activities ?? [],
+    );
+    this.rebuildArray(
+      this.rdigForm.get('budget.studentAllowances') as FormArray,
+      data.budget?.studentAllowances ?? [],
+    );
+    this.rebuildArray(
+      this.rdigForm.get('budget.travelAccommodation') as FormArray,
+      data.budget?.travelAccommodation ?? [],
+    );
+    this.rebuildArray(
+      this.rdigForm.get('budget.materialsSupplies') as FormArray,
+      data.budget?.materialsSupplies ?? [],
+    );
+    this.rebuildArray(
+      this.rdigForm.get('budget.specialServices') as FormArray,
+      data.budget?.specialServices ?? [],
+    );
+
+    // ── Restore workflow state ───────────────────────────────────
+    if (data.workflow) {
+      this.workflowState.set(data.workflow);
+    }
+
+    // ── Sync ABAC signals ────────────────────────────────────────
+    this.syncWorkflowFromForm();
+
+    // Re-sync reviewer assignment signals after form patch
+    const r1 = this.rdigForm.get('approvals.reviewer1Assignment')?.value ?? '';
+    const r2 = this.rdigForm.get('approvals.reviewer2Assignment')?.value ?? '';
+    this.workflow.reviewer1UserId.set(r1);
+    this.workflow.reviewer2UserId.set(r2);
+  }
+
+  /** Clear a FormArray and rebuild it from a plain-object array. */
+  private rebuildArray(arr: FormArray, items: any[]): void {
+    arr.clear({ emitEvent: false });
+    items.forEach(item => arr.push(this.fb.group(item), { emitEvent: false }));
   }
 
   // ── Wizard navigation ──────────────────────────────────────────
@@ -516,21 +724,131 @@ export class RdigApplicationComponent implements OnInit {
 
   onSaveDraft(): void {
     this.isSaving.set(true);
-    // TODO: wire up API service
-    setTimeout(() => {
-      console.log('Draft saved', this.rdigForm.getRawValue());
-      this.isSaving.set(false);
-    }, 800);
+    const formData = { ...this.rdigForm.getRawValue(), workflow: this.workflowState() };
+    console.log('Draft saved', formData);
+
+    const appId = this.loadedAppId();
+    const isEdit = !!appId;
+    const url = isEdit
+      ? `http://localhost:3000/applications/${appId}`
+      : 'http://localhost:3000/applications';
+
+    const request$ = isEdit
+      ? this.http.put(url, formData)
+      : this.http.post(url, formData);
+
+    request$.subscribe({
+      next: (response: any) => {
+        if (!isEdit && response.id) {
+          this.loadedAppId.set(response.id);
+        }
+        this.isSaving.set(false);
+        alert('Test Database (JSON): Draft saved successfully!');
+      },
+      error: (err) => {
+        console.error('Save draft failed:', err);
+        this.isSaving.set(false);
+        alert('Failed to save draft. Remember to run `npm run db` in a new terminal!');
+      }
+    });
   }
 
   onSubmit(): void {
-    if (this.rdigForm.invalid) {
+    this.submitAttempted.set(true);
+    if (!this.validationDisabled() && this.rdigForm.invalid) {
       this.rdigForm.markAllAsTouched();
       console.warn('Form invalid — please review all steps.');
+      alert('Your form has missing or invalid fields. Please review all steps.');
       return;
     }
     this.isSubmitting.set(true);
-    // TODO: wire up API service
-    console.log('Submitting', this.rdigForm.getRawValue());
+
+    // ── Workflow transition ──────────────────────────────────────
+    // Status is authoritative in workflowState — never duplicated in metadata.
+    const currentStatus = this.workflowState().currentStatus as RdigStatus;
+    const approvals = this.rdigForm.get('approvals')?.getRawValue() ?? {};
+    const transition = this.workflow.determineTransition(currentStatus, approvals);
+
+    if (transition) {
+      const nextStatus = transition.nextStatus;
+
+      if (transition.incrementVersion) {
+        const v = (this.rdigForm.get('metadata.applicationVersion')?.value ?? 1) + 1;
+        this.rdigForm.get('metadata.applicationVersion')?.setValue(v, { emitEvent: false });
+        this.workflow.version.set(v);
+      }
+
+      if (transition.incrementReviewersVersion) {
+        const rv = (this.rdigForm.get('metadata.reviewers_version')?.value ?? 1) + 1;
+        this.rdigForm.get('metadata.reviewers_version')?.setValue(rv, { emitEvent: false });
+        this.workflow.reviewersVersion.set(rv);
+      }
+
+      // Build history entry
+      const currentUser = this.auth.currentUser();
+      const historyEntry: WorkflowHistoryEntry = {
+        action: transition.action,
+        fromStatus: currentStatus,
+        toStatus: nextStatus,
+        performedBy: currentUser?.name ?? 'Unknown',
+        role: transition.actorRole,
+        timestamp: new Date().toISOString(),
+      };
+
+      // Determine next users (reviewer stage uses assigned reviewer IDs)
+      const nextUsers: string[] = nextStatus === 'pending_reviewers'
+        ? [
+            this.rdigForm.get('approvals.reviewer1Assignment')?.value,
+            this.rdigForm.get('approvals.reviewer2Assignment')?.value,
+          ].filter(Boolean)
+        : [];
+
+      // Update workflow state signal
+      this.workflowState.set({
+        currentStatus: nextStatus,
+        nextRoles: getNextRoles(nextStatus),
+        nextUsers,
+        history: [...this.workflowState().history, historyEntry],
+      });
+
+      // Sync workflow service so ABAC reacts immediately
+      this.workflow.status.set(nextStatus);
+    }
+    // ── End workflow transition ──────────────────────────────────
+
+    const formData = { ...this.rdigForm.getRawValue(), workflow: this.workflowState() };
+    console.log('Submitting', formData);
+
+    const appId = this.loadedAppId();
+    const isEdit = !!appId;
+    const url = isEdit
+      ? `http://localhost:3000/applications/${appId}`
+      : 'http://localhost:3000/applications';
+
+    const request$ = isEdit
+      ? this.http.put(url, formData)
+      : this.http.post(url, formData);
+
+    request$.subscribe({
+      next: (response: any) => {
+        let savedId = appId;
+        if (!isEdit && response.id) {
+          savedId = response.id;
+          this.loadedAppId.set(savedId);
+        }
+        this.isSubmitting.set(false);
+        const newStatus = this.workflowState().currentStatus;
+        const appLink = `${window.location.origin}/rdig?id=${savedId}`;
+        const msg = !isEdit
+          ? `Application submitted!\n\nShare this link with the next reviewer:\n${appLink}\n\nStatus → ${newStatus}`
+          : `Submitted successfully.\n\nStatus → ${newStatus}\n\nApplication link:\n${appLink}`;
+        alert(msg);
+      },
+      error: (err) => {
+        console.error('Save failed:', err);
+        this.isSubmitting.set(false);
+        alert('Failed to save. Remember to run `npm run db` in a new terminal to start the json-server!');
+      }
+    });
   }
 }

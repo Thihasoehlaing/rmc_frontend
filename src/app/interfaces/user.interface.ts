@@ -35,6 +35,7 @@ export type UserGroup =
   | 'CEO';
 
 export interface User {
+  department: string;
   id: string;
   name: string;
   email: string;

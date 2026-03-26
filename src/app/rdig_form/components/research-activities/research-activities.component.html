@@ -12,12 +12,12 @@
 
       <div class="list-section-header">
         <span class="list-count">{{ activities.length }} {{ activities.length === 1 ? 'Activity' : 'Activities' }} · Duration: {{ projectDuration() }} Months</span>
-        <button type="button" class="btn btn-primary btn-sm"
+        <app-action-button
+          type="primary" label="Add Activity" icon="add"
           [disabled]="!projectDuration() || workflow.isFormReadOnly()"
           [title]="!projectDuration() ? 'Select a Project Duration first' : ''"
-          (click)="addActivity()">
-          <span class="material-icons">add</span> Add Activity
-        </button>
+          (clicked)="addActivity()">
+        </app-action-button>
       </div>
 
       @if (validationWarnings().length > 0) {

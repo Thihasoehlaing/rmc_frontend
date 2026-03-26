@@ -1,6 +1,8 @@
-import { Component, Input, signal } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { ReactiveFormsModule, FormGroup, FormArray, FormBuilder, FormControl, Validators } from '@angular/forms';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { SearchableDropdownComponent } from '../../../shared/components/searchable-dropdown/searchable-dropdown.component';
 import { CharacterCounterComponent } from '../../../shared/components/character-counter/character-counter.component';
 import { ValidationMessageComponent } from '../../../shared/components/validation-message/validation-message.component';
@@ -10,8 +12,11 @@ import { FileUploadComponent } from '../../../shared/components/file-upload/file
 import { DialogComponent } from '../../../shared/components/dialog/dialog.component';
 import { ReviewBlockComponent } from '../review-block/review-block.component';
 import { RdigWorkflowService } from '../../services/rdig-workflow.service';
+import { RdigDropdownOptionsService } from '../../../settings/rdig-dropdown-options.service';
+import { AuthService } from '../../../services/auth.service';
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
 import type { DataTableColumn } from '../../../shared/components/data-table/data-table.component';
+import { ActionButtonComponent } from '../../../shared/components/action-button/action-button.component';
 
 @Component({
   selector: 'app-team-details',
@@ -28,11 +33,20 @@ import type { DataTableColumn } from '../../../shared/components/data-table/data
     DialogComponent,
     ReviewBlockComponent,
     DataTableComponent,
+    ActionButtonComponent,
   ],
   templateUrl: './team-details.component.html',
   styleUrl: './team-details.component.scss'
 })
-export class TeamDetailsComponent {
+export class TeamDetailsComponent implements OnInit, OnDestroy {
+  private readonly dropdownService = inject(RdigDropdownOptionsService);
+  private readonly authService = inject(AuthService);
+  private readonly destroy$ = new Subject<void>();
+
+  /** Eligible internal co-researchers: (full_time|contract) AND academic, NOT Reviewer/blocked */
+  readonly eligibleResearchers = this.authService.getEligibleCoResearchers();
+  readonly researcherOptions: { label: string; value: string }[] =
+    this.eligibleResearchers.map(r => ({ label: r.name, value: r.id }));
   @Input({ required: true }) parentForm!: FormGroup;
   @Input() showHosComments = false;
   @Input() showRmcComments = false;
@@ -83,13 +97,7 @@ export class TeamDetailsComponent {
   internalForm: FormGroup;
   externalForm: FormGroup;
 
-  clusters = [
-    { label: 'Socio-Economic Impact', value: 'sei' },
-    { label: 'Technology & Innovation', value: 'ti' },
-    { label: 'Environmental Sustainability', value: 'es' },
-    { label: 'Health & Biomedical Sciences', value: 'hbs' },
-    { label: 'Digital Transformation', value: 'dt' }
-  ];
+  clusters: { label: string; value: string }[] = [];
 
   titles = [
     { label: 'Prof.', value: 'Prof.' },
@@ -112,8 +120,9 @@ export class TeamDetailsComponent {
 
   constructor(private fb: FormBuilder) {
     this.internalForm = this.fb.group({
-      staffName: ['', Validators.required],
-      department: [{ value: '', disabled: true }],
+      staffId: ['', Validators.required],
+      staffName: [''],
+      department: [''],
       expertise: ['', [Validators.required, Validators.maxLength(200)]],
       roles: ['', [Validators.required, Validators.maxLength(600)]]
     });
@@ -133,6 +142,27 @@ export class TeamDetailsComponent {
     });
   }
 
+  ngOnInit(): void {
+    this.dropdownService.loadOptions('research_cluster').subscribe();
+    this.dropdownService.getOptions('research_cluster')
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(options => {
+        this.clusters = options
+          .filter(o => o.status === 'Active')
+          .map(o => ({ label: o.optionName, value: o.id.toString() }));
+      });
+
+    // Auto-populate name + department when a researcher is selected from the dropdown
+    this.internalForm.get('staffId')!.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(id => this.onResearcherSelected(id));
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
   getInitials(value: string): string {
     if (!value) return '--';
     return value
@@ -143,10 +173,23 @@ export class TeamDetailsComponent {
       .join('');
   }
 
+  /** Called when the user picks a researcher from the dropdown. */
+  onResearcherSelected(userId: string): void {
+    const researcher = this.eligibleResearchers.find(r => r.id === userId);
+    if (researcher) {
+      this.internalForm.patchValue({
+        staffName: researcher.name,
+        department: researcher.department,
+      });
+    } else {
+      this.internalForm.patchValue({ staffName: '', department: '' });
+    }
+  }
+
   openInternalModal(): void {
     if (this.internalResearchers.length >= 2) return;
     this.editingInternalIdx.set(null);
-    this.internalForm.reset({ department: '' });
+    this.internalForm.reset({ staffId: '', staffName: '', department: '' });
     this.showInternalModal.set(true);
   }
 

@@ -50,19 +50,20 @@
       </div>
 
       <div class="toolbar-actions">
-        <button class="btn-primary-pill" type="button" (click)="openAddModal()">
-          <span class="material-icons-outlined">add</span>
-          + Add Option
-        </button>
+        <app-action-button
+          type="primary"
+          label="Add Option"
+          icon="add"
+          (clicked)="openAddModal()">
+        </app-action-button>
 
-        <button
-          class="btn-secondary-pill"
-          type="button"
+        <app-action-button
+          type="danger"
+          label="Delete Selected"
+          icon="delete"
           [disabled]="!canDeleteSelected()"
-          (click)="deleteSelected()">
-          <span class="material-icons-outlined">delete</span>
-          Delete Selected
-        </button>
+          (clicked)="deleteSelected()">
+        </app-action-button>
       </div>
 
       <app-data-table [columns]="tableColumns" [rows]="(filteredOptions$ | async) ?? []" [dense]="true">
@@ -119,25 +120,25 @@
             <td class="actions-cell">
               @if (editingRowId() === row.id) {
                 <button class="icon-btn icon-btn--save" type="button" title="Save" (click)="saveInlineEdit(row)">
-                  <span class="material-icons-outlined">done</span>
+                  <span class="material-icons">done</span>
                 </button>
                 <button class="icon-btn icon-btn--neutral" type="button" title="Cancel" (click)="cancelInlineEdit()">
-                  <span class="material-icons-outlined">close</span>
+                  <span class="material-icons">close</span>
                 </button>
               } @else {
                 <button class="icon-btn icon-btn--edit" type="button" title="Edit inline" (click)="startInlineEdit(row)">
-                  <span class="material-icons-outlined">edit</span>
+                  <span class="material-icons">edit</span>
                 </button>
 
-                <button
-                  class="icon-btn"
-                  [class.icon-btn--deactivate]="row.status === 'Active'"
-                  [class.icon-btn--activate]="row.status === 'Inactive'"
-                  type="button"
-                  [title]="row.status === 'Active' ? 'Deactivate' : 'Activate'"
-                  (click)="toggleStatus(row)">
-                  <span class="material-icons-outlined">{{ row.status === 'Active' ? 'block' : 'check_circle' }}</span>
-                </button>
+                @if (row.status === 'Inactive') {
+                  <button class="btn btn-sm btn-status-activate" type="button" (click)="toggleStatus(row)">
+                    <span class="material-icons">check_circle</span> Activate
+                  </button>
+                } @else {
+                  <button class="btn btn-sm btn-status-deactivate" type="button" (click)="toggleStatus(row)">
+                    <span class="material-icons">block</span> Deactivate
+                  </button>
+                }
               }
             </td>
           </tr>
@@ -147,39 +148,40 @@
   </div>
 </section>
 
-<app-dialog *ngIf="showModal()" [title]="'Add Option'" (close)="closeModal()">
-  <form [formGroup]="optionForm" (ngSubmit)="saveOption()" class="modal-form">
-    <div class="form-field">
-      <label class="form-label is-required">Option Name</label>
-      <input type="text" class="input--text" formControlName="optionName" maxlength="120" placeholder="Enter option name">
-      <app-validation-message [control]="optionForm.get('optionName')"></app-validation-message>
-    </div>
-
-    @if (categoryCtrl.value === 'sub_research_domain') {
+@if (showModal()) {
+  <app-dialog [isOpen]="true" [title]="'Add Option'" (close)="closeModal()">
+    <form [formGroup]="optionForm" (ngSubmit)="saveOption()" class="modal-form">
       <div class="form-field">
-        <label class="form-label is-required">Parent Research Domain</label>
-        <select class="input--text" formControlName="parentDomainId">
-          <option [ngValue]="null">Select Parent Domain</option>
-          @for (domain of (researchDomains$ | async) ?? []; track domain.id) {
-            <option [ngValue]="domain.id">{{ domain.optionName }}</option>
-          }
-        </select>
-        <app-validation-message [control]="optionForm.get('parentDomainId')"></app-validation-message>
+        <label class="form-label is-required">Option Name</label>
+        <input type="text" class="input--text" formControlName="optionName" maxlength="120" placeholder="Enter option name">
+        <app-validation-message [control]="optionForm.get('optionName')"></app-validation-message>
       </div>
-    }
 
-    <div class="form-field">
-      <label class="form-label">Status</label>
-      <select class="input--text" formControlName="status">
-        <option value="Active">Active</option>
-        <option value="Inactive">Deactivated</option>
-      </select>
-    </div>
+      @if (categoryCtrl.value === 'sub_research_domain') {
+        <div class="form-field">
+          <label class="form-label is-required">Parent Research Domain</label>
+          <select class="input--text" formControlName="parentDomainId">
+            <option [ngValue]="null">Select Parent Domain</option>
+            @for (domain of (researchDomains$ | async) ?? []; track domain.id) {
+              <option [ngValue]="domain.id">{{ domain.optionName }}</option>
+            }
+          </select>
+          <app-validation-message [control]="optionForm.get('parentDomainId')"></app-validation-message>
+        </div>
+      }
 
-    <div class="modal-actions">
-      <button class="btn-secondary-pill" type="button" (click)="closeModal()">Cancel</button>
-      <button class="btn-primary-pill" type="submit" [disabled]="optionForm.invalid">Save</button>
-    </div>
-  </form>
-</app-dialog>
+      <div class="form-field">
+        <label class="form-label">Status</label>
+        <select class="input--text" formControlName="status">
+          <option value="Active">Active</option>
+          <option value="Inactive">Deactivated</option>
+        </select>
+      </div>
 
+      <div class="modal-actions">
+        <app-action-button type="secondary" label="Cancel" (clicked)="closeModal()"></app-action-button>
+        <button class="btn-primary-pill" type="submit" [disabled]="optionForm.invalid">Save</button>
+      </div>
+    </form>
+  </app-dialog>
+}

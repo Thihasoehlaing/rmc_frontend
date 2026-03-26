@@ -182,72 +182,20 @@ tbody tr:hover,
   gap: 10px;
 }
 
-.btn-icon,
-:host ::ng-deep .btn-icon {
-  width: 22px;
-  height: 22px;
-  border-radius: 0;
-  border: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  background: transparent;
-  color: inherit;
-  padding: 0;
-  transition: opacity var(--transition-fast);
-
-  .material-icons {
-    font-size: 20px;
-    line-height: 1;
-  }
-
-  &--edit {
-    color: #2f80ed;
-
-    &:hover {
-      opacity: 0.8;
-    }
-  }
-
-  &--delete {
-    color: #e63946;
-
-    &:hover {
-      opacity: 0.8;
-    }
-  }
-
-  &:disabled {
-    opacity: 0.45;
-    cursor: not-allowed;
-  }
-}
-
-/* ::ng-deep overrides for projected btn-icon content */
-:host ::ng-deep .btn-icon .material-icons {
-  font-size: 20px;
-  line-height: 1;
-}
-
+// Base .btn-icon styles come from global _forms.scss.
+// ::ng-deep is required here because buttons are inside projected <ng-template> content.
 :host ::ng-deep .btn-icon--edit {
-  color: #2f80ed;
-
-  &:hover {
-    opacity: 0.8;
-  }
+  color: var(--color-primary);
+  &:hover:not(:disabled) { background: var(--color-primary-light); }
 }
 
 :host ::ng-deep .btn-icon--delete {
-  color: #e63946;
-
-  &:hover {
-    opacity: 0.8;
-  }
+  color: var(--color-error);
+  &:hover:not(:disabled) { background: var(--color-error-light); }
 }
 
 :host ::ng-deep .btn-icon:disabled {
-  opacity: 0.45;
+  opacity: var(--disabled-opacity);
   cursor: not-allowed;
 }
 

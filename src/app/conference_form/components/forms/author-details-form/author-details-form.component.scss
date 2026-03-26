@@ -101,49 +101,6 @@
   line-height: 1.5;
 }
 
-// Note: .btn, .btn-primary, .btn-secondary, .btn-sm, .btn--danger are defined globally in _forms.scss
-// Do not redefine them locally
-
-// Icon buttons
-.btn-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: var(--space-8); // no token: icon button size
-  height: var(--space-8); // no token: icon button size
-  padding: 0;
-  border: none;
-  border-radius: var(--radius-sm);
-  background: transparent;
-  cursor: pointer;
-  transition: all var(--transition-fast);
-  color: var(--color-text);
-
-  .material-icons {
-    font-size: 18px; // no token: material icon pixel size
-  }
-
-  &:hover {
-    background: var(--color-surface-hover);
-  }
-
-  &--edit {
-    color: var(--color-primary);
-
-    &:hover {
-      background: rgba(var(--color-primary-rgb), 0.1);
-    }
-  }
-
-  &--delete {
-    color: var(--color-error);
-
-    &:hover {
-      background: rgba(var(--color-error-rgb), 0.1);
-    }
-  }
-}
-
 // Modal styles
 .modal-overlay {
   position: fixed;

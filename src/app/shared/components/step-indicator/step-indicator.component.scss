@@ -68,7 +68,7 @@
     .step__label { color: var(--color-success-dark); }
   }
 
-  // ── Warning (visited but incomplete) ──────────────────────────
+  // ── Warning (visited but incomplete, before submit attempt) ───
   &--warning {
     .step__bubble {
       background: var(--color-warning, #f59e0b);
@@ -79,6 +79,20 @@
     .step__label {
       color: var(--color-warning-dark, #92400e);
       font-weight: var(--fw-medium);
+    }
+  }
+
+  // ── Error (submit attempted but still incomplete) ─────────────
+  &--error {
+    .step__bubble {
+      background: var(--color-error, #dc3545);
+      border-color: var(--color-error, #dc3545);
+      color: #fff;
+      box-shadow: 0 0 0 3px var(--color-error-light, #fee2e2);
+    }
+    .step__label {
+      color: var(--color-error, #dc3545);
+      font-weight: var(--fw-bold);
     }
   }
 

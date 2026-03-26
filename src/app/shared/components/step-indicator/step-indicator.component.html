@@ -7,15 +7,18 @@
       class="step"
       [class.step--complete]="isComplete(i)"
       [class.step--active]="isActive(i)"
+      [class.step--error]="isError(i)"
       [class.step--warning]="isWarning(i)"
       [class.step--pending]="isPending(i)"
-      [title]="isWarning(i) ? getMissingTooltip(i) : step.label"
+      [title]="(isWarning(i) || isError(i)) ? getMissingTooltip(i) : step.label"
       (click)="goToStep(i)"
       [attr.aria-label]="step.label">
 
       <div class="step__bubble">
         @if (isComplete(i)) {
           <span class="material-icons">check</span>
+        } @else if (isError(i)) {
+          <span class="material-icons">error</span>
         } @else if (isWarning(i)) {
           <span class="material-icons">warning_amber</span>
         } @else {

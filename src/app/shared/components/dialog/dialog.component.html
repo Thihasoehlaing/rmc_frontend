@@ -2,16 +2,17 @@
   <div class="modal-overlay"
        role="dialog"
        aria-modal="true"
+       [attr.aria-labelledby]="'dialog-title-' + dialogId"
        (click)="onOverlayClick($event)">
 
     <div class="modal-dialog"
-         [style.max-width]="width ? width : null"
+         [style.max-width]="width ?? null"
          (click)="$event.stopPropagation()">
 
       <!-- Header ─────────────────────────────────────────────── -->
       <header class="modal-dialog__header">
-        <h4>{{ title }}</h4>
-        <button type="button" class="btn-icon" (click)="close.emit()">
+        <h4 [id]="'dialog-title-' + dialogId">{{ title }}</h4>
+        <button type="button" class="modal-dialog__close" aria-label="Close dialog" (click)="close.emit()">
           <span class="material-icons">close</span>
         </button>
       </header>

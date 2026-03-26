@@ -90,55 +90,94 @@
 
 .actions-cell {
     display: flex;
-    justify-content: flex-end;
+    justify-content: flex-start;
     gap: var(--space-2);
 }
 
+// Ghost icon buttons — no background or border by default
 .icon-btn {
-    width: 34px;
-    height: 34px;
+    width: 32px;
+    height: 32px;
     border-radius: var(--radius-full);
-    border: 1px solid transparent;
+    border: none;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background: #fff;
+    background: transparent;
     cursor: pointer;
-    transition: all var(--transition-fast) var(--ease-default);
+    transition: background var(--transition-fast) var(--ease-default),
+                color var(--transition-fast) var(--ease-default),
+                transform var(--transition-fast) var(--ease-default);
 
+    .material-icons,
     .material-icons-outlined {
         font-size: 18px;
+    }
+
+    &:hover {
+        transform: translateY(-1px);
     }
 }
 
 .icon-btn--edit {
     color: var(--color-primary);
-    border-color: color-mix(in srgb, var(--color-primary) 20%, transparent);
-}
 
-.icon-btn--activate {
-    color: var(--color-success-dark);
-    border-color: color-mix(in srgb, var(--color-success) 30%, transparent);
-}
-
-.icon-btn--deactivate {
-    color: var(--color-error-dark);
-    border-color: color-mix(in srgb, var(--color-error) 30%, transparent);
+    &:hover {
+        background: color-mix(in srgb, var(--color-primary) 10%, transparent);
+    }
 }
 
 .icon-btn--save {
     color: var(--color-success-dark);
-    border-color: color-mix(in srgb, var(--color-success) 30%, transparent);
+
+    &:hover {
+        background: color-mix(in srgb, var(--color-success) 12%, transparent);
+    }
 }
 
 .icon-btn--neutral {
     color: var(--color-label);
-    border-color: var(--border-default);
+
+    &:hover {
+        background: color-mix(in srgb, var(--color-label) 10%, transparent);
+    }
 }
 
-.icon-btn:hover {
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-sm);
+// Ghost text+icon status buttons — no box, colored text only
+.btn-status-activate,
+.btn-status-deactivate {
+    background: transparent;
+    border: none;
+    padding: var(--space-1) var(--space-2);
+    font-size: var(--fs-xs);
+    font-weight: var(--fw-semibold);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    border-radius: var(--radius-md);
+    transition: background var(--transition-fast) var(--ease-default),
+                color var(--transition-fast) var(--ease-default);
+
+    .material-icons {
+        font-size: 16px;
+    }
+}
+
+.btn-status-activate {
+    color: var(--color-success-dark);
+
+    &:hover:not(:disabled) {
+        background: color-mix(in srgb, var(--color-success) 12%, transparent);
+    }
+}
+
+.btn-status-deactivate {
+    color: var(--color-error-dark);
+
+    &:hover:not(:disabled) {
+        background: color-mix(in srgb, var(--color-error) 12%, transparent);
+    }
 }
 
 .modal-form {
@@ -165,7 +204,7 @@
     }
 
     .toolbar-actions .btn-primary-pill,
-    .toolbar-actions .btn-secondary-pill {
+    .toolbar-actions .btn-danger-pill {
         width: 100%;
     }
 }

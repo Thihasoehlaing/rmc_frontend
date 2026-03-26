@@ -1,10 +1,24 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { ReactiveFormsModule, FormControl } from '@angular/forms';
+import { syncRequiredValidator } from '../../../shared/utils/form.utils';
 
 export interface ApprovalOption {
   label: string;
   value: string;
 }
+
+/** Visual display type for each approval decision button. */
+type ApprovalDisplayType = 'approve' | 'resubmit' | 'reject' | 'default';
+interface OptionMeta { icon: string; type: ApprovalDisplayType; }
+
+/** Maps raw option values to their icon and colour-type. */
+const OPTION_META: Record<string, OptionMeta> = {
+  approve:      { icon: 'check_circle',           type: 'approve'  },
+  resubmit:     { icon: 'published_with_changes', type: 'resubmit' },
+  resubmission: { icon: 'published_with_changes', type: 'resubmit' },
+  reject:       { icon: 'dangerous',              type: 'reject'   },
+};
+const DEFAULT_META: OptionMeta = { icon: 'radio_button_unchecked', type: 'default' };
 
 /**
  * Reusable approval card for HOS, RMC, Reviewer 2, RDIG Chair, VC, CEO.
@@ -25,17 +39,20 @@ export interface ApprovalOption {
           }
         </div>
         <div class="approval-card__body">
-          <div class="form-field">
-            <label class="form-label">{{ fieldLabel }}</label>
-            <select
-              class="input--select"
-              [formControl]="control"
-              [attr.disabled]="readonly ? '' : null">
-              <option value="" disabled>Select decision...</option>
-              @for (opt of options; track opt.value) {
-                <option [value]="opt.value">{{ opt.label }}</option>
-              }
-            </select>
+          <label class="form-label">{{ fieldLabel }}</label>
+          <div class="button-selection-group">
+            @for (opt of options; track opt.value) {
+              <button
+                type="button"
+                class="option-btn"
+                [attr.data-type]="metaFor(opt.value).type"
+                [class.active]="control.value === opt.value"
+                [disabled]="readonly ? true : null"
+                (click)="select(opt.value)">
+                <span class="material-icons">{{ metaFor(opt.value).icon }}</span>
+                <span>{{ opt.label }}</span>
+              </button>
+            }
           </div>
         </div>
       </div>
@@ -87,12 +104,93 @@ export interface ApprovalOption {
       text-transform: uppercase;
     }
 
+    // ── Button selection group ──────────────────────────────────────────
     .approval-card__body {
-      max-width: 320px;
+      .form-label {
+        display: block;
+        margin-bottom: var(--space-3);
+      }
+    }
+
+    .button-selection-group {
+      display: flex;
+      gap: var(--space-3);
+      flex-wrap: wrap;
+    }
+
+    .option-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-2);
+      padding: var(--space-4) var(--space-5);
+      min-width: 110px;
+      border: 2px solid var(--border-default);
+      border-radius: var(--radius-lg);
+      background: var(--color-surface);
+      color: var(--color-text-secondary);
+      cursor: pointer;
+      font-family: inherit;
+      transition:
+        border-color 0.2s ease,
+        background  0.2s ease,
+        color       0.2s ease,
+        transform   0.15s ease,
+        box-shadow  0.2s ease;
+
+      .material-icons {
+        font-size: 28px;
+        line-height: 1;
+      }
+
+      span:last-child {
+        font-size: var(--fs-xs, 11px);
+        font-weight: var(--fw-bold);
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+      }
+
+      &:hover:not(:disabled) {
+        transform: translateY(-2px);
+        border-color: var(--border-hover);
+        box-shadow: var(--shadow-sm);
+      }
+
+      &:disabled {
+        cursor: not-allowed;
+        opacity: var(--disabled-opacity, 0.55);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--color-primary);
+        outline-offset: 2px;
+      }
+
+      // Active states per decision type
+      &.active[data-type="approve"] {
+        border-color: var(--color-success, #28a745);
+        background: color-mix(in srgb, var(--color-success, #28a745) 10%, var(--color-surface));
+        color: var(--color-success-dark, #176227);
+        box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-success, #28a745) 15%, transparent);
+      }
+
+      &.active[data-type="resubmit"] {
+        border-color: var(--color-warning, #ffc107);
+        background: color-mix(in srgb, var(--color-warning, #ffc107) 12%, var(--color-surface));
+        color: var(--color-warning-dark, #92400e);
+        box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-warning, #ffc107) 15%, transparent);
+      }
+
+      &.active[data-type="reject"] {
+        border-color: var(--color-error, #dc3545);
+        background: color-mix(in srgb, var(--color-error, #dc3545) 10%, var(--color-surface));
+        color: var(--color-error, #dc3545);
+        box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-error, #dc3545) 15%, transparent);
+      }
     }
   `]
 })
-export class ApprovalCardComponent {
+export class ApprovalCardComponent implements OnChanges {
   @Input() title = 'Approval';
   @Input() fieldLabel = 'Approval Status';
   @Input() icon = 'verified_user';
@@ -100,4 +198,20 @@ export class ApprovalCardComponent {
   @Input() readonly = true;
   @Input() options: ApprovalOption[] = [];
   @Input() control = new FormControl('');
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if ('readonly' in changes || 'control' in changes) {
+      syncRequiredValidator(this.control, this.readonly);
+    }
+  }
+
+  metaFor(value: string) {
+    return OPTION_META[value] ?? DEFAULT_META;
+  }
+
+  select(value: string): void {
+    if (!this.readonly) {
+      this.control.setValue(value);
+    }
+  }
 }

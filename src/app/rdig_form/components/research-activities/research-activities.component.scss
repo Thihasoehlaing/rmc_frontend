@@ -133,26 +133,6 @@
   }
 }
 
-.btn-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: var(--input-height-sm);
-  height: var(--input-height-sm);
-  border-radius: var(--radius-md);
-  border: none;
-  cursor: pointer;
-  background: transparent;
-  transition: background 0.15s;
-
-  .material-icons { font-size: 18px; }
-
-  &--delete {
-    color: var(--color-error);
-    &:hover { background: var(--color-error-light); }
-  }
-}
-
 // ── Gantt Chart ───────────────────────────────────────────────
 .gantt-card {
   margin-top: 0; // gap handled by parent flex

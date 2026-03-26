@@ -6,17 +6,11 @@
   gap: var(--space-8);
 }
 
-// ── Section header (subheader + add button on same row) ──────────
-.list-section-header {
+// ── Add-button row above table ────────────────────────────────────
+.category-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 0 var(--space-5) 0;
-
-  app-custom-subheader {
-    flex: 1;
-    margin-bottom: 0;
-  }
+  margin-bottom: var(--space-4);
 }
 
 // ── Empty state ────────────────────────────────────────────────────

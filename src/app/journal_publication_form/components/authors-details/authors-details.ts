@@ -36,7 +36,8 @@ export class AuthorsDetails implements OnInit {
     { value: 'Local Public University', label: 'Local Public University' },
     { value: 'Local Private University', label: 'Local Private University' },
     { value: 'Industry', label: 'Industry' },
-    { value: 'Agency (Government/NGO)', label: 'Agency (Government/NGO)' }
+    { value: 'Agency (Government/NGO)', label: 'Agency (Government/NGO)' },
+    
   ];
 
   constructor(private fb: FormBuilder) {}

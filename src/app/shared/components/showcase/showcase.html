@@ -642,10 +642,8 @@
                 <input class="input--text" placeholder="Type something…">
               </div>
             </div>
-            <div dialog-footer>
-              <button class="btn btn-ghost" (click)="showDialog.set(false)">Cancel</button>
-              <button class="btn btn-primary" (click)="showDialog.set(false)">Confirm</button>
-            </div>
+            <button dialog-footer class="btn btn-ghost" (click)="showDialog.set(false)">Cancel</button>
+            <button dialog-footer class="btn btn-primary" (click)="showDialog.set(false)">Confirm</button>
           </app-dialog>
         }
       </div>

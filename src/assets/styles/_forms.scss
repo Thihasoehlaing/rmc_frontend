@@ -168,7 +168,8 @@
 
 // Reusable pill buttons (used by RDIG settings and available app-wide)
 .btn-primary-pill,
-.btn-secondary-pill {
+.btn-secondary-pill,
+.btn-danger-pill {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -222,6 +223,18 @@
     background: var(--color-primary);
     color: #fff;
     border-color: var(--color-primary);
+  }
+}
+
+.btn-danger-pill {
+  background: #fff;
+  color: var(--color-error);
+  border: 1px solid var(--color-error);
+
+  &:hover:not(:disabled) {
+    background: var(--color-error);
+    color: #fff;
+    border-color: var(--color-error);
   }
 }
 
@@ -364,7 +377,50 @@
   gap: var(--space-5);
 }
 
-// 8. Button Size Variants
+// 8. Icon Button (table actions, modal close, inline controls)
+.btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--input-height-sm);
+  height: var(--input-height-sm);
+  flex-shrink: 0;
+  border-radius: var(--radius-md);
+  border: none;
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition:
+    background var(--transition-fast) var(--ease-default),
+    color var(--transition-fast) var(--ease-default);
+
+  .material-icons {
+    font-size: 18px;
+    line-height: 1;
+  }
+
+  &:disabled {
+    opacity: var(--disabled-opacity);
+    cursor: not-allowed;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+
+  &--edit {
+    color: var(--color-primary);
+    &:hover:not(:disabled) { background: var(--color-primary-light); }
+  }
+
+  &--delete {
+    color: var(--color-error);
+    &:hover:not(:disabled) { background: var(--color-error-light); }
+  }
+}
+
+// 8b. Button Size Variants
 .btn-sm {
   height: var(--input-height-sm);
   padding: var(--space-1) var(--space-3);

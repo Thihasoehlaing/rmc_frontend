@@ -11,7 +11,7 @@
     <div style="margin: 16px 0; padding: 8px; background: #fffbe6; border: 1px solid #ffe58f; border-radius: 6px;">
       <label style="font-weight: bold; color: #ad8b00;">DEV TEST: Application Status</label>
       <select
-        [formControl]="fc('metadata.applicationStatus')"
+        [value]="workflowState().currentStatus"
         (change)="onTestStatusChange($any($event.target).value)"
         style="margin-left: 12px; width: 340px; padding: 4px 8px; border: 1px solid #ffe58f; border-radius: 4px;">
         <option value="fill_application">fill_application</option>
@@ -30,8 +30,23 @@
         <option value="rejected_vc">rejected_vc</option>
         <option value="pending_ceo">pending_ceo</option>
         <option value="rejected_ceo">rejected_ceo</option>
+        <option value="approved">approved</option>
       </select>
       <span style="margin-left: 12px; color: #ad8b00; font-size: 12px;">(Live ABAC override for developer testing)</span>
+      <button
+        type="button"
+        (click)="toggleValidation()"
+        [style.margin-left]="'20px'"
+        [style.padding]="'4px 14px'"
+        [style.border-radius]="'4px'"
+        [style.border]="validationDisabled() ? '1px solid #ff4d4f' : '1px solid #52c41a'"
+        [style.background]="validationDisabled() ? '#fff1f0' : '#f6ffed'"
+        [style.color]="validationDisabled() ? '#cf1322' : '#389e0d'"
+        [style.font-weight]="'600'"
+        [style.font-size]="'12px'"
+        [style.cursor]="'pointer'">
+        {{ validationDisabled() ? '⚠ Validation OFF — Click to Re-enable' : '✓ Validation ON — Click to Disable' }}
+      </button>
     </div>
     <!-- DEV TEST END -->
 
@@ -48,6 +63,7 @@
     [currentStep]="currentStep()"
     [steps]="steps"
     [stepStatuses]="getStepStatuses()"
+    [submitAttempted]="submitAttempted()"
     (stepClick)="goToStep($event)">
   </app-step-indicator>
 
@@ -132,16 +148,13 @@
   }
 
   <!-- ── 4. Main Form ──────────────────────────────────────────── -->
-  <form [formGroup]="rdigForm" (ngSubmit)="onSubmit()" novalidate>
+  <form [formGroup]="rdigForm" novalidate>
 
     <!-- Hidden metadata — always present, never visible -->
     <div formGroupName="metadata" hidden aria-hidden="true">
-      <input formControlName="batchNumber"       readonly>
-      <input formControlName="applicationId"     readonly>
-      <input formControlName="version"           readonly>
-      <input formControlName="applicationStatus" readonly>
+      <input formControlName="batchNumber"        readonly>
       <input formControlName="applicationVersion" readonly>
-      <input formControlName="reviewers_version" readonly>
+      <input formControlName="reviewers_version"  readonly>
     </div>
 
     <!-- ── Form Container ─────────────────────────────────────── -->

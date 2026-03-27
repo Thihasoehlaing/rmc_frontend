@@ -65,8 +65,8 @@
   gap: var(--space-3);
   padding: var(--space-4);
   margin-bottom: var(--space-6);
-  background-color: #fef3c7;
-  border: 1px solid #fbbf24;
+  background-color: var(--color-warning-light);
+  border: 1px solid var(--color-warning);
   border-radius: var(--radius-md);
   align-items: flex-start;
 }
@@ -76,8 +76,8 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  color: #d97706;
-  font-size: 24px;
+  color: var(--color-warning);
+  font-size: 24px; // no token: material icon pixel size
 }
 
 .warning-content {
@@ -88,14 +88,14 @@
 
 .warning-title {
   font-weight: var(--fw-semibold);
-  color: #92400e;
+  color: var(--color-warning-dark);
   font-size: var(--fs-sm);
   margin: 0;
   padding: 0;
 }
 
 .warning-text {
-  color: #78350f;
+  color: var(--color-warning-dark);
   font-size: var(--fs-sm);
   margin: 0;
   padding: 0;
@@ -121,8 +121,8 @@
   }
 
   input[type="radio"] {
-    width: 18px;
-    height: 18px;
+    width: 18px; // no token: radio button size
+    height: 18px; // no token: radio button size
     cursor: pointer;
     accent-color: var(--color-text);
     flex-shrink: 0;
@@ -146,7 +146,7 @@
   align-items: center;
 
   input {
-    max-width: 300px;
+    max-width: 300px; // no token: keyword input max width
     flex: 1;
   }
 
@@ -234,7 +234,7 @@
 .disclaimer-field {
   padding: var(--space-3);
   background: var(--bg-rejected);
-  border-left: 2px solid var(--color-error-dark);
+  border-left: 2px solid var(--color-error-dark); // 2px sub-space
   border-radius: var(--radius-sm);
   margin-bottom: var(--space-2);
 }
@@ -246,45 +246,6 @@
   line-height: 1.5;
 }
 
-
-.btn-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: var(--space-8);
-  height: var(--space-8);
-  padding: 0;
-  border: none;
-  border-radius: var(--radius-sm);
-  background: transparent;
-  cursor: pointer;
-  transition: all var(--transition-fast);
-  color: var(--color-text);
-
-  .material-icons {
-    font-size: 18px;
-  }
-
-  &:hover {
-    background: var(--color-surface-hover);
-  }
-
-  &--edit {
-    color: var(--color-primary);
-
-    &:hover {
-      background: rgba(var(--color-primary-rgb), 0.1);
-    }
-  }
-
-  &--delete {
-    color: var(--color-error);
-
-    &:hover {
-      background: rgba(var(--color-error-rgb), 0.1);
-    }
-  }
-}
 
 // List and table styles
 .list-section-header {

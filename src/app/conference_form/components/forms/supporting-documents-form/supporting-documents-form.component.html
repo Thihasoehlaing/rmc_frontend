@@ -15,6 +15,7 @@
           label="Acceptance Notification"
           [accept]="PDF_ACCEPT"
           [maxSizeMB]="MAX_FILE_SIZE_MB"
+          [disabled]="!canUploadDocuments()"
           placeholder="Upload acceptance notification PDF"
           (fileSelected)="onFileSelected('acceptanceNotification', $any($event))">
         </app-file-upload>
@@ -33,6 +34,7 @@
           label="Reviewers' Feedback"
           [accept]="PDF_ACCEPT"
           [maxSizeMB]="MAX_FILE_SIZE_MB"
+          [disabled]="!canUploadDocuments()"
           placeholder="Upload reviewers' feedback PDF"
           (fileSelected)="onFileSelected('reviewersFeedback', $any($event))">
         </app-file-upload>
@@ -51,6 +53,7 @@
           label="Evidence of Guaranteed SCOPUS Indexed Publication"
           [accept]="PDF_ACCEPT"
           [maxSizeMB]="MAX_FILE_SIZE_MB"
+          [disabled]="!canUploadDocuments()"
           placeholder="Upload SCOPUS publication evidence PDF"
           (fileSelected)="onFileSelected('scopusEvidencePublication', $any($event))">
         </app-file-upload>
@@ -70,6 +73,7 @@
           label="Turnitin Report"
           [accept]="PDF_ACCEPT"
           [maxSizeMB]="MAX_FILE_SIZE_MB"
+          [disabled]="!canUploadDocuments()"
           placeholder="Upload Turnitin report PDF"
           (fileSelected)="onFileSelected('turnitinReport', $any($event))">
         </app-file-upload>
@@ -89,6 +93,7 @@
           label="Final Paper Draft"
           [accept]="PDF_ACCEPT"
           [maxSizeMB]="MAX_FILE_SIZE_MB"
+          [disabled]="!canUploadDocuments()"
           placeholder="Upload final paper draft PDF"
           (fileSelected)="onFileSelected('finalPaperDraft', $any($event))">
         </app-file-upload>
@@ -114,6 +119,7 @@
           label="Conference Invoice"
           [accept]="PDF_ACCEPT"
           [maxSizeMB]="MAX_FILE_SIZE_MB"
+          [disabled]="!canUploadDocuments()"
           placeholder="Upload conference invoice PDF"
           (fileSelected)="onFileSelected('conferenceInvoice', $any($event))">
         </app-file-upload>

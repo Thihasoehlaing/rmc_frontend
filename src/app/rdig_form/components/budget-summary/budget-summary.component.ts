@@ -10,6 +10,7 @@ import { DataTableComponent } from '../../../shared/components/data-table/data-t
 import type { DataTableColumn } from '../../../shared/components/data-table/data-table.component';
 import { DialogComponent } from '../../../shared/components/dialog/dialog.component';
 import { ValidationMessageComponent } from '../../../shared/components/validation-message/validation-message.component';
+import { ActionButtonComponent } from '../../../shared/components/action-button/action-button.component';
 
 type BudgetCategoryKey = 'studentAllowances' | 'travelAccommodation' | 'materialsSupplies' | 'specialServices';
 
@@ -26,6 +27,7 @@ type BudgetCategoryKey = 'studentAllowances' | 'travelAccommodation' | 'material
     DataTableComponent,
     DialogComponent,
     ValidationMessageComponent,
+    ActionButtonComponent,
   ],
   templateUrl: './budget-summary.component.html',
   styleUrl: './budget-summary.component.scss'

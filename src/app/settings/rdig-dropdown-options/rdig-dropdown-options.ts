@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { combineLatest, Observable, of, Subject } from 'rxjs';
 import { map, startWith, switchMap, takeUntil } from 'rxjs/operators';
-import { RdigDropdownOptionsService, DropdownCategoryKey, DropdownOption, CATEGORY_LABELS } from '../rdig-dropdown-options.service';
+import { RdigDropdownOptionsService, DropdownCategoryKey, DropdownOptionEntityEntity as DropdownOptionEntity, CATEGORY_LABELS } from '../rdig-dropdown-options.service';
 import { DataTableComponent } from '../../shared/components/data-table/data-table.component';
 import type { DataTableColumn } from '../../shared/components/data-table/data-table.component';
 import { DialogComponent } from '../../shared/components/dialog/dialog.component';
 import { ValidationMessageComponent } from '../../shared/components/validation-message/validation-message.component';
+import { ActionButtonComponent } from '../../shared/components/action-button/action-button.component';
 
 @Component({
   selector: 'app-rdig-dropdown-options',
@@ -17,7 +18,8 @@ import { ValidationMessageComponent } from '../../shared/components/validation-m
     ReactiveFormsModule,
     DataTableComponent,
     DialogComponent,
-    ValidationMessageComponent
+    ValidationMessageComponent,
+    ActionButtonComponent,
   ],
   templateUrl: './rdig-dropdown-options.html',
   styleUrl: './rdig-dropdown-options.scss',
@@ -32,8 +34,8 @@ export class RdigDropdownOptions implements OnInit, OnDestroy {
   parentDomainCtrl = new FormControl<number | null>(null);
   statusFilterCtrl = new FormControl<'all' | 'active' | 'inactive'>('all', { nonNullable: true });
 
-  researchDomains$: Observable<DropdownOption[]> = of([]);
-  filteredOptions$!: Observable<DropdownOption[]>;
+  researchDomains$: Observable<DropdownOptionEntity[]> = of([]);
+  filteredOptions$!: Observable<DropdownOptionEntity[]>;
 
   tableColumns: DataTableColumn[] = [
     { key: 'select', label: '', width: '56px', align: 'center', headerAlign: 'center' },
@@ -54,7 +56,7 @@ export class RdigDropdownOptions implements OnInit, OnDestroy {
   canDeleteSelected = computed(() => this.selectedIds().length > 0);
 
   private destroy$ = new Subject<void>();
-  private allDomains: DropdownOption[] = [];
+  private allDomains: DropdownOptionEntity[] = [];
 
   ngOnInit(): void {
     this.initCreateForm();
@@ -181,7 +183,7 @@ export class RdigDropdownOptions implements OnInit, OnDestroy {
     this.showModal.set(false);
   }
 
-  startInlineEdit(option: DropdownOption): void {
+  startInlineEdit(option: DropdownOptionEntity): void {
     this.editingRowId.set(option.id);
     this.updateInlineFormValidators();
     this.inlineEditForm.reset({
@@ -195,7 +197,7 @@ export class RdigDropdownOptions implements OnInit, OnDestroy {
     this.inlineEditForm.reset({ optionName: '', parentDomainId: null });
   }
 
-  saveInlineEdit(option: DropdownOption): void {
+  saveInlineEdit(option: DropdownOptionEntity): void {
     if (this.inlineEditForm.invalid) {
       this.inlineEditForm.markAllAsTouched();
       return;
@@ -247,7 +249,7 @@ export class RdigDropdownOptions implements OnInit, OnDestroy {
     this.closeModal();
   }
 
-  toggleStatus(option: DropdownOption): void {
+  toggleStatus(option: DropdownOptionEntity): void {
     this.optionsService.toggleStatus(this.categoryCtrl.value, option.id);
     const action = option.status === 'Active' ? 'deactivated' : 'activated';
     this.feedback.set({ type: 'success', text: `Option ${action}.` });

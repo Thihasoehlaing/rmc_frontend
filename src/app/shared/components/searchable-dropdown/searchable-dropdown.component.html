@@ -1,65 +1,143 @@
-<div class="searchable-dropdown" [class.is-open]="isOpen()" [class.is-disabled]="isDisabled()">
+<div
+  class="searchable-dropdown"
+  [class.is-open]="isOpen()"
+  [class.is-disabled]="isDisabled() || loading">
+
+  <!-- ── Label ──────────────────────────────────────────────────── -->
   @if (label) {
-  <label class="form-label" [class.is-required]="false">{{label}}</label>
+    <label class="form-label">{{ label }}</label>
   }
 
-  <div class="dropdown-trigger" (click)="toggleDropdown()" [class.has-value]="selectedValues().length > 0" [class.is-disabled]="isDisabled()">
+  <!-- ── Trigger ────────────────────────────────────────────────── -->
+  <div
+    class="dropdown-trigger"
+    tabindex="0"
+    role="combobox"
+    [attr.aria-expanded]="isOpen()"
+    [attr.aria-haspopup]="'listbox'"
+    [attr.aria-controls]="listboxId"
+    [attr.aria-activedescendant]="activeDescendantId"
+    [attr.aria-disabled]="isDisabled() || loading"
+    [class.has-value]="selectedValues().length > 0"
+    [class.is-disabled]="isDisabled() || loading"
+    (click)="toggleDropdown()">
+
     <div class="display-container">
       @if (selectedValues().length === 0) {
-      <span class="placeholder">{{placeholder}}</span>
-      } @else {
-      @if (isMulti) {
-      <div class="chips-container">
-        @for (val of selectedValues(); track val) {
-        <div class="chip" (click)="$event.stopPropagation()">
-          <span class="chip-label">{{(options.find(o => o.value === val))?.label}}</span>
-          <span class="chip-remove" (click)="selectOption({value: val, label: ''})">&times;</span>
-        </div>
-        }
-      </div>
-      } @else {
-      <span class="value-text">{{displayValue}}</span>
-      }
-      }
-    </div>
-    <div class="trigger-actions">
-      @if (selectedValues().length > 0) {
-      <span class="clear-btn" (click)="clearSelection($event)">&times;</span>
-      }
-      <span class="arrow-icon"></span>
-    </div>
-  </div>
+        <!-- Placeholder / loading text -->
+        <span class="placeholder">{{ loading ? 'Loading…' : placeholder }}</span>
 
-  @if (isOpen()) {
-  <div class="dropdown-panel">
-    @if (searchable) {
-    <div class="search-container">
-      <input [formControl]="searchCtrl" class="input--text" placeholder="Search..."
-        (click)="$event.stopPropagation()" />
-    </div>
-    }
-
-    <div class="options-list">
-      @for (opt of filteredOptions; track opt.value) {
-      <div class="option-item" [class.selected]="isSelected(opt.value)" [class.disabled]="opt.disabled"
-        (click)="selectOption(opt); $event.stopPropagation()">
-        @if (isMulti) {
-        <div class="checkbox-box">
-          @if (isSelected(opt.value)) {
-          <span class="check-mark"></span>
+      } @else if (isMulti) {
+        <!-- Multi-select: chip list -->
+        <div class="chips-container">
+          @for (val of selectedValues(); track $index) {
+            <div class="chip">
+              <span class="chip-label">{{ getChipLabel(val) }}</span>
+              @if (!isDisabled()) {
+                <button
+                  type="button"
+                  class="chip-remove"
+                  [attr.aria-label]="'Remove ' + getChipLabel(val)"
+                  (click)="removeChip(val, $event)">
+                  &times;
+                </button>
+              }
+            </div>
           }
         </div>
-        }
-        <span class="option-label">{{opt.label}}</span>
-        @if (!isMulti && isSelected(opt.value)) {
-        <span class="check-mark-single"></span>
-        }
-      </div>
-      } @empty {
-      <div class="no-results">No options found</div>
+
+      } @else {
+        <!-- Single-select: display text -->
+        <span class="value-text">{{ displayValue }}</span>
       }
+    </div>
+
+    <div class="trigger-actions">
+      @if (loading) {
+        <span class="spinner" aria-hidden="true"></span>
+      } @else if (selectedValues().length > 0 && !isDisabled()) {
+        <button
+          type="button"
+          class="clear-btn"
+          aria-label="Clear selection"
+          (click)="clearSelection($event)">
+          &times;
+        </button>
+      }
+      <span class="arrow-icon" aria-hidden="true"></span>
     </div>
   </div>
 
+  <!-- ── Dropdown panel ─────────────────────────────────────────── -->
+  @if (isOpen()) {
+    <div
+      class="dropdown-panel"
+      [id]="listboxId"
+      role="listbox"
+      [attr.aria-multiselectable]="isMulti"
+      [attr.aria-label]="label || placeholder">
+
+      <!-- Search input -->
+      @if (searchable) {
+        <div class="search-container">
+          <input
+            class="input--text sd-search-input"
+            type="text"
+            [formControl]="searchCtrl"
+            placeholder="Search…"
+            autocomplete="off"
+            aria-autocomplete="list"
+            (click)="$event.stopPropagation()"
+            (keydown.arrowdown)="$event.preventDefault()"
+            (keydown.arrowup)="$event.preventDefault()" />
+        </div>
+      }
+
+      <!-- Options list -->
+      <div class="options-list" role="presentation">
+        @for (opt of filteredOptions(); track opt.value; let i = $index) {
+          <div
+            class="option-item"
+            role="option"
+            [id]="getOptionId(i)"
+            [class.selected]="isSelected(opt.value)"
+            [class.focused]="focusedIndex() === i"
+            [class.disabled]="opt.disabled"
+            [attr.aria-selected]="isSelected(opt.value)"
+            [attr.aria-disabled]="opt.disabled ?? false"
+            (click)="selectOption(opt); $event.stopPropagation()">
+
+            <!-- Checkbox indicator (multi-select) -->
+            @if (isMulti) {
+              <div
+                class="checkbox-box"
+                [class.checked]="isSelected(opt.value)"
+                aria-hidden="true">
+                @if (isSelected(opt.value)) {
+                  <span class="check-mark"></span>
+                }
+              </div>
+            }
+
+            <span class="option-label">{{ opt.label }}</span>
+
+            <!-- Single-select checkmark -->
+            @if (!isMulti && isSelected(opt.value)) {
+              <span class="check-mark-single" aria-hidden="true"></span>
+            }
+          </div>
+
+        } @empty {
+          @if (loading) {
+            <div class="no-results">
+              <span class="spinner spinner--sm" aria-hidden="true"></span>
+              Loading options…
+            </div>
+          } @else {
+            <div class="no-results" role="status">No options found</div>
+          }
+        }
+      </div>
+    </div>
   }
 </div>

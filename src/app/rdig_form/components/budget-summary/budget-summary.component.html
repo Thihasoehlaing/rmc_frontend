@@ -34,9 +34,9 @@
     <app-custom-subheader title="V11000 - Student Allowances (Graduate Research Assistants)"></app-custom-subheader>
     <div class="card__content">
       <div class="category-header">
-        <button type="button" class="btn btn-primary" [disabled]="workflow.isFormReadOnly()" (click)="openAddItemModal('studentAllowances')">
-          <span class="material-icons">add</span> Add Item
-        </button>
+        <app-action-button type="primary" label="Add Item" icon="add"
+          [disabled]="workflow.isFormReadOnly()" (clicked)="openAddItemModal('studentAllowances')">
+        </app-action-button>
       </div>
       @if (studentAllowances.length > 0) {
         <app-data-table
@@ -87,9 +87,9 @@
     <app-custom-subheader title="V21000 - Travelling and Accommodation"></app-custom-subheader>
     <div class="card__content">
       <div class="category-header">
-        <button type="button" class="btn btn-primary" [disabled]="workflow.isFormReadOnly()" (click)="openAddItemModal('travelAccommodation')">
-          <span class="material-icons">add</span> Add Item
-        </button>
+        <app-action-button type="primary" label="Add Item" icon="add"
+          [disabled]="workflow.isFormReadOnly()" (clicked)="openAddItemModal('travelAccommodation')">
+        </app-action-button>
       </div>
       @if (travelAccommodation.length > 0) {
         <app-data-table
@@ -140,9 +140,9 @@
     <app-custom-subheader title="V27000 - Research Materials &amp; Supplies"></app-custom-subheader>
     <div class="card__content">
       <div class="category-header">
-        <button type="button" class="btn btn-primary" [disabled]="workflow.isFormReadOnly()" (click)="openAddItemModal('materialsSupplies')">
-          <span class="material-icons">add</span> Add Item
-        </button>
+        <app-action-button type="primary" label="Add Item" icon="add"
+          [disabled]="workflow.isFormReadOnly()" (clicked)="openAddItemModal('materialsSupplies')">
+        </app-action-button>
       </div>
       @if (materialsSupplies.length > 0) {
         <app-data-table
@@ -194,9 +194,9 @@
     <app-custom-subheader title="V29000 - Special Services"></app-custom-subheader>
     <div class="card__content">
       <div class="category-header">
-        <button type="button" class="btn btn-primary" [disabled]="workflow.isFormReadOnly()" (click)="openAddItemModal('specialServices')">
-          <span class="material-icons">add</span> Add Item
-        </button>
+        <app-action-button type="primary" label="Add Item" icon="add"
+          [disabled]="workflow.isFormReadOnly()" (clicked)="openAddItemModal('specialServices')">
+        </app-action-button>
       </div>
       @if (specialServices.length > 0) {
         <app-data-table
@@ -320,13 +320,10 @@
       </div>
     </div>
 
-    <div dialog-footer>
-      <button type="button" class="btn btn-ghost" (click)="closeAddItemModal()">Cancel</button>
-      <button type="button" class="btn btn-primary" [disabled]="budgetItemForm.invalid" (click)="submitBudgetItem()">
-        <span class="material-icons">check</span>
-        {{ modalSubmitLabel }}
-      </button>
-    </div>
+    <app-action-button dialog-footer type="secondary" label="Cancel" (clicked)="closeAddItemModal()"></app-action-button>
+    <app-action-button dialog-footer type="primary" icon="check" [label]="modalSubmitLabel"
+      [disabled]="budgetItemForm.invalid" (clicked)="submitBudgetItem()">
+    </app-action-button>
 
   </app-dialog>
 }

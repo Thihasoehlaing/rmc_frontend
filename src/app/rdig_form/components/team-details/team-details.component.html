@@ -51,17 +51,19 @@
 
   <!-- ── Section 3: APU Co-Researchers (Internal) ──────────── -->
   <section class="card">
-    <div class="list-section-header">
-      <app-custom-subheader title="APU Co-Researchers (Internal)"
-        tooltip="Minimum 1, Maximum 2 internal co-researchers"></app-custom-subheader>
-      <button type="button" class="btn btn-primary btn-sm"
-        [disabled]="internalResearchers.length >= 2 || workflow.isFormReadOnly()"
-        (click)="openInternalModal()">
-        <span class="material-icons">add</span> Add Member
-      </button>
-    </div>
+    <app-custom-subheader title="APU Co-Researchers (Internal)"
+      tooltip="Minimum 1, Maximum 2 internal co-researchers">
+    </app-custom-subheader>
 
     <div class="card__content">
+      <div class="category-header">
+        <app-action-button
+          type="primary" label="Add Member" icon="add"
+          [disabled]="internalResearchers.length >= 2 || workflow.isFormReadOnly()"
+          (clicked)="openInternalModal()">
+        </app-action-button>
+      </div>
+
       @if (internalResearchers.length === 0) {
       <div class="empty-state">
         <span class="material-icons">group_add</span>
@@ -113,17 +115,19 @@
 
   <!-- ── Section 4: External Co-Researchers ────────────────── -->
   <section class="card">
-    <div class="list-section-header">
-      <app-custom-subheader title="External Co-Researchers / Collaborators"
-        tooltip="Minimum 2, Maximum 10 external collaborators"></app-custom-subheader>
-      <button type="button" class="btn btn-primary btn-sm"
-        [disabled]="externalResearchers.length >= 10 || workflow.isFormReadOnly()"
-        (click)="openExternalModal()">
-        <span class="material-icons">add</span> Add Collaborator
-      </button>
-    </div>
+    <app-custom-subheader title="External Co-Researchers / Collaborators"
+      tooltip="Minimum 2, Maximum 10 external collaborators">
+    </app-custom-subheader>
 
     <div class="card__content">
+      <div class="category-header">
+        <app-action-button
+          type="primary" label="Add Collaborator" icon="add"
+          [disabled]="externalResearchers.length >= 10 || workflow.isFormReadOnly()"
+          (clicked)="openExternalModal()">
+        </app-action-button>
+      </div>
+
       @if (externalResearchers.length === 0) {
       <div class="empty-state">
         <span class="material-icons">public</span>
@@ -237,12 +241,18 @@
       <div class="row row--2">
         <div class="form-field">
           <label class="form-label is-required">Staff Name</label>
-          <input type="text" class="input--text" formControlName="staffName" placeholder="Enter staff full name...">
-          <app-validation-message [control]="internalForm.get('staffName')"></app-validation-message>
+          <app-searchable-dropdown
+            [options]="researcherOptions"
+            formControlName="staffId"
+            placeholder="Search and select staff..."
+            valueMode="single">
+          </app-searchable-dropdown>
+          <app-validation-message [control]="internalForm.get('staffId')"></app-validation-message>
         </div>
         <div class="form-field">
           <label class="form-label">School / Department</label>
-          <input type="text" class="input--text" formControlName="department" readonly>
+          <input type="text" class="input--text" formControlName="department" readonly
+            placeholder="Auto-filled from selected staff">
         </div>
       </div>
 
@@ -266,13 +276,12 @@
       </div>
     </div>
 
-    <div dialog-footer>
-      <button type="button" class="btn btn-ghost" (click)="showInternalModal.set(false)">Cancel</button>
-      <button type="button" class="btn btn-primary" [disabled]="internalForm.invalid" (click)="saveInternal()">
-        <span class="material-icons">check</span>
-        {{ editingInternalIdx() !== null ? 'Save Changes' : 'Add Member' }}
-      </button>
-    </div>
+    <app-action-button dialog-footer type="secondary" label="Cancel" (clicked)="showInternalModal.set(false)"></app-action-button>
+    <app-action-button dialog-footer type="primary" icon="check"
+      [label]="editingInternalIdx() !== null ? 'Save Changes' : 'Add Member'"
+      [disabled]="internalForm.invalid"
+      (clicked)="saveInternal()">
+    </app-action-button>
 
   </app-dialog>
 }
@@ -391,13 +400,12 @@
 
     </div>
 
-    <div dialog-footer>
-      <button type="button" class="btn btn-ghost" (click)="showExternalModal.set(false)">Cancel</button>
-      <button type="button" class="btn btn-primary" [disabled]="externalForm.invalid" (click)="saveExternal()">
-        <span class="material-icons">check</span>
-        {{ editingExternalIdx() !== null ? 'Save Changes' : 'Add Collaborator' }}
-      </button>
-    </div>
+    <app-action-button dialog-footer type="secondary" label="Cancel" (clicked)="showExternalModal.set(false)"></app-action-button>
+    <app-action-button dialog-footer type="primary" icon="check"
+      [label]="editingExternalIdx() !== null ? 'Save Changes' : 'Add Collaborator'"
+      [disabled]="externalForm.invalid"
+      (clicked)="saveExternal()">
+    </app-action-button>
 
   </app-dialog>
 }

@@ -1,0 +1,247 @@
+{
+  "applications": [
+    {
+      "metadata": {
+        "batchNumber": null,
+        "applicationVersion": 2,
+        "reviewers_version": 1
+      },
+      "teamDetails": {
+        "leaderName": "Dr. John Smith",
+        "leaderEmail": "john.smith@apu.edu.my",
+        "department": "School of Business",
+        "researchCluster": "4",
+        "leaderRoles": "xsd",
+        "internalResearchers": [
+          {
+            "staffId": "5",
+            "staffName": "Dr. Ali Hassan",
+            "department": "School of Computing & Technology",
+            "expertise": "sd",
+            "roles": "sd"
+          }
+        ],
+        "externalResearchers": []
+      },
+      "projectDetails": {
+        "applicationType": "",
+        "declarations": {
+          "ethics": false,
+          "conflict": false
+        },
+        "category": "S&T",
+        "duration": "",
+        "title": "",
+        "researchArea": "",
+        "domain": "",
+        "subDomain": "",
+        "esgs": [],
+        "sdgs": [],
+        "executiveSummary": "",
+        "keywords": "",
+        "introduction": "",
+        "problemStatement": "",
+        "researchAim": "",
+        "researchQuestions": "",
+        "hypothesis": "",
+        "literatureReview": "",
+        "methodology": "",
+        "references": "",
+        "benefits": {
+          "apu": "",
+          "students": "",
+          "stakeholders": ""
+        },
+        "visionMission": ""
+      },
+      "activities": [],
+      "outputs": {
+        "journal": {
+          "checked": false,
+          "quantity": null
+        },
+        "conceptualDesign": false,
+        "knowledgeTransfer": {
+          "checked": false,
+          "community": ""
+        },
+        "externalGrant": {
+          "checked": false,
+          "scheme": ""
+        },
+        "others": {
+          "checked": false,
+          "details": ""
+        }
+      },
+      "budget": {
+        "studentAllowances": [],
+        "travelAccommodation": [],
+        "materialsSupplies": [],
+        "specialServices": [],
+        "totalRequest": 0
+      },
+      "finalDeclaration": {
+        "noveltyJustification": "",
+        "agreed": true
+      },
+      "reviewTeam": {
+        "hosComment": "sd",
+        "reviewer1Comment": "",
+        "reviewer1Score": "",
+        "reviewer2Comment": "",
+        "reviewer2Score": "",
+        "rmcComment": "ds"
+      },
+      "reviewProject": {
+        "hosPageComment": "sdsd",
+        "reviewer1ClassificationComment": "",
+        "reviewer2ClassificationComment": "",
+        "reviewer1TitleComment": "",
+        "reviewer2TitleComment": "",
+        "reviewer1ResearchAreaComment": "",
+        "reviewer2ResearchAreaComment": "",
+        "reviewer1EsgComment": "",
+        "reviewer2EsgComment": "",
+        "reviewer1SdgComment": "",
+        "reviewer2SdgComment": "",
+        "reviewer1KeywordsComment": "",
+        "reviewer2KeywordsComment": "",
+        "reviewer1ReferencesComment": "",
+        "reviewer2ReferencesComment": "",
+        "reviewer1VisionComment": "",
+        "reviewer2VisionComment": "",
+        "reviewer1ActivitiesComment": "",
+        "reviewer2ActivitiesComment": "",
+        "reviewer1SummaryComment": "",
+        "reviewer1SummaryScore": "",
+        "reviewer2SummaryComment": "",
+        "reviewer2SummaryScore": "",
+        "reviewer1IntroComment": "",
+        "reviewer1IntroScore": "",
+        "reviewer2IntroComment": "",
+        "reviewer2IntroScore": "",
+        "reviewer1ProblemComment": "",
+        "reviewer1ProblemScore": "",
+        "reviewer2ProblemComment": "",
+        "reviewer2ProblemScore": "",
+        "reviewer1HypothesisComment": "",
+        "reviewer1HypothesisScore": "",
+        "reviewer2HypothesisComment": "",
+        "reviewer2HypothesisScore": "",
+        "reviewer1LitReviewComment": "",
+        "reviewer1LitReviewScore": "",
+        "reviewer2LitReviewComment": "",
+        "reviewer2LitReviewScore": "",
+        "reviewer1MethodComment": "",
+        "reviewer1MethodScore": "",
+        "reviewer2MethodComment": "",
+        "reviewer2MethodScore": "",
+        "reviewer1StakeholdersComment": "",
+        "reviewer1StakeholdersScore": "",
+        "reviewer2StakeholdersComment": "",
+        "reviewer2StakeholdersScore": "",
+        "reviewer1AimComment": "",
+        "reviewer1AimScore": "",
+        "reviewer2AimComment": "",
+        "reviewer2AimScore": "",
+        "reviewer1QuestionsComment": "",
+        "reviewer1QuestionsScore": "",
+        "reviewer2QuestionsComment": "",
+        "reviewer2QuestionsScore": "",
+        "rmcAimComment": ""
+      },
+      "reviewOutput": {
+        "hosComment": "",
+        "reviewer1Comment": "",
+        "reviewer2Comment": "",
+        "rmcComment": ""
+      },
+      "reviewBudget": {
+        "reviewer1StudentComment": "",
+        "reviewer2StudentComment": "",
+        "reviewer1TravelComment": "",
+        "reviewer2TravelComment": "",
+        "reviewer1MaterialsComment": "",
+        "reviewer2MaterialsComment": "",
+        "reviewer1ServicesComment": "",
+        "reviewer2ServicesComment": "",
+        "hosComment": "",
+        "rmcComment": "",
+        "reviewer1Comment": "",
+        "reviewer1Score": "",
+        "reviewer2Comment": "",
+        "reviewer2Score": ""
+      },
+      "reviewDeclaration": {
+        "rdigChairComment": "",
+        "vcComment": ""
+      },
+      "approvals": {
+        "hosStatus": "approve",
+        "rmcStatus": "approve",
+        "reviewer2Decision": "",
+        "rdigChairStatus": "",
+        "vcStatus": "",
+        "ceoStatus": "",
+        "reviewer1Assignment": "5",
+        "reviewer2Assignment": "7"
+      },
+      "workflow": {
+        "currentStatus": "pending_reviewers",
+        "nextRoles": [
+          "Reviewer1",
+          "Reviewer2"
+        ],
+        "nextUsers": [
+          "5",
+          "7"
+        ],
+        "history": [
+          {
+            "action": "submit",
+            "fromStatus": "fill_application",
+            "toStatus": "pending_hos",
+            "performedBy": "Dr. John Smith",
+            "role": "Applicant",
+            "timestamp": "2026-03-26T00:29:14.586Z"
+          },
+          {
+            "action": "resubmit",
+            "fromStatus": "pending_hos",
+            "toStatus": "pending_applicant_resubmission_hos",
+            "performedBy": "Prof. Sarah Lee",
+            "role": "HOS",
+            "timestamp": "2026-03-26T00:29:55.529Z"
+          },
+          {
+            "action": "resubmit",
+            "fromStatus": "pending_applicant_resubmission_hos",
+            "toStatus": "pending_hos_review",
+            "performedBy": "Dr. John Smith",
+            "role": "Applicant",
+            "timestamp": "2026-03-26T00:30:28.184Z"
+          },
+          {
+            "action": "approve",
+            "fromStatus": "pending_hos_review",
+            "toStatus": "pending_rmc",
+            "performedBy": "Prof. Sarah Lee",
+            "role": "HOS",
+            "timestamp": "2026-03-26T00:30:56.431Z"
+          },
+          {
+            "action": "approve",
+            "fromStatus": "pending_rmc",
+            "toStatus": "pending_reviewers",
+            "performedBy": "RMC Test",
+            "role": "RMC",
+            "timestamp": "2026-03-26T00:32:18.304Z"
+          }
+        ]
+      },
+      "id": 1
+    }
+  ],
+  "$schema": "./node_modules/json-server/schema.json"
+}

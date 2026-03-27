@@ -2,7 +2,12 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, of, tap, map, catchError } from 'rxjs';
 
-export interface DropdownOption {
+/**
+ * Server-side dropdown record returned from the settings API.
+ * Named DropdownOptionEntityEntity to distinguish it from the UI-facing
+ * DropdownOptionEntity<T> in shared/interfaces/components.interface.ts.
+ */
+export interface DropdownOptionEntityEntity {
   id: number;
   optionName: string;
   status: 'Active' | 'Inactive';
@@ -24,7 +29,7 @@ export const CATEGORY_LABELS: Record<DropdownCategoryKey, string> = {
   providedIn: 'root'
 })
 export class RdigDropdownOptionsService {
-  private store = new BehaviorSubject<Record<DropdownCategoryKey, DropdownOption[]>>({
+  private store = new BehaviorSubject<Record<DropdownCategoryKey, DropdownOptionEntityEntity[]>>({
     research_cluster: [],
     research_domain: [],
     sub_research_domain: [],
@@ -36,7 +41,7 @@ export class RdigDropdownOptionsService {
 
   constructor(private http: HttpClient) {}
 
-  loadOptions(category: DropdownCategoryKey): Observable<DropdownOption[]> {
+  loadOptions(category: DropdownCategoryKey): Observable<DropdownOptionEntityEntity[]> {
     if (this.loaded.has(category)) {
       return of(this.store.getValue()[category]);
     }
@@ -61,19 +66,19 @@ export class RdigDropdownOptionsService {
     );
   }
 
-  getOptions(category: DropdownCategoryKey): Observable<DropdownOption[]> {
+  getOptions(category: DropdownCategoryKey): Observable<DropdownOptionEntityEntity[]> {
     return this.store$.pipe(map(state => state[category]));
   }
 
-  getOptionsSnapshot(category: DropdownCategoryKey): DropdownOption[] {
+  getOptionsSnapshot(category: DropdownCategoryKey): DropdownOptionEntityEntity[] {
     return this.store.getValue()[category];
   }
 
-  addOption(category: DropdownCategoryKey, option: Pick<DropdownOption, 'optionName' | 'status' | 'parentDomainId'>): void {
+  addOption(category: DropdownCategoryKey, option: Pick<DropdownOptionEntityEntity, 'optionName' | 'status' | 'parentDomainId'>): void {
     const currentState = this.store.getValue();
     const options = currentState[category];
     const newId = options.length > 0 ? Math.max(...options.map(o => o.id)) + 1 : 1;
-    const newOption: DropdownOption = {
+    const newOption: DropdownOptionEntityEntity = {
       id: newId,
       optionName: option.optionName,
       status: option.status,
@@ -85,7 +90,7 @@ export class RdigDropdownOptionsService {
     this.store.next({ ...currentState, [category]: updatedOptions });
   }
 
-  updateOption(category: DropdownCategoryKey, updatedOption: DropdownOption): void {
+  updateOption(category: DropdownCategoryKey, updatedOption: DropdownOptionEntityEntity): void {
     const currentState = this.store.getValue();
     const options = currentState[category];
     const updatedOptions = options.map(o => o.id === updatedOption.id ? { ...o, ...updatedOption } : o);

@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, Input, effect } from '@angular/core';
+import { Component, OnInit, OnDestroy, Input, effect, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { NoteComponent } from '../../../../shared/components/note/note.component';
@@ -6,6 +6,7 @@ import { SearchableDropdownComponent } from '../../../../shared/components/searc
 import { DropdownOption } from '../../../../interfaces/components.interface';
 import { ConferenceWorkflowService } from '../../../services/conference-workflow.service';
 import { ConferenceFormStateService } from '../../../services/conference-form-state.service';
+import { BreakdownOptionsService } from '../../../services/breakdown-options.service';
 
 @Component({
   selector: 'app-conference-details-form',
@@ -18,6 +19,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
   @Input() workflow?: ConferenceWorkflowService;
   @Input() isFormReadOnly: boolean = false;
 
+  private breakdownOptionsService = inject(BreakdownOptionsService);
   form!: FormGroup;
   breakdownForm!: FormGroup;
   isBreakdownModalOpen = false;
@@ -59,28 +61,18 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     label: region
   }));
 
-  researchBreakdownOptions: DropdownOption[] = [
-    { value: 'airfare', label: 'Airfare' },
-    { value: 'accommodation', label: 'Accommodation' },
-    { value: 'registration', label: 'Registration Fee' },
-    { value: 'other', label: 'Other' }
-  ];
+  // Get breakdown options from service (reactive)
+  get researchBreakdownOptions(): DropdownOption[] {
+    return this.breakdownOptionsService.getOptionsForType('research');
+  }
 
-  localBreakdownOptions: DropdownOption[] = [
-    { value: 'venue-transport', label: 'Venue & Transport' },
-    { value: 'accommodation', label: 'Accommodation' },
-    { value: 'registration', label: 'Registration Fee' },
-    { value: 'meals', label: 'Meals & Allowance' },
-    { value: 'other', label: 'Other' }
-  ];
+  get localBreakdownOptions(): DropdownOption[] {
+    return this.breakdownOptionsService.getOptionsForType('local');
+  }
 
-  overseasBreakdownOptions: DropdownOption[] = [
-    { value: 'airfare', label: 'Airfare' },
-    { value: 'accommodation', label: 'Accommodation' },
-    { value: 'registration', label: 'Registration Fee' },
-    { value: 'visa', label: 'Visa & Travel Insurance' },
-    { value: 'other', label: 'Other' }
-  ];
+  get overseasBreakdownOptions(): DropdownOption[] {
+    return this.breakdownOptionsService.getOptionsForType('overseas');
+  }
 
   regionFundingInfo: Record<string, string> = {
     'Americas': '50% & limit to a maximum of RM5,000',

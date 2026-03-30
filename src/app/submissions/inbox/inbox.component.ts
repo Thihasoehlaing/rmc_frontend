@@ -1,12 +1,11 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { DatePipe } from '@angular/common';
 import { ApplicationService } from '../../services/application.service';
 
 @Component({
   selector: 'app-inbox',
   standalone: true,
-  imports: [RouterLink, DatePipe],
+  imports: [RouterLink],
   templateUrl: './inbox.component.html',
   styleUrl: './inbox.component.scss',
 })

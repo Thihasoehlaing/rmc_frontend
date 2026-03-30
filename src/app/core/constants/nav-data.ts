@@ -78,6 +78,19 @@ export const NAVIGATION_DATA: NavGroup[] = [
                             ],
                         },
                     },
+                    // Conference Settings: ((full_time OR contract) AND academic) OR HOS OR VC
+                    {
+                        label: 'Conference Settings',
+                        icon: 'tune',
+                        route: '/conference/settings',
+                        permission: {
+                            anyCondition: [
+                                { anyOf: ['full_time', 'contract'], allOf: ['academic'] },
+                                { anyOf: ['HOS'] },
+                                { anyOf: ['VC'] },
+                            ],
+                        },
+                    },
                     // Journal: ((full_time OR contract) AND academic) OR HOS OR VC
                     {
                         label: 'Journal Publication',

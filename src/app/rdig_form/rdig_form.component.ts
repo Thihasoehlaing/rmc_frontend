@@ -2,6 +2,8 @@ import { Component, signal, computed, inject, OnInit, effect } from '@angular/co
 import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, FormControl, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { BatchSittingService } from '../settings/batch-sitting.service';
+import { BatchSitting } from '../interfaces/batch-sitting.interface';
 
 // Shared layout components
 import { FormMainTitleComponent } from '../shared/components/form-main-title/form-main-title.component';
@@ -49,6 +51,25 @@ export class RdigApplicationComponent implements OnInit {
   readonly auth = inject(AuthService);
   private http = inject(HttpClient);
   private route = inject(ActivatedRoute);
+  private batchSvc = inject(BatchSittingService);
+
+  /** The currently active batch loaded from the server on init. */
+  activeBatch = signal<BatchSitting | null | undefined>(undefined); // undefined = loading
+
+  /** True when no active batch exists — blocks form access and submission. */
+  readonly noBatchError = computed(() => this.activeBatch() === null);
+
+  /** True while the batch status is still being fetched. */
+  readonly isBatchLoading = computed(() => this.activeBatch() === undefined);
+
+  /** Days remaining until active batch endDate. Returns -999 when no batch loaded. */
+  readonly deadlineDaysLeft = computed((): number => {
+    const batch = this.activeBatch();
+    if (!batch) return -999;
+    const today  = new Date(); today.setHours(0, 0, 0, 0);
+    const end    = new Date(batch.endDate + 'T00:00:00');
+    return Math.floor((end.getTime() - today.getTime()) / 86_400_000);
+  });
 
   // ── Wizard state ───────────────────────────────────────────────
   currentStep = signal<number>(1);
@@ -239,7 +260,7 @@ export class RdigApplicationComponent implements OnInit {
       // Status is in workflow.currentStatus (single source of truth).
       // Record ID is tracked via loadedAppId signal (not stored in the form).
       metadata: this.fb.group({
-        batchNumber: [null],
+        batch: [null],            // auto-assigned from active batch on submit — never set manually
         applicationVersion: [1],
         reviewers_version: [1],
       }),
@@ -556,6 +577,15 @@ export class RdigApplicationComponent implements OnInit {
 
   // ── Sync ABAC attributes to workflow ───────────────────────────
   ngOnInit(): void {
+    // Load the active batch — gates form access and is auto-assigned on submit.
+    this.batchSvc.loadAll().subscribe({
+      next: batches => {
+        const active = batches.find(b => b.status === 'active') ?? null;
+        this.activeBatch.set(active);
+      },
+      error: () => this.activeBatch.set(null),
+    });
+
     // If a record ID is in the URL (?id=xxx), load and restore that application.
     const id = this.route.snapshot.queryParamMap.get('id');
     if (id) {
@@ -755,6 +785,20 @@ export class RdigApplicationComponent implements OnInit {
 
   onSubmit(): void {
     this.submitAttempted.set(true);
+
+    // ── Batch constraint check ───────────────────────────────────────────────
+    const batch = this.activeBatch();
+    if (!batch) {
+      alert('No active batch exists. Submission is not allowed until RMC opens a new batch.');
+      return;
+    }
+    const today = new Date().toISOString().substring(0, 10);
+    if (today < batch.startDate || today > batch.endDate) {
+      alert(`Submission is only allowed between ${batch.startDate} and ${batch.endDate}.\nThe current batch window has expired or has not started yet.`);
+      return;
+    }
+    // ── End batch constraint check ───────────────────────────────────────────
+
     if (!this.validationDisabled() && this.rdigForm.invalid) {
       this.rdigForm.markAllAsTouched();
       console.warn('Form invalid — please review all steps.');
@@ -762,6 +806,9 @@ export class RdigApplicationComponent implements OnInit {
       return;
     }
     this.isSubmitting.set(true);
+
+    // Auto-assign the active batch id (server-side of truth — never client-selected).
+    this.rdigForm.get('metadata.batch')?.setValue(batch.id, { emitEvent: false });
 
     // ── Workflow transition ──────────────────────────────────────
     // Status is authoritative in workflowState — never duplicated in metadata.

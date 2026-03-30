@@ -1,6 +1,8 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ApplicationService } from '../../services/application.service';
+import { BatchSittingService } from '../../settings/batch-sitting.service';
+import { BatchSitting, WORKFLOW_STAGE_META } from '../../interfaces/batch-sitting.interface';
 
 @Component({
   selector: 'app-inbox',
@@ -11,10 +13,12 @@ import { ApplicationService } from '../../services/application.service';
 })
 export class InboxComponent implements OnInit {
   private applicationService = inject(ApplicationService);
+  private batchSvc           = inject(BatchSittingService);
 
-  applications = signal<any[]>([]);
-  loading      = signal(true);
-  error        = signal<string | null>(null);
+  private allApplications = signal<any[]>([]);
+  activeBatch             = signal<BatchSitting | null>(null);
+  loading                 = signal(true);
+  error                   = signal<string | null>(null);
 
   /** Badge colour per workflow status */
   readonly statusColors: Record<string, string> = {
@@ -37,11 +41,57 @@ export class InboxComponent implements OnInit {
     approved:                                 '#22c55e',
   };
 
+  /**
+   * Applications filtered by batch stage date windows.
+   * An application is visible only when today falls within the allowed time
+   * window for its current workflow status (as configured in the active batch).
+   * Applications with no matching stage window are always visible (no restriction).
+   */
+  readonly applications = computed(() => {
+    const batch = this.activeBatch();
+    const today = new Date().toISOString().substring(0, 10);
+
+    return this.allApplications().filter(app => {
+      if (!batch) return true;  // No batch config → no date restriction
+
+      const status = this.getStatus(app);
+
+      // Find the batch stage that governs this workflow status
+      const stageMeta = WORKFLOW_STAGE_META.find(m => m.rdigStatuses.includes(status));
+      if (!stageMeta) return true;  // Status not mapped to a stage → always visible
+
+      const stageWindow = batch.stages[stageMeta.key];
+      if (!stageWindow?.startDate || !stageWindow?.endDate) return true; // No window set → always visible
+
+      return today >= stageWindow.startDate && today <= stageWindow.endDate;
+    });
+  });
+
+  /** Days until the active batch endDate. Used to show deadline warning. */
+  readonly batchDeadlineDays = computed((): number | null => {
+    const batch = this.activeBatch();
+    if (!batch) return null;
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const end   = new Date(batch.endDate + 'T00:00:00');
+    return Math.floor((end.getTime() - today.getTime()) / 86_400_000);
+  });
+
+  readonly showDeadlineWarning = computed(() => {
+    const days = this.batchDeadlineDays();
+    return days !== null && days >= 0 && days <= 5;
+  });
+
   ngOnInit(): void {
-    // Filtering is now done server-side — no local filterForCurrentUser call needed.
+    // Load active batch for date-window filtering
+    this.batchSvc.loadAll().subscribe({
+      next: batches => this.activeBatch.set(batches.find(b => b.status === 'active') ?? null),
+      error: () => this.activeBatch.set(null),
+    });
+
+    // Filtering is done server-side for roles, then client-side for date windows.
     this.applicationService.getInboxApplications().subscribe({
       next: (apps) => {
-        this.applications.set(apps);
+        this.allApplications.set(apps);
         this.loading.set(false);
       },
       error: () => {

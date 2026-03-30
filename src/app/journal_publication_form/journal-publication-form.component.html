@@ -11,5 +11,10 @@
   <div class="wizard-content">
     <app-journal-details *ngIf="currentStep === 1"></app-journal-details>
     <app-authors-details *ngIf="currentStep === 2"></app-authors-details>
+    <app-documents *ngIf="currentStep === 3"></app-documents>
+    <app-declaration 
+      *ngIf="currentStep === 4"
+      (formValidityChange)="updateFormValidity(4, $event)">
+    </app-declaration>
   </div>
 </div>

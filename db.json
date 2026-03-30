@@ -2,25 +2,17 @@
   "applications": [
     {
       "metadata": {
-        "batchNumber": null,
-        "applicationVersion": 2,
+        "batch": 2,
+        "applicationVersion": 1,
         "reviewers_version": 1
       },
       "teamDetails": {
         "leaderName": "Dr. John Smith",
         "leaderEmail": "john.smith@apu.edu.my",
         "department": "School of Business",
-        "researchCluster": "4",
-        "leaderRoles": "xsd",
-        "internalResearchers": [
-          {
-            "staffId": "5",
-            "staffName": "Dr. Ali Hassan",
-            "department": "School of Computing & Technology",
-            "expertise": "sd",
-            "roles": "sd"
-          }
-        ],
+        "researchCluster": "1",
+        "leaderRoles": "hahahah",
+        "internalResearchers": [],
         "externalResearchers": []
       },
       "projectDetails": {
@@ -86,15 +78,15 @@
         "agreed": true
       },
       "reviewTeam": {
-        "hosComment": "sd",
+        "hosComment": "",
         "reviewer1Comment": "",
         "reviewer1Score": "",
         "reviewer2Comment": "",
         "reviewer2Score": "",
-        "rmcComment": "ds"
+        "rmcComment": ""
       },
       "reviewProject": {
-        "hosPageComment": "sdsd",
+        "hosPageComment": "",
         "reviewer1ClassificationComment": "",
         "reviewer2ClassificationComment": "",
         "reviewer1TitleComment": "",
@@ -178,25 +170,21 @@
         "vcComment": ""
       },
       "approvals": {
-        "hosStatus": "approve",
-        "rmcStatus": "approve",
+        "hosStatus": "",
+        "rmcStatus": "",
         "reviewer2Decision": "",
         "rdigChairStatus": "",
         "vcStatus": "",
         "ceoStatus": "",
-        "reviewer1Assignment": "5",
-        "reviewer2Assignment": "7"
+        "reviewer1Assignment": "4",
+        "reviewer2Assignment": "4"
       },
       "workflow": {
-        "currentStatus": "pending_reviewers",
+        "currentStatus": "pending_hos",
         "nextRoles": [
-          "Reviewer1",
-          "Reviewer2"
+          "HOS"
         ],
-        "nextUsers": [
-          "5",
-          "7"
-        ],
+        "nextUsers": [],
         "history": [
           {
             "action": "submit",
@@ -204,44 +192,331 @@
             "toStatus": "pending_hos",
             "performedBy": "Dr. John Smith",
             "role": "Applicant",
-            "timestamp": "2026-03-26T00:29:14.586Z"
-          },
-          {
-            "action": "resubmit",
-            "fromStatus": "pending_hos",
-            "toStatus": "pending_applicant_resubmission_hos",
-            "performedBy": "Prof. Sarah Lee",
-            "role": "HOS",
-            "timestamp": "2026-03-26T00:29:55.529Z"
-          },
-          {
-            "action": "resubmit",
-            "fromStatus": "pending_applicant_resubmission_hos",
-            "toStatus": "pending_hos_review",
-            "performedBy": "Dr. John Smith",
-            "role": "Applicant",
-            "timestamp": "2026-03-26T00:30:28.184Z"
-          },
-          {
-            "action": "approve",
-            "fromStatus": "pending_hos_review",
-            "toStatus": "pending_rmc",
-            "performedBy": "Prof. Sarah Lee",
-            "role": "HOS",
-            "timestamp": "2026-03-26T00:30:56.431Z"
-          },
-          {
-            "action": "approve",
-            "fromStatus": "pending_rmc",
-            "toStatus": "pending_reviewers",
-            "performedBy": "RMC Test",
-            "role": "RMC",
-            "timestamp": "2026-03-26T00:32:18.304Z"
+            "timestamp": "2026-03-26T11:05:58.831Z"
           }
         ]
       },
       "id": 1
+    },
+    {
+      "metadata": {
+        "batch": 2,
+        "applicationVersion": 1,
+        "reviewers_version": 1
+      },
+      "teamDetails": {
+        "leaderName": "Dr. John Smith",
+        "leaderEmail": "john.smith@apu.edu.my",
+        "department": "School of Business",
+        "researchCluster": null,
+        "leaderRoles": "",
+        "internalResearchers": [
+          {
+            "staffId": "5",
+            "staffName": "Dr. Ali Hassan",
+            "department": "School of Computing & Technology",
+            "expertise": "df",
+            "roles": "df"
+          },
+          {
+            "staffId": "5",
+            "staffName": "Dr. Ali Hassan",
+            "department": "School of Computing & Technology",
+            "expertise": "df",
+            "roles": "df"
+          }
+        ],
+        "externalResearchers": []
+      },
+      "projectDetails": {
+        "applicationType": "",
+        "declarations": {
+          "ethics": false,
+          "conflict": false
+        },
+        "category": "S&T",
+        "duration": "12",
+        "title": "",
+        "researchArea": "",
+        "domain": "",
+        "subDomain": "",
+        "esgs": [],
+        "sdgs": [],
+        "executiveSummary": "",
+        "keywords": "",
+        "introduction": "",
+        "problemStatement": "",
+        "researchAim": "",
+        "researchQuestions": "",
+        "hypothesis": "",
+        "literatureReview": "",
+        "methodology": "",
+        "references": "",
+        "benefits": {
+          "apu": "",
+          "students": "",
+          "stakeholders": ""
+        },
+        "visionMission": ""
+      },
+      "activities": [
+        {
+          "name": "ht",
+          "startMonth": "1",
+          "endMonth": "8",
+          "duration": 8
+        }
+      ],
+      "outputs": {
+        "journal": {
+          "checked": false,
+          "quantity": null
+        },
+        "conceptualDesign": false,
+        "knowledgeTransfer": {
+          "checked": false,
+          "community": ""
+        },
+        "externalGrant": {
+          "checked": false,
+          "scheme": ""
+        },
+        "others": {
+          "checked": false,
+          "details": ""
+        }
+      },
+      "budget": {
+        "studentAllowances": [],
+        "travelAccommodation": [],
+        "materialsSupplies": [],
+        "specialServices": [],
+        "totalRequest": 0
+      },
+      "finalDeclaration": {
+        "noveltyJustification": "",
+        "agreed": true
+      },
+      "reviewTeam": {
+        "hosComment": "",
+        "reviewer1Comment": "",
+        "reviewer1Score": "",
+        "reviewer2Comment": "",
+        "reviewer2Score": "",
+        "rmcComment": ""
+      },
+      "reviewProject": {
+        "hosPageComment": "",
+        "reviewer1ClassificationComment": "",
+        "reviewer2ClassificationComment": "",
+        "reviewer1TitleComment": "",
+        "reviewer2TitleComment": "",
+        "reviewer1ResearchAreaComment": "",
+        "reviewer2ResearchAreaComment": "",
+        "reviewer1EsgComment": "",
+        "reviewer2EsgComment": "",
+        "reviewer1SdgComment": "",
+        "reviewer2SdgComment": "",
+        "reviewer1KeywordsComment": "",
+        "reviewer2KeywordsComment": "",
+        "reviewer1ReferencesComment": "",
+        "reviewer2ReferencesComment": "",
+        "reviewer1VisionComment": "",
+        "reviewer2VisionComment": "",
+        "reviewer1ActivitiesComment": "",
+        "reviewer2ActivitiesComment": "",
+        "reviewer1SummaryComment": "",
+        "reviewer1SummaryScore": "",
+        "reviewer2SummaryComment": "",
+        "reviewer2SummaryScore": "",
+        "reviewer1IntroComment": "",
+        "reviewer1IntroScore": "",
+        "reviewer2IntroComment": "",
+        "reviewer2IntroScore": "",
+        "reviewer1ProblemComment": "",
+        "reviewer1ProblemScore": "",
+        "reviewer2ProblemComment": "",
+        "reviewer2ProblemScore": "",
+        "reviewer1HypothesisComment": "",
+        "reviewer1HypothesisScore": "",
+        "reviewer2HypothesisComment": "",
+        "reviewer2HypothesisScore": "",
+        "reviewer1LitReviewComment": "",
+        "reviewer1LitReviewScore": "",
+        "reviewer2LitReviewComment": "",
+        "reviewer2LitReviewScore": "",
+        "reviewer1MethodComment": "",
+        "reviewer1MethodScore": "",
+        "reviewer2MethodComment": "",
+        "reviewer2MethodScore": "",
+        "reviewer1StakeholdersComment": "",
+        "reviewer1StakeholdersScore": "",
+        "reviewer2StakeholdersComment": "",
+        "reviewer2StakeholdersScore": "",
+        "reviewer1AimComment": "",
+        "reviewer1AimScore": "",
+        "reviewer2AimComment": "",
+        "reviewer2AimScore": "",
+        "reviewer1QuestionsComment": "",
+        "reviewer1QuestionsScore": "",
+        "reviewer2QuestionsComment": "",
+        "reviewer2QuestionsScore": "",
+        "rmcAimComment": ""
+      },
+      "reviewOutput": {
+        "hosComment": "",
+        "reviewer1Comment": "",
+        "reviewer2Comment": "",
+        "rmcComment": ""
+      },
+      "reviewBudget": {
+        "reviewer1StudentComment": "",
+        "reviewer2StudentComment": "",
+        "reviewer1TravelComment": "",
+        "reviewer2TravelComment": "",
+        "reviewer1MaterialsComment": "",
+        "reviewer2MaterialsComment": "",
+        "reviewer1ServicesComment": "",
+        "reviewer2ServicesComment": "",
+        "hosComment": "",
+        "rmcComment": "",
+        "reviewer1Comment": "",
+        "reviewer1Score": "",
+        "reviewer2Comment": "",
+        "reviewer2Score": ""
+      },
+      "reviewDeclaration": {
+        "rdigChairComment": "",
+        "vcComment": ""
+      },
+      "approvals": {
+        "hosStatus": "",
+        "rmcStatus": "",
+        "reviewer2Decision": "",
+        "rdigChairStatus": "",
+        "vcStatus": "",
+        "ceoStatus": "",
+        "reviewer1Assignment": "4",
+        "reviewer2Assignment": "4"
+      },
+      "workflow": {
+        "currentStatus": "pending_hos",
+        "nextRoles": [
+          "HOS"
+        ],
+        "nextUsers": [],
+        "history": [
+          {
+            "action": "submit",
+            "fromStatus": "fill_application",
+            "toStatus": "pending_hos",
+            "performedBy": "Dr. John Smith",
+            "role": "Applicant",
+            "timestamp": "2026-03-27T09:33:12.852Z"
+          }
+        ]
+      },
+      "id": 2
     }
   ],
-  "$schema": "./node_modules/json-server/schema.json"
+  "$schema": "./node_modules/json-server/schema.json",
+  "batches": [
+    {
+      "id": 1,
+      "batchName": "RDIG 2026 Cycle 1",
+      "status": "completed",
+      "startDate": "2026-01-01",
+      "endDate": "2026-11-20",
+      "stages": {
+        "hos_first_review": {
+          "startDate": "2026-01-31",
+          "endDate": "2026-02-07"
+        },
+        "applicant_resubmission": {
+          "startDate": "2026-01-16",
+          "endDate": "2026-02-05"
+        },
+        "hos_review_again": {
+          "startDate": "2026-02-06",
+          "endDate": "2026-02-20"
+        },
+        "rmc": {
+          "startDate": "2026-02-21",
+          "endDate": "2026-03-07"
+        },
+        "reviewers": {
+          "startDate": "2026-03-08",
+          "endDate": "2026-04-09"
+        },
+        "rmc_again": {
+          "startDate": "2026-04-08",
+          "endDate": "2026-04-21"
+        },
+        "rdig_chair": {
+          "startDate": "2026-04-23",
+          "endDate": "2026-05-08"
+        },
+        "vc": {
+          "startDate": "2026-05-08",
+          "endDate": "2026-05-21"
+        },
+        "ceo": {
+          "startDate": "2026-05-23",
+          "endDate": "2026-06-05"
+        }
+      },
+      "createdAt": "2025-12-01T08:00:00.000Z",
+      "updatedAt": "2026-03-26T09:54:08.471Z",
+      "createdBy": "rmc_ahmad",
+      "endedAt": "2026-03-26T09:54:08.471Z"
+    },
+    {
+      "batchName": "RDIG 123",
+      "startDate": "2026-03-01",
+      "endDate": "2026-12-04",
+      "stages": {
+        "hos_first_review": {
+          "startDate": "2026-03-19",
+          "endDate": "2026-11-23"
+        },
+        "applicant_resubmission": {
+          "startDate": "2026-11-25",
+          "endDate": "2026-11-26"
+        },
+        "hos_review_again": {
+          "startDate": "2026-11-26",
+          "endDate": "2026-11-27"
+        },
+        "rmc": {
+          "startDate": "2026-11-25",
+          "endDate": "2026-11-26"
+        },
+        "reviewers": {
+          "startDate": "2026-11-25",
+          "endDate": "2026-11-26"
+        },
+        "rmc_again": {
+          "startDate": "2026-11-24",
+          "endDate": "2026-11-26"
+        },
+        "rdig_chair": {
+          "startDate": "2026-11-25",
+          "endDate": "2026-11-26"
+        },
+        "vc": {
+          "startDate": "2026-11-26",
+          "endDate": "2026-11-28"
+        },
+        "ceo": {
+          "startDate": "2026-11-29",
+          "endDate": "2026-11-30"
+        }
+      },
+      "status": "active",
+      "createdAt": "2026-03-26T09:15:11.739Z",
+      "updatedAt": "2026-03-27T09:21:11.191Z",
+      "createdBy": "rmc_ahmad",
+      "id": 2
+    }
+  ]
 }

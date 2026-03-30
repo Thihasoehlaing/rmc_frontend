@@ -124,6 +124,7 @@ export const NAVIGATION_DATA: NavGroup[] = [
                 permission: { allOf: ['RMC'] },
                 children: [
                     { label: 'RDIG Dropdown Options Management', route: '/settings/rdig-dropdown-options' },
+                    { label: 'Batch Sitting', icon: 'event_available', route: '/settings/batch-sitting' },
                 ],
             },
         ],

@@ -8,6 +8,29 @@
   margin-bottom: 28px;
 }
 
+// ── Deadline Warning Banner ───────────────────────────────────────────────────
+.deadline-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  color: #92400e;
+  font-size: 0.9rem;
+  line-height: 1.5;
+
+  &__icon {
+    font-size: 22px;
+    color: #f97316;
+    flex-shrink: 0;
+  }
+
+  strong { color: #7c2d12; }
+}
+
 .inbox-title {
   display: flex;
   align-items: center;

@@ -119,9 +119,7 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
     }
   }
 
-  /**
-   * Save form state to the state service
-   */
+
   private saveFormState() {
     if (this.form) {
       this.formStateService.saveFormSection('authorDetails', this.form.getRawValue());

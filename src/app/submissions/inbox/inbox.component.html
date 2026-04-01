@@ -8,6 +8,20 @@
     <p class="inbox-subtitle">Applications awaiting your action</p>
   </div>
 
+  <!-- Deadline warning banner (within 5 days of batch end) -->
+  @if (showDeadlineWarning()) {
+    <div class="deadline-banner">
+      <span class="material-icons deadline-banner__icon">warning</span>
+      <span>
+        <strong>Deadline approaching!</strong>
+        The active batch closes in
+        <strong>{{ batchDeadlineDays() }} day{{ batchDeadlineDays() === 1 ? '' : 's' }}</strong>
+        ({{ activeBatch()?.endDate }}).
+        Complete all pending actions before the window closes.
+      </span>
+    </div>
+  }
+
   <!-- Loading -->
   @if (loading()) {
     <div class="state-message">
@@ -28,7 +42,7 @@
   @if (!loading() && !error() && applications().length === 0) {
     <div class="state-message state-empty">
       <span class="material-icons">check_circle_outline</span>
-      No applications pending your action.
+      No applications pending your action within the current batch window.
     </div>
   }
 

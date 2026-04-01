@@ -122,7 +122,16 @@ export const routes: Routes = [
             {
                 path: 'rdig-dropdown-options',
                 loadComponent: () => import('./settings/rdig-dropdown-options/rdig-dropdown-options').then(m => m.RdigDropdownOptions)
-            }
+            },
+            {
+                path: 'batch-sitting',
+                canActivate: [permissionGuard],
+                data: {
+                    permission: { allOf: ['RMC'] } satisfies NavPermission,
+                },
+                loadComponent: () =>
+                    import('./settings/batch-sitting/batch-sitting.component').then(m => m.BatchSittingComponent),
+            },
         ]
       },
 

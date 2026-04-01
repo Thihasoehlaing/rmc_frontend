@@ -1,0 +1,358 @@
+// Conference Settings Component Styles
+
+.conference-settings {
+  max-width: 100%;
+  margin: 0;
+  padding: var(--space-6) var(--space-4);
+
+  .settings-header {
+    margin-bottom: var(--space-6);
+
+    h1 {
+      margin: 0;
+      color: var(--color-text);
+    }
+  }
+
+  .settings-container {
+    background: var(--color-surface);
+    border: 1px solid var(--border-default);
+
+    .card__content {
+      padding: var(--space-6);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-6);
+    }
+
+    .form-label {
+      font-weight: 600;
+      color: var(--color-label);
+      margin-bottom: var(--space-2);
+    }
+
+    .required {
+      color: var(--color-error);
+    }
+
+    // Top Section: Category and Status Filter
+    .top-section {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-6);
+      margin-bottom: var(--space-6);
+
+      .selector-group {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-2);
+        max-width: 400px;
+      }
+    }
+
+    // Action Buttons
+    .action-buttons {
+      display: flex;
+      gap: var(--space-4);
+      margin-bottom: var(--space-6);
+
+      .btn-danger {
+        background: var(--color-error);
+        color: white;
+
+        &:hover:not(:disabled) {
+          background: var(--color-error-dark);
+        }
+
+        &:disabled {
+          opacity: var(--disabled-opacity);
+        }
+      }
+    }
+
+    // Custom button colors for table actions
+    .btn-edit {
+      background: var(--color-primary);
+      color: white;
+
+      &:hover:not(:disabled) {
+        opacity: 0.9;
+      }
+    }
+
+    .btn-delete {
+      background: var(--color-error-dark);
+      color: white;
+
+      &:hover:not(:disabled) {
+        opacity: 0.9;
+      }
+    }
+
+    // Options Table
+    .options-table-wrapper {
+      margin-bottom: var(--space-6);
+      overflow-x: auto;
+      border-radius: 4px; // no token: table corner radius
+      border: 1px solid var(--border-default);
+
+      .options-table {
+        width: 100%;
+        border-collapse: collapse;
+
+        thead {
+          background: var(--color-table-header);
+          border-bottom: 1px solid var(--border-default);
+
+          th {
+            padding: var(--space-3) var(--space-4);
+            text-align: left;
+            font-weight: 600;
+            color: var(--color-label);
+            font-size: var(--fs-sm);
+
+            &.th-checkbox {
+              text-align: center;
+              width: 40px;
+            }
+
+            &.th-actions {
+              text-align: center;
+              width: 100px;
+            }
+          }
+        }
+
+        tbody {
+          tr {
+            border-bottom: 1px solid var(--border-default);
+            transition: background 0.2s;
+
+            &:hover {
+              background: var(--color-table-row-bg);
+            }
+
+            &:last-child {
+              border-bottom: none;
+            }
+
+            td {
+              padding: var(--space-3) var(--space-4);
+              color: var(--color-label);
+              font-size: var(--fs-sm);
+
+              &.td-checkbox {
+                text-align: center;
+                width: 40px;
+
+                input[type="checkbox"] {
+                  cursor: pointer;
+                }
+              }
+
+              &.option-name {
+                font-weight: 500;
+              }
+
+              &.option-status {
+                .status-badge {
+                  display: inline-block;
+                  padding: 2px var(--space-2);
+                  border-radius: 4px;
+                  font-size: 12px;
+                  font-weight: 600;
+
+                  &.status-active {
+                    background: var(--bg-success);
+                    color: var(--color-success-text);
+                  }
+
+                  &.status-inactive {
+                    background: var(--bg-rejected);
+                    color: var(--color-rejected-text);
+                  }
+                }
+              }
+
+              &.td-actions {
+                text-align: center;
+                width: 100px;
+                display: flex;
+                gap: var(--space-2);
+                justify-content: center;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // Empty State
+    .empty-state {
+      text-align: center;
+      padding: var(--space-6);
+      color: var(--color-text-muted);
+
+      p {
+        margin: 0;
+        font-size: var(--fs-sm);
+      }
+    }
+  }
+
+  // Modal Styles
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 1000;
+    animation: fadeIn 0.2s;
+  }
+
+  .modal-dialog {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #1a1a1a;
+    border: 1px solid #333; // 1px border — allowed exception
+    border-radius: 8px; // no token: modal border radius
+    max-width: 500px;
+    width: 90%;
+    max-height: 90vh;
+    overflow: auto;
+    z-index: 1001;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+    animation: slideIn 0.3s;
+
+    .modal-header {
+      padding: var(--space-6);
+      border-bottom: 1px solid #333; // 1px border — allowed exception
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      .modal-title {
+        margin: 0;
+        color: var(--color-primary);
+        font-size: var(--fs-lg);
+        font-weight: 600;
+      }
+
+      .modal-close-btn {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 24px; // no token: close button size
+        cursor: pointer;
+        padding: 0;
+        width: 32px; // no token: close button size
+        height: 32px; // no token: close button size
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 4px; // no token: close button radius
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.1);
+        }
+      }
+    }
+
+    .modal-body {
+      padding: var(--space-6);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-6);
+
+      .form-field {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-2);
+
+        .form-label {
+          font-weight: 600;
+        }
+
+        .input--text,
+        .input--select {
+          font-size: var(--fs-base);
+        }
+
+        .form-error {
+          color: var(--color-error);
+          font-size: var(--fs-xs);
+        }
+      }
+    }
+
+    .modal-actions {
+      padding: var(--space-6);
+      border-top: 1px solid var(--border-default);
+      display: flex;
+      gap: var(--space-4);
+      justify-content: flex-end;
+
+      .btn {
+        min-width: 120px;
+        padding: var(--space-3) var(--space-6);
+        border-radius: 4px; // no token: button radius
+        border: none;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+
+        &.btn-primary {
+          background: var(--color-primary);
+          color: white;
+
+          &:hover:not(:disabled) {
+            background: var(--color-primary-dark);
+          }
+
+          &:disabled {
+            opacity: var(--disabled-opacity);
+            cursor: not-allowed;
+          }
+        }
+
+        &.btn-ghost {
+          background: transparent;
+          color: var(--color-label);
+          border: 1px solid var(--border-default);
+
+          &:hover {
+            background: var(--color-surface-hover);
+          }
+        }
+      }
+    }
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translate(-50%, -48%);
+    }
+    to {
+      opacity: 1;
+      transform: translate(-50%, -50%);
+    }
+  }
+}
+
+
+
+

@@ -1,5 +1,86 @@
 @use '../../assets/styles/index' as *;
 
+// ── Batch gate (no active batch / loading) ────────────────────────────────────
+.batch-gate {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 48px 24px;
+  margin: 24px 0;
+  border-radius: 12px;
+  text-align: center;
+
+  &--loading {
+    background: #f0f9ff;
+    color: #0369a1;
+    border: 1px solid #bae6fd;
+  }
+
+  &--blocked {
+    background: #fff7ed;
+    color: #92400e;
+    border: 1px solid #fed7aa;
+  }
+
+  &__icon {
+    font-size: 48px;
+    opacity: 0.7;
+  }
+
+  &__title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin: 0;
+  }
+
+  &__msg {
+    max-width: 480px;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin: 0;
+    color: #78350f;
+  }
+}
+
+// ── Active batch info banner ──────────────────────────────────────────────────
+.batch-info-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #166534;
+  font-size: 0.88rem;
+
+  &--warning {
+    background: #fff7ed;
+    border-color: #fed7aa;
+    color: #92400e;
+  }
+
+  &__icon { font-size: 20px; flex-shrink: 0; }
+}
+
+.batch-deadline-warn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+  font-weight: 700;
+  color: #dc2626;
+
+  .material-icons { font-size: 18px; }
+}
+
+// ── Spinning icon ─────────────────────────────────────────────────────────────
+@keyframes spin { to { transform: rotate(360deg); } }
+.spinning { display: inline-block; animation: spin 1s linear infinite; }
+
 .rdig-app {
   max-width: var(--page-max-width);
   margin: 0 auto;

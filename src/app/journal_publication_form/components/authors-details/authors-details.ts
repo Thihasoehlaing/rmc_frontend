@@ -1,15 +1,19 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject, effect } from '@angular/core';
+import { CustomHeaderComponent } from '../../../shared/components/custom-header/custom-header.component';
+import { CustomSubheaderComponent } from '../../../shared/components/custom-subheader/custom-subheader.component';
+import { ValidationMessageComponent } from '../../../shared/components/validation-message/validation-message.component';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
 import { SearchableDropdownComponent } from '../../../shared/components/searchable-dropdown/searchable-dropdown.component';
 import { DropdownOption } from '../../../interfaces/components.interface';
+import { JournalWorkflowService } from '../../services/journal-workflow.service';
 
 @Component({
   selector: 'app-authors-details',
   templateUrl: './authors-details.html',
   styleUrls: ['./authors-details.scss'],
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, SearchableDropdownComponent]
+  imports: [CommonModule, ReactiveFormsModule, SearchableDropdownComponent, CustomHeaderComponent, CustomSubheaderComponent, ValidationMessageComponent]
 })
 export class AuthorsDetails implements OnInit {
   form!: FormGroup;
@@ -40,7 +44,22 @@ export class AuthorsDetails implements OnInit {
     
   ];
 
-  constructor(private fb: FormBuilder) {}
+  workflow = inject(JournalWorkflowService);
+
+  constructor(private fb: FormBuilder) {
+    effect(() => {
+      // Small timeout to allow form to initialize first if OnInit hasn't fired yet
+      setTimeout(() => {
+        if (this.workflow.isFormReadOnly()) {
+          this.form?.disable({ emitEvent: false });
+          this.editForm?.disable({ emitEvent: false });
+        } else {
+          this.form?.enable({ emitEvent: false });
+          this.editForm?.enable({ emitEvent: false });
+        }
+      }, 0);
+    });
+  }
 
   ngOnInit() {
     this.initializeForm();

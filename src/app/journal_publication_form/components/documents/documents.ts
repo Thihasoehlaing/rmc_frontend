@@ -1,13 +1,17 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, inject, effect } from '@angular/core';
+import { CustomHeaderComponent } from '../../../shared/components/custom-header/custom-header.component';
+import { CustomSubheaderComponent } from '../../../shared/components/custom-subheader/custom-subheader.component';
 import { CommonModule } from '@angular/common';
+import { ValidationMessageComponent } from '../../../shared/components/validation-message/validation-message.component';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { FileUploadComponent } from '../../../shared/components/file-upload/file-upload.component';
-import { NoteComponent } from '../../../shared/components/note/note.component';
+import { NoteComponent } from '../../../shared/components/note/note.component'; 
+import { JournalWorkflowService } from '../../services/journal-workflow.service';
 
 @Component({
   selector: 'app-documents',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FileUploadComponent, NoteComponent],
+  imports: [CommonModule, ReactiveFormsModule, FileUploadComponent, NoteComponent, CustomHeaderComponent, CustomSubheaderComponent, ValidationMessageComponent],
   templateUrl: './documents.html',
   styleUrl: './documents.scss'
 })
@@ -20,12 +24,24 @@ export class DocumentsComponent implements OnInit {
   @ViewChild('scopusEvidenceUpload', { static: false }) scopusEvidenceUpload?: FileUploadComponent;
   @ViewChild('turnitinReportUpload', { static: false }) turnitinReportUpload?: FileUploadComponent;
   @ViewChild('finalPaperUpload', { static: false }) finalPaperUpload?: FileUploadComponent;
-  @ViewChild('conferenceInvoiceUpload', { static: false }) conferenceInvoiceUpload?: FileUploadComponent;
+  @ViewChild('journalInvoiceUpload', { static: false }) journalInvoiceUpload?: FileUploadComponent;
   // File constants
   readonly PDF_ACCEPT = '.pdf';
   readonly MAX_FILE_SIZE_MB = 10;
 
-  constructor(private fb: FormBuilder) {}
+  workflow = inject(JournalWorkflowService);
+
+  constructor(private fb: FormBuilder) {
+    effect(() => {
+      setTimeout(() => {
+        if (this.workflow.isFormReadOnly()) {
+          this.documentsForm?.disable({ emitEvent: false });
+        } else {
+          this.documentsForm?.enable({ emitEvent: false });
+        }
+      }, 0);
+    });
+  }
 
   ngOnInit() {
     this.initializeDocumentsForm();
@@ -38,7 +54,7 @@ export class DocumentsComponent implements OnInit {
       scopusEvidencePublication: ['', [Validators.required]],
       turnitinReport: ['', [Validators.required]],
       finalPaperDraft: ['', [Validators.required]],
-      conferenceInvoice: ['', [Validators.required]],
+      journalInvoice: ['', [Validators.required]],
       manuscriptInternallyReviewed: ['', [Validators.required]],
       reviewerName: ['', [Validators.required]],
       manuscriptPreviouslyPublished: ['', [Validators.required]]

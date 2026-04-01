@@ -1,20 +1,27 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AuthService } from '../../../services/auth.service';
+import { JournalWorkflowService } from '../../services/journal-workflow.service';
 import { NoteComponent } from '../../../shared/components/note/note.component';
 import { SearchableDropdownComponent } from '../../../shared/components/searchable-dropdown/searchable-dropdown.component';
 import { DialogComponent } from '../../../shared/components/dialog/dialog.component';
 import { FileUploadComponent } from '../../../shared/components/file-upload/file-upload.component';
 import { CharacterCounterComponent } from '../../../shared/components/character-counter/character-counter.component';
+import { CustomHeaderComponent } from '../../../shared/components/custom-header/custom-header.component';
+import { CustomSubheaderComponent } from '../../../shared/components/custom-subheader/custom-subheader.component';
+import { ValidationMessageComponent } from '../../../shared/components/validation-message/validation-message.component';
 
 @Component({
   selector: 'app-journal-details',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, NoteComponent, SearchableDropdownComponent, DialogComponent, FileUploadComponent, CharacterCounterComponent],
+  imports: [CommonModule, ReactiveFormsModule, NoteComponent, SearchableDropdownComponent, DialogComponent, FileUploadComponent, CharacterCounterComponent, CustomHeaderComponent, CustomSubheaderComponent],
   templateUrl: './journal-details.html',
   styleUrl: './journal-details.scss'
 })
 export class JournalDetails implements OnInit {
+  auth = inject(AuthService);
+  workflow = inject(JournalWorkflowService);
   form!: FormGroup;
   breakdownForm!: FormGroup;
   isBreakdownModalOpen = false;
@@ -32,35 +39,47 @@ export class JournalDetails implements OnInit {
   
   breakdownOptions: any[] = [];
 
-  constructor(private fb: FormBuilder) {}
+  constructor(private fb: FormBuilder) {
+    effect(() => {
+      setTimeout(() => {
+        if (this.workflow.isFormReadOnly()) {
+          this.form?.disable({ emitEvent: false });
+          this.breakdownForm?.disable({ emitEvent: false });
+        } else {
+          this.form?.enable({ emitEvent: false });
+          this.breakdownForm?.enable({ emitEvent: false });
+        }
+      }, 0);
+    });
+  }
 
   ngOnInit() {
     this.form = this.fb.group({
-      authorshipType: [''],
-      scopusQuartile: [''],
-      researchType: [''],
-      restrictedPublisher: [''],
-      journalName: [''],
-      paperTitle: [''],
-      sdgKeyword1: [''],
+      authorshipType: ['', Validators.required],
+      scopusQuartile: ['', Validators.required],
+      researchType: ['', Validators.required],
+      restrictedPublisher: ['', Validators.required],
+      journalName: ['', Validators.required],
+      paperTitle: ['', Validators.required],
+      sdgKeyword1: ['', Validators.required],
       sdgKeyword2: [''],
       sdgKeyword3: [''],
-      projectAccountCode: [''],
-      externalProjectAccountCode: [''],
+      projectAccountCode: ['', Validators.required],
+      externalProjectAccountCode: ['', Validators.required],
       totalRM: [''],
-      sponsoredAmountExternal: [''],
-      sponsoredBy: [''],
-      sponsorshipPercentage: [''],
+      sponsoredAmountExternal: ['', Validators.required],
+      sponsoredBy: ['', Validators.required],
+      sponsorshipPercentage: ['', Validators.required],
       sponsorshipAmountAPU: [''],
-      costByApplicant: [''],
+      costByApplicant: ['', Validators.required],
       costingRemarks: ['']
     });
 
     this.breakdownForm = this.fb.group({
-      itemDescription: [''],
-      voteNumber: [''],
-      cost: [''],
-      exchangeRate: [''],
+      itemDescription: ['', Validators.required],
+      voteNumber: ['', Validators.required],
+      cost: ['', Validators.required],
+      exchangeRate: ['', Validators.required],
       description: ['']
     });
   }

@@ -65,7 +65,8 @@ import { AuthService } from '../../../services/auth.service';
               type="text"
               class="input--text"
               formControlName="applicantName"
-              placeholder="Ex: Jessica Teh Sze Hui">
+              placeholder="Ex: Jessica Teh Sze Hui"
+              readonly>
           </div>
           <div class="detail-field">
             <label class="detail-label">Email</label>
@@ -73,7 +74,8 @@ import { AuthService } from '../../../services/auth.service';
               type="email"
               class="input--text"
               formControlName="email"
-              placeholder="TPXXXXXX@mail.apu.edu.my">
+              placeholder="TPXXXXXX@mail.apu.edu.my"
+              readonly>
           </div>
           <div class="detail-field">
             <label class="detail-label">School Name</label>
@@ -81,7 +83,8 @@ import { AuthService } from '../../../services/auth.service';
               type="text"
               class="input--text"
               formControlName="schoolName"
-              placeholder="Ex: School of Culinary Arts and Hospitality">
+              placeholder="Ex: School of Culinary Arts and Hospitality"
+              readonly>
           </div>
         </form>
       </div>

@@ -32,7 +32,7 @@
     }
 
     .required {
-      color: var(--color-error);
+      color: var(--color-error-dark);
     }
 
     // Top Section: Category and Status Filter
@@ -46,7 +46,7 @@
         display: flex;
         flex-direction: column;
         gap: var(--space-2);
-        max-width: 400px;
+        max-width: var(--space-50); // no token: selector fixed width
       }
     }
 
@@ -93,8 +93,8 @@
     .options-table-wrapper {
       margin-bottom: var(--space-6);
       overflow-x: auto;
-      border-radius: 4px; // no token: table corner radius
-      border: 1px solid var(--border-default);
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-default); // 1px border — allowed exception
 
       .options-table {
         width: 100%;
@@ -113,12 +113,12 @@
 
             &.th-checkbox {
               text-align: center;
-              width: 40px;
+              width: var(--space-10); // no token: checkbox column fixed width
             }
 
             &.th-actions {
               text-align: center;
-              width: 100px;
+              width: var(--space-25); // no token: actions column fixed width
             }
           }
         }
@@ -143,7 +143,7 @@
 
               &.td-checkbox {
                 text-align: center;
-                width: 40px;
+                width: var(--space-10); // no token: checkbox column fixed width
 
                 input[type="checkbox"] {
                   cursor: pointer;
@@ -157,9 +157,9 @@
               &.option-status {
                 .status-badge {
                   display: inline-block;
-                  padding: 2px var(--space-2);
-                  border-radius: 4px;
-                  font-size: 12px;
+                  padding: var(--space-1) var(--space-2); // space-1 = 4px used for 2px doubled
+                  border-radius: var(--radius-sm);
+                  font-size: var(--fs-xs);
                   font-weight: 600;
 
                   &.status-active {
@@ -176,7 +176,7 @@
 
               &.td-actions {
                 text-align: center;
-                width: 100px;
+                width: var(--space-25); // no token: actions column fixed width
                 display: flex;
                 gap: var(--space-2);
                 justify-content: center;
@@ -207,7 +207,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.6);
+    background: var(--color-overlay);
     z-index: 1000;
     animation: fadeIn 0.2s;
   }
@@ -217,20 +217,20 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background: #1a1a1a;
-    border: 1px solid #333; // 1px border — allowed exception
-    border-radius: 8px; // no token: modal border radius
-    max-width: 500px;
+    background: var(--color-surface);
+    border: 1px solid var(--border-default); // 1px border — allowed exception
+    border-radius: var(--radius-lg);
+    max-width: var(--space-62); // no token: modal fixed width (500px)
     width: 90%;
     max-height: 90vh;
     overflow: auto;
     z-index: 1001;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+    box-shadow: var(--shadow-lg);
     animation: slideIn 0.3s;
 
     .modal-header {
       padding: var(--space-6);
-      border-bottom: 1px solid #333; // 1px border — allowed exception
+      border-bottom: 1px solid var(--border-default); // 1px border — allowed exception
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -246,18 +246,18 @@
         background: none;
         border: none;
         color: white;
-        font-size: 24px; // no token: close button size
+        font-size: var(--fs-xl); // material icon size
         cursor: pointer;
         padding: 0;
-        width: 32px; // no token: close button size
-        height: 32px; // no token: close button size
+        width: var(--space-8); // no token: close button fixed size
+        height: var(--space-8); // no token: close button fixed size
         display: flex;
         align-items: center;
         justify-content: center;
-        border-radius: 4px; // no token: close button radius
+        border-radius: var(--radius-sm);
 
         &:hover {
-          background: rgba(255, 255, 255, 0.1);
+          background: rgba(white, 0.1);
         }
       }
     }
@@ -297,9 +297,9 @@
       justify-content: flex-end;
 
       .btn {
-        min-width: 120px;
+        min-width: var(--space-30); // no token: button fixed width
         padding: var(--space-3) var(--space-6);
-        border-radius: 4px; // no token: button radius
+        border-radius: var(--radius-sm);
         border: none;
         font-weight: 600;
         cursor: pointer;

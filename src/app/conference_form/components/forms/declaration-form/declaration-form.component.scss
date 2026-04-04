@@ -1,5 +1,10 @@
 @use '../../../../../assets/styles/index' as *;
 
+// Override required field color for conference form
+.form-label.is-required::after {
+  color: var(--color-error-dark);
+}
+
 .form-section {
   padding: var(--space-4);
 }

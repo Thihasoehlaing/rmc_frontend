@@ -190,7 +190,7 @@
         @if (modalType === 'apu-staff') {
           <div class="form-group">
             <app-searchable-dropdown
-              label="Staff Name *"
+              label="Staff Name <span class='asterisk'>*</span>"
               [options]="staffOptions"
               [searchable]="true"
               placeholder="Search staff..."
@@ -202,7 +202,7 @@
           </div>
 
           <div class="form-group">
-            <label for="schoolDept1">School/Department *</label>
+            <label for="schoolDept1">School/Department <span class="asterisk">*</span></label>
             <input type="text" id="schoolDept1" class="form-control" formControlName="schoolDepartment"
               placeholder="Ex. School of Culinary Arts and Hospitality">
             @if (editForm.get('schoolDepartment')?.invalid && editForm.get('schoolDepartment')?.touched) {
@@ -211,7 +211,7 @@
           </div>
 
           <div class="form-group">
-            <label for="affiliation1">Affiliation *</label>
+            <label for="affiliation1">Affiliation <span class="asterisk">*</span></label>
             <input type="text" id="affiliation1" class="form-control" formControlName="affiliation"
               placeholder="Ex. Taylor's University">
             @if (editForm.get('affiliation')?.invalid && editForm.get('affiliation')?.touched) {
@@ -223,7 +223,7 @@
         <!-- Student Form -->
         @if (modalType === 'student') {
           <div class="form-group">
-            <label for="tpNumber">TP Number *</label>
+            <label for="tpNumber">TP Number <span class="asterisk">*</span></label>
             <input type="text" id="tpNumber" class="form-control" formControlName="tpNumber"
               placeholder="Ex. TPXXXXXX">
             @if (editForm.get('tpNumber')?.invalid && editForm.get('tpNumber')?.touched) {
@@ -232,7 +232,7 @@
           </div>
 
           <div class="form-group">
-            <label for="fullNameStudent">Full Name (as per IC/Passport) *</label>
+            <label for="fullNameStudent">Full Name (as per IC/Passport) <span class="asterisk">*</span></label>
             <input type="text" id="fullNameStudent" class="form-control" formControlName="fullName"
               placeholder="Ex. Jessica Teh Sze Hui">
             @if (editForm.get('fullName')?.invalid && editForm.get('fullName')?.touched) {
@@ -241,7 +241,7 @@
           </div>
 
           <div class="form-group">
-            <label for="schoolDept2">School/Department *</label>
+            <label for="schoolDept2">School/Department <span class="asterisk">*</span></label>
             <input type="text" id="schoolDept2" class="form-control" formControlName="schoolDepartment"
               placeholder="Ex. School of Culinary Arts and Hospitality">
             @if (editForm.get('schoolDepartment')?.invalid && editForm.get('schoolDepartment')?.touched) {
@@ -250,7 +250,7 @@
           </div>
 
           <div class="form-group">
-            <label for="affiliation2">Affiliation *</label>
+            <label for="affiliation2">Affiliation <span class="asterisk">*</span></label>
             <input type="text" id="affiliation2" class="form-control" formControlName="affiliation"
               placeholder="Ex. Taylor's University">
             @if (editForm.get('affiliation')?.invalid && editForm.get('affiliation')?.touched) {
@@ -262,7 +262,7 @@
         <!-- Non-APU Form -->
         @if (modalType === 'non-apu') {
           <div class="form-group">
-            <label for="fullNameNonApu">Full Name (as per IC/Passport) *</label>
+            <label for="fullNameNonApu">Full Name (as per IC/Passport) <span class="asterisk">*</span></label>
             <input type="text" id="fullNameNonApu" class="form-control" formControlName="fullName"
               placeholder="Ex. Jessica Teh Sze Hui">
             @if (editForm.get('fullName')?.invalid && editForm.get('fullName')?.touched) {
@@ -271,7 +271,7 @@
           </div>
 
           <div class="form-group">
-            <label for="country">Country *</label>
+            <label for="country">Country <span class="asterisk">*</span></label>
             <input type="text" id="country" class="form-control" formControlName="country"
               placeholder="Ex. Jordan">
             @if (editForm.get('country')?.invalid && editForm.get('country')?.touched) {
@@ -280,7 +280,7 @@
           </div>
 
           <div class="form-group">
-            <label for="email">Email *</label>
+            <label for="email">Email <span class="asterisk">*</span></label>
             <input type="email" id="email" class="form-control" formControlName="email"
               placeholder="Ex. user@example.com">
             @if (editForm.get('email')?.invalid && editForm.get('email')?.touched) {
@@ -290,7 +290,7 @@
 
           <div class="form-group">
             <app-searchable-dropdown
-              label="Type of Organisation *"
+              label="Type of Organisation <span class='asterisk'>*</span>"
               [options]="organisationTypeOptions"
               [searchable]="true"
               placeholder="Search organisation type..."
@@ -302,7 +302,7 @@
           </div>
 
           <div class="form-group">
-            <label for="schoolDept3">School/Department *</label>
+            <label for="schoolDept3">School/Department <span class="asterisk">*</span></label>
             <input type="text" id="schoolDept3" class="form-control" formControlName="schoolDepartment"
               placeholder="Ex. School of Culinary Arts and Hospitality">
             @if (editForm.get('schoolDepartment')?.invalid && editForm.get('schoolDepartment')?.touched) {
@@ -311,7 +311,7 @@
           </div>
 
           <div class="form-group">
-            <label for="institutionName">Institution/Company Name *</label>
+            <label for="institutionName">Institution/Company Name <span class="asterisk">*</span></label>
             <input type="text" id="institutionName" class="form-control" formControlName="institutionName"
               placeholder="Ex. Shanghai Hypergryph Network Technology Co., Ltd.">
             @if (editForm.get('institutionName')?.invalid && editForm.get('institutionName')?.touched) {

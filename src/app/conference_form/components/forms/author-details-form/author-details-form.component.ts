@@ -166,24 +166,12 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
     return this.form.get('nonApuCoAuthors') as FormArray;
   }
 
-  addTestSubsection() {
-    this.testSubsections.push(this.createTestSubsection());
-  }
-
   deleteTestSubsection(index: number) {
     this.testSubsections.removeAt(index);
   }
 
-  addStudentCoAuthor() {
-    this.studentCoAuthors.push(this.createStudentCoAuthor());
-  }
-
   deleteStudentCoAuthor(index: number) {
     this.studentCoAuthors.removeAt(index);
-  }
-
-  addNonApuCoAuthor() {
-    this.nonApuCoAuthors.push(this.createNonApuCoAuthor());
   }
 
   deleteNonApuCoAuthor(index: number) {

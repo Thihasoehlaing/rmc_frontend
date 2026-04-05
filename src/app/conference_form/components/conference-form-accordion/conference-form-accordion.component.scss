@@ -123,18 +123,14 @@
   gap: var(--space-4);
   padding-top: var(--space-6);
   border-top: 1px solid var(--border-default); // 1px border — allowed exception
-}
 
-.btn {
-  padding: var(--space-2) var(--space-5);
-  font-size: var(--fs-sm);
-  font-weight: var(--fw-semibold);
-  border: none;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  transition: all var(--transition-fast);
+  .btn {
+    padding: var(--space-2) var(--space-5);
+    font-size: var(--fs-sm);
+    border-radius: var(--radius-sm);
+  }
 
-  &.btn-primary {
+  .btn-primary {
     background: var(--color-primary);
     color: white;
 
@@ -144,7 +140,7 @@
     }
   }
 
-  &.btn-secondary {
+  .btn-secondary {
     background: var(--color-surface-hover);
     color: var(--color-label);
     border: 1px solid var(--border-default); // 1px border — allowed exception

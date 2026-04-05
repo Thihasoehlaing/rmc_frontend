@@ -139,14 +139,12 @@
     <!-- Conference Dates -->
     <div class="row--2">
       <div class="form-field">
-        <div class="label-with-note">
-          <label class="form-label is-required">Conference Start Date</label>
-          <app-note text="Please select end date first" [isTooltip]="true"></app-note>
-        </div>
+        <label class="form-label is-required">Conference Start Date</label>
         <input
           type="date"
           class="input--text"
           formControlName="conferenceStartDate">
+        <app-validation-message [control]="form.get('conferenceStartDate')"></app-validation-message>
       </div>
 
       <div class="form-field">
@@ -155,6 +153,7 @@
           type="date"
           class="input--text"
           formControlName="conferenceEndDate">
+        <app-validation-message [control]="form.get('conferenceEndDate')"></app-validation-message>
       </div>
     </div>
 
@@ -186,7 +185,10 @@
       </div>
 
       <div class="form-field">
-        <label class="form-label is-required">Select Research or Non-Research Project</label>
+        <div class="label-with-note">
+          <label class="form-label is-required">Select Research or Non-Research Project</label>
+          <app-note text="If External Research Project is selected, all required funding will be fully subsidized from External Sources." [isTooltip]="true"></app-note>
+        </div>
         <div class="radio-group">
           <label class="radio-label">
             <input type="radio" value="external-research" formControlName="researchType">
@@ -257,7 +259,8 @@
               type="text"
               class="input--text"
               formControlName="regionName"
-              [value]="selectedRegion">
+              [value]="selectedRegion"
+              readonly>
           </div>
 
           <div class="form-field">
@@ -265,8 +268,8 @@
             <input
               type="text"
               class="input--text"
-              formControlName="percentage"
-              placeholder="percentage heree~">
+              [value]="form.get('percentage')?.value || ''"
+              readonly>
           </div>
 
           <div class="form-field">
@@ -275,7 +278,8 @@
               type="text"
               class="input--text"
               formControlName="limit"
-              placeholder="Delulu">
+              [value]="5000"
+              readonly>
           </div>
 
           <div class="form-field">
@@ -284,7 +288,8 @@
               class="input--textarea"
               formControlName="regionDescription"
               placeholder="Additional funding details for this region"
-              rows="2"></textarea>
+              rows="2"
+              readonly></textarea>
           </div>
         </div>
       </div>
@@ -373,65 +378,76 @@
               </div>
             </div>
 
-            <!-- Sponsored Amount by External & Sponsored by -->
-            <div class="row--2">
-              <!-- Sponsored Amount by External -->
-              <div class="form-field">
-                <label class="form-label is-required">Sponsored Amount by External (RM)</label>
-                <input
-                  type="number"
-                  class="input--text"
-                  formControlName="sponsoredAmountExternal">
+            <div class="total-display">
+              <span class="total-label">Total BEFORE SUBSIDY (RM)</span>
+              <div class="total-amount">{{ calculateBreakdownTotal('research') | number: '1.2-2' }}</div>
+            </div>
+
+            <!-- Sponsorship Subsections Container -->
+            <div class="sponsorship-subsections-container">
+              <!-- External Sponsorship Subsection -->
+              <div class="sponsorship-subsection">
+                <span class="subsection-title">External Sponsorship</span>
+                <div class="subsection-fields-wrapper">
+                  <div class="row--2">
+                    <div class="form-field">
+                      <label class="form-label">Sponsored Amount by External (RM)</label>
+                      <input
+                        type="number"
+                        class="input--text"
+                        formControlName="sponsoredAmountExternal">
+                    </div>
+                  </div>
+                  <div class="row--2">
+                    <div class="form-field">
+                      <label class="form-label">Sponsored by</label>
+                      <input
+                        type="text"
+                        class="input--text"
+                        formControlName="sponsoredBy">
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              <!-- Sponsored by -->
-              <div class="form-field">
-                <label class="form-label is-required">Sponsored by</label>
-                <input
-                  type="text"
-                  class="input--text"
-                  formControlName="sponsoredBy">
+              <!-- APU Sponsorship Subsection -->
+              <div class="sponsorship-subsection">
+                <span class="subsection-title">APU Sponsorship</span>
+                <div class="subsection-fields-wrapper">
+                  <div class="row--2">
+                    <div class="form-field">
+                      <label class="form-label">Sponsorship Percentage by APU (%)</label>
+                      <input
+                        type="text"
+                        class="input--text"
+                        [value]="percentage | number: '1.2-2'"
+                        disabled
+                        aria-label="Sponsorship Percentage by APU (Read Only)">
+                    </div>
+                  </div>
+                  <div class="row--2">
+                    <!-- Sponsorship Amount by APU (Read Only) -->
+                    <div class="form-field">
+                      <label class="form-label">Sponsorship Amount by APU (RM)</label>
+                      <input
+                        type="text"
+                        class="input--text"
+                        [value]="getCappedSponsorshipAmount(sponsorshipAmountByAPU) | number: '1.2-2'"
+                        disabled
+                        aria-label="Sponsorship Amount by APU (Read Only)">
+                      <small class="tooltip-text">{{ isCapLimitTooltip(sponsorshipAmountByAPU) ? getCapLimitTooltip(sponsorshipAmountByAPU) : (isReductionTooltip(sponsorshipAmountByAPU, getCappedSponsorshipAmount(sponsorshipAmountByAPU)) ? getReductionTooltip(sponsorshipAmountByAPU, getCappedSponsorshipAmount(sponsorshipAmountByAPU)) : '') }}</small>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <!-- Sponsorship Amount by APU, Cost to be borne by Applicant & Sponsorship Percentage -->
-            <div class="row--3">
-              <!-- Sponsorship Amount by APU -->
-              <div class="form-field">
-                <label class="form-label">Sponsorship Amount by APU</label>
-                <input
-                  type="number"
-                  class="input--text"
-                  formControlName="sponsorshipAmountAPU"
-                  readonly>
-              </div>
-
-              <!-- Cost to be borne by Applicant -->
-              <div class="form-field">
-                <label class="form-label is-required">Cost to be borne by Applicant (RM)</label>
-                <input
-                  type="number"
-                  class="input--text"
-                  formControlName="costByApplicant">
-              </div>
-
-              <!-- Sponsorship Percentage Requested -->
-              <div class="form-field">
-                <label class="form-label is-required">Sponsorship Percentage Requested (%)</label>
-                <input
-                  type="number"
-                  class="input--text"
-                  formControlName="sponsorshipPercentage"
-                  min="0"
-                  max="100">
-              </div>
+            <!-- Cost to be borne by Applicant (Read Only) -->
+            <div class="form-field total-field">
+              <label class="form-label">Cost to be borne by Applicant (RM)</label>
+              <div class="total-value-display">{{ costBorneByApplicant | number: '1.2-2' }}</div>
             </div>
 
-            <!-- Total in RM - Grand Total -->
-            <div class="form-field grand-total">
-              <label class="form-label">Total in RM</label>
-              <div class="total-value">{{ form.get('totalRM')?.value || 0 | number: '1.2-2' }}</div>
-            </div>
             <div class="form-field">
               <label class="form-label">Remarks (Optional)</label>
               <textarea
@@ -517,62 +533,92 @@
               </div>
             </div>
 
-            <div class="row--2">
-              <!-- Sponsored Amount by External -->
-              <div class="form-field">
-                <label class="form-label is-required">Sponsored Amount by External (RM)</label>
-                <input
-                  type="number"
-                  class="input--text"
-                  formControlName="externalSponsoredAmountExternal">
+            <div class="total-display">
+              <span class="total-label">Total BEFORE SUBSIDY (RM)</span>
+              <div class="total-amount">{{ calculateBreakdownTotal('external-research') | number: '1.2-2' }}</div>
+            </div>
+
+            <!-- Sponsorship Subsections Container -->
+            <div class="sponsorship-subsections-container">
+              <!-- External Sponsorship Subsection -->
+              <div class="sponsorship-subsection">
+                <span class="subsection-title">External Sponsorship</span>
+                <div class="subsection-fields-wrapper">
+                  <div class="row--2">
+                    <div class="form-field">
+                      <label class="form-label">Sponsored Amount by External (RM)</label>
+                      @if (isExternalResearchProject) {
+                        <input
+                          type="text"
+                          class="input--text"
+                          [value]="externalResearchTotalCost | number: '1.2-2'"
+                          readonly>
+                      } @else {
+                        <input
+                          type="number"
+                          class="input--text"
+                          formControlName="externalSponsoredAmountExternal">
+                      }
+                    </div>
+                  </div>
+                  <div class="row--2">
+                    <div class="form-field">
+                      <label class="form-label">Sponsored by</label>
+                      @if (isExternalResearchProject) {
+                        <input
+                          type="text"
+                          class="input--text"
+                          value="Government Sector"
+                          readonly>
+                      } @else {
+                        <input
+                          type="text"
+                          class="input--text"
+                          formControlName="externalSponsoredBy">
+                      }
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              <!-- Sponsored by -->
-              <div class="form-field">
-                <label class="form-label is-required">Sponsored by</label>
-                <input
-                  type="text"
-                  class="input--text"
-                  formControlName="externalSponsoredBy">
+              <!-- APU Sponsorship Subsection -->
+              <div class="sponsorship-subsection">
+                <span class="subsection-title">APU Sponsorship</span>
+                <div class="subsection-fields-wrapper">
+                  <div class="row--2">
+                    <div class="form-field">
+                      <label class="form-label">Sponsorship Percentage by APU (%)</label>
+                      <input
+                        type="text"
+                        class="input--text"
+                        [value]="externalResearchPercentage | number: '1.0-0'"
+                        readonly
+                        aria-label="Sponsorship Percentage by APU (Read Only)">
+                    </div>
+                  </div>
+                  <div class="row--2">
+                    <!-- Sponsorship Amount by APU (Read Only) -->
+                    <div class="form-field">
+                      <label class="form-label">Sponsorship Amount by APU (RM)</label>
+                      <input
+                        type="text"
+                        class="input--text"
+                        [value]="getCappedSponsorshipAmount(externalResearchSponsorshipByAPU) | number: '1.2-2'"
+                        readonly
+                        aria-label="Sponsorship Amount by APU (Read Only)">
+                      <small class="tooltip-text">{{ isCapLimitTooltip(externalResearchSponsorshipByAPU) ? getCapLimitTooltip(externalResearchSponsorshipByAPU) : (isReductionTooltip(externalResearchSponsorshipByAPU, getCappedSponsorshipAmount(externalResearchSponsorshipByAPU)) ? getReductionTooltip(externalResearchSponsorshipByAPU, getCappedSponsorshipAmount(externalResearchSponsorshipByAPU)) : '') }}</small>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div class="row--3">
-              <!-- Sponsorship Amount by APU -->
-              <div class="form-field">
-                <label class="form-label">Sponsorship Amount by APU</label>
-                <input
-                  type="number"
-                  class="input--text"
-                  formControlName="externalSponsorshipAmountAPU"
-                  readonly>
-              </div>
-
-              <!-- Cost to be borne by Applicant -->
-              <div class="form-field">
-                <label class="form-label is-required">Cost to be borne by Applicant (RM)</label>
-                <input
-                  type="number"
-                  class="input--text"
-                  formControlName="externalCostByApplicant">
-              </div>
-
-              <div class="form-field">
-                <label class="form-label is-required">Sponsorship Percentage Requested (%)</label>
-                <input
-                  type="number"
-                  class="input--text"
-                  formControlName="externalSponsorshipPercentage"
-                  min="0"
-                  max="100">
-              </div>
+            <!-- Cost to be borne by Applicant (Read Only) -->
+            <div class="form-field total-field">
+              <label class="form-label">Cost to be borne by Applicant (RM)</label>
+              <div class="total-value-display">{{ externalCostBorneByApplicant | number: '1.2-2' }}</div>
             </div>
 
-            <!-- Total in RM - Grand Total -->
-            <div class="form-field grand-total">
-              <label class="form-label">Total in RM</label>
-              <div class="total-value">{{ form.get('externalTotalRM')?.value || 0 | number: '1.2-2' }}</div>
-            </div>
             <div class="form-field">
               <label class="form-label">Remarks (Optional)</label>
               <textarea
@@ -658,64 +704,76 @@
               </div>
             </div>
 
-            <div class="row--2">
-              <!-- Sponsored Amount by External -->
-              <div class="form-field">
-                <label class="form-label is-required">Sponsored Amount by External (RM)</label>
-                <input
-                  type="number"
-                  class="input--text"
-                  formControlName="localSponsoredAmountExternal">
+            <div class="total-display">
+              <span class="total-label">Total BEFORE SUBSIDY (RM)</span>
+              <div class="total-amount">{{ calculateBreakdownTotal('local') | number: '1.2-2' }}</div>
+            </div>
+
+            <!-- Sponsorship Subsections Container -->
+            <div class="sponsorship-subsections-container">
+              <!-- External Sponsorship Subsection -->
+              <div class="sponsorship-subsection">
+                <span class="subsection-title">External Sponsorship</span>
+                <div class="subsection-fields-wrapper">
+                  <div class="row--2">
+                    <div class="form-field">
+                      <label class="form-label">Sponsored Amount by External (RM)</label>
+                      <input
+                        type="number"
+                        class="input--text"
+                        formControlName="localSponsoredAmountExternal">
+                    </div>
+                  </div>
+                  <div class="row--2">
+                    <div class="form-field">
+                      <label class="form-label">Sponsored by</label>
+                      <input
+                        type="text"
+                        class="input--text"
+                        formControlName="localSponsoredBy">
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              <!-- Sponsored by -->
-              <div class="form-field">
-                <label class="form-label is-required">Sponsored by</label>
-                <input
-                  type="text"
-                  class="input--text"
-                  formControlName="localSponsoredBy">
+              <!-- APU Sponsorship Subsection -->
+              <div class="sponsorship-subsection">
+                <span class="subsection-title">APU Sponsorship</span>
+                <div class="subsection-fields-wrapper">
+                  <div class="row--2">
+                    <div class="form-field">
+                      <label class="form-label">Sponsorship Percentage by APU (%)</label>
+                      <input
+                        type="text"
+                        class="input--text"
+                        [value]="percentage | number: '1.2-2'"
+                        disabled
+                        aria-label="Sponsorship Percentage by APU (Read Only)">
+                    </div>
+                  </div>
+                  <div class="row--2">
+                    <!-- Sponsorship Amount by APU (Read Only) -->
+                    <div class="form-field">
+                      <label class="form-label">Sponsorship Amount by APU (RM)</label>
+                      <input
+                        type="text"
+                        class="input--text"
+                        [value]="getCappedSponsorshipAmount(localSponsorshipAmountByAPU) | number: '1.2-2'"
+                        disabled
+                        aria-label="Sponsorship Amount by APU (Read Only)">
+                      <small class="tooltip-text">{{ isCapLimitTooltip(localSponsorshipAmountByAPU) ? getCapLimitTooltip(localSponsorshipAmountByAPU) : (isReductionTooltip(localSponsorshipAmountByAPU, getCappedSponsorshipAmount(localSponsorshipAmountByAPU)) ? getReductionTooltip(localSponsorshipAmountByAPU, getCappedSponsorshipAmount(localSponsorshipAmountByAPU)) : '') }}</small>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <!-- Sponsorship Amount by APU, Cost to be borne by Applicant & Sponsorship Percentage -->
-            <div class="row--3">
-              <!-- Sponsorship Amount by APU -->
-              <div class="form-field">
-                <label class="form-label">Sponsorship Amount by APU</label>
-                <input
-                  type="number"
-                  class="input--text"
-                  formControlName="localSponsorshipAmountAPU"
-                  readonly>
-              </div>
-
-              <!-- Cost to be borne by Applicant -->
-              <div class="form-field">
-                <label class="form-label is-required">Cost to be borne by Applicant (RM)</label>
-                <input
-                  type="number"
-                  class="input--text"
-                  formControlName="localCostByApplicant">
-              </div>
-
-              <!-- Sponsorship Percentage Requested -->
-              <div class="form-field">
-                <label class="form-label is-required">Sponsorship Percentage Requested (%)</label>
-                <input
-                  type="number"
-                  class="input--text"
-                  formControlName="localSponsorshipPercentage"
-                  min="0"
-                  max="100">
-              </div>
+            <!-- Cost to be borne by Applicant (Read Only) -->
+            <div class="form-field total-field">
+              <label class="form-label">Cost to be borne by Applicant (RM)</label>
+              <div class="total-value-display">{{ localCostBorneByApplicant | number: '1.2-2' }}</div>
             </div>
 
-            <!-- Total in RM - Grand Total -->
-            <div class="form-field grand-total">
-              <label class="form-label">Total in RM</label>
-              <div class="total-value">{{ form.get('localTotalRM')?.value || 0 | number: '1.2-2' }}</div>
-            </div>
             <div class="form-field">
               <label class="form-label">Remarks (Optional)</label>
               <textarea
@@ -801,60 +859,76 @@
               </div>
             </div>
 
-            <div class="row--2">
-              <div class="form-field">
-                <label class="form-label is-required">Sponsored Amount by External (RM)</label>
-                <input
-                  type="number"
-                  class="input--text"
-                  formControlName="overseasSponsoredAmountExternal">
+            <div class="total-display">
+              <span class="total-label">Total BEFORE SUBSIDY (RM)</span>
+              <div class="total-amount">{{ calculateBreakdownTotal('overseas') | number: '1.2-2' }}</div>
+            </div>
+
+            <!-- Sponsorship Subsections Container -->
+            <div class="sponsorship-subsections-container">
+              <!-- External Sponsorship Subsection -->
+              <div class="sponsorship-subsection">
+                <span class="subsection-title">External Sponsorship</span>
+                <div class="subsection-fields-wrapper">
+                  <div class="row--2">
+                    <div class="form-field">
+                      <label class="form-label">Sponsored Amount by External (RM)</label>
+                      <input
+                        type="number"
+                        class="input--text"
+                        formControlName="overseasSponsoredAmountExternal">
+                    </div>
+                  </div>
+                  <div class="row--2">
+                    <div class="form-field">
+                      <label class="form-label">Sponsored by</label>
+                      <input
+                        type="text"
+                        class="input--text"
+                        formControlName="overseasSponsoredBy">
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              <!-- Sponsored by -->
-              <div class="form-field">
-                <label class="form-label is-required">Sponsored by</label>
-                <input
-                  type="text"
-                  class="input--text"
-                  formControlName="overseasSponsoredBy">
+              <!-- APU Sponsorship Subsection -->
+              <div class="sponsorship-subsection">
+                <span class="subsection-title">APU Sponsorship</span>
+                <div class="subsection-fields-wrapper">
+                  <div class="row--2">
+                    <div class="form-field">
+                      <label class="form-label">Sponsorship Percentage by APU (%)</label>
+                      <input
+                        type="text"
+                        class="input--text"
+                        [value]="percentage | number: '1.2-2'"
+                        disabled
+                        aria-label="Sponsorship Percentage by APU (Read Only)">
+                    </div>
+                  </div>
+                  <div class="row--2">
+                    <!-- Sponsorship Amount by APU (Read Only) -->
+                    <div class="form-field">
+                      <label class="form-label">Sponsorship Amount by APU (RM)</label>
+                      <input
+                        type="text"
+                        class="input--text"
+                        [value]="getCappedSponsorshipAmount(overseasSponsorshipAmountByAPU) | number: '1.2-2'"
+                        disabled
+                        aria-label="Sponsorship Amount by APU (Read Only)">
+                      <small class="tooltip-text">{{ isCapLimitTooltip(overseasSponsorshipAmountByAPU) ? getCapLimitTooltip(overseasSponsorshipAmountByAPU) : (isReductionTooltip(overseasSponsorshipAmountByAPU, getCappedSponsorshipAmount(overseasSponsorshipAmountByAPU)) ? getReductionTooltip(overseasSponsorshipAmountByAPU, getCappedSponsorshipAmount(overseasSponsorshipAmountByAPU)) : '') }}</small>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div class="row--3">
-              <!-- Sponsorship Amount by APU -->
-              <div class="form-field">
-                <label class="form-label">Sponsorship Amount by APU</label>
-                <input
-                  type="number"
-                  class="input--text"
-                  formControlName="overseasSponsorshipAmountAPU"
-                  readonly>
-              </div>
-
-              <!-- Cost to be borne by Applicant -->
-              <div class="form-field">
-                <label class="form-label is-required">Cost to be borne by Applicant (RM)</label>
-                <input
-                  type="number"
-                  class="input--text"
-                  formControlName="overseasCostByApplicant">
-              </div>
-
-              <div class="form-field">
-                <label class="form-label is-required">Sponsorship Percentage Requested (%)</label>
-                <input
-                  type="number"
-                  class="input--text"
-                  formControlName="overseasSponsorshipPercentage"
-                  min="0"
-                  max="100">
-              </div>
+            <!-- Cost to be borne by Applicant (Read Only) -->
+            <div class="form-field total-field">
+              <label class="form-label">Cost to be borne by Applicant (RM)</label>
+              <div class="total-value-display">{{ overseasCostBorneByApplicant | number: '1.2-2' }}</div>
             </div>
 
-            <div class="form-field grand-total">
-              <label class="form-label">Total in RM</label>
-              <div class="total-value">{{ form.get('overseasTotalRM')?.value || 0 | number: '1.2-2' }}</div>
-            </div>
             <div class="form-field">
               <label class="form-label">Remarks (Optional)</label>
               <textarea
@@ -883,7 +957,7 @@
       <form [formGroup]="breakdownForm" (ngSubmit)="submitBreakdownModal()" class="modal-body">
         <!-- Select Item Description -->
         <div class="form-group">
-          <label for="itemDescription">Select Item Description *</label>
+          <label for="itemDescription">Select Item Description <span class="asterisk">*</span></label>
           <app-searchable-dropdown
             [options]="getBreakdownOptionsForType()"
             placeholder="Search and select item"
@@ -914,7 +988,7 @@
         <!-- Cost in Foreign Currency / MYR -->
         <div class="form-group">
           <label for="cost">
-            {{ (breakdownType === 'local') ? 'Cost in Foreign Currency / MYR (RM)' : 'Cost in Foreign Currency / MYR' }} *
+            {{ (breakdownType === 'local') ? 'Cost in Foreign Currency / MYR (RM)' : 'Cost in Foreign Currency / MYR' }} <span class="asterisk">*</span>
           </label>
           <input
             id="cost"
@@ -931,7 +1005,7 @@
         <!-- Exchange Rate -->
         <div class="form-group">
           <div class="label-with-note">
-            <label for="exchangeRate">Exchange Rate *</label>
+            <label for="exchangeRate">Exchange Rate <span class="asterisk">*</span></label>
             <app-note text="ℹ For Malaysia Ringgit/MYR, please put 1 as the exchange rate." [isTooltip]="true"></app-note>
           </div>
           <input

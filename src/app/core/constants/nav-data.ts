@@ -116,6 +116,16 @@ export const NAVIGATION_DATA: NavGroup[] = [
                             ],
                         },
                     },
+                    // Partnership: (full_time OR contract) AND academic
+                    {
+                        label: 'Partnership Application',
+                        icon: 'handshake',
+                        route: '/partnership/application',
+                        permission: {
+                            anyOf: ['full_time', 'contract'],
+                            allOf: ['academic'],
+                        },
+                    },
                     // Proposal: (full_time OR contract) AND academic
                     {
                         label: 'Proposal Application',

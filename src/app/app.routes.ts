@@ -115,6 +115,23 @@ export const routes: Routes = [
           import('./ragra_form/ragra-form.component').then(m => m.RagraFormComponent),
       },
 
+      // ── Partnership Application ───────────────────────────────────────────
+      // Rule: (full_time OR contract) AND academic
+      {
+        path: 'partnership',
+        canActivate: [permissionGuard],
+        data: {
+          permission: {
+            anyOf: ['full_time', 'contract'],
+            allOf: ['academic'],
+          } satisfies NavPermission,
+        },
+        loadChildren: () =>
+          import('./partnership_form/partnership_form.routes').then(
+            m => m.partnershipFormRoutes
+          ),
+      },
+
       // ── RMC Settings —  RMC group only ───────────────────────────────────
       {
         path: 'settings',

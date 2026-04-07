@@ -1,0 +1,39 @@
+<div class="partnership-app">
+
+  <!-- ── 1. Page Title ─────────────────────────────────────────── -->
+  <app-form-main-title
+    title="Partnership Proposal Application Form" 
+    modalTitle="Partnership Proposal Guidelines"
+    endpoint="/api/guidelines/partnership">
+  </app-form-main-title>
+
+  <!-- ── 2. Step Indicator (clickable) ─────────────────────────── -->
+  <app-step-indicator
+    [currentStep]="currentStep()"
+    [steps]="steps"
+    [stepStatuses]="getStepStatuses()"
+    [submitAttempted]="submitAttempted()"
+    (stepClick)="goToStep($event)">
+  </app-step-indicator>
+
+  <div class="form-content">
+    @if (currentStep() === 1) {
+      <app-proposal-details></app-proposal-details>
+    } @else if (currentStep() === 2) {
+      <app-risk-assessment></app-risk-assessment>
+    }
+  </div>
+
+  <!-- ── 3. Step Navigation Footer ───────────────────────────── -->
+  <app-form-wizard-nav
+    [currentStep]="currentStep()"
+    [totalSteps]="totalSteps"
+    [isSaving]="isSaving()"
+    [isSubmitting]="isSubmitting()"
+    (prev)="onPrev()"
+    (next)="onNext()"
+    (saveDraft)="onSaveDraft()"
+    (submitForm)="onSubmit()">
+  </app-form-wizard-nav>
+
+</div>

@@ -96,6 +96,29 @@
     font-weight: 600;
     color: var(--color-text-secondary, #6b7280);
     white-space: nowrap;
+
+    &.sortable-header {
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.2s;
+      background: var(--color-surface-light);
+      border-radius: 2px;
+      padding: var(--space-1) var(--space-2);
+      margin: calc(var(--space-1) * -1) calc(var(--space-2) * -1);
+      font-weight: 500;
+      letter-spacing: 0.2px;
+
+      &:hover {
+        background: var(--color-primary-light);
+        color: var(--color-primary-dark);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08), inset 0 1px 3px rgba(0, 0, 0, 0.04);
+        transform: translateY(-1px);
+      }
+
+      &:active {
+        transform: translateY(0);
+      }
+    }
   }
 
   td {

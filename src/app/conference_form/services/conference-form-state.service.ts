@@ -22,12 +22,6 @@ export interface ConferenceFormState {
       fundingAmount?: number;
       researchArea?: string;
     }>;
-    overseasBreakdown?: Array<{
-      researchDirection?: string;
-      fundingAmount?: number;
-      city?: string;
-      country?: string;
-    }>;
     researchBreakdown?: Array<{
       researchDirection?: string;
       fundingAmount?: number;

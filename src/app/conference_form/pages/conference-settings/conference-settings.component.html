@@ -41,8 +41,42 @@
           </button>
         </div>
 
+        <!-- Search, Filter, and Sort Controls -->
+        <div class="controls-section">
+          <div class="search-box">
+            <input
+              type="text"
+              class="input--text search-input"
+              placeholder="Search options..."
+              [value]="searchQuery()"
+              (input)="onSearchInput($event)"
+              aria-label="Search options">
+          </div>
+
+          <div class="filter-sort-group">
+            <select
+              class="input--select filter-select"
+              [value]="filterStatus()"
+              (change)="onFilterChange($event)"
+              aria-label="Filter by status">
+              <option value="All">All Status</option>
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+            </select>
+
+            <select
+              class="input--select sort-select"
+              [value]="sortBy()"
+              (change)="onSortChange($event)"
+              aria-label="Sort options">
+              <option value="date">Newest First</option>
+              <option value="name">Name (A-Z)</option>
+            </select>
+          </div>
+        </div>
+
         <!-- Options Table -->
-        @if (getCurrentOptions().length > 0) {
+        @if (getFilteredAndSortedOptions().length > 0) {
           <div class="options-table-wrapper">
             <table class="options-table">
               <thead>
@@ -50,14 +84,28 @@
                   <th class="th-checkbox">
                     <input type="checkbox" aria-label="Select all">
                   </th>
-                  <th>Option Name</th>
-                  <th>Status</th>
-                  <th>Created Date</th>
+                  <th class="sortable-header" (click)="onHeaderClick('label')" [title]="isSortableColumn('label') ? 'Click to sort' : ''">
+                    Vote Number{{ getSortIndicator('label') }}
+                  </th>
+                  @if (isLocalType()) {
+                    <th class="sortable-header" (click)="onHeaderClick('accountCode')" [title]="isSortableColumn('accountCode') ? 'Click to sort' : ''">
+                      Account Code{{ getSortIndicator('accountCode') }}
+                    </th>
+                  }
+                  <th class="sortable-header" (click)="onHeaderClick('foreignLocal')" [title]="isSortableColumn('foreignLocal') ? 'Click to sort' : ''">
+                    Foreign / Local{{ getSortIndicator('foreignLocal') }}
+                  </th>
+                  <th class="sortable-header" (click)="onHeaderClick('status')" [title]="isSortableColumn('status') ? 'Click to sort' : ''">
+                    Status{{ getSortIndicator('status') }}
+                  </th>
+                  <th class="sortable-header" (click)="onHeaderClick('createdDate')" [title]="isSortableColumn('createdDate') ? 'Click to sort' : ''">
+                    Created Date{{ getSortIndicator('createdDate') }}
+                  </th>
                   <th class="th-actions">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                @for (option of getCurrentOptions(); track option.value) {
+                @for (option of getFilteredAndSortedOptions(); track option.value) {
                   <tr>
                     <td class="td-checkbox">
                       <input
@@ -67,6 +115,12 @@
                         [attr.aria-label]="'Select ' + option.label">
                     </td>
                     <td class="option-name">{{ option.label }}</td>
+                    @if (isLocalType()) {
+                      <td class="option-account-code">{{ option.accountCode || '-' }}</td>
+                    }
+                    <td class="option-foreign-local">
+                      {{ option.foreignLocal ? (option.foreignLocal === 'foreign' ? 'Foreign' : 'Local') : '-' }}
+                    </td>
                     <td class="option-status">
                       <span class="status-badge" [class]="'status-' + (option.status || 'Active').toLowerCase()">
                         {{ option.status || 'Active' }}
@@ -77,18 +131,10 @@
                       <button
                         type="button"
                         class="btn btn-sm btn-edit"
-                        (click)="editOption(option, getCurrentOptions().indexOf(option))"
+                        (click)="editOption(option, getFilteredAndSortedOptions().indexOf(option))"
                         aria-label="Edit option"
                         title="Edit">
                         Edit
-                      </button>
-                      <button
-                        type="button"
-                        class="btn btn-sm btn-delete"
-                        (click)="deleteOption(option.value)"
-                        aria-label="Delete option"
-                        title="Delete">
-                        Delete
                       </button>
                     </td>
                   </tr>
@@ -126,15 +172,35 @@
 
       <form [formGroup]="optionForm" class="modal-body">
         <div class="form-field">
-          <label class="form-label">Option Name <span class="required">*</span></label>
+          <label class="form-label">Vote Number <span class="required">*</span></label>
           <input
             type="text"
             class="input--text"
             formControlName="label"
-            placeholder="Enter option name">
+            placeholder="Enter vote number">
           @if (optionForm.get('label')?.invalid && optionForm.get('label')?.touched) {
-            <span class="form-error">Option name is required</span>
+            <span class="form-error">Vote Number is required</span>
           }
+        </div>
+
+        @if (isLocalType()) {
+          <div class="form-field">
+            <label class="form-label">Account Code</label>
+            <input
+              type="text"
+              class="input--text"
+              formControlName="accountCode"
+              placeholder="Enter account code">
+          </div>
+        }
+
+        <div class="form-field">
+          <label class="form-label">Foreign / Local</label>
+          <select class="input--select" formControlName="foreignLocal">
+            <option value="">--Select--</option>
+            <option value="foreign">Foreign</option>
+            <option value="local">Local</option>
+          </select>
         </div>
 
         <div class="form-field">

@@ -321,36 +321,36 @@
               <div class="form-field">
                 <label class="form-label">Total in RM</label>
                 <div class="total-value" style="background-color: var(--bg-subtle); padding: 0 var(--space-3); border-radius: var(--radius-sm); font-weight: 500; border: 1px solid var(--border-subtle); height: 42px; display: flex; align-items: center;">
-                  {{ form.get('externalTotalRM')?.value || 0 | number: '1.2-2' }}
+                  {{ form.get('totalRM')?.value || 0 | number: '1.2-2' }}
                 </div>
               </div>
               <div class="form-field">
                 <label class="form-label is-required">Sponsored Amount by External (If any) RM</label>
-                <input type="number" class="input--text" formControlName="externalSponsoredAmountExternal" placeholder="0.00">
+                <input type="number" class="input--text" formControlName="sponsoredAmountExternal" style="background: var(--bg-subtle); color: var(--color-text-muted);" readonly placeholder="0.00">
               </div>
               <div class="form-field">
                 <label class="form-label is-required">Sponsored By</label>
-                <input type="text" class="input--text" formControlName="externalSponsoredBy" placeholder="Enter sponsor name">
+                <input type="text" class="input--text" formControlName="sponsoredBy" style="background: var(--bg-subtle); color: var(--color-text-muted);" readonly placeholder="Enter sponsor name">
               </div>
               <div class="form-field">
                 <label class="form-label is-required">Sponsorship Percentage Requested (%)</label>
-                <input type="number" class="input--text" formControlName="externalSponsorshipPercentage" min="0" max="100" placeholder="0">
+                <input type="number" class="input--text" formControlName="sponsorshipPercentage" style="background: var(--bg-subtle); color: var(--color-text-muted);" readonly min="0" max="100" placeholder="0">
               </div>
               <div class="form-field">
                 <label class="form-label">Sponsorship Amount by APU (RM) (Max up to RM 5,000)</label>
-                <input type="number" class="input--text input--readonly" formControlName="externalSponsorshipAmountAPU" readonly placeholder="0.00">
+                <input type="number" class="input--text input--readonly" formControlName="sponsorshipAmountAPU" style="background: var(--bg-subtle); color: var(--color-text-muted);" readonly readonly placeholder="0.00">
               </div>
               <div class="form-field">
                 <label class="form-label is-required">Cost to be Borne by Applicant (RM)</label>
-                <input type="number" class="input--text" formControlName="externalCostByApplicant" placeholder="0.00">
+                <input type="number" class="input--text" formControlName="costByApplicant" style="background: var(--bg-subtle); color: var(--color-text-muted);" readonly placeholder="0.00">
               </div>
             </div>
 
             <div class="form-field" style="margin-top: var(--space-4);">
               <label class="form-label">Remarks (Optional)</label>
               <div style="flex-grow: 1; display: flex; flex-direction: column;">
-                <textarea class="input--textarea" formControlName="externalCostingRemarks" placeholder="Enter any additional remarks" rows="3" maxlength="255"></textarea>
-                <app-character-counter [current]="getCharacterCount('externalCostingRemarks')" [max]="255"></app-character-counter>
+                <textarea class="input--textarea" formControlName="costingRemarks" placeholder="Enter any additional remarks" rows="3" maxlength="255"></textarea>
+                <app-character-counter [current]="getCharacterCount('costingRemarks')" [max]="255"></app-character-counter>
               </div>
             </div>
           </div>
@@ -497,24 +497,24 @@
 
     <!-- Vote Number or Account Code -->
     <div style="display: flex; flex-direction: column; gap: var(--space-2);">
-      <label [for]="breakdownType === 'local' || breakdownType === 'overseas' ? 'accountCode' : 'voteNumber'" style="font-size: var(--fs-sm); font-weight: var(--fw-medium); color: var(--color-text);">
-        {{ (breakdownType === 'local' || breakdownType === 'overseas') ? 'Account Code' : 'Vote Number' }}
+      <label [for]="breakdownType === 'non-research' ? 'accountCode' : 'voteNumber'" style="font-size: var(--fs-sm); font-weight: var(--fw-medium); color: var(--color-text);">
+        {{ (breakdownType === 'non-research') ? 'Account Code' : 'Vote Number' }}
       </label>
       <input
-        [id]="breakdownType === 'local' || breakdownType === 'overseas' ? 'accountCode' : 'voteNumber'"
+        [id]="breakdownType === 'non-research' ? 'accountCode' : 'voteNumber'"
         type="text"
         class="input--text"
         formControlName="voteNumber"
-        [placeholder]="(breakdownType === 'local' || breakdownType === 'overseas') ? 'V29000' : 'V29000'">
+        [placeholder]="(breakdownType === 'non-research') ? 'V29000' : 'V29000'">
       @if (breakdownForm.get('voteNumber')?.invalid && breakdownForm.get('voteNumber')?.touched) {
-        <span class="error-message">{{ (breakdownType === 'local' || breakdownType === 'overseas') ? 'Account code' : 'Vote number' }} is required</span>
+        <span class="error-message">{{ (breakdownType === 'non-research') ? 'Account code' : 'Vote number' }} is required</span>
       }
     </div>
 
     <!-- Cost in Foreign Currency / MYR -->
     <div style="display: flex; flex-direction: column; gap: var(--space-2);">
       <label for="cost" style="font-size: var(--fs-sm); font-weight: var(--fw-medium); color: var(--color-text);">
-        {{ (breakdownType === 'local') ? 'Cost in Foreign Currency / MYR (RM)' : 'Cost in Foreign Currency / MYR' }} *
+        {{ (breakdownType === 'internal-research') ? 'Cost in Foreign Currency / MYR (RM)' : 'Cost in Foreign Currency / MYR' }} *
       </label>
       <input
         id="cost"
@@ -596,4 +596,5 @@
     </div>
   </form>
 </app-dialog>
+
 

@@ -4,11 +4,12 @@ import { CustomSubheaderComponent } from '../../../shared/components/custom-subh
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { JournalWorkflowService } from '../../services/journal-workflow.service';
+import { ValidationMessageComponent } from '../../../shared/components/validation-message/validation-message.component';
 
 @Component({
   selector: 'app-declaration',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, CustomHeaderComponent, CustomSubheaderComponent],
+  imports: [CommonModule, ReactiveFormsModule, CustomHeaderComponent, CustomSubheaderComponent, ValidationMessageComponent],
   templateUrl: './declaration.html',
   styleUrl: './declaration.scss'
 })

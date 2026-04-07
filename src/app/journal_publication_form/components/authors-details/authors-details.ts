@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, effect } from '@angular/core';
+import { Component, OnInit, inject, effect, Output, EventEmitter } from '@angular/core';
 import { CustomHeaderComponent } from '../../../shared/components/custom-header/custom-header.component';
 import { CustomSubheaderComponent } from '../../../shared/components/custom-subheader/custom-subheader.component';
 import { ValidationMessageComponent } from '../../../shared/components/validation-message/validation-message.component';
@@ -16,6 +16,7 @@ import { JournalWorkflowService } from '../../services/journal-workflow.service'
   imports: [CommonModule, ReactiveFormsModule, SearchableDropdownComponent, CustomHeaderComponent, CustomSubheaderComponent, ValidationMessageComponent]
 })
 export class AuthorsDetails implements OnInit {
+  @Output() formValidityChange = new EventEmitter<boolean>();
   form!: FormGroup;
   isModalOpen: boolean = false;
   editForm!: FormGroup;
@@ -78,6 +79,10 @@ export class AuthorsDetails implements OnInit {
       testSubsections: this.fb.array([]),
       studentCoAuthors: this.fb.array([]),
       nonApuCoAuthors: this.fb.array([])
+    });
+
+    this.form.statusChanges.subscribe(status => {
+      this.formValidityChange.emit(status === 'VALID');
     });
   }
 

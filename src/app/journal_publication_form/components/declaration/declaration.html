@@ -20,6 +20,7 @@
               required>
             <span class="is-required">I have read and agree to the terms and conditions outlined in the Declaration and Agreement for Journal Publication Funding.</span>
           </label>
+          <app-validation-message [control]="declarationForm.get('agreeToTerms')"></app-validation-message>
         </div>
 
         <div class="form-field checkbox-field">
@@ -31,6 +32,7 @@
               required>
             <span class="is-required">I certify that the grant funder(s) has/have been appropriately acknowledged in the publication.</span>
           </label>
+          <app-validation-message [control]="declarationForm.get('acknowledgeGrantFunder')"></app-validation-message>
         </div>
       </div>
     </div>

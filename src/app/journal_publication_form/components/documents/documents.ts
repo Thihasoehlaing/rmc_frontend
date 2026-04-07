@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, inject, effect } from '@angular/core';
+import { Component, OnInit, ViewChild, inject, effect, Output, EventEmitter } from '@angular/core';
 import { CustomHeaderComponent } from '../../../shared/components/custom-header/custom-header.component';
 import { CustomSubheaderComponent } from '../../../shared/components/custom-subheader/custom-subheader.component';
 import { CommonModule } from '@angular/common';
@@ -16,6 +16,7 @@ import { JournalWorkflowService } from '../../services/journal-workflow.service'
   styleUrl: './documents.scss'
 })
 export class DocumentsComponent implements OnInit {
+  @Output() formValidityChange = new EventEmitter<boolean>();
   documentsForm!: FormGroup;
 
   // References to file upload components for manual reset if needed
@@ -58,6 +59,10 @@ export class DocumentsComponent implements OnInit {
       manuscriptInternallyReviewed: ['', [Validators.required]],
       reviewerName: ['', [Validators.required]],
       manuscriptPreviouslyPublished: ['', [Validators.required]]
+    });
+
+    this.documentsForm.statusChanges.subscribe(status => {
+      this.formValidityChange.emit(status === 'VALID');
     });
   }
 

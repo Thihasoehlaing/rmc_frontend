@@ -1,11 +1,9 @@
 <form [formGroup]="declarationForm" class="form-section">
-  <div class="card">
-    <div class="card__header">
-      <h2 class="card__title">Declaration and Agreement</h2>
-    </div>
-
-    <div class="card__content">
-      <div class="section-fields">
+  <app-custom-header icon="fact_check" title="Declaration and Agreement"></app-custom-header>
+  <div class="section-fields">
+    <div class="card">
+      <app-custom-subheader title="Terms and Conditions"></app-custom-subheader>
+      <div class="card__content">
         <div class="declaration-text">
           <p>I hereby declare and confirm that my Scopus ID affiliation is Asia Pacific University of Technology & Innovation. I hereby confirm and agree that I shall submit evidence of publication such as Digital Object Identifier (DOI) of the article, a softcopy of the paper published and/or conference proceeding to the monthly return for retention and record within a month of publication. I shall also conduct a sharing session in the Academic Development Programme within 3 months of publication or upon returning from conference. The Scopus paper shall be recognised based on the latest indexed list released by Scopus. Should I fail to do so within the stipulated time and unless good reason(s) in writing could be furnished for the delay thereafter, I agree that I shall be liable to reimburse the University the full amount of the cost incurred for the publication fee. I confirm that I shall submit all expenses claim for conference presentation or participation within 7 days upon return from conference.</p>
 
@@ -22,6 +20,7 @@
               required>
             <span class="is-required">I have read and agree to the terms and conditions outlined in the Declaration and Agreement for Journal Publication Funding.</span>
           </label>
+          <app-validation-message [control]="declarationForm.get('agreeToTerms')"></app-validation-message>
         </div>
 
         <div class="form-field checkbox-field">
@@ -33,6 +32,7 @@
               required>
             <span class="is-required">I certify that the grant funder(s) has/have been appropriately acknowledged in the publication.</span>
           </label>
+          <app-validation-message [control]="declarationForm.get('acknowledgeGrantFunder')"></app-validation-message>
         </div>
       </div>
     </div>

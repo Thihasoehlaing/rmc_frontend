@@ -24,14 +24,13 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
   form!: FormGroup;
   breakdownForm!: FormGroup;
   isBreakdownModalOpen = false;
-  breakdownType: 'research' | 'external-research' | 'local' | 'overseas' | null = null;
+  breakdownType: 'research' | 'external-research' | 'local' | null = null;
   breakdownEditingIndex: number | null = null;
 
   // Breakdown arrays
   researchBreakdowns: any[] = [];
   externalBreakdowns: any[] = [];
   localBreakdowns: any[] = [];
-  overseasBreakdowns: any[] = [];
   selectedFileName: string | null = null;
   selectedFile: File | null = null;
 
@@ -73,10 +72,6 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
 
   get externalBreakdownOptions(): DropdownOption[] {
     return this.breakdownOptionsService.getOptionsForType('external-research');
-  }
-
-  get overseasBreakdownOptions(): DropdownOption[] {
-    return this.breakdownOptionsService.getOptionsForType('overseas');
   }
 
   regionFundingInfo: Record<string, string> = {
@@ -133,9 +128,6 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     }
     if (this.breakdownType === 'local') {
       return this.localBreakdownOptions;
-    }
-    if (this.breakdownType === 'overseas') {
-      return this.overseasBreakdownOptions;
     }
     return [];
   }
@@ -243,7 +235,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
   /**
    * Calculate total Cost in RM for a given breakdown type
    */
-  calculateBreakdownTotal(breakdownType: 'research' | 'external-research' | 'local' | 'overseas'): number {
+  calculateBreakdownTotal(breakdownType: 'research' | 'external-research' | 'local'): number {
     let breakdowns: any[] = [];
 
     switch (breakdownType) {
@@ -255,9 +247,6 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
         break;
       case 'local':
         breakdowns = this.localBreakdowns;
-        break;
-      case 'overseas':
-        breakdowns = this.overseasBreakdowns;
         break;
     }
 
@@ -290,9 +279,6 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
       if (savedState.localBreakdown) {
         this.localBreakdowns = [...savedState.localBreakdown];
       }
-      if (savedState.overseasBreakdown) {
-        this.overseasBreakdowns = [...savedState.overseasBreakdown];
-      }
     }
   }
 
@@ -307,8 +293,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
         ...formData,
         researchBreakdown: this.researchBreakdowns,
         externalResearchBreakdown: this.externalBreakdowns,
-        localBreakdown: this.localBreakdowns,
-        overseasBreakdown: this.overseasBreakdowns
+        localBreakdown: this.localBreakdowns
       };
       this.formStateService.saveFormSection('conferenceDetails', completeState);
     }
@@ -359,11 +344,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
       localProjectAccountCode: [''],
       localSponsoredAmountExternal: [''],
       localSponsoredBy: [''],
-      localCostingRemarks: [''],
-      overseasProjectAccountCode: [''],
-      overseasSponsoredAmountExternal: [''],
-      overseasSponsoredBy: [''],
-      overseasCostingRemarks: ['']
+      localCostingRemarks: ['']
     });
   }
 
@@ -410,14 +391,6 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
    */
   get localSponsorshipAmountByAPU(): number {
     return this.calculateSponsorshipAmountByAPU('localSponsoredAmountExternal');
-  }
-
-  /**
-   * Get Sponsorship Amount by APU for Overseas Conference
-   * Formula: A = min((T × P / 100), T - E)
-   */
-  get overseasSponsorshipAmountByAPU(): number {
-    return this.calculateSponsorshipAmountByAPU('overseasSponsoredAmountExternal');
   }
 
   /**
@@ -504,14 +477,6 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Get Cost to be borne by Applicant for Overseas Conference
-   * Formula: Total - Sponsored Amount by External - Sponsored Amount by APU
-   */
-  get overseasCostBorneByApplicant(): number {
-    return this.calculateCostBorneByApplicant('overseasSponsoredAmountExternal', 'overseas');
-  }
-
-  /**
    * Check if External Research Project is selected
    */
   get isExternalResearchProject(): boolean {
@@ -556,13 +521,11 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     const sponsoredAmountExternal = parseFloat(this.form.get(sponsorshipFieldName)?.value) || 0;
 
     // Get the corresponding breakdown type to calculate total
-    let breakdownType: 'research' | 'external-research' | 'local' | 'overseas' = 'research';
+    let breakdownType: 'research' | 'external-research' | 'local' = 'research';
     if (sponsorshipFieldName === 'externalSponsoredAmountExternal') {
       breakdownType = 'external-research';
     } else if (sponsorshipFieldName === 'localSponsoredAmountExternal') {
       breakdownType = 'local';
-    } else if (sponsorshipFieldName === 'overseasSponsoredAmountExternal') {
-      breakdownType = 'overseas';
     }
 
     const totalAmount = this.calculateBreakdownTotal(breakdownType);
@@ -579,7 +542,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
    * Cost = Total - Sponsored Amount by External - Sponsored Amount by APU
    * where Total = Sum of breakdown costs
    */
-  calculateCostBorneByApplicant(sponsorshipFieldName: string, breakdownType: 'research' | 'external-research' | 'local' | 'overseas'): number {
+  calculateCostBorneByApplicant(sponsorshipFieldName: string, breakdownType: 'research' | 'external-research' | 'local'): number {
     const totalAmount = this.calculateBreakdownTotal(breakdownType);
     const sponsoredAmountExternal = parseFloat(this.form.get(sponsorshipFieldName)?.value) || 0;
     const sponsorshipAmountByAPU = this.calculateSponsorshipAmountByAPU(sponsorshipFieldName);
@@ -591,7 +554,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     return Math.max(0, costBorneByApplicant);
   }
 
-  openBreakdownModal(type: 'research' | 'external-research' | 'local' | 'overseas', index?: number) {
+  openBreakdownModal(type: 'research' | 'external-research' | 'local', index?: number) {
     this.breakdownType = type;
     this.isBreakdownModalOpen = true;
 
@@ -658,7 +621,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     this.closeBreakdownModal();
   }
 
-  deleteBreakdown(type: 'research' | 'external-research' | 'local' | 'overseas', index: number) {
+  deleteBreakdown(type: 'research' | 'external-research' | 'local', index: number) {
     const array = this.getBreakdownArray(type);
     array.splice(index, 1);
   }
@@ -694,7 +657,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     }
   }
 
-  private getBreakdownArray(type: 'research' | 'external-research' | 'local' | 'overseas'): any[] {
+  private getBreakdownArray(type: 'research' | 'external-research' | 'local'): any[] {
     switch (type) {
       case 'research':
         return this.researchBreakdowns;
@@ -702,8 +665,6 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
         return this.externalBreakdowns;
       case 'local':
         return this.localBreakdowns;
-      case 'overseas':
-        return this.overseasBreakdowns;
       default:
         return [];
     }
@@ -715,8 +676,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     const titles = {
       'research': `${isEditing} Research Breakdown Entry`,
       'external-research': `${isEditing} External Research Project Breakdown Entry`,
-      'local': `${isEditing} Local Breakdown Entry`,
-      'overseas': `${isEditing} Overseas Breakdown Entry`
+      'local': `${isEditing} Local Breakdown Entry`
     };
     return titles[this.breakdownType];
   }

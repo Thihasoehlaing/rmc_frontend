@@ -63,15 +63,22 @@ export const routes: Routes = [
       },
 
       // ── Conference Application ────────────────────────────────────────────
-      // Rule: (full_time OR contract) AND academic, NOT Reviewer, NOT HOS
+      // Rule: ((full_time OR contract) AND academic) OR Admin
       {
         path: 'conference',
         canActivate: [permissionGuard],
         data: {
           permission: {
-            anyOf: ['full_time', 'contract'],
-            allOf: ['academic'],
-            excludeGroups: ['Reviewer', 'HOS'],
+            anyCondition: [
+              {
+                anyOf: ['full_time', 'contract'],
+                allOf: ['academic'],
+                excludeGroups: ['Reviewer', 'HOS'],
+              },
+              {
+                anyOf: ['Admin'],
+              },
+            ],
           } satisfies NavPermission,
         },
         loadChildren: () =>

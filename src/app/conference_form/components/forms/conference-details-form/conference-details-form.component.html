@@ -785,161 +785,6 @@
           </div>
         }
 
-        @if (selectedLocalOrOverseas === 'overseas' && researchType === 'non-research') {
-          <div class="research-subsection">
-            <h4 class="research-title"><b>Overseas</b></h4>
-
-            <div class="form-field">
-              <label class="form-label is-required">Project Account Code</label>
-              <input
-                type="text"
-                class="input--text"
-                formControlName="overseasProjectAccountCode"
-                placeholder="Enter project account code">
-            </div>
-
-            <!-- Disclaimer -->
-            <!-- Detailed Breakdown for Overseas -->
-            <div class="form-field">
-              <label class="form-label">Detailed Breakdown for Overseas</label>
-              <div class="costing-breakdown">
-                <div class="list-section-header">
-                  <span class="list-count">{{ overseasBreakdowns.length }} {{ overseasBreakdowns.length === 1 ? 'Entry' : 'Entries' }}</span>
-                  <button type="button" class="btn btn-primary btn-sm" [disabled]="!canAddBreakdownEntries()" (click)="openBreakdownModal('overseas')">
-                    <span class="material-icons">add</span> Add Entry
-                  </button>
-                </div>
-
-                @if (overseasBreakdowns.length > 0) {
-                  <div class="table-scroll">
-                    <table class="list-table">
-                      <thead>
-                        <tr>
-                          <th class="col-no">#</th>
-                          <th>Item Description</th>
-                          <th>Account Code</th>
-                          <th>Cost (Foreign/MYR)</th>
-                          <th>Exchange Rate</th>
-                          <th>Cost in RM</th>
-                          <th class="col-actions">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        @for (item of overseasBreakdowns; track $index; let i = $index) {
-                          <tr>
-                            <td class="col-no text-muted">{{ i + 1 }}</td>
-                            <td>{{ item.itemDescription }}</td>
-                            <td>{{ item.voteNumber }}</td>
-                            <td>{{ item.cost | number: '1.2-2' }}</td>
-                            <td>{{ item.exchangeRate | number: '1.2-2' }}</td>
-                            <td>{{ item.costInRM | number: '1.2-2' }}</td>
-                            <td class="col-actions">
-                              <button type="button" class="btn-icon btn-icon--edit" [disabled]="!canAddBreakdownEntries()"
-                                (click)="openBreakdownModal('overseas', i)" aria-label="Edit entry">
-                                <span class="material-icons">edit</span>
-                              </button>
-                              @if (overseasBreakdowns.length > 1) {
-                                <button type="button" class="btn-icon btn-icon--delete" [disabled]="!canAddBreakdownEntries()"
-                                  (click)="deleteBreakdown('overseas', i)" aria-label="Remove entry">
-                                  <span class="material-icons">delete</span>
-                                </button>
-                              }
-                            </td>
-                          </tr>
-                        }
-                      </tbody>
-                    </table>
-                  </div>
-                } @else {
-                  <div class="empty-state">
-                    <span class="material-icons">receipt</span>
-                    <p>No breakdown entries added yet. Click <strong>Add Entry</strong> to start adding items.</p>
-                  </div>
-                }
-              </div>
-            </div>
-
-            <div class="total-display">
-              <span class="total-label">Total BEFORE SUBSIDY (RM)</span>
-              <div class="total-amount">{{ calculateBreakdownTotal('overseas') | number: '1.2-2' }}</div>
-            </div>
-
-            <!-- Sponsorship Subsections Container -->
-            <div class="sponsorship-subsections-container">
-              <!-- External Sponsorship Subsection -->
-              <div class="sponsorship-subsection">
-                <span class="subsection-title">External Sponsorship</span>
-                <div class="subsection-fields-wrapper">
-                  <div class="row--2">
-                    <div class="form-field">
-                      <label class="form-label">Sponsored Amount by External (RM)</label>
-                      <input
-                        type="number"
-                        class="input--text"
-                        formControlName="overseasSponsoredAmountExternal">
-                    </div>
-                  </div>
-                  <div class="row--2">
-                    <div class="form-field">
-                      <label class="form-label">Sponsored by</label>
-                      <input
-                        type="text"
-                        class="input--text"
-                        formControlName="overseasSponsoredBy">
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- APU Sponsorship Subsection -->
-              <div class="sponsorship-subsection">
-                <span class="subsection-title">APU Sponsorship</span>
-                <div class="subsection-fields-wrapper">
-                  <div class="row--2">
-                    <div class="form-field">
-                      <label class="form-label">Sponsorship Percentage by APU (%)</label>
-                      <input
-                        type="text"
-                        class="input--text"
-                        [value]="percentage | number: '1.2-2'"
-                        disabled
-                        aria-label="Sponsorship Percentage by APU (Read Only)">
-                    </div>
-                  </div>
-                  <div class="row--2">
-                    <!-- Sponsorship Amount by APU (Read Only) -->
-                    <div class="form-field">
-                      <label class="form-label">Sponsorship Amount by APU (RM)</label>
-                      <input
-                        type="text"
-                        class="input--text"
-                        [value]="getCappedSponsorshipAmount(overseasSponsorshipAmountByAPU) | number: '1.2-2'"
-                        disabled
-                        aria-label="Sponsorship Amount by APU (Read Only)">
-                      <small class="tooltip-text">{{ isCapLimitTooltip(overseasSponsorshipAmountByAPU) ? getCapLimitTooltip(overseasSponsorshipAmountByAPU) : (isReductionTooltip(overseasSponsorshipAmountByAPU, getCappedSponsorshipAmount(overseasSponsorshipAmountByAPU)) ? getReductionTooltip(overseasSponsorshipAmountByAPU, getCappedSponsorshipAmount(overseasSponsorshipAmountByAPU)) : '') }}</small>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Cost to be borne by Applicant (Read Only) -->
-            <div class="form-field total-field">
-              <label class="form-label">Cost to be borne by Applicant (RM)</label>
-              <div class="total-value-display">{{ overseasCostBorneByApplicant | number: '1.2-2' }}</div>
-            </div>
-
-            <div class="form-field">
-              <label class="form-label">Remarks (Optional)</label>
-              <textarea
-                class="input--textarea"
-                formControlName="overseasCostingRemarks"
-                placeholder="Enter any additional remarks"
-                rows="3"></textarea>
-            </div>
-          </div>
-        }
-
       </div>
     </section>
 
@@ -971,17 +816,17 @@
 
         <!-- Vote Number or Account Code -->
         <div class="form-group">
-          <label [for]="breakdownType === 'local' || breakdownType === 'overseas' ? 'accountCode' : 'voteNumber'">
-            {{ (breakdownType === 'local' || breakdownType === 'overseas') ? 'Account Code' : 'Vote Number' }}
+          <label [for]="breakdownType === 'local' ? 'accountCode' : 'voteNumber'">
+            {{ (breakdownType === 'local') ? 'Account Code' : 'Vote Number' }}
           </label>
           <input
-            [id]="breakdownType === 'local' || breakdownType === 'overseas' ? 'accountCode' : 'voteNumber'"
+            [id]="breakdownType === 'local' ? 'accountCode' : 'voteNumber'"
             type="text"
             class="form-control"
             formControlName="voteNumber"
-            [placeholder]="(breakdownType === 'local' || breakdownType === 'overseas') ? 'V29000' : 'V29000'">
+            [placeholder]="(breakdownType === 'local') ? 'V29000' : 'V29000'">
           @if (breakdownForm.get('voteNumber')?.invalid && breakdownForm.get('voteNumber')?.touched) {
-            <span class="error-message">{{ (breakdownType === 'local' || breakdownType === 'overseas') ? 'Account code' : 'Vote number' }} is required</span>
+            <span class="error-message">{{ (breakdownType === 'local') ? 'Account code' : 'Vote number' }} is required</span>
           }
         </div>
 

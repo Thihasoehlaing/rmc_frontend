@@ -30,21 +30,10 @@ export class BreakdownOptionsService {
     { value: 'training-presentation', label: 'TRAINING PRESENTATION PUBLICATION' }
   ];
 
-  private defaultOverseasOptions: DropdownOption[] = [
-    { value: 'airfare-foreign', label: 'AIRFARE FOREIGN' },
-    { value: 'hotel-lodging-foreign', label: 'HOTEL & LODGING FOREIGN' },
-    { value: 'meals-subsistence-foreign', label: 'MEALS & SUBSISTANCE FOREIGN' },
-    { value: 'mileage-fares-foreign', label: 'MILEAGE FARES PARKING FOREIGN' },
-    { value: 'staff-welfare', label: 'STAFF WELFARE AND REFRESHMENT' },
-    { value: 'telephone-fax', label: 'TELEPHONE AND FAX' },
-    { value: 'training-presentation', label: 'TRAINING PRESENTATION PUBLICATION' }
-  ];
-
   // Signals for reactive updates
   researchOptions = signal<DropdownOption[]>([]);
   externalOptions = signal<DropdownOption[]>([]);
   localOptions = signal<DropdownOption[]>([]);
-  overseasOptions = signal<DropdownOption[]>([]);
 
   constructor() {
     this.loadOptionsFromStorage();
@@ -71,7 +60,6 @@ export class BreakdownOptionsService {
         this.researchOptions.set(data.researchOptions || this.defaultResearchOptions);
         this.externalOptions.set(data.externalOptions || this.defaultExternalOptions);
         this.localOptions.set(data.localOptions || this.defaultLocalOptions);
-        this.overseasOptions.set(data.overseasOptions || this.defaultOverseasOptions);
       } catch (e) {
         console.error('Failed to parse stored breakdown options', e);
         this.loadDefaults();
@@ -88,7 +76,6 @@ export class BreakdownOptionsService {
     this.researchOptions.set([...this.defaultResearchOptions]);
     this.externalOptions.set([...this.defaultExternalOptions]);
     this.localOptions.set([...this.defaultLocalOptions]);
-    this.overseasOptions.set([...this.defaultOverseasOptions]);
   }
 
   /**
@@ -98,8 +85,7 @@ export class BreakdownOptionsService {
     const data = {
       researchOptions: this.researchOptions(),
       externalOptions: this.externalOptions(),
-      localOptions: this.localOptions(),
-      overseasOptions: this.overseasOptions()
+      localOptions: this.localOptions()
     };
     localStorage.setItem(this.storageKey, JSON.stringify(data));
   }
@@ -107,7 +93,7 @@ export class BreakdownOptionsService {
   /**
    * Get options for a specific breakdown type
    */
-  getOptionsForType(type: 'research' | 'external-research' | 'local' | 'overseas'): DropdownOption[] {
+  getOptionsForType(type: 'research' | 'external-research' | 'local'): DropdownOption[] {
     switch (type) {
       case 'research':
         return this.researchOptions();
@@ -115,8 +101,6 @@ export class BreakdownOptionsService {
         return this.externalOptions();
       case 'local':
         return this.localOptions();
-      case 'overseas':
-        return this.overseasOptions();
       default:
         return [];
     }
@@ -125,7 +109,7 @@ export class BreakdownOptionsService {
   /**
    * Add a new option to a breakdown type
    */
-  addOption(type: 'research' | 'external-research' | 'local' | 'overseas', option: DropdownOption): void {
+  addOption(type: 'research' | 'external-research' | 'local', option: DropdownOption): void {
     const options = this.getOptionsForType(type);
 
     // Check if value already exists
@@ -140,7 +124,7 @@ export class BreakdownOptionsService {
   /**
    * Update an existing option
    */
-  updateOption(type: 'research' | 'external-research' | 'local' | 'overseas', value: string, newOption: DropdownOption): void {
+  updateOption(type: 'research' | 'external-research' | 'local', value: string, newOption: DropdownOption): void {
     const options = this.getOptionsForType(type);
     const index = options.findIndex(opt => opt.value === value);
 
@@ -161,7 +145,7 @@ export class BreakdownOptionsService {
   /**
    * Delete an option from a breakdown type
    */
-  deleteOption(type: 'research' | 'external-research' | 'local' | 'overseas', value: string): void {
+  deleteOption(type: 'research' | 'external-research' | 'local', value: string): void {
     const options = this.getOptionsForType(type);
     const updatedOptions = options.filter(opt => opt.value !== value);
 
@@ -175,15 +159,13 @@ export class BreakdownOptionsService {
   /**
    * Update all options for a specific type
    */
-  private updateTypeOptions(type: 'research' | 'external-research' | 'local' | 'overseas', options: DropdownOption[]): void {
+  private updateTypeOptions(type: 'research' | 'external-research' | 'local', options: DropdownOption[]): void {
     if (type === 'research') {
       this.researchOptions.set(options);
     } else if (type === 'external-research') {
       this.externalOptions.set(options);
     } else if (type === 'local') {
       this.localOptions.set(options);
-    } else if (type === 'overseas') {
-      this.overseasOptions.set(options);
     }
     this.saveToStorage();
   }

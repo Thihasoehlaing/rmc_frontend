@@ -1,0 +1,63 @@
+<div class="partnership-section" [formGroup]="riskForm">
+
+  <section class="card">
+    <div class="card__header">
+      <h2 class="card__title"><span class="material-icons">assessment</span> Risk Assessment</h2>
+    </div>
+
+    <div class="card__content section-fields">
+      
+      <div class="form-field">
+        <label class="form-label is-required">Affordability/Financial</label>
+        <textarea class="input--textarea" rows="4" formControlName="affordability" maxlength="2000"></textarea>
+        <app-character-counter [current]="riskForm.get('affordability')?.value?.length ?? 0" [max]="2000"></app-character-counter>
+      </div>
+
+      <div class="form-field mt-3">
+        <label class="form-label is-required">Sustainability</label>
+        <textarea class="input--textarea" rows="4" formControlName="sustainability" maxlength="2000"></textarea>
+        <app-character-counter [current]="riskForm.get('sustainability')?.value?.length ?? 0" [max]="2000"></app-character-counter>
+      </div>
+
+      <div class="form-field mt-3">
+        <label class="form-label is-required">Strategic</label>
+        <textarea class="input--textarea" rows="4" formControlName="strategic" maxlength="2000"></textarea>
+        <app-character-counter [current]="riskForm.get('strategic')?.value?.length ?? 0" [max]="2000"></app-character-counter>
+      </div>
+
+      <div class="form-field mt-3">
+        <label class="form-label is-required">Student Focus</label>
+        <textarea class="input--textarea" rows="4" formControlName="studentFocus" maxlength="2000"></textarea>
+        <app-character-counter [current]="riskForm.get('studentFocus')?.value?.length ?? 0" [max]="2000"></app-character-counter>
+      </div>
+
+      <div class="form-field mt-3">
+        <label class="form-label is-required">Outcome of Risk Assessment</label>
+        <textarea class="input--textarea" rows="4" formControlName="outcome" maxlength="500"></textarea>
+        <app-character-counter [current]="riskForm.get('outcome')?.value?.length ?? 0" [max]="500"></app-character-counter>
+      </div>
+
+      <!-- ── Section 2: Measurable Outcomes ─────────────────────────── -->
+      <div class="mt-5">
+        <app-custom-subheader title="Measurable Outcomes" icon="trending_up"></app-custom-subheader>
+      </div>
+
+      <div class="form-note">
+        <h4 class="form-note__title">! NOTE</h4>
+        <div class="form-note__content">
+          <p>As part of APU’s continual monitoring of collaborations quarterly reporting of actions and outcomes achieved are to be identified with appropriate timelines.</p>
+          <p>As well as reporting to the APU Senior Leadership Team, APU must also provide a summary of partnerships and outcomes to the Ministry of Education at the start of each year.</p>
+          <p>Provide details of milestones, expected outcomes and the name of the lead member of staff who will be required to provide updates for the “APU Collaboration Agreement Database”.</p>
+        </div>
+      </div>
+
+      <div class="form-field mt-4">
+        <label class="form-label is-required">Milestones & Expected Outcomes</label>
+        <textarea class="input--textarea" rows="6" formControlName="measurableOutcomes" maxlength="2000"></textarea>
+        <app-character-counter [current]="riskForm.get('measurableOutcomes')?.value?.length ?? 0" [max]="2000"></app-character-counter>
+      </div>
+
+    </div>
+  </section>
+
+</div>

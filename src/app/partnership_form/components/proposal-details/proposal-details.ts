@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, Input, SimpleChanges, OnChanges, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CustomSubheaderComponent } from '../../../shared/components/custom-subheader/custom-subheader.component';
@@ -19,8 +19,10 @@ import { CharacterCounterComponent } from '../../../shared/components/character-
   templateUrl: './proposal-details.html',
   styleUrls: ['./proposal-details.scss']
 })
-export class ProposalDetails {
+export class ProposalDetails implements OnChanges, OnInit {
   private fb = inject(FormBuilder);
+
+  @Input() isDisabled = false;
 
   partnershipOptions: DropdownOption<string>[] = [
     { label: 'Academic', value: 'Academic' },
@@ -55,4 +57,26 @@ export class ProposalDetails {
     schoolDiscussions: ['', [Validators.required, Validators.maxLength(1000)]],
     programmesIdentified: ['', [Validators.required, Validators.maxLength(1000)]]
   });
+
+  ngOnInit(): void {
+    this.updateFormState();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['isDisabled'] && !changes['isDisabled'].firstChange) {
+      this.updateFormState();
+    }
+  }
+
+  private updateFormState(): void {
+    const readOnlyFields = ['applicantName', 'functionalArea', 'applicantEmail', 'mobileNumber'];
+    
+    if (this.isDisabled) {
+      this.applicantForm.disable({ emitEvent: false });
+    } else {
+      this.applicantForm.enable({ emitEvent: false });
+      // Re-disable explicitly read-only base fields 
+      readOnlyFields.forEach(field => this.applicantForm.get(field)?.disable({ emitEvent: false }));
+    }
+  }
 }

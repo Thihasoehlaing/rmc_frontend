@@ -144,8 +144,8 @@
               <div class="costing-breakdown" style="margin-top: var(--space-2);">
                 <div class="list-section-header">
                   <span class="list-count">{{ researchBreakdowns.length }} {{ researchBreakdowns.length === 1 ? 'Entry' : 'Entries' }}</span>
-                  <button type="button" class="btn btn-primary btn-sm" (click)="openBreakdownModal('research')" style="background: transparent; border: none; color: var(--color-primary); padding: 0;">
-                    <span class="material-icons">add_circle_outline</span>
+                  <button type="button" class="btn btn-primary btn-sm" (click)="openBreakdownModal('internal-research'); $event.preventDefault(); $event.stopPropagation()">
+                    <span class="material-icons">add</span> Add Entry
                   </button>
                 </div>
 
@@ -174,12 +174,12 @@
                             <td>{{ item.costInRM | number: '1.2-2' }}</td>
                             <td class="col-actions">
                               <button type="button" class="btn-icon btn-icon--edit"
-                                (click)="openBreakdownModal('research', i)" aria-label="Edit entry">
+                                (click)="openBreakdownModal('internal-research', i)" aria-label="Edit entry">
                                 <span class="material-icons">edit</span>
                               </button>
                               @if (researchBreakdowns.length > 1) {
                                 <button type="button" class="btn-icon btn-icon--delete"
-                                  (click)="deleteBreakdown('research', i)" aria-label="Remove entry">
+                                  (click)="deleteBreakdown('internal-research', i)" aria-label="Remove entry">
                                   <span class="material-icons">delete</span>
                                 </button>
                               }
@@ -202,42 +202,43 @@
             <div class="row row--2" style="margin-top: var(--space-4);">
               <div class="form-field">
                 <label class="form-label">Total in RM</label>
-                <input type="text" class="input--text" style="background: var(--bg-subtle); color: var(--color-text-muted);" readonly [value]="(form.get('totalRM')?.value || 0) | number: '1.2-2'">
+                <div class="total-value" style="background-color: var(--bg-subtle); padding: 0 var(--space-3); border-radius: var(--radius-sm); font-weight: 500; border: 1px solid var(--border-subtle); height: 42px; display: flex; align-items: center;">
+                  {{ form.get('totalRM')?.value || 0 | number: '1.2-2' }}
+                </div>
               </div>
 
               <div class="form-field">
-                <label class="form-label is-required">Sponsored Amount by External (RM)</label>
-                <input type="number" class="input--text" formControlName="sponsoredAmountExternal">
+                <label class="form-label is-required">Sponsored Amount by External (If any) RM</label>
+                <input type="number" class="input--text" formControlName="sponsoredAmountExternal" placeholder="0.00">
               </div>
 
               <div class="form-field">
-                <label class="form-label is-required">Sponsored by</label>
-                <input type="text" class="input--text" formControlName="sponsoredBy">
+                <label class="form-label is-required">Sponsored By</label>
+                <input type="text" class="input--text" formControlName="sponsoredBy" placeholder="Enter sponsor name">
               </div>
 
               <div class="form-field">
                 <label class="form-label is-required">Sponsorship Percentage Requested (%)</label>
-                <input type="number" class="input--text" formControlName="sponsorshipPercentage" min="0" max="100">
+                <input type="number" class="input--text" formControlName="sponsorshipPercentage" min="0" max="100" placeholder="0">
               </div>
 
               <div class="form-field">
-                <label class="form-label">Sponsorship Amount by APU</label>
-                <input type="number" class="input--text input--readonly" formControlName="sponsorshipAmountAPU" readonly placeholder="0.00">
+                <label class="form-label">Sponsorship Amount by APU (RM) (Max up to RM 5,000)</label>
+                <input type="number" class="input--text input--readonly" formControlName="sponsorshipAmountAPU" style="background: var(--bg-subtle); color: var(--color-text-muted);" readonly placeholder="0.00">
               </div>
 
               <div class="form-field">
-                <label class="form-label is-required">Cost to be borne by Applicant (RM)</label>
-                <input type="number" class="input--text" formControlName="costByApplicant">
+                <label class="form-label is-required">Cost to be Borne by Applicant (RM)</label>
+                <input type="number" class="input--text" formControlName="costByApplicant" style="background: var(--bg-subtle); color: var(--color-text-muted);" readonly placeholder="0.00">
               </div>
             </div>
 
             <div class="form-field" style="margin-top: var(--space-4);">
               <label class="form-label">Remarks (Optional)</label>
-              <textarea
-                class="input--textarea"
-                formControlName="costingRemarks"
-                rows="5"></textarea>
-               <app-character-counter [current]="getCharacterCount('costingRemarks')" [max]="500"></app-character-counter>
+              <div style="flex-grow: 1; display: flex; flex-direction: column;">
+                <textarea class="input--textarea" formControlName="costingRemarks" placeholder="Enter any additional remarks" rows="3" maxlength="255"></textarea>
+                <app-character-counter [current]="getCharacterCount('costingRemarks')" [max]="255"></app-character-counter>
+              </div>
             </div>
           </div>
         }
@@ -262,7 +263,7 @@
               <div class="costing-breakdown" style="margin-top: var(--space-2);">
                 <div class="list-section-header">
                   <span class="list-count">{{ externalBreakdowns.length }} {{ externalBreakdowns.length === 1 ? 'Entry' : 'Entries' }}</span>
-                  <button type="button" class="btn btn-primary btn-sm" (click)="openBreakdownModal('external-research')">
+                  <button type="button" class="btn btn-primary btn-sm" (click)="openBreakdownModal('external-research'); $event.preventDefault(); $event.stopPropagation()">
                     <span class="material-icons">add</span> Add Entry
                   </button>
                 </div>
@@ -375,7 +376,7 @@
               <div class="costing-breakdown" style="margin-top: var(--space-2);">
                 <div class="list-section-header">
                   <span class="list-count">{{ NonResearchBreakdowns.length }} {{ NonResearchBreakdowns.length === 1 ? 'Entry' : 'Entries' }}</span>
-                  <button type="button" class="btn btn-primary btn-sm" (click)="openBreakdownModal('non-research')">
+                  <button type="button" class="btn btn-primary btn-sm" (click)="openBreakdownModal('non-research'); $event.preventDefault(); $event.stopPropagation()">
                     <span class="material-icons">add</span> Add Entry
                   </button>
                 </div>
@@ -485,7 +486,7 @@
     <div style="display: flex; flex-direction: column; gap: var(--space-2);">
       <label for="itemDescription" style="font-size: var(--fs-sm); font-weight: var(--fw-medium); color: var(--color-text);">Select Item Description *</label>
       <app-searchable-dropdown
-        [options]="getBreakdownOptionsForType()"
+        [options]="currentBreakdownOptions"
         placeholder="Search and select item"
         formControlName="itemDescription">
       </app-searchable-dropdown>
@@ -503,9 +504,10 @@
       <input
         [id]="breakdownType === 'non-research' ? 'accountCode' : 'voteNumber'"
         type="text"
-        class="input--text"
+        class="input--text input--readonly"
         formControlName="voteNumber"
-        [placeholder]="(breakdownType === 'non-research') ? 'V29000' : 'V29000'">
+        readonly
+        [placeholder]="(breakdownType === 'non-research') ? 'Enter account code' : 'V29000'">
       @if (breakdownForm.get('voteNumber')?.invalid && breakdownForm.get('voteNumber')?.touched) {
         <span class="error-message">{{ (breakdownType === 'non-research') ? 'Account code' : 'Vote number' }} is required</span>
       }

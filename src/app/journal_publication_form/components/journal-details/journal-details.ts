@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, effect, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, inject, effect, Output, EventEmitter, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../../../services/auth.service';
@@ -10,6 +10,7 @@ import { FileUploadComponent } from '../../../shared/components/file-upload/file
 import { CharacterCounterComponent } from '../../../shared/components/character-counter/character-counter.component';
 import { CustomHeaderComponent } from '../../../shared/components/custom-header/custom-header.component';
 import { CustomSubheaderComponent } from '../../../shared/components/custom-subheader/custom-subheader.component';
+import { JournalOptionsService } from '../../services/journal-options.service';
 
 @Component({
   selector: 'app-journal-details',
@@ -21,6 +22,8 @@ import { CustomSubheaderComponent } from '../../../shared/components/custom-subh
 export class JournalDetails implements OnInit {
   auth = inject(AuthService);
   workflow = inject(JournalWorkflowService);
+  private journalOptionsService = inject(JournalOptionsService);
+  private cdr = inject(ChangeDetectorRef);
   form!: FormGroup;
   breakdownForm!: FormGroup;
   isBreakdownModalOpen = false;
@@ -36,6 +39,7 @@ export class JournalDetails implements OnInit {
   selectedFile: File | null = null;
 
   breakdownOptions: any[] = [];
+  currentBreakdownOptions: any[] = [];
 
   @Output() formValidityChange = new EventEmitter<boolean>();
 
@@ -83,15 +87,34 @@ export class JournalDetails implements OnInit {
     this.form.get('sponsoredBy')?.valueChanges.subscribe(() => this.calculateTotals());
 
     this.breakdownForm = this.fb.group({
-      itemDescription: [''],
-      voteNumber: [''],
+      itemDescription: ['', Validators.required],
+      voteNumber: [{ value: '', disabled: true }, Validators.required],
       accountCodeDescription: [''],
       accountCode: [''],
-      cost: [''],
+      cost: ['', Validators.required],
       costForeign: [''],
-      exchangeRate: [''],
+      exchangeRate: ['', Validators.required],
       description: [''],
       costInRM: [{ value: '', disabled: true }]
+    });
+
+    this.breakdownForm.get('itemDescription')?.valueChanges.subscribe(value => {
+      if (!value) return;
+
+      if (this.breakdownType === 'internal-research' || this.breakdownType === 'external-research') {
+        this.breakdownForm.patchValue({ voteNumber: 'V29000' }, { emitEvent: false });
+      } else if (this.breakdownType === 'non-research') {
+        const localOpts = this.journalOptionsService.getOptionsForType('local');
+        const matchedOpt = localOpts.find(opt => opt.label === value || opt.value === value);
+        if (matchedOpt) {
+          const meta = this.getOptionMetadata('local', matchedOpt.value);
+          if (meta && meta.accountCode) {
+            this.breakdownForm.patchValue({ voteNumber: meta.accountCode }, { emitEvent: false });
+          } else {
+            this.breakdownForm.patchValue({ voteNumber: '-' }, { emitEvent: false });
+          }
+        }
+      }
     });
 
     this.breakdownForm.valueChanges.subscribe((val) => {
@@ -122,15 +145,44 @@ export class JournalDetails implements OnInit {
 
   openBreakdownModal(type: string, index?: number) {
     this.breakdownType = type as any;
-    if (index !== undefined) {
-      this.breakdownEditingIndex = index;
-      const entry = this.getBreakdownArray(type)[index];
-      this.breakdownForm.patchValue(entry, { emitEvent: false });
-    } else {
-      this.breakdownEditingIndex = null;
-      this.breakdownForm.reset();
-    }
-    this.isBreakdownModalOpen = true;
+    
+    // Defer modal opening to next tick to avoid any form interaction or change detection overlaps
+    setTimeout(() => {
+      // Resolve dropdown options only when modal opens
+      if (type === 'non-research') {
+        const localOpts = this.journalOptionsService.getOptionsForType('local');
+        this.currentBreakdownOptions = localOpts.filter(opt => {
+          const meta = this.getOptionMetadata('local', opt.value);
+          return !meta || meta.status !== 'Inactive';
+        }).map(opt => ({
+          value: opt.label,
+          label: opt.label
+        }));
+      } else {
+        const researchOpts = this.journalOptionsService.getOptionsForType('research');
+        this.currentBreakdownOptions = researchOpts.filter(opt => {
+          const meta = this.getOptionMetadata('research', opt.value);
+          return !meta || meta.status !== 'Inactive';
+        }).map(opt => ({
+          value: opt.label,
+          label: opt.label
+        }));
+      }
+
+      if (index !== undefined) {
+        this.breakdownEditingIndex = index;
+        const entry = this.getBreakdownArray(type)[index];
+        this.breakdownForm.patchValue(entry, { emitEvent: false });
+      } else {
+        this.breakdownEditingIndex = null;
+        this.breakdownForm.reset();
+        if (type === 'internal-research' || type === 'external-research') {       
+          this.breakdownForm.patchValue({ voteNumber: 'V29000' }, { emitEvent: false });
+        }
+      }
+      this.isBreakdownModalOpen = true;
+      this.cdr.detectChanges();
+    }, 0);
   }
 
   closeBreakdownModal() {
@@ -138,6 +190,7 @@ export class JournalDetails implements OnInit {
     this.breakdownType = null;
     this.breakdownEditingIndex = null;
     this.breakdownForm.reset();
+    this.cdr.detectChanges();
   }
 
   saveBreakdownEntry() {
@@ -237,9 +290,18 @@ export class JournalDetails implements OnInit {
     this.saveBreakdownEntry();
   }
 
-  getBreakdownOptionsForType(): any[] {
-    return this.breakdownOptions;
-  }
+
+
+  private getOptionMetadata(type: 'research' | 'local', value: string): any {
+    const storageKey = `journal-option-metadata-${type}-${value}`;
+    try {
+      const stored = localStorage.getItem(storageKey);
+      if (stored && stored !== 'undefined') {
+        return JSON.parse(stored);
+      }
+    } catch (error) {
+      console.error(`Failed to parse metadata for ${storageKey}`, error);    }
+    return null;  }
 
   onFileSelected(event: any) {
     let file = event;

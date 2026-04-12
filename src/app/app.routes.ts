@@ -86,18 +86,17 @@ export const routes: Routes = [
       },
 
       // ── Journal Publication ───────────────────────────────────────────────
-      // Rule: ((full_time OR contract) AND academic) OR HOS OR VC
+      // Rule: ((full_time OR contract) AND academic) OR HOS OR VC OR Admin
       {
         path: 'journal',
         canActivate: [permissionGuard],
         data: {
           permission: {
             anyCondition: [
-              { anyOf: ['full_time', 'contract'], allOf: ['academic'] },
+              { anyOf: ['full_time', 'contract'], allOf: ['academic'] },        
               { anyOf: ['HOS'] },
               { anyOf: ['VC'] },
-            ],
-          } satisfies NavPermission,
+              { anyOf: ['Admin'] },            ],          } satisfies NavPermission,
         },
         loadChildren: () =>
           import('./journal_publication_form/journal_publication_form.routes').then(

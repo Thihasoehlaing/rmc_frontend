@@ -1,5 +1,40 @@
 <div class="rdig-app">
 
+  <!-- ── FULLSCREEN SUBMISSION OVERLAY ──────────────────────────── -->
+  @if (submissionState() !== 'IDLE') {
+    <div class="submission-overlay" [class]="'submission-overlay--' + submissionState().toLowerCase()">
+      <div class="submission-card">
+        @if (submissionState() === 'LOADING') {
+          <div class="loader-circle">
+            <svg class="spinner-svg" viewBox="0 0 50 50">
+              <circle class="spinner-path" cx="25" cy="25" r="20" fill="none" stroke-width="4"></circle>
+            </svg>
+          </div>
+          <h2 class="submission-msg">Processing...</h2>
+          <p class="submission-submsg">Please do not close this window while we securely save your application.</p>
+        }
+        @if (submissionState() === 'SUCCESS') {
+          <div class="loader-circle loader-circle--success">
+            <svg class="success-svg" viewBox="0 0 52 52">
+              <circle class="success-circle" cx="26" cy="26" r="25" fill="none"/>
+              <path class="success-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+            </svg>
+          </div>
+          <h2 class="submission-msg">Success!</h2>
+          <p class="submission-submsg">Your application was submitted successfully. Redirecting to dashboard...</p>
+        }
+        @if (submissionState() === 'ERROR') {
+          <div class="loader-circle loader-circle--error">
+            <span class="material-icons error-icon">priority_high</span>
+          </div>
+          <h2 class="submission-msg">Something went wrong</h2>
+          <p class="submission-submsg">{{ submissionErrorMessage() }}</p>
+          <button type="button" class="btn btn--primary" style="margin-top: 1.5rem" (click)="submissionState.set('IDLE')">Go Back</button>
+        }
+      </div>
+    </div>
+  }
+
   <!-- ── 1. Page Title ─────────────────────────────────────────── -->
   <app-form-main-title
     title="APU Research and Development Internal Grant (RDIG) Application Form"
@@ -46,12 +81,12 @@
     }
 
     <!-- DEV TEST START: Application Status Override -->
-    <div style="margin: 16px 0; padding: 8px; background: #fffbe6; border: 1px solid #ffe58f; border-radius: 6px;">
-      <label style="font-weight: bold; color: #ad8b00;">DEV TEST: Application Status</label>
+    <div class="dev-test-panel">
+      <label class="dev-test-panel__label">DEV TEST: Application Status</label>
       <select
         [value]="workflowState().currentStatus"
         (change)="onTestStatusChange($any($event.target).value)"
-        style="margin-left: 12px; width: 340px; padding: 4px 8px; border: 1px solid #ffe58f; border-radius: 4px;">
+        class="dev-test-panel__select">
         <option value="fill_application">fill_application</option>
         <option value="pending_applicant_resubmission_hos">pending_applicant_resubmission_hos</option>
         <option value="pending_applicant_resubmission_reviewers">pending_applicant_resubmission_reviewers</option>
@@ -70,19 +105,12 @@
         <option value="rejected_ceo">rejected_ceo</option>
         <option value="approved">approved</option>
       </select>
-      <span style="margin-left: 12px; color: #ad8b00; font-size: 12px;">(Live ABAC override for developer testing)</span>
+      <span class="dev-test-panel__note">(Live ABAC override for developer testing)</span>
       <button
         type="button"
         (click)="toggleValidation()"
-        [style.margin-left]="'20px'"
-        [style.padding]="'4px 14px'"
-        [style.border-radius]="'4px'"
-        [style.border]="validationDisabled() ? '1px solid #ff4d4f' : '1px solid #52c41a'"
-        [style.background]="validationDisabled() ? '#fff1f0' : '#f6ffed'"
-        [style.color]="validationDisabled() ? '#cf1322' : '#389e0d'"
-        [style.font-weight]="'600'"
-        [style.font-size]="'12px'"
-        [style.cursor]="'pointer'">
+        class="validation-toggle"
+        [class.validation-toggle--off]="validationDisabled()">
         {{ validationDisabled() ? '⚠ Validation OFF — Click to Re-enable' : '✓ Validation ON — Click to Disable' }}
       </button>
     </div>
@@ -316,6 +344,13 @@
       (saveDraft)="onSaveDraft()"
       (submitForm)="onSubmit()">
     </app-form-wizard-nav>
+
+    @if (draftSaveSuccess()) {
+      <div class="draft-saved-toast">
+        <span class="material-icons">check_circle</span>
+        Draft saved successfully
+      </div>
+    }
 
   </form>
 

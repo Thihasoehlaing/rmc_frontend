@@ -53,6 +53,7 @@
         <thead>
           <tr>
             <th>Project Title</th>
+            <th>Type</th>
             <th>Submitted By</th>
             <th>Status</th>
             <th>Next Actors</th>
@@ -64,6 +65,9 @@
           @for (app of applications(); track app.id) {
             <tr>
               <td class="col-title">{{ getTitle(app) }}</td>
+              <td>
+                <span class="type-badge" style="background:#e0e7ff; color:#4338ca; padding:4px 8px; border-radius:12px; font-size:0.75rem; font-weight:600;">{{ getFormTypeLabel(app) }}</span>
+              </td>
               <td>{{ getSubmittedBy(app) }}</td>
               <td>
                 <span
@@ -79,7 +83,7 @@
               <td class="col-action">
                 <a
                   class="btn-open"
-                  [routerLink]="['/rdig']"
+                  [routerLink]="[getFormRoute(app)]"
                   [queryParams]="{ id: app.id }">
                   <span class="material-icons">open_in_new</span>
                   Open

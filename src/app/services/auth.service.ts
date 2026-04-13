@@ -117,6 +117,33 @@ const DUMMY_USERS: User[] = [
     // HOS user on the RDIG block list — 'blocked_hos_rdig' prevents RDIG submission
     groups: ['full_time', 'academic', 'HOS', 'blocked_hos_rdig'],
   },
+  {
+    id: '10',
+    name: 'Dr. Chair Test',
+    username: 'rdig_chair',
+    email: 'chair.test@apu.edu.my',
+    password: 'chair123',
+    department: 'Research',
+    groups: ['RDIG_Chair'],
+  },
+  {
+    id: '11',
+    name: 'Prof. VC Test',
+    username: 'vc_test',
+    email: 'vc.test@apu.edu.my',
+    password: 'vc123',
+    department: 'University',
+    groups: ['VC'],
+  },
+  {
+    id: '12',
+    name: 'Mr. CEO Test',
+    username: 'ceo_test',
+    email: 'ceo.test@apu.edu.my',
+    password: 'ceo123',
+    department: 'University',
+    groups: ['CEO'],
+  },
 ];
 
 @Injectable({

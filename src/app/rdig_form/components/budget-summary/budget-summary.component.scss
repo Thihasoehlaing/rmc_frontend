@@ -56,7 +56,7 @@
   &--yellow {
     background: color-mix(in srgb, var(--color-warning) 8%, var(--color-surface));
     border-color: var(--color-warning);
-    color: var(--color-warning-dark, #b58000);
+    color: var(--color-warning-dark);
   }
   
   &--red {
@@ -69,18 +69,18 @@
 
 .data-table__actions {
   justify-content: flex-end;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .amount-cell {
   text-align: right;
   font-weight: var(--fw-semibold);
   color: var(--color-primary);
-  padding-right: 16px;
+  padding-right: var(--space-4);
 }
 
 .action-cell {
-  padding-right: 16px;
+  padding-right: var(--space-4);
 }
 
 .modal-note {

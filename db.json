@@ -3,15 +3,16 @@
     {
       "metadata": {
         "batch": 2,
-        "applicationVersion": 1,
-        "reviewers_version": 1
+        "applicationVersion": 2,
+        "reviewers_version": 2,
+        "applicantUserId": "4"
       },
       "teamDetails": {
         "leaderName": "Dr. John Smith",
         "leaderEmail": "john.smith@apu.edu.my",
         "department": "School of Business",
-        "researchCluster": "1",
-        "leaderRoles": "hahahah",
+        "researchCluster": null,
+        "leaderRoles": "",
         "internalResearchers": [],
         "externalResearchers": []
       },
@@ -75,7 +76,7 @@
       },
       "finalDeclaration": {
         "noveltyJustification": "",
-        "agreed": true
+        "agreed": false
       },
       "reviewTeam": {
         "hosComment": "",
@@ -170,19 +171,21 @@
         "vcComment": ""
       },
       "approvals": {
-        "hosStatus": "",
-        "rmcStatus": "",
-        "reviewer2Decision": "",
-        "rdigChairStatus": "",
-        "vcStatus": "",
+        "hosStatus": "approve",
+        "rmcStatus": "approve",
+        "reviewer1Decision": "",
+        "reviewer2Decision": "resubmission",
+        "rdigChairStatus": "approve",
+        "vcStatus": "approve",
         "ceoStatus": "",
-        "reviewer1Assignment": "4",
-        "reviewer2Assignment": "4"
+        "reviewer1Assignment": "",
+        "reviewer2Assignment": ""
       },
+      "formType": "RDIG",
       "workflow": {
-        "currentStatus": "pending_hos",
+        "currentStatus": "pending_ceo",
         "nextRoles": [
-          "HOS"
+          "CEO"
         ],
         "nextUsers": [],
         "history": [
@@ -192,17 +195,92 @@
             "toStatus": "pending_hos",
             "performedBy": "Dr. John Smith",
             "role": "Applicant",
-            "timestamp": "2026-03-26T11:05:58.831Z"
+            "timestamp": "2026-04-13T07:41:00.964Z"
+          },
+          {
+            "action": "resubmit",
+            "fromStatus": "pending_hos",
+            "toStatus": "pending_applicant_resubmission_hos",
+            "performedBy": "Prof. Sarah Lee",
+            "role": "HOS",
+            "timestamp": "2026-04-13T07:41:20.449Z"
+          },
+          {
+            "action": "resubmit",
+            "fromStatus": "pending_applicant_resubmission_hos",
+            "toStatus": "pending_hos_review",
+            "performedBy": "Dr. John Smith",
+            "role": "Applicant",
+            "timestamp": "2026-04-13T07:41:58.331Z"
+          },
+          {
+            "action": "approve",
+            "fromStatus": "pending_hos_review",
+            "toStatus": "pending_rmc",
+            "performedBy": "Prof. Sarah Lee",
+            "role": "HOS",
+            "timestamp": "2026-04-13T07:42:45.894Z"
+          },
+          {
+            "action": "approve",
+            "fromStatus": "pending_rmc",
+            "toStatus": "pending_reviewers",
+            "performedBy": "RMC Test",
+            "role": "RMC",
+            "timestamp": "2026-04-13T07:43:35.866Z"
+          },
+          {
+            "action": "resubmit",
+            "fromStatus": "pending_reviewers",
+            "toStatus": "pending_applicant_resubmission_reviewers",
+            "performedBy": "Dr. Farah Ibrahim",
+            "role": "Reviewer",
+            "timestamp": "2026-04-13T07:43:57.685Z"
+          },
+          {
+            "action": "resubmit",
+            "fromStatus": "pending_applicant_resubmission_reviewers",
+            "toStatus": "pending_rmc_review",
+            "performedBy": "Dr. John Smith",
+            "role": "Applicant",
+            "timestamp": "2026-04-13T07:46:20.003Z"
+          },
+          {
+            "action": "approve",
+            "fromStatus": "pending_rmc_review",
+            "toStatus": "pending_rdig_chair",
+            "performedBy": "RMC Test",
+            "role": "RMC",
+            "timestamp": "2026-04-13T07:46:48.032Z"
+          },
+          {
+            "action": "approve",
+            "fromStatus": "pending_rdig_chair",
+            "toStatus": "pending_vc",
+            "performedBy": "Dr. Chair Test",
+            "role": "RDIG Chair",
+            "timestamp": "2026-04-13T07:58:34.924Z"
+          },
+          {
+            "action": "approve",
+            "fromStatus": "pending_vc",
+            "toStatus": "pending_ceo",
+            "performedBy": "Prof. VC Test",
+            "role": "VC",
+            "timestamp": "2026-04-13T07:59:16.354Z"
           }
         ]
       },
+      "isDraft": false,
+      "savedAt": "2026-04-13T07:59:16.354Z",
       "id": 1
     },
     {
       "metadata": {
         "batch": 2,
         "applicationVersion": 1,
-        "reviewers_version": 1
+        "reviewers_version": 1,
+        "applicantUserId": "4"
       },
       "teamDetails": {
         "leaderName": "Dr. John Smith",
@@ -210,22 +288,7 @@
         "department": "School of Business",
         "researchCluster": null,
         "leaderRoles": "",
-        "internalResearchers": [
-          {
-            "staffId": "5",
-            "staffName": "Dr. Ali Hassan",
-            "department": "School of Computing & Technology",
-            "expertise": "df",
-            "roles": "df"
-          },
-          {
-            "staffId": "5",
-            "staffName": "Dr. Ali Hassan",
-            "department": "School of Computing & Technology",
-            "expertise": "df",
-            "roles": "df"
-          }
-        ],
+        "internalResearchers": [],
         "externalResearchers": []
       },
       "projectDetails": {
@@ -235,7 +298,7 @@
           "conflict": false
         },
         "category": "S&T",
-        "duration": "12",
+        "duration": "",
         "title": "",
         "researchArea": "",
         "domain": "",
@@ -259,14 +322,7 @@
         },
         "visionMission": ""
       },
-      "activities": [
-        {
-          "name": "ht",
-          "startMonth": "1",
-          "endMonth": "8",
-          "duration": 8
-        }
-      ],
+      "activities": [],
       "outputs": {
         "journal": {
           "checked": false,
@@ -295,7 +351,7 @@
       },
       "finalDeclaration": {
         "noveltyJustification": "",
-        "agreed": true
+        "agreed": false
       },
       "reviewTeam": {
         "hosComment": "",
@@ -390,7 +446,7 @@
         "vcComment": ""
       },
       "approvals": {
-        "hosStatus": "",
+        "hosStatus": "resubmit",
         "rmcStatus": "",
         "reviewer2Decision": "",
         "rdigChairStatus": "",
@@ -399,10 +455,11 @@
         "reviewer1Assignment": "4",
         "reviewer2Assignment": "4"
       },
+      "formType": "RDIG",
       "workflow": {
-        "currentStatus": "pending_hos",
+        "currentStatus": "pending_applicant_resubmission_hos",
         "nextRoles": [
-          "HOS"
+          "Applicant"
         ],
         "nextUsers": [],
         "history": [
@@ -412,10 +469,20 @@
             "toStatus": "pending_hos",
             "performedBy": "Dr. John Smith",
             "role": "Applicant",
-            "timestamp": "2026-03-27T09:33:12.852Z"
+            "timestamp": "2026-04-13T07:53:49.717Z"
+          },
+          {
+            "action": "resubmit",
+            "fromStatus": "pending_hos",
+            "toStatus": "pending_applicant_resubmission_hos",
+            "performedBy": "Prof. Sarah Lee",
+            "role": "HOS",
+            "timestamp": "2026-04-13T07:54:10.629Z"
           }
         ]
       },
+      "isDraft": false,
+      "savedAt": "2026-04-13T07:54:10.629Z",
       "id": 2
     }
   ],
@@ -429,46 +496,46 @@
       "endDate": "2026-11-20",
       "stages": {
         "hos_first_review": {
-          "startDate": "2026-01-31",
-          "endDate": "2026-02-07"
+          "startDate": "2026-01-01",
+          "endDate": "2026-12-31"
         },
         "applicant_resubmission": {
-          "startDate": "2026-01-16",
-          "endDate": "2026-02-05"
+          "startDate": "2026-01-01",
+          "endDate": "2026-12-31"
         },
         "hos_review_again": {
-          "startDate": "2026-02-06",
-          "endDate": "2026-02-20"
+          "startDate": "2026-01-01",
+          "endDate": "2026-12-31"
         },
         "rmc": {
-          "startDate": "2026-02-21",
-          "endDate": "2026-03-07"
+          "startDate": "2026-01-01",
+          "endDate": "2026-12-31"
         },
         "reviewers": {
-          "startDate": "2026-03-08",
-          "endDate": "2026-04-09"
+          "startDate": "2026-01-01",
+          "endDate": "2026-12-31"
         },
         "rmc_again": {
-          "startDate": "2026-04-08",
-          "endDate": "2026-04-21"
+          "startDate": "2026-01-01",
+          "endDate": "2026-12-31"
         },
         "rdig_chair": {
-          "startDate": "2026-04-23",
-          "endDate": "2026-05-08"
+          "startDate": "2026-01-01",
+          "endDate": "2026-12-31"
         },
         "vc": {
-          "startDate": "2026-05-08",
-          "endDate": "2026-05-21"
+          "startDate": "2026-01-01",
+          "endDate": "2026-12-31"
         },
         "ceo": {
-          "startDate": "2026-05-23",
-          "endDate": "2026-06-05"
+          "startDate": "2026-01-01",
+          "endDate": "2026-12-31"
         }
       },
       "createdAt": "2025-12-01T08:00:00.000Z",
-      "updatedAt": "2026-03-26T09:54:08.471Z",
+      "updatedAt": "2026-03-31T09:40:08.030Z",
       "createdBy": "rmc_ahmad",
-      "endedAt": "2026-03-26T09:54:08.471Z"
+      "endedAt": "2026-03-31T09:40:08.030Z"
     },
     {
       "batchName": "RDIG 123",
@@ -476,47 +543,220 @@
       "endDate": "2026-12-04",
       "stages": {
         "hos_first_review": {
-          "startDate": "2026-03-19",
-          "endDate": "2026-11-23"
+          "startDate": "2026-01-01",
+          "endDate": "2026-12-31"
         },
         "applicant_resubmission": {
-          "startDate": "2026-11-25",
-          "endDate": "2026-11-26"
+          "startDate": "2026-01-01",
+          "endDate": "2026-12-31"
         },
         "hos_review_again": {
-          "startDate": "2026-11-26",
-          "endDate": "2026-11-27"
+          "startDate": "2026-01-01",
+          "endDate": "2026-12-31"
         },
         "rmc": {
-          "startDate": "2026-11-25",
-          "endDate": "2026-11-26"
+          "startDate": "2026-01-01",
+          "endDate": "2026-12-31"
         },
         "reviewers": {
-          "startDate": "2026-11-25",
-          "endDate": "2026-11-26"
+          "startDate": "2026-01-01",
+          "endDate": "2026-12-31"
         },
         "rmc_again": {
-          "startDate": "2026-11-24",
-          "endDate": "2026-11-26"
+          "startDate": "2026-01-01",
+          "endDate": "2026-12-31"
         },
         "rdig_chair": {
-          "startDate": "2026-11-25",
-          "endDate": "2026-11-26"
+          "startDate": "2026-01-01",
+          "endDate": "2026-12-31"
         },
         "vc": {
-          "startDate": "2026-11-26",
-          "endDate": "2026-11-28"
+          "startDate": "2026-01-01",
+          "endDate": "2026-12-31"
         },
         "ceo": {
-          "startDate": "2026-11-29",
-          "endDate": "2026-11-30"
+          "startDate": "2026-01-01",
+          "endDate": "2026-12-31"
         }
       },
       "status": "active",
       "createdAt": "2026-03-26T09:15:11.739Z",
-      "updatedAt": "2026-03-27T09:21:11.191Z",
+      "updatedAt": "2026-03-31T09:41:38.474Z",
       "createdBy": "rmc_ahmad",
+      "id": 2,
+      "applicationIds": [
+        8,
+        9,
+        10,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        35,
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
+    }
+  ],
+  "notifications": [
+    {
+      "key": "APPLICATION_SUBMITTED_CONFIRMED",
+      "scope": "GLOBAL",
+      "type": "INFO",
+      "title": "Submission Confirmed",
+      "message": "RDIG Application #1 has been successfully submitted and is now awaiting review.",
+      "priority": "low",
+      "read": false,
+      "createdAt": "2026-04-13T07:41:01.361Z",
+      "recipientUserId": "4",
+      "data": {
+        "entityId": 1,
+        "entityType": "RDIG Application",
+        "entityModule": "rdig",
+        "stage": "pending_hos",
+        "actorName": "Dr. John Smith",
+        "route": null
+      },
       "id": 2
+    },
+    {
+      "key": "APPLICATION_RESUBMITTED_BY",
+      "scope": "GLOBAL",
+      "type": "INFO",
+      "title": "Application Resubmitted",
+      "message": "RDIG Application #1 has been resubmitted by Dr. John Smith and is ready for your review.",
+      "priority": "medium",
+      "read": false,
+      "createdAt": "2026-04-13T07:41:58.371Z",
+      "recipientRole": "HOS",
+      "recipientDepartment": "School of Business",
+      "data": {
+        "entityId": 1,
+        "entityType": "RDIG Application",
+        "entityModule": "rdig",
+        "stage": "pending_hos_review",
+        "actorName": "Dr. John Smith",
+        "route": "/rdig?id=1"
+      },
+      "id": 4
+    },
+    {
+      "key": "REVIEWER_ASSIGNED_TO_APPLICATION",
+      "scope": "GLOBAL",
+      "type": "ACTION",
+      "title": "Review Assignment",
+      "message": "You have been assigned to review RDIG Application #1. Please complete your review before the deadline.",
+      "priority": "high",
+      "read": false,
+      "createdAt": "2026-04-13T07:43:35.895Z",
+      "recipientUserId": "6",
+      "data": {
+        "entityId": 1,
+        "entityType": "RDIG Application",
+        "entityModule": "rdig",
+        "stage": "pending_reviewers",
+        "actorName": "RMC Test",
+        "route": "/rdig?id=1"
+      },
+      "id": 5
+    },
+    {
+      "key": "APPLICATION_RESUBMITTED_BY",
+      "scope": "GLOBAL",
+      "type": "INFO",
+      "title": "Application Resubmitted",
+      "message": "RDIG Application #1 has been resubmitted by Dr. John Smith and is ready for your review.",
+      "priority": "medium",
+      "read": false,
+      "createdAt": "2026-04-13T07:46:20.045Z",
+      "recipientRole": "RMC",
+      "data": {
+        "entityId": 1,
+        "entityType": "RDIG Application",
+        "entityModule": "rdig",
+        "stage": "pending_rmc_review",
+        "actorName": "Dr. John Smith",
+        "route": "/rdig?id=1"
+      },
+      "id": 6
+    },
+    {
+      "key": "APPLICATION_SUBMITTED_CONFIRMED",
+      "scope": "GLOBAL",
+      "type": "INFO",
+      "title": "Submission Confirmed",
+      "message": "RDIG Application #2 has been successfully submitted and is now awaiting review.",
+      "priority": "low",
+      "read": false,
+      "createdAt": "2026-04-13T07:53:49.762Z",
+      "recipientUserId": "4",
+      "data": {
+        "entityId": 2,
+        "entityType": "RDIG Application",
+        "entityModule": "rdig",
+        "stage": "pending_hos",
+        "actorName": "Dr. John Smith",
+        "route": null
+      },
+      "id": 9
+    },
+    {
+      "key": "APPLICATION_RETURNED_FOR_REVISION",
+      "scope": "GLOBAL",
+      "type": "ACTION",
+      "title": "Revision Required",
+      "message": "RDIG Application #2 has been returned by Prof. Sarah Lee for revision. Please review the comments and resubmit.",
+      "priority": "high",
+      "read": false,
+      "createdAt": "2026-04-13T07:54:10.665Z",
+      "recipientUserId": "4",
+      "data": {
+        "entityId": 2,
+        "entityType": "RDIG Application",
+        "entityModule": "rdig",
+        "stage": "pending_applicant_resubmission_hos",
+        "actorName": "Prof. Sarah Lee",
+        "route": "/rdig?id=2"
+      },
+      "id": 10
+    },
+    {
+      "key": "REVIEW_ASSIGNED_TO_YOU",
+      "scope": "GLOBAL",
+      "type": "ACTION",
+      "title": "Action Required",
+      "message": "RDIG Application #1 requires your review at the CEO Review stage.",
+      "priority": "high",
+      "read": false,
+      "createdAt": "2026-04-13T07:59:16.386Z",
+      "recipientRole": "CEO",
+      "data": {
+        "entityId": 1,
+        "entityType": "RDIG Application",
+        "entityModule": "rdig",
+        "stage": "pending_ceo",
+        "actorName": "Prof. VC Test",
+        "route": "/rdig?id=1"
+      },
+      "id": 11
     }
   ]
 }

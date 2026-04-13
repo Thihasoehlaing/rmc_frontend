@@ -1,9 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, Input, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
 import { SearchableDropdownComponent } from '../../../../shared/components/searchable-dropdown/searchable-dropdown.component';
 import { ActionButtonComponent } from '../../../../shared/components/action-button/action-button.component';
 import { DropdownOption } from '../../../../interfaces/components.interface';
+import { ConferenceWorkflowService } from '../../../services/conference-workflow.service';
+import { ConferenceFormStateService } from '../../../services/conference-form-state.service';
 
 @Component({
   selector: 'app-author-details-form',
@@ -12,13 +14,27 @@ import { DropdownOption } from '../../../../interfaces/components.interface';
   templateUrl: './author-details-form.component.html',
   styleUrl: './author-details-form.component.scss'
 })
-export class AuthorDetailsFormComponent implements OnInit {
+export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
+  @Input() workflow?: ConferenceWorkflowService;
+  @Input() isFormReadOnly: boolean = false;
+
   form!: FormGroup;
   editForm!: FormGroup;
 
   // Modal state
   isModalOpen = false;
   editingIndex: number | null = null;
+
+  constructor(private fb: FormBuilder, private formStateService: ConferenceFormStateService) {
+    // Apply form read-only effect if workflow is provided
+    effect(() => {
+      if (this.workflow?.isFormReadOnly()) {
+        this.form?.disable({ emitEvent: false });
+      } else {
+        this.form?.enable({ emitEvent: false });
+      }
+    });
+  }
   modalType: 'apu-staff' | 'student' | 'non-apu' | null = null;
 
   // Staff dropdown options
@@ -43,10 +59,14 @@ export class AuthorDetailsFormComponent implements OnInit {
     { value: 'Other', label: 'Other' }
   ];
 
-  constructor(private fb: FormBuilder) {}
-
   ngOnInit() {
     this.initializeForm();
+    this.loadFormState();
+  }
+
+  ngOnDestroy() {
+    // Save form state before component is destroyed
+    this.saveFormState();
   }
 
   initializeForm() {
@@ -63,6 +83,47 @@ export class AuthorDetailsFormComponent implements OnInit {
       studentCoAuthors: this.fb.array([]),
       nonApuCoAuthors: this.fb.array([])
     });
+  }
+
+  /**
+   * Load form state from the state service
+   */
+  private loadFormState() {
+    const savedState = this.formStateService.getFormSection('authorDetails');
+    if (savedState) {
+      // Define array field creators for FormArray restoration
+      const arrayFields = {
+        testSubsections: (data: any) => this.fb.group({
+          staffName: [data?.staffName || '', [Validators.required]],
+          schoolDepartment: [data?.schoolDepartment || '', [Validators.required]],
+          affiliation: [data?.affiliation || '', [Validators.required]]
+        }),
+        studentCoAuthors: (data: any) => this.fb.group({
+          tpNumber: [data?.tpNumber || '', [Validators.required]],
+          fullName: [data?.fullName || '', [Validators.required]],
+          schoolDepartment: [data?.schoolDepartment || '', [Validators.required]],
+          affiliation: [data?.affiliation || '', [Validators.required]]
+        }),
+        nonApuCoAuthors: (data: any) => this.fb.group({
+          fullName: [data?.fullName || '', [Validators.required]],
+          country: [data?.country || '', [Validators.required]],
+          email: [data?.email || '', [Validators.required, Validators.email]],
+          organisationType: [data?.organisationType || '', [Validators.required]],
+          schoolDepartment: [data?.schoolDepartment || '', [Validators.required]],
+          institutionName: [data?.institutionName || '', [Validators.required]]
+        })
+      };
+
+      // Use the enhanced restore method that handles FormArrays
+      this.formStateService.restoreFormState(this.form, savedState, arrayFields);
+    }
+  }
+
+
+  private saveFormState() {
+    if (this.form) {
+      this.formStateService.saveFormSection('authorDetails', this.form.getRawValue());
+    }
   }
 
   createTestSubsection(): FormGroup {
@@ -105,24 +166,12 @@ export class AuthorDetailsFormComponent implements OnInit {
     return this.form.get('nonApuCoAuthors') as FormArray;
   }
 
-  addTestSubsection() {
-    this.testSubsections.push(this.createTestSubsection());
-  }
-
   deleteTestSubsection(index: number) {
     this.testSubsections.removeAt(index);
   }
 
-  addStudentCoAuthor() {
-    this.studentCoAuthors.push(this.createStudentCoAuthor());
-  }
-
   deleteStudentCoAuthor(index: number) {
     this.studentCoAuthors.removeAt(index);
-  }
-
-  addNonApuCoAuthor() {
-    this.nonApuCoAuthors.push(this.createNonApuCoAuthor());
   }
 
   deleteNonApuCoAuthor(index: number) {
@@ -192,6 +241,13 @@ export class AuthorDetailsFormComponent implements OnInit {
         });
       }
     }
+
+    // Disable form if user can't add co-authors
+    if (!this.canAddCoAuthors()) {
+      this.editForm.disable({ emitEvent: false });
+    } else {
+      this.editForm.enable({ emitEvent: false });
+    }
   }
 
   closeModal() {
@@ -240,5 +296,17 @@ export class AuthorDetailsFormComponent implements OnInit {
       'non-apu': `${isEditing} Non-APU Co-Author`
     };
     return titles[this.modalType];
+  }
+
+  canAddCoAuthors(): boolean {
+    if (!this.workflow) return true;
+    const status = this.workflow.status();
+    const allowedStatuses = [
+      'normal_application',
+      'hos_application',
+      'hos_request_resubmission',
+      'rmc_request_resubmission'
+    ];
+    return allowedStatuses.includes(status);
   }
 }

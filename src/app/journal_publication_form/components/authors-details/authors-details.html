@@ -1,10 +1,9 @@
-<p>authors-details works!</p>
+
 <form [formGroup]="form" class="form-section">
+  <app-custom-header icon="group" title="Authors Details"></app-custom-header>
   <div class="section-fields">
-    <section class="card">
-      <div class="card__header">
-        <h2 class="card__title">APU Staff Co-Author Details</h2>
-      </div>
+    <div class="card">
+      <app-custom-subheader title="APU Staff Co-Author Details"></app-custom-subheader>
       <div class="card__content">
         <div class="list-section-header">
           <span class="list-count">{{ testSubsections.length }} {{ testSubsections.length === 1 ? 'Entry' : 'Entries' }}</span>
@@ -56,12 +55,10 @@
           </div>
         }
       </div>
-    </section>
+    </div>
 
-    <section class="card">
-      <div class="card__header">
-        <h2 class="card__title">APU Student Co-Authors</h2>
-      </div>
+    <div class="card">
+      <app-custom-subheader title="APU Student Co-Authors"></app-custom-subheader>
       <div class="card__content">
         <div class="list-section-header">
           <span class="list-count">{{ studentCoAuthors.length }} {{ studentCoAuthors.length === 1 ? 'Entry' : 'Entries' }}</span>
@@ -115,12 +112,10 @@
           </div>
         }
       </div>
-    </section>
+    </div>
 
-    <section class="card">
-      <div class="card__header">
-        <h2 class="card__title">Non-APU Co-Authors</h2>
-      </div>
+    <div class="card">
+      <app-custom-subheader title="Non-APU Co-Authors"></app-custom-subheader>
       <div class="card__content">
         <div class="list-section-header">
           <span class="list-count">{{ nonApuCoAuthors.length }} {{ nonApuCoAuthors.length === 1 ? 'Entry' : 'Entries' }}</span>
@@ -178,7 +173,7 @@
           </div>
         }
       </div>
-    </section>
+    </div>
   </div>
 </form>
 
@@ -204,27 +199,21 @@
               placeholder="Search staff..."
               formControlName="staffName">
             </app-searchable-dropdown>
-            @if (editForm.get('staffName')?.invalid && editForm.get('staffName')?.touched) {
-              <span class="error-message">Staff name is required</span>
-            }
+            <app-validation-message [control]="editForm.get('staffName')"></app-validation-message>
           </div>
 
           <div class="form-group">
             <label for="schoolDept1">School/Department *</label>
             <input type="text" id="schoolDept1" class="form-control" formControlName="schoolDepartment"
               placeholder="Ex. School of Culinary Arts and Hospitality">
-            @if (editForm.get('schoolDepartment')?.invalid && editForm.get('schoolDepartment')?.touched) {
-              <span class="error-message">School/Department is required</span>
-            }
+            <app-validation-message [control]="editForm.get('schoolDepartment')"></app-validation-message>
           </div>
 
           <div class="form-group">
             <label for="affiliation1">Affiliation *</label>
             <input type="text" id="affiliation1" class="form-control" formControlName="affiliation"
               placeholder="Ex. Taylor's University">
-            @if (editForm.get('affiliation')?.invalid && editForm.get('affiliation')?.touched) {
-              <span class="error-message">Affiliation is required</span>
-            }
+            <app-validation-message [control]="editForm.get('affiliation')"></app-validation-message>
           </div>
         }
 
@@ -234,36 +223,28 @@
             <label for="tpNumber">TP Number *</label>
             <input type="text" id="tpNumber" class="form-control" formControlName="tpNumber"
               placeholder="Ex. TPXXXXXX">
-            @if (editForm.get('tpNumber')?.invalid && editForm.get('tpNumber')?.touched) {
-              <span class="error-message">TP Number is required</span>
-            }
+            <app-validation-message [control]="editForm.get('tpNumber')"></app-validation-message>
           </div>
 
           <div class="form-group">
             <label for="fullNameStudent">Full Name (as per IC/Passport) *</label>
             <input type="text" id="fullNameStudent" class="form-control" formControlName="fullName"
               placeholder="Ex. Jessica Teh Sze Hui">
-            @if (editForm.get('fullName')?.invalid && editForm.get('fullName')?.touched) {
-              <span class="error-message">Full name is required</span>
-            }
+            <app-validation-message [control]="editForm.get('fullName')"></app-validation-message>
           </div>
 
           <div class="form-group">
             <label for="schoolDept2">School/Department *</label>
             <input type="text" id="schoolDept2" class="form-control" formControlName="schoolDepartment"
               placeholder="Ex. School of Culinary Arts and Hospitality">
-            @if (editForm.get('schoolDepartment')?.invalid && editForm.get('schoolDepartment')?.touched) {
-              <span class="error-message">School/Department is required</span>
-            }
+            <app-validation-message [control]="editForm.get('schoolDepartment')"></app-validation-message>
           </div>
 
           <div class="form-group">
             <label for="affiliation2">Affiliation *</label>
             <input type="text" id="affiliation2" class="form-control" formControlName="affiliation"
               placeholder="Ex. Taylor's University">
-            @if (editForm.get('affiliation')?.invalid && editForm.get('affiliation')?.touched) {
-              <span class="error-message">Affiliation is required</span>
-            }
+            <app-validation-message [control]="editForm.get('affiliation')"></app-validation-message>
           </div>
         }
 
@@ -273,27 +254,21 @@
             <label for="fullNameNonApu">Full Name (as per IC/Passport) *</label>
             <input type="text" id="fullNameNonApu" class="form-control" formControlName="fullName"
               placeholder="Ex. Jessica Teh Sze Hui">
-            @if (editForm.get('fullName')?.invalid && editForm.get('fullName')?.touched) {
-              <span class="error-message">Full name is required</span>
-            }
+            <app-validation-message [control]="editForm.get('fullName')"></app-validation-message>
           </div>
 
           <div class="form-group">
             <label for="country">Country *</label>
             <input type="text" id="country" class="form-control" formControlName="country"
               placeholder="Ex. Jordan">
-            @if (editForm.get('country')?.invalid && editForm.get('country')?.touched) {
-              <span class="error-message">Country is required</span>
-            }
+            <app-validation-message [control]="editForm.get('country')"></app-validation-message>
           </div>
 
           <div class="form-group">
             <label for="email">Email *</label>
             <input type="email" id="email" class="form-control" formControlName="email"
               placeholder="Ex. user@example.com">
-            @if (editForm.get('email')?.invalid && editForm.get('email')?.touched) {
-              <span class="error-message">Valid email is required</span>
-            }
+            <app-validation-message [control]="editForm.get('email')"></app-validation-message>
           </div>
 
           <div class="form-group">
@@ -304,27 +279,21 @@
               placeholder="Search organisation type..."
               formControlName="organisationType">
             </app-searchable-dropdown>
-            @if (editForm.get('organisationType')?.invalid && editForm.get('organisationType')?.touched) {
-              <span class="error-message">Organisation type is required</span>
-            }
+            <app-validation-message [control]="editForm.get('organisationType')"></app-validation-message>
           </div>
 
           <div class="form-group">
             <label for="schoolDept3">School/Department *</label>
             <input type="text" id="schoolDept3" class="form-control" formControlName="schoolDepartment"
               placeholder="Ex. School of Culinary Arts and Hospitality">
-            @if (editForm.get('schoolDepartment')?.invalid && editForm.get('schoolDepartment')?.touched) {
-              <span class="error-message">School/Department is required</span>
-            }
+            <app-validation-message [control]="editForm.get('schoolDepartment')"></app-validation-message>
           </div>
 
           <div class="form-group">
             <label for="institutionName">Institution/Company Name *</label>
             <input type="text" id="institutionName" class="form-control" formControlName="institutionName"
               placeholder="Ex. Shanghai Hypergryph Network Technology Co., Ltd.">
-            @if (editForm.get('institutionName')?.invalid && editForm.get('institutionName')?.touched) {
-              <span class="error-message">Institution/Company name is required</span>
-            }
+            <app-validation-message [control]="editForm.get('institutionName')"></app-validation-message>
           </div>
         }
 

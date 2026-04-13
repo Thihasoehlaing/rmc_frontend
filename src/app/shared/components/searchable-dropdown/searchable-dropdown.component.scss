@@ -59,6 +59,9 @@
 .placeholder {
   color: var(--color-letter-counter);
   font-size: var(--fs-base);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .value-text {
@@ -262,6 +265,15 @@
     cursor: not-allowed;
     background: transparent;
   }
+}
+
+// ── Option label text (truncate long text) ────────────────────────
+.option-label {
+  flex: 1;
+  min-width: 0; // allow text to shrink below content size
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 // ── Multi-select checkbox ─────────────────────────────────────────

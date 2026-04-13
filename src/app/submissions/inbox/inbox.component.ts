@@ -3,6 +3,7 @@ import { RouterLink } from '@angular/router';
 import { ApplicationService } from '../../services/application.service';
 import { BatchSittingService } from '../../settings/batch-sitting.service';
 import { BatchSitting, WORKFLOW_STAGE_META } from '../../interfaces/batch-sitting.interface';
+import { TableSortService, SortDirection } from '../../shared/services/table-sort.service';
 
 @Component({
   selector: 'app-inbox',
@@ -10,15 +11,19 @@ import { BatchSitting, WORKFLOW_STAGE_META } from '../../interfaces/batch-sittin
   imports: [RouterLink],
   templateUrl: './inbox.component.html',
   styleUrl: './inbox.component.scss',
+  providers: [TableSortService]
 })
 export class InboxComponent implements OnInit {
   private applicationService = inject(ApplicationService);
   private batchSvc           = inject(BatchSittingService);
+  private tableSortService   = inject(TableSortService);
 
   private allApplications = signal<any[]>([]);
   activeBatch             = signal<BatchSitting | null>(null);
   loading                 = signal(true);
   error                   = signal<string | null>(null);
+  headerSortColumn        = signal<string | null>(null);
+  headerSortDirection     = signal<SortDirection>(null);
 
   /** Badge colour per workflow status */
   readonly statusColors: Record<string, string> = {
@@ -135,5 +140,65 @@ export class InboxComponent implements OnInit {
 
   getFormTypeLabel(app: any): string {
     return this.applicationService.getFormTypeLabel(app);
+  }
+
+  /**
+   * Handle table header click for sorting
+   */
+  onHeaderClick(columnName: string): void {
+    const currentColumn = this.headerSortColumn();
+    const currentDirection = this.headerSortDirection();
+
+    if (currentColumn === columnName) {
+      // Same column: cycle through direction
+      this.headerSortDirection.set(this.tableSortService.getNextDirection(currentDirection));
+    } else {
+      // New column: start with ascending
+      this.headerSortColumn.set(columnName);
+      this.headerSortDirection.set('asc');
+    }
+  }
+
+  /**
+   * Get sort indicator for column header
+   */
+  getSortIndicator(columnName: string): string {
+    if (this.headerSortColumn() === columnName) {
+      const direction = this.headerSortDirection();
+      return direction === 'asc' ? ' ↑' : direction === 'desc' ? ' ↓' : '';
+    }
+    // Show ↕ indicator for sortable columns that aren't currently sorted
+    return this.isSortableColumn(columnName) ? ' ↕' : '';
+  }
+
+  /**
+   * Check if column header is sortable
+   */
+  isSortableColumn(columnName: string): boolean {
+    return ['title', 'submittedBy', 'status', 'lastAction'].includes(columnName);
+  }
+
+  /**
+   * Get sorted applications
+   */
+  getSortedApplications(): any[] {
+    const headerColumn = this.headerSortColumn();
+    const headerDirection = this.headerSortDirection();
+
+    if (headerColumn && headerDirection) {
+      // Map display column names to object properties for sorting
+      const propertyMap: Record<string, string> = {
+        'title': 'projectDetails.title',
+        'submittedBy': 'teamDetails.leaderName',
+        'status': 'workflow.currentStatus',
+        'nextActors': 'workflow.nextRoles',
+        'lastAction': 'workflow.history'
+      };
+
+      const property = propertyMap[headerColumn] || headerColumn;
+      return this.tableSortService.sort(this.applications(), property, headerDirection);
+    }
+
+    return this.applications();
   }
 }

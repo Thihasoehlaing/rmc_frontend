@@ -139,14 +139,12 @@
     <!-- Conference Dates -->
     <div class="row--2">
       <div class="form-field">
-        <div class="label-with-note">
-          <label class="form-label is-required">Conference Start Date</label>
-          <app-note text="Please select end date first" [isTooltip]="true"></app-note>
-        </div>
+        <label class="form-label is-required">Conference Start Date</label>
         <input
           type="date"
           class="input--text"
           formControlName="conferenceStartDate">
+        <app-validation-message [control]="form.get('conferenceStartDate')"></app-validation-message>
       </div>
 
       <div class="form-field">
@@ -155,6 +153,7 @@
           type="date"
           class="input--text"
           formControlName="conferenceEndDate">
+        <app-validation-message [control]="form.get('conferenceEndDate')"></app-validation-message>
       </div>
     </div>
 
@@ -186,7 +185,10 @@
       </div>
 
       <div class="form-field">
-        <label class="form-label is-required">Select Research or Non-Research Project</label>
+        <div class="label-with-note">
+          <label class="form-label is-required">Select Research or Non-Research Project</label>
+          <app-note text="If External Research Project is selected, all required funding will be fully subsidized from External Sources." [isTooltip]="true"></app-note>
+        </div>
         <div class="radio-group">
           <label class="radio-label">
             <input type="radio" value="external-research" formControlName="researchType">
@@ -257,7 +259,8 @@
               type="text"
               class="input--text"
               formControlName="regionName"
-              [value]="selectedRegion">
+              [value]="selectedRegion"
+              readonly>
           </div>
 
           <div class="form-field">
@@ -265,8 +268,8 @@
             <input
               type="text"
               class="input--text"
-              formControlName="percentage"
-              placeholder="percentage heree~">
+              [value]="form.get('percentage')?.value || ''"
+              readonly>
           </div>
 
           <div class="form-field">
@@ -275,7 +278,8 @@
               type="text"
               class="input--text"
               formControlName="limit"
-              placeholder="Delulu">
+              [value]="5000"
+              readonly>
           </div>
 
           <div class="form-field">
@@ -284,7 +288,8 @@
               class="input--textarea"
               formControlName="regionDescription"
               placeholder="Additional funding details for this region"
-              rows="2"></textarea>
+              rows="2"
+              readonly></textarea>
           </div>
         </div>
       </div>
@@ -319,7 +324,7 @@
               <div class="costing-breakdown">
                 <div class="list-section-header">
                   <span class="list-count">{{ researchBreakdowns.length }} {{ researchBreakdowns.length === 1 ? 'Entry' : 'Entries' }}</span>
-                  <button type="button" class="btn btn-primary btn-sm" (click)="openBreakdownModal('research')">
+                  <button type="button" class="btn btn-primary btn-sm" [disabled]="!canAddBreakdownEntries()" (click)="openBreakdownModal('research')">
                     <span class="material-icons">add</span> Add Entry
                   </button>
                 </div>
@@ -348,12 +353,12 @@
                             <td>{{ item.exchangeRate | number: '1.2-2' }}</td>
                             <td>{{ item.costInRM | number: '1.2-2' }}</td>
                             <td class="col-actions">
-                              <button type="button" class="btn-icon btn-icon--edit"
+                              <button type="button" class="btn-icon btn-icon--edit" [disabled]="!canAddBreakdownEntries()"
                                 (click)="openBreakdownModal('research', i)" aria-label="Edit entry">
                                 <span class="material-icons">edit</span>
                               </button>
                               @if (researchBreakdowns.length > 1) {
-                                <button type="button" class="btn-icon btn-icon--delete"
+                                <button type="button" class="btn-icon btn-icon--delete" [disabled]="!canAddBreakdownEntries()"
                                   (click)="deleteBreakdown('research', i)" aria-label="Remove entry">
                                   <span class="material-icons">delete</span>
                                 </button>
@@ -373,65 +378,76 @@
               </div>
             </div>
 
-            <!-- Sponsored Amount by External & Sponsored by -->
-            <div class="row--2">
-              <!-- Sponsored Amount by External -->
-              <div class="form-field">
-                <label class="form-label is-required">Sponsored Amount by External (RM)</label>
-                <input
-                  type="number"
-                  class="input--text"
-                  formControlName="sponsoredAmountExternal">
+            <div class="total-display">
+              <span class="total-label">Total BEFORE SUBSIDY (RM)</span>
+              <div class="total-amount">{{ calculateBreakdownTotal('research') | number: '1.2-2' }}</div>
+            </div>
+
+            <!-- Sponsorship Subsections Container -->
+            <div class="sponsorship-subsections-container">
+              <!-- External Sponsorship Subsection -->
+              <div class="sponsorship-subsection">
+                <span class="subsection-title">External Sponsorship</span>
+                <div class="subsection-fields-wrapper">
+                  <div class="row--2">
+                    <div class="form-field">
+                      <label class="form-label">Sponsored Amount by External (RM)</label>
+                      <input
+                        type="number"
+                        class="input--text"
+                        formControlName="sponsoredAmountExternal">
+                    </div>
+                  </div>
+                  <div class="row--2">
+                    <div class="form-field">
+                      <label class="form-label">Sponsored by</label>
+                      <input
+                        type="text"
+                        class="input--text"
+                        formControlName="sponsoredBy">
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              <!-- Sponsored by -->
-              <div class="form-field">
-                <label class="form-label is-required">Sponsored by</label>
-                <input
-                  type="text"
-                  class="input--text"
-                  formControlName="sponsoredBy">
+              <!-- APU Sponsorship Subsection -->
+              <div class="sponsorship-subsection">
+                <span class="subsection-title">APU Sponsorship</span>
+                <div class="subsection-fields-wrapper">
+                  <div class="row--2">
+                    <div class="form-field">
+                      <label class="form-label">Sponsorship Percentage by APU (%)</label>
+                      <input
+                        type="text"
+                        class="input--text"
+                        [value]="percentage | number: '1.2-2'"
+                        disabled
+                        aria-label="Sponsorship Percentage by APU (Read Only)">
+                    </div>
+                  </div>
+                  <div class="row--2">
+                    <!-- Sponsorship Amount by APU (Read Only) -->
+                    <div class="form-field">
+                      <label class="form-label">Sponsorship Amount by APU (RM)</label>
+                      <input
+                        type="text"
+                        class="input--text"
+                        [value]="getCappedSponsorshipAmount(sponsorshipAmountByAPU) | number: '1.2-2'"
+                        disabled
+                        aria-label="Sponsorship Amount by APU (Read Only)">
+                      <small class="tooltip-text">{{ isCapLimitTooltip(sponsorshipAmountByAPU) ? getCapLimitTooltip(sponsorshipAmountByAPU) : (isReductionTooltip(sponsorshipAmountByAPU, getCappedSponsorshipAmount(sponsorshipAmountByAPU)) ? getReductionTooltip(sponsorshipAmountByAPU, getCappedSponsorshipAmount(sponsorshipAmountByAPU)) : '') }}</small>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <!-- Sponsorship Amount by APU, Cost to be borne by Applicant & Sponsorship Percentage -->
-            <div class="row--3">
-              <!-- Sponsorship Amount by APU -->
-              <div class="form-field">
-                <label class="form-label">Sponsorship Amount by APU</label>
-                <input
-                  type="number"
-                  class="input--text"
-                  formControlName="sponsorshipAmountAPU"
-                  readonly>
-              </div>
-
-              <!-- Cost to be borne by Applicant -->
-              <div class="form-field">
-                <label class="form-label is-required">Cost to be borne by Applicant (RM)</label>
-                <input
-                  type="number"
-                  class="input--text"
-                  formControlName="costByApplicant">
-              </div>
-
-              <!-- Sponsorship Percentage Requested -->
-              <div class="form-field">
-                <label class="form-label is-required">Sponsorship Percentage Requested (%)</label>
-                <input
-                  type="number"
-                  class="input--text"
-                  formControlName="sponsorshipPercentage"
-                  min="0"
-                  max="100">
-              </div>
+            <!-- Cost to be borne by Applicant (Read Only) -->
+            <div class="form-field total-field">
+              <label class="form-label">Cost to be borne by Applicant (RM)</label>
+              <div class="total-value-display">{{ costBorneByApplicant | number: '1.2-2' }}</div>
             </div>
 
-            <!-- Total in RM - Grand Total -->
-            <div class="form-field grand-total">
-              <label class="form-label">Total in RM</label>
-              <div class="total-value">{{ form.get('totalRM')?.value || 0 | number: '1.2-2' }}</div>
-            </div>
             <div class="form-field">
               <label class="form-label">Remarks (Optional)</label>
               <textarea
@@ -463,7 +479,7 @@
               <div class="costing-breakdown">
                 <div class="list-section-header">
                   <span class="list-count">{{ externalBreakdowns.length }} {{ externalBreakdowns.length === 1 ? 'Entry' : 'Entries' }}</span>
-                  <button type="button" class="btn btn-primary btn-sm" (click)="openBreakdownModal('external-research')">
+                  <button type="button" class="btn btn-primary btn-sm" [disabled]="!canAddBreakdownEntries()" (click)="openBreakdownModal('external-research')">
                     <span class="material-icons">add</span> Add Entry
                   </button>
                 </div>
@@ -492,12 +508,12 @@
                             <td>{{ item.exchangeRate | number: '1.2-2' }}</td>
                             <td>{{ item.costInRM | number: '1.2-2' }}</td>
                             <td class="col-actions">
-                              <button type="button" class="btn-icon btn-icon--edit"
+                              <button type="button" class="btn-icon btn-icon--edit" [disabled]="!canAddBreakdownEntries()"
                                 (click)="openBreakdownModal('external-research', i)" aria-label="Edit entry">
                                 <span class="material-icons">edit</span>
                               </button>
                               @if (externalBreakdowns.length > 1) {
-                                <button type="button" class="btn-icon btn-icon--delete"
+                                <button type="button" class="btn-icon btn-icon--delete" [disabled]="!canAddBreakdownEntries()"
                                   (click)="deleteBreakdown('external-research', i)" aria-label="Remove entry">
                                   <span class="material-icons">delete</span>
                                 </button>
@@ -517,62 +533,92 @@
               </div>
             </div>
 
-            <div class="row--2">
-              <!-- Sponsored Amount by External -->
-              <div class="form-field">
-                <label class="form-label is-required">Sponsored Amount by External (RM)</label>
-                <input
-                  type="number"
-                  class="input--text"
-                  formControlName="externalSponsoredAmountExternal">
+            <div class="total-display">
+              <span class="total-label">Total BEFORE SUBSIDY (RM)</span>
+              <div class="total-amount">{{ calculateBreakdownTotal('external-research') | number: '1.2-2' }}</div>
+            </div>
+
+            <!-- Sponsorship Subsections Container -->
+            <div class="sponsorship-subsections-container">
+              <!-- External Sponsorship Subsection -->
+              <div class="sponsorship-subsection">
+                <span class="subsection-title">External Sponsorship</span>
+                <div class="subsection-fields-wrapper">
+                  <div class="row--2">
+                    <div class="form-field">
+                      <label class="form-label">Sponsored Amount by External (RM)</label>
+                      @if (isExternalResearchProject) {
+                        <input
+                          type="text"
+                          class="input--text"
+                          [value]="externalResearchTotalCost | number: '1.2-2'"
+                          readonly>
+                      } @else {
+                        <input
+                          type="number"
+                          class="input--text"
+                          formControlName="externalSponsoredAmountExternal">
+                      }
+                    </div>
+                  </div>
+                  <div class="row--2">
+                    <div class="form-field">
+                      <label class="form-label">Sponsored by</label>
+                      @if (isExternalResearchProject) {
+                        <input
+                          type="text"
+                          class="input--text"
+                          value="Government Sector"
+                          readonly>
+                      } @else {
+                        <input
+                          type="text"
+                          class="input--text"
+                          formControlName="externalSponsoredBy">
+                      }
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              <!-- Sponsored by -->
-              <div class="form-field">
-                <label class="form-label is-required">Sponsored by</label>
-                <input
-                  type="text"
-                  class="input--text"
-                  formControlName="externalSponsoredBy">
+              <!-- APU Sponsorship Subsection -->
+              <div class="sponsorship-subsection">
+                <span class="subsection-title">APU Sponsorship</span>
+                <div class="subsection-fields-wrapper">
+                  <div class="row--2">
+                    <div class="form-field">
+                      <label class="form-label">Sponsorship Percentage by APU (%)</label>
+                      <input
+                        type="text"
+                        class="input--text"
+                        [value]="externalResearchPercentage | number: '1.0-0'"
+                        readonly
+                        aria-label="Sponsorship Percentage by APU (Read Only)">
+                    </div>
+                  </div>
+                  <div class="row--2">
+                    <!-- Sponsorship Amount by APU (Read Only) -->
+                    <div class="form-field">
+                      <label class="form-label">Sponsorship Amount by APU (RM)</label>
+                      <input
+                        type="text"
+                        class="input--text"
+                        [value]="getCappedSponsorshipAmount(externalResearchSponsorshipByAPU) | number: '1.2-2'"
+                        readonly
+                        aria-label="Sponsorship Amount by APU (Read Only)">
+                      <small class="tooltip-text">{{ isCapLimitTooltip(externalResearchSponsorshipByAPU) ? getCapLimitTooltip(externalResearchSponsorshipByAPU) : (isReductionTooltip(externalResearchSponsorshipByAPU, getCappedSponsorshipAmount(externalResearchSponsorshipByAPU)) ? getReductionTooltip(externalResearchSponsorshipByAPU, getCappedSponsorshipAmount(externalResearchSponsorshipByAPU)) : '') }}</small>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div class="row--3">
-              <!-- Sponsorship Amount by APU -->
-              <div class="form-field">
-                <label class="form-label">Sponsorship Amount by APU</label>
-                <input
-                  type="number"
-                  class="input--text"
-                  formControlName="externalSponsorshipAmountAPU"
-                  readonly>
-              </div>
-
-              <!-- Cost to be borne by Applicant -->
-              <div class="form-field">
-                <label class="form-label is-required">Cost to be borne by Applicant (RM)</label>
-                <input
-                  type="number"
-                  class="input--text"
-                  formControlName="externalCostByApplicant">
-              </div>
-
-              <div class="form-field">
-                <label class="form-label is-required">Sponsorship Percentage Requested (%)</label>
-                <input
-                  type="number"
-                  class="input--text"
-                  formControlName="externalSponsorshipPercentage"
-                  min="0"
-                  max="100">
-              </div>
+            <!-- Cost to be borne by Applicant (Read Only) -->
+            <div class="form-field total-field">
+              <label class="form-label">Cost to be borne by Applicant (RM)</label>
+              <div class="total-value-display">{{ externalCostBorneByApplicant | number: '1.2-2' }}</div>
             </div>
 
-            <!-- Total in RM - Grand Total -->
-            <div class="form-field grand-total">
-              <label class="form-label">Total in RM</label>
-              <div class="total-value">{{ form.get('externalTotalRM')?.value || 0 | number: '1.2-2' }}</div>
-            </div>
             <div class="form-field">
               <label class="form-label">Remarks (Optional)</label>
               <textarea
@@ -604,7 +650,7 @@
               <div class="costing-breakdown">
                 <div class="list-section-header">
                   <span class="list-count">{{ localBreakdowns.length }} {{ localBreakdowns.length === 1 ? 'Entry' : 'Entries' }}</span>
-                  <button type="button" class="btn btn-primary btn-sm" (click)="openBreakdownModal('local')">
+                  <button type="button" class="btn btn-primary btn-sm" [disabled]="!canAddBreakdownEntries()" (click)="openBreakdownModal('local')">
                     <span class="material-icons">add</span> Add Entry
                   </button>
                 </div>
@@ -633,12 +679,12 @@
                             <td>{{ item.exchangeRate | number: '1.2-2' }}</td>
                             <td>{{ item.costInRM | number: '1.2-2' }}</td>
                             <td class="col-actions">
-                              <button type="button" class="btn-icon btn-icon--edit"
+                              <button type="button" class="btn-icon btn-icon--edit" [disabled]="!canAddBreakdownEntries()"
                                 (click)="openBreakdownModal('local', i)" aria-label="Edit entry">
                                 <span class="material-icons">edit</span>
                               </button>
                               @if (localBreakdowns.length > 1) {
-                                <button type="button" class="btn-icon btn-icon--delete"
+                                <button type="button" class="btn-icon btn-icon--delete" [disabled]="!canAddBreakdownEntries()"
                                   (click)="deleteBreakdown('local', i)" aria-label="Remove entry">
                                   <span class="material-icons">delete</span>
                                 </button>
@@ -658,208 +704,81 @@
               </div>
             </div>
 
-            <div class="row--2">
-              <!-- Sponsored Amount by External -->
-              <div class="form-field">
-                <label class="form-label is-required">Sponsored Amount by External (RM)</label>
-                <input
-                  type="number"
-                  class="input--text"
-                  formControlName="localSponsoredAmountExternal">
+            <div class="total-display">
+              <span class="total-label">Total BEFORE SUBSIDY (RM)</span>
+              <div class="total-amount">{{ calculateBreakdownTotal('local') | number: '1.2-2' }}</div>
+            </div>
+
+            <!-- Sponsorship Subsections Container -->
+            <div class="sponsorship-subsections-container">
+              <!-- External Sponsorship Subsection -->
+              <div class="sponsorship-subsection">
+                <span class="subsection-title">External Sponsorship</span>
+                <div class="subsection-fields-wrapper">
+                  <div class="row--2">
+                    <div class="form-field">
+                      <label class="form-label">Sponsored Amount by External (RM)</label>
+                      <input
+                        type="number"
+                        class="input--text"
+                        formControlName="localSponsoredAmountExternal">
+                    </div>
+                  </div>
+                  <div class="row--2">
+                    <div class="form-field">
+                      <label class="form-label">Sponsored by</label>
+                      <input
+                        type="text"
+                        class="input--text"
+                        formControlName="localSponsoredBy">
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              <!-- Sponsored by -->
-              <div class="form-field">
-                <label class="form-label is-required">Sponsored by</label>
-                <input
-                  type="text"
-                  class="input--text"
-                  formControlName="localSponsoredBy">
+              <!-- APU Sponsorship Subsection -->
+              <div class="sponsorship-subsection">
+                <span class="subsection-title">APU Sponsorship</span>
+                <div class="subsection-fields-wrapper">
+                  <div class="row--2">
+                    <div class="form-field">
+                      <label class="form-label">Sponsorship Percentage by APU (%)</label>
+                      <input
+                        type="text"
+                        class="input--text"
+                        [value]="percentage | number: '1.2-2'"
+                        disabled
+                        aria-label="Sponsorship Percentage by APU (Read Only)">
+                    </div>
+                  </div>
+                  <div class="row--2">
+                    <!-- Sponsorship Amount by APU (Read Only) -->
+                    <div class="form-field">
+                      <label class="form-label">Sponsorship Amount by APU (RM)</label>
+                      <input
+                        type="text"
+                        class="input--text"
+                        [value]="getCappedSponsorshipAmount(localSponsorshipAmountByAPU) | number: '1.2-2'"
+                        disabled
+                        aria-label="Sponsorship Amount by APU (Read Only)">
+                      <small class="tooltip-text">{{ isCapLimitTooltip(localSponsorshipAmountByAPU) ? getCapLimitTooltip(localSponsorshipAmountByAPU) : (isReductionTooltip(localSponsorshipAmountByAPU, getCappedSponsorshipAmount(localSponsorshipAmountByAPU)) ? getReductionTooltip(localSponsorshipAmountByAPU, getCappedSponsorshipAmount(localSponsorshipAmountByAPU)) : '') }}</small>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <!-- Sponsorship Amount by APU, Cost to be borne by Applicant & Sponsorship Percentage -->
-            <div class="row--3">
-              <!-- Sponsorship Amount by APU -->
-              <div class="form-field">
-                <label class="form-label">Sponsorship Amount by APU</label>
-                <input
-                  type="number"
-                  class="input--text"
-                  formControlName="localSponsorshipAmountAPU"
-                  readonly>
-              </div>
-
-              <!-- Cost to be borne by Applicant -->
-              <div class="form-field">
-                <label class="form-label is-required">Cost to be borne by Applicant (RM)</label>
-                <input
-                  type="number"
-                  class="input--text"
-                  formControlName="localCostByApplicant">
-              </div>
-
-              <!-- Sponsorship Percentage Requested -->
-              <div class="form-field">
-                <label class="form-label is-required">Sponsorship Percentage Requested (%)</label>
-                <input
-                  type="number"
-                  class="input--text"
-                  formControlName="localSponsorshipPercentage"
-                  min="0"
-                  max="100">
-              </div>
+            <!-- Cost to be borne by Applicant (Read Only) -->
+            <div class="form-field total-field">
+              <label class="form-label">Cost to be borne by Applicant (RM)</label>
+              <div class="total-value-display">{{ localCostBorneByApplicant | number: '1.2-2' }}</div>
             </div>
 
-            <!-- Total in RM - Grand Total -->
-            <div class="form-field grand-total">
-              <label class="form-label">Total in RM</label>
-              <div class="total-value">{{ form.get('localTotalRM')?.value || 0 | number: '1.2-2' }}</div>
-            </div>
             <div class="form-field">
               <label class="form-label">Remarks (Optional)</label>
               <textarea
                 class="input--textarea"
                 formControlName="localCostingRemarks"
-                placeholder="Enter any additional remarks"
-                rows="3"></textarea>
-            </div>
-          </div>
-        }
-
-        @if (selectedLocalOrOverseas === 'overseas' && researchType === 'non-research') {
-          <div class="research-subsection">
-            <h4 class="research-title"><b>Overseas</b></h4>
-
-            <div class="form-field">
-              <label class="form-label is-required">Project Account Code</label>
-              <input
-                type="text"
-                class="input--text"
-                formControlName="overseasProjectAccountCode"
-                placeholder="Enter project account code">
-            </div>
-
-            <!-- Disclaimer -->
-            <!-- Detailed Breakdown for Overseas -->
-            <div class="form-field">
-              <label class="form-label">Detailed Breakdown for Overseas</label>
-              <div class="costing-breakdown">
-                <div class="list-section-header">
-                  <span class="list-count">{{ overseasBreakdowns.length }} {{ overseasBreakdowns.length === 1 ? 'Entry' : 'Entries' }}</span>
-                  <button type="button" class="btn btn-primary btn-sm" (click)="openBreakdownModal('overseas')">
-                    <span class="material-icons">add</span> Add Entry
-                  </button>
-                </div>
-
-                @if (overseasBreakdowns.length > 0) {
-                  <div class="table-scroll">
-                    <table class="list-table">
-                      <thead>
-                        <tr>
-                          <th class="col-no">#</th>
-                          <th>Item Description</th>
-                          <th>Account Code</th>
-                          <th>Cost (Foreign/MYR)</th>
-                          <th>Exchange Rate</th>
-                          <th>Cost in RM</th>
-                          <th class="col-actions">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        @for (item of overseasBreakdowns; track $index; let i = $index) {
-                          <tr>
-                            <td class="col-no text-muted">{{ i + 1 }}</td>
-                            <td>{{ item.itemDescription }}</td>
-                            <td>{{ item.voteNumber }}</td>
-                            <td>{{ item.cost | number: '1.2-2' }}</td>
-                            <td>{{ item.exchangeRate | number: '1.2-2' }}</td>
-                            <td>{{ item.costInRM | number: '1.2-2' }}</td>
-                            <td class="col-actions">
-                              <button type="button" class="btn-icon btn-icon--edit"
-                                (click)="openBreakdownModal('overseas', i)" aria-label="Edit entry">
-                                <span class="material-icons">edit</span>
-                              </button>
-                              @if (overseasBreakdowns.length > 1) {
-                                <button type="button" class="btn-icon btn-icon--delete"
-                                  (click)="deleteBreakdown('overseas', i)" aria-label="Remove entry">
-                                  <span class="material-icons">delete</span>
-                                </button>
-                              }
-                            </td>
-                          </tr>
-                        }
-                      </tbody>
-                    </table>
-                  </div>
-                } @else {
-                  <div class="empty-state">
-                    <span class="material-icons">receipt</span>
-                    <p>No breakdown entries added yet. Click <strong>Add Entry</strong> to start adding items.</p>
-                  </div>
-                }
-              </div>
-            </div>
-
-            <div class="row--2">
-              <div class="form-field">
-                <label class="form-label is-required">Sponsored Amount by External (RM)</label>
-                <input
-                  type="number"
-                  class="input--text"
-                  formControlName="overseasSponsoredAmountExternal">
-              </div>
-
-              <!-- Sponsored by -->
-              <div class="form-field">
-                <label class="form-label is-required">Sponsored by</label>
-                <input
-                  type="text"
-                  class="input--text"
-                  formControlName="overseasSponsoredBy">
-              </div>
-            </div>
-
-            <div class="row--3">
-              <!-- Sponsorship Amount by APU -->
-              <div class="form-field">
-                <label class="form-label">Sponsorship Amount by APU</label>
-                <input
-                  type="number"
-                  class="input--text"
-                  formControlName="overseasSponsorshipAmountAPU"
-                  readonly>
-              </div>
-
-              <!-- Cost to be borne by Applicant -->
-              <div class="form-field">
-                <label class="form-label is-required">Cost to be borne by Applicant (RM)</label>
-                <input
-                  type="number"
-                  class="input--text"
-                  formControlName="overseasCostByApplicant">
-              </div>
-
-              <div class="form-field">
-                <label class="form-label is-required">Sponsorship Percentage Requested (%)</label>
-                <input
-                  type="number"
-                  class="input--text"
-                  formControlName="overseasSponsorshipPercentage"
-                  min="0"
-                  max="100">
-              </div>
-            </div>
-
-            <div class="form-field grand-total">
-              <label class="form-label">Total in RM</label>
-              <div class="total-value">{{ form.get('overseasTotalRM')?.value || 0 | number: '1.2-2' }}</div>
-            </div>
-            <div class="form-field">
-              <label class="form-label">Remarks (Optional)</label>
-              <textarea
-                class="input--textarea"
-                formControlName="overseasCostingRemarks"
                 placeholder="Enter any additional remarks"
                 rows="3"></textarea>
             </div>
@@ -883,7 +802,7 @@
       <form [formGroup]="breakdownForm" (ngSubmit)="submitBreakdownModal()" class="modal-body">
         <!-- Select Item Description -->
         <div class="form-group">
-          <label for="itemDescription">Select Item Description *</label>
+          <label for="itemDescription">Select Item Description <span class="asterisk">*</span></label>
           <app-searchable-dropdown
             [options]="getBreakdownOptionsForType()"
             placeholder="Search and select item"
@@ -897,24 +816,24 @@
 
         <!-- Vote Number or Account Code -->
         <div class="form-group">
-          <label [for]="breakdownType === 'local' || breakdownType === 'overseas' ? 'accountCode' : 'voteNumber'">
-            {{ (breakdownType === 'local' || breakdownType === 'overseas') ? 'Account Code' : 'Vote Number' }}
+          <label [for]="breakdownType === 'local' ? 'accountCode' : 'voteNumber'">
+            {{ (breakdownType === 'local') ? 'Account Code' : 'Vote Number' }}
           </label>
           <input
-            [id]="breakdownType === 'local' || breakdownType === 'overseas' ? 'accountCode' : 'voteNumber'"
+            [id]="breakdownType === 'local' ? 'accountCode' : 'voteNumber'"
             type="text"
             class="form-control"
             formControlName="voteNumber"
-            [placeholder]="(breakdownType === 'local' || breakdownType === 'overseas') ? 'V29000' : 'V29000'">
+            [placeholder]="(breakdownType === 'local') ? 'V29000' : 'V29000'">
           @if (breakdownForm.get('voteNumber')?.invalid && breakdownForm.get('voteNumber')?.touched) {
-            <span class="error-message">{{ (breakdownType === 'local' || breakdownType === 'overseas') ? 'Account code' : 'Vote number' }} is required</span>
+            <span class="error-message">{{ (breakdownType === 'local') ? 'Account code' : 'Vote number' }} is required</span>
           }
         </div>
 
         <!-- Cost in Foreign Currency / MYR -->
         <div class="form-group">
           <label for="cost">
-            {{ (breakdownType === 'local') ? 'Cost in Foreign Currency / MYR (RM)' : 'Cost in Foreign Currency / MYR' }} *
+            {{ (breakdownType === 'local') ? 'Cost in Foreign Currency / MYR (RM)' : 'Cost in Foreign Currency / MYR' }} <span class="asterisk">*</span>
           </label>
           <input
             id="cost"
@@ -931,7 +850,7 @@
         <!-- Exchange Rate -->
         <div class="form-group">
           <div class="label-with-note">
-            <label for="exchangeRate">Exchange Rate *</label>
+            <label for="exchangeRate">Exchange Rate <span class="asterisk">*</span></label>
             <app-note text="ℹ For Malaysia Ringgit/MYR, please put 1 as the exchange rate." [isTooltip]="true"></app-note>
           </div>
           <input
@@ -1000,7 +919,7 @@
 
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" (click)="closeBreakdownModal()">Cancel</button>
-          <button type="submit" class="btn btn-primary" [disabled]="breakdownForm.invalid">Save</button>
+          <button type="submit" class="btn btn-primary" [disabled]="breakdownForm.invalid || !canAddBreakdownEntries()">Save</button>
         </div>
       </form>
     </div>

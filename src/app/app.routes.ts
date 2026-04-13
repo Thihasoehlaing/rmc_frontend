@@ -80,16 +80,21 @@ export const routes: Routes = [
       },
 
       // ── Conference Application ────────────────────────────────────────────
-      // Rule: ((full_time OR contract) AND academic) OR HOS OR VC
+      // Rule: ((full_time OR contract) AND academic) OR Admin
       {
         path: 'conference',
         canActivate: [permissionGuard],
         data: {
           permission: {
             anyCondition: [
-              { anyOf: ['full_time', 'contract'], allOf: ['academic'] },
-              { anyOf: ['HOS'] },
-              { anyOf: ['VC'] },
+              {
+                anyOf: ['full_time', 'contract'],
+                allOf: ['academic'],
+                excludeGroups: ['Reviewer', 'HOS'],
+              },
+              {
+                anyOf: ['Admin'],
+              },
             ],
           } satisfies NavPermission,
         },
@@ -132,6 +137,23 @@ export const routes: Routes = [
         },
         loadComponent: () =>
           import('./ragra_form/ragra-form.component').then(m => m.RagraFormComponent),
+      },
+
+      // ── Partnership Application ───────────────────────────────────────────
+      // Rule: (full_time OR contract) AND academic
+      {
+        path: 'partnership',
+        canActivate: [permissionGuard],
+        data: {
+          permission: {
+            anyOf: ['full_time', 'contract'],
+            allOf: ['academic'],
+          } satisfies NavPermission,
+        },
+        loadChildren: () =>
+          import('./partnership_form/partnership_form.routes').then(
+            m => m.partnershipFormRoutes
+          ),
       },
 
       // ── RMC Settings —  RMC group only ───────────────────────────────────

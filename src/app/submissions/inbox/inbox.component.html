@@ -52,17 +52,25 @@
       <table class="inbox-table">
         <thead>
           <tr>
-            <th>Project Title</th>
+            <th class="sortable-header" (click)="onHeaderClick('title')" title="Click to sort">
+              Project Title{{ getSortIndicator('title') }}
+            </th>
             <th>Type</th>
-            <th>Submitted By</th>
-            <th>Status</th>
+            <th class="sortable-header" (click)="onHeaderClick('submittedBy')" title="Click to sort">
+              Submitted By{{ getSortIndicator('submittedBy') }}
+            </th>
+            <th class="sortable-header" (click)="onHeaderClick('status')" title="Click to sort">
+              Status{{ getSortIndicator('status') }}
+            </th>
             <th>Next Actors</th>
-            <th>Last Action</th>
+            <th class="sortable-header" (click)="onHeaderClick('lastAction')" title="Click to sort">
+              Last Action{{ getSortIndicator('lastAction') }}
+            </th>
             <th class="col-action"></th>
           </tr>
         </thead>
         <tbody>
-          @for (app of applications(); track app.id) {
+          @for (app of getSortedApplications(); track app.id) {
             <tr>
               <td class="col-title">{{ getTitle(app) }}</td>
               <td>

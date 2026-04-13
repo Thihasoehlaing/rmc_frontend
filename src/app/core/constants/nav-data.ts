@@ -103,6 +103,16 @@ export const NAVIGATION_DATA: NavGroup[] = [
                             ],
                         },
                     },
+                    // Partnership: (full_time OR contract) AND academic
+                    {
+                        label: 'Partnership Application',
+                        icon: 'handshake',
+                        route: '/partnership/application',
+                        permission: {
+                            anyOf: ['full_time', 'contract'],
+                            allOf: ['academic'],
+                        },
+                    },
                     // Proposal: (full_time OR contract) AND academic
                     {
                         label: 'Proposal Application',
@@ -125,6 +135,17 @@ export const NAVIGATION_DATA: NavGroup[] = [
                 children: [
                     { label: 'RDIG Dropdown Options Management', route: '/settings/rdig-dropdown-options' },
                     { label: 'Batch Sitting', icon: 'event_available', route: '/settings/batch-sitting' },
+                    { label: 'Conference Settings', icon: 'event_note', route: '/conference/settings' },
+                ],
+            },
+
+            // ── Admin Settings ──────────────────────────────────────────────────────────────
+            // Admin-only configuration folder.
+            {
+                label: 'Admin Settings',
+                icon: 'admin_panel_settings',
+                permission: { anyOf: ['Admin'] },
+                children: [
                 ],
             },
         ],

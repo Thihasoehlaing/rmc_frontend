@@ -104,16 +104,14 @@ export const NAVIGATION_DATA: NavGroup[] = [
                             ],
                         },
                     },
-                    // Travel Authorization: ((full_time OR contract) AND academic) OR HOS
+                    // Partnership: (full_time OR contract) AND academic
                     {
-                        label: 'Travel Authorization Application',
-                        icon: 'flight_takeoff',
-                        route: '/travel',
+                        label: 'Partnership Application',
+                        icon: 'handshake',
+                        route: '/partnership/application',
                         permission: {
-                            anyCondition: [
-                                { anyOf: ['full_time', 'contract'], allOf: ['academic'] },
-                                { anyOf: ['HOS'] },
-                            ],
+                            anyOf: ['full_time', 'contract'],
+                            allOf: ['academic'],
                         },
                     },
                     // Proposal: (full_time OR contract) AND academic

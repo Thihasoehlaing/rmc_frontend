@@ -122,29 +122,20 @@ export const routes: Routes = [
           import('./ragra_form/ragra-form.component').then(m => m.RagraFormComponent),
       },
 
-      // ── Travel Authorization Application ──────────────────────────────────
-      // Rule: ((full_time OR contract) AND academic) OR HOS
+      // ── Partnership Application ───────────────────────────────────────────
+      // Rule: (full_time OR contract) AND academic
       {
-        path: 'travel',
+        path: 'partnership',
         canActivate: [permissionGuard],
         data: {
           permission: {
-            anyCondition: [
-              { anyOf: ['full_time', 'contract'], allOf: ['academic'] },
-              { anyOf: ['HOS'] },
-            ],
+            anyOf: ['full_time', 'contract'],
+            allOf: ['academic'],
           } satisfies NavPermission,
         },
         loadChildren: () =>
-          import('./travel_authorization_form/travel_authorization_form.routes').then(m => m.travelAuthorizationFormRoutes),
-      },
-
-      // ── Dev Test Board —  Development/Testing ───────────────────────────
-      {
-        path: 'dev-test-board',
-        loadChildren: () =>
-          import('./dev_test_board_form/dev-test-board-form.routes').then(
-            m => m.DEV_TEST_BOARD_ROUTES
+          import('./partnership_form/partnership_form.routes').then(
+            m => m.partnershipFormRoutes
           ),
       },
 

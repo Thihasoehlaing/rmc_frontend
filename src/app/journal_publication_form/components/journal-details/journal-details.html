@@ -29,103 +29,125 @@
       <app-custom-subheader title="Journal Details"></app-custom-subheader>
       <div class="card__content section-fields">
         
-        <div class="row row--2" style="align-items: flex-start;">
-          
-          <!-- Left Column -->
-          <div style="display: flex; flex-direction: column; gap: var(--space-5);">
-            <div class="form-field">
-              <div style="display: flex; align-items: flex-start; gap: var(--space-2); margin-bottom: var(--space-2);">
-                <label class="form-label is-required" style="margin-bottom: 0;">Please select whether you are the “First Author” or “Corresponding Author”</label>
-                <app-note text="Applicant must be either first or corresponding author" [isTooltip]="true"></app-note>
+                <div class="row row--2" style="align-items: flex-start;">
+
+            <!-- Left Column -->
+            <div style="display: flex; flex-direction: column; gap: var(--space-5);">
+              <div class="form-field">
+                <div style="display: flex; align-items: flex-start; gap: var(--space-2); margin-bottom: var(--space-2);">
+                  <label class="form-label is-required" style="margin-bottom: 0;">Please select whether you are the “First Author” or “Corresponding Author”</label>
+                  <app-note text="Applicant must be either first or corresponding author" [isTooltip]="true"></app-note>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2);">
+                  <label class="radio-label">
+                    <input type="radio" class="radio-input" formControlName="authorshipType" value="first-author">
+                    <span class="radio-text">First Author</span>
+                  </label>
+                  <label class="radio-label">
+                    <input type="radio" class="radio-input" formControlName="authorshipType" value="co-author">
+                    <span class="radio-text">Corresponding Author</span>
+                  </label>
+                  <label class="radio-label" style="grid-column: span 2;">
+                    <input type="radio" class="radio-input" formControlName="authorshipType" value="corresponding-author">
+                    <span class="radio-text">First and Corresponding Author</span>
+                  </label>
+                </div>
               </div>
-              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2);">
-                <label class="radio-label">
-                  <input type="radio" class="radio-input" formControlName="authorshipType" value="first-author">
-                  <span class="radio-text">First Author</span>
-                </label>
-                <label class="radio-label">
-                  <input type="radio" class="radio-input" formControlName="authorshipType" value="co-author">
-                  <span class="radio-text">Corresponding Author</span>
-                </label>
-                <label class="radio-label" style="grid-column: span 2;">        
-                  <input type="radio" class="radio-input" formControlName="authorshipType" value="corresponding-author">
-                  <span class="radio-text">First and Corresponding Author</span>
-                </label>
+
+              <div class="form-field">
+                <label class="form-label is-required">Please select Scopus Quartile</label>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2);">
+                  <label class="radio-label"><input type="radio" class="radio-input" formControlName="scopusQuartile" value="Q1"><span class="radio-text">Q1</span></label>
+                  <label class="radio-label"><input type="radio" class="radio-input" formControlName="scopusQuartile" value="Q2"><span class="radio-text">Q2</span></label>
+                  <label class="radio-label" style="grid-column: span 2;"><input type="radio" class="radio-input" formControlName="scopusQuartile" value="Q3"><span class="radio-text">Q3</span></label>
+                </div>
+              </div>
+
+              <div class="form-field">
+                <label class="form-label is-required">Select Research or Non-Research Project</label>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2);">
+                  <label class="radio-label"><input type="radio" class="radio-input" formControlName="researchType" value="external-research"><span class="radio-text">External Research Project</span></label>
+                  <label class="radio-label"><input type="radio" class="radio-input" formControlName="researchType" value="internal-research"><span class="radio-text">Internal Research Project</span></label>
+                  <label class="radio-label" style="grid-column: span 2;"><input type="radio" class="radio-input" formControlName="researchType" value="non-research"><span class="radio-text">Non-Research Project</span></label>
+                </div>
+              </div>
+
+              <div class="form-field">
+                <div style="display: flex; align-items: flex-start; gap: var(--space-2); margin-bottom: var(--space-2);">
+                  <label class="form-label is-required" style="margin-bottom: 0;">Is the publisher of your journal one of the restricted publishers (e.g., MDPI, Common Ground, Hindawi, or Frontier)?</label>
+                  <app-note text="Expected Answer for Approval: No" [isTooltip]="true"></app-note>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2);">
+                  <label class="radio-label"><input type="radio" class="radio-input" formControlName="restrictedPublisher" value="yes"><span class="radio-text">Yes</span></label>
+                  <label class="radio-label"><input type="radio" class="radio-input" formControlName="restrictedPublisher" value="no"><span class="radio-text">No</span></label>
+                </div>
+              </div>
+              <div class="form-field">
+                <label class="form-label is-required">Have you cited at least 1 journal paper from APU JATI &amp; EJBM?</label>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2);">
+                  <label class="radio-label">
+                    <input type="radio" class="radio-input" formControlName="citedApuPaper" value="Yes">
+                    <span class="radio-text">Yes</span>
+                  </label>
+                  <label class="radio-label">
+                    <input type="radio" class="radio-input" formControlName="citedApuPaper" value="No">
+                    <span class="radio-text">No</span>
+                  </label>
+                </div>
+              </div>
+
+              @if (form.get('citedApuPaper')?.value === 'No') {
+                <div class="form-field">
+                  <label class="form-label is-required">If No, please explain</label>
+                  <textarea class="input--textarea" formControlName="citedApuPaperExplanation" placeholder="Enter explanation here" rows="3" maxlength="255"></textarea>
+                </div>
+              }
+            </div>
+
+            <!-- Right Column -->
+            <div style="display: flex; flex-direction: column; gap: var(--space-5);">
+              <div class="form-field">
+                <label class="form-label is-required">Journal Name</label>
+                <input type="text" class="input--text" formControlName="journalName">
+                <app-character-counter [current]="getCharacterCount('journalName')" [max]="150"></app-character-counter>
+              </div>
+
+              <div class="form-field">
+                <label class="form-label is-required">Paper Title</label>
+                <input type="text" class="input--text" formControlName="paperTitle">
+                <app-character-counter [current]="getCharacterCount('paperTitle')" [max]="200"></app-character-counter>
+              </div>
+
+              <div class="form-field">
+                <label class="form-label is-required">Please key in 3 SDG keywords in abstract</label>
+                <input type="text" class="input--text" formControlName="sdgKeyword1">
+              </div>
+
+              <div class="form-field">
+                <label class="form-label">Keyword 2</label>
+                <input type="text" class="input--text" formControlName="sdgKeyword2">
+              </div>
+
+              <div class="form-field">
+                <label class="form-label">Keyword 3</label>
+                <input type="text" class="input--text" formControlName="sdgKeyword3">
               </div>
             </div>
 
-            <div class="form-field">
-              <label class="form-label is-required">Please select Scopus Quartile</label>
-              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2);">
-                <label class="radio-label"><input type="radio" class="radio-input" formControlName="scopusQuartile" value="Q1"><span class="radio-text">Q1</span></label>
-                <label class="radio-label"><input type="radio" class="radio-input" formControlName="scopusQuartile" value="Q2"><span class="radio-text">Q2</span></label>
-                <label class="radio-label" style="grid-column: span 2;"><input type="radio" class="radio-input" formControlName="scopusQuartile" value="Q3"><span class="radio-text">Q3</span></label>
-              </div>
-            </div>
-            
-            <div class="form-field">
-              <label class="form-label is-required">Select Research or Non-Research Project</label>
-              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2);">
-                <label class="radio-label"><input type="radio" class="radio-input" formControlName="researchType" value="external-research"><span class="radio-text">External Research Project</span></label>
-                <label class="radio-label"><input type="radio" class="radio-input" formControlName="researchType" value="internal-research"><span class="radio-text">Internal Research Project</span></label>
-                <label class="radio-label" style="grid-column: span 2;"><input type="radio" class="radio-input" formControlName="researchType" value="non-research"><span class="radio-text">Non-Research Project</span></label>
-              </div>
-            </div>
-
-            <div class="form-field">
-              <div style="display: flex; align-items: flex-start; gap: var(--space-2); margin-bottom: var(--space-2);">
-                <label class="form-label is-required" style="margin-bottom: 0;">Is the publisher of your journal one of the restricted publishers (e.g., MDPI, Common Ground, Hindawi, or Frontier)?</label>
-                <app-note text="Expected Answer for Approval: No" [isTooltip]="true"></app-note>
-              </div>
-              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2);">
-                <label class="radio-label"><input type="radio" class="radio-input" formControlName="restrictedPublisher" value="yes"><span class="radio-text">Yes</span></label>
-                <label class="radio-label"><input type="radio" class="radio-input" formControlName="restrictedPublisher" value="no"><span class="radio-text">No</span></label>
-              </div>
-            </div>
           </div>
-
-          <!-- Right Column -->
-          <div style="display: flex; flex-direction: column; gap: var(--space-5);">
-            <div class="form-field">
-              <label class="form-label is-required">Journal Name</label>
-              <input type="text" class="input--text" formControlName="journalName">
-              <app-character-counter [current]="getCharacterCount('journalName')" [max]="150"></app-character-counter>
-            </div>
-
-            <div class="form-field">
-              <label class="form-label is-required">Paper Title</label>
-              <input type="text" class="input--text" formControlName="paperTitle">
-              <app-character-counter [current]="getCharacterCount('paperTitle')" [max]="200"></app-character-counter>
-            </div>
-
-            <div class="form-field">
-              <label class="form-label is-required">Please key in 3 SDG keywords in abstract</label>
-              <input type="text" class="input--text" formControlName="sdgKeyword1">
-            </div>
-            
-            <div class="form-field">
-              <label class="form-label">Keyword 2</label>
-              <input type="text" class="input--text" formControlName="sdgKeyword2">
-            </div>
-            
-            <div class="form-field">
-              <label class="form-label">Keyword 3</label>
-              <input type="text" class="input--text" formControlName="sdgKeyword3">
-            </div>
-          </div>
-
         </div>
-
       </div>
-    </div>
     <!-- Costing Section -->
    <div class="card">
       <app-custom-subheader title="Costing"></app-custom-subheader>
       <div class="card__content section-fields">
 
-        <!-- Research Section - Shows when Research or Non-Research Project is selected -->
-        @if (selectedResearchnonResearch && researchType === 'internal-research') {
+        <!-- Research Section (Controlled strictly by researchType) -->
+
+        @if (researchType === 'internal-research') {
           <div class="research-subsection">
+            <h4 class="research-title" style="margin-bottom: var(--space-4);"><b>Internal Research Project</b></h4>
+
             <!-- Project Account Code -->
             <div class="row row--2">
               <div class="form-field">
@@ -138,9 +160,9 @@
               </div>
             </div>
 
-            <!-- Detailed Breakdown for Research -->
+            <!-- Detailed Breakdown -->
             <div class="form-field">
-              <label class="form-label is-required">Detailed Breakdown for Internal Research Project</label>
+              <label class="form-label">Detailed Breakdown for Internal Research</label>
               <div class="costing-breakdown" style="margin-top: var(--space-2);">
                 <div class="list-section-header">
                   <span class="list-count">{{ researchBreakdowns.length }} {{ researchBreakdowns.length === 1 ? 'Entry' : 'Entries' }}</span>
@@ -198,53 +220,61 @@
               </div>
             </div>
 
-            <!-- Sponsored Amount by External & Sponsored by -->
-            <div class="row row--2" style="margin-top: var(--space-4);">
-              <div class="form-field">
-                <label class="form-label">Total in RM</label>
-                <div class="total-value" style="background-color: var(--bg-subtle); padding: 0 var(--space-3); border-radius: var(--radius-sm); font-weight: 500; border: 1px solid var(--border-subtle); height: 42px; display: flex; align-items: center;">
-                  {{ form.get('totalRM')?.value || 0 | number: '1.2-2' }}
+            <div class="total-display" style="display: flex; justify-content: space-between; padding: var(--space-4); background-color: var(--bg-subtle); border-radius: var(--radius-sm); margin: var(--space-4) 0; font-weight: 500;">
+              <span class="total-label">Total BEFORE SUBSIDY (RM)</span>
+              <div class="total-amount">{{ calculateBreakdownTotal('internal-research') | number: '1.2-2' }}</div>
+            </div>
+
+            <div class="sponsorship-subsections-container" style="display: flex; gap: var(--space-6); margin-top: var(--space-4); flex-wrap: wrap;">
+              <!-- External Sponsorship -->
+              <div class="sponsorship-subsection" style="flex: 1; border: 1px solid var(--border-default); padding: var(--space-4); border-radius: var(--radius-sm);">
+                <span class="subsection-title" style="display: block; font-weight: 600; margin-bottom: var(--space-3);">External Sponsorship</span>
+                <div class="subsection-fields-wrapper" style="display: flex; flex-direction: column; gap: var(--space-3);">
+                  <div class="form-field">
+                    <label class="form-label is-required">Sponsored Amount (RM)</label>
+                    <input type="number" class="input--text" formControlName="sponsoredAmountExternal" placeholder="0.00">
+                  </div>
+                  <div class="form-field">
+                    <label class="form-label is-required">Sponsored By</label>
+                    <input type="text" class="input--text" formControlName="sponsoredBy" placeholder="Sponsor Name">
+                  </div>
                 </div>
               </div>
 
-              <div class="form-field">
-                <label class="form-label is-required">Sponsored Amount by External (If any) RM</label>
-                <input type="number" class="input--text" formControlName="sponsoredAmountExternal" placeholder="0.00">
+              <!-- APU Sponsorship -->
+              <div class="sponsorship-subsection" style="flex: 1; border: 1px solid var(--border-default); padding: var(--space-4); border-radius: var(--radius-sm);">
+                <span class="subsection-title" style="display: block; font-weight: 600; margin-bottom: var(--space-3);">APU Sponsorship</span>
+                <div class="subsection-fields-wrapper" style="display: flex; flex-direction: column; gap: var(--space-3);">
+                  <div class="form-field">
+                    <label class="form-label is-required">Sponsorship Requested (%)</label>
+                    <input type="number" class="input--text" formControlName="sponsorshipPercentage" min="0" max="100" placeholder="0">
+                  </div>
+                  <div class="form-field">
+                    <label class="form-label">Sponsorship Amount (RM)</label>
+                    <input type="number" class="input--text input--readonly" formControlName="sponsorshipAmountAPU" style="background: var(--bg-subtle); color: var(--color-text-muted);" readonly placeholder="0.00">
+                  </div>
+                </div>
               </div>
+            </div>
 
-              <div class="form-field">
-                <label class="form-label is-required">Sponsored By</label>
-                <input type="text" class="input--text" formControlName="sponsoredBy" placeholder="Enter sponsor name">
-              </div>
-
-              <div class="form-field">
-                <label class="form-label is-required">Sponsorship Percentage Requested (%)</label>
-                <input type="number" class="input--text" formControlName="sponsorshipPercentage" min="0" max="100" placeholder="0">
-              </div>
-
-              <div class="form-field">
-                <label class="form-label">Sponsorship Amount by APU (RM) (Max up to RM 5,000)</label>
-                <input type="number" class="input--text input--readonly" formControlName="sponsorshipAmountAPU" style="background: var(--bg-subtle); color: var(--color-text-muted);" readonly placeholder="0.00">
-              </div>
-
-              <div class="form-field">
-                <label class="form-label is-required">Cost to be Borne by Applicant (RM)</label>
-                <input type="number" class="input--text" formControlName="costByApplicant" style="background: var(--bg-subtle); color: var(--color-text-muted);" readonly placeholder="0.00">
+            <div class="form-field total-field" style="margin-top: var(--space-4);">
+              <label class="form-label is-required">Cost to be Borne by Applicant (RM)</label>
+              <div class="total-value-display" style="font-weight: 600; background-color: var(--color-surface); padding: var(--space-2) var(--space-3); border: 1px solid var(--border-default); border-radius: var(--radius-sm);">
+                 {{ form.get('costByApplicant')?.value | number: '1.2-2' }}
               </div>
             </div>
 
             <div class="form-field" style="margin-top: var(--space-4);">
               <label class="form-label">Remarks (Optional)</label>
-              <div style="flex-grow: 1; display: flex; flex-direction: column;">
-                <textarea class="input--textarea" formControlName="costingRemarks" placeholder="Enter any additional remarks" rows="3" maxlength="255"></textarea>
-                <app-character-counter [current]="getCharacterCount('costingRemarks')" [max]="255"></app-character-counter>
-              </div>
+              <textarea class="input--textarea" formControlName="costingRemarks" placeholder="Additional remarks" rows="3" maxlength="255"></textarea>
             </div>
           </div>
         }
 
-        @if (selectedResearchnonResearch && researchType === 'external-research') {
+        @if (researchType === 'external-research') {
           <div class="research-subsection">
+            <h4 class="research-title" style="margin-bottom: var(--space-4);"><b>External Research Project</b></h4>
+
             <!-- Project Account Code -->
             <div class="row row--2">
               <div class="form-field">
@@ -257,9 +287,9 @@
               </div>
             </div>
 
-            <!-- Detailed Breakdown for External Research Project -->
+            <!-- Detailed Breakdown -->
             <div class="form-field">
-              <label class="form-label is-required">Detailed Breakdown for External Research Project</label>
+              <label class="form-label">Detailed Breakdown for External Research</label>
               <div class="costing-breakdown" style="margin-top: var(--space-2);">
                 <div class="list-section-header">
                   <span class="list-count">{{ externalBreakdowns.length }} {{ externalBreakdowns.length === 1 ? 'Entry' : 'Entries' }}</span>
@@ -317,48 +347,61 @@
               </div>
             </div>
 
-            <!-- Sponsorship Info mapped vertically with horizontal-layout fields like Internal Research Project -->
-            <div class="row row--2" style="margin-top: var(--space-4);">
-              <div class="form-field">
-                <label class="form-label">Total in RM</label>
-                <div class="total-value" style="background-color: var(--bg-subtle); padding: 0 var(--space-3); border-radius: var(--radius-sm); font-weight: 500; border: 1px solid var(--border-subtle); height: 42px; display: flex; align-items: center;">
-                  {{ form.get('totalRM')?.value || 0 | number: '1.2-2' }}
+            <div class="total-display" style="display: flex; justify-content: space-between; padding: var(--space-4); background-color: var(--bg-subtle); border-radius: var(--radius-sm); margin: var(--space-4) 0; font-weight: 500;">
+              <span class="total-label">Total BEFORE SUBSIDY (RM)</span>
+              <div class="total-amount">{{ calculateBreakdownTotal('external-research') | number: '1.2-2' }}</div>
+            </div>
+
+            <div class="sponsorship-subsections-container" style="display: flex; gap: var(--space-6); margin-top: var(--space-4); flex-wrap: wrap;">
+              <!-- External Sponsorship -->
+              <div class="sponsorship-subsection" style="flex: 1; border: 1px solid var(--border-default); padding: var(--space-4); border-radius: var(--radius-sm);">
+                <span class="subsection-title" style="display: block; font-weight: 600; margin-bottom: var(--space-3);">External Sponsorship</span>
+                <div class="subsection-fields-wrapper" style="display: flex; flex-direction: column; gap: var(--space-3);">
+                  <div class="form-field">
+                    <label class="form-label">Sponsored Amount (RM)</label>
+                    <input type="text" class="input--text" [value]="calculateBreakdownTotal('external-research') | number: '1.2-2'" readonly style="background: var(--bg-subtle); color: var(--color-text-muted);">
+                  </div>
+                  <div class="form-field">
+                    <label class="form-label">Sponsored By</label>
+                    <input type="text" class="input--text" value="Government Sector" readonly style="background: var(--bg-subtle); color: var(--color-text-muted);">
+                  </div>
                 </div>
               </div>
-              <div class="form-field">
-                <label class="form-label is-required">Sponsored Amount by External (If any) RM</label>
-                <input type="number" class="input--text" formControlName="sponsoredAmountExternal" style="background: var(--bg-subtle); color: var(--color-text-muted);" readonly placeholder="0.00">
+
+              <!-- APU Sponsorship -->
+              <div class="sponsorship-subsection" style="flex: 1; border: 1px solid var(--border-default); padding: var(--space-4); border-radius: var(--radius-sm);">
+                <span class="subsection-title" style="display: block; font-weight: 600; margin-bottom: var(--space-3);">APU Sponsorship</span>
+                <div class="subsection-fields-wrapper" style="display: flex; flex-direction: column; gap: var(--space-3);">
+                  <div class="form-field">
+                    <label class="form-label">Sponsorship Requested (%)</label>
+                    <input type="number" class="input--text" value="0" readonly style="background: var(--bg-subtle); color: var(--color-text-muted);">
+                  </div>
+                  <div class="form-field">
+                    <label class="form-label">Sponsorship Amount (RM)</label>
+                    <input type="number" class="input--text" value="0" readonly style="background: var(--bg-subtle); color: var(--color-text-muted);">
+                  </div>
+                </div>
               </div>
-              <div class="form-field">
-                <label class="form-label is-required">Sponsored By</label>
-                <input type="text" class="input--text" formControlName="sponsoredBy" style="background: var(--bg-subtle); color: var(--color-text-muted);" readonly placeholder="Enter sponsor name">
-              </div>
-              <div class="form-field">
-                <label class="form-label is-required">Sponsorship Percentage Requested (%)</label>
-                <input type="number" class="input--text" formControlName="sponsorshipPercentage" style="background: var(--bg-subtle); color: var(--color-text-muted);" readonly min="0" max="100" placeholder="0">
-              </div>
-              <div class="form-field">
-                <label class="form-label">Sponsorship Amount by APU (RM) (Max up to RM 5,000)</label>
-                <input type="number" class="input--text input--readonly" formControlName="sponsorshipAmountAPU" style="background: var(--bg-subtle); color: var(--color-text-muted);" readonly readonly placeholder="0.00">
-              </div>
-              <div class="form-field">
-                <label class="form-label is-required">Cost to be Borne by Applicant (RM)</label>
-                <input type="number" class="input--text" formControlName="costByApplicant" style="background: var(--bg-subtle); color: var(--color-text-muted);" readonly placeholder="0.00">
+            </div>
+
+            <div class="form-field total-field" style="margin-top: var(--space-4);">
+              <label class="form-label">Cost to be Borne by Applicant (RM)</label>
+              <div class="total-value-display" style="font-weight: 600; background-color: var(--color-surface); padding: var(--space-2) var(--space-3); border: 1px solid var(--border-default); border-radius: var(--radius-sm); color: var(--color-text-muted);">
+                 0.00
               </div>
             </div>
 
             <div class="form-field" style="margin-top: var(--space-4);">
               <label class="form-label">Remarks (Optional)</label>
-              <div style="flex-grow: 1; display: flex; flex-direction: column;">
-                <textarea class="input--textarea" formControlName="costingRemarks" placeholder="Enter any additional remarks" rows="3" maxlength="255"></textarea>
-                <app-character-counter [current]="getCharacterCount('costingRemarks')" [max]="255"></app-character-counter>
-              </div>
+              <textarea class="input--textarea" formControlName="costingRemarks" placeholder="Additional remarks" rows="3" maxlength="255"></textarea>
             </div>
           </div>
         }
 
-        @if (selectedResearchnonResearch && researchType === 'non-research') {
+        @if (researchType === 'non-research') {
           <div class="research-subsection">
+            <h4 class="research-title" style="margin-bottom: var(--space-4);"><b>Non-Research Project</b></h4>
+
             <!-- Project Account Code -->
             <div class="row row--2">
               <div class="form-field">
@@ -370,9 +413,10 @@
                   placeholder="Enter project account code">
               </div>
             </div>
-             <!-- Detailed Breakdown for Non-Research -->
+
+            <!-- Detailed Breakdown -->
             <div class="form-field">
-              <label class="form-label is-required">Detailed Breakdown for Non-Research</label>
+              <label class="form-label">Detailed Breakdown for Non-Research</label>
               <div class="costing-breakdown" style="margin-top: var(--space-2);">
                 <div class="list-section-header">
                   <span class="list-count">{{ NonResearchBreakdowns.length }} {{ NonResearchBreakdowns.length === 1 ? 'Entry' : 'Entries' }}</span>
@@ -430,46 +474,56 @@
               </div>
             </div>
 
-            <!-- Sponsorship Info mapped vertically with horizontal-layout fields like Internal Research Project -->
-            <div class="row row--2" style="margin-top: var(--space-4);">
-              <div class="form-field">
-                <label class="form-label">Total in RM</label>
-                <div class="total-value" style="background-color: var(--bg-subtle); padding: 0 var(--space-3); border-radius: var(--radius-sm); font-weight: 500; border: 1px solid var(--border-subtle); height: 42px; display: flex; align-items: center;">
-                  {{ form.get('non-researchTotalRM')?.value || 0 | number: '1.2-2' }}
+            <div class="total-display" style="display: flex; justify-content: space-between; padding: var(--space-4); background-color: var(--bg-subtle); border-radius: var(--radius-sm); margin: var(--space-4) 0; font-weight: 500;">
+              <span class="total-label">Total BEFORE SUBSIDY (RM)</span>
+              <div class="total-amount">{{ calculateBreakdownTotal('non-research') | number: '1.2-2' }}</div>
+            </div>
+
+            <div class="sponsorship-subsections-container" style="display: flex; gap: var(--space-6); margin-top: var(--space-4); flex-wrap: wrap;">
+              <!-- External Sponsorship -->
+              <div class="sponsorship-subsection" style="flex: 1; border: 1px solid var(--border-default); padding: var(--space-4); border-radius: var(--radius-sm);">
+                <span class="subsection-title" style="display: block; font-weight: 600; margin-bottom: var(--space-3);">External Sponsorship</span>
+                <div class="subsection-fields-wrapper" style="display: flex; flex-direction: column; gap: var(--space-3);">
+                  <div class="form-field">
+                    <label class="form-label is-required">Sponsored Amount (RM)</label>
+                    <input type="number" class="input--text" formControlName="sponsoredAmountExternal" placeholder="0.00">
+                  </div>
+                  <div class="form-field">
+                    <label class="form-label is-required">Sponsored By</label>
+                    <input type="text" class="input--text" formControlName="sponsoredBy" placeholder="Sponsor Name">
+                  </div>
                 </div>
               </div>
-              <div class="form-field">
-                <label class="form-label is-required">Sponsored Amount by External (If any) RM</label>
-                <input type="number" class="input--text" formControlName="non-researchSponsoredAmountExternal" placeholder="0.00">
+
+              <!-- APU Sponsorship -->
+              <div class="sponsorship-subsection" style="flex: 1; border: 1px solid var(--border-default); padding: var(--space-4); border-radius: var(--radius-sm);">
+                <span class="subsection-title" style="display: block; font-weight: 600; margin-bottom: var(--space-3);">APU Sponsorship</span>
+                <div class="subsection-fields-wrapper" style="display: flex; flex-direction: column; gap: var(--space-3);">
+                  <div class="form-field">
+                    <label class="form-label is-required">Sponsorship Requested (%)</label>
+                    <input type="number" class="input--text" formControlName="sponsorshipPercentage" min="0" max="100" placeholder="0">
+                  </div>
+                  <div class="form-field">
+                    <label class="form-label">Sponsorship Amount (RM)</label>
+                    <input type="number" class="input--text input--readonly" formControlName="sponsorshipAmountAPU" style="background: var(--bg-subtle); color: var(--color-text-muted);" readonly placeholder="0.00">
+                  </div>
+                </div>
               </div>
-              <div class="form-field">
-                <label class="form-label is-required">Sponsored By</label>
-                <input type="text" class="input--text" formControlName="non-researchSponsoredBy" placeholder="Enter sponsor name">
-              </div>
-              <div class="form-field">
-                <label class="form-label is-required">Sponsorship Percentage Requested (%)</label>
-                <input type="number" class="input--text" formControlName="non-researchSponsorshipPercentage" min="0" max="100" placeholder="0">
-              </div>
-              <div class="form-field">
-                <label class="form-label">Sponsorship Amount by APU (RM) (Max up to RM 5,000)</label>
-                <input type="number" class="input--text input--readonly" formControlName="non-researchSponsorshipAmountAPU" readonly placeholder="0.00">
-              </div>
-              <div class="form-field">
-                <label class="form-label is-required">Cost to be Borne by Applicant (RM)</label>
-                <input type="number" class="input--text" formControlName="non-researchCostByApplicant" placeholder="0.00">
+            </div>
+
+            <div class="form-field total-field" style="margin-top: var(--space-4);">
+              <label class="form-label is-required">Cost to be Borne by Applicant (RM)</label>
+              <div class="total-value-display" style="font-weight: 600; background-color: var(--color-surface); padding: var(--space-2) var(--space-3); border: 1px solid var(--border-default); border-radius: var(--radius-sm);">
+                 {{ form.get('costByApplicant')?.value | number: '1.2-2' }}
               </div>
             </div>
 
             <div class="form-field" style="margin-top: var(--space-4);">
               <label class="form-label">Remarks (Optional)</label>
-              <div style="flex-grow: 1; display: flex; flex-direction: column;">
-                <textarea class="input--textarea" formControlName="non-researchRemarks" placeholder="Enter any additional remarks" rows="3" maxlength="255"></textarea>
-                <app-character-counter [current]="getCharacterCount('non-researchRemarks')" [max]="255"></app-character-counter>
-              </div>
+              <textarea class="input--textarea" formControlName="costingRemarks" placeholder="Additional remarks" rows="3" maxlength="255"></textarea>
             </div>
           </div>
-        }
-      </div>
+        }      </div>
     </div>
   </div>
 </form>
@@ -598,5 +652,16 @@
     </div>
   </form>
 </app-dialog>
+
+
+
+
+
+
+
+
+
+
+
 
 

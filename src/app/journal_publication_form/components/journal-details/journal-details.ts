@@ -29,7 +29,6 @@ export class JournalDetails implements OnInit {
   isBreakdownModalOpen = false;
   breakdownType: 'internal-research' | 'external-research' | 'non-research' | null = null;
   breakdownEditingIndex: number | null = null;
-  selectedResearchnonResearch: boolean = true;
 
   researchBreakdowns: any[] = [];
   externalBreakdowns: any[] = [];
@@ -68,9 +67,12 @@ export class JournalDetails implements OnInit {
       sdgKeyword1: ['', Validators.required],
       sdgKeyword2: [''],
       sdgKeyword3: [''],
-      projectAccountCode: ['', Validators.required],
+      citedApuPaper: ['', Validators.required],
+      citedApuPaperExplanation: [''],
+      projectAccountCode: [''], // Only conditionally required for non-external
+      externalProjectAccountCode: [''], // For external research
       totalRM: [{ value: 0, disabled: true }],
-      sponsoredAmountExternal: [{ value: 0, disabled: true }],
+      sponsoredAmountExternal: [{ value: 0, disabled: false }],
       sponsoredBy: [''],
       sponsorshipPercentage: [{ value: 0, disabled: true }],
       sponsorshipAmountAPU: [{ value: 0, disabled: true }],
@@ -83,8 +85,30 @@ export class JournalDetails implements OnInit {
     });
 
     this.form.get('scopusQuartile')?.valueChanges.subscribe(() => this.calculateTotals());
-    this.form.get('researchType')?.valueChanges.subscribe(() => this.calculateTotals());
+    this.form.get('researchType')?.valueChanges.subscribe((type) => {
+      // Manage validation properly based on the new conditions
+      if (type === 'external-research') {
+        this.form.get('externalProjectAccountCode')?.setValidators([Validators.required]);
+        this.form.get('projectAccountCode')?.clearValidators();
+      } else {
+        this.form.get('projectAccountCode')?.setValidators([Validators.required]);
+        this.form.get('externalProjectAccountCode')?.clearValidators();
+      }
+      this.form.get('projectAccountCode')?.updateValueAndValidity();
+      this.form.get('externalProjectAccountCode')?.updateValueAndValidity();
+      
+      this.calculateTotals();
+    });
     this.form.get('sponsoredBy')?.valueChanges.subscribe(() => this.calculateTotals());
+
+    this.form.get('citedApuPaper')?.valueChanges.subscribe((value) => {
+      if (value === 'No') {
+        this.form.get('citedApuPaperExplanation')?.setValidators([Validators.required]);
+      } else {
+        this.form.get('citedApuPaperExplanation')?.clearValidators();
+      }
+      this.form.get('citedApuPaperExplanation')?.updateValueAndValidity();
+    });
 
     this.breakdownForm = this.fb.group({
       itemDescription: ['', Validators.required],
@@ -219,14 +243,19 @@ export class JournalDetails implements OnInit {
     this.calculateTotals();
   }
 
+calculateBreakdownTotal(type: string): number {
+    const array = this.getBreakdownArray(type);
+    let total = 0;
+    for (const item of array) {
+      total += parseFloat(item.costInRM) || 0;
+    }
+    return total;
+  }
+
   calculateTotals() {
     const pType = this.researchType;
     let breakdownArray = this.getBreakdownArray(pType || '');
-    let totalRM = 0;
-    
-    breakdownArray.forEach(item => {
-      totalRM += parseFloat(item.costInRM) || 0;
-    });
+    let totalRM = this.calculateBreakdownTotal(pType || '');
 
     const q = this.form.get('scopusQuartile')?.value;
 

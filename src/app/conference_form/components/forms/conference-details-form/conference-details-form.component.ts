@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, Input, effect, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, Input, effect, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { NoteComponent } from '../../../../shared/components/note/note.component';
@@ -56,10 +56,35 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     'Pacific'
   ];
 
-  regionOptions: DropdownOption[] = this.regions.map(region => ({
-    value: region,
-    label: region
-  }));
+  regionOptions = computed(() => {
+    return this.breakdownOptionsService.regionOptions();
+  });
+
+  // Build region descriptions dynamically from service metadata
+  getRegionDescription(regionValue: string): string {
+    const storageKey = `option-metadata-region-${regionValue}`;
+    const stored = localStorage.getItem(storageKey);
+    if (stored) {
+      try {
+        const metadata = JSON.parse(stored);
+        return metadata.description || '';
+      } catch (e) {
+        return '';
+      }
+    }
+    // Fallback to default descriptions for predefined regions
+    const defaultDescriptions: Record<string, string> = {
+      'americas': 'USA, Canada, Mexico and other parts of South America - (A maximum of 50% & limit to a maximum of RM5,000, whichever is lower)',
+      'asean': 'ASEAN Countries - (A maximum of 85% & limit to a maximum of RM5,000, whichever is lower)',
+      'asia': 'Japan, China, Korea, Central Asia, India, Sri Lanka, Pakistan - (A maximum of 70% & limit to a maximum of RM5,000, whichever is lower)',
+      'australasia': 'Australia, New Zealand, PNG, Timor Leste - (A maximum of 70% & limit to a maximum of RM5,000, whichever is lower)',
+      'europe': 'Europe - (A maximum of 50% & limit to a maximum of RM5,000, whichever is lower)',
+      'malaysia': 'Throughout Malaysia - (A maximum of 85% & limit to a maximum of RM5,000, whichever is lower)',
+      'mea': 'Middle East and Africa - (A maximum of 60% & limit to a maximum of RM5,000, whichever is lower)',
+      'pacific': 'Pacific Islands (Maldives etc.) - (A maximum of 70% & limit to a maximum of RM5,000, whichever is lower)'
+    };
+    return defaultDescriptions[regionValue.toLowerCase()] || '';
+  }
 
   // Get breakdown options from service (reactive)
   get researchBreakdownOptions(): DropdownOption[] {
@@ -195,7 +220,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     this.form.get('selectedRegion')?.valueChanges.subscribe((region) => {
       if (region) {
         const percentage = this.getRegionPercentage(region);
-        const description = this.regionDescriptions[region] || '';
+        const description = this.getRegionDescription(region);
         this.form.get('percentage')?.patchValue(percentage, { emitEvent: false });
         this.form.get('limit')?.patchValue(5000, { emitEvent: false });
         this.form.get('regionDescription')?.patchValue(description, { emitEvent: false });
@@ -212,17 +237,30 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
    * Get the funding percentage for a given region
    */
   getRegionPercentage(region: string): number {
+    const storageKey = `option-metadata-region-${region.toLowerCase()}`;
+    const stored = localStorage.getItem(storageKey);
+    if (stored) {
+      try {
+        const metadata = JSON.parse(stored);
+        if (metadata.percentage !== undefined) {
+          return metadata.percentage;
+        }
+      } catch (e) {
+        // Fall through to defaults
+      }
+    }
+    // Fallback to default percentages for predefined regions
     const percentageMap: Record<string, number> = {
-      'Americas': 50,
-      'Europe': 50,
-      'MEA': 60,
-      'Asia': 70,
-      'Pacific': 70,
-      'Australasia': 70,
-      'ASEAN': 85,
-      'Malaysia': 85
+      'americas': 50,
+      'europe': 50,
+      'mea': 60,
+      'asia': 70,
+      'pacific': 70,
+      'australasia': 70,
+      'asean': 85,
+      'malaysia': 85
     };
-    return percentageMap[region] || 0;
+    return percentageMap[region.toLowerCase()] || 0;
   }
 
   updateCostInRM() {

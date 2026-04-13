@@ -17,6 +17,7 @@ import { NavGroup } from '../../interfaces/nav.interface';
  *   Conference Application  : (full_time OR contract) AND academic AND HOS AND VC
  *   Journal Publication     : (full_time OR contract) AND academic AND HOS AND VC
  *   RA/GRA Application      : (full_time OR contract) AND academic AND HOS AND group_ra_gra_hos_pass
+ *   Travel Authorization    : (full_time OR contract) AND academic AND HOS
  *   RDIG Application        : (full_time OR contract) AND academic, NOT Reviewer, NOT blocked_hos_rdig
  *   RMC Settings            : RMC group only
  *   Submissions (Inbox...)  : All authenticated users
@@ -103,6 +104,18 @@ export const NAVIGATION_DATA: NavGroup[] = [
                             ],
                         },
                     },
+                    // Travel Authorization: ((full_time OR contract) AND academic) OR HOS
+                    {
+                        label: 'Travel Authorization Application',
+                        icon: 'flight_takeoff',
+                        route: '/travel',
+                        permission: {
+                            anyCondition: [
+                                { anyOf: ['full_time', 'contract'], allOf: ['academic'] },
+                                { anyOf: ['HOS'] },
+                            ],
+                        },
+                    },
                     // Proposal: (full_time OR contract) AND academic
                     {
                         label: 'Proposal Application',
@@ -112,6 +125,12 @@ export const NAVIGATION_DATA: NavGroup[] = [
                             anyOf: ['full_time', 'contract'],
                             allOf: ['academic'],
                         },
+                    },
+                    // Dev Test Board: Development/Testing - visible to all authenticated users
+                    {
+                        label: 'Dev Test Board',
+                        icon: 'build',
+                        route: '/dev-test-board',
                     },
                 ],
             },

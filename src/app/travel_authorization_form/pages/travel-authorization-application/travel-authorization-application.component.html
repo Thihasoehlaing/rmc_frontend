@@ -1,0 +1,646 @@
+<div class="travel-authorization-form">
+  <!-- Page Header -->
+  <div class="page-header">
+    <h1 class="page-header__title">Travel Authorization Form - Research Project</h1>
+    <p class="page-header__subtitle">(Program and Budget Summary)</p>
+  </div>
+
+  <!-- DEV TEST START: Travel Status Override -->
+  <div class="dev-test-override">
+    <label class="dev-test-override__label">DEV TEST: Travel Status</label>
+    <select
+      [value]="travelStatus()"
+      (change)="onTestStatusChange($any($event.target).value)"
+      class="dev-test-override__select">
+      @for (status of travelStatusOptions; track status.value) {
+        <option [value]="status.value">{{ status.label }}</option>
+      }
+    </select>
+    <span class="dev-test-override__hint">(Live ABAC override for developer testing)</span>
+  </div>
+
+  <!-- Comment Toggle Buttons -->
+  @if (showHosToggle() || showRmcToggle() || showVcToggle() || showHrToggle() || showCeoToggle() || showFinanceToggle() || showCooToggle()) {
+    <div class="comment-toggle-bar">
+      @if (showHosToggle()) {
+        <button type="button"
+          class="btn btn--comment-toggle"
+          [class.btn--comment-toggle-active]="showHosComments()"
+          (click)="toggleHosComments()">
+          <span class="material-icons">supervisor_account</span>
+          {{ showHosComments() ? 'Hide HOS Comments' : 'HOS Comments' }}
+        </button>
+      }
+
+      @if (showRmcToggle()) {
+        <button type="button"
+          class="btn btn--comment-toggle"
+          [class.btn--comment-toggle-active]="showRmcComments()"
+          (click)="toggleRmcComments()">
+          <span class="material-icons">verified</span>
+          {{ showRmcComments() ? 'Hide RMC Comments' : 'RMC Comments' }}
+        </button>
+      }
+
+      @if (showVcToggle()) {
+        <button type="button"
+          class="btn btn--comment-toggle"
+          [class.btn--comment-toggle-active]="showVcComments()"
+          (click)="toggleVcComments()">
+          <span class="material-icons">account_balance</span>
+          {{ showVcComments() ? 'Hide VC Comments' : 'VC Comments' }}
+        </button>
+      }
+
+      @if (showHrToggle()) {
+        <button type="button"
+          class="btn btn--comment-toggle"
+          [class.btn--comment-toggle-active]="showHrComments()"
+          (click)="toggleHrComments()">
+          <span class="material-icons">people</span>
+          {{ showHrComments() ? 'Hide HR Comments' : 'HR Comments' }}
+        </button>
+      }
+
+      @if (showCeoToggle()) {
+        <button type="button"
+          class="btn btn--comment-toggle"
+          [class.btn--comment-toggle-active]="showCeoComments()"
+          (click)="toggleCeoComments()">
+          <span class="material-icons">person_3</span>
+          {{ showCeoComments() ? 'Hide CEO Comments' : 'CEO Comments' }}
+        </button>
+      }
+
+      @if (showFinanceToggle()) {
+        <button type="button"
+          class="btn btn--comment-toggle"
+          [class.btn--comment-toggle-active]="showFinanceComments()"
+          (click)="toggleFinanceComments()">
+          <span class="material-icons">attach_money</span>
+          {{ showFinanceComments() ? 'Hide Finance Comments' : 'Finance Comments' }}
+        </button>
+      }
+
+      @if (showCooToggle()) {
+        <button type="button"
+          class="btn btn--comment-toggle"
+          [class.btn--comment-toggle-active]="showCooComments()"
+          (click)="toggleCooComments()">
+          <span class="material-icons">business</span>
+          {{ showCooComments() ? 'Hide COO Comments' : 'COO Comments' }}
+        </button>
+      }
+    </div>
+  }
+
+  <!-- Form Container -->
+  <form [formGroup]="travelAuthForm" class="form-container">
+    <!-- Personal Information Section -->
+    <app-custom-header title="Personal Information" icon="assignment"></app-custom-header>
+
+    <div class="row--2">
+      <!-- Applicant Name -->
+      <div class="form-field">
+        <label for="applicantName" class="form-label">Applicant Name</label>
+        <input
+          id="applicantName"
+          type="text"
+          class="input--text"
+          formControlName="applicantName">
+        <app-validation-message
+          [control]="travelAuthForm.get('applicantName')"></app-validation-message>
+      </div>
+
+      <!-- Staff ID -->
+      <div class="form-field">
+        <label for="staffId" class="form-label">Staff ID</label>
+        <input
+          id="staffId"
+          type="text"
+          class="input--text"
+          formControlName="staffId">
+        <app-validation-message
+          [control]="travelAuthForm.get('staffId')"></app-validation-message>
+      </div>
+    </div>
+
+    <div class="row--2">
+      <!-- Functional Area -->
+      <div class="form-field">
+        <label for="functionalArea" class="form-label">Functional Area</label>
+        <app-searchable-dropdown
+          id="functionalArea"
+          [options]="functionalAreaOptions"
+          [isMulti]="false"
+          formControlName="functionalArea"></app-searchable-dropdown>
+        <app-validation-message
+          [control]="travelAuthForm.get('functionalArea')"></app-validation-message>
+      </div>
+
+      <!-- Staff Email -->
+      <div class="form-field">
+        <label for="staffEmail" class="form-label">Staff Email</label>
+        <input
+          id="staffEmail"
+          type="email"
+          class="input--text"
+          formControlName="staffEmail">
+        <app-validation-message
+          [control]="travelAuthForm.get('staffEmail')"></app-validation-message>
+      </div>
+    </div>
+
+    <!-- Travel Information Section -->
+    <app-custom-header title="Travel Information" icon="assignment"></app-custom-header>
+
+    <div class="row--2">
+      <!-- Travel Type -->
+      <div class="form-field">
+        <label class="form-label">Type</label>
+        <div class="radio-group">
+          <label class="radio-wrapper">
+            <input
+              type="radio"
+              name="travelType"
+              value="external"
+              class="radio-input"
+              formControlName="travelType">
+            <span>External</span>
+          </label>
+          <label class="radio-wrapper">
+            <input
+              type="radio"
+              name="travelType"
+              value="internal"
+              class="radio-input"
+              formControlName="travelType">
+            <span>Internal</span>
+          </label>
+        </div>
+        <app-validation-message
+          [control]="travelAuthForm.get('travelType')"></app-validation-message>
+      </div>
+
+      <!-- Select Location -->
+      <div class="form-field">
+        <div class="label-with-note">
+          <label class="form-label">Select Location</label>
+          @if (isExternalTravel) {
+            <app-note
+              text="!! Events held within the Klang Valley are not eligible for claims"
+              [isTooltip]="true"></app-note>
+          }
+        </div>
+        <div class="location-options">
+          <!-- Overseas -->
+          <label class="radio-wrapper">
+            <input
+              type="radio"
+              name="location"
+              value="overseas"
+              class="radio-input"
+              formControlName="location">
+            <span>Overseas</span>
+          </label>
+
+          <!-- Local (Except Klang Valley) -->
+          <label class="radio-wrapper">
+            <input
+              type="radio"
+              name="location"
+              value="local-except-klang-valley"
+              class="radio-input"
+              formControlName="location">
+            <span>Local (Except Klang Valley)</span>
+          </label>
+
+          <!-- Klang Valley - only visible when External is selected -->
+          @if (isExternalTravel) {
+            <label class="radio-wrapper">
+              <input
+                type="radio"
+                name="location"
+                value="klang-valley"
+                class="radio-input"
+                formControlName="location">
+              <span>Klang Valley</span>
+            </label>
+          }
+        </div>
+        <app-validation-message
+          [control]="travelAuthForm.get('location')"></app-validation-message>
+        @if (isExternalTravel && travelAuthForm.get('location')?.value === 'klang-valley') {
+          <div class="warning-message">
+            !! Events held within the Klang Valley are not eligible for claims
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Departure and Return Dates -->
+    <div class="row--2">
+      <!-- Departure Date -->
+      <div class="form-field">
+        <label for="departureDate" class="form-label">Departure Date</label>
+        <input
+          id="departureDate"
+          type="date"
+          class="input--text"
+          formControlName="departureDate">
+        <app-validation-message
+          [control]="travelAuthForm.get('departureDate')"></app-validation-message>
+      </div>
+
+      <!-- Return Date -->
+      <div class="form-field">
+        <label for="returnDate" class="form-label">Return Date</label>
+        <input
+          id="returnDate"
+          type="date"
+          class="input--text"
+          formControlName="returnDate">
+        <app-validation-message
+          [control]="travelAuthForm.get('returnDate')"></app-validation-message>
+      </div>
+    </div>
+
+    <!-- Programme Details Section -->
+    <app-custom-header title="Programme Details" icon="assignment"></app-custom-header>
+
+    <div class="row--2">
+      <!-- Reason for Request / Purpose -->
+      <div class="form-field">
+        <label for="reasonForRequest" class="form-label">Reason for Request / Purpose</label>
+        <textarea
+          id="reasonForRequest"
+          class="input--textarea"
+          formControlName="reasonForRequest"
+          rows="4"></textarea>
+        <app-validation-message
+          [control]="travelAuthForm.get('reasonForRequest')"></app-validation-message>
+      </div>
+
+      <!-- Staff Participation -->
+      <div class="form-field">
+        <div class="label-with-note">
+          <label for="staffParticipation" class="form-label">Name of APU/APUT Staff Participation</label>
+          <app-note
+            text="Maximum 20 Participants"
+            [isTooltip]="true"></app-note>
+        </div>
+        <app-searchable-dropdown
+          id="staffParticipation"
+          [options]="staffParticipationOptions"
+          [isMulti]="true"
+          formControlName="staffParticipation"></app-searchable-dropdown>
+        <app-validation-message
+          [control]="travelAuthForm.get('staffParticipation')"></app-validation-message>
+      </div>
+    </div>
+
+    <!-- Location -->
+    <div class="form-field">
+      <label for="programmeLocation" class="form-label">Location</label>
+      <input
+        id="programmeLocation"
+        type="text"
+        class="input--text"
+        formControlName="programmeLocation">
+      <app-validation-message
+        [control]="travelAuthForm.get('programmeLocation')"></app-validation-message>
+    </div>
+
+    <!-- Budget & Expenses Section -->
+    <app-custom-header title="Budget & Expenses" icon="receipt"></app-custom-header>
+
+    <!-- Detailed Breakdown Section -->
+    <div class="breakdown-section">
+      <!-- Header with Title and Add Entry Button -->
+      <div class="breakdown-header">
+        <div class="breakdown-title-group">
+          <h3 class="breakdown-title">Detailed Breakdown for External Research Project</h3>
+          <span class="breakdown-count">{{ expenses.length }} {{ expenses.length === 1 ? 'Entry' : 'Entries' }}</span>
+        </div>
+        <button
+          type="button"
+          class="btn btn-primary btn-sm"
+          (click)="openExpenseModal()">
+          <span class="material-icons">add</span>
+          Add Entry
+        </button>
+      </div>
+
+      <!-- Expenses Table -->
+      @if (expenses.length > 0) {
+        <div class="expenses-table-container">
+          <table class="expenses-table">
+            <thead>
+              <tr>
+                <th class="col-index">#</th>
+                <th>Item Description</th>
+                <th>Vote Number</th>
+                <th>Cost (Foreign/MYR)</th>
+                <th>Exchange Rate</th>
+                <th>Cost in RM</th>
+                <th class="col-actions">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (expense of expenses; track $index) {
+                <tr>
+                  <td class="col-index">{{ $index + 1 }}</td>
+                  <td>{{ expense.typeOfExpense }}</td>
+                  <td>{{ expense.accountCode }}</td>
+                  <td>{{ expense.amountForeignCurrency }}</td>
+                  <td>{{ expense.exchangeRate }}</td>
+                  <td>{{ expense.amountMYR }}</td>
+                  <td class="col-actions">
+                    <div class="action-buttons">
+                      <button
+                        type="button"
+                        class="btn-icon btn-icon--edit"
+                        (click)="editExpense($index)"
+                        aria-label="Edit entry">
+                        <span class="material-icons">edit</span>
+                      </button>
+                      <button
+                        type="button"
+                        class="btn-icon btn-icon--delete"
+                        (click)="removeExpense($index)"
+                        aria-label="Delete entry">
+                        <span class="material-icons">delete</span>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <div class="empty-state">
+          <span class="material-icons">receipt</span>
+          <p>No breakdown entries added yet. Click <strong>Add Entry</strong> to start adding items.</p>
+        </div>
+      }
+    </div>
+
+    <!-- Expense Entry Dialog Modal -->
+    <app-dialog
+      [isOpen]="isExpenseModalOpen"
+      [title]="editExpenseIndex !== null ? 'Edit External Research Project Breakdown Entry' : 'Add External Research Project Breakdown Entry'"
+      (close)="closeExpenseModal()"
+      width="700px">
+      <form [formGroup]="expenseForm" (ngSubmit)="submitExpense()" class="expense-form-modal">
+
+        <!-- Select Item Description -->
+        <div class="form-field">
+          <label for="description" class="form-label is-required">Select Item Description</label>
+          <app-searchable-dropdown
+            id="description"
+            [options]="expenseTypeOptions"
+            [isMulti]="false"
+            formControlName="typeOfExpense"></app-searchable-dropdown>
+          <app-validation-message
+            [control]="expenseForm.get('typeOfExpense')"></app-validation-message>
+        </div>
+
+        <!-- Vote Number & Cost in Foreign Currency -->
+        <div class="row--2">
+          <div class="form-field">
+            <label for="accountCode" class="form-label">Vote Number</label>
+            <input
+              id="accountCode"
+              type="text"
+              class="input--text"
+              placeholder="V29000"
+              formControlName="accountCode">
+            <app-validation-message
+              [control]="expenseForm.get('accountCode')"></app-validation-message>
+          </div>
+
+          <div class="form-field">
+            <label for="amountForeignCurrency" class="form-label is-required">Cost in Foreign Currency / MYR</label>
+            <input
+              id="amountForeignCurrency"
+              type="number"
+              step="0.01"
+              class="input--text"
+              placeholder="Enter cost"
+              formControlName="amountForeignCurrency"
+              (change)="calculateMYR()">
+            <app-validation-message
+              [control]="expenseForm.get('amountForeignCurrency')"></app-validation-message>
+          </div>
+        </div>
+
+        <!-- Exchange Rate & Cost in RM -->
+        <div class="row--2">
+          <div class="form-field">
+            <div class="label-with-icon">
+              <label for="exchangeRate" class="form-label is-required">Exchange Rate</label>
+              <app-note text="ℹ For Malaysia Ringgit/MYR, please put 1 as the exchange rate." [isTooltip]="true"></app-note>
+            </div>
+            <input
+              id="exchangeRate"
+              type="number"
+              step="0.0001"
+              class="input--text"
+              placeholder="1"
+              formControlName="exchangeRate"
+              (change)="calculateMYR()">
+            <app-validation-message
+              [control]="expenseForm.get('exchangeRate')"></app-validation-message>
+          </div>
+
+          <div class="form-field">
+            <label for="amountMYR" class="form-label">Cost in RM (approximate)</label>
+            <input
+              id="amountMYR"
+              type="number"
+              step="0.01"
+              class="input--text"
+              readonly
+              placeholder="Auto-calculated"
+              formControlName="amountMYR">
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div class="form-field">
+          <label for="descriptionText" class="form-label">Description</label>
+          <textarea
+            id="descriptionText"
+            class="input--textarea"
+            placeholder="Enter description (optional)"
+            formControlName="description"
+            rows="3"></textarea>
+        </div>
+
+        <!-- Supporting Documents -->
+        <div class="form-field">
+          <label class="form-label">Supporting Documents</label>
+          <p class="form-hint">Max file size: 10MB. Allowed file types: PDF only.</p>
+          <app-file-upload
+            [accept]="'.pdf'"
+            [maxSizeMB]="10"
+            (fileSelected)="onFileSelected($event)">
+          </app-file-upload>
+          @if (selectedFileName) {
+            <div class="file-selected-item">
+              <span class="material-icons file-selected-item__icon">description</span>
+              <span class="file-selected-item__name">{{ selectedFileName }}</span>
+              <button type="button" class="btn btn-ghost btn-xs file-selected-item__remove" (click)="removeFile()" aria-label="Remove file">
+                <span class="material-icons">close</span>
+              </button>
+            </div>
+          }
+        </div>
+
+        <div class="modal-footer-actions">
+          <button class="btn btn-ghost btn-sm" type="button" (click)="closeExpenseModal()">Cancel</button>
+          <button class="btn btn-primary btn-sm" type="submit" [disabled]="expenseForm.invalid">{{ editExpenseIndex !== null ? 'Update' : 'Add' }}</button>
+        </div>
+      </form>
+    </app-dialog>
+
+    <!-- Declaration Section -->
+    <app-custom-header title="Declaration" icon="assignment"></app-custom-header>
+
+    <div class="section-fields">
+      <div class="form-field">
+        <label class="checkbox-label">
+          <input
+            type="checkbox"
+            formControlName="declarationAgreed">
+          <span class="checkbox-text">
+            I hereby declare that the information provided in this form is true, accurate, and complete to the best of my knowledge.
+          </span>
+        </label>
+        <app-validation-message [control]="travelAuthForm.get('declarationAgreed')"></app-validation-message>
+      </div>
+
+      <div class="form-field">
+        <label class="checkbox-label">
+          <input
+            type="checkbox"
+            formControlName="declarationFalseMisleading">
+          <span class="checkbox-text">
+            I understand that any false or misleading information may result in disciplinary action and/or rejection of the application.
+          </span>
+        </label>
+        <app-validation-message [control]="travelAuthForm.get('declarationFalseMisleading')"></app-validation-message>
+      </div>
+
+      <div class="form-field">
+        <label class="checkbox-label">
+          <input
+            type="checkbox"
+            formControlName="declarationTermsPolicies">
+          <span class="checkbox-text">
+            I confirm that I have read and understood the terms, policies, and procedures related to this request.
+          </span>
+        </label>
+        <app-validation-message [control]="travelAuthForm.get('declarationTermsPolicies')"></app-validation-message>
+      </div>
+
+      <div class="form-field">
+        <label class="checkbox-label">
+          <input
+            type="checkbox"
+            formControlName="declarationAccuracy">
+          <span class="checkbox-text">
+            I confirm that all information entered is correct and accurate.
+          </span>
+        </label>
+        <app-validation-message [control]="travelAuthForm.get('declarationAccuracy')"></app-validation-message>
+      </div>
+    </div>
+
+    <!-- Form Navigation Footer -->
+    <app-form-wizard-nav
+      [currentStep]="1"
+      [totalSteps]="1"
+      [isSubmitting]="isSubmitting()"
+      (submitForm)="onSubmitForm()"></app-form-wizard-nav>
+
+  </form>
+
+  <!-- Review Comments Section -->
+  @if (showAnyComments()) {
+    <div class="review-comments-section">
+      <div class="review-comments-header">Review Comments</div>
+
+      @if (showHosToggle() && getHosCommentState().visible) {
+        <app-review-block
+          label="HOS Comment"
+          icon="supervisor_account"
+          [visible]="true"
+          [readonly]="!getHosCommentState().editable"
+          [commentControl]="fc('reviewComments.hosComment')">
+        </app-review-block>
+      }
+
+      @if (showRmcToggle() && getRmcCommentState().visible) {
+        <app-review-block
+          label="RMC Comment"
+          icon="verified"
+          [visible]="true"
+          [readonly]="!getRmcCommentState().editable"
+          [commentControl]="fc('reviewComments.rmcComment')">
+        </app-review-block>
+      }
+
+      @if (showVcToggle() && getVcCommentState().visible) {
+        <app-review-block
+          label="VC Comment"
+          icon="account_balance"
+          [visible]="true"
+          [readonly]="!getVcCommentState().editable"
+          [commentControl]="fc('reviewComments.vcComment')">
+        </app-review-block>
+      }
+
+      @if (showHrToggle() && getHrCommentState().visible) {
+        <app-review-block
+          label="HR Comment"
+          icon="people"
+          [visible]="true"
+          [readonly]="!getHrCommentState().editable"
+          [commentControl]="fc('reviewComments.hrComment')">
+        </app-review-block>
+      }
+
+      @if (showCeoToggle() && getCeoCommentState().visible) {
+        <app-review-block
+          label="CEO Comment"
+          icon="person_3"
+          [visible]="true"
+          [readonly]="!getCeoCommentState().editable"
+          [commentControl]="fc('reviewComments.ceoComment')">
+        </app-review-block>
+      }
+
+      @if (showFinanceToggle() && getFinanceCommentState().visible) {
+        <app-review-block
+          label="Finance Comment"
+          icon="attach_money"
+          [visible]="true"
+          [readonly]="!getFinanceCommentState().editable"
+          [commentControl]="fc('reviewComments.financeComment')">
+        </app-review-block>
+      }
+
+      @if (showCooToggle() && getCooCommentState().visible) {
+        <app-review-block
+          label="COO Comment"
+          icon="business"
+          [visible]="true"
+          [readonly]="!getCooCommentState().editable"
+          [commentControl]="fc('reviewComments.cooComment')">
+        </app-review-block>
+      }
+    </div>
+  }
+</div>

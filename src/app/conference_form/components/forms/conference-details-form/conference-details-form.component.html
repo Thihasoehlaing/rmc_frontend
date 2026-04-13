@@ -231,7 +231,7 @@
     <div class="form-field">
       <app-searchable-dropdown
         label="Select Region *"
-        [options]="regionOptions"
+        [options]="regionOptions()"
         placeholder="[--SELECT REGION--]"
         formControlName="selectedRegion">
       </app-searchable-dropdown>
@@ -248,7 +248,7 @@
           </div>
           <div class="warning-content">
             <p class="warning-title">Funding Limit for {{ getFullRegionName(selectedRegion) }}</p>
-            <p class="warning-text">A maximum of {{ regionFundingInfo[selectedRegion] }}, whichever is lower.</p>
+            <p class="warning-text">{{ form.get('regionDescription')?.value }}</p>
           </div>
         </div>
 

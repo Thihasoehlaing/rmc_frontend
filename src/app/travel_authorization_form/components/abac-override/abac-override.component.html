@@ -1,0 +1,147 @@
+<div class="abac-override-wrapper">
+  <!-- ABAC Override Control Panel -->
+  <div class="abac-override-panel">
+    <div class="abac-header">
+      <div class="abac-title">
+        <span class="material-icons">security</span>
+        <h2>ABAC Testing Override</h2>
+      </div>
+      <button
+        class="abac-toggle-btn"
+        [class.active]="isABACOverrideEnabled()"
+        (click)="toggleABACOverride()">
+        <span class="toggle-switch" [class.on]="isABACOverrideEnabled()"></span>
+        {{ isABACOverrideEnabled() ? 'Enabled' : 'Disabled' }}
+      </button>
+    </div>
+
+    @if (isABACOverrideEnabled()) {
+      <div class="abac-content">
+        <!-- Preset Profiles Section -->
+        <div class="profiles-section">
+          <h3>Preset Profiles</h3>
+          <div class="profiles-grid">
+            @for (profile of presetProfiles; track profile.name) {
+              <button
+                class="profile-btn"
+                [class.active]="activeProfileName() === profile.name"
+                (click)="applyPresetProfile(profile)"
+                title="{{ profile.description }}">
+                <span class="profile-name">{{ profile.name }}</span>
+                <span class="profile-count">{{ profile.groups.length }} groups</span>
+              </button>
+            }
+          </div>
+        </div>
+
+        <!-- Manual Group Selection -->
+        <div class="groups-section">
+          <h3>Manual Group Selection</h3>
+          <div class="groups-grid">
+            @for (group of availableGroups; track group) {
+              <label class="group-checkbox">
+                <input
+                  type="checkbox"
+                  [checked]="selectedGroupsArray().includes(group)"
+                  (change)="toggleGroup(group)">
+                <span>{{ group }}</span>
+              </label>
+            }
+          </div>
+          @if (groupCount() > 0) {
+            <button class="clear-btn" (click)="clearAllGroups()">Clear All</button>
+          }
+        </div>
+
+        <!-- Active Groups Display -->
+        <div class="active-groups">
+          <h3>Active Groups ({{ groupCount() }})</h3>
+          @if (groupCount() > 0) {
+            <div class="groups-display">
+              @for (group of selectedGroupsArray(); track group) {
+                <span class="group-badge">{{ group }}</span>
+              }
+            </div>
+          } @else {
+            <p class="no-groups">No groups selected</p>
+          }
+        </div>
+
+        <!-- Custom Profiles -->
+        <div class="custom-profiles-section">
+          <div class="custom-header">
+            <h3>Custom Profiles ({{ profileCount() }})</h3>
+            <button class="add-profile-btn" (click)="showProfileManagerModal()">
+              <span class="material-icons">add</span>
+              Add Profile
+            </button>
+          </div>
+          @if (customProfiles().length > 0) {
+            <div class="custom-profiles-list">
+              @for (profile of customProfiles(); track profile.name) {
+                <div class="custom-profile-item">
+                  <div class="profile-info">
+                    <strong>{{ profile.name }}</strong>
+                    <p>{{ profile.description }}</p>
+                  </div>
+                  <div class="profile-actions">
+                    <button
+                      class="apply-btn"
+                      (click)="applyCustomProfile(profile)">
+                      Apply
+                    </button>
+                    <button
+                      class="delete-btn"
+                      (click)="deleteCustomProfile(profile.name)">
+                      <span class="material-icons">delete</span>
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- Profile Manager Modal -->
+  @if (showProfileManager()) {
+    <div class="modal-overlay" (click)="closeProfileManager()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3>Create Custom Profile</h3>
+          <button class="close-btn" (click)="closeProfileManager()">×</button>
+        </div>
+        <form [formGroup]="newProfileForm" class="profile-form">
+          <div class="form-group">
+            <label>Profile Name *</label>
+            <input
+              type="text"
+              formControlName="profileName"
+              placeholder="e.g., Deputy VC">
+          </div>
+          <div class="form-group">
+            <label>Description</label>
+            <textarea
+              formControlName="profileDescription"
+              placeholder="Optional description for this profile"></textarea>
+          </div>
+          <p class="form-info">Current groups: {{ groupCount() }}</p>
+          @if (groupCount() === 0) {
+            <p class="form-error">Please select at least one group</p>
+          }
+        </form>
+        <div class="modal-footer">
+          <button class="cancel-btn" (click)="closeProfileManager()">Cancel</button>
+          <button
+            class="save-btn"
+            [disabled]="newProfileForm.invalid || groupCount() === 0"
+            (click)="saveCustomProfile()">
+            Save Profile
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

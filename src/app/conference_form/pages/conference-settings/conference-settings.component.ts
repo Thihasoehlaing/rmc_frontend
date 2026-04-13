@@ -5,7 +5,7 @@ import { BreakdownOptionsService } from '../../services/breakdown-options.servic
 import { DropdownOption } from '../../../interfaces/components.interface';
 import { TableSortService, SortDirection } from '../../../shared/services/table-sort.service';
 
-type BreakdownTypeKey = 'research' | 'local';
+type BreakdownTypeKey = 'research' | 'local' | 'region';
 
 interface BreakdownTypeOption {
   value: BreakdownTypeKey;
@@ -17,6 +17,9 @@ interface ExtendedOption extends DropdownOption {
   status?: 'Active' | 'Inactive';
   accountCode?: string;
   foreignLocal?: 'foreign' | 'local';
+  percentage?: number;
+  limit?: number;
+  description?: string;
 }
 
 @Component({
@@ -45,7 +48,8 @@ export class ConferenceSettingsComponent implements OnInit {
 
   breakdownTypeOptions: BreakdownTypeOption[] = [
     { value: 'research', label: 'Vote Number' },
-    { value: 'local', label: 'Account Code' }
+    { value: 'local', label: 'Account Code' },
+    { value: 'region', label: 'Region' }
   ];
 
   /**
@@ -101,7 +105,10 @@ export class ConferenceSettingsComponent implements OnInit {
       label: ['', [Validators.required]],
       status: ['Active'],
       accountCode: [''],
-      foreignLocal: ['']
+      foreignLocal: [''],
+      percentage: [''],
+      limit: [''],
+      description: ['']
     });
   }
 
@@ -117,6 +124,13 @@ export class ConferenceSettingsComponent implements OnInit {
    */
   isLocalType(): boolean {
     return this.selectedBreakdownType() === 'local';
+  }
+
+  /**
+   * Check if current breakdown type is region
+   */
+  isRegionType(): boolean {
+    return this.selectedBreakdownType() === 'region';
   }
 
   /**
@@ -179,7 +193,7 @@ export class ConferenceSettingsComponent implements OnInit {
    * Check if column header is sortable
    */
   isSortableColumn(columnName: string): boolean {
-    return ['label', 'status', 'createdDate', 'accountCode', 'foreignLocal'].includes(columnName);
+    return ['label', 'status', 'createdDate', 'accountCode', 'foreignLocal', 'percentage', 'limit'].includes(columnName);
   }
 
   /**
@@ -207,6 +221,22 @@ export class ConferenceSettingsComponent implements OnInit {
       });
     }
 
+    // For region breakdown type, show region options
+    if (type === 'region') {
+      const regionOptions = this.breakdownOptionsService.getOptionsForType('region');
+
+      return regionOptions.map(opt => {
+        const metadata = this.getOptionMetadata('region', opt.value);
+        return {
+          ...opt,
+          createdDate: metadata?.createdDate,
+          status: metadata?.status || 'Active',
+          percentage: metadata?.percentage,
+          limit: metadata?.limit,
+          description: metadata?.description
+        } as ExtendedOption;
+      });
+    }
 
     const baseOptions = this.breakdownOptionsService.getOptionsForType(type as 'research' | 'local');
 
@@ -224,9 +254,9 @@ export class ConferenceSettingsComponent implements OnInit {
   }
 
   /**
-   * Get metadata for an option (created date, status, accountCode, foreignLocal) from storage
+   * Get metadata for an option (created date, status, accountCode, foreignLocal, percentage, limit, description) from storage
    */
-  private getOptionMetadata(type: 'research' | 'local', value: string): { createdDate?: string; status?: 'Active' | 'Inactive'; accountCode?: string; foreignLocal?: 'foreign' | 'local' } | null {
+  private getOptionMetadata(type: 'research' | 'local' | 'region', value: string): { createdDate?: string; status?: 'Active' | 'Inactive'; accountCode?: string; foreignLocal?: 'foreign' | 'local'; percentage?: number; limit?: number; description?: string } | null {
     // Retrieve metadata from localStorage
     const storageKey = `option-metadata-${type}-${value}`;
     const stored = localStorage.getItem(storageKey);
@@ -239,7 +269,7 @@ export class ConferenceSettingsComponent implements OnInit {
   /**
    * Save option metadata to localStorage
    */
-  private saveOptionMetadata(type: 'research' | 'local', value: string, metadata: { status?: string; accountCode?: string; foreignLocal?: string }) {
+  private saveOptionMetadata(type: 'research' | 'local' | 'region', value: string, metadata: { status?: string; accountCode?: string; foreignLocal?: string; percentage?: number; limit?: number; description?: string }) {
     const storageKey = `option-metadata-${type}-${value}`;
     const existingMetadata = this.getOptionMetadata(type, value) || {};
     const updated = {
@@ -300,7 +330,10 @@ export class ConferenceSettingsComponent implements OnInit {
       label: option.label,
       status: option.status || 'Active',
       accountCode: option.accountCode || '',
-      foreignLocal: option.foreignLocal || ''
+      foreignLocal: option.foreignLocal || '',
+      percentage: option.percentage || '',
+      limit: option.limit || '',
+      description: option.description || ''
     });
     this.isModalOpen.set(true);
   }
@@ -318,6 +351,9 @@ export class ConferenceSettingsComponent implements OnInit {
     const accountCode = this.optionForm.get('accountCode')?.value;
     const foreignLocal = this.optionForm.get('foreignLocal')?.value;
     const status = this.optionForm.get('status')?.value;
+    const percentage = this.optionForm.get('percentage')?.value;
+    const limit = this.optionForm.get('limit')?.value;
+    const description = this.optionForm.get('description')?.value;
 
     const newOption: DropdownOption = {
       value: label.toLowerCase().replace(/\s+/g, '-'),
@@ -325,11 +361,13 @@ export class ConferenceSettingsComponent implements OnInit {
     };
 
     try {
-      let serviceType: 'research' | 'local' = 'local';
+      let serviceType: 'research' | 'local' | 'region' = 'local';
       if (type === 'research') {
         serviceType = 'research';
       } else if (type === 'local') {
         serviceType = 'local';
+      } else if (type === 'region') {
+        serviceType = 'region';
       }
 
       if (this.editingOptionIndex() === null) {
@@ -346,7 +384,10 @@ export class ConferenceSettingsComponent implements OnInit {
       this.saveOptionMetadata(serviceType, newOption.value, {
         status,
         accountCode,
-        foreignLocal
+        foreignLocal,
+        percentage,
+        limit,
+        description
       });
 
       this.closeModal();
@@ -365,11 +406,13 @@ export class ConferenceSettingsComponent implements OnInit {
     }
 
     const type = this.selectedBreakdownType()!;
-    let serviceType: 'research' | 'local' = 'local';
+    let serviceType: 'research' | 'local' | 'region' = 'local';
     if (type === 'research') {
       serviceType = 'research';
     } else if (type === 'local') {
       serviceType = 'local';
+    } else if (type === 'region') {
+      serviceType = 'region';
     }
 
     try {
@@ -395,11 +438,13 @@ export class ConferenceSettingsComponent implements OnInit {
     }
 
     const type = this.selectedBreakdownType()!;
-    let serviceType: 'research' | 'local' = 'local';
+    let serviceType: 'research' | 'local' | 'region' = 'local';
     if (type === 'research') {
       serviceType = 'research';
     } else if (type === 'local') {
       serviceType = 'local';
+    } else if (type === 'region') {
+      serviceType = 'region';
     }
     const selectedValues = Array.from(this.selectedCheckboxes());
 

@@ -6,7 +6,7 @@
 
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, tap, catchError, throwError } from 'rxjs';
+import { BehaviorSubject, Observable, switchMap, of, tap, catchError, throwError } from 'rxjs';
 import { BatchSitting, WorkflowStageKey } from '../interfaces/batch-sitting.interface';
 
 const BASE_URL = 'http://localhost:3000/batches';
@@ -69,6 +69,21 @@ export class BatchSittingService {
 
   buildBlankBatch(createdBy: string, status: 'active' | 'planned' = 'active'): Omit<BatchSitting, 'id'> {
     const now = new Date().toISOString();
-    return { batchName: '', status, startDate: '', endDate: '', stages: emptyStages(), createdAt: now, updatedAt: now, createdBy };
+    return { batchName: '', status, startDate: '', endDate: '', stages: emptyStages(), createdAt: now, updatedAt: now, createdBy, applicationIds: [] };
+  }
+
+  /**
+   * Appends an application ID to the batch's applicationIds array.
+   * Called client-side when an applicant formally submits for the first time.
+   */
+  addApplicationId(batchId: number, appId: number): Observable<BatchSitting> {
+    return this.http.get<BatchSitting>(`${BASE_URL}/${batchId}`).pipe(
+      switchMap(batch => {
+        const existing = Array.isArray(batch.applicationIds) ? batch.applicationIds : [];
+        if (existing.includes(appId)) return of(batch);
+        return this.http.put<BatchSitting>(`${BASE_URL}/${batchId}`, { ...batch, applicationIds: [...existing, appId] });
+      }),
+      catchError(err => throwError(() => err)),
+    );
   }
 }

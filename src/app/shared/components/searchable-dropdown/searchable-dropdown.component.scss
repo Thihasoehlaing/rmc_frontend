@@ -16,11 +16,16 @@
 // ── Trigger ───────────────────────────────────────────────────────
 .dropdown-trigger {
   width: 100%;
-  min-height: 42px; // slightly taller than input-height-sm to accommodate chips
+  min-height: var(--input-height-sm);
+  height: var(--input-height-sm);
+  font-family: var(--font-family-system);
+  font-size: var(--fs-base);
+  line-height: var(--lh-normal);
+  color: var(--color-label);
   background: var(--input-bg-editable);
   border: 1px solid var(--input-border-default);
   border-radius: var(--radius-md);
-  padding: var(--space-2) var(--space-3);
+  padding: var(--size-input-padding);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -39,6 +44,10 @@
     border-color: var(--input-border-focus);
     box-shadow: var(--input-shadow-focus);
   }
+}
+
+.dropdown-trigger.has-value {
+  height: auto;
 }
 
 .display-container {

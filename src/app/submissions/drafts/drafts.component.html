@@ -1,0 +1,137 @@
+<div class="submissions-page">
+
+  <!-- ── Page Header ────────────────────────────────────────────────────────── -->
+  <div class="submissions-header">
+    <div class="submissions-header__text">
+      <h1 class="submissions-title">
+        <span class="material-icons">edit_note</span>
+        Drafts
+      </h1>
+      <p class="submissions-subtitle">Saved applications not yet submitted to HOS</p>
+    </div>
+  </div>
+
+  <!-- ── Batch status notice ────────────────────────────────────────────────── -->
+  @if (!hasBatch()) {
+    <div class="notice notice--warning">
+      <span class="material-icons">event_busy</span>
+      <span>
+        <strong>No active batch.</strong>
+        You can open and edit your drafts, but submission is locked until RMC opens a new batch.
+      </span>
+    </div>
+  } @else {
+    <div class="notice notice--info">
+      <span class="material-icons">event_available</span>
+      <span>
+        Active batch: <strong>{{ activeBatch()?.batchName }}</strong>
+        &nbsp;·&nbsp; Window: <strong>{{ activeBatch()?.startDate }}</strong> – <strong>{{ activeBatch()?.endDate }}</strong>
+      </span>
+    </div>
+  }
+
+  <!-- ── Loading ────────────────────────────────────────────────────────────── -->
+  @if (loading()) {
+    <div class="state-message">
+      <span class="material-icons spinning">sync</span>
+      Loading drafts…
+    </div>
+  }
+
+  <!-- ── Error ──────────────────────────────────────────────────────────────── -->
+  @if (!loading() && error()) {
+    <div class="state-message state-error">
+      <span class="material-icons">error_outline</span>
+      {{ error() }}
+    </div>
+  }
+
+  @if (!loading() && !error()) {
+
+    <!-- ── Search ────────────────────────────────────────────────────────────── -->
+    <div class="search-bar">
+      <span class="material-icons search-bar__icon">search</span>
+      <input
+        class="search-bar__input"
+        type="text"
+        placeholder="Search drafts by title…"
+        [value]="searchQuery()"
+        (input)="searchQuery.set($any($event.target).value)" />
+      @if (searchQuery()) {
+        <button class="search-bar__clear" (click)="searchQuery.set('')" title="Clear search">
+          <span class="material-icons">close</span>
+        </button>
+      }
+    </div>
+
+    <!-- ── Empty ─────────────────────────────────────────────────────────────── -->
+    @if (drafts().length === 0) {
+      <div class="state-message state-empty">
+        <span class="material-icons">edit_note</span>
+        @if (searchQuery()) {
+          No drafts match "{{ searchQuery() }}".
+        } @else {
+          No saved drafts. Click <strong>New Application</strong> to start one.
+        }
+      </div>
+    }
+
+    <!-- ── Table ─────────────────────────────────────────────────────────────── -->
+    @if (drafts().length > 0) {
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Project Title</th>
+              <th class="col-sortable" (click)="toggleSort()">
+                Last Saved
+                <span class="material-icons sort-icon">
+                  {{ sortAsc() ? 'arrow_upward' : 'arrow_downward' }}
+                </span>
+              </th>
+              <th>Batch</th>
+              <th>Submission Window</th>
+              <th class="col-action"></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (app of drafts(); track app.id) {
+              <tr>
+                <td class="col-title">
+                  {{ app.projectDetails?.title?.trim() || '(Untitled Draft)' }}
+                </td>
+                <td class="col-date">{{ formatDate(app) }}</td>
+                <td>
+                  @if (app.metadata?.batch) {
+                    <span class="badge badge--neutral">Batch #{{ app.metadata.batch }}</span>
+                  } @else {
+                    <span class="muted">—</span>
+                  }
+                </td>
+                <td>
+                  @if (!hasBatch()) {
+                    <span class="badge badge--locked">
+                      <span class="material-icons">lock</span> Locked
+                    </span>
+                  } @else {
+                    <span class="badge badge--open">
+                      <span class="material-icons">lock_open</span> Open
+                    </span>
+                  }
+                </td>
+                <td class="col-action">
+                  <button class="btn-open" (click)="openDraft(app)">
+                    <span class="material-icons">edit</span>
+                    Continue
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+  }
+
+</div>

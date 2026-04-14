@@ -85,6 +85,7 @@ export class SearchableDropdownComponent<T = number> implements ControlValueAcce
   readonly isOpen = signal(false);
   readonly selectedValues = signal<T[]>([]);
   readonly isDisabled = signal(false);
+  readonly hasSelection = computed(() => this.selectedValues().length > 0);
 
   /** Index of the keyboard-focused option inside the open list (-1 = none). */
   readonly focusedIndex = signal(-1);
@@ -143,9 +144,19 @@ export class SearchableDropdownComponent<T = number> implements ControlValueAcce
   writeValue(value: T | T[] | null | undefined): void {
     if (value == null) {
       this.selectedValues.set([]);
-    } else {
-      this.selectedValues.set(Array.isArray(value) ? value : [value]);
+      return;
     }
+
+    if (Array.isArray(value)) {
+      this.selectedValues.set(value.filter(v => !this.isEmptySelectionValue(v)));
+      return;
+    }
+
+    this.selectedValues.set(this.isEmptySelectionValue(value) ? [] : [value]);
+  }
+
+  private isEmptySelectionValue(value: unknown): boolean {
+    return value == null || (typeof value === 'string' && value.trim() === '');
   }
 
   registerOnChange(fn: (value: T | T[] | null) => void): void {

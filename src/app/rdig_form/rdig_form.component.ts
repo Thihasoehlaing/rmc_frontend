@@ -1,9 +1,10 @@
-import { Component, signal, computed, inject, OnInit, effect } from '@angular/core';
+import { Component, signal, computed, inject, OnInit, OnDestroy, effect } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, FormControl, Validators } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { BatchSittingService } from '../settings/batch-sitting.service';
 import { BatchSitting } from '../interfaces/batch-sitting.interface';
+import { NotificationService } from '../services/notification.service';
 
 // Shared layout components
 import { FormMainTitleComponent } from '../shared/components/form-main-title/form-main-title.component';
@@ -45,13 +46,15 @@ import { WorkflowState, WorkflowHistoryEntry } from '../interfaces/rdig-applicat
   templateUrl: './rdig_form.component.html',
   styleUrl: './rdig_form.component.scss',
 })
-export class RdigApplicationComponent implements OnInit {
+export class RdigApplicationComponent implements OnInit, OnDestroy {
 
   workflow = inject(RdigWorkflowService);
   readonly auth = inject(AuthService);
   private http = inject(HttpClient);
   private route = inject(ActivatedRoute);
-  private batchSvc = inject(BatchSittingService);
+  private router = inject(Router);
+  private batchSvc  = inject(BatchSittingService);
+  private notifSvc  = inject(NotificationService);
 
   /** The currently active batch loaded from the server on init. */
   activeBatch = signal<BatchSitting | null | undefined>(undefined); // undefined = loading
@@ -76,7 +79,9 @@ export class RdigApplicationComponent implements OnInit {
   readonly totalSteps = 5;
 
   isSaving = signal(false);
-  isSubmitting = signal(false);
+  submissionState = signal<'IDLE' | 'LOADING' | 'SUCCESS' | 'ERROR'>('IDLE');
+  submissionErrorMessage = signal('');
+  isSubmitting = computed(() => this.submissionState() !== 'IDLE');
   submitAttempted = signal(false);
 
   /**
@@ -263,6 +268,7 @@ export class RdigApplicationComponent implements OnInit {
         batch: [null],            // auto-assigned from active batch on submit — never set manually
         applicationVersion: [1],
         reviewers_version: [1],
+        applicantUserId: [null],  // stamped on first submit — used to target rejection/revision notifications
       }),
 
       // 2. Subpage 1 — Team Members (pre-filled from the logged-in user)
@@ -462,6 +468,7 @@ export class RdigApplicationComponent implements OnInit {
       approvals: this.fb.group({
         hosStatus: [''],
         rmcStatus: [''],
+        reviewer1Decision: [''],
         reviewer2Decision: [''],
         rdigChairStatus: [''],
         vcStatus: [''],
@@ -601,6 +608,10 @@ export class RdigApplicationComponent implements OnInit {
     this.workflow.reviewer2UserId.set(r2Ctrl.value ?? '');
     r1Ctrl.valueChanges.subscribe(v => this.workflow.reviewer1UserId.set(v ?? ''));
     r2Ctrl.valueChanges.subscribe(v => this.workflow.reviewer2UserId.set(v ?? ''));
+  }
+
+  ngOnDestroy(): void {
+    clearTimeout(this.draftSaveTimer);
   }
 
   /**
@@ -752,14 +763,41 @@ export class RdigApplicationComponent implements OnInit {
     }
   }
 
+  /** Feedback signal shown after a successful draft save (clears automatically). */
+  draftSaveSuccess = signal(false);
+  private draftSaveTimer?: ReturnType<typeof setTimeout>;
+
   onSaveDraft(): void {
     this.isSaving.set(true);
-    const formData = { ...this.rdigForm.getRawValue(), workflow: this.workflowState() };
-    console.log('Draft saved', formData);
+    const currentStatus = this.workflowState().currentStatus;
 
-    const appId = this.loadedAppId();
+    // Determine whether this is a brand-new application (not yet formally submitted
+    // to any reviewer) or an in-progress application being partially saved.
+    const isNewApp = currentStatus === 'fill_application';
+
+    // For new (unsubmitted) apps: hide from everyone's inbox by clearing nextRoles.
+    // For in-process apps (e.g. pending_applicant_resubmission_*): keep existing
+    // nextRoles so the application stays visible in the applicant's inbox.
+    const workflowForSave = isNewApp
+      ? { ...this.workflowState(), nextRoles: [], nextUsers: [] }
+      : { ...this.workflowState() };
+
+    // Stamp applicantUserId so the "my applications" server query can find it later.
+    const rawMeta = this.rdigForm.get('metadata')?.getRawValue() ?? {};
+    const applicantUserId = rawMeta['applicantUserId'] || this.auth.currentUser()?.id || null;
+
+    const formData: Record<string, unknown> = {
+      ...this.rdigForm.getRawValue(),
+      formType:  'RDIG',
+      workflow:  workflowForSave,
+      isDraft:   isNewApp,          // only unsubmitted apps get the draft flag
+      savedAt:   new Date().toISOString(),
+      metadata:  { ...rawMeta, applicantUserId },
+    };
+
+    const appId  = this.loadedAppId();
     const isEdit = !!appId;
-    const url = isEdit
+    const url    = isEdit
       ? `http://localhost:3000/applications/${appId}`
       : 'http://localhost:3000/applications';
 
@@ -769,17 +807,26 @@ export class RdigApplicationComponent implements OnInit {
 
     request$.subscribe({
       next: (response: any) => {
-        if (!isEdit && response.id) {
+        if (!isEdit && response?.id) {
           this.loadedAppId.set(response.id);
+          // Also update the URL so a refresh reopens the same draft
+          this.router.navigate([], {
+            relativeTo: this.route,
+            queryParams: { id: response.id },
+            replaceUrl: true,
+          });
         }
         this.isSaving.set(false);
-        alert('Test Database (JSON): Draft saved successfully!');
+        // Show an inline success indicator instead of a blocking alert
+        clearTimeout(this.draftSaveTimer);
+        this.draftSaveSuccess.set(true);
+        this.draftSaveTimer = setTimeout(() => this.draftSaveSuccess.set(false), 3000);
       },
       error: (err) => {
         console.error('Save draft failed:', err);
         this.isSaving.set(false);
         alert('Failed to save draft. Remember to run `npm run db` in a new terminal!');
-      }
+      },
     });
   }
 
@@ -794,7 +841,8 @@ export class RdigApplicationComponent implements OnInit {
     }
     const today = new Date().toISOString().substring(0, 10);
     if (today < batch.startDate || today > batch.endDate) {
-      alert(`Submission is only allowed between ${batch.startDate} and ${batch.endDate}.\nThe current batch window has expired or has not started yet.`);
+      this.submissionErrorMessage.set(`Submission is only allowed between ${batch.startDate} and ${batch.endDate}. The current batch window has expired or has not started yet.`);
+      this.submissionState.set('ERROR');
       return;
     }
     // ── End batch constraint check ───────────────────────────────────────────
@@ -802,13 +850,21 @@ export class RdigApplicationComponent implements OnInit {
     if (!this.validationDisabled() && this.rdigForm.invalid) {
       this.rdigForm.markAllAsTouched();
       console.warn('Form invalid — please review all steps.');
-      alert('Your form has missing or invalid fields. Please review all steps.');
+      this.submissionErrorMessage.set('Your form has missing or invalid fields. Please review all steps.');
+      this.submissionState.set('ERROR');
       return;
     }
-    this.isSubmitting.set(true);
+    this.submissionState.set('LOADING');
 
     // Auto-assign the active batch id (server-side of truth — never client-selected).
     this.rdigForm.get('metadata.batch')?.setValue(batch.id, { emitEvent: false });
+
+    // Stamp applicant's userId on first submit so downstream reviewers can target notifications back to them.
+    if (!this.rdigForm.get('metadata.applicantUserId')?.value) {
+      this.rdigForm.get('metadata.applicantUserId')?.setValue(
+        this.auth.currentUser()?.id ?? null, { emitEvent: false },
+      );
+    }
 
     // ── Workflow transition ──────────────────────────────────────
     // Status is authoritative in workflowState — never duplicated in metadata.
@@ -863,7 +919,17 @@ export class RdigApplicationComponent implements OnInit {
     }
     // ── End workflow transition ──────────────────────────────────
 
-    const formData = { ...this.rdigForm.getRawValue(), workflow: this.workflowState() };
+    this.submissionState.set('LOADING');
+
+    // Clear the draft flag on formal submission so the application moves to
+    // the appropriate inbox / pending view and not back to Drafts.
+    const formData = {
+      ...this.rdigForm.getRawValue(),
+      formType: 'RDIG',
+      workflow: this.workflowState(),
+      isDraft:  false,
+      savedAt:  new Date().toISOString(),
+    };
     console.log('Submitting', formData);
 
     const appId = this.loadedAppId();
@@ -883,19 +949,144 @@ export class RdigApplicationComponent implements OnInit {
           savedId = response.id;
           this.loadedAppId.set(savedId);
         }
-        this.isSubmitting.set(false);
-        const newStatus = this.workflowState().currentStatus;
-        const appLink = `${window.location.origin}/rdig?id=${savedId}`;
-        const msg = !isEdit
-          ? `Application submitted!\n\nShare this link with the next reviewer:\n${appLink}\n\nStatus → ${newStatus}`
-          : `Submitted successfully.\n\nStatus → ${newStatus}\n\nApplication link:\n${appLink}`;
-        alert(msg);
+
+        // First formal submission (applicant → HOS): register this app in the batch's applicationIds array.
+        if (currentStatus === 'fill_application' && batch && savedId != null) {
+          this.batchSvc.addApplicationId(batch.id, Number(savedId)).subscribe();
+        }
+
+        // First, clear any existing action notifications for the current user (e.g. they just approved it)
+        if (savedId != null) {
+          this.notifSvc.resolveAction(Number(savedId), 'RDIG Application');
+        }
+
+        // Fire workflow notifications for the next recipient(s).
+        if (transition && savedId != null) {
+          this.fireWorkflowNotifications(
+            transition.nextStatus, transition.actorRole, Number(savedId), formData, currentStatus,
+          );
+        }
+
+        this.submissionState.set('SUCCESS');
+
+        // Allow user to see the success checkmark, then redirect home
+        setTimeout(() => {
+          this.router.navigate(['/dashboard']);
+        }, 2200);
       },
       error: (err) => {
         console.error('Save failed:', err);
-        this.isSubmitting.set(false);
-        alert('Failed to save. Remember to run `npm run db` in a new terminal to start the json-server!');
+        let errorMsg = 'Failed to process. Please try again.';
+        if (err.status === 0) errorMsg = 'Could not connect to the server (Ensure the local db is running).';
+        
+        this.submissionErrorMessage.set(errorMsg);
+        this.submissionState.set('ERROR');
       }
     });
+  }
+
+  // ── Notification dispatch ──────────────────────────────────────────────────
+
+  /**
+   * Fires the correct notification(s) after each workflow transition.
+   * Determines recipient(s) from the next status and the saved formData.
+   */
+  private fireWorkflowNotifications(
+    nextStatus:    RdigStatus,
+    actorRole:     string,
+    savedId:       number,
+    formData:      any,
+    currentStatus: RdigStatus,
+  ): void {
+    const actorName         = this.auth.currentUser()?.name ?? 'Unknown';
+    const entityType        = 'RDIG Application';
+    const entityModule      = 'rdig';
+    const route             = `/rdig?id=${savedId}`;
+    const applicantUserId   = formData.metadata?.applicantUserId as string | null;
+    const appDepartment     = formData.teamDetails?.department   as string ?? '';
+    const nextUsers: string[] = formData.workflow?.nextUsers     ?? [];
+
+    const fire = (key: string, ctx: Record<string, unknown>) => {
+      this.notifSvc.create(
+        this.notifSvc.build(key, {
+          entityType, entityId: savedId, actorName, stage: nextStatus,
+          ...ctx,
+          data: {
+            entityId: savedId, entityType, entityModule,
+            stage: nextStatus, actorName, route,
+            ...(ctx['data'] as object ?? {}),
+          },
+        }),
+      ).subscribe();
+    };
+
+    switch (nextStatus) {
+
+      case 'pending_hos':
+        // Notify HOS (department-scoped)
+        fire('REVIEW_ASSIGNED_TO_YOU', {
+          stage: 'HOS Review', recipientRole: 'HOS', recipientDepartment: appDepartment,
+        });
+        // Confirm submission to applicant on first submit only
+        if (currentStatus === 'fill_application') {
+          fire('APPLICATION_SUBMITTED_CONFIRMED', {
+            recipientUserId: this.auth.currentUser()?.id,
+            data: { route: null } // This is strictly an FYI; strip the link
+          });
+        }
+        break;
+
+      case 'pending_hos_review':
+        // Applicant resubmitted → notify HOS again (department-scoped)
+        fire('APPLICATION_RESUBMITTED_BY', {
+          stage: 'HOS Re-Review', recipientRole: 'HOS', recipientDepartment: appDepartment,
+        });
+        break;
+
+      case 'pending_rmc':
+        fire('REVIEW_ASSIGNED_TO_YOU', { stage: 'RMC Review', recipientRole: 'RMC' });
+        break;
+
+      case 'pending_rmc_review':
+        // Applicant resubmitted after reviewers → notify RMC
+        fire('APPLICATION_RESUBMITTED_BY', { stage: 'RMC Final Review', recipientRole: 'RMC' });
+        break;
+
+      case 'pending_reviewers':
+        // Notify both assigned reviewers by their userId
+        nextUsers.forEach(uid =>
+          fire('REVIEWER_ASSIGNED_TO_APPLICATION', { recipientUserId: uid }),
+        );
+        break;
+
+      case 'pending_rdig_chair':
+        fire('REVIEW_ASSIGNED_TO_YOU', { stage: 'RDIG Chair Review', recipientRole: 'RDIG_Chair' });
+        break;
+
+      case 'pending_vc':
+        fire('REVIEW_ASSIGNED_TO_YOU', { stage: 'VC Review', recipientRole: 'VC' });
+        break;
+
+      case 'pending_ceo':
+        fire('REVIEW_ASSIGNED_TO_YOU', { stage: 'CEO Review', recipientRole: 'CEO' });
+        break;
+
+      case 'pending_applicant_resubmission_hos':
+      case 'pending_applicant_resubmission_reviewers':
+        if (applicantUserId) {
+          fire('APPLICATION_RETURNED_FOR_REVISION', { recipientUserId: applicantUserId });
+        }
+        break;
+
+      case 'rejected_hos':
+      case 'rejected_rmc':
+      case 'rejected_rdig_chair':
+      case 'rejected_vc':
+      case 'rejected_ceo':
+        if (applicantUserId) {
+          fire('APPLICATION_REJECTED_BY', { stage: actorRole, recipientUserId: applicantUserId });
+        }
+        break;
+    }
   }
 }

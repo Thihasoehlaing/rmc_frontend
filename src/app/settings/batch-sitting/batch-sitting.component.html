@@ -83,6 +83,12 @@
                   <span class="batch-summary__label">Closes</span>
                   <strong>{{ fmt(activeBatch()!.endDate) }}</strong>
                 </div>
+                <span class="material-icons batch-summary__arrow">arrow_forward</span>
+                <div class="batch-summary__chip">
+                  <span class="material-icons">folder_open</span>
+                  <span class="batch-summary__label">Applications</span>
+                  <span class="app-count-chip">{{ activeBatch()!.applicationIds?.length ?? 0 }}</span>
+                </div>
               </div>
               <ng-container *ngTemplateOutlet="stageReadTable; context: { batch: activeBatch() }">
               </ng-container>
@@ -257,7 +263,7 @@
                       <td>{{ fmt(batch.endDate) }}</td>
                       <td>{{ fmt(batch.endedAt) }}</td>
                       <td>
-                        <span class="app-count-chip">{{ batch.applicationCount ?? 0 }}</span>
+                        <span class="app-count-chip">{{ batch.applicationIds?.length ?? 0 }}</span>
                       </td>
                       <td class="actions-cell">
                         <!-- View -->
@@ -350,7 +356,7 @@
         </div>
         <div class="view-dialog__meta-item">
           <span class="material-icons">folder_special</span>
-          <span>Applications</span><strong>{{ vb.applicationCount ?? 0 }}</strong>
+          <span>Applications</span><strong>{{ vb.applicationIds?.length ?? 0 }}</strong>
         </div>
       </div>
       <ng-container *ngTemplateOutlet="stageReadTable; context: { batch: vb }"></ng-container>

@@ -1,0 +1,8 @@
+{
+    "chat.tools.terminal.autoApprove": {
+        "/^node -e \"const fs=require\\('fs'\\); const db=JSON\\.parse\\(fs\\.readFileSync\\('db\\.json','utf8'\\)\\); const apps=db\\.applications\\|\\|\\[\\]; console\\.log\\('applications length =', apps\\.length\\); apps\\.forEach\\(\\(a,i\\)=>console\\.log\\(i, a===null\\?'null':typeof a, a && Object\\.keys\\(a\\)\\)\\);\"$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
+    }
+}

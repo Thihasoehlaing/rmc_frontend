@@ -1,0 +1,18 @@
+[33m2abfd05[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mconference[m[33m, [m[1;31morigin/conference[m[33m)[m HEAD@{0}: pull --rebase (finish): returning to refs/heads/conference
+[33m2abfd05[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mconference[m[33m, [m[1;31morigin/conference[m[33m)[m HEAD@{1}: pull --rebase (start): checkout 2abfd052e28c59aa2f6f769da569d02c47f9daf5
+[33m8f878d7[m HEAD@{2}: commit (merge): Changed location of Guideline [Dev Test Board], minor tweaks in UI
+[33ma99282e[m HEAD@{3}: pull origin conference --rebase (finish): returning to refs/heads/conference
+[33ma99282e[m HEAD@{4}: pull origin conference --rebase (pick): Conference and TA Creation, added dev test notice for Proffesor Angelina.
+[33m2c7e94c[m HEAD@{5}: pull origin conference --rebase (start): checkout 2c7e94ca9f3f8165a8bdfc06ebffe1a2edaefefb
+[33m06adfca[m HEAD@{6}: commit: Conference and TA Creation, added dev test notice for Proffesor Angelina.
+[33m175f9d2[m HEAD@{7}: commit: Settings with sorting and filters
+[33m4f20079[m HEAD@{8}: pull origin main: Fast-forward
+[33md71f456[m HEAD@{9}: commit: "UI and Validation Fixes, Costing Figured out."
+[33m501f735[m HEAD@{10}: commit: Base for Conference Settings, unmoved
+[33mc03faad[m HEAD@{11}: pull origin main: Fast-forward
+[33m20f8c7c[m HEAD@{12}: commit: Validation and Permission B
+[33me0ae013[m HEAD@{13}: checkout: moving from main to conference
+[33m0382632[m[33m ([m[1;32mmain[m[33m)[m HEAD@{14}: reset: moving to HEAD
+[33m0382632[m[33m ([m[1;32mmain[m[33m)[m HEAD@{15}: reset: moving to HEAD~1
+[33m8693f8d[m HEAD@{16}: commit: Validation and Permission B
+[33m0382632[m[33m ([m[1;32mmain[m[33m)[m HEAD@{17}: clone: from https://github.com/adel8282/rmc-frontend-github

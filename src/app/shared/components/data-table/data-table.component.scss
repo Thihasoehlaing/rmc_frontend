@@ -77,6 +77,42 @@ tbody tr:last-child td,
   border-bottom: none;
 }
 
+.data-table__empty-row td,
+:host ::ng-deep .data-table__empty-row td {
+  padding: 28px 24px;
+  border-bottom: none;
+}
+
+.data-table__empty-state,
+:host ::ng-deep .data-table__empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 96px;
+  width: 100%;
+  border: 1px solid var(--border-default);
+  border-radius: 10px;
+  background: var(--color-surface);
+  padding: 24px 16px;
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+.data-table__empty-state .material-icons,
+:host ::ng-deep .data-table__empty-state .material-icons {
+  font-size: 28px;
+  line-height: 1;
+  color: var(--color-text-muted);
+}
+
+.data-table__empty-state p,
+:host ::ng-deep .data-table__empty-state p {
+  margin: 0;
+  font-size: 12px;
+}
+
 /* Alternating row colors — also applied via ::ng-deep so projected <tr> rows get striped */
 .data-table--striped tbody tr:nth-child(even),
 :host ::ng-deep .data-table--striped tbody tr:nth-child(even) {
@@ -179,7 +215,7 @@ tbody tr:hover,
   display: flex;
   justify-content: flex-start;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-1);
 }
 
 // Base .btn-icon styles come from global _forms.scss.

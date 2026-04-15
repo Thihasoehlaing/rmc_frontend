@@ -1,0 +1,79 @@
+@use '../../../../assets/styles/index' as *;
+
+.form-section {
+  padding: var(--space-4);
+}
+
+.card__title.declaration-title {
+  color: var(--color-primary);
+  font-weight: var(--fw-bold);
+  text-decoration: underline;
+  text-align: center;
+  font-size: var(--fs-2xl);
+}
+
+.section-fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.declaration-statement {
+  background: var(--color-surface-hover);
+  padding: var(--space-4);
+  border-left: var(--space-1) solid var(--color-primary);
+  border-radius: var(--radius-sm);
+
+  p {
+    margin: 0;
+    font-size: var(--fs-base);
+    font-weight: var(--fw-bold);
+    color: var(--color-heading);
+  }
+}
+
+.checkbox-field {
+  flex-direction: row;
+  gap: var(--space-3);
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  font-size: var(--fs-sm);
+  color: var(--color-label);
+  cursor: pointer;
+  font-weight: var(--fw-normal);
+  line-height: var(--lh-relaxed);
+}
+
+.checkbox-input {
+  width: 18px;
+  height: 18px;
+  margin-top: var(--space-1);
+  cursor: pointer;
+  accent-color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.divider {
+  height: 1px;
+  background: var(--border-default);
+  margin: var(--space-4) 0;
+}
+
+.declaration-footer {
+  background: var(--color-info-light);
+  border: 1px solid var(--color-info);
+  padding: var(--space-4);
+  border-radius: var(--radius-sm);
+
+  .footer-note {
+    margin: 0;
+    font-size: var(--fs-sm);
+    color: var(--color-label);
+    font-weight: var(--fw-medium);
+    line-height: var(--lh-relaxed);
+  }
+}

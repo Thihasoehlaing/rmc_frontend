@@ -14,7 +14,7 @@ import { NavGroup } from '../../interfaces/nav.interface';
  *   NavItem permission   -> hides just that item
  *
  * Application access rules:
- *   Conference Application  : (full_time OR contract) AND academic AND HOS AND VC
+ *   Conference Application  : (full_time OR contract) AND academic, OR HOS, OR VC, OR Admin
  *   Journal Publication     : (full_time OR contract) AND academic AND HOS AND VC
  *   RA/GRA Application      : (full_time OR contract) AND academic AND HOS AND group_ra_gra_hos_pass
  *   Travel Authorization    : (full_time OR contract) AND academic AND HOS
@@ -116,6 +116,16 @@ export const NAVIGATION_DATA: NavGroup[] = [
                             ],
                         },
                     },
+                    // Partnership: (full_time OR contract) AND academic
+                    {
+                        label: 'Partnership Application',
+                        icon: 'handshake',
+                        route: '/partnership/application',
+                        permission: {
+                            anyOf: ['full_time', 'contract'],
+                            allOf: ['academic'],
+                        },
+                    },
                     // Proposal: (full_time OR contract) AND academic
                     {
                         label: 'Proposal Application',
@@ -125,12 +135,6 @@ export const NAVIGATION_DATA: NavGroup[] = [
                             anyOf: ['full_time', 'contract'],
                             allOf: ['academic'],
                         },
-                    },
-                    // Dev Test Board: Development/Testing - visible to all authenticated users
-                    {
-                        label: 'Dev Test Board',
-                        icon: 'build',
-                        route: '/dev-test-board',
                     },
                 ],
             },
@@ -145,6 +149,7 @@ export const NAVIGATION_DATA: NavGroup[] = [
                     { label: 'RDIG Dropdown Options Management', route: '/settings/rdig-dropdown-options' },
                     { label: 'Batch Sitting', icon: 'event_available', route: '/settings/batch-sitting' },
                     { label: 'Conference Settings', icon: 'event_note', route: '/conference/settings' },
+                    { label: 'Dev Test Board', icon: 'build', route: '/settings/dev-test-board' },
                 ],
             },
 

@@ -51,7 +51,7 @@
   h2 {
     margin: 0;
     font-size: var(--fs-xl);
-    color: var(--color-heading);
+    color: black;
     font-weight: var(--fw-bold);
   }
 }
@@ -81,7 +81,7 @@
 
   h3 {
     font-size: var(--fs-lg);
-    color: var(--color-heading);
+    color: black;
     font-weight: var(--fw-bold);
     margin-top: var(--space-6);
     margin-bottom: var(--space-3);
@@ -93,7 +93,7 @@
 
   h4 {
     font-size: var(--fs-base);
-    color: var(--color-heading);
+    color: black;
     font-weight: var(--fw-semibold);
     margin: var(--space-4) 0 var(--space-2) 0;
   }
@@ -116,7 +116,7 @@
 .section-title {
   font-size: var(--fs-lg);
   font-weight: var(--fw-bold);
-  color: var(--color-heading);
+  color: black;
   margin: var(--space-6) 0 var(--space-3) 0;
 }
 

@@ -10,6 +10,11 @@
   color: var(--color-error-dark);
 }
 
+// Override card titles to be black
+.card__title {
+  color: black;
+}
+
 .form-section {
   padding: var(--space-4);
 }
@@ -43,7 +48,7 @@
   align-items: center;
   gap: var(--space-2);
   font-size: var(--fs-sm);
-  color: var(--color-label);
+  color: black;
   cursor: pointer;
   font-weight: var(--fw-normal);
 }
@@ -66,7 +71,7 @@
 .section-header {
   font-size: var(--fs-md);
   font-weight: var(--fw-bold);
-  color: var(--color-heading);
+  color: black;
   margin: 0 0 var(--space-4) 0;
 }
 
@@ -92,7 +97,7 @@
   justify-content: space-between;
   font-size: var(--fs-md);
   font-weight: var(--fw-bold);
-  color: var(--color-heading);
+  color: black;
   margin: 0 0 var(--space-2) 0;
 }
 
@@ -204,7 +209,7 @@
     margin: 0;
     font-size: var(--fs-lg);
     font-weight: var(--fw-bold);
-    color: var(--color-heading);
+    color: black;
   }
 }
 
@@ -247,7 +252,7 @@
   label {
     font-size: var(--fs-sm);
     font-weight: var(--fw-semibold);
-    color: var(--color-heading);
+    color: black;
   }
 
   .form-control {
@@ -365,7 +370,12 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  width: 100%;
+  box-sizing: border-box;
   padding: var(--space-8) var(--space-4);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
   text-align: center;
   color: var(--color-text-muted);
 

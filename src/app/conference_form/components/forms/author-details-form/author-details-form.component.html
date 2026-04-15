@@ -12,39 +12,32 @@
 
         @if (testSubsections.length > 0) {
           <div class="table-scroll">
-            <table class="list-table">
-              <thead>
+            <app-data-table
+              [columns]="apuStaffColumns"
+              [rows]="getApuStaffTableData()"
+              [hoverable]="true"
+              [striped]="true">
+              <ng-template #rowTemplate let-row let-i="index">
                 <tr>
-                  <th class="col-no">#</th>
-                  <th>Please select Staff Name</th>
-                  <th>School/Department</th>
-                  <th>Affiliation</th>
-                  <th class="col-actions">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (subsection of testSubsections.controls; track $index; let i = $index) {
-                  <tr>
-                    <td class="col-no text-muted">{{ i + 1 }}</td>
-                    <td>{{ subsection.value.staffName }}</td>
-                    <td>{{ subsection.value.schoolDepartment }}</td>
-                    <td>{{ subsection.value.affiliation }}</td>
-                    <td class="col-actions">
+                  <td class="col-no text-muted is-align-center">{{ row.index }}</td>
+                  <td>{{ row.staffName }}</td>
+                  <td>{{ row.schoolDepartment }}</td>
+                  <td>{{ row.affiliation }}</td>
+                  <td class="col-actions is-align-center">
+                    <div class="data-table__actions">
                       <button type="button" class="btn-icon btn-icon--edit" [disabled]="!canAddCoAuthors()"
                         (click)="openEditModal('apu-staff', i)" aria-label="Edit entry">
                         <span class="material-icons">edit</span>
                       </button>
-                      @if (testSubsections.length > 1) {
-                        <button type="button" class="btn-icon btn-icon--delete" [disabled]="!canAddCoAuthors()"
-                          (click)="deleteTestSubsection(i)" aria-label="Remove entry">
-                          <span class="material-icons">delete</span>
-                        </button>
-                      }
-                    </td>
-                  </tr>
-                }
-              </tbody>
-            </table>
+                      <button type="button" class="btn-icon btn-icon--delete" [disabled]="!canAddCoAuthors()"
+                        (click)="deleteTestSubsection(i)" aria-label="Remove entry">
+                        <span class="material-icons">delete</span>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </ng-template>
+            </app-data-table>
           </div>
         } @else {
           <div class="empty-state">
@@ -67,41 +60,33 @@
 
         @if (studentCoAuthors.length > 0) {
           <div class="table-scroll">
-            <table class="list-table">
-              <thead>
+            <app-data-table
+              [columns]="studentCoAuthorColumns"
+              [rows]="getStudentCoAuthorTableData()"
+              [hoverable]="true"
+              [striped]="true">
+              <ng-template #rowTemplate let-row let-i="index">
                 <tr>
-                  <th class="col-no">#</th>
-                  <th>TP Number</th>
-                  <th>Full Name (as per IC/Passport)</th>
-                  <th>School/Department</th>
-                  <th>Affiliation</th>
-                  <th class="col-actions">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (subsection of studentCoAuthors.controls; track $index; let i = $index) {
-                  <tr>
-                    <td class="col-no text-muted">{{ i + 1 }}</td>
-                    <td>{{ subsection.value.tpNumber }}</td>
-                    <td>{{ subsection.value.fullName }}</td>
-                    <td>{{ subsection.value.schoolDepartment }}</td>
-                    <td>{{ subsection.value.affiliation }}</td>
-                    <td class="col-actions">
+                  <td class="col-no text-muted is-align-center">{{ row.index }}</td>
+                  <td>{{ row.tpNumber }}</td>
+                  <td>{{ row.fullName }}</td>
+                  <td>{{ row.schoolDepartment }}</td>
+                  <td>{{ row.affiliation }}</td>
+                  <td class="col-actions is-align-center">
+                    <div class="data-table__actions">
                       <button type="button" class="btn-icon btn-icon--edit" [disabled]="!canAddCoAuthors()"
                         (click)="openEditModal('student', i)" aria-label="Edit entry">
                         <span class="material-icons">edit</span>
                       </button>
-                      @if (studentCoAuthors.length > 1) {
-                        <button type="button" class="btn-icon btn-icon--delete" [disabled]="!canAddCoAuthors()"
-                          (click)="deleteStudentCoAuthor(i)" aria-label="Remove entry">
-                          <span class="material-icons">delete</span>
-                        </button>
-                      }
-                    </td>
-                  </tr>
-                }
-              </tbody>
-            </table>
+                      <button type="button" class="btn-icon btn-icon--delete" [disabled]="!canAddCoAuthors()"
+                        (click)="deleteStudentCoAuthor(i)" aria-label="Remove entry">
+                        <span class="material-icons">delete</span>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </ng-template>
+            </app-data-table>
           </div>
         } @else {
           <div class="empty-state">
@@ -124,45 +109,35 @@
 
         @if (nonApuCoAuthors.length > 0) {
           <div class="table-scroll">
-            <table class="list-table">
-              <thead>
+            <app-data-table
+              [columns]="nonApuCoAuthorColumns"
+              [rows]="getNonApuCoAuthorTableData()"
+              [hoverable]="true"
+              [striped]="true">
+              <ng-template #rowTemplate let-row let-i="index">
                 <tr>
-                  <th class="col-no">#</th>
-                  <th>Full Name (as per IC/Passport)</th>
-                  <th>Country</th>
-                  <th>Email</th>
-                  <th>Type of Organisation</th>
-                  <th>School/Department</th>
-                  <th>Institution/Company Name</th>
-                  <th class="col-actions">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (subsection of nonApuCoAuthors.controls; track $index; let i = $index) {
-                  <tr>
-                    <td class="col-no text-muted">{{ i + 1 }}</td>
-                    <td>{{ subsection.value.fullName }}</td>
-                    <td>{{ subsection.value.country }}</td>
-                    <td>{{ subsection.value.email }}</td>
-                    <td>{{ subsection.value.organisationType }}</td>
-                    <td>{{ subsection.value.schoolDepartment }}</td>
-                    <td>{{ subsection.value.institutionName }}</td>
-                    <td class="col-actions">
+                  <td class="col-no text-muted is-align-center">{{ row.index }}</td>
+                  <td>{{ row.fullName }}</td>
+                  <td>{{ row.country }}</td>
+                  <td>{{ row.email }}</td>
+                  <td>{{ row.organisationType }}</td>
+                  <td>{{ row.schoolDepartment }}</td>
+                  <td>{{ row.institutionName }}</td>
+                  <td class="col-actions is-align-center">
+                    <div class="data-table__actions">
                       <button type="button" class="btn-icon btn-icon--edit" [disabled]="!canAddCoAuthors()"
                         (click)="openEditModal('non-apu', i)" aria-label="Edit entry">
                         <span class="material-icons">edit</span>
                       </button>
-                      @if (nonApuCoAuthors.length > 1) {
-                        <button type="button" class="btn-icon btn-icon--delete" [disabled]="!canAddCoAuthors()"
-                          (click)="deleteNonApuCoAuthor(i)" aria-label="Remove entry">
-                          <span class="material-icons">delete</span>
-                        </button>
-                      }
-                    </td>
-                  </tr>
-                }
-              </tbody>
-            </table>
+                      <button type="button" class="btn-icon btn-icon--delete" [disabled]="!canAddCoAuthors()"
+                        (click)="deleteNonApuCoAuthor(i)" aria-label="Remove entry">
+                        <span class="material-icons">delete</span>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </ng-template>
+            </app-data-table>
           </div>
         } @else {
           <div class="empty-state">
@@ -189,8 +164,8 @@
       <form [formGroup]="editForm" (ngSubmit)="submitModal()" class="modal-body">
         @if (modalType === 'apu-staff') {
           <div class="form-group">
+            <label>Staff Name <span class="asterisk">*</span></label>
             <app-searchable-dropdown
-              label="Staff Name <span class='asterisk'>*</span>"
               [options]="staffOptions"
               [searchable]="true"
               placeholder="Search staff..."
@@ -289,8 +264,8 @@
           </div>
 
           <div class="form-group">
+            <label>Type of Organisation <span class="asterisk">*</span></label>
             <app-searchable-dropdown
-              label="Type of Organisation <span class='asterisk'>*</span>"
               [options]="organisationTypeOptions"
               [searchable]="true"
               placeholder="Search organisation type..."

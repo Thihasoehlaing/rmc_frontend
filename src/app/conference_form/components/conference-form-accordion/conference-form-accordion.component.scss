@@ -14,7 +14,7 @@
 .form-title {
   font-size: var(--fs-2xl);
   font-weight: var(--fw-bold);
-  color: var(--color-heading);
+  color: black;
   margin: 0 0 var(--space-2) 0;
 }
 
@@ -57,7 +57,7 @@
   transition: all var(--transition-fast);
   font-size: var(--fs-base);
   font-weight: var(--fw-semibold);
-  color: var(--color-heading);
+  color: black;
   text-align: left;
 
   &:hover {
@@ -86,7 +86,7 @@
 .section-title {
   font-size: var(--fs-base);
   font-weight: var(--fw-semibold);
-  color: var(--color-heading);
+  color: black;
 }
 
 .toggle-icon {

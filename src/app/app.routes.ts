@@ -63,7 +63,7 @@ export const routes: Routes = [
       },
 
       // ── Conference Application ────────────────────────────────────────────
-      // Rule: ((full_time OR contract) AND academic) OR Admin
+      // Rule: Allow all authenticated users except fully blocked users
       {
         path: 'conference',
         canActivate: [permissionGuard],
@@ -73,7 +73,12 @@ export const routes: Routes = [
               {
                 anyOf: ['full_time', 'contract'],
                 allOf: ['academic'],
-                excludeGroups: ['Reviewer', 'HOS'],
+              },
+              {
+                anyOf: ['HOS'],
+              },
+              {
+                anyOf: ['VC'],
               },
               {
                 anyOf: ['Admin'],
@@ -139,12 +144,20 @@ export const routes: Routes = [
           import('./travel_authorization_form/travel_authorization_form.routes').then(m => m.travelAuthorizationFormRoutes),
       },
 
-      // ── Dev Test Board —  Development/Testing ───────────────────────────
+      // ── Partnership Application ───────────────────────────────────────────
+      // Rule: (full_time OR contract) AND academic
       {
-        path: 'dev-test-board',
+        path: 'partnership',
+        canActivate: [permissionGuard],
+        data: {
+          permission: {
+            anyOf: ['full_time', 'contract'],
+            allOf: ['academic'],
+          } satisfies NavPermission,
+        },
         loadChildren: () =>
-          import('./dev_test_board_form/dev-test-board-form.routes').then(
-            m => m.DEV_TEST_BOARD_ROUTES
+          import('./partnership_form/partnership_form.routes').then(
+            m => m.partnershipFormRoutes
           ),
       },
 
@@ -164,6 +177,13 @@ export const routes: Routes = [
                 },
                 loadComponent: () =>
                     import('./settings/batch-sitting/batch-sitting.component').then(m => m.BatchSittingComponent),
+            },
+            {
+                path: 'dev-test-board',
+                loadChildren: () =>
+                  import('./dev_test_board_form/dev-test-board-form.routes').then(
+                    m => m.DEV_TEST_BOARD_ROUTES
+                  ),
             },
         ]
       },

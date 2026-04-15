@@ -4,6 +4,7 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angula
 import { BreakdownOptionsService } from '../../services/breakdown-options.service';
 import { DropdownOption } from '../../../interfaces/components.interface';
 import { TableSortService, SortDirection } from '../../../shared/services/table-sort.service';
+import { DataTableComponent, DataTableColumn } from '../../../shared/components/data-table/data-table.component';
 
 type BreakdownTypeKey = 'research' | 'local' | 'region';
 
@@ -25,7 +26,7 @@ interface ExtendedOption extends DropdownOption {
 @Component({
   selector: 'app-conference-settings',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, DataTableComponent],
   templateUrl: './conference-settings.component.html',
   styleUrl: './conference-settings.component.scss',
   providers: [TableSortService]
@@ -51,6 +52,36 @@ export class ConferenceSettingsComponent implements OnInit {
     { value: 'local', label: 'Account Code' },
     { value: 'region', label: 'Region' }
   ];
+  /**
+   * Get dynamic columns based on selected breakdown type
+   */
+  getTableColumns = computed(() => {
+    const type = this.selectedBreakdownType();
+    const baseColumns: DataTableColumn[] = [
+      { key: 'checkbox', label: '', width: '50px', align: 'center' },
+      { key: 'label', label: type === 'region' ? 'Region Name' : (type === 'local' ? 'Item Description' : 'Vote Number') }
+    ];
+
+    if (type === 'local') {
+      baseColumns.push({ key: 'accountCode', label: 'Account Code' });
+    } else if (type === 'region') {
+      baseColumns.push({ key: 'percentage', label: 'Percentage' });
+      baseColumns.push({ key: 'limit', label: 'Limit (RM)' });
+    } else if (type === 'research') {
+      baseColumns.push({ key: 'description', label: 'Item Description' });
+    }
+
+    if (type === 'research' || type === 'local') {
+      baseColumns.push({ key: 'foreignLocal', label: 'Foreign / Local' });
+    }
+
+    baseColumns.push({ key: 'status', label: 'Status' });
+    baseColumns.push({ key: 'createdDate', label: 'Created Date' });
+    baseColumns.push({ key: 'actions', label: 'Actions', width: '100px', align: 'center' });
+
+    return baseColumns;
+  });
+
 
   /**
    * Check if any options are selected for bulk delete
@@ -248,7 +279,8 @@ export class ConferenceSettingsComponent implements OnInit {
         createdDate: metadata?.createdDate,
         status: metadata?.status || 'Active',
         accountCode: metadata?.accountCode,
-        foreignLocal: metadata?.foreignLocal
+        foreignLocal: metadata?.foreignLocal,
+        description: metadata?.description
       } as ExtendedOption;
     });
   }

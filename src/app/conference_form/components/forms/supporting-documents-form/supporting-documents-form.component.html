@@ -137,9 +137,19 @@
     </div>
     <div class="card__content">
     <div class="section-fields">
+      <!-- Name of Reviewer -->
+      <div class="form-field">
+        <label class="form-label is-required">Name of Reviewer</label>
+        <input
+          type="text"
+          class="input--text"
+          formControlName="reviewerName"
+          placeholder="Enter reviewer name">
+      </div>
+
       <!-- Internal Review -->
       <div class="form-field">
-        <label class="form-label is-required">The manuscript has been internally reviewed for the quality of content and English.</label>
+        <label class="form-label">The manuscript has been internally reviewed for the quality of content and English?</label>
         <div class="radio-group">
           <label class="radio-label">
             <input type="radio" value="yes" formControlName="manuscriptInternallyReviewed">
@@ -150,15 +160,6 @@
             <span>No</span>
           </label>
         </div>
-      </div>
-
-      <div class="form-field">
-        <label class="form-label is-required">Name of Reviewer</label>
-        <input
-          type="text"
-          class="input--text"
-          formControlName="reviewerName"
-          placeholder="Enter reviewer name">
       </div>
 
       <div class="form-field">

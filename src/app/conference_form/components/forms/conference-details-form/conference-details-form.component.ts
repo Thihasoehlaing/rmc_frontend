@@ -4,6 +4,8 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractContro
 import { NoteComponent } from '../../../../shared/components/note/note.component';
 import { SearchableDropdownComponent } from '../../../../shared/components/searchable-dropdown/searchable-dropdown.component';
 import { ValidationMessageComponent } from '../../../../shared/components/validation-message/validation-message.component';
+import { DataTableComponent, DataTableColumn } from '../../../../shared/components/data-table/data-table.component';
+import { DialogComponent } from '../../../../shared/components/dialog/dialog.component';
 import { DropdownOption } from '../../../../interfaces/components.interface';
 import { ConferenceWorkflowService } from '../../../services/conference-workflow.service';
 import { ConferenceFormStateService } from '../../../services/conference-form-state.service';
@@ -12,7 +14,7 @@ import { BreakdownOptionsService } from '../../../services/breakdown-options.ser
 @Component({
   selector: 'app-conference-details-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, NoteComponent, SearchableDropdownComponent, ValidationMessageComponent],
+  imports: [CommonModule, ReactiveFormsModule, NoteComponent, SearchableDropdownComponent, ValidationMessageComponent, DataTableComponent, DialogComponent],
   templateUrl: './conference-details-form.component.html',
   styleUrl: './conference-details-form.component.scss'
 })
@@ -23,7 +25,9 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
   private breakdownOptionsService = inject(BreakdownOptionsService);
   form!: FormGroup;
   breakdownForm!: FormGroup;
+  sdgKeywordsForm!: FormGroup;
   isBreakdownModalOpen = false;
+  isSDGKeywordsModalOpen = false;
   breakdownType: 'research' | 'external-research' | 'local' | null = null;
   breakdownEditingIndex: number | null = null;
 
@@ -140,6 +144,37 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     'Other'
   ];
 
+  // DataTable column definitions for breakdown tables
+  researchBreakdownColumns: readonly DataTableColumn[] = [
+    { key: 'index', label: '#', width: '50px', align: 'center' },
+    { key: 'itemDescription', label: 'Item Description' },
+    { key: 'voteNumber', label: 'Vote Number' },
+    { key: 'cost', label: 'Cost (Foreign/MYR)' },
+    { key: 'exchangeRate', label: 'Exchange Rate' },
+    { key: 'costInRM', label: 'Cost in RM' },
+    { key: 'actions', label: 'Actions', width: '100px', align: 'center' }
+  ];
+
+  externalBreakdownColumns: readonly DataTableColumn[] = [
+    { key: 'index', label: '#', width: '50px', align: 'center' },
+    { key: 'itemDescription', label: 'Item Description' },
+    { key: 'voteNumber', label: 'Vote Number' },
+    { key: 'cost', label: 'Cost (Foreign/MYR)' },
+    { key: 'exchangeRate', label: 'Exchange Rate' },
+    { key: 'costInRM', label: 'Cost in RM' },
+    { key: 'actions', label: 'Actions', width: '100px', align: 'center' }
+  ];
+
+  localBreakdownColumns: readonly DataTableColumn[] = [
+    { key: 'index', label: '#', width: '50px', align: 'center' },
+    { key: 'itemDescription', label: 'Item Description' },
+    { key: 'voteNumber', label: 'Account Code' },
+    { key: 'cost', label: 'Cost (Foreign/MYR)' },
+    { key: 'exchangeRate', label: 'Exchange Rate' },
+    { key: 'costInRM', label: 'Cost in RM' },
+    { key: 'actions', label: 'Actions', width: '100px', align: 'center' }
+  ];
+
   getFullRegionName(regionShort: string): string {
     return this.regionFullNames[regionShort] || regionShort;
   }
@@ -157,9 +192,32 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     return [];
   }
 
+  // Methods to get table data as arrays with index
+  getResearchBreakdownTableData(): (any & { index: number })[] {
+    return this.researchBreakdowns.map((item, index) => ({
+      ...item,
+      index: index + 1
+    }));
+  }
+
+  getExternalBreakdownTableData(): (any & { index: number })[] {
+    return this.externalBreakdowns.map((item, index) => ({
+      ...item,
+      index: index + 1
+    }));
+  }
+
+  getLocalBreakdownTableData(): (any & { index: number })[] {
+    return this.localBreakdowns.map((item, index) => ({
+      ...item,
+      index: index + 1
+    }));
+  }
+
   ngOnInit() {
     this.initializeForm();
     this.initializeBreakdownForm();
+    this.initializeSDGKeywordsForm();
     this.setupBreakdownFormWatchers();
     this.setupFormWatchers();
     this.loadFormState();
@@ -345,6 +403,14 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
       exchangeRate: ['1', [Validators.required, Validators.min(0.01)]],
       costInRM: [{ value: '', disabled: true }],
       description: ['']
+    });
+  }
+
+  initializeSDGKeywordsForm() {
+    this.sdgKeywordsForm = this.fb.group({
+      keyword1: ['', [Validators.required]],
+      keyword2: ['', [Validators.required]],
+      keyword3: ['', [Validators.required]]
     });
   }
 
@@ -729,6 +795,81 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
       'rmc_request_resubmission'
     ];
     return allowedStatuses.includes(status);
+  }
+
+  autoExpandTextarea(event: any) {
+    const textarea = event.target as HTMLTextAreaElement;
+    textarea.style.height = 'auto';
+    textarea.style.height = textarea.scrollHeight + 'px';
+  }
+
+  /**
+   * Open SDG Keywords Modal
+   */
+  openSDGKeywordsModal() {
+    // Populate the modal form with current values from the main form
+    const keyword1 = this.form.get('sdgKeyword1')?.value || '';
+    const keyword2 = this.form.get('sdgKeyword2')?.value || '';
+    const keyword3 = this.form.get('sdgKeyword3')?.value || '';
+
+    this.sdgKeywordsForm.patchValue({
+      keyword1,
+      keyword2,
+      keyword3
+    }, { emitEvent: false });
+
+    this.isSDGKeywordsModalOpen = true;
+  }
+
+  /**
+   * Close SDG Keywords Modal
+   */
+  closeSDGKeywordsModal() {
+    this.isSDGKeywordsModalOpen = false;
+  }
+
+  /**
+   * Confirm and Save SDG Keywords
+   */
+  confirmSDGKeywords() {
+    if (this.sdgKeywordsForm.invalid) {
+      return;
+    }
+
+    const { keyword1, keyword2, keyword3 } = this.sdgKeywordsForm.value;
+
+    // Update the main form with the keywords
+    this.form.patchValue({
+      sdgKeyword1: keyword1,
+      sdgKeyword2: keyword2,
+      sdgKeyword3: keyword3
+    }, { emitEvent: false });
+
+    this.closeSDGKeywordsModal();
+  }
+
+  /**
+   * Get displayed keywords as array
+   */
+  getDisplayedKeywordsArray(): string[] {
+    const keyword1 = this.form.get('sdgKeyword1')?.value || '';
+    const keyword2 = this.form.get('sdgKeyword2')?.value || '';
+    const keyword3 = this.form.get('sdgKeyword3')?.value || '';
+
+    return [keyword1, keyword2, keyword3].filter(k => k);
+  }
+
+  /**
+   * Remove a keyword by setting its control to empty
+   */
+  removeKeyword(keyword: string) {
+    const controls = ['sdgKeyword1', 'sdgKeyword2', 'sdgKeyword3'];
+    for (const controlName of controls) {
+      if (this.form.get(controlName)?.value === keyword) {
+        this.form.get(controlName)?.patchValue('', { emitEvent: false });
+        break;
+      }
+    }
   }
 }
 

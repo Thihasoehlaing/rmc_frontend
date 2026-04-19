@@ -20,7 +20,7 @@
 
   &--active {
     border-color: var(--color-primary);
-    background: var(--color-primary-faint, color-mix(in srgb, var(--color-primary) 6%, transparent));
+    background: color-mix(in srgb, var(--color-primary) 6%, transparent);
   }
 }
 

@@ -33,11 +33,8 @@ export interface BatchSitting {
   createdBy: string;
   /** Set when RMC manually ends the batch or auto-complete triggers. */
   endedAt?: string;
-  /**
-   * Number of RDIG applications processed during this batch cycle.
-   * Future integration: computed server-side by joining applications on batchId.
-   */
-  applicationCount?: number;
+  /** IDs of all applications formally submitted under this batch. Populated client-side on first submission. */
+  applicationIds?: number[];
 }
 
 export interface WorkflowStageMeta {

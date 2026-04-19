@@ -100,3 +100,108 @@
     transform: translateY(0);
   }
 }
+// RDIG Extracted Styles for Consistency
+.radio-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4) var(--space-6);
+  padding: var(--space-2) 0;
+}
+
+.radio-option,
+.checkbox-option {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  font-size: var(--fs-sm);
+  cursor: pointer;
+  line-height: var(--lh-relaxed);
+
+  input {
+    margin-top: 3px;
+    flex-shrink: 0;
+  }
+}
+
+.checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  background: var(--color-surface-nested);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-default);
+}
+
+// Declaration UI overrides from RDIG
+.declaration-box {
+  background: var(--bg-surface-elevated, #fff);
+  border-left: 4px solid var(--color-primary);
+  border-radius: var(--radius-md);
+  padding: var(--space-4) var(--space-6);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: var(--space-6);
+
+  &__title {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    color: var(--color-primary);
+    font-size: var(--fs-md);
+    margin-bottom: var(--space-4);
+    font-weight: var(--fw-semibold);
+
+    .material-icons {
+      font-size: 20px;
+    }
+  }
+
+  p {
+    color: var(--color-text);
+    line-height: var(--lh-relaxed);
+    margin-bottom: var(--space-2);
+  }
+
+  .declaration-list {
+    margin: var(--space-3) 0 var(--space-4) var(--space-6);
+    color: var(--color-text);
+    line-height: var(--lh-relaxed);
+
+    li {
+      margin-bottom: var(--space-2);
+      
+      &::marker {
+        color: var(--color-text-muted);
+      }
+    }
+  }
+}
+
+.agreement-trigger {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--color-surface-hover);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+
+  &:hover {
+    background: var(--color-surface-nested);
+  }
+
+  input {
+    margin-top: 3px;
+  }
+
+  span {
+    color: var(--color-heading);
+    font-size: var(--fs-sm);
+    line-height: var(--lh-snug);
+  }
+
+  strong {
+    color: var(--color-error);
+  }
+}

@@ -38,11 +38,28 @@ export const routes: Routes = [
             loadComponent: () =>
               import('./submissions/inbox/inbox.component').then(m => m.InboxComponent),
           },
-          // Placeholder — future views
-          { path: 'draft',         redirectTo: '/dashboard' },
-          { path: 'pending',       redirectTo: '/dashboard' },
-          { path: 'history',       redirectTo: '/dashboard' },
-          { path: 'admin-history', redirectTo: '/dashboard' },
+          {
+            path: 'draft',
+            loadComponent: () =>
+              import('./submissions/drafts/drafts.component').then(m => m.DraftsComponent),
+          },
+          {
+            path: 'pending',
+            loadComponent: () =>
+              import('./submissions/pending/pending.component').then(m => m.PendingComponent),
+          },
+          {
+            path: 'history',
+            loadComponent: () =>
+              import('./submissions/history/history.component').then(m => m.HistoryComponent),
+          },
+          // Admin history uses the same history component but role filtering
+          // already surfaces the correct applications server-side.
+          {
+            path: 'admin-history',
+            loadComponent: () =>
+              import('./submissions/history/history.component').then(m => m.HistoryComponent),
+          },
         ],
       },
 
@@ -86,18 +103,17 @@ export const routes: Routes = [
       },
 
       // ── Journal Publication ───────────────────────────────────────────────
-      // Rule: ((full_time OR contract) AND academic) OR HOS OR VC
+      // Rule: ((full_time OR contract) AND academic) OR HOS OR VC OR Admin
       {
         path: 'journal',
         canActivate: [permissionGuard],
         data: {
           permission: {
             anyCondition: [
-              { anyOf: ['full_time', 'contract'], allOf: ['academic'] },
+              { anyOf: ['full_time', 'contract'], allOf: ['academic'] },        
               { anyOf: ['HOS'] },
               { anyOf: ['VC'] },
-            ],
-          } satisfies NavPermission,
+              { anyOf: ['Admin'] },            ],          } satisfies NavPermission,
         },
         loadChildren: () =>
           import('./journal_publication_form/journal_publication_form.routes').then(

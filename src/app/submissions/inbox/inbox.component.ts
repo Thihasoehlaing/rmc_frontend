@@ -134,8 +134,12 @@ export class InboxComponent implements OnInit {
     return roles.length ? roles.join(', ') : '—';
   }
 
-  applicationLink(app: any): string {
-    return `/rdig?id=${app.id}`;
+  getFormRoute(app: any): string {
+    return this.applicationService.getFormRoute(app);
+  }
+
+  getFormTypeLabel(app: any): string {
+    return this.applicationService.getFormTypeLabel(app);
   }
 
   /**

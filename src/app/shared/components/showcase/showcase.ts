@@ -98,7 +98,7 @@ export class ShowcaseComponent {
 
   // ── FileUpload demo ────────────────────────────────────────
   lastUploadedFile = signal<File | null>(null);
-  onFileSelected(file: File): void {
+  onFileSelected(file: File | null): void {
     this.lastUploadedFile.set(file);
   }
 

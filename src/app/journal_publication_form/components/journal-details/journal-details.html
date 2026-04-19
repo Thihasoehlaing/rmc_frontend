@@ -4,20 +4,20 @@
   <div class="section-fields">
 
     <!-- Top Information Box -->
-    <div class="card" style="margin-bottom: var(--space-4);">
-      <div class="card__content">
-        <h3 class="applicant-details-title">Applicant Details</h3>
+    <div class="card">
+      <app-custom-subheader title="Applicant Details"></app-custom-subheader>
+      <div class="card__content section-fields">
         <div class="row row--3">
           <div class="form-field">
-            <label class="form-label" style="color: #000; font-weight: 600;">Applicant Name</label>
+            <label class="form-label">Applicant Name</label>
             <input type="text" class="input--text input--soft-readonly" [value]="auth.currentUser()?.name || ''" readonly>
           </div>
           <div class="form-field">
-            <label class="form-label" style="color: #000; font-weight: 600;">Email</label>
+            <label class="form-label">Email</label>
             <input type="text" class="input--text input--soft-readonly" [value]="auth.currentUser()?.email || ''" readonly>
           </div>
           <div class="form-field">
-            <label class="form-label" style="color: #000; font-weight: 600;">School / Functional Unit</label>
+            <label class="form-label">School / Functional Unit</label>
             <input type="text" class="input--text input--soft-readonly" [value]="auth.currentUser()?.department || ''" readonly>
           </div>
         </div>
@@ -34,72 +34,87 @@
             <!-- Left Column -->
             <div style="display: flex; flex-direction: column; gap: var(--space-5);">
               <div class="form-field">
-                <div style="display: flex; align-items: flex-start; gap: var(--space-2); margin-bottom: var(--space-2);">
-                  <label class="form-label is-required" style="margin-bottom: 0;">Please select whether you are the “First Author” or “Corresponding Author”</label>
-                  <app-note text="Applicant must be either first or corresponding author" [isTooltip]="true"></app-note>
+                <div>
+                  <label class="form-label is-required" style="display: inline;">Please select whether you are the “First Author” or “Corresponding Author”</label>
+                  <span style="display: inline-block; vertical-align: text-bottom; margin-left: var(--space-2);"><app-note text="Applicant must be either first or corresponding author" [isTooltip]="true"></app-note></span>
                 </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2);">
-                  <label class="radio-label">
-                    <input type="radio" class="radio-input" formControlName="authorshipType" value="first-author">
-                    <span class="radio-text">First Author</span>
+                <div class="radio-group">
+                  <label class="radio-option">
+<input type="radio" formControlName="authorshipType" value="first-author">
+                    <span>First Author</span>
                   </label>
-                  <label class="radio-label">
-                    <input type="radio" class="radio-input" formControlName="authorshipType" value="co-author">
-                    <span class="radio-text">Corresponding Author</span>
+                  <label class="radio-option">
+<input type="radio" formControlName="authorshipType" value="co-author">
+                    <span>Corresponding Author</span>
                   </label>
-                  <label class="radio-label" style="grid-column: span 2;">
-                    <input type="radio" class="radio-input" formControlName="authorshipType" value="corresponding-author">
-                    <span class="radio-text">First and Corresponding Author</span>
+                  <label class="radio-option">
+<input type="radio" formControlName="authorshipType" value="corresponding-author">
+                    <span>First and Corresponding Author</span>
                   </label>
                 </div>
+                <app-validation-message [control]="form.get('authorshipType')"></app-validation-message>
               </div>
 
               <div class="form-field">
                 <label class="form-label is-required">Please select Scopus Quartile</label>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2);">
-                  <label class="radio-label"><input type="radio" class="radio-input" formControlName="scopusQuartile" value="Q1"><span class="radio-text">Q1</span></label>
-                  <label class="radio-label"><input type="radio" class="radio-input" formControlName="scopusQuartile" value="Q2"><span class="radio-text">Q2</span></label>
-                  <label class="radio-label" style="grid-column: span 2;"><input type="radio" class="radio-input" formControlName="scopusQuartile" value="Q3"><span class="radio-text">Q3</span></label>
+                <div class="radio-group">
+                  <label class="radio-option">
+<input type="radio" formControlName="scopusQuartile" value="Q1"><span>Q1</span></label>
+                  <label class="radio-option">
+<input type="radio" formControlName="scopusQuartile" value="Q2"><span>Q2</span></label>
+                  <label class="radio-option">
+<input type="radio" formControlName="scopusQuartile" value="Q3"><span>Q3</span></label>
                 </div>
+                <app-validation-message [control]="form.get('scopusQuartile')"></app-validation-message>
               </div>
 
               <div class="form-field">
                 <label class="form-label is-required">Select Research or Non-Research Project</label>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2);">
-                  <label class="radio-label"><input type="radio" class="radio-input" formControlName="researchType" value="external-research"><span class="radio-text">External Research Project</span></label>
-                  <label class="radio-label"><input type="radio" class="radio-input" formControlName="researchType" value="internal-research"><span class="radio-text">Internal Research Project</span></label>
-                  <label class="radio-label" style="grid-column: span 2;"><input type="radio" class="radio-input" formControlName="researchType" value="non-research"><span class="radio-text">Non-Research Project</span></label>
+                <div class="radio-group">
+                  <label class="radio-option">
+<input type="radio" formControlName="researchType" value="external-research"><span>External Research Project</span></label>
+                  <label class="radio-option">
+<input type="radio" formControlName="researchType" value="internal-research"><span>Internal Research Project</span></label>
+                  <label class="radio-option">
+<input type="radio" formControlName="researchType" value="non-research"><span>Non-Research Project</span></label>
                 </div>
+                <app-validation-message [control]="form.get('researchType')"></app-validation-message>
               </div>
 
               <div class="form-field">
-                <div style="display: flex; align-items: flex-start; gap: var(--space-2); margin-bottom: var(--space-2);">
-                  <label class="form-label is-required" style="margin-bottom: 0;">Is the publisher of your journal one of the restricted publishers (e.g., MDPI, Common Ground, Hindawi, or Frontier)?</label>
-                  <app-note text="Expected Answer for Approval: No" [isTooltip]="true"></app-note>
+                  <div>
+                    <label class="form-label is-required" style="display: inline;">Is the publisher of your journal one of the restricted publishers (e.g., MDPI, Common Ground, Hindawi, or Frontier)?</label>
+                    <span style="display: inline-block; vertical-align: text-bottom; margin-left: var(--space-2);"><app-note text="Expected Answer for Approval: No" [isTooltip]="true"></app-note></span>
                 </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2);">
-                  <label class="radio-label"><input type="radio" class="radio-input" formControlName="restrictedPublisher" value="yes"><span class="radio-text">Yes</span></label>
-                  <label class="radio-label"><input type="radio" class="radio-input" formControlName="restrictedPublisher" value="no"><span class="radio-text">No</span></label>
+                <div class="radio-group">
+                  <label class="radio-option">
+<input type="radio" formControlName="restrictedPublisher" value="yes"><span>Yes</span></label>
+                  <label class="radio-option">
+<input type="radio" formControlName="restrictedPublisher" value="no"><span>No</span></label>
                 </div>
+                <app-validation-message [control]="form.get('restrictedPublisher')"></app-validation-message>
               </div>
               <div class="form-field">
                 <label class="form-label is-required">Have you cited at least 1 journal paper from APU JATI &amp; EJBM?</label>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2);">
-                  <label class="radio-label">
-                    <input type="radio" class="radio-input" formControlName="citedApuPaper" value="Yes">
-                    <span class="radio-text">Yes</span>
+                <div class="radio-group">
+                  <label class="radio-option">
+<input type="radio" formControlName="citedApuPaper" value="Yes">
+                    <span>Yes</span>
                   </label>
-                  <label class="radio-label">
-                    <input type="radio" class="radio-input" formControlName="citedApuPaper" value="No">
-                    <span class="radio-text">No</span>
+                  <label class="radio-option">
+<input type="radio" formControlName="citedApuPaper" value="No">
+                    <span>No</span>
                   </label>
                 </div>
+                <app-validation-message [control]="form.get('citedApuPaper')"></app-validation-message>
               </div>
 
               @if (form.get('citedApuPaper')?.value === 'No') {
                 <div class="form-field">
                   <label class="form-label is-required">If No, please explain</label>
-                  <textarea class="input--textarea" formControlName="citedApuPaperExplanation" placeholder="Enter explanation here" rows="3" maxlength="255"></textarea>
+                  <textarea class="input--textarea" formControlName="citedApuPaperExplanation" placeholder="Enter explanation here" rows="3" maxlength="255" [class.is-invalid]="form.get('citedApuPaperExplanation')?.invalid && form.get('citedApuPaperExplanation')?.touched"></textarea>
+                  <app-character-counter [current]="form.get('citedApuPaperExplanation')?.value?.length || 0" [max]="255"></app-character-counter>
+                  <app-validation-message [control]="form.get('citedApuPaperExplanation')"></app-validation-message>
                 </div>
               }
             </div>
@@ -108,19 +123,22 @@
             <div style="display: flex; flex-direction: column; gap: var(--space-5);">
               <div class="form-field">
                 <label class="form-label is-required">Journal Name</label>
-                <input type="text" class="input--text" formControlName="journalName">
+                <input type="text" class="input--text" formControlName="journalName" maxlength="150" [class.is-invalid]="form.get('journalName')?.invalid && form.get('journalName')?.touched">
                 <app-character-counter [current]="getCharacterCount('journalName')" [max]="150"></app-character-counter>
+                <app-validation-message [control]="form.get('journalName')"></app-validation-message>
               </div>
 
               <div class="form-field">
-                <label class="form-label is-required">Paper Title</label>
-                <input type="text" class="input--text" formControlName="paperTitle">
+                <label class="form-label is-required">Paper Title</label>       
+                <input type="text" class="input--text" formControlName="paperTitle" maxlength="200" [class.is-invalid]="form.get('paperTitle')?.invalid && form.get('paperTitle')?.touched">
                 <app-character-counter [current]="getCharacterCount('paperTitle')" [max]="200"></app-character-counter>
+                <app-validation-message [control]="form.get('paperTitle')"></app-validation-message>
               </div>
 
               <div class="form-field">
                 <label class="form-label is-required">Please key in 3 SDG keywords in abstract</label>
-                <input type="text" class="input--text" formControlName="sdgKeyword1">
+                <input type="text" class="input--text" formControlName="sdgKeyword1" [class.is-invalid]="form.get('sdgKeyword1')?.invalid && form.get('sdgKeyword1')?.touched">
+                <app-validation-message [control]="form.get('sdgKeyword1')"></app-validation-message>
               </div>
 
               <div class="form-field">
@@ -137,398 +155,103 @@
           </div>
         </div>
       </div>
-    <!-- Costing Section -->
-   <div class="card">
-      <app-custom-subheader title="Costing"></app-custom-subheader>
-      <div class="card__content section-fields">
+      <!-- Costing Section -->
+      @if (researchType) {
+        <div class="card">
+          <app-custom-subheader title="Costing"></app-custom-subheader>
+          <div class="card__content section-fields">
+            <div class="form-field">
+              <label class="form-label">Project Account Code</label>
+              <input type="text" class="input--text" formControlName="projectAccountCode" placeholder="Enter project account code">
+            </div>
 
-        <!-- Research Section (Controlled strictly by researchType) -->
+            <div class="form-field">
+              <div class="category-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-4);">
+                <label class="form-label" style="margin: 0;">Detailed Breakdown for Research</label>
+                <div style="display: flex; align-items: center; gap: var(--space-3);">
+                  <span class="text-muted" style="font-size: var(--fs-sm);">{{ getBreakdownArray(researchType || '').length }} Entries</span>
+                  <app-action-button type="primary" label="Add Entry" icon="add" (clicked)="openBreakdownModal(researchType || '')"></app-action-button>
+                </div>
+              </div>
 
-        @if (researchType === 'internal-research') {
-          <div class="research-subsection">
-            <h4 class="research-title" style="margin-bottom: var(--space-4);"><b>Internal Research Project</b></h4>
+              @if (getBreakdownArray(researchType || '').length > 0) {
+                <app-data-table
+                  [columns]="breakdownColumns"
+                  [rows]="getBreakdownArray(researchType || '')"
+                  [dense]="true">
+                  <ng-template #rowTemplate let-row let-index="index">
+                    <tr>
+                      
+                      <td>
+                        <div class="data-table__title data-table__title--small">{{ row.itemDescription }}</div>
+                      </td>
+                      <td>{{ row.voteNumber }}</td>
+                      <td class="is-align-right">{{ row.cost | number: '1.2-2' }}</td>
+                      <td class="is-align-right">{{ row.exchangeRate | number: '1.2-2' }}</td>
+                      <td class="amount-cell">{{ row.costInRM | number: '1.2-2' }}</td>
+                      <td class="action-cell">
+                        <div class="data-table__actions" style="justify-content: center;">
+                          <button type="button" class="btn-icon btn-icon--edit" (click)="openBreakdownModal(researchType || '', index)" aria-label="Edit entry">
+                            <span class="material-icons">edit</span>
+                          </button>
+                          <button type="button" class="btn-icon btn-icon--delete" (click)="deleteBreakdown(researchType || '', index)" aria-label="Remove entry">
+                            <span class="material-icons">delete</span>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  </ng-template>
+                </app-data-table>
+              } @else {
+                <p class="empty-state">No items added. Click <strong>Add Entry</strong> to begin.</p>
+              }
+            </div>
 
-            <!-- Project Account Code -->
+            <!-- Budget Totals Banner (using RDIG style) -->
+            <div class="budget-banner" style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-4); background: var(--bg-highlight); border: 1px solid var(--color-primary-light); border-radius: var(--radius-md); margin-bottom: var(--space-4);">
+              <span class="total-label" style="font-weight: var(--fw-semibold); color: var(--color-primary-dark);">Total in RM</span>
+              <span class="total-amount" style="font-size: var(--fs-lg); font-weight: var(--fw-bold); color: var(--color-primary-dark);">{{ calculateBreakdownTotal(researchType || '') | number: '1.2-2' }}</span>
+            </div>
+
             <div class="row row--2">
               <div class="form-field">
-                <label class="form-label is-required">Project Account Code</label>
-                <input
-                  type="text"
-                  class="input--text"
-                  formControlName="projectAccountCode"
-                  placeholder="Enter project account code">
+                <label class="form-label">Sponsorship Amount by External (RM)</label>
+                <input type="number" class="input--text" formControlName="sponsoredAmountExternal" placeholder="0.00">
               </div>
-            </div>
-
-            <!-- Detailed Breakdown -->
-            <div class="form-field">
-              <label class="form-label">Detailed Breakdown for Internal Research</label>
-              <div class="costing-breakdown" style="margin-top: var(--space-2);">
-                <div class="list-section-header">
-                  <span class="list-count">{{ researchBreakdowns.length }} {{ researchBreakdowns.length === 1 ? 'Entry' : 'Entries' }}</span>
-                  <button type="button" class="btn btn-primary btn-sm" (click)="openBreakdownModal('internal-research'); $event.preventDefault(); $event.stopPropagation()">
-                    <span class="material-icons">add</span> Add Entry
-                  </button>
-                </div>
-
-                @if (researchBreakdowns.length > 0) {
-                  <div class="table-scroll">
-                    <table class="list-table">
-                      <thead>
-                        <tr>
-                          <th class="col-no">#</th>
-                          <th>Item Description</th>
-                          <th>Vote Number</th>
-                          <th>Cost (Foreign/MYR)</th>
-                          <th>Exchange Rate</th>
-                          <th>Cost in RM</th>
-                          <th class="col-actions">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        @for (item of researchBreakdowns; track $index; let i = $index) {
-                          <tr>
-                            <td class="col-no text-muted">{{ i + 1 }}</td>
-                            <td>{{ item.itemDescription }}</td>
-                            <td>{{ item.voteNumber }}</td>
-                            <td>{{ item.cost | number: '1.2-2' }}</td>
-                            <td>{{ item.exchangeRate | number: '1.2-2' }}</td>
-                            <td>{{ item.costInRM | number: '1.2-2' }}</td>
-                            <td class="col-actions">
-                              <button type="button" class="btn-icon btn-icon--edit"
-                                (click)="openBreakdownModal('internal-research', i)" aria-label="Edit entry">
-                                <span class="material-icons">edit</span>
-                              </button>
-                              @if (researchBreakdowns.length > 1) {
-                                <button type="button" class="btn-icon btn-icon--delete"
-                                  (click)="deleteBreakdown('internal-research', i)" aria-label="Remove entry">
-                                  <span class="material-icons">delete</span>
-                                </button>
-                              }
-                            </td>
-                          </tr>
-                        }
-                      </tbody>
-                    </table>
-                  </div>
-                } @else {
-                  <div class="empty-state">
-                    <span class="material-icons">receipt</span>
-                    <p>No breakdown entries added yet. Click <strong>Add Entry</strong> to start adding items.</p>
-                  </div>
-                }
-              </div>
-            </div>
-
-            <div class="total-display" style="display: flex; justify-content: space-between; padding: var(--space-4); background-color: var(--bg-subtle); border-radius: var(--radius-sm); margin: var(--space-4) 0; font-weight: 500;">
-              <span class="total-label">Total BEFORE SUBSIDY (RM)</span>
-              <div class="total-amount">{{ calculateBreakdownTotal('internal-research') | number: '1.2-2' }}</div>
-            </div>
-
-            <div class="sponsorship-subsections-container" style="display: flex; gap: var(--space-6); margin-top: var(--space-4); flex-wrap: wrap;">
-              <!-- External Sponsorship -->
-              <div class="sponsorship-subsection" style="flex: 1; border: 1px solid var(--border-default); padding: var(--space-4); border-radius: var(--radius-sm);">
-                <span class="subsection-title" style="display: block; font-weight: 600; margin-bottom: var(--space-3);">External Sponsorship</span>
-                <div class="subsection-fields-wrapper" style="display: flex; flex-direction: column; gap: var(--space-3);">
-                  <div class="form-field">
-                    <label class="form-label is-required">Sponsored Amount (RM)</label>
-                    <input type="number" class="input--text" formControlName="sponsoredAmountExternal" placeholder="0.00">
-                  </div>
-                  <div class="form-field">
-                    <label class="form-label is-required">Sponsored By</label>
-                    <input type="text" class="input--text" formControlName="sponsoredBy" placeholder="Sponsor Name">
-                  </div>
-                </div>
-              </div>
-
-              <!-- APU Sponsorship -->
-              <div class="sponsorship-subsection" style="flex: 1; border: 1px solid var(--border-default); padding: var(--space-4); border-radius: var(--radius-sm);">
-                <span class="subsection-title" style="display: block; font-weight: 600; margin-bottom: var(--space-3);">APU Sponsorship</span>
-                <div class="subsection-fields-wrapper" style="display: flex; flex-direction: column; gap: var(--space-3);">
-                  <div class="form-field">
-                    <label class="form-label is-required">Sponsorship Requested (%)</label>
-                    <input type="number" class="input--text" formControlName="sponsorshipPercentage" min="0" max="100" placeholder="0">
-                  </div>
-                  <div class="form-field">
-                    <label class="form-label">Sponsorship Amount (RM)</label>
-                    <input type="number" class="input--text input--readonly" formControlName="sponsorshipAmountAPU" style="background: var(--bg-subtle); color: var(--color-text-muted);" readonly placeholder="0.00">
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="form-field total-field" style="margin-top: var(--space-4);">
-              <label class="form-label is-required">Cost to be Borne by Applicant (RM)</label>
-              <div class="total-value-display" style="font-weight: 600; background-color: var(--color-surface); padding: var(--space-2) var(--space-3); border: 1px solid var(--border-default); border-radius: var(--radius-sm);">
-                 {{ form.get('costByApplicant')?.value | number: '1.2-2' }}
-              </div>
-            </div>
-
-            <div class="form-field" style="margin-top: var(--space-4);">
-              <label class="form-label">Remarks (Optional)</label>
-              <textarea class="input--textarea" formControlName="costingRemarks" placeholder="Additional remarks" rows="3" maxlength="255"></textarea>
-            </div>
-          </div>
-        }
-
-        @if (researchType === 'external-research') {
-          <div class="research-subsection">
-            <h4 class="research-title" style="margin-bottom: var(--space-4);"><b>External Research Project</b></h4>
-
-            <!-- Project Account Code -->
-            <div class="row row--2">
               <div class="form-field">
-                <label class="form-label is-required">Project Account Code</label>
-                <input
-                  type="text"
-                  class="input--text"
-                  formControlName="externalProjectAccountCode"
-                  placeholder="Enter project account code">
+                <label class="form-label">Sponsored By</label>
+                <input type="text" class="input--text" formControlName="sponsoredBy" placeholder="Sponsor Name">
               </div>
             </div>
-
-            <!-- Detailed Breakdown -->
-            <div class="form-field">
-              <label class="form-label">Detailed Breakdown for External Research</label>
-              <div class="costing-breakdown" style="margin-top: var(--space-2);">
-                <div class="list-section-header">
-                  <span class="list-count">{{ externalBreakdowns.length }} {{ externalBreakdowns.length === 1 ? 'Entry' : 'Entries' }}</span>
-                  <button type="button" class="btn btn-primary btn-sm" (click)="openBreakdownModal('external-research'); $event.preventDefault(); $event.stopPropagation()">
-                    <span class="material-icons">add</span> Add Entry
-                  </button>
-                </div>
-
-                @if (externalBreakdowns.length > 0) {
-                  <div class="table-scroll">
-                    <table class="list-table">
-                      <thead>
-                        <tr>
-                          <th class="col-no">#</th>
-                          <th>Item Description</th>
-                          <th>Vote Number</th>
-                          <th>Cost (Foreign/MYR)</th>
-                          <th>Exchange Rate</th>
-                          <th>Cost in RM</th>
-                          <th class="col-actions">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        @for (item of externalBreakdowns; track $index; let i = $index) {
-                          <tr>
-                            <td class="col-no text-muted">{{ i + 1 }}</td>
-                            <td>{{ item.itemDescription }}</td>
-                            <td>{{ item.voteNumber }}</td>
-                            <td>{{ item.cost | number: '1.2-2' }}</td>
-                            <td>{{ item.exchangeRate | number: '1.2-2' }}</td>
-                            <td>{{ item.costInRM | number: '1.2-2' }}</td>
-                            <td class="col-actions">
-                              <button type="button" class="btn-icon btn-icon--edit"
-                                (click)="openBreakdownModal('external-research', i)" aria-label="Edit entry">
-                                <span class="material-icons">edit</span>
-                              </button>
-                              @if (externalBreakdowns.length > 1) {
-                                <button type="button" class="btn-icon btn-icon--delete"
-                                  (click)="deleteBreakdown('external-research', i)" aria-label="Remove entry">
-                                  <span class="material-icons">delete</span>
-                                </button>
-                              }
-                            </td>
-                          </tr>
-                        }
-                      </tbody>
-                    </table>
-                  </div>
-                } @else {
-                  <div class="empty-state">
-                    <span class="material-icons">receipt</span>
-                    <p>No breakdown entries added yet. Click <strong>Add Entry</strong> to start adding items.</p>
-                  </div>
-                }
-              </div>
-            </div>
-
-            <div class="total-display" style="display: flex; justify-content: space-between; padding: var(--space-4); background-color: var(--bg-subtle); border-radius: var(--radius-sm); margin: var(--space-4) 0; font-weight: 500;">
-              <span class="total-label">Total BEFORE SUBSIDY (RM)</span>
-              <div class="total-amount">{{ calculateBreakdownTotal('external-research') | number: '1.2-2' }}</div>
-            </div>
-
-            <div class="sponsorship-subsections-container" style="display: flex; gap: var(--space-6); margin-top: var(--space-4); flex-wrap: wrap;">
-              <!-- External Sponsorship -->
-              <div class="sponsorship-subsection" style="flex: 1; border: 1px solid var(--border-default); padding: var(--space-4); border-radius: var(--radius-sm);">
-                <span class="subsection-title" style="display: block; font-weight: 600; margin-bottom: var(--space-3);">External Sponsorship</span>
-                <div class="subsection-fields-wrapper" style="display: flex; flex-direction: column; gap: var(--space-3);">
-                  <div class="form-field">
-                    <label class="form-label">Sponsored Amount (RM)</label>
-                    <input type="text" class="input--text" [value]="calculateBreakdownTotal('external-research') | number: '1.2-2'" readonly style="background: var(--bg-subtle); color: var(--color-text-muted);">
-                  </div>
-                  <div class="form-field">
-                    <label class="form-label">Sponsored By</label>
-                    <input type="text" class="input--text" value="Government Sector" readonly style="background: var(--bg-subtle); color: var(--color-text-muted);">
-                  </div>
-                </div>
-              </div>
-
-              <!-- APU Sponsorship -->
-              <div class="sponsorship-subsection" style="flex: 1; border: 1px solid var(--border-default); padding: var(--space-4); border-radius: var(--radius-sm);">
-                <span class="subsection-title" style="display: block; font-weight: 600; margin-bottom: var(--space-3);">APU Sponsorship</span>
-                <div class="subsection-fields-wrapper" style="display: flex; flex-direction: column; gap: var(--space-3);">
-                  <div class="form-field">
-                    <label class="form-label">Sponsorship Requested (%)</label>
-                    <input type="number" class="input--text" value="0" readonly style="background: var(--bg-subtle); color: var(--color-text-muted);">
-                  </div>
-                  <div class="form-field">
-                    <label class="form-label">Sponsorship Amount (RM)</label>
-                    <input type="number" class="input--text" value="0" readonly style="background: var(--bg-subtle); color: var(--color-text-muted);">
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="form-field total-field" style="margin-top: var(--space-4);">
-              <label class="form-label">Cost to be Borne by Applicant (RM)</label>
-              <div class="total-value-display" style="font-weight: 600; background-color: var(--color-surface); padding: var(--space-2) var(--space-3); border: 1px solid var(--border-default); border-radius: var(--radius-sm); color: var(--color-text-muted);">
-                 0.00
-              </div>
-            </div>
-
-            <div class="form-field" style="margin-top: var(--space-4);">
-              <label class="form-label">Remarks (Optional)</label>
-              <textarea class="input--textarea" formControlName="costingRemarks" placeholder="Additional remarks" rows="3" maxlength="255"></textarea>
-            </div>
-          </div>
-        }
-
-        @if (researchType === 'non-research') {
-          <div class="research-subsection">
-            <h4 class="research-title" style="margin-bottom: var(--space-4);"><b>Non-Research Project</b></h4>
-
-            <!-- Project Account Code -->
-            <div class="row row--2">
+            
+            <div class="row row--3">
               <div class="form-field">
-                <label class="form-label is-required">Project Account Code</label>
-                <input
-                  type="text"
-                  class="input--text"
-                  formControlName="projectAccountCode"
-                  placeholder="Enter project account code">
+                <label class="form-label">Sponsorship Percentage Requested (%)</label>
+                <input type="number" class="input--text input--readonly" formControlName="sponsorshipPercentage" readonly>
+              </div>
+              <div class="form-field">
+                <label class="form-label">Sponsorship Amount by APU (RM)</label>
+                <input type="number" class="input--text input--readonly" formControlName="sponsorshipAmountAPU" readonly>
+              </div>
+              <div class="form-field">
+                <label class="form-label">Cost to be Borne by Applicant (RM)</label>
+                <input type="number" class="input--text input--readonly" formControlName="costByApplicant" readonly>
               </div>
             </div>
 
-            <!-- Detailed Breakdown -->
             <div class="form-field">
-              <label class="form-label">Detailed Breakdown for Non-Research</label>
-              <div class="costing-breakdown" style="margin-top: var(--space-2);">
-                <div class="list-section-header">
-                  <span class="list-count">{{ NonResearchBreakdowns.length }} {{ NonResearchBreakdowns.length === 1 ? 'Entry' : 'Entries' }}</span>
-                  <button type="button" class="btn btn-primary btn-sm" (click)="openBreakdownModal('non-research'); $event.preventDefault(); $event.stopPropagation()">
-                    <span class="material-icons">add</span> Add Entry
-                  </button>
-                </div>
-
-                @if (NonResearchBreakdowns.length > 0) {
-                  <div class="table-scroll">
-                    <table class="list-table">
-                      <thead>
-                        <tr>
-                          <th class="col-no">#</th>
-                          <th>Item Description</th>
-                          <th>Account Code</th>
-                          <th>Cost (Foreign/MYR)</th>
-                          <th>Exchange Rate</th>
-                          <th>Cost in RM</th>
-                          <th class="col-actions">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        @for (item of NonResearchBreakdowns; track $index; let i = $index) {
-                          <tr>
-                            <td class="col-no text-muted">{{ i + 1 }}</td>
-                            <td>{{ item.itemDescription }}</td>
-                            <td>{{ item.voteNumber }}</td>
-                            <td>{{ item.cost | number: '1.2-2' }}</td>
-                            <td>{{ item.exchangeRate | number: '1.2-2' }}</td>
-                            <td>{{ item.costInRM | number: '1.2-2' }}</td>
-                            <td class="col-actions">
-                              <button type="button" class="btn-icon btn-icon--edit"
-                                (click)="openBreakdownModal('non-research', i)" aria-label="Edit entry">
-                                <span class="material-icons">edit</span>
-                              </button>
-                              @if (NonResearchBreakdowns.length > 1) {
-                                <button type="button" class="btn-icon btn-icon--delete"
-                                  (click)="deleteBreakdown('non-research', i)" aria-label="Remove entry">
-                                  <span class="material-icons">delete</span>
-                                </button>
-                              }
-                            </td>
-                          </tr>
-                        }
-                      </tbody>
-                    </table>
-                  </div>
-                } @else {
-                  <div class="empty-state">
-                    <span class="material-icons">receipt</span>
-                    <p>No breakdown entries added yet. Click <strong>Add Entry</strong> to start adding items.</p>
-                  </div>
-                }
-              </div>
-            </div>
-
-            <div class="total-display" style="display: flex; justify-content: space-between; padding: var(--space-4); background-color: var(--bg-subtle); border-radius: var(--radius-sm); margin: var(--space-4) 0; font-weight: 500;">
-              <span class="total-label">Total BEFORE SUBSIDY (RM)</span>
-              <div class="total-amount">{{ calculateBreakdownTotal('non-research') | number: '1.2-2' }}</div>
-            </div>
-
-            <div class="sponsorship-subsections-container" style="display: flex; gap: var(--space-6); margin-top: var(--space-4); flex-wrap: wrap;">
-              <!-- External Sponsorship -->
-              <div class="sponsorship-subsection" style="flex: 1; border: 1px solid var(--border-default); padding: var(--space-4); border-radius: var(--radius-sm);">
-                <span class="subsection-title" style="display: block; font-weight: 600; margin-bottom: var(--space-3);">External Sponsorship</span>
-                <div class="subsection-fields-wrapper" style="display: flex; flex-direction: column; gap: var(--space-3);">
-                  <div class="form-field">
-                    <label class="form-label is-required">Sponsored Amount (RM)</label>
-                    <input type="number" class="input--text" formControlName="sponsoredAmountExternal" placeholder="0.00">
-                  </div>
-                  <div class="form-field">
-                    <label class="form-label is-required">Sponsored By</label>
-                    <input type="text" class="input--text" formControlName="sponsoredBy" placeholder="Sponsor Name">
-                  </div>
-                </div>
-              </div>
-
-              <!-- APU Sponsorship -->
-              <div class="sponsorship-subsection" style="flex: 1; border: 1px solid var(--border-default); padding: var(--space-4); border-radius: var(--radius-sm);">
-                <span class="subsection-title" style="display: block; font-weight: 600; margin-bottom: var(--space-3);">APU Sponsorship</span>
-                <div class="subsection-fields-wrapper" style="display: flex; flex-direction: column; gap: var(--space-3);">
-                  <div class="form-field">
-                    <label class="form-label is-required">Sponsorship Requested (%)</label>
-                    <input type="number" class="input--text" formControlName="sponsorshipPercentage" min="0" max="100" placeholder="0">
-                  </div>
-                  <div class="form-field">
-                    <label class="form-label">Sponsorship Amount (RM)</label>
-                    <input type="number" class="input--text input--readonly" formControlName="sponsorshipAmountAPU" style="background: var(--bg-subtle); color: var(--color-text-muted);" readonly placeholder="0.00">
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="form-field total-field" style="margin-top: var(--space-4);">
-              <label class="form-label is-required">Cost to be Borne by Applicant (RM)</label>
-              <div class="total-value-display" style="font-weight: 600; background-color: var(--color-surface); padding: var(--space-2) var(--space-3); border: 1px solid var(--border-default); border-radius: var(--radius-sm);">
-                 {{ form.get('costByApplicant')?.value | number: '1.2-2' }}
-              </div>
-            </div>
-
-            <div class="form-field" style="margin-top: var(--space-4);">
               <label class="form-label">Remarks (Optional)</label>
               <textarea class="input--textarea" formControlName="costingRemarks" placeholder="Additional remarks" rows="3" maxlength="255"></textarea>
+              <app-character-counter [current]="form.get('costingRemarks')?.value?.length || 0" [max]="255"></app-character-counter>
+              <app-validation-message [control]="form.get('costingRemarks')"></app-validation-message>
             </div>
           </div>
-        }      </div>
+        </div>
+      }
     </div>
-  </div>
-</form>
+  </form>
 
-<!-- Breakdown Modal Overlays -->
+  <!-- Breakdown Modal Overlays -->
 <app-dialog
   [isOpen]="isBreakdownModalOpen"
   [title]="getBreakdownModalTitle()"
@@ -652,6 +375,7 @@
     </div>
   </form>
 </app-dialog>
+
 
 
 

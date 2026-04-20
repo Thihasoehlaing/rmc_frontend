@@ -7,7 +7,7 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   text-align: center;
   border: 1px solid rgba(0, 0, 0, 0.05);
-  
+
   &__title {
     font-size: 1.25rem;
     font-weight: 700;
@@ -15,7 +15,7 @@
     color: var(--color-info-dark, #0b3c82);
     letter-spacing: 0.5px;
   }
-  
+
   &__content {
     p {
       margin: 0 0 12px 0;
@@ -26,5 +26,205 @@
         margin-bottom: 0;
       }
     }
+  }
+}
+
+// Table styles
+.list-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-3);
+}
+
+.list-count {
+  font-size: var(--fs-sm);
+  color: var(--color-text-muted);
+  font-weight: var(--fw-medium);
+}
+
+.empty-state {
+  padding: var(--space-6);
+  text-align: center;
+  color: var(--color-text-muted);
+  font-size: var(--fs-sm);
+  background: var(--color-surface-nested);
+  border-radius: var(--radius-md);
+  border: 1px dashed var(--border-default);
+}
+
+.text-muted {
+  color: var(--color-text-muted);
+}
+// Icon buttons
+.btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--space-8); // no token: icon button size
+  height: var(--space-8); // no token: icon button size
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  color: var(--color-text);
+
+  .material-icons {
+    font-size: 18px; // no token: material icon pixel size
+  }
+
+  &:hover {
+    background: var(--color-surface-hover);
+  }
+
+  &--delete {
+    color: var(--color-error);
+
+    &:hover {
+      background: rgba(var(--color-error-rgb), 0.1);
+    }
+  }
+}
+
+// Modal styles (APU Lead Member Overlay)
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: var(--space-4);
+}
+
+.modal-dialog {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  max-width: 500px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: slideIn 0.3s ease-out;
+
+  @media (max-width: 640px) {
+    max-width: 100%;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--border-default);
+  gap: var(--space-2);
+
+  h3 {
+    margin: 0;
+    font-size: var(--fs-lg);
+    font-weight: var(--fw-bold);
+    color: var(--color-heading);
+  }
+}
+
+.btn-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  transition: all var(--transition-fast);
+  border-radius: var(--radius-sm);
+
+  &:hover {
+    background: var(--color-surface-hover);
+    color: var(--color-text);
+  }
+
+  .material-icons {
+    font-size: 20px;
+  }
+}
+
+.modal-body {
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+
+  label {
+    font-size: var(--fs-sm);
+    font-weight: var(--fw-semibold);
+    color: var(--color-heading);
+  }
+
+  .form-control {
+    padding: var(--space-2) var(--space-3);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-sm);
+    font-size: var(--fs-sm);
+    background: var(--input-bg-editable);
+    color: var(--color-label);
+    font-family: var(--font-family-system);
+    transition: all var(--transition-fast);
+
+    &:focus {
+      outline: none;
+      border-color: var(--input-border-focus);
+      box-shadow: var(--input-shadow-focus);
+    }
+
+    &:disabled {
+      background: var(--input-bg-readonly);
+      cursor: not-allowed;
+      opacity: var(--disabled-opacity, 0.5);
+    }
+  }
+
+  .error-message {
+    font-size: var(--fs-xs);
+    color: var(--color-error);
+    margin-top: -var(--space-1);
+  }
+}
+
+.modal-footer {
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-top: 1px solid var(--border-default);
+  justify-content: flex-end;
+
+  .btn {
+    min-width: 100px;
   }
 }

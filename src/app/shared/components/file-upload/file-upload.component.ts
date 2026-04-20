@@ -25,7 +25,7 @@ export class FileUploadComponent {
   @Input() disabled = false;
 
   /** Emits the valid File object after type + size checks pass, or null if invalid/cleared. */
-  @Output() fileSelected = new EventEmitter<File | null>();
+  @Output() fileSelected = new EventEmitter<any>();
 
   // ── Internal reactive state ────────────────────────────────────
   selectedFileName = signal<string | null>(null);

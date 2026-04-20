@@ -137,6 +137,7 @@ export const NAVIGATION_DATA: NavGroup[] = [
                     { label: 'Batch Sitting', icon: 'event_available', route: '/settings/batch-sitting', permission: { allOf: ['RMC'] } },
                     { label: 'Conference Settings', icon: 'event_note', route: '/conference/settings', permission: { allOf: ['RMC'] } },
                     { label: 'Journal Settings', icon: 'event_note', route: '/journal/settings', permission: { anyOf: ['Admin'] } },
+                    { label: 'Partnership Settings', icon: 'handshake', route: '/partnership/settings', permission: { anyOf: ['Admin'] } },
                 ],
             },
 

@@ -145,8 +145,13 @@ export const routes: Routes = [
         canActivate: [permissionGuard],
         data: {
           permission: {
-            anyOf: ['full_time', 'contract'],
-            allOf: ['academic'],
+            anyCondition: [
+              {
+                anyOf: ['full_time', 'contract'],
+                allOf: ['academic'],
+              },
+              { anyOf: ['Admin'] },
+            ],
           } satisfies NavPermission,
         },
         loadChildren: () =>

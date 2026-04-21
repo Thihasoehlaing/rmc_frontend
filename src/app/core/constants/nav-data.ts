@@ -131,11 +131,12 @@ export const NAVIGATION_DATA: NavGroup[] = [
             {
                 label: 'RMC Settings',
                 icon: 'settings',
-                permission: { allOf: ['RMC'] },
+                permission: { anyOf: ['RMC', 'Admin'] },
                 children: [
-                    { label: 'RDIG Dropdown Options Management', route: '/settings/rdig-dropdown-options' },
-                    { label: 'Batch Sitting', icon: 'event_available', route: '/settings/batch-sitting' },
-                    { label: 'Conference Settings', icon: 'event_note', route: '/conference/settings' },
+                    { label: 'RDIG Dropdown Options Management', route: '/settings/rdig-dropdown-options', permission: { allOf: ['RMC'] } },
+                    { label: 'Batch Sitting', icon: 'event_available', route: '/settings/batch-sitting', permission: { allOf: ['RMC'] } },
+                    { label: 'Conference Settings', icon: 'event_note', route: '/conference/settings', permission: { allOf: ['RMC'] } },
+                    { label: 'Journal Settings', icon: 'event_note', route: '/journal/settings', permission: { anyOf: ['Admin'] } },
                 ],
             },
 
@@ -146,6 +147,7 @@ export const NAVIGATION_DATA: NavGroup[] = [
                 icon: 'admin_panel_settings',
                 permission: { anyOf: ['Admin'] },
                 children: [
+                    { label: 'Journal Guidelines Settings', icon: 'rule', route: '/journal/guidelines-settings', permission: { anyOf: ['Admin'] } },
                 ],
             },
         ],

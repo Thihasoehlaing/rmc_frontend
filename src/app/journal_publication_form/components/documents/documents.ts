@@ -66,10 +66,16 @@ export class DocumentsComponent implements OnInit {
     });
   }
 
-  onDocumentSelected(controlName: string, file: File) {
-    this.documentsForm.patchValue({
-      [controlName]: file.name
-    });
+  onDocumentSelected(controlName: string, file: File | null) {
+    if (file) {
+      this.documentsForm.patchValue({
+        [controlName]: file.name
+      });
+    } else {
+      this.documentsForm.patchValue({
+        [controlName]: null
+      });
+    }
     this.documentsForm.get(controlName)?.markAsTouched();
   }
 }

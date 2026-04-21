@@ -1,13 +1,13 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
-import { ApplicationService } from '../../services/application.service';
-import { BatchSittingService } from '../../settings/batch-sitting.service';
-import { BatchSitting } from '../../interfaces/batch-sitting.interface';
+import { Router } from '@angular/router';
+import { ApplicationService } from '../../services/application.service';        
+import { BatchSittingService } from '../../settings/batch-sitting.service';     
+import { BatchSitting } from '../../interfaces/batch-sitting.interface';        
 
 @Component({
   selector: 'app-drafts',
   standalone: true,
-  imports: [RouterLink],
+  imports: [],
   templateUrl: './drafts.component.html',
   styleUrl: './drafts.component.scss',
 })

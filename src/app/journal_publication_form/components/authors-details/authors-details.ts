@@ -2,22 +2,50 @@ import { Component, OnInit, inject, effect, Output, EventEmitter } from '@angula
 import { CustomHeaderComponent } from '../../../shared/components/custom-header/custom-header.component';
 import { CustomSubheaderComponent } from '../../../shared/components/custom-subheader/custom-subheader.component';
 import { ValidationMessageComponent } from '../../../shared/components/validation-message/validation-message.component';
+import { ActionButtonComponent } from '../../../shared/components/action-button/action-button.component';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
 import { SearchableDropdownComponent } from '../../../shared/components/searchable-dropdown/searchable-dropdown.component';
 import { DropdownOption } from '../../../interfaces/components.interface';
 import { JournalWorkflowService } from '../../services/journal-workflow.service';
+import { DataTableComponent, DataTableColumn } from '../../../shared/components/data-table/data-table.component';
 
 @Component({
   selector: 'app-authors-details',
   templateUrl: './authors-details.html',
   styleUrls: ['./authors-details.scss'],
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, SearchableDropdownComponent, CustomHeaderComponent, CustomSubheaderComponent, ValidationMessageComponent]
+  imports: [CommonModule, ReactiveFormsModule, SearchableDropdownComponent, CustomHeaderComponent, CustomSubheaderComponent, ValidationMessageComponent, ActionButtonComponent, DataTableComponent]
 })
 export class AuthorsDetails implements OnInit {
   @Output() formValidityChange = new EventEmitter<boolean>();
   form!: FormGroup;
+
+  readonly apuStaffColumns: DataTableColumn[] = [
+    { key: 'staffName', label: 'Please select Staff Name' },
+    { key: 'schoolDepartment', label: 'School/Department' },
+    { key: 'affiliation', label: 'Affiliation' },
+    { key: 'actions', label: 'Actions', width: '100px', align: 'center', headerAlign: 'center' }
+  ];
+
+  readonly studentColumns: DataTableColumn[] = [
+    { key: 'tpNumber', label: 'TP Number', width: '120px' },
+    { key: 'fullName', label: 'Full Name (as per IC/Passport)' },
+    { key: 'schoolDepartment', label: 'School/Department' },
+    { key: 'affiliation', label: 'Affiliation' },
+    { key: 'actions', label: 'Actions', width: '100px', align: 'center', headerAlign: 'center' }
+  ];
+
+  readonly nonApuColumns: DataTableColumn[] = [
+    { key: 'fullName', label: 'Full Name (as per IC/Passport)' },
+    { key: 'country', label: 'Country' },
+    { key: 'email', label: 'Email' },
+    { key: 'organisationType', label: 'Type of Organisation' },
+    { key: 'schoolDepartment', label: 'School/Department' },
+    { key: 'institutionName', label: 'Institution/Company Name' },
+    { key: 'actions', label: 'Actions', width: '100px', align: 'center', headerAlign: 'center' }
+  ];
+
   isModalOpen: boolean = false;
   editForm!: FormGroup;
   editingIndex: number | null = null;

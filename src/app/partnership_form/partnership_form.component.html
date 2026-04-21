@@ -1,5 +1,33 @@
 <div class="partnership-app">
 
+  <!-- DEV TEST START: Application Status Override -->
+  <div style="margin: 16px 0; padding: 8px; background: #fffbe6; border: 1px solid #ffe58f; border-radius: 6px;">
+    <label style="font-weight: bold; color: #ad8b00;">DEV TEST: Application Status</label>
+    <select
+      [ngModel]="applicationStatus()" 
+      (ngModelChange)="setSimulatedStatus($event)"
+      style="margin-left: 12px; width: 340px; padding: 4px 8px; border: 1px solid #ffe58f; border-radius: 4px;">
+      <option value="draft">draft</option>
+      <option value="submitted">submitted</option>
+      <option value="pending_rmc_review">pending_rmc_review</option>
+      <option value="pending_proposer_resubmission_rmc">pending_proposer_resubmission_rmc</option>
+      <option value="pending_legal_review">pending_legal_review</option>
+      <option value="pending_proposer_resubmission_legal">pending_proposer_resubmission_legal</option>
+      <option value="pending_sr_director_review">pending_sr_director_review</option>
+      <option value="pending_proposer_resubmission_sr_director">pending_proposer_resubmission_sr_director</option>
+      <option value="pending_vc_review">pending_vc_review</option>
+      <option value="rejected_vc">rejected_vc</option>
+      <option value="pending_senior_executive_signing">pending_senior_executive_signing</option>
+      <option value="completed">completed</option>
+    </select>
+    <span style="margin-left: 12px; color: #ad8b00; font-size: 12px;">(Live ABAC override for developer testing)</span>
+    
+    <label style="margin-left: 20px; font-size: 13px; color: #ad8b00; cursor: pointer;">
+      <input type="checkbox" [ngModel]="isBusiness()" (ngModelChange)="isBusiness.set($event)"> Is Business Route? (Includes Legal)
+    </label>
+  </div>
+  <!-- DEV TEST END -->
+
   <!-- ── 1. Page Title ─────────────────────────────────────────── -->
   <app-form-main-title
     title="Partnership Proposal Application Form" 
@@ -16,13 +44,62 @@
     (stepClick)="goToStep($event)">
   </app-step-indicator>
 
+  <!-- ── 3. Comment Accordion (Historical/Current Comments) ──────────────── -->
+  @if (partnershipComments().length > 0) {
+    <div style="margin-top: 32px; background: transparent; margin-bottom: 24px;">
+      <app-form-comment-panel [comments]="partnershipComments()"></app-form-comment-panel>
+    </div>
+  }
+
   <div class="form-content">
     @if (currentStep() === 1) {
-      <app-proposal-details></app-proposal-details>
+      <app-proposal-details [isDisabled]="isProposerDisabled()"></app-proposal-details>
     } @else if (currentStep() === 2) {
-      <app-risk-assessment></app-risk-assessment>
+      <app-risk-assessment [isDisabled]="isProposerDisabled()"></app-risk-assessment>
     }
   </div>
+  
+
+
+  <!-- ── Dynamic Review Areas based on Application Status ──────────────── --> 
+  @if (isRmcEditable() || isLegalEditable() || isSrDirectorEditable() || isVcEditable()) {
+    <section class="card review-section mt-5" [formGroup]="reviewForm">
+      <div class="card__header">
+        <h2 class="card__title"><span class="material-icons">rate_review</span> Provide Review & Approval</h2>
+      </div>
+      <div class="card__content section-fields">
+
+        @if (isRmcEditable()) {
+          <div class="form-field">
+            <label class="form-label">RMC Review</label>
+            <textarea class="input--textarea" rows="4" formControlName="rmcComment" placeholder="Enter your review comments..."></textarea>
+          </div>
+        }
+
+        @if (isLegalEditable()) {
+          <div class="form-field">
+            <label class="form-label">Legal Dept Review</label>
+            <textarea class="input--textarea" rows="4" formControlName="legalComment" placeholder="Enter your review comments..."></textarea>
+          </div>
+        }
+
+        @if (isSrDirectorEditable()) {
+          <div class="form-field">
+            <label class="form-label">Sr. Director Review</label>
+            <textarea class="input--textarea" rows="4" formControlName="srDirectorComment" placeholder="Enter your review comments..."></textarea>
+          </div>
+        }
+
+        @if (isVcEditable()) {
+          <div class="form-field">
+            <label class="form-label">VC Review</label>
+            <textarea class="input--textarea" rows="4" formControlName="vcComment" placeholder="Enter your review comments..."></textarea>
+          </div>
+        }
+
+      </div>
+    </section>
+  }
 
   <!-- ── 3. Step Navigation Footer ───────────────────────────── -->
   <app-form-wizard-nav
@@ -37,3 +114,4 @@
   </app-form-wizard-nav>
 
 </div>
+

@@ -240,7 +240,7 @@
   label {
     font-size: var(--fs-sm);
     font-weight: var(--fw-semibold);
-    color: var(--color-heading);
+    color: var(--color-label);
   }
 
   .form-control {
@@ -275,10 +275,11 @@
 
 .modal-footer {
   display: flex;
-  gap: var(--space-3);
-  padding: var(--space-4);
-  border-top: 1px solid var(--border-default); // 1px border — allowed exception
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: var(--space-4);
+  margin-top: var(--space-4);
+  border-top: 1px solid var(--border-default);
 
   .btn {
     min-width: 100px;

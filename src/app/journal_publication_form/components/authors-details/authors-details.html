@@ -244,17 +244,6 @@
           </div>
 
           <div class="form-group">
-            <app-searchable-dropdown
-              label="Type of Organisation *"
-              [options]="organisationTypeOptions"
-              [searchable]="true"
-              placeholder="Search organisation type..."
-              formControlName="organisationType">
-            </app-searchable-dropdown>
-            <app-validation-message [control]="editForm.get('organisationType')"></app-validation-message>
-          </div>
-
-          <div class="form-group">
             <label for="schoolDept3">School/Department *</label>
             <input type="text" id="schoolDept3" class="form-control" formControlName="schoolDepartment"
               placeholder="Ex. School of Culinary Arts and Hospitality">

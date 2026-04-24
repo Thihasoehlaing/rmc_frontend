@@ -2,12 +2,11 @@
   <app-journal-guidelines-modal #journalGuidelinesModal></app-journal-guidelines-modal>
 
   <!-- DEV TEST START: Application Status Override -->
-  <div class="dev-test-override" style="margin-bottom: var(--space-4); padding: var(--space-4); background: var(--bg-surface); border: 1px solid var(--border-default); border-radius: var(--radius-md);">
-    <label style="font-weight: 600; margin-right: var(--space-3);">DEV TEST: Application Status</label>
+  <div class="dev-test-override">
+    <label class="dev-test-override__label">DEV TEST: Application Status</label>
     <select
       [formControl]="statusControl"
-      (change)="onTestStatusChange($any($event.target).value)"
-      style="padding: var(--space-2); border-radius: var(--radius-md); border: 1px solid var(--border-default);">
+      class="dev-test-override__select">
       <option value="draft">draft</option>
       <option value="submitted">submitted</option>
       <option value="pending_hos">pending_hos</option>
@@ -41,6 +40,7 @@
     [currentStep]="currentStep"
     [steps]="steps"
     [stepStatuses]="stepStatuses"
+    [submitAttempted]="submitAttempted"
     (stepClick)="onStepClick($event)">
   </app-step-indicator>
 
@@ -102,58 +102,58 @@
         *ngIf="currentStep === 4"
         (formValidityChange)="updateFormValidity(4, $event)">
       </app-declaration>
-
-      <!-- ── External Review Comment Panels ────────────────────────── -->
-      <ng-container *ngIf="workflow.status() !== 'draft' && (workflow.showHosToggle() || workflow.showRmcToggle() || workflow.showVcToggle() || workflow.showHrToggle() || workflow.showCeoToggle())">
-        <!-- Active Comment Panels -->
-        <div class="card review-comments-section" style="margin-top: var(--space-6);" *ngIf="selectedCommentSection">
-          <div class="card__content section-fields">
-            <h3 class="section-title" style="margin-bottom: var(--space-4);">Review Comments</h3>
-
-            <app-review-block *ngIf="selectedCommentSection === 'hos'"
-              label="HOS — Application Review"
-              icon="supervisor_account"
-              [visible]="true"
-              [readonly]="!workflow.isHosEditable()"
-              [commentControl]="reviewComments.hosComment">
-            </app-review-block>
-
-            <app-review-block *ngIf="selectedCommentSection === 'rmc'"
-              label="RMC — Application Review"
-              icon="verified"
-              [visible]="true"
-              [readonly]="!workflow.isRmcEditable()"
-              [commentControl]="reviewComments.rmcComment">
-            </app-review-block>
-
-            <app-review-block *ngIf="selectedCommentSection === 'vc'"
-              label="VC — Application Review"
-              icon="account_balance"
-              [visible]="true"
-              [readonly]="!workflow.isVcEditable()"
-              [commentControl]="reviewComments.vcComment">
-            </app-review-block>
-
-            <app-review-block *ngIf="selectedCommentSection === 'hr'"
-              label="HR — Application Review"
-              icon="people"
-              [visible]="true"
-              [readonly]="!workflow.isHrEditable()"
-              [commentControl]="reviewComments.hrComment">
-            </app-review-block>
-
-            <app-review-block *ngIf="selectedCommentSection === 'ceo'"
-              label="CEO — Application Review"
-              icon="stars"
-              [visible]="true"
-              [readonly]="!workflow.isCeoEditable()"
-              [commentControl]="reviewComments.ceoComment">
-            </app-review-block>
-          </div>
-        </div>
-      </ng-container>
     </div>
   </fieldset>
+
+  <!-- ── External Review Comment Panels (outside form disabling) ─────── -->
+  <ng-container *ngIf="workflow.status() !== 'draft' && (workflow.showHosToggle() || workflow.showRmcToggle() || workflow.showVcToggle() || workflow.showHrToggle() || workflow.showCeoToggle())">
+    <!-- Active Comment Panels -->
+    <div class="card review-comments-section" *ngIf="selectedCommentSection">
+      <div class="card__content section-fields">
+        <h3 class="section-title">Review Comments</h3>
+
+        <app-review-block *ngIf="selectedCommentSection === 'hos'"
+          label="HOS — Application Review"
+          icon="supervisor_account"
+          [visible]="true"
+          [readonly]="!workflow.isHosEditable()"
+          [commentControl]="reviewComments.hosComment">
+        </app-review-block>
+
+        <app-review-block *ngIf="selectedCommentSection === 'rmc'"
+          label="RMC — Application Review"
+          icon="verified"
+          [visible]="true"
+          [readonly]="!workflow.isRmcEditable()"
+          [commentControl]="reviewComments.rmcComment">
+        </app-review-block>
+
+        <app-review-block *ngIf="selectedCommentSection === 'vc'"
+          label="VC — Application Review"
+          icon="account_balance"
+          [visible]="true"
+          [readonly]="!workflow.isVcEditable()"
+          [commentControl]="reviewComments.vcComment">
+        </app-review-block>
+
+        <app-review-block *ngIf="selectedCommentSection === 'hr'"
+          label="HR — Application Review"
+          icon="people"
+          [visible]="true"
+          [readonly]="!workflow.isHrEditable()"
+          [commentControl]="reviewComments.hrComment">
+        </app-review-block>
+
+        <app-review-block *ngIf="selectedCommentSection === 'ceo'"
+          label="CEO — Application Review"
+          icon="stars"
+          [visible]="true"
+          [readonly]="!workflow.isCeoEditable()"
+          [commentControl]="reviewComments.ceoComment">
+        </app-review-block>
+      </div>
+    </div>
+  </ng-container>
   <!-- ── 4. Shared wizard navigation footer ───────────────────── -->
   <app-form-wizard-nav
     [currentStep]="currentStep"

@@ -4,8 +4,10 @@
   <div class="section-fields">
 
     <!-- Top Information Box -->
-    <div class="card">
-      <app-custom-subheader title="Applicant Details"></app-custom-subheader>
+    <section class="card">
+      <div class="card__header">
+        <h2 class="card__title">Applicant Details</h2>
+      </div>
       <div class="card__content section-fields">
         <div class="row row--3">
           <div class="form-field">
@@ -22,228 +24,251 @@
           </div>
         </div>
       </div>
-    </div>
+    </section>
 
     <!-- Publication Info Section -->
     <div class="card">
       <app-custom-subheader title="Journal Details"></app-custom-subheader>
       <div class="card__content section-fields">
-        
-                <div class="row row--2" style="align-items: flex-start;">
+        <div class="form-columns">
 
-            <!-- Left Column -->
-            <div style="display: flex; flex-direction: column; gap: var(--space-5);">
-              <div class="form-field">
-                <div>
-                  <label class="form-label is-required" style="display: inline;">Please select whether you are the “First Author” or “Corresponding Author”</label>
-                  <span style="display: inline-block; vertical-align: text-bottom; margin-left: var(--space-2);"><app-note text="Applicant must be either first or corresponding author" [isTooltip]="true"></app-note></span>
-                </div>
-                <div class="radio-group">
-                  <label class="radio-option">
-<input type="radio" formControlName="authorshipType" value="first-author">
-                    <span>First Author</span>
-                  </label>
-                  <label class="radio-option">
-<input type="radio" formControlName="authorshipType" value="co-author">
-                    <span>Corresponding Author</span>
-                  </label>
-                  <label class="radio-option">
-<input type="radio" formControlName="authorshipType" value="corresponding-author">
-                    <span>First and Corresponding Author</span>
-                  </label>
-                </div>
-                <app-validation-message [control]="form.get('authorshipType')"></app-validation-message>
+          <!-- Left Column -->
+          <div class="form-column">
+            <div class="form-field">
+              <div class="label-with-note">
+                <label class="form-label is-required">Please select whether you are the “First Author” or “Corresponding Author”</label>
+                <app-note text="Applicant must be either first or corresponding author" [isTooltip]="true"></app-note>
               </div>
-
-              <div class="form-field">
-                <label class="form-label is-required">Please select Scopus Quartile</label>
-                <div class="radio-group">
-                  <label class="radio-option">
-<input type="radio" formControlName="scopusQuartile" value="Q1"><span>Q1</span></label>
-                  <label class="radio-option">
-<input type="radio" formControlName="scopusQuartile" value="Q2"><span>Q2</span></label>
-                  <label class="radio-option">
-<input type="radio" formControlName="scopusQuartile" value="Q3"><span>Q3</span></label>
-                </div>
-                <app-validation-message [control]="form.get('scopusQuartile')"></app-validation-message>
+              <div class="radio-group">
+                <label class="radio-option">
+                  <input type="radio" formControlName="authorshipType" value="first-author">
+                  <span>First Author</span>
+                </label>
+                <label class="radio-option">
+                  <input type="radio" formControlName="authorshipType" value="co-author">
+                  <span>Corresponding Author</span>
+                </label>
+                <label class="radio-option">
+                  <input type="radio" formControlName="authorshipType" value="corresponding-author">
+                  <span>First and Corresponding Author</span>
+                </label>
               </div>
-
-              <div class="form-field">
-                <label class="form-label is-required">Select Research or Non-Research Project</label>
-                <div class="radio-group">
-                  <label class="radio-option">
-<input type="radio" formControlName="researchType" value="external-research"><span>External Research Project</span></label>
-                  <label class="radio-option">
-<input type="radio" formControlName="researchType" value="internal-research"><span>Internal Research Project</span></label>
-                  <label class="radio-option">
-<input type="radio" formControlName="researchType" value="non-research"><span>Non-Research Project</span></label>
-                </div>
-                <app-validation-message [control]="form.get('researchType')"></app-validation-message>
-              </div>
-
-              <div class="form-field">
-                  <div>
-                    <label class="form-label is-required" style="display: inline;">Is the publisher of your journal one of the restricted publishers (e.g., MDPI, Common Ground, Hindawi, or Frontier)?</label>
-                    <span style="display: inline-block; vertical-align: text-bottom; margin-left: var(--space-2);"><app-note text="Expected Answer for Approval: No" [isTooltip]="true"></app-note></span>
-                </div>
-                <div class="radio-group">
-                  <label class="radio-option">
-<input type="radio" formControlName="restrictedPublisher" value="yes"><span>Yes</span></label>
-                  <label class="radio-option">
-<input type="radio" formControlName="restrictedPublisher" value="no"><span>No</span></label>
-                </div>
-                <app-validation-message [control]="form.get('restrictedPublisher')"></app-validation-message>
-              </div>
-              <div class="form-field">
-                <label class="form-label is-required">Have you cited at least 1 journal paper from APU JATI &amp; EJBM?</label>
-                <div class="radio-group">
-                  <label class="radio-option">
-<input type="radio" formControlName="citedApuPaper" value="Yes">
-                    <span>Yes</span>
-                  </label>
-                  <label class="radio-option">
-<input type="radio" formControlName="citedApuPaper" value="No">
-                    <span>No</span>
-                  </label>
-                </div>
-                <app-validation-message [control]="form.get('citedApuPaper')"></app-validation-message>
-              </div>
-
-              @if (form.get('citedApuPaper')?.value === 'No') {
-                <div class="form-field">
-                  <label class="form-label is-required">If No, please explain</label>
-                  <textarea class="input--textarea" formControlName="citedApuPaperExplanation" placeholder="Enter explanation here" rows="3" maxlength="255" [class.is-invalid]="form.get('citedApuPaperExplanation')?.invalid && form.get('citedApuPaperExplanation')?.touched"></textarea>
-                  <app-character-counter [current]="form.get('citedApuPaperExplanation')?.value?.length || 0" [max]="255"></app-character-counter>
-                  <app-validation-message [control]="form.get('citedApuPaperExplanation')"></app-validation-message>
-                </div>
-              }
+              <app-validation-message [control]="form.get('authorshipType')"></app-validation-message>
             </div>
 
-            <!-- Right Column -->
-            <div style="display: flex; flex-direction: column; gap: var(--space-5);">
-              <div class="form-field">
-                <label class="form-label is-required">Journal Name</label>
-                <input type="text" class="input--text" formControlName="journalName" maxlength="150" [class.is-invalid]="form.get('journalName')?.invalid && form.get('journalName')?.touched">
-                <app-character-counter [current]="getCharacterCount('journalName')" [max]="150"></app-character-counter>
-                <app-validation-message [control]="form.get('journalName')"></app-validation-message>
+            <div class="form-field">
+              <label class="form-label is-required">Please select Scopus Quartile</label>
+              <div class="radio-group">
+                <label class="radio-option">
+                  <input type="radio" formControlName="scopusQuartile" value="Q1"><span>Q1</span>
+                </label>
+                <label class="radio-option">
+                  <input type="radio" formControlName="scopusQuartile" value="Q2"><span>Q2</span>
+                </label>
+                <label class="radio-option">
+                  <input type="radio" formControlName="scopusQuartile" value="Q3"><span>Q3</span>
+                </label>
               </div>
-
-              <div class="form-field">
-                <label class="form-label is-required">Paper Title</label>       
-                <input type="text" class="input--text" formControlName="paperTitle" maxlength="200" [class.is-invalid]="form.get('paperTitle')?.invalid && form.get('paperTitle')?.touched">
-                <app-character-counter [current]="getCharacterCount('paperTitle')" [max]="200"></app-character-counter>
-                <app-validation-message [control]="form.get('paperTitle')"></app-validation-message>
-              </div>
-
-              <div class="form-field">
-                <label class="form-label is-required">Please key in 3 SDG keywords in abstract</label>
-                <input type="text" class="input--text" formControlName="sdgKeyword1" [class.is-invalid]="form.get('sdgKeyword1')?.invalid && form.get('sdgKeyword1')?.touched">
-                <app-validation-message [control]="form.get('sdgKeyword1')"></app-validation-message>
-              </div>
-
-              <div class="form-field">
-                <label class="form-label">Keyword 2</label>
-                <input type="text" class="input--text" formControlName="sdgKeyword2">
-              </div>
-
-              <div class="form-field">
-                <label class="form-label">Keyword 3</label>
-                <input type="text" class="input--text" formControlName="sdgKeyword3">
-              </div>
+              <app-validation-message [control]="form.get('scopusQuartile')"></app-validation-message>
             </div>
 
+            <div class="form-field">
+              <label class="form-label is-required">Select Research or Non-Research Project</label>
+              <div class="radio-group">
+                <label class="radio-option">
+                  <input type="radio" formControlName="researchType" value="external-research"><span>External Research Project</span>
+                </label>
+                <label class="radio-option">
+                  <input type="radio" formControlName="researchType" value="internal-research"><span>Internal Research Project</span>
+                </label>
+                <label class="radio-option">
+                  <input type="radio" formControlName="researchType" value="non-research"><span>Non-Research Project</span>
+                </label>
+              </div>
+              <app-validation-message [control]="form.get('researchType')"></app-validation-message>
+            </div>
+
+            <div class="form-field">
+              <div class="label-with-note">
+                <label class="form-label is-required">Is the publisher of your journal one of the restricted publishers (e.g., MDPI, Common Ground, Hindawi, or Frontier)?</label>
+                <app-note text="Expected Answer for Approval: No" [isTooltip]="true"></app-note>
+              </div>
+              <div class="radio-group">
+                <label class="radio-option">
+                  <input type="radio" formControlName="restrictedPublisher" value="yes"><span>Yes</span>
+                </label>
+                <label class="radio-option">
+                  <input type="radio" formControlName="restrictedPublisher" value="no"><span>No</span>
+                </label>
+              </div>
+              <app-validation-message [control]="form.get('restrictedPublisher')"></app-validation-message>
+            </div>
+
+            <div class="form-field">
+              <label class="form-label is-required">Have you cited at least 1 journal paper from APU JATI &amp; EJBM?</label>
+              <div class="radio-group">
+                <label class="radio-option">
+                  <input type="radio" formControlName="citedApuPaper" value="Yes">
+                  <span>Yes</span>
+                </label>
+                <label class="radio-option">
+                  <input type="radio" formControlName="citedApuPaper" value="No">
+                  <span>No</span>
+                </label>
+              </div>
+              <app-validation-message [control]="form.get('citedApuPaper')"></app-validation-message>
+            </div>
+
+            @if (form.get('citedApuPaper')?.value === 'No') {
+              <div class="form-field">
+                <label class="form-label is-required">If No, please explain</label>
+                <textarea class="input--textarea" formControlName="citedApuPaperExplanation" placeholder="Enter explanation here" rows="3" maxlength="255" [class.is-invalid]="form.get('citedApuPaperExplanation')?.invalid && form.get('citedApuPaperExplanation')?.touched"></textarea>
+                <app-character-counter [current]="form.get('citedApuPaperExplanation')?.value?.length || 0" [max]="255"></app-character-counter>
+                <app-validation-message [control]="form.get('citedApuPaperExplanation')"></app-validation-message>
+              </div>
+            }
           </div>
+
+          <!-- Right Column -->
+          <div class="form-column">
+            <div class="form-field">
+              <label class="form-label is-required">Journal Name</label>
+              <input type="text" class="input--text" formControlName="journalName" maxlength="150" [class.is-invalid]="form.get('journalName')?.invalid && form.get('journalName')?.touched">
+              <app-character-counter [current]="getCharacterCount('journalName')" [max]="150"></app-character-counter>
+              <app-validation-message [control]="form.get('journalName')"></app-validation-message>
+            </div>
+
+            <div class="form-field">
+              <label class="form-label is-required">Paper Title</label>
+              <input type="text" class="input--text" formControlName="paperTitle" maxlength="200" [class.is-invalid]="form.get('paperTitle')?.invalid && form.get('paperTitle')?.touched">
+              <app-character-counter [current]="getCharacterCount('paperTitle')" [max]="200"></app-character-counter>
+              <app-validation-message [control]="form.get('paperTitle')"></app-validation-message>
+            </div>
+
+            <div class="form-field">
+              <label class="form-label is-required">Please key in 3 SDG keywords in abstract</label>
+              <input type="text" class="input--text" formControlName="sdgKeyword1" [class.is-invalid]="form.get('sdgKeyword1')?.invalid && form.get('sdgKeyword1')?.touched">
+              <app-validation-message [control]="form.get('sdgKeyword1')"></app-validation-message>
+            </div>
+
+            <div class="form-field">
+              <label class="form-label">Keyword 2</label>
+              <input type="text" class="input--text" formControlName="sdgKeyword2">
+            </div>
+
+            <div class="form-field">
+              <label class="form-label">Keyword 3</label>
+              <input type="text" class="input--text" formControlName="sdgKeyword3">
+            </div>
+          </div>
+
         </div>
       </div>
+    </div>
       <!-- Costing Section -->
       @if (researchType) {
         <div class="card">
           <app-custom-subheader title="Costing"></app-custom-subheader>
-          <div class="card__content section-fields">
-            <div class="form-field">
-              <label class="form-label">Project Account Code</label>
-              <input type="text" class="input--text" formControlName="projectAccountCode" placeholder="Enter project account code">
-            </div>
+          <div class="card__content costing-section">
+            <div class="costing-content">
+            <div class="research-subsection">
+              <div class="form-field">
+                <label class="form-label">Project Account Code</label>
+                <input type="text" class="input--text" formControlName="projectAccountCode" placeholder="Enter project account code">
+              </div>
 
-            <div class="form-field">
-              <div class="category-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-4);">
-                <label class="form-label" style="margin: 0;">Detailed Breakdown for Research</label>
-                <div style="display: flex; align-items: center; gap: var(--space-3);">
-                  <span class="text-muted" style="font-size: var(--fs-sm);">{{ getBreakdownArray(researchType || '').length }} Entries</span>
-                  <app-action-button type="primary" label="Add Entry" icon="add" (clicked)="openBreakdownModal(researchType || '')"></app-action-button>
+              <div class="form-field">
+                <label class="form-label">Detailed Breakdown for Research</label>
+                <div class="costing-breakdown">
+                  <div class="list-section-header">
+                    <span class="list-count">{{ getBreakdownArray(researchType || '').length }} {{ getBreakdownArray(researchType || '').length === 1 ? 'Entry' : 'Entries' }}</span>
+                    <app-action-button type="primary" label="Add Entry" icon="add" (clicked)="openBreakdownModal(researchType || '')"></app-action-button>
+                  </div>
+
+                  @if (getBreakdownArray(researchType || '').length > 0) {
+                    <app-data-table
+                      [columns]="breakdownColumns"
+                      [rows]="getBreakdownArray(researchType || '')"
+                      [dense]="true">
+                      <ng-template #rowTemplate let-row let-index="index">
+                        <tr>
+                          <td>
+                            <div class="data-table__title data-table__title--small">{{ row.itemDescription }}</div>
+                          </td>
+                          <td>{{ row.voteNumber }}</td>
+                          <td class="is-align-right">{{ row.cost | number: '1.2-2' }}</td>
+                          <td class="is-align-right">{{ row.exchangeRate | number: '1.2-2' }}</td>
+                          <td class="amount-cell">{{ row.costInRM | number: '1.2-2' }}</td>
+                          <td class="action-cell">
+                            <div class="data-table__actions">
+                              <button type="button" class="btn-icon btn-icon--edit" (click)="openBreakdownModal(researchType || '', index)" aria-label="Edit entry">
+                                <span class="material-icons">edit</span>
+                              </button>
+                              <button type="button" class="btn-icon btn-icon--delete" (click)="deleteBreakdown(researchType || '', index)" aria-label="Remove entry">
+                                <span class="material-icons">delete</span>
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      </ng-template>
+                    </app-data-table>
+                  } @else {
+                    <p class="empty-state">No items added. Click <strong>Add Entry</strong> to begin.</p>
+                  }
                 </div>
               </div>
 
-              @if (getBreakdownArray(researchType || '').length > 0) {
-                <app-data-table
-                  [columns]="breakdownColumns"
-                  [rows]="getBreakdownArray(researchType || '')"
-                  [dense]="true">
-                  <ng-template #rowTemplate let-row let-index="index">
-                    <tr>
-                      
-                      <td>
-                        <div class="data-table__title data-table__title--small">{{ row.itemDescription }}</div>
-                      </td>
-                      <td>{{ row.voteNumber }}</td>
-                      <td class="is-align-right">{{ row.cost | number: '1.2-2' }}</td>
-                      <td class="is-align-right">{{ row.exchangeRate | number: '1.2-2' }}</td>
-                      <td class="amount-cell">{{ row.costInRM | number: '1.2-2' }}</td>
-                      <td class="action-cell">
-                        <div class="data-table__actions" style="justify-content: center;">
-                          <button type="button" class="btn-icon btn-icon--edit" (click)="openBreakdownModal(researchType || '', index)" aria-label="Edit entry">
-                            <span class="material-icons">edit</span>
-                          </button>
-                          <button type="button" class="btn-icon btn-icon--delete" (click)="deleteBreakdown(researchType || '', index)" aria-label="Remove entry">
-                            <span class="material-icons">delete</span>
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  </ng-template>
-                </app-data-table>
-              } @else {
-                <p class="empty-state">No items added. Click <strong>Add Entry</strong> to begin.</p>
-              }
-            </div>
+              <div class="total-display">
+                <span class="total-label">Total in RM</span>
+                <div class="total-amount">{{ calculateBreakdownTotal(researchType || '') | number: '1.2-2' }}</div>
+              </div>
 
-            <!-- Budget Totals Banner (using RDIG style) -->
-            <div class="budget-banner" style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-4); background: var(--bg-highlight); border: 1px solid var(--color-primary-light); border-radius: var(--radius-md); margin-bottom: var(--space-4);">
-              <span class="total-label" style="font-weight: var(--fw-semibold); color: var(--color-primary-dark);">Total in RM</span>
-              <span class="total-amount" style="font-size: var(--fs-lg); font-weight: var(--fw-bold); color: var(--color-primary-dark);">{{ calculateBreakdownTotal(researchType || '') | number: '1.2-2' }}</span>
-            </div>
+              <div class="sponsorship-subsections-container">
+                <div class="sponsorship-subsection">
+                  <span class="subsection-title">External Sponsorship</span>
+                  <div class="subsection-fields-wrapper">
+                    <div class="row row--2">
+                      <div class="form-field">
+                        <label class="form-label">Sponsorship Amount by External (RM)</label>
+                        <input type="number" class="input--text" formControlName="sponsoredAmountExternal" placeholder="0.00">
+                      </div>
+                      <div class="form-field">
+                        <label class="form-label">Sponsored By</label>
+                        <input type="text" class="input--text" formControlName="sponsoredBy" placeholder="Sponsor Name">
+                      </div>
+                    </div>
+                  </div>
+                </div>
 
-            <div class="row row--2">
-              <div class="form-field">
-                <label class="form-label">Sponsorship Amount by External (RM)</label>
-                <input type="number" class="input--text" formControlName="sponsoredAmountExternal" placeholder="0.00">
+                <div class="sponsorship-subsection">
+                  <span class="subsection-title">APU Sponsorship</span>
+                  <div class="subsection-fields-wrapper">
+                    <div class="row row--2">
+                      <div class="form-field">
+                        <label class="form-label">Sponsorship Percentage Requested (%)</label>
+                        <input type="number" class="input--text input--readonly" formControlName="sponsorshipPercentage" readonly>
+                      </div>
+                      <div class="form-field">
+                        <label class="form-label">Sponsorship Amount by APU (RM)</label>
+                        <input type="number" class="input--text input--readonly" formControlName="sponsorshipAmountAPU" readonly>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div class="form-field">
-                <label class="form-label">Sponsored By</label>
-                <input type="text" class="input--text" formControlName="sponsoredBy" placeholder="Sponsor Name">
-              </div>
-            </div>
-            
-            <div class="row row--3">
-              <div class="form-field">
-                <label class="form-label">Sponsorship Percentage Requested (%)</label>
-                <input type="number" class="input--text input--readonly" formControlName="sponsorshipPercentage" readonly>
-              </div>
-              <div class="form-field">
-                <label class="form-label">Sponsorship Amount by APU (RM)</label>
-                <input type="number" class="input--text input--readonly" formControlName="sponsorshipAmountAPU" readonly>
-              </div>
-              <div class="form-field">
+
+              <div class="form-field total-field">
                 <label class="form-label">Cost to be Borne by Applicant (RM)</label>
                 <input type="number" class="input--text input--readonly" formControlName="costByApplicant" readonly>
               </div>
-            </div>
 
-            <div class="form-field">
-              <label class="form-label">Remarks (Optional)</label>
-              <textarea class="input--textarea" formControlName="costingRemarks" placeholder="Additional remarks" rows="3" maxlength="255"></textarea>
-              <app-character-counter [current]="form.get('costingRemarks')?.value?.length || 0" [max]="255"></app-character-counter>
-              <app-validation-message [control]="form.get('costingRemarks')"></app-validation-message>
+              <div class="form-field">
+                <label class="form-label">Remarks (Optional)</label>
+                <textarea class="input--textarea" formControlName="costingRemarks" placeholder="Additional remarks" rows="3" maxlength="500"></textarea>
+                <app-character-counter [current]="form.get('costingRemarks')?.value?.length || 0" [max]="500"></app-character-counter>
+                <app-validation-message [control]="form.get('costingRemarks')"></app-validation-message>
+              </div>
+            </div>
             </div>
           </div>
         </div>
@@ -258,10 +283,10 @@
   (close)="closeBreakdownModal()"
   width="600px"
 >
-  <form [formGroup]="breakdownForm" (ngSubmit)="submitBreakdownModal()" style="display: flex; flex-direction: column; gap: var(--space-4);">
+  <form [formGroup]="breakdownForm" (ngSubmit)="submitBreakdownModal()" class="breakdown-form">
     <!-- Select Item Description -->
-    <div style="display: flex; flex-direction: column; gap: var(--space-2);">
-      <label for="itemDescription" style="font-size: var(--fs-sm); font-weight: var(--fw-medium); color: var(--color-text);">Select Item Description *</label>
+    <div class="breakdown-field">
+      <label for="itemDescription" class="form-label">Select Item Description *</label>
       <app-searchable-dropdown
         [options]="currentBreakdownOptions"
         placeholder="Search and select item"
@@ -274,8 +299,8 @@
     }
 
     <!-- Vote Number or Account Code -->
-    <div style="display: flex; flex-direction: column; gap: var(--space-2);">
-      <label [for]="breakdownType === 'non-research' ? 'accountCode' : 'voteNumber'" style="font-size: var(--fs-sm); font-weight: var(--fw-medium); color: var(--color-text);">
+    <div class="breakdown-field">
+      <label [for]="breakdownType === 'non-research' ? 'accountCode' : 'voteNumber'" class="form-label">
         {{ (breakdownType === 'non-research') ? 'Account Code' : 'Vote Number' }}
       </label>
       <input
@@ -291,8 +316,8 @@
     </div>
 
     <!-- Cost in Foreign Currency / MYR -->
-    <div style="display: flex; flex-direction: column; gap: var(--space-2);">
-      <label for="cost" style="font-size: var(--fs-sm); font-weight: var(--fw-medium); color: var(--color-text);">
+    <div class="breakdown-field">
+      <label for="cost" class="form-label">
         {{ (breakdownType === 'internal-research') ? 'Cost in Foreign Currency / MYR (RM)' : 'Cost in Foreign Currency / MYR' }} *
       </label>
       <input
@@ -308,9 +333,9 @@
     </div>
 
     <!-- Exchange Rate -->
-    <div style="display: flex; flex-direction: column; gap: var(--space-2);">
-      <div style="display: flex; align-items: center; gap: var(--space-2);">
-        <label for="exchangeRate" style="font-size: var(--fs-sm); font-weight: var(--fw-medium); color: var(--color-text);">Exchange Rate *</label>
+    <div class="breakdown-field">
+      <div class="label-with-note">
+        <label for="exchangeRate" class="form-label">Exchange Rate *</label>
         <app-note text="ℹ For Malaysia Ringgit/MYR, please put 1 as the exchange rate." [isTooltip]="true"></app-note>
       </div>
       <input
@@ -326,8 +351,8 @@
     </div>
 
     <!-- Cost in RM (Read-only calculated field) -->
-    <div style="display: flex; flex-direction: column; gap: var(--space-2);">
-      <label for="costInRM" style="font-size: var(--fs-sm); font-weight: var(--fw-medium); color: var(--color-text);">Cost in RM (approximate) [Auto-calculated: Cost × Exchange Rate]</label>
+    <div class="breakdown-field">
+      <label for="costInRM" class="form-label">Cost in RM (approximate) [Auto-calculated: Cost × Exchange Rate]</label>
       <input
         id="costInRM"
         type="number"
@@ -339,8 +364,8 @@
     </div>
 
     <!-- Description -->
-    <div style="display: flex; flex-direction: column; gap: var(--space-2);">
-      <label for="description" style="font-size: var(--fs-sm); font-weight: var(--fw-medium); color: var(--color-text);">Description</label>
+    <div class="breakdown-field">
+      <label for="description" class="form-label">Description</label>
       <textarea
         id="description"
         class="input--textarea"
@@ -350,18 +375,18 @@
     </div>
 
     <!-- Supporting Documents -->
-    <div style="display: flex; flex-direction: column; gap: var(--space-2);">
-      <label style="font-size: var(--fs-sm); font-weight: var(--fw-medium); color: var(--color-text);">Supporting Documents</label>
-      <p class="form-hint" style="margin: 0; font-size: var(--fs-sm); color: var(--color-text-muted);">Max file size: 10MB. Allowed file types: PDF only.</p>
+    <div class="breakdown-field">
+      <label class="form-label">Supporting Documents</label>
+      <p class="form-hint">Max file size: 10MB. Allowed file types: PDF only.</p>
       <app-file-upload
         [accept]="'.pdf'"
         [maxSizeMB]="10"
         (fileSelected)="onFileSelected($event)">
       </app-file-upload>
       @if (selectedFileName) {
-        <div style="display: flex; align-items: center; gap: var(--space-2); margin-top: var(--space-2); padding: var(--space-2); background: var(--bg-subtle); border-radius: var(--radius-md);">
-          <span class="material-icons" style="font-size: 20px; color: var(--color-text-muted);">description</span>
-          <span style="font-size: var(--fs-sm); color: var(--color-text); flex: 1;">{{ selectedFileName }}</span>
+        <div class="breakdown-file-summary">
+          <span class="material-icons">description</span>
+          <span class="breakdown-file-name">{{ selectedFileName }}</span>
           <button type="button" class="btn-icon btn-icon--delete" (click)="removeFile()" aria-label="Remove file">
             <span class="material-icons">close</span>
           </button>
@@ -369,7 +394,7 @@
       }
     </div>
 
-    <div style="display: flex; justify-content: flex-end; gap: var(--space-3); margin-top: var(--space-4); padding-top: var(--space-4); border-top: 1px solid var(--border-default);">
+    <div class="breakdown-actions">
       <button type="button" class="btn btn-secondary" (click)="closeBreakdownModal()">Cancel</button>
       <button type="submit" class="btn btn-primary" [disabled]="breakdownForm.invalid">Save</button>
     </div>

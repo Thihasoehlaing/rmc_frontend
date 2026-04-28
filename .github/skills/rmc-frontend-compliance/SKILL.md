@@ -53,3 +53,54 @@ This skill packages the domain knowledge from `guidelines+ai_rules/system-guidel
 
 ## Usage
 Invoke this skill when working on RMC frontend to ensure adherence to guidelines. For example, before implementing a new form, use this skill to guide the process.
+
+## Complementary Resource: Angular Skills
+
+This RMC skill is designed to work alongside the official [Angular Skills](https://github.com/angular/skills) project, which provides general Angular development guidance.
+
+### Available Angular Skills
+
+1. **angular-developer**
+   - Generates Angular code aligned with latest best practices
+   - Provides architectural guidance for:
+     - Components, services, and dependency injection
+     - Modern reactivity: signals, linkedSignal, resource
+     - Forms and form patterns
+     - Routing and navigation
+     - Server-side rendering (SSR)
+     - Accessibility (ARIA) and semantic HTML
+     - Animations and styling
+     - Testing and CI tooling
+   - Use for general Angular development questions and patterns
+
+2. **angular-new-app**
+   - Scaffolds new Angular applications using Angular CLI
+   - Provides guidelines for modern Angular app setup and structure
+   - Use for creating new projects with best-practice defaults
+
+### How RMC Skill Complements Angular Skills
+
+| Aspect | Angular Skills | RMC Skill |
+|--------|---|---|
+| **Scope** | General Angular framework patterns | RMC project-specific UI system & guidelines |
+| **Focus** | Idiomatic Angular code generation | SCSS compliance, component reusability, design tokens |
+| **Use Case** | Architectural guidance, general development | Enforcing RMC conventions, ensuring design consistency |
+| **Styling** | General Angular styling best practices | RMC zero-hardcoding policy, token-based design system |
+
+### Integration Workflow
+
+1. Use `angular-developer` for general Angular patterns and architectural questions
+2. Use `rmc-frontend-compliance` skill to align implementation with RMC project standards
+3. Combine both for optimal RMC frontend development
+
+### Installation
+
+To add Angular Skills to your environment:
+```bash
+npx skills add https://github.com/angular/skills
+```
+
+### References
+- [Angular Skills Repository](https://github.com/angular/skills)
+- [Angular Documentation](https://angular.dev)
+- For RMC-specific guidelines: `guidelines+ai_rules/system-guidelines.md` and `guidelines+ai_rules/RULES.md`

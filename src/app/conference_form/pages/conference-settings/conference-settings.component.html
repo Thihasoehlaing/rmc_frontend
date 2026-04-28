@@ -31,14 +31,6 @@
             aria-label="Add option">
             + Add Option
           </button>
-          <button
-            type="button"
-            class="btn btn-danger"
-            [disabled]="!hasSelectedOptions()"
-            (click)="deleteSelectedOptions()"
-            aria-label="Delete selected options">
-            Delete
-          </button>
         </div>
 
         <!-- Search, Filter, and Sort Controls -->
@@ -81,110 +73,90 @@
 
         <!-- Options Table -->
         @if (getFilteredAndSortedOptions().length > 0) {
-          <div class="options-table-wrapper">
-            <table class="options-table">
+          <div class="table-scroll">
+            <table class="list-table">
               <thead>
                 <tr>
-                  <th class="td-checkbox is-align-center" style="width: 50px;"></th>
-                  <th class="sortable-header" (click)="onHeaderClick('label')" title="Click to sort">
+                  <th class="col-no">#</th>
+                  <th (click)="onHeaderClick('label')" [class.sortable]="isSortableColumn('label')" title="Click to sort">
                     {{ isRegionType() ? 'Region Name' : (isLocalType() ? 'Item Description' : 'Vote Number') }}
-                    @if (headerSortColumn() === 'label') {
-                      <span class="sort-indicator">{{ headerSortDirection() === 'asc' ? '▲' : '▼' }}</span>
-                    }
+                    <span class="sort-indicator">{{ getSortIndicator('label') }}</span>
                   </th>
                   @if (isResearchType()) {
-                    <th class="sortable-header" (click)="onHeaderClick('description')" title="Click to sort">
+                    <th (click)="onHeaderClick('description')" [class.sortable]="isSortableColumn('description')" title="Click to sort">
                       Item Description
-                      @if (headerSortColumn() === 'description') {
-                        <span class="sort-indicator">{{ headerSortDirection() === 'asc' ? '▲' : '▼' }}</span>
-                      }
+                      <span class="sort-indicator">{{ getSortIndicator('description') }}</span>
                     </th>
                   }
                   @if (isLocalType()) {
-                    <th class="sortable-header" (click)="onHeaderClick('accountCode')" title="Click to sort">
+                    <th (click)="onHeaderClick('accountCode')" [class.sortable]="isSortableColumn('accountCode')" title="Click to sort">
                       Account Code
-                      @if (headerSortColumn() === 'accountCode') {
-                        <span class="sort-indicator">{{ headerSortDirection() === 'asc' ? '▲' : '▼' }}</span>
-                      }
+                      <span class="sort-indicator">{{ getSortIndicator('accountCode') }}</span>
                     </th>
                   }
                   @if (isRegionType()) {
-                    <th class="sortable-header" (click)="onHeaderClick('percentage')" title="Click to sort">
+                    <th (click)="onHeaderClick('percentage')" [class.sortable]="isSortableColumn('percentage')" title="Click to sort">
                       Percentage
-                      @if (headerSortColumn() === 'percentage') {
-                        <span class="sort-indicator">{{ headerSortDirection() === 'asc' ? '▲' : '▼' }}</span>
-                      }
+                      <span class="sort-indicator">{{ getSortIndicator('percentage') }}</span>
                     </th>
-                    <th class="sortable-header" (click)="onHeaderClick('limit')" title="Click to sort">
+                    <th (click)="onHeaderClick('limit')" [class.sortable]="isSortableColumn('limit')" title="Click to sort">
                       Limit (RM)
-                      @if (headerSortColumn() === 'limit') {
-                        <span class="sort-indicator">{{ headerSortDirection() === 'asc' ? '▲' : '▼' }}</span>
-                      }
+                      <span class="sort-indicator">{{ getSortIndicator('limit') }}</span>
                     </th>
                   }
                   @if (isResearchType() || isLocalType()) {
-                    <th class="sortable-header" (click)="onHeaderClick('foreignLocal')" title="Click to sort">
+                    <th (click)="onHeaderClick('foreignLocal')" [class.sortable]="isSortableColumn('foreignLocal')" title="Click to sort">
                       Foreign / Local
-                      @if (headerSortColumn() === 'foreignLocal') {
-                        <span class="sort-indicator">{{ headerSortDirection() === 'asc' ? '▲' : '▼' }}</span>
-                      }
+                      <span class="sort-indicator">{{ getSortIndicator('foreignLocal') }}</span>
                     </th>
                   }
-                  <th class="sortable-header" (click)="onHeaderClick('status')" title="Click to sort">
+                  <th (click)="onHeaderClick('status')" [class.sortable]="isSortableColumn('status')" title="Click to sort">
                     Status
-                    @if (headerSortColumn() === 'status') {
-                      <span class="sort-indicator">{{ headerSortDirection() === 'asc' ? '▲' : '▼' }}</span>
-                    }
+                    <span class="sort-indicator">{{ getSortIndicator('status') }}</span>
                   </th>
-                  <th class="sortable-header" (click)="onHeaderClick('createdDate')" title="Click to sort">
+                  <th (click)="onHeaderClick('createdDate')" [class.sortable]="isSortableColumn('createdDate')" title="Click to sort">
                     Created Date
-                    @if (headerSortColumn() === 'createdDate') {
-                      <span class="sort-indicator">{{ headerSortDirection() === 'asc' ? '▲' : '▼' }}</span>
-                    }
+                    <span class="sort-indicator">{{ getSortIndicator('createdDate') }}</span>
                   </th>
-                  <th class="td-actions is-align-center" style="width: 100px;">Actions</th>
+                  <th class="col-actions">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                @for (row of getFilteredAndSortedOptions(); track row.value) {
+                @for (row of getFilteredAndSortedOptions(); track row.value; let i = $index) {
                   <tr>
-                    <td class="td-checkbox is-align-center">
-                      <input
-                        type="checkbox"
-                        [checked]="isOptionSelected(row.value)"
-                        (change)="toggleCheckbox(row.value)"
-                        [attr.aria-label]="'Select ' + row.label">
-                    </td>
-                    <td class="option-name">{{ row.label }}</td>
+                    <td class="col-no text-muted">{{ i + 1 }}</td>
+                    <td>{{ row.label }}</td>
                     @if (isResearchType()) {
-                      <td class="option-description">{{ row.description || '-' }}</td>
+                      <td>{{ row.description || '-' }}</td>
                     }
                     @if (isLocalType()) {
-                      <td class="option-account-code">{{ row.accountCode || '-' }}</td>
+                      <td>{{ row.accountCode || '-' }}</td>
                     }
                     @if (isRegionType()) {
-                      <td class="option-percentage">{{ row.percentage || '-' }}%</td>
-                      <td class="option-limit">RM{{ row.limit || '-' }}</td>
+                      <td>{{ row.percentage || '-' }}%</td>
+                      <td>RM{{ row.limit || '-' }}</td>
                     }
                     @if (isResearchType() || isLocalType()) {
-                      <td class="option-foreign-local">
+                      <td>
                         {{ row.foreignLocal ? (row.foreignLocal === 'foreign' ? 'Foreign' : 'Local') : '-' }}
                       </td>
                     }
-                    <td class="option-status">
-                      <span class="status-badge" [class]="'status-' + (row.status || 'Active').toLowerCase()">
-                        {{ row.status || 'Active' }}
-                      </span>
-                    </td>
-                    <td class="option-date">{{ row.createdDate || getTodayDate() }}</td>
-                    <td class="td-actions is-align-center">
+                    <td>{{ row.status || 'Active' }}</td>
+                    <td>{{ row.createdDate || getTodayDate() }}</td>
+                    <td class="col-actions">
                       <button
                         type="button"
-                        class="btn btn-sm btn-edit"
+                        class="btn-icon btn-icon--edit"
                         (click)="editOption(row, getFilteredAndSortedOptions().indexOf(row))"
-                        aria-label="Edit option"
-                        title="Edit">
-                        Edit
+                        aria-label="Edit option">
+                        <span class="material-icons">edit</span>
+                      </button>
+                      <button
+                        type="button"
+                        class="btn-icon btn-icon--delete"
+                        (click)="deleteOption(row.value)"
+                        aria-label="Delete option">
+                        <span class="material-icons">delete</span>
                       </button>
                     </td>
                   </tr>

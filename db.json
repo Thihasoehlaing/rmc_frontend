@@ -484,6 +484,390 @@
       "isDraft": false,
       "savedAt": "2026-04-13T07:54:10.629Z",
       "id": 2
+    },
+    {
+      "metadata": {
+        "batch": null,
+        "applicationVersion": 1,
+        "reviewers_version": 1,
+        "applicantUserId": "4"
+      },
+      "teamDetails": {
+        "leaderName": "Dr. John Smith",
+        "leaderEmail": "john.smith@apu.edu.my",
+        "department": "School of Business",
+        "researchCluster": "2",
+        "leaderRoles": "dd",
+        "internalResearchers": [],
+        "externalResearchers": []
+      },
+      "projectDetails": {
+        "applicationType": "",
+        "declarations": {
+          "ethics": false,
+          "conflict": false
+        },
+        "category": "S&T",
+        "duration": "",
+        "title": "",
+        "researchArea": "",
+        "domain": "",
+        "subDomain": "",
+        "esgs": [],
+        "sdgs": [],
+        "executiveSummary": "",
+        "keywords": "",
+        "introduction": "",
+        "problemStatement": "",
+        "researchAim": "",
+        "researchQuestions": "",
+        "hypothesis": "",
+        "literatureReview": "",
+        "methodology": "",
+        "references": "",
+        "benefits": {
+          "apu": "",
+          "students": "",
+          "stakeholders": ""
+        },
+        "visionMission": ""
+      },
+      "activities": [],
+      "outputs": {
+        "journal": {
+          "checked": false,
+          "quantity": null
+        },
+        "conceptualDesign": false,
+        "knowledgeTransfer": {
+          "checked": false,
+          "community": ""
+        },
+        "externalGrant": {
+          "checked": false,
+          "scheme": ""
+        },
+        "others": {
+          "checked": false,
+          "details": ""
+        }
+      },
+      "budget": {
+        "studentAllowances": [],
+        "travelAccommodation": [],
+        "materialsSupplies": [],
+        "specialServices": [],
+        "totalRequest": 0
+      },
+      "finalDeclaration": {
+        "noveltyJustification": "",
+        "agreed": false
+      },
+      "reviewTeam": {
+        "hosComment": "",
+        "reviewer1Comment": "",
+        "reviewer1Score": "",
+        "reviewer2Comment": "",
+        "reviewer2Score": "",
+        "rmcComment": ""
+      },
+      "reviewProject": {
+        "hosPageComment": "",
+        "reviewer1ClassificationComment": "",
+        "reviewer2ClassificationComment": "",
+        "reviewer1TitleComment": "",
+        "reviewer2TitleComment": "",
+        "reviewer1ResearchAreaComment": "",
+        "reviewer2ResearchAreaComment": "",
+        "reviewer1EsgComment": "",
+        "reviewer2EsgComment": "",
+        "reviewer1SdgComment": "",
+        "reviewer2SdgComment": "",
+        "reviewer1KeywordsComment": "",
+        "reviewer2KeywordsComment": "",
+        "reviewer1ReferencesComment": "",
+        "reviewer2ReferencesComment": "",
+        "reviewer1VisionComment": "",
+        "reviewer2VisionComment": "",
+        "reviewer1ActivitiesComment": "",
+        "reviewer2ActivitiesComment": "",
+        "reviewer1SummaryComment": "",
+        "reviewer1SummaryScore": "",
+        "reviewer2SummaryComment": "",
+        "reviewer2SummaryScore": "",
+        "reviewer1IntroComment": "",
+        "reviewer1IntroScore": "",
+        "reviewer2IntroComment": "",
+        "reviewer2IntroScore": "",
+        "reviewer1ProblemComment": "",
+        "reviewer1ProblemScore": "",
+        "reviewer2ProblemComment": "",
+        "reviewer2ProblemScore": "",
+        "reviewer1HypothesisComment": "",
+        "reviewer1HypothesisScore": "",
+        "reviewer2HypothesisComment": "",
+        "reviewer2HypothesisScore": "",
+        "reviewer1LitReviewComment": "",
+        "reviewer1LitReviewScore": "",
+        "reviewer2LitReviewComment": "",
+        "reviewer2LitReviewScore": "",
+        "reviewer1MethodComment": "",
+        "reviewer1MethodScore": "",
+        "reviewer2MethodComment": "",
+        "reviewer2MethodScore": "",
+        "reviewer1StakeholdersComment": "",
+        "reviewer1StakeholdersScore": "",
+        "reviewer2StakeholdersComment": "",
+        "reviewer2StakeholdersScore": "",
+        "reviewer1AimComment": "",
+        "reviewer1AimScore": "",
+        "reviewer2AimComment": "",
+        "reviewer2AimScore": "",
+        "reviewer1QuestionsComment": "",
+        "reviewer1QuestionsScore": "",
+        "reviewer2QuestionsComment": "",
+        "reviewer2QuestionsScore": "",
+        "rmcAimComment": ""
+      },
+      "reviewOutput": {
+        "hosComment": "",
+        "reviewer1Comment": "",
+        "reviewer2Comment": "",
+        "rmcComment": ""
+      },
+      "reviewBudget": {
+        "reviewer1StudentComment": "",
+        "reviewer2StudentComment": "",
+        "reviewer1TravelComment": "",
+        "reviewer2TravelComment": "",
+        "reviewer1MaterialsComment": "",
+        "reviewer2MaterialsComment": "",
+        "reviewer1ServicesComment": "",
+        "reviewer2ServicesComment": "",
+        "hosComment": "",
+        "rmcComment": "",
+        "reviewer1Comment": "",
+        "reviewer1Score": "",
+        "reviewer2Comment": "",
+        "reviewer2Score": ""
+      },
+      "reviewDeclaration": {
+        "rdigChairComment": "",
+        "vcComment": ""
+      },
+      "approvals": {
+        "hosStatus": "",
+        "rmcStatus": "",
+        "reviewer1Decision": "",
+        "reviewer2Decision": "",
+        "rdigChairStatus": "",
+        "vcStatus": "",
+        "ceoStatus": "",
+        "reviewer1Assignment": "4",
+        "reviewer2Assignment": "4"
+      },
+      "formType": "RDIG",
+      "workflow": {
+        "currentStatus": "fill_application",
+        "nextRoles": [],
+        "nextUsers": [],
+        "history": []
+      },
+      "isDraft": true,
+      "savedAt": "2026-04-28T02:01:11.508Z",
+      "id": 3
+    },
+    {
+      "metadata": {
+        "batch": null,
+        "applicationVersion": 1,
+        "reviewers_version": 1,
+        "applicantUserId": "4"
+      },
+      "teamDetails": {
+        "leaderName": "Dr. John Smith",
+        "leaderEmail": "john.smith@apu.edu.my",
+        "department": "School of Business",
+        "researchCluster": null,
+        "leaderRoles": "CV",
+        "internalResearchers": [],
+        "externalResearchers": []
+      },
+      "projectDetails": {
+        "applicationType": "",
+        "declarations": {
+          "ethics": false,
+          "conflict": false
+        },
+        "category": "S&T",
+        "duration": "",
+        "title": "",
+        "researchArea": "",
+        "domain": "",
+        "subDomain": "",
+        "esgs": [],
+        "sdgs": [],
+        "executiveSummary": "",
+        "keywords": "",
+        "introduction": "",
+        "problemStatement": "",
+        "researchAim": "",
+        "researchQuestions": "",
+        "hypothesis": "",
+        "literatureReview": "",
+        "methodology": "",
+        "references": "",
+        "benefits": {
+          "apu": "",
+          "students": "",
+          "stakeholders": ""
+        },
+        "visionMission": ""
+      },
+      "activities": [],
+      "outputs": {
+        "journal": {
+          "checked": false,
+          "quantity": null
+        },
+        "conceptualDesign": false,
+        "knowledgeTransfer": {
+          "checked": false,
+          "community": ""
+        },
+        "externalGrant": {
+          "checked": false,
+          "scheme": ""
+        },
+        "others": {
+          "checked": false,
+          "details": ""
+        }
+      },
+      "budget": {
+        "studentAllowances": [],
+        "travelAccommodation": [],
+        "materialsSupplies": [],
+        "specialServices": [],
+        "totalRequest": 0
+      },
+      "finalDeclaration": {
+        "noveltyJustification": "",
+        "agreed": false
+      },
+      "reviewTeam": {
+        "hosComment": "",
+        "reviewer1Comment": "",
+        "reviewer1Score": "",
+        "reviewer2Comment": "",
+        "reviewer2Score": "",
+        "rmcComment": ""
+      },
+      "reviewProject": {
+        "hosPageComment": "",
+        "reviewer1ClassificationComment": "",
+        "reviewer2ClassificationComment": "",
+        "reviewer1TitleComment": "",
+        "reviewer2TitleComment": "",
+        "reviewer1ResearchAreaComment": "",
+        "reviewer2ResearchAreaComment": "",
+        "reviewer1EsgComment": "",
+        "reviewer2EsgComment": "",
+        "reviewer1SdgComment": "",
+        "reviewer2SdgComment": "",
+        "reviewer1KeywordsComment": "",
+        "reviewer2KeywordsComment": "",
+        "reviewer1ReferencesComment": "",
+        "reviewer2ReferencesComment": "",
+        "reviewer1VisionComment": "",
+        "reviewer2VisionComment": "",
+        "reviewer1ActivitiesComment": "",
+        "reviewer2ActivitiesComment": "",
+        "reviewer1SummaryComment": "",
+        "reviewer1SummaryScore": "",
+        "reviewer2SummaryComment": "",
+        "reviewer2SummaryScore": "",
+        "reviewer1IntroComment": "",
+        "reviewer1IntroScore": "",
+        "reviewer2IntroComment": "",
+        "reviewer2IntroScore": "",
+        "reviewer1ProblemComment": "",
+        "reviewer1ProblemScore": "",
+        "reviewer2ProblemComment": "",
+        "reviewer2ProblemScore": "",
+        "reviewer1HypothesisComment": "",
+        "reviewer1HypothesisScore": "",
+        "reviewer2HypothesisComment": "",
+        "reviewer2HypothesisScore": "",
+        "reviewer1LitReviewComment": "",
+        "reviewer1LitReviewScore": "",
+        "reviewer2LitReviewComment": "",
+        "reviewer2LitReviewScore": "",
+        "reviewer1MethodComment": "",
+        "reviewer1MethodScore": "",
+        "reviewer2MethodComment": "",
+        "reviewer2MethodScore": "",
+        "reviewer1StakeholdersComment": "",
+        "reviewer1StakeholdersScore": "",
+        "reviewer2StakeholdersComment": "",
+        "reviewer2StakeholdersScore": "",
+        "reviewer1AimComment": "",
+        "reviewer1AimScore": "",
+        "reviewer2AimComment": "",
+        "reviewer2AimScore": "",
+        "reviewer1QuestionsComment": "",
+        "reviewer1QuestionsScore": "",
+        "reviewer2QuestionsComment": "",
+        "reviewer2QuestionsScore": "",
+        "rmcAimComment": ""
+      },
+      "reviewOutput": {
+        "hosComment": "",
+        "reviewer1Comment": "",
+        "reviewer2Comment": "",
+        "rmcComment": ""
+      },
+      "reviewBudget": {
+        "reviewer1StudentComment": "",
+        "reviewer2StudentComment": "",
+        "reviewer1TravelComment": "",
+        "reviewer2TravelComment": "",
+        "reviewer1MaterialsComment": "",
+        "reviewer2MaterialsComment": "",
+        "reviewer1ServicesComment": "",
+        "reviewer2ServicesComment": "",
+        "hosComment": "",
+        "rmcComment": "",
+        "reviewer1Comment": "",
+        "reviewer1Score": "",
+        "reviewer2Comment": "",
+        "reviewer2Score": ""
+      },
+      "reviewDeclaration": {
+        "rdigChairComment": "",
+        "vcComment": ""
+      },
+      "approvals": {
+        "hosStatus": "",
+        "rmcStatus": "",
+        "reviewer1Decision": "",
+        "reviewer2Decision": "",
+        "rdigChairStatus": "",
+        "vcStatus": "",
+        "ceoStatus": "",
+        "reviewer1Assignment": "4",
+        "reviewer2Assignment": "4"
+      },
+      "formType": "RDIG",
+      "workflow": {
+        "currentStatus": "fill_application",
+        "nextRoles": [],
+        "nextUsers": [],
+        "history": []
+      },
+      "isDraft": true,
+      "savedAt": "2026-04-28T02:03:15.718Z",
+      "id": 4
     }
   ],
   "$schema": "./node_modules/json-server/schema.json",
@@ -538,9 +922,9 @@
       "endedAt": "2026-03-31T09:40:08.030Z"
     },
     {
-      "batchName": "RDIG 123",
-      "startDate": "2026-03-01",
-      "endDate": "2026-12-04",
+      "batchName": "RDIG 230",
+      "startDate": "2025-12-29",
+      "endDate": "2026-12-31",
       "stages": {
         "hos_first_review": {
           "startDate": "2026-01-01",
@@ -581,7 +965,7 @@
       },
       "status": "active",
       "createdAt": "2026-03-26T09:15:11.739Z",
-      "updatedAt": "2026-03-31T09:41:38.474Z",
+      "updatedAt": "2026-04-28T02:02:54.604Z",
       "createdBy": "rmc_ahmad",
       "id": 2,
       "applicationIds": [

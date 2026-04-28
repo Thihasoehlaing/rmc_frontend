@@ -4,11 +4,12 @@ import { ApplicationService } from '../../services/application.service';
 import { BatchSittingService } from '../../settings/batch-sitting.service';
 import { BatchSitting, WORKFLOW_STAGE_META } from '../../interfaces/batch-sitting.interface';
 import { TableSortService, SortDirection } from '../../shared/services/table-sort.service';
+import { SubmissionsSearchComponent } from '../../shared/components/submissions-search/submissions-search.component';
 
 @Component({
   selector: 'app-inbox',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, SubmissionsSearchComponent],
   templateUrl: './inbox.component.html',
   styleUrl: './inbox.component.scss',
   providers: [TableSortService]
@@ -22,6 +23,7 @@ export class InboxComponent implements OnInit {
   activeBatch             = signal<BatchSitting | null>(null);
   loading                 = signal(true);
   error                   = signal<string | null>(null);
+  searchQuery             = signal('');
   headerSortColumn        = signal<string | null>(null);
   headerSortDirection     = signal<SortDirection>(null);
 
@@ -55,8 +57,11 @@ export class InboxComponent implements OnInit {
   readonly applications = computed(() => {
     const batch = this.activeBatch();
     const today = new Date().toISOString().substring(0, 10);
+    const query = this.searchQuery().toLowerCase().trim();
 
     return this.allApplications().filter(app => {
+      if (query && !this.getTitle(app).toLowerCase().includes(query)) return false;
+
       if (!batch) return true;  // No batch config → no date restriction
 
       const status = this.getStatus(app);

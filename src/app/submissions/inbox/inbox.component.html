@@ -38,11 +38,22 @@
     </div>
   }
 
+  @if (!loading() && !error()) {
+    <app-submissions-search
+      placeholder="Search inbox applications by title..."
+      [value]="searchQuery()"
+      (valueChange)="searchQuery.set($event)" />
+  }
+
   <!-- Empty -->
   @if (!loading() && !error() && applications().length === 0) {
     <div class="state-message state-empty">
       <span class="material-icons">check_circle_outline</span>
-      No applications pending your action within the current batch window.
+      @if (searchQuery()) {
+        No inbox applications match your search.
+      } @else {
+        No applications pending your action within the current batch window.
+      }
     </div>
   }
 

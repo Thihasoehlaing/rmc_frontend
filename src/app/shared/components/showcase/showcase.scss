@@ -44,6 +44,14 @@
   margin: var(--space-2) 0 0;
 }
 
+.radio-demo-row {
+  margin-top: var(--space-5);
+  padding: var(--space-4);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
 // ─── Color swatches ────────────────────────────────────────────────
 .swatch-grid {
   display: grid;

@@ -1,11 +1,12 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ApplicationService, TERMINAL_STATUSES } from '../../services/application.service';
+import { SubmissionsSearchComponent } from '../../shared/components/submissions-search/submissions-search.component';
 
 @Component({
   selector: 'app-pending',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, SubmissionsSearchComponent],
   templateUrl: './pending.component.html',
   styleUrl: './pending.component.scss',
 })

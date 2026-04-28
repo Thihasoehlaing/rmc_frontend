@@ -1,8 +1,9 @@
 import { Component, Input, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
 import { ReactiveFormsModule, FormGroup, FormArray, FormBuilder, FormControl, Validators } from '@angular/forms';
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { of, Subject } from 'rxjs';
+import { catchError, map, takeUntil } from 'rxjs/operators';
 import { SearchableDropdownComponent } from '../../../shared/components/searchable-dropdown/searchable-dropdown.component';
 import { CharacterCounterComponent } from '../../../shared/components/character-counter/character-counter.component';
 import { ValidationMessageComponent } from '../../../shared/components/validation-message/validation-message.component';
@@ -17,6 +18,14 @@ import { AuthService } from '../../../services/auth.service';
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
 import type { DataTableColumn } from '../../../shared/components/data-table/data-table.component';
 import { ActionButtonComponent } from '../../../shared/components/action-button/action-button.component';
+
+interface RestCountry {
+  name?: {
+    common?: string;
+    official?: string;
+  };
+  cca2?: string;
+}
 
 @Component({
   selector: 'app-team-details',
@@ -41,6 +50,7 @@ import { ActionButtonComponent } from '../../../shared/components/action-button/
 export class TeamDetailsComponent implements OnInit, OnDestroy {
   private readonly dropdownService = inject(RdigDropdownOptionsService);
   private readonly authService = inject(AuthService);
+  private readonly http = inject(HttpClient);
   private readonly destroy$ = new Subject<void>();
 
   /** Eligible internal co-researchers: (full_time|contract) AND academic, NOT Reviewer/blocked */
@@ -98,6 +108,8 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
   externalForm: FormGroup;
 
   clusters: { label: string; value: string }[] = [];
+  countryOptions: { label: string; value: string }[] = [];
+  countriesLoading = false;
 
   titles = [
     { label: 'Prof.', value: 'Prof.' },
@@ -156,6 +168,8 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
     this.internalForm.get('staffId')!.valueChanges
       .pipe(takeUntil(this.destroy$))
       .subscribe(id => this.onResearcherSelected(id));
+
+    this.loadCountryOptions();
   }
 
   ngOnDestroy(): void {
@@ -184,6 +198,42 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
     } else {
       this.internalForm.patchValue({ staffName: '', department: '' });
     }
+  }
+
+  private loadCountryOptions(): void {
+    this.countriesLoading = true;
+    this.http.get<RestCountry[]>('https://restcountries.com/v3.1/all?fields=name,cca2')
+      .pipe(
+        map(countries => this.normalizeCountryOptions(countries)),
+        catchError(error => {
+          console.error('Failed to load country options from REST Countries API', error);
+          return of([]);
+        }),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(options => {
+        this.countryOptions = options;
+        this.countriesLoading = false;
+      });
+  }
+
+  private normalizeCountryOptions(countries: RestCountry[]): { label: string; value: string }[] {
+    const optionsByName = new Map<string, { label: string; value: string }>();
+
+    countries.forEach(country => {
+      const rawName = country.name?.common?.trim();
+      if (!rawName) return;
+
+      const name = rawName.toLowerCase() === 'israel' ? 'Palestine' : rawName;
+      const key = name.toLowerCase();
+
+      if (!optionsByName.has(key)) {
+        optionsByName.set(key, { label: name, value: name });
+      }
+    });
+
+    return Array.from(optionsByName.values())
+      .sort((a, b) => a.label.localeCompare(b.label));
   }
 
   openInternalModal(): void {

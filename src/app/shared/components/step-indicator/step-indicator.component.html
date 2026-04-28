@@ -6,13 +6,13 @@
       type="button"
       class="step"
       [class.step--complete]="isComplete(i)"
-      [class.step--active]="isActive(i)"
+      [class.step--active]="isActive(i) && !isWarning(i) && !isError(i)"
       [class.step--error]="isError(i)"
       [class.step--warning]="isWarning(i)"
       [class.step--pending]="isPending(i)"
-      [title]="(isWarning(i) || isError(i)) ? getMissingTooltip(i) : step.label"
       (click)="goToStep(i)"
-      [attr.aria-label]="step.label">
+      [attr.aria-label]="getAriaLabel(i)"
+      [attr.aria-describedby]="showMissingTooltip(i) ? 'step-tooltip-' + i : null">
 
       <div class="step__bubble">
         @if (isComplete(i)) {
@@ -27,6 +27,21 @@
       </div>
 
       <span class="step__label">{{ step.label }}</span>
+
+      @if (showMissingTooltip(i)) {
+        <div class="step-tooltip" [id]="'step-tooltip-' + i" role="tooltip">
+          <div class="step-tooltip__header">
+            <span class="step-tooltip__accent"></span>
+            <span class="step-tooltip__title">{{ getTooltipTitle(i) }}</span>
+            <span class="step-tooltip__count">{{ getMissingCountLabel(i) }}</span>
+          </div>
+          <ul class="step-tooltip__list">
+            @for (field of getMissingFields(i); track field) {
+              <li>{{ field }}</li>
+            }
+          </ul>
+        </div>
+      }
     </button>
 
     <!-- Connector (not after last step) -->

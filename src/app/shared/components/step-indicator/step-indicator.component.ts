@@ -37,14 +37,12 @@ export class StepIndicatorComponent {
 
   /** Red: submit was attempted but step still has missing fields */
   isError(index: number): boolean {
-    if (this.isActive(index)) return false;
     const status = this.stepStatuses[index];
-    return this.submitAttempted && !!status?.visited && !status?.valid;
+    return this.submitAttempted && !status?.valid;
   }
 
   /** Amber: visited but has unmet required fields (before submit attempt) */
   isWarning(index: number): boolean {
-    if (this.isActive(index)) return false;
     if (this.isError(index)) return false;
     const status = this.stepStatuses[index];
     return !!status?.visited && !status?.valid;
@@ -59,10 +57,34 @@ export class StepIndicatorComponent {
     return this.isComplete(index);
   }
 
-  getMissingTooltip(index: number): string {
+  hasMissingFields(index: number): boolean {
     const status = this.stepStatuses[index];
-    if (!status?.missingFields?.length) return '';
-    return 'Missing: ' + status.missingFields.join(', ');
+    return !!status?.missingFields?.length;
+  }
+
+  showMissingTooltip(index: number): boolean {
+    return (this.isWarning(index) || this.isError(index)) && this.hasMissingFields(index);
+  }
+
+  getTooltipTitle(index: number): string {
+    return this.isError(index) ? 'Required Before Submit' : 'Missing Information';
+  }
+
+  getMissingFields(index: number): string[] {
+    const status = this.stepStatuses[index];
+    return status?.missingFields ?? [];
+  }
+
+  getMissingCountLabel(index: number): string {
+    const count = this.getMissingFields(index).length;
+    return `${count} ${count === 1 ? 'item' : 'items'}`;
+  }
+
+  getAriaLabel(index: number): string {
+    const step = this.steps[index];
+    const label = step?.label ?? `Step ${index + 1}`;
+    if (!this.showMissingTooltip(index)) return label;
+    return `${label}. ${this.getTooltipTitle(index)}: ${this.getMissingFields(index).join(', ')}`;
   }
 
   goToStep(index: number) {

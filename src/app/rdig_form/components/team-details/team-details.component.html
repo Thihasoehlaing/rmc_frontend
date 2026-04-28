@@ -11,15 +11,15 @@
       <div class="row row--3">
         <div class="form-field">
           <label class="form-label is-required">Project Leader Name</label>
-          <input type="text" class="input--text" formControlName="leaderName" readonly>
+          <input type="text" class="input--text input--disabled-readonly" formControlName="leaderName" readonly>
         </div>
         <div class="form-field">
           <label class="form-label is-required">Project Leader's Email</label>
-          <input type="email" class="input--text" formControlName="leaderEmail" readonly>
+          <input type="email" class="input--text input--disabled-readonly" formControlName="leaderEmail" readonly>
         </div>
         <div class="form-field">
           <label class="form-label is-required">Project Leader's School / Department</label>
-          <input type="text" class="input--text" formControlName="department" readonly>
+          <input type="text" class="input--text input--disabled-readonly" formControlName="department" readonly>
         </div>
       </div>
     </div>
@@ -303,7 +303,7 @@
         <div class="form-field">
           <label class="form-label is-required">Title</label>
           <select class="input--select" formControlName="title">
-            <option value="" disabled>Select title...</option>
+            <option value="" disabled>Select collaborator title...</option>
             @for (t of titles; track t.value) {
             <option [value]="t.value">{{ t.label }}</option>
             }
@@ -312,7 +312,7 @@
         </div>
         <div class="form-field">
           <label class="form-label is-required">Full Name</label>
-          <input type="text" class="input--text" formControlName="fullName" placeholder="Enter full name...">
+          <input type="text" class="input--text" formControlName="fullName" placeholder="e.g. Dr. Aisha Rahman">
           <app-validation-message [control]="externalForm.get('fullName')"></app-validation-message>
         </div>
       </div>
@@ -321,13 +321,13 @@
       <div class="row row--2">
         <div class="form-field">
           <label class="form-label is-required">Email Address</label>
-          <input type="email" class="input--text" formControlName="email" placeholder="name@institution.edu">
+          <input type="email" class="input--text" formControlName="email" placeholder="e.g. aisha.rahman@university.edu">
           <app-validation-message [control]="externalForm.get('email')"></app-validation-message>
         </div>
         <div class="form-field">
           <label class="form-label is-required">Institution / Company</label>
           <input type="text" class="input--text" formControlName="institution"
-            placeholder="Enter institution or company name...">
+            placeholder="e.g. Universiti Malaya or TechNova Sdn Bhd">
           <app-validation-message [control]="externalForm.get('institution')"></app-validation-message>
         </div>
       </div>
@@ -337,7 +337,7 @@
         <div class="form-field">
           <label class="form-label is-required">Type of Organisation</label>
           <select class="input--select" formControlName="orgType">
-            <option value="" disabled>Select type...</option>
+            <option value="" disabled>Select organisation type...</option>
             @for (o of orgTypes; track o.value) {
             <option [value]="o.value">{{ o.label }}</option>
             }
@@ -347,7 +347,7 @@
         <div class="form-field">
           <label class="form-label is-required">Position / Designation</label>
           <input type="text" class="input--text" formControlName="position"
-            placeholder="e.g. Senior Researcher, Director...">
+            placeholder="e.g. Senior Researcher, Director, Lecturer">
           <app-validation-message [control]="externalForm.get('position')"></app-validation-message>
         </div>
       </div>
@@ -357,13 +357,19 @@
         <div class="form-field">
           <label class="form-label is-required">School / Department / Faculty</label>
           <input type="text" class="input--text" formControlName="department"
-            placeholder="e.g. Faculty of Engineering...">
+            placeholder="e.g. Faculty of Computing and Informatics">
           <app-validation-message [control]="externalForm.get('department')"></app-validation-message>
         </div>
         <div class="form-field">
           <label class="form-label is-required">Country</label>
-          <input type="text" class="input--text" formControlName="country"
-            placeholder="e.g. Malaysia, United Kingdom...">
+          <app-searchable-dropdown
+            [options]="countryOptions"
+            [loading]="countriesLoading"
+            [isMulti]="false"
+            placeholder="Search and select country..."
+            valueMode="single"
+            formControlName="country">
+          </app-searchable-dropdown>
           <app-validation-message [control]="externalForm.get('country')"></app-validation-message>
         </div>
       </div>
@@ -371,7 +377,7 @@
       <!-- Full width: Matched Funding -->
       <div class="form-field">
         <label class="form-label is-required">Matched Funding (RM equivalent)</label>
-        <input type="text" class="input--text" formControlName="funding" placeholder="Numeric value only, e.g. 5000">
+        <input type="text" class="input--text" formControlName="funding" placeholder="e.g. 5000.00">
         <app-validation-message [control]="externalForm.get('funding')"></app-validation-message>
       </div>
 
@@ -379,7 +385,7 @@
       <div class="form-field">
         <label class="form-label is-required">Roles of Collaborator</label>
         <textarea class="input--textarea" formControlName="roles" [maxlength]="600"
-          placeholder="Describe the collaborator's specific roles...">
+          placeholder="e.g. Provide industry data, validate prototype, support field testing">
           </textarea>
         <app-character-counter [current]="externalForm.get('roles')?.value?.length || 0" [max]="600">
         </app-character-counter>

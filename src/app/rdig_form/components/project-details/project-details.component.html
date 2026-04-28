@@ -157,7 +157,7 @@
             <label class="form-label is-required">ESG Factors</label>
             <app-note text="Min 1, Max 3" [isTooltip]="true"></app-note>
           </div>
-          <app-searchable-dropdown [options]="esgs" [isMulti]="true" formControlName="esgs"></app-searchable-dropdown>
+          <app-searchable-dropdown [options]="esgs" [isMulti]="true" [maxSelections]="3" formControlName="esgs"></app-searchable-dropdown>
           <app-validation-message [control]="projectDetails.get('esgs')"></app-validation-message>
         </div>
         <div class="form-field">
@@ -165,7 +165,7 @@
             <label class="form-label is-required">SDG Alignment</label>
             <app-note text="Min 1, Max 3" [isTooltip]="true"></app-note>
           </div>
-          <app-searchable-dropdown [options]="sdgs" [isMulti]="true" formControlName="sdgs"></app-searchable-dropdown>
+          <app-searchable-dropdown [options]="sdgs" [isMulti]="true" [maxSelections]="3" formControlName="sdgs"></app-searchable-dropdown>
           <app-validation-message [control]="projectDetails.get('sdgs')"></app-validation-message>
         </div>
       </div>

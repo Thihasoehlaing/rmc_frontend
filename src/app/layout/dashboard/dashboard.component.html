@@ -1,112 +1,81 @@
-<div class="dashboard">
-  <header class="dashboard__header">
-    <div class="header-content">
-      <h1>Welcome back, {{ username() }}</h1>
-      <p class="subtitle">Here is what's happening with your grants today.</p>
+<main class="dashboard">
+  <header class="dashboard-header">
+    <div>
+      <p class="dashboard-kicker">RMC Portal</p>
+      <h1>Dashboard</h1>
+      <p class="dashboard-subtitle">Welcome back, {{ username() }}. Your work queue at a glance.</p>
     </div>
-    <div class="dashboard__actions">
-      <button class="btn btn--outline">
-        <span class="material-icons">file_download</span>
-        Export Report
-      </button>
-      <button class="btn btn--primary">
-        <span class="material-icons">add</span>
-        New Application
-      </button>
-    </div>
+
+    <a routerLink="/showcase" class="showcase-link" aria-label="Open UI showcase for testing">
+      <span class="material-icons">palette</span>
+      <span>Showcase</span>
+    </a>
   </header>
 
-  <!-- KPI Grid -->
-  <section class="kpi-grid">
-    @for (stat of stats; track stat.label) {
-    <div class="kpi-card">
-      <div class="kpi-card__icon" [style.background-color]="stat.color + '15'" [style.color]="stat.color">
-        <span class="material-icons">{{ stat.icon }}</span>
-      </div>
-      <div class="kpi-card__content">
-        <div class="kpi-card__label">{{ stat.label }}</div>
-        <div class="kpi-card__value">{{ stat.value }}</div>
-        <div class="kpi-card__trend" [class.up]="stat.trend > 0" [class.down]="stat.trend < 0">
-          <span class="material-icons">{{ stat.trend > 0 ? 'trending_up' : 'trending_down' }}</span>
-          {{ stat.trend }}% since last month
+  @if (error()) {
+    <section class="state-panel state-panel--error">
+      <span class="material-icons">error_outline</span>
+      <span>{{ error() }}</span>
+    </section>
+  }
+
+  <section class="metrics-grid" aria-label="Application summary">
+    @for (metric of metrics(); track metric.label) {
+      <a
+        class="metric-card"
+        [ngClass]="'metric-card--' + metric.tone"
+        [routerLink]="metric.route">
+        <div class="metric-card__icon">
+          <span class="material-icons">{{ metric.icon }}</span>
         </div>
-      </div>
-    </div>
+        <div>
+          <span class="metric-card__label">{{ metric.label }}</span>
+          <strong class="metric-card__value">{{ loading() ? '...' : metric.value }}</strong>
+        </div>
+      </a>
     }
   </section>
 
-  <!-- Main Section: Recent Activity & Quick Links -->
-  <div class="dashboard__main-grid">
-    <section class="card recent-activity">
-      <div class="card__header">
-        <h2 class="card__title">Recent Applications</h2>
-        <a href="#" class="card__link">View All</a>
+  <section class="applications-panel">
+    <div class="panel-header">
+      <div>
+        <p class="panel-eyebrow">Applications</p>
+        <h2>Recent Applications</h2>
       </div>
-      <div class="card__content">
-        <div class="activity-list">
-          @for (app of recentApps; track app.id) {
-          <div class="activity-item">
-            <div class="activity-item__details">
-              <div class="app-title">{{ app.title }}</div>
-              <div class="app-meta">{{ app.id }} • {{ app.date | date }}</div>
-            </div>
-            <div class="activity-item__status">
-              <span class="status-badge" [class]="'status--' + app.status.toLowerCase()">
-                {{ app.status }}
-              </span>
-            </div>
-          </div>
-          }
-        </div>
-      </div>
-    </section>
+      <a routerLink="/submissions/pending" class="panel-link">View pending</a>
+    </div>
 
-    <section class="quick-links">
-      <h2 class="section-title">Quick Actions</h2>
-      <div class="link-grid">
-        @if (canApplyRdig()) {
-        <a routerLink="/rdig" class="link-tile">
-          <span class="material-icons">description</span>
-          <span>Apply for RDIG</span>
-        </a>
-        }
-        @if (canApplyConference()) {
-        <a routerLink="/conference" class="link-tile">
-          <span class="material-icons">event</span>
-          <span>Conference Funding</span>
-        </a>
-        }
-        <a routerLink="/profile" class="link-tile">
-          <span class="material-icons">person</span>
-          <span>Update Profile</span>
-        </a>
-        <a routerLink="/showcase" class="link-tile">
-          <span class="material-icons">palette</span>
-          <span>UI Showcase</span>
-        </a>
+    @if (loading()) {
+      <div class="state-panel">
+        <span class="material-icons">hourglass_empty</span>
+        <span>Loading recent applications...</span>
       </div>
-
-      <div class="card stats-card" style="margin-top: 24px;">
-        <div class="card__header">
-          <h2 class="card__title">System Status</h2>
-        </div>
-        <div class="card__content">
-          <div class="system-status">
-            <div class="status-line">
-              <span>API Gateway</span>
-              <span class="dot online"></span>
-            </div>
-            <div class="status-line">
-              <span>Database Cluster</span>
-              <span class="dot online"></span>
-            </div>
-            <div class="status-line">
-              <span>Submission Engine</span>
-              <span class="dot delayed"></span>
-            </div>
-          </div>
-        </div>
+    } @else if (recentApps().length === 0) {
+      <div class="empty-state">
+        <span class="material-icons">description</span>
+        <p>No applications found yet.</p>
       </div>
-    </section>
-  </div>
-</div>
+    } @else {
+      <div class="application-list">
+        @for (app of recentApps(); track app.id ?? getTitle(app)) {
+          <a
+            class="application-row"
+            [routerLink]="getFormRoute(app)"
+            [queryParams]="{ id: app.id }">
+            <div class="application-row__main">
+              <span class="application-row__type">{{ getFormTypeLabel(app) }}</span>
+              <strong>{{ getTitle(app) }}</strong>
+              <small>{{ formatDate(app) }}</small>
+            </div>
+            <span
+              class="status-chip"
+              [style.border-color]="getStatusColor(app)"
+              [style.color]="getStatusColor(app)">
+              {{ getStatusLabel(app) }}
+            </span>
+          </a>
+        }
+      </div>
+    }
+  </section>
+</main>

@@ -100,6 +100,26 @@
   .material-icons { font-size: var(--icon-sm); }
 }
 
+.view-only-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid color-mix(in srgb, var(--color-primary) 24%, var(--border-default));
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--color-primary) 7%, var(--color-surface));
+  color: var(--color-secondary);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+
+  .material-icons {
+    color: var(--color-primary);
+    font-size: var(--icon-md);
+    flex: 0 0 auto;
+  }
+}
+
 // ── Spinning icon ─────────────────────────────────────────────────────────────
 @keyframes spin { to { transform: rotate(360deg); } }
 .spinning { display: inline-block; animation: spin 1s linear infinite; }
@@ -238,6 +258,12 @@
     background: color-mix(in srgb, var(--color-error) 8%, var(--color-surface));
     color: var(--color-error-dark);
   }
+}
+
+.dev-test-panel__select:disabled,
+.validation-toggle:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
 }
 
 @keyframes stepFadeIn {

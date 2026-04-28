@@ -14,22 +14,11 @@
         <span class="list-count">{{ activities.length }} {{ activities.length === 1 ? 'Activity' : 'Activities' }} · Duration: {{ projectDuration() }} Months</span>
         <app-action-button
           type="primary" label="Add Activity" icon="add"
-          [disabled]="!projectDuration() || workflow.isFormReadOnly()"
-          [title]="!projectDuration() ? 'Select a Project Duration first' : ''"
+          [disabled]="!canAddActivity()"
+          [title]="getAddActivityTitle()"
           (clicked)="addActivity()">
         </app-action-button>
       </div>
-
-      @if (validationWarnings().length > 0) {
-        <div class="validation-warnings">
-          <span class="material-icons">info_outline</span>
-          <ul>
-            @for (w of validationWarnings(); track w) {
-              <li>{{ w }}</li>
-            }
-          </ul>
-        </div>
-      }
 
       @if (activities.length > 0) {
         <div class="table-scroll">
@@ -58,22 +47,19 @@
                     <td class="col-month">
                       <select class="input--select" formControlName="startMonth">
                         @for (m of months(); track m) {
-                          <option [value]="m">{{ m }}</option>
+                          <option [value]="m" [disabled]="isStartMonthDisabled(i, m)">{{ m }}</option>
                         }
                       </select>
                     </td>
                     <td class="col-month">
                       <select class="input--select" formControlName="endMonth">
                         @for (m of months(); track m) {
-                          <option [value]="m" [disabled]="m < activity.get('startMonth')?.value">{{ m }}</option>
+                          <option [value]="m" [disabled]="isEndMonthDisabled(activity, m)">{{ m }}</option>
                         }
                       </select>
                     </td>
                     <td class="col-duration">
                       <span class="duration-badge">{{ activity.get('duration')?.value }} Mo</span>
-                      @if (activity.get('endMonth')?.value <= activity.get('startMonth')?.value) {
-                        <p class="text-danger text-xs">End ≤ Start</p>
-                      }
                     </td>
                     <td class="col-timeline">
                       <div class="timeline-grid">
@@ -104,7 +90,7 @@
         </div>
       }
 
-      <app-note text="Duration is auto-calculated. End Month must be after Start Month. Each activity starts where the previous one ended (continuous timeline)." [isTooltip]="true"></app-note>
+      <app-note text="Start Month is set automatically. End Month must be after Start Month, and the final activity must end at the project duration month." [isTooltip]="true"></app-note>
     </div>
   </div>
 

@@ -1,5 +1,5 @@
 import { Component, signal, computed, inject, OnInit, OnDestroy, effect } from '@angular/core';
-import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, FormControl, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, FormControl, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { BatchSittingService } from '../settings/batch-sitting.service';
@@ -65,6 +65,9 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
   /** True while the batch status is still being fetched. */
   readonly isBatchLoading = computed(() => this.activeBatch() === undefined);
 
+  /** Existing applications remain readable even when no submission batch is active. */
+  readonly canShowForm = computed(() => !this.noBatchError() || !!this.loadedAppId());
+
   /** Days remaining until active batch endDate. Returns -999 when no batch loaded. */
   readonly deadlineDaysLeft = computed((): number => {
     const batch = this.activeBatch();
@@ -83,6 +86,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
   submissionErrorMessage = signal('');
   isSubmitting = computed(() => this.submissionState() !== 'IDLE');
   submitAttempted = signal(false);
+  isViewOnly = computed(() => !this.workflow.currentUserCanAct());
 
   /**
    * The json-server record ID for the currently loaded application.
@@ -118,8 +122,8 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
     this.showRdigChairComments() || this.showVcComments() || this.showCeoComments()
   );
 
-  /** Tracks which steps the user has visited */
-  visitedSteps = new Set<number>([1]);
+  /** Tracks steps the user has left, making them eligible for warning/complete state */
+  checkedSteps = new Set<number>();
 
   // ── Step metadata ──────────────────────────────────────────────
   readonly steps: WizardStep[] = [
@@ -139,6 +143,8 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
       { path: 'teamDetails.department', label: "School / Department" },
       { path: 'teamDetails.researchCluster', label: 'Research Cluster' },
       { path: 'teamDetails.leaderRoles', label: 'Roles of Project Leader' },
+      { path: 'teamDetails.internalResearchers', label: 'APU Co-Researchers (min 1)' },
+      { path: 'teamDetails.externalResearchers', label: 'External Collaborators (min 2)' },
     ],
     // Step 2: Project Details
     [
@@ -167,11 +173,17 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
       { path: 'projectDetails.benefits.stakeholders', label: 'Stakeholders Benefit' },
       { path: 'projectDetails.visionMission', label: 'Vision & Mission Alignment' },
     ],
-    // Step 3: Research Activities (FormArray check handled separately)
+    // Step 3: Research Output
+    [
+      { path: 'outputs.journal.checked', label: 'Indexed Journal Publication' },
+      { path: 'outputs.journal.quantity', label: 'Indexed Journal Publication Quantity' },
+      { path: 'outputs.conceptualDesign', label: 'Conceptual Design / Product Development' },
+      { path: 'outputs.knowledgeTransfer.checked', label: 'Knowledge Transfer Programme' },
+      { path: 'outputs.knowledgeTransfer.community', label: 'Knowledge Transfer Community' },
+    ],
+    // Step 4: Budget
     [],
-    // Step 4: Research Output
-    [],
-    // Step 5: Budget + Declaration
+    // Step 5: Declaration
     [
       { path: 'finalDeclaration.noveltyJustification', label: 'Novelty Justification' },
       { path: 'finalDeclaration.agreed', label: 'Declaration Agreement' },
@@ -210,34 +222,81 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
       .replace(/\bEsg\b/g, 'ESG');
   }
 
+  private budgetRangeValidator = (control: AbstractControl): ValidationErrors | null => {
+    const budget = control as FormGroup;
+    const total = Number(budget.getRawValue()?.totalRequest ?? 0);
+    const category = budget.parent?.get('projectDetails.category')?.value;
+
+    if (category === 'S&T' && (total < 20000 || total > 30000)) {
+      return { budgetRange: true };
+    }
+
+    if (category === 'Non S&T' && (total < 5000 || total > 10000)) {
+      return { budgetRange: true };
+    }
+
+    return null;
+  };
+
+  private activitiesTimelineValidator = (control: AbstractControl): ValidationErrors | null => {
+    const activities = control as FormArray;
+    const duration = Number(control.parent?.get('projectDetails.duration')?.value ?? 0);
+
+    if (!duration) return null;
+    if (!activities || activities.length === 0) return { activitiesTimeline: true };
+
+    let previousEnd = 0;
+
+    for (let i = 0; i < activities.length; i++) {
+      const activity = activities.at(i);
+      const start = Number(activity.get('startMonth')?.value ?? 0);
+      const end = Number(activity.get('endMonth')?.value ?? 0);
+
+      if (i === 0 && start !== 1) return { activitiesTimeline: true };
+      if (end <= start) return { activitiesTimeline: true };
+      if (i > 0 && start !== previousEnd) return { activitiesTimeline: true };
+
+      previousEnd = end;
+    }
+
+    return previousEnd === duration ? null : { activitiesTimeline: true };
+  };
+
   getStepStatuses(): StepStatus[] {
     if (this.validationDisabled()) {
       return this.steps.map((_, i) => ({
-        visited: this.visitedSteps.has(i + 1),
+        visited: this.checkedSteps.has(i + 1),
         valid: true,
         missingFields: [],
       }));
     }
     return this.steps.map((_, i) => {
       const stepNum = i + 1;
-      const visited = this.visitedSteps.has(stepNum);
+      const visited = this.checkedSteps.has(stepNum);
       const checks = this.stepFieldChecks[i] ?? [];
       const missingFields = checks
         .filter(c => this.rdigForm.get(c.path)?.invalid)
         .map(c => c.label);
 
-      // Step 2 also includes Research Activities
-      if (stepNum === 2) {
+      // Step 2 also includes Research Activities (applicant-only)
+      if (stepNum === 2 && this.workflow.isApplicantEditable()) {
         const acts = this.rdigForm.get('activities') as FormArray;
         if (!acts || acts.length === 0) {
           missingFields.push('At least 1 Research Activity');
         } else {
           acts.controls.forEach((ctrl, idx) => {
-            if (ctrl.get('name')?.invalid) {
+            if (ctrl.get('name')?.invalid || !String(ctrl.get('name')?.value ?? '').trim()) {
               missingFields.push(`Activity ${idx + 1} Description`);
             }
           });
+          if (acts.hasError('activitiesTimeline')) {
+            missingFields.push('Research Activities Timeline');
+          }
         }
+      }
+
+      if (stepNum === 4 && this.rdigForm.get('budget')?.hasError('budgetRange')) {
+        missingFields.push('Total Amount Requested');
       }
 
       // Include required-but-empty review fields (set dynamically by ReviewBlockComponent
@@ -273,13 +332,13 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
 
       // 2. Subpage 1 — Team Members (pre-filled from the logged-in user)
       teamDetails: this.fb.group({
-        leaderName: [this.auth.currentUser()?.name ?? '', Validators.required],
-        leaderEmail: [this.auth.currentUser()?.email ?? '', [Validators.required, Validators.email]],
-        department: [this.auth.currentUser()?.department ?? '', Validators.required],
+        leaderName: [{ value: this.auth.currentUser()?.name ?? '', disabled: true }, Validators.required],
+        leaderEmail: [{ value: this.auth.currentUser()?.email ?? '', disabled: true }, [Validators.required, Validators.email]],
+        department: [{ value: this.auth.currentUser()?.department ?? '', disabled: true }, Validators.required],
         researchCluster: [null, Validators.required],
         leaderRoles: ['', [Validators.required, Validators.maxLength(600)]],
-        internalResearchers: this.fb.array([]),
-        externalResearchers: this.fb.array([])
+        internalResearchers: this.fb.array([], [Validators.minLength(1), Validators.maxLength(2)]),
+        externalResearchers: this.fb.array([], [Validators.minLength(2), Validators.maxLength(10)])
       }),
 
       // 3. Subpage 2 — Project Details
@@ -295,8 +354,8 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
         researchArea: ['', [Validators.required, Validators.maxLength(100)]],
         domain: ['', Validators.required],
         subDomain: ['', Validators.required],
-        esgs: [[], Validators.required],
-        sdgs: [[], Validators.required],
+        esgs: [[], [Validators.required, Validators.minLength(1), Validators.maxLength(3)]],
+        sdgs: [[], [Validators.required, Validators.minLength(1), Validators.maxLength(3)]],
         executiveSummary: ['', [Validators.required, Validators.maxLength(1500)]],
         keywords: ['', [Validators.required, Validators.maxLength(200)]],
         introduction: ['', [Validators.required, Validators.maxLength(3000)]],
@@ -316,18 +375,18 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
       }),
 
       // 4. Subpage 3 — Research Activities
-      activities: this.fb.array([]),
+      activities: this.fb.array([], { validators: [this.activitiesTimelineValidator] }),
 
       // 5. Subpage 4 — Research Output
       outputs: this.fb.group({
         journal: this.fb.group({
-          checked: [false],
-          quantity: [null]
+          checked: [false, Validators.requiredTrue],
+          quantity: [null, Validators.required]
         }),
-        conceptualDesign: [false],
+        conceptualDesign: [false, Validators.requiredTrue],
         knowledgeTransfer: this.fb.group({
-          checked: [false],
-          community: ['']
+          checked: [false, Validators.requiredTrue],
+          community: ['', Validators.required]
         }),
         externalGrant: this.fb.group({
           checked: [false],
@@ -346,7 +405,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
         materialsSupplies: this.fb.array([]),
         specialServices: this.fb.array([]),
         totalRequest: [{ value: 0, disabled: true }]
-      }),
+      }, { validators: [this.budgetRangeValidator] }),
 
       // 7. Final Declaration
       finalDeclaration: this.fb.group({
@@ -478,6 +537,9 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
       })
     });
 
+    this.rdigForm.get('budget')?.updateValueAndValidity({ emitEvent: false });
+    this.rdigForm.get('activities')?.updateValueAndValidity({ emitEvent: false });
+
     // Reactively disable/enable applicant form groups based on workflow status.
     // Review groups (reviewTeam, reviewProject, etc.) and approvals are NOT included
     // here — they are controlled individually by each review-block/approval-card.
@@ -492,6 +554,9 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
       });
       // totalRequest is always computed — keep it disabled regardless
       this.rdigForm.get('budget.totalRequest')?.disable({ emitEvent: false });
+      ['leaderName', 'leaderEmail', 'department'].forEach(name => {
+        this.rdigForm.get(`teamDetails.${name}`)?.disable({ emitEvent: false });
+      });
     });
   }
 
@@ -508,6 +573,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
       currentStatus: s,
       nextRoles: getNextRoles(s),
     }));
+    this.workflow.currentUserCanAct.set(this.canCurrentUserActOnCurrentState());
   }
 
   /** DEV ONLY — toggles validation bypass for testing navigation and submission. */
@@ -598,6 +664,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
     if (id) {
       this.loadApplication(id);
     } else {
+      this.workflow.currentUserCanAct.set(true);
       this.syncWorkflowFromForm();
     }
 
@@ -608,6 +675,12 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
     this.workflow.reviewer2UserId.set(r2Ctrl.value ?? '');
     r1Ctrl.valueChanges.subscribe(v => this.workflow.reviewer1UserId.set(v ?? ''));
     r2Ctrl.valueChanges.subscribe(v => this.workflow.reviewer2UserId.set(v ?? ''));
+    this.rdigForm.get('projectDetails.category')?.valueChanges.subscribe(() => {
+      this.rdigForm.get('budget')?.updateValueAndValidity({ emitEvent: false });
+    });
+    this.rdigForm.get('projectDetails.duration')?.valueChanges.subscribe(() => {
+      this.rdigForm.get('activities')?.updateValueAndValidity({ emitEvent: false });
+    });
   }
 
   ngOnDestroy(): void {
@@ -628,6 +701,48 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
     if (!isNaN(rv)) this.workflow.reviewersVersion.set(rv);
     const ver = parseInt(this.rdigForm.get('metadata.applicationVersion')?.value, 10);
     if (!isNaN(ver)) this.workflow.version.set(ver);
+  }
+
+  private canCurrentUserActOnCurrentState(): boolean {
+    return this.canCurrentUserActOnApplication({
+      workflow: this.workflowState(),
+      metadata: this.rdigForm.get('metadata')?.getRawValue(),
+      teamDetails: this.rdigForm.get('teamDetails')?.getRawValue(),
+    });
+  }
+
+  private canCurrentUserActOnApplication(app: any): boolean {
+    const user = this.auth.currentUser();
+    if (!user) return false;
+
+    const wf = app.workflow ?? {};
+    const nextRoles: string[] = Array.isArray(wf.nextRoles) ? wf.nextRoles : [];
+    const nextUsers = Array.isArray(wf.nextUsers) ? wf.nextUsers.map(String) : [];
+    const ownerById = app.metadata?.applicantUserId && String(app.metadata.applicantUserId) === String(user.id);
+    const ownerByName = app.teamDetails?.leaderName && app.teamDetails.leaderName === user.name;
+    const isOwner = !!(ownerById || ownerByName);
+
+    if ((wf.currentStatus === 'fill_application' || app.isDraft === true) && isOwner) return true;
+
+    if (nextUsers.includes(String(user.id))) return true;
+
+    if (nextRoles.includes('Applicant')) {
+      return isOwner;
+    }
+
+    for (const role of user.groups) {
+      if (!nextRoles.includes(role)) continue;
+      if (role === 'Reviewer') continue;
+
+      if (role === 'HOS') {
+        const appDepartment = app.teamDetails?.department ?? '';
+        return !appDepartment || !user.department || appDepartment === user.department;
+      }
+
+      return true;
+    }
+
+    return false;
   }
 
   /**
@@ -698,6 +813,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
       this.rdigForm.get('activities') as FormArray,
       data.activities ?? [],
     );
+    this.rdigForm.get('activities')?.updateValueAndValidity({ emitEvent: false });
     this.rebuildArray(
       this.rdigForm.get('budget.studentAllowances') as FormArray,
       data.budget?.studentAllowances ?? [],
@@ -714,11 +830,13 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
       this.rdigForm.get('budget.specialServices') as FormArray,
       data.budget?.specialServices ?? [],
     );
+    this.rdigForm.get('budget')?.updateValueAndValidity({ emitEvent: false });
 
     // ── Restore workflow state ───────────────────────────────────
     if (data.workflow) {
       this.workflowState.set(data.workflow);
     }
+    this.workflow.currentUserCanAct.set(this.canCurrentUserActOnApplication(data));
 
     // ── Sync ABAC signals ────────────────────────────────────────
     this.syncWorkflowFromForm();
@@ -739,25 +857,25 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
   // ── Wizard navigation ──────────────────────────────────────────
   goToStep(step: number): void {
     if (step >= 1 && step <= this.totalSteps) {
-      this.visitedSteps.add(this.currentStep());
+      if (step !== this.currentStep()) {
+        this.checkedSteps.add(this.currentStep());
+      }
       this.currentStep.set(step);
-      this.visitedSteps.add(step);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }
 
   onNext(): void {
     if (this.currentStep() < this.totalSteps) {
-      this.visitedSteps.add(this.currentStep());
+      this.checkedSteps.add(this.currentStep());
       this.currentStep.update(s => s + 1);
-      this.visitedSteps.add(this.currentStep());
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }
 
   onPrev(): void {
     if (this.currentStep() > 1) {
-      this.visitedSteps.add(this.currentStep());
+      this.checkedSteps.add(this.currentStep());
       this.currentStep.update(s => s - 1);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -768,6 +886,12 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
   private draftSaveTimer?: ReturnType<typeof setTimeout>;
 
   onSaveDraft(): void {
+    if (this.isViewOnly()) {
+      this.submissionErrorMessage.set('This application is open in history view only and cannot be edited.');
+      this.submissionState.set('ERROR');
+      return;
+    }
+
     this.isSaving.set(true);
     const currentStatus = this.workflowState().currentStatus;
 
@@ -821,6 +945,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
         clearTimeout(this.draftSaveTimer);
         this.draftSaveSuccess.set(true);
         this.draftSaveTimer = setTimeout(() => this.draftSaveSuccess.set(false), 3000);
+        this.router.navigate(['/dashboard']);
       },
       error: (err) => {
         console.error('Save draft failed:', err);
@@ -832,6 +957,11 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
 
   onSubmit(): void {
     this.submitAttempted.set(true);
+    if (this.isViewOnly()) {
+      this.submissionErrorMessage.set('This application is open in history view only and cannot be submitted.');
+      this.submissionState.set('ERROR');
+      return;
+    }
 
     // ── Batch constraint check ───────────────────────────────────────────────
     const batch = this.activeBatch();

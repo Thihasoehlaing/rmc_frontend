@@ -7,7 +7,9 @@
   ></app-custom-header>
 
   <!-- ?? Budget Totals Banner ?????????????????????????????????? -->
-  <div class="budget-banner" [class.budget-banner--invalid]="isBudgetInvalidRange">
+  <div class="budget-banner"
+    [class.budget-banner--warning]="budgetAlertColor === 'yellow'"
+    [class.budget-banner--invalid]="budgetAlertColor === 'red'">
     <div class="budget-total">
       <span class="total-label">Total Amount Requested</span>
       <span class="total-amount">RM {{ budgetForm.get('totalRequest')?.value | number:'1.2-2' }}</span>
@@ -16,18 +18,11 @@
     <span class="badge" 
           [class.badge--success]="budgetAlertColor === 'default' && !isBudgetInvalidRange" 
           [class.badge--warning]="budgetAlertColor === 'yellow'"
-          [class.badge--danger]="budgetAlertColor === 'red' || isBudgetInvalidRange">
+          [class.badge--danger]="budgetAlertColor === 'red'">
       Requirement: {{ budgetRangeMessage }}
     </span>
   }
   </div>
-
-  @if (isBudgetInvalidRange) {
-    <div class="warning-box" [class.warning-box--yellow]="budgetAlertColor === 'yellow'" [class.warning-box--red]="budgetAlertColor === 'red'">
-      <span class="material-icons">warning_amber</span>
-      <span><strong>Budget Limit Alert:</strong> Total must be {{ budgetRangeMessage }} for {{ category }} projects.</span>
-    </div>
-  }
 
   <!-- ?? V11000: Student Allowances ?????????????????????????? -->
   <div class="card">

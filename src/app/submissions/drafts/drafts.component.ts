@@ -3,11 +3,12 @@ import { Router } from '@angular/router';
 import { ApplicationService } from '../../services/application.service';        
 import { BatchSittingService } from '../../settings/batch-sitting.service';     
 import { BatchSitting } from '../../interfaces/batch-sitting.interface';        
+import { SubmissionsSearchComponent } from '../../shared/components/submissions-search/submissions-search.component';
 
 @Component({
   selector: 'app-drafts',
   standalone: true,
-  imports: [],
+  imports: [SubmissionsSearchComponent],
   templateUrl: './drafts.component.html',
   styleUrl: './drafts.component.scss',
 })

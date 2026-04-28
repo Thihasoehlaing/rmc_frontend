@@ -53,6 +53,7 @@ export class SearchableDropdownComponent<T = number> implements ControlValueAcce
   @Input() placeholder = 'Select an option...';
   @Input() isMulti = false;
   @Input() searchable = true;
+  @Input() maxSelections: number | null = null;
 
   /** Show a spinner and disable interaction while options are loading asynchronously. */
   @Input() loading = false;
@@ -209,11 +210,14 @@ export class SearchableDropdownComponent<T = number> implements ControlValueAcce
   // ── Selection ─────────────────────────────────────────────────────
 
   selectOption(option: DropdownOption<T>): void {
-    if (option.disabled || this.isDisabled()) return;
+    if (this.isOptionDisabled(option) || this.isDisabled()) return;
 
     if (this.isMulti) {
       const current = this.selectedValues();
       const existing = current.findIndex(v => this.compareWith(v, option.value));
+      if (existing === -1 && this.maxSelections !== null && current.length >= this.maxSelections) {
+        return;
+      }
       const next = existing === -1
         ? [...current, option.value]
         : current.filter((_, i) => i !== existing);
@@ -245,6 +249,13 @@ export class SearchableDropdownComponent<T = number> implements ControlValueAcce
 
   isSelected(value: T): boolean {
     return this.selectedValues().some(v => this.compareWith(v, value));
+  }
+
+  isOptionDisabled(option: DropdownOption<T>): boolean {
+    if (option.disabled) return true;
+    if (!this.isMulti || this.maxSelections === null) return false;
+    if (this.isSelected(option.value)) return false;
+    return this.selectedValues().length >= this.maxSelections;
   }
 
   // ── Display helpers ──────────────────────────────────────────────

@@ -108,7 +108,7 @@
 
   <!-- ── Approval Cards (auto-visible based on status, NOT dependent on toggle) ── -->
   @if (workflow.isHosApprovalVisible() || workflow.isRmcApprovalVisible() ||
-       workflow.isReviewerApprovalVisible() || workflow.isRdigChairApprovalVisible() ||
+       workflow.isReviewer1ApprovalVisible() || workflow.isReviewer2ApprovalVisible() || workflow.isRdigChairApprovalVisible() ||
        workflow.isVcApprovalVisible() || workflow.isCeoApprovalVisible()) {
     <div class="card">
       <div class="card__header">
@@ -139,10 +139,20 @@
         </app-approval-card>
 
         <app-approval-card
+          title="Reviewer 1 Decision"
+          fieldLabel="Recommendation"
+          icon="rate_review"
+          [visible]="workflow.isReviewer1ApprovalVisible()"
+          [readonly]="!workflow.isReviewer1Editable()"
+          [options]="workflow.reviewer1DecisionOptions(reviewer1Total)"
+          [control]="ac('reviewer1Decision')">
+        </app-approval-card>
+
+        <app-approval-card
           title="Reviewer 2 Decision"
           fieldLabel="Recommendation"
           icon="rate_review"
-          [visible]="workflow.isReviewerApprovalVisible()"
+          [visible]="workflow.isReviewer2ApprovalVisible()"
           [readonly]="!workflow.isReviewer2Editable()"
           [options]="workflow.reviewer2DecisionOptions(reviewer2Total)"
           [control]="ac('reviewer2Decision')">

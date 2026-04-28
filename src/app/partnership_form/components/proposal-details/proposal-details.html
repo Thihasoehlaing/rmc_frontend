@@ -4,10 +4,10 @@
     <div class="card__header">
       <h2 class="card__title">Applicant & Proposal Details</h2>
     </div>
-    
+
     <div class="card__content section-fields">
-      
-      <!-- ── Section 1: Personal Information ───────────────────────────── -->
+
+      <!-- ── Section 1: Personal Information ───────────────────────────── --> 
       <app-custom-subheader title="Personal Information" icon="person"></app-custom-subheader>
       <div class="row row--2">
         <div class="form-field">
@@ -33,8 +33,8 @@
       <div class="row row--2">
         <div class="form-field">
           <label class="form-label is-required">Academic/Industry Partnership</label>
-          <app-searchable-dropdown 
-            [options]="partnershipOptions" 
+          <app-searchable-dropdown
+            [options]="partnershipOptions"
             formControlName="partnershipType">
           </app-searchable-dropdown>
         </div>
@@ -42,90 +42,92 @@
 
       <!-- ── Section 3: Details of the proposal ─────────────────────────── -->
       <app-custom-subheader title="Details of the proposal" icon="article"></app-custom-subheader>
-      <div class="row row--2">
-        <div class="form-field">
-          <label class="form-label is-required">Proposed Partner Name</label>
-          <input type="text" class="input--text" formControlName="proposedPartnerName">
-        </div>
-        <div class="form-field">
-          <label class="form-label is-required">APU Partnership Category</label>
-          <app-searchable-dropdown 
-            [options]="categoryOptions" 
-            formControlName="partnershipCategory">
-          </app-searchable-dropdown>
-        </div>
+
+      <div class="form-field mt-3">
+        <label class="form-label is-required">Proposed Partner Name</label>   
+        <textarea class="input--textarea" rows="2" formControlName="proposedPartnerName" maxlength="500"></textarea>
+        <app-character-counter [current]="applicantForm.get('proposedPartnerName')?.value?.length ?? 0" [max]="500"></app-character-counter>
       </div>
 
       <div class="form-field mt-3">
         <label class="form-label is-required">Rationale</label>
-        <textarea class="input--textarea" rows="4" formControlName="rationale" maxlength="1500"></textarea>
-        <app-character-counter [current]="applicantForm.get('rationale')?.value?.length ?? 0" [max]="1500"></app-character-counter>
+        <textarea class="input--textarea" rows="4" formControlName="rationale" maxlength="4000"></textarea>
+        <app-character-counter [current]="applicantForm.get('rationale')?.value?.length ?? 0" [max]="4000"></app-character-counter>
       </div>
 
       <div class="form-field mt-3">
         <label class="form-label is-required">Benefits of the Partnership</label>
-        <textarea class="input--textarea" rows="4" formControlName="benefits" maxlength="1500"></textarea>
-        <app-character-counter [current]="applicantForm.get('benefits')?.value?.length ?? 0" [max]="1500"></app-character-counter>
+        <textarea class="input--textarea" rows="4" formControlName="benefits" maxlength="4000"></textarea>
+        <app-character-counter [current]="applicantForm.get('benefits')?.value?.length ?? 0" [max]="4000"></app-character-counter>
       </div>
 
       <div class="form-field mt-3">
         <label class="form-label is-required">Timescale</label>
-        <textarea class="input--textarea" rows="4" formControlName="timescale" maxlength="1000"></textarea>
-        <app-character-counter [current]="applicantForm.get('timescale')?.value?.length ?? 0" [max]="1000"></app-character-counter>
+        <textarea class="input--textarea" rows="4" formControlName="timescale" maxlength="2000"></textarea>
+        <app-character-counter [current]="applicantForm.get('timescale')?.value?.length ?? 0" [max]="2000"></app-character-counter>
       </div>
 
       <div class="form-field mt-3">
-        <label class="form-label is-required">Management of Arrangement</label>
-        <textarea class="input--textarea" rows="4" formControlName="managementArrangement" maxlength="1000"></textarea>
-        <app-character-counter [current]="applicantForm.get('managementArrangement')?.value?.length ?? 0" [max]="1000"></app-character-counter>
+        <label class="form-label is-required">Management of Arrangement</label> 
+        <textarea class="input--textarea" rows="4" formControlName="managementArrangement" maxlength="2000"></textarea>
+        <app-character-counter [current]="applicantForm.get('managementArrangement')?.value?.length ?? 0" [max]="2000"></app-character-counter>
       </div>
 
       <div class="form-field mt-3">
         <label class="form-label is-required">Constraints</label>
-        <textarea class="input--textarea" rows="4" formControlName="constraints" maxlength="1000"></textarea>
-        <app-character-counter [current]="applicantForm.get('constraints')?.value?.length ?? 0" [max]="1000"></app-character-counter>
+        <textarea class="input--textarea" rows="4" formControlName="constraints" maxlength="2000"></textarea>
+        <app-character-counter [current]="applicantForm.get('constraints')?.value?.length ?? 0" [max]="2000"></app-character-counter>
       </div>
 
       <div class="form-field mt-3">
         <label class="form-label is-required">Impact on Staff</label>
-        <textarea class="input--textarea" rows="4" formControlName="impactOnStaff" maxlength="1000"></textarea>
-        <app-character-counter [current]="applicantForm.get('impactOnStaff')?.value?.length ?? 0" [max]="1000"></app-character-counter>
+        <textarea class="input--textarea" rows="4" formControlName="impactOnStaff" maxlength="2000"></textarea>
+        <app-character-counter [current]="applicantForm.get('impactOnStaff')?.value?.length ?? 0" [max]="2000"></app-character-counter>
       </div>
 
       <div class="form-field mt-3">
         <label class="form-label is-required">Impact on Other APU Functional Units</label>
-        <textarea class="input--textarea" rows="4" formControlName="impactOnOtherUnits" maxlength="1000"></textarea>
-        <app-character-counter [current]="applicantForm.get('impactOnOtherUnits')?.value?.length ?? 0" [max]="1000"></app-character-counter>
+        <textarea class="input--textarea" rows="4" formControlName="impactOnOtherUnits" maxlength="2000"></textarea>
+        <app-character-counter [current]="applicantForm.get('impactOnOtherUnits')?.value?.length ?? 0" [max]="2000"></app-character-counter>
       </div>
 
       <div class="form-field mt-3">
         <label class="form-label is-required">Resource Implications of the Proposed Collaboration</label>
-        <textarea class="input--textarea" rows="4" formControlName="resourceImplications" maxlength="1000"></textarea>
-        <app-character-counter [current]="applicantForm.get('resourceImplications')?.value?.length ?? 0" [max]="1000"></app-character-counter>
+        <textarea class="input--textarea" rows="4" formControlName="resourceImplications" maxlength="2000"></textarea>
+        <app-character-counter [current]="applicantForm.get('resourceImplications')?.value?.length ?? 0" [max]="2000"></app-character-counter>
       </div>
 
       <div class="form-field mt-3">
         <label class="form-label is-required">Other School/Research Centres Involved</label>
-        <textarea class="input--textarea" rows="4" formControlName="otherSchoolsInvolved" maxlength="1000"></textarea>
-        <app-character-counter [current]="applicantForm.get('otherSchoolsInvolved')?.value?.length ?? 0" [max]="1000"></app-character-counter>
+        <textarea class="input--textarea" rows="4" formControlName="otherSchoolsInvolved" maxlength="2000"></textarea>
+        <app-character-counter [current]="applicantForm.get('otherSchoolsInvolved')?.value?.length ?? 0" [max]="2000"></app-character-counter>
       </div>
 
       <div class="form-field mt-3">
-        <label class="form-label is-required">Contact Made to Date</label>
-        <textarea class="input--textarea" rows="4" formControlName="contactMade" maxlength="1000"></textarea>
-        <app-character-counter [current]="applicantForm.get('contactMade')?.value?.length ?? 0" [max]="1000"></app-character-counter>
+        <label class="form-label is-required">Contact Made to Date</label>      
+        <textarea class="input--textarea" rows="4" formControlName="contactMade" maxlength="2000"></textarea>
+        <app-character-counter [current]="applicantForm.get('contactMade')?.value?.length ?? 0" [max]="2000"></app-character-counter>
+      </div>
+
+      <div class="form-field mt-3">
+        <app-searchable-dropdown
+          label="APU Partnership Category *"
+          [options]="categoryOptions"
+          placeholder="Select partnership category..."
+          formControlName="partnershipCategory">
+        </app-searchable-dropdown>
       </div>
 
       <div class="form-field mt-3">
         <label class="form-label is-required">APU School Discussions to Date/Planned</label>
-        <textarea class="input--textarea" rows="4" formControlName="schoolDiscussions" maxlength="1000"></textarea>
-        <app-character-counter [current]="applicantForm.get('schoolDiscussions')?.value?.length ?? 0" [max]="1000"></app-character-counter>
+        <textarea class="input--textarea" rows="4" formControlName="schoolDiscussions" maxlength="2000"></textarea>
+        <app-character-counter [current]="applicantForm.get('schoolDiscussions')?.value?.length ?? 0" [max]="2000"></app-character-counter>
       </div>
 
       <div class="form-field mt-3">
         <label class="form-label is-required">Programmes Identified for the Partnership and Projected Student Numbers</label>
-        <textarea class="input--textarea" rows="4" formControlName="programmesIdentified" maxlength="1000"></textarea>
-        <app-character-counter [current]="applicantForm.get('programmesIdentified')?.value?.length ?? 0" [max]="1000"></app-character-counter>
+        <textarea class="input--textarea" rows="4" formControlName="programmesIdentified" maxlength="2000"></textarea>
+        <app-character-counter [current]="applicantForm.get('programmesIdentified')?.value?.length ?? 0" [max]="2000"></app-character-counter>
       </div>
 
     </div>

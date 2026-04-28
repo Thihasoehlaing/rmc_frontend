@@ -2,22 +2,49 @@ import { Component, OnInit, inject, effect, Output, EventEmitter } from '@angula
 import { CustomHeaderComponent } from '../../../shared/components/custom-header/custom-header.component';
 import { CustomSubheaderComponent } from '../../../shared/components/custom-subheader/custom-subheader.component';
 import { ValidationMessageComponent } from '../../../shared/components/validation-message/validation-message.component';
+import { ActionButtonComponent } from '../../../shared/components/action-button/action-button.component';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
 import { SearchableDropdownComponent } from '../../../shared/components/searchable-dropdown/searchable-dropdown.component';
 import { DropdownOption } from '../../../interfaces/components.interface';
 import { JournalWorkflowService } from '../../services/journal-workflow.service';
+import { DataTableComponent, DataTableColumn } from '../../../shared/components/data-table/data-table.component';
 
 @Component({
   selector: 'app-authors-details',
   templateUrl: './authors-details.html',
   styleUrls: ['./authors-details.scss'],
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, SearchableDropdownComponent, CustomHeaderComponent, CustomSubheaderComponent, ValidationMessageComponent]
+  imports: [CommonModule, ReactiveFormsModule, SearchableDropdownComponent, CustomHeaderComponent, CustomSubheaderComponent, ValidationMessageComponent, ActionButtonComponent, DataTableComponent]
 })
 export class AuthorsDetails implements OnInit {
   @Output() formValidityChange = new EventEmitter<boolean>();
   form!: FormGroup;
+
+  readonly apuStaffColumns: DataTableColumn[] = [
+    { key: 'staffName', label: 'Please select Staff Name' },
+    { key: 'schoolDepartment', label: 'School/Department' },
+    { key: 'affiliation', label: 'Affiliation' },
+    { key: 'actions', label: 'Actions', width: '100px', align: 'center', headerAlign: 'center' }
+  ];
+
+  readonly studentColumns: DataTableColumn[] = [
+    { key: 'tpNumber', label: 'TP Number', width: '120px' },
+    { key: 'fullName', label: 'Full Name (as per IC/Passport)' },
+    { key: 'schoolDepartment', label: 'School/Department' },
+    { key: 'affiliation', label: 'Affiliation' },
+    { key: 'actions', label: 'Actions', width: '100px', align: 'center', headerAlign: 'center' }
+  ];
+
+  readonly nonApuColumns: DataTableColumn[] = [
+    { key: 'fullName', label: 'Full Name (as per IC/Passport)' },
+    { key: 'country', label: 'Country' },
+    { key: 'email', label: 'Email' },
+    { key: 'schoolDepartment', label: 'School/Department' },
+    { key: 'institutionName', label: 'Institution/Company Name' },
+    { key: 'actions', label: 'Actions', width: '100px', align: 'center', headerAlign: 'center' }
+  ];
+
   isModalOpen: boolean = false;
   editForm!: FormGroup;
   editingIndex: number | null = null;
@@ -33,16 +60,6 @@ export class AuthorsDetails implements OnInit {
     { value: 'Robert Wilson', label: 'Robert Wilson' },
     { value: 'Jessica Taylor', label: 'Jessica Taylor' },
     { value: 'James Anderson', label: 'James Anderson' }
-  ];
-
-  // Organisation type dropdown options
-  organisationTypeOptions: DropdownOption[] = [
-    { value: 'International University', label: 'International University' },
-    { value: 'Local Public University', label: 'Local Public University' },
-    { value: 'Local Private University', label: 'Local Private University' },
-    { value: 'Industry', label: 'Industry' },
-    { value: 'Agency (Government/NGO)', label: 'Agency (Government/NGO)' },
-    
   ];
 
   workflow = inject(JournalWorkflowService);
@@ -108,7 +125,6 @@ export class AuthorsDetails implements OnInit {
       fullName: ['', [Validators.required]],
       country: ['', [Validators.required]],
       email: ['', [Validators.required, Validators.email]],
-      organisationType: ['', [Validators.required]],
       schoolDepartment: ['', [Validators.required]],
       institutionName: ['', [Validators.required]]
     });
@@ -181,7 +197,6 @@ export class AuthorsDetails implements OnInit {
           fullName: [data.fullName, [Validators.required]],
           country: [data.country, [Validators.required]],
           email: [data.email, [Validators.required, Validators.email]],
-          organisationType: [data.organisationType, [Validators.required]],
           schoolDepartment: [data.schoolDepartment, [Validators.required]],
           institutionName: [data.institutionName, [Validators.required]]
         });
@@ -207,7 +222,6 @@ export class AuthorsDetails implements OnInit {
           fullName: ['', [Validators.required]],
           country: ['', [Validators.required]],
           email: ['', [Validators.required, Validators.email]],
-          organisationType: ['', [Validators.required]],
           schoolDepartment: ['', [Validators.required]],
           institutionName: ['', [Validators.required]]
         });

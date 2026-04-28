@@ -412,7 +412,11 @@ export class RdigWorkflowService {
     this.status() === 'pending_rmc' || this.status() === 'pending_rmc_review'
   );
 
-  isReviewerApprovalVisible = computed(() =>
+  isReviewer1ApprovalVisible = computed(() =>
+    this.status() === 'pending_reviewers' && this.isCurrentUserReviewer1()
+  );
+
+  isReviewer2ApprovalVisible = computed(() =>
     this.status() === 'pending_reviewers' && this.isCurrentUserReviewer2()
   );
 
@@ -442,6 +446,18 @@ export class RdigWorkflowService {
     { label: 'Approve', value: 'approve' },
     { label: 'Reject', value: 'reject' },
   ];
+
+  reviewer1DecisionOptions(totalScore: number) {
+    if (totalScore >= 70) {
+      return [
+        { label: 'Approve', value: 'approve' },
+        { label: 'Resubmission', value: 'resubmission' },
+      ];
+    }
+    return [
+      { label: 'Resubmission', value: 'resubmission' },
+    ];
+  }
 
   reviewer2DecisionOptions(totalScore: number) {
     if (totalScore >= 70) {
@@ -482,6 +498,24 @@ export class RdigWorkflowService {
     ];
     if (applicantStatuses.includes(currentStatus)) {
       return { ...config.transitions[0], actorRole: config.actorRole };
+    }
+
+    // Custom logic for pending_reviewers (waiting for both decisions)
+    if (currentStatus === 'pending_reviewers') {
+      const r1 = approvals['reviewer1Decision'];
+      const r2 = approvals['reviewer2Decision'];
+      
+      // If BOTH reviewers have reached a decision
+      if (r1 && r2) {
+        if (r1 === 'resubmission' || r2 === 'resubmission') {
+          return { action: 'resubmit', nextStatus: 'pending_applicant_resubmission_reviewers', actorRole: 'Reviewer' };
+        }
+        if (r1 === 'approve' && r2 === 'approve') {
+          return { action: 'approve', nextStatus: 'pending_rdig_chair', actorRole: 'Reviewer' };
+        }
+      }
+      // If not both decided yet, do not transition
+      return null;
     }
 
     // Reviewer / approver stages: match on decision field value

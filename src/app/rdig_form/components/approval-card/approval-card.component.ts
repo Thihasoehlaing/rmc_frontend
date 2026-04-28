@@ -168,24 +168,24 @@ const DEFAULT_META: OptionMeta = { icon: 'radio_button_unchecked', type: 'defaul
 
       // Active states per decision type
       &.active[data-type="approve"] {
-        border-color: var(--color-success, #28a745);
-        background: color-mix(in srgb, var(--color-success, #28a745) 10%, var(--color-surface));
-        color: var(--color-success-dark, #176227);
-        box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-success, #28a745) 15%, transparent);
+        border-color: var(--color-success);
+        background: color-mix(in srgb, var(--color-success) 10%, var(--color-surface));
+        color: var(--color-success-dark);
+        box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-success) 15%, transparent);
       }
 
       &.active[data-type="resubmit"] {
-        border-color: var(--color-warning, #ffc107);
-        background: color-mix(in srgb, var(--color-warning, #ffc107) 12%, var(--color-surface));
-        color: var(--color-warning-dark, #92400e);
-        box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-warning, #ffc107) 15%, transparent);
+        border-color: var(--color-warning);
+        background: color-mix(in srgb, var(--color-warning) 12%, var(--color-surface));
+        color: var(--color-warning-dark);
+        box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-warning) 15%, transparent);
       }
 
       &.active[data-type="reject"] {
-        border-color: var(--color-error, #dc3545);
-        background: color-mix(in srgb, var(--color-error, #dc3545) 10%, var(--color-surface));
-        color: var(--color-error, #dc3545);
-        box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-error, #dc3545) 15%, transparent);
+        border-color: var(--color-error);
+        background: color-mix(in srgb, var(--color-error) 10%, var(--color-surface));
+        color: var(--color-error);
+        box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-error) 15%, transparent);
       }
     }
   `]

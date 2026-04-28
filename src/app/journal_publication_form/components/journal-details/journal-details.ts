@@ -1,4 +1,5 @@
-import { Component, OnInit, inject, effect, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, inject, effect, Output, EventEmitter, ChangeDetectorRef } from '@angular/core';
+import { ActionButtonComponent } from '../../../shared/components/action-button/action-button.component';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../../../services/auth.service';
@@ -22,6 +23,8 @@ import { ValidationMessageComponent } from '../../../shared/components/validatio
 export class JournalDetails implements OnInit {
   auth = inject(AuthService);
   workflow = inject(JournalWorkflowService);
+  private journalOptionsService = inject(JournalOptionsService);
+  private cdr = inject(ChangeDetectorRef);
   form!: FormGroup;
   breakdownForm!: FormGroup;
   sdgKeywordsForm!: FormGroup;
@@ -29,7 +32,6 @@ export class JournalDetails implements OnInit {
   isSDGKeywordsModalOpen = false;
   breakdownType: 'internal-research' | 'external-research' | 'non-research' | null = null;
   breakdownEditingIndex: number | null = null;
-  selectedResearchnonResearch: boolean = true;
 
   researchBreakdowns: any[] = [];
   externalBreakdowns: any[] = [];
@@ -39,6 +41,7 @@ export class JournalDetails implements OnInit {
   selectedFile: File | null = null;
 
   breakdownOptions: any[] = [];
+  currentBreakdownOptions: any[] = [];
 
   @Output() formValidityChange = new EventEmitter<boolean>();
 
@@ -62,19 +65,22 @@ export class JournalDetails implements OnInit {
       scopusQuartile: ['', Validators.required],
       researchType: ['', Validators.required],
       restrictedPublisher: ['', Validators.required],
-      journalName: ['', Validators.required],
-      paperTitle: ['', Validators.required],
+      journalName: ['', [Validators.required, Validators.maxLength(150)]],
+      paperTitle: ['', [Validators.required, Validators.maxLength(200)]],
       sdgKeyword1: ['', Validators.required],
       sdgKeyword2: [''],
       sdgKeyword3: [''],
-      projectAccountCode: ['', Validators.required],
+      citedApuPaper: ['', Validators.required],
+      citedApuPaperExplanation: ['', [Validators.maxLength(255)]],
+      projectAccountCode: [''], // Only conditionally required for non-external 
+      externalProjectAccountCode: [''], // For external research
       totalRM: [{ value: 0, disabled: true }],
-      sponsoredAmountExternal: [{ value: 0, disabled: true }],
+      sponsoredAmountExternal: [{ value: 0, disabled: false }],
       sponsoredBy: [''],
       sponsorshipPercentage: [{ value: 0, disabled: true }],
       sponsorshipAmountAPU: [{ value: 0, disabled: true }],
       costByApplicant: [{ value: 0, disabled: true }],
-      costingRemarks: ['']
+      costingRemarks: ['', [Validators.maxLength(500)]]
     });
 
     this.form.statusChanges.subscribe(status => {
@@ -82,17 +88,33 @@ export class JournalDetails implements OnInit {
     });
 
     this.form.get('scopusQuartile')?.valueChanges.subscribe(() => this.calculateTotals());
-    this.form.get('researchType')?.valueChanges.subscribe(() => this.calculateTotals());
+    this.form.get('researchType')?.valueChanges.subscribe((type) => {
+      // Manage validation properly based on the new conditions
+      this.form.get('projectAccountCode')?.setValidators([Validators.required]);
+      this.form.get('projectAccountCode')?.updateValueAndValidity();
+      
+      this.calculateTotals();
+    });
+    this.form.get('sponsoredAmountExternal')?.valueChanges.subscribe(() => this.calculateTotals());
     this.form.get('sponsoredBy')?.valueChanges.subscribe(() => this.calculateTotals());
 
+    this.form.get('citedApuPaper')?.valueChanges.subscribe((value) => {        
+      if (value === 'No') {
+        this.form.get('citedApuPaperExplanation')?.setValidators([Validators.required]);
+      } else {
+        this.form.get('citedApuPaperExplanation')?.clearValidators();
+      }
+      this.form.get('citedApuPaperExplanation')?.updateValueAndValidity();     
+    });
+
     this.breakdownForm = this.fb.group({
-      itemDescription: [''],
-      voteNumber: [''],
+      itemDescription: ['', Validators.required],
+      voteNumber: [{ value: '', disabled: true }, Validators.required],
       accountCodeDescription: [''],
       accountCode: [''],
-      cost: [''],
+      cost: ['', Validators.required],
       costForeign: [''],
-      exchangeRate: [''],
+      exchangeRate: ['', Validators.required],
       description: [''],
       costInRM: [{ value: '', disabled: true }]
     });
@@ -108,9 +130,9 @@ export class JournalDetails implements OnInit {
       const rate = parseFloat(val.exchangeRate);
 
       let rm: number | null = null;
-      if (!isNaN(cost) && !isNaN(rate)) {
-        rm = cost * rate;
-      } else if (!isNaN(cost)) {
+      if (cost !== null && rate !== null) {
+        rm = this.normalizeAmount(cost * rate);
+      } else if (cost !== null) {
         rm = cost;
       }
 
@@ -131,15 +153,44 @@ export class JournalDetails implements OnInit {
 
   openBreakdownModal(type: string, index?: number) {
     this.breakdownType = type as any;
-    if (index !== undefined) {
-      this.breakdownEditingIndex = index;
-      const entry = this.getBreakdownArray(type)[index];
-      this.breakdownForm.patchValue(entry, { emitEvent: false });
-    } else {
-      this.breakdownEditingIndex = null;
-      this.breakdownForm.reset();
-    }
-    this.isBreakdownModalOpen = true;
+    
+    // Defer modal opening to next tick to avoid any form interaction or change detection overlaps
+    setTimeout(() => {
+      // Resolve dropdown options only when modal opens
+      if (type === 'non-research') {
+        const localOpts = this.journalOptionsService.getOptionsForType('local');
+        this.currentBreakdownOptions = localOpts.filter(opt => {
+          const meta = this.getOptionMetadata('local', opt.value);
+          return !meta || meta.status !== 'Inactive';
+        }).map(opt => ({
+          value: opt.label,
+          label: opt.label
+        }));
+      } else {
+        const researchOpts = this.journalOptionsService.getOptionsForType('research');
+        this.currentBreakdownOptions = researchOpts.filter(opt => {
+          const meta = this.getOptionMetadata('research', opt.value);
+          return !meta || meta.status !== 'Inactive';
+        }).map(opt => ({
+          value: opt.label,
+          label: opt.label
+        }));
+      }
+
+      if (index !== undefined) {
+        this.breakdownEditingIndex = index;
+        const entry = this.getBreakdownArray(type)[index];
+        this.breakdownForm.patchValue(entry, { emitEvent: false });
+      } else {
+        this.breakdownEditingIndex = null;
+        this.breakdownForm.reset();
+        if (type === 'internal-research' || type === 'external-research') {       
+          this.breakdownForm.patchValue({ voteNumber: 'V29000' }, { emitEvent: false });
+        }
+      }
+      this.isBreakdownModalOpen = true;
+      this.cdr.detectChanges();
+    }, 0);
   }
 
   closeBreakdownModal() {
@@ -147,6 +198,7 @@ export class JournalDetails implements OnInit {
     this.breakdownType = null;
     this.breakdownEditingIndex = null;
     this.breakdownForm.reset();
+    this.cdr.detectChanges();
   }
 
   saveBreakdownEntry() {
@@ -156,13 +208,24 @@ export class JournalDetails implements OnInit {
     }
 
     const entry = this.breakdownForm.getRawValue();
+    const normalizedCost = this.normalizeAmount(entry.cost);
+    const normalizedRate = this.normalizeAmount(entry.exchangeRate);
+    const calculatedRM = normalizedCost !== null
+      ? this.normalizeAmount(normalizedRate !== null ? normalizedCost * normalizedRate : normalizedCost)
+      : null;
+    const entryToSave = {
+      ...entry,
+      cost: normalizedCost ?? entry.cost,
+      exchangeRate: normalizedRate ?? entry.exchangeRate,
+      costInRM: calculatedRM !== null ? calculatedRM.toFixed(2) : entry.costInRM
+    };
     const type = this.breakdownType as string;
     const array = this.getBreakdownArray(type);
 
     if (this.breakdownEditingIndex !== null) {
-      array[this.breakdownEditingIndex] = entry;
+      array[this.breakdownEditingIndex] = entryToSave;
     } else {
-      array.push(entry);
+      array.push(entryToSave);
     }
 
     this.calculateTotals();
@@ -175,6 +238,35 @@ export class JournalDetails implements OnInit {
     this.calculateTotals();
   }
 
+calculateBreakdownTotal(type: string): number {
+    const array = this.getBreakdownArray(type);
+    let total = 0;
+    for (const item of array) {
+      total += parseFloat(item.costInRM) || 0;
+    }
+    return total;
+  }
+
+  calculateSponsorshipCosting(totalCost: number, externalSponsorship: number, scopusQuartile: string) {
+    let percentage = 0;
+    if (scopusQuartile === 'Q1' || scopusQuartile === 'Q2') percentage = 100;
+    else if (scopusQuartile === 'Q3') percentage = 50;
+
+    let hiddenPercentageBridge = percentage / 100;
+    
+    let apuBase = Math.min(totalCost * hiddenPercentageBridge, 5000);
+    let remainingAmount = Math.max(totalCost - externalSponsorship, 0);
+    let apuFinal = Math.min(apuBase, remainingAmount);
+    
+    let applicantCost = Math.max(totalCost - externalSponsorship - apuFinal, 0);
+
+    return {
+      sponsorshipPercentage: percentage,
+      apuSponsorshipAmount: apuFinal,
+      applicantCost: applicantCost
+    };
+  }
+
   calculateTotals() {
     const pType = this.researchType;
     let breakdownArray = this.getBreakdownArray(pType || '');
@@ -184,45 +276,100 @@ export class JournalDetails implements OnInit {
       totalRM += parseFloat(item.costInRM) || 0;
     });
 
-    const q = this.form.get('scopusQuartile')?.value;
+    const q = this.form.get('scopusQuartile')?.value || '';
+    let manualExternal = parseFloat(this.form.get('sponsoredAmountExternal')?.value) || 0;
 
     let spPercent = 0;
-    let spExternal = 0;
     let spAPU = 0;
     let applicantCost = 0;
 
     if (pType === 'external-research') {
-      spPercent = 100;
-      spExternal = totalRM;
-      spAPU = 0;
+      // 5 & 6. Sponsored By validation
+      this.form.get('sponsoredBy')?.enable({ emitEvent: false });
+      if (manualExternal > 0) {
+        this.form.get('sponsoredBy')?.setValidators([Validators.required]);
+      } else {
+        this.form.get('sponsoredBy')?.clearValidators();
+      }
+      this.form.get('sponsoredBy')?.updateValueAndValidity({ emitEvent: false });
+
+      // Validate Sponsorship Amount by External cannot exceed Total in RM
+      const extAmountCtrl = this.form.get('sponsoredAmountExternal');
+      if (extAmountCtrl) {
+        if (manualExternal > totalRM && totalRM >= 0) {
+          extAmountCtrl.setErrors({ ...extAmountCtrl.errors, maxExceeded: true });
+        } else {
+          const errors = extAmountCtrl.errors;
+          if (errors) {
+            delete errors['maxExceeded'];
+            extAmountCtrl.setErrors(Object.keys(errors).length ? errors : null);
+          }
+        }
+      }
+
+      const remainingBalance = Math.max(totalRM - manualExternal, 0);
+
+      // Sponsorship Percentage Requested (%)
+      if (q === 'Q1' || q === 'Q2' || q === 'Q3') {
+        spPercent = 100;
+      } else {
+        spPercent = 0;
+      }
+
+      // APU Sponsorship Amount
+      spAPU = remainingBalance;
+
+      // Cost to be Borne by Applicant (RM)
       applicantCost = 0;
 
       this.form.get('sponsoredBy')?.setValue('External', { emitEvent: false });
       this.form.get('sponsoredBy')?.disable({ emitEvent: false });
     } else if (pType === 'internal-research' || pType === 'non-research') {
+      // 1 & 2 & 6. Sponsored By / External Amount validaton (Same bounds as external flow)
       this.form.get('sponsoredBy')?.enable({ emitEvent: false });
 
       if (q === 'Q1' || q === 'Q2') spPercent = 100;
       else if (q === 'Q3') spPercent = 50;
 
-      const sponsoredAmount = totalRM * (spPercent / 100);
-      applicantCost = totalRM - sponsoredAmount;
+      const remainingBalance = Math.max(totalRM - manualExternal, 0);
 
-      const sponsoredBy = this.form.get('sponsoredBy')?.value;
+      if (q === 'Q1' || q === 'Q2') {
+        // Sponsorship Percentage Requested (%)
+        spPercent = 100;
 
-      if (sponsoredBy === 'External') spExternal = sponsoredAmount;
-      else if (sponsoredBy === 'APU') spAPU = sponsoredAmount;
+        // APU Sponsorship Amount
+        spAPU = remainingBalance;
+
+        // Cost to be Borne by Applicant (RM)
+        applicantCost = 0;
+      } else if (q === 'Q3') {
+        // Sponsorship Percentage Requested (%)
+        spPercent = 50;
+
+        // APU Sponsorship Amount
+        spAPU = remainingBalance * 0.5;
+
+        // Cost to be Borne by Applicant (RM)
+        applicantCost = remainingBalance * 0.5;
+      } else {
+        spPercent = 0;
+        spAPU = 0;
+        applicantCost = remainingBalance;
+      }
     }
 
+    // Do NOT patch sponsoredAmountExternal to avoid overwriting or forcing auto-format on the user's manual input
     this.form.patchValue({
       totalRM: totalRM ? totalRM.toFixed(2) : '0.00',
       sponsorshipPercentage: spPercent ? spPercent.toString() : '0',
-      sponsoredAmountExternal: spExternal ? spExternal.toFixed(2) : '0.00',
       sponsorshipAmountAPU: spAPU ? spAPU.toFixed(2) : '0.00',
       costByApplicant: applicantCost ? applicantCost.toFixed(2) : '0.00'
     }, { emitEvent: false });
+    
+    // Evaluate if Breakdown table is required for external
+    const isBreakdownValid = pType === 'external-research' ? breakdownArray.length > 0 : true;
+    this.formValidityChange.emit(this.form.valid && isBreakdownValid);
   }
-
   getBreakdownModalTitle(): string {
     if (this.breakdownType === 'internal-research') return 'Detailed Breakdown for Internal Research Project';
     if (this.breakdownType === 'external-research') return 'Detailed Breakdown for External Research Project';
@@ -246,9 +393,18 @@ export class JournalDetails implements OnInit {
     this.saveBreakdownEntry();
   }
 
-  getBreakdownOptionsForType(): any[] {
-    return this.breakdownOptions;
-  }
+
+
+  private getOptionMetadata(type: 'research' | 'local', value: string): any {
+    const storageKey = `journal-option-metadata-${type}-${value}`;
+    try {
+      const stored = localStorage.getItem(storageKey);
+      if (stored && stored !== 'undefined') {
+        return JSON.parse(stored);
+      }
+    } catch (error) {
+      console.error(`Failed to parse metadata for ${storageKey}`, error);    }
+    return null;  }
 
   onFileSelected(event: any) {
     let file = event;
@@ -335,5 +491,6 @@ export class JournalDetails implements OnInit {
     }
   }
 }
+
 
 

@@ -10,7 +10,7 @@
 
   <!-- ── Trigger ────────────────────────────────────────────────── -->
   <div
-    class="dropdown-trigger"
+    class="dropdown-trigger input--text"
     tabindex="0"
     role="combobox"
     [attr.aria-expanded]="isOpen()"
@@ -18,12 +18,12 @@
     [attr.aria-controls]="listboxId"
     [attr.aria-activedescendant]="activeDescendantId"
     [attr.aria-disabled]="isDisabled() || loading"
-    [class.has-value]="selectedValues().length > 0"
+    [class.has-value]="hasSelection()"
     [class.is-disabled]="isDisabled() || loading"
     (click)="toggleDropdown()">
 
     <div class="display-container">
-      @if (selectedValues().length === 0) {
+      @if (!hasSelection()) {
         <!-- Placeholder / loading text -->
         <span class="placeholder">{{ loading ? 'Loading…' : placeholder }}</span>
 
@@ -55,7 +55,7 @@
     <div class="trigger-actions">
       @if (loading) {
         <span class="spinner" aria-hidden="true"></span>
-      } @else if (selectedValues().length > 0 && !isDisabled()) {
+      } @else if (hasSelection() && !isDisabled()) {
         <button
           type="button"
           class="clear-btn"

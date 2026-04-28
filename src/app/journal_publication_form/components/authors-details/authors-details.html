@@ -7,50 +7,42 @@
       <div class="card__content">
         <div class="list-section-header">
           <span class="list-count">{{ testSubsections.length }} {{ testSubsections.length === 1 ? 'Entry' : 'Entries' }}</span>
-          <button type="button" class="btn btn-primary btn-sm" (click)="openEditModal('apu-staff')">
-            <span class="material-icons">add</span> Add Entry
-          </button>
+          <app-action-button type="primary" label="Add Entry" icon="add" (clicked)="openEditModal('apu-staff')"></app-action-button>
         </div>
 
         @if (testSubsections.length > 0) {
-          <div class="table-scroll">
-            <table class="list-table">
-              <thead>
-                <tr>
-                  <th class="col-no">#</th>
-                  <th>Please select Staff Name</th>
-                  <th>School/Department</th>
-                  <th>Affiliation</th>
-                  <th class="col-actions">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (subsection of testSubsections.controls; track $index; let i = $index) {
-                  <tr>
-                    <td class="col-no text-muted">{{ i + 1 }}</td>
-                    <td>{{ subsection.value.staffName }}</td>
-                    <td>{{ subsection.value.schoolDepartment }}</td>
-                    <td>{{ subsection.value.affiliation }}</td>
-                    <td class="col-actions">
-                      <button type="button" class="btn-icon btn-icon--edit"
-                        (click)="openEditModal('apu-staff', i)" aria-label="Edit entry">
-                        <span class="material-icons">edit</span>
+          <app-data-table
+            [columns]="apuStaffColumns"
+            [rows]="testSubsections.controls"
+            [dense]="true">
+            <ng-template #rowTemplate let-row let-index="index">
+              <tr>
+                
+                <td>
+                  <div class="data-table__title data-table__title--small">{{ row.value.staffName }}</div>
+                </td>
+                <td>{{ row.value.schoolDepartment }}</td>
+                <td>{{ row.value.affiliation }}</td>
+                <td class="action-cell">
+                  <div class="data-table__actions" style="justify-content: center;">
+                    <button type="button" class="btn-icon btn-icon--edit"
+                      (click)="openEditModal('apu-staff', index)" aria-label="Edit entry">
+                      <span class="material-icons">edit</span>
+                    </button>
+                    @if (testSubsections.length > 1) {
+                      <button type="button" class="btn-icon btn-icon--delete"
+                        (click)="deleteTestSubsection(index)" aria-label="Remove entry">
+                        <span class="material-icons">delete</span>
                       </button>
-                      @if (testSubsections.length > 1) {
-                        <button type="button" class="btn-icon btn-icon--delete"
-                          (click)="deleteTestSubsection(i)" aria-label="Remove entry">
-                          <span class="material-icons">delete</span>
-                        </button>
-                      }
-                    </td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
+                    }
+                  </div>
+                </td>
+              </tr>
+            </ng-template>
+          </app-data-table>
         } @else {
           <div class="empty-state">
-            <span class="material-icons">receipt</span>
+            
             <p>No entries added yet. Click <strong>Add Entry</strong> to start adding items.</p>
           </div>
         }
@@ -62,52 +54,43 @@
       <div class="card__content">
         <div class="list-section-header">
           <span class="list-count">{{ studentCoAuthors.length }} {{ studentCoAuthors.length === 1 ? 'Entry' : 'Entries' }}</span>
-          <button type="button" class="btn btn-primary btn-sm" (click)="openEditModal('student')">
-            <span class="material-icons">add</span> Add Entry
-          </button>
+          <app-action-button type="primary" label="Add Entry" icon="add" (clicked)="openEditModal('student')"></app-action-button>
         </div>
 
         @if (studentCoAuthors.length > 0) {
-          <div class="table-scroll">
-            <table class="list-table">
-              <thead>
-                <tr>
-                  <th class="col-no">#</th>
-                  <th>TP Number</th>
-                  <th>Full Name (as per IC/Passport)</th>
-                  <th>School/Department</th>
-                  <th>Affiliation</th>
-                  <th class="col-actions">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (subsection of studentCoAuthors.controls; track $index; let i = $index) {
-                  <tr>
-                    <td class="col-no text-muted">{{ i + 1 }}</td>
-                    <td>{{ subsection.value.tpNumber }}</td>
-                    <td>{{ subsection.value.fullName }}</td>
-                    <td>{{ subsection.value.schoolDepartment }}</td>
-                    <td>{{ subsection.value.affiliation }}</td>
-                    <td class="col-actions">
-                      <button type="button" class="btn-icon btn-icon--edit"
-                        (click)="openEditModal('student', i)" aria-label="Edit entry">
-                        <span class="material-icons">edit</span>
+          <app-data-table
+            [columns]="studentColumns"
+            [rows]="studentCoAuthors.controls"
+            [dense]="true">
+            <ng-template #rowTemplate let-row let-index="index">
+              <tr>
+                
+                <td>{{ row.value.tpNumber }}</td>
+                <td>
+                  <div class="data-table__title data-table__title--small">{{ row.value.fullName }}</div>
+                </td>
+                <td>{{ row.value.schoolDepartment }}</td>
+                <td>{{ row.value.affiliation }}</td>
+                <td class="action-cell">
+                  <div class="data-table__actions" style="justify-content: center;">
+                    <button type="button" class="btn-icon btn-icon--edit"
+                      (click)="openEditModal('student', index)" aria-label="Edit entry">
+                      <span class="material-icons">edit</span>
+                    </button>
+                    @if (studentCoAuthors.length > 1) {
+                      <button type="button" class="btn-icon btn-icon--delete"
+                        (click)="deleteStudentCoAuthor(index)" aria-label="Remove entry">
+                        <span class="material-icons">delete</span>
                       </button>
-                      @if (studentCoAuthors.length > 1) {
-                        <button type="button" class="btn-icon btn-icon--delete"
-                          (click)="deleteStudentCoAuthor(i)" aria-label="Remove entry">
-                          <span class="material-icons">delete</span>
-                        </button>
-                      }
-                    </td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
+                    }
+                  </div>
+                </td>
+              </tr>
+            </ng-template>
+          </app-data-table>
         } @else {
           <div class="empty-state">
-            <span class="material-icons">receipt</span>
+            
             <p>No entries added yet. Click <strong>Add Entry</strong> to start adding items.</p>
           </div>
         }
@@ -119,56 +102,45 @@
       <div class="card__content">
         <div class="list-section-header">
           <span class="list-count">{{ nonApuCoAuthors.length }} {{ nonApuCoAuthors.length === 1 ? 'Entry' : 'Entries' }}</span>
-          <button type="button" class="btn btn-primary btn-sm" (click)="openEditModal('non-apu')">
-            <span class="material-icons">add</span> Add Entry
-          </button>
+          <app-action-button type="primary" label="Add Entry" icon="add" (clicked)="openEditModal('non-apu')"></app-action-button>
         </div>
 
         @if (nonApuCoAuthors.length > 0) {
-          <div class="table-scroll">
-            <table class="list-table">
-              <thead>
-                <tr>
-                  <th class="col-no">#</th>
-                  <th>Full Name (as per IC/Passport)</th>
-                  <th>Country</th>
-                  <th>Email</th>
-                  <th>Type of Organisation</th>
-                  <th>School/Department</th>
-                  <th>Institution/Company Name</th>
-                  <th class="col-actions">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (subsection of nonApuCoAuthors.controls; track $index; let i = $index) {
-                  <tr>
-                    <td class="col-no text-muted">{{ i + 1 }}</td>
-                    <td>{{ subsection.value.fullName }}</td>
-                    <td>{{ subsection.value.country }}</td>
-                    <td>{{ subsection.value.email }}</td>
-                    <td>{{ subsection.value.organisationType }}</td>
-                    <td>{{ subsection.value.schoolDepartment }}</td>
-                    <td>{{ subsection.value.institutionName }}</td>
-                    <td class="col-actions">
-                      <button type="button" class="btn-icon btn-icon--edit"
-                        (click)="openEditModal('non-apu', i)" aria-label="Edit entry">
-                        <span class="material-icons">edit</span>
+          <app-data-table
+            [columns]="nonApuColumns"
+            [rows]="nonApuCoAuthors.controls"
+            [dense]="true">
+            <ng-template #rowTemplate let-row let-index="index">
+              <tr>
+                
+                <td>
+                  <div class="data-table__title data-table__title--small">{{ row.value.fullName }}</div>
+                </td>
+                <td>{{ row.value.country }}</td>
+                <td>{{ row.value.email }}</td>
+                <td>{{ row.value.organisationType }}</td>
+                <td>{{ row.value.schoolDepartment }}</td>
+                <td>{{ row.value.institutionName }}</td>
+                <td class="action-cell">
+                  <div class="data-table__actions" style="justify-content: center;">
+                    <button type="button" class="btn-icon btn-icon--edit"
+                      (click)="openEditModal('non-apu', index)" aria-label="Edit entry">
+                      <span class="material-icons">edit</span>
+                    </button>
+                    @if (nonApuCoAuthors.length > 1) {
+                      <button type="button" class="btn-icon btn-icon--delete"
+                        (click)="deleteNonApuCoAuthor(index)" aria-label="Remove entry">
+                        <span class="material-icons">delete</span>
                       </button>
-                      @if (nonApuCoAuthors.length > 1) {
-                        <button type="button" class="btn-icon btn-icon--delete"
-                          (click)="deleteNonApuCoAuthor(i)" aria-label="Remove entry">
-                          <span class="material-icons">delete</span>
-                        </button>
-                      }
-                    </td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
+                    }
+                  </div>
+                </td>
+              </tr>
+            </ng-template>
+          </app-data-table>
         } @else {
           <div class="empty-state">
-            <span class="material-icons">receipt</span>
+            
             <p>No entries added yet. Click <strong>Add Entry</strong> to start adding items.</p>
           </div>
         }
@@ -269,17 +241,6 @@
             <input type="email" id="email" class="form-control" formControlName="email"
               placeholder="Ex. user@example.com">
             <app-validation-message [control]="editForm.get('email')"></app-validation-message>
-          </div>
-
-          <div class="form-group">
-            <app-searchable-dropdown
-              label="Type of Organisation *"
-              [options]="organisationTypeOptions"
-              [searchable]="true"
-              placeholder="Search organisation type..."
-              formControlName="organisationType">
-            </app-searchable-dropdown>
-            <app-validation-message [control]="editForm.get('organisationType')"></app-validation-message>
           </div>
 
           <div class="form-group">

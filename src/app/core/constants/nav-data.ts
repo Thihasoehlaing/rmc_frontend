@@ -144,7 +144,7 @@ export const NAVIGATION_DATA: NavGroup[] = [
             {
                 label: 'RMC Settings',
                 icon: 'settings',
-                permission: { allOf: ['RMC'] },
+                permission: { anyOf: ['RMC', 'Admin'] },
                 children: [
                     { label: 'RDIG Dropdown Options Management', route: '/settings/rdig-dropdown-options' },
                     { label: 'Batch Sitting', icon: 'event_available', route: '/settings/batch-sitting' },
@@ -160,6 +160,7 @@ export const NAVIGATION_DATA: NavGroup[] = [
                 icon: 'admin_panel_settings',
                 permission: { anyOf: ['Admin'] },
                 children: [
+                    { label: 'Journal Guidelines Settings', icon: 'rule', route: '/journal/guidelines-settings', permission: { anyOf: ['Admin'] } },
                 ],
             },
         ],

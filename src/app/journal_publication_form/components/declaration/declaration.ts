@@ -1,6 +1,5 @@
 import { Component, OnInit, Output, EventEmitter, inject, effect } from '@angular/core';
 import { CustomHeaderComponent } from '../../../shared/components/custom-header/custom-header.component';
-import { CustomSubheaderComponent } from '../../../shared/components/custom-subheader/custom-subheader.component';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { JournalWorkflowService } from '../../services/journal-workflow.service';
@@ -9,7 +8,7 @@ import { ValidationMessageComponent } from '../../../shared/components/validatio
 @Component({
   selector: 'app-declaration',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, CustomHeaderComponent, CustomSubheaderComponent, ValidationMessageComponent],
+  imports: [CommonModule, ReactiveFormsModule, CustomHeaderComponent, ValidationMessageComponent],
   templateUrl: './declaration.html',
   styleUrl: './declaration.scss'
 })

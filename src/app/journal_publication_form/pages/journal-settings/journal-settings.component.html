@@ -1,0 +1,216 @@
+<main class="Journal-settings">
+  <header class="settings-header">
+    <h1>Journal Settings</h1>
+  </header>
+
+  <section class="settings-container card">
+    <div class="card__content">
+      <div class="top-section">
+        <div class="selector-group">
+          <label class="form-label">Dropdown Category</label>
+          <select
+            class="input--select category-select"
+            #breakdownSelect
+            (change)="onBreakdownTypeChange(breakdownSelect.value)"
+            [value]="selectedBreakdownType() || ''">
+            <option value="" disabled>--Select--</option>
+            @for (type of breakdownTypeOptions; track type.value) {
+              <option [value]="type.value">{{ type.label }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      @if (selectedBreakdownType()) {
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+          <button
+            type="button"
+            class="btn btn-primary"
+            (click)="openAddModal()"
+            aria-label="Add option">
+            + Add Option
+          </button>
+          <button
+            type="button"
+            class="btn btn-danger"
+            [disabled]="!hasSelectedOptions()"
+            (click)="deleteSelectedOptions()"
+            aria-label="Delete selected options">
+            Delete
+          </button>
+        </div>
+
+        <!-- Search, Filter, and Sort Controls -->
+        <div class="controls-section">
+          <div class="search-box">
+            <input
+              type="text"
+              class="input--text search-input"
+              placeholder="Search options..."
+              [value]="searchQuery()"
+              (input)="onSearchInput($event)"
+              aria-label="Search options">
+          </div>
+
+          <div class="filter-sort-group">
+            <select
+              class="input--select filter-select"
+              [value]="filterStatus()"
+              (change)="onFilterChange($event)"
+              aria-label="Filter by status">
+              <option value="All">All Status</option>
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+            </select>
+
+            <select
+              class="input--select sort-select"
+              [value]="sortBy()"
+              (change)="onSortChange($event)"
+              aria-label="Sort options">
+              <option value="date">Newest First</option>
+              <option value="name">Name (A-Z)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Options Table -->
+        @if (getFilteredAndSortedOptions().length > 0) {
+          <div class="options-table-wrapper">
+            <table class="options-table">
+              <thead>
+                <tr>
+                  <th class="th-checkbox">
+                    <input type="checkbox" aria-label="Select all">
+                  </th>
+                  <th class="sortable-header" (click)="onHeaderClick('label')" [title]="isSortableColumn('label') ? 'Click to sort' : ''">
+                    Option Name{{ getSortIndicator('label') }}
+                  </th>
+                  <th class="sortable-header" (click)="onHeaderClick('accountCode')" [title]="isSortableColumn('accountCode') ? 'Click to sort' : ''">
+                    Account Code{{ getSortIndicator('accountCode') }}
+                  </th>
+                  <th class="sortable-header" (click)="onHeaderClick('status')" [title]="isSortableColumn('status') ? 'Click to sort' : ''">
+                    Status{{ getSortIndicator('status') }}
+                  </th>
+                  <th class="sortable-header" (click)="onHeaderClick('createdDate')" [title]="isSortableColumn('createdDate') ? 'Click to sort' : ''">
+                    Created Date{{ getSortIndicator('createdDate') }}
+                  </th>
+                  <th class="th-actions">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (option of getFilteredAndSortedOptions(); track option.value) {
+                  <tr>
+                    <td class="td-checkbox">
+                      <input
+                        type="checkbox"
+                        [checked]="isOptionSelected(option.value)"
+                        (change)="toggleCheckbox(option.value)"
+                        [attr.aria-label]="'Select ' + option.label">
+                    </td>
+                    <td class="option-name">{{ option.label }}</td>
+                    <td class="option-account">{{ option.accountCode || '-' }}</td>
+                    <td class="option-status">
+                      <span class="status-badge" [class]="'status-' + (option.status || 'Active').toLowerCase()">
+                        {{ option.status || 'Active' }}
+                      </span>
+                    </td>
+                    <td class="option-date">{{ option.createdDate || getTodayDate() }}</td>
+                    <td class="td-actions">
+                      <button
+                        type="button"
+                        class="btn btn-sm btn-edit"
+                        (click)="editOption(option, getFilteredAndSortedOptions().indexOf(option))"
+                        aria-label="Edit option"
+                        title="Edit">
+                        Edit
+                      </button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        } @else {
+          <div class="empty-state">
+            <p>No options available. Click "Add Option" to create one.</p>
+          </div>
+        }
+      }
+    </div>
+  </section>
+
+  <!-- Modal Overlay -->
+  @if (isModalOpen()) {
+    <div class="modal-overlay" (click)="closeModal()"></div>
+
+    <!-- Add/Edit Option Modal -->
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          {{ editingOptionIndex() === null ? 'Add Option' : 'Edit Option' }}
+        </h3>
+        <button
+          type="button"
+          class="modal-close-btn"
+          (click)="closeModal()"
+          aria-label="Close modal">
+          ✕
+        </button>
+      </div>
+
+      <form [formGroup]="optionForm" class="modal-body">
+        <div class="form-field">
+          <label class="form-label">Option Name <span class="required">*</span></label>
+          <input
+            type="text"
+            class="input--text"
+            formControlName="label"
+            placeholder="Enter option name">
+          @if (optionForm.get('label')?.invalid && optionForm.get('label')?.touched) {
+            <span class="form-error">Option Name is required</span>
+          }
+        </div>
+
+        <div class="form-field">
+          <label class="form-label">Account Code <span class="optional">(Optional)</span></label>
+          <input
+            type="text"
+            class="input--text"
+            formControlName="accountCode"
+            placeholder="Enter account code">
+        </div>
+
+        <div class="form-field">
+          <label class="form-label">Status</label>
+          <select class="input--select" formControlName="status">
+            <option value="Active">Active</option>
+            <option value="Inactive">Inactive</option>
+          </select>
+        </div>
+
+        @if (errorMessage()) {
+          <div class="form-error" style="margin-bottom: 1rem; color: #dc3545; font-weight: 500;">
+            {{ errorMessage() }}
+          </div>
+        }
+
+        <div class="modal-actions">
+          <button
+            type="button"
+            class="btn btn-ghost"
+            (click)="closeModal()">
+            Cancel
+          </button>
+          <button
+            type="button"
+            class="btn btn-primary"
+            (click)="saveOption()"
+            [disabled]="optionForm.invalid">
+            Save
+          </button>
+        </div>
+      </form>
+    </div>
+  }

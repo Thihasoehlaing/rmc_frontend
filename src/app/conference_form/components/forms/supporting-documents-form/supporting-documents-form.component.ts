@@ -60,7 +60,9 @@ export class SupportingDocumentsFormComponent implements OnInit, OnDestroy {
       conferenceInvoice: ['', [Validators.required]],
       manuscriptInternallyReviewed: ['', [Validators.required]],
       reviewerName: ['', [Validators.required]],
-      manuscriptPreviouslyPublished: ['', [Validators.required]]
+      manuscriptPreviouslyPublished: ['', [Validators.required]],
+      citedJournalPaper: ['', [Validators.required]],
+      citedJournalPaperExplanation: ['', [Validators.required]]
     });
   }
 

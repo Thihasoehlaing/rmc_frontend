@@ -24,23 +24,34 @@
         }
 
         <tbody>
-          @for (row of rows; track trackRow($index, row); let i = $index) {
-            @if (rowTemplate) {
-              <ng-container
-                [ngTemplateOutlet]="rowTemplate"
-                [ngTemplateOutletContext]="{ $implicit: row, row: row, index: i, columns: columns }">
-              </ng-container>
-            } @else {
-              <tr [class.is-hoverable]="hoverable">
-                @for (column of columns; track column.key) {
-                  <td
-                    [class.is-align-center]="cellAlign(column) === 'center'"
-                    [class.is-align-right]="cellAlign(column) === 'right'">
-                    {{ resolveValue(row, column.key) ?? '—' }}
-                  </td>
-                }
-              </tr>
+          @if (rows.length > 0) {
+            @for (row of rows; track trackRow($index, row); let i = $index) {
+              @if (rowTemplate) {
+                <ng-container
+                  [ngTemplateOutlet]="rowTemplate"
+                  [ngTemplateOutletContext]="{ $implicit: row, row: row, index: i, columns: columns }">
+                </ng-container>
+              } @else {
+                <tr [class.is-hoverable]="hoverable">
+                  @for (column of columns; track column.key) {
+                    <td
+                      [class.is-align-center]="cellAlign(column) === 'center'"
+                      [class.is-align-right]="cellAlign(column) === 'right'">
+                      {{ resolveValue(row, column.key) ?? '—' }}
+                    </td>
+                  }
+                </tr>
+              }
             }
+          } @else {
+            <tr class="data-table__empty-row">
+              <td [attr.colspan]="columns.length || 1">
+                <div class="data-table__empty-state">
+                  <span class="material-icons" aria-hidden="true">receipt</span>
+                  <p>No entries added yet.</p>
+                </div>
+              </td>
+            </tr>
           }
         </tbody>
       </table>

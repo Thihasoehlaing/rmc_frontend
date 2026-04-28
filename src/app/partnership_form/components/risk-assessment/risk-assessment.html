@@ -6,7 +6,7 @@
     </div>
 
     <div class="card__content section-fields">
-      
+
       <div class="form-field">
         <label class="form-label is-required">Affordability/Financial</label>
         <textarea class="input--textarea" rows="4" formControlName="affordability" maxlength="2000"></textarea>
@@ -51,13 +51,333 @@
         </div>
       </div>
 
-      <div class="form-field mt-4">
-        <label class="form-label is-required">Milestones & Expected Outcomes</label>
-        <textarea class="input--textarea" rows="6" formControlName="measurableOutcomes" maxlength="2000"></textarea>
-        <app-character-counter [current]="riskForm.get('measurableOutcomes')?.value?.length ?? 0" [max]="2000"></app-character-counter>
+      <!-- 1. APU Lead Member Table -->
+      <div class="card mt-5">
+        <app-custom-subheader title="APU Lead Member of Staff"></app-custom-subheader>
+
+        <div class="card__content">
+          <div class="list-section-header">
+            <span class="list-count">{{ apuLeadMembers.length }} {{ apuLeadMembers.length === 1 ? 'Entry' : 'Entries' }}</span>
+            <app-action-button type="primary" label="Add Entry" icon="add" (clicked)="openModal('leadMember')" [disabled]="isDisabled"></app-action-button>
+          </div>
+
+        @if (apuLeadMembers.length > 0) {
+          <app-data-table
+            [columns]="apuLeadMembersColumns"
+            [rows]="apuLeadMembers.controls"
+            [dense]="true">
+            <ng-template #rowTemplate let-row let-index="index">
+              <tr>
+                <td style="text-align: center;" class="text-muted">{{ index + 1 }}</td>
+                <td>
+                  <div class="data-table__title data-table__title--small">{{ row.value.name }}</div>
+                </td>
+                <td>{{ row.value.functionalUnit }}</td>
+                <td>{{ row.value.email }}</td>
+                <td class="action-cell">
+                  <div class="data-table__actions" style="justify-content: center;">
+                    <button type="button" class="btn-icon btn-icon--edit"
+                      (click)="openModal('leadMember', index)" aria-label="Edit entry" [disabled]="isDisabled">
+                      <span class="material-icons">edit</span>
+                    </button>
+                    <button type="button" class="btn-icon btn-icon--delete"
+                      (click)="removeLeadMember(index)" aria-label="Remove entry" [disabled]="isDisabled">
+                      <span class="material-icons">delete</span>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </ng-template>
+          </app-data-table>
+        } @else {
+          <div class="empty-state">
+            <p>No entries added yet. Click <strong>Add Entry</strong> to start adding items.</p>
+          </div>
+        }
+        </div>
+      </div>
+
+      <!-- 2. Milestones Table -->
+      <div class="card mt-5">
+        <app-custom-subheader title="Milestones"></app-custom-subheader>
+
+        <div class="card__content">
+          <div class="list-section-header">
+            <span class="list-count">{{ milestones.length }} {{ milestones.length === 1 ? 'Entry' : 'Entries' }}</span>
+            <app-action-button type="primary" label="Add Entry" icon="add" (clicked)="openModal('milestone')" [disabled]="isDisabled"></app-action-button>
+          </div>
+
+        @if (milestones.length > 0) {
+          <app-data-table
+            [columns]="milestonesColumns"
+            [rows]="milestones.controls"
+            [dense]="true">
+            <ng-template #rowTemplate let-row let-index="index">
+              <tr>
+                <td style="text-align: center;" class="text-muted">{{ index + 1 }}</td>
+                <td>
+                  <div class="data-table__title data-table__title--small">{{ row.value.action }}</div>
+                </td>
+                <td>{{ row.value.startDate | date }}</td>
+                <td>{{ row.value.endDate | date }}</td>
+                <td class="action-cell">
+                  <div class="data-table__actions" style="justify-content: center;">
+                    <button type="button" class="btn-icon btn-icon--edit"
+                      (click)="openModal('milestone', index)" aria-label="Edit entry" [disabled]="isDisabled">
+                      <span class="material-icons">edit</span>
+                    </button>
+                    <button type="button" class="btn-icon btn-icon--delete"
+                      (click)="removeMilestone(index)" aria-label="Remove entry" [disabled]="isDisabled">
+                      <span class="material-icons">delete</span>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </ng-template>
+          </app-data-table>
+        } @else {
+          <div class="empty-state">
+            <p>No entries added yet. Click <strong>Add Entry</strong> to start adding items.</p>
+          </div>
+        }
+        </div>
+      </div>
+
+      <!-- 3. Outcomes Table -->
+      <div class="card mt-5">
+        <app-custom-subheader title="Outcomes"></app-custom-subheader>
+
+        <div class="card__content">
+          <div class="list-section-header">
+            <span class="list-count">{{ outcomes.length }} {{ outcomes.length === 1 ? 'Entry' : 'Entries' }}</span>
+            <app-action-button type="primary" label="Add Entry" icon="add" (clicked)="openModal('outcome')" [disabled]="isDisabled"></app-action-button>
+          </div>
+
+        @if (outcomes.length > 0) {
+          <app-data-table
+            [columns]="outcomesColumns"
+            [rows]="outcomes.controls"
+            [dense]="true">
+            <ng-template #rowTemplate let-row let-index="index">
+              <tr>
+                <td style="text-align: center;" class="text-muted">{{ index + 1 }}</td>
+                <td>
+                  <div class="data-table__title data-table__title--small">{{ row.value.outcome }}</div>
+                </td>
+                <td>{{ row.value.startDate | date }}</td>
+                <td>{{ row.value.endDate | date }}</td>
+                <td class="action-cell">
+                  <div class="data-table__actions" style="justify-content: center;">
+                    <button type="button" class="btn-icon btn-icon--edit"
+                      (click)="openModal('outcome', index)" aria-label="Edit entry" [disabled]="isDisabled">
+                      <span class="material-icons">edit</span>
+                    </button>
+                    <button type="button" class="btn-icon btn-icon--delete"
+                      (click)="removeOutcome(index)" aria-label="Remove entry" [disabled]="isDisabled">
+                      <span class="material-icons">delete</span>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </ng-template>
+          </app-data-table>
+        } @else {
+          <div class="empty-state">
+            <p>No entries added yet. Click <strong>Add Entry</strong> to start adding items.</p>
+          </div>
+        }
+        </div>
+      </div>
+
+      <!-- 4. Supporting Documentation Table -->
+      <div class="card mt-5">
+        <app-custom-subheader title="Supporting Documentation"></app-custom-subheader>
+
+        <div class="card__content">
+          <div class="list-section-header">
+            <span class="list-count">{{ supportingDocs.length }} {{ supportingDocs.length === 1 ? 'Entry' : 'Entries' }}</span>
+            <app-action-button type="primary" label="Add Entry" icon="add" (clicked)="openModal('suppDoc')" [disabled]="isDisabled"></app-action-button>
+          </div>
+
+        @if (supportingDocs.length > 0) {
+          <app-data-table
+            [columns]="supportingDocsColumns"
+            [rows]="supportingDocs.controls"
+            [dense]="true">
+            <ng-template #rowTemplate let-row let-index="index">
+              <tr>
+                <td style="text-align: center;" class="text-muted">{{ index + 1 }}</td>
+                <td>
+                  <div class="data-table__title data-table__title--small">{{ row.value.documentType }}</div>
+                </td>
+                <td>
+                  <span class="material-icons text-muted" style="font-size: 16px; vertical-align: middle; margin-right: 4px;">description</span>
+                  {{ row.value.fileName }}
+                </td>
+                <td>{{ row.value.description }}</td>
+                <td class="action-cell">
+                  <div class="data-table__actions" style="justify-content: center;">
+                    <button type="button" class="btn-icon btn-icon--edit"
+                      (click)="openModal('suppDoc', index)" aria-label="Edit entry" [disabled]="isDisabled">
+                      <span class="material-icons">edit</span>
+                    </button>
+                    <button type="button" class="btn-icon btn-icon--delete"
+                      (click)="removeSupportingDoc(index)" aria-label="Remove entry" [disabled]="isDisabled">
+                      <span class="material-icons">delete</span>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </ng-template>
+          </app-data-table>
+        } @else {
+          <div class="empty-state">
+            <p>No documents added yet. Click <strong>Add Entry</strong> to upload.</p>
+          </div>
+        }
+        </div>
+      </div>
+
+      <div class="form-field mt-5">
+        <label class="form-label">Success Factor</label>
+        <textarea class="form-control input--textarea" rows="4" formControlName="successFactor" maxlength="500" placeholder="max 500 char"></textarea>
+        <app-character-counter [current]="riskForm.get('successFactor')?.value?.length ?? 0" [max]="500"></app-character-counter>
       </div>
 
     </div>
   </section>
 
 </div>
+
+<!-- Modal Overlay (Shared Engine) -->
+@if (isModalOpen) {
+  <div class="modal-overlay" (click)="closeModal()">
+    <div class="modal-dialog" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>{{ getModalTitle() }}</h3>
+        <button type="button" class="btn-close" (click)="closeModal()" aria-label="Close">
+          <span class="material-icons">close</span>
+        </button>
+      </div>
+
+      <!-- APU Lead Member Form -->
+      @if (modalType === 'leadMember') {
+        <form [formGroup]="leadMemberForm" (ngSubmit)="submitModal()" class="modal-body">
+          <div class="form-group">
+            <label class="form-label is-required">Name</label>
+            <input type="text" class="form-control input--text" formControlName="name" placeholder="Enter name">
+            <app-validation-message [control]="leadMemberForm.get('name')"></app-validation-message>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label is-required">Functional Unit</label>
+            <input type="text" class="form-control input--text" formControlName="functionalUnit" placeholder="Enter functional unit">
+            <app-validation-message [control]="leadMemberForm.get('functionalUnit')"></app-validation-message>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label is-required">Email</label>
+            <input type="email" class="form-control input--text" formControlName="email" placeholder="Enter email">
+            <app-validation-message [control]="leadMemberForm.get('email')"></app-validation-message>
+          </div>
+
+          <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-4); background: var(--color-surface-nested); border-top: 1px solid var(--border-default); margin-top: var(--space-4); box-sizing: border-box;">
+            <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+            <button type="submit" class="btn btn-primary" [disabled]="leadMemberForm.invalid">Save</button>
+          </div>
+        </form>
+      }
+
+      <!-- Milestone Form -->
+      @if (modalType === 'milestone') {
+        <form [formGroup]="milestoneForm" (ngSubmit)="submitModal()" class="modal-body">
+          <div class="form-group">
+            <label class="form-label is-required">Action/Milestone</label>
+            <input type="text" class="form-control input--text" formControlName="action" placeholder="Enter action or milestone description">
+            <app-validation-message [control]="milestoneForm.get('action')"></app-validation-message>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label is-required">Start Date</label>
+            <input type="date" class="form-control input--text" formControlName="startDate">
+            <app-validation-message [control]="milestoneForm.get('startDate')"></app-validation-message>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label is-required">End Date</label>
+            <input type="date" class="form-control input--text" formControlName="endDate">
+            <app-validation-message [control]="milestoneForm.get('endDate')"></app-validation-message>
+          </div>
+
+          <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-4); background: var(--color-surface-nested); border-top: 1px solid var(--border-default); margin-top: var(--space-4); box-sizing: border-box;">
+            <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+            <button type="submit" class="btn btn-primary" [disabled]="milestoneForm.invalid">Save</button>
+          </div>
+        </form>
+      }
+
+      <!-- Outcome Form -->
+      @if (modalType === 'outcome') {
+        <form [formGroup]="outcomeForm" (ngSubmit)="submitModal()" class="modal-body">
+          <div class="form-group">
+            <label class="form-label is-required">Outcome</label>
+            <input type="text" class="form-control input--text" formControlName="outcome" placeholder="Enter expected outcome">
+            <app-validation-message [control]="outcomeForm.get('outcome')"></app-validation-message>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label is-required">Start Date</label>
+            <input type="date" class="form-control input--text" formControlName="startDate">
+            <app-validation-message [control]="outcomeForm.get('startDate')"></app-validation-message>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label is-required">End Date</label>
+            <input type="date" class="form-control input--text" formControlName="endDate">
+            <app-validation-message [control]="outcomeForm.get('endDate')"></app-validation-message>
+          </div>
+
+          <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-4); background: var(--color-surface-nested); border-top: 1px solid var(--border-default); margin-top: var(--space-4); box-sizing: border-box;">
+            <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+            <button type="submit" class="btn btn-primary" [disabled]="outcomeForm.invalid">Save</button>
+          </div>
+        </form>
+      }
+
+      <!-- Supporting Documentation Form -->
+      @if (modalType === 'suppDoc') {
+        <form [formGroup]="supportingDocForm" (ngSubmit)="submitModal()" class="modal-body">
+          <div class="form-group">
+            <label class="form-label is-required">Document Type</label>
+            <input type="text" class="form-control input--text" formControlName="documentType" placeholder="Ex. Agreement, Annex, etc.">
+            <app-validation-message [control]="supportingDocForm.get('documentType')"></app-validation-message>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label is-required">Upload Field</label>
+              <app-file-upload
+                [accept]="'*'"
+                [maxSizeMB]="10"
+                placeholder="Click or drag and drop to upload file"
+                (fileSelected)="onFileSelected($event)">
+              </app-file-upload>
+              <input type="hidden" formControlName="fileName">
+              <app-validation-message [control]="supportingDocForm.get('fileName')"></app-validation-message>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Description</label>
+            <textarea class="form-control input--textarea" rows="3" formControlName="description" placeholder="Optional document description"></textarea>
+          </div>
+
+          <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-4); background: var(--color-surface-nested); border-top: 1px solid var(--border-default); margin-top: var(--space-4); box-sizing: border-box;">
+            <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+            <button type="submit" class="btn btn-primary" [disabled]="supportingDocForm.invalid">Save</button>
+          </div>
+        </form>
+      }
+    </div>
+  </div>
+}
+
+

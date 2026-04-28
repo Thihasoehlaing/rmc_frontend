@@ -286,7 +286,7 @@ import { AuthService } from '../../../services/auth.service';
       margin: 0 0 var(--space-3) 0;
       font-size: var(--fs-lg);
       font-weight: var(--fw-bold);
-      color: var(--color-heading);
+      color: black;
     }
 
     .applicant-details__content {
@@ -309,7 +309,7 @@ import { AuthService } from '../../../services/auth.service';
 
     .detail-label {
       font-weight: var(--fw-bold);
-      color: var(--color-label);
+      color: black;
       font-size: var(--fs-sm);
     }
 
@@ -394,7 +394,7 @@ import { AuthService } from '../../../services/auth.service';
     .review-comments-header {
       font-size: var(--fs-lg);
       font-weight: var(--fw-bold);
-      color: var(--color-primary);
+      color: black;
       margin-bottom: var(--space-4);
       padding-bottom: var(--space-3);
       border-bottom: 2px solid var(--border-default); // 2px sub-space

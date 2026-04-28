@@ -1,0 +1,252 @@
+<div class="manual-override-container">
+  <!-- Header -->
+  <div class="override-header">
+    <h2>🧪 Manual Override Controls</h2>
+  </div>
+
+  <!-- Master Enable Toggle -->
+  <div class="override-master-control">
+    <label class="toggle-switch">
+      <input
+        type="checkbox"
+        [checked]="isOverrideEnabled()"
+        (change)="isOverrideEnabled.set($event.target.checked)">
+      <span class="toggle-slider"></span>
+    </label>
+    <span class="toggle-label">Enable Manual Overrides</span>
+    @if (activeOverridesCount() > 0) {
+      <span class="override-badge">{{ activeOverridesCount() }} active</span>
+    }
+  </div>
+
+  @if (isOverrideEnabled()) {
+    <!-- Tab Navigation -->
+    <div class="override-tabs">
+      <button class="tab-btn tab-active">Manual Override</button>
+      <button class="tab-btn">Profiles</button>
+    </div>
+
+    <!-- Section: Add Override -->
+    <section class="override-section">
+      <h3 class="section-title">Add Override Value</h3>
+      <form [formGroup]="overrideForm" class="override-form">
+        <div class="form-row">
+          <div class="form-field">
+            <label for="overrideKey">Override Key *</label>
+            <input
+              id="overrideKey"
+              type="text"
+              class="input--text"
+              formControlName="overrideKey"
+              placeholder="e.g., isLoading, formValue, apiEndpoint">
+          </div>
+
+          <div class="form-field">
+            <label for="overrideType">Type *</label>
+            <select class="input--select" id="overrideType" formControlName="overrideType">
+              <option value="string">String</option>
+              <option value="number">Number</option>
+              <option value="boolean">Boolean</option>
+              <option value="json">JSON</option>
+              <option value="date">Date</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label for="overrideValue">Value *</label>
+          <textarea
+            id="overrideValue"
+            class="input--textarea"
+            formControlName="overrideValue"
+            placeholder="Enter value (boolean: true/false, number: 123, json: {...})"
+            rows="3"></textarea>
+        </div>
+
+        <div class="form-field">
+          <label for="overrideDescription">Description</label>
+          <input
+            id="overrideDescription"
+            type="text"
+            class="input--text"
+            formControlName="overrideDescription"
+            placeholder="Optional description of this override">
+        </div>
+
+        <button
+          type="button"
+          class="btn btn-primary"
+          (click)="addOverride()"
+          [disabled]="overrideForm.invalid">
+          + Add Override
+        </button>
+      </form>
+    </section>
+
+    <!-- Section: Active Overrides -->
+    <section class="override-section">
+      <div class="section-header">
+        <h3 class="section-title">Active Overrides ({{ activeOverridesCount() }})</h3>
+        <div class="section-actions">
+          <button class="btn btn-secondary btn-sm" (click)="openJSONEditor()">
+            📝 JSON Edit
+          </button>
+          <button class="btn btn-secondary btn-sm" (click)="exportOverrides()">
+            ⬇️ Export
+          </button>
+          <button class="btn btn-secondary btn-sm" (click)="importOverrides()">
+            ⬆️ Import
+          </button>
+        </div>
+      </div>
+
+      @if (activeOverridesCount() > 0) {
+        <div class="overrides-list">
+          @for (item of overrideValues() | keyvalue; track item.key) {
+            <div class="override-item">
+              <div class="override-info">
+                <div class="override-key">{{ item.key }}</div>
+                <div class="override-value">
+                  <code>{{ getDisplayValue(item.value.value) }}</code>
+                </div>
+                @if (item.value.description) {
+                  <div class="override-description">{{ item.value.description }}</div>
+                }
+              </div>
+              <div class="override-meta">
+                <span class="type-badge">{{ item.value.type }}</span>
+                <button
+                  type="button"
+                  class="btn-remove"
+                  (click)="removeOverride(item.key)"
+                  title="Remove override">
+                  ✕
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+
+        <button
+          type="button"
+          class="btn btn-danger btn-sm"
+          (click)="clearAllOverrides()">
+          🗑️ Clear All Overrides
+        </button>
+      } @else {
+        <div class="empty-state">
+          <p>No active overrides. Add one above to get started.</p>
+        </div>
+      }
+    </section>
+
+    <!-- Section: Preset Profiles -->
+    <section class="override-section">
+      <div class="section-header">
+        <h3 class="section-title">Test Profiles</h3>
+        <button
+          type="button"
+          class="btn btn-secondary btn-sm"
+          (click)="saveAsProfile()"
+          [disabled]="activeOverridesCount() === 0">
+          💾 Save as Profile
+        </button>
+      </div>
+
+      <div class="profiles-grid">
+        @for (profile of testProfiles; track profile.name) {
+          <div class="profile-card">
+            <div class="profile-header">
+              <h4>{{ profile.name }}</h4>
+              <span class="preset-badge">Preset</span>
+            </div>
+            <p class="profile-description">{{ profile.description }}</p>
+            <div class="profile-details">
+              <small>{{ profile.overrides.length }} overrides</small>
+            </div>
+            <button
+              type="button"
+              class="btn btn-secondary btn-xs"
+              (click)="applyProfile(profile)">
+              Apply
+            </button>
+          </div>
+        }
+
+        @for (profile of overrideProfiles() | slice:testProfiles.length; track profile.name) {
+          <div class="profile-card custom">
+            <div class="profile-header">
+              <h4>{{ profile.name }}</h4>
+              <span class="custom-badge">Custom</span>
+            </div>
+            <p class="profile-description">{{ profile.description }}</p>
+            <div class="profile-details">
+              <small>{{ profile.overrides.length }} overrides</small>
+              <small class="created-date">
+                {{ profile.createdAt | date:'short' }}
+              </small>
+            </div>
+            <div class="profile-actions">
+              <button
+                type="button"
+                class="btn btn-secondary btn-xs"
+                (click)="applyProfile(profile)">
+                Apply
+              </button>
+              <button
+                type="button"
+                class="btn btn-danger btn-xs"
+                (click)="deleteProfile(profile.name)">
+                Delete
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    </section>
+
+    <!-- JSON Editor Modal -->
+    @if (showJSONEditor()) {
+      <div class="modal-overlay" (click)="showJSONEditor.set(false)"></div>
+      <div class="json-editor-modal">
+        <div class="modal-header">
+          <h3>JSON Bulk Editor</h3>
+          <button
+            type="button"
+            class="modal-close"
+            (click)="showJSONEditor.set(false)">
+            ✕
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <textarea
+            class="json-editor"
+            [value]="jsonEditorContent()"
+            (input)="jsonEditorContent.set($any($event.target).value)"></textarea>
+
+          @if (jsonValidationError()) {
+            <div class="error-message">
+              {{ jsonValidationError() }}
+            </div>
+          }
+        </div>
+
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-ghost"
+            (click)="showJSONEditor.set(false)">
+            Cancel
+          </button>
+          <button
+            type="button"
+            class="btn btn-primary"
+            (click)="saveJSONChanges()">
+            Save Changes
+          </button>
+        </div>
+      </div>
+    }
+  }
+</div>

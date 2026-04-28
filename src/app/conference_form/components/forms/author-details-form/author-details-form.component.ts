@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
 import { SearchableDropdownComponent } from '../../../../shared/components/searchable-dropdown/searchable-dropdown.component';
 import { ActionButtonComponent } from '../../../../shared/components/action-button/action-button.component';
+import { DataTableComponent, DataTableColumn } from '../../../../shared/components/data-table/data-table.component';
 import { DropdownOption } from '../../../../interfaces/components.interface';
 import { ConferenceWorkflowService } from '../../../services/conference-workflow.service';
 import { ConferenceFormStateService } from '../../../services/conference-form-state.service';
@@ -10,7 +11,7 @@ import { ConferenceFormStateService } from '../../../services/conference-form-st
 @Component({
   selector: 'app-author-details-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, SearchableDropdownComponent, ActionButtonComponent],
+  imports: [CommonModule, ReactiveFormsModule, SearchableDropdownComponent, ActionButtonComponent, DataTableComponent],
   templateUrl: './author-details-form.component.html',
   styleUrl: './author-details-form.component.scss'
 })
@@ -57,6 +58,35 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
     { value: 'Government Agency', label: 'Government Agency' },
     { value: 'Non-Profit Organization', label: 'Non-Profit Organization' },
     { value: 'Other', label: 'Other' }
+  ];
+
+  // DataTable column definitions
+  apuStaffColumns: readonly DataTableColumn[] = [
+    { key: 'index', label: '#', width: '50px', align: 'center' },
+    { key: 'staffName', label: 'Please select Staff Name' },
+    { key: 'schoolDepartment', label: 'School/Department' },
+    { key: 'affiliation', label: 'Affiliation' },
+    { key: 'actions', label: 'Actions', width: '100px', align: 'center' }
+  ];
+
+  studentCoAuthorColumns: readonly DataTableColumn[] = [
+    { key: 'index', label: '#', width: '50px', align: 'center' },
+    { key: 'tpNumber', label: 'TP Number' },
+    { key: 'fullName', label: 'Full Name (as per IC/Passport)' },
+    { key: 'schoolDepartment', label: 'School/Department' },
+    { key: 'affiliation', label: 'Affiliation' },
+    { key: 'actions', label: 'Actions', width: '100px', align: 'center' }
+  ];
+
+  nonApuCoAuthorColumns: readonly DataTableColumn[] = [
+    { key: 'index', label: '#', width: '50px', align: 'center' },
+    { key: 'fullName', label: 'Full Name (as per IC/Passport)' },
+    { key: 'country', label: 'Country' },
+    { key: 'email', label: 'Email' },
+    { key: 'organisationType', label: 'Type of Organisation' },
+    { key: 'schoolDepartment', label: 'School/Department' },
+    { key: 'institutionName', label: 'Institution/Company Name' },
+    { key: 'actions', label: 'Actions', width: '100px', align: 'center' }
   ];
 
   ngOnInit() {
@@ -164,6 +194,28 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
 
   get nonApuCoAuthors(): FormArray {
     return this.form.get('nonApuCoAuthors') as FormArray;
+  }
+
+  // Methods to get table data as arrays with index
+  getApuStaffTableData(): (any & { index: number })[] {
+    return this.testSubsections.controls.map((control, index) => ({
+      ...control.value,
+      index: index + 1
+    }));
+  }
+
+  getStudentCoAuthorTableData(): (any & { index: number })[] {
+    return this.studentCoAuthors.controls.map((control, index) => ({
+      ...control.value,
+      index: index + 1
+    }));
+  }
+
+  getNonApuCoAuthorTableData(): (any & { index: number })[] {
+    return this.nonApuCoAuthors.controls.map((control, index) => ({
+      ...control.value,
+      index: index + 1
+    }));
   }
 
   deleteTestSubsection(index: number) {

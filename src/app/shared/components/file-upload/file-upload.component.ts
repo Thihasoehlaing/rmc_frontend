@@ -24,8 +24,8 @@ export class FileUploadComponent {
   /** Whether file upload is disabled. */
   @Input() disabled = false;
 
-  /** Emits the valid File object after type + size checks pass. */
-  @Output() fileSelected = new EventEmitter<File>();
+  /** Emits the valid File object after type + size checks pass, or null if invalid/cleared. */
+  @Output() fileSelected = new EventEmitter<any>();
 
   // ── Internal reactive state ────────────────────────────────────
   selectedFileName = signal<string | null>(null);
@@ -77,6 +77,7 @@ export class FileUploadComponent {
       if (!ok) {
         this.errorMsg.set(`Invalid file type. Accepted: ${this.accept}`);
         this.selectedFileName.set(null);
+        this.fileSelected.emit(null);
         return;
       }
     }
@@ -85,8 +86,9 @@ export class FileUploadComponent {
     if (file.size > this.maxSizeMB * 1024 * 1024) {
       this.errorMsg.set(`File exceeds ${this.maxSizeMB} MB limit.`);
       this.selectedFileName.set(null);
-      return;
-    }
+        this.fileSelected.emit(null);
+        return;
+      }
 
     this.selectedFileName.set(file.name);
     this.fileSelected.emit(file);
@@ -96,5 +98,6 @@ export class FileUploadComponent {
   reset(): void {
     this.selectedFileName.set(null);
     this.errorMsg.set(null);
+    this.fileSelected.emit(null);
   }
 }

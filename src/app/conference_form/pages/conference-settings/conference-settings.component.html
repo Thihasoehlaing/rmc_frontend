@@ -31,14 +31,6 @@
             aria-label="Add option">
             + Add Option
           </button>
-          <button
-            type="button"
-            class="btn btn-danger"
-            [disabled]="!hasSelectedOptions()"
-            (click)="deleteSelectedOptions()"
-            aria-label="Delete selected options">
-            Delete
-          </button>
         </div>
 
         <!-- Search, Filter, and Sort Controls -->
@@ -75,66 +67,96 @@
           </div>
         </div>
 
+        <div style="display: none;">
+          <app-data-table [columns]="[]" [rows]="[]"></app-data-table>
+        </div>
+
         <!-- Options Table -->
         @if (getFilteredAndSortedOptions().length > 0) {
-          <div class="options-table-wrapper">
-            <table class="options-table">
+          <div class="table-scroll">
+            <table class="list-table">
               <thead>
                 <tr>
-                  <th class="th-checkbox">
-                    <input type="checkbox" aria-label="Select all">
+                  <th class="col-no">#</th>
+                  <th (click)="onHeaderClick('label')" [class.sortable]="isSortableColumn('label')" title="Click to sort">
+                    {{ isRegionType() ? 'Region Name' : (isLocalType() ? 'Item Description' : 'Vote Number') }}
+                    <span class="sort-indicator">{{ getSortIndicator('label') }}</span>
                   </th>
-                  <th class="sortable-header" (click)="onHeaderClick('label')" [title]="isSortableColumn('label') ? 'Click to sort' : ''">
-                    Vote Number{{ getSortIndicator('label') }}
-                  </th>
-                  @if (isLocalType()) {
-                    <th class="sortable-header" (click)="onHeaderClick('accountCode')" [title]="isSortableColumn('accountCode') ? 'Click to sort' : ''">
-                      Account Code{{ getSortIndicator('accountCode') }}
+                  @if (isResearchType()) {
+                    <th (click)="onHeaderClick('description')" [class.sortable]="isSortableColumn('description')" title="Click to sort">
+                      Item Description
+                      <span class="sort-indicator">{{ getSortIndicator('description') }}</span>
                     </th>
                   }
-                  <th class="sortable-header" (click)="onHeaderClick('foreignLocal')" [title]="isSortableColumn('foreignLocal') ? 'Click to sort' : ''">
-                    Foreign / Local{{ getSortIndicator('foreignLocal') }}
+                  @if (isLocalType()) {
+                    <th (click)="onHeaderClick('accountCode')" [class.sortable]="isSortableColumn('accountCode')" title="Click to sort">
+                      Account Code
+                      <span class="sort-indicator">{{ getSortIndicator('accountCode') }}</span>
+                    </th>
+                  }
+                  @if (isRegionType()) {
+                    <th (click)="onHeaderClick('percentage')" [class.sortable]="isSortableColumn('percentage')" title="Click to sort">
+                      Percentage
+                      <span class="sort-indicator">{{ getSortIndicator('percentage') }}</span>
+                    </th>
+                    <th (click)="onHeaderClick('limit')" [class.sortable]="isSortableColumn('limit')" title="Click to sort">
+                      Limit (RM)
+                      <span class="sort-indicator">{{ getSortIndicator('limit') }}</span>
+                    </th>
+                  }
+                  @if (isResearchType() || isLocalType()) {
+                    <th (click)="onHeaderClick('foreignLocal')" [class.sortable]="isSortableColumn('foreignLocal')" title="Click to sort">
+                      Foreign / Local
+                      <span class="sort-indicator">{{ getSortIndicator('foreignLocal') }}</span>
+                    </th>
+                  }
+                  <th (click)="onHeaderClick('status')" [class.sortable]="isSortableColumn('status')" title="Click to sort">
+                    Status
+                    <span class="sort-indicator">{{ getSortIndicator('status') }}</span>
                   </th>
-                  <th class="sortable-header" (click)="onHeaderClick('status')" [title]="isSortableColumn('status') ? 'Click to sort' : ''">
-                    Status{{ getSortIndicator('status') }}
+                  <th (click)="onHeaderClick('createdDate')" [class.sortable]="isSortableColumn('createdDate')" title="Click to sort">
+                    Created Date
+                    <span class="sort-indicator">{{ getSortIndicator('createdDate') }}</span>
                   </th>
-                  <th class="sortable-header" (click)="onHeaderClick('createdDate')" [title]="isSortableColumn('createdDate') ? 'Click to sort' : ''">
-                    Created Date{{ getSortIndicator('createdDate') }}
-                  </th>
-                  <th class="th-actions">Actions</th>
+                  <th class="col-actions">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                @for (option of getFilteredAndSortedOptions(); track option.value) {
+                @for (row of getFilteredAndSortedOptions(); track row.value; let i = $index) {
                   <tr>
-                    <td class="td-checkbox">
-                      <input
-                        type="checkbox"
-                        [checked]="isOptionSelected(option.value)"
-                        (change)="toggleCheckbox(option.value)"
-                        [attr.aria-label]="'Select ' + option.label">
-                    </td>
-                    <td class="option-name">{{ option.label }}</td>
-                    @if (isLocalType()) {
-                      <td class="option-account-code">{{ option.accountCode || '-' }}</td>
+                    <td class="col-no text-muted">{{ i + 1 }}</td>
+                    <td>{{ row.label }}</td>
+                    @if (isResearchType()) {
+                      <td>{{ row.description || '-' }}</td>
                     }
-                    <td class="option-foreign-local">
-                      {{ option.foreignLocal ? (option.foreignLocal === 'foreign' ? 'Foreign' : 'Local') : '-' }}
-                    </td>
-                    <td class="option-status">
-                      <span class="status-badge" [class]="'status-' + (option.status || 'Active').toLowerCase()">
-                        {{ option.status || 'Active' }}
-                      </span>
-                    </td>
-                    <td class="option-date">{{ option.createdDate || getTodayDate() }}</td>
-                    <td class="td-actions">
+                    @if (isLocalType()) {
+                      <td>{{ row.accountCode || '-' }}</td>
+                    }
+                    @if (isRegionType()) {
+                      <td>{{ row.percentage || '-' }}%</td>
+                      <td>RM{{ row.limit || '-' }}</td>
+                    }
+                    @if (isResearchType() || isLocalType()) {
+                      <td>
+                        {{ row.foreignLocal ? (row.foreignLocal === 'foreign' ? 'Foreign' : 'Local') : '-' }}
+                      </td>
+                    }
+                    <td>{{ row.status || 'Active' }}</td>
+                    <td>{{ row.createdDate || getTodayDate() }}</td>
+                    <td class="col-actions">
                       <button
                         type="button"
-                        class="btn btn-sm btn-edit"
-                        (click)="editOption(option, getFilteredAndSortedOptions().indexOf(option))"
-                        aria-label="Edit option"
-                        title="Edit">
-                        Edit
+                        class="btn-icon btn-icon--edit"
+                        (click)="editOption(row, getFilteredAndSortedOptions().indexOf(row))"
+                        aria-label="Edit option">
+                        <span class="material-icons">edit</span>
+                      </button>
+                      <button
+                        type="button"
+                        class="btn-icon btn-icon--delete"
+                        (click)="deleteOption(row.value)"
+                        aria-label="Delete option">
+                        <span class="material-icons">delete</span>
                       </button>
                     </td>
                   </tr>
@@ -172,16 +194,34 @@
 
       <form [formGroup]="optionForm" class="modal-body">
         <div class="form-field">
-          <label class="form-label">Vote Number <span class="required">*</span></label>
+          <label class="form-label">
+            @if (!isResearchType()) {
+              <span class="required">*</span>
+            }
+            {{ isRegionType() ? 'Region Name' : (isLocalType() ? 'Item Description' : 'Vote Number') }}
+          </label>
           <input
             type="text"
             class="input--text"
             formControlName="label"
-            placeholder="Enter vote number">
+            [placeholder]="isRegionType() ? 'Enter region name' : (isLocalType() ? 'Enter item description' : 'Enter vote number')">
           @if (optionForm.get('label')?.invalid && optionForm.get('label')?.touched) {
-            <span class="form-error">Vote Number is required</span>
+            <span class="form-error">
+              {{ isRegionType() ? 'Region Name' : (isLocalType() ? 'Item Description' : 'Vote Number') }} is required
+            </span>
           }
         </div>
+
+        @if (isResearchType()) {
+          <div class="form-field">
+            <label class="form-label">Item Description</label>
+            <textarea
+              class="input--textarea"
+              formControlName="description"
+              placeholder="Enter item description"
+              rows="3"></textarea>
+          </div>
+        }
 
         @if (isLocalType()) {
           <div class="form-field">
@@ -194,14 +234,50 @@
           </div>
         }
 
-        <div class="form-field">
-          <label class="form-label">Foreign / Local</label>
-          <select class="input--select" formControlName="foreignLocal">
-            <option value="">--Select--</option>
-            <option value="foreign">Foreign</option>
-            <option value="local">Local</option>
-          </select>
-        </div>
+        @if (isRegionType()) {
+          <div class="form-field">
+            <label class="form-label">Percentage (%)</label>
+            <input
+              type="number"
+              class="input--text"
+              formControlName="percentage"
+              placeholder="Enter percentage"
+              min="0"
+              max="100"
+              step="0.01">
+          </div>
+
+          <div class="form-field">
+            <label class="form-label">Limit (RM)</label>
+            <input
+              type="number"
+              class="input--text"
+              formControlName="limit"
+              placeholder="Enter limit amount"
+              min="0"
+              step="0.01">
+          </div>
+
+          <div class="form-field">
+            <label class="form-label">Description (Warning)</label>
+            <textarea
+              class="input--textarea"
+              formControlName="description"
+              placeholder="Enter region description/warning"
+              rows="3"></textarea>
+          </div>
+        }
+
+        @if (!isRegionType()) {
+          <div class="form-field">
+            <label class="form-label">Foreign / Local</label>
+            <select class="input--select" formControlName="foreignLocal">
+              <option value="">--Select--</option>
+              <option value="foreign">Foreign</option>
+              <option value="local">Local</option>
+            </select>
+          </div>
+        }
 
         <div class="form-field">
           <label class="form-label">Status</label>

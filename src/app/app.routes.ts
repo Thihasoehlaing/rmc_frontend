@@ -80,7 +80,7 @@ export const routes: Routes = [
       },
 
       // ── Conference Application ────────────────────────────────────────────
-      // Rule: ((full_time OR contract) AND academic) OR Admin
+      // Rule: Allow all authenticated users except fully blocked users
       {
         path: 'conference',
         canActivate: [permissionGuard],
@@ -90,7 +90,12 @@ export const routes: Routes = [
               {
                 anyOf: ['full_time', 'contract'],
                 allOf: ['academic'],
-                excludeGroups: ['Reviewer', 'HOS'],
+              },
+              {
+                anyOf: ['HOS'],
+              },
+              {
+                anyOf: ['VC'],
               },
               {
                 anyOf: ['Admin'],
@@ -103,18 +108,17 @@ export const routes: Routes = [
       },
 
       // ── Journal Publication ───────────────────────────────────────────────
-      // Rule: ((full_time OR contract) AND academic) OR HOS OR VC
+      // Rule: ((full_time OR contract) AND academic) OR HOS OR VC OR Admin
       {
         path: 'journal',
         canActivate: [permissionGuard],
         data: {
           permission: {
             anyCondition: [
-              { anyOf: ['full_time', 'contract'], allOf: ['academic'] },
+              { anyOf: ['full_time', 'contract'], allOf: ['academic'] },        
               { anyOf: ['HOS'] },
               { anyOf: ['VC'] },
-            ],
-          } satisfies NavPermission,
+              { anyOf: ['Admin'] },            ],          } satisfies NavPermission,
         },
         loadChildren: () =>
           import('./journal_publication_form/journal_publication_form.routes').then(
@@ -139,6 +143,23 @@ export const routes: Routes = [
           import('./ragra_form/ragra-form.component').then(m => m.RagraFormComponent),
       },
 
+      // ── Travel Authorization Application ──────────────────────────────────
+      // Rule: ((full_time OR contract) AND academic) OR HOS
+      {
+        path: 'travel',
+        canActivate: [permissionGuard],
+        data: {
+          permission: {
+            anyCondition: [
+              { anyOf: ['full_time', 'contract'], allOf: ['academic'] },
+              { anyOf: ['HOS'] },
+            ],
+          } satisfies NavPermission,
+        },
+        loadChildren: () =>
+          import('./travel_authorization_form/travel_authorization_form.routes').then(m => m.travelAuthorizationFormRoutes),
+      },
+
       // ── Partnership Application ───────────────────────────────────────────
       // Rule: (full_time OR contract) AND academic
       {
@@ -146,8 +167,13 @@ export const routes: Routes = [
         canActivate: [permissionGuard],
         data: {
           permission: {
-            anyOf: ['full_time', 'contract'],
-            allOf: ['academic'],
+            anyCondition: [
+              {
+                anyOf: ['full_time', 'contract'],
+                allOf: ['academic'],
+              },
+              { anyOf: ['Admin'] },
+            ],
           } satisfies NavPermission,
         },
         loadChildren: () =>
@@ -172,6 +198,13 @@ export const routes: Routes = [
                 },
                 loadComponent: () =>
                     import('./settings/batch-sitting/batch-sitting.component').then(m => m.BatchSittingComponent),
+            },
+            {
+                path: 'dev-test-board',
+                loadChildren: () =>
+                  import('./dev_test_board_form/dev-test-board-form.routes').then(
+                    m => m.DEV_TEST_BOARD_ROUTES
+                  ),
             },
         ]
       },

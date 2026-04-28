@@ -7,7 +7,7 @@ import { DropdownOption } from '../../interfaces/components.interface';
 export class BreakdownOptionsService {
   private storageKey = 'rmc_breakdown_options';
   private versionKey = 'rmc_breakdown_options_version';
-  private currentVersion = '2.0'; // Version bump to force migration
+  private currentVersion = '3.0'; // Version bump to include regions
 
   // Default options
   private defaultResearchOptions: DropdownOption[] = [
@@ -30,10 +30,22 @@ export class BreakdownOptionsService {
     { value: 'training-presentation', label: 'TRAINING PRESENTATION PUBLICATION' }
   ];
 
+  private defaultRegionOptions: DropdownOption[] = [
+    { value: 'americas', label: 'Americas' },
+    { value: 'asean', label: 'ASEAN' },
+    { value: 'asia', label: 'Asia' },
+    { value: 'australasia', label: 'Australasia' },
+    { value: 'europe', label: 'Europe' },
+    { value: 'malaysia', label: 'Malaysia' },
+    { value: 'mea', label: 'Middle East and Africa' },
+    { value: 'pacific', label: 'Pacific Islands' }
+  ];
+
   // Signals for reactive updates
   researchOptions = signal<DropdownOption[]>([]);
   externalOptions = signal<DropdownOption[]>([]);
   localOptions = signal<DropdownOption[]>([]);
+  regionOptions = signal<DropdownOption[]>([]);
 
   constructor() {
     this.loadOptionsFromStorage();
@@ -60,6 +72,7 @@ export class BreakdownOptionsService {
         this.researchOptions.set(data.researchOptions || this.defaultResearchOptions);
         this.externalOptions.set(data.externalOptions || this.defaultExternalOptions);
         this.localOptions.set(data.localOptions || this.defaultLocalOptions);
+        this.regionOptions.set(data.regionOptions || this.defaultRegionOptions);
       } catch (e) {
         console.error('Failed to parse stored breakdown options', e);
         this.loadDefaults();
@@ -76,6 +89,7 @@ export class BreakdownOptionsService {
     this.researchOptions.set([...this.defaultResearchOptions]);
     this.externalOptions.set([...this.defaultExternalOptions]);
     this.localOptions.set([...this.defaultLocalOptions]);
+    this.regionOptions.set([...this.defaultRegionOptions]);
   }
 
   /**
@@ -85,7 +99,8 @@ export class BreakdownOptionsService {
     const data = {
       researchOptions: this.researchOptions(),
       externalOptions: this.externalOptions(),
-      localOptions: this.localOptions()
+      localOptions: this.localOptions(),
+      regionOptions: this.regionOptions()
     };
     localStorage.setItem(this.storageKey, JSON.stringify(data));
   }
@@ -93,7 +108,7 @@ export class BreakdownOptionsService {
   /**
    * Get options for a specific breakdown type
    */
-  getOptionsForType(type: 'research' | 'external-research' | 'local'): DropdownOption[] {
+  getOptionsForType(type: 'research' | 'external-research' | 'local' | 'region'): DropdownOption[] {
     switch (type) {
       case 'research':
         return this.researchOptions();
@@ -101,6 +116,8 @@ export class BreakdownOptionsService {
         return this.externalOptions();
       case 'local':
         return this.localOptions();
+      case 'region':
+        return this.regionOptions();
       default:
         return [];
     }
@@ -109,7 +126,7 @@ export class BreakdownOptionsService {
   /**
    * Add a new option to a breakdown type
    */
-  addOption(type: 'research' | 'external-research' | 'local', option: DropdownOption): void {
+  addOption(type: 'research' | 'external-research' | 'local' | 'region', option: DropdownOption): void {
     const options = this.getOptionsForType(type);
 
     // Check if value already exists
@@ -124,7 +141,7 @@ export class BreakdownOptionsService {
   /**
    * Update an existing option
    */
-  updateOption(type: 'research' | 'external-research' | 'local', value: string, newOption: DropdownOption): void {
+  updateOption(type: 'research' | 'external-research' | 'local' | 'region', value: string, newOption: DropdownOption): void {
     const options = this.getOptionsForType(type);
     const index = options.findIndex(opt => opt.value === value);
 
@@ -145,7 +162,7 @@ export class BreakdownOptionsService {
   /**
    * Delete an option from a breakdown type
    */
-  deleteOption(type: 'research' | 'external-research' | 'local', value: string): void {
+  deleteOption(type: 'research' | 'external-research' | 'local' | 'region', value: string): void {
     const options = this.getOptionsForType(type);
     const updatedOptions = options.filter(opt => opt.value !== value);
 
@@ -159,13 +176,15 @@ export class BreakdownOptionsService {
   /**
    * Update all options for a specific type
    */
-  private updateTypeOptions(type: 'research' | 'external-research' | 'local', options: DropdownOption[]): void {
+  private updateTypeOptions(type: 'research' | 'external-research' | 'local' | 'region', options: DropdownOption[]): void {
     if (type === 'research') {
       this.researchOptions.set(options);
     } else if (type === 'external-research') {
       this.externalOptions.set(options);
     } else if (type === 'local') {
       this.localOptions.set(options);
+    } else if (type === 'region') {
+      this.regionOptions.set(options);
     }
     this.saveToStorage();
   }

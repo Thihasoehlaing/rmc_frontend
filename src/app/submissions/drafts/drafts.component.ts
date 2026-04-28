@@ -1,14 +1,13 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { ApplicationService } from '../../services/application.service';
-import { BatchSittingService } from '../../settings/batch-sitting.service';
-import { BatchSitting } from '../../interfaces/batch-sitting.interface';
-import { SubmissionsSearchComponent } from '../../shared/components/submissions-search/submissions-search.component';
+import { ApplicationService } from '../../services/application.service';        
+import { BatchSittingService } from '../../settings/batch-sitting.service';     
+import { BatchSitting } from '../../interfaces/batch-sitting.interface';        
 
 @Component({
   selector: 'app-drafts',
   standalone: true,
-  imports: [SubmissionsSearchComponent],
+  imports: [],
   templateUrl: './drafts.component.html',
   styleUrl: './drafts.component.scss',
 })

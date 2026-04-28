@@ -1,9 +1,11 @@
 import { Component, signal, computed, inject } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { FormMainTitleComponent } from '../shared/components/form-main-title/form-main-title.component';
 import { StepIndicatorComponent, WizardStep, StepStatus } from '../shared/components/step-indicator/step-indicator.component';
 import { FormWizardNavComponent } from '../shared/components/form-wizard-nav/form-wizard-nav.component';
+import { FormCommentPanelComponent, CommentItem } from '../shared/components/form-comment-panel/form-comment-panel.component';
 import { ProposalDetails } from './components/proposal-details/proposal-details';
 import { RiskAssessment } from './components/risk-assessment/risk-assessment';
 
@@ -24,7 +26,7 @@ export type PartnershipStatus =
 @Component({
   selector: 'app-partnership-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormMainTitleComponent, StepIndicatorComponent, FormWizardNavComponent, ProposalDetails, RiskAssessment],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, FormMainTitleComponent, StepIndicatorComponent, FormWizardNavComponent, FormCommentPanelComponent, ProposalDetails, RiskAssessment],        
   templateUrl: './partnership_form.component.html',
   styleUrls: ['./partnership_form.component.scss']
 })
@@ -45,6 +47,28 @@ export class PartnershipFormComponent {
     legalComment: [''],
     srDirectorComment: [''],
     vcComment: ['']
+  });
+
+  reviewValues = toSignal(this.reviewForm.valueChanges, { initialValue: this.reviewForm.getRawValue() });
+
+  partnershipComments = computed<CommentItem[]>(() => {
+    const vals = this.reviewValues();
+    const items: CommentItem[] = [];
+
+    if (this.showRmcReview()) {
+      items.push({ key: 'rmc_comment', label: 'RMC Comments', content: vals.rmcComment });
+    }
+    if (this.showLegalReview()) {
+      items.push({ key: 'legal_comment', label: 'Legal Dept Comments', content: vals.legalComment });
+    }
+    if (this.showSrDirectorReview()) {
+      items.push({ key: 'sr_director_comment', label: 'Sr. Director Comments', content: vals.srDirectorComment });
+    }
+    if (this.showVcReview()) {
+      items.push({ key: 'vc_comment', label: 'VC Comments', content: vals.vcComment });
+    }
+
+    return items;
   });
 
   // --- COMPUTE PERMISSIONS BY STAGE ---
@@ -113,6 +137,11 @@ export class PartnershipFormComponent {
     if (cur < this.totalSteps) {
       this.goToStep(cur + 1);
     }
+  }
+
+  setSimulatedStatus(newStatus: PartnershipStatus): void {
+    console.log('Set DEV status:', newStatus);
+    this.applicationStatus.set(newStatus);
   }
 
   onSaveDraft(): void {

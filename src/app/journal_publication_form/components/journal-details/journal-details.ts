@@ -11,15 +11,12 @@ import { FileUploadComponent } from '../../../shared/components/file-upload/file
 import { CharacterCounterComponent } from '../../../shared/components/character-counter/character-counter.component';
 import { CustomHeaderComponent } from '../../../shared/components/custom-header/custom-header.component';
 import { CustomSubheaderComponent } from '../../../shared/components/custom-subheader/custom-subheader.component';
-import { JournalOptionsService } from '../../services/journal-options.service';
-import { DataTableComponent, DataTableColumn } from '../../../shared/components/data-table/data-table.component';
-
 import { ValidationMessageComponent } from '../../../shared/components/validation-message/validation-message.component';
 
 @Component({
   selector: 'app-journal-details',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, NoteComponent, SearchableDropdownComponent, DialogComponent, FileUploadComponent, CharacterCounterComponent, CustomHeaderComponent, CustomSubheaderComponent, ValidationMessageComponent, ActionButtonComponent, DataTableComponent],
+  imports: [CommonModule, ReactiveFormsModule, NoteComponent, SearchableDropdownComponent, DialogComponent, FileUploadComponent, CharacterCounterComponent, CustomHeaderComponent, CustomSubheaderComponent, ValidationMessageComponent],
   templateUrl: './journal-details.html',
   styleUrl: './journal-details.scss'
 })
@@ -30,17 +27,9 @@ export class JournalDetails implements OnInit {
   private cdr = inject(ChangeDetectorRef);
   form!: FormGroup;
   breakdownForm!: FormGroup;
-
-  readonly breakdownColumns: DataTableColumn[] = [
-    { key: 'itemDescription', label: 'Item Description' },
-    { key: 'voteNumber', label: 'Vote Number', width: '150px' },
-    { key: 'cost', label: 'Cost (Foreign/MYR)', width: '150px', align: 'right', headerAlign: 'right' },
-    { key: 'exchangeRate', label: 'Exchange Rate', width: '130px', align: 'right', headerAlign: 'right' },
-    { key: 'costInRM', label: 'Cost in RM', width: '120px', align: 'right', headerAlign: 'right' },
-    { key: 'actions', label: 'Actions', width: '100px', align: 'center', headerAlign: 'center' }
-  ];
-
+  sdgKeywordsForm!: FormGroup;
   isBreakdownModalOpen = false;
+  isSDGKeywordsModalOpen = false;
   breakdownType: 'internal-research' | 'external-research' | 'non-research' | null = null;
   breakdownEditingIndex: number | null = null;
 
@@ -130,28 +119,15 @@ export class JournalDetails implements OnInit {
       costInRM: [{ value: '', disabled: true }]
     });
 
-    this.breakdownForm.get('itemDescription')?.valueChanges.subscribe(value => {
-      if (!value) return;
-
-      if (this.breakdownType === 'internal-research' || this.breakdownType === 'external-research') {
-        this.breakdownForm.patchValue({ voteNumber: 'V29000' }, { emitEvent: false });
-      } else if (this.breakdownType === 'non-research') {
-        const localOpts = this.journalOptionsService.getOptionsForType('local');
-        const matchedOpt = localOpts.find(opt => opt.label === value || opt.value === value);
-        if (matchedOpt) {
-          const meta = this.getOptionMetadata('local', matchedOpt.value);
-          if (meta && meta.accountCode) {
-            this.breakdownForm.patchValue({ voteNumber: meta.accountCode }, { emitEvent: false });
-          } else {
-            this.breakdownForm.patchValue({ voteNumber: '-' }, { emitEvent: false });
-          }
-        }
-      }
+    this.sdgKeywordsForm = this.fb.group({
+      keyword1: ['', Validators.required],
+      keyword2: ['', Validators.required],
+      keyword3: ['', Validators.required]
     });
 
     this.breakdownForm.valueChanges.subscribe((val) => {
-      const cost = this.normalizeAmount(val.cost);
-      const rate = this.normalizeAmount(val.exchangeRate);
+      const cost = parseFloat(val.cost);
+      const rate = parseFloat(val.exchangeRate);
 
       let rm: number | null = null;
       if (cost !== null && rate !== null) {
@@ -294,7 +270,11 @@ calculateBreakdownTotal(type: string): number {
   calculateTotals() {
     const pType = this.researchType;
     let breakdownArray = this.getBreakdownArray(pType || '');
-    let totalRM = this.calculateBreakdownTotal(pType || '');
+    let totalRM = 0;
+
+    breakdownArray.forEach(item => {
+      totalRM += parseFloat(item.costInRM) || 0;
+    });
 
     const q = this.form.get('scopusQuartile')?.value || '';
     let manualExternal = parseFloat(this.form.get('sponsoredAmountExternal')?.value) || 0;
@@ -342,29 +322,14 @@ calculateBreakdownTotal(type: string): number {
       // Cost to be Borne by Applicant (RM)
       applicantCost = 0;
 
+      this.form.get('sponsoredBy')?.setValue('External', { emitEvent: false });
+      this.form.get('sponsoredBy')?.disable({ emitEvent: false });
     } else if (pType === 'internal-research' || pType === 'non-research') {
       // 1 & 2 & 6. Sponsored By / External Amount validaton (Same bounds as external flow)
       this.form.get('sponsoredBy')?.enable({ emitEvent: false });
-      if (manualExternal > 0) {
-        this.form.get('sponsoredBy')?.setValidators([Validators.required]);
-      } else {
-        this.form.get('sponsoredBy')?.clearValidators();
-      }
-      this.form.get('sponsoredBy')?.updateValueAndValidity({ emitEvent: false });
 
-      // Validate Sponsorship Amount by External cannot exceed Total in RM
-      const extAmountCtrl = this.form.get('sponsoredAmountExternal');
-      if (extAmountCtrl) {
-        if (manualExternal > totalRM && totalRM >= 0) {
-          extAmountCtrl.setErrors({ ...extAmountCtrl.errors, maxExceeded: true });
-        } else {
-          const errors = extAmountCtrl.errors;
-          if (errors) {
-            delete errors['maxExceeded'];
-            extAmountCtrl.setErrors(Object.keys(errors).length ? errors : null);
-          }
-        }
-      }
+      if (q === 'Q1' || q === 'Q2') spPercent = 100;
+      else if (q === 'Q3') spPercent = 50;
 
       const remainingBalance = Math.max(totalRM - manualExternal, 0);
 
@@ -457,17 +422,73 @@ calculateBreakdownTotal(type: string): number {
     this.selectedFileName = null;
   }
 
-  private normalizeAmount(value: unknown): number | null {
-    if (value === null || value === undefined || value === '') {
-      return null;
+  /**
+   * Open SDG Keywords Modal
+   */
+  openSDGKeywordsModal() {
+    // Populate the modal form with current values from the main form
+    const keyword1 = this.form.get('sdgKeyword1')?.value || '';
+    const keyword2 = this.form.get('sdgKeyword2')?.value || '';
+    const keyword3 = this.form.get('sdgKeyword3')?.value || '';
+
+    this.sdgKeywordsForm.patchValue({
+      keyword1,
+      keyword2,
+      keyword3
+    }, { emitEvent: false });
+
+    this.isSDGKeywordsModalOpen = true;
+  }
+
+  /**
+   * Close SDG Keywords Modal
+   */
+  closeSDGKeywordsModal() {
+    this.isSDGKeywordsModalOpen = false;
+  }
+
+  /**
+   * Confirm and Save SDG Keywords
+   */
+  confirmSDGKeywords() {
+    if (this.sdgKeywordsForm.invalid) {
+      return;
     }
 
-    const num = typeof value === 'number' ? value : parseFloat(String(value));
-    if (Number.isNaN(num)) {
-      return null;
-    }
+    const { keyword1, keyword2, keyword3 } = this.sdgKeywordsForm.value;
 
-    return Math.round((num + Number.EPSILON) * 100) / 100;
+    // Update the main form with the keywords
+    this.form.patchValue({
+      sdgKeyword1: keyword1,
+      sdgKeyword2: keyword2,
+      sdgKeyword3: keyword3
+    }, { emitEvent: false });
+
+    this.closeSDGKeywordsModal();
+  }
+
+  /**
+   * Get displayed keywords as array
+   */
+  getDisplayedKeywordsArray(): string[] {
+    const keyword1 = this.form.get('sdgKeyword1')?.value || '';
+    const keyword2 = this.form.get('sdgKeyword2')?.value || '';
+    const keyword3 = this.form.get('sdgKeyword3')?.value || '';
+
+    return [keyword1, keyword2, keyword3].filter(k => k);
+  }
+
+  /**
+   * Remove a keyword by setting its control to empty
+   */
+  removeKeyword(keyword: string) {
+    const controls = ['sdgKeyword1', 'sdgKeyword2', 'sdgKeyword3'];
+    for (const controlName of controls) {
+      if (this.form.get(controlName)?.value === keyword) {
+        this.form.get(controlName)?.patchValue('', { emitEvent: false });
+        break;
+      }
+    }
   }
 }
 

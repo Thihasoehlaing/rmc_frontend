@@ -10,7 +10,7 @@
 }
 
 .card__title.declaration-title {
-  color: var(--color-primary);
+  color: black;
   font-weight: var(--fw-bold);
   text-decoration: underline;
   text-align: center;
@@ -23,7 +23,7 @@
   gap: var(--space-4);
 }
 
-.declaration-statement {
+.declaration-text {
   background: var(--color-surface-hover);
   padding: var(--space-4);
   border-left: var(--space-1) solid var(--color-primary);
@@ -33,7 +33,7 @@
     margin: 0;
     font-size: var(--fs-base);
     font-weight: var(--fw-bold);
-    color: var(--color-heading);
+    color: black;
   }
 }
 
@@ -50,7 +50,7 @@
   align-items: flex-start;
   gap: var(--space-2);
   font-size: var(--fs-sm);
-  color: var(--color-label);
+  color: black;
   cursor: pointer;
   font-weight: var(--fw-normal);
   line-height: var(--lh-relaxed);

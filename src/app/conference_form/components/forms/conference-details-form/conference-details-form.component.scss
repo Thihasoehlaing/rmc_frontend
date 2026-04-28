@@ -1,4 +1,5 @@
 @use '../../../../../assets/styles/index' as *;
+@use '../../../styles/radio-group';
 
 // Override required field color for conference form
 .form-label.is-required::after {
@@ -70,7 +71,7 @@
 
   .form-label {
     font-size: var(--fs-md);
-    color: var(--color-text-muted);
+    color: black;
     margin-bottom: var(--space-2);
   }
 }
@@ -131,7 +132,7 @@
 .subsection-title {
   font-size: var(--fs-md);
   font-weight: var(--fw-bold);
-  color: var(--color-primary);
+  color: black;
   background-color: var(--color-primary-light);
   padding: var(--space-3) var(--space-4);
   margin: 0 0 var(--space-4) 0;
@@ -228,33 +229,6 @@
   line-height: 1.5;
 }
 
-.radio-group {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-}
-
-.radio-label {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  font-size: var(--fs-sm);
-  color: var(--color-text);
-  font-weight: var(--fw-normal);
-
-  span {
-    color: var(--color-text);
-  }
-
-  input[type="radio"] {
-    width: 18px; // no token: radio button size
-    height: 18px; // no token: radio button size
-    cursor: pointer;
-    accent-color: var(--color-text);
-    flex-shrink: 0;
-  }
-}
-
 
 .shrink-input {
   max-width: 300px; // no token: input constraint width
@@ -323,7 +297,7 @@
 .section-header {
   font-size: var(--fs-lg);
   font-weight: var(--fw-bold);
-  color: var(--color-heading);
+  color: black;
   margin: 0 0 var(--space-4) 0;
 }
 
@@ -346,7 +320,7 @@
 .research-title {
   font-size: var(--fs-md);
   font-weight: var(--fw-bold);
-  color: var(--color-text);
+  color: black;
   margin: 0 0 var(--space-2) 0;
 }
 
@@ -398,14 +372,14 @@
     padding: var(--space-3);
     text-align: left;
     font-weight: var(--fw-semibold);
-    color: var(--color-heading);
+    color: black;
     border-bottom: 2px solid var(--border-default);
   }
 
   td {
     padding: var(--space-3);
     border-bottom: 1px solid var(--border-default);
-    color: var(--color-label);
+    color: black;
 
     &.col-no {
       width: 40px;
@@ -439,7 +413,12 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  width: 100%;
+  box-sizing: border-box;
   padding: var(--space-8) var(--space-4);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
   text-align: center;
   color: var(--color-text-muted);
 
@@ -515,7 +494,7 @@
     margin: 0;
     font-size: var(--fs-lg);
     font-weight: var(--fw-bold);
-    color: var(--color-heading);
+    color: black;
   }
 }
 
@@ -570,7 +549,7 @@
   label {
     font-size: var(--fs-sm);
     font-weight: var(--fw-semibold);
-    color: var(--color-heading);
+    color: black;
   }
 
   .form-control {
@@ -728,4 +707,57 @@
   padding: var(--space-2);
 }
 
+// SDG Keywords Container & Chips Styles
+.sdg-keywords-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: white;
+  min-height: 40px;
+  align-items: center;
+  cursor: pointer;
+  transition: border-color 0.2s, background-color 0.2s;
+
+  &:hover {
+    border-color: #999;
+    background: #fafafa;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #0066cc;
+    outline-offset: -1px;
+  }
+}
+
+.keyword-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #333;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.chip-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: white;
+  cursor: pointer;
+  padding: 0;
+  width: 16px;
+  height: 16px;
+
+  .material-icons {
+    font-size: 14px;
+  }
+}
 

@@ -20,8 +20,10 @@
       </div>
 
       <div class="form-field">
-        <label class="form-label "></label>
-        <p class="form-hint"></p>
+        <div class="upload-field-header">
+          <h3 class="upload-field-title is-required">Reviewers' Feedback</h3>
+          <p class="upload-field-subtitle">Max file size: 10 MB. PDF ONLY</p>
+        </div>
         <app-file-upload
           #reviewersFeedbackUpload
           label="Reviewers' Feedback"
@@ -34,8 +36,10 @@
       </div>
 
       <div class="form-field">
-        <label class="form-label "></label>
-        <p class="form-hint"></p>
+        <div class="upload-field-header">
+          <h3 class="upload-field-title is-required">Screenshot of SCOPUS CiteScore</h3>
+          <p class="upload-field-subtitle">Max file size: 10 MB. PDF ONLY</p>
+        </div>
         <app-file-upload
           #scopusUpload
           label="Screenshot of SCOPUS CiteScore"
@@ -49,15 +53,17 @@
 
       <!-- Turnitin Report -->
       <div class="form-field">
-        <label class="form-label "></label>
-        <p class="form-hint"></p>
+        <div class="upload-field-header">
+          <h3 class="upload-field-title is-required">Turnitin Report</h3>
+          <p class="upload-field-subtitle">Max file size: 10 MB. PDF ONLY</p>
+        </div>
         <app-file-upload
           #turnitinReportUpload
           label="Turnitin Report"
           [accept]="PDF_ACCEPT"
           [maxSizeMB]="MAX_FILE_SIZE_MB"
           placeholder="Upload Turnitin report PDF"
-          (fileSelected)="onDocumentSelected('turnitinReport', $any($event))">  
+          (fileSelected)="onDocumentSelected('turnitinReport', $any($event))">
         </app-file-upload>
         <app-validation-message [control]="documentsForm.get('turnitinReport')"></app-validation-message>
       </div>
@@ -95,7 +101,7 @@
           [accept]="PDF_ACCEPT"
           [maxSizeMB]="MAX_FILE_SIZE_MB"
           placeholder="Upload journal invoice PDF"
-          (fileSelected)="onDocumentSelected('journalInvoice', $any($event))">  
+          (fileSelected)="onDocumentSelected('journalInvoice', $any($event))">
         </app-file-upload>
         <app-validation-message [control]="documentsForm.get('journalInvoice')"></app-validation-message>
       </div>
@@ -107,9 +113,20 @@
     <app-custom-subheader title="Manuscript Details"></app-custom-subheader>
     <div class="card__content">
     <div class="section-fields">
+      <!-- Name of Reviewer -->
+      <div class="form-field">
+        <label class="form-label is-required">Name of Reviewer</label>
+        <input
+          type="text"
+          class="input--text"
+          formControlName="reviewerName"
+          placeholder="Enter reviewer name">
+        <app-validation-message [control]="documentsForm.get('reviewerName')"></app-validation-message>
+      </div>
+
       <!-- Internal Review -->
       <div class="form-field">
-        <label class="form-label is-required">The manuscript has been internally reviewed for the quality of content and English.</label>
+        <label class="form-label">The manuscript has been internally reviewed for the quality of content and English?<span class="asterisk">*</span></label>
         <div class="radio-group">
           <label class="radio-label">
             <input type="radio" value="yes" formControlName="manuscriptInternallyReviewed">
@@ -121,16 +138,6 @@
           </label>
         </div>
         <app-validation-message [control]="documentsForm.get('manuscriptInternallyReviewed')"></app-validation-message>
-      </div>
-
-      <div class="form-field">
-        <label class="form-label is-required">Name of Reviewer</label>
-        <input
-          type="text"
-          class="input--text"
-          formControlName="reviewerName"
-          placeholder="Enter reviewer name">
-        <app-validation-message [control]="documentsForm.get('reviewerName')"></app-validation-message>
       </div>
 
       <div class="form-field">

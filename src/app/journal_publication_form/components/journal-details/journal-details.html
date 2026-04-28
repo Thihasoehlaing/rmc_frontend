@@ -30,7 +30,8 @@
     <div class="card">
       <app-custom-subheader title="Journal Details"></app-custom-subheader>
       <div class="card__content section-fields">
-        <div class="form-columns">
+
+        <div class="row row--2" style="align-items: flex-start;">
 
           <!-- Left Column -->
           <div class="form-column">
@@ -48,9 +49,9 @@
                   <input type="radio" formControlName="authorshipType" value="co-author">
                   <span>Corresponding Author</span>
                 </label>
-                <label class="radio-option">
-                  <input type="radio" formControlName="authorshipType" value="corresponding-author">
-                  <span>First and Corresponding Author</span>
+                <label class="radio-label" style="grid-column: span 2;">
+                  <input type="radio" class="radio-input" formControlName="authorshipType" value="corresponding-author">
+                  <span class="radio-text">First and Corresponding Author</span>
                 </label>
               </div>
               <app-validation-message [control]="form.get('authorshipType')"></app-validation-message>
@@ -147,18 +148,23 @@
 
             <div class="form-field">
               <label class="form-label is-required">Please key in 3 SDG keywords in abstract</label>
-              <input type="text" class="input--text" formControlName="sdgKeyword1" [class.is-invalid]="form.get('sdgKeyword1')?.invalid && form.get('sdgKeyword1')?.touched">
+              <div class="sdg-keywords-container" (click)="openSDGKeywordsModal()" role="button" tabindex="0" (keydown.enter)="openSDGKeywordsModal()" (keydown.space)="openSDGKeywordsModal()">
+                @for (keyword of getDisplayedKeywordsArray(); track keyword) {
+                  <div class="keyword-chip">
+                    <span class="chip-label">{{ keyword }}</span>
+                    <button
+                      type="button"
+                      class="chip-close"
+                      (click)="removeKeyword(keyword); $event.stopPropagation()"
+                      aria-label="Remove keyword">
+                      <span class="material-icons">close</span>
+                    </button>
+                  </div>
+                }
+              </div>
               <app-validation-message [control]="form.get('sdgKeyword1')"></app-validation-message>
-            </div>
-
-            <div class="form-field">
-              <label class="form-label">Keyword 2</label>
-              <input type="text" class="input--text" formControlName="sdgKeyword2">
-            </div>
-
-            <div class="form-field">
-              <label class="form-label">Keyword 3</label>
-              <input type="text" class="input--text" formControlName="sdgKeyword3">
+              <app-validation-message [control]="form.get('sdgKeyword2')"></app-validation-message>
+              <app-validation-message [control]="form.get('sdgKeyword3')"></app-validation-message>
             </div>
           </div>
 
@@ -399,6 +405,51 @@
       <button type="submit" class="btn btn-primary" [disabled]="breakdownForm.invalid">Save</button>
     </div>
   </form>
+</app-dialog>
+
+<!-- SDG Keywords Modal -->
+<app-dialog
+  [title]="'Enter SDG Keywords'"
+  [isOpen]="isSDGKeywordsModalOpen"
+  [width]="'600px'"
+  (close)="closeSDGKeywordsModal()">
+
+  <form [formGroup]="sdgKeywordsForm">
+    <div class="form-field">
+      <label class="form-label">Keyword 1 *</label>
+      <input
+        type="text"
+        class="input--text"
+        formControlName="keyword1"
+        placeholder="Enter first keyword">
+      <app-validation-message [control]="sdgKeywordsForm.get('keyword1')"></app-validation-message>
+    </div>
+
+    <div class="form-field">
+      <label class="form-label">Keyword 2 *</label>
+      <input
+        type="text"
+        class="input--text"
+        formControlName="keyword2"
+        placeholder="Enter second keyword">
+      <app-validation-message [control]="sdgKeywordsForm.get('keyword2')"></app-validation-message>
+    </div>
+
+    <div class="form-field">
+      <label class="form-label">Keyword 3 *</label>
+      <input
+        type="text"
+        class="input--text"
+        formControlName="keyword3"
+        placeholder="Enter third keyword">
+      <app-validation-message [control]="sdgKeywordsForm.get('keyword3')"></app-validation-message>
+    </div>
+  </form>
+
+  <div dialog-footer class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="closeSDGKeywordsModal()">Cancel</button>
+    <button type="button" class="btn btn-primary" (click)="confirmSDGKeywords()" [disabled]="sdgKeywordsForm.invalid">Confirm</button>
+  </div>
 </app-dialog>
 
 

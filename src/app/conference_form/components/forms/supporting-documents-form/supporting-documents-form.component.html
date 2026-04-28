@@ -137,9 +137,19 @@
     </div>
     <div class="card__content">
     <div class="section-fields">
+      <!-- Name of Reviewer -->
+      <div class="form-field">
+        <label class="form-label is-required">Name of Reviewer</label>
+        <input
+          type="text"
+          class="input--text"
+          formControlName="reviewerName"
+          placeholder="Enter reviewer name">
+      </div>
+
       <!-- Internal Review -->
       <div class="form-field">
-        <label class="form-label is-required">The manuscript has been internally reviewed for the quality of content and English.</label>
+        <label class="form-label">The manuscript has been internally reviewed for the quality of content and English?</label>
         <div class="radio-group">
           <label class="radio-label">
             <input type="radio" value="yes" formControlName="manuscriptInternallyReviewed">
@@ -153,12 +163,29 @@
       </div>
 
       <div class="form-field">
-        <label class="form-label is-required">Name of Reviewer</label>
-        <input
-          type="text"
-          class="input--text"
-          formControlName="reviewerName"
-          placeholder="Enter reviewer name">
+        <label class="form-label is-required">Have you cited at least 1 journal paper from APU JATI & EJBM</label>
+        <div class="radio-group">
+          <label class="radio-label">
+            <input type="radio" value="yes" formControlName="citedJournalPaper">
+            <span>Yes</span>
+          </label>
+          <label class="radio-label">
+            <input type="radio" value="no" formControlName="citedJournalPaper">
+            <span>No</span>
+          </label>
+        </div>
+        @if (form.get('citedJournalPaper')?.value === 'no') {
+          <div class="form-field">
+            <label class="form-label is-required">If No, Please Explain:</label>
+            <textarea
+              class="input--textarea"
+              formControlName="citedJournalPaperExplanation">
+            </textarea>
+            @if (form.get('citedJournalPaperExplanation')?.invalid && form.get('citedJournalPaperExplanation')?.touched) {
+              <span class="form-error-msg">Explanation is required</span>
+            }
+          </div>
+        }
       </div>
 
       <div class="form-field">

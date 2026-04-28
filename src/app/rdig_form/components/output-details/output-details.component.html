@@ -15,8 +15,11 @@
         formGroupName="journal">
         <label class="item-trigger">
           <input type="checkbox" formControlName="checked">
-          <span class="item-label">Indexed Journal Publication</span>
+          <span class="item-label is-required">Indexed Journal Publication</span>
         </label>
+        @if (outputForm.get('journal.checked')?.touched && outputForm.get('journal.checked')?.invalid) {
+          <p class="validation-error">This output is required.</p>
+        }
         @if (outputForm.get('journal.checked')?.value) {
           <div class="item-content">
             <div class="form-field">
@@ -39,8 +42,11 @@
       <div class="output-item" [class.output-item--active]="outputForm.get('conceptualDesign')?.value">
         <label class="item-trigger">
           <input type="checkbox" formControlName="conceptualDesign">
-          <span class="item-label">Conceptual Design / Product Development</span>
+          <span class="item-label is-required">Conceptual Design / Product Development</span>
         </label>
+        @if (outputForm.get('conceptualDesign')?.touched && outputForm.get('conceptualDesign')?.invalid) {
+          <p class="validation-error">This output is required.</p>
+        }
       </div>
 
       <!-- ── Knowledge Transfer ────────────────────────────────── -->
@@ -48,8 +54,11 @@
         formGroupName="knowledgeTransfer">
         <label class="item-trigger">
           <input type="checkbox" formControlName="checked">
-          <span class="item-label">Knowledge Transfer Programme</span>
+          <span class="item-label is-required">Knowledge Transfer Programme</span>
         </label>
+        @if (outputForm.get('knowledgeTransfer.checked')?.touched && outputForm.get('knowledgeTransfer.checked')?.invalid) {
+          <p class="validation-error">This output is required.</p>
+        }
         @if (outputForm.get('knowledgeTransfer.checked')?.value) {
           <div class="item-content">
             <div class="form-field">

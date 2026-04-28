@@ -50,7 +50,7 @@
     </div>
   }
 
-  @if (!isBatchLoading() && noBatchError()) {
+  @if (!isBatchLoading() && noBatchError() && !canShowForm()) {
     <div class="batch-gate batch-gate--blocked">
       <span class="material-icons batch-gate__icon">event_busy</span>
       <h3 class="batch-gate__title">No Active Batch</h3>
@@ -61,7 +61,7 @@
     </div>
   }
 
-  @if (!isBatchLoading() && !noBatchError()) {
+  @if (!isBatchLoading() && canShowForm()) {
     <!-- ── Active batch info banner ──────────────────────────── -->
     @if (activeBatch(); as ab) {
       <div class="batch-info-banner"
@@ -80,12 +80,20 @@
       </div>
     }
 
+    @if (isViewOnly()) {
+      <div class="view-only-banner">
+        <span class="material-icons">visibility</span>
+        <span>History view only. This application is not waiting for your action, so editing and submission are disabled.</span>
+      </div>
+    }
+
     <!-- DEV TEST START: Application Status Override -->
     <div class="dev-test-panel">
       <label class="dev-test-panel__label">DEV TEST: Application Status</label>
       <select
         [value]="workflowState().currentStatus"
         (change)="onTestStatusChange($any($event.target).value)"
+        [disabled]="isViewOnly()"
         class="dev-test-panel__select">
         <option value="fill_application">fill_application</option>
         <option value="pending_applicant_resubmission_hos">pending_applicant_resubmission_hos</option>
@@ -109,6 +117,7 @@
       <button
         type="button"
         (click)="toggleValidation()"
+        [disabled]="isViewOnly()"
         class="validation-toggle"
         [class.validation-toggle--off]="validationDisabled()">
         {{ validationDisabled() ? '⚠ Validation OFF — Click to Re-enable' : '✓ Validation ON — Click to Disable' }}
@@ -304,6 +313,7 @@
         @if (currentStep() === 4) {
           <app-budget-summary
             [parentForm]="rdigForm"
+            [submitAttempted]="submitAttempted()"
             [showHosComments]="showHosComments()"
             [showRmcComments]="showRmcComments()"
             [showR1Comments]="showR1Comments()"
@@ -339,6 +349,7 @@
       [totalSteps]="totalSteps"
       [isSaving]="isSaving()"
       [isSubmitting]="isSubmitting()"
+      [readOnly]="isViewOnly()"
       (prev)="onPrev()"
       (next)="onNext()"
       (saveDraft)="onSaveDraft()"

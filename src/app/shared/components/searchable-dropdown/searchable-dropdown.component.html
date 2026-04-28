@@ -102,9 +102,9 @@
             [id]="getOptionId(i)"
             [class.selected]="isSelected(opt.value)"
             [class.focused]="focusedIndex() === i"
-            [class.disabled]="opt.disabled"
+            [class.disabled]="isOptionDisabled(opt)"
             [attr.aria-selected]="isSelected(opt.value)"
-            [attr.aria-disabled]="opt.disabled ?? false"
+            [attr.aria-disabled]="isOptionDisabled(opt)"
             (click)="selectOption(opt); $event.stopPropagation()">
 
             <!-- Checkbox indicator (multi-select) -->

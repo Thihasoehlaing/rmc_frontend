@@ -22,6 +22,11 @@ export const routes: Routes = [
     children: [
       // Accessible to ALL authenticated users
       { path: 'dashboard', component: DashboardComponent },
+      {
+        path: 'inbox',
+        loadComponent: () =>
+          import('./submissions/inbox/inbox.component').then(m => m.InboxComponent),
+      },
       { path: 'profile', component: ProfileComponent },
       {
         path: 'showcase',

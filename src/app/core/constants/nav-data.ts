@@ -27,14 +27,19 @@ export const NAVIGATION_DATA: NavGroup[] = [
         groupName: '', // No visible section header — single unified nav list
         elements: [
 
+            // ── Dashboard ────────────────────────────────────────────────────────────
+            { label: 'Dashboard', icon: 'dashboard', route: '/dashboard' },
+
+            // ── Inbox ─────────────────────────────────────────────────────────────────
+            { label: 'Inbox', icon: 'mail', route: '/inbox' },
+
             // ── Submissions ──────────────────────────────────────────────────────────────
             // Collapsible folder visible to every authenticated user. Open by default.
             {
                 label: 'Submissions',
                 icon: 'inbox',
-                isExpanded: true,
+                isExpanded: false,
                 children: [
-                    { label: 'Inbox',               icon: 'mail',           route: '/submissions/inbox' },
                     { label: 'Draft',               icon: 'edit_note',      route: '/submissions/draft' },
                     { label: 'Pending Application', icon: 'schedule',       route: '/submissions/pending' },
                     { label: 'History',             icon: 'history',        route: '/submissions/history' },

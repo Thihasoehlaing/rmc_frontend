@@ -19,6 +19,8 @@ export class FormWizardNavComponent {
   @Input() isSubmitting = false;
   /** Hide the submit button until last step */
   @Input() showSubmit = false;
+  /** Hide save/submit actions for read-only history views */
+  @Input() readOnly = false;
 
   @Output() prev = new EventEmitter<void>();
   @Output() next = new EventEmitter<void>();

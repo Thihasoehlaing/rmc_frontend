@@ -10,12 +10,12 @@
       <span class="material-icons">{{ pinned() ? 'push_pin' : 'push_pin' }}</span>
     </button>
     }
-    <div class="sidebar__logo">
+    <a routerLink="/dashboard" class="sidebar__logo">
       <img src="assets/styles/images/apu.png" alt="APU Logo" class="logo-img">
       @if (isExpanded()) {
       <span class="logo-text">RMC</span>
       }
-    </div>
+    </a>
   </div>
 
   <!-- User Profile Section -->

@@ -215,6 +215,9 @@ export class RdigWorkflowService {
   /** Current application status — driven purely by form metadata (ABAC) */
   status = signal<RdigStatus>('fill_application');
 
+  /** True only when the logged-in user is the current actor for this application. */
+  currentUserCanAct = signal<boolean>(true);
+
   /** Current application version — used for HOS approval options */
   version = signal<number>(1);
 
@@ -228,7 +231,7 @@ export class RdigWorkflowService {
 
   /** True when the applicant can edit all form fields */
   isApplicantEditable = computed(() =>
-    APPLICANT_EDITABLE.includes(this.status())
+    this.currentUserCanAct() && APPLICANT_EDITABLE.includes(this.status())
   );
 
   /** True when form fields should be read-only */
@@ -255,42 +258,42 @@ export class RdigWorkflowService {
 
   /** HOS comment/approval editable during pending_hos and pending_hos_review */
   isHosEditable = computed(() =>
-    this.status() === 'pending_hos' || this.status() === 'pending_hos_review'
+    this.currentUserCanAct() && (this.status() === 'pending_hos' || this.status() === 'pending_hos_review')
   );
 
   /** RMC comment/approval + reviewer assignment editable during pending_rmc and pending_rmc_review */
   isRmcEditable = computed(() =>
-    this.status() === 'pending_rmc' || this.status() === 'pending_rmc_review'
+    this.currentUserCanAct() && (this.status() === 'pending_rmc' || this.status() === 'pending_rmc_review')
   );
 
   /** Reviewer 1 fields editable: only during pending_reviewers AND only for the assigned Reviewer 1 */
   isReviewer1Editable = computed(() =>
-    this.status() === 'pending_reviewers' && this.isCurrentUserReviewer1()
+    this.currentUserCanAct() && this.status() === 'pending_reviewers' && this.isCurrentUserReviewer1()
   );
 
   /** Reviewer 2 fields editable: only during pending_reviewers AND only for the assigned Reviewer 2 */
   isReviewer2Editable = computed(() =>
-    this.status() === 'pending_reviewers' && this.isCurrentUserReviewer2()
+    this.currentUserCanAct() && this.status() === 'pending_reviewers' && this.isCurrentUserReviewer2()
   );
 
   /** RDIG Chair comment/approval editable only during pending_rdig_chair */
-  isRdigChairEditable = computed(() => this.status() === 'pending_rdig_chair');
+  isRdigChairEditable = computed(() => this.currentUserCanAct() && this.status() === 'pending_rdig_chair');
 
   /** VC comment/approval editable only during pending_vc */
-  isVcEditable = computed(() => this.status() === 'pending_vc');
+  isVcEditable = computed(() => this.currentUserCanAct() && this.status() === 'pending_vc');
 
   /** CEO comment/approval editable only during pending_ceo */
-  isCeoEditable = computed(() => this.status() === 'pending_ceo');
+  isCeoEditable = computed(() => this.currentUserCanAct() && this.status() === 'pending_ceo');
 
   // ── Score dropdown editability ─────────────────────────────────
 
   /** Score dropdowns are only interactive during pending_reviewers */
-  isScoreEditable = computed(() => this.status() === 'pending_reviewers');
+  isScoreEditable = computed(() => this.currentUserCanAct() && this.status() === 'pending_reviewers');
 
   // ── Reviewer assignment visibility ─────────────────────────────
 
   /** Reviewer Assignment section visible ONLY during pending_rmc */
-  isReviewerAssignmentVisible = computed(() => this.status() === 'pending_rmc');
+  isReviewerAssignmentVisible = computed(() => this.currentUserCanAct() && this.status() === 'pending_rmc');
 
   // ── Score summary visibility ──────────────────────────────────
 
@@ -405,26 +408,26 @@ export class RdigWorkflowService {
   // ── Approval card visibility ─
 
   isHosApprovalVisible = computed(() =>
-    this.status() === 'pending_hos' || this.status() === 'pending_hos_review'
+    this.currentUserCanAct() && (this.status() === 'pending_hos' || this.status() === 'pending_hos_review')
   );
 
   isRmcApprovalVisible = computed(() =>
-    this.status() === 'pending_rmc' || this.status() === 'pending_rmc_review'
+    this.currentUserCanAct() && (this.status() === 'pending_rmc' || this.status() === 'pending_rmc_review')
   );
 
   isReviewer1ApprovalVisible = computed(() =>
-    this.status() === 'pending_reviewers' && this.isCurrentUserReviewer1()
+    this.currentUserCanAct() && this.status() === 'pending_reviewers' && this.isCurrentUserReviewer1()
   );
 
   isReviewer2ApprovalVisible = computed(() =>
-    this.status() === 'pending_reviewers' && this.isCurrentUserReviewer2()
+    this.currentUserCanAct() && this.status() === 'pending_reviewers' && this.isCurrentUserReviewer2()
   );
 
-  isRdigChairApprovalVisible = computed(() => this.status() === 'pending_rdig_chair');
+  isRdigChairApprovalVisible = computed(() => this.currentUserCanAct() && this.status() === 'pending_rdig_chair');
 
-  isVcApprovalVisible = computed(() => this.status() === 'pending_vc');
+  isVcApprovalVisible = computed(() => this.currentUserCanAct() && this.status() === 'pending_vc');
 
-  isCeoApprovalVisible = computed(() => this.status() === 'pending_ceo');
+  isCeoApprovalVisible = computed(() => this.currentUserCanAct() && this.status() === 'pending_ceo');
 
   // ── HOS approval options (version-dependent) ──────────────────
 

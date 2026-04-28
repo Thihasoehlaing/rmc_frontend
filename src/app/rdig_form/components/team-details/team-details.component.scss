@@ -13,6 +13,14 @@
   margin-bottom: var(--space-4);
 }
 
+.input--disabled-readonly {
+  background: var(--color-surface-nested);
+  border-color: var(--border-default);
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+  opacity: 1;
+}
+
 // ── Empty state ────────────────────────────────────────────────────
 .empty-state {
   display: flex;

@@ -12,11 +12,13 @@ import { CharacterCounterComponent } from '../../../shared/components/character-
 import { CustomHeaderComponent } from '../../../shared/components/custom-header/custom-header.component';
 import { CustomSubheaderComponent } from '../../../shared/components/custom-subheader/custom-subheader.component';
 import { ValidationMessageComponent } from '../../../shared/components/validation-message/validation-message.component';
+import { DataTableComponent, DataTableColumn } from '../../../shared/components/data-table/data-table.component';
+import { JournalOptionsService } from '../../services/journal-options.service';
 
 @Component({
   selector: 'app-journal-details',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, NoteComponent, SearchableDropdownComponent, DialogComponent, FileUploadComponent, CharacterCounterComponent, CustomHeaderComponent, CustomSubheaderComponent, ValidationMessageComponent],
+  imports: [CommonModule, ReactiveFormsModule, NoteComponent, SearchableDropdownComponent, DialogComponent, FileUploadComponent, CharacterCounterComponent, CustomHeaderComponent, CustomSubheaderComponent, ValidationMessageComponent, ActionButtonComponent, DataTableComponent],
   templateUrl: './journal-details.html',
   styleUrl: './journal-details.scss'
 })
@@ -42,6 +44,15 @@ export class JournalDetails implements OnInit {
 
   breakdownOptions: any[] = [];
   currentBreakdownOptions: any[] = [];
+
+  readonly breakdownColumns: DataTableColumn[] = [
+    { key: 'itemDescription', label: 'Item Description' },
+    { key: 'voteNumber', label: 'Vote Number', width: '140px' },
+    { key: 'cost', label: 'Cost', width: '120px', align: 'right', headerAlign: 'right' },
+    { key: 'exchangeRate', label: 'Exchange Rate', width: '140px', align: 'right', headerAlign: 'right' },
+    { key: 'costInRM', label: 'Cost in RM', width: '140px', align: 'right', headerAlign: 'right' },
+    { key: 'actions', label: 'Actions', width: '100px', align: 'center', headerAlign: 'center' }
+  ];
 
   @Output() formValidityChange = new EventEmitter<boolean>();
 
@@ -265,6 +276,11 @@ calculateBreakdownTotal(type: string): number {
       apuSponsorshipAmount: apuFinal,
       applicantCost: applicantCost
     };
+  }
+
+  private normalizeAmount(value: unknown): number | null {
+    const amount = typeof value === 'number' ? value : parseFloat(String(value ?? '').replace(/,/g, ''));
+    return Number.isFinite(amount) ? Math.round(amount * 100) / 100 : null;
   }
 
   calculateTotals() {

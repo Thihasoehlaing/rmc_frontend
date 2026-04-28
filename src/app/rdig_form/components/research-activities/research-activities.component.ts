@@ -39,9 +39,6 @@ export class ResearchActivitiesComponent implements OnInit, OnDestroy {
     /** Available months computed from duration */
     months = computed(() => Array.from({ length: this.projectDuration() }, (_, i) => i + 1));
 
-    /** Validation warnings (non-blocking but visible) */
-    validationWarnings = signal<string[]>([]);
-
     private subs: Subscription[] = [];
 
     get activities() {
@@ -75,7 +72,6 @@ export class ResearchActivitiesComponent implements OnInit, OnDestroy {
                     if (dur > 0) {
                         this.projectDuration.set(dur);
                         this.clampActivityMonths(dur);
-                        this.validateSequence();
                     }
                 })
             );
@@ -89,7 +85,6 @@ export class ResearchActivitiesComponent implements OnInit, OnDestroy {
         this.subs.push(
             this.activities.valueChanges.subscribe(() => {
                 this.updateCascade();
-                this.validateSequence();
             })
         );
     }
@@ -99,7 +94,7 @@ export class ResearchActivitiesComponent implements OnInit, OnDestroy {
     }
 
     addActivity() {
-        if (!this.projectDuration()) return; // guard: no duration set
+        if (!this.canAddActivity()) return;
         const isFirst = this.activities.length === 0;
         const maxMonth = this.projectDuration();
         // First activity: start = 1 (user-editable); subsequent: start = prev end (auto-locked)
@@ -109,28 +104,25 @@ export class ResearchActivitiesComponent implements OnInit, OnDestroy {
 
         const activityGroup = this.fb.group({
             name: ['', Validators.required],
-            startMonth: [{ value: startMonth, disabled: !isFirst }, Validators.required],
+            startMonth: [{ value: startMonth, disabled: true }, Validators.required],
             endMonth: [Math.min(startMonth + 1, maxMonth), Validators.required],
             duration: [{ value: 1, disabled: true }]
         });
 
-        // Auto-calculate duration (use .get().value to handle disabled startMonth)
+        this.ensureValidActivityMonths(activityGroup);
+
+        // Auto-calculate duration and correct invalid month combinations before they become warnings.
         activityGroup.valueChanges.subscribe(() => {
-            const start = parseInt(String(activityGroup.get('startMonth')?.value || '0'), 10);
-            const end = parseInt(String(activityGroup.get('endMonth')?.value || '0'), 10);
-            activityGroup.get('duration')?.setValue(
-                end > start ? end - start + 1 : 0,
-                { emitEvent: false }
-            );
+            this.ensureValidActivityMonths(activityGroup);
         });
 
         this.activities.push(activityGroup);
-        this.validateSequence();
+        this.updateCascade();
     }
 
     removeActivity(index: number) {
         this.activities.removeAt(index);
-        this.validateSequence();
+        this.updateCascade();
     }
 
     getTimeline(start: any, end: any) {
@@ -141,65 +133,88 @@ export class ResearchActivitiesComponent implements OnInit, OnDestroy {
         return Array.from({ length: total }, (_, i) => i + 1 >= s && i + 1 <= e);
     }
 
+    canAddActivity(): boolean {
+        const maxMonth = this.projectDuration();
+        if (!maxMonth || this.workflow?.isFormReadOnly()) return false;
+        if (this.activities.length === 0) return true;
+
+        const lastEnd = this.monthValue(this.activities.at(this.activities.length - 1).get('endMonth')?.value);
+        return lastEnd < maxMonth;
+    }
+
+    getAddActivityTitle(): string {
+        if (!this.projectDuration()) return 'Select a Project Duration first';
+        if (!this.canAddActivity()) return 'The activity timeline already reaches the project end month';
+        return '';
+    }
+
+    isStartMonthDisabled(index: number, month: number): boolean {
+        return true;
+    }
+
+    isEndMonthDisabled(activity: any, month: number): boolean {
+        return month <= this.monthValue(activity.get('startMonth')?.value);
+    }
+
     /** Update startMonth of all non-first activities to equal prev activity's endMonth */
     private updateCascade(): void {
-        for (let i = 1; i < this.activities.length; i++) {
-            const prevEnd = parseInt(String(this.activities.at(i - 1).get('endMonth')?.value ?? 1), 10);
-            this.activities.at(i).get('startMonth')?.setValue(prevEnd, { emitEvent: false });
+        if (this.activities.length > 0) {
+            const firstActivity = this.activities.at(0) as FormGroup;
+            firstActivity.get('startMonth')?.disable({ emitEvent: false });
+            firstActivity.get('startMonth')?.setValue(1, { emitEvent: false });
+            this.ensureValidActivityMonths(firstActivity);
         }
+
+        for (let i = 1; i < this.activities.length; i++) {
+            const prevEnd = this.monthValue(this.activities.at(i - 1).get('endMonth')?.value);
+            const activity = this.activities.at(i) as FormGroup;
+            activity.get('startMonth')?.disable({ emitEvent: false });
+            activity.get('startMonth')?.setValue(prevEnd, { emitEvent: false });
+            this.ensureValidActivityMonths(activity);
+        }
+
+        this.activities.updateValueAndValidity({ emitEvent: false });
     }
 
     /** Clamp all activity months to max duration when duration changes */
     private clampActivityMonths(maxMonth: number): void {
         for (let i = 0; i < this.activities.length; i++) {
-            const ctrl = this.activities.at(i);
-            const start = parseInt(String(ctrl.get('startMonth')?.value ?? 0), 10);
-            const end = parseInt(String(ctrl.get('endMonth')?.value ?? 0), 10);
-            if (start > maxMonth) ctrl.get('startMonth')?.setValue(maxMonth, { emitEvent: false });
-            if (end > maxMonth) ctrl.get('endMonth')?.setValue(maxMonth, { emitEvent: false });
+            this.ensureValidActivityMonths(this.activities.at(i) as FormGroup, maxMonth);
         }
+        this.updateCascade();
     }
 
-    /** Validate activity sequence rules and produce warnings */
-    validateSequence(): void {
-        const warnings: string[] = [];
-        const maxMonth = this.projectDuration();
+    private ensureValidActivityMonths(activityGroup: FormGroup, maxMonth = this.projectDuration()): void {
+        if (!maxMonth) return;
 
-        if (this.activities.length === 0) {
-            this.validationWarnings.set(warnings);
-            return;
+        const startCtrl = activityGroup.get('startMonth');
+        const endCtrl = activityGroup.get('endMonth');
+        if (!startCtrl || !endCtrl) return;
+
+        let start = this.monthValue(startCtrl.value);
+        let end = this.monthValue(endCtrl.value);
+
+        if (start >= maxMonth) {
+            start = Math.max(1, maxMonth - 1);
+            startCtrl.setValue(start, { emitEvent: false });
         }
 
-        // Rule 1: First activity must start at month 1
-        const firstStart = parseInt(String(this.activities.at(0).get('startMonth')?.value ?? 0), 10);
-        if (firstStart !== 1) {
-            warnings.push('First activity must start at Month 1.');
+        if (end > maxMonth || end <= start) {
+            end = Math.min(maxMonth, start + 1);
+            endCtrl.setValue(end, { emitEvent: false });
         }
 
-        // Rule 2: Each activity end must be > start
-        for (let i = 0; i < this.activities.length; i++) {
-            const start = parseInt(String(this.activities.at(i).get('startMonth')?.value ?? 0), 10);
-            const end = parseInt(String(this.activities.at(i).get('endMonth')?.value ?? 0), 10);
-            if (end <= start) {
-                warnings.push(`Activity ${i + 1}: End month must be after Start month.`);
-            }
-        }
+        this.setDuration(activityGroup);
+    }
 
-        // Rule 3: Continuous — each activity's start must equal previous activity's end
-        for (let i = 1; i < this.activities.length; i++) {
-            const prevEnd = parseInt(String(this.activities.at(i - 1).get('endMonth')?.value ?? 0), 10);
-            const currStart = parseInt(String(this.activities.at(i).get('startMonth')?.value ?? 0), 10);
-            if (currStart !== prevEnd) {
-                warnings.push(`Activity ${i + 1}: Should start at Month ${prevEnd} (equal to previous end).`);
-            }
-        }
+    private setDuration(activityGroup: FormGroup): void {
+        const start = this.monthValue(activityGroup.get('startMonth')?.value);
+        const end = this.monthValue(activityGroup.get('endMonth')?.value);
+        activityGroup.get('duration')?.setValue(end > start ? end - start + 1 : 0, { emitEvent: false });
+    }
 
-        // Rule 4: Last activity must end at project duration month
-        const lastEnd = parseInt(String(this.activities.at(this.activities.length - 1).get('endMonth')?.value ?? 0), 10);
-        if (lastEnd !== maxMonth) {
-            warnings.push(`Last activity must end at Month ${maxMonth} (project duration).`);
-        }
-
-        this.validationWarnings.set(warnings);
+    private monthValue(value: unknown): number {
+        const month = parseInt(String(value ?? 0), 10);
+        return Number.isFinite(month) ? month : 0;
     }
 }

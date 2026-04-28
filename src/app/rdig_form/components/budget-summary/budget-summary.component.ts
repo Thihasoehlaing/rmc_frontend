@@ -41,6 +41,7 @@ export class BudgetSummaryComponent implements OnInit {
   @Input() showRdigChairComments = false;
   @Input() showVcComments = false;
   @Input() showCeoComments = false;
+  @Input() submitAttempted = false;
 
   get showAnyComments(): boolean {
     return this.showHosComments || this.showRmcComments ||
@@ -89,7 +90,7 @@ export class BudgetSummaryComponent implements OnInit {
   readonly budgetColumns: DataTableColumn[] = [
     { key: 'index', label: '#', width: '52px', align: 'center', headerAlign: 'center' },
     { key: 'description', label: 'Description of Expense', width: '40%' },
-    { key: 'amount', label: 'Amount (RM)', width: '160px', align: 'right', headerAlign: 'right' },
+    { key: 'amount', label: 'Amount (RM)', width: '160px' },
     { key: 'remarks', label: 'Remarks' },
     { key: 'actions', label: '', width: '92px', align: 'right', headerAlign: 'right' }
   ];
@@ -219,6 +220,7 @@ export class BudgetSummaryComponent implements OnInit {
       sum(this.materialsSupplies) + sum(this.specialServices);
 
     this.budgetForm.get('totalRequest')?.setValue(total, { emitEvent: false });
+    this.budgetForm.updateValueAndValidity({ emitEvent: false });
   }
 
   get isBudgetInvalidRange(): boolean {
@@ -234,11 +236,11 @@ export class BudgetSummaryComponent implements OnInit {
     if (this.category === 'S&T') limitMin = 20000;
     else if (this.category === 'Non S&T') limitMin = 5000;
 
-    // Use workflow.isFormReadOnly() as proxy for isSubmitted
-    const isSubmitted = this.workflow.isFormReadOnly();
-    
     if (total < limitMin) {
-      return isSubmitted ? 'red' : 'yellow';
+      return this.submitAttempted ? 'red' : 'yellow';
+    }
+    if (this.isBudgetInvalidRange) {
+      return this.submitAttempted ? 'red' : 'yellow';
     }
     return 'default';
   }

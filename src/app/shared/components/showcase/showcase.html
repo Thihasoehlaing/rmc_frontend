@@ -193,10 +193,62 @@
       </div>
     </div>
 
+    <div class="subsection-heading">Shared Radio Classes</div>
+    <div class="radio-demo-row">
+      <div class="form-field">
+        <label class="form-label is-required">Application Type</label>
+        <div class="radio-group">
+          <label class="radio-option">
+            <input type="radio" name="showcase-application-type" checked>
+            <span>New Application</span>
+          </label>
+          <label class="radio-option">
+            <input type="radio" name="showcase-application-type">
+            <span>Resubmission</span>
+          </label>
+          <label class="radio-option">
+            <input type="radio" name="showcase-application-type" disabled>
+            <span>Disabled Option</span>
+          </label>
+        </div>
+        <span class="form-hint">Use <code>.radio-group</code> and <code>.radio-option</code> for all native radio groups.</span>
+      </div>
+    </div>
+
     <table class="ref-table">
       <thead><tr><th>Class</th><th>Purpose</th><th>Usage</th></tr></thead>
       <tbody>
         @for (c of globalClasses | slice:8:20; track c.cls) {
+          <tr>
+            <td><code>{{ c.cls }}</code></td>
+            <td>{{ c.purpose }}</td>
+            <td><code>{{ c.usage }}</code></td>
+          </tr>
+        }
+      </tbody>
+    </table>
+
+    <table class="ref-table" style="margin-top: var(--space-4);">
+      <thead><tr><th>Class</th><th>Purpose</th><th>Usage</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><code>.radio-group</code></td>
+          <td>Shared flex wrapper for radio options with responsive spacing.</td>
+          <td><code>&lt;div class="radio-group"&gt;...&lt;/div&gt;</code></td>
+        </tr>
+        <tr>
+          <td><code>.radio-option</code></td>
+          <td>Shared label style for native radio controls (checked, focus, disabled states).</td>
+          <td><code>&lt;label class="radio-option"&gt;&lt;input type="radio"&gt;&lt;span&gt;Label&lt;/span&gt;&lt;/label&gt;</code></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="subsection-heading" style="margin-top: var(--space-6);">Complete Shared Class Registry</div>
+    <table class="ref-table">
+      <thead><tr><th>Class</th><th>Purpose</th><th>Usage</th></tr></thead>
+      <tbody>
+        @for (c of globalClasses; track c.cls) {
           <tr>
             <td><code>{{ c.cls }}</code></td>
             <td>{{ c.purpose }}</td>
@@ -664,6 +716,20 @@
         </tbody>
       </table>
     </div>
+
+    <div class="subsection-heading" style="margin-top: var(--space-7);">Complete Shared Component Registry</div>
+    <table class="ref-table">
+      <thead><tr><th>Component</th><th>Selector</th><th>Purpose</th></tr></thead>
+      <tbody>
+        @for (component of sharedComponentRegistry; track component.selector) {
+          <tr>
+            <td>{{ component.name }}</td>
+            <td><code>{{ component.selector }}</code></td>
+            <td>{{ component.purpose }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
 
   </section>
 

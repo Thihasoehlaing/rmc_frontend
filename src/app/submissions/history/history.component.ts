@@ -3,11 +3,12 @@ import { NgClass } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ApplicationService, TERMINAL_STATUSES } from '../../services/application.service';
 import { AuthService } from '../../services/auth.service';
+import { SubmissionsSearchComponent } from '../../shared/components/submissions-search/submissions-search.component';
 
 @Component({
   selector: 'app-history',
   standalone: true,
-  imports: [RouterLink, NgClass],
+  imports: [RouterLink, NgClass, SubmissionsSearchComponent],
   templateUrl: './history.component.html',
   styleUrl: './history.component.scss',
 })
@@ -172,3 +173,4 @@ export class HistoryComponent implements OnInit {
     return app.teamDetails?.leaderName ?? '—';
   }
 }
+

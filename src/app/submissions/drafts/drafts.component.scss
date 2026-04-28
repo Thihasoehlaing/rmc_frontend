@@ -117,52 +117,8 @@
 .spinning { animation: spin 1.2s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-// ── Search bar ────────────────────────────────────────────────────────────────
-.search-bar {
-  position: relative;
+app-submissions-search {
   margin-bottom: var(--space-4);
-
-  &__icon {
-    position: absolute;
-    left: var(--space-3);
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 1.1rem;
-    color: var(--color-text-secondary);
-    pointer-events: none;
-  }
-
-  &__input {
-    width: 100%;
-    padding: var(--space-2) var(--space-9) var(--space-2) var(--space-8);
-    border: 1px solid var(--border-default);
-    border-radius: var(--radius-lg);
-    font-size: var(--fs-sm);
-    background: var(--color-surface);
-    color: var(--color-text);
-    outline: none;
-    transition: border-color 0.15s;
-    box-sizing: border-box;
-
-    &:focus { border-color: var(--color-primary); }
-  }
-
-  &__clear {
-    position: absolute;
-    right: var(--space-3);
-    top: 50%;
-    transform: translateY(-50%);
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: var(--color-text-secondary);
-    display: flex;
-    align-items: center;
-    padding: 2px;
-
-    .material-icons { font-size: 1rem; }
-    &:hover { color: var(--color-text); }
-  }
 }
 
 // ── Table ─────────────────────────────────────────────────────────────────────

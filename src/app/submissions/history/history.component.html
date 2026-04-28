@@ -32,20 +32,10 @@
     <!-- ── Toolbar: search + type filter ───────────────────────────────────── -->
     <div class="toolbar">
 
-      <div class="search-bar">
-        <span class="material-icons search-bar__icon">search</span>
-        <input
-          class="search-bar__input"
-          type="text"
-          placeholder="Search history by title…"
-          [value]="searchQuery()"
-          (input)="searchQuery.set($any($event.target).value)" />
-        @if (searchQuery()) {
-          <button class="search-bar__clear" (click)="searchQuery.set('')" title="Clear search">
-            <span class="material-icons">close</span>
-          </button>
-        }
-      </div>
+      <app-submissions-search
+        placeholder="Search history by title..."
+        [value]="searchQuery()"
+        (valueChange)="searchQuery.set($event)" />
 
       <!-- Application type filter — only rendered when multiple types exist -->
       @if (availableTypes().length > 2) {
@@ -145,3 +135,5 @@
   }
 
 </div>
+
+

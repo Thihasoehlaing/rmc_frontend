@@ -40,7 +40,6 @@ export class AuthorsDetails implements OnInit {
     { key: 'fullName', label: 'Full Name (as per IC/Passport)' },
     { key: 'country', label: 'Country' },
     { key: 'email', label: 'Email' },
-    { key: 'organisationType', label: 'Type of Organisation' },
     { key: 'schoolDepartment', label: 'School/Department' },
     { key: 'institutionName', label: 'Institution/Company Name' },
     { key: 'actions', label: 'Actions', width: '100px', align: 'center', headerAlign: 'center' }
@@ -61,16 +60,6 @@ export class AuthorsDetails implements OnInit {
     { value: 'Robert Wilson', label: 'Robert Wilson' },
     { value: 'Jessica Taylor', label: 'Jessica Taylor' },
     { value: 'James Anderson', label: 'James Anderson' }
-  ];
-
-  // Organisation type dropdown options
-  organisationTypeOptions: DropdownOption[] = [
-    { value: 'International University', label: 'International University' },
-    { value: 'Local Public University', label: 'Local Public University' },
-    { value: 'Local Private University', label: 'Local Private University' },
-    { value: 'Industry', label: 'Industry' },
-    { value: 'Agency (Government/NGO)', label: 'Agency (Government/NGO)' },
-    
   ];
 
   workflow = inject(JournalWorkflowService);
@@ -136,7 +125,6 @@ export class AuthorsDetails implements OnInit {
       fullName: ['', [Validators.required]],
       country: ['', [Validators.required]],
       email: ['', [Validators.required, Validators.email]],
-      organisationType: ['', [Validators.required]],
       schoolDepartment: ['', [Validators.required]],
       institutionName: ['', [Validators.required]]
     });
@@ -209,7 +197,6 @@ export class AuthorsDetails implements OnInit {
           fullName: [data.fullName, [Validators.required]],
           country: [data.country, [Validators.required]],
           email: [data.email, [Validators.required, Validators.email]],
-          organisationType: [data.organisationType, [Validators.required]],
           schoolDepartment: [data.schoolDepartment, [Validators.required]],
           institutionName: [data.institutionName, [Validators.required]]
         });
@@ -235,7 +222,6 @@ export class AuthorsDetails implements OnInit {
           fullName: ['', [Validators.required]],
           country: ['', [Validators.required]],
           email: ['', [Validators.required, Validators.email]],
-          organisationType: ['', [Validators.required]],
           schoolDepartment: ['', [Validators.required]],
           institutionName: ['', [Validators.required]]
         });

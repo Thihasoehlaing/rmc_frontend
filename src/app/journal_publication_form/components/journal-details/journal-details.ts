@@ -91,7 +91,7 @@ export class JournalDetails implements OnInit {
       sponsorshipPercentage: [{ value: 0, disabled: true }],
       sponsorshipAmountAPU: [{ value: 0, disabled: true }],
       costByApplicant: [{ value: 0, disabled: true }],
-      costingRemarks: ['', [Validators.maxLength(255)]]
+      costingRemarks: ['', [Validators.maxLength(500)]]
     });
 
     this.form.statusChanges.subscribe(status => {
@@ -150,13 +150,13 @@ export class JournalDetails implements OnInit {
     });
 
     this.breakdownForm.valueChanges.subscribe((val) => {
-      const cost = parseFloat(val.cost);
-      const rate = parseFloat(val.exchangeRate);
-      
+      const cost = this.normalizeAmount(val.cost);
+      const rate = this.normalizeAmount(val.exchangeRate);
+
       let rm: number | null = null;
-      if (!isNaN(cost) && !isNaN(rate)) {
-        rm = cost * rate;
-      } else if (!isNaN(cost)) {
+      if (cost !== null && rate !== null) {
+        rm = this.normalizeAmount(cost * rate);
+      } else if (cost !== null) {
         rm = cost;
       }
 
@@ -232,13 +232,24 @@ export class JournalDetails implements OnInit {
     }
 
     const entry = this.breakdownForm.getRawValue();
+    const normalizedCost = this.normalizeAmount(entry.cost);
+    const normalizedRate = this.normalizeAmount(entry.exchangeRate);
+    const calculatedRM = normalizedCost !== null
+      ? this.normalizeAmount(normalizedRate !== null ? normalizedCost * normalizedRate : normalizedCost)
+      : null;
+    const entryToSave = {
+      ...entry,
+      cost: normalizedCost ?? entry.cost,
+      exchangeRate: normalizedRate ?? entry.exchangeRate,
+      costInRM: calculatedRM !== null ? calculatedRM.toFixed(2) : entry.costInRM
+    };
     const type = this.breakdownType as string;
     const array = this.getBreakdownArray(type);
 
     if (this.breakdownEditingIndex !== null) {
-      array[this.breakdownEditingIndex] = entry;
+      array[this.breakdownEditingIndex] = entryToSave;
     } else {
-      array.push(entry);
+      array.push(entryToSave);
     }
 
     this.calculateTotals();
@@ -316,15 +327,20 @@ calculateBreakdownTotal(type: string): number {
         }
       }
 
-      // 7. Sponsorship Percentage Requested (%)
-      spPercent = 100;
+      const remainingBalance = Math.max(totalRM - manualExternal, 0);
 
-      // 8. APU Sponsorship Amount
-      let remainingBalance = Math.max(totalRM - manualExternal, 0);
-      spAPU = Math.min(remainingBalance, 5000);
+      // Sponsorship Percentage Requested (%)
+      if (q === 'Q1' || q === 'Q2' || q === 'Q3') {
+        spPercent = 100;
+      } else {
+        spPercent = 0;
+      }
 
-      // 9. Cost to be Borne by Applicant (RM)
-      applicantCost = Math.max(totalRM - manualExternal - spAPU, 0);
+      // APU Sponsorship Amount
+      spAPU = remainingBalance;
+
+      // Cost to be Borne by Applicant (RM)
+      applicantCost = 0;
 
     } else if (pType === 'internal-research' || pType === 'non-research') {
       // 1 & 2 & 6. Sponsored By / External Amount validaton (Same bounds as external flow)
@@ -350,14 +366,31 @@ calculateBreakdownTotal(type: string): number {
         }
       }
 
-      // 3. Sponsorship Percentage Requested (%) fixed at 0
-      spPercent = 0;
-      
-      // 4. Sponsorship Amount by APU (RM) fixed at 0
-      spAPU = 0;
+      const remainingBalance = Math.max(totalRM - manualExternal, 0);
 
-      // 5. Cost to be Borne by Applicant (RM) auto-calculated
-      applicantCost = Math.max(totalRM - manualExternal, 0);
+      if (q === 'Q1' || q === 'Q2') {
+        // Sponsorship Percentage Requested (%)
+        spPercent = 100;
+
+        // APU Sponsorship Amount
+        spAPU = remainingBalance;
+
+        // Cost to be Borne by Applicant (RM)
+        applicantCost = 0;
+      } else if (q === 'Q3') {
+        // Sponsorship Percentage Requested (%)
+        spPercent = 50;
+
+        // APU Sponsorship Amount
+        spAPU = remainingBalance * 0.5;
+
+        // Cost to be Borne by Applicant (RM)
+        applicantCost = remainingBalance * 0.5;
+      } else {
+        spPercent = 0;
+        spAPU = 0;
+        applicantCost = remainingBalance;
+      }
     }
 
     // Do NOT patch sponsoredAmountExternal to avoid overwriting or forcing auto-format on the user's manual input
@@ -422,6 +455,19 @@ calculateBreakdownTotal(type: string): number {
   removeFile() {
     this.selectedFile = null;
     this.selectedFileName = null;
+  }
+
+  private normalizeAmount(value: unknown): number | null {
+    if (value === null || value === undefined || value === '') {
+      return null;
+    }
+
+    const num = typeof value === 'number' ? value : parseFloat(String(value));
+    if (Number.isNaN(num)) {
+      return null;
+    }
+
+    return Math.round((num + Number.EPSILON) * 100) / 100;
   }
 }
 

@@ -1,4 +1,4 @@
-import { Component, inject, ViewChild } from '@angular/core';
+import { Component, inject, ViewChild, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { JournalDetails } from './components/journal-details/journal-details';
@@ -59,6 +59,28 @@ export class JournalPublicationFormComponent {
     3: false,
     4: false
   };
+
+  submitAttempted = false;
+  selectedCommentSection: 'hos' | 'rmc' | 'vc' | 'hr' | 'ceo' | null = null;
+
+  constructor() {
+    // Sync workflow status changes to the form control
+    effect(() => {
+      const status = this.workflow.status();
+      if (this.statusControl.value !== status) {
+        this.statusControl.setValue(status, { emitEvent: false });
+      }
+    });
+
+    // Sync form control changes to workflow
+    this.statusControl.valueChanges.subscribe((newStatus) => {
+      if (newStatus) {
+        this.workflow.status.set(newStatus as JournalStatus);
+        // Reset selected comment section when status changes
+        this.selectedCommentSection = null;
+      }
+    });
+  }
 
   validateCurrentStep(markAsTouched: boolean = true): boolean {
     let isValid = true;
@@ -158,20 +180,26 @@ export class JournalPublicationFormComponent {
   }
 
   onSubmit() {
+    this.submitAttempted = true;
+    this.validateCurrentStep(true);
+
+    this.stepStatuses = this.stepStatuses.map((status, index) => ({
+      ...status,
+      visited: true,
+      valid: this.formValid[index + 1] || false,
+    }));
+
+    const allValid = Object.values(this.formValid).every(Boolean);
+    if (!allValid) {
+      return;
+    }
+
     this.isSubmitting = true;
     setTimeout(() => {
       this.isSubmitting = false;
       alert('Form submitted successfully!');
     }, 1000);
   }
-
-  onTestStatusChange(newStatus: any) {
-    this.workflow.status.set(newStatus as JournalStatus);
-    // Reset selected comment section when status changes
-    this.selectedCommentSection = null;
-  }
-
-  selectedCommentSection: 'hos' | 'rmc' | 'vc' | 'hr' | 'ceo' | null = null;
 
   toggleCommentSection(section: 'hos' | 'rmc' | 'vc' | 'hr' | 'ceo') {
     if (this.selectedCommentSection === section) {

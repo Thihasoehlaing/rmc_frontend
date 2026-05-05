@@ -1,6 +1,5 @@
 import { Component, OnInit, ViewChild, inject, effect, Output, EventEmitter } from '@angular/core';
 import { CustomHeaderComponent } from '../../../shared/components/custom-header/custom-header.component';
-import { CustomSubheaderComponent } from '../../../shared/components/custom-subheader/custom-subheader.component';
 import { CommonModule } from '@angular/common';
 import { ValidationMessageComponent } from '../../../shared/components/validation-message/validation-message.component';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -11,7 +10,7 @@ import { JournalWorkflowService } from '../../services/journal-workflow.service'
 @Component({
   selector: 'app-documents',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FileUploadComponent, NoteComponent, CustomHeaderComponent, CustomSubheaderComponent, ValidationMessageComponent],
+  imports: [CommonModule, ReactiveFormsModule, FileUploadComponent, NoteComponent, CustomHeaderComponent, ValidationMessageComponent],
   templateUrl: './documents.html',
   styleUrl: './documents.scss'
 })
@@ -77,5 +76,21 @@ export class DocumentsComponent implements OnInit {
       });
     }
     this.documentsForm.get(controlName)?.markAsTouched();
+  }
+
+  /**
+   * Strip digit characters from name text inputs.
+   * Bound to (input) on name fields to prevent numeric entry.
+   */
+  stripDigits(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const cleaned = input.value.replace(/[0-9]/g, '');
+    if (cleaned !== input.value) {
+      input.value = cleaned;
+      const ctrl = this.documentsForm.get(input.getAttribute('formControlName') || input.id || '');
+      if (ctrl) {
+        ctrl.setValue(cleaned, { emitEvent: true });
+      }
+    }
   }
 }

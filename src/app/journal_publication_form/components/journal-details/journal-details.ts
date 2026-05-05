@@ -507,9 +507,11 @@ calculateBreakdownTotal(type: string): number {
       if (stored && stored !== 'undefined') {
         return JSON.parse(stored);
       }
-    } catch (error) {
-      console.error(`Failed to parse metadata for ${storageKey}`, error);    }
-    return null;  }
+    } catch {
+      // Silently discard malformed metadata — do not log storage key names
+    }
+    return null;
+  }
 
   onFileSelected(event: any) {
     let file = event;

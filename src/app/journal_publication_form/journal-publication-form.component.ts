@@ -150,6 +150,8 @@ export class JournalPublicationFormComponent {
 
   isSaving = false;
   isSubmitting = false;
+  saveSuccess = false;
+  submitSuccess = false;
 
   onNext() {
     if (this.currentStep < this.totalSteps) {
@@ -175,7 +177,8 @@ export class JournalPublicationFormComponent {
     this.isSaving = true;
     setTimeout(() => {
       this.isSaving = false;
-      alert('Draft saved successfully!');
+      this.saveSuccess = true;
+      setTimeout(() => { this.saveSuccess = false; }, 3000);
     }, 1000);
   }
 
@@ -197,7 +200,7 @@ export class JournalPublicationFormComponent {
     this.isSubmitting = true;
     setTimeout(() => {
       this.isSubmitting = false;
-      alert('Form submitted successfully!');
+      this.submitSuccess = true;
     }, 1000);
   }
 

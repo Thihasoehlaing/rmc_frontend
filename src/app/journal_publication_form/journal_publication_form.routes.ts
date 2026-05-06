@@ -6,7 +6,12 @@ import { permissionGuard } from '../guards/permission.guard';
 import { NavPermission } from '../interfaces/permission.interface';
 
 export const journalPublicationFormRoutes: Routes = [
-  { path: 'application', component: JournalPublicationFormComponent },
+  {
+    path: 'application',
+    component: JournalPublicationFormComponent,
+    canActivate: [permissionGuard]
+    // No permission data = any authenticated user may access
+  },
   {
       path: 'settings',
       component: JournalSettingsComponent,

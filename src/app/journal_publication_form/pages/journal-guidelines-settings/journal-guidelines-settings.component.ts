@@ -126,7 +126,7 @@ export class JournalGuidelinesSettingsComponent implements OnInit {
     if (this.editingId()) {
       this.guidelinesService.updateGuideline(this.editingId()!, { ...val, id: this.editingId()!, createdDate: new Date().toISOString() });
     } else {
-      this.guidelinesService.addGuideline({ ...val, id: Date.now().toString(), createdDate: new Date().toISOString() });
+      this.guidelinesService.addGuideline({ ...val, id: crypto.randomUUID(), createdDate: new Date().toISOString() });
     }
 
     this.loadGuidelines();

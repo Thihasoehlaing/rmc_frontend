@@ -541,3 +541,21 @@ input[type="number"] {
     font-weight: 600;
   }
 }
+
+// 12. Required asterisk — standalone <span class="asterisk"> pattern
+//     (complements the .form-label.is-required::after pseudo-element approach)
+.asterisk {
+  color: var(--color-error);
+  margin-left: 0.25rem;
+  font-size: 1.1em;
+}
+
+// 13. Inline error/validation message spans
+//     Ensures any <span class="error-message"> is consistently red
+.error-message {
+  font-size: var(--fs-xs);
+  color: var(--color-error);
+  font-weight: var(--fw-medium);
+  margin-top: var(--space-1);
+  display: block;
+}

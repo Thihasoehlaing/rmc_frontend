@@ -1,6 +1,5 @@
 import { Component, OnInit, inject, effect, Output, EventEmitter } from '@angular/core';
 import { CustomHeaderComponent } from '../../../shared/components/custom-header/custom-header.component';
-import { CustomSubheaderComponent } from '../../../shared/components/custom-subheader/custom-subheader.component';
 import { ValidationMessageComponent } from '../../../shared/components/validation-message/validation-message.component';
 import { ActionButtonComponent } from '../../../shared/components/action-button/action-button.component';
 import { CommonModule } from '@angular/common';
@@ -15,34 +14,37 @@ import { DataTableComponent, DataTableColumn } from '../../../shared/components/
   templateUrl: './authors-details.html',
   styleUrls: ['./authors-details.scss'],
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, SearchableDropdownComponent, CustomHeaderComponent, CustomSubheaderComponent, ValidationMessageComponent, ActionButtonComponent, DataTableComponent]
+  imports: [CommonModule, ReactiveFormsModule, SearchableDropdownComponent, CustomHeaderComponent, ValidationMessageComponent, ActionButtonComponent, DataTableComponent]
 })
 export class AuthorsDetails implements OnInit {
   @Output() formValidityChange = new EventEmitter<boolean>();
   form!: FormGroup;
 
   readonly apuStaffColumns: DataTableColumn[] = [
-    { key: 'staffName', label: 'Please select Staff Name' },
-    { key: 'schoolDepartment', label: 'School/Department' },
-    { key: 'affiliation', label: 'Affiliation' },
-    { key: 'actions', label: 'Actions', width: '100px', align: 'center', headerAlign: 'center' }
+    { key: 'no', label: '#', width: '5%', align: 'center', headerAlign: 'center' },
+    { key: 'staffName', label: 'Staff Name', width: '28%' },
+    { key: 'schoolDepartment', label: 'School/Department', width: '32%' },
+    { key: 'affiliation', label: 'Affiliation', width: '25%' },
+    { key: 'actions', label: 'Actions', width: '10%', align: 'center', headerAlign: 'center' }
   ];
 
   readonly studentColumns: DataTableColumn[] = [
-    { key: 'tpNumber', label: 'TP Number', width: '120px' },
-    { key: 'fullName', label: 'Full Name (as per IC/Passport)' },
-    { key: 'schoolDepartment', label: 'School/Department' },
-    { key: 'affiliation', label: 'Affiliation' },
-    { key: 'actions', label: 'Actions', width: '100px', align: 'center', headerAlign: 'center' }
+    { key: 'no', label: '#', width: '5%', align: 'center', headerAlign: 'center' },
+    { key: 'tpNumber', label: 'TP Number', width: '12%' },
+    { key: 'fullName', label: 'Full Name (as per IC/Passport)', width: '25%' },
+    { key: 'schoolDepartment', label: 'School/Department', width: '26%' },
+    { key: 'affiliation', label: 'Affiliation', width: '22%' },
+    { key: 'actions', label: 'Actions', width: '10%', align: 'center', headerAlign: 'center' }
   ];
 
   readonly nonApuColumns: DataTableColumn[] = [
-    { key: 'fullName', label: 'Full Name (as per IC/Passport)' },
-    { key: 'country', label: 'Country' },
-    { key: 'email', label: 'Email' },
-    { key: 'schoolDepartment', label: 'School/Department' },
-    { key: 'institutionName', label: 'Institution/Company Name' },
-    { key: 'actions', label: 'Actions', width: '100px', align: 'center', headerAlign: 'center' }
+    { key: 'no', label: '#', width: '5%', align: 'center', headerAlign: 'center' },
+    { key: 'fullName', label: 'Full Name (as per IC/Passport)', width: '18%' },
+    { key: 'country', label: 'Country', width: '11%' },
+    { key: 'email', label: 'Email', width: '18%' },
+    { key: 'schoolDepartment', label: 'School/Department', width: '18%' },
+    { key: 'institutionName', label: 'Institution/Company Name', width: '20%' },
+    { key: 'actions', label: 'Actions', width: '10%', align: 'center', headerAlign: 'center' }
   ];
 
   isModalOpen: boolean = false;
@@ -61,6 +63,23 @@ export class AuthorsDetails implements OnInit {
     { value: 'Jessica Taylor', label: 'Jessica Taylor' },
     { value: 'James Anderson', label: 'James Anderson' }
   ];
+
+  // Country dropdown — searchable list used in the Non-APU co-author modal
+  readonly countryOptions: DropdownOption<string>[] = [
+    'Afghanistan','Albania','Algeria','Argentina','Australia','Austria',
+    'Bangladesh','Belgium','Brazil','Cambodia','Canada','Chile','China',
+    'Colombia','Czech Republic','Denmark','Egypt','Ethiopia','Finland',
+    'France','Germany','Ghana','Greece','Hong Kong','Hungary','India',
+    'Indonesia','Iran','Iraq','Ireland','Israel','Italy','Japan','Jordan',
+    'Kazakhstan','Kenya','Kuwait','Lebanon','Libya','Malaysia','Mexico',
+    'Morocco','Myanmar','Nepal','Netherlands','New Zealand','Nigeria',
+    'Norway','Oman','Pakistan','Palestine','Philippines','Poland',
+    'Portugal','Qatar','Romania','Russia','Saudi Arabia','Singapore',
+    'South Africa','South Korea','Spain','Sri Lanka','Sudan','Sweden',
+    'Switzerland','Syria','Taiwan','Thailand','Tunisia','Turkey',
+    'Ukraine','United Arab Emirates','United Kingdom','United States',
+    'Vietnam','Yemen','Zimbabwe'
+  ].map(c => ({ value: c, label: c }));
 
   workflow = inject(JournalWorkflowService);
 
@@ -113,7 +132,8 @@ export class AuthorsDetails implements OnInit {
 
   createStudentCoAuthor(): FormGroup {
     return this.fb.group({
-      tpNumber: ['', [Validators.required]],
+      // TP Number: required, must be non-empty digits, no all-zeros
+      tpNumber: ['', [Validators.required, Validators.pattern('^(?!0+$)[0-9]+$')]],
       fullName: ['', [Validators.required]],
       schoolDepartment: ['', [Validators.required]],
       affiliation: ['', [Validators.required]]
@@ -186,7 +206,7 @@ export class AuthorsDetails implements OnInit {
       } else if (type === 'student') {
         data = this.studentCoAuthors.at(index).value;
         this.editForm = this.fb.group({
-          tpNumber: [data.tpNumber, [Validators.required]],
+          tpNumber: [this.parseTPNumber(data.tpNumber), [Validators.required, Validators.pattern('^(?!0+$)[0-9]+$')]],
           fullName: [data.fullName, [Validators.required]],
           schoolDepartment: [data.schoolDepartment, [Validators.required]],
           affiliation: [data.affiliation, [Validators.required]]
@@ -212,7 +232,7 @@ export class AuthorsDetails implements OnInit {
         });
       } else if (type === 'student') {
         this.editForm = this.fb.group({
-          tpNumber: ['', [Validators.required]],
+          tpNumber: ['', [Validators.required, Validators.pattern('^(?!0+$)[0-9]+$')]],
           fullName: ['', [Validators.required]],
           schoolDepartment: ['', [Validators.required]],
           affiliation: ['', [Validators.required]]
@@ -241,7 +261,12 @@ export class AuthorsDetails implements OnInit {
       return;
     }
 
-    const formData = this.editForm.value;
+    const formData = { ...this.editForm.value };
+
+    // Prepend "TP" prefix to the student TP number before saving
+    if (this.modalType === 'student' && formData.tpNumber) {
+      formData.tpNumber = this.formatTPNumber(formData.tpNumber);
+    }
 
     if (this.editingIndex !== null) {
       // Update existing entry
@@ -275,6 +300,54 @@ export class AuthorsDetails implements OnInit {
       'non-apu': `${isEditing} Non-APU Co-Author`
     };
     return titles[this.modalType];
+  }
+
+  /**
+   * Strip digit characters from name text inputs.
+   * Bound to (input) on name fields to prevent numeric entry.
+   * Uses the input's id to look up the reactive form control.
+   */
+  stripDigits(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const cleaned = input.value.replace(/[0-9]/g, '');
+    if (cleaned !== input.value) {
+      input.value = cleaned;
+      // Try editForm first (modal), then main form
+      const ctrl = this.editForm?.get(input.id) ?? this.form?.get(input.id);
+      ctrl?.setValue(cleaned, { emitEvent: true });
+    }
+  }
+
+  /**
+   * Enforce digits-only input for TP Number.
+   * Strips any non-digit character on every keystroke.
+   * The "TP" prefix is visual only — the form control stores digits only.
+   * On save, the full value is stored as "TP" + digits.
+   */
+  enforceTPNumber(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const cleaned = input.value.replace(/[^0-9]/g, '');
+    if (cleaned !== input.value) {
+      input.value = cleaned;
+      this.editForm?.get('tpNumber')?.setValue(cleaned, { emitEvent: true });
+    }
+  }
+
+  /**
+   * When saving a student entry, prefix the TP number with "TP" if not already present.
+   * The form control stores digits only; the saved entry stores the full "TP123456" value.
+   */
+  private formatTPNumber(raw: string): string {
+    const digits = raw.replace(/[^0-9]/g, '');
+    return digits ? `TP${digits}` : '';
+  }
+
+  /**
+   * When loading a student entry for editing, strip the "TP" prefix so only
+   * the numeric part is shown in the editable input.
+   */
+  private parseTPNumber(stored: string): string {
+    return stored.replace(/^TP/i, '');
   }
 }
 

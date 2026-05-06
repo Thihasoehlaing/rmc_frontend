@@ -14,10 +14,9 @@ import { NavGroup } from '../../interfaces/nav.interface';
  *   NavItem permission   -> hides just that item
  *
  * Application access rules:
- *   Conference Application  : (full_time OR contract) AND academic, OR HOS, OR VC, OR Admin
+ *   Conference Application  : (full_time OR contract) AND academic AND HOS AND VC
  *   Journal Publication     : (full_time OR contract) AND academic AND HOS AND VC
  *   RA/GRA Application      : (full_time OR contract) AND academic AND HOS AND group_ra_gra_hos_pass
- *   Travel Authorization    : (full_time OR contract) AND academic AND HOS
  *   RDIG Application        : (full_time OR contract) AND academic, NOT Reviewer, NOT blocked_hos_rdig
  *   RMC Settings            : RMC group only
  *   Submissions (Inbox...)  : All authenticated users
@@ -27,19 +26,14 @@ export const NAVIGATION_DATA: NavGroup[] = [
         groupName: '', // No visible section header — single unified nav list
         elements: [
 
-            // ── Dashboard ────────────────────────────────────────────────────────────
-            { label: 'Dashboard', icon: 'dashboard', route: '/dashboard' },
-
-            // ── Inbox ─────────────────────────────────────────────────────────────────
-            { label: 'Inbox', icon: 'mail', route: '/inbox' },
-
             // ── Submissions ──────────────────────────────────────────────────────────────
             // Collapsible folder visible to every authenticated user. Open by default.
             {
                 label: 'Submissions',
                 icon: 'inbox',
-                isExpanded: false,
+                isExpanded: true,
                 children: [
+                    { label: 'Inbox',               icon: 'mail',           route: '/submissions/inbox' },
                     { label: 'Draft',               icon: 'edit_note',      route: '/submissions/draft' },
                     { label: 'Pending Application', icon: 'schedule',       route: '/submissions/pending' },
                     { label: 'History',             icon: 'history',        route: '/submissions/history' },
@@ -109,18 +103,6 @@ export const NAVIGATION_DATA: NavGroup[] = [
                             ],
                         },
                     },
-                    // Travel Authorization: ((full_time OR contract) AND academic) OR HOS
-                    {
-                        label: 'Travel Authorization Application',
-                        icon: 'flight_takeoff',
-                        route: '/travel',
-                        permission: {
-                            anyCondition: [
-                                { anyOf: ['full_time', 'contract'], allOf: ['academic'] },
-                                { anyOf: ['HOS'] },
-                            ],
-                        },
-                    },
                     // Partnership: (full_time OR contract) AND academic
                     {
                         label: 'Partnership Application',
@@ -151,10 +133,11 @@ export const NAVIGATION_DATA: NavGroup[] = [
                 icon: 'settings',
                 permission: { anyOf: ['RMC', 'Admin'] },
                 children: [
-                    { label: 'RDIG Dropdown Options Management', route: '/settings/rdig-dropdown-options' },
-                    { label: 'Batch Sitting', icon: 'event_available', route: '/settings/batch-sitting' },
-                    { label: 'Conference Settings', icon: 'event_note', route: '/conference/settings' },
-                    { label: 'Dev Test Board', icon: 'build', route: '/settings/dev-test-board' },
+                    { label: 'RDIG Dropdown Options Management', route: '/settings/rdig-dropdown-options', permission: { allOf: ['RMC'] } },
+                    { label: 'Batch Sitting', icon: 'event_available', route: '/settings/batch-sitting', permission: { allOf: ['RMC'] } },
+                    { label: 'Conference Settings', icon: 'event_note', route: '/conference/settings', permission: { allOf: ['RMC'] } },
+                    { label: 'Journal Settings', icon: 'event_note', route: '/journal/settings', permission: { anyOf: ['Admin'] } },
+                    { label: 'Partnership Settings', icon: 'handshake', route: '/partnership/settings', permission: { anyOf: ['Admin'] } },
                 ],
             },
 

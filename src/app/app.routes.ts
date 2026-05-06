@@ -110,7 +110,7 @@ export const routes: Routes = [
         data: {
           permission: {
             anyCondition: [
-              { anyOf: ['full_time', 'contract'], allOf: ['academic'] },        
+              { anyOf: ['full_time', 'contract'], allOf: ['academic'] },
               { anyOf: ['HOS'] },
               { anyOf: ['VC'] },
               { anyOf: ['Admin'] },            ],          } satisfies NavPermission,
@@ -164,6 +164,31 @@ export const routes: Routes = [
       {
         path: 'settings',
         children: [
+          {
+            path: '',
+            redirectTo: 'admin-settings',
+            pathMatch: 'full'
+          },
+            {
+                path: 'admin-settings',
+                loadComponent: () => import('./settings/admin-settings/admin-settings.component').then(m => m.AdminSettingsComponent)
+            },
+            {
+                path: 'guidelines',
+                loadComponent: () => import('./settings/guidelines/guidelines.component').then(m => m.GuidelinesComponent)
+            },
+            {
+                path: 'dropdowns',
+                loadComponent: () => import('./settings/dropdowns/dropdowns.component').then(m => m.DropdownsComponent)
+            },
+            {
+                path: 'batches',
+                loadComponent: () => import('./settings/batches/batches.component').then(m => m.BatchesComponent)
+            },
+            {
+                path: 'staff-access',
+                loadComponent: () => import('./settings/staff-access/staff-access.component').then(m => m.StaffAccessComponent)
+            },
             {
                 path: 'rdig-dropdown-options',
                 loadComponent: () => import('./settings/rdig-dropdown-options/rdig-dropdown-options').then(m => m.RdigDropdownOptions)

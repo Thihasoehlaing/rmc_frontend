@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 import { combineLatest, Observable, of, Subject } from 'rxjs';
 import { map, startWith, switchMap, takeUntil } from 'rxjs/operators';
 import { RdigDropdownOptionsService, DropdownCategoryKey, DropdownOptionEntityEntity as DropdownOptionEntity, CATEGORY_LABELS } from '../rdig-dropdown-options.service';
@@ -27,8 +28,16 @@ import { ActionButtonComponent } from '../../shared/components/action-button/act
 export class RdigDropdownOptions implements OnInit, OnDestroy {
   private readonly fb = inject(FormBuilder);
   private readonly optionsService = inject(RdigDropdownOptionsService);
+  private readonly router = inject(Router);
 
   categories = Object.entries(CATEGORY_LABELS).map(([key, label]) => ({ key: key as DropdownCategoryKey, label }));
+
+  // Computed counts per category for the chip UI
+  categoryCounts = computed(() => this.categories.map(c => ({
+    key: c.key,
+    label: c.label,
+    count: this.optionsService.getOptionsSnapshot(c.key).length,
+  })));
 
   categoryCtrl = new FormControl<DropdownCategoryKey>('research_cluster', { nonNullable: true });
   parentDomainCtrl = new FormControl<number | null>(null);
@@ -103,6 +112,17 @@ export class RdigDropdownOptions implements OnInit, OnDestroy {
     });
 
     this.updateColumns();
+  }
+
+  selectCategory(key: DropdownCategoryKey): void {
+    this.categoryCtrl.setValue(key);
+    this.selectedIds.set([]);
+    this.editingRowId.set(null);
+    this.parentDomainCtrl.setValue(null);
+  }
+
+  goBack(): void {
+    this.router.navigate(['/settings/dropdowns']);
   }
 
   private updateColumns() {

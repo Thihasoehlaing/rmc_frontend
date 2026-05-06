@@ -1,13 +1,19 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, effect, inject, signal } from '@angular/core';
 import { DropdownOption } from '../../interfaces/components.interface';
+import { DropdownsStoreService } from '../../settings/dropdowns/dropdowns-store.service';
+import type { StoredDropdownOption } from '../../settings/dropdowns/dropdowns-store.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class BreakdownOptionsService {
+  private readonly dropdownStore = inject(DropdownsStoreService);
   private storageKey = 'rmc_breakdown_options';
   private versionKey = 'rmc_breakdown_options_version';
   private currentVersion = '3.0'; // Version bump to include regions
+  private readonly conferenceFormName = 'Conference Application';
+  private readonly itemDescriptionCategory = 'Select Item Description';
+  private readonly regionCategory = 'Select Region';
 
   // Default options
   private defaultResearchOptions: DropdownOption[] = [
@@ -49,6 +55,9 @@ export class BreakdownOptionsService {
 
   constructor() {
     this.loadOptionsFromStorage();
+    effect(() => {
+      this.syncFromSettingsStore(this.dropdownStore.entries());
+    });
   }
 
   /**
@@ -90,6 +99,28 @@ export class BreakdownOptionsService {
     this.externalOptions.set([...this.defaultExternalOptions]);
     this.localOptions.set([...this.defaultLocalOptions]);
     this.regionOptions.set([...this.defaultRegionOptions]);
+  }
+
+  private syncFromSettingsStore(entries: StoredDropdownOption[]): void {
+    this.loadOptionsFromStorage();
+
+    const sharedItemDescriptionOptions = entries
+      .filter(option => option.formName === this.conferenceFormName && option.category === this.itemDescriptionCategory && option.status === 'Active')
+      .map(option => ({ value: option.value, label: option.value }));
+
+    const sharedRegionOptions = entries
+      .filter(option => option.formName === this.conferenceFormName && option.category === this.regionCategory && option.status === 'Active')
+      .map(option => ({ value: option.value, label: option.value }));
+
+    if (sharedItemDescriptionOptions.length > 0) {
+      this.researchOptions.set(sharedItemDescriptionOptions);
+      this.externalOptions.set(sharedItemDescriptionOptions);
+      this.localOptions.set(sharedItemDescriptionOptions);
+    }
+
+    if (sharedRegionOptions.length > 0) {
+      this.regionOptions.set(sharedRegionOptions);
+    }
   }
 
   /**

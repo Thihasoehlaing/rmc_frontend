@@ -12,6 +12,45 @@
     gap: var(--space-2);
 }
 
+.settings-card__header-row {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-4);
+}
+
+.back-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    border-radius: var(--radius-full);
+    border: 1px solid var(--border-default);
+    background: var(--color-surface);
+    color: var(--color-primary);
+    cursor: pointer;
+    transition: background var(--transition-fast) var(--ease-default),
+        border-color var(--transition-fast) var(--ease-default),
+        transform var(--transition-fast) var(--ease-default),
+        box-shadow var(--transition-fast) var(--ease-default);
+
+    &:hover {
+        background: var(--color-surface-hover);
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-xs);
+    }
+
+    &:focus-visible {
+        outline: 2px solid var(--color-primary);
+        outline-offset: 2px;
+    }
+
+    .material-icons {
+        font-size: 1.25rem;
+    }
+}
+
 .settings-card__subtitle {
     margin: 0;
     color: var(--color-text-muted);
@@ -45,8 +84,59 @@
 
 .filters-grid {
     display: grid;
-    grid-template-columns: repeat(3, minmax(220px, 1fr));
+    grid-template-columns: 1fr 220px;
     gap: var(--space-4);
+}
+
+.category-row {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.category-summary {
+    color: var(--color-text-muted);
+    font-size: var(--fs-sm);
+}
+
+.category-list {
+    display: flex;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.category-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: 8px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--border-subtle);
+    background: var(--color-surface);
+    color: var(--color-label);
+    font-size: var(--fs-sm);
+    font-weight: var(--fw-medium);
+    cursor: pointer;
+}
+
+.category-chip .count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 28px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--color-background-secondary);
+    color: var(--color-text-muted);
+    font-size: var(--fs-xs);
+    font-weight: var(--fw-semibold);
+}
+
+.category-chip.is-active {
+    background: var(--color-primary);
+    color: #fff;
+    border-color: var(--color-primary);
 }
 
 .toolbar-actions {
@@ -194,6 +284,10 @@
 }
 
 @media (max-width: 900px) {
+    .settings-card__header-row {
+        gap: var(--space-3);
+    }
+
     .filters-grid {
         grid-template-columns: 1fr;
     }

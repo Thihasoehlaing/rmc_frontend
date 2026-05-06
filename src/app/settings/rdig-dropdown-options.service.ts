@@ -1,6 +1,8 @@
-import { Injectable } from '@angular/core';
+import { Injectable, effect, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, of, tap, map, catchError } from 'rxjs';
+import { DropdownsStoreService } from './dropdowns/dropdowns-store.service';
+import type { StoredDropdownOption } from './dropdowns/dropdowns-store.service';
 
 /**
  * Server-side dropdown record returned from the settings API.
@@ -15,31 +17,52 @@ export interface DropdownOptionEntityEntity {
   parentDomainId?: number; // Only for sub-research domain
 }
 
-export type DropdownCategoryKey = 'research_cluster' | 'research_domain' | 'sub_research_domain' | 'esg_factors' | 'sdg_alignment';
+export type DropdownCategoryKey =
+  | 'research_cluster'
+  | 'type_of_organisation'
+  | 'research_domain'
+  | 'sub_research_domain'
+  | 'esg_factors'
+  | 'sdg_alignment';
 
 export const CATEGORY_LABELS: Record<DropdownCategoryKey, string> = {
   research_cluster: 'Research Cluster',
+  type_of_organisation: 'Type of Organisation',
   research_domain: 'Research Domain',
   sub_research_domain: 'Sub-Research Domain',
-  esg_factors: 'ESG Factors',
-  sdg_alignment: 'SDG Alignment'
+  esg_factors: 'ESG',
+  sdg_alignment: 'SDG',
 };
 
 @Injectable({
   providedIn: 'root'
 })
 export class RdigDropdownOptionsService {
+  private readonly dropdownStore = inject(DropdownsStoreService);
   private store = new BehaviorSubject<Record<DropdownCategoryKey, DropdownOptionEntityEntity[]>>({
     research_cluster: [],
+    type_of_organisation: [],
     research_domain: [],
     sub_research_domain: [],
     esg_factors: [],
     sdg_alignment: [],
   });
+  private baseState: Record<DropdownCategoryKey, DropdownOptionEntityEntity[]> = {
+    research_cluster: [],
+    type_of_organisation: [],
+    research_domain: [],
+    sub_research_domain: [],
+    esg_factors: [],
+    sdg_alignment: [],
+  };
   private loaded = new Set<DropdownCategoryKey>();
   store$ = this.store.asObservable();
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) {
+    effect(() => {
+      this.syncFromSettingsStore(this.dropdownStore.entries());
+    });
+  }
 
   loadOptions(category: DropdownCategoryKey): Observable<DropdownOptionEntityEntity[]> {
     if (this.loaded.has(category)) {
@@ -56,6 +79,7 @@ export class RdigDropdownOptionsService {
       }))),
       tap(options => {
         this.loaded.add(category);
+        this.baseState = { ...this.baseState, [category]: options };
         this.store.next({ ...this.store.getValue(), [category]: options });
       }),
       catchError(err => {
@@ -72,6 +96,49 @@ export class RdigDropdownOptionsService {
 
   getOptionsSnapshot(category: DropdownCategoryKey): DropdownOptionEntityEntity[] {
     return this.store.getValue()[category];
+  }
+
+  private syncFromSettingsStore(entries: StoredDropdownOption[]): void {
+    const categoryMappings: Array<{ category: DropdownCategoryKey; formName: string; categoryName: string }> = [
+      { category: 'research_cluster', formName: 'RDIG Application', categoryName: 'Research Cluster' },
+      { category: 'type_of_organisation', formName: 'RDIG Application', categoryName: 'Type of Organisation' },
+      { category: 'research_domain', formName: 'RDIG Application', categoryName: 'Research Domain' },
+      { category: 'sub_research_domain', formName: 'RDIG Application', categoryName: 'Sub-Research Domain' },
+      { category: 'esg_factors', formName: 'RDIG Application', categoryName: 'ESG Factors' },
+      { category: 'sdg_alignment', formName: 'RDIG Application', categoryName: 'SDG Alignment' },
+    ];
+
+    let nextState = { ...this.baseState };
+    let hasOverrides = false;
+
+    for (const mapping of categoryMappings) {
+      const sharedEntries = entries.filter(option =>
+        option.formName === mapping.formName &&
+        option.category === mapping.categoryName &&
+        option.status === 'Active'
+      );
+
+      if (sharedEntries.length === 0) {
+        continue;
+      }
+
+      hasOverrides = true;
+      nextState = {
+        ...nextState,
+        [mapping.category]: sharedEntries.map(entry => ({
+          id: entry.id,
+          optionName: entry.value,
+          status: entry.status,
+          createdDate: entry.lastUpdated,
+        })),
+      };
+    }
+
+    if (hasOverrides) {
+      this.store.next(nextState);
+    } else {
+      this.store.next(nextState);
+    }
   }
 
   addOption(category: DropdownCategoryKey, option: Pick<DropdownOptionEntityEntity, 'optionName' | 'status' | 'parentDomainId'>): void {

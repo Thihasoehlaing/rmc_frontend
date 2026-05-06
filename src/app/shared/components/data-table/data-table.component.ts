@@ -1,4 +1,4 @@
-import { Component, ContentChild, Input, TemplateRef, TrackByFunction } from '@angular/core';
+import { Component, ContentChild, Input, TemplateRef, TrackByFunction, Output, EventEmitter } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 
 type DataTableAlign = 'left' | 'center' | 'right';
@@ -9,6 +9,7 @@ export interface DataTableColumn {
   width?: string;
   align?: DataTableAlign;
   headerAlign?: DataTableAlign;
+  sortable?: boolean;
 }
 
 export interface DataTableRowContext<T = unknown> {
@@ -29,10 +30,13 @@ export class DataTableComponent {
   @Input({ required: true }) columns: readonly DataTableColumn[] = [];
   @Input({ required: true }) rows: readonly unknown[] = [];
   @Input() rowTrackFn: TrackByFunction<unknown> = (index) => index;
+  @Input() sortColumn: string | null = null;
+  @Input() sortDirection: 'asc' | 'desc' | null = null;
   @Input() showHeader = true;
   @Input() dense = false;
   @Input() hoverable = true;
   @Input() striped = true;
+  @Output() sortChange = new EventEmitter<string>();
 
   @ContentChild('rowTemplate') rowTemplate?: TemplateRef<DataTableRowContext<unknown>>;
 
@@ -50,5 +54,11 @@ export class DataTableComponent {
 
   cellAlign(column: DataTableColumn): DataTableAlign {
     return column.align || 'left';
+  }
+
+  onHeaderClick(column: DataTableColumn) {
+    if (column.sortable) {
+      this.sortChange.emit(column.key);
+    }
   }
 }

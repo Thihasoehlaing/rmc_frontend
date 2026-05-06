@@ -1,5 +1,12 @@
-import { Injectable, signal } from '@angular/core';
-import { DropdownOption } from '../../interfaces/components.interface';      
+import { Injectable, signal, inject, effect } from '@angular/core';
+import { DropdownOption } from '../../interfaces/components.interface';
+import { DropdownsStoreService, StoredDropdownOption } from '../../settings/dropdowns/dropdowns-store.service';
+
+export type JournalOptionType =
+  | 'vote_number_description'
+  | 'vote_number'
+  | 'account_code_description'
+  | 'account_code';
 
 @Injectable({
   providedIn: 'root'
@@ -7,26 +14,84 @@ import { DropdownOption } from '../../interfaces/components.interface';
 export class JournalOptionsService {
   private storageKey = 'rmc_journal_options';
   private versionKey = 'rmc_journal_options_version';
-  private currentVersion = '1.0';
+  private currentVersion = '2.0';
+  private dropdownsStoreService = inject(DropdownsStoreService);
+  private readonly formName = 'Journal Application';
 
-  // Default options for Vote Number (mapped internally as 'research' to match common struct)
-  private defaultResearchOptions: DropdownOption[] = [
+  // Default options for Vote Number Description
+  private defaultVoteNumberDescriptionOptions: DropdownOption[] = [
+    { value: 'journal-vote-desc-1', label: 'VOTE NUMBER DESCRIPTION 01' },
+    { value: 'journal-vote-desc-2', label: 'VOTE NUMBER DESCRIPTION 02' }
+  ];
+
+  // Default options for Vote Number
+  private defaultVoteNumberOptions: DropdownOption[] = [
     { value: 'journal-vote-1', label: 'VOTE NUMBER 01' },
     { value: 'journal-vote-2', label: 'VOTE NUMBER 02' }
   ];
 
-  // Default options for Account Code (mapped internally as 'local')
-  private defaultLocalOptions: DropdownOption[] = [
+  // Default options for Account Code Description
+  private defaultAccountCodeDescriptionOptions: DropdownOption[] = [
+    { value: 'journal-account-desc-1', label: 'ACCOUNT CODE DESCRIPTION 01' },
+    { value: 'journal-account-desc-2', label: 'ACCOUNT CODE DESCRIPTION 02' }
+  ];
+
+  // Default options for Account Code
+  private defaultAccountCodeOptions: DropdownOption[] = [
     { value: 'journal-acc-1', label: 'ACCOUNT CODE A' },
     { value: 'journal-acc-2', label: 'ACCOUNT CODE B' }
   ];
 
   // Signals for reactive updates
-  researchOptions = signal<DropdownOption[]>([]);
-  localOptions = signal<DropdownOption[]>([]);
+  voteNumberDescriptionOptions = signal<DropdownOption[]>([]);
+  voteNumberOptions = signal<DropdownOption[]>([]);
+  accountCodeDescriptionOptions = signal<DropdownOption[]>([]);
+  accountCodeOptions = signal<DropdownOption[]>([]);
 
   constructor() {
-    this.loadOptionsFromStorage();
+    this.voteNumberDescriptionOptions.set([]);
+    this.voteNumberOptions.set([]);
+    this.accountCodeDescriptionOptions.set([]);
+    this.accountCodeOptions.set([]);
+
+    // Sync with Admin Settings whenever dropdown entries are updated
+    effect(() => {
+      this.syncFromSettingsStore(this.dropdownsStoreService.entries());
+    });
+  }
+
+  /**
+   * Sync options from the Admin Settings dropdown store
+   */
+  private syncFromSettingsStore(entries: StoredDropdownOption[]): void {
+    // Map category names from Admin Settings to our signals
+    const voteDescOptions = entries
+      .filter(option => option.formName === this.formName && option.category === 'Vote Number Description' && option.status === 'Active')
+      .map(option => ({ value: option.value, label: option.value }));
+
+    const voteNumOptions = entries
+      .filter(option => option.formName === this.formName && option.category === 'Vote Number' && option.status === 'Active')
+      .map(option => ({ value: option.value, label: option.value }));
+
+    const accountDescOptions = entries
+      .filter(option => option.formName === this.formName && option.category === 'Account Code Description' && option.status === 'Active')
+      .map(option => ({ value: option.value, label: option.value }));
+
+    const accountCodeOptions = entries
+      .filter(option => option.formName === this.formName && option.category === 'Account Code' && option.status === 'Active')
+      .map(option => ({ value: option.value, label: option.value }));
+
+    this.voteNumberDescriptionOptions.set(voteDescOptions);
+    this.voteNumberOptions.set(voteNumOptions);
+    this.accountCodeDescriptionOptions.set(accountDescOptions);
+    this.accountCodeOptions.set(accountCodeOptions);
+  }
+
+  /**
+   * Re-read the latest persisted values from localStorage.
+   */
+  reloadFromStorage(): void {
+    this.syncFromSettingsStore(this.dropdownsStoreService.entries());
   }
 
   /**
@@ -62,8 +127,10 @@ export class JournalOptionsService {
    * Load and set default options
    */
   private loadDefaults(): void {
-    this.researchOptions.set([...this.defaultResearchOptions]);
-    this.localOptions.set([...this.defaultLocalOptions]);
+    this.voteNumberDescriptionOptions.set([...this.defaultVoteNumberDescriptionOptions]);
+    this.voteNumberOptions.set([...this.defaultVoteNumberOptions]);
+    this.accountCodeDescriptionOptions.set([...this.defaultAccountCodeDescriptionOptions]);
+    this.accountCodeOptions.set([...this.defaultAccountCodeOptions]);
   }
 
   /**
@@ -71,21 +138,28 @@ export class JournalOptionsService {
    */
   private saveToStorage(): void {
     const data = {
-      researchOptions: this.researchOptions(),
-      localOptions: this.localOptions()
+      voteNumberDescriptionOptions: this.voteNumberDescriptionOptions(),
+      voteNumberOptions: this.voteNumberOptions(),
+      accountCodeDescriptionOptions: this.accountCodeDescriptionOptions(),
+      accountCodeOptions: this.accountCodeOptions()
     };
     localStorage.setItem(this.storageKey, JSON.stringify(data));
   }
 
   /**
    * Get options for a specific breakdown type
+   * Options are kept in sync with Admin Settings via the effect
    */
-  getOptionsForType(type: 'research' | 'local'): DropdownOption[] {
+  getOptionsForType(type: JournalOptionType): DropdownOption[] {
     switch (type) {
-      case 'research':
-        return this.researchOptions();
-      case 'local':
-        return this.localOptions();
+      case 'vote_number_description':
+        return this.voteNumberDescriptionOptions();
+      case 'vote_number':
+        return this.voteNumberOptions();
+      case 'account_code_description':
+        return this.accountCodeDescriptionOptions();
+      case 'account_code':
+        return this.accountCodeOptions();
       default:
         return [];
     }
@@ -94,12 +168,12 @@ export class JournalOptionsService {
   /**
    * Add a new option to a breakdown type
    */
-  addOption(type: 'research' | 'local', option: DropdownOption): void {
+  addOption(type: JournalOptionType, option: DropdownOption): void {
     const options = this.getOptionsForType(type);
 
     // Check if value already exists
     if (options.some(opt => opt.value === option.value)) {
-      throw new Error(`Option with value "${option.value}" already exists`);    
+      throw new Error(`Option with value "${option.value}" already exists`);
     }
 
     const updatedOptions = [...options, option];
@@ -109,7 +183,7 @@ export class JournalOptionsService {
   /**
    * Update an existing option
    */
-  updateOption(type: 'research' | 'local', value: string, newOption: DropdownOption): void {
+  updateOption(type: JournalOptionType, value: string, newOption: DropdownOption): void {
     const options = this.getOptionsForType(type);
     const index = options.findIndex(opt => opt.value === value);
 
@@ -117,9 +191,9 @@ export class JournalOptionsService {
       throw new Error(`Option with value "${value}" not found`);
     }
 
-    // Check if new value conflicts with other options (if value changed)       
+    // Check if new value conflicts with other options (if value changed)
     if (newOption.value !== value && options.some(opt => opt.value === newOption.value)) {
-      throw new Error(`Option with value "${newOption.value}" already exists`); 
+      throw new Error(`Option with value "${newOption.value}" already exists`);
     }
 
     const updatedOptions = [...options];
@@ -130,7 +204,7 @@ export class JournalOptionsService {
   /**
    * Delete an option from a breakdown type
    */
-  deleteOption(type: 'research' | 'local', value: string): void {
+  deleteOption(type: JournalOptionType, value: string): void {
     const options = this.getOptionsForType(type);
     const updatedOptions = options.filter(opt => opt.value !== value);
 
@@ -144,11 +218,15 @@ export class JournalOptionsService {
   /**
    * Update all options for a specific type
    */
-  private updateTypeOptions(type: 'research' | 'local', options: DropdownOption[]): void {
-    if (type === 'research') {
-      this.researchOptions.set(options);
-    } else if (type === 'local') {
-      this.localOptions.set(options);
+  private updateTypeOptions(type: JournalOptionType, options: DropdownOption[]): void {
+    if (type === 'vote_number_description') {
+      this.voteNumberDescriptionOptions.set(options);
+    } else if (type === 'vote_number') {
+      this.voteNumberOptions.set(options);
+    } else if (type === 'account_code_description') {
+      this.accountCodeDescriptionOptions.set(options);
+    } else if (type === 'account_code') {
+      this.accountCodeOptions.set(options);
     }
     this.saveToStorage();
   }

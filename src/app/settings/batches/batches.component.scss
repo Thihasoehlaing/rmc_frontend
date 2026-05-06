@@ -1,0 +1,174 @@
+.batches-page {
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-5);
+	padding: var(--space-6);
+	min-height: 100vh;
+	background: var(--color-background);
+}
+
+.batches-page__header {
+	display: flex;
+	align-items: flex-start;
+	gap: var(--space-3);
+}
+
+.back-button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 40px;
+	height: 40px;
+	border-radius: var(--radius-full);
+	background: var(--color-surface);
+	color: var(--color-primary);
+	text-decoration: none;
+	flex-shrink: 0;
+	border: 1px solid var(--border-default);
+	transition: background var(--transition-fast) var(--ease-default),
+		border-color var(--transition-fast) var(--ease-default),
+		transform var(--transition-fast) var(--ease-default),
+		box-shadow var(--transition-fast) var(--ease-default);
+
+	&:hover {
+		background: var(--color-surface-hover);
+		transform: translateY(-1px);
+		box-shadow: var(--shadow-xs);
+	}
+
+	&:focus-visible {
+		outline: 2px solid var(--color-primary);
+		outline-offset: 2px;
+	}
+}
+
+.batches-page__copy {
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-1);
+}
+
+.batches-page__eyebrow {
+	margin: 0;
+	font-size: var(--fs-xs);
+	color: var(--color-text-muted);
+	font-weight: var(--fw-medium);
+}
+
+.batches-page__title {
+	margin: 0;
+	font-size: var(--fs-2xl);
+	line-height: 1.2;
+	color: var(--color-label);
+}
+
+.batches-page__description {
+	margin: 0;
+	color: var(--color-text-muted);
+	font-size: var(--fs-base);
+}
+
+.batches-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+	gap: var(--space-5);
+	align-items: stretch;
+}
+
+.batch-card {
+	display: flex;
+	align-items: center;
+	gap: var(--space-4);
+	padding: var(--space-5);
+	text-decoration: none;
+	color: inherit;
+	min-height: 138px;
+	background: var(--color-surface);
+	border: 1px solid var(--border-default);
+	border-radius: var(--radius-lg);
+	box-shadow: var(--shadow-xs);
+	transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
+
+	&:hover {
+		transform: translateY(-2px);
+		box-shadow: var(--shadow-md);
+		border-color: var(--border-subtle);
+	}
+}
+
+.batch-card__icon-wrap {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 40px;
+	height: 40px;
+	border-radius: 12px;
+	background: var(--color-primary-light);
+	color: var(--color-primary);
+	flex-shrink: 0;
+}
+
+.batch-card__icon {
+	font-size: 20px;
+}
+
+.batch-card__body {
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-1);
+	flex: 1;
+	min-width: 0;
+}
+
+.batch-card__title {
+	margin: 0;
+	font-size: var(--fs-base);
+	color: var(--color-label);
+}
+
+.batch-card__subtitle {
+	margin: 0;
+	color: var(--color-text-muted);
+	font-size: var(--fs-sm);
+	line-height: 1.45;
+}
+
+.batch-card__footer {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	justify-content: space-between;
+	min-height: 78px;
+	flex-shrink: 0;
+}
+
+.batch-card__badge {
+	align-self: flex-start;
+}
+
+.batch-card__arrow {
+	color: var(--color-text-muted);
+	font-size: 18px;
+}
+
+@media (max-width: 640px) {
+	.batches-page {
+		padding: var(--space-4);
+	}
+
+	.batches-page__header {
+		gap: var(--space-2);
+	}
+
+	.batch-card {
+		align-items: flex-start;
+		flex-direction: column;
+	}
+
+	.batch-card__footer {
+		width: 100%;
+		flex-direction: row;
+		align-items: center;
+		min-height: auto;
+	}
+}

@@ -49,8 +49,8 @@ export class JournalOptionsService {
         const data = JSON.parse(stored);
         this.researchOptions.set(data.researchOptions || this.defaultResearchOptions);
         this.localOptions.set(data.localOptions || this.defaultLocalOptions);   
-      } catch (e) {
-        console.error('Failed to parse stored journal options', e);
+      } catch {
+        // Silently discard malformed data — fall back to defaults
         this.loadDefaults();
       }
     } else {

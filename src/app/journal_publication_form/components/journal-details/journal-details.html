@@ -201,6 +201,36 @@
                   </div>
 
                   @if (getBreakdownArray(researchType || '').length > 0) {
+<<<<<<< HEAD
+<<<<<<< HEAD
+                    <app-data-table
+                      [columns]="breakdownColumns"
+                      [rows]="getBreakdownArray(researchType || '')"
+                      [dense]="true">
+                      <ng-template #rowTemplate let-row let-index="index">
+                        <tr>
+                          <td>
+                            <div class="data-table__title data-table__title--small">{{ getDropdownLabel('vote_number_description', row.itemDescription) }}</div>
+                          </td>
+                          <td>{{ getDropdownLabel('vote_number', row.voteNumber) }}</td>
+                          <td>{{ getDropdownLabel('account_code_description', row.accountCodeDescription) }}</td>
+                          <td>{{ getDropdownLabel('account_code', row.accountCode) }}</td>
+                          <td class="action-cell">
+                            <div class="data-table__actions">
+                              <button type="button" class="btn-icon btn-icon--edit" (click)="openBreakdownModal(researchType || '', index)" aria-label="Edit entry">
+                                <span class="material-icons">edit</span>
+                              </button>
+                              <button type="button" class="btn-icon btn-icon--delete" (click)="deleteBreakdown(researchType || '', index)" aria-label="Remove entry">
+                                <span class="material-icons">delete</span>
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      </ng-template>
+                    </app-data-table>
+=======
+=======
+>>>>>>> 55593ee27b7e145793ab89ceb9fadf9a39fea456
                     @if (researchType === 'non-research') {
                       <div class="table-scroll non-research-table">
                         <app-data-table
@@ -277,6 +307,10 @@
                         </app-data-table>
                       </div>
                     }
+<<<<<<< HEAD
+>>>>>>> d6f5fc1d977efdd64c208db6c2b275dabe578e0e
+=======
+>>>>>>> 55593ee27b7e145793ab89ceb9fadf9a39fea456
                   } @else {
                     <div class="empty-state">
                       <span class="material-icons">receipt</span>
@@ -286,6 +320,19 @@
                 </div>
               </div>
 
+<<<<<<< HEAD
+<<<<<<< HEAD
+              <div class="sponsorship-subsections-container">
+                <div class="sponsorship-subsection">
+                  <span class="subsection-title">External Sponsorship</span>
+                  <div class="subsection-fields-wrapper">
+                    <div class="row row--2">
+                      <div class="form-field">
+                        <label class="form-label">Sponsorship Amount by External (RM)</label>
+                        <input type="number" class="input--text" formControlName="sponsoredAmountExternal" placeholder="0.00">
+=======
+=======
+>>>>>>> 55593ee27b7e145793ab89ceb9fadf9a39fea456
               @if (researchType === 'non-research') {
                 <div class="total-display">
                   <span class="total-label">Total in RM</span>
@@ -305,6 +352,10 @@
                           <label class="form-label">Sponsored By</label>
                           <input type="text" class="input--text" formControlName="sponsoredBy" placeholder="Sponsor Name" (input)="stripDigits($event)">
                         </div>
+<<<<<<< HEAD
+>>>>>>> d6f5fc1d977efdd64c208db6c2b275dabe578e0e
+=======
+>>>>>>> 55593ee27b7e145793ab89ceb9fadf9a39fea456
                       </div>
                     </div>
                   </div>
@@ -405,11 +456,30 @@
   width="600px"
 >
   <form [formGroup]="breakdownForm" (ngSubmit)="submitBreakdownModal()" class="breakdown-form">
+<<<<<<< HEAD
+<<<<<<< HEAD
+    <!-- Vote Number Description -->
+    <div class="breakdown-field">
+      <div class="label-with-manage">
+        <label for="itemDescription" class="form-label">Vote Number Description *</label>
+        <button type="button" class="manage-btn"
+          (click)="manageVoteNumbers()"
+          title="Manage Vote Number Descriptions">
+          <span class="manage-icon">⚙️</span>
+        </button>
+      </div>
+=======
+=======
+>>>>>>> 55593ee27b7e145793ab89ceb9fadf9a39fea456
     <!-- Select Item Description / Account Code Description -->
     <div class="breakdown-field">
       <label for="itemDescription" class="form-label">
         {{ breakdownType === 'non-research' ? 'Select Account Code Description *' : 'Select Item Description *' }}
       </label>
+<<<<<<< HEAD
+>>>>>>> d6f5fc1d977efdd64c208db6c2b275dabe578e0e
+=======
+>>>>>>> 55593ee27b7e145793ab89ceb9fadf9a39fea456
       <app-searchable-dropdown
         [options]="voteNumberDescriptionOptions"
         placeholder="Search and select vote number description"
@@ -418,6 +488,32 @@
     </div>
 
     @if (breakdownForm.get('itemDescription')?.invalid && breakdownForm.get('itemDescription')?.touched) {
+<<<<<<< HEAD
+<<<<<<< HEAD
+      <span class="error-message">Vote number description is required</span>
+    }
+
+    <!-- Vote Number -->
+    <div class="breakdown-field">
+      <div class="label-with-manage">
+        <label for="voteNumber" class="form-label">Vote Number *</label>
+        <button type="button" class="manage-btn"
+          (click)="manageVoteNumbers()"
+          title="Manage Vote Numbers">
+          <span class="manage-icon">⚙️</span>
+        </button>
+      </div>
+      <app-searchable-dropdown
+        [options]="voteNumberOptions"
+        id="voteNumber"
+        formControlName="voteNumber"
+        placeholder="Search and select vote number">
+      </app-searchable-dropdown>
+      @if (breakdownForm.get('voteNumber')?.invalid && breakdownForm.get('voteNumber')?.touched) {
+        <span class="error-message">Vote number is required</span>
+=======
+=======
+>>>>>>> 55593ee27b7e145793ab89ceb9fadf9a39fea456
       <span class="error-message">
         {{ breakdownType === 'non-research' ? 'Account code description is required' : 'Item description is required' }}
       </span>
@@ -485,11 +581,37 @@
         (input)="enforceInteger($event)">
       @if (breakdownForm.get('exchangeRate')?.invalid && breakdownForm.get('exchangeRate')?.touched) {
         <span class="error-message">Exchange rate is required (whole numbers only)</span>
+<<<<<<< HEAD
+>>>>>>> d6f5fc1d977efdd64c208db6c2b275dabe578e0e
+=======
+>>>>>>> 55593ee27b7e145793ab89ceb9fadf9a39fea456
       }
     </div>
 
     <!-- Cost in RM (Read-only calculated field) -->
     <div class="breakdown-field">
+<<<<<<< HEAD
+<<<<<<< HEAD
+      <div class="label-with-manage">
+        <label for="accountCodeDescription" class="form-label">Account Code Description *</label>
+        <button type="button" class="manage-btn"
+          (click)="manageAccountCodes()"
+          title="Manage Account Code Descriptions">
+          <span class="manage-icon">⚙️</span>
+        </button>
+      </div>
+      <app-searchable-dropdown
+        [options]="accountCodeDescriptionOptions"
+        id="accountCodeDescription"
+        formControlName="accountCodeDescription"
+        placeholder="Search and select account code description">
+      </app-searchable-dropdown>
+      @if (breakdownForm.get('accountCodeDescription')?.invalid && breakdownForm.get('accountCodeDescription')?.touched) {
+        <span class="error-message">Account code description is required</span>
+      }
+=======
+=======
+>>>>>>> 55593ee27b7e145793ab89ceb9fadf9a39fea456
       <label for="costInRM" class="form-label">Cost in RM (approximate) [Auto-calculated: Cost × Exchange Rate]</label>
       <input
         id="costInRM"
@@ -499,6 +621,10 @@
         readonly
         placeholder="Auto-calculated"
         step="any">
+<<<<<<< HEAD
+>>>>>>> d6f5fc1d977efdd64c208db6c2b275dabe578e0e
+=======
+>>>>>>> 55593ee27b7e145793ab89ceb9fadf9a39fea456
     </div>
 
     <!-- Description -->

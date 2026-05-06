@@ -1,4 +1,13 @@
+<<<<<<< HEAD
+<<<<<<< HEAD
+import { Component, OnInit, OnDestroy, inject, effect, Output, EventEmitter, ChangeDetectorRef } from '@angular/core';
+import { ActionButtonComponent } from '../../../shared/components/action-button/action-button.component';
+=======
 import { Component, OnInit, inject, effect, Output, EventEmitter, ChangeDetectorRef } from '@angular/core';
+>>>>>>> d6f5fc1d977efdd64c208db6c2b275dabe578e0e
+=======
+import { Component, OnInit, inject, effect, Output, EventEmitter, ChangeDetectorRef } from '@angular/core';
+>>>>>>> 55593ee27b7e145793ab89ceb9fadf9a39fea456
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -16,7 +25,15 @@ import { JournalOptionType, JournalOptionsService } from '../../services/journal
 @Component({
   selector: 'app-journal-details',
   standalone: true,
+<<<<<<< HEAD
+<<<<<<< HEAD
+  imports: [CommonModule, ReactiveFormsModule, NoteComponent, SearchableDropdownComponent, DialogComponent, CharacterCounterComponent, CustomHeaderComponent, CustomSubheaderComponent, ValidationMessageComponent, ActionButtonComponent, DataTableComponent],
+=======
   imports: [CommonModule, ReactiveFormsModule, FileUploadComponent, CharacterCounterComponent, CustomHeaderComponent, DataTableComponent, NoteComponent, SearchableDropdownComponent, DialogComponent, ValidationMessageComponent],
+>>>>>>> d6f5fc1d977efdd64c208db6c2b275dabe578e0e
+=======
+  imports: [CommonModule, ReactiveFormsModule, FileUploadComponent, CharacterCounterComponent, CustomHeaderComponent, DataTableComponent, NoteComponent, SearchableDropdownComponent, DialogComponent, ValidationMessageComponent],
+>>>>>>> 55593ee27b7e145793ab89ceb9fadf9a39fea456
   templateUrl: './journal-details.html',
   styleUrl: './journal-details.scss'
 })
@@ -47,6 +64,15 @@ export class JournalDetails implements OnInit, OnDestroy {
   accountCodeOptions: { value: string; label: string }[] = [];
 
   readonly breakdownColumns: DataTableColumn[] = [
+<<<<<<< HEAD
+<<<<<<< HEAD
+    { key: 'itemDescription', label: 'Vote Number Description' },
+    { key: 'voteNumber', label: 'Vote Number', width: '140px' },
+    { key: 'accountCodeDescription', label: 'Account Code Description' },
+    { key: 'accountCode', label: 'Account Code', width: '140px' },
+=======
+=======
+>>>>>>> 55593ee27b7e145793ab89ceb9fadf9a39fea456
     { key: 'index', label: '#', width: '50px', align: 'center', headerAlign: 'center' },
     { key: 'itemDescription', label: 'Item Description' },
     { key: 'voteNumber', label: 'Vote Number' },
@@ -66,6 +92,10 @@ export class JournalDetails implements OnInit, OnDestroy {
     { key: 'costInRM', label: 'Cost in RM' },
     { key: 'description', label: 'Description' },
     { key: 'fileName', label: 'Supporting Doc' },
+<<<<<<< HEAD
+>>>>>>> d6f5fc1d977efdd64c208db6c2b275dabe578e0e
+=======
+>>>>>>> 55593ee27b7e145793ab89ceb9fadf9a39fea456
     { key: 'actions', label: 'Actions', width: '100px', align: 'center', headerAlign: 'center' }
   ];
 
@@ -142,7 +172,14 @@ export class JournalDetails implements OnInit, OnDestroy {
       this.form.get('projectAccountCode')?.setValidators([Validators.required]);
       this.form.get('projectAccountCode')?.updateValueAndValidity();
     });
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
     this.form.get('sponsoredAmountExternal')?.valueChanges.subscribe(() => this.calculateTotals());
+>>>>>>> d6f5fc1d977efdd64c208db6c2b275dabe578e0e
+=======
+    this.form.get('sponsoredAmountExternal')?.valueChanges.subscribe(() => this.calculateTotals());
+>>>>>>> 55593ee27b7e145793ab89ceb9fadf9a39fea456
 
     this.form.get('citedApuPaper')?.valueChanges.subscribe((value) => {
       if (value === 'No') {
@@ -155,6 +192,14 @@ export class JournalDetails implements OnInit, OnDestroy {
 
     this.breakdownForm = this.fb.group({
       itemDescription: ['', Validators.required],
+<<<<<<< HEAD
+<<<<<<< HEAD
+      voteNumber: ['', Validators.required],
+      accountCodeDescription: ['', Validators.required],
+      accountCode: ['', Validators.required]
+=======
+=======
+>>>>>>> 55593ee27b7e145793ab89ceb9fadf9a39fea456
       // voteNumber is only required for research types; non-research uses accountCode instead
       voteNumber: [{ value: '', disabled: true }],
       accountCodeDescription: [''],
@@ -164,6 +209,10 @@ export class JournalDetails implements OnInit, OnDestroy {
       exchangeRate: ['', [Validators.required, Validators.pattern('^[0-9]+$')]],
       description: [''],
       costInRM: [{ value: '', disabled: true }]
+<<<<<<< HEAD
+>>>>>>> d6f5fc1d977efdd64c208db6c2b275dabe578e0e
+=======
+>>>>>>> 55593ee27b7e145793ab89ceb9fadf9a39fea456
     });
 
     this.sdgKeywordsForm = this.fb.group({
@@ -172,6 +221,19 @@ export class JournalDetails implements OnInit, OnDestroy {
       keyword3: ['', Validators.required]
     });
 
+<<<<<<< HEAD
+<<<<<<< HEAD
+    this.refreshDropdownOptions();
+
+    // Listen for dropdown updates from admin settings
+    window.addEventListener('rmc-dropdowns-updated', this.onJournalDropdownsUpdated);
+  }
+
+  ngOnDestroy(): void {
+    window.removeEventListener('rmc-dropdowns-updated', this.onJournalDropdownsUpdated);
+=======
+=======
+>>>>>>> 55593ee27b7e145793ab89ceb9fadf9a39fea456
     this.breakdownForm.get('itemDescription')?.valueChanges.subscribe((value) => {
       if (this.breakdownType !== 'non-research') return;
       const selected = this.findNonResearchOption(value);
@@ -184,6 +246,10 @@ export class JournalDetails implements OnInit, OnDestroy {
     // NOTE: costInRM is recalculated via recalcCostInRM() called from (input) events
     // in the template — NOT via valueChanges — to avoid feedback loops that corrupt
     // the exchange rate value while the user is still typing.
+<<<<<<< HEAD
+>>>>>>> d6f5fc1d977efdd64c208db6c2b275dabe578e0e
+=======
+>>>>>>> 55593ee27b7e145793ab89ceb9fadf9a39fea456
   }
 
   get researchType() {
@@ -200,6 +266,13 @@ export class JournalDetails implements OnInit, OnDestroy {
   openBreakdownModal(type: string, index?: number) {
     this.breakdownType = type as any;
 
+<<<<<<< HEAD
+<<<<<<< HEAD
+    // Defer modal opening to next tick to avoid any form interaction or change detection overlaps
+    setTimeout(() => {
+=======
+=======
+>>>>>>> 55593ee27b7e145793ab89ceb9fadf9a39fea456
     // Defer modal opening to next tick to avoid change detection overlaps
     setTimeout(() => {
       // 1. Resolve dropdown options for this type
@@ -248,6 +321,10 @@ export class JournalDetails implements OnInit, OnDestroy {
       }
 
       // 4. Populate form values
+<<<<<<< HEAD
+>>>>>>> d6f5fc1d977efdd64c208db6c2b275dabe578e0e
+=======
+>>>>>>> 55593ee27b7e145793ab89ceb9fadf9a39fea456
       if (index !== undefined) {
         // Editing an existing entry
         this.breakdownEditingIndex = index;
@@ -270,9 +347,19 @@ export class JournalDetails implements OnInit, OnDestroy {
       } else {
         // New entry — form already reset above; set defaults for research types
         this.breakdownEditingIndex = null;
+<<<<<<< HEAD
+<<<<<<< HEAD
+        this.breakdownForm.reset();
+=======
         if (type === 'internal-research' || type === 'external-research') {
           this.breakdownForm.patchValue({ voteNumber: 'V29000' }, { emitEvent: false });
         }
+>>>>>>> d6f5fc1d977efdd64c208db6c2b275dabe578e0e
+=======
+        if (type === 'internal-research' || type === 'external-research') {
+          this.breakdownForm.patchValue({ voteNumber: 'V29000' }, { emitEvent: false });
+        }
+>>>>>>> 55593ee27b7e145793ab89ceb9fadf9a39fea456
       }
 
       this.isBreakdownModalOpen = true;
@@ -304,6 +391,11 @@ export class JournalDetails implements OnInit, OnDestroy {
     }
 
     const entry = this.breakdownForm.getRawValue();
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
+=======
+>>>>>>> 55593ee27b7e145793ab89ceb9fadf9a39fea456
     const cost = parseFloat(entry.cost);
     const rate = parseFloat(entry.exchangeRate);
 
@@ -335,6 +427,10 @@ export class JournalDetails implements OnInit, OnDestroy {
       fileName: this.selectedFileName || entry.fileName || ''
     };
 
+<<<<<<< HEAD
+>>>>>>> d6f5fc1d977efdd64c208db6c2b275dabe578e0e
+=======
+>>>>>>> 55593ee27b7e145793ab89ceb9fadf9a39fea456
     const type = this.breakdownType as string;
     const array = this.getBreakdownArray(type);
 
@@ -476,11 +572,23 @@ calculateBreakdownTotal(type: string): number {
       sponsorshipAmountAPU: spAPU ? spAPU.toFixed(2) : '0.00',
       costByApplicant: applicantCost ? applicantCost.toFixed(2) : '0.00'
     }, { emitEvent: false });
+<<<<<<< HEAD
+<<<<<<< HEAD
+
+    // Evaluate if Breakdown table is required for external
+    const isBreakdownValid = pType === 'external-research' ? breakdownArray.length > 0 : true;
+=======
+=======
+>>>>>>> 55593ee27b7e145793ab89ceb9fadf9a39fea456
     
     // Breakdown table is required for external-research and non-research
     const isBreakdownValid = (pType === 'external-research' || pType === 'non-research')
       ? breakdownArray.length > 0
       : true;
+<<<<<<< HEAD
+>>>>>>> d6f5fc1d977efdd64c208db6c2b275dabe578e0e
+=======
+>>>>>>> 55593ee27b7e145793ab89ceb9fadf9a39fea456
     this.formValidityChange.emit(this.form.valid && isBreakdownValid);
   }
   getBreakdownModalTitle(): string {
@@ -505,6 +613,11 @@ calculateBreakdownTotal(type: string): number {
   submitBreakdownModal() {
     this.saveBreakdownEntry();
   }
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
+=======
+>>>>>>> 55593ee27b7e145793ab89ceb9fadf9a39fea456
 
 
 
@@ -521,6 +634,10 @@ calculateBreakdownTotal(type: string): number {
     return null;
   }
 
+<<<<<<< HEAD
+>>>>>>> d6f5fc1d977efdd64c208db6c2b275dabe578e0e
+=======
+>>>>>>> 55593ee27b7e145793ab89ceb9fadf9a39fea456
   onFileSelected(event: any) {
     let file = event;
     if (event && event.target && event.target.files) {

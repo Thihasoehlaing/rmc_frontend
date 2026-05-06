@@ -202,6 +202,7 @@
 
                   @if (getBreakdownArray(researchType || '').length > 0) {
 <<<<<<< HEAD
+<<<<<<< HEAD
                     <app-data-table
                       [columns]="breakdownColumns"
                       [rows]="getBreakdownArray(researchType || '')"
@@ -228,6 +229,8 @@
                       </ng-template>
                     </app-data-table>
 =======
+=======
+>>>>>>> 55593ee27b7e145793ab89ceb9fadf9a39fea456
                     @if (researchType === 'non-research') {
                       <div class="table-scroll non-research-table">
                         <app-data-table
@@ -304,7 +307,10 @@
                         </app-data-table>
                       </div>
                     }
+<<<<<<< HEAD
 >>>>>>> d6f5fc1d977efdd64c208db6c2b275dabe578e0e
+=======
+>>>>>>> 55593ee27b7e145793ab89ceb9fadf9a39fea456
                   } @else {
                     <div class="empty-state">
                       <span class="material-icons">receipt</span>
@@ -315,6 +321,7 @@
               </div>
 
 <<<<<<< HEAD
+<<<<<<< HEAD
               <div class="sponsorship-subsections-container">
                 <div class="sponsorship-subsection">
                   <span class="subsection-title">External Sponsorship</span>
@@ -324,6 +331,8 @@
                         <label class="form-label">Sponsorship Amount by External (RM)</label>
                         <input type="number" class="input--text" formControlName="sponsoredAmountExternal" placeholder="0.00">
 =======
+=======
+>>>>>>> 55593ee27b7e145793ab89ceb9fadf9a39fea456
               @if (researchType === 'non-research') {
                 <div class="total-display">
                   <span class="total-label">Total in RM</span>
@@ -343,7 +352,10 @@
                           <label class="form-label">Sponsored By</label>
                           <input type="text" class="input--text" formControlName="sponsoredBy" placeholder="Sponsor Name" (input)="stripDigits($event)">
                         </div>
+<<<<<<< HEAD
 >>>>>>> d6f5fc1d977efdd64c208db6c2b275dabe578e0e
+=======
+>>>>>>> 55593ee27b7e145793ab89ceb9fadf9a39fea456
                       </div>
                     </div>
                   </div>
@@ -445,6 +457,7 @@
 >
   <form [formGroup]="breakdownForm" (ngSubmit)="submitBreakdownModal()" class="breakdown-form">
 <<<<<<< HEAD
+<<<<<<< HEAD
     <!-- Vote Number Description -->
     <div class="breakdown-field">
       <div class="label-with-manage">
@@ -456,12 +469,17 @@
         </button>
       </div>
 =======
+=======
+>>>>>>> 55593ee27b7e145793ab89ceb9fadf9a39fea456
     <!-- Select Item Description / Account Code Description -->
     <div class="breakdown-field">
       <label for="itemDescription" class="form-label">
         {{ breakdownType === 'non-research' ? 'Select Account Code Description *' : 'Select Item Description *' }}
       </label>
+<<<<<<< HEAD
 >>>>>>> d6f5fc1d977efdd64c208db6c2b275dabe578e0e
+=======
+>>>>>>> 55593ee27b7e145793ab89ceb9fadf9a39fea456
       <app-searchable-dropdown
         [options]="voteNumberDescriptionOptions"
         placeholder="Search and select vote number description"
@@ -470,6 +488,7 @@
     </div>
 
     @if (breakdownForm.get('itemDescription')?.invalid && breakdownForm.get('itemDescription')?.touched) {
+<<<<<<< HEAD
 <<<<<<< HEAD
       <span class="error-message">Vote number description is required</span>
     }
@@ -493,6 +512,8 @@
       @if (breakdownForm.get('voteNumber')?.invalid && breakdownForm.get('voteNumber')?.touched) {
         <span class="error-message">Vote number is required</span>
 =======
+=======
+>>>>>>> 55593ee27b7e145793ab89ceb9fadf9a39fea456
       <span class="error-message">
         {{ breakdownType === 'non-research' ? 'Account code description is required' : 'Item description is required' }}
       </span>
@@ -526,7 +547,7 @@
       </div>
     }
 
-    <!-- Cost in Foreign Currency / MYR -->
+    <!-- Account Code Description -->
     <div class="breakdown-field">
       <label for="cost" class="form-label">
         {{ (breakdownType === 'internal-research') ? 'Cost in Foreign Currency / MYR (RM)' : 'Cost in Foreign Currency / MYR' }} *
@@ -560,12 +581,16 @@
         (input)="enforceInteger($event)">
       @if (breakdownForm.get('exchangeRate')?.invalid && breakdownForm.get('exchangeRate')?.touched) {
         <span class="error-message">Exchange rate is required (whole numbers only)</span>
+<<<<<<< HEAD
 >>>>>>> d6f5fc1d977efdd64c208db6c2b275dabe578e0e
+=======
+>>>>>>> 55593ee27b7e145793ab89ceb9fadf9a39fea456
       }
     </div>
 
-    <!-- Account Code Description -->
+    <!-- Cost in RM (Read-only calculated field) -->
     <div class="breakdown-field">
+<<<<<<< HEAD
 <<<<<<< HEAD
       <div class="label-with-manage">
         <label for="accountCodeDescription" class="form-label">Account Code Description *</label>
@@ -585,6 +610,8 @@
         <span class="error-message">Account code description is required</span>
       }
 =======
+=======
+>>>>>>> 55593ee27b7e145793ab89ceb9fadf9a39fea456
       <label for="costInRM" class="form-label">Cost in RM (approximate) [Auto-calculated: Cost × Exchange Rate]</label>
       <input
         id="costInRM"
@@ -594,10 +621,13 @@
         readonly
         placeholder="Auto-calculated"
         step="any">
+<<<<<<< HEAD
 >>>>>>> d6f5fc1d977efdd64c208db6c2b275dabe578e0e
+=======
+>>>>>>> 55593ee27b7e145793ab89ceb9fadf9a39fea456
     </div>
 
-    <!-- Account Code -->
+    <!-- Description -->
     <div class="breakdown-field">
       <div class="label-with-manage">
         <label for="accountCode" class="form-label">Account Code *</label>

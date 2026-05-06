@@ -203,11 +203,15 @@ export class JournalSettingsComponent implements OnInit {
    * Get metadata for an option (created date, status) from storage
    */
 <<<<<<< HEAD
+<<<<<<< HEAD
   private getOptionMetadata(type: BreakdownTypeKey, value: string): { createdDate?: string; status?: 'Active' | 'Inactive'; accountCode?: string; } | null {
     // Retrieve metadata from localStorage
 =======
   private getOptionMetadata(type: 'research' | 'local', value: string): { createdDate?: string; status?: 'Active' | 'Inactive'; accountCode?: string; } | null {
 >>>>>>> d6f5fc1d977efdd64c208db6c2b275dabe578e0e
+=======
+  private getOptionMetadata(type: 'research' | 'local', value: string): { createdDate?: string; status?: 'Active' | 'Inactive'; accountCode?: string; } | null {
+>>>>>>> 55593ee27b7e145793ab89ceb9fadf9a39fea456
     const storageKey = `journal-option-metadata-${type}-${value}`;
     try {
       const stored = localStorage.getItem(storageKey);
@@ -347,6 +351,7 @@ export class JournalSettingsComponent implements OnInit {
     try {
       this.JournalOptionsService.deleteOption(serviceType, optionValue);
 <<<<<<< HEAD
+<<<<<<< HEAD
       this.selectedCheckboxes.set(new Set()); // Clear selection
       window.dispatchEvent(new CustomEvent('rmc-dropdowns-updated'));
     } catch (error) {
@@ -357,6 +362,11 @@ export class JournalSettingsComponent implements OnInit {
     } catch {
       this.errorMessage.set('Failed to delete option. Please try again.');
 >>>>>>> d6f5fc1d977efdd64c208db6c2b275dabe578e0e
+=======
+      this.selectedCheckboxes.set(new Set());
+    } catch {
+      this.errorMessage.set('Failed to delete option. Please try again.');
+>>>>>>> 55593ee27b7e145793ab89ceb9fadf9a39fea456
     }
   }
 
@@ -383,6 +393,7 @@ export class JournalSettingsComponent implements OnInit {
       });
       this.selectedCheckboxes.set(new Set());
 <<<<<<< HEAD
+<<<<<<< HEAD
       window.dispatchEvent(new CustomEvent('rmc-dropdowns-updated'));
     } catch (error) {
       console.error('Error deleting options:', error);
@@ -391,6 +402,10 @@ export class JournalSettingsComponent implements OnInit {
     } catch {
       this.errorMessage.set('Failed to delete one or more options. Please try again.');
 >>>>>>> d6f5fc1d977efdd64c208db6c2b275dabe578e0e
+=======
+    } catch {
+      this.errorMessage.set('Failed to delete one or more options. Please try again.');
+>>>>>>> 55593ee27b7e145793ab89ceb9fadf9a39fea456
     }
   }
 

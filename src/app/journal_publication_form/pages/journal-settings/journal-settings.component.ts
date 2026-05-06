@@ -202,12 +202,15 @@ export class JournalSettingsComponent implements OnInit {
   /**
    * Get metadata for an option (created date, status) from storage
    */
-  private getOptionMetadata(type: BreakdownTypeKey, value: string): { createdDate?: string; status?: 'Active' | 'Inactive'; accountCode?: string; } | null {
-    // Retrieve metadata from localStorage
+  private getOptionMetadata(type: 'research' | 'local', value: string): { createdDate?: string; status?: 'Active' | 'Inactive'; accountCode?: string; } | null {
     const storageKey = `journal-option-metadata-${type}-${value}`;
-    const stored = localStorage.getItem(storageKey);
-    if (stored) {
-      return JSON.parse(stored);
+    try {
+      const stored = localStorage.getItem(storageKey);
+      if (stored) {
+        return JSON.parse(stored);
+      }
+    } catch {
+      // Silently discard malformed metadata
     }
     return { createdDate: this.getTodayDate(), status: 'Active' };
   }
@@ -305,16 +308,13 @@ export class JournalSettingsComponent implements OnInit {
       const serviceType: BreakdownTypeKey = type;
 
       if (this.editingOptionIndex() === null) {
-        // Add new option
         this.JournalOptionsService.addOption(serviceType, newOption);
       } else {
-        // Update existing option
         const currentOptions = this.getCurrentOptions();
         const originalValue = currentOptions[this.editingOptionIndex()!].value;
         this.JournalOptionsService.updateOption(serviceType, originalValue, newOption);
       }
 
-      // Store metadata in localStorage
       this.saveOptionMetadata(serviceType, newOption.value, {
         status,
         accountCode
@@ -323,9 +323,8 @@ export class JournalSettingsComponent implements OnInit {
       window.dispatchEvent(new CustomEvent('rmc-dropdowns-updated'));
 
       this.closeModal();
-    } catch (error) {
-      console.error('Error saving option:', error);
-      this.errorMessage.set((error as Error).message);
+    } catch {
+      this.errorMessage.set('Failed to save option. Please try again.');
     }
   }
 
@@ -342,11 +341,9 @@ export class JournalSettingsComponent implements OnInit {
 
     try {
       this.JournalOptionsService.deleteOption(serviceType, optionValue);
-      this.selectedCheckboxes.set(new Set()); // Clear selection
-      window.dispatchEvent(new CustomEvent('rmc-dropdowns-updated'));
-    } catch (error) {
-      console.error('Error deleting option:', error);
-      alert(`Error: ${(error as Error).message}`);
+      this.selectedCheckboxes.set(new Set());
+    } catch {
+      this.errorMessage.set('Failed to delete option. Please try again.');
     }
   }
 
@@ -372,10 +369,8 @@ export class JournalSettingsComponent implements OnInit {
         this.JournalOptionsService.deleteOption(serviceType, value);
       });
       this.selectedCheckboxes.set(new Set());
-      window.dispatchEvent(new CustomEvent('rmc-dropdowns-updated'));
-    } catch (error) {
-      console.error('Error deleting options:', error);
-      alert(`Error: ${(error as Error).message}`);
+    } catch {
+      this.errorMessage.set('Failed to delete one or more options. Please try again.');
     }
   }
 

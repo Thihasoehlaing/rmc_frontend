@@ -22,11 +22,6 @@ export const routes: Routes = [
     children: [
       // Accessible to ALL authenticated users
       { path: 'dashboard', component: DashboardComponent },
-      {
-        path: 'inbox',
-        loadComponent: () =>
-          import('./submissions/inbox/inbox.component').then(m => m.InboxComponent),
-      },
       { path: 'profile', component: ProfileComponent },
       {
         path: 'showcase',
@@ -85,7 +80,7 @@ export const routes: Routes = [
       },
 
       // ── Conference Application ────────────────────────────────────────────
-      // Rule: Allow all authenticated users except fully blocked users
+      // Rule: ((full_time OR contract) AND academic) OR Admin
       {
         path: 'conference',
         canActivate: [permissionGuard],
@@ -95,12 +90,7 @@ export const routes: Routes = [
               {
                 anyOf: ['full_time', 'contract'],
                 allOf: ['academic'],
-              },
-              {
-                anyOf: ['HOS'],
-              },
-              {
-                anyOf: ['VC'],
+                excludeGroups: ['Reviewer', 'HOS'],
               },
               {
                 anyOf: ['Admin'],
@@ -146,23 +136,6 @@ export const routes: Routes = [
         },
         loadComponent: () =>
           import('./ragra_form/ragra-form.component').then(m => m.RagraFormComponent),
-      },
-
-      // ── Travel Authorization Application ──────────────────────────────────
-      // Rule: ((full_time OR contract) AND academic) OR HOS
-      {
-        path: 'travel',
-        canActivate: [permissionGuard],
-        data: {
-          permission: {
-            anyCondition: [
-              { anyOf: ['full_time', 'contract'], allOf: ['academic'] },
-              { anyOf: ['HOS'] },
-            ],
-          } satisfies NavPermission,
-        },
-        loadChildren: () =>
-          import('./travel_authorization_form/travel_authorization_form.routes').then(m => m.travelAuthorizationFormRoutes),
       },
 
       // ── Partnership Application ───────────────────────────────────────────
@@ -228,13 +201,6 @@ export const routes: Routes = [
                 },
                 loadComponent: () =>
                     import('./settings/batch-sitting/batch-sitting.component').then(m => m.BatchSittingComponent),
-            },
-            {
-                path: 'dev-test-board',
-                loadChildren: () =>
-                  import('./dev_test_board_form/dev-test-board-form.routes').then(
-                    m => m.DEV_TEST_BOARD_ROUTES
-                  ),
             },
         ]
       },

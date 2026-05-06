@@ -112,12 +112,10 @@ export class JournalOptionsService {
     if (stored) {
       try {
         const data = JSON.parse(stored);
-        this.voteNumberDescriptionOptions.set(data.voteNumberDescriptionOptions || this.defaultVoteNumberDescriptionOptions);
-        this.voteNumberOptions.set(data.voteNumberOptions || this.defaultVoteNumberOptions);
-        this.accountCodeDescriptionOptions.set(data.accountCodeDescriptionOptions || this.defaultAccountCodeDescriptionOptions);
-        this.accountCodeOptions.set(data.accountCodeOptions || this.defaultAccountCodeOptions);
-      } catch (e) {
-        console.error('Failed to parse stored journal options', e);
+        this.researchOptions.set(data.researchOptions || this.defaultResearchOptions);
+        this.localOptions.set(data.localOptions || this.defaultLocalOptions);   
+      } catch {
+        // Silently discard malformed data — fall back to defaults
         this.loadDefaults();
       }
     } else {

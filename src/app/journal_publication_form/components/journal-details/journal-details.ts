@@ -1,5 +1,4 @@
-import { Component, OnInit, OnDestroy, inject, effect, Output, EventEmitter, ChangeDetectorRef } from '@angular/core';
-import { ActionButtonComponent } from '../../../shared/components/action-button/action-button.component';
+import { Component, OnInit, inject, effect, Output, EventEmitter, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -10,7 +9,6 @@ import { SearchableDropdownComponent } from '../../../shared/components/searchab
 import { DialogComponent } from '../../../shared/components/dialog/dialog.component';
 import { CharacterCounterComponent } from '../../../shared/components/character-counter/character-counter.component';
 import { CustomHeaderComponent } from '../../../shared/components/custom-header/custom-header.component';
-import { CustomSubheaderComponent } from '../../../shared/components/custom-subheader/custom-subheader.component';
 import { ValidationMessageComponent } from '../../../shared/components/validation-message/validation-message.component';
 import { DataTableComponent, DataTableColumn } from '../../../shared/components/data-table/data-table.component';
 import { JournalOptionType, JournalOptionsService } from '../../services/journal-options.service';
@@ -18,7 +16,7 @@ import { JournalOptionType, JournalOptionsService } from '../../services/journal
 @Component({
   selector: 'app-journal-details',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, NoteComponent, SearchableDropdownComponent, DialogComponent, CharacterCounterComponent, CustomHeaderComponent, CustomSubheaderComponent, ValidationMessageComponent, ActionButtonComponent, DataTableComponent],
+  imports: [CommonModule, ReactiveFormsModule, FileUploadComponent, CharacterCounterComponent, CustomHeaderComponent, DataTableComponent, NoteComponent, SearchableDropdownComponent, DialogComponent, ValidationMessageComponent],
   templateUrl: './journal-details.html',
   styleUrl: './journal-details.scss'
 })
@@ -49,10 +47,25 @@ export class JournalDetails implements OnInit, OnDestroy {
   accountCodeOptions: { value: string; label: string }[] = [];
 
   readonly breakdownColumns: DataTableColumn[] = [
-    { key: 'itemDescription', label: 'Vote Number Description' },
-    { key: 'voteNumber', label: 'Vote Number', width: '140px' },
+    { key: 'index', label: '#', width: '50px', align: 'center', headerAlign: 'center' },
+    { key: 'itemDescription', label: 'Item Description' },
+    { key: 'voteNumber', label: 'Vote Number' },
+    { key: 'cost', label: 'Cost (Foreign/MYR)' },
+    { key: 'exchangeRate', label: 'Exchange Rate' },
+    { key: 'costInRM', label: 'Cost in RM' },
+    { key: 'description', label: 'Description' },
+    { key: 'fileName', label: 'Supporting Doc' },
+    { key: 'actions', label: 'Actions', width: '100px', align: 'center', headerAlign: 'center' }
+  ];
+
+  readonly nonResearchBreakdownColumns: DataTableColumn[] = [
     { key: 'accountCodeDescription', label: 'Account Code Description' },
-    { key: 'accountCode', label: 'Account Code', width: '140px' },
+    { key: 'accountCode', label: 'Account Code' },
+    { key: 'cost', label: 'Cost (Foreign/MYR)' },
+    { key: 'exchangeRate', label: 'Exchange Rate' },
+    { key: 'costInRM', label: 'Cost in RM' },
+    { key: 'description', label: 'Description' },
+    { key: 'fileName', label: 'Supporting Doc' },
     { key: 'actions', label: 'Actions', width: '100px', align: 'center', headerAlign: 'center' }
   ];
 
@@ -69,10 +82,12 @@ export class JournalDetails implements OnInit, OnDestroy {
       setTimeout(() => {
         if (this.workflow.isFormReadOnly()) {
           this.form?.disable({ emitEvent: false });
-          this.breakdownForm?.disable({ emitEvent: false });
+          // breakdownForm is a transient modal form — do not disable it via the
+          // workflow effect, as doing so causes Angular's NumberValueAccessor to
+          // reformat number inputs (cost, exchangeRate) and corrupt user-entered values.
         } else {
           this.form?.enable({ emitEvent: false });
-          this.breakdownForm?.enable({ emitEvent: false });
+          // Same reason: do not re-enable breakdownForm here.
         }
       }, 0);
     });
@@ -85,6 +100,13 @@ export class JournalDetails implements OnInit, OnDestroy {
       this.journalOptionsService.accountCodeOptions();
       this.refreshDropdownOptions();
     });
+  }
+
+  // Textarea auto expand
+  autoExpandTextarea(event: Event) {
+    const textarea = event.target as HTMLTextAreaElement;
+    textarea.style.height = 'auto';
+    textarea.style.height = textarea.scrollHeight + 'px';
   }
 
   ngOnInit() {
@@ -120,6 +142,7 @@ export class JournalDetails implements OnInit, OnDestroy {
       this.form.get('projectAccountCode')?.setValidators([Validators.required]);
       this.form.get('projectAccountCode')?.updateValueAndValidity();
     });
+    this.form.get('sponsoredAmountExternal')?.valueChanges.subscribe(() => this.calculateTotals());
 
     this.form.get('citedApuPaper')?.valueChanges.subscribe((value) => {
       if (value === 'No') {
@@ -132,9 +155,15 @@ export class JournalDetails implements OnInit, OnDestroy {
 
     this.breakdownForm = this.fb.group({
       itemDescription: ['', Validators.required],
-      voteNumber: ['', Validators.required],
-      accountCodeDescription: ['', Validators.required],
-      accountCode: ['', Validators.required]
+      // voteNumber is only required for research types; non-research uses accountCode instead
+      voteNumber: [{ value: '', disabled: true }],
+      accountCodeDescription: [''],
+      accountCode: [{ value: '', disabled: true }],
+      cost: ['', Validators.required],
+      costForeign: [''],
+      exchangeRate: ['', [Validators.required, Validators.pattern('^[0-9]+$')]],
+      description: [''],
+      costInRM: [{ value: '', disabled: true }]
     });
 
     this.sdgKeywordsForm = this.fb.group({
@@ -143,14 +172,18 @@ export class JournalDetails implements OnInit, OnDestroy {
       keyword3: ['', Validators.required]
     });
 
-    this.refreshDropdownOptions();
-
-    // Listen for dropdown updates from admin settings
-    window.addEventListener('rmc-dropdowns-updated', this.onJournalDropdownsUpdated);
-  }
-
-  ngOnDestroy(): void {
-    window.removeEventListener('rmc-dropdowns-updated', this.onJournalDropdownsUpdated);
+    this.breakdownForm.get('itemDescription')?.valueChanges.subscribe((value) => {
+      if (this.breakdownType !== 'non-research') return;
+      const selected = this.findNonResearchOption(value);
+      // Auto-fill Account Code and its description from the selected option's metadata
+      this.breakdownForm.patchValue({
+        accountCode: selected?.accountCode || '',
+        accountCodeDescription: selected?.label || ''
+      }, { emitEvent: false });
+    });
+    // NOTE: costInRM is recalculated via recalcCostInRM() called from (input) events
+    // in the template — NOT via valueChanges — to avoid feedback loops that corrupt
+    // the exchange rate value while the user is still typing.
   }
 
   get researchType() {
@@ -167,16 +200,81 @@ export class JournalDetails implements OnInit, OnDestroy {
   openBreakdownModal(type: string, index?: number) {
     this.breakdownType = type as any;
 
-    // Defer modal opening to next tick to avoid any form interaction or change detection overlaps
+    // Defer modal opening to next tick to avoid change detection overlaps
     setTimeout(() => {
+      // 1. Resolve dropdown options for this type
+      if (type === 'non-research') {
+        const localOpts = this.journalOptionsService.getOptionsForType('local');
+        this.currentBreakdownOptions = localOpts.filter(opt => {
+          const meta = this.getOptionMetadata('local', opt.value);
+          return !meta || meta.status !== 'Inactive';
+        }).map(opt => ({
+          value: opt.value,
+          label: opt.label,
+          accountCode: this.getOptionMetadata('local', opt.value)?.accountCode || ''
+        }));
+      } else {
+        const researchOpts = this.journalOptionsService.getOptionsForType('research');
+        this.currentBreakdownOptions = researchOpts.filter(opt => {
+          const meta = this.getOptionMetadata('research', opt.value);
+          return !meta || meta.status !== 'Inactive';
+        }).map(opt => ({
+          value: opt.label,
+          label: opt.label
+        }));
+      }
+
+      // 2. Reset form first so we start from a clean slate
+      this.breakdownForm.reset({}, { emitEvent: false });
+      // Also reset the file picker so a previous entry's file doesn't bleed in
+      this.selectedFile = null;
+      this.selectedFileName = null;
+
+      // 3. Configure validators and enable/disable fields AFTER reset
+      //    (reset() re-applies initial disabled state, so enable must come after)
+      const voteNumberCtrl = this.breakdownForm.get('voteNumber');
+      const accountCodeCtrl = this.breakdownForm.get('accountCode');
+
+      if (type === 'non-research') {
+        // Non-research: Account Code is auto-filled; Vote Number is not used
+        voteNumberCtrl?.clearValidators();
+        voteNumberCtrl?.updateValueAndValidity({ emitEvent: false });
+        accountCodeCtrl?.enable({ emitEvent: false });
+      } else {
+        // Research types: Vote Number is required; Account Code is not used
+        voteNumberCtrl?.setValidators([Validators.required]);
+        voteNumberCtrl?.updateValueAndValidity({ emitEvent: false });
+        accountCodeCtrl?.disable({ emitEvent: false });
+      }
+
+      // 4. Populate form values
       if (index !== undefined) {
+        // Editing an existing entry
         this.breakdownEditingIndex = index;
         const entry = this.getBreakdownArray(type)[index];
-        this.breakdownForm.patchValue(entry, { emitEvent: false });
+        // Restore the saved file name so the user can see what was previously uploaded
+        this.selectedFileName = entry.fileName || null;
+        this.selectedFile = null; // actual File object is not re-stored; only the name is shown
+        if (type === 'non-research') {
+          // Re-resolve the option so accountCode is always fresh from the options list
+          const selected = this.findNonResearchOption(entry.itemDescription);
+          this.breakdownForm.patchValue({
+            ...entry,
+            itemDescription: selected?.value || entry.itemDescription,
+            accountCode: selected?.accountCode || entry.accountCode || '',
+            accountCodeDescription: selected?.label || entry.accountCodeDescription || ''
+          }, { emitEvent: false });
+        } else {
+          this.breakdownForm.patchValue(entry, { emitEvent: false });
+        }
       } else {
+        // New entry — form already reset above; set defaults for research types
         this.breakdownEditingIndex = null;
-        this.breakdownForm.reset();
+        if (type === 'internal-research' || type === 'external-research') {
+          this.breakdownForm.patchValue({ voteNumber: 'V29000' }, { emitEvent: false });
+        }
       }
+
       this.isBreakdownModalOpen = true;
       this.cdr.detectChanges();
     }, 0);
@@ -187,7 +285,16 @@ export class JournalDetails implements OnInit, OnDestroy {
     this.breakdownType = null;
     this.breakdownEditingIndex = null;
     this.breakdownForm.reset();
+    // Reset validators to a clean state
+    this.breakdownForm.get('voteNumber')?.clearValidators();
+    this.breakdownForm.get('voteNumber')?.updateValueAndValidity({ emitEvent: false });
     this.cdr.detectChanges();
+  }
+
+  private findNonResearchOption(value: string): { value: string; label: string; accountCode?: string } | undefined {
+    if (!value) return undefined;
+    return this.currentBreakdownOptions.find(opt => opt.value === value)
+      || this.currentBreakdownOptions.find(opt => opt.label === value);
   }
 
   saveBreakdownEntry() {
@@ -197,6 +304,37 @@ export class JournalDetails implements OnInit, OnDestroy {
     }
 
     const entry = this.breakdownForm.getRawValue();
+    const cost = parseFloat(entry.cost);
+    const rate = parseFloat(entry.exchangeRate);
+
+    // Compute costInRM precisely; preserve the user's exact cost and exchangeRate values
+    let costInRM = '';
+    if (Number.isFinite(cost) && Number.isFinite(rate) && rate > 0) {
+      costInRM = (Math.round(cost * rate * 100) / 100).toFixed(2);
+    } else if (Number.isFinite(cost)) {
+      costInRM = cost.toFixed(2);
+    }
+
+    // For non-research: always resolve accountCode from the options list to guarantee it's populated
+    let resolvedAccountCode = entry.accountCode || '';
+    let resolvedAccountCodeDescription = entry.accountCodeDescription || '';
+    if (this.breakdownType === 'non-research') {
+      const selected = this.findNonResearchOption(entry.itemDescription);
+      if (selected) {
+        resolvedAccountCode = selected.accountCode || resolvedAccountCode;
+        resolvedAccountCodeDescription = selected.label || resolvedAccountCodeDescription;
+      }
+    }
+
+    const entryToSave = {
+      ...entry,
+      accountCode: resolvedAccountCode,
+      accountCodeDescription: resolvedAccountCodeDescription,
+      costInRM,
+      // Persist the uploaded file name so it shows in the table
+      fileName: this.selectedFileName || entry.fileName || ''
+    };
+
     const type = this.breakdownType as string;
     const array = this.getBreakdownArray(type);
 
@@ -261,7 +399,6 @@ calculateBreakdownTotal(type: string): number {
 
     if (pType === 'external-research') {
       // 5 & 6. Sponsored By validation
-      this.form.get('sponsoredBy')?.enable({ emitEvent: false });
       if (manualExternal > 0) {
         this.form.get('sponsoredBy')?.setValidators([Validators.required]);
       } else {
@@ -298,11 +435,9 @@ calculateBreakdownTotal(type: string): number {
       // Cost to be Borne by Applicant (RM)
       applicantCost = 0;
 
-      this.form.get('sponsoredBy')?.setValue('External', { emitEvent: false });
-      this.form.get('sponsoredBy')?.disable({ emitEvent: false });
     } else if (pType === 'internal-research' || pType === 'non-research') {
       // 1 & 2 & 6. Sponsored By / External Amount validaton (Same bounds as external flow)
-      this.form.get('sponsoredBy')?.enable({ emitEvent: false });
+      // Removed .enable() to fix constant resetting lockup while typing.
 
       if (q === 'Q1' || q === 'Q2') spPercent = 100;
       else if (q === 'Q3') spPercent = 50;
@@ -341,9 +476,11 @@ calculateBreakdownTotal(type: string): number {
       sponsorshipAmountAPU: spAPU ? spAPU.toFixed(2) : '0.00',
       costByApplicant: applicantCost ? applicantCost.toFixed(2) : '0.00'
     }, { emitEvent: false });
-
-    // Evaluate if Breakdown table is required for external
-    const isBreakdownValid = pType === 'external-research' ? breakdownArray.length > 0 : true;
+    
+    // Breakdown table is required for external-research and non-research
+    const isBreakdownValid = (pType === 'external-research' || pType === 'non-research')
+      ? breakdownArray.length > 0
+      : true;
     this.formValidityChange.emit(this.form.valid && isBreakdownValid);
   }
   getBreakdownModalTitle(): string {
@@ -368,6 +505,22 @@ calculateBreakdownTotal(type: string): number {
   submitBreakdownModal() {
     this.saveBreakdownEntry();
   }
+
+
+
+  private getOptionMetadata(type: 'research' | 'local', value: string): any {
+    const storageKey = `journal-option-metadata-${type}-${value}`;
+    try {
+      const stored = localStorage.getItem(storageKey);
+      if (stored && stored !== 'undefined') {
+        return JSON.parse(stored);
+      }
+    } catch {
+      // Silently discard malformed metadata — do not log storage key names
+    }
+    return null;
+  }
+
   onFileSelected(event: any) {
     let file = event;
     if (event && event.target && event.target.files) {
@@ -382,6 +535,91 @@ calculateBreakdownTotal(type: string): number {
   removeFile() {
     this.selectedFile = null;
     this.selectedFileName = null;
+  }
+
+  /**
+   * Recalculate Cost in RM from the current cost and exchange rate values.
+   * Called from (input) events on the cost and exchangeRate fields so the
+   * calculation only runs on genuine user input — never as a side-effect of
+   * patchValue() calls — which prevents the exchange rate from being mutated.
+   * Both cost and exchangeRate are stored as strings (type="text") to prevent
+   * Angular's NumberValueAccessor from reformatting the user's entered value.
+   */
+  recalcCostInRM(): void {
+    const raw = this.breakdownForm.getRawValue();
+    const cost = parseFloat(String(raw.cost ?? '').replace(/,/g, ''));
+    const rate = parseFloat(String(raw.exchangeRate ?? '').replace(/,/g, ''));
+
+    let rm = '';
+    if (Number.isFinite(cost) && Number.isFinite(rate) && rate > 0) {
+      rm = (Math.round(cost * rate * 100) / 100).toFixed(2);
+    } else if (Number.isFinite(cost) && cost >= 0) {
+      rm = cost.toFixed(2);
+    }
+
+    this.breakdownForm.patchValue({ costInRM: rm }, { emitEvent: false });
+  }
+
+  /**
+   * Clamp a text-mode numeric input to >= 0.
+   * Bound to (input) on cost and exchangeRate fields to reject negative values.
+   * Works with type="text" inputs (no NumberValueAccessor interference).
+   */
+  clampPositive(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const raw = input.value.replace(/,/g, '');
+    const val = parseFloat(raw);
+    if (Number.isFinite(val) && val < 0) {
+      input.value = '0';
+      // Sync back into the reactive form control by id
+      const ctrl = this.breakdownForm.get(input.id);
+      if (ctrl) {
+        ctrl.setValue('0', { emitEvent: false });
+      }
+    }
+  }
+
+  /**
+   * Clamp a numeric input in the main form to >= 0.
+   */
+  clampPositiveMain(controlName: string, event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const val = parseFloat(input.value);
+    if (Number.isFinite(val) && val < 0) {
+      input.value = '0';
+      this.form.get(controlName)?.setValue(0, { emitEvent: true });
+    }
+  }
+
+  /**
+   * Strip any digit characters from a name text input.
+   * Bound to (input) on name fields to prevent numeric entry.
+   */
+  stripDigits(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const cleaned = input.value.replace(/[0-9]/g, '');
+    if (cleaned !== input.value) {
+      input.value = cleaned;
+      // Sync back to the reactive form control by id
+      const ctrl = this.breakdownForm.get(input.id) || this.form.get(input.id);
+      if (ctrl) {
+        ctrl.setValue(cleaned, { emitEvent: true });
+      }
+    }
+  }
+
+  /**
+   * Enforce integer-only input on the Exchange Rate field.
+   * Strips any non-digit characters (including decimal points) on input.
+   */
+  enforceInteger(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const cleaned = input.value.replace(/[^0-9]/g, '');
+    if (cleaned !== input.value) {
+      input.value = cleaned;
+      this.breakdownForm.get('exchangeRate')?.setValue(cleaned, { emitEvent: false });
+    }
+    this.recalcCostInRM();
   }
 
   /**

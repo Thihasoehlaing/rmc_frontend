@@ -281,7 +281,7 @@
             <app-validation-message [control]="leadMemberForm.get('email')"></app-validation-message>
           </div>
 
-          <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-4); background: var(--color-surface-nested); border-top: 1px solid var(--border-default); margin-top: var(--space-4); box-sizing: border-box;">
+          <div class="modal-footer" style="display: flex; justify-content: space-between; padding: var(--space-4) 0 0 0; border-top: none; margin-top: var(--space-4);">
             <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancel</button>
             <button type="submit" class="btn btn-primary" [disabled]="leadMemberForm.invalid">Save</button>
           </div>
@@ -309,7 +309,7 @@
             <app-validation-message [control]="milestoneForm.get('endDate')"></app-validation-message>
           </div>
 
-          <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-4); background: var(--color-surface-nested); border-top: 1px solid var(--border-default); margin-top: var(--space-4); box-sizing: border-box;">
+          <div class="modal-footer" style="display: flex; justify-content: space-between; padding: var(--space-4) 0 0 0; border-top: none; margin-top: var(--space-4);">
             <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancel</button>
             <button type="submit" class="btn btn-primary" [disabled]="milestoneForm.invalid">Save</button>
           </div>
@@ -337,7 +337,7 @@
             <app-validation-message [control]="outcomeForm.get('endDate')"></app-validation-message>
           </div>
 
-          <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-4); background: var(--color-surface-nested); border-top: 1px solid var(--border-default); margin-top: var(--space-4); box-sizing: border-box;">
+          <div class="modal-footer" style="display: flex; justify-content: space-between; padding: var(--space-4) 0 0 0; border-top: none; margin-top: var(--space-4);">
             <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancel</button>
             <button type="submit" class="btn btn-primary" [disabled]="outcomeForm.invalid">Save</button>
           </div>
@@ -370,7 +370,7 @@
             <textarea class="form-control input--textarea" rows="3" formControlName="description" placeholder="Optional document description"></textarea>
           </div>
 
-          <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-4); background: var(--color-surface-nested); border-top: 1px solid var(--border-default); margin-top: var(--space-4); box-sizing: border-box;">
+          <div class="modal-footer" style="display: flex; justify-content: space-between; padding: var(--space-4) 0 0 0; border-top: none; margin-top: var(--space-4);">
             <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancel</button>
             <button type="submit" class="btn btn-primary" [disabled]="supportingDocForm.invalid">Save</button>
           </div>
@@ -379,5 +379,3 @@
     </div>
   </div>
 }
-
-

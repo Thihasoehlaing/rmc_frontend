@@ -10,3 +10,12 @@ body {
   margin: 0;
   padding: 0;
 }
+
+/* ── Authors Details: center all table cells ─────────────────────
+   DataTableComponent uses ::ng-deep with high specificity, so the
+   only reliable override is here in the global stylesheet.        */
+app-authors-details app-data-table td,
+app-authors-details app-data-table th {
+  text-align: center !important;
+  vertical-align: middle !important;
+}

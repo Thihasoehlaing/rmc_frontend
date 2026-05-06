@@ -199,12 +199,11 @@
                       <ng-template #rowTemplate let-row let-index="index">
                         <tr>
                           <td>
-                            <div class="data-table__title data-table__title--small">{{ row.itemDescription }}</div>
+                            <div class="data-table__title data-table__title--small">{{ getDropdownLabel('vote_number_description', row.itemDescription) }}</div>
                           </td>
-                          <td>{{ row.voteNumber }}</td>
-                          <td class="is-align-right">{{ row.cost | number: '1.2-2' }}</td>
-                          <td class="is-align-right">{{ row.exchangeRate | number: '1.2-2' }}</td>
-                          <td class="amount-cell">{{ row.costInRM | number: '1.2-2' }}</td>
+                          <td>{{ getDropdownLabel('vote_number', row.voteNumber) }}</td>
+                          <td>{{ getDropdownLabel('account_code_description', row.accountCodeDescription) }}</td>
+                          <td>{{ getDropdownLabel('account_code', row.accountCode) }}</td>
                           <td class="action-cell">
                             <div class="data-table__actions">
                               <button type="button" class="btn-icon btn-icon--edit" (click)="openBreakdownModal(researchType || '', index)" aria-label="Edit entry">
@@ -222,11 +221,6 @@
                     <p class="empty-state">No items added. Click <strong>Add Entry</strong> to begin.</p>
                   }
                 </div>
-              </div>
-
-              <div class="total-display">
-                <span class="total-label">Total in RM</span>
-                <div class="total-amount">{{ calculateBreakdownTotal(researchType || '') | number: '1.2-2' }}</div>
               </div>
 
               <div class="sponsorship-subsections-container">
@@ -290,113 +284,87 @@
   width="600px"
 >
   <form [formGroup]="breakdownForm" (ngSubmit)="submitBreakdownModal()" class="breakdown-form">
-    <!-- Select Item Description -->
+    <!-- Vote Number Description -->
     <div class="breakdown-field">
-      <label for="itemDescription" class="form-label">Select Item Description *</label>
+      <div class="label-with-manage">
+        <label for="itemDescription" class="form-label">Vote Number Description *</label>
+        <button type="button" class="manage-btn"
+          (click)="manageVoteNumbers()"
+          title="Manage Vote Number Descriptions">
+          <span class="manage-icon">⚙️</span>
+        </button>
+      </div>
       <app-searchable-dropdown
-        [options]="currentBreakdownOptions"
-        placeholder="Search and select item"
+        [options]="voteNumberDescriptionOptions"
+        placeholder="Search and select vote number description"
         formControlName="itemDescription">
       </app-searchable-dropdown>
     </div>
 
     @if (breakdownForm.get('itemDescription')?.invalid && breakdownForm.get('itemDescription')?.touched) {
-      <span class="error-message">Item description is required</span>
+      <span class="error-message">Vote number description is required</span>
     }
 
-    <!-- Vote Number or Account Code -->
+    <!-- Vote Number -->
     <div class="breakdown-field">
-      <label [for]="breakdownType === 'non-research' ? 'accountCode' : 'voteNumber'" class="form-label">
-        {{ (breakdownType === 'non-research') ? 'Account Code' : 'Vote Number' }}
-      </label>
-      <input
-        [id]="breakdownType === 'non-research' ? 'accountCode' : 'voteNumber'"
-        type="text"
-        class="input--text input--readonly"
-        formControlName="voteNumber"
-        readonly
-        [placeholder]="(breakdownType === 'non-research') ? 'Enter account code' : 'V29000'">
-      @if (breakdownForm.get('voteNumber')?.invalid && breakdownForm.get('voteNumber')?.touched) {
-        <span class="error-message">{{ (breakdownType === 'non-research') ? 'Account code' : 'Vote number' }} is required</span>
-      }
-    </div>
-
-    <!-- Cost in Foreign Currency / MYR -->
-    <div class="breakdown-field">
-      <label for="cost" class="form-label">
-        {{ (breakdownType === 'internal-research') ? 'Cost in Foreign Currency / MYR (RM)' : 'Cost in Foreign Currency / MYR' }} *
-      </label>
-      <input
-        id="cost"
-        type="number"
-        class="input--text"
-        formControlName="cost"
-        placeholder="Enter cost"
-        step="0.01">
-      @if (breakdownForm.get('cost')?.invalid && breakdownForm.get('cost')?.touched) {
-        <span class="error-message">Cost is required</span>
-      }
-    </div>
-
-    <!-- Exchange Rate -->
-    <div class="breakdown-field">
-      <div class="label-with-note">
-        <label for="exchangeRate" class="form-label">Exchange Rate *</label>
-        <app-note text="ℹ For Malaysia Ringgit/MYR, please put 1 as the exchange rate." [isTooltip]="true"></app-note>
+      <div class="label-with-manage">
+        <label for="voteNumber" class="form-label">Vote Number *</label>
+        <button type="button" class="manage-btn"
+          (click)="manageVoteNumbers()"
+          title="Manage Vote Numbers">
+          <span class="manage-icon">⚙️</span>
+        </button>
       </div>
-      <input
-        id="exchangeRate"
-        type="number"
-        class="input--text"
-        formControlName="exchangeRate"
-        placeholder="1.0"
-        step="0.01">
-      @if (breakdownForm.get('exchangeRate')?.invalid && breakdownForm.get('exchangeRate')?.touched) {
-        <span class="error-message">Exchange rate is required</span>
+      <app-searchable-dropdown
+        [options]="voteNumberOptions"
+        id="voteNumber"
+        formControlName="voteNumber"
+        placeholder="Search and select vote number">
+      </app-searchable-dropdown>
+      @if (breakdownForm.get('voteNumber')?.invalid && breakdownForm.get('voteNumber')?.touched) {
+        <span class="error-message">Vote number is required</span>
       }
     </div>
 
-    <!-- Cost in RM (Read-only calculated field) -->
+    <!-- Account Code Description -->
     <div class="breakdown-field">
-      <label for="costInRM" class="form-label">Cost in RM (approximate) [Auto-calculated: Cost × Exchange Rate]</label>
-      <input
-        id="costInRM"
-        type="number"
-        class="input--text"
-        formControlName="costInRM"
-        readonly
-        placeholder="Auto-calculated"
-        step="0.01">
+      <div class="label-with-manage">
+        <label for="accountCodeDescription" class="form-label">Account Code Description *</label>
+        <button type="button" class="manage-btn"
+          (click)="manageAccountCodes()"
+          title="Manage Account Code Descriptions">
+          <span class="manage-icon">⚙️</span>
+        </button>
+      </div>
+      <app-searchable-dropdown
+        [options]="accountCodeDescriptionOptions"
+        id="accountCodeDescription"
+        formControlName="accountCodeDescription"
+        placeholder="Search and select account code description">
+      </app-searchable-dropdown>
+      @if (breakdownForm.get('accountCodeDescription')?.invalid && breakdownForm.get('accountCodeDescription')?.touched) {
+        <span class="error-message">Account code description is required</span>
+      }
     </div>
 
-    <!-- Description -->
+    <!-- Account Code -->
     <div class="breakdown-field">
-      <label for="description" class="form-label">Description</label>
-      <textarea
-        id="description"
-        class="input--textarea"
-        formControlName="description"
-        placeholder="Enter description (optional)"
-        rows="3"></textarea>
-    </div>
-
-    <!-- Supporting Documents -->
-    <div class="breakdown-field">
-      <label class="form-label">Supporting Documents</label>
-      <p class="form-hint">Max file size: 10MB. Allowed file types: PDF only.</p>
-      <app-file-upload
-        [accept]="'.pdf'"
-        [maxSizeMB]="10"
-        (fileSelected)="onFileSelected($event)">
-      </app-file-upload>
-      @if (selectedFileName) {
-        <div class="breakdown-file-summary">
-          <span class="material-icons">description</span>
-          <span class="breakdown-file-name">{{ selectedFileName }}</span>
-          <button type="button" class="btn-icon btn-icon--delete" (click)="removeFile()" aria-label="Remove file">
-            <span class="material-icons">close</span>
-          </button>
-        </div>
+      <div class="label-with-manage">
+        <label for="accountCode" class="form-label">Account Code *</label>
+        <button type="button" class="manage-btn"
+          (click)="manageAccountCodes()"
+          title="Manage Account Codes">
+          <span class="manage-icon">⚙️</span>
+        </button>
+      </div>
+      <app-searchable-dropdown
+        [options]="accountCodeOptions"
+        id="accountCode"
+        formControlName="accountCode"
+        placeholder="Search and select account code">
+      </app-searchable-dropdown>
+      @if (breakdownForm.get('accountCode')?.invalid && breakdownForm.get('accountCode')?.touched) {
+        <span class="error-message">Account code is required</span>
       }
     </div>
 

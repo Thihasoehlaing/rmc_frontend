@@ -1,0 +1,31 @@
+<div class="batches-page">
+  <div class="batches-page__header">
+    <a href="/settings/admin-settings" class="back-button" aria-label="Back to Admin Settings">
+      <span class="material-icons">arrow_back</span>
+    </a>
+
+    <div class="batches-page__copy">
+      <p class="batches-page__eyebrow">Admin Settings</p>
+      <h1 class="batches-page__title">Batches</h1>
+      <p class="batches-page__description">Select a form to manage its submission batches.</p>
+    </div>
+  </div>
+
+  <div class="batches-grid">
+    <a *ngFor="let card of cards" [href]="card.route" class="batch-card card">
+      <div class="batch-card__icon-wrap">
+        <span class="material-icons batch-card__icon">{{ card.icon }}</span>
+      </div>
+
+      <div class="batch-card__body">
+        <h2 class="batch-card__title">{{ card.title }}</h2>
+        <p class="batch-card__subtitle">{{ card.subtitle }}</p>
+      </div>
+
+      <div class="batch-card__footer">
+        <span class="badge badge-info batch-card__badge">{{ card.badge }}</span>
+        <span class="material-icons batch-card__arrow">chevron_right</span>
+      </div>
+    </a>
+  </div>
+</div>

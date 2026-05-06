@@ -352,6 +352,7 @@
                           <td class="col-no text-muted is-align-center">{{ row.index }}</td>
                           <td>{{ row.itemDescription }}</td>
                           <td>{{ row.voteNumber }}</td>
+                          <td>{{ row.description || '-' }}</td>
                           <td>{{ row.cost | number: '1.2-2' }}</td>
                           <td>{{ row.exchangeRate | number: '1.2-2' }}</td>
                           <td>{{ row.costInRM | number: '1.2-2' }}</td>
@@ -497,6 +498,7 @@
                           <td class="col-no text-muted is-align-center">{{ row.index }}</td>
                           <td>{{ row.itemDescription }}</td>
                           <td>{{ row.voteNumber }}</td>
+                          <td>{{ row.description || '-' }}</td>
                           <td>{{ row.cost | number: '1.2-2' }}</td>
                           <td>{{ row.exchangeRate | number: '1.2-2' }}</td>
                           <td>{{ row.costInRM | number: '1.2-2' }}</td>
@@ -660,6 +662,8 @@
                           <td class="col-no text-muted is-align-center">{{ row.index }}</td>
                           <td>{{ row.itemDescription }}</td>
                           <td>{{ row.voteNumber }}</td>
+                          <td>{{ row.description || '-' }}</td>
+                          <td>{{ row.supportingDocument || '-' }}</td>
                           <td>{{ row.cost | number: '1.2-2' }}</td>
                           <td>{{ row.exchangeRate | number: '1.2-2' }}</td>
                           <td>{{ row.costInRM | number: '1.2-2' }}</td>

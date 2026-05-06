@@ -79,6 +79,11 @@ export class SidebarComponent {
       newSet.has(label) ? newSet.delete(label) : newSet.add(label);
       return newSet;
     });
+
+    // Navigate to the folder's route if it exists
+    if (folder.route) {
+      this.router.navigateByUrl(folder.route);
+    }
   }
 
   isFolderExpanded(folder: NavFolder): boolean {

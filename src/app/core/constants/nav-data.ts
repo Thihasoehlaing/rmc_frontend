@@ -16,7 +16,7 @@ import { NavGroup } from '../../interfaces/nav.interface';
  * Application access rules:
  *   Conference Application  : (full_time OR contract) AND academic AND HOS AND VC
  *   Journal Publication     : (full_time OR contract) AND academic AND HOS AND VC
- *   RA/GRA Application      : (full_time OR contract) AND academic AND HOS AND group_ra_gra_hos_pass
+ *   RA/GRA Application      : (full_time OR contract) AND academic
  *   RDIG Application        : (full_time OR contract) AND academic, NOT Reviewer, NOT blocked_hos_rdig
  *   RMC Settings            : RMC group only
  *   Submissions (Inbox...)  : All authenticated users
@@ -91,16 +91,14 @@ export const NAVIGATION_DATA: NavGroup[] = [
                             ],
                         },
                     },
-                    // RA/GRA: (HOS AND (full_time OR contract) AND academic) OR ra_gra_hos_pass
+                    // RA/GRA: (full_time OR contract) AND academic
                     {
                         label: 'RA/GRA Application',
                         icon: 'person_add',
                         route: '/ragra',
                         permission: {
-                            anyCondition: [
-                                { anyOf: ['full_time', 'contract'], allOf: ['academic', 'HOS'] },
-                                { anyOf: ['group_ra_gra_hos_pass'] },
-                            ],
+                            anyOf: ['full_time', 'contract'],
+                            allOf: ['academic'],
                         },
                     },
                     // Partnership: (full_time OR contract) AND academic

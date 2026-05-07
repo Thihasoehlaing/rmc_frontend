@@ -122,20 +122,18 @@ export const routes: Routes = [
       },
 
       // ── RA/GRA Application ────────────────────────────────────────────────
-      // Rule: (HOS AND (full_time OR contract) AND academic) OR ra_gra_hos_pass
+      // Rule: (full_time OR contract) AND academic
       {
         path: 'ragra',
         canActivate: [permissionGuard],
         data: {
           permission: {
-            anyCondition: [
-              { anyOf: ['full_time', 'contract'], allOf: ['academic', 'HOS'] },
-              { anyOf: ['group_ra_gra_hos_pass'] },
-            ],
+            anyOf: ['full_time', 'contract'],
+            allOf: ['academic'],
           } satisfies NavPermission,
         },
         loadComponent: () =>
-          import('./ragra_form/ragra-form.component').then(m => m.RagraFormComponent),
+          import('./RA-GRA_form/RA-GRA_form.component').then(m => m.RagraFormComponent),
       },
 
       // ── Partnership Application ───────────────────────────────────────────

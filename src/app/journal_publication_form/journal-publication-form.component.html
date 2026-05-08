@@ -26,23 +26,25 @@
   </div>
   <!-- DEV TEST END -->
 
-  <!-- ── 1. Page Title ─────────────────────────────────────────── -->
-  <app-form-main-title
-    title="Journal Publication Funding Request Form"
-    [customModal]="true"
-    (helpClick)="journalGuidelinesModal.open()"
-    modalTitle="Journal Guidelines"
-    endpoint="/api/guidelines/journal">
-  </app-form-main-title>
+  <!-- ── 1. Page Title + Step Indicator ──────────────────────── -->
+  <div class="form-header">
+    <app-form-main-title
+      title="Journal Publication Funding Request Form"
+      [customModal]="true"
+      (helpClick)="journalGuidelinesModal.open()"
+      modalTitle="Journal Guidelines"
+      endpoint="/api/guidelines/journal">
+    </app-form-main-title>
 
-  <!-- ── 2. Step Indicator (clickable) ─────────────────────────── -->
-  <app-step-indicator
-    [currentStep]="currentStep"
-    [steps]="steps"
-    [stepStatuses]="stepStatuses"
-    [submitAttempted]="submitAttempted"
-    (stepClick)="onStepClick($event)">
-  </app-step-indicator>
+    <!-- ── Step Indicator (clickable) ──────────────────────────── -->
+    <app-step-indicator
+      [currentStep]="currentStep"
+      [steps]="steps"
+      [stepStatuses]="stepStatuses"
+      [submitAttempted]="submitAttempted"
+      (stepClick)="onStepClick($event)">
+    </app-step-indicator>
+  </div>
 
 
 

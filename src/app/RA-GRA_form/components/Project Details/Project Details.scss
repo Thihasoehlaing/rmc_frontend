@@ -1,0 +1,55 @@
+@use '../../../../assets/styles/index' as *;
+
+// Component-level layout only.
+// Global classes (.card, .form-field, .form-label, .input--text, .input--select,
+// .row, .row--2, .row--3, .radio-group, .radio-option, .label-with-note,
+// .section-fields) are defined in _forms.scss — do NOT redefine them here.
+
+.form-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+// Ensure each column stacks its fields vertically inside .row--2
+.form-column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  min-width: 0;
+}
+
+// Vertical radio group variant — stacks options top-to-bottom
+.radio-group--vertical {
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+// Soft-readonly input — visually distinct but not fully disabled
+.input--soft-readonly {
+  background: var(--input-bg-readonly);
+  cursor: default;
+  color: var(--color-text-secondary);
+}
+
+// Disabled radio option — muted appearance when Research Cluster is locked
+.radio-option--disabled {
+  opacity: var(--disabled-opacity);
+  cursor: not-allowed;
+
+  input[type='radio'] {
+    cursor: not-allowed;
+  }
+
+  span {
+    color: var(--color-text-muted);
+  }
+}
+
+// Inline hint text shown beside a disabled radio option label
+.radio-option__hint {
+  font-size: var(--fs-xs);
+  color: var(--color-text-muted);
+  font-style: italic;
+  margin-left: var(--space-1);
+}

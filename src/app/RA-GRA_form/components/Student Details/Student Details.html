@@ -1,452 +1,430 @@
 <form [formGroup]="form" class="form-section">
 
-  <!-- ── Student Details Card ──────────────────────────────────── -->
   <div class="card">
     <app-custom-subheader icon="person" title="Student Details"></app-custom-subheader>
     <div class="card__content section-fields">
+
       <div class="row row--2">
 
-        <!-- ── Left Column ──────────────────────────────────────── -->
+        <!-- Left top -->
         <div class="form-column">
 
-          <!-- APU Student ID -->
           <div class="form-field">
             <label class="form-label is-required">APU Student ID</label>
-            <input
-              type="text"
-              class="input--text"
+            <input type="text" class="input--text"
               formControlName="studentId"
-              placeholder="e.g. TP123456"
               [class.is-invalid]="form.get('studentId')?.invalid && form.get('studentId')?.touched">
             <app-validation-message [control]="form.get('studentId')"></app-validation-message>
           </div>
 
-          <!-- Program Title (GRA only) -->
-          <div class="form-field" *ngIf="positionRequested === 'GRA'">
-            <label class="form-label is-required">Program Title</label>
-            <input
-              type="text"
-              class="input--text"
+          <div class="form-field">
+            <label class="form-label is-required">Program Title (only for GRA)</label>
+            <select class="input--select"
               formControlName="programTitle"
-              placeholder="e.g. Master of Science in Computer Science"
               [class.is-invalid]="form.get('programTitle')?.invalid && form.get('programTitle')?.touched">
+              <option value="" disabled selected>Select Program Title</option>
+              <option *ngFor="let prog of programTitleOptions" [value]="prog">{{ prog }}</option>
+            </select>
             <app-validation-message [control]="form.get('programTitle')"></app-validation-message>
           </div>
 
-          <!-- Student Name -->
           <div class="form-field">
             <label class="form-label is-required">Student Name (As per IC/Passport)</label>
-            <input
-              type="text"
-              class="input--text"
+            <input type="text" class="input--text"
               formControlName="studentName"
-              placeholder="e.g. Ahmad bin Abdullah"
               [class.is-invalid]="form.get('studentName')?.invalid && form.get('studentName')?.touched">
             <app-validation-message [control]="form.get('studentName')"></app-validation-message>
           </div>
 
-          <!-- Student Personal Email -->
           <div class="form-field">
             <label class="form-label is-required">Student Personal Email Address</label>
-            <input
-              type="email"
-              class="input--text"
+            <input type="email" class="input--text"
               formControlName="personalEmail"
-              placeholder="e.g. student@gmail.com"
               [class.is-invalid]="form.get('personalEmail')?.invalid && form.get('personalEmail')?.touched">
             <app-validation-message [control]="form.get('personalEmail')"></app-validation-message>
           </div>
 
-          <!-- Student Residential Address -->
           <div class="form-field">
             <label class="form-label is-required">Student Residential Address</label>
-            <textarea
-              class="input--textarea"
+            <input type="text" class="input--text"
               formControlName="residentialAddress"
-              placeholder="Enter full residential address"
-              rows="3"
               [class.is-invalid]="form.get('residentialAddress')?.invalid && form.get('residentialAddress')?.touched">
-            </textarea>
             <app-validation-message [control]="form.get('residentialAddress')"></app-validation-message>
           </div>
 
-          <!-- Job Duties -->
-          <div class="form-field">
-            <label class="form-label is-required">Job Duties</label>
-            <textarea
-              class="input--textarea"
-              formControlName="jobDuties"
-              placeholder="Describe the student's job duties and responsibilities"
-              rows="4"
-              [class.is-invalid]="form.get('jobDuties')?.invalid && form.get('jobDuties')?.touched">
-            </textarea>
-            <app-character-counter
-              [current]="form.get('jobDuties')?.value?.length || 0"
-              [max]="500">
-            </app-character-counter>
-            <app-validation-message [control]="form.get('jobDuties')"></app-validation-message>
-          </div>
-
-          <!-- Appointment Commencement Date -->
-          <div class="form-field">
-            <label class="form-label is-required">Appointment Commencement Date</label>
-            <input
-              type="date"
-              class="input--text"
-              formControlName="commencementDate"
-              [class.is-invalid]="form.get('commencementDate')?.invalid && form.get('commencementDate')?.touched">
-            <app-validation-message [control]="form.get('commencementDate')"></app-validation-message>
-          </div>
-
-          <!-- Appointment Duration (Days) -->
-          <div class="form-field">
-            <label class="form-label is-required">Appointment Duration (Days)</label>
-            <input
-              type="number"
-              class="input--text"
-              formControlName="durationDays"
-              placeholder="e.g. 90"
-              min="1"
-              [class.is-invalid]="form.get('durationDays')?.invalid && form.get('durationDays')?.touched">
-            <app-validation-message [control]="form.get('durationDays')"></app-validation-message>
-          </div>
-
         </div>
-        <!-- /Left Column -->
 
-        <!-- ── Right Column ─────────────────────────────────────── -->
+        <!-- Right top -->
         <div class="form-column">
 
-          <!-- Nationality -->
           <div class="form-field">
             <label class="form-label is-required">Nationality</label>
-            <input
-              type="text"
-              class="input--text"
+            <select class="input--select"
               formControlName="nationality"
-              placeholder="e.g. Malaysian"
               [class.is-invalid]="form.get('nationality')?.invalid && form.get('nationality')?.touched">
+              <option value="" disabled selected>Select Nationality</option>
+              <option *ngFor="let nat of nationalityOptions" [value]="nat">{{ nat }}</option>
+            </select>
             <app-validation-message [control]="form.get('nationality')"></app-validation-message>
           </div>
 
-          <!-- NRIC / Passport -->
           <div class="form-field">
             <label class="form-label is-required">NRIC / Passport</label>
-            <input
-              type="text"
-              class="input--text"
+            <input type="text" class="input--text"
               formControlName="nricPassport"
-              placeholder="e.g. 990101-14-1234 or A12345678"
               [class.is-invalid]="form.get('nricPassport')?.invalid && form.get('nricPassport')?.touched">
             <app-validation-message [control]="form.get('nricPassport')"></app-validation-message>
           </div>
 
-          <!-- Student APU Email -->
           <div class="form-field">
             <label class="form-label is-required">Student APU Email Address</label>
-            <input
-              type="email"
-              class="input--text"
+            <input type="email" class="input--text"
               formControlName="apuEmail"
-              placeholder="e.g. TP123456@mail.apu.edu.my"
               [class.is-invalid]="form.get('apuEmail')?.invalid && form.get('apuEmail')?.touched">
             <app-validation-message [control]="form.get('apuEmail')"></app-validation-message>
           </div>
 
-          <!-- Student Phone Number -->
           <div class="form-field">
             <label class="form-label is-required">Student Phone Number</label>
-            <input
-              type="text"
-              class="input--text"
+            <input type="tel" class="input--text"
               formControlName="phoneNumber"
-              placeholder="e.g. +60123456789"
+              inputmode="tel"
               [class.is-invalid]="form.get('phoneNumber')?.invalid && form.get('phoneNumber')?.touched">
             <app-validation-message [control]="form.get('phoneNumber')"></app-validation-message>
           </div>
 
-          <!-- Student Visa Expiry Date (optional) -->
           <div class="form-field">
             <label class="form-label">Student Visa Expiry Date (if international student)</label>
-            <input
-              type="date"
-              class="input--text"
-              formControlName="visaExpiryDate">
+            <input type="date" class="input--text"
+              formControlName="visaExpiryDate"
+              placeholder="YYYY-MM-DD">
           </div>
 
-          <!-- Second Reporting Person -->
+        </div>
+
+      </div>
+
+      <div class="row row--2 row--stretch">
+
+        <div class="form-field form-field--stretch">
+          <label class="form-label is-required">Job Duties</label>
+          <textarea class="input--textarea input--textarea-stretch"
+            formControlName="jobDuties"
+            placeholder="Describe the student's job duties and responsibilities"
+            [class.is-invalid]="form.get('jobDuties')?.invalid && form.get('jobDuties')?.touched">
+          </textarea>
+          <app-character-counter
+            [current]="form.get('jobDuties')?.value?.length || 0"
+            [max]="1000">
+          </app-character-counter>
+          <app-validation-message [control]="form.get('jobDuties')"></app-validation-message>
+        </div>
+
+        <div class="form-column">
+
           <div class="form-field">
             <div class="label-with-note">
               <label class="form-label is-required">Second Reporting Person</label>
               <app-note
-                text="The second reporting person is an alternative supervisor or project leader who can oversee the student's work in the primary supervisor's absence."
+                text="Please select the co-supervisor/FUM (if any)."
                 [isTooltip]="true">
               </app-note>
             </div>
-            <input
-              type="text"
-              class="input--text"
+            <select class="input--select"
               formControlName="secondReportingPerson"
-              placeholder="Enter name of second reporting person"
               [class.is-invalid]="form.get('secondReportingPerson')?.invalid && form.get('secondReportingPerson')?.touched">
+              <option value="" disabled selected>Select Second Reporting Person</option>
+              <option *ngFor="let person of secondReportingPersonOptions" [value]="person">{{ person }}</option>
+            </select>
             <app-validation-message [control]="form.get('secondReportingPerson')"></app-validation-message>
           </div>
 
-          <!-- Monthly Allowance -->
           <div class="form-field">
             <div class="label-with-note">
-              <label class="form-label is-required">Monthly Allowance (RM)</label>
+              <label class="form-label is-required">Monthly Allowance</label>
               <app-note
-                text="The monthly allowance is subject to the approved budget for the research project or cluster. Please refer to the RA/GRA allowance policy for the applicable rates."
+                text="Monthly Allowance must be between RM500 and RM2800. Ensure you input a valid amount."
                 [isTooltip]="true">
               </app-note>
             </div>
-            <input
-              type="number"
-              class="input--text"
+            <input type="number" class="input--text"
               formControlName="monthlyAllowance"
               placeholder="e.g. 800"
-              min="0"
+              min="500"
+              max="2800"
               [class.is-invalid]="form.get('monthlyAllowance')?.invalid && form.get('monthlyAllowance')?.touched">
             <app-validation-message [control]="form.get('monthlyAllowance')"></app-validation-message>
           </div>
 
-          <!-- Fee Reduction Percentage (GRA / PG only) -->
           <div class="form-field" *ngIf="positionRequested === 'GRA'">
             <div class="label-with-note">
               <label class="form-label is-required">Fee Reduction Percentage (only for PG)</label>
               <app-note
-                text="Graduate Research Assistants (PG students) may be eligible for a tuition fee reduction. Select the applicable percentage as approved by the research project or cluster."
+                text="Fee reduction is only applicable for Postgraduate Renewal applications."
                 [isTooltip]="true">
               </app-note>
             </div>
-            <select
-              class="input--select"
+            <select class="input--select"
               formControlName="feeReductionPercentage"
               [class.is-invalid]="form.get('feeReductionPercentage')?.invalid && form.get('feeReductionPercentage')?.touched">
-              <option value="0">0%</option>
-              <option value="25">25%</option>
-              <option value="50">50%</option>
-              <option value="75">75%</option>
-              <option value="100">100%</option>
+              <option *ngFor="let opt of feeReductionOptions" [value]="opt.value">{{ opt.label }}</option>
             </select>
             <app-validation-message [control]="form.get('feeReductionPercentage')"></app-validation-message>
           </div>
 
-          <!-- Appointment End Date -->
-          <div class="form-field">
-            <label class="form-label is-required">Appointment End Date</label>
-            <input
-              type="date"
-              class="input--text"
-              formControlName="appointmentEndDate"
-              [class.is-invalid]="form.get('appointmentEndDate')?.invalid && form.get('appointmentEndDate')?.touched">
-            <app-validation-message [control]="form.get('appointmentEndDate')"></app-validation-message>
-          </div>
-
         </div>
-        <!-- /Right Column -->
 
       </div>
+
+      <div class="row row--2">
+
+        <div class="form-field">
+          <div class="label-with-note">
+            <label class="form-label is-required">Appointment Commencement Date</label>
+            <app-note
+              text="Appointment Commencement Date must be after the Project Start Date."
+              [isTooltip]="true">
+            </app-note>
+          </div>
+          <input type="date" class="input--text"
+            formControlName="commencementDate"
+            placeholder="YYYY-MM-DD"
+            [class.is-invalid]="form.get('commencementDate')?.invalid && form.get('commencementDate')?.touched">
+          <app-validation-message [control]="form.get('commencementDate')"></app-validation-message>
+        </div>
+
+        <div class="form-field">
+          <div class="label-with-note">
+            <label class="form-label is-required">Appointment End Date</label>
+            <app-note
+              text="Appointment End Date cannot be later than the Visa End Date or Project End Date."
+              [isTooltip]="true">
+            </app-note>
+          </div>
+          <input type="date" class="input--text"
+            formControlName="appointmentEndDate"
+            placeholder="YYYY-MM-DD"
+            [class.is-invalid]="form.get('appointmentEndDate')?.invalid && form.get('appointmentEndDate')?.touched">
+          <app-validation-message [control]="form.get('appointmentEndDate')"></app-validation-message>
+        </div>
+
+      </div>
+
+      <div class="row row--2">
+
+        <div class="form-field">
+          <div class="label-with-note">
+            <label class="form-label is-required">Appointment Duration (Days)</label>
+            <app-note
+              text="Please specify the job duties of RA/GRA. This will be included in the offer letter by HR."
+              [isTooltip]="true">
+            </app-note>
+          </div>
+          <input type="number" class="input--text"
+            formControlName="durationDays"
+            placeholder="e.g. 90"
+            min="1"
+            [class.is-invalid]="form.get('durationDays')?.invalid && form.get('durationDays')?.touched">
+          <app-validation-message [control]="form.get('durationDays')"></app-validation-message>
+        </div>
+
+        <div></div>
+
+      </div>
+
     </div>
   </div>
-  <!-- /Student Details Card -->
 
-  <!-- ══════════════════════════════════════════════════════════
-       Upload Supporting Documents Section
-  ══════════════════════════════════════════════════════════ -->
   <section class="card">
     <app-custom-subheader icon="upload_file" title="Upload Supporting Documents"></app-custom-subheader>
     <div class="card__content">
       <div class="section-fields upload-grid">
 
-        <!-- 1. Employment Application Form -->
-        <div class="upload-item">
+        <div class="form-field">
           <div class="upload-field-header">
-            <h3 class="upload-field-title is-required">Employment Application Form</h3>
+            <div class="title-with-tooltip">
+              <h3 class="upload-field-title is-required">Employment Application Form</h3>
+              <app-note text="Please ensure all sections are completed, and the form is signed by the applicant." [isTooltip]="true"></app-note>
+            </div>
             <p class="upload-field-subtitle">Max file size: 10 MB. Allowed file types: PDF only.</p>
             <a href="#" class="download-link" (click)="$event.preventDefault()">
               <span class="material-icons">download</span>
               Download Employment Application Form (PDF)
             </a>
           </div>
-          <div class="upload-field-body">
-            <app-file-upload
-              #employmentFormUpload
-              [accept]="PDF_ACCEPT"
-              [maxSizeMB]="MAX_FILE_SIZE_MB"
-              placeholder="Drop files here or click to upload"
-              (fileSelected)="onDocumentSelected('employmentForm', $any($event))">
-            </app-file-upload>
-            @if (form.get('employmentForm')?.invalid && form.get('employmentForm')?.touched) {
-              <span class="form-error-msg">Employment Application Form is required</span>
-            }
-          </div>
+          <app-file-upload
+            #employmentFormUpload
+            [accept]="PDF_ACCEPT"
+            [maxSizeMB]="MAX_FILE_SIZE_MB"
+            placeholder="Drop files here or click to upload"
+            (fileSelected)="onDocumentSelected('employmentForm', $any($event))">
+          </app-file-upload>
+          @if (form.get('employmentForm')?.invalid && form.get('employmentForm')?.touched) {
+            <span class="form-error-msg">Employment Application Form is required</span>
+          }
         </div>
 
-        <!-- 2. Copy of Academic Transcripts -->
-        <div class="upload-item">
+        <div class="form-field">
           <div class="upload-field-header">
-            <h3 class="upload-field-title is-required">Copy of Academic Transcripts (E.g. Diploma, Degree, Master)</h3>
+            <div class="title-with-tooltip">
+              <h3 class="upload-field-title is-required">Copy of Academic Transcripts (E.g. Diploma, Degree, Master)</h3>
+              <app-note text="Please combine all pages into one PDF file for submission." [isTooltip]="true"></app-note>
+            </div>
             <p class="upload-field-subtitle">Max file size: 10 MB. Allowed file types: PDF only.</p>
           </div>
-          <div class="upload-field-body">
-            <app-file-upload
-              #academicTranscriptsUpload
-              [accept]="PDF_ACCEPT"
-              [maxSizeMB]="MAX_FILE_SIZE_MB"
-              placeholder="Drop files here or click to upload"
-              (fileSelected)="onDocumentSelected('academicTranscripts', $any($event))">
-            </app-file-upload>
-            @if (form.get('academicTranscripts')?.invalid && form.get('academicTranscripts')?.touched) {
-              <span class="form-error-msg">Academic Transcripts are required</span>
-            }
-          </div>
+          <app-file-upload
+            #academicTranscriptsUpload
+            [accept]="PDF_ACCEPT"
+            [maxSizeMB]="MAX_FILE_SIZE_MB"
+            placeholder="Drop files here or click to upload"
+            (fileSelected)="onDocumentSelected('academicTranscripts', $any($event))">
+          </app-file-upload>
+          @if (form.get('academicTranscripts')?.invalid && form.get('academicTranscripts')?.touched) {
+            <span class="form-error-msg">Academic Transcripts are required</span>
+          }
         </div>
 
-        <!-- 3. RA/GRA's CV -->
-        <div class="upload-item">
+        <div class="form-field">
           <div class="upload-field-header">
-            <h3 class="upload-field-title is-required">RA/GRA's CV</h3>
+            <div class="title-with-tooltip">
+              <h3 class="upload-field-title is-required">RA/GRA's CV</h3>
+              <app-note text="Please ensure the Curriculum Vitae (CV) is updated and included relevant academic and research experiences." [isTooltip]="true"></app-note>
+            </div>
             <p class="upload-field-subtitle">Max file size: 10 MB. Allowed file types: PDF only.</p>
           </div>
-          <div class="upload-field-body">
-            <app-file-upload
-              #cvUpload
-              [accept]="PDF_ACCEPT"
-              [maxSizeMB]="MAX_FILE_SIZE_MB"
-              placeholder="Drop files here or click to upload"
-              (fileSelected)="onDocumentSelected('cv', $any($event))">
-            </app-file-upload>
-            @if (form.get('cv')?.invalid && form.get('cv')?.touched) {
-              <span class="form-error-msg">RA/GRA's CV is required</span>
-            }
-          </div>
+          <app-file-upload
+            #cvUpload
+            [accept]="PDF_ACCEPT"
+            [maxSizeMB]="MAX_FILE_SIZE_MB"
+            placeholder="Drop files here or click to upload"
+            (fileSelected)="onDocumentSelected('cv', $any($event))">
+          </app-file-upload>
+          @if (form.get('cv')?.invalid && form.get('cv')?.touched) {
+            <span class="form-error-msg">RA/GRA's CV is required</span>
+          }
         </div>
 
-        <!-- 4. Print Screen of Bank Statement -->
-        <div class="upload-item">
+        <div class="form-field">
           <div class="upload-field-header">
-            <h3 class="upload-field-title is-required">Print Screen of Bank Statement</h3>
+            <div class="title-with-tooltip">
+              <h3 class="upload-field-title is-required">Print Screen of Bank Statement</h3>
+              <app-note text="Please upload a screenshot of the first page of student's bank statement showing account holder name and account number." [isTooltip]="true"></app-note>
+            </div>
             <p class="upload-field-subtitle">Max file size: 10 MB. Allowed file types: PDF only.</p>
           </div>
-          <div class="upload-field-body">
-            <app-file-upload
-              #bankStatementUpload
-              [accept]="PDF_ACCEPT"
-              [maxSizeMB]="MAX_FILE_SIZE_MB"
-              placeholder="Drop files here or click to upload"
-              (fileSelected)="onDocumentSelected('bankStatement', $any($event))">
-            </app-file-upload>
-            @if (form.get('bankStatement')?.invalid && form.get('bankStatement')?.touched) {
-              <span class="form-error-msg">Bank Statement is required</span>
-            }
-          </div>
+          <app-file-upload
+            #bankStatementUpload
+            [accept]="PDF_ACCEPT"
+            [maxSizeMB]="MAX_FILE_SIZE_MB"
+            placeholder="Drop files here or click to upload"
+            (fileSelected)="onDocumentSelected('bankStatement', $any($event))">
+          </app-file-upload>
+          @if (form.get('bankStatement')?.invalid && form.get('bankStatement')?.touched) {
+            <span class="form-error-msg">Bank Statement is required</span>
+          }
         </div>
 
-        <!-- 5. Recruitment Submission Form -->
-        <div class="upload-item">
+        <div class="form-field">
           <div class="upload-field-header">
-            <h3 class="upload-field-title is-required">Recruitment Submission Form</h3>
+            <div class="title-with-tooltip">
+              <h3 class="upload-field-title is-required">Recruitment Submission Form</h3>
+              <app-note text="Please ensure all sections are completed, and the form is signed by the applicant." [isTooltip]="true"></app-note>
+            </div>
             <p class="upload-field-subtitle">Max file size: 10 MB. Allowed file types: PDF only.</p>
             <a href="#" class="download-link" (click)="$event.preventDefault()">
               <span class="material-icons">download</span>
               Download Recruitment Submission Form (PDF)
             </a>
           </div>
-          <div class="upload-field-body">
-            <app-file-upload
-              #recruitmentFormUpload
-              [accept]="PDF_ACCEPT"
-              [maxSizeMB]="MAX_FILE_SIZE_MB"
-              placeholder="Drop files here or click to upload"
-              (fileSelected)="onDocumentSelected('recruitmentForm', $any($event))">
-            </app-file-upload>
-            @if (form.get('recruitmentForm')?.invalid && form.get('recruitmentForm')?.touched) {
-              <span class="form-error-msg">Recruitment Submission Form is required</span>
-            }
-          </div>
+          <app-file-upload
+            #recruitmentFormUpload
+            [accept]="PDF_ACCEPT"
+            [maxSizeMB]="MAX_FILE_SIZE_MB"
+            placeholder="Drop files here or click to upload"
+            (fileSelected)="onDocumentSelected('recruitmentForm', $any($event))">
+          </app-file-upload>
+          @if (form.get('recruitmentForm')?.invalid && form.get('recruitmentForm')?.touched) {
+            <span class="form-error-msg">Recruitment Submission Form is required</span>
+          }
         </div>
 
-        <!-- 6. Non-Employee Confidentiality Agreement Form -->
-        <div class="upload-item">
+        <div class="form-field">
           <div class="upload-field-header">
-            <h3 class="upload-field-title is-required">Non-Employee Confidentiality Agreement Form (For Student)</h3>
+            <div class="title-with-tooltip">
+              <h3 class="upload-field-title is-required">Non-Employee Confidentiality Agreement Form (For Student)</h3>
+              <app-note text="Please ensure all pages are completed, and signed by the student." [isTooltip]="true"></app-note>
+            </div>
             <p class="upload-field-subtitle">Max file size: 10 MB. Allowed file types: PDF only.</p>
             <a href="#" class="download-link" (click)="$event.preventDefault()">
               <span class="material-icons">download</span>
               Download Confidentiality Agreement Form (PDF)
             </a>
           </div>
-          <div class="upload-field-body">
-            <app-file-upload
-              #confidentialityFormUpload
-              [accept]="PDF_ACCEPT"
-              [maxSizeMB]="MAX_FILE_SIZE_MB"
-              placeholder="Drop files here or click to upload"
-              (fileSelected)="onDocumentSelected('confidentialityForm', $any($event))">
-            </app-file-upload>
-            @if (form.get('confidentialityForm')?.invalid && form.get('confidentialityForm')?.touched) {
-              <span class="form-error-msg">Confidentiality Agreement Form is required</span>
-            }
-          </div>
+          <app-file-upload
+            #confidentialityFormUpload
+            [accept]="PDF_ACCEPT"
+            [maxSizeMB]="MAX_FILE_SIZE_MB"
+            placeholder="Drop files here or click to upload"
+            (fileSelected)="onDocumentSelected('confidentialityForm', $any($event))">
+          </app-file-upload>
+          @if (form.get('confidentialityForm')?.invalid && form.get('confidentialityForm')?.touched) {
+            <span class="form-error-msg">Confidentiality Agreement Form is required</span>
+          }
         </div>
 
-        <!-- 7. Other Supporting Documents (If any) -->
-        <div class="upload-item">
+        <div class="form-field">
           <div class="upload-field-header">
-            <h3 class="upload-field-title">Other Supporting Documents (If any)</h3>
+            <div class="title-with-tooltip">
+              <h3 class="upload-field-title">Other Supporting Documents (if any)</h3>
+              <app-note text="Please upload any other relevant supporting documents e.g. Research Agreement, Research Proposal etc. (if any)." [isTooltip]="true"></app-note>
+            </div>
             <p class="upload-field-subtitle">Max file size: 10 MB. Allowed file types: PDF only.</p>
+            <a href="#" class="download-link" (click)="$event.preventDefault()">
+              <span class="material-icons">download</span>
+              Download Other Supporting Documents (PDF)
+            </a>
           </div>
-          <div class="upload-field-body">
-            <app-file-upload
-              #otherDocumentsUpload
-              [accept]="PDF_ACCEPT"
-              [maxSizeMB]="MAX_FILE_SIZE_MB"
-              placeholder="Drop files here or click to upload"
-              (fileSelected)="onDocumentSelected('otherDocuments', $any($event))">
-            </app-file-upload>
-          </div>
+          <app-file-upload
+            #otherDocumentsUpload
+            [accept]="PDF_ACCEPT"
+            [maxSizeMB]="MAX_FILE_SIZE_MB"
+            placeholder="Drop files here or click to upload"
+            (fileSelected)="onDocumentSelected('otherDocuments', $any($event))">
+          </app-file-upload>
         </div>
 
-        <!-- 8. NRIC/Passport -->
-        <div class="upload-item">
+        <div class="form-field">
           <div class="upload-field-header">
             <h3 class="upload-field-title is-required">NRIC/Passport</h3>
             <p class="upload-field-subtitle">Max file size: 10 MB. Allowed file types: PDF only.</p>
           </div>
-          <div class="upload-field-body">
-            <app-file-upload
-              #nricPassportUpload
-              [accept]="PDF_ACCEPT"
-              [maxSizeMB]="MAX_FILE_SIZE_MB"
-              placeholder="Drop files here or click to upload"
-              (fileSelected)="onDocumentSelected('nricPassportDoc', $any($event))">
-            </app-file-upload>
-            @if (form.get('nricPassportDoc')?.invalid && form.get('nricPassportDoc')?.touched) {
-              <span class="form-error-msg">NRIC/Passport document is required</span>
-            }
-          </div>
+          <app-file-upload
+            #nricPassportUpload
+            [accept]="PDF_ACCEPT"
+            [maxSizeMB]="MAX_FILE_SIZE_MB"
+            placeholder="Drop files here or click to upload"
+            (fileSelected)="onDocumentSelected('nricPassportDoc', $any($event))">
+          </app-file-upload>
+          @if (form.get('nricPassportDoc')?.invalid && form.get('nricPassportDoc')?.touched) {
+            <span class="form-error-msg">NRIC/Passport document is required</span>
+          }
         </div>
 
-        <!-- 9. VISA -->
-        <div class="upload-item">
+        <div class="form-field">
           <div class="upload-field-header">
             <h3 class="upload-field-title is-required">VISA</h3>
             <p class="upload-field-subtitle">Max file size: 10 MB. Allowed file types: PDF only.</p>
           </div>
-          <div class="upload-field-body">
-            <app-file-upload
-              #visaUpload
-              [accept]="PDF_ACCEPT"
-              [maxSizeMB]="MAX_FILE_SIZE_MB"
-              placeholder="Drop files here or click to upload"
-              (fileSelected)="onDocumentSelected('visa', $any($event))">
-            </app-file-upload>
-            @if (form.get('visa')?.invalid && form.get('visa')?.touched) {
-              <span class="form-error-msg">VISA document is required</span>
-            }
-          </div>
+          <app-file-upload
+            #visaUpload
+            [accept]="PDF_ACCEPT"
+            [maxSizeMB]="MAX_FILE_SIZE_MB"
+            placeholder="Drop files here or click to upload"
+            (fileSelected)="onDocumentSelected('visa', $any($event))">
+          </app-file-upload>
+          @if (form.get('visa')?.invalid && form.get('visa')?.touched) {
+            <span class="form-error-msg">VISA document is required</span>
+          }
         </div>
 
       </div>

@@ -113,7 +113,8 @@ export const routes: Routes = [
               { anyOf: ['full_time', 'contract'], allOf: ['academic'] },
               { anyOf: ['HOS'] },
               { anyOf: ['VC'] },
-              { anyOf: ['Admin'] },            ],          } satisfies NavPermission,
+              { anyOf: ['Admin'] },],
+          } satisfies NavPermission,
         },
         loadChildren: () =>
           import('./journal_publication_form/journal_publication_form.routes').then(
@@ -132,8 +133,8 @@ export const routes: Routes = [
             allOf: ['academic'],
           } satisfies NavPermission,
         },
-        loadComponent: () =>
-          import('./RA-GRA_form/RA-GRA_form.component').then(m => m.RagraFormComponent),
+        loadChildren: () =>
+          import('./RA-GRA_form/RA-GRA_form.routes').then(m => m.ragraFormRoutes),
       },
 
       // ── Partnership Application ───────────────────────────────────────────
@@ -200,6 +201,9 @@ export const routes: Routes = [
                 loadComponent: () =>
                     import('./settings/batch-sitting/batch-sitting.component').then(m => m.BatchSittingComponent),
             },
+            loadComponent: () =>
+              import('./settings/batch-sitting/batch-sitting.component').then(m => m.BatchSittingComponent),
+          },
         ]
       },
 

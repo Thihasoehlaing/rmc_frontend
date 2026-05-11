@@ -1,52 +1,39 @@
 <form [formGroup]="form" class="form-section">
-
-  <!-- ══════════════════════════════════════════════════════════
-       SECTION 1 — Applicant Details
-  ══════════════════════════════════════════════════════════════ -->
+  <!-- Section 1: Applicant Details -->
   <div class="card">
     <app-custom-subheader icon="person" title="Applicant Details"></app-custom-subheader>
     <div class="card__content section-fields">
       <div class="row row--2">
-
         <div class="form-field">
-          <label class="form-label">Applicant Name (Principal Supervisor / Project Leader etc.)</label>
-          <input type="text" class="input--text input--soft-readonly"
-            [value]="auth.currentUser()?.name || ''" readonly>
+          <label class="form-label">Applicant Name (Principal Supervisor/Project Leader etc.)</label>
+          <input type="text" class="input--text input--soft-readonly" [value]="auth.currentUser()?.name || ''" readonly>
         </div>
-
         <div class="form-field">
           <label class="form-label is-required">School Name</label>
-          <select formControlName="schoolName" class="input--select"
-            [class.is-invalid]="form.get('schoolName')?.invalid && form.get('schoolName')?.touched">
+          <select formControlName="schoolName" class="input--text" [class.is-invalid]="form.get('schoolName')?.invalid && form.get('schoolName')?.touched">
             <option value="" disabled selected>Select School</option>
             <option value="SBM">School of Business and Management (SBM)</option>
             <option value="SOC">School of Computing (SOC)</option>
             <option value="SOE">School of Engineering (SOE)</option>
-            <option value="SOMAD">School of Media, Arts and Design (SOMAD)</option>
+            <option value="SOM">School of Media, Arts and Design (SOMAD)</option>
           </select>
           <app-validation-message [control]="form.get('schoolName')"></app-validation-message>
         </div>
-
       </div>
     </div>
   </div>
 
-  <!-- ══════════════════════════════════════════════════════════
-       SECTION 2 — Project / Research Cluster Details
-  ══════════════════════════════════════════════════════════════ -->
+  <!-- Section 2: Project / Research Cluster Details -->
   <div class="card">
     <app-custom-subheader icon="article" title="Project / Research Cluster Details"></app-custom-subheader>
     <div class="card__content section-fields">
       <div class="row row--2">
-
         <!-- Left Column -->
         <div class="form-column">
-
-          <!-- Position Requested -->
           <div class="form-field">
             <div class="label-with-note">
               <label class="form-label is-required">Position Requested</label>
-              <app-note text="Research Assistants can only be placed under Research Projects." [isTooltip]="true"></app-note>
+              <app-note text="Select the type of position being requested" [isTooltip]="true"></app-note>
             </div>
             <div class="radio-group radio-group--vertical">
               <label class="radio-option">
@@ -61,7 +48,6 @@
             <app-validation-message [control]="form.get('positionRequested')"></app-validation-message>
           </div>
 
-          <!-- RA/GRA Application Type -->
           <div class="form-field">
             <label class="form-label is-required">RA/GRA Application Type</label>
             <div class="radio-group radio-group--vertical">
@@ -76,38 +62,25 @@
             </div>
             <app-validation-message [control]="form.get('applicationType')"></app-validation-message>
           </div>
-
         </div>
-        <!-- /Left Column -->
 
         <!-- Right Column -->
         <div class="form-column">
-
-          <!-- Placement -->
           <div class="form-field">
             <label class="form-label is-required">Is this RA/GRA to be placed at:</label>
             <div class="radio-group radio-group--vertical">
-
               <label class="radio-option">
                 <input type="radio" formControlName="placement" value="Research Project">
                 <span>Research Project</span>
               </label>
-
-              <!-- Research Cluster is disabled when RA is selected (Req 1) -->
-              <label class="radio-option"
-                [class.radio-option--disabled]="isRA"
-                [title]="isRA ? 'Research Cluster is not available for Research Assistant (UG Student)' : ''">
-                <input type="radio" formControlName="placement" value="Research Cluster"
-                  [disabled]="isRA">
+              <label class="radio-option">
+                <input type="radio" formControlName="placement" value="Research Cluster">
                 <span>Research Cluster</span>
-                <span class="radio-option__hint" *ngIf="isRA">(Not available for RA)</span>
               </label>
-
             </div>
             <app-validation-message [control]="form.get('placement')"></app-validation-message>
           </div>
 
-          <!-- Year -->
           <div class="form-field">
             <label class="form-label is-required">Year</label>
             <div class="radio-group radio-group--vertical">
@@ -122,149 +95,8 @@
             </div>
             <app-validation-message [control]="form.get('year')"></app-validation-message>
           </div>
-
         </div>
-        <!-- /Right Column -->
-
       </div>
     </div>
   </div>
-
-  <!-- ══════════════════════════════════════════════════════════
-       SECTION 3 — Research Project Details
-       Shown only when placement = Research Project
-  ══════════════════════════════════════════════════════════════ -->
-  <div class="card" *ngIf="isResearchProject" formGroupName="projectDetails">
-    <app-custom-subheader icon="science" title="Research Project Details"></app-custom-subheader>
-    <div class="card__content section-fields">
-
-      <!-- Row 1: Account Code | Select Vote | Category of Grant -->
-      <div class="row row--3">
-
-        <!-- Account Code -->
-        <div class="form-field">
-          <label class="form-label is-required">Account Code</label>
-          <select formControlName="accountCode" class="input--select"
-            [class.is-invalid]="form.get('projectDetails.accountCode')?.invalid && form.get('projectDetails.accountCode')?.touched">
-            <option value="" disabled selected>Select Account Code</option>
-            <option *ngFor="let opt of accountCodeOptions" [value]="opt.value">{{ opt.label }}</option>
-          </select>
-          <app-validation-message [control]="form.get('projectDetails.accountCode')"></app-validation-message>
-        </div>
-
-        <!-- Select Vote -->
-        <div class="form-field">
-          <label class="form-label is-required">Select Vote</label>
-          <select formControlName="selectVote" class="input--select"
-            [class.is-invalid]="form.get('projectDetails.selectVote')?.invalid && form.get('projectDetails.selectVote')?.touched">
-            <option value="" disabled selected>Select Vote</option>
-            <option *ngFor="let opt of voteOptions" [value]="opt.value">{{ opt.label }}</option>
-          </select>
-          <app-validation-message [control]="form.get('projectDetails.selectVote')"></app-validation-message>
-        </div>
-
-        <!-- Category of Grant -->
-        <div class="form-field">
-          <label class="form-label is-required">Category of Grant</label>
-          <div class="radio-group radio-group--vertical">
-            <label class="radio-option">
-              <input type="radio" formControlName="categoryOfGrant" value="Internal">
-              <span>Internal Grant</span>
-            </label>
-            <label class="radio-option">
-              <input type="radio" formControlName="categoryOfGrant" value="External">
-              <span>External Grant</span>
-            </label>
-          </div>
-          <app-validation-message [control]="form.get('projectDetails.categoryOfGrant')"></app-validation-message>
-        </div>
-
-      </div>
-
-      <!-- Row 2: Research Title (full width) -->
-      <div class="form-field">
-        <label class="form-label is-required">Research Title</label>
-        <input type="text" class="input--text" formControlName="researchTitle"
-          placeholder="Enter the full research project title"
-          [class.is-invalid]="form.get('projectDetails.researchTitle')?.invalid && form.get('projectDetails.researchTitle')?.touched">
-        <app-validation-message [control]="form.get('projectDetails.researchTitle')"></app-validation-message>
-      </div>
-
-      <!-- Row 3: Project Start Date | Project End Date | Research Grant/Project Funder -->
-      <div class="row row--3">
-
-        <!-- Project Start Date -->
-        <div class="form-field">
-          <label class="form-label is-required">Project Start Date</label>
-          <input type="date" class="input--text" formControlName="projectStartDate"
-            [class.is-invalid]="form.get('projectDetails.projectStartDate')?.invalid && form.get('projectDetails.projectStartDate')?.touched">
-          <app-validation-message [control]="form.get('projectDetails.projectStartDate')"></app-validation-message>
-        </div>
-
-        <!-- Project End Date -->
-        <div class="form-field">
-          <label class="form-label is-required">Project End Date</label>
-          <input type="date" class="input--text" formControlName="projectEndDate"
-            [class.is-invalid]="form.get('projectDetails.projectEndDate')?.invalid && form.get('projectDetails.projectEndDate')?.touched">
-          <app-validation-message [control]="form.get('projectDetails.projectEndDate')"></app-validation-message>
-        </div>
-
-        <!-- Research Grant/Project Funder (locked for Internal, editable for External) -->
-        <div class="form-field">
-          <div class="label-with-note">
-            <label class="form-label is-required">Research Grant / Project Funder</label>
-            <app-note
-              *ngIf="isInternalGrant"
-              text="Funder is fixed as Asia Pacific University for Internal Grants."
-              [isTooltip]="true">
-            </app-note>
-          </div>
-          <input type="text" formControlName="funder"
-            [class]="isInternalGrant ? 'input--text input--soft-readonly' : 'input--text'"
-            [class.is-invalid]="form.get('projectDetails.funder')?.invalid && form.get('projectDetails.funder')?.touched"
-            placeholder="Enter funder name">
-          <app-validation-message [control]="form.get('projectDetails.funder')"></app-validation-message>
-        </div>
-
-      </div>
-
-    </div>
-  </div>
-
-  <!-- ══════════════════════════════════════════════════════════
-       SECTION 4 — Research Cluster Details
-       Shown only when placement = Research Cluster
-  ══════════════════════════════════════════════════════════════ -->
-  <div class="card" *ngIf="isResearchCluster" formGroupName="clusterDetails">
-    <app-custom-subheader icon="hub" title="Research Cluster Details"></app-custom-subheader>
-    <div class="card__content section-fields">
-      <div class="row row--2">
-
-        <!-- Left: Select Research Cluster/Research Centre -->
-        <div class="form-field">
-          <label class="form-label is-required">Select Research Cluster / Research Centre</label>
-          <select formControlName="selectedCluster" class="input--select"
-            [class.is-invalid]="form.get('clusterDetails.selectedCluster')?.invalid && form.get('clusterDetails.selectedCluster')?.touched">
-            <option value="" disabled selected>Select Research Cluster / Research Centre</option>
-            <option *ngFor="let opt of clusterOptions" [value]="opt.value">{{ opt.label }}</option>
-          </select>
-          <app-validation-message [control]="form.get('clusterDetails.selectedCluster')"></app-validation-message>
-        </div>
-
-        <!-- Right: How many current active RA/GRA -->
-        <div class="form-field">
-          <label class="form-label is-required">How many current active RA/GRA in the research cluster?</label>
-          <div class="radio-group">
-            <label class="radio-option" *ngFor="let count of activeRaGraOptions">
-              <input type="radio" formControlName="activeRaGraCount" [value]="count">
-              <span>{{ count }}</span>
-            </label>
-          </div>
-          <app-validation-message [control]="form.get('clusterDetails.activeRaGraCount')"></app-validation-message>
-        </div>
-
-      </div>
-    </div>
-  </div>
-
 </form>

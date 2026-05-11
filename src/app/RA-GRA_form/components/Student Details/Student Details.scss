@@ -2,8 +2,8 @@
 
 // Component-level layout only.
 // Global classes (.card, .form-field, .form-label, .input--text, .input--textarea,
-// .input--select, .row, .row--2, .label-with-note, .section-fields) are defined
-// in _forms.scss — do NOT redefine them here.
+// .input--select, .row, .row--2, .label-with-note, .form-hint) are defined in
+// _forms.scss and must NOT be redefined here.
 
 .form-section {
   display: flex;
@@ -14,10 +14,10 @@
 .section-fields {
   display: flex;
   flex-direction: column;
-  gap: var(--space-5);
+  gap: var(--space-4);
 }
 
-// Each column stacks its fields vertically with consistent spacing
+// Ensure each column stacks its fields vertically
 .form-column {
   display: flex;
   flex-direction: column;
@@ -25,79 +25,56 @@
   min-width: 0;
 }
 
-// ── Zone 2: stretch row so both cells are the same height ────────
-// The grid default align-items:stretch already does this.
-// We just need the Job Duties form-field and textarea to fill that height.
-.row--stretch {
-  align-items: stretch;
-}
-
-// form-field that fills the full height of its grid cell
-.form-field--stretch {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  height: 100%;
-}
-
-// Textarea that grows to fill the remaining space inside .form-field--stretch
-// (label + counter + validation message take fixed height; textarea takes the rest)
-.input--textarea-stretch {
-  flex: 1;
-  min-height: 220px; // no token: minimum fallback height — allowed exception
-  resize: vertical;
-}
-
 // ══════════════════════════════════════════════════════════════════
-// Upload Supporting Documents — mirrors Journal/RDIG pattern exactly
+// Upload Supporting Documents Section — mirrors Journal pattern
 // ══════════════════════════════════════════════════════════════════
 
-// 2-column upload grid — uses both the compound selector (Journal pattern)
-// AND a standalone fallback to guarantee the grid wins regardless of
-// Angular view encapsulation scoping.
-.section-fields.upload-grid,
-.upload-grid {
+// Upload grid: 2-column layout matching the Journal form.
+// align-items: stretch (grid default) makes both cells in each row
+// the same height automatically — no extra work needed.
+.section-fields.upload-grid {
   display: grid !important;
   grid-template-columns: 1fr 1fr;
   gap: var(--space-6);
-  // Reset any flex properties inherited from .section-fields
-  flex-direction: unset;
-  align-items: stretch; // stretch = both cells in each row get equal height
 
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
   }
 }
 
-// Each upload item fills its grid cell height completely
-// so the dropzone is always pushed to the bottom of the cell
-.section-fields.upload-grid .form-field,
-.upload-grid .form-field {
+// Each upload item is a flex column that stretches to fill the grid cell.
+// justify-content: space-between pushes the dropzone to the bottom so
+// items in the same row always have their dropzones at the same vertical
+// position, regardless of how many lines the title or download link takes.
+.upload-item {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  gap: var(--space-3);
+  min-width: 0;
 }
 
-// The header (title + subtitle + download link) grows to fill
-// all available space above the dropzone — this is what keeps
-// dropzones aligned across a row even when titles have different heights
+// The header area (title + subtitle + optional download link) grows to
+// fill available space, keeping the dropzone anchored at the bottom.
 .upload-field-header {
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
-  flex: 1; // grow to push dropzone to bottom
+  flex: 1;
 }
 
-// Title: same as Journal — flex row so asterisk sits inline
+// The dropzone + error message area — always at the bottom of the item.
+.upload-field-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
 .upload-field-title {
   font-size: var(--fs-md);
   font-weight: var(--fw-bold);
   color: var(--color-text);
   margin: 0;
   padding: 0;
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
 
   &.is-required::after {
     content: ' *';
@@ -105,7 +82,6 @@
   }
 }
 
-// Subtitle helper text
 .upload-field-subtitle {
   font-size: var(--fs-xs);
   color: var(--color-text-muted);
@@ -113,22 +89,7 @@
   padding: 0;
 }
 
-// Title + tooltip icon wrapper — same as Journal .title-with-tooltip
-.title-with-tooltip {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  width: fit-content;
-  max-width: 100%;
-  flex-wrap: wrap;
-
-  app-note {
-    flex-shrink: 0;
-    align-self: center;
-  }
-}
-
-// Download link
+// Download link — styled like a button link with icon
 .download-link {
   display: inline-flex;
   align-items: center;

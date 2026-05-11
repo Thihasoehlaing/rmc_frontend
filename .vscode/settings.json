@@ -4,6 +4,5 @@
             "approve": true,
             "matchCommandLine": true
         }
-    },
-    "liveServer.settings.port": 5501
+    }
 }

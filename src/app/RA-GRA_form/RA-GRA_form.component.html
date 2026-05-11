@@ -1,30 +1,5 @@
 <div class="ragra-app">
 
-  <!-- DEV TEST START: Application Status Override -->
-  <div class="dev-test-override">
-    <label class="dev-test-override__label">DEV TEST: Application Status</label>
-    <select
-      [formControl]="statusControl"
-      class="dev-test-override__select">
-      <option value="draft">draft</option>
-      <option value="submitted">submitted</option>
-      <option value="pending_hos">pending_hos</option>
-      <option value="returned_by_hos">returned_by_hos</option>
-      <option value="recommended_by_hos">recommended_by_hos</option>
-      <option value="rejected_by_hos">rejected_by_hos</option>
-      <option value="pending_rmc">pending_rmc</option>
-      <option value="returned_by_rmc">returned_by_rmc</option>
-      <option value="approved_by_rmc">approved_by_rmc</option>
-      <option value="rejected_by_rmc">rejected_by_rmc</option>
-      <option value="pending_hr">pending_hr</option>
-      <option value="approved_by_hr">approved_by_hr</option>
-      <option value="rejected_by_hr">rejected_by_hr</option>
-      <option value="offer_letter_generated">offer_letter_generated</option>
-      <option value="blocked">blocked</option>
-    </select>
-  </div>
-  <!-- DEV TEST END -->
-
   <!-- ── 1. Page Title + Step Indicator ──────────────────────── -->
   <div class="form-header">
     <app-form-main-title
@@ -32,7 +7,6 @@
       [customModal]="false">
     </app-form-main-title>
 
-    <!-- ── Step Indicator (clickable) ──────────────────────────── -->
     <app-step-indicator
       [currentStep]="currentStep"
       [steps]="steps"
@@ -42,84 +16,33 @@
     </app-step-indicator>
   </div>
 
-
-
-  <!-- ── External Review Comment Buttons ───────────────────────── -->
-  <ng-container *ngIf="workflow.status() !== 'draft' && (workflow.showHosToggle() || workflow.showRmcToggle() || workflow.showHrToggle())">
-    
-    <div class="comment-toggle-bar">
-      <button type="button" class="btn btn--comment-toggle"
-              *ngIf="workflow.showHosToggle()"
-              [class.btn--comment-toggle-active]="selectedCommentSection === 'hos'"
-              (click)="toggleCommentSection('hos')">
-        <span class="material-icons">supervisor_account</span>
-        {{ selectedCommentSection === 'hos' ? 'Hide HOS Comments' : 'HOS Comments' }}
-      </button>
-
-      <button type="button" class="btn btn--comment-toggle"
-              *ngIf="workflow.showRmcToggle()"
-              [class.btn--comment-toggle-active]="selectedCommentSection === 'rmc'"
-              (click)="toggleCommentSection('rmc')">
-        <span class="material-icons">verified</span>
-        {{ selectedCommentSection === 'rmc' ? 'Hide RMC Comments' : 'RMC Comments' }}
-      </button>
-
-      <button type="button" class="btn btn--comment-toggle"
-              *ngIf="workflow.showHrToggle()"
-              [class.btn--comment-toggle-active]="selectedCommentSection === 'hr'"
-              (click)="toggleCommentSection('hr')">
-        <span class="material-icons">people</span>
-        {{ selectedCommentSection === 'hr' ? 'Hide HR Comments' : 'HR Comments' }}
-      </button>
-    </div>
-  </ng-container>
-
-  <!-- ── 3. Main Form ──────────────────────────────────────────── -->
-  <fieldset class="form-container" [disabled]="workflow.isFormReadOnly()">
+  <!-- ── 2. Main Form ──────────────────────────────────────────── -->
+  <fieldset class="form-container">
     <div class="ragra-app__content">
-      <app-ragra-project-details *ngIf="currentStep === 1" (formValidityChange)="updateFormValidity(1, $event)"></app-ragra-project-details>       
-      <app-ragra-student-details *ngIf="currentStep === 2" [positionRequested]="positionRequested" (formValidityChange)="updateFormValidity(2, $event)"></app-ragra-student-details>       
+
+      <!-- Step 1: Applicant and Project Details -->
+      <app-ragra-project-details
+        *ngIf="currentStep === 1"
+        (formValidityChange)="updateFormValidity(1, $event)">
+      </app-ragra-project-details>
+
+      <!-- Step 2: Student Details -->
+      <app-ragra-student-details
+        *ngIf="currentStep === 2"
+        [positionRequested]="positionRequested"
+        (formValidityChange)="updateFormValidity(2, $event)">
+      </app-ragra-student-details>
+
+      <!-- Step 3: Declaration -->
       <app-ragra-declaration
         *ngIf="currentStep === 3"
         (formValidityChange)="updateFormValidity(3, $event)">
       </app-ragra-declaration>
+
     </div>
   </fieldset>
 
-  <!-- ── External Review Comment Panels (outside form disabling) ─────── -->
-  <ng-container *ngIf="workflow.status() !== 'draft' && (workflow.showHosToggle() || workflow.showRmcToggle() || workflow.showHrToggle())">
-    <!-- Active Comment Panels -->
-    <div class="card review-comments-section" *ngIf="selectedCommentSection">
-      <div class="card__content section-fields">
-        <h3 class="section-title">Review Comments</h3>
-
-        <app-review-block *ngIf="selectedCommentSection === 'hos'"
-          label="HOS — Application Review"
-          icon="supervisor_account"
-          [visible]="true"
-          [readonly]="!workflow.isHosEditable()"
-          [commentControl]="reviewComments.hosComment">
-        </app-review-block>
-
-        <app-review-block *ngIf="selectedCommentSection === 'rmc'"
-          label="RMC — Application Review"
-          icon="verified"
-          [visible]="true"
-          [readonly]="!workflow.isRmcEditable()"
-          [commentControl]="reviewComments.rmcComment">
-        </app-review-block>
-
-        <app-review-block *ngIf="selectedCommentSection === 'hr'"
-          label="HR — Application Review"
-          icon="people"
-          [visible]="true"
-          [readonly]="!workflow.isHrEditable()"
-          [commentControl]="reviewComments.hrComment">
-        </app-review-block>
-      </div>
-    </div>
-  </ng-container>
-  <!-- ── 4. Shared wizard navigation footer ───────────────────── -->
+  <!-- ── 3. Wizard Navigation Footer ─────────────────────────── -->
   <app-form-wizard-nav
     [currentStep]="currentStep"
     [totalSteps]="totalSteps"
@@ -130,9 +53,5 @@
     (saveDraft)="onSaveDraft()"
     (submitForm)="onSubmit()">
   </app-form-wizard-nav>
+
 </div>
-
-
-
-
-

@@ -1,22 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { JournalSettingsComponent } from './Journal-settings.component';
-import { BreakdownOptionsService } from '../../services/breakdown-options.service';
+import { JournalSettingsComponent } from './journal-settings.component';
 
 describe('JournalSettingsComponent', () => {
   let component: JournalSettingsComponent;
   let fixture: ComponentFixture<JournalSettingsComponent>;
-  let breakdownService: BreakdownOptionsService;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [JournalSettingsComponent],
-      providers: [BreakdownOptionsService]
+      imports: [JournalSettingsComponent]
     }).compileComponents();
 
+    localStorage.clear();
     fixture = TestBed.createComponent(JournalSettingsComponent);
     component = fixture.componentInstance;
-    breakdownService = TestBed.inject(BreakdownOptionsService);
-    localStorage.clear();
     fixture.detectChanges();
   });
 
@@ -28,77 +24,24 @@ describe('JournalSettingsComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should initialize with research breakdown type selected', () => {
-    expect(component.selectedBreakdownType()).toBe('research');
+  it('should initialize with the first journal category selected', () => {
+    expect(component.selectedBreakdownType()).toBe('vote_number_description');
   });
 
-  it('should load current options on init', () => {
-    expect(component.currentOptions().length).toBeGreaterThan(0);
+  it('should expose four journal option categories', () => {
+    expect(component.breakdownTypeOptions.map(option => option.value)).toEqual([
+      'vote_number_description',
+      'vote_number',
+      'account_code_description',
+      'account_code'
+    ]);
   });
 
-  it('should switch breakdown types', () => {
-    component.selectBreakdownType('local');
-    expect(component.selectedBreakdownType()).toBe('local');
-  });
+  it('should open and close the option modal', () => {
+    component.openAddModal();
+    expect(component.isModalOpen()).toBeTrue();
 
-  it('should open add form', () => {
-    component.openAddForm();
-    expect(component.showAddForm).toBeTruthy();
-    expect(component.editingOption).toBeNull();
-  });
-
-  it('should close add form', () => {
-    component.openAddForm();
-    component.closeAddForm();
-    expect(component.showAddForm).toBeFalsy();
-  });
-
-  it('should open edit form with option data', () => {
-    const option = component.currentOptions()[0];
-    component.openEditForm(option);
-    expect(component.showAddForm).toBeTruthy();
-    expect(component.editingOption).toBe(option);
-    expect(component.breakdownForm.get('value')?.value).toBe(option.value);
-  });
-
-  it('should add new option', () => {
-    const initialCount = component.currentOptions().length;
-    component.openAddForm();
-    component.breakdownForm.patchValue({
-      value: 'newtest',
-      label: 'New Test Option'
-    });
-    component.saveOption();
-    expect(component.currentOptions().length).toBe(initialCount + 1);
-    expect(component.successMessage).toBeTruthy();
-  });
-
-  it('should show error on invalid form submission', () => {
-    component.openAddForm();
-    component.breakdownForm.reset();
-    component.saveOption();
-    expect(component.errorMessage).toBeTruthy();
-  });
-
-  it('should delete option with confirmation', () => {
-    spyOn(window, 'confirm').and.returnValue(true);
-    const initialCount = component.currentOptions().length;
-    const option = component.currentOptions()[0];
-    component.deleteOption(option);
-    expect(component.currentOptions().length).toBeLessThan(initialCount);
-  });
-
-  it('should reset to defaults with confirmation', () => {
-    spyOn(window, 'confirm').and.returnValue(true);
-    component.breakdownForm.patchValue({
-      value: 'temptest',
-      label: 'Temp Test'
-    });
-    component.openAddForm();
-    component.saveOption();
-    expect(component.currentOptions().length).toBeGreaterThan(0);
-    component.resetToDefaults();
-    const hasTempTest = component.currentOptions().some(o => o.value === 'temptest');
-    expect(hasTempTest).toBeFalsy();
+    component.closeModal();
+    expect(component.isModalOpen()).toBeFalse();
   });
 });

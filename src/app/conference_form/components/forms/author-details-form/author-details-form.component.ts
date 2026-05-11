@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, Input, effect } from '@angular/core';
+import { Component, OnInit, OnDestroy, Input, effect, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
 import { SearchableDropdownComponent } from '../../../../shared/components/searchable-dropdown/searchable-dropdown.component';
@@ -7,6 +7,7 @@ import { DataTableComponent, DataTableColumn } from '../../../../shared/componen
 import { DropdownOption } from '../../../../interfaces/components.interface';
 import { ConferenceWorkflowService } from '../../../services/conference-workflow.service';
 import { ConferenceFormStateService } from '../../../services/conference-form-state.service';
+import { DropdownsStoreService, StoredDropdownOption } from '../../../../settings/dropdowns/dropdowns-store.service';
 
 @Component({
   selector: 'app-author-details-form',
@@ -21,10 +22,31 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
 
   form!: FormGroup;
   editForm!: FormGroup;
+  private readonly dropdownStore = inject(DropdownsStoreService);
 
   // Modal state
   isModalOpen = false;
   editingIndex: number | null = null;
+
+  private readonly defaultStaffOptions: DropdownOption[] = [
+    { value: 'Vivian Banshee', label: 'Vivian Banshee' },
+    { value: 'John Smith', label: 'John Smith' },
+    { value: 'Sarah Johnson', label: 'Sarah Johnson' },
+    { value: 'Michael Brown', label: 'Michael Brown' },
+    { value: 'Emily Davis', label: 'Emily Davis' },
+    { value: 'Robert Wilson', label: 'Robert Wilson' },
+    { value: 'Jessica Taylor', label: 'Jessica Taylor' },
+    { value: 'James Anderson', label: 'James Anderson' }
+  ];
+
+  private readonly defaultOrganisationTypeOptions: DropdownOption[] = [
+    { value: 'University', label: 'University' },
+    { value: 'Research Institute', label: 'Research Institute' },
+    { value: 'Company', label: 'Company' },
+    { value: 'Government Agency', label: 'Government Agency' },
+    { value: 'Non-Profit Organization', label: 'Non-Profit Organization' },
+    { value: 'Other', label: 'Other' }
+  ];
 
   constructor(private fb: FormBuilder, private formStateService: ConferenceFormStateService) {
     // Apply form read-only effect if workflow is provided
@@ -38,27 +60,13 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
   }
   modalType: 'apu-staff' | 'student' | 'non-apu' | null = null;
 
-  // Staff dropdown options
-  staffOptions: DropdownOption[] = [
-    { value: 'Vivian Banshee', label: 'Vivian Banshee' },
-    { value: 'John Smith', label: 'John Smith' },
-    { value: 'Sarah Johnson', label: 'Sarah Johnson' },
-    { value: 'Michael Brown', label: 'Michael Brown' },
-    { value: 'Emily Davis', label: 'Emily Davis' },
-    { value: 'Robert Wilson', label: 'Robert Wilson' },
-    { value: 'Jessica Taylor', label: 'Jessica Taylor' },
-    { value: 'James Anderson', label: 'James Anderson' }
-  ];
+  get staffOptions(): DropdownOption[] {
+    return this.getConferenceDropdownOptions('Staff Name', this.defaultStaffOptions);
+  }
 
-  // Organisation type dropdown options
-  organisationTypeOptions: DropdownOption[] = [
-    { value: 'University', label: 'University' },
-    { value: 'Research Institute', label: 'Research Institute' },
-    { value: 'Company', label: 'Company' },
-    { value: 'Government Agency', label: 'Government Agency' },
-    { value: 'Non-Profit Organization', label: 'Non-Profit Organization' },
-    { value: 'Other', label: 'Other' }
-  ];
+  get organisationTypeOptions(): DropdownOption[] {
+    return this.getConferenceDropdownOptions('Type of Organisation', this.defaultOrganisationTypeOptions);
+  }
 
   // DataTable column definitions
   apuStaffColumns: readonly DataTableColumn[] = [
@@ -216,6 +224,14 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
       ...control.value,
       index: index + 1
     }));
+  }
+
+  private getConferenceDropdownOptions(category: string, defaults: DropdownOption[]): DropdownOption[] {
+    const options = this.dropdownStore.getOptions('Conference Application', category)
+      .filter((option: StoredDropdownOption) => option.status === 'Active')
+      .map((option: StoredDropdownOption) => ({ value: option.value, label: option.value }));
+
+    return options.length > 0 ? options : defaults;
   }
 
   deleteTestSubsection(index: number) {

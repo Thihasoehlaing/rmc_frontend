@@ -147,8 +147,9 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
   // DataTable column definitions for breakdown tables
   researchBreakdownColumns: readonly DataTableColumn[] = [
     { key: 'index', label: '#', width: '50px', align: 'center' },
-    { key: 'itemDescription', label: 'Item Description' },
+    { key: 'itemDescription', label: 'Vote Number Description' },
     { key: 'voteNumber', label: 'Vote Number' },
+    { key: 'description', label: 'Description' },
     { key: 'cost', label: 'Cost (Foreign/MYR)' },
     { key: 'exchangeRate', label: 'Exchange Rate' },
     { key: 'costInRM', label: 'Cost in RM' },
@@ -157,8 +158,9 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
 
   externalBreakdownColumns: readonly DataTableColumn[] = [
     { key: 'index', label: '#', width: '50px', align: 'center' },
-    { key: 'itemDescription', label: 'Item Description' },
+    { key: 'itemDescription', label: 'Vote Number Description' },
     { key: 'voteNumber', label: 'Vote Number' },
+    { key: 'description', label: 'Description' },
     { key: 'cost', label: 'Cost (Foreign/MYR)' },
     { key: 'exchangeRate', label: 'Exchange Rate' },
     { key: 'costInRM', label: 'Cost in RM' },
@@ -167,8 +169,10 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
 
   localBreakdownColumns: readonly DataTableColumn[] = [
     { key: 'index', label: '#', width: '50px', align: 'center' },
-    { key: 'itemDescription', label: 'Item Description' },
+    { key: 'itemDescription', label: 'Account Code Description' },
     { key: 'voteNumber', label: 'Account Code' },
+    { key: 'description', label: 'Description' },
+    { key: 'supportingDocument', label: 'Document' },
     { key: 'cost', label: 'Cost (Foreign/MYR)' },
     { key: 'exchangeRate', label: 'Exchange Rate' },
     { key: 'costInRM', label: 'Cost in RM' },
@@ -675,6 +679,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
         costInRM: data.costInRM,
         description: data.description
       });
+      this.selectedFileName = data.supportingDocument || null;
     } else {
       // Adding new entry
       this.breakdownEditingIndex = null;
@@ -682,6 +687,8 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
         exchangeRate: 1,
         voteNumber: 'V29000'
       });
+      this.selectedFileName = null;
+      this.selectedFile = null;
     }
 
     // Disable form if user can't add entries
@@ -697,6 +704,8 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     this.breakdownType = null;
     this.breakdownEditingIndex = null;
     this.breakdownForm.reset();
+    this.selectedFileName = null;
+    this.selectedFile = null;
   }
 
   submitBreakdownModal() {
@@ -707,12 +716,16 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     const formData = this.breakdownForm.value;
     // Calculate Cost in RM (Cost * Exchange Rate)
     const costInRM = (parseFloat(formData.cost) || 0) * (parseFloat(formData.exchangeRate) || 1);
+    const array = this.getBreakdownArray(this.breakdownType!);
+    const existingDocument = this.breakdownEditingIndex !== null
+      ? (array[this.breakdownEditingIndex]?.supportingDocument || null)
+      : null;
+
     const entry = {
       ...formData,
-      costInRM: parseFloat(costInRM.toFixed(2))
+      costInRM: parseFloat(costInRM.toFixed(2)),
+      supportingDocument: this.selectedFileName || existingDocument
     };
-
-    const array = this.getBreakdownArray(this.breakdownType!);
 
     if (this.breakdownEditingIndex !== null) {
       // Update existing entry

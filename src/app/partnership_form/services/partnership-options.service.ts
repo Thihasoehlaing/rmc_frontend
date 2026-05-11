@@ -1,5 +1,7 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, effect, inject, signal } from '@angular/core';
 import { DropdownOption } from '../../interfaces/components.interface';
+import { DropdownsStoreService } from '../../settings/dropdowns/dropdowns-store.service';
+import type { StoredDropdownOption } from '../../settings/dropdowns/dropdowns-store.service';
 
 export interface PartnershipDropdownOption extends DropdownOption {
   status?: string;
@@ -10,9 +12,19 @@ export interface PartnershipDropdownOption extends DropdownOption {
   providedIn: 'root'
 })
 export class PartnershipOptionsService {
+  private readonly dropdownStore = inject(DropdownsStoreService);
   private storageKey = 'rmc_partnership_category_options';
   private versionKey = 'rmc_partnership_category_options_version';
   private currentVersion = '1.1';
+  private readonly partnershipFormName = 'Partnership Application';
+  private readonly partnershipTypeCategory = 'Partnership Type';
+  private readonly partnershipCategoryCategory = 'Partnership Category';
+
+  private readonly defaultTypeOptions: DropdownOption[] = [
+    { value: 'Academic', label: 'Academic' },
+    { value: 'Industry', label: 'Industry' },
+    { value: 'Both', label: 'Both' }
+  ];
 
   private defaultCategoryOptions: PartnershipDropdownOption[] = [
     { value: 'University Strategic Partnership', label: 'University Strategic Partnership', status: 'Active', createdDate: '21/04/2026' },
@@ -21,10 +33,14 @@ export class PartnershipOptionsService {
     { value: 'School Partnership', label: 'School Partnership', status: 'Active', createdDate: '21/04/2026' }
   ];
 
+  partnershipTypeOptions = signal<DropdownOption[]>([]);
   categoryOptions = signal<PartnershipDropdownOption[]>([]);
 
   constructor() {
     this.loadOptionsFromStorage();
+    effect(() => {
+      this.syncFromSettingsStore(this.dropdownStore.entries());
+    });
   }
 
   private loadOptionsFromStorage(): void {
@@ -49,6 +65,24 @@ export class PartnershipOptionsService {
     } else {
       this.loadDefaults();
     }
+  }
+
+  private syncFromSettingsStore(entries: StoredDropdownOption[]): void {
+    const activeTypeOptions = entries
+      .filter(option => option.formName === this.partnershipFormName && option.category === this.partnershipTypeCategory && option.status === 'Active')
+      .map(option => ({ value: option.value, label: option.value }));
+
+    const activeCategoryOptions = entries
+      .filter(option => option.formName === this.partnershipFormName && option.category === this.partnershipCategoryCategory && option.status === 'Active')
+      .map(option => ({
+        value: option.value,
+        label: option.value,
+        status: option.status,
+        createdDate: option.lastUpdated || undefined,
+      }));
+
+    this.partnershipTypeOptions.set(activeTypeOptions);
+    this.categoryOptions.set(activeCategoryOptions);
   }
 
   private loadDefaults(): void {

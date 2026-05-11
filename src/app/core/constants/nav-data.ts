@@ -144,9 +144,13 @@ export const NAVIGATION_DATA: NavGroup[] = [
             {
                 label: 'Admin Settings',
                 icon: 'admin_panel_settings',
+                route: '/settings/admin-settings',
                 permission: { anyOf: ['Admin'] },
                 children: [
-                    { label: 'Journal Guidelines Settings', icon: 'rule', route: '/journal/guidelines-settings', permission: { anyOf: ['Admin'] } },
+                    { label: 'Guidelines', icon: 'description', route: '/settings/guidelines', permission: { anyOf: ['Admin'] } },
+                    { label: 'Dropdowns', icon: 'list', route: '/settings/dropdowns', permission: { anyOf: ['Admin'] } },
+                    { label: 'Batches', icon: 'batch_prediction', route: '/settings/batches', permission: { anyOf: ['Admin'] } },
+                    { label: 'Staff Access', icon: 'person_add', route: '/settings/staff-access', permission: { anyOf: ['Admin'] } },
                 ],
             },
         ],

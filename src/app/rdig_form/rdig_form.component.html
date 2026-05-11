@@ -58,6 +58,13 @@
         RDIG applications are only accepted during an open batch cycle.
         There is currently no active batch. Please contact RMC for the next submission window.
       </p>
+      <button
+        type="button"
+        class="batch-gate__action"
+        (click)="toggleBatchValidation()">
+        <span class="material-icons">lock_open</span>
+        Disable Batch Validation and Open Form
+      </button>
     </div>
   }
 
@@ -77,6 +84,15 @@
             {{ deadlineDaysLeft() }} day{{ deadlineDaysLeft() === 1 ? '' : 's' }} left!
           </span>
         }
+      </div>
+    }
+
+    @if (!activeBatch() && batchValidationDisabled()) {
+      <div class="batch-info-banner batch-info-banner--override">
+        <span class="material-icons batch-info-banner__icon">lock_open</span>
+        <span>
+          Batch validation is disabled. The form is open without an active batch.
+        </span>
       </div>
     }
 
@@ -121,6 +137,14 @@
         class="validation-toggle"
         [class.validation-toggle--off]="validationDisabled()">
         {{ validationDisabled() ? '⚠ Validation OFF — Click to Re-enable' : '✓ Validation ON — Click to Disable' }}
+      </button>
+      <button
+        type="button"
+        (click)="toggleBatchValidation()"
+        [disabled]="isViewOnly() && !batchValidationDisabled()"
+        class="validation-toggle"
+        [class.validation-toggle--off]="batchValidationDisabled()">
+        {{ batchValidationDisabled() ? 'Batch Validation OFF — Click to Re-enable' : 'Batch Validation ON — Click to Disable' }}
       </button>
     </div>
     <!-- DEV TEST END -->

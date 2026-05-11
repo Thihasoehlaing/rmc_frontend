@@ -12,6 +12,7 @@ export interface NavItem {
 export interface NavFolder {
     label: string;
     icon?: string;
+    route?: string;
     children: (NavItem | NavFolder)[];
     isExpanded?: boolean;
     /** ABAC permission rules. Omit to allow all authenticated users. */

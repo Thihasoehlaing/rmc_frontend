@@ -64,7 +64,6 @@ export class JournalOptionsService {
    * Sync options from the Admin Settings dropdown store
    */
   private syncFromSettingsStore(entries: StoredDropdownOption[]): void {
-    // Map category names from Admin Settings to our signals
     const voteDescOptions = entries
       .filter(option => option.formName === this.formName && option.category === 'Vote Number Description' && option.status === 'Active')
       .map(option => ({ value: option.value, label: option.value }));
@@ -112,25 +111,12 @@ export class JournalOptionsService {
     if (stored) {
       try {
         const data = JSON.parse(stored);
-<<<<<<< HEAD
-<<<<<<< HEAD
         this.voteNumberDescriptionOptions.set(data.voteNumberDescriptionOptions || this.defaultVoteNumberDescriptionOptions);
         this.voteNumberOptions.set(data.voteNumberOptions || this.defaultVoteNumberOptions);
         this.accountCodeDescriptionOptions.set(data.accountCodeDescriptionOptions || this.defaultAccountCodeDescriptionOptions);
         this.accountCodeOptions.set(data.accountCodeOptions || this.defaultAccountCodeOptions);
       } catch (e) {
         console.error('Failed to parse stored journal options', e);
-=======
-=======
->>>>>>> 55593ee27b7e145793ab89ceb9fadf9a39fea456
-        this.researchOptions.set(data.researchOptions || this.defaultResearchOptions);
-        this.localOptions.set(data.localOptions || this.defaultLocalOptions);   
-      } catch {
-        // Silently discard malformed data — fall back to defaults
-<<<<<<< HEAD
->>>>>>> d6f5fc1d977efdd64c208db6c2b275dabe578e0e
-=======
->>>>>>> 55593ee27b7e145793ab89ceb9fadf9a39fea456
         this.loadDefaults();
       }
     } else {

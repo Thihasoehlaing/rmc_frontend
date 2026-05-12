@@ -57,11 +57,19 @@
       <ng-template #rowTemplate let-row let-index="index" let-columns="columns">
         <tr>
           <td>{{ row.form }}</td>
-            <td>{{ row.title }}</td>
-            <td class="center">{{ row.config.blocks.length }} blocks</td>
+          <td>{{ row.title }}</td>
+          <td class="center">
+            <span class="guideline-status" [class.is-active]="row.isActive" [class.is-inactive]="!row.isActive">
+              {{ row.isActive ? 'Active' : 'Inactive' }}
+            </span>
+          </td>
+          <td class="center">{{ row.config.blocks.length }} blocks</td>
           <td>{{ row.lastUpdated }}</td>
           <td>{{ row.createdBy }}</td>
           <td class="actions-cell">
+            <button *ngIf="!row.isActive" class="btn btn-sm btn-success" type="button" (click)="activateGuideline(row.id)">
+              Activate
+            </button>
             <button class="action-btn edit-btn" (click)="editGuideline(row.id)" title="Edit">
               <span class="material-icons">edit</span>
             </button>

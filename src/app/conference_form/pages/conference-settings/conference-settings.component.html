@@ -142,7 +142,7 @@
                       </td>
                     }
                     <td>{{ row.status || 'Active' }}</td>
-                    <td>{{ row.createdDate || getTodayDate() }}</td>
+                    <td>{{ formatRowDate(row.createdDate) }}</td>
                     <td class="col-actions">
                       <button
                         type="button"

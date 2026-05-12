@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { ActionButtonComponent } from '../../shared/components/action-button/action-button.component';
 import { DataTableComponent } from '../../shared/components/data-table/data-table.component';
+import { AddOptionModalComponent, AddOptionPayload } from '../../shared/components/add-option-modal/add-option-modal.component';
 import type { DataTableColumn } from '../../shared/components/data-table/data-table.component';
 
 interface DropdownOption {
@@ -17,6 +18,10 @@ interface DropdownOption {
   status: 'Active' | 'Inactive';
 }
 
+interface DropdownOptionView extends DropdownOption {
+  sharedWith: string[];
+}
+
 interface DropdownGroup {
   id: number;
   title: string;
@@ -25,13 +30,21 @@ interface DropdownGroup {
   shared?: number;
 }
 
-type DropdownSortKey = 'value' | 'lastUpdated' | 'createdBy';
+type DropdownSortKey = 'value' | 'status' | 'lastUpdated';
 type DropdownStatusFilter = 'all' | 'active' | 'inactive';
+
+/**
+ * Explicit sharing configuration: defines which forms can share which categories.
+ * Only the forms listed for a category can share options in that category.
+ */
+interface CategorySharingConfig {
+  [categoryName: string]: string[];
+}
 
 @Component({
   selector: 'app-dropdowns',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, ActionButtonComponent, DataTableComponent],
+  imports: [CommonModule, FormsModule, RouterModule, ActionButtonComponent, DataTableComponent, AddOptionModalComponent],
   templateUrl: './dropdowns.component.html',
   styleUrls: ['./dropdowns.component.scss'],
 })
@@ -40,6 +53,16 @@ export class DropdownsComponent implements OnInit {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private readonly STORAGE_KEY = 'rmc_dropdowns_data';
+
+  /**
+   * Defines which forms are allowed to share options for each category.
+   * Only forms listed here can have shared options across forms.
+   * Categories not listed here are NOT shared across forms.
+   */
+  private readonly CATEGORY_SHARING_CONFIG: CategorySharingConfig = {
+    'Research Cluster': ['RDIG Application', 'RA/GRA Application'],
+    'Type of Organisation': ['RDIG Application', 'Conference Application'],
+  };
 
   groups = signal<DropdownGroup[]>([
     { id: 1, title: 'RDIG Application', categories: ['Research Cluster', 'Type of Organisation', 'Research Domain', 'Sub-Research Domain', 'ESG Factors', 'SDG Alignment'], items: 17, shared: 11 },
@@ -52,19 +75,20 @@ export class DropdownsComponent implements OnInit {
   dropdownOptions = signal<DropdownOption[]>([]);
   selectedGroupId = signal<number | null>(null);
   selectedCategory = signal<string>('');
+  searchQuery = signal<string>('');
   statusFilter = signal<DropdownStatusFilter>('all');
   sortBy = signal<DropdownSortKey>('value');
   sortDirection = signal<'asc' | 'desc'>('asc');
   showAddModal = signal(false);
   editingOptionId = signal<number | null>(null);
+  editingInitialPayload = signal<AddOptionPayload | null>(null);
   newOptionValue = signal<string>('');
-  selectedIds = signal<Set<number>>(new Set());
 
   tableColumns: DataTableColumn[] = [
-    { key: 'select', label: '', width: '56px', align: 'center', headerAlign: 'center' },
-    { key: 'optionName', label: 'Option Name' },
-    { key: 'status', label: 'Status' },
-    { key: 'createdDate', label: 'Created Date' },
+    { key: 'value', label: 'Option Name', sortable: true },
+    { key: 'sharedWith', label: 'Shared With' },
+    { key: 'status', label: 'Status', sortable: true },
+    { key: 'lastUpdated', label: 'Created Date', sortable: true },
     { key: 'actions', label: 'Actions' },
   ];
 
@@ -73,6 +97,23 @@ export class DropdownsComponent implements OnInit {
 
   selectedGroup = computed(() => this.groups().find(g => g.id === this.selectedGroupId()) ?? null);
   selectedGroupCategories = computed(() => this.selectedGroup()?.categories ?? []);
+  shareableForms = computed(() => {
+    const category = this.selectedCategory();
+    if (!category) {
+      return [] as string[];
+    }
+
+    // If the category is in the sharing config, return only those forms
+    if (this.CATEGORY_SHARING_CONFIG[category]) {
+      return this.CATEGORY_SHARING_CONFIG[category].filter(form =>
+        this.groups().some(g => g.title === form)
+      );
+    }
+
+    // Otherwise, no sharing is allowed (return only current form)
+    const group = this.selectedGroup();
+    return group ? [group.title] : [];
+  });
 
   // Computed list of categories with their counts for the currently selected group
   categoryCounts = computed(() => {
@@ -85,7 +126,7 @@ export class DropdownsComponent implements OnInit {
     }));
   });
 
-  filteredOptions = computed(() => {
+  filteredOptions = computed<DropdownOptionView[]>(() => {
     // Only show options if a form AND category are explicitly selected
     if (!this.selectedGroupId() || !this.selectedCategory()) {
       return [];
@@ -97,6 +138,11 @@ export class DropdownsComponent implements OnInit {
       o.formName === this.selectedGroup()?.title &&
       o.category === this.selectedCategory()
     );
+
+    const query = this.searchQuery().trim().toLowerCase();
+    if (query) {
+      filtered = filtered.filter(o => o.value.toLowerCase().includes(query));
+    }
 
     const status = this.statusFilter();
     if (status !== 'all') {
@@ -110,7 +156,10 @@ export class DropdownsComponent implements OnInit {
       return this.compareOptions(a, b, sortKey) * dir;
     });
 
-    return filtered;
+    return filtered.map(option => ({
+      ...option,
+      sharedWith: this.getSharedWithForms(option),
+    }));
   });
 
   ngOnInit(): void {
@@ -120,15 +169,15 @@ export class DropdownsComponent implements OnInit {
       const id = Number(params['group']);
       this.selectedGroupId.set(!Number.isNaN(id) && id > 0 ? id : null);
       this.selectedCategory.set('');
+      this.searchQuery.set('');
       this.statusFilter.set('all');
-      this.selectedIds.set(new Set());
     });
   }
 
   selectCategory(category: string) {
     this.selectedCategory.set(category);
     // reset selected rows and status filter when switching categories
-    this.selectedIds.set(new Set());
+    this.searchQuery.set('');
     this.statusFilter.set('all');
   }
 
@@ -142,12 +191,17 @@ export class DropdownsComponent implements OnInit {
           formName: item.formName ?? '',
           category: item.category ?? '',
           value: item.value ?? '',
-          lastUpdated: item.lastUpdated ?? this.formatDisplayDate(new Date()),
+          lastUpdated: this.normalizeDisplayDate(item.lastUpdated),
           createdBy: item.createdBy ?? 'Unknown',
           status: item.status === 'Inactive' ? 'Inactive' : 'Active',
         })));
       } else {
-        this.dropdownOptions.set(this.getDefaultOptions());
+        this.dropdownOptions.set(
+          this.getDefaultOptions().map(item => ({
+            ...item,
+            lastUpdated: this.normalizeDisplayDate(item.lastUpdated),
+          }))
+        );
       }
     } catch (error) {
       console.error('Failed to load dropdown options from localStorage:', error);
@@ -212,13 +266,101 @@ export class DropdownsComponent implements OnInit {
 
   goBack() {
     this.router.navigate([], { relativeTo: this.route, queryParams: {} });
-    this.selectedIds.set(new Set());
   }
 
   addOption() {
     this.editingOptionId.set(null);
+    this.editingInitialPayload.set(null);
     this.newOptionValue.set('');
     this.showAddModal.set(true);
+  }
+
+  onModalSave(payload: AddOptionPayload) {
+    const now = this.formatDisplayDate(new Date());
+    const currentUserName = this.auth.currentUser()?.name ?? 'Unknown';
+
+    if (this.editingOptionId()) {
+      // update existing and propagate to shared forms
+      const id = this.editingOptionId() as number;
+      const original = this.dropdownOptions().find(o => o.id === id);
+      if (original) {
+        const originalNorm = original.value.trim().toLowerCase();
+        const category = original.category;
+
+        // entries that are part of the original shared group (same category + normalized value)
+        const originalShared = this.dropdownOptions().filter(e =>
+          e.category === category && e.value.trim().toLowerCase() === originalNorm
+        );
+
+        const desiredForms = payload.appliesTo && payload.appliesTo.length > 0 ? payload.appliesTo : [original.formName];
+
+        // Build new list: update entries that should remain, remove those unselected
+        let nextList = this.dropdownOptions().filter(e => !originalShared.some(os => os.id === e.id));
+
+        // Keep/update entries for forms that were in originalShared and are still desired
+        for (const os of originalShared) {
+          if (desiredForms.includes(os.formName)) {
+            nextList.push({
+              ...os,
+              value: payload.name.trim(),
+              status: payload.status,
+              lastUpdated: now,
+              createdBy: currentUserName,
+            });
+          }
+          // if not desired, we omit (effectively deleting from that form)
+        }
+
+        // Add entries for desired forms that did not previously exist in originalShared
+        const existingForms = new Set(originalShared.map(s => s.formName));
+        let nextId = Math.max(...this.dropdownOptions().map(o => o.id), 0) + 1;
+        for (const formName of desiredForms) {
+          if (!existingForms.has(formName)) {
+            nextList.push({
+              id: nextId++,
+              formName,
+              category: category,
+              value: payload.name.trim(),
+              lastUpdated: now,
+              createdBy: currentUserName,
+              status: payload.status,
+            } as DropdownOption);
+          }
+        }
+
+        this.dropdownOptions.set(nextList);
+      }
+    } else {
+      // add one option per selected form (shared across forms)
+      const nextIdStart = Math.max(...this.dropdownOptions().map(o => o.id), 0) + 1;
+      let nextId = nextIdStart;
+      const newEntries = payload.appliesTo.map(formName => ({
+        id: nextId++,
+        formName,
+        category: this.selectedCategory() || '',
+        value: payload.name.trim(),
+        lastUpdated: now,
+        createdBy: currentUserName,
+        status: payload.status,
+      } as DropdownOption));
+
+      this.dropdownOptions.update(list => [...list, ...newEntries]);
+    }
+
+    this.editingOptionId.set(null);
+    this.newOptionValue.set('');
+    this.showAddModal.set(false);
+    this.saveOptionsToStorage();
+  }
+
+  editingInitial(): AddOptionPayload | null {
+    const id = this.editingOptionId();
+    if (!id) return null;
+    const opt = this.dropdownOptions().find(o => o.id === id);
+    if (!opt) return null;
+    const shared = this.getSharedWithForms(opt);
+    const appliesTo = [opt.formName, ...shared.filter(s => s !== opt.formName)];
+    return { name: opt.value, status: opt.status, appliesTo };
   }
 
   saveOption(value: string) {
@@ -259,47 +401,6 @@ export class DropdownsComponent implements OnInit {
     this.saveOptionsToStorage();
   }
 
-  deleteOption(id: number) {
-    this.dropdownOptions.update(options => options.filter(o => o.id !== id));
-    this.selectedIds.update(prev => {
-      const next = new Set(prev);
-      next.delete(id);
-      return next;
-    });
-    this.saveOptionsToStorage();
-  }
-
-  isRowSelected(id: number): boolean {
-    return this.selectedIds().has(id);
-  }
-
-  onRowSelectionChange(id: number, checked: boolean) {
-    this.selectedIds.update(prev => {
-      const next = new Set(prev);
-      if (checked) {
-        next.add(id);
-      } else {
-        next.delete(id);
-      }
-      return next;
-    });
-  }
-
-  canDeleteSelected(): boolean {
-    return this.selectedIds().size > 0;
-  }
-
-  deleteSelected() {
-    const selected = this.selectedIds();
-    if (selected.size === 0) {
-      return;
-    }
-
-    this.dropdownOptions.update(list => list.filter(o => !selected.has(o.id)));
-    this.selectedIds.set(new Set());
-    this.saveOptionsToStorage();
-  }
-
   toggleStatus(id: number) {
     this.dropdownOptions.update(list => list.map(o => {
       if (o.id !== id) {
@@ -319,6 +420,7 @@ export class DropdownsComponent implements OnInit {
     if (option) {
       this.newOptionValue.set(option.value);
       this.editingOptionId.set(id);
+      this.editingInitialPayload.set(this.editingInitial());
       this.showAddModal.set(true);
     }
   }
@@ -326,6 +428,7 @@ export class DropdownsComponent implements OnInit {
   closeModal() {
     this.showAddModal.set(false);
     this.editingOptionId.set(null);
+    this.editingInitialPayload.set(null);
     this.newOptionValue.set('');
   }
 
@@ -334,21 +437,21 @@ export class DropdownsComponent implements OnInit {
     return this.sortDirection() === 'asc' ? 'arrow_upward' : 'arrow_downward';
   }
 
-  onHeaderClick(key: string) {
-    this.onSortChange(key);
-  }
-
   onSortChange(columnKey: string) {
     if (this.sortBy() === columnKey) {
       this.sortDirection.update(d => (d === 'asc' ? 'desc' : 'asc'));
     } else {
       this.sortBy.set(columnKey as DropdownSortKey);
-      this.sortDirection.set('asc');
+      this.sortDirection.set(columnKey === 'lastUpdated' ? 'desc' : 'asc');
     }
   }
 
   totalItems() {
     return this.dropdownOptions().length;
+  }
+
+  sharedWithLabel(option: DropdownOptionView): string {
+    return option.sharedWith.length > 0 ? option.sharedWith.join(', ') : '-';
   }
 
   private compareOptions(a: DropdownOption, b: DropdownOption, sortKey: DropdownSortKey): number {
@@ -358,31 +461,79 @@ export class DropdownsComponent implements OnInit {
     return a[sortKey].localeCompare(b[sortKey]);
   }
 
+  private getSharedWithForms(option: DropdownOption): string[] {
+    const normalizedValue = option.value.trim().toLowerCase();
+    if (!normalizedValue) {
+      return [];
+    }
+
+    // Get the forms allowed to share this category
+    const allowedFormsForCategory = this.CATEGORY_SHARING_CONFIG[option.category];
+    if (!allowedFormsForCategory) {
+      // Category is not in the sharing config, so no sharing
+      return [];
+    }
+
+    // Filter to only those forms that are allowed to share this category
+    return Array.from(new Set(
+      this.dropdownOptions()
+        .filter(other =>
+          other.id !== option.id &&
+          other.category === option.category &&
+          other.status === 'Active' &&
+          other.value.trim().toLowerCase() === normalizedValue &&
+          other.formName !== option.formName &&
+          allowedFormsForCategory.includes(other.formName)
+        )
+        .map(other => other.formName)
+        .filter(formName => formName.length > 0)
+    )).sort((a, b) => a.localeCompare(b));
+  }
+
   private formatDisplayDate(date: Date): string {
-    return new Intl.DateTimeFormat('en-GB', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-    }).format(date);
+    const day = `${date.getDate()}`.padStart(2, '0');
+    const month = `${date.getMonth() + 1}`.padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
   }
 
   private parseDisplayDate(dateValue: string): number {
-    const parsed = new Date(dateValue).getTime();
-    if (!Number.isNaN(parsed)) {
-      return parsed;
+    const slashMatch = dateValue.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    if (slashMatch) {
+      const [, day, month, year] = slashMatch;
+      return new Date(Number(year), Number(month) - 1, Number(day)).getTime();
     }
+
     const match = dateValue.match(/^(\d{2})\s([A-Za-z]{3})\s(\d{4})$/);
-    if (!match) {
-      return 0;
+    if (match) {
+      const monthLookup: Record<string, number> = {
+        Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5, Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11,
+      };
+      const [, day, monthText, year] = match;
+      const month = monthLookup[monthText];
+      if (month !== undefined) {
+        return new Date(Number(year), month, Number(day)).getTime();
+      }
     }
-    const monthLookup: Record<string, number> = {
-      Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5, Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11,
-    };
-    const [, day, monthText, year] = match;
-    const month = monthLookup[monthText];
-    if (month === undefined) {
-      return 0;
+
+    const isoParsed = new Date(dateValue).getTime();
+    if (!Number.isNaN(isoParsed)) {
+      return isoParsed;
     }
-    return new Date(Number(year), month, Number(day)).getTime();
+
+    return 0;
+  }
+
+  private normalizeDisplayDate(dateValue?: string): string {
+    if (!dateValue) {
+      return this.formatDisplayDate(new Date());
+    }
+
+    const timestamp = this.parseDisplayDate(dateValue);
+    if (!timestamp) {
+      return this.formatDisplayDate(new Date());
+    }
+
+    return this.formatDisplayDate(new Date(timestamp));
   }
 }

@@ -12,7 +12,7 @@ import { DialogComponent } from '../../../shared/components/dialog/dialog.compon
   selector: 'app-partnership-settings',
   standalone: true,
   imports: [
-    CommonModule, 
+    CommonModule,
     ReactiveFormsModule,
     ActionButtonComponent,
     ValidationMessageComponent,
@@ -39,7 +39,7 @@ export class PartnershipSettingsComponent implements OnInit {
 
   searchQuery = signal<string>('');
   filterStatus = signal<string>('All');
-  sortBy = signal<string>('date');
+  sortBy = signal<string>('createdDate');
   sortDirection = signal<'asc' | 'desc'>('desc');
 
   selectedCheckboxes = signal<Set<string>>(new Set<string>());
@@ -170,7 +170,7 @@ export class PartnershipSettingsComponent implements OnInit {
 
   deleteSelectedOptions() {
     if (!this.selectedBreakdownType()) return;
-    if (confirm('Are you sure you want to delete the selected options?')) {     
+    if (confirm('Are you sure you want to delete the selected options?')) {
       const selected = Array.from(this.selectedCheckboxes());
       selected.forEach(value => {
         try {
@@ -188,14 +188,19 @@ export class PartnershipSettingsComponent implements OnInit {
     this.filterStatus.set(select.value);
   }
 
+  onSearchInput(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    this.searchQuery.set(target.value);
+  }
+
   onHeaderClick(column: string) {
     if (!this.isSortableColumn(column)) return;
 
     if (this.sortBy() === column) {
-      this.sortDirection.set(this.sortDirection() === 'asc' ? 'desc' : 'asc');  
+      this.sortDirection.set(this.sortDirection() === 'asc' ? 'desc' : 'asc');
     } else {
       this.sortBy.set(column);
-      this.sortDirection.set(column === 'date' || column === 'createdDate' ? 'desc' : 'asc');
+      this.sortDirection.set(column === 'createdDate' ? 'desc' : 'asc');
     }
   }
 
@@ -207,6 +212,11 @@ export class PartnershipSettingsComponent implements OnInit {
     if (!this.selectedBreakdownType()) return [];
 
     let options = this.optionsService.getOptions() || [];
+
+    const query = this.searchQuery().trim().toLowerCase();
+    if (query) {
+      options = options.filter(opt => opt.label.toLowerCase().includes(query));
+    }
 
     const status = this.filterStatus();
     if (status !== 'All') {
@@ -231,12 +241,9 @@ export class PartnershipSettingsComponent implements OnInit {
           valA = (a.status || 'Active').toLowerCase();
           valB = (b.status || 'Active').toLowerCase();
           break;
-        case 'date':
         case 'createdDate':
         default:
-          valA = a.createdDate || '';
-          valB = b.createdDate || '';
-          break;
+          return (this.parseDisplayDate(a.createdDate) - this.parseDisplayDate(b.createdDate)) * sortDir;
       }
 
       if (valA < valB) return -1 * sortDir;
@@ -252,11 +259,58 @@ export class PartnershipSettingsComponent implements OnInit {
     this.optionsService.updateOption(option.value, newOption);
   }
 
+  formatRowDate(dateValue?: string): string {
+    return this.normalizeDisplayDate(dateValue);
+  }
+
   getTodayDate(): string {
-    const today = new Date();
-    const ds = String(today.getDate()).padStart(2, '0');
-    const ms = String(today.getMonth() + 1).padStart(2, '0');
-    const y = today.getFullYear();
-    return `${ds}/${ms}/${y}`;
+    return this.formatDisplayDate(new Date());
+  }
+
+  private formatDisplayDate(date: Date): string {
+    const day = `${date.getDate()}`.padStart(2, '0');
+    const month = `${date.getMonth() + 1}`.padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  }
+
+  private parseDisplayDate(dateValue?: string): number {
+    if (!dateValue) {
+      return 0;
+    }
+
+    const slashMatch = dateValue.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    if (slashMatch) {
+      const [, day, month, year] = slashMatch;
+      return new Date(Number(year), Number(month) - 1, Number(day)).getTime();
+    }
+
+    const shortMonthMatch = dateValue.match(/^(\d{2})\s([A-Za-z]{3})\s(\d{4})$/);
+    if (shortMonthMatch) {
+      const monthLookup: Record<string, number> = {
+        Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5, Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11,
+      };
+      const [, day, monthText, year] = shortMonthMatch;
+      const month = monthLookup[monthText];
+      if (month !== undefined) {
+        return new Date(Number(year), month, Number(day)).getTime();
+      }
+    }
+
+    const isoParsed = new Date(dateValue).getTime();
+    if (!Number.isNaN(isoParsed)) {
+      return isoParsed;
+    }
+
+    return 0;
+  }
+
+  private normalizeDisplayDate(dateValue?: string): string {
+    const timestamp = this.parseDisplayDate(dateValue);
+    if (!timestamp) {
+      return this.formatDisplayDate(new Date());
+    }
+
+    return this.formatDisplayDate(new Date(timestamp));
   }
 }

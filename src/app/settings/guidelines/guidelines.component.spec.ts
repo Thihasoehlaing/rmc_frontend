@@ -51,4 +51,60 @@ describe('GuidelinesComponent', () => {
 
     expect(blockCounts).toEqual([...blockCounts].sort((a, b) => a - b));
   });
+
+  it('should keep only one active guideline per form when a new guideline is saved', () => {
+    const config: GuidelineConfig = {
+      title: 'Conference 2027 Guideline',
+      formName: 'Conference Application',
+      backgroundToken: 'white',
+      textToken: 'var(--color-text-primary)',
+      buttonToken: 'var(--color-primary)',
+      buttonText: 'Close',
+      blocks: [{ id: 'new-a', type: 'text', content: 'Updated conference policy' }],
+    };
+
+    component.saveGuideline(config);
+
+    const conferenceGuidelines = component.guidelines().filter(g => g.form === 'Conference Application');
+    const activeConferenceGuidelines = conferenceGuidelines.filter(g => g.isActive);
+
+    expect(activeConferenceGuidelines.length).toBe(1);
+    expect(activeConferenceGuidelines[0].title).toBe('Conference 2027 Guideline');
+  });
+
+  it('should activate selected guideline and deactivate others in the same form', () => {
+    const firstConfig: GuidelineConfig = {
+      title: 'Conference Guideline A',
+      formName: 'Conference Application',
+      backgroundToken: 'white',
+      textToken: 'var(--color-text-primary)',
+      buttonToken: 'var(--color-primary)',
+      buttonText: 'Close',
+      blocks: [{ id: 'a-1', type: 'text', content: 'A' }],
+    };
+
+    const secondConfig: GuidelineConfig = {
+      title: 'Conference Guideline B',
+      formName: 'Conference Application',
+      backgroundToken: 'white',
+      textToken: 'var(--color-text-primary)',
+      buttonToken: 'var(--color-primary)',
+      buttonText: 'Close',
+      blocks: [{ id: 'b-1', type: 'text', content: 'B' }],
+    };
+
+    component.saveGuideline(firstConfig);
+    component.saveGuideline(secondConfig);
+
+    const firstId = component.guidelines().find(g => g.title === 'Conference Guideline A')?.id;
+    expect(firstId).toBeDefined();
+
+    component.activateGuideline(firstId as number);
+
+    const conferenceGuidelines = component.guidelines().filter(g => g.form === 'Conference Application');
+    const activeConferenceGuidelines = conferenceGuidelines.filter(g => g.isActive);
+
+    expect(activeConferenceGuidelines.length).toBe(1);
+    expect(activeConferenceGuidelines[0].title).toBe('Conference Guideline A');
+  });
 });

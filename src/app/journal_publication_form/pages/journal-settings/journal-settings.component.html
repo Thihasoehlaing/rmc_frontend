@@ -116,7 +116,7 @@
                         {{ option.status || 'Active' }}
                       </span>
                     </td>
-                    <td class="option-date">{{ option.createdDate || getTodayDate() }}</td>
+                    <td class="option-date">{{ formatRowDate(option.createdDate) }}</td>
                     <td class="td-actions">
                       <button
                         type="button"

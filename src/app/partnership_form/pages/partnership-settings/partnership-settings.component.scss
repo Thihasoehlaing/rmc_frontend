@@ -32,20 +32,20 @@
 }
 
 .feedback-banner--success {
-    background: color-mix(in srgb, var(--color-success) 8%, #fff);
+    background: color-mix(in srgb, var(--color-success) 8%, white);
     color: var(--color-success-dark);
     border-color: color-mix(in srgb, var(--color-success) 25%, transparent);
 }
 
 .feedback-banner--error {
-    background: color-mix(in srgb, var(--color-error) 8%, #fff);
+    background: color-mix(in srgb, var(--color-error) 8%, white);
     color: var(--color-error-dark);
     border-color: color-mix(in srgb, var(--color-error) 25%, transparent);
 }
 
 .filters-grid {
     display: grid;
-    grid-template-columns: repeat(3, minmax(220px, 1fr));
+    grid-template-columns: repeat(3, minmax(240px, 1fr));
     gap: var(--space-4);
 }
 
@@ -79,12 +79,12 @@
 }
 
 .status-chip--active {
-    background: color-mix(in srgb, var(--color-success) 10%, #fff);
+    background: color-mix(in srgb, var(--color-success) 10%, white);
     color: var(--color-success-dark);
 }
 
 .status-chip--inactive {
-    background: color-mix(in srgb, var(--color-error) 10%, #fff);
+    background: color-mix(in srgb, var(--color-error) 10%, white);
     color: var(--color-error-dark);
 }
 

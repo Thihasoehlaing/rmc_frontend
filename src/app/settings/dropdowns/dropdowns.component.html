@@ -85,54 +85,72 @@
               </div>
             </div>
 
-            <div class="filters-grid">
-              <div class="form-field">
-                <label class="form-label" for="status-filter">Status Filter</label>
-                <select
-                  id="status-filter"
-                  class="input--text"
-                  [ngModel]="statusFilter()"
-                  (ngModelChange)="statusFilter.set($event)"
-                >
-                  <option value="all">All</option>
-                  <option value="active">Active</option>
-                  <option value="inactive">Deactivated</option>
-                </select>
+            <div class="settings-controls">
+              <div class="filters-grid">
+                <div class="form-field">
+                  <label class="form-label" for="search-filter">Search</label>
+                  <input
+                    id="search-filter"
+                    type="text"
+                    class="input--text"
+                    [ngModel]="searchQuery()"
+                    (ngModelChange)="searchQuery.set($event)"
+                    placeholder="Search option name"
+                  />
+                </div>
+
+                <div class="form-field">
+                  <label class="form-label" for="status-filter">Status Filter</label>
+                  <select
+                    id="status-filter"
+                    class="input--text"
+                    [ngModel]="statusFilter()"
+                    (ngModelChange)="statusFilter.set($event)"
+                  >
+                    <option value="all">All</option>
+                    <option value="active">Active</option>
+                    <option value="inactive">Deactivated</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="toolbar-actions">
+                <app-action-button
+                  type="primary"
+                  label="Add Option"
+                  icon="add"
+                  [disabled]="!selectedCategory()"
+                  (clicked)="addOption()">
+                </app-action-button>
               </div>
             </div>
 
-          <div class="toolbar-actions">
-            <app-action-button
-              type="primary"
-              label="Add Option"
-              icon="add"
-              [disabled]="!selectedCategory()"
-              (clicked)="addOption()">
-            </app-action-button>
-
-            <app-action-button
-              type="danger"
-              label="Delete Selected"
-              icon="delete"
-              [disabled]="!canDeleteSelected()"
-              (clicked)="deleteSelected()">
-            </app-action-button>
-          </div>
-
           <div *ngIf="selectedCategory(); else selectCategoryHint">
-            <app-data-table [columns]="tableColumns" [rows]="filteredOptions()" [dense]="true">
+            <app-data-table
+              [columns]="tableColumns"
+              [rows]="filteredOptions()"
+              [sortColumn]="sortBy()"
+              [sortDirection]="sortDirection()"
+              (sortChange)="onSortChange($event)"
+              [dense]="true">
               <ng-template #rowTemplate let-row="row">
                 <tr [class.row--inactive]="row.status === 'Inactive'">
-                  <td>
-                    <input
-                      type="checkbox"
-                      class="row-checkbox"
-                      [checked]="isRowSelected(row.id)"
-                      [attr.aria-label]="'Select ' + row.value"
-                      (change)="onRowSelectionChange(row.id, $any($event.target).checked)">
-                  </td>
-
                   <td>{{ row.value }}</td>
+
+                  <td>
+                    <div class="shared-with-list" [class.shared-with-list--empty]="row.sharedWith.length === 0">
+                      @if (row.sharedWith.length > 0) {
+                        @for (sharedForm of row.sharedWith; track sharedForm) {
+                          <span class="shared-with-chip">
+                            <span class="material-icons">share</span>
+                            {{ sharedForm }}
+                          </span>
+                        }
+                      } @else {
+                        <span class="shared-with-empty">-</span>
+                      }
+                    </div>
+                  </td>
 
                   <td>
                     <span class="status-chip" [class.status-chip--active]="row.status === 'Active'" [class.status-chip--inactive]="row.status === 'Inactive'">
@@ -166,55 +184,24 @@
             </div>
           </div>
 
-          <ng-template #selectCategoryHint>
-            <div class="help-text">
-              <p>Select a dropdown category to view or manage its options.</p>
+              <ng-template #selectCategoryHint>
+                <div class="help-text">
+                  <p>Select a dropdown category to view or manage its options.</p>
+                </div>
+              </ng-template>
             </div>
-          </ng-template>
-        </div>
-      </div>
-
-      <div *ngIf="showAddModal()" class="modal-overlay" (click)="closeModal()">
-        <div class="modal-content" (click)="$event.stopPropagation()">
-          <div class="modal-header">
-            <h2>{{ editingOptionId() ? 'Edit Option' : 'Add New Option' }}</h2>
-            <button type="button" class="close-btn" (click)="closeModal()">
-              <span class="material-icons">close</span>
-            </button>
           </div>
-          <form class="modal-body" (ngSubmit)="saveOption(newOptionValue())">
-            <div class="form-group">
-              <label for="category-input">Category</label>
-              <select
-                class="input--select"
-                [ngModel]="selectedCategory()"
-                (ngModelChange)="selectedCategory.set($event)"
-                name="category"
-                disabled
-              >
-                <option *ngFor="let cat of selectedGroupCategories()" [value]="cat">{{ cat }}</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label for="option-value">Option Value</label>
-              <input
-                type="text"
-                id="option-value"
-                class="input--text"
-                [ngModel]="newOptionValue()"
-                (ngModelChange)="newOptionValue.set($event)"
-                name="value"
-                placeholder="Enter option value"
-                required
-              />
-            </div>
-            <div class="form-actions">
-              <button type="button" class="btn btn-ghost" (click)="closeModal()">Cancel</button>
-              <button type="submit" class="btn btn-primary">Save</button>
-            </div>
-          </form>
-        </div>
-      </div>
+
+          <app-add-option-modal
+            [isOpen]="showAddModal()"
+            [title]="editingOptionId() ? 'Edit Option' : 'Add Dropdown Option'"
+            [categoryLabel]="selectedCategory()"
+            [availableForms]="shareableForms()"
+            [initial]="editingInitialPayload()"
+            [primaryActionLabel]="editingOptionId() ? 'Save' : 'Add Option'"
+            (close)="closeModal()"
+            (save)="onModalSave($event)">
+          </app-add-option-modal>
     </div>
   </div>
 </section>

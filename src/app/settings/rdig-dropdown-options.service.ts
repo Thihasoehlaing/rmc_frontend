@@ -39,6 +39,7 @@ export const CATEGORY_LABELS: Record<DropdownCategoryKey, string> = {
 })
 export class RdigDropdownOptionsService {
   private readonly dropdownStore = inject(DropdownsStoreService);
+  private readonly formName = 'RDIG Application';
   private store = new BehaviorSubject<Record<DropdownCategoryKey, DropdownOptionEntityEntity[]>>({
     research_cluster: [],
     type_of_organisation: [],
@@ -74,13 +75,14 @@ export class RdigDropdownOptionsService {
         id: row.id,
         optionName: row.value,
         status: row.isActive ? ('Active' as const) : ('Inactive' as const),
-        createdDate: new Date().toISOString(),
+        createdDate: this.formatDisplayDate(new Date()),
         parentDomainId: row.parentDomainId,
       }))),
       tap(options => {
         this.loaded.add(category);
         this.baseState = { ...this.baseState, [category]: options };
         this.store.next({ ...this.store.getValue(), [category]: options });
+        this.syncFromSettingsStore(this.dropdownStore.entries());
       }),
       catchError(err => {
         console.error(`Failed to load ${category}`, err);
@@ -100,12 +102,12 @@ export class RdigDropdownOptionsService {
 
   private syncFromSettingsStore(entries: StoredDropdownOption[]): void {
     const categoryMappings: Array<{ category: DropdownCategoryKey; formName: string; categoryName: string }> = [
-      { category: 'research_cluster', formName: 'RDIG Application', categoryName: 'Research Cluster' },
-      { category: 'type_of_organisation', formName: 'RDIG Application', categoryName: 'Type of Organisation' },
-      { category: 'research_domain', formName: 'RDIG Application', categoryName: 'Research Domain' },
-      { category: 'sub_research_domain', formName: 'RDIG Application', categoryName: 'Sub-Research Domain' },
-      { category: 'esg_factors', formName: 'RDIG Application', categoryName: 'ESG Factors' },
-      { category: 'sdg_alignment', formName: 'RDIG Application', categoryName: 'SDG Alignment' },
+      { category: 'research_cluster', formName: this.formName, categoryName: 'Research Cluster' },
+      { category: 'type_of_organisation', formName: this.formName, categoryName: 'Type of Organisation' },
+      { category: 'research_domain', formName: this.formName, categoryName: 'Research Domain' },
+      { category: 'sub_research_domain', formName: this.formName, categoryName: 'Sub-Research Domain' },
+      { category: 'esg_factors', formName: this.formName, categoryName: 'ESG Factors' },
+      { category: 'sdg_alignment', formName: this.formName, categoryName: 'SDG Alignment' },
     ];
 
     let nextState = { ...this.baseState };
@@ -114,8 +116,7 @@ export class RdigDropdownOptionsService {
     for (const mapping of categoryMappings) {
       const sharedEntries = entries.filter(option =>
         option.formName === mapping.formName &&
-        option.category === mapping.categoryName &&
-        option.status === 'Active'
+        option.category === mapping.categoryName
       );
 
       if (sharedEntries.length === 0) {
@@ -129,7 +130,7 @@ export class RdigDropdownOptionsService {
           id: entry.id,
           optionName: entry.value,
           status: entry.status,
-          createdDate: entry.lastUpdated,
+          createdDate: this.normalizeDisplayDate(entry.lastUpdated),
         })),
       };
     }
@@ -149,12 +150,13 @@ export class RdigDropdownOptionsService {
       id: newId,
       optionName: option.optionName,
       status: option.status,
-      createdDate: new Date().toISOString(),
+      createdDate: this.formatDisplayDate(new Date()),
       parentDomainId: option.parentDomainId,
     };
 
     const updatedOptions = [...options, newOption];
     this.store.next({ ...currentState, [category]: updatedOptions });
+    this.persistCategory(category, updatedOptions);
   }
 
   updateOption(category: DropdownCategoryKey, updatedOption: DropdownOptionEntityEntity): void {
@@ -163,6 +165,7 @@ export class RdigDropdownOptionsService {
     const updatedOptions = options.map(o => o.id === updatedOption.id ? { ...o, ...updatedOption } : o);
 
     this.store.next({ ...currentState, [category]: updatedOptions });
+    this.persistCategory(category, updatedOptions);
   }
 
   deleteOptions(category: DropdownCategoryKey, ids: number[]): void {
@@ -170,11 +173,12 @@ export class RdigDropdownOptionsService {
     const currentState = this.store.getValue();
     const next = currentState[category].filter(item => !ids.includes(item.id));
     this.store.next({ ...currentState, [category]: next });
+    this.persistCategory(category, next);
   }
 
   toggleStatus(category: DropdownCategoryKey, id: number): void {
     const currentState = this.store.getValue();
-    const next = currentState[category].map(item => {
+    const next: DropdownOptionEntityEntity[] = currentState[category].map(item => {
       if (item.id !== id) return item;
       return {
         ...item,
@@ -182,6 +186,70 @@ export class RdigDropdownOptionsService {
       };
     });
     this.store.next({ ...currentState, [category]: next });
+    this.persistCategory(category, next);
+  }
+
+  private persistCategory(category: DropdownCategoryKey, options: DropdownOptionEntityEntity[]): void {
+    const storedOptions: Array<Omit<StoredDropdownOption, 'formName' | 'category'>> = options.map<Omit<StoredDropdownOption, 'formName' | 'category'>>(option => ({
+      id: option.id,
+      value: option.optionName,
+      lastUpdated: this.normalizeDisplayDate(option.createdDate),
+      createdBy: 'Admin',
+      status: option.status,
+    }));
+
+    this.dropdownStore.replaceCategoryOptions(
+      this.formName,
+      CATEGORY_LABELS[category],
+      storedOptions,
+    );
+  }
+
+  private formatDisplayDate(date: Date): string {
+    const day = `${date.getDate()}`.padStart(2, '0');
+    const month = `${date.getMonth() + 1}`.padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  }
+
+  private parseDisplayDate(dateValue: string): number {
+    const slashMatch = dateValue.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    if (slashMatch) {
+      const [, day, month, year] = slashMatch;
+      return new Date(Number(year), Number(month) - 1, Number(day)).getTime();
+    }
+
+    const shortMonthMatch = dateValue.match(/^(\d{2})\s([A-Za-z]{3})\s(\d{4})$/);
+    if (shortMonthMatch) {
+      const monthLookup: Record<string, number> = {
+        Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5, Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11,
+      };
+      const [, day, monthText, year] = shortMonthMatch;
+      const month = monthLookup[monthText];
+      if (month !== undefined) {
+        return new Date(Number(year), month, Number(day)).getTime();
+      }
+    }
+
+    const isoParsed = new Date(dateValue).getTime();
+    if (!Number.isNaN(isoParsed)) {
+      return isoParsed;
+    }
+
+    return 0;
+  }
+
+  private normalizeDisplayDate(dateValue?: string): string {
+    if (!dateValue) {
+      return this.formatDisplayDate(new Date());
+    }
+
+    const timestamp = this.parseDisplayDate(dateValue);
+    if (!timestamp) {
+      return this.formatDisplayDate(new Date());
+    }
+
+    return this.formatDisplayDate(new Date(timestamp));
   }
 }
 

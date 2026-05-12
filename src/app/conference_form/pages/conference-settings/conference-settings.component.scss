@@ -256,6 +256,64 @@
       }
     }
 
+    /* Action group for edit + activate/deactivate pill */
+    .action-group {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+
+      .action-edit {
+        width: 36px;
+        height: 36px;
+        padding: 0;
+        border-radius: 8px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--color-surface-contrast, #111);
+        color: white;
+        border: 1px solid rgba(0,0,0,0.06);
+        cursor: pointer;
+
+        .material-icons {
+          font-size: 18px;
+        }
+
+        &:hover {
+          opacity: 0.95;
+        }
+      }
+
+      .action-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--space-2);
+        padding: 6px 10px;
+        border-radius: 20px;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        color: white;
+
+        .material-icons {
+          font-size: 16px;
+        }
+
+        .pill-label {
+          font-size: 13px;
+          line-height: 1;
+        }
+
+        &.activate {
+          background: var(--color-success, #17a964);
+        }
+
+        &.deactivate {
+          background: var(--color-error, #d32f2f);
+        }
+      }
+    }
+
     // Empty State
     .empty-state {
       text-align: center;

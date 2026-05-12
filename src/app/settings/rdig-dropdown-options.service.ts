@@ -106,8 +106,8 @@ export class RdigDropdownOptionsService {
       { category: 'type_of_organisation', formName: this.formName, categoryName: 'Type of Organisation' },
       { category: 'research_domain', formName: this.formName, categoryName: 'Research Domain' },
       { category: 'sub_research_domain', formName: this.formName, categoryName: 'Sub-Research Domain' },
-      { category: 'esg_factors', formName: this.formName, categoryName: 'ESG Factors' },
-      { category: 'sdg_alignment', formName: this.formName, categoryName: 'SDG Alignment' },
+      { category: 'esg_factors', formName: this.formName, categoryName: 'ESG' },
+      { category: 'sdg_alignment', formName: this.formName, categoryName: 'SDG' },
     ];
 
     let nextState = { ...this.baseState };

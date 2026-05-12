@@ -457,6 +457,34 @@ export class ConferenceSettingsComponent implements OnInit {
   }
 
   /**
+   * Toggle active/inactive status for an option
+   */
+  toggleOptionStatus(option: ExtendedOption) {
+    if (!this.selectedBreakdownType()) {
+      return;
+    }
+
+    const type = this.selectedBreakdownType()!;
+    let serviceType: 'research' | 'local' | 'region' = 'local';
+    if (type === 'research') {
+      serviceType = 'research';
+    } else if (type === 'local') {
+      serviceType = 'local';
+    } else if (type === 'region') {
+      serviceType = 'region';
+    }
+
+    const newStatus: 'Active' | 'Inactive' = option.status === 'Active' ? 'Inactive' : 'Active';
+
+    try {
+      this.saveOptionMetadata(serviceType, option.value, { status: newStatus });
+    } catch (error) {
+      console.error('Error toggling option status:', error);
+      alert('Failed to update status.');
+    }
+  }
+
+  /**
    * Delete selected options
    */
   deleteSelectedOptions() {

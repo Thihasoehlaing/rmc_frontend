@@ -334,6 +334,6 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
   }
 
   manageOrgTypes(): void {
-    this.router.navigate(['/settings/rdig-dropdown-options']);
+    // RDIG dropdown options management has been removed
   }
 }

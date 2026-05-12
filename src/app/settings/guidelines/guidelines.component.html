@@ -67,15 +67,21 @@
           <td>{{ row.lastUpdated }}</td>
           <td>{{ row.createdBy }}</td>
           <td class="actions-cell">
-            <button *ngIf="!row.isActive" class="btn btn-sm btn-success" type="button" (click)="activateGuideline(row.id)">
-              Activate
-            </button>
-            <button class="action-btn edit-btn" (click)="editGuideline(row.id)" title="Edit">
-              <span class="material-icons">edit</span>
-            </button>
-            <button class="action-btn delete-btn" (click)="deleteGuideline(row.id)" title="Delete">
-              <span class="material-icons">delete</span>
-            </button>
+            <div class="action-group">
+              <button class="action-edit" (click)="editGuideline(row.id)" title="Edit">
+                <span class="material-icons">edit</span>
+              </button>
+
+              <button *ngIf="row.isActive" class="action-pill deactivate" (click)="toggleGuidelineStatus(row.id)" aria-label="Deactivate">
+                <span class="material-icons">block</span>
+                <span class="pill-label">Deactivate</span>
+              </button>
+
+              <button *ngIf="!row.isActive" class="action-pill activate" (click)="toggleGuidelineStatus(row.id)" aria-label="Activate">
+                <span class="material-icons">check</span>
+                <span class="pill-label">Activate</span>
+              </button>
+            </div>
           </td>
         </tr>
       </ng-template>

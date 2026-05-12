@@ -144,20 +144,35 @@
                     <td>{{ row.status || 'Active' }}</td>
                     <td>{{ formatRowDate(row.createdDate) }}</td>
                     <td class="col-actions">
-                      <button
-                        type="button"
-                        class="btn-icon btn-icon--edit"
-                        (click)="editOption(row, getFilteredAndSortedOptions().indexOf(row))"
-                        aria-label="Edit option">
-                        <span class="material-icons">edit</span>
-                      </button>
-                      <button
-                        type="button"
-                        class="btn-icon btn-icon--delete"
-                        (click)="deleteOption(row.value)"
-                        aria-label="Delete option">
-                        <span class="material-icons">delete</span>
-                      </button>
+                      <div class="action-group">
+                        <button
+                          type="button"
+                          class="action-edit"
+                          (click)="editOption(row, getFilteredAndSortedOptions().indexOf(row))"
+                          aria-label="Edit option">
+                          <span class="material-icons">edit</span>
+                        </button>
+
+                        @if (row.status === 'Active') {
+                          <button
+                            type="button"
+                            class="action-pill deactivate"
+                            (click)="toggleOptionStatus(row)"
+                            aria-label="Deactivate option">
+                            <span class="material-icons">block</span>
+                            <span class="pill-label">Deactivate</span>
+                          </button>
+                        } @else {
+                          <button
+                            type="button"
+                            class="action-pill activate"
+                            (click)="toggleOptionStatus(row)"
+                            aria-label="Activate option">
+                            <span class="material-icons">check</span>
+                            <span class="pill-label">Activate</span>
+                          </button>
+                        }
+                      </div>
                     </td>
                   </tr>
                 }

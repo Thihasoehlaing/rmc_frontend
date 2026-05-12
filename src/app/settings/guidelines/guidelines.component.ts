@@ -86,7 +86,11 @@ export class GuidelinesComponent implements OnInit {
 
   private saveGuidelinesToStorage() {
     try {
-      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.guidelines()));
+      // Persist a normalized copy to ensure only one active guideline per form is stored
+      const normalized = this.normalizeSingleActivePerForm(this.guidelines());
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(normalized));
+      // Also update the in-memory signal with the normalized list to keep UI consistent
+      this.guidelines.set(normalized);
     } catch (error) {
       console.error('Failed to save guidelines to localStorage:', error);
     }
@@ -208,9 +212,12 @@ export class GuidelinesComponent implements OnInit {
   }
 
   filteredGuidelines() {
+    // Ensure only one guideline is active per form at runtime
+    const normalizedList = this.normalizeSingleActivePerForm(this.guidelines());
+
     // search by title and createdBy
     const searchLower = this.searchTerm().toLowerCase();
-    let list = this.guidelines().filter(g => {
+    let list = normalizedList.filter(g => {
       const matchesSearch = g.title.toLowerCase().includes(searchLower) ||
                            g.createdBy.toLowerCase().includes(searchLower);
       const matchesForm = !this.selectedForm() || g.form === this.selectedForm();
@@ -295,6 +302,31 @@ export class GuidelinesComponent implements OnInit {
         guidelines.map(g => g.id === id ? { ...g, isActive: true } : g)
       )
     );
+    this.saveGuidelinesToStorage();
+  }
+
+  /**
+   * Toggle guideline status between Active and Inactive.
+   */
+  toggleGuidelineStatus(arg: number | Guideline) {
+    const id = typeof arg === 'number' ? arg : arg.id;
+    const found = this.guidelines().find(g => g.id === id);
+    if (!found) return;
+
+    // Flip the target guideline's isActive and ensure at most one per form
+    const updated = this.guidelines().map(g => {
+      if (g.id === id) {
+        return { ...g, isActive: !g.isActive };
+      }
+      // If we're activating the target, deactivate others in the same form
+      if (!found.isActive && g.form === found.form) {
+        return { ...g, isActive: false };
+      }
+      return g;
+    });
+
+    const normalized = this.normalizeSingleActivePerForm(updated);
+    this.guidelines.set(normalized);
     this.saveGuidelinesToStorage();
   }
 

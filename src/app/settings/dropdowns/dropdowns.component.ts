@@ -65,7 +65,7 @@ export class DropdownsComponent implements OnInit {
   };
 
   groups = signal<DropdownGroup[]>([
-    { id: 1, title: 'RDIG Application', categories: ['Research Cluster', 'Type of Organisation', 'Research Domain', 'Sub-Research Domain', 'ESG Factors', 'SDG Alignment'], items: 17, shared: 11 },
+    { id: 1, title: 'RDIG Application', categories: ['Research Cluster', 'Type of Organisation', 'Research Domain', 'Sub-Research Domain', 'ESG', 'SDG'], items: 17, shared: 11 },
     { id: 2, title: 'RA/GRA Application', categories: ['Research Cluster', 'Programme Type', 'Supervisor Type', 'Funding Type'], items: 16, shared: 10 },
     { id: 3, title: 'Conference Application', categories: ['Select Region', 'Select Item Description', 'Type of Organisation', 'Staff Name'], items: 15, shared: 6 },
     { id: 4, title: 'Journal Application', categories: ['Vote Number Description', 'Vote Number', 'Account Code Description', 'Account Code'], items: 13, shared: 10 },
@@ -167,7 +167,10 @@ export class DropdownsComponent implements OnInit {
     console.log('[DEBUG] DropdownsComponent initialized');
     this.route.queryParams.subscribe(params => {
       const id = Number(params['group']);
-      this.selectedGroupId.set(!Number.isNaN(id) && id > 0 ? id : null);
+      const explicitGroupId = !Number.isNaN(id) && id > 0 ? id : null;
+      const isRdigRoute = this.route.snapshot.routeConfig?.path === 'rdig-dropdown-options';
+      const rdigGroupId = this.groups().find(group => group.title === 'RDIG Application')?.id ?? null;
+      this.selectedGroupId.set(explicitGroupId ?? (isRdigRoute ? rdigGroupId : null));
       this.selectedCategory.set('');
       this.searchQuery.set('');
       this.statusFilter.set('all');
@@ -251,13 +254,20 @@ export class DropdownsComponent implements OnInit {
       { id: 29, formName: 'Conference Application', category: 'Staff Name', value: 'Robert Wilson', lastUpdated: '22 Apr 2026', createdBy: 'Admin', status: 'Active' },
       { id: 30, formName: 'Conference Application', category: 'Staff Name', value: 'Jessica Taylor', lastUpdated: '22 Apr 2026', createdBy: 'Admin', status: 'Active' },
       { id: 31, formName: 'Conference Application', category: 'Staff Name', value: 'James Anderson', lastUpdated: '22 Apr 2026', createdBy: 'Admin', status: 'Active' },
+      // RDIG Application: copy Type of Organisation options from Conference (1-to-1)
+      { id: 32, formName: 'RDIG Application', category: 'Type of Organisation', value: 'University', lastUpdated: '20 Apr 2026', createdBy: 'Admin', status: 'Active' },
+      { id: 33, formName: 'RDIG Application', category: 'Type of Organisation', value: 'Research Institute', lastUpdated: '20 Apr 2026', createdBy: 'Admin', status: 'Active' },
+      { id: 34, formName: 'RDIG Application', category: 'Type of Organisation', value: 'Company', lastUpdated: '20 Apr 2026', createdBy: 'Admin', status: 'Active' },
+      { id: 35, formName: 'RDIG Application', category: 'Type of Organisation', value: 'Government Agency', lastUpdated: '20 Apr 2026', createdBy: 'Admin', status: 'Active' },
+      { id: 36, formName: 'RDIG Application', category: 'Type of Organisation', value: 'Non-Profit Organization', lastUpdated: '20 Apr 2026', createdBy: 'Admin', status: 'Active' },
+      { id: 37, formName: 'RDIG Application', category: 'Type of Organisation', value: 'Other', lastUpdated: '20 Apr 2026', createdBy: 'Admin', status: 'Active' },
     ];
   }
 
   openGroup(g: DropdownGroup) {
     // If RDIG group is clicked, open the dedicated RDIG dropdown management page
     if (g.title.toLowerCase().includes('rdig')) {
-      this.router.navigate(['/settings/rdig-dropdown-options']);
+      this.router.navigate(['/settings/rdig-dropdown-options'], { queryParams: { group: g.id } });
       return;
     }
 
@@ -265,6 +275,12 @@ export class DropdownsComponent implements OnInit {
   }
 
   goBack() {
+    const isRdigRoute = this.route.snapshot.routeConfig?.path === 'rdig-dropdown-options';
+    if (isRdigRoute) {
+      this.router.navigate(['/settings/dropdowns']);
+      return;
+    }
+
     this.router.navigate([], { relativeTo: this.route, queryParams: {} });
   }
 

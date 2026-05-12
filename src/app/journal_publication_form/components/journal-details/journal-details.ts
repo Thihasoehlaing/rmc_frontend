@@ -16,7 +16,7 @@ import { JournalOptionType, JournalOptionsService } from '../../services/journal
 @Component({
   selector: 'app-journal-details',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, NoteComponent, SearchableDropdownComponent, DialogComponent, CharacterCounterComponent, CustomHeaderComponent, ValidationMessageComponent, DataTableComponent],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './journal-details.html',
   styleUrl: './journal-details.scss'
 })
@@ -41,6 +41,7 @@ export class JournalDetails implements OnInit, OnDestroy {
 
   selectedFileName: string | null = null;
   selectedFile: File | null = null;
+  currentBreakdownOptions: { value: string; label: string; accountCode?: string }[] = [];
 
   voteNumberDescriptionOptions: { value: string; label: string }[] = [];
   voteNumberOptions: { value: string; label: string }[] = [];
@@ -73,7 +74,6 @@ export class JournalDetails implements OnInit, OnDestroy {
   @Output() formValidityChange = new EventEmitter<boolean>();
 
   private onJournalDropdownsUpdated = (): void => {
-    // Refresh options from the management-table-backed service when settings change
     this.refreshDropdownOptions();
     this.cdr.detectChanges();
   };
@@ -90,7 +90,6 @@ export class JournalDetails implements OnInit, OnDestroy {
     });
 
     effect(() => {
-      // Keep dropdown arrays synchronized with table-backed option signals.
       this.journalOptionsService.voteNumberDescriptionOptions();
       this.journalOptionsService.voteNumberOptions();
       this.journalOptionsService.accountCodeDescriptionOptions();
@@ -135,7 +134,6 @@ export class JournalDetails implements OnInit, OnDestroy {
     });
 
     this.form.get('researchType')?.valueChanges.subscribe((type) => {
-      // Manage validation properly based on the new conditions
       this.form.get('projectAccountCode')?.setValidators([Validators.required]);
       this.form.get('projectAccountCode')?.updateValueAndValidity();
     });
@@ -152,7 +150,6 @@ export class JournalDetails implements OnInit, OnDestroy {
 
     this.breakdownForm = this.fb.group({
       itemDescription: ['', Validators.required],
-      // voteNumber is only required for research types; non-research uses accountCode instead
       voteNumber: [{ value: '', disabled: true }],
       accountCodeDescription: [''],
       accountCode: [{ value: '', disabled: true }],
@@ -170,20 +167,7 @@ export class JournalDetails implements OnInit, OnDestroy {
     });
 
     this.refreshDropdownOptions();
-
-    // Listen for dropdown updates from admin settings
     window.addEventListener('rmc-dropdowns-updated', this.onJournalDropdownsUpdated);
-
-    this.breakdownForm.get('itemDescription')?.valueChanges.subscribe((value) => {
-      if (this.breakdownType !== 'non-research') return;
-      const selected = this.findNonResearchOption(value);
-      // Auto-fill Account Code and its description from the selected option's metadata
-      this.breakdownForm.patchValue({
-        accountCode: selected?.accountCode || '',
-        accountCodeDescription: selected?.label || ''
-      }, { emitEvent: false });
-    });
-  }
 
   ngOnDestroy(): void {
     window.removeEventListener('rmc-dropdowns-updated', this.onJournalDropdownsUpdated);
@@ -202,38 +186,20 @@ export class JournalDetails implements OnInit, OnDestroy {
 
   openBreakdownModal(type: string, index?: number) {
     this.breakdownType = type as any;
-
-    // Defer modal opening to next tick to avoid change detection overlaps
     setTimeout(() => {
-      // 1. Resolve dropdown options for this type
+      // Resolve dropdown options
       if (type === 'non-research') {
-        const localOpts = this.journalOptionsService.getOptionsForType('account_code_description');
-        this.currentBreakdownOptions = localOpts.filter(opt => {
-          const meta = this.getOptionMetadata('account_code_description', opt.value);
-          return !meta || meta.status !== 'Inactive';
-        }).map(opt => ({
-          value: opt.value,
-          label: opt.label,
-          accountCode: this.getOptionMetadata('account_code_description', opt.value)?.accountCode || ''
-        }));
+        const localOpts = this.journalOptionsService.getOptionsForType('account_code');
+        this.currentBreakdownOptions = localOpts.map(opt => ({ value: opt.value, label: opt.label, accountCode: '' }));
       } else {
-        const researchOpts = this.journalOptionsService.getOptionsForType('vote_number_description');
-        this.currentBreakdownOptions = researchOpts.filter(opt => {
-          const meta = this.getOptionMetadata('vote_number_description', opt.value);
-          return !meta || meta.status !== 'Inactive';
-        }).map(opt => ({
-          value: opt.value,
-          label: opt.label
-        }));
+        const researchOpts = this.journalOptionsService.getOptionsForType('vote_number');
+        this.currentBreakdownOptions = researchOpts.map(opt => ({ value: opt.value, label: opt.label }));
       }
 
-      // 2. Reset form first so we start from a clean slate
       this.breakdownForm.reset({}, { emitEvent: false });
-      // Also reset the file picker so a previous entry's file doesn't bleed in
       this.selectedFile = null;
       this.selectedFileName = null;
 
-      // 3. Configure validators and enable/disable fields AFTER reset
       const voteNumberCtrl = this.breakdownForm.get('voteNumber');
       const accountCodeCtrl = this.breakdownForm.get('accountCode');
 
@@ -247,9 +213,7 @@ export class JournalDetails implements OnInit, OnDestroy {
         accountCodeCtrl?.disable({ emitEvent: false });
       }
 
-      // 4. Populate form values
       if (index !== undefined) {
-        // Editing an existing entry
         this.breakdownEditingIndex = index;
         const entry = this.getBreakdownArray(type)[index];
         this.selectedFileName = entry.fileName || null;
@@ -266,7 +230,6 @@ export class JournalDetails implements OnInit, OnDestroy {
           this.breakdownForm.patchValue(entry, { emitEvent: false });
         }
       } else {
-        // New entry — form already reset above; set defaults for research types
         this.breakdownEditingIndex = null;
         if (type === 'internal-research' || type === 'external-research') {
           this.breakdownForm.patchValue({ voteNumber: 'V29000' }, { emitEvent: false });
@@ -290,8 +253,7 @@ export class JournalDetails implements OnInit, OnDestroy {
 
   private findNonResearchOption(value: string): { value: string; label: string; accountCode?: string } | undefined {
     if (!value) return undefined;
-    return this.currentBreakdownOptions.find(opt => opt.value === value)
-      || this.currentBreakdownOptions.find(opt => opt.label === value);
+    return this.currentBreakdownOptions.find(opt => opt.value === value) || this.currentBreakdownOptions.find(opt => opt.label === value);
   }
 
   saveBreakdownEntry() {
@@ -451,9 +413,7 @@ export class JournalDetails implements OnInit, OnDestroy {
       costByApplicant: applicantCost ? applicantCost.toFixed(2) : '0.00'
     }, { emitEvent: false });
 
-    const isBreakdownValid = (pType === 'external-research' || pType === 'non-research')
-      ? breakdownArray.length > 0
-      : true;
+    const isBreakdownValid = (pType === 'external-research' || pType === 'non-research') ? breakdownArray.length > 0 : true;
     this.formValidityChange.emit(this.form.valid && isBreakdownValid);
   }
 
@@ -488,7 +448,7 @@ export class JournalDetails implements OnInit, OnDestroy {
         return JSON.parse(stored);
       }
     } catch {
-      // Silently discard malformed metadata — do not log storage key names
+      // Silently discard malformed metadata
     }
     return null;
   }
@@ -573,12 +533,7 @@ export class JournalDetails implements OnInit, OnDestroy {
     const keyword2 = this.form.get('sdgKeyword2')?.value || '';
     const keyword3 = this.form.get('sdgKeyword3')?.value || '';
 
-    this.sdgKeywordsForm.patchValue({
-      keyword1,
-      keyword2,
-      keyword3
-    }, { emitEvent: false });
-
+    this.sdgKeywordsForm.patchValue({ keyword1, keyword2, keyword3 }, { emitEvent: false });
     this.isSDGKeywordsModalOpen = true;
   }
 
@@ -590,15 +545,8 @@ export class JournalDetails implements OnInit, OnDestroy {
     if (this.sdgKeywordsForm.invalid) {
       return;
     }
-
     const { keyword1, keyword2, keyword3 } = this.sdgKeywordsForm.value;
-
-    this.form.patchValue({
-      sdgKeyword1: keyword1,
-      sdgKeyword2: keyword2,
-      sdgKeyword3: keyword3
-    }, { emitEvent: false });
-
+    this.form.patchValue({ sdgKeyword1: keyword1, sdgKeyword2: keyword2, sdgKeyword3: keyword3 }, { emitEvent: false });
     this.closeSDGKeywordsModal();
   }
 
@@ -606,7 +554,6 @@ export class JournalDetails implements OnInit, OnDestroy {
     const keyword1 = this.form.get('sdgKeyword1')?.value || '';
     const keyword2 = this.form.get('sdgKeyword2')?.value || '';
     const keyword3 = this.form.get('sdgKeyword3')?.value || '';
-
     return [keyword1, keyword2, keyword3].filter(k => k);
   }
 
@@ -636,8 +583,7 @@ export class JournalDetails implements OnInit, OnDestroy {
   }
 
   private getDropdownOptions(type: JournalOptionType): { value: string; label: string }[] {
-    return this.journalOptionsService.getOptionsForType(type)
-      .map(opt => ({ value: opt.value, label: opt.label }));
+    return this.journalOptionsService.getOptionsForType(type).map(opt => ({ value: opt.value, label: opt.label }));
   }
 
   getDropdownLabel(type: JournalOptionType, value: string): string {

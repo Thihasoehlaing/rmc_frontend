@@ -1,0 +1,99 @@
+@use '../../../../assets/styles/index' as *;
+
+// Component-level layout only.
+// Global classes (.card, .card__content, .form-field, .form-label, .input--text,
+// .input--textarea, .section-fields, .agreement-trigger) are defined in _forms.scss
+// and must NOT be redefined here.
+
+.declaration-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+// ── Centered heading above the declaration text box ───────────
+.declaration-heading {
+  text-align: center;
+  padding: var(--space-2) 0;
+
+  &__text {
+    font-size: var(--fs-lg);
+    font-weight: var(--fw-bold);
+    color: var(--color-heading);
+    margin: 0;
+    line-height: var(--lh-snug);
+  }
+}
+
+// ── Declaration text box — mirrors RDIG / Journal pattern ─────
+.declaration-box {
+  padding: var(--space-6);
+  background: var(--color-surface-nested);
+  border-left: 4px solid var(--color-primary);
+  border-radius: var(--radius-lg);
+  font-size: var(--fs-sm);
+  color: var(--color-text-secondary);
+  line-height: var(--lh-relaxed);
+
+  &__title {
+    font-size: var(--fs-base);
+    font-weight: var(--fw-bold);
+    color: var(--color-heading);
+    margin-bottom: var(--space-4);
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+
+    .material-icons {
+      font-size: var(--icon-md);
+      color: var(--color-primary);
+    }
+  }
+
+  p {
+    margin-bottom: var(--space-3);
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+// ── Agreement checkbox — mirrors RDIG / Journal pattern ───────
+// (agreement-trigger is defined globally in journal shell scss;
+//  redefined here scoped to this component so it works standalone)
+.agreement-trigger {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+  cursor: pointer;
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  transition: background var(--transition-fast);
+
+  &:hover {
+    background: var(--color-surface-hover);
+  }
+
+  input[type='checkbox'] {
+    width: 20px;  // no token: checkbox size — allowed exception
+    height: 20px; // no token: checkbox size — allowed exception
+    flex-shrink: 0;
+    margin-top: 2px; // no token: fine-tune alignment — allowed exception
+    accent-color: var(--color-primary);
+    cursor: pointer;
+  }
+
+  span {
+    font-size: var(--fs-base);
+    line-height: var(--lh-relaxed);
+    color: var(--color-text);
+
+    // Red asterisk for required spans using .is-required class
+    &.is-required::after {
+      content: ' *';
+      color: var(--color-error);
+      font-size: 1.1em;
+    }
+  }
+}

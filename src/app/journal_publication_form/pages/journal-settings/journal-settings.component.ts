@@ -341,7 +341,7 @@ export class JournalSettingsComponent implements OnInit {
 
     try {
       this.JournalOptionsService.deleteOption(serviceType, optionValue);
-      this.selectedCheckboxes.set(new Set()); // Clear selection
+      this.selectedCheckboxes.set(new Set());
       window.dispatchEvent(new CustomEvent('rmc-dropdowns-updated'));
     } catch (error) {
       console.error('Error deleting option:', error);

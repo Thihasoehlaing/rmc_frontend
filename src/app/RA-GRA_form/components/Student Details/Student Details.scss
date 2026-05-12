@@ -1,0 +1,113 @@
+@use '../../../../assets/styles/index' as *;
+
+// Component-level layout only.
+// Global classes (.card, .form-field, .form-label, .input--text, .input--textarea,
+// .input--select, .row, .row--2, .label-with-note, .form-hint) are defined in
+// _forms.scss and must NOT be redefined here.
+
+.form-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.section-fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+// Ensure each column stacks its fields vertically
+.form-column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+// ══════════════════════════════════════════════════════════════════
+// Upload Supporting Documents Section — mirrors Journal pattern
+// ══════════════════════════════════════════════════════════════════
+
+// Upload grid: 2-column layout matching the Journal form.
+// align-items: stretch (grid default) makes both cells in each row
+// the same height automatically — no extra work needed.
+.section-fields.upload-grid {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-6);
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+// Each upload item is a flex column that stretches to fill the grid cell.
+// justify-content: space-between pushes the dropzone to the bottom so
+// items in the same row always have their dropzones at the same vertical
+// position, regardless of how many lines the title or download link takes.
+.upload-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+// The header area (title + subtitle + optional download link) grows to
+// fill available space, keeping the dropzone anchored at the bottom.
+.upload-field-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  flex: 1;
+}
+
+// The dropzone + error message area — always at the bottom of the item.
+.upload-field-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.upload-field-title {
+  font-size: var(--fs-md);
+  font-weight: var(--fw-bold);
+  color: var(--color-text);
+  margin: 0;
+  padding: 0;
+
+  &.is-required::after {
+    content: ' *';
+    color: var(--color-error-dark);
+  }
+}
+
+.upload-field-subtitle {
+  font-size: var(--fs-xs);
+  color: var(--color-text-muted);
+  margin: 0;
+  padding: 0;
+}
+
+// Download link — styled like a button link with icon
+.download-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--fs-xs);
+  color: var(--color-primary);
+  text-decoration: none;
+  font-weight: var(--fw-medium);
+  margin-top: var(--space-1);
+  transition: color var(--transition-fast);
+  width: fit-content;
+
+  .material-icons {
+    font-size: 16px; // no token: material icon pixel size — allowed exception
+  }
+
+  &:hover {
+    color: var(--color-primary-hover);
+    text-decoration: underline;
+  }
+}

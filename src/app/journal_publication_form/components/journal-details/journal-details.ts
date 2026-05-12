@@ -5,10 +5,13 @@ import { Router } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
 import { JournalWorkflowService } from '../../services/journal-workflow.service';
 import { NoteComponent } from '../../../shared/components/note/note.component';
+import { ActionButtonComponent } from '../../../shared/components/action-button/action-button.component';
+import { CustomSubheaderComponent } from '../../../shared/components/custom-subheader/custom-subheader.component';
 import { SearchableDropdownComponent } from '../../../shared/components/searchable-dropdown/searchable-dropdown.component';
 import { DialogComponent } from '../../../shared/components/dialog/dialog.component';
 import { CharacterCounterComponent } from '../../../shared/components/character-counter/character-counter.component';
 import { CustomHeaderComponent } from '../../../shared/components/custom-header/custom-header.component';
+import { FileUploadComponent } from '../../../shared/components/file-upload/file-upload.component';
 import { ValidationMessageComponent } from '../../../shared/components/validation-message/validation-message.component';
 import { DataTableComponent, DataTableColumn } from '../../../shared/components/data-table/data-table.component';
 import { JournalOptionType, JournalOptionsService } from '../../services/journal-options.service';
@@ -16,7 +19,20 @@ import { JournalOptionType, JournalOptionsService } from '../../services/journal
 @Component({
   selector: 'app-journal-details',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    ActionButtonComponent,
+    CharacterCounterComponent,
+    CustomHeaderComponent,
+    CustomSubheaderComponent,
+    DataTableComponent,
+    DialogComponent,
+    FileUploadComponent,
+    NoteComponent,
+    SearchableDropdownComponent,
+    ValidationMessageComponent
+  ],
   templateUrl: './journal-details.html',
   styleUrl: './journal-details.scss'
 })
@@ -41,7 +57,6 @@ export class JournalDetails implements OnInit, OnDestroy {
 
   selectedFileName: string | null = null;
   selectedFile: File | null = null;
-  currentBreakdownOptions: { value: string; label: string; accountCode?: string }[] = [];
 
   voteNumberDescriptionOptions: { value: string; label: string }[] = [];
   voteNumberOptions: { value: string; label: string }[] = [];
@@ -168,6 +183,7 @@ export class JournalDetails implements OnInit, OnDestroy {
 
     this.refreshDropdownOptions();
     window.addEventListener('rmc-dropdowns-updated', this.onJournalDropdownsUpdated);
+  }
 
   ngOnDestroy(): void {
     window.removeEventListener('rmc-dropdowns-updated', this.onJournalDropdownsUpdated);

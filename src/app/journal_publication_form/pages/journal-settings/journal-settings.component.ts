@@ -406,8 +406,19 @@ export class JournalSettingsComponent implements OnInit {
    * Get the label for a breakdown type
    */
   getBreakdownTypeLabel(type: BreakdownTypeKey): string {
-    const option = this.breakdownTypeOptions.find(o => o.value === type);
+    const option = this.breakdownTypeOptions.find((o: BreakdownTypeOption) => o.value === type);
     return option?.label || type;
+  }
+
+  formatRowDate(date?: string | null): string {
+    if (!date) return this.getTodayDate();
+    try {
+      const d = new Date(date);
+      if (isNaN(d.getTime())) return String(date);
+      return d.toLocaleDateString('en-GB');
+    } catch {
+      return String(date);
+    }
   }
 }
 

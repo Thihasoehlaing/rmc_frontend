@@ -64,7 +64,6 @@ export class JournalOptionsService {
    * Sync options from the Admin Settings dropdown store
    */
   private syncFromSettingsStore(entries: StoredDropdownOption[]): void {
-    // Map category names from Admin Settings to our signals
     const voteDescOptions = entries
       .filter(option => option.formName === this.formName && option.category === 'Vote Number Description' && option.status === 'Active')
       .map(option => ({ value: option.value, label: option.value }));

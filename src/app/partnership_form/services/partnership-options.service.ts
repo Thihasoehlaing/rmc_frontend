@@ -57,7 +57,11 @@ export class PartnershipOptionsService {
     if (stored) {
       try {
         const data = JSON.parse(stored);
-        this.categoryOptions.set(data.categoryOptions || this.defaultCategoryOptions);
+        const storedOptions = (data.categoryOptions || this.defaultCategoryOptions) as PartnershipDropdownOption[];
+        this.categoryOptions.set(storedOptions.map(option => ({
+          ...option,
+          createdDate: this.normalizeDisplayDate(option.createdDate),
+        })));
       } catch (e) {
         console.error('Failed to parse stored partnership options', e);
         this.loadDefaults();
@@ -78,7 +82,7 @@ export class PartnershipOptionsService {
         value: option.value,
         label: option.value,
         status: option.status,
-        createdDate: option.lastUpdated || undefined,
+        createdDate: this.normalizeDisplayDate(option.lastUpdated),
       }));
 
     this.partnershipTypeOptions.set(activeTypeOptions);
@@ -86,7 +90,10 @@ export class PartnershipOptionsService {
   }
 
   private loadDefaults(): void {
-    this.categoryOptions.set([...this.defaultCategoryOptions]);
+    this.categoryOptions.set(this.defaultCategoryOptions.map(option => ({
+      ...option,
+      createdDate: this.normalizeDisplayDate(option.createdDate),
+    })));
   }
 
   private saveToStorage(): void {
@@ -138,12 +145,62 @@ export class PartnershipOptionsService {
   }
 
   private updateOptions(options: PartnershipDropdownOption[]): void {
-    this.categoryOptions.set(options);
+    this.categoryOptions.set(options.map(option => ({
+      ...option,
+      createdDate: this.normalizeDisplayDate(option.createdDate),
+    })));
     this.saveToStorage();
   }
 
   resetToDefaults(): void {
     this.loadDefaults();
     this.saveToStorage();
+  }
+
+  private formatDisplayDate(date: Date): string {
+    const day = `${date.getDate()}`.padStart(2, '0');
+    const month = `${date.getMonth() + 1}`.padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  }
+
+  private parseDisplayDate(dateValue?: string): number {
+    if (!dateValue) {
+      return 0;
+    }
+
+    const slashMatch = dateValue.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    if (slashMatch) {
+      const [, day, month, year] = slashMatch;
+      return new Date(Number(year), Number(month) - 1, Number(day)).getTime();
+    }
+
+    const shortMonthMatch = dateValue.match(/^(\d{2})\s([A-Za-z]{3})\s(\d{4})$/);
+    if (shortMonthMatch) {
+      const monthLookup: Record<string, number> = {
+        Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5, Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11,
+      };
+      const [, day, monthText, year] = shortMonthMatch;
+      const month = monthLookup[monthText];
+      if (month !== undefined) {
+        return new Date(Number(year), month, Number(day)).getTime();
+      }
+    }
+
+    const isoParsed = new Date(dateValue).getTime();
+    if (!Number.isNaN(isoParsed)) {
+      return isoParsed;
+    }
+
+    return 0;
+  }
+
+  private normalizeDisplayDate(dateValue?: string): string {
+    const timestamp = this.parseDisplayDate(dateValue);
+    if (!timestamp) {
+      return this.formatDisplayDate(new Date());
+    }
+
+    return this.formatDisplayDate(new Date(timestamp));
   }
 }

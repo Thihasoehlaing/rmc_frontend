@@ -49,6 +49,41 @@ export class DropdownsStoreService {
     }
   }
 
+  replaceCategoryOptions(
+    formName: string,
+    category: string,
+    options: Array<Omit<StoredDropdownOption, 'formName' | 'category'>>,
+  ): void {
+    if (typeof localStorage === 'undefined') {
+      return;
+    }
+
+    const currentEntries = [...this.entries()];
+    const remainingEntries = currentEntries.filter(entry => entry.formName !== formName || entry.category !== category);
+
+    const replacementEntries = options.map<StoredDropdownOption>(option => ({
+      id: option.id,
+      formName,
+      category,
+      value: option.value.trim(),
+      lastUpdated: this.normalizeDisplayDate(option.lastUpdated),
+      createdBy: option.createdBy,
+      status: option.status === 'Inactive' ? 'Inactive' : 'Active',
+    }));
+
+    const nextEntries: StoredDropdownOption[] = [
+      ...remainingEntries,
+      ...replacementEntries,
+    ];
+
+    localStorage.setItem(this.storageKey, JSON.stringify(nextEntries));
+    this.entriesSignal.set(nextEntries);
+
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent(this.updateEventName));
+    }
+  }
+
   upsertOptions(formName: string, category: string, values: string[], createdBy: string): void {
     if (typeof localStorage === 'undefined') {
       return;
@@ -132,7 +167,7 @@ export class DropdownsStoreService {
         formName: item.formName ?? '',
         category: item.category ?? '',
         value: item.value ?? '',
-        lastUpdated: item.lastUpdated ?? '',
+        lastUpdated: this.normalizeDisplayDate(item.lastUpdated),
         createdBy: item.createdBy ?? '',
         status: item.status === 'Inactive' ? 'Inactive' : 'Active',
       })));
@@ -143,10 +178,49 @@ export class DropdownsStoreService {
   }
 
   private formatDisplayDate(date: Date): string {
-    return new Intl.DateTimeFormat('en-GB', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-    }).format(date);
+    const day = `${date.getDate()}`.padStart(2, '0');
+    const month = `${date.getMonth() + 1}`.padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  }
+
+  private parseDisplayDate(dateValue?: string): number {
+    if (!dateValue) {
+      return 0;
+    }
+
+    const slashMatch = dateValue.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    if (slashMatch) {
+      const [, day, month, year] = slashMatch;
+      return new Date(Number(year), Number(month) - 1, Number(day)).getTime();
+    }
+
+    const shortMonthMatch = dateValue.match(/^(\d{2})\s([A-Za-z]{3})\s(\d{4})$/);
+    if (shortMonthMatch) {
+      const monthLookup: Record<string, number> = {
+        Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5, Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11,
+      };
+      const [, day, monthText, year] = shortMonthMatch;
+      const month = monthLookup[monthText];
+      if (month !== undefined) {
+        return new Date(Number(year), month, Number(day)).getTime();
+      }
+    }
+
+    const isoParsed = new Date(dateValue).getTime();
+    if (!Number.isNaN(isoParsed)) {
+      return isoParsed;
+    }
+
+    return 0;
+  }
+
+  private normalizeDisplayDate(dateValue?: string): string {
+    const timestamp = this.parseDisplayDate(dateValue);
+    if (!timestamp) {
+      return this.formatDisplayDate(new Date());
+    }
+
+    return this.formatDisplayDate(new Date(timestamp));
   }
 }

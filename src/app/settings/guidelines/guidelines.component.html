@@ -57,17 +57,31 @@
       <ng-template #rowTemplate let-row let-index="index" let-columns="columns">
         <tr>
           <td>{{ row.form }}</td>
-            <td>{{ row.title }}</td>
-            <td class="center">{{ row.config.blocks.length }} blocks</td>
+          <td>{{ row.title }}</td>
+          <td class="center">
+            <span class="guideline-status" [class.is-active]="row.isActive" [class.is-inactive]="!row.isActive">
+              {{ row.isActive ? 'Active' : 'Inactive' }}
+            </span>
+          </td>
+          <td class="center">{{ row.config.blocks.length }} blocks</td>
           <td>{{ row.lastUpdated }}</td>
           <td>{{ row.createdBy }}</td>
           <td class="actions-cell">
-            <button class="action-btn edit-btn" (click)="editGuideline(row.id)" title="Edit">
-              <span class="material-icons">edit</span>
-            </button>
-            <button class="action-btn delete-btn" (click)="deleteGuideline(row.id)" title="Delete">
-              <span class="material-icons">delete</span>
-            </button>
+            <div class="action-group">
+              <button class="action-edit" (click)="editGuideline(row.id)" title="Edit">
+                <span class="material-icons">edit</span>
+              </button>
+
+              <button *ngIf="row.isActive" class="action-pill deactivate" (click)="toggleGuidelineStatus(row.id)" aria-label="Deactivate">
+                <span class="material-icons">block</span>
+                <span class="pill-label">Deactivate</span>
+              </button>
+
+              <button *ngIf="!row.isActive" class="action-pill activate" (click)="toggleGuidelineStatus(row.id)" aria-label="Activate">
+                <span class="material-icons">check</span>
+                <span class="pill-label">Activate</span>
+              </button>
+            </div>
           </td>
         </tr>
       </ng-template>

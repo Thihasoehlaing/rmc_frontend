@@ -37,6 +37,7 @@ export class JournalDetails implements OnInit, OnDestroy {
   researchBreakdowns: any[] = [];
   externalBreakdowns: any[] = [];
   NonResearchBreakdowns: any[] = [];
+  currentBreakdownOptions: { value: string; label: string; accountCode?: string }[] = [];
 
   selectedFileName: string | null = null;
   selectedFile: File | null = null;
@@ -167,7 +168,6 @@ export class JournalDetails implements OnInit, OnDestroy {
 
     this.refreshDropdownOptions();
     window.addEventListener('rmc-dropdowns-updated', this.onJournalDropdownsUpdated);
-  }
 
   ngOnDestroy(): void {
     window.removeEventListener('rmc-dropdowns-updated', this.onJournalDropdownsUpdated);
@@ -440,7 +440,7 @@ export class JournalDetails implements OnInit, OnDestroy {
     this.saveBreakdownEntry();
   }
 
-  private getOptionMetadata(type: 'research' | 'local', value: string): any {
+  private getOptionMetadata(type: JournalOptionType, value: string): any {
     const storageKey = `journal-option-metadata-${type}-${value}`;
     try {
       const stored = localStorage.getItem(storageKey);

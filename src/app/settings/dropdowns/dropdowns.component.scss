@@ -259,10 +259,28 @@
   gap: var(--space-5);
 }
 
-.filters-grid {
-  display: grid;
-  grid-template-columns: 1fr 220px;
+.settings-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
   gap: var(--space-4);
+}
+
+.filters-grid {
+  display: flex;
+  flex: 1 1 40rem;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.filters-grid .form-field {
+  flex: 1 1 19rem;
+  min-width: 19rem;
+}
+
+.filters-grid .input--text {
+  width: 100%;
 }
 
 .category-list {
@@ -309,11 +327,11 @@
   &.is-active,
   &.is-active:hover {
     background: var(--color-primary);
-    color: white; // CSS keyword instead of #ffffff
+    color: white; // CSS keyword for white surface text
     border-color: var(--color-primary);
 
     .count {
-      background: white; // CSS keyword instead of #ffffff
+      background: white; // CSS keyword for white surface
       color: var(--color-primary);
     }
   }
@@ -339,6 +357,7 @@
   display: flex;
   justify-content: flex-end;
   gap: var(--space-3);
+  margin-top: calc(var(--space-1) * -1);
 }
 
 .row-checkbox {
@@ -370,57 +389,98 @@
   color: var(--color-error-dark);
 }
 
+.shared-with-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.shared-with-list--empty {
+  min-height: 1.5rem;
+}
+
+.shared-with-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: 28px;
+  padding: 0 var(--space-3);
+  border-radius: 999px;
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-medium);
+  white-space: nowrap;
+
+  .material-icons {
+    font-size: 14px;
+  }
+}
+
+.shared-with-empty {
+  color: var(--color-text-muted);
+  font-size: var(--fs-sm);
+}
+
 .actions-cell {
   display: flex;
-  justify-content: flex-start;
   gap: var(--space-2);
+  align-items: center;
+  justify-content: flex-start;
+  white-space: nowrap;
+  flex-shrink: 0;
+  position: sticky;
+  right: 0;
+  z-index: 4;
+  background: var(--color-surface);
+  padding-left: var(--space-2);
+  box-shadow: -8px 0 10px rgba(0,0,0,0.06);
 }
 
 .icon-btn {
-  width: 32px; // no token: icon button size
-  height: 32px; // no token: icon button size
-  border-radius: var(--radius-full);
-  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-default);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: transparent;
+  background: var(--color-surface);
+  padding: 0;
   cursor: pointer;
-  transition: background var(--transition-fast) var(--ease-default), color var(--transition-fast) var(--ease-default), transform var(--transition-fast) var(--ease-default);
+  transition: background var(--transition-fast) var(--ease-default), color var(--transition-fast) var(--ease-default);
 
   .material-icons {
-    font-size: 18px; // no token: material icon pixel size
+    font-size: 18px;
   }
 
   &:hover {
-    transform: translateY(-1px);
+    background: var(--color-surface-hover);
   }
 }
 
 .icon-btn--edit {
   color: var(--color-primary);
-
-  &:hover {
-    background: var(--color-primary-light);
-  }
 }
 
 .btn-status-activate,
 .btn-status-deactivate {
-  background: transparent;
-  border: none;
-  padding: var(--space-1) var(--space-2);
-  font-size: var(--fs-xs);
+  height: 36px;
+  border: 1px solid var(--border-default);
+  background: var(--color-surface);
+  padding: 0 var(--space-3);
+  font-size: var(--fs-sm);
   font-weight: var(--fw-semibold);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: var(--space-1);
+  gap: var(--space-2);
   border-radius: var(--radius-md);
   transition: background var(--transition-fast) var(--ease-default), color var(--transition-fast) var(--ease-default);
 
   .material-icons {
-    font-size: 16px; // no token: material icon pixel size
+    font-size: 16px;
   }
 }
 
@@ -441,7 +501,9 @@
 }
 
 .actions-cell {
+  /* keep actions from wrapping and remain visible when table/list scrolls */
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .help-text,
@@ -557,13 +619,19 @@
     padding: var(--space-4);
   }
 
+  .settings-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
   .filters-grid {
-    grid-template-columns: 1fr;
+    flex: 1 1 auto;
+    gap: var(--space-2);
   }
 
   .toolbar-actions {
-    justify-content: stretch;
     flex-direction: column;
+    margin-top: 0;
   }
 
   .toolbar-actions .btn-primary-pill,

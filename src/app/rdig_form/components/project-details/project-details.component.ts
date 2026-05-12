@@ -160,18 +160,18 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy {
     }
 
     manageResearchDomains(): void {
-        this.router.navigate(['/settings/rdig-dropdown-options']);
+        // RDIG dropdown options management has been removed
     }
 
     manageSubResearchDomains(): void {
-        this.router.navigate(['/settings/rdig-dropdown-options']);
+        // RDIG dropdown options management has been removed
     }
 
     manageEsg(): void {
-        this.router.navigate(['/settings/rdig-dropdown-options']);
+        // RDIG dropdown options management has been removed
     }
 
     manageSdg(): void {
-        this.router.navigate(['/settings/rdig-dropdown-options']);
+        // RDIG dropdown options management has been removed
     }
 }

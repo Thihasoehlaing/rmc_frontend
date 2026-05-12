@@ -180,16 +180,16 @@ export const routes: Routes = [
                 loadComponent: () => import('./settings/dropdowns/dropdowns.component').then(m => m.DropdownsComponent)
             },
             {
+              path: 'rdig-dropdown-options',
+              loadComponent: () => import('./settings/dropdowns/dropdowns.component').then(m => m.DropdownsComponent)
+            },
+            {
                 path: 'batches',
                 loadComponent: () => import('./settings/batches/batches.component').then(m => m.BatchesComponent)
             },
             {
                 path: 'staff-access',
                 loadComponent: () => import('./settings/staff-access/staff-access.component').then(m => m.StaffAccessComponent)
-            },
-            {
-                path: 'rdig-dropdown-options',
-                loadComponent: () => import('./settings/rdig-dropdown-options/rdig-dropdown-options').then(m => m.RdigDropdownOptions)
             },
             {
                 path: 'batch-sitting',

@@ -5,13 +5,12 @@ import { GuidelinesComponent } from './guidelines/guidelines.component';
 import { DropdownsComponent } from './dropdowns/dropdowns.component';
 import { BatchesComponent } from './batches/batches.component';
 import { StaffAccessComponent } from './staff-access/staff-access.component';
-import { RdigDropdownOptions } from './rdig-dropdown-options/rdig-dropdown-options';
 
 const routes: Routes = [
   { path: 'admin-settings', component: AdminSettingsComponent },
   { path: 'guidelines', component: GuidelinesComponent },
   { path: 'dropdowns', component: DropdownsComponent },
-  { path: 'rdig-dropdown-options', component: RdigDropdownOptions },
+  { path: 'rdig-dropdown-options', component: DropdownsComponent },
   { path: 'batches', component: BatchesComponent },
   { path: 'staff-access', component: StaffAccessComponent },
 ];

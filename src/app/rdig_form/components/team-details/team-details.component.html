@@ -313,6 +313,7 @@
         <div class="form-field">
           <label class="form-label is-required">Full Name</label>
           <input type="text" class="input--text" formControlName="fullName" placeholder="e.g. Dr. Aisha Rahman">
+          <p class="collaborator-note">External collaborators must be staff, researchers, or industry partners. Students are not eligible for this role.</p>
           <app-validation-message [control]="externalForm.get('fullName')"></app-validation-message>
         </div>
       </div>

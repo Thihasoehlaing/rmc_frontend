@@ -25,12 +25,11 @@
       />
     </div>
     <div class="guidelines-filter">
-      <label for="form-filter" class="filter-label">Form:</label>
-      <select id="form-filter" class="input--select" [(ngModel)]="selectedForm">
-        <option value="">All Forms</option>
-        <option *ngFor="let form of uniqueForms()" [value]="form">
-          {{ form }}
-        </option>
+      <label for="status-filter" class="filter-label">Status:</label>
+      <select id="status-filter" class="input--select" [(ngModel)]="selectedStatus">
+        <option value="">All</option>
+        <option value="Active">Active</option>
+        <option value="Inactive">Inactive</option>
       </select>
     </div>
     <div class="guidelines-actions">
@@ -67,21 +66,19 @@
           <td>{{ row.lastUpdated }}</td>
           <td>{{ row.createdBy }}</td>
           <td class="actions-cell">
-            <div class="action-group">
-              <button class="action-edit" (click)="editGuideline(row.id)" title="Edit">
-                <span class="material-icons">edit</span>
-              </button>
+            <button class="icon-btn icon-btn--edit" type="button" title="Edit inline" (click)="editGuideline(row.id)">
+              <span class="material-icons">edit</span>
+            </button>
 
-              <button *ngIf="row.isActive" class="action-pill deactivate" (click)="toggleGuidelineStatus(row.id)" aria-label="Deactivate">
-                <span class="material-icons">block</span>
-                <span class="pill-label">Deactivate</span>
-              </button>
+            <button *ngIf="!row.isActive" class="btn btn-sm btn-status-activate" type="button" (click)="toggleGuidelineStatus(row.id)">
+              <span class="material-icons">check_circle</span>
+              Activate
+            </button>
 
-              <button *ngIf="!row.isActive" class="action-pill activate" (click)="toggleGuidelineStatus(row.id)" aria-label="Activate">
-                <span class="material-icons">check</span>
-                <span class="pill-label">Activate</span>
-              </button>
-            </div>
+            <button *ngIf="row.isActive" class="btn btn-sm btn-status-deactivate" type="button" (click)="toggleGuidelineStatus(row.id)">
+              <span class="material-icons">block</span>
+              Deactivate
+            </button>
           </td>
         </tr>
       </ng-template>

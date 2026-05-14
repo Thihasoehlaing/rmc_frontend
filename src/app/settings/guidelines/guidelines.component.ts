@@ -29,7 +29,7 @@ export class GuidelinesComponent implements OnInit {
   private readonly STORAGE_KEY = 'rmc_guidelines_data';
 
   searchTerm = signal('');
-  selectedForm = signal<string>('');
+  selectedStatus = signal<string>('');
   sortBy = signal<GuidelineSortKey>('form');
   sortDirection = signal<'asc' | 'desc'>('asc');
   showAddModal = signal(false);
@@ -206,10 +206,7 @@ export class GuidelinesComponent implements OnInit {
     ];
   }
 
-  uniqueForms(): string[] {
-    const forms = [...new Set(this.guidelines().map(g => g.form))];
-    return forms.sort();
-  }
+
 
   filteredGuidelines() {
     // Ensure only one guideline is active per form at runtime
@@ -220,8 +217,9 @@ export class GuidelinesComponent implements OnInit {
     let list = normalizedList.filter(g => {
       const matchesSearch = g.title.toLowerCase().includes(searchLower) ||
                            g.createdBy.toLowerCase().includes(searchLower);
-      const matchesForm = !this.selectedForm() || g.form === this.selectedForm();
-      return matchesSearch && matchesForm;
+      const statusFilter = this.selectedStatus();
+      const matchesStatus = !statusFilter || (statusFilter === 'Active' ? g.isActive : !g.isActive);
+      return matchesSearch && matchesStatus;
     });
 
     // apply sorting

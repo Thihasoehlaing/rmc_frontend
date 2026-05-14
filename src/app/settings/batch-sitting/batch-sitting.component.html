@@ -158,6 +158,13 @@
                 <!-- Row summary -->
                 <div class="planned-item__row">
                   <div class="planned-item__info">
+                    <button class="icon-btn icon-btn--muted" type="button"
+                      [title]="isUpcomingExpanded(batch.id) ? 'Collapse details' : 'Expand details'"
+                      (click)="toggleUpcoming(batch.id)">
+                      <span class="material-icons">
+                        {{ isUpcomingExpanded(batch.id) ? 'expand_less' : 'expand_more' }}
+                      </span>
+                    </button>
                     <span class="status-badge status-badge--planned">Planned</span>
                     <strong class="planned-item__name">{{ batch.batchName }}</strong>
                     <span class="planned-item__dates">
@@ -197,6 +204,23 @@
                     minStart: minStartFor(batch),
                     type: 'planned'
                   }"></ng-container>
+                } @else if (isUpcomingExpanded(batch.id)) {
+                  <div class="planned-item__details">
+                    <div class="batch-summary__dates">
+                      <div class="batch-summary__chip">
+                        <span class="material-icons">calendar_today</span>
+                        <span class="batch-summary__label">Opens</span>
+                        <strong>{{ fmt(batch.startDate) }}</strong>
+                      </div>
+                      <span class="material-icons batch-summary__arrow">arrow_forward</span>
+                      <div class="batch-summary__chip">
+                        <span class="material-icons">event_busy</span>
+                        <span class="batch-summary__label">Closes</span>
+                        <strong>{{ fmt(batch.endDate) }}</strong>
+                      </div>
+                    </div>
+                    <ng-container *ngTemplateOutlet="stageReadTable; context: { batch: batch }"></ng-container>
+                  </div>
                 }
               </div>
             }
@@ -243,50 +267,68 @@
           }
 
           @if (historyBatches().length > 0) {
-            <div class="history-table-wrap">
-              <table class="history-table">
-                <thead>
-                  <tr>
-                    <th>Batch Name</th>
-                    <th>Start</th>
-                    <th>End</th>
-                    <th>Ended At</th>
-                    <th>Applications</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  @for (batch of historyBatches(); track batch.id) {
-                    <tr>
-                      <td><strong>{{ batch.batchName }}</strong></td>
-                      <td>{{ fmt(batch.startDate) }}</td>
-                      <td>{{ fmt(batch.endDate) }}</td>
-                      <td>{{ fmt(batch.endedAt) }}</td>
-                      <td>
-                        <span class="app-count-chip">{{ batch.applicationIds?.length ?? 0 }}</span>
-                      </td>
-                      <td class="actions-cell">
-                        <!-- View -->
-                        <button class="icon-btn icon-btn--edit" type="button" title="View batch details"
-                          (click)="openView(batch)">
-                          <span class="material-icons">visibility</span>
-                        </button>
-                        <!-- Retrieve -->
-                        <button
-                          class="icon-btn"
-                          [class.icon-btn--retrieve]="canRetrieve()"
-                          [class.icon-btn--muted]="!canRetrieve()"
-                          type="button"
-                          [disabled]="!canRetrieve()"
-                          [title]="retrieveTooltip()"
-                          (click)="canRetrieve() && retrieveBatch(batch)">
-                          <span class="material-icons">restore</span>
-                        </button>
-                      </td>
-                    </tr>
+            <div class="planned-list">
+              @for (batch of historyBatches(); track batch.id) {
+                <div class="planned-item">
+                  <div class="planned-item__row">
+                    <div class="planned-item__info">
+                      <button class="icon-btn icon-btn--muted" type="button"
+                        [title]="isHistoryExpanded(batch.id) ? 'Collapse details' : 'Expand details'"
+                        (click)="toggleHistory(batch.id)">
+                        <span class="material-icons">
+                          {{ isHistoryExpanded(batch.id) ? 'expand_less' : 'expand_more' }}
+                        </span>
+                      </button>
+                      <span class="status-badge status-badge--history">Closed</span>
+                      <strong class="planned-item__name">{{ batch.batchName }}</strong>
+                      <span class="planned-item__dates">
+                        {{ fmt(batch.startDate) }} → {{ fmt(batch.endDate) }}
+                      </span>
+                    </div>
+                    <div class="planned-item__actions">
+                      <button class="icon-btn icon-btn--edit" type="button" title="View batch details"
+                        (click)="openView(batch)">
+                        <span class="material-icons">visibility</span>
+                      </button>
+                      <button
+                        class="icon-btn"
+                        [class.icon-btn--retrieve]="canRetrieve()"
+                        [class.icon-btn--muted]="!canRetrieve()"
+                        type="button"
+                        [disabled]="!canRetrieve()"
+                        [title]="retrieveTooltip()"
+                        (click)="canRetrieve() && retrieveBatch(batch)">
+                        <span class="material-icons">restore</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  @if (isHistoryExpanded(batch.id)) {
+                    <div class="planned-item__details">
+                      <div class="batch-summary__dates">
+                        <div class="batch-summary__chip">
+                          <span class="material-icons">calendar_today</span>
+                          <span class="batch-summary__label">Start</span>
+                          <strong>{{ fmt(batch.startDate) }}</strong>
+                        </div>
+                        <span class="material-icons batch-summary__arrow">arrow_forward</span>
+                        <div class="batch-summary__chip">
+                          <span class="material-icons">event_busy</span>
+                          <span class="batch-summary__label">End</span>
+                          <strong>{{ fmt(batch.endDate) }}</strong>
+                        </div>
+                        <span class="material-icons batch-summary__arrow">arrow_forward</span>
+                        <div class="batch-summary__chip">
+                          <span class="material-icons">folder_open</span>
+                          <span class="batch-summary__label">Applications</span>
+                          <span class="app-count-chip">{{ batch.applicationIds?.length ?? 0 }}</span>
+                        </div>
+                      </div>
+                      <ng-container *ngTemplateOutlet="stageReadTable; context: { batch: batch }"></ng-container>
+                    </div>
                   }
-                </tbody>
-              </table>
+                </div>
+              }
             </div>
           }
         </div><!-- /section history -->

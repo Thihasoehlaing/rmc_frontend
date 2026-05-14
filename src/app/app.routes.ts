@@ -185,7 +185,7 @@ export const routes: Routes = [
             },
             {
                 path: 'batches',
-                loadComponent: () => import('./settings/batches/batches.component').then(m => m.BatchesComponent)
+              loadComponent: () => import('./settings/batch-sitting/batch-sitting.component').then(m => m.BatchSittingComponent)
             },
             {
                 path: 'staff-access',

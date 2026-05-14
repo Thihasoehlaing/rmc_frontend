@@ -157,6 +157,11 @@
     color: var(--color-warning-dark);
     border: 1px solid color-mix(in srgb, var(--color-warning) 40%, transparent);
 }
+.status-badge--history {
+    background: color-mix(in srgb, var(--color-text-muted) 12%, white);
+    color: var(--color-text-muted);
+    border: 1px solid color-mix(in srgb, var(--color-text-muted) 30%, transparent);
+}
 
 // ── Read-only Patch Summary ───────────────────────────────────────────────────
 
@@ -244,6 +249,15 @@
 
     strong { margin-right: auto; }
     .material-icons { font-size: 18px; }
+}
+
+.planned-item__details {
+    padding: var(--space-3) var(--space-5) var(--space-4);
+    border-top: 1px solid var(--border-subtle);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    background: color-mix(in srgb, var(--color-primary) 2%, white);
 }
 
 // ── Stage Read Table ──────────────────────────────────────────────────────────

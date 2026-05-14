@@ -344,7 +344,7 @@
                   <div class="table-scroll">
                     <app-data-table
                       [columns]="researchBreakdownColumns"
-                      [rows]="getResearchBreakdownTableData()"
+                      [rows]="getResearchBreakdownTableDataPaginated()"
                       [hoverable]="true"
                       [striped]="true">
                       <ng-template #rowTemplate let-row let-i="index">
@@ -369,6 +369,17 @@
                         </tr>
                       </ng-template>
                     </app-data-table>
+                  </div>
+                  <div class="table-footer">
+                    <app-pagination
+                      [currentPage]="researchPage"
+                      [totalPages]="getResearchTotalPages()"
+                      [pageSize]="researchPageSize"
+                      [pageSizeOptions]="researchPageSizeOptions"
+                      (pageChange)="onResearchPageChange($event)"
+                      (pageSizeChange)="onResearchPageSizeChange($event)">
+                    </app-pagination>
+                    <div class="table-summary">{{ researchPageStart() }}–{{ researchPageEnd() }} of {{ getResearchBreakdownTableData().length }}</div>
                   </div>
                 } @else {
                   <div class="empty-state">
@@ -490,7 +501,7 @@
                   <div class="table-scroll">
                     <app-data-table
                       [columns]="externalBreakdownColumns"
-                      [rows]="getExternalBreakdownTableData()"
+                      [rows]="getExternalBreakdownTableDataPaginated()"
                       [hoverable]="true"
                       [striped]="true">
                       <ng-template #rowTemplate let-row let-i="index">
@@ -515,6 +526,17 @@
                         </tr>
                       </ng-template>
                     </app-data-table>
+                  </div>
+                  <div class="table-footer">
+                    <app-pagination
+                      [currentPage]="externalPage"
+                      [totalPages]="getExternalTotalPages()"
+                      [pageSize]="externalPageSize"
+                      [pageSizeOptions]="externalPageSizeOptions"
+                      (pageChange)="onExternalPageChange($event)"
+                      (pageSizeChange)="onExternalPageSizeChange($event)">
+                    </app-pagination>
+                    <div class="table-summary">{{ externalPageStart() }}–{{ externalPageEnd() }} of {{ getExternalBreakdownTableData().length }}</div>
                   </div>
                 } @else {
                   <div class="empty-state">
@@ -654,7 +676,7 @@
                   <div class="table-scroll">
                     <app-data-table
                       [columns]="localBreakdownColumns"
-                      [rows]="getLocalBreakdownTableData()"
+                      [rows]="getLocalBreakdownTableDataPaginated()"
                       [hoverable]="true"
                       [striped]="true">
                       <ng-template #rowTemplate let-row let-i="index">
@@ -680,6 +702,17 @@
                         </tr>
                       </ng-template>
                     </app-data-table>
+                  </div>
+                  <div class="table-footer">
+                    <app-pagination
+                      [currentPage]="localPage"
+                      [totalPages]="getLocalTotalPages()"
+                      [pageSize]="localPageSize"
+                      [pageSizeOptions]="localPageSizeOptions"
+                      (pageChange)="onLocalPageChange($event)"
+                      (pageSizeChange)="onLocalPageSizeChange($event)">
+                    </app-pagination>
+                    <div class="table-summary">{{ localPageStart() }}–{{ localPageEnd() }} of {{ getLocalBreakdownTableData().length }}</div>
                   </div>
                 } @else {
                   <div class="empty-state">

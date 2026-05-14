@@ -106,7 +106,7 @@
                   </tr>
                 </thead>
                 <tbody>
-                  @for (stage of stagesForBatch(activeBatch()!); track stage.key) {
+                  @for (stage of paginatedStagesForBatch(activeBatch()!); track stage.key) {
                     <tr>
                       <td>
                         <strong>{{ stage.meta.label }}</strong>
@@ -215,7 +215,7 @@
                 </tr>
               </thead>
               <tbody>
-                @for (batch of historyBatches(); track batch.id) {
+                @for (batch of paginatedHistoryBatches(); track batch.id) {
                   <tr>
                     <td>{{ batch.batchName }}</td>
                     <td>{{ fmt(batch.startDate) }}</td>
@@ -243,6 +243,14 @@
               </tbody>
             </table>
           </div>
+          <app-pagination
+            [currentPage]="historyPage()"
+            [totalPages]="historyTotalPages()"
+            [pageSize]="historyPageSize()"
+            [pageSizeOptions]="historyPageSizeOptions"
+            (pageChange)="onHistoryPageChange($event)"
+            (pageSizeChange)="onHistoryPageSizeChange($event)">
+          </app-pagination>
         } @else {
           <div class="empty-state">
             <span class="material-icons empty-state__icon">inbox</span>
@@ -288,7 +296,7 @@
             </tr>
           </thead>
           <tbody>
-            @for (stage of stagesForBatch(batch); track stage.key) {
+            @for (stage of paginatedStagesForBatch(batch); track stage.key) {
               <tr>
                 <td>
                   <strong>{{ stage.meta.label }}</strong>
@@ -300,6 +308,14 @@
           </tbody>
         </table>
       </div>
+      <app-pagination
+        [currentPage]="stagePage()"
+        [totalPages]="stageTotalPages()"
+        [pageSize]="stagePageSize()"
+        [pageSizeOptions]="stagePageSizeOptions"
+        (pageChange)="onStagePageChange($event)"
+        (pageSizeChange)="onStagePageSizeChange($event)">
+      </app-pagination>
     </div>
   </app-dialog>
 }

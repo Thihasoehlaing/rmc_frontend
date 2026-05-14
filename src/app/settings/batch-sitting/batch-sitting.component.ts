@@ -36,6 +36,7 @@ import { AuthService } from '../../services/auth.service';
 import { ActionButtonComponent } from '../../shared/components/action-button/action-button.component';
 import { ValidationMessageComponent } from '../../shared/components/validation-message/validation-message.component';
 import { DialogComponent } from '../../shared/components/dialog/dialog.component';
+import { PaginationComponent } from '../../shared/components/pagination/pagination.component';
 
 // ── Validators ────────────────────────────────────────────────────────────────
 
@@ -65,7 +66,7 @@ function stageWithinBatchValidator(startFn: () => string, endFn: () => string) {
 @Component({
   selector: 'app-batch-sitting',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule, ActionButtonComponent, ValidationMessageComponent, DialogComponent],
+  imports: [CommonModule, ReactiveFormsModule, ActionButtonComponent, ValidationMessageComponent, DialogComponent, PaginationComponent],
   templateUrl: './batch-sitting.component.html',
   styleUrl: './batch-sitting.component.scss',
 })
@@ -97,6 +98,9 @@ export class BatchSittingComponent implements OnInit, OnDestroy {
   feedback           = signal<{ type: 'success' | 'error'; text: string } | null>(null);
   expandedUpcomingIds = signal<Set<number>>(new Set<number>());
   expandedHistoryIds  = signal<Set<number>>(new Set<number>());
+  stagePage           = signal(1);
+  stagePageSize       = signal(15);
+  stagePageSizeOptions = [5, 15, 30, 50];
 
   // ── Forms ─────────────────────────────────────────────────────────────────
   activeForm!:  FormGroup;
@@ -136,6 +140,25 @@ export class BatchSittingComponent implements OnInit, OnDestroy {
     if (idx > 0) return this.addDay(sorted[idx - 1].endDate);
     const a = this.activeBatch();
     return a ? this.addDay(a.endDate) : '';
+  }
+
+  stageTotalPages(): number {
+    return Math.max(1, Math.ceil(this.stageMeta.length / this.stagePageSize()));
+  }
+
+  paginatedStageMeta() {
+    const currentPage = Math.min(this.stagePage(), this.stageTotalPages());
+    const startIndex = (currentPage - 1) * this.stagePageSize();
+    return this.stageMeta.slice(startIndex, startIndex + this.stagePageSize());
+  }
+
+  onStagePageChange(page: number): void {
+    this.stagePage.set(page);
+  }
+
+  onStagePageSizeChange(pageSize: number): void {
+    this.stagePageSize.set(pageSize);
+    this.stagePage.set(1);
   }
 
   // ── Lifecycle ─────────────────────────────────────────────────────────────
@@ -181,6 +204,7 @@ export class BatchSittingComponent implements OnInit, OnDestroy {
     this.activeBatch.set(active);
     this.plannedBatches.set(upcoming);
     this.historyBatches.set(history);
+    this.stagePage.set(1);
     this.expandedUpcomingIds.set(new Set<number>());
     this.expandedHistoryIds.set(new Set<number>());
     this.buildActiveForm(active);

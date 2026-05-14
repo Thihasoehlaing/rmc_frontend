@@ -5,6 +5,7 @@ import { NoteComponent } from '../../../../shared/components/note/note.component
 import { SearchableDropdownComponent } from '../../../../shared/components/searchable-dropdown/searchable-dropdown.component';
 import { ValidationMessageComponent } from '../../../../shared/components/validation-message/validation-message.component';
 import { DataTableComponent, DataTableColumn } from '../../../../shared/components/data-table/data-table.component';
+import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
 import { DialogComponent } from '../../../../shared/components/dialog/dialog.component';
 import { DropdownOption } from '../../../../interfaces/components.interface';
 import { ConferenceWorkflowService } from '../../../services/conference-workflow.service';
@@ -14,7 +15,7 @@ import { BreakdownOptionsService } from '../../../services/breakdown-options.ser
 @Component({
   selector: 'app-conference-details-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, NoteComponent, SearchableDropdownComponent, ValidationMessageComponent, DataTableComponent, DialogComponent],
+  imports: [CommonModule, ReactiveFormsModule, NoteComponent, SearchableDropdownComponent, ValidationMessageComponent, DataTableComponent, DialogComponent, PaginationComponent],
   templateUrl: './conference-details-form.component.html',
   styleUrl: './conference-details-form.component.scss'
 })
@@ -48,6 +49,19 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
       }
     });
   }
+
+  // Pagination state for breakdown tables
+  researchPage: number = 1;
+  researchPageSize: number = 15;
+  researchPageSizeOptions: number[] = [5, 15, 30, 50];
+
+  externalPage: number = 1;
+  externalPageSize: number = 15;
+  externalPageSizeOptions: number[] = [5, 15, 30, 50];
+
+  localPage: number = 1;
+  localPageSize: number = 15;
+  localPageSizeOptions: number[] = [5, 15, 30, 50];
 
   regions = [
     'Americas',
@@ -204,11 +218,71 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     }));
   }
 
+  getResearchBreakdownTableDataPaginated(): (any & { index: number })[] {
+    const data = this.getResearchBreakdownTableData();
+    const start = (this.researchPage - 1) * this.researchPageSize;
+    return data.slice(start, start + this.researchPageSize);
+  }
+
+  getResearchTotalPages(): number {
+    const len = this.getResearchBreakdownTableData().length;
+    return Math.max(1, Math.ceil(len / this.researchPageSize));
+  }
+
+  researchPageStart(): number {
+    const total = this.getResearchBreakdownTableData().length;
+    if (total === 0) return 0;
+    return (this.researchPage - 1) * this.researchPageSize + 1;
+  }
+
+  researchPageEnd(): number {
+    return Math.min(this.getResearchBreakdownTableData().length, this.researchPage * this.researchPageSize);
+  }
+
+  onResearchPageChange(page: number) {
+    this.researchPage = page;
+  }
+
+  onResearchPageSizeChange(size: number) {
+    this.researchPageSize = size;
+    this.researchPage = 1;
+  }
+
   getExternalBreakdownTableData(): (any & { index: number })[] {
     return this.externalBreakdowns.map((item, index) => ({
       ...item,
       index: index + 1
     }));
+  }
+
+  getExternalBreakdownTableDataPaginated(): (any & { index: number })[] {
+    const data = this.getExternalBreakdownTableData();
+    const start = (this.externalPage - 1) * this.externalPageSize;
+    return data.slice(start, start + this.externalPageSize);
+  }
+
+  getExternalTotalPages(): number {
+    const len = this.getExternalBreakdownTableData().length;
+    return Math.max(1, Math.ceil(len / this.externalPageSize));
+  }
+
+  externalPageStart(): number {
+    const total = this.getExternalBreakdownTableData().length;
+    if (total === 0) return 0;
+    return (this.externalPage - 1) * this.externalPageSize + 1;
+  }
+
+  externalPageEnd(): number {
+    return Math.min(this.getExternalBreakdownTableData().length, this.externalPage * this.externalPageSize);
+  }
+
+  onExternalPageChange(page: number) {
+    this.externalPage = page;
+  }
+
+  onExternalPageSizeChange(size: number) {
+    this.externalPageSize = size;
+    this.externalPage = 1;
   }
 
   getLocalBreakdownTableData(): (any & { index: number })[] {
@@ -218,6 +292,36 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     }));
   }
 
+  getLocalBreakdownTableDataPaginated(): (any & { index: number })[] {
+    const data = this.getLocalBreakdownTableData();
+    const start = (this.localPage - 1) * this.localPageSize;
+    return data.slice(start, start + this.localPageSize);
+  }
+
+  getLocalTotalPages(): number {
+    const len = this.getLocalBreakdownTableData().length;
+    return Math.max(1, Math.ceil(len / this.localPageSize));
+  }
+
+  localPageStart(): number {
+    const total = this.getLocalBreakdownTableData().length;
+    if (total === 0) return 0;
+    return (this.localPage - 1) * this.localPageSize + 1;
+  }
+
+  localPageEnd(): number {
+    return Math.min(this.getLocalBreakdownTableData().length, this.localPage * this.localPageSize);
+  }
+
+  onLocalPageChange(page: number) {
+    this.localPage = page;
+  }
+
+  onLocalPageSizeChange(size: number) {
+    this.localPageSize = size;
+    this.localPage = 1;
+  }
+
   ngOnInit() {
     this.initializeForm();
     this.initializeBreakdownForm();
@@ -225,6 +329,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     this.setupBreakdownFormWatchers();
     this.setupFormWatchers();
     this.loadFormState();
+    this.normalizePages();
   }
 
   ngOnDestroy() {
@@ -397,6 +502,16 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
       };
       this.formStateService.saveFormSection('conferenceDetails', completeState);
     }
+  }
+
+  // Ensure page numbers are within valid bounds after initial load
+  private normalizePages() {
+    if (this.researchPage > this.getResearchTotalPages()) this.researchPage = this.getResearchTotalPages();
+    if (this.externalPage > this.getExternalTotalPages()) this.externalPage = this.getExternalTotalPages();
+    if (this.localPage > this.getLocalTotalPages()) this.localPage = this.getLocalTotalPages();
+    if (this.researchPage < 1) this.researchPage = 1;
+    if (this.externalPage < 1) this.externalPage = 1;
+    if (this.localPage < 1) this.localPage = 1;
   }
 
   initializeBreakdownForm() {
@@ -735,12 +850,29 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
       array.push(entry);
     }
 
+    // Ensure pagination stays valid and show new entry when added
+    if (this.breakdownEditingIndex === null) {
+      // new entry added -> jump to last page for that type
+      if (this.breakdownType === 'research') this.researchPage = this.getResearchTotalPages();
+      if (this.breakdownType === 'external-research') this.externalPage = this.getExternalTotalPages();
+      if (this.breakdownType === 'local') this.localPage = this.getLocalTotalPages();
+    } else {
+      // updated entry -> ensure current page still valid
+      if (this.breakdownType === 'research' && this.researchPage > this.getResearchTotalPages()) this.researchPage = this.getResearchTotalPages();
+      if (this.breakdownType === 'external-research' && this.externalPage > this.getExternalTotalPages()) this.externalPage = this.getExternalTotalPages();
+      if (this.breakdownType === 'local' && this.localPage > this.getLocalTotalPages()) this.localPage = this.getLocalTotalPages();
+    }
+
     this.closeBreakdownModal();
   }
 
   deleteBreakdown(type: 'research' | 'external-research' | 'local', index: number) {
     const array = this.getBreakdownArray(type);
     array.splice(index, 1);
+    // Ensure page bounds after deletion
+    if (type === 'research' && this.researchPage > this.getResearchTotalPages()) this.researchPage = this.getResearchTotalPages();
+    if (type === 'external-research' && this.externalPage > this.getExternalTotalPages()) this.externalPage = this.getExternalTotalPages();
+    if (type === 'local' && this.localPage > this.getLocalTotalPages()) this.localPage = this.getLocalTotalPages();
   }
 
   onFileSelected(event: any) {

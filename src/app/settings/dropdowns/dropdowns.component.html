@@ -94,7 +94,7 @@
                     type="text"
                     class="input--text"
                     [ngModel]="searchQuery()"
-                    (ngModelChange)="searchQuery.set($event)"
+                    (ngModelChange)="onSearchQueryChange($event)"
                     placeholder="Search option name"
                   />
                 </div>
@@ -105,7 +105,7 @@
                     id="status-filter"
                     class="input--text"
                     [ngModel]="statusFilter()"
-                    (ngModelChange)="statusFilter.set($event)"
+                    (ngModelChange)="onStatusFilterChange($event)"
                   >
                     <option value="all">All</option>
                     <option value="active">Active</option>
@@ -128,7 +128,7 @@
           <div *ngIf="selectedCategory(); else selectCategoryHint">
             <app-data-table
               [columns]="tableColumns"
-              [rows]="filteredOptions()"
+              [rows]="paginatedOptions()"
               [sortColumn]="sortBy()"
               [sortDirection]="sortDirection()"
               (sortChange)="onSortChange($event)"
@@ -178,6 +178,15 @@
                 </tr>
               </ng-template>
             </app-data-table>
+
+            <app-pagination
+              [currentPage]="optionsPage()"
+              [totalPages]="optionsTotalPages()"
+              [pageSize]="optionsPageSize()"
+              [pageSizeOptions]="optionsPageSizeOptions"
+              (pageChange)="onOptionsPageChange($event)"
+              (pageSizeChange)="onOptionsPageSizeChange($event)">
+            </app-pagination>
 
             <div *ngIf="filteredOptions().length === 0" class="empty-state">
               <p>No options for this category. Click "Add Option" to create one.</p>

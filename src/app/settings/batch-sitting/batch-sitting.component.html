@@ -92,6 +92,14 @@
               </div>
               <ng-container *ngTemplateOutlet="stageReadTable; context: { batch: activeBatch() }">
               </ng-container>
+              <app-pagination
+                [currentPage]="stagePage()"
+                [totalPages]="stageTotalPages()"
+                [pageSize]="stagePageSize()"
+                [pageSizeOptions]="stagePageSizeOptions"
+                (pageChange)="onStagePageChange($event)"
+                (pageSizeChange)="onStagePageSizeChange($event)">
+              </app-pagination>
             </div>
           }
 
@@ -420,7 +428,7 @@
         </tr>
       </thead>
       <tbody>
-        @for (stage of stageMeta; track stage.key) {
+        @for (stage of paginatedStageMeta(); track stage.key) {
           <tr>
             <td>
               <div class="stage-name">{{ stage.label }}</div>
@@ -433,6 +441,14 @@
       </tbody>
     </table>
   </div>
+  <app-pagination
+    [currentPage]="stagePage()"
+    [totalPages]="stageTotalPages()"
+    [pageSize]="stagePageSize()"
+    [pageSizeOptions]="stagePageSizeOptions"
+    (pageChange)="onStagePageChange($event)"
+    (pageSizeChange)="onStagePageSizeChange($event)">
+  </app-pagination>
 </ng-template>
 
 <!-- ══════════════════════════════════════════════════════════════════════════ -->
@@ -519,7 +535,7 @@
             </tr>
           </thead>
           <tbody formGroupName="stages">
-            @for (stage of stageMeta; track stage.key) {
+            @for (stage of paginatedStageMeta(); track stage.key) {
               <tr [formGroupName]="stage.key"
                   [class.row--disabled]="!stagesEnabled(form)">
                 <td class="cell-stage">
@@ -562,6 +578,14 @@
           </tbody>
         </table>
       </div>
+      <app-pagination
+        [currentPage]="stagePage()"
+        [totalPages]="stageTotalPages()"
+        [pageSize]="stagePageSize()"
+        [pageSizeOptions]="stagePageSizeOptions"
+        (pageChange)="onStagePageChange($event)"
+        (pageSizeChange)="onStagePageSizeChange($event)">
+      </app-pagination>
     </div>
 
     <!-- ── Form Actions ───────────────────────────────────────────────────── -->

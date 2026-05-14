@@ -6,6 +6,7 @@ import { AuthService } from '../../services/auth.service';
 import { ActionButtonComponent } from '../../shared/components/action-button/action-button.component';
 import { DataTableComponent } from '../../shared/components/data-table/data-table.component';
 import { AddOptionModalComponent, AddOptionPayload } from '../../shared/components/add-option-modal/add-option-modal.component';
+import { PaginationComponent } from '../../shared/components/pagination/pagination.component';
 import type { DataTableColumn } from '../../shared/components/data-table/data-table.component';
 
 interface DropdownOption {
@@ -44,7 +45,7 @@ interface CategorySharingConfig {
 @Component({
   selector: 'app-dropdowns',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, ActionButtonComponent, DataTableComponent, AddOptionModalComponent],
+  imports: [CommonModule, FormsModule, RouterModule, ActionButtonComponent, DataTableComponent, AddOptionModalComponent, PaginationComponent],
   templateUrl: './dropdowns.component.html',
   styleUrls: ['./dropdowns.component.scss'],
 })
@@ -83,6 +84,9 @@ export class DropdownsComponent implements OnInit {
   editingOptionId = signal<number | null>(null);
   editingInitialPayload = signal<AddOptionPayload | null>(null);
   newOptionValue = signal<string>('');
+  optionsPage = signal(1);
+  optionsPageSize = signal(15);
+  optionsPageSizeOptions = [5, 15, 30, 50];
 
   tableColumns: DataTableColumn[] = [
     { key: 'value', label: 'Option Name', sortable: true },
@@ -162,6 +166,30 @@ export class DropdownsComponent implements OnInit {
     }));
   });
 
+  paginatedOptions = computed(() => {
+    const list = this.filteredOptions();
+    const totalPages = this.optionsTotalPages();
+    const currentPage = Math.min(this.optionsPage(), totalPages);
+    const startIndex = (currentPage - 1) * this.optionsPageSize();
+    return list.slice(startIndex, startIndex + this.optionsPageSize());
+  });
+
+  optionsTotalPages = computed(() => {
+    return Math.max(1, Math.ceil(this.filteredOptions().length / this.optionsPageSize()));
+  });
+
+  optionsPageStart = computed(() => {
+    const total = this.filteredOptions().length;
+    if (total === 0) return 0;
+    return ((Math.min(this.optionsPage(), this.optionsTotalPages()) - 1) * this.optionsPageSize()) + 1;
+  });
+
+  optionsPageEnd = computed(() => {
+    const total = this.filteredOptions().length;
+    if (total === 0) return 0;
+    return Math.min(this.optionsPageStart() + this.optionsPageSize() - 1, total);
+  });
+
   ngOnInit(): void {
     this.loadOptionsFromStorage();
     console.log('[DEBUG] DropdownsComponent initialized');
@@ -182,6 +210,26 @@ export class DropdownsComponent implements OnInit {
     // reset selected rows and status filter when switching categories
     this.searchQuery.set('');
     this.statusFilter.set('all');
+    this.optionsPage.set(1);
+  }
+
+  onSearchQueryChange(value: string) {
+    this.searchQuery.set(value);
+    this.optionsPage.set(1);
+  }
+
+  onStatusFilterChange(value: DropdownStatusFilter) {
+    this.statusFilter.set(value);
+    this.optionsPage.set(1);
+  }
+
+  onOptionsPageChange(page: number) {
+    this.optionsPage.set(page);
+  }
+
+  onOptionsPageSizeChange(pageSize: number) {
+    this.optionsPageSize.set(pageSize);
+    this.optionsPage.set(1);
   }
 
   private loadOptionsFromStorage() {

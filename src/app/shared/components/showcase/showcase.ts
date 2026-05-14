@@ -13,6 +13,7 @@ import { FormWizardNavComponent } from '../form-wizard-nav/form-wizard-nav.compo
 import { FormCommentPanelComponent, CommentItem } from '../form-comment-panel/form-comment-panel.component';
 import { FileUploadComponent } from '../file-upload/file-upload.component';
 import { DialogComponent } from '../dialog/dialog.component';
+import { PaginationComponent } from '../pagination/pagination.component';
 import { DropdownOption } from '../../../interfaces/components.interface';
 
 @Component({
@@ -34,6 +35,7 @@ import { DropdownOption } from '../../../interfaces/components.interface';
     FormCommentPanelComponent,
     FileUploadComponent,
     DialogComponent,
+    PaginationComponent,
   ],
   templateUrl: './showcase.html',
   styleUrl: './showcase.scss',
@@ -100,6 +102,21 @@ export class ShowcaseComponent {
   lastUploadedFile = signal<File | null>(null);
   onFileSelected(file: File | null): void {
     this.lastUploadedFile.set(file);
+  }
+
+  // ── Pagination demo ────────────────────────────────────────
+  paginationCurrentPage = signal(1);
+  paginationTotalPages = 47;
+  paginationPageSize = signal(15);
+  paginationPageSizeOptions = [5, 15, 30, 50];
+
+  onPaginationPageChange(page: number): void {
+    this.paginationCurrentPage.set(page);
+  }
+
+  onPaginationPageSizeChange(pageSize: number): void {
+    this.paginationPageSize.set(pageSize);
+    this.paginationCurrentPage.set(1); // Reset to first page
   }
 
   // ── Color token rows for table ───────────────────────────────
@@ -211,6 +228,7 @@ export class ShowcaseComponent {
     { name: 'FormWizardNav', selector: '<app-form-wizard-nav>', purpose: 'Form step navigation footer with save/submit actions.' },
     { name: 'GuidelinesModal', selector: '<app-guidelines-modal>', purpose: 'Guidelines modal that fetches remote HTML content.' },
     { name: 'Note', selector: '<app-note>', purpose: 'Inline note or tooltip-style contextual hint.' },
+    { name: 'Pagination', selector: '<app-pagination>', purpose: 'Page navigation with adjustable items-per-page selector.' },
     { name: 'SearchableDropdown', selector: '<app-searchable-dropdown>', purpose: 'Single/multi select dropdown with search and chips.' },
     { name: 'StepIndicator', selector: '<app-step-indicator>', purpose: 'Clickable step progress indicator with status states.' },
     { name: 'ValidationMessage', selector: '<app-validation-message>', purpose: 'Consistent reactive form validation error renderer.' },

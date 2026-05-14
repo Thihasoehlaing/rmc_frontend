@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AddGuidelineModalComponent, GuidelineConfig } from './add-guideline-modal/add-guideline-modal.component';
 import { DataTableComponent, DataTableColumn } from '../../shared/components/data-table/data-table.component';
+import { PaginationComponent } from '../../shared/components/pagination/pagination.component';
 import { AuthService } from '../../services/auth.service';
 
 interface Guideline {
@@ -20,7 +21,7 @@ type GuidelineSortKey = 'form' | 'title' | 'blocks' | 'lastUpdated' | 'createdBy
 @Component({
   selector: 'app-guidelines',
   standalone: true,
-  imports: [CommonModule, FormsModule, AddGuidelineModalComponent, DataTableComponent],
+  imports: [CommonModule, FormsModule, AddGuidelineModalComponent, DataTableComponent, PaginationComponent],
   templateUrl: './guidelines.component.html',
   styleUrls: ['./guidelines.component.scss'],
 })
@@ -35,6 +36,9 @@ export class GuidelinesComponent implements OnInit {
   showAddModal = signal(false);
   editingGuidelineId = signal<number | null>(null);
   editingConfig = signal<GuidelineConfig | null>(null);
+  guidelinePage = signal(1);
+  guidelinePageSize = signal(15);
+  guidelinePageSizeOptions = [5, 15, 30, 50];
 
   columns: readonly DataTableColumn[] = [
     { key: 'form', label: 'Form', width: '180px', sortable: true },
@@ -230,6 +234,48 @@ export class GuidelinesComponent implements OnInit {
     });
 
     return list;
+  }
+
+  guidelineTotalPages(): number {
+    return Math.max(1, Math.ceil(this.filteredGuidelines().length / this.guidelinePageSize()));
+  }
+
+  paginatedGuidelines(): Guideline[] {
+    const list = this.filteredGuidelines();
+    const currentPage = Math.min(this.guidelinePage(), this.guidelineTotalPages());
+    const startIndex = (currentPage - 1) * this.guidelinePageSize();
+    return list.slice(startIndex, startIndex + this.guidelinePageSize());
+  }
+
+  guidelinePageStart(): number {
+    const total = this.filteredGuidelines().length;
+    if (total === 0) return 0;
+    return ((Math.min(this.guidelinePage(), this.guidelineTotalPages()) - 1) * this.guidelinePageSize()) + 1;
+  }
+
+  guidelinePageEnd(): number {
+    const total = this.filteredGuidelines().length;
+    if (total === 0) return 0;
+    return Math.min(this.guidelinePageStart() + this.guidelinePageSize() - 1, total);
+  }
+
+  onGuidelineSearchChange(value: string) {
+    this.searchTerm.set(value);
+    this.guidelinePage.set(1);
+  }
+
+  onGuidelineStatusChange(value: string) {
+    this.selectedStatus.set(value);
+    this.guidelinePage.set(1);
+  }
+
+  onGuidelinePageChange(page: number) {
+    this.guidelinePage.set(page);
+  }
+
+  onGuidelinePageSizeChange(pageSize: number) {
+    this.guidelinePageSize.set(pageSize);
+    this.guidelinePage.set(1);
   }
 
   onSortChange(columnKey: string) {

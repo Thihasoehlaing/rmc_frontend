@@ -14,6 +14,7 @@ import { AuthService } from '../../services/auth.service';
 import { ActionButtonComponent } from '../../shared/components/action-button/action-button.component';
 import { ValidationMessageComponent } from '../../shared/components/validation-message/validation-message.component';
 import { DialogComponent } from '../../shared/components/dialog/dialog.component';
+import { PaginationComponent } from '../../shared/components/pagination/pagination.component';
 
 // ── Validators ────────────────────────────────────────────────────────────────
 
@@ -41,7 +42,7 @@ function stageWithinBatchValidator(startFn: () => string, endFn: () => string) {
 @Component({
   selector: 'app-batches',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule, ActionButtonComponent, ValidationMessageComponent, DialogComponent],
+  imports: [CommonModule, ReactiveFormsModule, ActionButtonComponent, ValidationMessageComponent, DialogComponent, PaginationComponent],
   templateUrl: './batches.component.html',
   styleUrl: './batches.component.scss',
 })
@@ -68,6 +69,12 @@ export class BatchesComponent implements OnInit, OnDestroy {
   showEndConfirm     = signal(false);
   viewingBatch       = signal<BatchSitting | null>(null);
   feedback           = signal<{ type: 'success' | 'error'; text: string } | null>(null);
+  stagePage          = signal(1);
+  stagePageSize      = signal(15);
+  stagePageSizeOptions = [5, 15, 30, 50];
+  historyPage        = signal(1);
+  historyPageSize    = signal(15);
+  historyPageSizeOptions = [5, 15, 30, 50];
 
   // ── Forms ─────────────────────────────────────────────────────────────────
   activeForm!:  FormGroup;
@@ -97,6 +104,51 @@ export class BatchesComponent implements OnInit, OnDestroy {
     }, { validators: endAfterStartValidator });
   }
 
+  stageTotalPages(): number {
+    return Math.max(1, Math.ceil(WORKFLOW_STAGE_META.length / this.stagePageSize()));
+  }
+
+  paginatedStageMeta() {
+    const currentPage = Math.min(this.stagePage(), this.stageTotalPages());
+    const startIndex = (currentPage - 1) * this.stagePageSize();
+    return WORKFLOW_STAGE_META.slice(startIndex, startIndex + this.stagePageSize());
+  }
+
+  paginatedStagesForBatch(batch: BatchSitting) {
+    const currentPage = Math.min(this.stagePage(), this.stageTotalPages());
+    const startIndex = (currentPage - 1) * this.stagePageSize();
+    return this.stagesForBatch(batch).slice(startIndex, startIndex + this.stagePageSize());
+  }
+
+  historyTotalPages(): number {
+    return Math.max(1, Math.ceil(this.historyBatches().length / this.historyPageSize()));
+  }
+
+  paginatedHistoryBatches(): BatchSitting[] {
+    const batches = this.historyBatches();
+    const currentPage = Math.min(this.historyPage(), this.historyTotalPages());
+    const startIndex = (currentPage - 1) * this.historyPageSize();
+    return batches.slice(startIndex, startIndex + this.historyPageSize());
+  }
+
+  onStagePageChange(page: number): void {
+    this.stagePage.set(page);
+  }
+
+  onStagePageSizeChange(pageSize: number): void {
+    this.stagePageSize.set(pageSize);
+    this.stagePage.set(1);
+  }
+
+  onHistoryPageChange(page: number): void {
+    this.historyPage.set(page);
+  }
+
+  onHistoryPageSizeChange(pageSize: number): void {
+    this.historyPageSize.set(pageSize);
+    this.historyPage.set(1);
+  }
+
   private load() {
     this.isLoading.set(true);
     this.svc.loadAll()
@@ -113,6 +165,8 @@ export class BatchesComponent implements OnInit, OnDestroy {
           this.activeBatch.set(active ?? null);
           this.plannedBatches.set(planned);
           this.historyBatches.set(history);
+          this.stagePage.set(1);
+          this.historyPage.set(1);
 
           if (active) {
             this.populateActiveForm(active);

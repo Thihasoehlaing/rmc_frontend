@@ -1,31 +1,160 @@
-<div class="staff-access-page">
-  <div class="staff-access-page__header">
-    <a href="/settings/admin-settings" class="back-button" aria-label="Back to Admin Settings">
-      <span class="material-icons">arrow_back</span>
-    </a>
-
-    <div class="staff-access-page__copy">
-      <p class="staff-access-page__eyebrow">Admin Settings</p>
-      <h1 class="staff-access-page__title">Staff Access</h1>
-      <p class="staff-access-page__description">Manage blocked staff and per-form access restrictions.</p>
+<section class="staff-access-page">
+  <header class="staff-access-page__header">
+    <div class="staff-access-page__title-wrap">
+      <h1 class="staff-access-page__title">RDIG Application</h1>
+      <p class="staff-access-page__subtitle">
+        {{ staffRecords().length }} staff loaded from database ·
+        <span class="staff-access-page__blocked-count">{{ blockedCount() }} blocked</span>
+      </p>
     </div>
-  </div>
 
-  <div class="staff-access-grid">
-    <a *ngFor="let card of cards" [href]="'/settings/staff-access?form=' + card.id" class="staff-card card">
-      <div class="staff-card__icon-wrap">
-        <span class="material-icons staff-card__icon">{{ card.icon }}</span>
-      </div>
-
-      <div class="staff-card__body">
-        <h2 class="staff-card__title">{{ card.title }}</h2>
-        <p class="staff-card__subtitle">{{ card.subtitle }}</p>
-      </div>
-
-      <div class="staff-card__footer">
-        <span class="badge badge-info staff-card__badge">{{ card.badge }}</span>
-        <span class="material-icons staff-card__arrow">chevron_right</span>
-      </div>
+    <a href="/settings/admin-settings" class="staff-access-page__source" aria-label="Back to Admin Settings">
+      <span class="material-icons" aria-hidden="true">database</span>
+      Staff fetched from university database
     </a>
-  </div>
-</div>
+  </header>
+
+  <section class="staff-access-filters" aria-label="Staff access filters">
+    <label class="staff-access-filter-field">
+      <span class="staff-access-filter-label">Department</span>
+      <select
+        class="input--select"
+        [value]="departmentFilter()"
+        (change)="setDepartmentFilter(departmentSelect.value)"
+        #departmentSelect
+      >
+        <option value="all">All departments</option>
+        @for (department of departmentOptions(); track department) {
+          <option [value]="department">{{ department }}</option>
+        }
+      </select>
+    </label>
+
+    <label class="staff-access-filter-field">
+      <span class="staff-access-filter-label">Access Status</span>
+      <select
+        class="input--select"
+        [value]="statusFilter()"
+        (change)="setStatusFilter(statusSelect.value)"
+        #statusSelect
+      >
+        <option value="all">All status</option>
+        <option value="active">Active</option>
+        <option value="blocked">Blocked</option>
+      </select>
+    </label>
+
+    <label class="staff-access-filter-field staff-access-filter-field--search">
+      <span class="staff-access-filter-label">Search</span>
+      <div class="staff-access-search-wrap">
+        <span class="material-icons staff-access-search-icon" aria-hidden="true">search</span>
+        <input
+          class="input--text staff-access-search-input"
+          [value]="searchFilter()"
+          (input)="setSearchFilter(searchInput.value)"
+          #searchInput
+          placeholder="Search name, ID, role..."
+          type="search"
+        />
+      </div>
+    </label>
+  </section>
+
+  <section class="staff-access-table-shell" aria-label="Staff access list">
+    <div class="staff-access-table-wrap">
+      <table class="staff-access-table">
+        <thead>
+          <tr>
+            <th scope="col">
+              <button class="staff-access-sort-btn" type="button" (click)="setSort('name')">
+                Staff Name
+                <span class="material-icons" aria-hidden="true">unfold_more</span>
+              </button>
+            </th>
+            <th scope="col">
+              <button class="staff-access-sort-btn" type="button" (click)="setSort('staffId')">
+                Staff ID
+                <span class="material-icons" aria-hidden="true">unfold_more</span>
+              </button>
+            </th>
+            <th scope="col">
+              <button class="staff-access-sort-btn" type="button" (click)="setSort('department')">
+                Department
+                <span class="material-icons" aria-hidden="true">unfold_more</span>
+              </button>
+            </th>
+            <th scope="col">
+              <button class="staff-access-sort-btn" type="button" (click)="setSort('role')">
+                Role
+                <span class="material-icons" aria-hidden="true">unfold_more</span>
+              </button>
+            </th>
+            <th scope="col">Email</th>
+            <th scope="col">Status</th>
+            <th scope="col">Blocked Date</th>
+            <th scope="col">Reason</th>
+            <th scope="col" class="staff-access-actions-head">Actions</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          @if (sortedStaff().length === 0) {
+            <tr>
+              <td class="staff-access-empty" colspan="9">
+                No staff records match your current filters.
+              </td>
+            </tr>
+          } @else {
+            @for (staff of sortedStaff(); track staff.id) {
+              <tr [class.staff-access-row--blocked]="staff.status === 'blocked'">
+                <td>
+                  <div class="staff-access-person">
+                    <span class="staff-access-avatar">{{ staff.initials }}</span>
+                    <span class="staff-access-name">{{ staff.name }}</span>
+                  </div>
+                </td>
+                <td><span class="staff-access-id-chip">{{ staff.staffId }}</span></td>
+                <td>{{ staff.department }}</td>
+                <td>{{ staff.role }}</td>
+                <td class="staff-access-email">{{ staff.email }}</td>
+                <td>
+                  <span
+                    class="badge"
+                    [class.badge-success]="staff.status === 'active'"
+                    [class.badge-danger]="staff.status === 'blocked'"
+                  >
+                    {{ staff.status === 'active' ? 'Active' : 'Blocked' }}
+                  </span>
+                </td>
+                <td>{{ staff.blockedDate || '—' }}</td>
+                <td>
+                  @if (staff.reason) {
+                    <span class="staff-access-reason">{{ staff.reason }}</span>
+                  } @else {
+                    —
+                  }
+                </td>
+                <td>
+                  <button
+                    class="btn btn-sm staff-access-action"
+                    [class.staff-access-action--block]="staff.status === 'active'"
+                    [class.staff-access-action--unblock]="staff.status === 'blocked'"
+                    type="button"
+                    (click)="toggleAccess(staff.id)"
+                  >
+                    <span class="material-icons" aria-hidden="true">{{ staff.status === 'active' ? 'block' : 'shield' }}</span>
+                    {{ staff.status === 'active' ? 'Block' : 'Unblock' }}
+                  </button>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <p class="staff-access-footer">
+    Showing {{ sortedStaff().length }} of {{ staffRecords().length }} staff · {{ blockedCount() }} blocked from this form
+  </p>
+</section>

@@ -38,10 +38,8 @@
           <!-- Left Column -->
           <div class="form-column">
             <div class="form-field">
-              <div class="label-with-note">
-                <label class="form-label is-required">Please select whether you are the “First Author” or “Corresponding Author”</label>
-                <app-note text="Applicant must be either first or corresponding author" [isTooltip]="true"></app-note>
-              </div>
+              <label class="form-label is-required">Please select whether you are the “First Author” or “Corresponding Author”</label>
+
               <div class="radio-group">
                 <label class="radio-option">
                   <input type="radio" formControlName="authorshipType" value="first-author">
@@ -56,6 +54,7 @@
                   <span>First and Corresponding Author</span>
                 </label>
               </div>
+              <app-note text="Applicant must be either first or corresponding author" [isTooltip]="false"></app-note>
               <app-validation-message [control]="form.get('authorshipType')"></app-validation-message>
             </div>
 
@@ -92,10 +91,7 @@
             </div>
 
             <div class="form-field">
-              <div class="label-with-note">
-                <label class="form-label is-required">Is the publisher of your journal one of the restricted publishers (e.g., MDPI, Common Ground, Hindawi, or Frontier)?</label>
-                <app-note text="Expected Answer for Approval: No" [isTooltip]="true"></app-note>
-              </div>
+              <label class="form-label is-required">Is the publisher of your journal one of the restricted publishers (e.g., MDPI, Common Ground, Hindawi, or Frontier)?</label>
               <div class="radio-group">
                 <label class="radio-option">
                   <input type="radio" formControlName="restrictedPublisher" value="yes"><span>Yes</span>
@@ -104,6 +100,7 @@
                   <input type="radio" formControlName="restrictedPublisher" value="no"><span>No</span>
                 </label>
               </div>
+              <app-note text="Expected Answer for Approval: No" [isTooltip]="false"></app-note>
               <app-validation-message [control]="form.get('restrictedPublisher')"></app-validation-message>
             </div>
 
@@ -471,10 +468,7 @@
 
     <!-- Exchange Rate -->
     <div class="breakdown-field">
-      <div class="label-with-note">
-        <label for="exchangeRate" class="form-label">Exchange Rate *</label>
-        <app-note text="ℹ For Malaysia Ringgit/MYR, please put 1 as the exchange rate." [isTooltip]="true"></app-note>
-      </div>
+      <label for="exchangeRate" class="form-label">Exchange Rate *</label>
       <input
         id="exchangeRate"
         type="text"
@@ -483,6 +477,7 @@
         formControlName="exchangeRate"
         placeholder="e.g. 1, 4, 5"
         (input)="enforceInteger($event)">
+              <app-note text="For Malaysia Ringgit/MYR, please put 1 as the exchange rate." [isTooltip]="false"></app-note>
       @if (breakdownForm.get('exchangeRate')?.invalid && breakdownForm.get('exchangeRate')?.touched) {
         <span class="error-message">Exchange rate is required (whole numbers only)</span>
       }

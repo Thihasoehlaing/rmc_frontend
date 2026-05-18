@@ -30,6 +30,16 @@
             <option value="Inactive">Deactivated</option>
           </select>
         </div>
+
+        <div class="form-field">
+          <label class="form-label">Search</label>
+          <input
+            type="text"
+            class="input--text"
+            [value]="searchQuery()"
+            (input)="onSearchInput($event)"
+            placeholder="Search option name">
+        </div>
       </div>
 
       <div class="toolbar-actions">
@@ -49,7 +59,13 @@
         </app-action-button>
       </div>
 
-      <app-data-table [columns]="tableColumns" [rows]="getFilteredAndSortedOptions()" [dense]="true">
+      <app-data-table
+        [columns]="tableColumns"
+        [rows]="getFilteredAndSortedOptions()"
+        [sortColumn]="sortBy()"
+        [sortDirection]="sortDirection()"
+        (sortChange)="onHeaderClick($event)"
+        [dense]="true">
         <ng-template #rowTemplate let-row="row">
           <tr [class.row--inactive]="row.status === 'Inactive'">
             <td>
@@ -69,7 +85,7 @@
               </span>
             </td>
 
-            <td>{{ row.createdDate || getTodayDate() }}</td>
+            <td>{{ formatRowDate(row.createdDate) }}</td>
 
             <td class="actions-cell">
               <button class="icon-btn icon-btn--edit" type="button" title="Edit" (click)="editOption(row, getFilteredAndSortedOptions().indexOf(row))">

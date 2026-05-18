@@ -26,11 +26,9 @@ export class ProposalDetails implements OnChanges, OnInit {
 
   @Input() isDisabled = false;
 
-  partnershipOptions: DropdownOption<string>[] = [
-    { label: 'Academic', value: 'Academic' },
-    { label: 'Industry', value: 'Industry' },
-    { label: 'Both', value: 'Both' }
-  ];
+  get partnershipOptions(): DropdownOption<string>[] {
+    return this.partnershipOptionsService.partnershipTypeOptions();
+  }
 
   categoryOptions: DropdownOption<string>[] = [];
 

@@ -1,0 +1,339 @@
+<section class="batch-container">
+  <!-- ── Header ─────────────────────────────────────────────────────────── -->
+  <div class="batch-header">
+    <div class="batch-header__icon-wrap">
+      <span class="material-icons batch-header__icon">event_available</span>
+    </div>
+
+    <div class="batch-header__content">
+      <h1 class="batch-header__title">Batch Sitting Management</h1>
+      <p class="batch-header__description">
+        Manage RDIG application cycle windows. One active batch runs at a time.
+        Completed batches are preserved in history and can be retrieved.
+      </p>
+    </div>
+
+    <div class="batch-header__actions">
+      @if (activeBatch() && !isEditingActive()) {
+        <app-action-button type="primary" label="Edit Batch" icon="edit"
+          (clicked)="startEditActive()" class="action-button">
+        </app-action-button>
+        <app-action-button type="danger" label="Close Batch" icon="stop_circle"
+          (clicked)="openEndConfirm()" class="action-button">
+        </app-action-button>
+      }
+    </div>
+  </div>
+
+  <!-- ── Feedback ───────────────────────────────────────────────────────── -->
+  @if (feedback(); as note) {
+    <div class="feedback-banner"
+         [class.feedback-banner--success]="note.type === 'success'"
+         [class.feedback-banner--error]="note.type === 'error'"
+         role="status" aria-live="polite">
+      <span class="material-icons feedback-banner__icon">
+        {{ note.type === 'success' ? 'check_circle' : 'error' }}
+      </span>
+      {{ note.text }}
+    </div>
+  }
+
+  <!-- ── Loading ────────────────────────────────────────────────────────── -->
+  @if (isLoading()) {
+    <div class="loading-state">
+      <span class="material-icons loading-state__icon">hourglass_top</span>
+      <p>Loading batches…</p>
+    </div>
+  }
+
+  @if (!isLoading()) {
+    <!-- ════════════════════════════════════════════════════════════════ -->
+    <!--  CURRENT ACTIVE BATCH                                           -->
+    <!-- ════════════════════════════════════════════════════════════════ -->
+    <div class="batch-section">
+      <div class="section-head">
+        <div class="section-head__left">
+          <span class="material-icons section-head__icon icon--active">check_circle</span>
+          <h2 class="section-head__title">Current Active Batch</h2>
+          @if (activeBatch()) {
+            <span class="status-badge status-badge--active">Active</span>
+          }
+        </div>
+      </div>
+
+      <!-- Read-only view -->
+      @if (activeBatch() && !isEditingActive()) {
+        <div class="batch-content">
+          <!-- Global Batch Window -->
+          <div class="batch-window">
+            <h3 class="batch-window__title">
+              <span class="material-icons batch-window__icon">calendar_today</span>
+              Global Batch Window
+            </h3>
+            <p class="batch-window__description">Set the batch start and end date.</p>
+
+            <div class="batch-window__fields">
+              <div class="form-group">
+                <label class="form-label">Batch Name</label>
+                <div class="form-value">{{ activeBatch()!.batchName }}</div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Start Date</label>
+                <div class="form-value">{{ fmt(activeBatch()!.startDate) }}</div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">End Date</label>
+                <div class="form-value">{{ fmt(activeBatch()!.endDate) }}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Workflow Stage Windows -->
+          <div class="batch-window">
+            <h3 class="batch-window__title">
+              <span class="material-icons batch-window__icon">timeline</span>
+              Workflow Stage Windows
+            </h3>
+            <p class="batch-window__description">Stage dates must stay within the global batch window. End date cannot precede start date.</p>
+
+            <div class="stages-table-wrap">
+              <table class="stages-table">
+                <thead>
+                  <tr>
+                    <th>STAGE</th>
+                    <th>STAGE START</th>
+                    <th>STAGE END</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (stage of paginatedStagesForBatch(activeBatch()!); track stage.key) {
+                    <tr>
+                      <td>
+                        <strong>{{ stage.meta.label }}</strong>
+                        <p class="stage-description">{{ stage.meta.description }}</p>
+                      </td>
+                      <td>{{ stage.window?.startDate ? fmt(stage.window.startDate) : '—' }}</td>
+                      <td>{{ stage.window?.endDate ? fmt(stage.window.endDate) : '—' }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- Empty state -->
+      @if (!activeBatch() && !isEditingActive()) {
+        <div class="empty-state">
+          <span class="material-icons empty-state__icon">event_note</span>
+          <p class="empty-state__text">No active batch. Create one to begin managing RDIG applications.</p>
+          <app-action-button type="primary" label="Create Active Batch" icon="add"
+            (clicked)="startEditActive()">
+          </app-action-button>
+        </div>
+      }
+
+      <!-- Edit form -->
+      @if (isEditingActive()) {
+        <form [formGroup]="activeForm" class="batch-form">
+          <div class="batch-window">
+            <h3 class="batch-window__title">Edit Active Batch</h3>
+
+            <div class="batch-window__fields">
+              <div class="form-group">
+                <label for="batch-name" class="form-label">Batch Name <span class="required">*</span></label>
+                <input id="batch-name" type="text" formControlName="batchName" class="input input--text"
+                  placeholder="e.g., RDIG 2025 Cycle 1">
+                @if (activeForm.get('batchName')?.errors?.['required']) {
+                  <app-validation-message message="Batch name is required"></app-validation-message>
+                }
+                @if (activeForm.get('batchName')?.errors?.['minlength']) {
+                  <app-validation-message message="Batch name must be at least 3 characters"></app-validation-message>
+                }
+              </div>
+
+              <div class="form-group">
+                <label for="batch-start" class="form-label">Start Date <span class="required">*</span></label>
+                <input id="batch-start" type="date" formControlName="startDate" class="input input--text">
+                @if (activeForm.get('startDate')?.errors?.['required']) {
+                  <app-validation-message message="Start date is required"></app-validation-message>
+                }
+              </div>
+
+              <div class="form-group">
+                <label for="batch-end" class="form-label">End Date <span class="required">*</span></label>
+                <input id="batch-end" type="date" formControlName="endDate" class="input input--text">
+                @if (activeForm.get('endDate')?.errors?.['required']) {
+                  <app-validation-message message="End date is required"></app-validation-message>
+                }
+              </div>
+            </div>
+
+            @if (activeForm.errors?.['endBeforeStart']) {
+              <app-validation-message message="End date must be after start date"></app-validation-message>
+            }
+
+            <div class="form-actions">
+              <app-action-button type="secondary" label="Cancel"
+                (clicked)="cancelEditActive()">
+              </app-action-button>
+              <app-action-button type="primary" label="Save Batch"
+                [disabled]="!activeForm.valid || isSaving()"
+                (clicked)="saveActiveForm()">
+              </app-action-button>
+            </div>
+          </div>
+        </form>
+      }
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════════════ -->
+    <!--  BATCH HISTORY                                                  -->
+    <!-- ════════════════════════════════════════════════════════════════ -->
+    <div class="batch-section">
+      <div class="section-head">
+        <div class="section-head__left">
+          <span class="material-icons section-head__icon icon--history">history</span>
+          <h2 class="section-head__title">Batch History</h2>
+          <span class="history-badge">{{ historyBatches().length }} batches</span>
+        </div>
+      </div>
+
+      <div class="batch-content">
+        @if (historyBatches().length > 0) {
+          <div class="history-table-wrap">
+            <table class="history-table">
+              <thead>
+                <tr>
+                  <th>Batch Name</th>
+                  <th>Start Date</th>
+                  <th>End Date</th>
+                  <th>Submissions</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (batch of paginatedHistoryBatches(); track batch.id) {
+                  <tr>
+                    <td>{{ batch.batchName }}</td>
+                    <td>{{ fmt(batch.startDate) }}</td>
+                    <td>{{ fmt(batch.endDate) }}</td>
+                    <td>{{ batch.applicationIds?.length ?? 0 }}</td>
+                    <td>
+                      <span class="status-badge status-badge--completed">Closed</span>
+                    </td>
+                    <td>
+                      <div class="action-links">
+                        <button type="button" class="action-link" (click)="viewBatch(batch)"
+                          title="View batch details">
+                          <span class="material-icons">visibility</span>
+                        </button>
+                        <button type="button" class="action-link"
+                          [disabled]="activeBatch() !== null"
+                          (click)="retrieveCompleted(batch.id)"
+                          [title]="activeBatch() ? 'Cannot retrieve while active batch exists' : 'Retrieve this batch'">
+                          <span class="material-icons">redo</span>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          <app-pagination
+            [currentPage]="historyPage()"
+            [totalPages]="historyTotalPages()"
+            [pageSize]="historyPageSize()"
+            [pageSizeOptions]="historyPageSizeOptions"
+            (pageChange)="onHistoryPageChange($event)"
+            (pageSizeChange)="onHistoryPageSizeChange($event)">
+          </app-pagination>
+        } @else {
+          <div class="empty-state">
+            <span class="material-icons empty-state__icon">inbox</span>
+            <p class="empty-state__text">No completed batches yet.</p>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</section>
+
+<!-- ── View Batch Dialog ────────────────────────────────────────────────────── -->
+@if (viewingBatch(); as batch) {
+  <app-dialog [title]="'Viewing: ' + batch.batchName" (close)="closeViewBatch()">
+    <div class="dialog-content">
+      <div class="batch-summary">
+        <div class="summary-field">
+          <label class="summary-label">Batch Name</label>
+          <p class="summary-value">{{ batch.batchName }}</p>
+        </div>
+        <div class="summary-field">
+          <label class="summary-label">Start Date</label>
+          <p class="summary-value">{{ fmt(batch.startDate) }}</p>
+        </div>
+        <div class="summary-field">
+          <label class="summary-label">End Date</label>
+          <p class="summary-value">{{ fmt(batch.endDate) }}</p>
+        </div>
+        <div class="summary-field">
+          <label class="summary-label">Total Applications</label>
+          <p class="summary-value">{{ batch.applicationIds?.length ?? 0 }}</p>
+        </div>
+      </div>
+
+      <h3 class="dialog-subtitle">Workflow Stages</h3>
+      <div class="stages-table-wrap">
+        <table class="stages-table">
+          <thead>
+            <tr>
+              <th>STAGE</th>
+              <th>STAGE START</th>
+              <th>STAGE END</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (stage of paginatedStagesForBatch(batch); track stage.key) {
+              <tr>
+                <td>
+                  <strong>{{ stage.meta.label }}</strong>
+                </td>
+                <td>{{ stage.window?.startDate ? fmt(stage.window.startDate) : '—' }}</td>
+                <td>{{ stage.window?.endDate ? fmt(stage.window.endDate) : '—' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <app-pagination
+        [currentPage]="stagePage()"
+        [totalPages]="stageTotalPages()"
+        [pageSize]="stagePageSize()"
+        [pageSizeOptions]="stagePageSizeOptions"
+        (pageChange)="onStagePageChange($event)"
+        (pageSizeChange)="onStagePageSizeChange($event)">
+      </app-pagination>
+    </div>
+  </app-dialog>
+}
+
+<!-- ── End Batch Confirmation Dialog ───────────────────────────────────────── -->
+@if (showEndConfirm()) {
+  <app-dialog title="Close Batch" (close)="showEndConfirm.set(false)">
+    <div class="dialog-content">
+      <p>Are you sure you want to close this batch? This action cannot be undone.</p>
+      <div class="dialog-actions">
+        <app-action-button type="secondary" label="Cancel"
+          (clicked)="showEndConfirm.set(false)">
+        </app-action-button>
+        <app-action-button type="danger" label="Close Batch"
+          [disabled]="isSaving()"
+          (clicked)="confirmEndBatch()">
+        </app-action-button>
+      </div>
+    </div>
+  </app-dialog>
+}

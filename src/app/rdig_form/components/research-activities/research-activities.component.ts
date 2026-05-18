@@ -36,8 +36,13 @@ export class ResearchActivitiesComponent implements OnInit, OnDestroy {
     /** Project duration (months) — driven by projectDetails.duration; 0 = not set */
     projectDuration = signal<number>(0);
 
-    /** Available months computed from duration */
-    months = computed(() => Array.from({ length: this.projectDuration() }, (_, i) => i + 1));
+    private readonly activityMinMonth = 0;
+    private readonly activityMaxMonth = 12;
+
+    /** Research activity planning uses a fixed M0-M12 range. */
+    months = computed(() =>
+        Array.from({ length: this.activityMaxMonth - this.activityMinMonth + 1 }, (_, i) => this.activityMinMonth + i)
+    );
 
     private subs: Subscription[] = [];
 
@@ -81,10 +86,11 @@ export class ResearchActivitiesComponent implements OnInit, OnDestroy {
             this.addActivity();
         }
 
-        // Watch activities changes for validation and cascade updates
+        // Watch activities changes for validation and duration updates
         this.subs.push(
             this.activities.valueChanges.subscribe(() => {
-                this.updateCascade();
+                this.normalizeAllActivityMonths();
+                this.activities.updateValueAndValidity({ emitEvent: false });
             })
         );
     }
@@ -95,18 +101,13 @@ export class ResearchActivitiesComponent implements OnInit, OnDestroy {
 
     addActivity() {
         if (!this.canAddActivity()) return;
-        const isFirst = this.activities.length === 0;
-        const maxMonth = this.projectDuration();
-        // First activity: start = 1 (user-editable); subsequent: start = prev end (auto-locked)
-        const startMonth = isFirst
-            ? 1
-            : parseInt(String(this.activities.at(this.activities.length - 1).get('endMonth')?.value || '1'), 10);
+        const startMonth = this.activityMinMonth;
 
         const activityGroup = this.fb.group({
             name: ['', Validators.required],
-            startMonth: [{ value: startMonth, disabled: true }, Validators.required],
-            endMonth: [Math.min(startMonth + 1, maxMonth), Validators.required],
-            duration: [{ value: 1, disabled: true }]
+            startMonth: [startMonth, Validators.required],
+            endMonth: [startMonth, Validators.required],
+            duration: [{ value: 0, disabled: true }]
         });
 
         this.ensureValidActivityMonths(activityGroup);
@@ -117,76 +118,53 @@ export class ResearchActivitiesComponent implements OnInit, OnDestroy {
         });
 
         this.activities.push(activityGroup);
-        this.updateCascade();
+        this.activities.updateValueAndValidity({ emitEvent: false });
     }
 
     removeActivity(index: number) {
         this.activities.removeAt(index);
-        this.updateCascade();
+        this.activities.updateValueAndValidity({ emitEvent: false });
     }
 
     getTimeline(start: any, end: any) {
         const s = parseInt((start || '0').toString());
         const e = parseInt((end || '0').toString());
-        const total = this.projectDuration();
-        if (isNaN(s) || isNaN(e) || e < s) return Array.from({ length: total }, () => false);
-        return Array.from({ length: total }, (_, i) => i + 1 >= s && i + 1 <= e);
+        if (isNaN(s) || isNaN(e) || e < s) return this.months().map(() => false);
+        return this.months().map(month => month >= s && month <= e);
     }
 
     canAddActivity(): boolean {
-        const maxMonth = this.projectDuration();
-        if (!maxMonth || this.workflow?.isFormReadOnly()) return false;
-        if (this.activities.length === 0) return true;
-
-        const lastEnd = this.monthValue(this.activities.at(this.activities.length - 1).get('endMonth')?.value);
-        return lastEnd < maxMonth;
+        return !this.workflow?.isFormReadOnly();
     }
 
     getAddActivityTitle(): string {
-        if (!this.projectDuration()) return 'Select a Project Duration first';
-        if (!this.canAddActivity()) return 'The activity timeline already reaches the project end month';
+        if (!this.canAddActivity()) return 'This form is read-only';
         return '';
     }
 
     isStartMonthDisabled(index: number, month: number): boolean {
-        return true;
+        return false;
     }
 
     isEndMonthDisabled(activity: any, month: number): boolean {
-        return month <= this.monthValue(activity.get('startMonth')?.value);
+        return month < this.monthValue(activity.get('startMonth')?.value);
     }
 
-    /** Update startMonth of all non-first activities to equal prev activity's endMonth */
-    private updateCascade(): void {
-        if (this.activities.length > 0) {
-            const firstActivity = this.activities.at(0) as FormGroup;
-            firstActivity.get('startMonth')?.disable({ emitEvent: false });
-            firstActivity.get('startMonth')?.setValue(1, { emitEvent: false });
-            this.ensureValidActivityMonths(firstActivity);
+    /** Clamp all activity months to the allowed activity planning range. */
+    private clampActivityMonths(_maxMonth?: number): void {
+        for (let i = 0; i < this.activities.length; i++) {
+            this.ensureValidActivityMonths(this.activities.at(i) as FormGroup);
         }
-
-        for (let i = 1; i < this.activities.length; i++) {
-            const prevEnd = this.monthValue(this.activities.at(i - 1).get('endMonth')?.value);
-            const activity = this.activities.at(i) as FormGroup;
-            activity.get('startMonth')?.disable({ emitEvent: false });
-            activity.get('startMonth')?.setValue(prevEnd, { emitEvent: false });
-            this.ensureValidActivityMonths(activity);
-        }
-
         this.activities.updateValueAndValidity({ emitEvent: false });
     }
 
-    /** Clamp all activity months to max duration when duration changes */
-    private clampActivityMonths(maxMonth: number): void {
+    private normalizeAllActivityMonths(): void {
         for (let i = 0; i < this.activities.length; i++) {
-            this.ensureValidActivityMonths(this.activities.at(i) as FormGroup, maxMonth);
+            this.ensureValidActivityMonths(this.activities.at(i) as FormGroup);
         }
-        this.updateCascade();
     }
 
-    private ensureValidActivityMonths(activityGroup: FormGroup, maxMonth = this.projectDuration()): void {
-        if (!maxMonth) return;
-
+    private ensureValidActivityMonths(activityGroup: FormGroup): void {
         const startCtrl = activityGroup.get('startMonth');
         const endCtrl = activityGroup.get('endMonth');
         if (!startCtrl || !endCtrl) return;
@@ -194,13 +172,19 @@ export class ResearchActivitiesComponent implements OnInit, OnDestroy {
         let start = this.monthValue(startCtrl.value);
         let end = this.monthValue(endCtrl.value);
 
-        if (start >= maxMonth) {
-            start = Math.max(1, maxMonth - 1);
+        if (start < this.activityMinMonth) {
+            start = this.activityMinMonth;
+            startCtrl.setValue(start, { emitEvent: false });
+        } else if (start > this.activityMaxMonth) {
+            start = this.activityMaxMonth;
             startCtrl.setValue(start, { emitEvent: false });
         }
 
-        if (end > maxMonth || end <= start) {
-            end = Math.min(maxMonth, start + 1);
+        if (end < start) {
+            end = start;
+            endCtrl.setValue(end, { emitEvent: false });
+        } else if (end > this.activityMaxMonth) {
+            end = this.activityMaxMonth;
             endCtrl.setValue(end, { emitEvent: false });
         }
 
@@ -210,7 +194,7 @@ export class ResearchActivitiesComponent implements OnInit, OnDestroy {
     private setDuration(activityGroup: FormGroup): void {
         const start = this.monthValue(activityGroup.get('startMonth')?.value);
         const end = this.monthValue(activityGroup.get('endMonth')?.value);
-        activityGroup.get('duration')?.setValue(end > start ? end - start + 1 : 0, { emitEvent: false });
+        activityGroup.get('duration')?.setValue(Math.max(0, end - start), { emitEvent: false });
     }
 
     private monthValue(value: unknown): number {

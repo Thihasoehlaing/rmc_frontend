@@ -717,6 +717,41 @@
       </table>
     </div>
 
+    <!-- ── Pagination ────────────────────────────────────────────── -->
+    <div class="component-block">
+      <div class="component-block__header">
+        <span class="comp-name">Pagination</span>
+        <code class="comp-selector">&lt;app-pagination&gt;</code>
+        <p class="comp-desc">Page navigation control with page size selector dropdown. Shows current page, total pages, previous/next buttons, and number buttons. Default page size is 15 with options: 5, 15, 30, 50.</p>
+      </div>
+      <div class="component-block__demo">
+        <app-pagination
+          [currentPage]="paginationCurrentPage()"
+          [totalPages]="paginationTotalPages"
+          [pageSize]="paginationPageSize()"
+          [pageSizeOptions]="paginationPageSizeOptions"
+          (pageChange)="onPaginationPageChange($event)"
+          (pageSizeChange)="onPaginationPageSizeChange($event)">
+        </app-pagination>
+      </div>
+      <table class="props-table">
+        <thead><tr><th>Input</th><th>Type</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>currentPage</code></td><td>number</td><td>Currently active page (1-based)</td></tr>
+          <tr><td><code>totalPages</code></td><td>number</td><td>Total number of pages to display</td></tr>
+          <tr><td><code>pageSize</code></td><td>number</td><td>Currently selected items per page. Default: 15</td></tr>
+          <tr><td><code>pageSizeOptions</code></td><td>number[]</td><td>Array of page size options for the dropdown. Default: [5, 15, 30, 50]</td></tr>
+        </tbody>
+      </table>
+      <table class="props-table" style="margin-top:var(--space-3)">
+        <thead><tr><th>Output</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>pageChange</code></td><td>Emits the new page number when user navigates</td></tr>
+          <tr><td><code>pageSizeChange</code></td><td>Emits the new page size when user changes the dropdown selection</td></tr>
+        </tbody>
+      </table>
+    </div>
+
     <div class="subsection-heading" style="margin-top: var(--space-7);">Complete Shared Component Registry</div>
     <table class="ref-table">
       <thead><tr><th>Component</th><th>Selector</th><th>Purpose</th></tr></thead>

@@ -1,6 +1,7 @@
-import { Component, Input, OnInit, OnDestroy, inject, signal } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, inject, signal, ChangeDetectorRef } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
 import { ReactiveFormsModule, FormGroup, FormArray, FormBuilder, FormControl, Validators } from '@angular/forms';
 import { of, Subject } from 'rxjs';
 import { catchError, map, takeUntil } from 'rxjs/operators';
@@ -51,6 +52,8 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
   private readonly dropdownService = inject(RdigDropdownOptionsService);
   private readonly authService = inject(AuthService);
   private readonly http = inject(HttpClient);
+  private readonly router = inject(Router);
+  private readonly cdr = inject(ChangeDetectorRef);
   private readonly destroy$ = new Subject<void>();
 
   /** Eligible internal co-researchers: (full_time|contract) AND academic, NOT Reviewer/blocked */
@@ -108,6 +111,7 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
   externalForm: FormGroup;
 
   clusters: { label: string; value: string }[] = [];
+  orgTypes: { label: string; value: string }[] = [];
   countryOptions: { label: string; value: string }[] = [];
   countriesLoading = false;
 
@@ -120,14 +124,6 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
     { label: 'Ts.', value: 'Ts.' },
     { label: 'Ir.', value: 'Ir.' },
     { label: 'Dato\'', value: 'Dato\'' }
-  ];
-
-  orgTypes = [
-    { label: 'University / Higher Education', value: 'university' },
-    { label: 'Research Institute', value: 'research' },
-    { label: 'Private Company', value: 'private' },
-    { label: 'Government Agency', value: 'government' },
-    { label: 'NGO / Non-Profit', value: 'ngo' }
   ];
 
   constructor(private fb: FormBuilder) {
@@ -164,12 +160,39 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
           .map(o => ({ label: o.optionName, value: o.id.toString() }));
       });
 
+    this.dropdownService.loadOptions('type_of_organisation').subscribe();
+    this.dropdownService.getOptions('type_of_organisation')
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(options => {
+        this.orgTypes = options
+          .filter(o => o.status === 'Active')
+          .map(o => ({ label: o.optionName, value: o.optionName.toLowerCase().replace(/\s+/g, '-') }));
+      });
+
     // Auto-populate name + department when a researcher is selected from the dropdown
     this.internalForm.get('staffId')!.valueChanges
       .pipe(takeUntil(this.destroy$))
       .subscribe(id => this.onResearcherSelected(id));
 
     this.loadCountryOptions();
+
+    // Listen for dropdown updates from admin settings
+    const onDropdownsUpdated = (): void => {
+      this.dropdownService.loadOptions('type_of_organisation').subscribe();
+      this.dropdownService.getOptions('type_of_organisation')
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(options => {
+          this.orgTypes = options
+            .filter(o => o.status === 'Active')
+            .map(o => ({ label: o.optionName, value: o.optionName.toLowerCase().replace(/\s+/g, '-') }));
+          this.cdr.detectChanges();
+        });
+    };
+
+    window.addEventListener('rmc-dropdowns-updated', onDropdownsUpdated);
+    this.destroy$.subscribe(() => {
+      window.removeEventListener('rmc-dropdowns-updated', onDropdownsUpdated);
+    });
   }
 
   ngOnDestroy(): void {
@@ -308,5 +331,9 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
 
   onFileSelected(file: File): void {
     this.externalForm.get('supportLetter')?.setValue(file);
+  }
+
+  manageOrgTypes(): void {
+    // RDIG dropdown options management has been removed
   }
 }

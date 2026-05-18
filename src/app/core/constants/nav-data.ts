@@ -16,7 +16,7 @@ import { NavGroup } from '../../interfaces/nav.interface';
  * Application access rules:
  *   Conference Application  : (full_time OR contract) AND academic AND HOS AND VC
  *   Journal Publication     : (full_time OR contract) AND academic AND HOS AND VC
- *   RA/GRA Application      : (full_time OR contract) AND academic AND HOS AND group_ra_gra_hos_pass
+ *   RA/GRA Application      : (full_time OR contract) AND academic
  *   RDIG Application        : (full_time OR contract) AND academic, NOT Reviewer, NOT blocked_hos_rdig
  *   RMC Settings            : RMC group only
  *   Submissions (Inbox...)  : All authenticated users
@@ -91,16 +91,14 @@ export const NAVIGATION_DATA: NavGroup[] = [
                             ],
                         },
                     },
-                    // RA/GRA: (HOS AND (full_time OR contract) AND academic) OR ra_gra_hos_pass
+                    // RA/GRA: (full_time OR contract) AND academic
                     {
                         label: 'RA/GRA Application',
                         icon: 'person_add',
                         route: '/ragra',
                         permission: {
-                            anyCondition: [
-                                { anyOf: ['full_time', 'contract'], allOf: ['academic', 'HOS'] },
-                                { anyOf: ['group_ra_gra_hos_pass'] },
-                            ],
+                            anyOf: ['full_time', 'contract'],
+                            allOf: ['academic'],
                         },
                     },
                     // Partnership: (full_time OR contract) AND academic
@@ -133,7 +131,6 @@ export const NAVIGATION_DATA: NavGroup[] = [
                 icon: 'settings',
                 permission: { anyOf: ['RMC', 'Admin'] },
                 children: [
-                    { label: 'RDIG Dropdown Options Management', route: '/settings/rdig-dropdown-options', permission: { allOf: ['RMC'] } },
                     { label: 'Batch Sitting', icon: 'event_available', route: '/settings/batch-sitting', permission: { allOf: ['RMC'] } },
                     { label: 'Conference Settings', icon: 'event_note', route: '/conference/settings', permission: { allOf: ['RMC'] } },
                     { label: 'Journal Settings', icon: 'event_note', route: '/journal/settings', permission: { anyOf: ['Admin'] } },
@@ -146,9 +143,13 @@ export const NAVIGATION_DATA: NavGroup[] = [
             {
                 label: 'Admin Settings',
                 icon: 'admin_panel_settings',
+                route: '/settings/admin-settings',
                 permission: { anyOf: ['Admin'] },
                 children: [
-                    { label: 'Journal Guidelines Settings', icon: 'rule', route: '/journal/guidelines-settings', permission: { anyOf: ['Admin'] } },
+                    { label: 'Guidelines', icon: 'description', route: '/settings/guidelines', permission: { anyOf: ['Admin'] } },
+                    { label: 'Dropdowns', icon: 'list', route: '/settings/dropdowns', permission: { anyOf: ['Admin'] } },
+                    { label: 'Batches', icon: 'batch_prediction', route: '/settings/batches', permission: { anyOf: ['Admin'] } },
+                    { label: 'Staff Access', icon: 'person_add', route: '/settings/staff-access', permission: { anyOf: ['Admin'] } },
                 ],
             },
         ],

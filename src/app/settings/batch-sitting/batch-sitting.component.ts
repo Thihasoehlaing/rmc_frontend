@@ -36,6 +36,7 @@ import { AuthService } from '../../services/auth.service';
 import { ActionButtonComponent } from '../../shared/components/action-button/action-button.component';
 import { ValidationMessageComponent } from '../../shared/components/validation-message/validation-message.component';
 import { DialogComponent } from '../../shared/components/dialog/dialog.component';
+import { PaginationComponent } from '../../shared/components/pagination/pagination.component';
 
 // ── Validators ────────────────────────────────────────────────────────────────
 
@@ -65,7 +66,7 @@ function stageWithinBatchValidator(startFn: () => string, endFn: () => string) {
 @Component({
   selector: 'app-batch-sitting',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule, ActionButtonComponent, ValidationMessageComponent, DialogComponent],
+  imports: [CommonModule, ReactiveFormsModule, ActionButtonComponent, ValidationMessageComponent, DialogComponent, PaginationComponent],
   templateUrl: './batch-sitting.component.html',
   styleUrl: './batch-sitting.component.scss',
 })
@@ -95,6 +96,11 @@ export class BatchSittingComponent implements OnInit, OnDestroy {
   /** Batch shown in the read-only history view dialog. */
   viewingBatch       = signal<BatchSitting | null>(null);
   feedback           = signal<{ type: 'success' | 'error'; text: string } | null>(null);
+  expandedUpcomingIds = signal<Set<number>>(new Set<number>());
+  expandedHistoryIds  = signal<Set<number>>(new Set<number>());
+  stagePage           = signal(1);
+  stagePageSize       = signal(15);
+  stagePageSizeOptions = [5, 15, 30, 50];
 
   // ── Forms ─────────────────────────────────────────────────────────────────
   activeForm!:  FormGroup;
@@ -136,6 +142,25 @@ export class BatchSittingComponent implements OnInit, OnDestroy {
     return a ? this.addDay(a.endDate) : '';
   }
 
+  stageTotalPages(): number {
+    return Math.max(1, Math.ceil(this.stageMeta.length / this.stagePageSize()));
+  }
+
+  paginatedStageMeta() {
+    const currentPage = Math.min(this.stagePage(), this.stageTotalPages());
+    const startIndex = (currentPage - 1) * this.stagePageSize();
+    return this.stageMeta.slice(startIndex, startIndex + this.stagePageSize());
+  }
+
+  onStagePageChange(page: number): void {
+    this.stagePage.set(page);
+  }
+
+  onStagePageSizeChange(pageSize: number): void {
+    this.stagePageSize.set(pageSize);
+    this.stagePage.set(1);
+  }
+
   // ── Lifecycle ─────────────────────────────────────────────────────────────
 
   ngOnInit(): void {
@@ -159,7 +184,13 @@ export class BatchSittingComponent implements OnInit, OnDestroy {
   private hydrate(batches: BatchSitting[]): void {
     const active  = batches.find(b => b.status === 'active') ?? null;
     const planned = batches.filter(b => b.status === 'planned').sort((a, b) => a.startDate.localeCompare(b.startDate));
-    const history = batches.filter(b => b.status === 'completed').sort((a, b) => (b.endedAt ?? b.endDate).localeCompare(a.endedAt ?? a.endDate));
+    const nonActive = batches.filter(b => b.id !== active?.id);
+    const upcoming = nonActive
+      .filter(b => b.startDate > this.today || (b.status === 'planned' && b.endDate >= this.today))
+      .sort((a, b) => a.startDate.localeCompare(b.startDate));
+    const history = nonActive
+      .filter(b => b.endDate < this.today || b.status === 'completed')
+      .sort((a, b) => (b.endedAt ?? b.endDate).localeCompare(a.endedAt ?? a.endDate));
 
     // Auto-complete: if a planned batch's start date has arrived, complete the active batch and activate the next.
     if (active) {
@@ -171,8 +202,11 @@ export class BatchSittingComponent implements OnInit, OnDestroy {
     }
 
     this.activeBatch.set(active);
-    this.plannedBatches.set(planned);
+    this.plannedBatches.set(upcoming);
     this.historyBatches.set(history);
+    this.stagePage.set(1);
+    this.expandedUpcomingIds.set(new Set<number>());
+    this.expandedHistoryIds.set(new Set<number>());
     this.buildActiveForm(active);
     this.buildPlannedForm(null, () => '', () => '');
   }
@@ -295,11 +329,38 @@ export class BatchSittingComponent implements OnInit, OnDestroy {
         error: () => this.feedback.set({ type: 'error', text: 'Failed to save.' }),
       });
     } else {
+      const currentDate = this.currentDateIso();
+      const isFutureStart = typeof fv.startDate === 'string' && fv.startDate > currentDate;
       const user = this.auth.currentUser();
-      this.svc.create({ ...fv, status: 'active', createdAt: now, updatedAt: now, createdBy: user?.username ?? 'rmc' }).pipe(
+      this.svc.create({
+        ...fv,
+        status: isFutureStart ? 'planned' : 'active',
+        createdAt: now,
+        updatedAt: now,
+        createdBy: user?.username ?? 'rmc',
+      }).pipe(
         finalize(() => this.isSaving.set(false)), takeUntil(this.destroy$),
       ).subscribe({
-        next: created => { this.activeBatch.set(created); this.isEditingActive.set(false); this.feedback.set({ type: 'success', text: 'Active batch created.' }); },
+        next: created => {
+          if (isFutureStart) {
+            this.plannedBatches.update(list =>
+              [...list, created].sort((a, b) => a.startDate.localeCompare(b.startDate))
+            );
+            // Keep upcoming cards minimized by default.
+            this.expandedUpcomingIds.update(current => {
+              const next = new Set<number>(current);
+              next.delete(created.id);
+              return next;
+            });
+            this.buildActiveForm(null);
+            this.feedback.set({ type: 'success', text: 'Start date is in the future. Batch was added to Upcoming Batches.' });
+          } else {
+            this.activeBatch.set(created);
+            this.buildActiveForm(created);
+            this.feedback.set({ type: 'success', text: 'Active batch created.' });
+          }
+          this.isEditingActive.set(false);
+        },
         error: () => this.feedback.set({ type: 'error', text: 'Failed to create.' }),
       });
     }
@@ -321,16 +382,36 @@ export class BatchSittingComponent implements OnInit, OnDestroy {
       finalize(() => this.isSaving.set(false)), takeUntil(this.destroy$),
     ).subscribe({
       next: () => {
-        this.showEndConfirm.set(false);
+        // Remove immediately from current active view.
+        this.activeBatch.set(null);
         this.isEditingActive.set(false);
+        // Append into history without replacing unrelated history records.
+        this.historyBatches.update(list => {
+          const withoutEnded = list.filter(b => b.id !== completed.id);
+          return [completed, ...withoutEnded].sort((a, b) => (b.endedAt ?? b.endDate).localeCompare(a.endedAt ?? a.endDate));
+        });
+        // Remove ended batch from upcoming/planned lists if present.
+        this.plannedBatches.update(list => list.filter(b => b.id !== completed.id));
+
+        this.showEndConfirm.set(false);
         // Promote next planned batch (earliest by date) to active
         const sorted      = [...this.plannedBatches()].sort((a, b) => a.startDate.localeCompare(b.startDate));
         const nextPlanned = sorted[0];
         if (nextPlanned) {
           this.svc.update({ ...nextPlanned, status: 'active', updatedAt: now }).pipe(takeUntil(this.destroy$))
-            .subscribe({ next: () => { this.reload(); this.feedback.set({ type: 'success', text: 'Batch ended. Next planned batch is now active.' }); } });
+            .subscribe({
+              next: (saved) => {
+                this.activeBatch.set(saved);
+                this.plannedBatches.update(list => list.filter(b => b.id !== saved.id));
+                this.buildActiveForm(saved);
+                this.feedback.set({ type: 'success', text: 'Batch ended. Next planned batch is now active.' });
+              },
+              error: () => {
+                this.feedback.set({ type: 'error', text: 'Batch ended, but failed to activate next planned batch.' });
+              },
+            });
         } else {
-          this.reload();
+          this.buildActiveForm(null);
           this.feedback.set({ type: 'success', text: 'Batch ended and moved to history.' });
         }
       },
@@ -425,6 +506,32 @@ export class BatchSittingComponent implements OnInit, OnDestroy {
 
   canDeletePlanned(batch: BatchSitting): boolean { return batch.startDate > this.today; }
 
+  toggleUpcoming(batchId: number): void {
+    this.expandedUpcomingIds.update(current => {
+      const next = new Set<number>(current);
+      if (next.has(batchId)) next.delete(batchId);
+      else next.add(batchId);
+      return next;
+    });
+  }
+
+  isUpcomingExpanded(batchId: number): boolean {
+    return this.expandedUpcomingIds().has(batchId);
+  }
+
+  toggleHistory(batchId: number): void {
+    this.expandedHistoryIds.update(current => {
+      const next = new Set<number>(current);
+      if (next.has(batchId)) next.delete(batchId);
+      else next.add(batchId);
+      return next;
+    });
+  }
+
+  isHistoryExpanded(batchId: number): boolean {
+    return this.expandedHistoryIds().has(batchId);
+  }
+
   // ── History actions ───────────────────────────────────────────────────────
 
   openView(batch: BatchSitting):  void { this.viewingBatch.set(batch); }
@@ -483,5 +590,9 @@ export class BatchSittingComponent implements OnInit, OnDestroy {
   private addDay(dateStr: string): string {
     if (!dateStr) return '';
     return new Date(new Date(dateStr + 'T00:00:00').getTime() + 86_400_000).toISOString().substring(0, 10);
+  }
+
+  private currentDateIso(): string {
+    return new Date().toISOString().substring(0, 10);
   }
 }

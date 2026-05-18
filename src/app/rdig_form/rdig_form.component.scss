@@ -65,6 +65,29 @@
     margin: 0;
     color: var(--color-warning-dark);
   }
+
+  &__action {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin-top: var(--space-2);
+    padding: var(--space-2) var(--space-5);
+    border: 1px solid var(--color-warning);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    color: var(--color-warning-dark);
+    font-size: var(--fs-sm);
+    font-weight: var(--fw-semibold);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+
+    .material-icons { font-size: var(--icon-sm); }
+
+    &:hover {
+      background: color-mix(in srgb, var(--color-warning) 12%, var(--color-surface));
+      border-color: var(--color-warning-dark);
+    }
+  }
 }
 
 // ── Active batch info banner ──────────────────────────────────────────────────
@@ -84,6 +107,12 @@
     background: var(--color-warning-light);
     border-color: color-mix(in srgb, var(--color-warning) 40%, var(--color-surface));
     color: var(--color-warning-dark);
+  }
+
+  &--override {
+    background: color-mix(in srgb, var(--color-error) 8%, var(--color-surface));
+    border-color: color-mix(in srgb, var(--color-error) 35%, var(--color-surface));
+    color: var(--color-error-dark);
   }
 
   &__icon { font-size: var(--icon-md); flex-shrink: 0; }
@@ -133,6 +162,9 @@
   padding: var(--space-4) 0;
 
   &__content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-8);
     animation: stepFadeIn var(--transition-base) ease;
   }
 }

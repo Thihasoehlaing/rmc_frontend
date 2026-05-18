@@ -110,7 +110,7 @@ export const routes: Routes = [
         data: {
           permission: {
             anyCondition: [
-              { anyOf: ['full_time', 'contract'], allOf: ['academic'] },        
+              { anyOf: ['full_time', 'contract'], allOf: ['academic'] },
               { anyOf: ['HOS'] },
               { anyOf: ['VC'] },
               { anyOf: ['Admin'] },            ],          } satisfies NavPermission,
@@ -122,20 +122,18 @@ export const routes: Routes = [
       },
 
       // ── RA/GRA Application ────────────────────────────────────────────────
-      // Rule: (HOS AND (full_time OR contract) AND academic) OR ra_gra_hos_pass
+      // Rule: (full_time OR contract) AND academic
       {
         path: 'ragra',
         canActivate: [permissionGuard],
         data: {
           permission: {
-            anyCondition: [
-              { anyOf: ['full_time', 'contract'], allOf: ['academic', 'HOS'] },
-              { anyOf: ['group_ra_gra_hos_pass'] },
-            ],
+            anyOf: ['full_time', 'contract'],
+            allOf: ['academic'],
           } satisfies NavPermission,
         },
         loadComponent: () =>
-          import('./ragra_form/ragra-form.component').then(m => m.RagraFormComponent),
+          import('./RA-GRA_form/RA-GRA_form.component').then(m => m.RagraFormComponent),
       },
 
       // ── Partnership Application ───────────────────────────────────────────
@@ -164,9 +162,34 @@ export const routes: Routes = [
       {
         path: 'settings',
         children: [
+          {
+            path: '',
+            redirectTo: 'admin-settings',
+            pathMatch: 'full'
+          },
             {
-                path: 'rdig-dropdown-options',
-                loadComponent: () => import('./settings/rdig-dropdown-options/rdig-dropdown-options').then(m => m.RdigDropdownOptions)
+                path: 'admin-settings',
+                loadComponent: () => import('./settings/admin-settings/admin-settings.component').then(m => m.AdminSettingsComponent)
+            },
+            {
+                path: 'guidelines',
+                loadComponent: () => import('./settings/guidelines/guidelines.component').then(m => m.GuidelinesComponent)
+            },
+            {
+                path: 'dropdowns',
+                loadComponent: () => import('./settings/dropdowns/dropdowns.component').then(m => m.DropdownsComponent)
+            },
+            {
+              path: 'rdig-dropdown-options',
+              loadComponent: () => import('./settings/dropdowns/dropdowns.component').then(m => m.DropdownsComponent)
+            },
+            {
+                path: 'batches',
+              loadComponent: () => import('./settings/batch-sitting/batch-sitting.component').then(m => m.BatchSittingComponent)
+            },
+            {
+                path: 'staff-access',
+                loadComponent: () => import('./settings/staff-access/staff-access.component').then(m => m.StaffAccessComponent)
             },
             {
                 path: 'batch-sitting',

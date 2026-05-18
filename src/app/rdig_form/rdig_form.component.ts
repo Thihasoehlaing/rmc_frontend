@@ -65,8 +65,13 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
   /** True while the batch status is still being fetched. */
   readonly isBatchLoading = computed(() => this.activeBatch() === undefined);
 
+  /** DEV ONLY - bypasses active-batch checks so the form can be opened for testing. */
+  batchValidationDisabled = signal(false);
+
   /** Existing applications remain readable even when no submission batch is active. */
-  readonly canShowForm = computed(() => !this.noBatchError() || !!this.loadedAppId());
+  readonly canShowForm = computed(() =>
+    !this.noBatchError() || !!this.loadedAppId() || this.batchValidationDisabled()
+  );
 
   /** Days remaining until active batch endDate. Returns -999 when no batch loaded. */
   readonly deadlineDaysLeft = computed((): number => {
@@ -79,7 +84,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
 
   // ── Wizard state ───────────────────────────────────────────────
   currentStep = signal<number>(1);
-  readonly totalSteps = 5;
+  readonly totalSteps = 4;
 
   isSaving = signal(false);
   submissionState = signal<'IDLE' | 'LOADING' | 'SUCCESS' | 'ERROR'>('IDLE');
@@ -129,8 +134,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
   readonly steps: WizardStep[] = [
     { label: 'Team Members', icon: 'group' },
     { label: 'Project Details', icon: 'description' },
-    { label: 'Research Output', icon: 'science' },
-    { label: 'Budget', icon: 'account_balance_wallet' },
+    { label: 'Research Output & Budget', icon: 'science' },
     { label: 'Declaration', icon: 'verified' }
   ];
 
@@ -173,7 +177,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
       { path: 'projectDetails.benefits.stakeholders', label: 'Stakeholders Benefit' },
       { path: 'projectDetails.visionMission', label: 'Vision & Mission Alignment' },
     ],
-    // Step 3: Research Output
+    // Step 3: Research Output & Budget
     [
       { path: 'outputs.journal.checked', label: 'Indexed Journal Publication' },
       { path: 'outputs.journal.quantity', label: 'Indexed Journal Publication Quantity' },
@@ -181,9 +185,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
       { path: 'outputs.knowledgeTransfer.checked', label: 'Knowledge Transfer Programme' },
       { path: 'outputs.knowledgeTransfer.community', label: 'Knowledge Transfer Community' },
     ],
-    // Step 4: Budget
-    [],
-    // Step 5: Declaration
+    // Step 4: Declaration
     [
       { path: 'finalDeclaration.noveltyJustification', label: 'Novelty Justification' },
       { path: 'finalDeclaration.agreed', label: 'Declaration Agreement' },
@@ -192,11 +194,10 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
 
   /** Review form groups mapped by step index (0-based) */
   private readonly reviewGroupByStep = [
-    'reviewTeam',        // Step 1
-    'reviewProject',     // Step 2
-    'reviewOutput',      // Step 3
-    'reviewBudget',      // Step 4
-    'reviewDeclaration', // Step 5
+    ['reviewTeam'],                  // Step 1
+    ['reviewProject'],               // Step 2
+    ['reviewOutput', 'reviewBudget'], // Step 3
+    ['reviewDeclaration'],           // Step 4
   ];
 
   /** Returns labels for required-but-empty controls in a FormGroup */
@@ -240,26 +241,21 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
 
   private activitiesTimelineValidator = (control: AbstractControl): ValidationErrors | null => {
     const activities = control as FormArray;
-    const duration = Number(control.parent?.get('projectDetails.duration')?.value ?? 0);
+    const minMonth = 0;
+    const maxMonth = 12;
 
-    if (!duration) return null;
     if (!activities || activities.length === 0) return { activitiesTimeline: true };
-
-    let previousEnd = 0;
 
     for (let i = 0; i < activities.length; i++) {
       const activity = activities.at(i);
       const start = Number(activity.get('startMonth')?.value ?? 0);
       const end = Number(activity.get('endMonth')?.value ?? 0);
 
-      if (i === 0 && start !== 1) return { activitiesTimeline: true };
-      if (end <= start) return { activitiesTimeline: true };
-      if (i > 0 && start !== previousEnd) return { activitiesTimeline: true };
-
-      previousEnd = end;
+      if (!Number.isFinite(start) || !Number.isFinite(end)) return { activitiesTimeline: true };
+      if (start < minMonth || end < start || end > maxMonth) return { activitiesTimeline: true };
     }
 
-    return previousEnd === duration ? null : { activitiesTimeline: true };
+    return null;
   };
 
   getStepStatuses(): StepStatus[] {
@@ -295,18 +291,18 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
         }
       }
 
-      if (stepNum === 4 && this.rdigForm.get('budget')?.hasError('budgetRange')) {
+      if (stepNum === 3 && this.rdigForm.get('budget')?.hasError('budgetRange')) {
         missingFields.push('Total Amount Requested');
       }
 
       // Include required-but-empty review fields (set dynamically by ReviewBlockComponent
       // and ApprovalCardComponent when the current user's role is editable)
-      const reviewGroup = this.reviewGroupByStep[i];
-      if (reviewGroup) {
+      const reviewGroups = this.reviewGroupByStep[i] ?? [];
+      reviewGroups.forEach(reviewGroup => {
         missingFields.push(...this.getRequiredInvalidLabels(reviewGroup));
-      }
-      // Step 5 also includes approval decision controls
-      if (stepNum === 5) {
+      });
+      // Step 4 also includes approval decision controls
+      if (stepNum === 4) {
         missingFields.push(...this.getRequiredInvalidLabels('approvals'));
       }
 
@@ -579,6 +575,11 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
   /** DEV ONLY — toggles validation bypass for testing navigation and submission. */
   toggleValidation(): void {
     this.validationDisabled.update(v => !v);
+  }
+
+  /** DEV ONLY - toggles active-batch validation for testing access and submission. */
+  toggleBatchValidation(): void {
+    this.batchValidationDisabled.update(v => !v);
   }
 
   // ── Score computations ─────────────────────────────────────────
@@ -965,12 +966,13 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
 
     // ── Batch constraint check ───────────────────────────────────────────────
     const batch = this.activeBatch();
-    if (!batch) {
+    const bypassBatchValidation = this.batchValidationDisabled();
+    if (!batch && !bypassBatchValidation) {
       alert('No active batch exists. Submission is not allowed until RMC opens a new batch.');
       return;
     }
     const today = new Date().toISOString().substring(0, 10);
-    if (today < batch.startDate || today > batch.endDate) {
+    if (batch && !bypassBatchValidation && (today < batch.startDate || today > batch.endDate)) {
       this.submissionErrorMessage.set(`Submission is only allowed between ${batch.startDate} and ${batch.endDate}. The current batch window has expired or has not started yet.`);
       this.submissionState.set('ERROR');
       return;
@@ -986,8 +988,8 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
     }
     this.submissionState.set('LOADING');
 
-    // Auto-assign the active batch id (server-side of truth — never client-selected).
-    this.rdigForm.get('metadata.batch')?.setValue(batch.id, { emitEvent: false });
+    // Auto-assign the active batch id unless dev batch validation is disabled.
+    this.rdigForm.get('metadata.batch')?.setValue(batch?.id ?? null, { emitEvent: false });
 
     // Stamp applicant's userId on first submit so downstream reviewers can target notifications back to them.
     if (!this.rdigForm.get('metadata.applicantUserId')?.value) {

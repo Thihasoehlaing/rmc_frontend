@@ -1,11 +1,11 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { JournalOptionsService } from '../../../journal_publication_form/services/journal-options.service';
+import { JournalOptionsService, JournalOptionType } from '../../../journal_publication_form/services/journal-options.service';
 import { DropdownOption } from '../../../interfaces/components.interface';
 import { TableSortService, SortDirection } from '../../../shared/services/table-sort.service';
 
-type BreakdownTypeKey = 'research' | 'local';
+type BreakdownTypeKey = JournalOptionType;
 
 interface BreakdownTypeOption {
   value: BreakdownTypeKey;
@@ -44,8 +44,10 @@ export class JournalSettingsComponent implements OnInit {
   headerSortDirection = signal<SortDirection>(null);
 
   breakdownTypeOptions: BreakdownTypeOption[] = [
-    { value: 'research', label: 'Vote Number' },
-    { value: 'local', label: 'Account Code' }
+    { value: 'vote_number_description', label: 'Vote Number Description' },
+    { value: 'vote_number', label: 'Vote Number' },
+    { value: 'account_code_description', label: 'Account Code Description' },
+    { value: 'account_code', label: 'Account Code' }
   ];
 
   /**
@@ -92,8 +94,8 @@ export class JournalSettingsComponent implements OnInit {
 
   ngOnInit() {
     this.initializeOptionForm();
-    // Set default to research
-    this.selectedBreakdownType.set('research');
+    // Set default to first category
+    this.selectedBreakdownType.set('vote_number_description');
   }
 
   private initializeOptionForm() {
@@ -105,17 +107,10 @@ export class JournalSettingsComponent implements OnInit {
   }
 
   /**
-   * Check if current breakdown type is research
+   * Check if current breakdown type is vote number description
    */
-  isResearchType(): boolean {
-    return this.selectedBreakdownType() === 'research';
-  }
-
-  /**
-   * Check if current breakdown type is local
-   */
-  isLocalType(): boolean {
-    return this.selectedBreakdownType() === 'local';
+  isVoteNumberDescriptionType(): boolean {
+    return this.selectedBreakdownType() === 'vote_number_description';
   }
 
   /**
@@ -190,26 +185,11 @@ export class JournalSettingsComponent implements OnInit {
       return [];
     }
 
-    // For local breakdown type, show local options
-    if (type === 'local') {
-      const localOptions = this.JournalOptionsService.getOptionsForType('local');
-
-      return localOptions.map(opt => {
-        const metadata = this.getOptionMetadata('local', opt.value);
-        return {
-          ...opt,
-          createdDate: metadata?.createdDate,
-          status: metadata?.status || 'Active',
-          accountCode: metadata?.accountCode
-        } as ExtendedOption;
-      });
-    }
-
-    const baseOptions = this.JournalOptionsService.getOptionsForType(type as 'research' | 'local');
+    const baseOptions = this.JournalOptionsService.getOptionsForType(type);
 
     // Enhance with metadata from localStorage if available
     return baseOptions.map(opt => {
-      const metadata = this.getOptionMetadata(type as 'research' | 'local', opt.value);
+      const metadata = this.getOptionMetadata(type, opt.value);
       return {
         ...opt,
         createdDate: metadata?.createdDate,
@@ -222,7 +202,7 @@ export class JournalSettingsComponent implements OnInit {
   /**
    * Get metadata for an option (created date, status) from storage
    */
-  private getOptionMetadata(type: 'research' | 'local', value: string): { createdDate?: string; status?: 'Active' | 'Inactive'; accountCode?: string; } | null {
+  private getOptionMetadata(type: BreakdownTypeKey, value: string): { createdDate?: string; status?: 'Active' | 'Inactive'; accountCode?: string; } | null {
     const storageKey = `journal-option-metadata-${type}-${value}`;
     try {
       const stored = localStorage.getItem(storageKey);
@@ -238,7 +218,7 @@ export class JournalSettingsComponent implements OnInit {
   /**
    * Save option metadata to localStorage
    */
-  private saveOptionMetadata(type: 'research' | 'local', value: string, metadata: { status?: string; accountCode?: string; }) {
+  private saveOptionMetadata(type: BreakdownTypeKey, value: string, metadata: { status?: string; accountCode?: string; }) {
     const storageKey = `journal-option-metadata-${type}-${value}`;
     const existingMetadata = this.getOptionMetadata(type, value) || {};
     const updated = {
@@ -325,18 +305,13 @@ export class JournalSettingsComponent implements OnInit {
 
     try {
       this.errorMessage.set('');
-      let serviceType: 'research' | 'local' = 'local';
-      if (type === 'research') {
-        serviceType = 'research';
-      } else if (type === 'local') {
-        serviceType = 'local';
-      }
+      const serviceType: BreakdownTypeKey = type;
 
       if (this.editingOptionIndex() === null) {
         this.JournalOptionsService.addOption(serviceType, newOption);
       } else {
         const currentOptions = this.getCurrentOptions();
-        const originalValue = currentOptions[this.editingOptionIndex()!].value; 
+        const originalValue = currentOptions[this.editingOptionIndex()!].value;
         this.JournalOptionsService.updateOption(serviceType, originalValue, newOption);
       }
 
@@ -344,6 +319,8 @@ export class JournalSettingsComponent implements OnInit {
         status,
         accountCode
       });
+
+      window.dispatchEvent(new CustomEvent('rmc-dropdowns-updated'));
 
       this.closeModal();
     } catch {
@@ -360,17 +337,14 @@ export class JournalSettingsComponent implements OnInit {
     }
 
     const type = this.selectedBreakdownType()!;
-    let serviceType: 'research' | 'local' = 'local';
-    if (type === 'research') {
-      serviceType = 'research';
-    } else if (type === 'local') {
-      serviceType = 'local';
-    }
+    const serviceType: BreakdownTypeKey = type;
 
     try {
       this.JournalOptionsService.deleteOption(serviceType, optionValue);
       this.selectedCheckboxes.set(new Set());
-    } catch {
+      window.dispatchEvent(new CustomEvent('rmc-dropdowns-updated'));
+    } catch (error) {
+      console.error('Error deleting option:', error);
       this.errorMessage.set('Failed to delete option. Please try again.');
     }
   }
@@ -389,12 +363,7 @@ export class JournalSettingsComponent implements OnInit {
     }
 
     const type = this.selectedBreakdownType()!;
-    let serviceType: 'research' | 'local' = 'local';
-    if (type === 'research') {
-      serviceType = 'research';
-    } else if (type === 'local') {
-      serviceType = 'local';
-    }
+    const serviceType: BreakdownTypeKey = type;
     const selectedValues = Array.from(this.selectedCheckboxes());
 
     try {
@@ -402,7 +371,9 @@ export class JournalSettingsComponent implements OnInit {
         this.JournalOptionsService.deleteOption(serviceType, value);
       });
       this.selectedCheckboxes.set(new Set());
-    } catch {
+      window.dispatchEvent(new CustomEvent('rmc-dropdowns-updated'));
+    } catch (error) {
+      console.error('Error deleting options:', error);
       this.errorMessage.set('Failed to delete one or more options. Please try again.');
     }
   }
@@ -435,8 +406,19 @@ export class JournalSettingsComponent implements OnInit {
    * Get the label for a breakdown type
    */
   getBreakdownTypeLabel(type: BreakdownTypeKey): string {
-    const option = this.breakdownTypeOptions.find(o => o.value === type);
+    const option = this.breakdownTypeOptions.find((o: BreakdownTypeOption) => o.value === type);
     return option?.label || type;
+  }
+
+  formatRowDate(date?: string | null): string {
+    if (!date) return this.getTodayDate();
+    try {
+      const d = new Date(date);
+      if (isNaN(d.getTime())) return String(date);
+      return d.toLocaleDateString('en-GB');
+    } catch {
+      return String(date);
+    }
   }
 }
 

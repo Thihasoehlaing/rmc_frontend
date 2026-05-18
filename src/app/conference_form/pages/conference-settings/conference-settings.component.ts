@@ -114,8 +114,8 @@ export class ConferenceSettingsComponent implements OnInit {
     const sortKey = this.sortBy();
     if (sortKey === 'date') {
       filtered.sort((a, b) => {
-        const dateA = new Date(a.createdDate || this.getTodayDate()).getTime();
-        const dateB = new Date(b.createdDate || this.getTodayDate()).getTime();
+        const dateA = this.parseDisplayDate(a.createdDate || this.getTodayDate());
+        const dateB = this.parseDisplayDate(b.createdDate || this.getTodayDate());
         return dateB - dateA; // Newest first
       });
     } else if (sortKey === 'name') {
@@ -457,6 +457,34 @@ export class ConferenceSettingsComponent implements OnInit {
   }
 
   /**
+   * Toggle active/inactive status for an option
+   */
+  toggleOptionStatus(option: ExtendedOption) {
+    if (!this.selectedBreakdownType()) {
+      return;
+    }
+
+    const type = this.selectedBreakdownType()!;
+    let serviceType: 'research' | 'local' | 'region' = 'local';
+    if (type === 'research') {
+      serviceType = 'research';
+    } else if (type === 'local') {
+      serviceType = 'local';
+    } else if (type === 'region') {
+      serviceType = 'region';
+    }
+
+    const newStatus: 'Active' | 'Inactive' = option.status === 'Active' ? 'Inactive' : 'Active';
+
+    try {
+      this.saveOptionMetadata(serviceType, option.value, { status: newStatus });
+    } catch (error) {
+      console.error('Error toggling option status:', error);
+      alert('Failed to update status.');
+    }
+  }
+
+  /**
    * Delete selected options
    */
   deleteSelectedOptions() {
@@ -511,7 +539,58 @@ export class ConferenceSettingsComponent implements OnInit {
    * Get today's date formatted
    */
   getTodayDate(): string {
-    return new Date().toLocaleDateString('en-GB');
+    return this.formatDisplayDate(new Date());
+  }
+
+  formatRowDate(dateValue?: string): string {
+    return this.normalizeDisplayDate(dateValue);
+  }
+
+  private formatDisplayDate(date: Date): string {
+    const day = `${date.getDate()}`.padStart(2, '0');
+    const month = `${date.getMonth() + 1}`.padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  }
+
+  private parseDisplayDate(dateValue?: string): number {
+    if (!dateValue) {
+      return 0;
+    }
+
+    const slashMatch = dateValue.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    if (slashMatch) {
+      const [, day, month, year] = slashMatch;
+      return new Date(Number(year), Number(month) - 1, Number(day)).getTime();
+    }
+
+    const shortMonthMatch = dateValue.match(/^(\d{2})\s([A-Za-z]{3})\s(\d{4})$/);
+    if (shortMonthMatch) {
+      const monthLookup: Record<string, number> = {
+        Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5, Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11,
+      };
+      const [, day, monthText, year] = shortMonthMatch;
+      const month = monthLookup[monthText];
+      if (month !== undefined) {
+        return new Date(Number(year), month, Number(day)).getTime();
+      }
+    }
+
+    const isoParsed = new Date(dateValue).getTime();
+    if (!Number.isNaN(isoParsed)) {
+      return isoParsed;
+    }
+
+    return 0;
+  }
+
+  private normalizeDisplayDate(dateValue?: string): string {
+    const timestamp = this.parseDisplayDate(dateValue);
+    if (!timestamp) {
+      return this.formatDisplayDate(new Date());
+    }
+
+    return this.formatDisplayDate(new Date(timestamp));
   }
 
   /**

@@ -1,17 +1,19 @@
-import { Component, OnInit, OnDestroy, Input, effect } from '@angular/core';
+import { Component, OnInit, OnDestroy, Input, effect, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
 import { SearchableDropdownComponent } from '../../../../shared/components/searchable-dropdown/searchable-dropdown.component';
 import { ActionButtonComponent } from '../../../../shared/components/action-button/action-button.component';
 import { DataTableComponent, DataTableColumn } from '../../../../shared/components/data-table/data-table.component';
+import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
 import { DropdownOption } from '../../../../interfaces/components.interface';
 import { ConferenceWorkflowService } from '../../../services/conference-workflow.service';
 import { ConferenceFormStateService } from '../../../services/conference-form-state.service';
+import { DropdownsStoreService, StoredDropdownOption } from '../../../../settings/dropdowns/dropdowns-store.service';
 
 @Component({
   selector: 'app-author-details-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, SearchableDropdownComponent, ActionButtonComponent, DataTableComponent],
+  imports: [CommonModule, ReactiveFormsModule, SearchableDropdownComponent, ActionButtonComponent, DataTableComponent, PaginationComponent],
   templateUrl: './author-details-form.component.html',
   styleUrl: './author-details-form.component.scss'
 })
@@ -21,10 +23,31 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
 
   form!: FormGroup;
   editForm!: FormGroup;
+  private readonly dropdownStore = inject(DropdownsStoreService);
 
   // Modal state
   isModalOpen = false;
   editingIndex: number | null = null;
+
+  private readonly defaultStaffOptions: DropdownOption[] = [
+    { value: 'Vivian Banshee', label: 'Vivian Banshee' },
+    { value: 'John Smith', label: 'John Smith' },
+    { value: 'Sarah Johnson', label: 'Sarah Johnson' },
+    { value: 'Michael Brown', label: 'Michael Brown' },
+    { value: 'Emily Davis', label: 'Emily Davis' },
+    { value: 'Robert Wilson', label: 'Robert Wilson' },
+    { value: 'Jessica Taylor', label: 'Jessica Taylor' },
+    { value: 'James Anderson', label: 'James Anderson' }
+  ];
+
+  private readonly defaultOrganisationTypeOptions: DropdownOption[] = [
+    { value: 'University', label: 'University' },
+    { value: 'Research Institute', label: 'Research Institute' },
+    { value: 'Company', label: 'Company' },
+    { value: 'Government Agency', label: 'Government Agency' },
+    { value: 'Non-Profit Organization', label: 'Non-Profit Organization' },
+    { value: 'Other', label: 'Other' }
+  ];
 
   constructor(private fb: FormBuilder, private formStateService: ConferenceFormStateService) {
     // Apply form read-only effect if workflow is provided
@@ -38,27 +61,13 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
   }
   modalType: 'apu-staff' | 'student' | 'non-apu' | null = null;
 
-  // Staff dropdown options
-  staffOptions: DropdownOption[] = [
-    { value: 'Vivian Banshee', label: 'Vivian Banshee' },
-    { value: 'John Smith', label: 'John Smith' },
-    { value: 'Sarah Johnson', label: 'Sarah Johnson' },
-    { value: 'Michael Brown', label: 'Michael Brown' },
-    { value: 'Emily Davis', label: 'Emily Davis' },
-    { value: 'Robert Wilson', label: 'Robert Wilson' },
-    { value: 'Jessica Taylor', label: 'Jessica Taylor' },
-    { value: 'James Anderson', label: 'James Anderson' }
-  ];
+  get staffOptions(): DropdownOption[] {
+    return this.getConferenceDropdownOptions('Staff Name', this.defaultStaffOptions);
+  }
 
-  // Organisation type dropdown options
-  organisationTypeOptions: DropdownOption[] = [
-    { value: 'University', label: 'University' },
-    { value: 'Research Institute', label: 'Research Institute' },
-    { value: 'Company', label: 'Company' },
-    { value: 'Government Agency', label: 'Government Agency' },
-    { value: 'Non-Profit Organization', label: 'Non-Profit Organization' },
-    { value: 'Other', label: 'Other' }
-  ];
+  get organisationTypeOptions(): DropdownOption[] {
+    return this.getConferenceDropdownOptions('Type of Organisation', this.defaultOrganisationTypeOptions);
+  }
 
   // DataTable column definitions
   apuStaffColumns: readonly DataTableColumn[] = [
@@ -93,6 +102,24 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
     this.initializeForm();
     this.loadFormState();
   }
+
+  ngAfterViewInit() {
+    // Ensure pagination pages are valid after form arrays restored
+    this.normalizePages();
+  }
+
+  // Pagination state for co-author tables
+  apuStaffPage: number = 1;
+  apuStaffPageSize: number = 15;
+  apuStaffPageSizeOptions: number[] = [5, 15, 30, 50];
+
+  studentPage: number = 1;
+  studentPageSize: number = 15;
+  studentPageSizeOptions: number[] = [5, 15, 30, 50];
+
+  nonApuPage: number = 1;
+  nonApuPageSize: number = 15;
+  nonApuPageSizeOptions: number[] = [5, 15, 30, 50];
 
   ngOnDestroy() {
     // Save form state before component is destroyed
@@ -156,6 +183,17 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
     }
   }
 
+  // Clamp pages to valid ranges
+  private normalizePages() {
+    if (this.apuStaffPage < 1) this.apuStaffPage = 1;
+    if (this.studentPage < 1) this.studentPage = 1;
+    if (this.nonApuPage < 1) this.nonApuPage = 1;
+
+    if (this.apuStaffPage > this.getApuStaffTotalPages()) this.apuStaffPage = this.getApuStaffTotalPages();
+    if (this.studentPage > this.getStudentTotalPages()) this.studentPage = this.getStudentTotalPages();
+    if (this.nonApuPage > this.getNonApuTotalPages()) this.nonApuPage = this.getNonApuTotalPages();
+  }
+
   createTestSubsection(): FormGroup {
     return this.fb.group({
       staffName: ['', [Validators.required]],
@@ -204,6 +242,22 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
     }));
   }
 
+  getApuStaffTableDataPaginated(): (any & { index: number })[] {
+    const data = this.getApuStaffTableData();
+    const start = (this.apuStaffPage - 1) * this.apuStaffPageSize;
+    return data.slice(start, start + this.apuStaffPageSize);
+  }
+
+  getApuStaffTotalPages(): number {
+    const len = this.getApuStaffTableData().length;
+    return Math.max(1, Math.ceil(len / this.apuStaffPageSize));
+  }
+
+  apuStaffStart(): number { const total = this.getApuStaffTableData().length; if (total === 0) return 0; return (this.apuStaffPage - 1) * this.apuStaffPageSize + 1; }
+  apuStaffEnd(): number { return Math.min(this.getApuStaffTableData().length, this.apuStaffPage * this.apuStaffPageSize); }
+  onApuStaffPageChange(page: number) { this.apuStaffPage = page; }
+  onApuStaffPageSizeChange(size: number) { this.apuStaffPageSize = size; this.apuStaffPage = 1; }
+
   getStudentCoAuthorTableData(): (any & { index: number })[] {
     return this.studentCoAuthors.controls.map((control, index) => ({
       ...control.value,
@@ -211,11 +265,51 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
     }));
   }
 
+  getStudentCoAuthorTableDataPaginated(): (any & { index: number })[] {
+    const data = this.getStudentCoAuthorTableData();
+    const start = (this.studentPage - 1) * this.studentPageSize;
+    return data.slice(start, start + this.studentPageSize);
+  }
+
+  getStudentTotalPages(): number {
+    const len = this.getStudentCoAuthorTableData().length;
+    return Math.max(1, Math.ceil(len / this.studentPageSize));
+  }
+
+  studentStart(): number { const total = this.getStudentCoAuthorTableData().length; if (total === 0) return 0; return (this.studentPage - 1) * this.studentPageSize + 1; }
+  studentEnd(): number { return Math.min(this.getStudentCoAuthorTableData().length, this.studentPage * this.studentPageSize); }
+  onStudentPageChange(page: number) { this.studentPage = page; }
+  onStudentPageSizeChange(size: number) { this.studentPageSize = size; this.studentPage = 1; }
+
   getNonApuCoAuthorTableData(): (any & { index: number })[] {
     return this.nonApuCoAuthors.controls.map((control, index) => ({
       ...control.value,
       index: index + 1
     }));
+  }
+
+  getNonApuCoAuthorTableDataPaginated(): (any & { index: number })[] {
+    const data = this.getNonApuCoAuthorTableData();
+    const start = (this.nonApuPage - 1) * this.nonApuPageSize;
+    return data.slice(start, start + this.nonApuPageSize);
+  }
+
+  getNonApuTotalPages(): number {
+    const len = this.getNonApuCoAuthorTableData().length;
+    return Math.max(1, Math.ceil(len / this.nonApuPageSize));
+  }
+
+  nonApuStart(): number { const total = this.getNonApuCoAuthorTableData().length; if (total === 0) return 0; return (this.nonApuPage - 1) * this.nonApuPageSize + 1; }
+  nonApuEnd(): number { return Math.min(this.getNonApuCoAuthorTableData().length, this.nonApuPage * this.nonApuPageSize); }
+  onNonApuPageChange(page: number) { this.nonApuPage = page; }
+  onNonApuPageSizeChange(size: number) { this.nonApuPageSize = size; this.nonApuPage = 1; }
+
+  private getConferenceDropdownOptions(category: string, defaults: DropdownOption[]): DropdownOption[] {
+    const options = this.dropdownStore.getOptions('Conference Application', category)
+      .filter((option: StoredDropdownOption) => option.status === 'Active')
+      .map((option: StoredDropdownOption) => ({ value: option.value, label: option.value }));
+
+    return options.length > 0 ? options : defaults;
   }
 
   deleteTestSubsection(index: number) {

@@ -1,0 +1,49 @@
+<div class="dialog-backdrop" *ngIf="isOpen">
+  <div class="dialog">
+    <header class="dialog__header">
+      <h3>{{ title }}</h3>
+      <button class="btn-icon" (click)="onCancel()">✕</button>
+    </header>
+
+    <section class="dialog__body">
+      <label class="form-label">Option Name *</label>
+      <input type="text" class="input--text" [(ngModel)]="name" placeholder="e.g. Applied Research" />
+
+      <label class="form-label">Category</label>
+      <div class="category-locked">{{ categoryLabel || 'Fixed' }} <span class="pill">Locked</span></div>
+
+      <label class="form-label">Category is fixed and matches the current dropdown group.</label>
+      <p class="helper-text" *ngIf="categoryLabel">
+        Only forms that already have the {{ categoryLabel }} category are shown.
+      </p>
+      <div class="forms-list">
+        <ng-container *ngIf="availableForms.length > 0; else noAvailableForms">
+          <button *ngFor="let f of availableForms" type="button" class="form-chip" [class.selected]="appliesTo.includes(f)" (click)="onToggleForm(f)">
+            {{ f }}
+          </button>
+        </ng-container>
+        <ng-template #noAvailableForms>
+          <div class="empty-share-targets">No forms are available for this category.</div>
+        </ng-template>
+      </div>
+
+      <p class="selection-error" *ngIf="showAppliesToError">At least one Dropdown should be selected</p>
+
+      <div *ngIf="appliesTo.length" class="shared-note">
+        <span class="icon">🔗</span>
+        This option will be shared across {{ appliesTo.length }} form{{ appliesTo.length > 1 ? 's' : '' }}.
+      </div>
+
+      <label class="form-label">Status</label>
+      <div class="status-toggle">
+        <button type="button" class="btn-pill" [class.active]="status === 'Active'" (click)="status = 'Active'">Active</button>
+        <button type="button" class="btn-pill" [class.active]="status === 'Inactive'" (click)="status = 'Inactive'">Inactive</button>
+      </div>
+    </section>
+
+    <footer class="dialog__footer">
+      <button class="btn btn--ghost" (click)="onCancel()">Cancel</button>
+      <button class="btn btn-primary" [disabled]="!isValid" (click)="onSave()">{{ primaryActionLabel }}</button>
+    </footer>
+  </div>
+</div>

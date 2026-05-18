@@ -80,8 +80,7 @@
   color: var(--color-label);
   font-weight: var(--fw-semibold);
   font-size: var(--fs-sm);
-  display: inline-flex;
-  align-items: center;
+  display: block;
 
   &.is-required::after {
     content: '*';

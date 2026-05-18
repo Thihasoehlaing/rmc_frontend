@@ -81,9 +81,6 @@
                   <input type="radio" formControlName="researchType" value="external-research"><span>External Research Project</span>
                 </label>
                 <label class="radio-option">
-                  <input type="radio" formControlName="researchType" value="internal-research"><span>Internal Research Project</span>
-                </label>
-                <label class="radio-option">
                   <input type="radio" formControlName="researchType" value="non-research"><span>Non-Research Project</span>
                 </label>
               </div>
@@ -105,7 +102,7 @@
             </div>
 
             <div class="form-field">
-              <label class="form-label is-required">Have you cited at least 1 journal paper from APU JATI &amp; EJBM?</label>
+              <label class="form-label is-required">Have you cited at least 1 journal paper from Asia Pacific University of Technology & Innovation JATI &amp; EJBM?</label>
               <div class="radio-group">
                 <label class="radio-option">
                   <input type="radio" formControlName="citedApuPaper" value="Yes">
@@ -174,9 +171,7 @@
       <!-- Costing Section -->
       @if (researchType) {
         <section class="card">
-          <div class="card__header">
-            <h2 class="card__title">Costing</h2>
-          </div>
+          <app-custom-header icon="payments" title="Costing"></app-custom-header>
           <div class="card__content costing-section">
             <div class="costing-content">
             <div class="research-subsection">
@@ -213,21 +208,38 @@
                               <td>{{ row.exchangeRate | number: '1.2-2' }}</td>
                               <td>{{ row.costInRM | number: '1.2-2' }}</td>
                               <td>{{ row.description || '—' }}</td>
-                              <td>
-                                @if (row.fileName) {
-                                  <span class="file-badge">
-                                    <span class="material-icons">attach_file</span>
-                                    {{ row.fileName }}
-                                  </span>
-                                } @else {
-                                  <span class="text-muted">—</span>
-                                }
-                              </td>
                               <td class="col-actions is-align-center">
                                 <button type="button" class="btn-icon btn-icon--edit" (click)="openBreakdownModal('non-research', index)" aria-label="Edit entry">
                                   <span class="material-icons">edit</span>
                                 </button>
                                 <button type="button" class="btn-icon btn-icon--delete" (click)="deleteBreakdown('non-research', index)" aria-label="Remove entry">
+                                  <span class="material-icons">delete</span>
+                                </button>
+                              </td>
+                            </tr>
+                          </ng-template>
+                        </app-data-table>
+                      </div>
+                    } @else if (researchType === 'external-research') {
+                      <div class="table-scroll research-table">
+                        <app-data-table
+                          [columns]="externalResearchBreakdownColumns"
+                          [rows]="getBreakdownArray('external-research')"
+                          [hoverable]="true"
+                          [striped]="true">
+                          <ng-template #rowTemplate let-row let-index="index">
+                            <tr>
+                              <td>{{ row.itemDescription }}</td>
+                              <td>{{ row.voteNumber }}</td>
+                              <td>{{ row.costInRM | number: '1.2-2' }}</td>
+                              <td>{{ row.cost | number: '1.2-2' }}</td>
+                              <td>{{ row.exchangeRate | number: '1.2-2' }}</td>
+                              <td>{{ row.description || '—' }}</td>
+                              <td class="col-actions is-align-center">
+                                <button type="button" class="btn-icon btn-icon--edit" (click)="openBreakdownModal('external-research', index)" aria-label="Edit entry">
+                                  <span class="material-icons">edit</span>
+                                </button>
+                                <button type="button" class="btn-icon btn-icon--delete" (click)="deleteBreakdown('external-research', index)" aria-label="Remove entry">
                                   <span class="material-icons">delete</span>
                                 </button>
                               </td>
@@ -315,7 +327,7 @@
                           <input type="number" class="input--text input--readonly" formControlName="sponsorshipPercentage" readonly>
                         </div>
                         <div class="form-field">
-                          <label class="form-label">Sponsorship Amount by APU (RM)</label>
+                          <label class="form-label">Sponsorship Amount by APU </label>
                           <input type="number" class="input--text input--readonly" formControlName="sponsorshipAmountAPU" readonly>
                         </div>
                       </div>
@@ -405,7 +417,7 @@
     <!-- Select Item Description / Account Code Description -->
     <div class="breakdown-field">
       <label for="itemDescription" class="form-label">
-        {{ breakdownType === 'non-research' ? 'Select Account Code Description *' : 'Select Item Description *' }}
+        {{ breakdownType === 'non-research' ? 'Select Account Code Description' : 'Select Item Description' }} <span class="asterisk">*</span>
       </label>
       <app-searchable-dropdown
         [options]="currentBreakdownOptions"
@@ -451,7 +463,7 @@
     <!-- Cost in Foreign Currency / MYR -->
     <div class="breakdown-field">
       <label for="cost" class="form-label">
-        {{ (breakdownType === 'internal-research') ? 'Cost in Foreign Currency / MYR (RM)' : 'Cost in Foreign Currency / MYR' }} *
+        {{ (breakdownType === 'internal-research') ? 'Cost in Foreign Currency / MYR (RM)' : 'Cost in Foreign Currency / MYR' }} <span class="asterisk">*</span>
       </label>
       <input
         id="cost"
@@ -468,7 +480,7 @@
 
     <!-- Exchange Rate -->
     <div class="breakdown-field">
-      <label for="exchangeRate" class="form-label">Exchange Rate *</label>
+      <label for="exchangeRate" class="form-label">Exchange Rate <span class="asterisk">*</span></label>
       <input
         id="exchangeRate"
         type="text"
@@ -477,7 +489,7 @@
         formControlName="exchangeRate"
         placeholder="e.g. 1, 4, 5"
         (input)="enforceInteger($event)">
-              <app-note text="For Malaysia Ringgit/MYR, please put 1 as the exchange rate." [isTooltip]="false"></app-note>
+      <app-note text="For Malaysia Ringgit/MYR, please put 1 as the exchange rate." [isTooltip]="false"></app-note>
       @if (breakdownForm.get('exchangeRate')?.invalid && breakdownForm.get('exchangeRate')?.touched) {
         <span class="error-message">Exchange rate is required (whole numbers only)</span>
       }
@@ -485,7 +497,7 @@
 
     <!-- Cost in RM (Read-only calculated field) -->
     <div class="breakdown-field">
-      <label for="costInRM" class="form-label">Cost in RM (approximate) [Auto-calculated: Cost × Exchange Rate]</label>
+      <label for="costInRM" class="form-label">Cost in RM (approximate)</label>
       <input
         id="costInRM"
         type="number"
@@ -543,7 +555,7 @@
 
   <form [formGroup]="sdgKeywordsForm">
     <div class="form-field">
-      <label class="form-label">Keyword 1 *</label>
+      <label class="form-label">Keyword 1 <span class="asterisk">*</span></label>
       <input
         type="text"
         class="input--text"
@@ -553,7 +565,7 @@
     </div>
 
     <div class="form-field">
-      <label class="form-label">Keyword 2 *</label>
+      <label class="form-label">Keyword 2 <span class="asterisk">*</span></label>
       <input
         type="text"
         class="input--text"
@@ -563,7 +575,7 @@
     </div>
 
     <div class="form-field">
-      <label class="form-label">Keyword 3 *</label>
+      <label class="form-label">Keyword 3 <span class="asterisk">*</span></label>
       <input
         type="text"
         class="input--text"

@@ -25,6 +25,7 @@ import { DeclarationComponent } from './components/Declaration/Declaration';
   styleUrl: './RA-GRA_form.component.scss'
 })
 export class RagraFormComponent {
+
   @ViewChild(ProjectDetailsComponent) projectDetailsComponent?: ProjectDetailsComponent;
   @ViewChild(StudentDetailsComponent) studentDetailsComponent?: StudentDetailsComponent;
   @ViewChild(DeclarationComponent) declarationComponent?: DeclarationComponent;
@@ -44,22 +45,29 @@ export class RagraFormComponent {
   ];
 
   /** Tracks validity per step (1-based keys). */
-  formValid: { [key: number]: boolean } = { 1: false, 2: false, 3: false };
+  formValid: { [key: number]: boolean} = { 1: false, 2: false, 3: false };
 
   submitAttempted = false;
   isSaving = false;
   isSubmitting = false;
+  saveSuccess = false;
+  submitSuccess = false;
+
+  /** Cached positionRequested value — set when leaving Step 1 so it survives component destruction. */
+  private _positionRequested: 'RA' | 'GRA' | '' = '';
 
   get totalSteps(): number {
     return this.steps.length;
   }
 
   /**
-   * Reads positionRequested from Step 1 and passes it to Step 2.
-   * Returns '' if Step 1 hasn't been initialised yet.
+   * Reads positionRequested from Step 1 if it is still mounted,
+   * otherwise returns the cached value set when the user left Step 1.
    */
   get positionRequested(): 'RA' | 'GRA' | '' {
-    return this.projectDetailsComponent?.form?.value?.positionRequested ?? '';
+    const live = this.projectDetailsComponent?.form?.value?.positionRequested;
+    if (live) this._positionRequested = live;
+    return this._positionRequested;
   }
 
   /**
@@ -96,6 +104,12 @@ export class RagraFormComponent {
 
   /** Called when the user clicks a step in the step indicator. */
   onStepClick(stepIndex: number): void {
+    // Cache positionRequested before Step 1 component is destroyed by *ngIf
+    if (this.currentStep === 1 && this.projectDetailsComponent?.form) {
+      this._positionRequested =
+        this.projectDetailsComponent.form.value.positionRequested ?? '';
+    }
+
     if (stepIndex > this.currentStep) {
       this.validateCurrentStep();
     } else {
@@ -123,6 +137,12 @@ export class RagraFormComponent {
   }
 
   onNext(): void {
+    // Cache positionRequested before Step 1 component is destroyed by *ngIf
+    if (this.currentStep === 1 && this.projectDetailsComponent?.form) {
+      this._positionRequested =
+        this.projectDetailsComponent.form.value.positionRequested ?? '';
+    }
+
     const isValid = this.validateCurrentStep();
 
     // Mark current step as visited
@@ -157,6 +177,8 @@ export class RagraFormComponent {
     this.isSaving = true;
     setTimeout(() => {
       this.isSaving = false;
+      this.saveSuccess = true;
+      setTimeout(() => { this.saveSuccess = false; }, 3000);
     }, 1000);
   }
 
@@ -179,6 +201,7 @@ export class RagraFormComponent {
     this.isSubmitting = true;
     setTimeout(() => {
       this.isSubmitting = false;
+      this.submitSuccess = true;
     }, 1000);
   }
 }

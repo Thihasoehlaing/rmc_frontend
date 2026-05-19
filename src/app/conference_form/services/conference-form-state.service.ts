@@ -17,6 +17,8 @@ export interface ConferenceFormState {
     presentationType?: string;
     proofOfAcceptance?: string;
     presentationLink?: string;
+    citedJournalPaper?: string;
+    citedJournalPaperExplanation?: string;
     localBreakdown?: Array<{
       researchDirection?: string;
       fundingAmount?: number;

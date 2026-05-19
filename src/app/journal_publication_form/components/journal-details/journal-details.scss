@@ -120,18 +120,18 @@
 }
 
 .label-with-note {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-1);
   margin-bottom: var(--space-2);
 
   .form-label {
-    display: inline;
     margin: 0;
   }
 
   app-note {
-    display: inline-block;
-    vertical-align: middle;
-    margin-left: var(--space-1);
+    margin-left: 0;
   }
 }
 

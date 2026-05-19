@@ -27,7 +27,7 @@ export class PartnershipSettingsComponent implements OnInit {
   private fb = inject(FormBuilder);
 
   breakdownTypeOptions = [
-    { value: 'category', label: 'APU Partnership Category' }
+    { value: 'category', label: 'Asia Pacific University of Technology & Innovation Partnership Category' }
   ];
   selectedBreakdownType = signal<string | null>('category');
 

@@ -18,7 +18,7 @@
 .section-fields {
   display: flex;
   flex-direction: column;
-  gap: var(--space-6);
+  gap: var(--space-7); // increase spacing between sections
 }
 
 
@@ -29,13 +29,118 @@
   margin-top: var(--space-1);
 }
 
+.restricted-publisher-label {
+  line-height: 1.5;
+  /* make this specific label behave like a vertical stack to avoid inline-flex quirks */
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+
+  .label-line1 {
+    display: inline-block;
+    word-break: keep-all;
+
+    /* No inline asterisk here: we will suppress visual markers but keep validation */
+  }
+
+  .label-line2 {
+    display: block;
+    margin-top: var(--space-1);
+    margin-left: 0;
+  }
+
+  .required-inline {
+    color: var(--color-error-dark);
+    margin-left: var(--space-2);
+    font-size: 1.1em;
+    display: inline-block;
+    vertical-align: text-top;
+  }
+
+  /* hide the global pseudo-asterisk for this specific label to avoid duplication */
+  &.is-required::after {
+    display: none !important;
+    content: none !important;
+  }
+}
+
 .row--2 {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--space-6);
+  gap: var(--space-8); // more breathing room between columns vertically/horizontally
 
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
+  }
+}
+
+.row--2--stacked {
+  grid-template-columns: 1fr;
+}
+
+.radio-divider-extended {
+  position: relative;
+
+  /* full-height vertical divider limited to only the wrapped radio section */
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 1px;
+    background: var(--border-default);
+    z-index: 0;
+  }
+
+  /* ensure form fields sit above the divider and provide breathing room */
+  .form-field {
+    position: relative;
+    z-index: 1;
+    padding-left: var(--space-3);
+    padding-right: var(--space-3);
+  }
+
+  /* prevent in-label note boxes from extending into the center divider */
+  .form-field .label-with-note app-note {
+    display: block;
+    max-width: calc(100% - var(--space-6));
+    box-sizing: border-box;
+    z-index: 2;
+  }
+
+  @media (max-width: 768px) {
+    &::before {
+      display: none;
+    }
+
+    .form-field {
+      padding-left: 0;
+      padding-right: 0;
+    }
+  }
+
+  /* Improve vertical alignment between left/right columns */
+  --label-block-min-height: 96px; /* increased to fit label + note boxes */
+
+  /* Ensure both simple labels and labels-with-note reserve the same vertical space */
+  .form-field > .label-with-note,
+  .form-field > .form-label {
+    display: block;
+    min-height: var(--label-block-min-height);
+    box-sizing: border-box;
+    padding-top: var(--space-1);
+    padding-bottom: 0;
+  }
+
+  @media (max-width: 1024px) {
+    --label-block-min-height: 72px;
+  }
+
+  /* Keep radio lists aligned by giving them a consistent top gap */
+  .radio-group {
+    margin-top: 0;
   }
 }
 
@@ -104,7 +209,7 @@
 }
 
 .form-field {
-  margin-bottom: var(--space-7);
+  margin-bottom: var(--space-9); // larger vertical spacing between form fields
 
   &:last-child {
     margin-bottom: 0;
@@ -164,7 +269,7 @@
 
 .tooltip-text {
   font-size: var(--fs-xs);
-  color: var(--color-text-muted);
+  color: var(--color-warning-dark);
   margin-top: var(--space-2);
   display: block;
   font-weight: var(--fw-normal);
@@ -232,6 +337,11 @@
 
 .shrink-input {
   max-width: 300px; // no token: input constraint width
+}
+
+.input--textarea {
+  resize: vertical;
+  overflow-y: auto;
 }
 
 .keywords-group {

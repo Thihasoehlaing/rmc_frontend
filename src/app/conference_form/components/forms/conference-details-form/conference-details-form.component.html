@@ -6,7 +6,8 @@
         <h2 class="card__title">Conference Details</h2>
       </div>
       <div class="card__content">
-      <div class="row--2">
+      <div class="radio-divider-extended">
+      <div class="row--2 row--2--radio-divider">
         <div class="form-field">
           <label class="form-label is-required">Conference Funding Request Type</label>
           <div class="radio-group">
@@ -36,11 +37,11 @@
         </div>
       </div>
 
-      <div class="row--2">
+      <div class="row--2 row--2--radio-divider">
         <div class="form-field">
           <div class="label-with-note">
             <label class="form-label is-required">Is Travelling Required?</label>
-            <app-note text="Tick Yes for Conference outside of APU" [isTooltip]="true"></app-note>
+            <app-note text="Tick Yes for Conference outside of Asia Pacific University of Technology & Innovation" [isTooltip]="true"></app-note>
           </div>
           <div class="radio-group">
             <label class="radio-label">
@@ -56,7 +57,7 @@
 
         <div class="form-field">
           <div class="label-with-note">
-            <label class="form-label is-required">Please select whether you are the "First Author" or "Corresponding Author"</label>
+            <label class="form-label is-required">Please select whether you are the "First Author" and/or "Corresponding Author"</label>
             <app-note text="Applicant must be either first or corresponding author" [isTooltip]="true"></app-note>
           </div>
           <div class="radio-group">
@@ -76,40 +77,81 @@
         </div>
       </div>
 
-    <!-- SCOPUS Publication Guaranteed -->
-    <div class="form-field">
-      <label class="form-label is-required">Select Conference Proceeding with Guaranteed Publication in SCOPUS-Indexed</label>
+    <!-- Restricted Publisher + Citation (side-by-side) -->
+    <div class="row--2 row--2--radio-divider">
+      <div class="form-field">
+        <div class="label-with-note">
+          <label class="form-label restricted-publisher-label is-required">
+            <span class="label-line1">Is the publisher of your conference proceeding one of the restricted publishers</span>
+            <span class="label-line2">(e.g., MDPI, Common Ground, Hindawi, or Frontier)?<span class="required-inline" aria-hidden="true">*</span></span>
+          </label>
+          <app-note text="Expected Answer for Approval: No" [isTooltip]="true"></app-note>
+        </div>
+        <div class="radio-group">
+          <label class="radio-label">
+            <input type="radio" value="yes" formControlName="restrictedPublisher">
+            <span>Yes</span>
+          </label>
+          <label class="radio-label">
+            <input type="radio" value="no" formControlName="restrictedPublisher">
+            <span>No</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="form-field">
+      <label class="form-label is-required">Have you cited at least 1 journal paper from APU JATI & EJBM</label>
       <div class="radio-group">
         <label class="radio-label">
-          <input type="radio" value="yes" formControlName="scopusPublicationGuaranteed">
+          <input type="radio" value="yes" formControlName="citedJournalPaper">
           <span>Yes</span>
         </label>
         <label class="radio-label">
-          <input type="radio" value="no" formControlName="scopusPublicationGuaranteed">
+          <input type="radio" value="no" formControlName="citedJournalPaper">
           <span>No</span>
         </label>
       </div>
+      @if (form.get('citedJournalPaper')?.value === 'no') {
+        <div class="form-field">
+          <label class="form-label is-required">If No, Please Explain:</label>
+          <textarea
+            class="input--textarea"
+            formControlName="citedJournalPaperExplanation">
+          </textarea>
+          @if (form.get('citedJournalPaperExplanation')?.invalid && form.get('citedJournalPaperExplanation')?.touched) {
+            <span class="form-error-msg">Explanation is required</span>
+          }
+        </div>
+      }
+    </div>
     </div>
 
-    <div class="form-field">
-      <div class="label-with-note">
-        <label class="form-label is-required">Is the publisher of your conference one of the restricted publishers (e.g., MDPI, Common Ground, Hindawi, or Frontier)?</label>
-        <app-note text="Expected Answer for Approval: No" [isTooltip]="true"></app-note>
+    <!-- SCOPUS Publication Guaranteed (standalone row) -->
+    <div class="row--2 row--2--radio-divider">
+      <div class="form-field">
+        <div class="label-with-note">
+          <label class="form-label is-required">Is the conference proceeding with guaranteed publication Scopus-indexed?</label>
+        </div>
+        <div class="radio-group">
+          <label class="radio-label">
+            <input type="radio" value="yes" formControlName="scopusPublicationGuaranteed">
+            <span>Yes</span>
+          </label>
+          <label class="radio-label">
+            <input type="radio" value="no" formControlName="scopusPublicationGuaranteed">
+            <span>No</span>
+          </label>
+        </div>
       </div>
-      <div class="radio-group">
-        <label class="radio-label">
-          <input type="radio" value="yes" formControlName="restrictedPublisher">
-          <span>Yes</span>
-        </label>
-        <label class="radio-label">
-          <input type="radio" value="no" formControlName="restrictedPublisher">
-          <span>No</span>
-        </label>
-      </div>
+      <div class="form-field"><!-- right column intentionally empty --></div>
     </div>
 
-    <!-- SDG Keywords and Conference Name -->
-    <div class="row--2">
+
+
+      </div> <!-- /.radio-divider-extended -->
+
+      <!-- SDG Keywords and Conference Name -->
+    <div class="row--2 row--2--stacked">
       <div class="form-field">
         <label class="form-label is-required">Please key in 3 SDG keywords in abstract</label>
         <div class="sdg-keywords-container" (click)="openSDGKeywordsModal()" role="button" tabindex="0" (keydown.enter)="openSDGKeywordsModal()" (keydown.space)="openSDGKeywordsModal()">
@@ -134,7 +176,7 @@
       <div class="form-field">
         <label class="form-label is-required">Conference Name</label>
         <textarea
-          class="input--textarea shrink-input"
+          class="input--textarea"
           formControlName="conferenceName"
           placeholder="Enter conference name"
           maxlength="200"
@@ -144,12 +186,13 @@
     </div>
 
     <!-- Conference Dates -->
-    <div class="row--2">
+    <div class="row--2 row--2--radio-divider">
       <div class="form-field">
         <label class="form-label is-required">Conference Start Date</label>
         <input
           type="date"
           class="input--text"
+          [attr.min]="getTomorrowDate()"
           formControlName="conferenceStartDate">
         <app-validation-message [control]="form.get('conferenceStartDate')"></app-validation-message>
       </div>
@@ -159,12 +202,13 @@
         <input
           type="date"
           class="input--text"
+          [attr.min]="form.get('conferenceStartDate')?.value || getTomorrowDate()"
           formControlName="conferenceEndDate">
         <app-validation-message [control]="form.get('conferenceEndDate')"></app-validation-message>
       </div>
     </div>
 
-    <div class="row--2">
+    <div class="row--2 row--2--radio-divider">
       <!-- Local or Overseas -->
       <div class="form-field">
         <div class="label-with-note">
@@ -213,11 +257,11 @@
       </div>
     </div>
 
-    <div class="row--2">
+    <div class="row--2 row--2--stacked">
       <div class="form-field">
         <label class="form-label is-required">Conference Location</label>
         <textarea
-          class="input--textarea shrink-input"
+          class="input--textarea"
           formControlName="conferenceLocation"
           placeholder="Enter conference location"
           (input)="autoExpandTextarea($event)"
@@ -229,7 +273,7 @@
       <div class="form-field">
         <label class="form-label is-required">Paper Title</label>
         <textarea
-          class="input--textarea shrink-input"
+          class="input--textarea"
           formControlName="paperTitle"
           placeholder="Enter paper title"
           (input)="autoExpandTextarea($event)"
@@ -424,28 +468,28 @@
 
               <!-- APU Sponsorship Subsection -->
               <div class="sponsorship-subsection">
-                <span class="subsection-title">APU Sponsorship</span>
+                <span class="subsection-title">Asia Pacific University of Technology & Innovation Sponsorship</span>
                 <div class="subsection-fields-wrapper">
                   <div class="row--2">
                     <div class="form-field">
-                      <label class="form-label">Sponsorship Percentage by APU (%)</label>
+                      <label class="form-label">Sponsorship Percentage by Asia Pacific University of Technology & Innovation (%)</label>
                       <input
                         type="text"
                         class="input--text"
                         [value]="percentage | number: '1.2-2'"
                         disabled
-                        aria-label="Sponsorship Percentage by APU (Read Only)">
+                        aria-label="Sponsorship Percentage by Asia Pacific University of Technology & Innovation (Read Only)">
                     </div>
                   </div>
                   <div class="row--2">
                     <div class="form-field">
-                      <label class="form-label">Sponsorship Amount by APU (RM)</label>
+                      <label class="form-label">Sponsorship Amount by Asia Pacific University of Technology & Innovation (RM)</label>
                       <input
                         type="text"
                         class="input--text"
                         [value]="getCappedSponsorshipAmount(sponsorshipAmountByAPU) | number: '1.2-2'"
                         disabled
-                        aria-label="Sponsorship Amount by APU (Read Only)">
+                        aria-label="Sponsorship Amount by Asia Pacific University of Technology & Innovation (Read Only)">
                       <small class="tooltip-text">{{ isCapLimitTooltip(sponsorshipAmountByAPU) ? getCapLimitTooltip(sponsorshipAmountByAPU) : (isReductionTooltip(sponsorshipAmountByAPU, getCappedSponsorshipAmount(sponsorshipAmountByAPU)) ? getReductionTooltip(sponsorshipAmountByAPU, getCappedSponsorshipAmount(sponsorshipAmountByAPU)) : '') }}</small>
                     </div>
                   </div>
@@ -597,29 +641,29 @@
 
               <!-- APU Sponsorship Subsection -->
               <div class="sponsorship-subsection">
-                <span class="subsection-title">APU Sponsorship</span>
+                <span class="subsection-title">Asia Pacific University of Technology & Innovation Sponsorship</span>
                 <div class="subsection-fields-wrapper">
                   <div class="row--2">
                     <div class="form-field">
-                      <label class="form-label">Sponsorship Percentage by APU (%)</label>
+                      <label class="form-label">Sponsorship Percentage by Asia Pacific University of Technology & Innovation (%)</label>
                       <input
                         type="text"
                         class="input--text"
                         [value]="externalResearchPercentage | number: '1.0-0'"
                         readonly
-                        aria-label="Sponsorship Percentage by APU (Read Only)">
+                        aria-label="Sponsorship Percentage by Asia Pacific University of Technology & Innovation (Read Only)">
                     </div>
                   </div>
                   <div class="row--2">
                     <!-- Sponsorship Amount by APU (Read Only) -->
                     <div class="form-field">
-                      <label class="form-label">Sponsorship Amount by APU (RM)</label>
+                      <label class="form-label">Sponsorship Amount by Asia Pacific University of Technology & Innovation (RM)</label>
                       <input
                         type="text"
                         class="input--text"
                         [value]="getCappedSponsorshipAmount(externalResearchSponsorshipByAPU) | number: '1.2-2'"
                         readonly
-                        aria-label="Sponsorship Amount by APU (Read Only)">
+                        aria-label="Sponsorship Amount by Asia Pacific University of Technology & Innovation (Read Only)">
                       <small class="tooltip-text">{{ isCapLimitTooltip(externalResearchSponsorshipByAPU) ? getCapLimitTooltip(externalResearchSponsorshipByAPU) : (isReductionTooltip(externalResearchSponsorshipByAPU, getCappedSponsorshipAmount(externalResearchSponsorshipByAPU)) ? getReductionTooltip(externalResearchSponsorshipByAPU, getCappedSponsorshipAmount(externalResearchSponsorshipByAPU)) : '') }}</small>
                     </div>
                   </div>
@@ -754,28 +798,28 @@
               </div>
 
               <div class="sponsorship-subsection">
-                <span class="subsection-title">APU Sponsorship</span>
+                <span class="subsection-title">Asia Pacific University of Technology & Innovation Sponsorship</span>
                 <div class="subsection-fields-wrapper">
                   <div class="row--2">
                     <div class="form-field">
-                      <label class="form-label">Sponsorship Percentage by APU (%)</label>
+                      <label class="form-label">Sponsorship Percentage by Asia Pacific University of Technology & Innovation (%)</label>
                       <input
                         type="text"
                         class="input--text"
                         [value]="percentage | number: '1.2-2'"
                         disabled
-                        aria-label="Sponsorship Percentage by APU (Read Only)">
+                        aria-label="Sponsorship Percentage by Asia Pacific University of Technology & Innovation (Read Only)">
                     </div>
                   </div>
                   <div class="row--2">
                     <div class="form-field">
-                      <label class="form-label">Sponsorship Amount by APU (RM)</label>
+                      <label class="form-label">Sponsorship Amount by Asia Pacific University of Technology & Innovation (RM)</label>
                       <input
                         type="text"
                         class="input--text"
                         [value]="getCappedSponsorshipAmount(localSponsorshipAmountByAPU) | number: '1.2-2'"
                         disabled
-                        aria-label="Sponsorship Amount by APU (Read Only)">
+                        aria-label="Sponsorship Amount by Asia Pacific University of Technology & Innovation (Read Only)">
                       <small class="tooltip-text">{{ isCapLimitTooltip(localSponsorshipAmountByAPU) ? getCapLimitTooltip(localSponsorshipAmountByAPU) : (isReductionTooltip(localSponsorshipAmountByAPU, getCappedSponsorshipAmount(localSponsorshipAmountByAPU)) ? getReductionTooltip(localSponsorshipAmountByAPU, getCappedSponsorshipAmount(localSponsorshipAmountByAPU)) : '') }}</small>
                     </div>
                   </div>

@@ -147,7 +147,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
       { path: 'teamDetails.department', label: "School / Department" },
       { path: 'teamDetails.researchCluster', label: 'Research Cluster' },
       { path: 'teamDetails.leaderRoles', label: 'Roles of Project Leader' },
-      { path: 'teamDetails.internalResearchers', label: 'APU Co-Researchers (min 1)' },
+      { path: 'teamDetails.internalResearchers', label: 'Asia Pacific University of Technology & Innovation Co-Researchers (min 1)' },
       { path: 'teamDetails.externalResearchers', label: 'External Collaborators (min 2)' },
     ],
     // Step 2: Project Details
@@ -172,7 +172,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
       { path: 'projectDetails.literatureReview', label: 'Literature Review' },
       { path: 'projectDetails.methodology', label: 'Methodology' },
       { path: 'projectDetails.references', label: 'References' },
-      { path: 'projectDetails.benefits.apu', label: 'APU Benefit' },
+      { path: 'projectDetails.benefits.apu', label: 'Asia Pacific University of Technology & Innovation Benefit' },
       { path: 'projectDetails.benefits.students', label: 'Students Benefit' },
       { path: 'projectDetails.benefits.stakeholders', label: 'Stakeholders Benefit' },
       { path: 'projectDetails.visionMission', label: 'Vision & Mission Alignment' },
@@ -1110,7 +1110,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
         console.error('Save failed:', err);
         let errorMsg = 'Failed to process. Please try again.';
         if (err.status === 0) errorMsg = 'Could not connect to the server (Ensure the local db is running).';
-        
+
         this.submissionErrorMessage.set(errorMsg);
         this.submissionState.set('ERROR');
       }

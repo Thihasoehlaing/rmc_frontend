@@ -329,6 +329,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     this.setupBreakdownFormWatchers();
     this.setupFormWatchers();
     this.loadFormState();
+    this.syncCitedJournalPaperExplanationValidator();
     this.normalizePages();
   }
 
@@ -343,20 +344,28 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Validator: Conference Start Date cannot be earlier than today
+   * Validator: Conference Start Date cannot be earlier than tomorrow
    */
   private minDateValidator(control: AbstractControl): ValidationErrors | null {
     if (!control.value) {
       return null;
     }
     const selectedDate = new Date(control.value);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date();
+    tomorrow.setHours(0, 0, 0, 0);
+    tomorrow.setDate(tomorrow.getDate() + 1);
 
-    if (selectedDate < today) {
+    if (selectedDate < tomorrow) {
       return { 'minDate': { value: control.value } };
     }
     return null;
+  }
+
+  getTomorrowDate(): string {
+    const tomorrow = new Date();
+    tomorrow.setHours(0, 0, 0, 0);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    return tomorrow.toISOString().split('T')[0];
   }
 
   /**
@@ -398,6 +407,26 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     this.form.get('conferenceStartDate')?.valueChanges.subscribe(() => {
       this.form.get('conferenceEndDate')?.updateValueAndValidity({ emitEvent: false });
     });
+
+    this.form.get('citedJournalPaper')?.valueChanges.subscribe((answer) => {
+      this.syncCitedJournalPaperExplanationValidator(answer);
+    });
+  }
+
+  private syncCitedJournalPaperExplanationValidator(answer: string | null = this.form?.get('citedJournalPaper')?.value ?? null) {
+    const explanationControl = this.form?.get('citedJournalPaperExplanation');
+    if (!explanationControl) {
+      return;
+    }
+
+    if (answer === 'no') {
+      explanationControl.setValidators([Validators.required]);
+    } else {
+      explanationControl.clearValidators();
+      explanationControl.reset('', { emitEvent: false });
+    }
+
+    explanationControl.updateValueAndValidity({ emitEvent: false });
   }
 
   /**
@@ -471,6 +500,16 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
       const stateWithoutRegion = { ...savedState };
       delete stateWithoutRegion['selectedRegion'];
       delete stateWithoutRegion['percentage'];
+
+      const supportingDocuments = this.formStateService.getFormSection('supportingDocuments');
+      if (supportingDocuments) {
+        if (stateWithoutRegion['citedJournalPaper'] === undefined && supportingDocuments['citedJournalPaper'] !== undefined) {
+          stateWithoutRegion['citedJournalPaper'] = supportingDocuments['citedJournalPaper'];
+        }
+        if (stateWithoutRegion['citedJournalPaperExplanation'] === undefined && supportingDocuments['citedJournalPaperExplanation'] !== undefined) {
+          stateWithoutRegion['citedJournalPaperExplanation'] = supportingDocuments['citedJournalPaperExplanation'];
+        }
+      }
 
       this.form.patchValue(stateWithoutRegion, { emitEvent: false });
 
@@ -549,6 +588,8 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
       conferenceEndDate: ['', [Validators.required, this.endDateValidator]],
       localOrOverseas: ['', [Validators.required]],
       researchType: ['', [Validators.required]],
+      citedJournalPaper: ['', [Validators.required]],
+      citedJournalPaperExplanation: [''],
       conferenceLocation: ['', [Validators.required, Validators.maxLength(200)]],
       paperTitle: ['', [Validators.required, Validators.maxLength(200)]],
       selectedRegion: ['', [Validators.required]],

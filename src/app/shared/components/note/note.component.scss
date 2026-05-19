@@ -1,37 +1,32 @@
 @use '../../../../assets/styles/index' as *;
 
 :host {
-  display: inline-block;
+  display: block;
 }
 
 .note-container {
   display: flex;
-  gap: var(--space-2);
-  padding: var(--space-3) var(--space-4);
-  background: var(--color-warning-light);
-  border-left: 4px solid var(--color-warning);
-  border-radius: var(--radius-sm);
+  align-items: flex-start;
+  gap: var(--space-1);
   margin: var(--space-2) 0;
-  width: max-content;
-  max-width: 300px;
 }
 
 .note-icon {
-  color: var(--color-warning-dark);
+  color: #F59E0B;
   font-weight: var(--fw-bold);
-  font-size: var(--fs-md);
+  font-size: var(--fs-sm);
   flex-shrink: 0;
+  line-height: 1.5;
 }
 
 .note-text {
-  color: var(--color-warning-dark);
+  color: #F59E0B;
   font-size: var(--fs-sm);
-  line-height: var(--lh-normal);
-  text-align: left;
+  line-height: 1.5;
+  font-weight: var(--fw-semibold);
 
   strong {
-    color: var(--color-warning-dark);
-    font-weight: var(--fw-bold);
+    display: none;
   }
 }
 

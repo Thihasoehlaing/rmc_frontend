@@ -6,7 +6,7 @@
     <!-- ── APU Staff Co-Author Details ─────────────────────────── -->
     <section class="card">
       <div class="card__header">
-        <h2 class="card__title">APU Staff Co-Author Details</h2>
+        <h2 class="card__title"> Asia Pacific University of Technology & Innovation(APU) Staff Co-Authors</h2>
       </div>
       <div class="card__content">
         <div class="card-body">
@@ -55,7 +55,7 @@
     <!-- ── APU Student Co-Authors ───────────────────────────────── -->
     <section class="card">
       <div class="card__header">
-        <h2 class="card__title">APU Student Co-Authors</h2>
+        <h2 class="card__title"> Asia Pacific University of Technology & Innovation(APU) Student Co-Authors</h2>
       </div>
       <div class="card__content">
         <div class="card-body">
@@ -105,7 +105,7 @@
     <!-- ── Non-APU Co-Authors ───────────────────────────────────── -->
     <section class="card">
       <div class="card__header">
-        <h2 class="card__title">Non-APU Co-Authors</h2>
+        <h2 class="card__title"> Non-Asia Pacific University of Technology & Innovation(APU) Co-Authors</h2>
       </div>
       <div class="card__content">
         <div class="card-body">
@@ -124,10 +124,11 @@
                 <tr>
                   <td class="col-no text-muted is-align-center">{{ index + 1 }}</td>
                   <td>{{ row.value.fullName }}</td>
-                  <td>{{ row.value.country }}</td>
                   <td>{{ row.value.email }}</td>
-                  <td>{{ row.value.schoolDepartment }}</td>
+                  <td>{{ row.value.country }}</td>
+                  <td>{{ row.value.typeOfOrganisation }}</td>
                   <td>{{ row.value.institutionName }}</td>
+                  <td>{{ row.value.schoolDepartment }}</td>
                   <td class="col-actions is-align-center">
                     <div class="data-table__actions">
                       <button type="button" class="btn-icon btn-icon--edit"
@@ -173,7 +174,7 @@
         <!-- ── APU Staff Form ──────────────────────────────────── -->
         @if (modalType === 'apu-staff') {
           <div class="form-group">
-            <label class="is-required">Staff Name</label>
+            <label>Staff Name</label>
             <app-searchable-dropdown
               [options]="staffOptions"
               [searchable]="true"
@@ -184,7 +185,7 @@
           </div>
 
           <div class="form-group">
-            <label for="schoolDept1" class="is-required">School / Department</label>
+            <label for="schoolDept1">School / Department</label>
             <input type="text" id="schoolDept1" class="form-control" formControlName="schoolDepartment"
               placeholder="Ex. School of Computing and Technology"
               (input)="stripDigits($event)">
@@ -192,7 +193,7 @@
           </div>
 
           <div class="form-group">
-            <label for="affiliation1" class="is-required">Affiliation</label>
+            <label for="affiliation1">Second Affiliation (if any)</label>
             <input type="text" id="affiliation1" class="form-control" formControlName="affiliation"
               placeholder="Ex. Asia Pacific University"
               (input)="stripDigits($event)">
@@ -231,7 +232,7 @@
           </div>
 
           <div class="form-group">
-            <label for="affiliation2" class="is-required">Affiliation</label>
+            <label for="affiliation2">Second Affiliation (if any)</label>
             <input type="text" id="affiliation2" class="form-control" formControlName="affiliation"
               placeholder="Ex. Asia Pacific University"
               (input)="stripDigits($event)">
@@ -274,6 +275,20 @@
               placeholder="Ex. School of Computing and Technology"
               (input)="stripDigits($event)">
             <app-validation-message [control]="editForm.get('schoolDepartment')"></app-validation-message>
+          </div>
+
+          <div class="form-group">
+            <label for="typeOfOrganisation" class="is-required">Type of Organisation (Please Select One)</label>
+            <select id="typeOfOrganisation" class="form-control" formControlName="typeOfOrganisation">
+              <option value="" disabled selected>--Select the Type of Organisation--</option>
+              <option value="University">University</option>
+              <option value="Research Institute">Research Institute</option>
+              <option value="Government Agency">Government Agency</option>
+              <option value="Private Company">Private Company</option>
+              <option value="Non-Profit Organization">Non-Profit Organization</option>
+              <option value="Other">Other</option>
+            </select>
+            <app-validation-message [control]="editForm.get('typeOfOrganisation')"></app-validation-message>
           </div>
 
           <div class="form-group">

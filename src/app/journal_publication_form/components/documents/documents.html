@@ -102,13 +102,7 @@
 
         <div class="form-field">
           <div class="upload-field-header">
-            <div class="title-with-tooltip">
-              <h3 class="upload-field-title is-required">Journal Invoice</h3>
-              <app-note
-                text="Please ensure billing name is: Asia Pacific University Sdn. Bhd."
-                [isTooltip]="true">
-              </app-note>
-            </div>
+            <h3 class="upload-field-title is-required">Journal Invoice</h3>
             <p class="upload-field-subtitle">Max file size: 10 MB. PDF ONLY</p>
           </div>
           <app-file-upload
@@ -119,6 +113,10 @@
             placeholder="Upload journal invoice PDF"
             (fileSelected)="onDocumentSelected('journalInvoice', $any($event))">
           </app-file-upload>
+          <app-note
+            text="Please ensure billing name is: Asia Pacific University Sdn. Bhd."
+            [isTooltip]="false">
+          </app-note>
           @if (documentsForm.get('journalInvoice')?.invalid && documentsForm.get('journalInvoice')?.touched) {
             <span class="form-error-msg">Journal Invoice is required</span>
           }
@@ -163,10 +161,7 @@
         </div>
 
         <div class="form-field">
-          <div class="label-with-note">
-            <label class="form-label is-required">Has the manuscript and content been published in another journal or conference etc.?</label>
-            <app-note text=" Manuscript must not be published previously" [isTooltip]="true"></app-note>
-          </div>
+          <label class="form-label is-required">Has the manuscript and content been published in another journal or conference etc.?</label>
           <div class="radio-group">
             <label class="radio-label">
               <input type="radio" value="yes" formControlName="manuscriptPreviouslyPublished">
@@ -177,6 +172,7 @@
               <span>No</span>
             </label>
           </div>
+          <app-note text="Manuscript must not be published previously" [isTooltip]="false"></app-note>
           <app-validation-message [control]="documentsForm.get('manuscriptPreviouslyPublished')"></app-validation-message>
         </div>
 

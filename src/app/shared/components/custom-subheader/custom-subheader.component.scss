@@ -2,7 +2,8 @@
 
 .custom-subheader {
   display: flex;
-  align-items: center;
+  flex-wrap: wrap;
+  align-items: flex-start;
   gap: var(--space-3);
   padding: var(--space-2) var(--space-4);
   background-color: var(--color-surface);
@@ -56,4 +57,8 @@
   line-height: var(--lh-tight);
   text-transform: uppercase;
   letter-spacing: 0.3px;
+}
+
+app-note {
+  flex-basis: 100%;
 }

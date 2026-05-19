@@ -23,27 +23,28 @@ export class AuthorsDetails implements OnInit {
   readonly apuStaffColumns: DataTableColumn[] = [
     { key: 'no', label: '#', width: '5%', align: 'center', headerAlign: 'center' },
     { key: 'staffName', label: 'Staff Name', width: '28%' },
-    { key: 'schoolDepartment', label: 'School/Department', width: '32%' },
-    { key: 'affiliation', label: 'Affiliation', width: '25%' },
+    { key: 'schoolDepartment', label: 'School', width: '32%' },
+    { key: 'affiliation', label: 'Second Affiliation (if any)', width: '25%' },
     { key: 'actions', label: 'Actions', width: '10%', align: 'center', headerAlign: 'center' }
   ];
 
   readonly studentColumns: DataTableColumn[] = [
     { key: 'no', label: '#', width: '5%', align: 'center', headerAlign: 'center' },
     { key: 'tpNumber', label: 'TP Number', width: '12%' },
-    { key: 'fullName', label: 'Full Name (as per IC/Passport)', width: '25%' },
-    { key: 'schoolDepartment', label: 'School/Department', width: '26%' },
-    { key: 'affiliation', label: 'Affiliation', width: '22%' },
+    { key: 'fullName', label: 'Student Name', width: '25%' },
+    { key: 'schoolDepartment', label: 'School', width: '26%' },
+    { key: 'affiliation', label: 'Second Affiliation (if any)', width: '22%' },
     { key: 'actions', label: 'Actions', width: '10%', align: 'center', headerAlign: 'center' }
   ];
 
   readonly nonApuColumns: DataTableColumn[] = [
     { key: 'no', label: '#', width: '5%', align: 'center', headerAlign: 'center' },
-    { key: 'fullName', label: 'Full Name (as per IC/Passport)', width: '18%' },
-    { key: 'country', label: 'Country', width: '11%' },
-    { key: 'email', label: 'Email', width: '18%' },
+    { key: 'fullName', label: 'Full Name', width: '13%' },
+    { key: 'email', label: 'Email', width: '15%' },
+    { key: 'country', label: 'Country', width: '10%' },
+    { key: 'typeOfOrganisation', label: 'Type of Organisation', width: '13%' },
+    { key: 'institutionName', label: 'Institution/Company Name', width: '16%' },
     { key: 'schoolDepartment', label: 'School/Department', width: '18%' },
-    { key: 'institutionName', label: 'Institution/Company Name', width: '20%' },
     { key: 'actions', label: 'Actions', width: '10%', align: 'center', headerAlign: 'center' }
   ];
 
@@ -124,9 +125,9 @@ export class AuthorsDetails implements OnInit {
 
   createTestSubsection(): FormGroup {
     return this.fb.group({
-      staffName: ['', [Validators.required]],
-      schoolDepartment: ['', [Validators.required]],
-      affiliation: ['', [Validators.required]]
+      staffName: [''],
+      schoolDepartment: [''],
+      affiliation: ['']
     });
   }
 
@@ -136,7 +137,7 @@ export class AuthorsDetails implements OnInit {
       tpNumber: ['', [Validators.required, Validators.pattern('^(?!0+$)[0-9]+$')]],
       fullName: ['', [Validators.required]],
       schoolDepartment: ['', [Validators.required]],
-      affiliation: ['', [Validators.required]]
+      affiliation: ['']
     });
   }
 
@@ -146,6 +147,7 @@ export class AuthorsDetails implements OnInit {
       country: ['', [Validators.required]],
       email: ['', [Validators.required, Validators.email]],
       schoolDepartment: ['', [Validators.required]],
+      typeOfOrganisation: ['', [Validators.required]],
       institutionName: ['', [Validators.required]]
     });
   }
@@ -199,9 +201,9 @@ export class AuthorsDetails implements OnInit {
       if (type === 'apu-staff') {
         data = this.testSubsections.at(index).value;
         this.editForm = this.fb.group({
-          staffName: [data.staffName, [Validators.required]],
-          schoolDepartment: [data.schoolDepartment, [Validators.required]],
-          affiliation: [data.affiliation, [Validators.required]]
+          staffName: [data.staffName],
+          schoolDepartment: [data.schoolDepartment],
+          affiliation: [data.affiliation]
         });
       } else if (type === 'student') {
         data = this.studentCoAuthors.at(index).value;
@@ -209,7 +211,7 @@ export class AuthorsDetails implements OnInit {
           tpNumber: [this.parseTPNumber(data.tpNumber), [Validators.required, Validators.pattern('^(?!0+$)[0-9]+$')]],
           fullName: [data.fullName, [Validators.required]],
           schoolDepartment: [data.schoolDepartment, [Validators.required]],
-          affiliation: [data.affiliation, [Validators.required]]
+          affiliation: [data.affiliation]
         });
       } else if (type === 'non-apu') {
         data = this.nonApuCoAuthors.at(index).value;
@@ -218,6 +220,7 @@ export class AuthorsDetails implements OnInit {
           country: [data.country, [Validators.required]],
           email: [data.email, [Validators.required, Validators.email]],
           schoolDepartment: [data.schoolDepartment, [Validators.required]],
+          typeOfOrganisation: [data.typeOfOrganisation, [Validators.required]],
           institutionName: [data.institutionName, [Validators.required]]
         });
       }
@@ -226,16 +229,16 @@ export class AuthorsDetails implements OnInit {
       this.editingIndex = null;
       if (type === 'apu-staff') {
         this.editForm = this.fb.group({
-          staffName: ['', [Validators.required]],
-          schoolDepartment: ['', [Validators.required]],
-          affiliation: ['', [Validators.required]]
+          staffName: [''],
+          schoolDepartment: [''],
+          affiliation: ['']
         });
       } else if (type === 'student') {
         this.editForm = this.fb.group({
           tpNumber: ['', [Validators.required, Validators.pattern('^(?!0+$)[0-9]+$')]],
           fullName: ['', [Validators.required]],
           schoolDepartment: ['', [Validators.required]],
-          affiliation: ['', [Validators.required]]
+          affiliation: ['']
         });
       } else if (type === 'non-apu') {
         this.editForm = this.fb.group({
@@ -243,6 +246,7 @@ export class AuthorsDetails implements OnInit {
           country: ['', [Validators.required]],
           email: ['', [Validators.required, Validators.email]],
           schoolDepartment: ['', [Validators.required]],
+          typeOfOrganisation: ['', [Validators.required]],
           institutionName: ['', [Validators.required]]
         });
       }

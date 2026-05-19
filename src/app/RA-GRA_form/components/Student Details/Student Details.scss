@@ -1,72 +1,141 @@
 @use '../../../../assets/styles/index' as *;
 
-// Component-level layout only.
-// Global classes (.card, .form-field, .form-label, .input--text, .input--textarea,
-// .input--select, .row, .row--2, .label-with-note, .form-hint) are defined in
-// _forms.scss and must NOT be redefined here.
+// Student Details Component Styles
+// Follows Journal form design system
 
 .form-section {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-6);
+  width: 100%;
+  min-width: 0;
+  overflow-x: clip;
+}
+
+.card {
+  width: 100%;
+  min-width: 0;
+}
+
+.input--soft-readonly {
+  background-color: var(--input-bg-readonly);
+  border: 1px solid var(--border-subtle);
+  color: var(--color-text-muted);
+  font-weight: 400;
+  cursor: default;
+  box-shadow: none;
+
+  &:focus {
+    outline: none;
+    border-color: var(--border-subtle);
+    box-shadow: none;
+  }
+}
+
+.input--readonly {
+  color: var(--color-text-muted);
+  background: var(--input-bg-readonly);
+  border-color: var(--border-subtle);
+  cursor: not-allowed;
 }
 
 .section-fields {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
-}
-
-// Ensure each column stacks its fields vertically
-.form-column {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
+  gap: var(--space-5);
   min-width: 0;
 }
 
-// ══════════════════════════════════════════════════════════════════
-// Upload Supporting Documents Section — mirrors Journal pattern
-// ══════════════════════════════════════════════════════════════════
+.section-fields .row {
+  display: grid;
+  gap: var(--space-5);
+}
 
-// Upload grid: 2-column layout matching the Journal form.
-// align-items: stretch (grid default) makes both cells in each row
-// the same height automatically — no extra work needed.
-.section-fields.upload-grid {
-  display: grid !important;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-6);
+.section-fields .row--2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
 
-  @media (max-width: 768px) {
+.section-fields .row--3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.section-fields .row--4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+@media (max-width: 1024px) {
+  .section-fields .row--3,
+  .section-fields .row--4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .section-fields .row--2,
+  .section-fields .row--3,
+  .section-fields .row--4 {
     grid-template-columns: 1fr;
   }
 }
 
-// Each upload item is a flex column that stretches to fill the grid cell.
-// justify-content: space-between pushes the dropzone to the bottom so
-// items in the same row always have their dropzones at the same vertical
-// position, regardless of how many lines the title or download link takes.
-.upload-item {
+.form-field {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: var(--space-2);
   min-width: 0;
+  width: 100%;
 }
 
-// The header area (title + subtitle + optional download link) grows to
-// fill available space, keeping the dropzone anchored at the bottom.
+.input--text,
+.input--textarea,
+.input--select {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.label-with-note {
+  display: block;
+  margin-bottom: var(--space-2);
+
+  .form-label {
+    display: inline;
+    margin: 0;
+  }
+
+  app-note {
+    display: inline-block;
+    vertical-align: middle;
+    margin-left: var(--space-1);
+  }
+}
+
+// Upload Documents Styles - Matching Journal form exactly
+.section-fields.upload-grid {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: var(--space-6) !important;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr !important;
+  }
+}
+
 .upload-field-header {
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
-  flex: 1;
 }
 
-// The dropzone + error message area — always at the bottom of the item.
-.upload-field-body {
+.title-with-tooltip {
   display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
+  align-items: center;
+  gap: var(--space-2);
+  width: fit-content;
+  max-width: 100%;
+  flex-wrap: wrap;
+
+  app-note {
+    flex-shrink: 0;
+    margin-left: 0;
+    align-self: center;
+  }
 }
 
 .upload-field-title {
@@ -75,6 +144,9 @@
   color: var(--color-text);
   margin: 0;
   padding: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
 
   &.is-required::after {
     content: ' *';
@@ -89,21 +161,22 @@
   padding: 0;
 }
 
-// Download link — styled like a button link with icon
+.download-link-wrapper {
+  margin-bottom: var(--space-2);
+}
+
 .download-link {
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
-  font-size: var(--fs-xs);
+  font-size: var(--fs-sm);
   color: var(--color-primary);
   text-decoration: none;
   font-weight: var(--fw-medium);
-  margin-top: var(--space-1);
-  transition: color var(--transition-fast);
-  width: fit-content;
+  transition: color var(--transition-fast) var(--ease-default);
 
   .material-icons {
-    font-size: 16px; // no token: material icon pixel size — allowed exception
+    font-size: 18px;
   }
 
   &:hover {

@@ -7,7 +7,7 @@
 
     <div class="card__content section-fields">
 
-      <!-- ── Section 1: Personal Information ───────────────────────────── --> 
+      <!-- ── Section 1: Personal Information ───────────────────────────── -->
       <app-custom-subheader title="Personal Information" icon="person"></app-custom-subheader>
       <div class="row row--2">
         <div class="form-field">
@@ -44,7 +44,7 @@
       <app-custom-subheader title="Details of the proposal" icon="article"></app-custom-subheader>
 
       <div class="form-field mt-3">
-        <label class="form-label is-required">Proposed Partner Name</label>   
+        <label class="form-label is-required">Proposed Partner Name</label>
         <textarea class="input--textarea" rows="2" formControlName="proposedPartnerName" maxlength="500"></textarea>
         <app-character-counter [current]="applicantForm.get('proposedPartnerName')?.value?.length ?? 0" [max]="500"></app-character-counter>
       </div>
@@ -68,7 +68,7 @@
       </div>
 
       <div class="form-field mt-3">
-        <label class="form-label is-required">Management of Arrangement</label> 
+        <label class="form-label is-required">Management of Arrangement</label>
         <textarea class="input--textarea" rows="4" formControlName="managementArrangement" maxlength="2000"></textarea>
         <app-character-counter [current]="applicantForm.get('managementArrangement')?.value?.length ?? 0" [max]="2000"></app-character-counter>
       </div>
@@ -86,7 +86,7 @@
       </div>
 
       <div class="form-field mt-3">
-        <label class="form-label is-required">Impact on Other APU Functional Units</label>
+        <label class="form-label is-required">Impact on Other Asia Pacific University of Technology & Innovation Functional Units</label>
         <textarea class="input--textarea" rows="4" formControlName="impactOnOtherUnits" maxlength="2000"></textarea>
         <app-character-counter [current]="applicantForm.get('impactOnOtherUnits')?.value?.length ?? 0" [max]="2000"></app-character-counter>
       </div>
@@ -104,14 +104,14 @@
       </div>
 
       <div class="form-field mt-3">
-        <label class="form-label is-required">Contact Made to Date</label>      
+        <label class="form-label is-required">Contact Made to Date</label>
         <textarea class="input--textarea" rows="4" formControlName="contactMade" maxlength="2000"></textarea>
         <app-character-counter [current]="applicantForm.get('contactMade')?.value?.length ?? 0" [max]="2000"></app-character-counter>
       </div>
 
       <div class="form-field mt-3">
         <app-searchable-dropdown
-          label="APU Partnership Category *"
+          label="Asia Pacific University of Technology & Innovation Partnership Category *"
           [options]="categoryOptions"
           placeholder="Select partnership category..."
           formControlName="partnershipCategory">
@@ -119,7 +119,7 @@
       </div>
 
       <div class="form-field mt-3">
-        <label class="form-label is-required">APU School Discussions to Date/Planned</label>
+        <label class="form-label is-required">Asia Pacific University of Technology & Innovation School Discussions to Date/Planned</label>
         <textarea class="input--textarea" rows="4" formControlName="schoolDiscussions" maxlength="2000"></textarea>
         <app-character-counter [current]="applicantForm.get('schoolDiscussions')?.value?.length ?? 0" [max]="2000"></app-character-counter>
       </div>

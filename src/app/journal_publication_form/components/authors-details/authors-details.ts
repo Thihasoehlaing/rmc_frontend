@@ -299,9 +299,9 @@ export class AuthorsDetails implements OnInit {
     if (!this.modalType) return '';
     const isEditing = this.editingIndex !== null ? 'Edit' : 'Add';
     const titles = {
-      'apu-staff': `${isEditing} APU Staff Co-Author`,
-      'student': `${isEditing} APU Student Co-Author`,
-      'non-apu': `${isEditing} Non-APU Co-Author`
+      'apu-staff': `${isEditing} Asia Pacific University of Technology & Innovation Staff Co-Author`,
+      'student': `${isEditing} Asia Pacific University of Technology & Innovation Student Co-Author`,
+      'non-apu': `${isEditing} Co-Author Outside Asia Pacific University of Technology & Innovation`
     };
     return titles[this.modalType];
   }

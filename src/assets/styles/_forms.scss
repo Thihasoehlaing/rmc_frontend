@@ -44,6 +44,22 @@
     border-color: var(--border-default);
   }
 
+  // Soft readonly state (visually readonly but value is included in form submission)
+  &.input--soft-readonly {
+    background: var(--input-bg-readonly);
+    cursor: not-allowed;
+    opacity: 0.8;
+    border-color: var(--border-default);
+  }
+
+  // Readonly state (similar to soft-readonly, alternative naming)
+  &.input--readonly {
+    background: var(--input-bg-readonly);
+    cursor: not-allowed;
+    opacity: 0.8;
+    border-color: var(--border-default);
+  }
+
   // Error/Invalid state
   &.has-error,
   &.is-invalid {
@@ -72,7 +88,7 @@
 .form-field {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
+  gap: 0.25rem;
 }
 
 .form-label {
@@ -80,7 +96,9 @@
   color: var(--color-label);
   font-weight: var(--fw-semibold);
   font-size: var(--fs-sm);
-  display: block;
+  display: inline-flex;
+  align-items: center;
+  line-height: 1.5;
 
   &.is-required::after {
     content: '*';
@@ -96,6 +114,13 @@
   flex-wrap: wrap;
   gap: var(--space-4) var(--space-6);
   padding: var(--space-2) 0;
+}
+
+// Vertical radio group variant - stacks options vertically
+.radio-group--vertical {
+  flex-direction: column;
+  gap: var(--space-3);
+  flex-wrap: nowrap;
 }
 
 .radio-option {
@@ -516,12 +541,10 @@ input[type="number"] {
   }
 }
 
-// 10. Label with inline tooltip note
 .label-with-note {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: var(--space-1);
-  margin-bottom: var(--space-1);
 
   .form-label {
     margin-bottom: 0;

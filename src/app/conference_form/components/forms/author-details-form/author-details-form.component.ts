@@ -74,7 +74,7 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
     { key: 'index', label: '#', width: '50px', align: 'center' },
     { key: 'staffName', label: 'Please select Staff Name' },
     { key: 'schoolDepartment', label: 'School/Department' },
-    { key: 'affiliation', label: 'Affiliation' },
+    { key: 'affiliation', label: 'Second Affiliation (if any)' },
     { key: 'actions', label: 'Actions', width: '100px', align: 'center' }
   ];
 
@@ -437,9 +437,9 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
     if (!this.modalType) return '';
     const isEditing = this.editingIndex !== null ? 'Edit' : 'Add';
     const titles = {
-      'apu-staff': `${isEditing} APU Staff Co-Author`,
-      'student': `${isEditing} APU Student Co-Author`,
-      'non-apu': `${isEditing} Non-APU Co-Author`
+      'apu-staff': `${isEditing} Asia Pacific University of Technology & Innovation Staff Co-Author`,
+      'student': `${isEditing} Asia Pacific University of Technology & Innovation Student Co-Author`,
+      'non-apu': `${isEditing} Co-Author Outside Asia Pacific University of Technology & Innovation`
     };
     return titles[this.modalType];
   }

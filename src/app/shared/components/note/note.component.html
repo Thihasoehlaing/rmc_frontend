@@ -1,14 +1,9 @@
 @if (isTooltip) {
-<div class="tooltip-container">
-  <div class="tooltip-icon">!</div>
-  <div class="tooltip-popup">
-    <div class="note-container">
-      <span class="note-icon">ℹ</span>
-      <span class="note-text">
-        {{text}}
-      </span>
-    </div>
-  </div>
+<div class="note-container note-container--tooltip">
+  <span class="note-icon">ℹ</span>
+  <span class="note-text">
+    {{text}}
+  </span>
 </div>
 } @else {
 <div class="note-container">

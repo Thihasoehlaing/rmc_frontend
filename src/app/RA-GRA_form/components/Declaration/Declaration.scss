@@ -1,14 +1,37 @@
 @use '../../../../assets/styles/index' as *;
 
-// Component-level layout only.
-// Global classes (.card, .card__content, .form-field, .form-label, .input--text,
-// .input--textarea, .section-fields, .agreement-trigger) are defined in _forms.scss
-// and must NOT be redefined here.
+// Declaration Component Styles
+// Follows Journal form design system
 
 .declaration-section {
   display: flex;
   flex-direction: column;
   gap: var(--space-6);
+}
+
+.card {
+  width: 100%;
+  min-width: 0;
+}
+
+.section-fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  min-width: 0;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.input--text,
+.input--textarea {
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 // ── Centered heading above the declaration text box ───────────
@@ -25,33 +48,33 @@
   }
 }
 
-// ── Declaration text box — mirrors RDIG / Journal pattern ─────
+// ── Declaration text box — mirrors Journal pattern ─────
 .declaration-box {
-  padding: var(--space-6);
-  background: var(--color-surface-nested);
+  background: var(--bg-surface-elevated, #fff);
   border-left: 4px solid var(--color-primary);
-  border-radius: var(--radius-lg);
-  font-size: var(--fs-sm);
-  color: var(--color-text-secondary);
-  line-height: var(--lh-relaxed);
+  border-radius: var(--radius-md);
+  padding: var(--space-4) var(--space-6);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: var(--space-6);
 
   &__title {
-    font-size: var(--fs-base);
-    font-weight: var(--fw-bold);
-    color: var(--color-heading);
-    margin-bottom: var(--space-4);
     display: flex;
     align-items: center;
     gap: var(--space-2);
+    color: var(--color-primary);
+    font-size: var(--fs-md);
+    margin-bottom: var(--space-4);
+    font-weight: var(--fw-semibold);
 
     .material-icons {
-      font-size: var(--icon-md);
-      color: var(--color-primary);
+      font-size: 20px;
     }
   }
 
   p {
-    margin-bottom: var(--space-3);
+    color: var(--color-text);
+    line-height: var(--lh-relaxed);
+    margin-bottom: var(--space-2);
 
     &:last-child {
       margin-bottom: 0;
@@ -59,35 +82,29 @@
   }
 }
 
-// ── Agreement checkbox — mirrors RDIG / Journal pattern ───────
-// (agreement-trigger is defined globally in journal shell scss;
-//  redefined here scoped to this component so it works standalone)
+// ── Agreement checkbox — mirrors Journal pattern ───────
 .agreement-trigger {
   display: flex;
   align-items: flex-start;
-  gap: var(--space-4);
-  cursor: pointer;
-  padding: var(--space-3);
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--color-surface-hover);
   border-radius: var(--radius-md);
-  transition: background var(--transition-fast);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
 
   &:hover {
-    background: var(--color-surface-hover);
+    background: var(--color-surface-nested);
   }
 
-  input[type='checkbox'] {
-    width: 20px;  // no token: checkbox size — allowed exception
-    height: 20px; // no token: checkbox size — allowed exception
-    flex-shrink: 0;
-    margin-top: 2px; // no token: fine-tune alignment — allowed exception
-    accent-color: var(--color-primary);
-    cursor: pointer;
+  input {
+    margin-top: 3px;
   }
 
   span {
-    font-size: var(--fs-base);
-    line-height: var(--lh-relaxed);
-    color: var(--color-text);
+    color: var(--color-heading);
+    font-size: var(--fs-sm);
+    line-height: var(--lh-snug);
 
     // Red asterisk for required spans using .is-required class
     &.is-required::after {
@@ -95,5 +112,9 @@
       color: var(--color-error);
       font-size: 1.1em;
     }
+  }
+
+  strong {
+    color: var(--color-error);
   }
 }

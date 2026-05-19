@@ -426,26 +426,24 @@
       <div class="component-block__header">
         <span class="comp-name">Note</span>
         <code class="comp-selector">&lt;app-note&gt;</code>
-        <p class="comp-desc"><strong>Inline</strong> = amber banner with caution icon. <strong>Tooltip</strong> = "!" icon with message on hover. Use isTooltip inside label rows.</p>
+        <p class="comp-desc"><strong>Inline</strong> = amber banner with caution icon. <strong>Tooltip</strong> = inline helper text under the question using the warning color. Use isTooltip inside label rows.</p>
       </div>
       <div class="component-block__demo">
         <p class="demo-label">isTooltip: false — inline banner</p>
         <app-note [isTooltip]="false"
           text="RA/GRA Allowance — RM 500 per month per RA/GRA. Please state the number of months and students.">
         </app-note>
-        <p class="demo-label" style="margin-top:var(--space-5)">isTooltip: true — hover icon inside a label</p>
+        <p class="demo-label" style="margin-top:var(--space-5)">isTooltip: true — inline helper text inside a label</p>
         <div class="label-with-note">
           <label class="form-label">Requested Amount</label>
-          <app-note [isTooltip]="true"
-            text="Please ensure the amount does not exceed the ceiling of RM 50,000 for this category.">
-          </app-note>
+          <app-note [isTooltip]="true" text="Please ensure the amount does not exceed the ceiling of RM 50,000 for this category."></app-note>
         </div>
       </div>
       <table class="props-table">
         <thead><tr><th>Input</th><th>Type</th><th>Description</th></tr></thead>
         <tbody>
           <tr><td><code>text</code></td><td>string</td><td>The message to display</td></tr>
-          <tr><td><code>isTooltip</code></td><td>boolean</td><td>false = inline banner, true = hover tooltip. Default: false</td></tr>
+          <tr><td><code>isTooltip</code></td><td>boolean</td><td>false = inline banner, true = inline helper text under the field label. Default: false</td></tr>
         </tbody>
       </table>
     </div>

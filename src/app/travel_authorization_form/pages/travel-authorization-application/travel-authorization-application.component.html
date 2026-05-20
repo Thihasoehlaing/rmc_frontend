@@ -184,14 +184,13 @@
 
       <!-- Select Location -->
       <div class="form-field">
-        <div class="label-with-note">
-          <label class="form-label">Select Location</label>
-          @if (isExternalTravel) {
-            <app-note
-              text="!! Events held within the Klang Valley are not eligible for claims"
-              [isTooltip]="true"></app-note>
-          }
-        </div>
+        <label class="form-label">Select Location</label>
+        @if (isExternalTravel) {
+          <app-note
+            text="!! Events held within the Klang Valley are not eligible for claims"
+            [isTooltip]="true"
+            class="note--below"></app-note>
+        }
         <div class="location-options">
           <!-- Overseas -->
           <label class="radio-wrapper">
@@ -283,12 +282,11 @@
 
       <!-- Staff Participation -->
       <div class="form-field">
-        <div class="label-with-note">
-          <label for="staffParticipation" class="form-label">Name of Asia Pacific University of Technology & Innovation Staff Participation</label>
-          <app-note
-            text="Maximum 20 Participants"
-            [isTooltip]="true"></app-note>
-        </div>
+        <label for="staffParticipation" class="form-label">Name of Asia Pacific University of Technology & Innovation Staff Participation</label>
+        <app-note
+          text="Maximum 20 Participants"
+          [isTooltip]="false"
+          class="note--below"></app-note>
         <app-searchable-dropdown
           id="staffParticipation"
           [options]="staffParticipationOptions"

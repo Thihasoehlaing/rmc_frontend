@@ -30,6 +30,11 @@
   font-weight: var(--fw-semibold);
 
   strong {
-    display: none;
+    display: inline;
   }
+}
+
+/* Hide the strong label when rendered as a tooltip */
+.note-container--tooltip .note-text strong {
+  display: none;
 }

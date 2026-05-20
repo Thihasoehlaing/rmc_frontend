@@ -442,7 +442,7 @@
           class="input--text input--readonly"
           formControlName="accountCode"
           readonly
-          placeholder="Auto-filled from account code description">
+          placeholder="Auto-filled from Project Account Code">
       </div>
     } @else {
       <div class="breakdown-field">
@@ -450,10 +450,10 @@
         <input
           id="voteNumber"
           type="text"
-          class="input--text input--readonly"
+          [class]="breakdownType === 'external-research' ? 'input--text input--readonly' : 'input--text input--readonly'"
           formControlName="voteNumber"
           readonly
-          placeholder="V29000">
+          [placeholder]="breakdownType === 'external-research' ? 'Auto-filled from Project Account Code' : 'V29000'">
         @if (breakdownForm.get('voteNumber')?.invalid && breakdownForm.get('voteNumber')?.touched) {
           <span class="error-message">Vote number is required</span>
         }

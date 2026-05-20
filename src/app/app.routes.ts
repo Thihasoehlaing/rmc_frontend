@@ -136,6 +136,16 @@ export const routes: Routes = [
           import('./RA-GRA_form/RA-GRA_form.component').then(m => m.RagraFormComponent),
       },
 
+      // ── Travel Authorization ─────────────────────────────────────────────
+      // Visible to authenticated users (no extra ABAC restrictions here).
+      {
+        path: 'travel-authorization',
+        loadChildren: () =>
+          import('./travel_authorization_form/travel_authorization_form.routes').then(
+            m => m.travelAuthorizationFormRoutes
+          ),
+      },
+
       // ── Partnership Application ───────────────────────────────────────────
       // Rule: (full_time OR contract) AND academic
       {

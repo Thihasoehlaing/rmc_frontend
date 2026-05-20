@@ -84,36 +84,32 @@
 
           <!-- Appointment Commencement Date -->
           <div class="form-field">
-            <div class="label-with-note">
-              <label class="form-label is-required">Appointment Commencement Date</label>
-              <app-note
-                text="Appointment Commencement Date must be after the Project Start Date."
-                [isTooltip]="true">
-              </app-note>
-            </div>
+            <label class="form-label is-required">Appointment Commencement Date</label>
             <input
               type="date"
               class="input--text"
               formControlName="commencementDate"
               [class.is-invalid]="form.get('commencementDate')?.invalid && form.get('commencementDate')?.touched">
+            <app-note
+              text="Appointment Commencement Date must be after the Project Start Date."
+              [isTooltip]="false">
+            </app-note>
             <app-validation-message [control]="form.get('commencementDate')"></app-validation-message>
           </div>
 
           <!-- Appointment Duration (Days) -->
           <div class="form-field">
-            <div class="label-with-note">
-              <label class="form-label is-required">Appointment Duration (Days)</label>
-              <app-note
-                text="Please specify the job duties of RA/GRA. This will be included in the offer letter by HR."
-                [isTooltip]="true">
-              </app-note>
-            </div>
+            <label class="form-label is-required">Appointment Duration (Days)</label>
             <input
               type="number"
               class="input--text"
               formControlName="durationDays"
               min="1"
               [class.is-invalid]="form.get('durationDays')?.invalid && form.get('durationDays')?.touched">
+            <app-note
+              text="Please specify the job duties of RA/GRA. This will be included in the offer letter by HR."
+              [isTooltip]="false">
+            </app-note>
             <app-validation-message [control]="form.get('durationDays')"></app-validation-message>
           </div>
 
@@ -181,31 +177,23 @@
 
           <!-- Second Reporting Person -->
           <div class="form-field">
-            <div class="label-with-note">
-              <label class="form-label is-required">Second Reporting Person</label>
-              <app-note
-                text="Please select the co-supervisor/FUM (if any)."
-                [isTooltip]="true">
-              </app-note>
-            </div>
+            <label class="form-label is-required">Second Reporting Person</label>
             <select
               class="input--select"
               formControlName="secondReportingPerson"
               [class.is-invalid]="form.get('secondReportingPerson')?.invalid && form.get('secondReportingPerson')?.touched">
               <option *ngFor="let opt of secondReportingOptions" [value]="opt.value">{{ opt.label }}</option>
             </select>
+            <app-note
+              text="Please select the co-supervisor/FUM (if any)."
+              [isTooltip]="false">
+            </app-note>
             <app-validation-message [control]="form.get('secondReportingPerson')"></app-validation-message>
           </div>
 
           <!-- Monthly Allowance -->
           <div class="form-field">
-            <div class="label-with-note">
-              <label class="form-label is-required">Monthly Allowance</label>
-              <app-note
-                text="Monthly Allowance must be between RM500 and RM2800. Ensure you input a valid amount."
-                [isTooltip]="true">
-              </app-note>
-            </div>
+            <label class="form-label is-required">Monthly Allowance</label>
             <input
               type="number"
               class="input--text"
@@ -213,18 +201,16 @@
               min="500"
               max="2800"
               [class.is-invalid]="form.get('monthlyAllowance')?.invalid && form.get('monthlyAllowance')?.touched">
+            <app-note
+              text="Monthly Allowance must be between RM500 and RM2800. Ensure you input a valid amount."
+              [isTooltip]="false">
+            </app-note>
             <app-validation-message [control]="form.get('monthlyAllowance')"></app-validation-message>
           </div>
 
           <!-- Fee Reduction Percentage (only for PG) -->
           <div class="form-field" *ngIf="positionRequested === 'GRA'">
-            <div class="label-with-note">
-              <label class="form-label is-required">Fee Reduction Percentage (only for PG)</label>
-              <app-note
-                text="Fee reduction is only applicable for Postgraduate Renewal applications."
-                [isTooltip]="true">
-              </app-note>
-            </div>
+            <label class="form-label is-required">Fee Reduction Percentage (only for PG)</label>
             <select
               class="input--select"
               formControlName="feeReductionPercentage"
@@ -237,23 +223,25 @@
               <option value="90">90%</option>
               <option value="100">100%</option>
             </select>
+            <app-note
+              text="Fee reduction is only applicable for Postgraduate Renewal applications."
+              [isTooltip]="false">
+            </app-note>
             <app-validation-message [control]="form.get('feeReductionPercentage')"></app-validation-message>
           </div>
 
           <!-- Appointment End Date -->
           <div class="form-field">
-            <div class="label-with-note">
-              <label class="form-label is-required">Appointment End Date</label>
-              <app-note
-                text="Appointment End Date cannot be later than the Visa End Date or Project End Date."
-                [isTooltip]="true">
-              </app-note>
-            </div>
+            <label class="form-label is-required">Appointment End Date</label>
             <input
               type="date"
               class="input--text"
               formControlName="appointmentEndDate"
               [class.is-invalid]="form.get('appointmentEndDate')?.invalid && form.get('appointmentEndDate')?.touched">
+            <app-note
+              text="Appointment End Date cannot be later than the Visa End Date or Project End Date."
+              [isTooltip]="false">
+            </app-note>
             <app-validation-message [control]="form.get('appointmentEndDate')"></app-validation-message>
           </div>
 
@@ -273,16 +261,8 @@
 
         <!-- 1. Employment Application Form -->
         <div class="form-field">
-          <div class="upload-field-header">
-            <div class="title-with-tooltip">
-              <h3 class="upload-field-title is-required">Employment Application Form</h3>
-              <app-note
-                text="Please ensure all sections are completed, and the form is signed by the applicant."
-                [isTooltip]="true">
-              </app-note>
-            </div>
-            <p class="upload-field-subtitle">Max file size: 10 MB. PDF ONLY</p>
-          </div>
+          <h3 class="upload-field-title is-required">Employment Application Form</h3>
+          <p class="upload-field-subtitle">Max file size: 10 MB. PDF ONLY</p>
           <div class="download-link-wrapper">
             <a href="javascript:void(0)" class="download-link" (click)="downloadEmploymentForm()">
               <span class="material-icons">download</span>
@@ -296,6 +276,10 @@
             placeholder="Upload employment application form PDF"
             (fileSelected)="onDocumentSelected('employmentApplicationForm', $any($event))">
           </app-file-upload>
+          <app-note
+            text="Please ensure all sections are completed, and the form is signed by the applicant."
+            [isTooltip]="false">
+          </app-note>
           @if (form.get('employmentApplicationForm')?.invalid && form.get('employmentApplicationForm')?.touched) {
             <span class="form-error-msg">Employment Application Form is required</span>
           }
@@ -303,15 +287,10 @@
 
         <!-- 2. Copy of Academic Transcripts -->
         <div class="form-field">
-          <div class="upload-field-header">
-            <div class="title-with-tooltip">
-              <h3 class="upload-field-title is-required">Copy of Academic Transcripts (E.g. Diploma, Degree, Master)</h3>
-              <app-note
-                text="Please combine all pages into one PDF file for submission."
-                [isTooltip]="true">
-              </app-note>
-            </div>
-            <p class="upload-field-subtitle">Max file size: 10 MB. PDF ONLY</p>
+          <h3 class="upload-field-title is-required">Copy of Academic Transcripts (E.g. Diploma, Degree, Master)</h3>
+          <p class="upload-field-subtitle">Max file size: 10 MB. PDF ONLY</p>
+          <div class="download-link-wrapper">
+            <!-- Empty space for alignment -->
           </div>
           <app-file-upload
             #transcriptsUpload
@@ -320,6 +299,10 @@
             placeholder="Upload academic transcripts PDF"
             (fileSelected)="onDocumentSelected('academicTranscripts', $any($event))">
           </app-file-upload>
+          <app-note
+            text="Please combine all pages into one PDF file for submission."
+            [isTooltip]="false">
+          </app-note>
           @if (form.get('academicTranscripts')?.invalid && form.get('academicTranscripts')?.touched) {
             <span class="form-error-msg">Academic Transcripts are required</span>
           }
@@ -327,15 +310,10 @@
 
         <!-- 3. RA/GRA's CV -->
         <div class="form-field">
-          <div class="upload-field-header">
-            <div class="title-with-tooltip">
-              <h3 class="upload-field-title is-required">RA/GRA's CV</h3>
-              <app-note
-                text="Please ensure the Curriculum Vitae (CV) is updated and included relevant academic and research experiences."
-                [isTooltip]="true">
-              </app-note>
-            </div>
-            <p class="upload-field-subtitle">Max file size: 10 MB. PDF ONLY</p>
+          <h3 class="upload-field-title is-required">RA/GRA's CV</h3>
+          <p class="upload-field-subtitle">Max file size: 10 MB. PDF ONLY</p>
+          <div class="download-link-wrapper">
+            <!-- Empty space for alignment -->
           </div>
           <app-file-upload
             #cvUpload
@@ -344,6 +322,10 @@
             placeholder="Upload CV PDF"
             (fileSelected)="onDocumentSelected('ragraCv', $any($event))">
           </app-file-upload>
+          <app-note
+            text="Please ensure the Curriculum Vitae (CV) is updated and included relevant academic and research experiences."
+            [isTooltip]="false">
+          </app-note>
           @if (form.get('ragraCv')?.invalid && form.get('ragraCv')?.touched) {
             <span class="form-error-msg">RA/GRA's CV is required</span>
           }
@@ -351,15 +333,10 @@
 
         <!-- 4. Print Screen of Bank Statement -->
         <div class="form-field">
-          <div class="upload-field-header">
-            <div class="title-with-tooltip">
-              <h3 class="upload-field-title is-required">Print Screen of Bank Statement</h3>
-              <app-note
-                text="Please upload a screenshot of the first page of student's bank statement showing account holder name and account number."
-                [isTooltip]="true">
-              </app-note>
-            </div>
-            <p class="upload-field-subtitle">Max file size: 10 MB. PDF ONLY</p>
+          <h3 class="upload-field-title is-required">Print Screen of Bank Statement</h3>
+          <p class="upload-field-subtitle">Max file size: 10 MB. PDF ONLY</p>
+          <div class="download-link-wrapper">
+            <!-- Empty space for alignment -->
           </div>
           <app-file-upload
             #bankStatementUpload
@@ -368,6 +345,10 @@
             placeholder="Upload bank statement PDF"
             (fileSelected)="onDocumentSelected('bankStatement', $any($event))">
           </app-file-upload>
+          <app-note
+            text="Please upload a screenshot of the first page of student's bank statement showing account holder name and account number."
+            [isTooltip]="false">
+          </app-note>
           @if (form.get('bankStatement')?.invalid && form.get('bankStatement')?.touched) {
             <span class="form-error-msg">Bank Statement is required</span>
           }
@@ -375,16 +356,8 @@
 
         <!-- 5. Recruitment Submission Form -->
         <div class="form-field">
-          <div class="upload-field-header">
-            <div class="title-with-tooltip">
-              <h3 class="upload-field-title is-required">Recruitment Submission Form</h3>
-              <app-note
-                text="Please ensure all sections are completed, and the form is signed by the applicant."
-                [isTooltip]="true">
-              </app-note>
-            </div>
-            <p class="upload-field-subtitle">Max file size: 10 MB. PDF ONLY</p>
-          </div>
+          <h3 class="upload-field-title is-required">Recruitment Submission Form</h3>
+          <p class="upload-field-subtitle">Max file size: 10 MB. PDF ONLY</p>
           <div class="download-link-wrapper">
             <a href="javascript:void(0)" class="download-link" (click)="downloadRecruitmentForm()">
               <span class="material-icons">download</span>
@@ -398,6 +371,10 @@
             placeholder="Upload recruitment submission form PDF"
             (fileSelected)="onDocumentSelected('recruitmentSubmissionForm', $any($event))">
           </app-file-upload>
+          <app-note
+            text="Please ensure all sections are completed, and the form is signed by the applicant."
+            [isTooltip]="false">
+          </app-note>
           @if (form.get('recruitmentSubmissionForm')?.invalid && form.get('recruitmentSubmissionForm')?.touched) {
             <span class="form-error-msg">Recruitment Submission Form is required</span>
           }
@@ -405,16 +382,8 @@
 
         <!-- 6. Non-Employee Confidentiality Agreement Form -->
         <div class="form-field">
-          <div class="upload-field-header">
-            <div class="title-with-tooltip">
-              <h3 class="upload-field-title is-required">Non-Employee Confidentiality Agreement Form (For Student)</h3>
-              <app-note
-                text="Please ensure all pages are completed, and signed by the student."
-                [isTooltip]="true">
-              </app-note>
-            </div>
-            <p class="upload-field-subtitle">Max file size: 10 MB. PDF ONLY</p>
-          </div>
+          <h3 class="upload-field-title is-required">Non-Employee Confidentiality Agreement Form (For Student)</h3>
+          <p class="upload-field-subtitle">Max file size: 10 MB. PDF ONLY</p>
           <div class="download-link-wrapper">
             <a href="javascript:void(0)" class="download-link" (click)="downloadConfidentialityForm()">
               <span class="material-icons">download</span>
@@ -428,6 +397,10 @@
             placeholder="Upload confidentiality agreement form PDF"
             (fileSelected)="onDocumentSelected('confidentialityAgreementForm', $any($event))">
           </app-file-upload>
+          <app-note
+            text="Please ensure all pages are completed, and signed by the student."
+            [isTooltip]="false">
+          </app-note>
           @if (form.get('confidentialityAgreementForm')?.invalid && form.get('confidentialityAgreementForm')?.touched) {
             <span class="form-error-msg">Confidentiality Agreement Form is required</span>
           }
@@ -435,15 +408,10 @@
 
         <!-- 7. Other Supporting Documents (Optional) -->
         <div class="form-field">
-          <div class="upload-field-header">
-            <div class="title-with-tooltip">
-              <h3 class="upload-field-title">Other Supporting Documents (If any)</h3>
-              <app-note
-                text="Please upload any other relevant supporting documents e.g. Research Agreement, Research Proposal etc. (if any)."
-                [isTooltip]="true">
-              </app-note>
-            </div>
-            <p class="upload-field-subtitle">Max file size: 10 MB. PDF ONLY</p>
+          <h3 class="upload-field-title">Other Supporting Documents (If any)</h3>
+          <p class="upload-field-subtitle">Max file size: 10 MB. PDF ONLY</p>
+          <div class="download-link-wrapper">
+            <!-- Empty space for alignment -->
           </div>
           <app-file-upload
             #otherDocumentsUpload
@@ -452,13 +420,18 @@
             placeholder="Upload other supporting documents PDF"
             (fileSelected)="onDocumentSelected('otherSupportingDocuments', $any($event))">
           </app-file-upload>
+          <app-note
+            text="Please upload any other relevant supporting documents e.g. Research Agreement, Research Proposal etc. (if any)."
+            [isTooltip]="false">
+          </app-note>
         </div>
 
         <!-- 8. NRIC/Passport -->
         <div class="form-field">
-          <div class="upload-field-header">
-            <h3 class="upload-field-title is-required">NRIC/Passport</h3>
-            <p class="upload-field-subtitle">Max file size: 10 MB. PDF ONLY</p>
+          <h3 class="upload-field-title is-required">NRIC/Passport</h3>
+          <p class="upload-field-subtitle">Max file size: 10 MB. PDF ONLY</p>
+          <div class="download-link-wrapper">
+            <!-- Empty space for alignment -->
           </div>
           <app-file-upload
             #nricPassportUpload
@@ -474,9 +447,10 @@
 
         <!-- 9. VISA (Optional) -->
         <div class="form-field">
-          <div class="upload-field-header">
-            <h3 class="upload-field-title">VISA</h3>
-            <p class="upload-field-subtitle">Max file size: 10 MB. PDF ONLY</p>
+          <h3 class="upload-field-title">VISA</h3>
+          <p class="upload-field-subtitle">Max file size: 10 MB. PDF ONLY</p>
+          <div class="download-link-wrapper">
+            <!-- Empty space for alignment -->
           </div>
           <app-file-upload
             #visaUpload

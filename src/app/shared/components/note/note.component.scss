@@ -3,38 +3,3 @@
 :host {
   display: block;
 }
-
-.note-container {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--space-1);
-  margin: var(--space-2) 0;
-}
-
-.note-container--tooltip {
-  margin-top: var(--space-1);
-}
-
-.note-icon {
-  color: #F59E0B;
-  font-weight: var(--fw-bold);
-  font-size: var(--fs-sm);
-  flex-shrink: 0;
-  line-height: 1.5;
-}
-
-.note-text {
-  color: #F59E0B;
-  font-size: var(--fs-sm);
-  line-height: 1.5;
-  font-weight: var(--fw-semibold);
-
-  strong {
-    display: inline;
-  }
-}
-
-/* Hide the strong label when rendered as a tooltip */
-.note-container--tooltip .note-text strong {
-  display: none;
-}

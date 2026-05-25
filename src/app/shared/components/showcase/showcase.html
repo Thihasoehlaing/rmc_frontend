@@ -403,11 +403,11 @@
       <div class="component-block__header">
         <span class="comp-name">CustomSubheader</span>
         <code class="comp-selector">&lt;app-custom-subheader&gt;</code>
-        <p class="comp-desc">Standardized H3 sub-section heading with optional icon and inline tooltip.</p>
+        <p class="comp-desc">Standardized H3 sub-section heading with optional icon and field note.</p>
       </div>
       <div class="component-block__demo">
-        <app-custom-subheader title="Sub-Section with Tooltip" icon="info"
-          tooltip="This tooltip appears when hovering the note icon.">
+        <app-custom-subheader title="Sub-Section with Field Note" icon="info"
+          tooltip="This field note appears below the sub-section heading.">
         </app-custom-subheader>
       </div>
       <table class="props-table">
@@ -416,34 +416,31 @@
           <tr><td><code>title</code></td><td>string</td><td>Sub-section heading text</td></tr>
           <tr><td><code>iconSvg</code></td><td>string</td><td>Raw SVG string icon. Optional.</td></tr>
           <tr><td><code>icon</code></td><td>string</td><td>Material Icons name. Optional.</td></tr>
-          <tr><td><code>tooltip</code></td><td>string</td><td>When set, renders a NoteComponent tooltip icon.</td></tr>
+          <tr><td><code>tooltip</code></td><td>string</td><td>Optional helper text shown beside the heading.</td></tr>
         </tbody>
       </table>
     </div>
 
-    <!-- ── Note ──────────────────────────────────────────────────── -->
+    <!-- ── FieldNote ──────────────────────────────────────────────── -->
     <div class="component-block">
       <div class="component-block__header">
-        <span class="comp-name">Note</span>
-        <code class="comp-selector">&lt;app-note&gt;</code>
-        <p class="comp-desc"><strong>Inline</strong> = amber banner with caution icon. <strong>Tooltip</strong> = inline helper text under the question using the warning color. Use isTooltip inside label rows.</p>
+        <span class="comp-name">FieldNote</span>
+        <code class="comp-selector">&lt;app-field-note&gt;</code>
+        <p class="comp-desc">Compact note block for field-level guidance. The component provides the design; each field provides its own text.</p>
       </div>
       <div class="component-block__demo">
-        <p class="demo-label">isTooltip: false — inline banner</p>
-        <app-note [isTooltip]="false"
-          text="RA/GRA Allowance — RM 500 per month per RA/GRA. Please state the number of months and students.">
-        </app-note>
-        <p class="demo-label" style="margin-top:var(--space-5)">isTooltip: true — inline helper text inside a label</p>
-        <div class="label-with-note">
-          <label class="form-label">Requested Amount</label>
-          <app-note [isTooltip]="true" text="Please ensure the amount does not exceed the ceiling of RM 50,000 for this category."></app-note>
+        <div class="form-field" style="max-width: 520px;">
+          <label class="form-label is-required">Full Name</label>
+          <input type="text" class="input--text" placeholder="e.g. Dr. Aisha Rahman">
+          <app-field-note>
+            External collaborators must be staff, researchers, or industry partners. Students are not eligible for this role.
+          </app-field-note>
         </div>
       </div>
       <table class="props-table">
-        <thead><tr><th>Input</th><th>Type</th><th>Description</th></tr></thead>
+        <thead><tr><th>Content</th><th>Type</th><th>Description</th></tr></thead>
         <tbody>
-          <tr><td><code>text</code></td><td>string</td><td>The message to display</td></tr>
-          <tr><td><code>isTooltip</code></td><td>boolean</td><td>false = inline banner, true = inline helper text under the field label. Default: false</td></tr>
+          <tr><td><code>ng-content</code></td><td>string / inline content</td><td>Field-specific note text written between the component tags</td></tr>
         </tbody>
       </table>
     </div>
@@ -772,9 +769,9 @@
   ══════════════════════════════════════════════════════════════ -->
   <section class="showcase-section">
     <app-custom-header title="Zero-Hardcoding Contract" icon="gavel"></app-custom-header>
-    <app-note [isTooltip]="false"
-      text="This rule is strictly enforced. All developers must use the token system below. Any hardcoded values will be flagged in code review.">
-    </app-note>
+    <app-field-note>
+      This rule is strictly enforced. All developers must use the token system below. Any hardcoded values will be flagged in code review.
+    </app-field-note>
 
     <table class="ref-table" style="margin-top: var(--space-5);">
       <thead>

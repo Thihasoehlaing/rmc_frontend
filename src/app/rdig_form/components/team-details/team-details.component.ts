@@ -19,6 +19,7 @@ import { AuthService } from '../../../services/auth.service';
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
 import type { DataTableColumn } from '../../../shared/components/data-table/data-table.component';
 import { ActionButtonComponent } from '../../../shared/components/action-button/action-button.component';
+import { FieldNoteComponent } from '../../../shared/components/field-note/field-note.component';
 
 interface RestCountry {
   name?: {
@@ -44,6 +45,7 @@ interface RestCountry {
     ReviewBlockComponent,
     DataTableComponent,
     ActionButtonComponent,
+    FieldNoteComponent,
   ],
   templateUrl: './team-details.component.html',
   styleUrl: './team-details.component.scss'

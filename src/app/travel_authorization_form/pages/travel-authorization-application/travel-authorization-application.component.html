@@ -414,10 +414,8 @@
         <!-- Exchange Rate & Cost in RM -->
         <div class="row--2">
           <div class="form-field">
-            <div class="label-with-icon">
-              <label for="exchangeRate" class="form-label is-required">Exchange Rate</label>
-              <app-note text="ℹ For Malaysia Ringgit/MYR, please put 1 as the exchange rate." [isTooltip]="true"></app-note>
-            </div>
+            <label for="exchangeRate" class="form-label is-required">Exchange Rate</label>
+            <app-note text="For Malaysia Ringgit/MYR, please put 1 as the exchange rate." [isTooltip]="false"></app-note>
             <input
               id="exchangeRate"
               type="text"

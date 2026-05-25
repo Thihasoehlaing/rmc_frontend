@@ -46,6 +46,12 @@ export class JournalDetails implements OnInit, OnDestroy {
   breakdownType: 'internal-research' | 'external-research' | 'non-research' | null = null;
   breakdownEditingIndex: number | null = null;
 
+  // Pagination
+  readonly ITEMS_PER_PAGE = 5;
+  nonResearchBreakdownCurrentPage = 0;
+  externalResearchBreakdownCurrentPage = 0;
+  internalResearchBreakdownCurrentPage = 0;
+
   researchBreakdowns: any[] = [];
   externalBreakdowns: any[] = [];
   NonResearchBreakdowns: any[] = [];
@@ -158,11 +164,11 @@ export class JournalDetails implements OnInit, OnDestroy {
       this.form.get('projectAccountCode')?.updateValueAndValidity();
       this.calculateTotals(); // Recalculate when research type changes
     });
-    
+
     this.form.get('scopusQuartile')?.valueChanges.subscribe(() => {
       this.calculateTotals(); // Recalculate when quartile changes
     });
-    
+
     this.form.get('sponsoredAmountExternal')?.valueChanges.subscribe(() => {
       this.calculateTotals(); // Recalculate when external sponsorship changes
     });
@@ -176,16 +182,19 @@ export class JournalDetails implements OnInit, OnDestroy {
       this.form.get('citedApuPaperExplanation')?.updateValueAndValidity();
     });
 
+    const decimalPattern = '^[0-9]+(\\\\.[0-9]{1,2})?$';
+    const integerPattern = '^[0-9]+$';
+
     this.breakdownForm = this.fb.group({
       itemDescription: ['', Validators.required],
-      voteNumber: [{ value: '', disabled: true }],
+      voteNumber: { value: '', disabled: true },
       accountCodeDescription: [''],
-      accountCode: [{ value: '', disabled: true }],
-      cost: ['', Validators.required],
+      accountCode: { value: '', disabled: true },
+      cost: ['', [Validators.required, Validators.pattern(decimalPattern)]],
       costForeign: [''],
-      exchangeRate: ['', [Validators.required, Validators.pattern('^[0-9]+$')]],
+      exchangeRate: ['', [Validators.required, Validators.pattern(integerPattern)]],
       description: [''],
-      costInRM: [{ value: '', disabled: true }]
+      costInRM: { value: '', disabled: true }
     });
 
     this.sdgKeywordsForm = this.fb.group({
@@ -664,5 +673,18 @@ export class JournalDetails implements OnInit, OnDestroy {
   getDropdownLabel(type: JournalOptionType, value: string): string {
     const option = this.getDropdownOptions(type).find(opt => opt.value === value);
     return option?.label || value || '-';
+  }
+
+  // Pagination handlers
+  onNonResearchBreakdownPageChange(page: number) {
+    this.nonResearchBreakdownCurrentPage = page;
+  }
+
+  onExternalResearchBreakdownPageChange(page: number) {
+    this.externalResearchBreakdownCurrentPage = page;
+  }
+
+  onInternalResearchBreakdownPageChange(page: number) {
+    this.internalResearchBreakdownCurrentPage = page;
   }
 }

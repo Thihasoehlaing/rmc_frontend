@@ -26,7 +26,7 @@ export type PartnershipStatus =
 @Component({
   selector: 'app-partnership-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, FormMainTitleComponent, StepIndicatorComponent, FormWizardNavComponent, FormCommentPanelComponent, ProposalDetails, RiskAssessment],        
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, FormMainTitleComponent, StepIndicatorComponent, FormWizardNavComponent, FormCommentPanelComponent, ProposalDetails, RiskAssessment],
   templateUrl: './partnership_form.component.html',
   styleUrls: ['./partnership_form.component.scss']
 })
@@ -72,7 +72,7 @@ export class PartnershipFormComponent {
   });
 
   // --- COMPUTE PERMISSIONS BY STAGE ---
-  
+
   isProposerDisabled = computed(() => {
     const status = this.applicationStatus();
     return !['draft', 'pending_proposer_resubmission_rmc', 'pending_proposer_resubmission_legal', 'pending_proposer_resubmission_sr_director'].includes(status);
@@ -140,19 +140,16 @@ export class PartnershipFormComponent {
   }
 
   setSimulatedStatus(newStatus: PartnershipStatus): void {
-    console.log('Set DEV status:', newStatus);
     this.applicationStatus.set(newStatus);
   }
 
   onSaveDraft(): void {
-    console.log('Saving partnership draft...');
     this.isSaving.set(true);
     setTimeout(() => this.isSaving.set(false), 1000);
   }
 
   onSubmit(): void {
     this.submitAttempted.set(true);
-    console.log('Submitting partnership form...');
     this.isSubmitting.set(true);
     setTimeout(() => this.isSubmitting.set(false), 1500);
   }

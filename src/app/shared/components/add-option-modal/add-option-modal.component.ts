@@ -53,7 +53,6 @@ export class AddOptionModalComponent implements OnChanges {
   }
 
   onToggleForm(form: string) {
-    console.log('[AddOptionModal] toggle form', form);
     const idx = this.appliesTo.indexOf(form);
     if (idx >= 0) this.appliesTo.splice(idx, 1);
     else this.appliesTo.push(form);

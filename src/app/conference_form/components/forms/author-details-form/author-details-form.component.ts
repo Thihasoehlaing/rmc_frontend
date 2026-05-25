@@ -156,7 +156,7 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
           affiliation: [data?.affiliation || '', [Validators.required]]
         }),
         studentCoAuthors: (data: any) => this.fb.group({
-          tpNumber: [data?.tpNumber || '', [Validators.required]],
+          tpNumber: [data?.tpNumber || '', [Validators.required, Validators.pattern('^[0-9]{6}$')]],
           fullName: [data?.fullName || '', [Validators.required]],
           schoolDepartment: [data?.schoolDepartment || '', [Validators.required]],
           affiliation: [data?.affiliation || '', [Validators.required]]
@@ -204,7 +204,7 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
 
   createStudentCoAuthor(): FormGroup {
     return this.fb.group({
-      tpNumber: ['', [Validators.required]],
+      tpNumber: ['', [Validators.required, Validators.pattern('^[0-9]{6}$')]],
       fullName: ['', [Validators.required]],
       schoolDepartment: ['', [Validators.required]],
       affiliation: ['', [Validators.required]]
@@ -344,7 +344,7 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
       } else if (type === 'student') {
         data = this.studentCoAuthors.at(index).value;
         this.editForm = this.fb.group({
-          tpNumber: [data.tpNumber, [Validators.required]],
+          tpNumber: [data.tpNumber, [Validators.required, Validators.pattern('^[0-9]{6}$')]],
           fullName: [data.fullName, [Validators.required]],
           schoolDepartment: [data.schoolDepartment, [Validators.required]],
           affiliation: [data.affiliation, [Validators.required]]
@@ -371,7 +371,7 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
         });
       } else if (type === 'student') {
         this.editForm = this.fb.group({
-          tpNumber: ['', [Validators.required]],
+          tpNumber: ['', [Validators.required, Validators.pattern('^[0-9]{6}$')]],
           fullName: ['', [Validators.required]],
           schoolDepartment: ['', [Validators.required]],
           affiliation: ['', [Validators.required]]
@@ -454,5 +454,11 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
       'rmc_request_resubmission'
     ];
     return allowedStatuses.includes(status);
+  }
+
+  filterTpNumber(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    input.value = input.value.replace(/[^0-9]/g, '').slice(0, 6);
+    this.editForm.get('tpNumber')?.setValue(input.value, { emitEvent: false });
   }
 }

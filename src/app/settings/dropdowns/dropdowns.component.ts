@@ -192,7 +192,6 @@ export class DropdownsComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadOptionsFromStorage();
-    console.log('[DEBUG] DropdownsComponent initialized');
     this.route.queryParams.subscribe(params => {
       const id = Number(params['group']);
       const explicitGroupId = !Number.isNaN(id) && id > 0 ? id : null;

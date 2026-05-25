@@ -121,11 +121,14 @@ export const NAVIGATION_DATA: NavGroup[] = [
                             allOf: ['academic'],
                         },
                     },
-                    // Travel Authorization: visible to all authenticated users
+                    // Travel Authorization: visible to all authenticated users except Admin
                     {
                         label: 'Travel Authorization',
                         icon: 'flight_takeoff',
-                        route: '/travel-authorization/application'
+                        route: '/travel-authorization/application',
+                        permission: {
+                            excludeGroups: ['Admin'],
+                        },
                     },
                 ],
             },

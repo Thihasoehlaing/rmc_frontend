@@ -233,9 +233,13 @@
           <div class="form-group">
             <label for="tpNumber">TP Number <span class="asterisk">*</span></label>
             <input type="text" id="tpNumber" class="form-control" formControlName="tpNumber"
-              placeholder="Ex. TPXXXXXX">
+              placeholder="Ex. 123456" maxlength="6" (input)="filterTpNumber($event)">
             @if (editForm.get('tpNumber')?.invalid && editForm.get('tpNumber')?.touched) {
-              <span class="error-message">TP Number is required</span>
+              @if (editForm.get('tpNumber')?.errors?.['required']) {
+                <span class="error-message">TP Number is required</span>
+              } @else if (editForm.get('tpNumber')?.errors?.['pattern']) {
+                <span class="error-message">TP Number must be exactly 6 digits</span>
+              }
             }
           </div>
 

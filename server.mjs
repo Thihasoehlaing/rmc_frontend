@@ -42,9 +42,48 @@ import { readFileSync } from 'fs'
 const server      = jsonServer.create()
 const router      = jsonServer.router('db.json')
 const middlewares = jsonServer.defaults()
+const allowedOrigins = new Set([
+  'http://localhost:4200',
+  'http://127.0.0.1:4200',
+  'http://localhost:3000',
+  'http://127.0.0.1:3000',
+])
+
+server.disable('x-powered-by')
 
 server.use(middlewares)
 server.use(jsonServer.bodyParser)
+
+server.use((req, res, next) => {
+  const origin = typeof req.headers.origin === 'string' ? req.headers.origin : ''
+
+  if (origin && !allowedOrigins.has(origin)) {
+    return res.status(403).json({
+      error: 'Origin not allowed',
+      message: 'Requests from this browser origin are blocked by the local demo server.',
+    })
+  }
+
+  if (origin) {
+    res.setHeader('Access-Control-Allow-Origin', origin)
+    res.setHeader('Vary', 'Origin')
+  }
+
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PATCH,PUT,DELETE,OPTIONS')
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+  res.setHeader('Access-Control-Max-Age', '600')
+  res.setHeader('X-Content-Type-Options', 'nosniff')
+  res.setHeader('X-Frame-Options', 'DENY')
+  res.setHeader('Referrer-Policy', 'same-origin')
+  res.setHeader('Cross-Origin-Resource-Policy', 'same-origin')
+  res.setHeader('Cache-Control', 'no-store, max-age=0')
+
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(204)
+  }
+
+  next()
+})
 
 // ─── Helper ────────────────────────────────────────────────────────────────
 

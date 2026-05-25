@@ -1,4 +1,5 @@
-import { Component, ContentChild, Input, TemplateRef, TrackByFunction, Output, EventEmitter } from '@angular/core';
+import { Component, ContentChild, Input, TemplateRef, TrackByFunction, Output, EventEmitter, computed } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { NgTemplateOutlet } from '@angular/common';
 
 type DataTableAlign = 'left' | 'center' | 'right';
@@ -22,7 +23,7 @@ export interface DataTableRowContext<T = unknown> {
 @Component({
   selector: 'app-data-table',
   standalone: true,
-  imports: [NgTemplateOutlet],
+  imports: [NgTemplateOutlet, CommonModule],
   templateUrl: './data-table.component.html',
   styleUrl: './data-table.component.scss'
 })
@@ -36,9 +37,33 @@ export class DataTableComponent {
   @Input() dense = false;
   @Input() hoverable = true;
   @Input() striped = true;
+  @Input() pageSize: number | null = null;
+  @Input() currentPage: number = 0;
   @Output() sortChange = new EventEmitter<string>();
+  @Output() pageChange = new EventEmitter<number>();
 
   @ContentChild('rowTemplate') rowTemplate?: TemplateRef<DataTableRowContext<unknown>>;
+
+  // Computed properties for pagination
+  get displayRows(): readonly unknown[] {
+    if (!this.pageSize || this.pageSize <= 0) {
+      return this.rows;
+    }
+    const start = this.currentPage * this.pageSize;
+    const end = start + this.pageSize;
+    return this.rows.slice(start, end);
+  }
+
+  get totalPages(): number {
+    if (!this.pageSize || this.pageSize <= 0) {
+      return 1;
+    }
+    return Math.ceil(this.rows.length / this.pageSize);
+  }
+
+  get hasPagination(): boolean {
+    return this.pageSize !== null && this.pageSize > 0;
+  }
 
   resolveValue(row: unknown, key: string): unknown {
     return (row as Record<string, unknown>)?.[key];
@@ -59,6 +84,27 @@ export class DataTableComponent {
   onHeaderClick(column: DataTableColumn) {
     if (column.sortable) {
       this.sortChange.emit(column.key);
+    }
+  }
+
+  onPreviousPage() {
+    if (this.currentPage > 0) {
+      this.currentPage--;
+      this.pageChange.emit(this.currentPage);
+    }
+  }
+
+  onNextPage() {
+    if (this.currentPage < this.totalPages - 1) {
+      this.currentPage++;
+      this.pageChange.emit(this.currentPage);
+    }
+  }
+
+  goToPage(page: number) {
+    if (page >= 0 && page < this.totalPages) {
+      this.currentPage = page;
+      this.pageChange.emit(this.currentPage);
     }
   }
 }

@@ -57,7 +57,7 @@
       </div>
     } @else {
       <div class="application-list">
-        @for (app of recentApps(); track app.id ?? getTitle(app)) {
+        @for (app of recentApps(); track $index) {
           <a
             class="application-row"
             [routerLink]="getFormRoute(app)"

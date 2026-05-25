@@ -21,7 +21,6 @@ export class AdminSettingsComponent implements OnInit {
   cards: AdminCard[] = [];
 
   ngOnInit(): void {
-    console.log('[DEBUG] AdminSettingsComponent initialized');
     // Guidelines count: read persisted guidelines if available
     let guidelinesCount = 0;
     try {

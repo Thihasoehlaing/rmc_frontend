@@ -538,11 +538,9 @@ export class ConferenceApplication implements OnInit {
 
   saveDraft() {
     // TODO: Implement save draft functionality
-    console.log('Save draft triggered at step', this.currentStep());
   }
 
   submitForm() {
     // TODO: Implement submit form functionality
-    console.log('Submit form triggered');
   }
 }

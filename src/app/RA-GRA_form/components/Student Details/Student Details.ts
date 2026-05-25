@@ -357,16 +357,13 @@ export class StudentDetailsComponent implements OnInit, OnChanges {
   // Download links - these would typically point to actual document URLs
   downloadEmploymentForm() {
     // Implement download logic
-    console.log('Download Employment Application Form');
   }
 
   downloadRecruitmentForm() {
     // Implement download logic
-    console.log('Download Recruitment Submission Form');
   }
 
   downloadConfidentialityForm() {
     // Implement download logic
-    console.log('Download Confidentiality Agreement Form');
   }
 }

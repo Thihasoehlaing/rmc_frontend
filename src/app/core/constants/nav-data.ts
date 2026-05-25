@@ -18,7 +18,7 @@ import { NavGroup } from '../../interfaces/nav.interface';
  *   Journal Publication     : (full_time OR contract) AND academic AND HOS AND VC
  *   RA/GRA Application      : (full_time OR contract) AND academic
  *   RDIG Application        : (full_time OR contract) AND academic, NOT Reviewer, NOT blocked_hos_rdig
- *   RMC Settings            : RMC group only
+ *   Admin Settings          : Admin group only
  *   Submissions (Inbox...)  : All authenticated users
  */
 export const NAVIGATION_DATA: NavGroup[] = [
@@ -130,20 +130,6 @@ export const NAVIGATION_DATA: NavGroup[] = [
                             excludeGroups: ['Admin'],
                         },
                     },
-                ],
-            },
-
-            // ── RMC Settings ─────────────────────────────────────────────────────────────
-            // Administrative configuration folder — RMC group only.
-            {
-                label: 'RMC Settings',
-                icon: 'settings',
-                permission: { anyOf: ['RMC', 'Admin'] },
-                children: [
-                    { label: 'Batch Sitting', icon: 'event_available', route: '/settings/batch-sitting', permission: { allOf: ['RMC'] } },
-                    { label: 'Conference Settings', icon: 'event_note', route: '/conference/settings', permission: { allOf: ['RMC'] } },
-                    { label: 'Journal Settings', icon: 'event_note', route: '/journal/settings', permission: { anyOf: ['Admin'] } },
-                    { label: 'Partnership Settings', icon: 'handshake', route: '/partnership/settings', permission: { anyOf: ['Admin'] } },
                 ],
             },
 

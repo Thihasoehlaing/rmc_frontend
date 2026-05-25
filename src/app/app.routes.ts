@@ -174,7 +174,7 @@ export const routes: Routes = [
           ),
       },
 
-      // ── RMC Settings —  RMC group only ───────────────────────────────────
+      // ── Admin Settings — Admin group only ────────────────────────────────
       {
         path: 'settings',
         children: [

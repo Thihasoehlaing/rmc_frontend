@@ -244,7 +244,7 @@ export class JournalDetails implements OnInit, OnDestroy {
       if (type === 'non-research') {
         voteNumberCtrl?.clearValidators();
         voteNumberCtrl?.updateValueAndValidity({ emitEvent: false });
-        accountCodeCtrl?.enable({ emitEvent: false });
+        accountCodeCtrl?.disable({ emitEvent: false }); // Make account code read-only for non-research
       } else {
         voteNumberCtrl?.setValidators([Validators.required]);
         voteNumberCtrl?.updateValueAndValidity({ emitEvent: false });
@@ -269,8 +269,14 @@ export class JournalDetails implements OnInit, OnDestroy {
         }
       } else {
         this.breakdownEditingIndex = null;
-        if (type === 'internal-research' || type === 'external-research') {
-          this.breakdownForm.patchValue({ voteNumber: 'V29000' }, { emitEvent: false });
+        if (type === 'external-research') {
+          // For External, auto-fill with Project Account Code
+          const projectAccountCode = this.form.get('projectAccountCode')?.value || '';
+          this.breakdownForm.patchValue({ voteNumber: projectAccountCode }, { emitEvent: false });
+        } else if (type === 'non-research') {
+          // For Non-Research, auto-fill with Project Account Code
+          const projectAccountCode = this.form.get('projectAccountCode')?.value || '';
+          this.breakdownForm.patchValue({ accountCode: projectAccountCode }, { emitEvent: false });
         }
       }
 

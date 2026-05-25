@@ -45,7 +45,7 @@ The sidebar navigation is currently hardcoded in `sidebar.component.ts` for proo
 - RDIG Application Form (with children: Inbox, List, History)
 - Conference Funding Application (with children)
 - Journal Publication Funding (with children)
-- RMC Settings (with children)
+- Admin Settings (with children)
 
 ## Future API Integration
 

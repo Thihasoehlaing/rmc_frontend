@@ -1,12 +1,10 @@
 @use '../../../../../assets/styles/index' as *;
 @use '../../../styles/radio-group';
 
-// Override required field color for conference form
 .form-label.is-required::after {
   color: var(--color-error-dark);
 }
 
-// Style asterisks in modal to use error-dark color
 .asterisk {
   color: var(--color-error-dark);
 }
@@ -18,7 +16,7 @@
 .section-fields {
   display: flex;
   flex-direction: column;
-  gap: var(--space-7); // increase spacing between sections
+  gap: var(--space-7);
 }
 
 

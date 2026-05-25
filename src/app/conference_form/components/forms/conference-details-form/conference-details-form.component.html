@@ -909,10 +909,8 @@
 
         <!-- Exchange Rate -->
         <div class="form-group">
-          <div class="label-with-note">
-            <label for="exchangeRate">Exchange Rate <span class="asterisk">*</span></label>
-            <app-note text="ℹ For Malaysia Ringgit/MYR, please put 1 as the exchange rate." [isTooltip]="true"></app-note>
-          </div>
+          <label for="exchangeRate" class="form-label">Exchange Rate <span class="asterisk">*</span></label>
+          <app-note text="For Malaysia Ringgit/MYR, please put 1 as the exchange rate." [isTooltip]="false"></app-note>
           <input
             id="exchangeRate"
             type="number"

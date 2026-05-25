@@ -53,6 +53,12 @@ export class AuthorsDetails implements OnInit {
   editingIndex: number | null = null;
   modalType: 'apu-staff' | 'student' | 'non-apu' | null = null;
 
+  // Pagination
+  readonly ITEMS_PER_PAGE = 5;
+  apuStaffCurrentPage = 0;
+  studentCoAuthorsCurrentPage = 0;
+  nonApuCoAuthorsCurrentPage = 0;
+
   // Staff dropdown options
   staffOptions: DropdownOption[] = [
     { value: 'Vivian Banshee', label: 'Vivian Banshee' },
@@ -133,8 +139,8 @@ export class AuthorsDetails implements OnInit {
 
   createStudentCoAuthor(): FormGroup {
     return this.fb.group({
-      // TP Number: required, must be non-empty digits, no all-zeros
-      tpNumber: ['', [Validators.required, Validators.pattern('^(?!0+$)[0-9]+$')]],
+      // TP Number: required, must be non-empty digits, no all-zeros, max 6 digits
+      tpNumber: ['', [Validators.required, Validators.pattern('^(?!0+$)[0-9]{1,6}$')]],
       fullName: ['', [Validators.required]],
       schoolDepartment: ['', [Validators.required]],
       affiliation: ['']
@@ -208,7 +214,7 @@ export class AuthorsDetails implements OnInit {
       } else if (type === 'student') {
         data = this.studentCoAuthors.at(index).value;
         this.editForm = this.fb.group({
-          tpNumber: [this.parseTPNumber(data.tpNumber), [Validators.required, Validators.pattern('^(?!0+$)[0-9]+$')]],
+          tpNumber: [this.parseTPNumber(data.tpNumber), [Validators.required, Validators.pattern('^(?!0+$)[0-9]{1,6}$')]],
           fullName: [data.fullName, [Validators.required]],
           schoolDepartment: [data.schoolDepartment, [Validators.required]],
           affiliation: [data.affiliation]
@@ -235,7 +241,7 @@ export class AuthorsDetails implements OnInit {
         });
       } else if (type === 'student') {
         this.editForm = this.fb.group({
-          tpNumber: ['', [Validators.required, Validators.pattern('^(?!0+$)[0-9]+$')]],
+          tpNumber: ['', [Validators.required, Validators.pattern('^(?!0+$)[0-9]{1,6}$')]],
           fullName: ['', [Validators.required]],
           schoolDepartment: ['', [Validators.required]],
           affiliation: ['']
@@ -352,6 +358,19 @@ export class AuthorsDetails implements OnInit {
    */
   private parseTPNumber(stored: string): string {
     return stored.replace(/^TP/i, '');
+  }
+
+  // Pagination handlers
+  onApuStaffPageChange(page: number) {
+    this.apuStaffCurrentPage = page;
+  }
+
+  onStudentCoAuthorsPageChange(page: number) {
+    this.studentCoAuthorsCurrentPage = page;
+  }
+
+  onNonApuCoAuthorsPageChange(page: number) {
+    this.nonApuCoAuthorsCurrentPage = page;
   }
 }
 

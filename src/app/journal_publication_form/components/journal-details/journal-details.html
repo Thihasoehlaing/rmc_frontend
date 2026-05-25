@@ -199,7 +199,10 @@
                           [columns]="nonResearchBreakdownColumns"
                           [rows]="getBreakdownArray('non-research')"
                           [hoverable]="true"
-                          [striped]="true">
+                          [striped]="true"
+                          [pageSize]="ITEMS_PER_PAGE"
+                          [currentPage]="nonResearchBreakdownCurrentPage"
+                          (pageChange)="onNonResearchBreakdownPageChange($event)">
                           <ng-template #rowTemplate let-row let-index="index">
                             <tr>
                               <td>{{ row.accountCodeDescription || row.itemDescription || '—' }}</td>
@@ -226,7 +229,10 @@
                           [columns]="externalResearchBreakdownColumns"
                           [rows]="getBreakdownArray('external-research')"
                           [hoverable]="true"
-                          [striped]="true">
+                          [striped]="true"
+                          [pageSize]="ITEMS_PER_PAGE"
+                          [currentPage]="externalResearchBreakdownCurrentPage"
+                          (pageChange)="onExternalResearchBreakdownPageChange($event)">
                           <ng-template #rowTemplate let-row let-index="index">
                             <tr>
                               <td>{{ row.itemDescription }}</td>
@@ -253,7 +259,10 @@
                           [columns]="breakdownColumns"
                           [rows]="getBreakdownArray(researchType || '')"
                           [hoverable]="true"
-                          [striped]="true">
+                          [striped]="true"
+                          [pageSize]="ITEMS_PER_PAGE"
+                          [currentPage]="internalResearchBreakdownCurrentPage"
+                          (pageChange)="onInternalResearchBreakdownPageChange($event)">
                           <ng-template #rowTemplate let-row let-index="index">
                             <tr>
                               <td class="col-no text-muted is-align-center">{{ index + 1 }}</td>
@@ -467,11 +476,12 @@
       </label>
       <input
         id="cost"
-        type="text"
+        type="number"
         inputmode="decimal"
         class="input--text"
         formControlName="cost"
         placeholder="Enter cost"
+        step="0.01"
         (input)="clampPositive($event); recalcCostInRM()">
       @if (breakdownForm.get('cost')?.invalid && breakdownForm.get('cost')?.touched) {
         <span class="error-message">Cost is required</span>
@@ -481,6 +491,7 @@
     <!-- Exchange Rate -->
     <div class="breakdown-field">
       <label for="exchangeRate" class="form-label">Exchange Rate <span class="asterisk">*</span></label>
+      <app-note text="For Malaysia Ringgit/MYR, please put 1 as the exchange rate." [isTooltip]="false"></app-note>
       <input
         id="exchangeRate"
         type="text"
@@ -489,7 +500,6 @@
         formControlName="exchangeRate"
         placeholder="e.g. 1, 4, 5"
         (input)="enforceInteger($event)">
-      <app-note text="For Malaysia Ringgit/MYR, please put 1 as the exchange rate." [isTooltip]="false"></app-note>
       @if (breakdownForm.get('exchangeRate')?.invalid && breakdownForm.get('exchangeRate')?.touched) {
         <span class="error-message">Exchange rate is required (whole numbers only)</span>
       }

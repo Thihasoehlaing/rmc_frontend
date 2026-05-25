@@ -2,6 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
+import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-login',
@@ -22,9 +23,10 @@ export class LoginComponent {
   loginError  = signal('');
   showPassword = signal(false);
   showDemoAccounts = signal(false);
+  readonly isProduction = environment.production;
 
   /** Demo accounts pulled from AuthService so they stay in sync with DUMMY_USERS. */
-  readonly demoAccounts = this.authService.getDemoAccounts();
+  readonly demoAccounts = this.isProduction ? [] : this.authService.getDemoAccounts();
 
   /** Submit the login form. */
   submit(): void {

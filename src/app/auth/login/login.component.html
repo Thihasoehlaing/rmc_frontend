@@ -91,29 +91,31 @@
 
       </form>
 
-      <!-- Demo accounts disclosure -->
-      <div class="demo-panel">
-        <button class="demo-panel__toggle" type="button" (click)="toggleDemoAccounts()">
-          <span class="material-icons">{{ showDemoAccounts() ? 'expand_less' : 'expand_more' }}</span>
-          <span>Demo Accounts</span>
-          <span class="demo-panel__badge">{{ demoAccounts.length }}</span>
-        </button>
+      @if (!isProduction) {
+        <!-- Demo accounts disclosure -->
+        <div class="demo-panel">
+          <button class="demo-panel__toggle" type="button" (click)="toggleDemoAccounts()">
+            <span class="material-icons">{{ showDemoAccounts() ? 'expand_less' : 'expand_more' }}</span>
+            <span>Demo Accounts</span>
+            <span class="demo-panel__badge">{{ demoAccounts.length }}</span>
+          </button>
 
-        @if (showDemoAccounts()) {
-          <div class="demo-panel__list">
-            <p class="demo-panel__note">Click any account to pre-fill the form.</p>
-            @for (account of demoAccounts; track account.username) {
-              <button class="demo-account" type="button" (click)="fillDemo(account)">
-                <div class="demo-account__main">
-                  <span class="demo-account__name">{{ account.label }}</span>
-                  <code class="demo-account__creds">{{ account.username }} / {{ account.password }}</code>
-                </div>
-                <div class="demo-account__groups">{{ account.groups }}</div>
-              </button>
-            }
-          </div>
-        }
-      </div>
+          @if (showDemoAccounts()) {
+            <div class="demo-panel__list">
+              <p class="demo-panel__note">Click any account to pre-fill the form.</p>
+              @for (account of demoAccounts; track account.username) {
+                <button class="demo-account" type="button" (click)="fillDemo(account)">
+                  <div class="demo-account__main">
+                    <span class="demo-account__name">{{ account.label }}</span>
+                    <code class="demo-account__creds">{{ account.username }}</code>
+                  </div>
+                  <div class="demo-account__groups">{{ account.groups }}</div>
+                </button>
+              }
+            </div>
+          }
+        </div>
+      }
 
     </div><!-- /login-card -->
   </div><!-- /login-container -->

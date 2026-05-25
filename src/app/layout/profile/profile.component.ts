@@ -33,7 +33,6 @@ export class ProfileComponent {
 
   saveProfile() {
     if (this.profileForm.valid) {
-      console.log('Profile Saved:', this.profileForm.value);
       alert('Profile updated successfully!');
     } else {
       alert('Please fill in all required fields, including your current password.');

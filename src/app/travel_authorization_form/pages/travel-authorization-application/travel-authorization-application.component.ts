@@ -662,7 +662,6 @@ export class TravelAuthorizationApplicationComponent implements OnInit {
     if (this.travelAuthForm.valid) {
       this.isSubmitting.set(true);
       // TODO: Replace with actual API call
-      console.log('Form submitted:', this.travelAuthForm.getRawValue());
       // Simulate API call
       setTimeout(() => {
         this.isSubmitting.set(false);

@@ -20,7 +20,10 @@
               [columns]="apuStaffColumns"
               [rows]="testSubsections.controls"
               [hoverable]="true"
-              [striped]="true">
+              [striped]="true"
+              [pageSize]="ITEMS_PER_PAGE"
+              [currentPage]="apuStaffCurrentPage"
+              (pageChange)="onApuStaffPageChange($event)">
               <ng-template #rowTemplate let-row let-index="index">
                 <tr>
                   <td class="col-no text-muted is-align-center">{{ index + 1 }}</td>
@@ -69,7 +72,10 @@
               [columns]="studentColumns"
               [rows]="studentCoAuthors.controls"
               [hoverable]="true"
-              [striped]="true">
+              [striped]="true"
+              [pageSize]="ITEMS_PER_PAGE"
+              [currentPage]="studentCoAuthorsCurrentPage"
+              (pageChange)="onStudentCoAuthorsPageChange($event)">
               <ng-template #rowTemplate let-row let-index="index">
                 <tr>
                   <td class="col-no text-muted is-align-center">{{ index + 1 }}</td>
@@ -119,7 +125,10 @@
               [columns]="nonApuColumns"
               [rows]="nonApuCoAuthors.controls"
               [hoverable]="true"
-              [striped]="true">
+              [striped]="true"
+              [pageSize]="ITEMS_PER_PAGE"
+              [currentPage]="nonApuCoAuthorsCurrentPage"
+              (pageChange)="onNonApuCoAuthorsPageChange($event)">
               <ng-template #rowTemplate let-row let-index="index">
                 <tr>
                   <td class="col-no text-muted is-align-center">{{ index + 1 }}</td>
@@ -210,6 +219,7 @@
               <input type="text" id="tpNumber" inputmode="numeric" class="form-control input-prefix-group__input"
                 formControlName="tpNumber"
                 placeholder="e.g. 123456"
+                maxlength="6"
                 (input)="enforceTPNumber($event)">
             </div>
             <app-validation-message [control]="editForm.get('tpNumber')"></app-validation-message>

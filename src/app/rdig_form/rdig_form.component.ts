@@ -981,7 +981,6 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
 
     if (!this.validationDisabled() && this.rdigForm.invalid) {
       this.rdigForm.markAllAsTouched();
-      console.warn('Form invalid — please review all steps.');
       this.submissionErrorMessage.set('Your form has missing or invalid fields. Please review all steps.');
       this.submissionState.set('ERROR');
       return;
@@ -1062,7 +1061,6 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
       isDraft:  false,
       savedAt:  new Date().toISOString(),
     };
-    console.log('Submitting', formData);
 
     const appId = this.loadedAppId();
     const isEdit = !!appId;

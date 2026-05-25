@@ -314,35 +314,27 @@ export class ManualOverrideComponent {
    * Notification methods (can be replaced with proper event emitters in parent)
    */
   private notifyOverrideChange(override: OverrideValue) {
-    console.log('[Override] Added/Updated:', override);
   }
 
   private notifyOverrideRemoved(key: string) {
-    console.log('[Override] Removed:', key);
   }
 
   private notifyAllOverridesCleared() {
-    console.log('[Override] All cleared');
   }
 
   private notifyProfileApplied(profileName: string) {
-    console.log('[Profile] Applied:', profileName);
   }
 
   private notifyProfileSaved(profileName: string) {
-    console.log('[Profile] Saved:', profileName);
   }
 
   private notifyProfileDeleted(profileName: string) {
-    console.log('[Profile] Deleted:', profileName);
   }
 
   private notifyOverridesImported() {
-    console.log('[Override] Imported');
   }
 
   private notifyOverridesUpdated() {
-    console.log('[Override] Updated from JSON');
   }
 
   /**

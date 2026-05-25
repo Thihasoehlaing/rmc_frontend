@@ -137,9 +137,15 @@ export const routes: Routes = [
       },
 
       // ── Travel Authorization ─────────────────────────────────────────────
-      // Visible to authenticated users (no extra ABAC restrictions here).
+      // Rule: all authenticated users EXCEPT Admin
       {
         path: 'travel-authorization',
+        canActivate: [permissionGuard],
+        data: {
+          permission: {
+            excludeGroups: ['Admin'],
+          } satisfies NavPermission,
+        },
         loadChildren: () =>
           import('./travel_authorization_form/travel_authorization_form.routes').then(
             m => m.travelAuthorizationFormRoutes
@@ -168,7 +174,7 @@ export const routes: Routes = [
           ),
       },
 
-      // ── RMC Settings —  RMC group only ───────────────────────────────────
+      // ── Admin Settings — Admin group only ────────────────────────────────
       {
         path: 'settings',
         children: [

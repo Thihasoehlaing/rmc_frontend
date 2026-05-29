@@ -472,9 +472,12 @@
           }
         </div>
 
+        <div class="form-field">
+          <button class="btn btn-primary btn-sm" type="submit" [disabled]="expenseForm.invalid">{{ editExpenseIndex !== null ? 'Update' : 'Add' }}</button>
+        </div>
+
         <div class="modal-footer-actions">
           <button class="btn btn-ghost btn-sm" type="button" (click)="closeExpenseModal()">Cancel</button>
-          <button class="btn btn-primary btn-sm" type="submit" [disabled]="expenseForm.invalid">{{ editExpenseIndex !== null ? 'Update' : 'Add' }}</button>
         </div>
       </form>
     </app-dialog>

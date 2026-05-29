@@ -1,5 +1,4 @@
 @use '../../../../../assets/styles/index' as *;
-@use '../../../styles/radio-group';
 
 .form-label.is-required::after {
   color: var(--color-error-dark);
@@ -10,15 +9,18 @@
 }
 
 .form-section {
-  padding: var(--space-4);
+  padding: var(--space-2);
 }
 
 .section-fields {
   display: flex;
   flex-direction: column;
-  gap: var(--space-7);
+  gap: var(--space-2);
 }
 
+.form-column .form-field {
+  margin-bottom: var(--space-3);
+}
 
 .form-counter {
   font-size: var(--fs-xs);
@@ -65,7 +67,7 @@
 .row--2 {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--space-8); // more breathing room between columns vertically/horizontally
+  gap: var(--space-2);
 
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
@@ -78,6 +80,9 @@
 
 .radio-divider-extended {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
 
   /* full-height vertical divider limited to only the wrapped radio section */
   &::before {
@@ -96,8 +101,8 @@
   .form-field {
     position: relative;
     z-index: 1;
-    padding-left: var(--space-3);
-    padding-right: var(--space-3);
+    padding-left: var(--space-2);
+    padding-right: var(--space-2);
   }
 
   /* prevent in-label note boxes from extending into the center divider */
@@ -120,7 +125,7 @@
   }
 
   /* Improve vertical alignment between left/right columns */
-  --label-block-min-height: 96px; /* increased to fit label + note boxes */
+  --label-block-min-height: 52px;
 
   /* Ensure both simple labels and labels-with-note reserve the same vertical space */
   .form-field > .label-with-note,
@@ -145,7 +150,7 @@
 .row--3 {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
-  gap: var(--space-6);
+  gap: var(--space-2);
 
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
@@ -187,9 +192,9 @@
 }
 
 .total-display {
-  padding-bottom: var(--space-4);
+  padding-bottom: var(--space-2);
   border-bottom: 2px solid var(--border-default);
-  margin-bottom: var(--space-4);
+  margin-bottom: var(--space-2);
 
   .total-label {
     font-size: var(--fs-md);
@@ -207,7 +212,7 @@
 }
 
 .form-field {
-  margin-bottom: var(--space-9); // larger vertical spacing between form fields
+  margin-bottom: var(--space-2);
 
   &:last-child {
     margin-bottom: 0;
@@ -217,8 +222,8 @@
 .sponsorship-subsections-container {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--space-6);
-  margin-bottom: var(--space-6);
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
 
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
@@ -248,17 +253,17 @@
 .subsection-fields-wrapper {
   display: flex;
   flex-direction: column;
-  gap: var(--space-6);
+  gap: var(--space-2);
   flex: 1;
-  padding: var(--space-4);
+  padding: var(--space-2);
   background-color: var(--color-surface);
-  border: 1px solid var(--border-default); // 1px border — allowed exception
+  border: 1px solid var(--border-default);
   border-radius: var(--radius-sm);
 }
 
 .sponsorship-subsection .row--2 {
   grid-template-columns: 1fr;
-  gap: var(--space-6);
+  gap: var(--space-2);
 
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
@@ -277,13 +282,13 @@
 .subsection-fields {
   display: flex;
   flex-direction: column;
-  gap: var(--space-6);
+  gap: var(--space-2);
 }
 
 .sponsorship-subsection-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--space-6);
+  gap: var(--space-2);
 
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
@@ -292,9 +297,9 @@
 
 .funding-warning-box {
   display: flex;
-  gap: var(--space-3);
-  padding: var(--space-4);
-  margin-bottom: var(--space-6);
+  gap: var(--space-2);
+  padding: var(--space-2);
+  margin-bottom: var(--space-2);
   background-color: var(--color-warning-light);
   border: 1px solid var(--color-warning);
   border-radius: var(--radius-md);
@@ -695,10 +700,13 @@
   gap: var(--space-3);
   padding: var(--space-3) var(--space-4);
   border-top: 1px solid var(--border-default);
-  justify-content: flex-end;
+  justify-content: space-between;
   align-items: center;
   flex-shrink: 0;
+  grid-column: 1 / -1;
   width: 100%;
+  box-sizing: border-box;
+  margin: 0;
 
   .btn {
     min-width: 100px;

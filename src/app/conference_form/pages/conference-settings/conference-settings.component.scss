@@ -422,6 +422,9 @@
       display: flex;
       gap: var(--space-4);
       justify-content: flex-end;
+      width: calc(100% + 2 * var(--space-6));
+      margin-left: calc(var(--space-6) * -1);
+      margin-right: calc(var(--space-6) * -1);
 
       .btn {
         min-width: var(--space-30); // no token: button fixed width

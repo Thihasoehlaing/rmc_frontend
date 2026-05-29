@@ -4,6 +4,7 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractContro
 import { NoteComponent } from '../../../../shared/components/note/note.component';
 import { SearchableDropdownComponent } from '../../../../shared/components/searchable-dropdown/searchable-dropdown.component';
 import { ValidationMessageComponent } from '../../../../shared/components/validation-message/validation-message.component';
+import { CharacterCounterComponent } from '../../../../shared/components/character-counter/character-counter.component';
 import { DataTableComponent, DataTableColumn } from '../../../../shared/components/data-table/data-table.component';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
 import { DialogComponent } from '../../../../shared/components/dialog/dialog.component';
@@ -15,7 +16,7 @@ import { BreakdownOptionsService } from '../../../services/breakdown-options.ser
 @Component({
   selector: 'app-conference-details-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, NoteComponent, SearchableDropdownComponent, ValidationMessageComponent, DataTableComponent, DialogComponent, PaginationComponent],
+  imports: [CommonModule, ReactiveFormsModule, NoteComponent, SearchableDropdownComponent, ValidationMessageComponent, CharacterCounterComponent, DataTableComponent, DialogComponent, PaginationComponent],
   templateUrl: './conference-details-form.component.html',
   styleUrl: './conference-details-form.component.scss'
 })
@@ -411,6 +412,15 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     this.form.get('citedJournalPaper')?.valueChanges.subscribe((answer) => {
       this.syncCitedJournalPaperExplanationValidator(answer);
     });
+
+    // Watch for external project account code changes and update all vote numbers in external breakdowns
+    this.form.get('externalProjectAccountCode')?.valueChanges.subscribe((value) => {
+      if (this.researchType === 'external-research' && value) {
+        this.externalBreakdowns.forEach(breakdown => {
+          breakdown.voteNumber = value;
+        });
+      }
+    });
   }
 
   private syncCitedJournalPaperExplanationValidator(answer: string | null = this.form?.get('citedJournalPaper')?.value ?? null) {
@@ -605,7 +615,6 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
       externalSponsoredAmountExternal: [''],
       externalSponsoredBy: [''],
       externalCostingRemarks: [''],
-      localProjectAccountCode: [''],
       localSponsoredAmountExternal: [''],
       localSponsoredBy: [''],
       localCostingRemarks: ['']
@@ -658,11 +667,11 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Check if sponsorship amount exceeds RM 5,000 limit for Internal or Non-Research projects
+   * Check if sponsorship amount exceeds RM 5,000 limit for Non-Research projects
    */
   isAPUSponsorshipExceededLimit(sponsorshipAmount: number): boolean {
     const researchTypeValue = this.researchType;
-    if (researchTypeValue === 'internal-research' || researchTypeValue === 'non-research') {
+    if (researchTypeValue === 'non-research') {
       return sponsorshipAmount > 5000;
     }
     return false;
@@ -834,15 +843,18 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
         exchangeRate: data.exchangeRate,
         costInRM: data.costInRM,
         description: data.description
-      });
+      }, { emitEvent: false });
       this.selectedFileName = data.supportingDocument || null;
     } else {
       // Adding new entry
       this.breakdownEditingIndex = null;
+      const voteNumberValue = type === 'external-research'
+        ? (this.form.get('externalProjectAccountCode')?.value || 'V29000')
+        : 'V29000';
       this.breakdownForm.reset({
         exchangeRate: 1,
-        voteNumber: 'V29000'
-      });
+        voteNumber: voteNumberValue
+      }, { emitEvent: false });
       this.selectedFileName = null;
       this.selectedFile = null;
     }
@@ -852,6 +864,13 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
       this.breakdownForm.disable({ emitEvent: false });
     } else {
       this.breakdownForm.enable({ emitEvent: false });
+    }
+
+    // Make voteNumber read-only for external-research type
+    if (type === 'external-research') {
+      this.breakdownForm.get('voteNumber')?.disable({ emitEvent: false });
+    } else {
+      this.breakdownForm.get('voteNumber')?.enable({ emitEvent: false });
     }
   }
 
@@ -869,7 +888,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const formData = this.breakdownForm.value;
+    const formData = this.breakdownForm.getRawValue(); // Use getRawValue to include disabled controls
     // Calculate Cost in RM (Cost * Exchange Rate)
     const costInRM = (parseFloat(formData.cost) || 0) * (parseFloat(formData.exchangeRate) || 1);
     const array = this.getBreakdownArray(this.breakdownType!);

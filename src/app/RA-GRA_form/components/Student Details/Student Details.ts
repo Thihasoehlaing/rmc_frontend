@@ -19,6 +19,19 @@ import {
 import { ValidationMessageComponent } from '../../../shared/components/validation-message/validation-message.component';
 import { CustomSubheaderComponent } from '../../../shared/components/custom-subheader/custom-subheader.component';
 import { NoteComponent } from '../../../shared/components/note/note.component';
+import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
+
+interface UploadDocumentConfig {
+  id: string;
+  title: string;
+  controlName: string;
+  placeholder: string;
+  required: boolean;
+  subtitle?: string;
+  note?: string;
+  downloadLabel?: string;
+  downloadAction?: 'employment' | 'recruitment' | 'confidentiality';
+}
 import { CharacterCounterComponent } from '../../../shared/components/character-counter/character-counter.component';
 import { FileUploadComponent } from '../../../shared/components/file-upload/file-upload.component';
 
@@ -32,7 +45,8 @@ import { FileUploadComponent } from '../../../shared/components/file-upload/file
     CustomSubheaderComponent,
     NoteComponent,
     CharacterCounterComponent,
-    FileUploadComponent
+    FileUploadComponent,
+    PaginationComponent
   ],
   templateUrl: './Student Details.html',
   styleUrls: ['./Student Details.scss']
@@ -63,6 +77,9 @@ export class StudentDetailsComponent implements OnInit, OnChanges {
   // File constants
   readonly PDF_ACCEPT = '.pdf';
   readonly MAX_FILE_SIZE_MB = 10;
+  readonly uploadPageSizeOptions = [4, 8, 12];
+  uploadDocumentsCurrentPage = 1;
+  uploadDocumentsPageSize = 4;
 
   // Select option placeholders
   programOptions: { label: string; value: string }[] = [
@@ -266,6 +283,94 @@ export class StudentDetailsComponent implements OnInit, OnChanges {
     { label: 'Prof. John Smith', value: 'report3' }
   ];
 
+  readonly uploadDocuments: UploadDocumentConfig[] = [
+    {
+      id: 'employmentApplicationForm',
+      title: 'Employment Application Form',
+      controlName: 'employmentApplicationForm',
+      placeholder: 'Upload employment application form PDF',
+      required: true,
+      subtitle: 'Max file size: 10 MB. PDF ONLY',
+      note: 'Please ensure all sections are completed, and the form is signed by the applicant.',
+      downloadLabel: 'Download Employment Application Form (PDF)',
+      downloadAction: 'employment'
+    },
+    {
+      id: 'academicTranscripts',
+      title: 'Copy of Academic Transcripts (E.g. Diploma, Degree, Master)',
+      controlName: 'academicTranscripts',
+      placeholder: 'Upload academic transcripts PDF',
+      required: true,
+      subtitle: 'Max file size: 10 MB. PDF ONLY',
+      note: 'Please combine all pages into one PDF file for submission.'
+    },
+    {
+      id: 'ragraCv',
+      title: "RA/GRA's CV",
+      controlName: 'ragraCv',
+      placeholder: 'Upload CV PDF',
+      required: true,
+      subtitle: 'Max file size: 10 MB. PDF ONLY',
+      note: 'Please ensure the Curriculum Vitae (CV) is updated and included relevant academic and research experiences.'
+    },
+    {
+      id: 'bankStatement',
+      title: 'Print Screen of Bank Statement',
+      controlName: 'bankStatement',
+      placeholder: 'Upload bank statement PDF',
+      required: true,
+      subtitle: 'Max file size: 10 MB. PDF ONLY',
+      note: "Please upload a screenshot of the first page of student's bank statement showing account holder name and account number."
+    },
+    {
+      id: 'recruitmentSubmissionForm',
+      title: 'Recruitment Submission Form',
+      controlName: 'recruitmentSubmissionForm',
+      placeholder: 'Upload recruitment submission form PDF',
+      required: true,
+      subtitle: 'Max file size: 10 MB. PDF ONLY',
+      note: 'Please ensure all sections are completed, and the form is signed by the applicant.',
+      downloadLabel: 'Download Recruitment Submission Form (PDF)',
+      downloadAction: 'recruitment'
+    },
+    {
+      id: 'confidentialityAgreementForm',
+      title: 'Non-Employee Confidentiality Agreement Form (For Student)',
+      controlName: 'confidentialityAgreementForm',
+      placeholder: 'Upload confidentiality agreement form PDF',
+      required: true,
+      subtitle: 'Max file size: 10 MB. PDF ONLY',
+      note: 'Please ensure all pages are completed, and signed by the student.',
+      downloadLabel: 'Download Confidentiality Agreement Form (PDF)',
+      downloadAction: 'confidentiality'
+    },
+    {
+      id: 'otherSupportingDocuments',
+      title: 'Other Supporting Documents (If any)',
+      controlName: 'otherSupportingDocuments',
+      placeholder: 'Upload other supporting documents PDF',
+      required: false,
+      subtitle: 'Max file size: 10 MB. PDF ONLY',
+      note: 'Please upload any other relevant supporting documents e.g. Research Agreement, Research Proposal etc. (if any).'
+    },
+    {
+      id: 'nricPassportUpload',
+      title: 'NRIC/Passport',
+      controlName: 'nricPassportUpload',
+      placeholder: 'Upload NRIC/Passport PDF',
+      required: true,
+      subtitle: 'Max file size: 10 MB. PDF ONLY'
+    },
+    {
+      id: 'visa',
+      title: 'VISA',
+      controlName: 'visa',
+      placeholder: 'Upload VISA PDF',
+      required: false,
+      subtitle: 'Max file size: 10 MB. PDF ONLY'
+    }
+  ];
+
   ngOnInit(): void {
     this.form = this.fb.group({
       // Left column
@@ -316,6 +421,49 @@ export class StudentDetailsComponent implements OnInit, OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['positionRequested'] && this.form) {
       this.applyConditionalValidators();
+    }
+  }
+
+  get paginatedUploadDocuments(): UploadDocumentConfig[] {
+    const currentPage = Math.min(this.uploadDocumentsCurrentPage, this.getUploadTotalPages());
+    const startIndex = (currentPage - 1) * this.uploadDocumentsPageSize;
+    return this.uploadDocuments.slice(startIndex, startIndex + this.uploadDocumentsPageSize);
+  }
+
+  getUploadTotalPages(): number {
+    return Math.max(1, Math.ceil(this.uploadDocuments.length / this.uploadDocumentsPageSize));
+  }
+
+  getUploadPageStart(): number {
+    if (this.uploadDocuments.length === 0) {
+      return 0;
+    }
+    return ((Math.min(this.uploadDocumentsCurrentPage, this.getUploadTotalPages()) - 1) * this.uploadDocumentsPageSize) + 1;
+  }
+
+  getUploadPageEnd(): number {
+    if (this.uploadDocuments.length === 0) {
+      return 0;
+    }
+    return Math.min(this.getUploadPageStart() + this.uploadDocumentsPageSize - 1, this.uploadDocuments.length);
+  }
+
+  onUploadDocumentsPageChange(page: number) {
+    this.uploadDocumentsCurrentPage = page;
+  }
+
+  onUploadDocumentsPageSizeChange(pageSize: number) {
+    this.uploadDocumentsPageSize = pageSize;
+    this.uploadDocumentsCurrentPage = 1;
+  }
+
+  onUploadDocumentAction(action?: UploadDocumentConfig['downloadAction']) {
+    if (action === 'employment') {
+      this.downloadEmploymentForm();
+    } else if (action === 'recruitment') {
+      this.downloadRecruitmentForm();
+    } else if (action === 'confidentiality') {
+      this.downloadConfidentialityForm();
     }
   }
 

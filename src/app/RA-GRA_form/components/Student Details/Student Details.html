@@ -259,209 +259,49 @@
     <div class="card__content">
       <div class="section-fields upload-grid">
 
-        <!-- 1. Employment Application Form -->
-        <div class="form-field">
-          <h3 class="upload-field-title is-required">Employment Application Form</h3>
-          <p class="upload-field-subtitle">Max file size: 10 MB. PDF ONLY</p>
-          <div class="download-link-wrapper">
-            <a href="javascript:void(0)" class="download-link" (click)="downloadEmploymentForm()">
-              <span class="material-icons">download</span>
-              Download Employment Application Form (PDF)
-            </a>
+        @for (doc of paginatedUploadDocuments; track doc.id) {
+          <div class="form-field">
+            <h3 class="upload-field-title" [class.is-required]="doc.required">{{ doc.title }}</h3>
+            <p class="upload-field-subtitle">{{ doc.subtitle }}</p>
+            <div class="download-link-wrapper">
+              @if (doc.downloadLabel) {
+                <a href="javascript:void(0)" class="download-link" (click)="onUploadDocumentAction(doc.downloadAction)">
+                  <span class="material-icons">download</span>
+                  {{ doc.downloadLabel }}
+                </a>
+              }
+            </div>
+            <app-file-upload
+              [accept]="PDF_ACCEPT"
+              [maxSizeMB]="MAX_FILE_SIZE_MB"
+              [placeholder]="doc.placeholder"
+              (fileSelected)="onDocumentSelected(doc.controlName, $any($event))">
+            </app-file-upload>
+            @if (doc.note) {
+              <app-note
+                [text]="doc.note"
+                [isTooltip]="false">
+              </app-note>
+            }
+            @if (doc.required && form.get(doc.controlName)?.invalid && form.get(doc.controlName)?.touched) {
+              <span class="form-error-msg">{{ doc.title }} is required</span>
+            }
           </div>
-          <app-file-upload
-            #employmentFormUpload
-            [accept]="PDF_ACCEPT"
-            [maxSizeMB]="MAX_FILE_SIZE_MB"
-            placeholder="Upload employment application form PDF"
-            (fileSelected)="onDocumentSelected('employmentApplicationForm', $any($event))">
-          </app-file-upload>
-          <app-note
-            text="Please ensure all sections are completed, and the form is signed by the applicant."
-            [isTooltip]="false">
-          </app-note>
-          @if (form.get('employmentApplicationForm')?.invalid && form.get('employmentApplicationForm')?.touched) {
-            <span class="form-error-msg">Employment Application Form is required</span>
-          }
-        </div>
-
-        <!-- 2. Copy of Academic Transcripts -->
-        <div class="form-field">
-          <h3 class="upload-field-title is-required">Copy of Academic Transcripts (E.g. Diploma, Degree, Master)</h3>
-          <p class="upload-field-subtitle">Max file size: 10 MB. PDF ONLY</p>
-          <div class="download-link-wrapper">
-            <!-- Empty space for alignment -->
-          </div>
-          <app-file-upload
-            #transcriptsUpload
-            [accept]="PDF_ACCEPT"
-            [maxSizeMB]="MAX_FILE_SIZE_MB"
-            placeholder="Upload academic transcripts PDF"
-            (fileSelected)="onDocumentSelected('academicTranscripts', $any($event))">
-          </app-file-upload>
-          <app-note
-            text="Please combine all pages into one PDF file for submission."
-            [isTooltip]="false">
-          </app-note>
-          @if (form.get('academicTranscripts')?.invalid && form.get('academicTranscripts')?.touched) {
-            <span class="form-error-msg">Academic Transcripts are required</span>
-          }
-        </div>
-
-        <!-- 3. RA/GRA's CV -->
-        <div class="form-field">
-          <h3 class="upload-field-title is-required">RA/GRA's CV</h3>
-          <p class="upload-field-subtitle">Max file size: 10 MB. PDF ONLY</p>
-          <div class="download-link-wrapper">
-            <!-- Empty space for alignment -->
-          </div>
-          <app-file-upload
-            #cvUpload
-            [accept]="PDF_ACCEPT"
-            [maxSizeMB]="MAX_FILE_SIZE_MB"
-            placeholder="Upload CV PDF"
-            (fileSelected)="onDocumentSelected('ragraCv', $any($event))">
-          </app-file-upload>
-          <app-note
-            text="Please ensure the Curriculum Vitae (CV) is updated and included relevant academic and research experiences."
-            [isTooltip]="false">
-          </app-note>
-          @if (form.get('ragraCv')?.invalid && form.get('ragraCv')?.touched) {
-            <span class="form-error-msg">RA/GRA's CV is required</span>
-          }
-        </div>
-
-        <!-- 4. Print Screen of Bank Statement -->
-        <div class="form-field">
-          <h3 class="upload-field-title is-required">Print Screen of Bank Statement</h3>
-          <p class="upload-field-subtitle">Max file size: 10 MB. PDF ONLY</p>
-          <div class="download-link-wrapper">
-            <!-- Empty space for alignment -->
-          </div>
-          <app-file-upload
-            #bankStatementUpload
-            [accept]="PDF_ACCEPT"
-            [maxSizeMB]="MAX_FILE_SIZE_MB"
-            placeholder="Upload bank statement PDF"
-            (fileSelected)="onDocumentSelected('bankStatement', $any($event))">
-          </app-file-upload>
-          <app-note
-            text="Please upload a screenshot of the first page of student's bank statement showing account holder name and account number."
-            [isTooltip]="false">
-          </app-note>
-          @if (form.get('bankStatement')?.invalid && form.get('bankStatement')?.touched) {
-            <span class="form-error-msg">Bank Statement is required</span>
-          }
-        </div>
-
-        <!-- 5. Recruitment Submission Form -->
-        <div class="form-field">
-          <h3 class="upload-field-title is-required">Recruitment Submission Form</h3>
-          <p class="upload-field-subtitle">Max file size: 10 MB. PDF ONLY</p>
-          <div class="download-link-wrapper">
-            <a href="javascript:void(0)" class="download-link" (click)="downloadRecruitmentForm()">
-              <span class="material-icons">download</span>
-              Download Recruitment Submission Form (PDF)
-            </a>
-          </div>
-          <app-file-upload
-            #recruitmentFormUpload
-            [accept]="PDF_ACCEPT"
-            [maxSizeMB]="MAX_FILE_SIZE_MB"
-            placeholder="Upload recruitment submission form PDF"
-            (fileSelected)="onDocumentSelected('recruitmentSubmissionForm', $any($event))">
-          </app-file-upload>
-          <app-note
-            text="Please ensure all sections are completed, and the form is signed by the applicant."
-            [isTooltip]="false">
-          </app-note>
-          @if (form.get('recruitmentSubmissionForm')?.invalid && form.get('recruitmentSubmissionForm')?.touched) {
-            <span class="form-error-msg">Recruitment Submission Form is required</span>
-          }
-        </div>
-
-        <!-- 6. Non-Employee Confidentiality Agreement Form -->
-        <div class="form-field">
-          <h3 class="upload-field-title is-required">Non-Employee Confidentiality Agreement Form (For Student)</h3>
-          <p class="upload-field-subtitle">Max file size: 10 MB. PDF ONLY</p>
-          <div class="download-link-wrapper">
-            <a href="javascript:void(0)" class="download-link" (click)="downloadConfidentialityForm()">
-              <span class="material-icons">download</span>
-              Download Confidentiality Agreement Form (PDF)
-            </a>
-          </div>
-          <app-file-upload
-            #confidentialityFormUpload
-            [accept]="PDF_ACCEPT"
-            [maxSizeMB]="MAX_FILE_SIZE_MB"
-            placeholder="Upload confidentiality agreement form PDF"
-            (fileSelected)="onDocumentSelected('confidentialityAgreementForm', $any($event))">
-          </app-file-upload>
-          <app-note
-            text="Please ensure all pages are completed, and signed by the student."
-            [isTooltip]="false">
-          </app-note>
-          @if (form.get('confidentialityAgreementForm')?.invalid && form.get('confidentialityAgreementForm')?.touched) {
-            <span class="form-error-msg">Confidentiality Agreement Form is required</span>
-          }
-        </div>
-
-        <!-- 7. Other Supporting Documents (Optional) -->
-        <div class="form-field">
-          <h3 class="upload-field-title">Other Supporting Documents (If any)</h3>
-          <p class="upload-field-subtitle">Max file size: 10 MB. PDF ONLY</p>
-          <div class="download-link-wrapper">
-            <!-- Empty space for alignment -->
-          </div>
-          <app-file-upload
-            #otherDocumentsUpload
-            [accept]="PDF_ACCEPT"
-            [maxSizeMB]="MAX_FILE_SIZE_MB"
-            placeholder="Upload other supporting documents PDF"
-            (fileSelected)="onDocumentSelected('otherSupportingDocuments', $any($event))">
-          </app-file-upload>
-          <app-note
-            text="Please upload any other relevant supporting documents e.g. Research Agreement, Research Proposal etc. (if any)."
-            [isTooltip]="false">
-          </app-note>
-        </div>
-
-        <!-- 8. NRIC/Passport -->
-        <div class="form-field">
-          <h3 class="upload-field-title is-required">NRIC/Passport</h3>
-          <p class="upload-field-subtitle">Max file size: 10 MB. PDF ONLY</p>
-          <div class="download-link-wrapper">
-            <!-- Empty space for alignment -->
-          </div>
-          <app-file-upload
-            #nricPassportUpload
-            [accept]="PDF_ACCEPT"
-            [maxSizeMB]="MAX_FILE_SIZE_MB"
-            placeholder="Upload NRIC/Passport PDF"
-            (fileSelected)="onDocumentSelected('nricPassportUpload', $any($event))">
-          </app-file-upload>
-          @if (form.get('nricPassportUpload')?.invalid && form.get('nricPassportUpload')?.touched) {
-            <span class="form-error-msg">NRIC/Passport is required</span>
-          }
-        </div>
-
-        <!-- 9. VISA (Optional) -->
-        <div class="form-field">
-          <h3 class="upload-field-title">VISA</h3>
-          <p class="upload-field-subtitle">Max file size: 10 MB. PDF ONLY</p>
-          <div class="download-link-wrapper">
-            <!-- Empty space for alignment -->
-          </div>
-          <app-file-upload
-            #visaUpload
-            [accept]="PDF_ACCEPT"
-            [maxSizeMB]="MAX_FILE_SIZE_MB"
-            placeholder="Upload VISA PDF"
-            (fileSelected)="onDocumentSelected('visa', $any($event))">
-          </app-file-upload>
-        </div>
+        }
 
       </div>
+
+      <div class="table-footer">
+        <app-pagination
+          [currentPage]="uploadDocumentsCurrentPage"
+          [totalPages]="getUploadTotalPages()"
+          [pageSize]="uploadDocumentsPageSize"
+          [pageSizeOptions]="uploadPageSizeOptions"
+          (pageChange)="onUploadDocumentsPageChange($event)"
+          (pageSizeChange)="onUploadDocumentsPageSizeChange($event)">
+        </app-pagination>
+      </div>
+      <div class="table-summary">{{ getUploadPageStart() }}–{{ getUploadPageEnd() }} of {{ uploadDocuments.length }}</div>
     </div>
   </div>
   <!-- /Upload Supporting Documents Card -->

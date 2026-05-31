@@ -119,7 +119,7 @@
             @if (form.get('citedApuPaper')?.value === 'No') {
               <div class="form-field">
                 <label class="form-label is-required">If No, please explain</label>
-                <textarea class="input--textarea" formControlName="citedApuPaperExplanation" placeholder="Enter explanation here" rows="3" maxlength="255" [class.is-invalid]="form.get('citedApuPaperExplanation')?.invalid && form.get('citedApuPaperExplanation')?.touched"></textarea>
+                <textarea class="input--textarea" formControlName="citedApuPaperExplanation" placeholder="Enter explanation here" rows="3" maxlength="255" [class.is-invalid]="form.get('citedApuPaperExplanation')?.invalid && form.get('citedApuPaperExplanation')?.touched" (input)="autoExpandTextarea($event)"></textarea>
                 <app-character-counter [current]="form.get('citedApuPaperExplanation')?.value?.length || 0" [max]="255"></app-character-counter>
                 <app-validation-message [control]="form.get('citedApuPaperExplanation')"></app-validation-message>
               </div>
@@ -130,14 +130,14 @@
           <div class="form-column">
             <div class="form-field">
               <label class="form-label is-required">Journal Name</label>
-              <input type="text" class="input--text" formControlName="journalName" maxlength="150" [class.is-invalid]="form.get('journalName')?.invalid && form.get('journalName')?.touched">
+              <textarea class="input--textarea input--textarea-compact" formControlName="journalName" maxlength="150" rows="1" [class.is-invalid]="form.get('journalName')?.invalid && form.get('journalName')?.touched" (input)="autoExpandTextarea($event)"></textarea>
               <app-character-counter [current]="getCharacterCount('journalName')" [max]="150"></app-character-counter>
               <app-validation-message [control]="form.get('journalName')"></app-validation-message>
             </div>
 
             <div class="form-field">
               <label class="form-label is-required">Paper Title</label>
-              <input type="text" class="input--text" formControlName="paperTitle" maxlength="200" [class.is-invalid]="form.get('paperTitle')?.invalid && form.get('paperTitle')?.touched">
+              <textarea class="input--textarea input--textarea-compact" formControlName="paperTitle" maxlength="200" rows="1" [class.is-invalid]="form.get('paperTitle')?.invalid && form.get('paperTitle')?.touched" (input)="autoExpandTextarea($event)"></textarea>
               <app-character-counter [current]="getCharacterCount('paperTitle')" [max]="200"></app-character-counter>
               <app-validation-message [control]="form.get('paperTitle')"></app-validation-message>
             </div>
@@ -175,10 +175,12 @@
           <div class="card__content costing-section">
             <div class="costing-content">
             <div class="research-subsection">
-              <div class="form-field">
-                <label class="form-label">Project Account Code</label>
-                <input type="text" class="input--text" formControlName="projectAccountCode" placeholder="Enter project account code">
-              </div>
+              @if (researchType !== 'non-research') {
+                <div class="form-field">
+                  <label class="form-label">Project Account Code</label>
+                  <input type="text" class="input--text" formControlName="projectAccountCode" placeholder="Enter project account code">
+                </div>
+              }
 
               <div class="form-field">
                 <label class="form-label">
@@ -197,12 +199,9 @@
                       <div class="table-scroll non-research-table">
                         <app-data-table
                           [columns]="nonResearchBreakdownColumns"
-                          [rows]="getBreakdownArray('non-research')"
+                          [rows]="getPaginatedBreakdownArray('non-research')"
                           [hoverable]="true"
-                          [striped]="true"
-                          [pageSize]="ITEMS_PER_PAGE"
-                          [currentPage]="nonResearchBreakdownCurrentPage"
-                          (pageChange)="onNonResearchBreakdownPageChange($event)">
+                          [striped]="true">
                           <ng-template #rowTemplate let-row let-index="index">
                             <tr>
                               <td>{{ row.accountCodeDescription || row.itemDescription || '—' }}</td>
@@ -223,16 +222,24 @@
                           </ng-template>
                         </app-data-table>
                       </div>
+                      <div class="table-footer">
+                        <app-pagination
+                          [currentPage]="nonResearchBreakdownCurrentPage"
+                          [totalPages]="getBreakdownTotalPages('non-research')"
+                          [pageSize]="nonResearchBreakdownPageSize"
+                          [pageSizeOptions]="ITEMS_PER_PAGE_OPTIONS"
+                          (pageChange)="onNonResearchBreakdownPageChange($event)"
+                          (pageSizeChange)="onNonResearchBreakdownPageSizeChange($event)">
+                        </app-pagination>
+                      </div>
+                      <div class="table-summary">{{ getBreakdownPageStart('non-research') }}–{{ getBreakdownPageEnd('non-research') }} of {{ getBreakdownArray('non-research').length }}</div>
                     } @else if (researchType === 'external-research') {
                       <div class="table-scroll research-table">
                         <app-data-table
                           [columns]="externalResearchBreakdownColumns"
-                          [rows]="getBreakdownArray('external-research')"
+                          [rows]="getPaginatedBreakdownArray('external-research')"
                           [hoverable]="true"
-                          [striped]="true"
-                          [pageSize]="ITEMS_PER_PAGE"
-                          [currentPage]="externalResearchBreakdownCurrentPage"
-                          (pageChange)="onExternalResearchBreakdownPageChange($event)">
+                          [striped]="true">
                           <ng-template #rowTemplate let-row let-index="index">
                             <tr>
                               <td>{{ row.itemDescription }}</td>
@@ -253,16 +260,24 @@
                           </ng-template>
                         </app-data-table>
                       </div>
+                      <div class="table-footer">
+                        <app-pagination
+                          [currentPage]="externalResearchBreakdownCurrentPage"
+                          [totalPages]="getBreakdownTotalPages('external-research')"
+                          [pageSize]="externalResearchBreakdownPageSize"
+                          [pageSizeOptions]="ITEMS_PER_PAGE_OPTIONS"
+                          (pageChange)="onExternalResearchBreakdownPageChange($event)"
+                          (pageSizeChange)="onExternalResearchBreakdownPageSizeChange($event)">
+                        </app-pagination>
+                      </div>
+                      <div class="table-summary">{{ getBreakdownPageStart('external-research') }}–{{ getBreakdownPageEnd('external-research') }} of {{ getBreakdownArray('external-research').length }}</div>
                     } @else {
                       <div class="table-scroll research-table">
                         <app-data-table
                           [columns]="breakdownColumns"
-                          [rows]="getBreakdownArray(researchType || '')"
+                          [rows]="getPaginatedBreakdownArray(researchType || '')"
                           [hoverable]="true"
-                          [striped]="true"
-                          [pageSize]="ITEMS_PER_PAGE"
-                          [currentPage]="internalResearchBreakdownCurrentPage"
-                          (pageChange)="onInternalResearchBreakdownPageChange($event)">
+                          [striped]="true">
                           <ng-template #rowTemplate let-row let-index="index">
                             <tr>
                               <td class="col-no text-muted is-align-center">{{ index + 1 }}</td>
@@ -294,6 +309,17 @@
                           </ng-template>
                         </app-data-table>
                       </div>
+                      <div class="table-footer">
+                        <app-pagination
+                          [currentPage]="internalResearchBreakdownCurrentPage"
+                          [totalPages]="getBreakdownTotalPages(researchType || '')"
+                          [pageSize]="internalResearchBreakdownPageSize"
+                          [pageSizeOptions]="ITEMS_PER_PAGE_OPTIONS"
+                          (pageChange)="onInternalResearchBreakdownPageChange($event)"
+                          (pageSizeChange)="onInternalResearchBreakdownPageSizeChange($event)">
+                        </app-pagination>
+                      </div>
+                      <div class="table-summary">{{ getBreakdownPageStart(researchType || '') }}–{{ getBreakdownPageEnd(researchType || '') }} of {{ getBreakdownArray(researchType || '').length }}</div>
                     }
                   } @else {
                     <div class="empty-state">
@@ -351,7 +377,7 @@
 
                 <div class="form-field">
                   <label class="form-label">Remarks (Optional)</label>
-                  <textarea class="input--textarea" formControlName="costingRemarks" placeholder="Additional remarks" rows="3" maxlength="500"></textarea>
+                  <textarea class="input--textarea" formControlName="costingRemarks" placeholder="Additional remarks" rows="3" maxlength="500" (input)="autoExpandTextarea($event)"></textarea>
                   <app-character-counter [current]="form.get('costingRemarks')?.value?.length || 0" [max]="500"></app-character-counter>
                   <app-validation-message [control]="form.get('costingRemarks')"></app-validation-message>
                 </div>
@@ -402,7 +428,7 @@
 
                 <div class="form-field">
                   <label class="form-label">Remarks (Optional)</label>
-                  <textarea class="input--textarea" formControlName="costingRemarks" placeholder="Additional remarks" rows="3" maxlength="500"></textarea>
+                  <textarea class="input--textarea" formControlName="costingRemarks" placeholder="Additional remarks" rows="3" maxlength="500" (input)="autoExpandTextarea($event)"></textarea>
                   <app-character-counter [current]="form.get('costingRemarks')?.value?.length || 0" [max]="500"></app-character-counter>
                   <app-validation-message [control]="form.get('costingRemarks')"></app-validation-message>
                 </div>
@@ -448,10 +474,9 @@
         <input
           id="accountCode"
           type="text"
-          class="input--text input--readonly"
+          class="input--text"
           formControlName="accountCode"
-          readonly
-          placeholder="Auto-filled from Project Account Code">
+          placeholder="Enter account code">
       </div>
     } @else {
       <div class="breakdown-field">
@@ -526,7 +551,8 @@
         class="input--textarea"
         formControlName="description"
         placeholder="Enter description (optional)"
-        rows="3"></textarea>
+        rows="3"
+        (input)="autoExpandTextarea($event)"></textarea>
     </div>
 
     <!-- Supporting Documents -->

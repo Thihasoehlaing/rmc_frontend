@@ -119,6 +119,13 @@
   box-sizing: border-box;
 }
 
+.input--textarea-compact {
+  min-height: var(--input-height-sm);
+  height: var(--input-height-sm);
+  resize: none;
+  overflow: hidden;
+}
+
 .label-with-note {
   display: flex;
   flex-direction: column;
@@ -242,6 +249,19 @@
 .table-scroll {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+}
+
+.table-footer {
+  margin-top: var(--space-3);
+  width: 100%;
+}
+
+.table-summary {
+  margin: var(--space-2) 0 0 0;
+  color: var(--color-text-muted);
+  font-size: var(--fs-sm);
+  text-align: left;
+  width: 100%;
 }
 
 // Both breakdown tables: allow text to wrap so columns fit within the

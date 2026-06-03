@@ -10,6 +10,24 @@
   gap: var(--space-6);
 }
 
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.table-footer {
+  margin-top: var(--space-3);
+  width: 100%;
+}
+
+.table-summary {
+  margin: var(--space-2) 0 0 0;
+  color: var(--color-text-muted);
+  font-size: var(--fs-sm);
+  text-align: left;
+  width: 100%;
+}
+
 // Override card title color to black for author subsection cards
 // (global card__title uses --color-heading which may resolve to primary/blue)
 .card__title {

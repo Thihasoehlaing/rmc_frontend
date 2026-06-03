@@ -12,6 +12,7 @@ import { CustomHeaderComponent } from '../../../shared/components/custom-header/
 import { FileUploadComponent } from '../../../shared/components/file-upload/file-upload.component';
 import { ValidationMessageComponent } from '../../../shared/components/validation-message/validation-message.component';
 import { DataTableComponent, DataTableColumn } from '../../../shared/components/data-table/data-table.component';
+import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
 import { JournalOptionType, JournalOptionsService } from '../../services/journal-options.service';
 
 @Component({
@@ -27,7 +28,8 @@ import { JournalOptionType, JournalOptionsService } from '../../services/journal
     FileUploadComponent,
     NoteComponent,
     SearchableDropdownComponent,
-    ValidationMessageComponent
+    ValidationMessageComponent,
+    PaginationComponent
   ],
   templateUrl: './journal-details.html',
   styleUrl: './journal-details.scss'
@@ -48,9 +50,13 @@ export class JournalDetails implements OnInit, OnDestroy {
 
   // Pagination
   readonly ITEMS_PER_PAGE = 5;
-  nonResearchBreakdownCurrentPage = 0;
-  externalResearchBreakdownCurrentPage = 0;
-  internalResearchBreakdownCurrentPage = 0;
+  readonly ITEMS_PER_PAGE_OPTIONS = [5, 15, 30, 50];
+  nonResearchBreakdownCurrentPage = 1;
+  externalResearchBreakdownCurrentPage = 1;
+  internalResearchBreakdownCurrentPage = 1;
+  nonResearchBreakdownPageSize = 5;
+  externalResearchBreakdownPageSize = 5;
+  internalResearchBreakdownPageSize = 5;
 
   researchBreakdowns: any[] = [];
   externalBreakdowns: any[] = [];
@@ -160,13 +166,28 @@ export class JournalDetails implements OnInit, OnDestroy {
     });
 
     this.form.get('researchType')?.valueChanges.subscribe((type) => {
-      this.form.get('projectAccountCode')?.setValidators([Validators.required]);
-      this.form.get('projectAccountCode')?.updateValueAndValidity();
+      const projectAccountCodeCtrl = this.form.get('projectAccountCode');
+      if (type === 'non-research') {
+        projectAccountCodeCtrl?.clearValidators();
+        projectAccountCodeCtrl?.setValue('', { emitEvent: false });
+      } else if (type === 'external-research') {
+        projectAccountCodeCtrl?.setValidators([Validators.required]);
+        this.syncExternalBreakdownAccountCode(projectAccountCodeCtrl?.value || '');
+      } else {
+        projectAccountCodeCtrl?.setValidators([Validators.required]);
+      }
+      projectAccountCodeCtrl?.updateValueAndValidity();
       this.calculateTotals(); // Recalculate when research type changes
     });
 
     this.form.get('scopusQuartile')?.valueChanges.subscribe(() => {
       this.calculateTotals(); // Recalculate when quartile changes
+    });
+
+    this.form.get('projectAccountCode')?.valueChanges.subscribe((value) => {
+      if (this.researchType === 'external-research') {
+        this.syncExternalBreakdownAccountCode(value || '');
+      }
     });
 
     this.form.get('sponsoredAmountExternal')?.valueChanges.subscribe(() => {
@@ -222,6 +243,46 @@ export class JournalDetails implements OnInit, OnDestroy {
     return [];
   }
 
+  getBreakdownPageSize(type: string): number {
+    if (type === 'internal-research') return this.internalResearchBreakdownPageSize;
+    if (type === 'external-research') return this.externalResearchBreakdownPageSize;
+    if (type === 'non-research') return this.nonResearchBreakdownPageSize;
+    return this.ITEMS_PER_PAGE;
+  }
+
+  getBreakdownCurrentPage(type: string): number {
+    if (type === 'internal-research') return this.internalResearchBreakdownCurrentPage;
+    if (type === 'external-research') return this.externalResearchBreakdownCurrentPage;
+    if (type === 'non-research') return this.nonResearchBreakdownCurrentPage;
+    return 1;
+  }
+
+  getBreakdownTotalPages(type: string): number {
+    const pageSize = this.getBreakdownPageSize(type);
+    return Math.max(1, Math.ceil(this.getBreakdownArray(type).length / pageSize));
+  }
+
+  getBreakdownPageStart(type: string): number {
+    const total = this.getBreakdownArray(type).length;
+    if (total === 0) return 0;
+    const currentPage = Math.min(this.getBreakdownCurrentPage(type), this.getBreakdownTotalPages(type));
+    return ((currentPage - 1) * this.getBreakdownPageSize(type)) + 1;
+  }
+
+  getBreakdownPageEnd(type: string): number {
+    const total = this.getBreakdownArray(type).length;
+    if (total === 0) return 0;
+    return Math.min(this.getBreakdownPageStart(type) + this.getBreakdownPageSize(type) - 1, total);
+  }
+
+  getPaginatedBreakdownArray(type: string): any[] {
+    const rows = this.getBreakdownArray(type);
+    const currentPage = Math.min(this.getBreakdownCurrentPage(type), this.getBreakdownTotalPages(type));
+    const pageSize = this.getBreakdownPageSize(type);
+    const startIndex = (currentPage - 1) * pageSize;
+    return rows.slice(startIndex, startIndex + pageSize);
+  }
+
   openBreakdownModal(type: string, index?: number) {
     this.breakdownType = type as any;
     setTimeout(() => {
@@ -244,11 +305,15 @@ export class JournalDetails implements OnInit, OnDestroy {
       if (type === 'non-research') {
         voteNumberCtrl?.clearValidators();
         voteNumberCtrl?.updateValueAndValidity({ emitEvent: false });
-        accountCodeCtrl?.disable({ emitEvent: false }); // Make account code read-only for non-research
+        accountCodeCtrl?.enable({ emitEvent: false });
+        accountCodeCtrl?.setValidators([Validators.required]);
+        accountCodeCtrl?.updateValueAndValidity({ emitEvent: false });
       } else {
         voteNumberCtrl?.setValidators([Validators.required]);
         voteNumberCtrl?.updateValueAndValidity({ emitEvent: false });
+        accountCodeCtrl?.clearValidators();
         accountCodeCtrl?.disable({ emitEvent: false });
+        accountCodeCtrl?.updateValueAndValidity({ emitEvent: false });
       }
 
       if (index !== undefined) {
@@ -261,7 +326,7 @@ export class JournalDetails implements OnInit, OnDestroy {
           this.breakdownForm.patchValue({
             ...entry,
             itemDescription: selected?.value || entry.itemDescription,
-            accountCode: selected?.accountCode || entry.accountCode || '',
+            accountCode: entry.accountCode || '',
             accountCodeDescription: selected?.label || entry.accountCodeDescription || ''
           }, { emitEvent: false });
         } else {
@@ -272,11 +337,7 @@ export class JournalDetails implements OnInit, OnDestroy {
         if (type === 'external-research') {
           // For External, auto-fill with Project Account Code
           const projectAccountCode = this.form.get('projectAccountCode')?.value || '';
-          this.breakdownForm.patchValue({ voteNumber: projectAccountCode }, { emitEvent: false });
-        } else if (type === 'non-research') {
-          // For Non-Research, auto-fill with Project Account Code
-          const projectAccountCode = this.form.get('projectAccountCode')?.value || '';
-          this.breakdownForm.patchValue({ accountCode: projectAccountCode }, { emitEvent: false });
+          this.breakdownForm.patchValue({ voteNumber: projectAccountCode, accountCode: projectAccountCode }, { emitEvent: false });
         }
       }
 
@@ -292,6 +353,8 @@ export class JournalDetails implements OnInit, OnDestroy {
     this.breakdownForm.reset();
     this.breakdownForm.get('voteNumber')?.clearValidators();
     this.breakdownForm.get('voteNumber')?.updateValueAndValidity({ emitEvent: false });
+    this.breakdownForm.get('accountCode')?.clearValidators();
+    this.breakdownForm.get('accountCode')?.disable({ emitEvent: false });
     this.cdr.detectChanges();
   }
 
@@ -322,9 +385,14 @@ export class JournalDetails implements OnInit, OnDestroy {
     if (this.breakdownType === 'non-research') {
       const selected = this.findNonResearchOption(entry.itemDescription);
       if (selected) {
-        resolvedAccountCode = selected.accountCode || resolvedAccountCode;
         resolvedAccountCodeDescription = selected.label || resolvedAccountCodeDescription;
       }
+    }
+
+    if (this.breakdownType === 'external-research') {
+      const projectAccountCode = this.form.get('projectAccountCode')?.value || '';
+      resolvedAccountCode = projectAccountCode;
+      entry.voteNumber = projectAccountCode;
     }
 
     const entryToSave = {
@@ -506,6 +574,21 @@ export class JournalDetails implements OnInit, OnDestroy {
     // Validate breakdown entries exist for certain project types
     const isBreakdownValid = (pType === 'external-research' || pType === 'non-research') ? breakdownArray.length > 0 : true;
     this.formValidityChange.emit(this.form.valid && isBreakdownValid);
+  }
+
+  private syncExternalBreakdownAccountCode(projectAccountCode: string): void {
+    this.externalBreakdowns = this.externalBreakdowns.map(entry => ({
+      ...entry,
+      voteNumber: projectAccountCode,
+      accountCode: projectAccountCode
+    }));
+
+    if (this.breakdownType === 'external-research') {
+      this.breakdownForm.patchValue({
+        voteNumber: projectAccountCode,
+        accountCode: projectAccountCode
+      }, { emitEvent: false });
+    }
   }
 
   getBreakdownModalTitle(): string {
@@ -692,5 +775,20 @@ export class JournalDetails implements OnInit, OnDestroy {
 
   onInternalResearchBreakdownPageChange(page: number) {
     this.internalResearchBreakdownCurrentPage = page;
+  }
+
+  onNonResearchBreakdownPageSizeChange(pageSize: number) {
+    this.nonResearchBreakdownPageSize = pageSize;
+    this.nonResearchBreakdownCurrentPage = 1;
+  }
+
+  onExternalResearchBreakdownPageSizeChange(pageSize: number) {
+    this.externalResearchBreakdownPageSize = pageSize;
+    this.externalResearchBreakdownCurrentPage = 1;
+  }
+
+  onInternalResearchBreakdownPageSizeChange(pageSize: number) {
+    this.internalResearchBreakdownPageSize = pageSize;
+    this.internalResearchBreakdownCurrentPage = 1;
   }
 }

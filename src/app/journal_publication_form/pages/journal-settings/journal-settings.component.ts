@@ -4,6 +4,7 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angula
 import { JournalOptionsService, JournalOptionType } from '../../../journal_publication_form/services/journal-options.service';
 import { DropdownOption } from '../../../interfaces/components.interface';
 import { TableSortService, SortDirection } from '../../../shared/services/table-sort.service';
+import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
 
 type BreakdownTypeKey = JournalOptionType;
 
@@ -21,7 +22,7 @@ interface ExtendedOption extends DropdownOption {
 @Component({
   selector: 'app-journal-settings',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, PaginationComponent],
   templateUrl: './journal-settings.component.html',
   styleUrl: './journal-settings.component.scss',
   providers: [TableSortService]
@@ -42,6 +43,9 @@ export class JournalSettingsComponent implements OnInit {
   sortBy = signal<'name' | 'date'>('date');
   headerSortColumn = signal<string | null>(null);
   headerSortDirection = signal<SortDirection>(null);
+  optionsPage = signal(1);
+  optionsPageSize = signal(15);
+  optionsPageSizeOptions = [5, 15, 30, 50];
 
   breakdownTypeOptions: BreakdownTypeOption[] = [
     { value: 'vote_number_description', label: 'Vote Number Description' },
@@ -92,6 +96,29 @@ export class JournalSettingsComponent implements OnInit {
     return filtered;
   });
 
+  optionsTotalPages = computed(() => {
+    return Math.max(1, Math.ceil(this.getFilteredAndSortedOptions().length / this.optionsPageSize()));
+  });
+
+  paginatedOptions = computed(() => {
+    const list = this.getFilteredAndSortedOptions();
+    const currentPage = Math.min(this.optionsPage(), this.optionsTotalPages());
+    const startIndex = (currentPage - 1) * this.optionsPageSize();
+    return list.slice(startIndex, startIndex + this.optionsPageSize());
+  });
+
+  optionsPageStart = computed(() => {
+    const total = this.getFilteredAndSortedOptions().length;
+    if (total === 0) return 0;
+    return ((Math.min(this.optionsPage(), this.optionsTotalPages()) - 1) * this.optionsPageSize()) + 1;
+  });
+
+  optionsPageEnd = computed(() => {
+    const total = this.getFilteredAndSortedOptions().length;
+    if (total === 0) return 0;
+    return Math.min(this.optionsPageStart() + this.optionsPageSize() - 1, total);
+  });
+
   ngOnInit() {
     this.initializeOptionForm();
     // Set default to first category
@@ -119,6 +146,7 @@ export class JournalSettingsComponent implements OnInit {
   onSearchInput(event: Event): void {
     const target = event.target as HTMLInputElement;
     this.searchQuery.set(target.value);
+    this.optionsPage.set(1);
   }
 
   /**
@@ -127,6 +155,7 @@ export class JournalSettingsComponent implements OnInit {
   onFilterChange(event: Event): void {
     const target = event.target as HTMLSelectElement;
     this.filterStatus.set(target.value as 'All' | 'Active' | 'Inactive');
+    this.optionsPage.set(1);
   }
 
   /**
@@ -138,6 +167,7 @@ export class JournalSettingsComponent implements OnInit {
     // Reset header sorting when using dropdown
     this.headerSortColumn.set(null);
     this.headerSortDirection.set(null);
+    this.optionsPage.set(1);
   }
 
   /**
@@ -155,6 +185,7 @@ export class JournalSettingsComponent implements OnInit {
       this.headerSortColumn.set(columnName);
       this.headerSortDirection.set('asc');
     }
+    this.optionsPage.set(1);
   }
 
   /**
@@ -239,6 +270,16 @@ export class JournalSettingsComponent implements OnInit {
     this.searchQuery.set('');
     this.filterStatus.set('All');
     this.sortBy.set('date');
+    this.optionsPage.set(1);
+  }
+
+  onOptionsPageChange(page: number): void {
+    this.optionsPage.set(page);
+  }
+
+  onOptionsPageSizeChange(pageSize: number): void {
+    this.optionsPageSize.set(pageSize);
+    this.optionsPage.set(1);
   }
 
   /**

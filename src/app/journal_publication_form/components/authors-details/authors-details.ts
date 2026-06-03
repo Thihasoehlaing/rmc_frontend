@@ -8,13 +8,14 @@ import { SearchableDropdownComponent } from '../../../shared/components/searchab
 import { DropdownOption } from '../../../interfaces/components.interface';
 import { JournalWorkflowService } from '../../services/journal-workflow.service';
 import { DataTableComponent, DataTableColumn } from '../../../shared/components/data-table/data-table.component';
+import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
 
 @Component({
   selector: 'app-authors-details',
   templateUrl: './authors-details.html',
   styleUrls: ['./authors-details.scss'],
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, SearchableDropdownComponent, CustomHeaderComponent, ValidationMessageComponent, ActionButtonComponent, DataTableComponent]
+  imports: [CommonModule, ReactiveFormsModule, SearchableDropdownComponent, CustomHeaderComponent, ValidationMessageComponent, ActionButtonComponent, DataTableComponent, PaginationComponent]
 })
 export class AuthorsDetails implements OnInit {
   @Output() formValidityChange = new EventEmitter<boolean>();
@@ -55,9 +56,13 @@ export class AuthorsDetails implements OnInit {
 
   // Pagination
   readonly ITEMS_PER_PAGE = 5;
-  apuStaffCurrentPage = 0;
-  studentCoAuthorsCurrentPage = 0;
-  nonApuCoAuthorsCurrentPage = 0;
+  readonly ITEMS_PER_PAGE_OPTIONS = [5, 15, 30, 50];
+  apuStaffCurrentPage = 1;
+  studentCoAuthorsCurrentPage = 1;
+  nonApuCoAuthorsCurrentPage = 1;
+  apuStaffPageSize = 5;
+  studentCoAuthorsPageSize = 5;
+  nonApuCoAuthorsPageSize = 5;
 
   // Staff dropdown options
   staffOptions: DropdownOption[] = [
@@ -156,6 +161,69 @@ export class AuthorsDetails implements OnInit {
       typeOfOrganisation: ['', [Validators.required]],
       institutionName: ['', [Validators.required]]
     });
+  }
+
+  getApuStaffPageSize(): number {
+    return this.apuStaffPageSize;
+  }
+
+  getStudentCoAuthorsPageSize(): number {
+    return this.studentCoAuthorsPageSize;
+  }
+
+  getNonApuCoAuthorsPageSize(): number {
+    return this.nonApuCoAuthorsPageSize;
+  }
+
+  getApuStaffTotalPages(): number {
+    return Math.max(1, Math.ceil(this.testSubsections.length / this.apuStaffPageSize));
+  }
+
+  getStudentCoAuthorsTotalPages(): number {
+    return Math.max(1, Math.ceil(this.studentCoAuthors.length / this.studentCoAuthorsPageSize));
+  }
+
+  getNonApuCoAuthorsTotalPages(): number {
+    return Math.max(1, Math.ceil(this.nonApuCoAuthors.length / this.nonApuCoAuthorsPageSize));
+  }
+
+  getApuStaffPageStart(): number {
+    return this.testSubsections.length === 0 ? 0 : ((Math.min(this.apuStaffCurrentPage, this.getApuStaffTotalPages()) - 1) * this.apuStaffPageSize) + 1;
+  }
+
+  getApuStaffPageEnd(): number {
+    return this.testSubsections.length === 0 ? 0 : Math.min(this.getApuStaffPageStart() + this.apuStaffPageSize - 1, this.testSubsections.length);
+  }
+
+  getStudentCoAuthorsPageStart(): number {
+    return this.studentCoAuthors.length === 0 ? 0 : ((Math.min(this.studentCoAuthorsCurrentPage, this.getStudentCoAuthorsTotalPages()) - 1) * this.studentCoAuthorsPageSize) + 1;
+  }
+
+  getStudentCoAuthorsPageEnd(): number {
+    return this.studentCoAuthors.length === 0 ? 0 : Math.min(this.getStudentCoAuthorsPageStart() + this.studentCoAuthorsPageSize - 1, this.studentCoAuthors.length);
+  }
+
+  getNonApuCoAuthorsPageStart(): number {
+    return this.nonApuCoAuthors.length === 0 ? 0 : ((Math.min(this.nonApuCoAuthorsCurrentPage, this.getNonApuCoAuthorsTotalPages()) - 1) * this.nonApuCoAuthorsPageSize) + 1;
+  }
+
+  getNonApuCoAuthorsPageEnd(): number {
+    return this.nonApuCoAuthors.length === 0 ? 0 : Math.min(this.getNonApuCoAuthorsPageStart() + this.nonApuCoAuthorsPageSize - 1, this.nonApuCoAuthors.length);
+  }
+
+  getPaginatedApuStaffControls() {
+    const startIndex = (Math.min(this.apuStaffCurrentPage, this.getApuStaffTotalPages()) - 1) * this.apuStaffPageSize;
+    return this.testSubsections.controls.slice(startIndex, startIndex + this.apuStaffPageSize);
+  }
+
+  getPaginatedStudentCoAuthorsControls() {
+    const startIndex = (Math.min(this.studentCoAuthorsCurrentPage, this.getStudentCoAuthorsTotalPages()) - 1) * this.studentCoAuthorsPageSize;
+    return this.studentCoAuthors.controls.slice(startIndex, startIndex + this.studentCoAuthorsPageSize);
+  }
+
+  getPaginatedNonApuCoAuthorsControls() {
+    const startIndex = (Math.min(this.nonApuCoAuthorsCurrentPage, this.getNonApuCoAuthorsTotalPages()) - 1) * this.nonApuCoAuthorsPageSize;
+    return this.nonApuCoAuthors.controls.slice(startIndex, startIndex + this.nonApuCoAuthorsPageSize);
   }
 
   get testSubsections(): FormArray {
@@ -365,12 +433,27 @@ export class AuthorsDetails implements OnInit {
     this.apuStaffCurrentPage = page;
   }
 
+  onApuStaffPageSizeChange(pageSize: number) {
+    this.apuStaffPageSize = pageSize;
+    this.apuStaffCurrentPage = 1;
+  }
+
   onStudentCoAuthorsPageChange(page: number) {
     this.studentCoAuthorsCurrentPage = page;
   }
 
+  onStudentCoAuthorsPageSizeChange(pageSize: number) {
+    this.studentCoAuthorsPageSize = pageSize;
+    this.studentCoAuthorsCurrentPage = 1;
+  }
+
   onNonApuCoAuthorsPageChange(page: number) {
     this.nonApuCoAuthorsCurrentPage = page;
+  }
+
+  onNonApuCoAuthorsPageSizeChange(pageSize: number) {
+    this.nonApuCoAuthorsPageSize = pageSize;
+    this.nonApuCoAuthorsCurrentPage = 1;
   }
 }
 

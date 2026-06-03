@@ -76,7 +76,7 @@
               </tr>
             </thead>
             <tbody>
-              @for (g of filteredGuidelines(); track g.id) {
+              @for (g of paginatedGuidelines(); track g.id) {
                 <tr>
                   <td class="td-checkbox">
                     <input
@@ -109,6 +109,18 @@
             </tbody>
           </table>
         </div>
+
+        <div class="table-footer">
+          <app-pagination
+            [currentPage]="guidelinePage()"
+            [totalPages]="guidelineTotalPages()"
+            [pageSize]="guidelinePageSize()"
+            [pageSizeOptions]="guidelinePageSizeOptions"
+            (pageChange)="onGuidelinePageChange($event)"
+            (pageSizeChange)="onGuidelinePageSizeChange($event)">
+          </app-pagination>
+        </div>
+        <div class="table-summary">{{ guidelinePageStart() }}-{{ guidelinePageEnd() }} of {{ filteredGuidelines().length }} guidelines</div>
       } @else {
         <div class="empty-state">
           <p>No guidelines found. Click "Add Guideline" to create one.</p>
@@ -151,7 +163,7 @@
 
         <div class="form-field">
           <label class="form-label">Content <span class="required">*</span></label>
-          <textarea class="input--textarea" formControlName="content" rows="6" placeholder="Guideline details... HTML supported."></textarea>
+          <textarea class="input--textarea" formControlName="content" rows="6" placeholder="Guideline details... HTML supported." (input)="autoExpandTextarea($event)"></textarea>
         </div>
 
         <div class="form-field">

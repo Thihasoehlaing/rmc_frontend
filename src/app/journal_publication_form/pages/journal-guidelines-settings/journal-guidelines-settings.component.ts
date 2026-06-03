@@ -2,11 +2,12 @@ import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { JournalGuidelinesService, JournalGuideline } from '../../services/journal-guidelines.service';
+import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
 
 @Component({
   selector: 'app-journal-guidelines-settings',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, PaginationComponent],
   templateUrl: './journal-guidelines-settings.component.html',
   styleUrl: './journal-guidelines-settings.component.scss'
 })
@@ -25,6 +26,9 @@ export class JournalGuidelinesSettingsComponent implements OnInit {
   filterStatus = signal<'All' | 'Active' | 'Inactive'>('All');
   sortBy = signal<'date' | 'title'>('date');
   sortDirection = signal<'asc' | 'desc'>('asc');
+  guidelinePage = signal(1);
+  guidelinePageSize = signal(15);
+  guidelinePageSizeOptions = [5, 15, 30, 50];
 
   // Computed signal for filtered list
   filteredGuidelines = computed(() => {
@@ -62,6 +66,29 @@ export class JournalGuidelinesSettingsComponent implements OnInit {
     return result;
   });
 
+  guidelineTotalPages = computed(() => {
+    return Math.max(1, Math.ceil(this.filteredGuidelines().length / this.guidelinePageSize()));
+  });
+
+  paginatedGuidelines = computed(() => {
+    const list = this.filteredGuidelines();
+    const currentPage = Math.min(this.guidelinePage(), this.guidelineTotalPages());
+    const startIndex = (currentPage - 1) * this.guidelinePageSize();
+    return list.slice(startIndex, startIndex + this.guidelinePageSize());
+  });
+
+  guidelinePageStart = computed(() => {
+    const total = this.filteredGuidelines().length;
+    if (total === 0) return 0;
+    return ((Math.min(this.guidelinePage(), this.guidelineTotalPages()) - 1) * this.guidelinePageSize()) + 1;
+  });
+
+  guidelinePageEnd = computed(() => {
+    const total = this.filteredGuidelines().length;
+    if (total === 0) return 0;
+    return Math.min(this.guidelinePageStart() + this.guidelinePageSize() - 1, total);
+  });
+
   get hasSelectedCheckboxes(): boolean {
       return this.selectedCheckboxes().size > 0;
   }
@@ -69,11 +96,13 @@ export class JournalGuidelinesSettingsComponent implements OnInit {
   onSearchInput(event: Event) {
     const input = event.target as HTMLInputElement;
     this.searchQuery.set(input.value);
+    this.guidelinePage.set(1);
   }
 
   onFilterChange(event: Event) {
     const select = event.target as HTMLSelectElement;
-    this.filterStatus.set(select.value as 'All' | 'Active' | 'Inactive');       
+    this.filterStatus.set(select.value as 'All' | 'Active' | 'Inactive');
+    this.guidelinePage.set(1);
   }
 
   onSortChange(column: 'date' | 'title') {
@@ -82,7 +111,9 @@ export class JournalGuidelinesSettingsComponent implements OnInit {
     } else {
       this.sortBy.set(column);
       this.sortDirection.set('asc');
-    }  }
+    }
+    this.guidelinePage.set(1);
+  }
 
   ngOnInit() {
     this.loadGuidelines();    this.form = this.fb.group({
@@ -96,6 +127,25 @@ export class JournalGuidelinesSettingsComponent implements OnInit {
 
   loadGuidelines() {
     this.guidelines.set(this.guidelinesService.getAll());
+    const maxPage = this.guidelineTotalPages();
+    if (this.guidelinePage() > maxPage) {
+      this.guidelinePage.set(maxPage);
+    }
+  }
+
+  onGuidelinePageChange(page: number) {
+    this.guidelinePage.set(page);
+  }
+
+  onGuidelinePageSizeChange(pageSize: number) {
+    this.guidelinePageSize.set(pageSize);
+    this.guidelinePage.set(1);
+  }
+
+  autoExpandTextarea(event: Event) {
+    const textarea = event.target as HTMLTextAreaElement;
+    textarea.style.height = 'auto';
+    textarea.style.height = `${textarea.scrollHeight}px`;
   }
 
   openAddModal() {

@@ -249,6 +249,19 @@
       }
     }
 
+    .table-footer {
+      margin-top: var(--space-3);
+      width: 100%;
+    }
+
+    .table-summary {
+      margin: var(--space-2) 0 0 0;
+      color: var(--color-text-muted);
+      font-size: var(--fs-sm);
+      text-align: left;
+      width: 100%;
+    }
+
     // Empty State
     .empty-state {
       text-align: center;
@@ -260,6 +273,7 @@
         font-size: var(--fs-sm);
       }
     }
+
   }
 
   // Modal Styles

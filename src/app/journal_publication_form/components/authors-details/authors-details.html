@@ -16,35 +16,45 @@
           </div>
 
           @if (testSubsections.length > 0) {
-            <app-data-table
-              [columns]="apuStaffColumns"
-              [rows]="testSubsections.controls"
-              [hoverable]="true"
-              [striped]="true"
-              [pageSize]="ITEMS_PER_PAGE"
-              [currentPage]="apuStaffCurrentPage"
-              (pageChange)="onApuStaffPageChange($event)">
-              <ng-template #rowTemplate let-row let-index="index">
-                <tr>
-                  <td class="col-no text-muted is-align-center">{{ index + 1 }}</td>
-                  <td>{{ row.value.staffName }}</td>
-                  <td>{{ row.value.schoolDepartment }}</td>
-                  <td>{{ row.value.affiliation }}</td>
-                  <td class="col-actions is-align-center">
-                    <div class="data-table__actions">
-                      <button type="button" class="btn-icon btn-icon--edit"
-                        (click)="openEditModal('apu-staff', index)" aria-label="Edit entry">
-                        <span class="material-icons">edit</span>
-                      </button>
-                      <button type="button" class="btn-icon btn-icon--delete"
-                        (click)="deleteTestSubsection(index)" aria-label="Remove entry">
-                        <span class="material-icons">delete</span>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              </ng-template>
-            </app-data-table>
+            <div class="table-scroll">
+              <app-data-table
+                [columns]="apuStaffColumns"
+                [rows]="getPaginatedApuStaffControls()"
+                [hoverable]="true"
+                [striped]="true">
+                <ng-template #rowTemplate let-row let-index="index">
+                  <tr>
+                    <td class="col-no text-muted is-align-center">{{ ((apuStaffCurrentPage - 1) * apuStaffPageSize) + index + 1 }}</td>
+                    <td>{{ row.value.staffName }}</td>
+                    <td>{{ row.value.schoolDepartment }}</td>
+                    <td>{{ row.value.affiliation }}</td>
+                    <td class="col-actions is-align-center">
+                      <div class="data-table__actions">
+                        <button type="button" class="btn-icon btn-icon--edit"
+                          (click)="openEditModal('apu-staff', ((apuStaffCurrentPage - 1) * apuStaffPageSize) + index)" aria-label="Edit entry">
+                          <span class="material-icons">edit</span>
+                        </button>
+                        <button type="button" class="btn-icon btn-icon--delete"
+                          (click)="deleteTestSubsection(((apuStaffCurrentPage - 1) * apuStaffPageSize) + index)" aria-label="Remove entry">
+                          <span class="material-icons">delete</span>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </ng-template>
+              </app-data-table>
+            </div>
+            <div class="table-footer">
+              <app-pagination
+                [currentPage]="apuStaffCurrentPage"
+                [totalPages]="getApuStaffTotalPages()"
+                [pageSize]="apuStaffPageSize"
+                [pageSizeOptions]="ITEMS_PER_PAGE_OPTIONS"
+                (pageChange)="onApuStaffPageChange($event)"
+                (pageSizeChange)="onApuStaffPageSizeChange($event)">
+              </app-pagination>
+            </div>
+            <div class="table-summary">{{ getApuStaffPageStart() }}–{{ getApuStaffPageEnd() }} of {{ testSubsections.length }}</div>
           } @else {
             <div class="empty-state">
               <span class="material-icons">group</span>
@@ -68,36 +78,46 @@
           </div>
 
           @if (studentCoAuthors.length > 0) {
-            <app-data-table
-              [columns]="studentColumns"
-              [rows]="studentCoAuthors.controls"
-              [hoverable]="true"
-              [striped]="true"
-              [pageSize]="ITEMS_PER_PAGE"
-              [currentPage]="studentCoAuthorsCurrentPage"
-              (pageChange)="onStudentCoAuthorsPageChange($event)">
-              <ng-template #rowTemplate let-row let-index="index">
-                <tr>
-                  <td class="col-no text-muted is-align-center">{{ index + 1 }}</td>
-                  <td>{{ row.value.tpNumber }}</td>
-                  <td>{{ row.value.fullName }}</td>
-                  <td>{{ row.value.schoolDepartment }}</td>
-                  <td>{{ row.value.affiliation }}</td>
-                  <td class="col-actions is-align-center">
-                    <div class="data-table__actions">
-                      <button type="button" class="btn-icon btn-icon--edit"
-                        (click)="openEditModal('student', index)" aria-label="Edit entry">
-                        <span class="material-icons">edit</span>
-                      </button>
-                      <button type="button" class="btn-icon btn-icon--delete"
-                        (click)="deleteStudentCoAuthor(index)" aria-label="Remove entry">
-                        <span class="material-icons">delete</span>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              </ng-template>
-            </app-data-table>
+            <div class="table-scroll">
+              <app-data-table
+                [columns]="studentColumns"
+                [rows]="getPaginatedStudentCoAuthorsControls()"
+                [hoverable]="true"
+                [striped]="true">
+                <ng-template #rowTemplate let-row let-index="index">
+                  <tr>
+                    <td class="col-no text-muted is-align-center">{{ ((studentCoAuthorsCurrentPage - 1) * studentCoAuthorsPageSize) + index + 1 }}</td>
+                    <td>{{ row.value.tpNumber }}</td>
+                    <td>{{ row.value.fullName }}</td>
+                    <td>{{ row.value.schoolDepartment }}</td>
+                    <td>{{ row.value.affiliation }}</td>
+                    <td class="col-actions is-align-center">
+                      <div class="data-table__actions">
+                        <button type="button" class="btn-icon btn-icon--edit"
+                          (click)="openEditModal('student', ((studentCoAuthorsCurrentPage - 1) * studentCoAuthorsPageSize) + index)" aria-label="Edit entry">
+                          <span class="material-icons">edit</span>
+                        </button>
+                        <button type="button" class="btn-icon btn-icon--delete"
+                          (click)="deleteStudentCoAuthor(((studentCoAuthorsCurrentPage - 1) * studentCoAuthorsPageSize) + index)" aria-label="Remove entry">
+                          <span class="material-icons">delete</span>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </ng-template>
+              </app-data-table>
+            </div>
+            <div class="table-footer">
+              <app-pagination
+                [currentPage]="studentCoAuthorsCurrentPage"
+                [totalPages]="getStudentCoAuthorsTotalPages()"
+                [pageSize]="studentCoAuthorsPageSize"
+                [pageSizeOptions]="ITEMS_PER_PAGE_OPTIONS"
+                (pageChange)="onStudentCoAuthorsPageChange($event)"
+                (pageSizeChange)="onStudentCoAuthorsPageSizeChange($event)">
+              </app-pagination>
+            </div>
+            <div class="table-summary">{{ getStudentCoAuthorsPageStart() }}–{{ getStudentCoAuthorsPageEnd() }} of {{ studentCoAuthors.length }}</div>
           } @else {
             <div class="empty-state">
               <span class="material-icons">school</span>
@@ -121,38 +141,48 @@
           </div>
 
           @if (nonApuCoAuthors.length > 0) {
-            <app-data-table
-              [columns]="nonApuColumns"
-              [rows]="nonApuCoAuthors.controls"
-              [hoverable]="true"
-              [striped]="true"
-              [pageSize]="ITEMS_PER_PAGE"
-              [currentPage]="nonApuCoAuthorsCurrentPage"
-              (pageChange)="onNonApuCoAuthorsPageChange($event)">
-              <ng-template #rowTemplate let-row let-index="index">
-                <tr>
-                  <td class="col-no text-muted is-align-center">{{ index + 1 }}</td>
-                  <td>{{ row.value.fullName }}</td>
-                  <td>{{ row.value.email }}</td>
-                  <td>{{ row.value.country }}</td>
-                  <td>{{ row.value.typeOfOrganisation }}</td>
-                  <td>{{ row.value.institutionName }}</td>
-                  <td>{{ row.value.schoolDepartment }}</td>
-                  <td class="col-actions is-align-center">
-                    <div class="data-table__actions">
-                      <button type="button" class="btn-icon btn-icon--edit"
-                        (click)="openEditModal('non-apu', index)" aria-label="Edit entry">
-                        <span class="material-icons">edit</span>
-                      </button>
-                      <button type="button" class="btn-icon btn-icon--delete"
-                        (click)="deleteNonApuCoAuthor(index)" aria-label="Remove entry">
-                        <span class="material-icons">delete</span>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              </ng-template>
-            </app-data-table>
+            <div class="table-scroll">
+              <app-data-table
+                [columns]="nonApuColumns"
+                [rows]="getPaginatedNonApuCoAuthorsControls()"
+                [hoverable]="true"
+                [striped]="true">
+                <ng-template #rowTemplate let-row let-index="index">
+                  <tr>
+                    <td class="col-no text-muted is-align-center">{{ ((nonApuCoAuthorsCurrentPage - 1) * nonApuCoAuthorsPageSize) + index + 1 }}</td>
+                    <td>{{ row.value.fullName }}</td>
+                    <td>{{ row.value.email }}</td>
+                    <td>{{ row.value.country }}</td>
+                    <td>{{ row.value.typeOfOrganisation }}</td>
+                    <td>{{ row.value.institutionName }}</td>
+                    <td>{{ row.value.schoolDepartment }}</td>
+                    <td class="col-actions is-align-center">
+                      <div class="data-table__actions">
+                        <button type="button" class="btn-icon btn-icon--edit"
+                          (click)="openEditModal('non-apu', ((nonApuCoAuthorsCurrentPage - 1) * nonApuCoAuthorsPageSize) + index)" aria-label="Edit entry">
+                          <span class="material-icons">edit</span>
+                        </button>
+                        <button type="button" class="btn-icon btn-icon--delete"
+                          (click)="deleteNonApuCoAuthor(((nonApuCoAuthorsCurrentPage - 1) * nonApuCoAuthorsPageSize) + index)" aria-label="Remove entry">
+                          <span class="material-icons">delete</span>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </ng-template>
+              </app-data-table>
+            </div>
+            <div class="table-footer">
+              <app-pagination
+                [currentPage]="nonApuCoAuthorsCurrentPage"
+                [totalPages]="getNonApuCoAuthorsTotalPages()"
+                [pageSize]="nonApuCoAuthorsPageSize"
+                [pageSizeOptions]="ITEMS_PER_PAGE_OPTIONS"
+                (pageChange)="onNonApuCoAuthorsPageChange($event)"
+                (pageSizeChange)="onNonApuCoAuthorsPageSizeChange($event)">
+              </app-pagination>
+            </div>
+            <div class="table-summary">{{ getNonApuCoAuthorsPageStart() }}–{{ getNonApuCoAuthorsPageEnd() }} of {{ nonApuCoAuthors.length }}</div>
           } @else {
             <div class="empty-state">
               <span class="material-icons">public</span>

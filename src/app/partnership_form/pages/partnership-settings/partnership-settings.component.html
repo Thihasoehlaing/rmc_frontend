@@ -59,52 +59,56 @@
         </app-action-button>
       </div>
 
-      <app-data-table
-        [columns]="tableColumns"
-        [rows]="getFilteredAndSortedOptions()"
-        [sortColumn]="sortBy()"
-        [sortDirection]="sortDirection()"
-        (sortChange)="onHeaderClick($event)"
-        [dense]="true">
-        <ng-template #rowTemplate let-row="row">
-          <tr [class.row--inactive]="row.status === 'Inactive'">
-            <td>
-              <input
-                type="checkbox"
-                class="row-checkbox"
-                [checked]="isOptionSelected(row.value)"
-                [attr.aria-label]="'Select ' + row.label"
-                (change)="toggleCheckbox(row.value, $any($event.target).checked)">
-            </td>
+      <div class="table-scroll">
+        <app-data-table
+          [columns]="tableColumns"
+          [rows]="getFilteredAndSortedOptions()"
+          [sortColumn]="sortBy()"
+          [sortDirection]="sortDirection()"
+          (sortChange)="onHeaderClick($event)"
+          [dense]="true"
+          [hoverable]="true"
+          [striped]="true">
+          <ng-template #rowTemplate let-row="row">
+            <tr [class.row--inactive]="row.status === 'Inactive'">
+              <td>
+                <input
+                  type="checkbox"
+                  class="row-checkbox"
+                  [checked]="isOptionSelected(row.value)"
+                  [attr.aria-label]="'Select ' + row.label"
+                  (change)="toggleCheckbox(row.value, $any($event.target).checked)">
+              </td>
 
-            <td>{{ row.label }}</td>
+              <td>{{ row.label }}</td>
 
-            <td>
-              <span class="status-chip" [class.status-chip--active]="row.status === 'Active' || !row.status" [class.status-chip--inactive]="row.status === 'Inactive'">
-                {{ row.status || 'Active' }}
-              </span>
-            </td>
+              <td>
+                <span class="status-chip" [class.status-chip--active]="row.status === 'Active' || !row.status" [class.status-chip--inactive]="row.status === 'Inactive'">
+                  {{ row.status || 'Active' }}
+                </span>
+              </td>
 
-            <td>{{ formatRowDate(row.createdDate) }}</td>
+              <td>{{ formatRowDate(row.createdDate) }}</td>
 
-            <td class="actions-cell">
-              <button class="icon-btn icon-btn--edit" type="button" title="Edit" (click)="editOption(row, getFilteredAndSortedOptions().indexOf(row))">
-                <span class="material-icons">edit</span>
-              </button>
-
-              @if (row.status === 'Inactive') {
-                <button class="btn-status-activate" type="button" (click)="toggleStatus(row)">
-                  <span class="material-icons">check_circle</span> Activate
+              <td class="actions-cell">
+                <button class="icon-btn icon-btn--edit" type="button" title="Edit" (click)="editOption(row, getFilteredAndSortedOptions().indexOf(row))">
+                  <span class="material-icons">edit</span>
                 </button>
-              } @else {
-                <button class="btn-status-deactivate" type="button" (click)="toggleStatus(row)">
-                  <span class="material-icons">block</span> Deactivate
-                </button>
-              }
-            </td>
-          </tr>
-        </ng-template>
-      </app-data-table>
+
+                @if (row.status === 'Inactive') {
+                  <button class="btn-status-activate" type="button" (click)="toggleStatus(row)">
+                    <span class="material-icons">check_circle</span> Activate
+                  </button>
+                } @else {
+                  <button class="btn-status-deactivate" type="button" (click)="toggleStatus(row)">
+                    <span class="material-icons">block</span> Deactivate
+                  </button>
+                }
+              </td>
+            </tr>
+          </ng-template>
+        </app-data-table>
+      </div>
     </div>
   </div>
 </section>

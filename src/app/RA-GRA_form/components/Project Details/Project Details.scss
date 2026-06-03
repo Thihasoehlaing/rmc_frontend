@@ -81,19 +81,16 @@
   box-sizing: border-box;
 }
 
-.label-with-note {
-  display: block;
-  margin-bottom: var(--space-2);
+.position-requested-note {
+  display: inline-block;
+  margin-top: var(--space-2);
+  width: fit-content;
+  max-width: 100%;
+  align-self: flex-start;
 
-  .form-label {
-    display: inline;
-    margin: 0;
-  }
-
-  app-note {
+  ::ng-deep .field-note {
     display: inline-block;
-    vertical-align: middle;
-    margin-left: var(--space-1);
+    max-width: 100%;
   }
 }
 

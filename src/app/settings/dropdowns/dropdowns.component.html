@@ -8,11 +8,7 @@
           Select a form to manage its dropdown options. Categories are fixed per form, and shared options are grouped together for quick reuse.
         </p>
 
-        <div class="dropdowns-chips">
-          <span class="chip chip--primary">{{ totalItems() }} total options</span>
-          <span class="chip">{{ groups().length }} forms</span>
-          <span class="chip">Shared category support</span>
-        </div>
+
       </div>
 
       <div class="grid">
@@ -26,14 +22,14 @@
                 </div>
               </div>
 
-              <span class="badge badge-info items">Shared ({{ g.shared || 0 }})</span>
             </div>
 
-            <p class="card__meta card__meta--tight">
-              {{ g.categories.length }} categories: {{ g.categories.slice(0, 3).join(', ') }}{{ g.categories.length > 3 ? '...' : '' }}
-            </p>
+            
 
             <div class="card__stats">
+              <div class="card__description">
+                {{ g.categories.slice(0, 3).join(', ') }}{{ g.categories.length > 3 ? '...' : '' }}
+              </div>
             </div>
 
             <div class="card__footer">
@@ -43,7 +39,6 @@
         </ng-container>
       </div>
     </div>
-
     <div *ngIf="selectedGroup()" class="details-view settings-container fade-in">
       <div class="card settings-card elevation-1">
         <div class="card__header settings-card__header">
@@ -63,23 +58,22 @@
             <div class="category-row">
               <div class="category-summary">
                 <ng-container *ngIf="selectedCategory(); else totalSummary">
-                  {{ filteredOptions().length }} options in current category · {{ categoryCounts().length }} categories total
+                  Options in current category
                 </ng-container>
                 <ng-template #totalSummary>
-                  {{ totalItems() }} options · {{ categoryCounts().length }} categories total
+                  All options for this form
                 </ng-template>
               </div>
               <div class="category-list" role="tablist" aria-label="Dropdown categories">
                 <button
-                  *ngFor="let c of categoryCounts()"
+                  *ngFor="let name of selectedGroupCategories()"
                   type="button"
                   class="category-chip"
-                  [class.is-active]="selectedCategory() === c.name"
-                  (click)="selectCategory(c.name)"
-                  [attr.aria-pressed]="selectedCategory() === c.name"
+                  [class.is-active]="selectedCategory() === name"
+                  (click)="selectCategory(name)"
+                  [attr.aria-pressed]="selectedCategory() === name"
                 >
-                  <span class="category-label">{{ c.name }}</span>
-                  <span class="count">{{ c.count }}</span>
+                  <span class="category-label">{{ name }}</span>
                 </button>
               </div>
             </div>

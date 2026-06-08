@@ -5,6 +5,7 @@ import { SearchableDropdownComponent } from '../../../../shared/components/searc
 import { ActionButtonComponent } from '../../../../shared/components/action-button/action-button.component';
 import { DataTableComponent, DataTableColumn } from '../../../../shared/components/data-table/data-table.component';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
+import { CustomSubheaderComponent } from '../../../../shared/components/custom-subheader/custom-subheader.component';
 import { DropdownOption } from '../../../../interfaces/components.interface';
 import { ConferenceWorkflowService } from '../../../services/conference-workflow.service';
 import { ConferenceFormStateService } from '../../../services/conference-form-state.service';
@@ -13,7 +14,7 @@ import { DropdownsStoreService, StoredDropdownOption } from '../../../../setting
 @Component({
   selector: 'app-author-details-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, SearchableDropdownComponent, ActionButtonComponent, DataTableComponent, PaginationComponent],
+  imports: [CommonModule, ReactiveFormsModule, SearchableDropdownComponent, ActionButtonComponent, DataTableComponent, PaginationComponent, CustomSubheaderComponent],
   templateUrl: './author-details-form.component.html',
   styleUrl: './author-details-form.component.scss'
 })

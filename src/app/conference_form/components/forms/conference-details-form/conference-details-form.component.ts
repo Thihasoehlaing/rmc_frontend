@@ -8,6 +8,7 @@ import { CharacterCounterComponent } from '../../../../shared/components/charact
 import { DataTableComponent, DataTableColumn } from '../../../../shared/components/data-table/data-table.component';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
 import { DialogComponent } from '../../../../shared/components/dialog/dialog.component';
+import { CustomSubheaderComponent } from '../../../../shared/components/custom-subheader/custom-subheader.component';
 import { DropdownOption } from '../../../../interfaces/components.interface';
 import { ConferenceWorkflowService } from '../../../services/conference-workflow.service';
 import { ConferenceFormStateService } from '../../../services/conference-form-state.service';
@@ -16,7 +17,7 @@ import { BreakdownOptionsService } from '../../../services/breakdown-options.ser
 @Component({
   selector: 'app-conference-details-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, NoteComponent, SearchableDropdownComponent, ValidationMessageComponent, CharacterCounterComponent, DataTableComponent, DialogComponent, PaginationComponent],
+  imports: [CommonModule, ReactiveFormsModule, NoteComponent, SearchableDropdownComponent, ValidationMessageComponent, CharacterCounterComponent, DataTableComponent, DialogComponent, PaginationComponent, CustomSubheaderComponent],
   templateUrl: './conference-details-form.component.html',
   styleUrl: './conference-details-form.component.scss'
 })
@@ -1077,4 +1078,3 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     }
   }
 }
-

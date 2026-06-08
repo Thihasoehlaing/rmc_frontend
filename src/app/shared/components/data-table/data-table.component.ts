@@ -20,6 +20,11 @@ export interface DataTableRowContext<T = unknown> {
   columns: readonly DataTableColumn[];
 }
 
+export interface DataTableHeaderContext {
+  column: DataTableColumn;
+  index: number;
+}
+
 @Component({
   selector: 'app-data-table',
   standalone: true,
@@ -43,6 +48,7 @@ export class DataTableComponent {
   @Output() pageChange = new EventEmitter<number>();
 
   @ContentChild('rowTemplate') rowTemplate?: TemplateRef<DataTableRowContext<unknown>>;
+  @ContentChild('headerTemplate') headerTemplate?: TemplateRef<DataTableHeaderContext>;
 
   // Computed properties for pagination
   get displayRows(): readonly unknown[] {

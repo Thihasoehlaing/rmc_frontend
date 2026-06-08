@@ -23,6 +23,14 @@
 .dialog__body { padding:20px; display:block; gap:12px; overflow: auto; }
 .form-label { font-weight:600; display:block; margin-bottom:8px; }
 .category-locked { padding:10px; background:var(--neutral-100,#f8f8fb); border-radius:8px; display:inline-block; }
+.metadata-field { margin: var(--space-4) 0; }
+.region-metadata-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+  margin: var(--space-4) 0;
+}
+.form-field--full { grid-column: 1 / -1; }
 .forms-list { display:flex; flex-direction:column; gap:8px; margin:8px 0 12px; }
 .form-chip { text-align:left; padding:10px 12px; border-radius:8px; border:1px solid var(--border, #e6e9ef); background:transparent; }
 .form-chip.selected { background: #eef6ff; border-color: #cfe4ff; }

@@ -21,6 +21,10 @@ interface DropdownOption {
 
 interface DropdownOptionView extends DropdownOption {
   sharedWith: string[];
+  accountNumber?: string;
+  percentage?: number;
+  limit?: number;
+  description?: string;
 }
 
 interface DropdownGroup {
@@ -33,6 +37,20 @@ interface DropdownGroup {
 
 type DropdownSortKey = 'value' | 'status' | 'lastUpdated';
 type DropdownStatusFilter = 'all' | 'active' | 'inactive';
+
+interface RegionMetadata {
+  createdDate?: string;
+  status?: 'Active' | 'Inactive';
+  percentage?: number;
+  limit?: number;
+  description?: string;
+}
+
+interface AccountCodeMetadata {
+  createdDate?: string;
+  status?: 'Active' | 'Inactive';
+  accountNumber?: string;
+}
 
 /**
  * Explicit sharing configuration: defines which forms can share which categories.
@@ -62,14 +80,67 @@ export class DropdownsComponent implements OnInit {
    */
   private readonly CATEGORY_SHARING_CONFIG: CategorySharingConfig = {
     'Research Cluster': ['RDIG Application', 'RA/GRA Application'],
-    'Type of Organisation': ['RDIG Application', 'Conference Application'],
+    'Type of Organisation': ['RDIG Application', 'Conference Application', 'Journal Application'],
+  };
+
+  private readonly DEFAULT_REGION_METADATA: Record<string, Required<Pick<RegionMetadata, 'percentage' | 'limit' | 'description'>>> = {
+    americas: {
+      percentage: 50,
+      limit: 5000,
+      description: 'USA, Canada, Mexico and other parts of South America - (A maximum of 50% & limit to a maximum of RM5,000, whichever is lower)',
+    },
+    asean: {
+      percentage: 85,
+      limit: 5000,
+      description: 'ASEAN Countries - (A maximum of 85% & limit to a maximum of RM5,000, whichever is lower)',
+    },
+    asia: {
+      percentage: 70,
+      limit: 5000,
+      description: 'Japan, China, Korea, Central Asia, India, Sri Lanka, Pakistan - (A maximum of 70% & limit to a maximum of RM5,000, whichever is lower)',
+    },
+    australasia: {
+      percentage: 70,
+      limit: 5000,
+      description: 'Australia, New Zealand, PNG, Timor Leste - (A maximum of 70% & limit to a maximum of RM5,000, whichever is lower)',
+    },
+    europe: {
+      percentage: 50,
+      limit: 5000,
+      description: 'Europe - (A maximum of 50% & limit to a maximum of RM5,000, whichever is lower)',
+    },
+    malaysia: {
+      percentage: 85,
+      limit: 5000,
+      description: 'Throughout Malaysia - (A maximum of 85% & limit to a maximum of RM5,000, whichever is lower)',
+    },
+    'middle east and africa': {
+      percentage: 60,
+      limit: 5000,
+      description: 'Middle East and Africa - (A maximum of 60% & limit to a maximum of RM5,000, whichever is lower)',
+    },
+    mea: {
+      percentage: 60,
+      limit: 5000,
+      description: 'Middle East and Africa - (A maximum of 60% & limit to a maximum of RM5,000, whichever is lower)',
+    },
+    'pacific islands': {
+      percentage: 70,
+      limit: 5000,
+      description: 'Pacific Islands (Maldives etc.) - (A maximum of 70% & limit to a maximum of RM5,000, whichever is lower)',
+    },
+    pacific: {
+      percentage: 70,
+      limit: 5000,
+      description: 'Pacific Islands (Maldives etc.) - (A maximum of 70% & limit to a maximum of RM5,000, whichever is lower)',
+    },
   };
 
   groups = signal<DropdownGroup[]>([
     { id: 1, title: 'RDIG Application', categories: ['Research Cluster', 'Type of Organisation', 'Research Domain', 'Sub-Research Domain', 'ESG', 'SDG'], items: 17, shared: 11 },
     { id: 2, title: 'RA/GRA Application', categories: ['Research Cluster', 'Programme Type', 'Supervisor Type', 'Funding Type'], items: 16, shared: 10 },
-    { id: 3, title: 'Conference Application', categories: ['Select Region', 'Select Item Description', 'Type of Organisation', 'Staff Name'], items: 15, shared: 6 },
-    { id: 4, title: 'Journal Application', categories: ['Vote Number Description', 'Vote Number', 'Account Code Description', 'Account Code'], items: 13, shared: 10 },
+    { id: 3, title: 'Conference Application', categories: ['Select Region', 'Select Item Description', 'Vote Number Description', 'Type of Organisation'], items: 15, shared: 6 },
+    { id: 4, title: 'Journal Application', categories: ['Vote Number Description', 'Account Code', 'Type of Organisation'], items: 13, shared: 6 },
     { id: 5, title: 'Partnership Application', categories: ['Partnership Type', 'Partnership Category'], items: 2, shared: 0 },
   ]);
 
@@ -84,17 +155,59 @@ export class DropdownsComponent implements OnInit {
   editingOptionId = signal<number | null>(null);
   editingInitialPayload = signal<AddOptionPayload | null>(null);
   newOptionValue = signal<string>('');
+  selectedOptionIds = signal<Set<number>>(new Set());
+  deleteSelectionHint = signal(false);
   optionsPage = signal(1);
   optionsPageSize = signal(15);
   optionsPageSizeOptions = [5, 15, 30, 50];
 
-  tableColumns: DataTableColumn[] = [
-    { key: 'value', label: 'Option Name', sortable: true },
-    { key: 'sharedWith', label: 'Shared With' },
-    { key: 'status', label: 'Status', sortable: true },
-    { key: 'lastUpdated', label: 'Created Date', sortable: true },
-    { key: 'actions', label: 'Actions' },
-  ];
+  tableColumns = computed<DataTableColumn[]>(() => {
+    const selectionColumn: DataTableColumn = { key: 'select', label: '', width: '56px', align: 'center' };
+
+    if (this.isRegionMetadataCategory()) {
+      return [
+        selectionColumn,
+        { key: 'value', label: 'Region Name', sortable: true },
+        { key: 'percentage', label: 'Percentage' },
+        { key: 'limit', label: 'Limit (RM)' },
+        { key: 'description', label: 'Description' },
+        { key: 'status', label: 'Status', sortable: true },
+        { key: 'lastUpdated', label: 'Created Date', sortable: true },
+        { key: 'actions', label: 'Actions' },
+      ];
+    }
+
+    if (this.isAccountCodeMetadataCategory()) {
+      return [
+        selectionColumn,
+        { key: 'value', label: 'Option Name', sortable: true },
+        { key: 'accountNumber', label: 'Account Number' },
+        { key: 'status', label: 'Status', sortable: true },
+        { key: 'lastUpdated', label: 'Created Date', sortable: true },
+        { key: 'actions', label: 'Actions' },
+      ];
+    }
+
+    if (this.isConferenceVoteNumberDescriptionCategory()) {
+      return [
+        selectionColumn,
+        { key: 'value', label: 'Vote Number Description', sortable: true },
+        { key: 'sharedWith', label: 'Shared With' },
+        { key: 'status', label: 'Status', sortable: true },
+        { key: 'lastUpdated', label: 'Created Date', sortable: true },
+        { key: 'actions', label: 'Actions' },
+      ];
+    }
+
+    return [
+      selectionColumn,
+      { key: 'value', label: 'Option Name', sortable: true },
+      { key: 'sharedWith', label: 'Shared With' },
+      { key: 'status', label: 'Status', sortable: true },
+      { key: 'lastUpdated', label: 'Created Date', sortable: true },
+      { key: 'actions', label: 'Actions' },
+    ];
+  });
 
   trackById: TrackByFunction<DropdownGroup> = (i, g) => g.id;
   trackByOptionId: TrackByFunction<DropdownOption> = (i, o) => o.id;
@@ -118,6 +231,55 @@ export class DropdownsComponent implements OnInit {
     const group = this.selectedGroup();
     return group ? [group.title] : [];
   });
+
+  defaultSelectedForms = computed(() => {
+    const group = this.selectedGroup();
+    return group ? [group.title] : [];
+  });
+
+  isRegionMetadataCategory(): boolean {
+    return this.selectedGroup()?.title === 'Conference Application' &&
+      this.selectedCategory() === 'Select Region';
+  }
+
+  isAccountCodeMetadataCategory(): boolean {
+    const groupTitle = this.selectedGroup()?.title;
+    const category = this.selectedCategory();
+    return (groupTitle === 'Conference Application' && category === 'Select Item Description') ||
+      (groupTitle === 'Journal Application' && category === 'Account Code');
+  }
+
+  private isAccountCodeMetadataOption(option: DropdownOption): boolean {
+    return (option.formName === 'Conference Application' && option.category === 'Select Item Description') ||
+      (option.formName === 'Journal Application' && option.category === 'Account Code');
+  }
+
+  isConferenceVoteNumberDescriptionCategory(): boolean {
+    return ['Conference Application', 'Journal Application'].includes(this.selectedGroup()?.title ?? '') &&
+      this.selectedCategory() === 'Vote Number Description';
+  }
+
+  getCategoryDisplayLabel(category: string): string {
+    if (this.selectedGroup()?.title !== 'Conference Application') {
+      return category;
+    }
+
+    if (category === 'Select Region') {
+      return 'Region';
+    }
+
+    if (category === 'Select Item Description') {
+      return 'Account Code';
+    }
+
+    return category;
+  }
+
+  getOptionNameInputLabel(): string {
+    return this.isConferenceVoteNumberDescriptionCategory()
+      ? 'Vote Number Description'
+      : 'Option Name';
+  }
 
   // Computed list of categories with their counts for the currently selected group
   categoryCounts = computed(() => {
@@ -160,10 +322,25 @@ export class DropdownsComponent implements OnInit {
       return this.compareOptions(a, b, sortKey) * dir;
     });
 
-    return filtered.map(option => ({
-      ...option,
-      sharedWith: this.getSharedWithForms(option),
-    }));
+    return filtered.map(option => {
+      const regionMetadata = this.isRegionMetadataCategory()
+        ? this.getRegionMetadata(option.value)
+        : null;
+      const accountCodeMetadata = this.isAccountCodeMetadataCategory()
+        ? this.getAccountCodeMetadata(option.value, option.formName, option.category)
+        : null;
+
+      return {
+        ...option,
+        accountNumber: accountCodeMetadata?.accountNumber,
+        percentage: regionMetadata?.percentage,
+        limit: regionMetadata?.limit,
+        description: regionMetadata?.description,
+        sharedWith: this.isRegionMetadataCategory() || this.isAccountCodeMetadataCategory()
+          ? []
+          : this.getSharedWithForms(option),
+      };
+    });
   });
 
   paginatedOptions = computed(() => {
@@ -190,6 +367,13 @@ export class DropdownsComponent implements OnInit {
     return Math.min(this.optionsPageStart() + this.optionsPageSize() - 1, total);
   });
 
+  selectedOptionsCount = computed(() => this.selectedOptionIds().size);
+
+  isAllFilteredOptionsSelected = computed(() => {
+    const optionIds = this.filteredOptions().map(option => option.id);
+    return optionIds.length > 0 && optionIds.every(id => this.selectedOptionIds().has(id));
+  });
+
   ngOnInit(): void {
     this.loadOptionsFromStorage();
     this.route.queryParams.subscribe(params => {
@@ -205,20 +389,27 @@ export class DropdownsComponent implements OnInit {
   }
 
   selectCategory(category: string) {
+    if (!this.selectedGroupCategories().includes(category)) {
+      return;
+    }
+
     this.selectedCategory.set(category);
     // reset selected rows and status filter when switching categories
     this.searchQuery.set('');
     this.statusFilter.set('all');
+    this.clearSelection();
     this.optionsPage.set(1);
   }
 
   onSearchQueryChange(value: string) {
     this.searchQuery.set(value);
+    this.clearSelection();
     this.optionsPage.set(1);
   }
 
   onStatusFilterChange(value: DropdownStatusFilter) {
     this.statusFilter.set(value);
+    this.clearSelection();
     this.optionsPage.set(1);
   }
 
@@ -228,7 +419,86 @@ export class DropdownsComponent implements OnInit {
 
   onOptionsPageSizeChange(pageSize: number) {
     this.optionsPageSize.set(pageSize);
+    this.clearSelection();
     this.optionsPage.set(1);
+  }
+
+  isOptionSelected(id: number): boolean {
+    return this.selectedOptionIds().has(id);
+  }
+
+  toggleOptionSelection(id: number, selected: boolean): void {
+    this.selectedOptionIds.update(current => {
+      const next = new Set(current);
+      selected ? next.add(id) : next.delete(id);
+      return next;
+    });
+  }
+
+  toggleFilteredOptionsSelection(selected: boolean): void {
+    const filteredIds = this.filteredOptions().map(option => option.id);
+    if (selected) {
+      this.selectedOptionIds.set(new Set(filteredIds));
+      return;
+    }
+
+    this.selectedOptionIds.update(current => {
+      const next = new Set(current);
+      for (const id of filteredIds) {
+        next.delete(id);
+      }
+      return next;
+    });
+  }
+
+  clearSelection(): void {
+    this.selectedOptionIds.set(new Set());
+  }
+
+  onDeleteSelectedClick(): void {
+    if (this.selectedOptionsCount() === 0) {
+      this.showDeleteSelectionHint();
+      return;
+    }
+
+    this.deleteSelectedOptions();
+  }
+
+  showDeleteSelectionHint(): void {
+    if (this.selectedOptionsCount() > 0) {
+      return;
+    }
+
+    this.deleteSelectionHint.set(true);
+    window.setTimeout(() => this.deleteSelectionHint.set(false), 2200);
+  }
+
+  deleteSelectedOptions(): void {
+    const selectedIds = this.selectedOptionIds();
+    if (selectedIds.size === 0) {
+      this.showDeleteSelectionHint();
+      return;
+    }
+
+    const selectedRows = this.dropdownOptions().filter(option => selectedIds.has(option.id));
+    const count = selectedRows.length;
+    const confirmed = window.confirm(`Delete ${count} selected option${count === 1 ? '' : 's'}?`);
+    if (!confirmed) {
+      return;
+    }
+
+    this.dropdownOptions.update(options => options.filter(option => !selectedIds.has(option.id)));
+
+    for (const option of selectedRows) {
+      this.deleteMetadataForOption(option);
+    }
+
+    this.clearSelection();
+    this.saveOptionsToStorage();
+
+    if (this.optionsPage() > this.optionsTotalPages()) {
+      this.optionsPage.set(this.optionsTotalPages());
+    }
   }
 
   private loadOptionsFromStorage() {
@@ -253,9 +523,12 @@ export class DropdownsComponent implements OnInit {
           }))
         );
       }
+
+      this.seedDefaultRegionMetadata();
     } catch (error) {
       console.error('Failed to load dropdown options from localStorage:', error);
       this.dropdownOptions.set(this.getDefaultOptions());
+      this.seedDefaultRegionMetadata();
     }
   }
 
@@ -308,6 +581,16 @@ export class DropdownsComponent implements OnInit {
       { id: 35, formName: 'RDIG Application', category: 'Type of Organisation', value: 'Government Agency', lastUpdated: '20 Apr 2026', createdBy: 'Admin', status: 'Active' },
       { id: 36, formName: 'RDIG Application', category: 'Type of Organisation', value: 'Non-Profit Organization', lastUpdated: '20 Apr 2026', createdBy: 'Admin', status: 'Active' },
       { id: 37, formName: 'RDIG Application', category: 'Type of Organisation', value: 'Other', lastUpdated: '20 Apr 2026', createdBy: 'Admin', status: 'Active' },
+      { id: 38, formName: 'Journal Application', category: 'Vote Number Description', value: 'VOTE NUMBER DESCRIPTION 01', lastUpdated: '18 Apr 2026', createdBy: 'Admin', status: 'Active' },
+      { id: 39, formName: 'Journal Application', category: 'Vote Number Description', value: 'VOTE NUMBER DESCRIPTION 02', lastUpdated: '18 Apr 2026', createdBy: 'Admin', status: 'Active' },
+      { id: 40, formName: 'Journal Application', category: 'Account Code', value: 'ACCOUNT CODE A', lastUpdated: '18 Apr 2026', createdBy: 'Admin', status: 'Active' },
+      { id: 41, formName: 'Journal Application', category: 'Account Code', value: 'ACCOUNT CODE B', lastUpdated: '18 Apr 2026', createdBy: 'Admin', status: 'Active' },
+      { id: 42, formName: 'Journal Application', category: 'Type of Organisation', value: 'University', lastUpdated: '20 Apr 2026', createdBy: 'Admin', status: 'Active' },
+      { id: 43, formName: 'Journal Application', category: 'Type of Organisation', value: 'Research Institute', lastUpdated: '20 Apr 2026', createdBy: 'Admin', status: 'Active' },
+      { id: 44, formName: 'Journal Application', category: 'Type of Organisation', value: 'Company', lastUpdated: '20 Apr 2026', createdBy: 'Admin', status: 'Active' },
+      { id: 45, formName: 'Journal Application', category: 'Type of Organisation', value: 'Government Agency', lastUpdated: '20 Apr 2026', createdBy: 'Admin', status: 'Active' },
+      { id: 46, formName: 'Journal Application', category: 'Type of Organisation', value: 'Non-Profit Organization', lastUpdated: '20 Apr 2026', createdBy: 'Admin', status: 'Active' },
+      { id: 47, formName: 'Journal Application', category: 'Type of Organisation', value: 'Other', lastUpdated: '20 Apr 2026', createdBy: 'Admin', status: 'Active' },
     ];
   }
 
@@ -350,12 +633,21 @@ export class DropdownsComponent implements OnInit {
         const originalNorm = original.value.trim().toLowerCase();
         const category = original.category;
 
-        // entries that are part of the original shared group (same category + normalized value)
+        const allowedSharedForms = this.CATEGORY_SHARING_CONFIG[category];
+
+        // Entries that are part of the original shared group. Non-shared categories
+        // stay scoped to the selected option, even if another form has the same value.
         const originalShared = this.dropdownOptions().filter(e =>
-          e.category === category && e.value.trim().toLowerCase() === originalNorm
+          allowedSharedForms
+            ? e.category === category &&
+              e.value.trim().toLowerCase() === originalNorm &&
+              allowedSharedForms.includes(e.formName)
+            : e.id === original.id
         );
 
-        const desiredForms = payload.appliesTo && payload.appliesTo.length > 0 ? payload.appliesTo : [original.formName];
+        const desiredForms = allowedSharedForms
+          ? (payload.appliesTo && payload.appliesTo.length > 0 ? payload.appliesTo : [original.formName])
+          : [original.formName];
 
         // Build new list: update entries that should remain, remove those unselected
         let nextList = this.dropdownOptions().filter(e => !originalShared.some(os => os.id === e.id));
@@ -392,6 +684,8 @@ export class DropdownsComponent implements OnInit {
         }
 
         this.dropdownOptions.set(nextList);
+        this.saveRegionMetadataIfNeeded(payload.name.trim(), payload, original.value);
+        this.saveAccountCodeMetadataIfNeeded(payload.name.trim(), payload, original.value);
       }
     } else {
       // add one option per selected form (shared across forms)
@@ -408,6 +702,8 @@ export class DropdownsComponent implements OnInit {
       } as DropdownOption));
 
       this.dropdownOptions.update(list => [...list, ...newEntries]);
+      this.saveRegionMetadataIfNeeded(payload.name.trim(), payload);
+      this.saveAccountCodeMetadataIfNeeded(payload.name.trim(), payload);
     }
 
     this.editingOptionId.set(null);
@@ -423,7 +719,20 @@ export class DropdownsComponent implements OnInit {
     if (!opt) return null;
     const shared = this.getSharedWithForms(opt);
     const appliesTo = [opt.formName, ...shared.filter(s => s !== opt.formName)];
-    return { name: opt.value, status: opt.status, appliesTo };
+    const regionMetadata = this.isRegionMetadataCategory() ? this.getRegionMetadata(opt.value) : null;
+    const accountCodeMetadata = this.isAccountCodeMetadataCategory()
+      ? this.getAccountCodeMetadata(opt.value, opt.formName, opt.category)
+      : null;
+
+    return {
+      name: opt.value,
+      status: opt.status,
+      appliesTo,
+      accountNumber: accountCodeMetadata?.accountNumber,
+      percentage: regionMetadata?.percentage,
+      limit: regionMetadata?.limit,
+      description: regionMetadata?.description,
+    };
   }
 
   saveOption(value: string) {
@@ -515,6 +824,203 @@ export class DropdownsComponent implements OnInit {
 
   sharedWithLabel(option: DropdownOptionView): string {
     return option.sharedWith.length > 0 ? option.sharedWith.join(', ') : '-';
+  }
+
+  private getRegionMetadata(regionName: string): RegionMetadata {
+    const stored = this.getStoredRegionMetadata(regionName);
+    if (stored) {
+      return stored;
+    }
+
+    const defaults = this.DEFAULT_REGION_METADATA[this.normalizeRegionKey(regionName)];
+    return {
+      createdDate: this.formatDisplayDate(new Date()),
+      status: 'Active',
+      percentage: defaults?.percentage,
+      limit: defaults?.limit,
+      description: defaults?.description,
+    };
+  }
+
+  private getStoredRegionMetadata(regionName: string): RegionMetadata | null {
+    for (const key of this.getRegionMetadataStorageKeys(regionName)) {
+      const stored = localStorage.getItem(key);
+      if (!stored) {
+        continue;
+      }
+
+      try {
+        return JSON.parse(stored) as RegionMetadata;
+      } catch {
+        return null;
+      }
+    }
+
+    return null;
+  }
+
+  private getAccountCodeMetadata(
+    optionName: string,
+    formName: string = this.selectedGroup()?.title ?? '',
+    category: string = this.selectedCategory()
+  ): AccountCodeMetadata {
+    return this.getStoredAccountCodeMetadata(optionName, formName, category) ?? {
+      createdDate: this.formatDisplayDate(new Date()),
+      status: 'Active',
+    };
+  }
+
+  private getStoredAccountCodeMetadata(optionName: string, formName: string, category: string): AccountCodeMetadata | null {
+    for (const key of this.getAccountCodeMetadataStorageKeys(optionName, formName, category)) {
+      const stored = localStorage.getItem(key);
+      if (!stored) {
+        continue;
+      }
+
+      try {
+        return JSON.parse(stored) as AccountCodeMetadata;
+      } catch {
+        return null;
+      }
+    }
+
+    return null;
+  }
+
+  private seedDefaultRegionMetadata(): void {
+    const regionOptions = this.dropdownOptions().filter(option =>
+      option.formName === 'Conference Application' &&
+      option.category === 'Select Region'
+    );
+
+    for (const option of regionOptions) {
+      if (this.getStoredRegionMetadata(option.value)) {
+        continue;
+      }
+
+      const defaults = this.DEFAULT_REGION_METADATA[this.normalizeRegionKey(option.value)];
+      if (!defaults) {
+        continue;
+      }
+
+      const metadata: RegionMetadata = {
+        createdDate: option.lastUpdated || this.formatDisplayDate(new Date()),
+        status: option.status,
+        percentage: defaults.percentage,
+        limit: defaults.limit,
+        description: defaults.description,
+      };
+
+      for (const key of this.getRegionMetadataStorageKeys(option.value)) {
+        localStorage.setItem(key, JSON.stringify(metadata));
+      }
+    }
+  }
+
+  private saveRegionMetadataIfNeeded(regionName: string, payload: AddOptionPayload, previousRegionName?: string): void {
+    if (!this.isRegionMetadataCategory()) {
+      return;
+    }
+
+    const previousMetadata = previousRegionName ? this.getRegionMetadata(previousRegionName) : {};
+    const metadata: RegionMetadata = {
+      ...previousMetadata,
+      status: payload.status,
+      percentage: this.toNumberOrUndefined(payload.percentage),
+      limit: this.toNumberOrUndefined(payload.limit),
+      description: payload.description?.trim() || previousMetadata.description,
+      createdDate: previousMetadata.createdDate || this.formatDisplayDate(new Date()),
+    };
+
+    for (const key of this.getRegionMetadataStorageKeys(regionName)) {
+      localStorage.setItem(key, JSON.stringify(metadata));
+    }
+  }
+
+  private saveAccountCodeMetadataIfNeeded(optionName: string, payload: AddOptionPayload, previousOptionName?: string): void {
+    if (!this.isAccountCodeMetadataCategory()) {
+      return;
+    }
+
+    const formName = this.selectedGroup()?.title ?? '';
+    const category = this.selectedCategory();
+    const previousMetadata = previousOptionName
+      ? this.getAccountCodeMetadata(previousOptionName, formName, category)
+      : {};
+    const metadata: AccountCodeMetadata = {
+      ...previousMetadata,
+      status: payload.status,
+      accountNumber: payload.accountNumber?.trim() || previousMetadata.accountNumber,
+      createdDate: previousMetadata.createdDate || this.formatDisplayDate(new Date()),
+    };
+
+    for (const key of this.getAccountCodeMetadataStorageKeys(optionName, formName, category)) {
+      localStorage.setItem(key, JSON.stringify(metadata));
+    }
+  }
+
+  private deleteMetadataForOption(option: DropdownOption): void {
+    if (option.formName === 'Conference Application' && option.category === 'Select Region') {
+      for (const key of this.getRegionMetadataStorageKeys(option.value)) {
+        localStorage.removeItem(key);
+      }
+      return;
+    }
+
+    if (this.isAccountCodeMetadataOption(option)) {
+      for (const key of this.getAccountCodeMetadataStorageKeys(option.value, option.formName, option.category)) {
+        localStorage.removeItem(key);
+      }
+    }
+  }
+
+  private getRegionMetadataStorageKeys(regionName: string): string[] {
+    const trimmed = regionName.trim();
+    const normalized = this.normalizeRegionKey(trimmed);
+    const slug = normalized.replace(/\s+/g, '-');
+
+    return Array.from(new Set([
+      `option-metadata-region-${trimmed}`,
+      `option-metadata-region-${normalized}`,
+      `option-metadata-region-${slug}`,
+    ]));
+  }
+
+  private getAccountCodeMetadataStorageKeys(optionName: string, formName: string, category: string): string[] {
+    const trimmed = optionName.trim();
+    const normalized = trimmed.toLowerCase();
+    const slug = normalized.replace(/\s+/g, '-');
+    const formSlug = formName.trim().toLowerCase().replace(/\s+/g, '-');
+    const categorySlug = category.trim().toLowerCase().replace(/\s+/g, '-');
+
+    const keys = [
+      `option-metadata-account-code-${formSlug}-${categorySlug}-${trimmed}`,
+      `option-metadata-account-code-${formSlug}-${categorySlug}-${normalized}`,
+      `option-metadata-account-code-${formSlug}-${categorySlug}-${slug}`,
+    ];
+
+    if (formName === 'Conference Application' && category === 'Select Item Description') {
+      keys.push(
+        `option-metadata-account-code-${trimmed}`,
+        `option-metadata-account-code-${normalized}`,
+        `option-metadata-account-code-${slug}`,
+      );
+    }
+
+    return Array.from(new Set(keys));
+  }
+
+  private normalizeRegionKey(regionName: string): string {
+    return regionName.trim().toLowerCase();
+  }
+
+  private toNumberOrUndefined(value: number | string | null | undefined): number | undefined {
+    if (value === null || value === undefined || value === '') {
+      return undefined;
+    }
+
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : undefined;
   }
 
   private compareOptions(a: DropdownOption, b: DropdownOption, sortKey: DropdownSortKey): number {

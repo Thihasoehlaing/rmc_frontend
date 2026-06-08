@@ -1,9 +1,10 @@
-import { Component, signal, computed, inject, OnInit, effect } from '@angular/core';
+import { Component, signal, computed, inject, OnInit, effect, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, FormControl, Validators } from '@angular/forms';
 import { StepIndicatorComponent, WizardStep, StepStatus } from '../../../shared/components/step-indicator/step-indicator.component';
 import { FormWizardNavComponent } from '../../../shared/components/form-wizard-nav/form-wizard-nav.component';
 import { ConferenceGuidelinesModalComponent } from '../../components/conference-guidelines-modal/conference-guidelines-modal.component';
+import { FormMainTitleComponent } from '../../../shared/components/form-main-title/form-main-title.component';
 import { ConferenceDetailsFormComponent } from '../../components/forms/conference-details-form/conference-details-form.component';
 import { AuthorDetailsFormComponent } from '../../components/forms/author-details-form/author-details-form.component';
 import { SupportingDocumentsFormComponent } from '../../components/forms/supporting-documents-form/supporting-documents-form.component';
@@ -20,6 +21,7 @@ import { AuthService } from '../../../services/auth.service';
     ReactiveFormsModule,
     StepIndicatorComponent,
     FormWizardNavComponent,
+    FormMainTitleComponent,
     ConferenceGuidelinesModalComponent,
     ConferenceDetailsFormComponent,
     AuthorDetailsFormComponent,
@@ -29,7 +31,14 @@ import { AuthService } from '../../../services/auth.service';
   ],
   template: `
     <div class="conference-wizard">
-      <app-conference-guidelines-modal></app-conference-guidelines-modal>
+      <app-form-main-title
+        title="Conference"
+        modalTitle="Guidelines for Applicants"
+        [customModal]="true"
+        (helpClick)="openGuidelines()">
+      </app-form-main-title>
+
+      <app-conference-guidelines-modal #guidelinesModal></app-conference-guidelines-modal>
 
       <!-- DEV TEST START: Application Status Override -->
       <div class="dev-test-override">
@@ -242,18 +251,28 @@ import { AuthService } from '../../../services/auth.service';
       display: flex;
       flex-direction: column;
       gap: var(--space-6);
-      padding: var(--space-4);
+      width: 100%;
+      max-width: var(--page-max-width);
+      margin: 0 auto;
+      padding: var(--space-4) 0;
+      box-sizing: border-box;
+
+      @media (max-width: 768px) {
+        gap: var(--space-4);
+        padding: var(--space-3) 0;
+      }
     }
 
     /* DEV TEST: Application Status Override — temporary styling */
     .dev-test-override {
       display: flex;
       align-items: center;
-      gap: var(--space-2);
-      margin: var(--space-6) 0;
+      flex-wrap: wrap;
+      gap: var(--space-2) var(--space-3);
+      margin: var(--space-4) 0 0;
       padding: var(--space-2);
-      background: var(--color-dev-warning);
-      border: 1px solid var(--color-dev-warning-border);
+      background: var(--color-warning-light);
+      border: 1px solid color-mix(in srgb, var(--color-warning) 35%, var(--color-surface));
       border-radius: var(--radius-md);
     }
 
@@ -263,14 +282,12 @@ import { AuthService } from '../../../services/auth.service';
     }
 
     .dev-test-override__select {
-      margin-left: var(--space-2);
       padding: var(--space-1) var(--space-2);
       border: 1px solid var(--color-dev-warning-border);
       border-radius: var(--radius-sm);
     }
 
     .dev-test-override__hint {
-      margin-left: var(--space-2);
       color: var(--color-dev-text);
       font-size: var(--fs-xs);
     }
@@ -278,82 +295,99 @@ import { AuthService } from '../../../services/auth.service';
     .applicant-details {
       background: var(--color-surface);
       border: 1px solid var(--border-default);
-      border-radius: var(--radius-md);
-      padding: var(--space-4);
+      border-radius: var(--radius-xl);
+      padding: var(--space-6);
+      box-shadow: var(--shadow-sm);
+
+      @media (max-width: 768px) {
+        padding: var(--space-4);
+      }
     }
 
     .applicant-details__title {
-      margin: 0 0 var(--space-3) 0;
-      font-size: var(--fs-lg);
+      margin: 0 0 var(--space-4) 0;
+      font-size: var(--fs-base);
       font-weight: var(--fw-bold);
-      color: black;
-    }
-
-    .applicant-details__content {
-      display: flex;
-      gap: var(--space-6);
-      flex-wrap: wrap;
+      color: var(--color-heading);
     }
 
     .applicant-details__content {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: var(--space-4);
+
+      @media (max-width: 1024px) {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      @media (max-width: 640px) {
+        grid-template-columns: 1fr;
+      }
     }
 
     .detail-field {
       display: flex;
       flex-direction: column;
       gap: var(--space-2);
+      min-width: 0;
     }
 
     .detail-label {
       font-weight: var(--fw-bold);
-      color: black;
+      color: var(--color-label);
       font-size: var(--fs-sm);
     }
 
     .main-section {
-      background: var(--color-surface);
-      border-radius: var(--radius-lg);
-      box-shadow: var(--shadow-xl);
       display: flex;
       flex-direction: column;
+      gap: var(--space-6);
     }
 
     .comment-toggle-bar {
       display: flex;
       flex-wrap: wrap;
-      gap: var(--space-2);
-      padding: var(--space-4);
-      border-bottom: 1px solid var(--border-default);
-      background: var(--color-surface);
+      gap: var(--space-3);
+      justify-content: flex-end;
+      max-width: 100%;
+      padding: 0;
     }
 
     .btn--comment-toggle {
       display: flex;
       align-items: center;
       gap: var(--space-2);
-      padding: var(--space-2) var(--space-3);
+      height: var(--input-height-sm);
+      padding: 0 var(--space-5);
       border: 1px solid var(--border-default);
       border-radius: var(--radius-md);
       background: var(--color-surface);
-      color: var(--color-text);
+      color: var(--color-text-secondary);
       cursor: pointer;
-      font-size: var(--fs-xs);
+      font-size: var(--fs-sm);
       font-weight: var(--fw-medium);
       transition: all var(--transition-fast);
 
       &:hover:not(:disabled) {
-        background: var(--color-primary);
-        color: white;
         border-color: var(--color-primary);
+        color: var(--color-primary);
+        background: var(--color-primary-light);
       }
 
       &.btn--comment-toggle-active {
         background: var(--color-primary);
-        color: white;
+        color: var(--button-color-primary);
         border-color: var(--color-primary);
+
+        .material-icons {
+          color: var(--button-color-primary);
+        }
+
+        &:hover:not(:disabled) {
+          background: var(--color-primary-hover);
+          border-color: var(--color-primary-hover);
+          color: var(--button-color-primary);
+        }
       }
 
       &:disabled {
@@ -381,23 +415,48 @@ import { AuthService } from '../../../services/auth.service';
 
     .wizard-content {
       flex: 1;
+      background: var(--color-surface);
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-sm);
+      padding: var(--space-7) var(--space-6);
+      animation: stepFadeIn var(--transition-base) ease;
+
+      @media (max-width: 768px) {
+        padding: var(--space-4);
+      }
     }
 
     .review-comments-section {
-      margin-top: var(--space-6);
-      padding: var(--space-4);
+      padding: var(--space-5);
       background: var(--color-surface);
       border: 1px solid var(--border-default);
       border-radius: var(--radius-lg);
+
+      @media (max-width: 768px) {
+        padding: var(--space-4);
+      }
     }
 
     .review-comments-header {
       font-size: var(--fs-lg);
       font-weight: var(--fw-bold);
-      color: black;
+      color: var(--color-heading);
       margin-bottom: var(--space-4);
       padding-bottom: var(--space-3);
       border-bottom: 2px solid var(--border-default); // 2px sub-space
+    }
+
+    @keyframes stepFadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(var(--space-2));
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
   `
@@ -406,6 +465,7 @@ export class ConferenceApplication implements OnInit {
 
   workflow = inject(ConferenceWorkflowService);
   private auth = inject(AuthService);
+  @ViewChild('guidelinesModal') guidelinesModal?: ConferenceGuidelinesModalComponent;
 
   currentStep = signal(1);
   isSaving = signal(false);
@@ -478,6 +538,10 @@ export class ConferenceApplication implements OnInit {
    */
   onTestStatusChange(val: string): void {
     this.workflow.status.set(val as any);
+  }
+
+  openGuidelines(): void {
+    this.guidelinesModal?.open();
   }
 
   // ── Comment toggles ────────────────────────────────────────────

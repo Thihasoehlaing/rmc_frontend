@@ -6,7 +6,7 @@
 }
 
 .form-section {
-  padding: var(--space-4);
+  padding: 0;
 }
 
 .card__title.declaration-title {
@@ -20,20 +20,25 @@
 .section-fields {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: var(--space-5);
 }
 
 .declaration-text {
   background: var(--color-surface-hover);
-  padding: var(--space-4);
+  padding: var(--space-5);
   border-left: var(--space-1) solid var(--color-primary);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
 
   p {
-    margin: 0;
+    margin: 0 0 var(--space-4);
     font-size: var(--fs-base);
     font-weight: var(--fw-bold);
     color: black;
+    line-height: var(--lh-relaxed);
+
+    &:last-child {
+      margin-bottom: 0;
+    }
   }
 }
 
@@ -43,6 +48,10 @@
 .checkbox-field {
   flex-direction: row;
   gap: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
 }
 
 .checkbox-label {

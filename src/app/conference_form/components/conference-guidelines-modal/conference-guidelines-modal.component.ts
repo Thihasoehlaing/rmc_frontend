@@ -9,7 +9,11 @@ import { CommonModule } from '@angular/common';
   styleUrl: './conference-guidelines-modal.component.scss'
 })
 export class ConferenceGuidelinesModalComponent {
-  isOpen = signal(true);
+  isOpen = signal(false);
+
+  open() {
+    this.isOpen.set(true);
+  }
 
   close() {
     this.isOpen.set(false);

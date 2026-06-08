@@ -11,7 +11,7 @@
         @if (showHeader) {
           <thead>
             <tr>
-              @for (column of columns; track column.key) {
+              @for (column of columns; track column.key; let i = $index) {
                 <th
                   scope="col"
                   [class.is-align-center]="headerAlign(column) === 'center'"
@@ -19,7 +19,14 @@
                   [class.is-sortable]="column.sortable"
                   [class.is-sorted]="sortColumn === column.key"
                   (click)="onHeaderClick(column)">
-                  <span class="header-label">{{ column.label }}</span>
+                  @if (headerTemplate) {
+                    <ng-container
+                      [ngTemplateOutlet]="headerTemplate"
+                      [ngTemplateOutletContext]="{ column: column, index: i }">
+                    </ng-container>
+                  } @else {
+                    <span class="header-label">{{ column.label }}</span>
+                  }
                   <span class="sort-indicator" aria-hidden="true" [hidden]="!column.sortable">
                     <span class="material-icons" aria-hidden="true">{{ sortColumn === column.key ? (sortDirection === 'asc' ? 'arrow_upward' : sortDirection === 'desc' ? 'arrow_downward' : 'unfold_more') : 'unfold_more' }}</span>
                   </span>

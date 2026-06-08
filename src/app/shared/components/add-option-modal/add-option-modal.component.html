@@ -6,11 +6,33 @@
     </header>
 
     <section class="dialog__body">
-      <label class="form-label">Option Name *</label>
+      <label class="form-label">{{ optionNameLabel }} *</label>
       <input type="text" class="input--text" [(ngModel)]="name" placeholder="e.g. Applied Research" />
 
       <label class="form-label">Category</label>
       <div class="category-locked">{{ categoryLabel || 'Fixed' }} <span class="pill">Locked</span></div>
+
+      <div class="form-field metadata-field" *ngIf="showAccountNumberMetadata">
+        <label class="form-label">Account Number *</label>
+        <input type="text" class="input--text" [(ngModel)]="accountNumber" placeholder="Enter account number" />
+      </div>
+
+      <div class="region-metadata-grid" *ngIf="showRegionMetadata">
+        <div class="form-field">
+          <label class="form-label">Percentage *</label>
+          <input type="number" class="input--text" [(ngModel)]="percentage" placeholder="Enter percentage" />
+        </div>
+
+        <div class="form-field">
+          <label class="form-label">Limit (RM) *</label>
+          <input type="number" class="input--text" [(ngModel)]="limit" placeholder="Enter limit amount" />
+        </div>
+
+        <div class="form-field form-field--full">
+          <label class="form-label">Description *</label>
+          <textarea class="input--textarea" [(ngModel)]="description" placeholder="Enter description" rows="3"></textarea>
+        </div>
+      </div>
 
       <label class="form-label">Category is fixed and matches the current dropdown group.</label>
       <p class="helper-text" *ngIf="categoryLabel">

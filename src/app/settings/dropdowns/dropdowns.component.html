@@ -73,7 +73,7 @@
                   (click)="selectCategory(name)"
                   [attr.aria-pressed]="selectedCategory() === name"
                 >
-                  <span class="category-label">{{ name }}</span>
+                  <span class="category-label">{{ getCategoryDisplayLabel(name) }}</span>
                 </button>
               </div>
             </div>
@@ -108,6 +108,27 @@
               </div>
 
               <div class="toolbar-actions">
+                <div class="bulk-actions">
+                  <div class="delete-action">
+                    <button
+                      type="button"
+                      class="btn-delete-selected"
+                      [class.is-disabled]="selectedOptionsCount() === 0"
+                      [attr.aria-disabled]="selectedOptionsCount() === 0"
+                      (mouseenter)="showDeleteSelectionHint()"
+                      (focus)="showDeleteSelectionHint()"
+                      (click)="onDeleteSelectedClick()">
+                      <span class="material-icons">delete</span>
+                      Delete Selected
+                    </button>
+                    @if (deleteSelectionHint()) {
+                      <div class="delete-action__hint" role="status">
+                        Select an option first to delete.
+                      </div>
+                    }
+                  </div>
+                </div>
+
                 <app-action-button
                   type="primary"
                   label="Add Option"
@@ -120,30 +141,63 @@
 
           <div *ngIf="selectedCategory(); else selectCategoryHint">
             <app-data-table
-              [columns]="tableColumns"
+              [columns]="tableColumns()"
               [rows]="paginatedOptions()"
               [sortColumn]="sortBy()"
               [sortDirection]="sortDirection()"
               (sortChange)="onSortChange($event)"
               [dense]="true">
+              <ng-template #headerTemplate let-column="column">
+                @if (column.key === 'select') {
+                  <input
+                    type="checkbox"
+                    class="select-all-checkbox"
+                    [checked]="isAllFilteredOptionsSelected()"
+                    [disabled]="filteredOptions().length === 0"
+                    (click)="$event.stopPropagation()"
+                    (change)="toggleFilteredOptionsSelection($any($event.target).checked)"
+                    aria-label="Select all options"
+                  />
+                } @else {
+                  <span class="header-label">{{ column.label }}</span>
+                }
+              </ng-template>
               <ng-template #rowTemplate let-row="row">
                 <tr [class.row--inactive]="row.status === 'Inactive'">
+                  <td class="select-cell">
+                    <input
+                      type="checkbox"
+                      class="row-checkbox"
+                      [checked]="isOptionSelected(row.id)"
+                      (change)="toggleOptionSelection(row.id, $any($event.target).checked)"
+                      [attr.aria-label]="'Select ' + row.value"
+                    />
+                  </td>
+
                   <td>{{ row.value }}</td>
 
-                  <td>
-                    <div class="shared-with-list" [class.shared-with-list--empty]="row.sharedWith.length === 0">
-                      @if (row.sharedWith.length > 0) {
-                        @for (sharedForm of row.sharedWith; track sharedForm) {
-                          <span class="shared-with-chip">
-                            <span class="material-icons">share</span>
-                            {{ sharedForm }}
-                          </span>
+                  @if (isRegionMetadataCategory()) {
+                    <td>{{ row.percentage ?? '-' }}%</td>
+                    <td>RM{{ row.limit ?? '-' }}</td>
+                    <td class="description-cell">{{ row.description || '-' }}</td>
+                  } @else if (isAccountCodeMetadataCategory()) {
+                    <td>{{ row.accountNumber || '-' }}</td>
+                  } @else {
+                    <td>
+                      <div class="shared-with-list" [class.shared-with-list--empty]="row.sharedWith.length === 0">
+                        @if (row.sharedWith.length > 0) {
+                          @for (sharedForm of row.sharedWith; track sharedForm) {
+                            <span class="shared-with-chip">
+                              <span class="material-icons">share</span>
+                              {{ sharedForm }}
+                            </span>
+                          }
+                        } @else {
+                          <span class="shared-with-empty">-</span>
                         }
-                      } @else {
-                        <span class="shared-with-empty">-</span>
-                      }
-                    </div>
-                  </td>
+                      </div>
+                    </td>
+                  }
 
                   <td>
                     <span class="status-chip" [class.status-chip--active]="row.status === 'Active'" [class.status-chip--inactive]="row.status === 'Inactive'">
@@ -197,10 +251,14 @@
           <app-add-option-modal
             [isOpen]="showAddModal()"
             [title]="editingOptionId() ? 'Edit Option' : 'Add Dropdown Option'"
-            [categoryLabel]="selectedCategory()"
+            [categoryLabel]="getCategoryDisplayLabel(selectedCategory())"
+            [optionNameLabel]="getOptionNameInputLabel()"
             [availableForms]="shareableForms()"
+            [defaultSelectedForms]="defaultSelectedForms()"
             [initial]="editingInitialPayload()"
             [primaryActionLabel]="editingOptionId() ? 'Save' : 'Add Option'"
+            [showAccountNumberMetadata]="isAccountCodeMetadataCategory()"
+            [showRegionMetadata]="isRegionMetadataCategory()"
             (close)="closeModal()"
             (save)="onModalSave($event)">
           </app-add-option-modal>

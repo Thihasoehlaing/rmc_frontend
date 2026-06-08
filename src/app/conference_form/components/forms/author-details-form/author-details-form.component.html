@@ -1,9 +1,7 @@
 <form [formGroup]="form" class="form-section">
   <div class="section-fields">
     <section class="card">
-      <div class="card__header">
-        <h2 class="card__title">Asia Pacific University of Technology & Innovation Staff Co-Author Details</h2>
-      </div>
+      <app-custom-subheader title="Asia Pacific University of Technology & Innovation Staff Co-Author Details"></app-custom-subheader>
       <div class="card__content">
         <div class="list-section-header">
           <span class="list-count">{{ testSubsections.length }} {{ testSubsections.length === 1 ? 'Entry' : 'Entries' }}</span>
@@ -60,9 +58,7 @@
     </section>
 
     <section class="card">
-      <div class="card__header">
-        <h2 class="card__title">Asia Pacific University of Technology & Innovation Student Co-Authors</h2>
-      </div>
+      <app-custom-subheader title="Asia Pacific University of Technology & Innovation Student Co-Authors"></app-custom-subheader>
       <div class="card__content">
         <div class="list-section-header">
           <span class="list-count">{{ studentCoAuthors.length }} {{ studentCoAuthors.length === 1 ? 'Entry' : 'Entries' }}</span>
@@ -120,9 +116,7 @@
     </section>
 
     <section class="card">
-      <div class="card__header">
-        <h2 class="card__title">Co-Authors Outside Asia Pacific University of Technology & Innovation</h2>
-      </div>
+      <app-custom-subheader title="Co-Authors Outside Asia Pacific University of Technology & Innovation"></app-custom-subheader>
       <div class="card__content">
         <div class="list-section-header">
           <span class="list-count">{{ nonApuCoAuthors.length }} {{ nonApuCoAuthors.length === 1 ? 'Entry' : 'Entries' }}</span>

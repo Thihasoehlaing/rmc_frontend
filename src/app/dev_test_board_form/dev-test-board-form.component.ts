@@ -221,7 +221,6 @@ export class DevTestBoardFormComponent {
   }
 
   exportConfig() {
-    console.log('Exported Configuration:', this.modalConfig());
   }
 
   togglePreviewFullscreen() {

@@ -1,5 +1,6 @@
 import { Component, Input, OnInit, OnDestroy, inject } from '@angular/core';
 import { ReactiveFormsModule, FormGroup, FormControl } from '@angular/forms';
+import { Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { CustomHeaderComponent } from '../../../shared/components/custom-header/custom-header.component';
@@ -46,6 +47,7 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy {
     @Input() workflow!: RdigWorkflowService;
 
     private readonly dropdownService = inject(RdigDropdownOptionsService);
+    private readonly router = inject(Router);
     private readonly destroy$ = new Subject<void>();
 
     get projectDetails() {
@@ -61,6 +63,14 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy {
     sdgs: { label: string; value: string }[] = [];
 
     private allSubDomainOptions: DropdownOptionEntity[] = [];
+
+    private onDropdownsUpdated = (): void => {
+      // Force reload all dropdown options from service
+      this.dropdownService.loadOptions('research_domain').subscribe();
+      this.dropdownService.loadOptions('sub_research_domain').subscribe();
+      this.dropdownService.loadOptions('esg_factors').subscribe();
+      this.dropdownService.loadOptions('sdg_alignment').subscribe();
+    };
 
     ngOnInit(): void {
         // Load all categories from the service
@@ -90,7 +100,7 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy {
                 }
             });
 
-        // Map ESG factors (only Active)
+        // Map ESG (only Active)
         this.dropdownService.getOptions('esg_factors')
             .pipe(takeUntil(this.destroy$))
             .subscribe(options => {
@@ -99,7 +109,7 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy {
                     .map(o => ({ label: o.optionName, value: o.id.toString() }));
             });
 
-        // Map SDG alignment (only Active)
+        // Map SDG (only Active)
         this.dropdownService.getOptions('sdg_alignment')
             .pipe(takeUntil(this.destroy$))
             .subscribe(options => {
@@ -121,6 +131,9 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy {
         if (currentDomain) {
             this.filterSubDomains(currentDomain);
         }
+
+        // Listen for dropdown updates from admin settings
+        window.addEventListener('rmc-dropdowns-updated', this.onDropdownsUpdated);
     }
 
     private filterSubDomains(domainIdStr: string): void {
@@ -135,6 +148,7 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy {
     }
 
     ngOnDestroy(): void {
+        window.removeEventListener('rmc-dropdowns-updated', this.onDropdownsUpdated);
         this.destroy$.next();
         this.destroy$.complete();
     }
@@ -143,5 +157,21 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy {
         const val: string = this.projectDetails.get('keywords')?.value ?? '';
         if (!val.trim()) return 0;
         return val.split(',').map((k: string) => k.trim()).filter((k: string) => k.length > 0).length;
+    }
+
+    manageResearchDomains(): void {
+        // RDIG dropdown options management has been removed
+    }
+
+    manageSubResearchDomains(): void {
+        // RDIG dropdown options management has been removed
+    }
+
+    manageEsg(): void {
+        // RDIG dropdown options management has been removed
+    }
+
+    manageSdg(): void {
+        // RDIG dropdown options management has been removed
     }
 }

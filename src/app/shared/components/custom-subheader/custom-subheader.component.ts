@@ -1,10 +1,10 @@
 import { Component, Input } from '@angular/core';
-import { NoteComponent } from '../note/note.component';
+import { FieldNoteComponent } from '../field-note/field-note.component';
 
 @Component({
   selector: 'app-custom-subheader',
   standalone: true,
-  imports: [NoteComponent],
+  imports: [FieldNoteComponent],
   templateUrl: './custom-subheader.component.html',
   styleUrls: ['./custom-subheader.component.scss']
 })

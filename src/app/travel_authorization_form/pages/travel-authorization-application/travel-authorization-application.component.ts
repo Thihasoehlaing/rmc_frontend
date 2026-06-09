@@ -9,6 +9,7 @@ import { DialogComponent } from '../../../shared/components/dialog/dialog.compon
 import { FileUploadComponent } from '../../../shared/components/file-upload/file-upload.component';
 import { FormWizardNavComponent } from '../../../shared/components/form-wizard-nav/form-wizard-nav.component';
 import { ReviewBlockComponent } from '../../../rdig_form/components/review-block/review-block.component';
+import { DataTableComponent, DataTableColumn } from '../../../shared/components/data-table/data-table.component';
 
 interface FunctionalAreaOption {
   label: string;
@@ -29,6 +30,7 @@ interface FunctionalAreaOption {
     FileUploadComponent,
     FormWizardNavComponent,
     ReviewBlockComponent,
+    DataTableComponent,
   ],
   templateUrl: './travel-authorization-application.component.html',
   styleUrl: './travel-authorization-application.component.scss',
@@ -129,6 +131,16 @@ export class TravelAuthorizationApplicationComponent implements OnInit {
     { label: 'Staff Member 18', value: 'staff-18' },
     { label: 'Staff Member 19', value: 'staff-19' },
     { label: 'Staff Member 20', value: 'staff-20' },
+  ];
+
+  externalBreakdownColumns: readonly DataTableColumn[] = [
+    { key: 'index', label: '#', width: '50px', align: 'center' },
+    { key: 'itemDescription', label: 'Item Description' },
+    { key: 'voteNumber', label: 'Vote Number' },
+    { key: 'cost', label: 'Cost (Foreign/MYR)' },
+    { key: 'exchangeRate', label: 'Exchange Rate' },
+    { key: 'costInRM', label: 'Cost in RM' },
+    { key: 'actions', label: 'Actions', width: '100px', align: 'center' }
   ];
 
   ngOnInit() {
@@ -460,8 +472,8 @@ export class TravelAuthorizationApplicationComponent implements OnInit {
       accountCode: ['', [Validators.required]],
       typeOfExpense: ['', [Validators.required]],
       description: [''],
-      amountForeignCurrency: ['', [Validators.required]],
-      exchangeRate: ['', [Validators.required]],
+      amountForeignCurrency: ['', [Validators.required, Validators.pattern('^[0-9]+(?:\\.[0-9]+)?$')]],
+      exchangeRate: ['', [Validators.required, Validators.pattern('^[0-9]+(?:\\.[0-9]+)?$')]],
       amountMYR: [{ value: '', disabled: true }],
       fileUpload: [''],
     });
@@ -513,11 +525,90 @@ export class TravelAuthorizationApplicationComponent implements OnInit {
     this.expenses.splice(index, 1);
   }
 
+  getExternalBreakdownTableData(): (Record<string, unknown> & { index: number })[] {
+    return this.expenses.map((expense, index) => ({
+      index: index + 1,
+      itemDescription: expense.typeOfExpense,
+      voteNumber: expense.accountCode,
+      cost: Number(expense.amountForeignCurrency || 0),
+      exchangeRate: Number(expense.exchangeRate || 0),
+      costInRM: Number(expense.amountMYR || 0),
+    }));
+  }
+
   calculateMYR() {
     const amount = parseFloat(this.expenseForm.get('amountForeignCurrency')?.value || 0);
     const rate = parseFloat(this.expenseForm.get('exchangeRate')?.value || 0);
     const total = (amount * rate).toFixed(2);
     this.expenseForm.get('amountMYR')?.setValue(total);
+  }
+
+  onDecimalFieldInput(controlName: 'amountForeignCurrency' | 'exchangeRate'): void {
+    const control = this.expenseForm.get(controlName);
+
+    if (!control) {
+      return;
+    }
+
+    const sanitizedValue = this.sanitizeDecimalValue(control.value);
+
+    if (sanitizedValue !== control.value) {
+      control.setValue(sanitizedValue, { emitEvent: false });
+    }
+
+    this.calculateMYR();
+  }
+
+  restrictDecimalInput(event: KeyboardEvent, controlName: 'amountForeignCurrency' | 'exchangeRate'): void {
+    const allowedKeys = [
+      'Backspace',
+      'Delete',
+      'Tab',
+      'Escape',
+      'Enter',
+      'ArrowLeft',
+      'ArrowRight',
+      'Home',
+      'End',
+      'PageUp',
+      'PageDown',
+      'Clear',
+    ];
+
+    if ((event.ctrlKey || event.metaKey) && ['a', 'c', 'v', 'x', 'z'].includes(event.key.toLowerCase())) {
+      return;
+    }
+
+    if (allowedKeys.includes(event.key) || /^\d$/.test(event.key)) {
+      return;
+    }
+
+    if (event.key === '.') {
+      const currentValue = String(this.expenseForm.get(controlName)?.value ?? '');
+      if (!currentValue.includes('.')) {
+        return;
+      }
+    }
+
+    event.preventDefault();
+  }
+
+  private sanitizeDecimalValue(value: unknown): string {
+    const rawValue = String(value ?? '');
+    const cleanedValue = rawValue.replace(/[^\d.]/g, '');
+
+    if (!cleanedValue) {
+      return '';
+    }
+
+    const [integerPart = '', ...decimalParts] = cleanedValue.split('.');
+    const decimalPart = decimalParts.join('');
+
+    if (cleanedValue.includes('.')) {
+      return `${integerPart || '0'}.${decimalPart}`;
+    }
+
+    return integerPart;
   }
 
   openExpenseModal() {
@@ -571,7 +662,6 @@ export class TravelAuthorizationApplicationComponent implements OnInit {
     if (this.travelAuthForm.valid) {
       this.isSubmitting.set(true);
       // TODO: Replace with actual API call
-      console.log('Form submitted:', this.travelAuthForm.getRawValue());
       // Simulate API call
       setTimeout(() => {
         this.isSubmitting.set(false);

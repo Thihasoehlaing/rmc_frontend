@@ -10,6 +10,30 @@
   gap: var(--space-6);
 }
 
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.table-footer {
+  margin-top: var(--space-3);
+  width: 100%;
+}
+
+.table-summary {
+  margin: var(--space-2) 0 0 0;
+  color: var(--color-text-muted);
+  font-size: var(--fs-sm);
+  text-align: left;
+  width: 100%;
+}
+
+// Override card title color to black for author subsection cards
+// (global card__title uses --color-heading which may resolve to primary/blue)
+.card__title {
+  color: var(--color-text);
+}
+
 // Note: .form-field, .form-label, .form-hint, .input--* are defined globally in _forms.scss
 // Use global classes directly; do not redefine locally
 
@@ -232,18 +256,28 @@
   gap: var(--space-4);
 }
 
+// Modal form groups — use form-label class for consistent required asterisk styling
 .form-group {
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
 
+  // Labels inside modal form groups use the global .form-label pattern
+  // so .is-required::after produces a red asterisk automatically
   label {
     font-size: var(--fs-sm);
     font-weight: var(--fw-semibold);
     color: var(--color-label);
+
+    &.is-required::after {
+      content: ' *';
+      color: var(--color-error);
+      font-size: 1.1em;
+    }
   }
 
   .form-control {
+    width: 100%;
     padding: var(--space-2) var(--space-3);
     border: 1px solid var(--border-default); // 1px border — allowed exception
     border-radius: var(--radius-sm);
@@ -252,6 +286,7 @@
     color: var(--color-label);
     font-family: var(--font-family-system);
     transition: all var(--transition-fast);
+    box-sizing: border-box;
 
     &:focus {
       outline: none;
@@ -269,7 +304,8 @@
   .error-message {
     font-size: var(--fs-xs);
     color: var(--color-error);
-    margin-top: -var(--space-1);
+    margin-top: var(--space-1);
+    display: block;
   }
 }
 
@@ -286,12 +322,59 @@
   }
 }
 
+// Table / card content layout
+// .card__content is a global class — use .card-body as a scoped wrapper inside it
+// so Angular's view encapsulation doesn't block the flex layout rule.
+.card-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: 100%;
+  min-width: 0;
+}
+
+// Custom element hosts render as inline by default — force block so they
+// stack correctly inside the flex column.
+app-data-table {
+  display: block;
+  width: 100%;
+  min-width: 0;
+}
+
+app-action-button {
+  display: inline-flex; // keep it inline so it doesn't stretch in the header row
+}
+
 // Table styles
+.entry-section-card {
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  margin-bottom: var(--space-6);
+  overflow: hidden;
+}
+
+.entry-section-header {
+  background-color: var(--color-surface-hover);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--border-default);
+  
+  h3 {
+    margin: 0;
+    font-size: var(--fs-md);
+    font-weight: var(--fw-bold);
+    color: var(--color-heading);
+  }
+}
+
+.entry-section-content {
+  padding: var(--space-4);
+}
+
 .list-section-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: var(--space-3);
 }
 
 .list-count {
@@ -301,15 +384,69 @@
 }
 
 .empty-state {
-  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  box-sizing: border-box;
+  padding: var(--space-8) var(--space-4);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
   text-align: center;
   color: var(--color-text-muted);
-  font-size: var(--fs-sm);
-  background: var(--color-surface-nested);
-  border-radius: var(--radius-md);
-  border: 1px dashed var(--border-default);
+
+  .material-icons {
+    font-size: 48px;
+    margin-bottom: var(--space-2);
+    opacity: 0.5;
+  }
+
+  p {
+    margin: 0;
+    line-height: 1.5;
+  }
 }
 
 .text-muted {
   color: var(--color-text-muted);
+}
+
+// Country dropdown inside modal — ensure it fills the form-group width
+.country-dropdown {
+  width: 100%;
+}
+
+// TP Number prefix input group
+// Shows a fixed "TP" badge attached to the left of the text input
+.input-prefix-group {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+
+  .input-prefix {
+    display: inline-flex;
+    align-items: center;
+    padding: 0 var(--space-3);
+    background: var(--color-surface-nested);
+    border: 1px solid var(--border-default);
+    border-right: none;
+    border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+    font-size: var(--fs-sm);
+    font-weight: var(--fw-bold);
+    color: var(--color-text-muted);
+    white-space: nowrap;
+    user-select: none;
+  }
+
+  &__input {
+    flex: 1;
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0 !important;
+    min-width: 0;
+
+    &:focus {
+      z-index: 1;
+    }
+  }
 }

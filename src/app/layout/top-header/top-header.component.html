@@ -3,7 +3,7 @@
     <!-- Left: Dynamic Breadcrumb -->
     <nav class="top-header__left" aria-label="Breadcrumb">
         <ol class="breadcrumb">
-            @for (crumb of breadcrumbs(); track crumb.route; let last = $last) {
+            @for (crumb of breadcrumbs(); track $index; let last = $last) {
                 <li class="breadcrumb__item" [class.breadcrumb__item--active]="last">
                     @if (!last) {
                         <a [routerLink]="crumb.route" class="breadcrumb__link">{{ crumb.label }}</a>
@@ -33,7 +33,7 @@
             @if (searchFocused() && searchQuery().length > 0) {
                 <div class="search-dropdown" (mousedown)="$event.preventDefault()">
                     @if (searchResults().length > 0) {
-                        @for (result of searchResults(); track result.route) {
+                        @for (result of searchResults(); track $index) {
                             <button class="search-dropdown__item" (mousedown)="navigateToResult(result)">
                                 <span class="material-icons">{{ result.icon }}</span>
                                 <div class="search-dropdown__text">

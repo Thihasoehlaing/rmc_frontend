@@ -48,9 +48,9 @@
     </div>
   </section>
 
-  <!-- ── Section 3: APU Co-Researchers (Internal) ──────────── -->
+  <!-- ── Section 3: Asia Pacific University of Technology & Innovation Co-Researchers (Internal) ──────────── -->
   <section class="card">
-    <app-custom-subheader title="APU Co-Researchers (Internal)"
+    <app-custom-subheader title="Asia Pacific University of Technology & Innovation Co-Researchers (Internal)"
       tooltip="Minimum 1, Maximum 2 internal co-researchers">
     </app-custom-subheader>
 
@@ -309,7 +309,10 @@
         </div>
         <div class="form-field">
           <label class="form-label is-required">Full Name</label>
-          <input type="text" class="input--text" formControlName="fullName">
+          <input type="text" class="input--text" formControlName="fullName" placeholder="e.g. Dr. Aisha Rahman">
+          <app-field-note>
+            External collaborators must be staff, researchers, or industry partners. Students are not eligible for this role.
+          </app-field-note>
           <app-validation-message [control]="externalForm.get('fullName')"></app-validation-message>
         </div>
       </div>
@@ -331,7 +334,12 @@
       <!-- Row 3: Org Type + Position -->
       <div class="row row--2">
         <div class="form-field">
-          <label class="form-label is-required">Type of Organisation</label>
+          <div class="label-with-manage">
+            <label class="form-label is-required">Type of Organisation</label>
+            <button type="button" class="manage-btn" (click)="manageOrgTypes()" title="Manage Organisation Types">
+              <span class="manage-icon">⚙️</span>
+            </button>
+          </div>
           <select class="input--select" formControlName="orgType">
             <option value="" disabled>Select organisation type...</option>
             @for (o of orgTypes; track o.value) {

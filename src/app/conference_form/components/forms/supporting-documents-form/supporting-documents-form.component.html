@@ -1,8 +1,6 @@
 <form [formGroup]="form" class="form-section">
   <section class="card">
-    <div class="card__header">
-      <h2 class="card__title">Upload Supporting Documents</h2>
-    </div>
+    <app-custom-subheader title="Upload Supporting Documents"></app-custom-subheader>
     <div class="card__content">
     <div class="section-fields">
       <div class="form-field">
@@ -107,12 +105,12 @@
         <div class="upload-field-header">
           <div class="title-with-tooltip">
             <h3 class="upload-field-title is-required">Conference Invoice</h3>
+            <p class="upload-field-subtitle">Max file size: 10 MB. PDF ONLY</p>
             <app-note
               text="Please ensure billing name is: Asia Pacific University Sdn. Bhd."
               [isTooltip]="true">
             </app-note>
           </div>
-          <p class="upload-field-subtitle">Max file size: 10 MB. PDF ONLY</p>
         </div>
         <app-file-upload
           #conferenceInvoiceUpload
@@ -132,9 +130,7 @@
   </section>
 
   <section class="card">
-    <div class="card__header">
-      <h2 class="card__title">Manuscript Details</h2>
-    </div>
+    <app-custom-subheader title="Manuscript Details"></app-custom-subheader>
     <div class="card__content">
     <div class="section-fields">
       <!-- Name of Reviewer -->
@@ -160,32 +156,6 @@
             <span>No</span>
           </label>
         </div>
-      </div>
-
-      <div class="form-field">
-        <label class="form-label is-required">Have you cited at least 1 journal paper from APU JATI & EJBM</label>
-        <div class="radio-group">
-          <label class="radio-label">
-            <input type="radio" value="yes" formControlName="citedJournalPaper">
-            <span>Yes</span>
-          </label>
-          <label class="radio-label">
-            <input type="radio" value="no" formControlName="citedJournalPaper">
-            <span>No</span>
-          </label>
-        </div>
-        @if (form.get('citedJournalPaper')?.value === 'no') {
-          <div class="form-field">
-            <label class="form-label is-required">If No, Please Explain:</label>
-            <textarea
-              class="input--textarea"
-              formControlName="citedJournalPaperExplanation">
-            </textarea>
-            @if (form.get('citedJournalPaperExplanation')?.invalid && form.get('citedJournalPaperExplanation')?.touched) {
-              <span class="form-error-msg">Explanation is required</span>
-            }
-          </div>
-        }
       </div>
 
       <div class="form-field">

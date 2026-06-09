@@ -10,7 +10,7 @@ import { JournalGuidelinesService } from '../../services/journal-guidelines.serv
   styleUrl: './journal-guidelines-modal.component.scss'
 })
 export class JournalGuidelinesModalComponent {
-  isOpen = signal(true);
+  isOpen = signal(false);
   private guidelinesService = inject(JournalGuidelinesService);
 
   journalGuidelines = computed(() => {

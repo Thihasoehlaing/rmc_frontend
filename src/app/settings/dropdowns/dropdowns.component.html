@@ -1,0 +1,267 @@
+<section class="dropdowns-container">
+  <div class="dropdowns-shell">
+    <div *ngIf="!selectedGroup()" class="list-view">
+      <div class="dropdowns-header">
+        <p class="dropdowns-header__eyebrow">Admin Settings</p>
+        <h1 class="dropdowns-title">Dropdowns</h1>
+        <p class="dropdowns-subtitle">
+          Select a form to manage its dropdown options. Categories are fixed per form, and shared options are grouped together for quick reuse.
+        </p>
+
+
+      </div>
+
+      <div class="grid">
+        <ng-container *ngFor="let g of groups(); trackBy: trackById">
+          <a href="#" class="card card-link" (click)="openGroup(g); $event.preventDefault()">
+            <div class="card__header">
+              <div class="title-with-icon">
+                <span class="material-icons card__icon">view_module</span>
+                <div class="card__heading">
+                  <h3 class="card__title">{{ g.title }}</h3>
+                </div>
+              </div>
+
+            </div>
+
+            
+
+            <div class="card__stats">
+              <div class="card__description">
+                {{ g.categories.slice(0, 3).join(', ') }}{{ g.categories.length > 3 ? '...' : '' }}
+              </div>
+            </div>
+
+            <div class="card__footer">
+              <span class="material-icons card__arrow">chevron_right</span>
+            </div>
+          </a>
+        </ng-container>
+      </div>
+    </div>
+    <div *ngIf="selectedGroup()" class="details-view settings-container fade-in">
+      <div class="card settings-card elevation-1">
+        <div class="card__header settings-card__header">
+          <div class="settings-card__header-row">
+            <button type="button" class="back-button" (click)="goBack()" aria-label="Back to dropdown forms">
+              <span class="material-icons">arrow_back</span>
+            </button>
+
+            <div>
+              <h2 class="card__title">{{ selectedGroup()?.title }} Dropdown Options Management</h2>
+              <p class="settings-card__subtitle">Manage all {{ selectedGroup()?.title }} dropdown options from a single maintainable page.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="card__content settings-card__content">
+            <div class="category-row">
+              <div class="category-summary">
+                <ng-container *ngIf="selectedCategory(); else totalSummary">
+                  Options in current category
+                </ng-container>
+                <ng-template #totalSummary>
+                  All options for this form
+                </ng-template>
+              </div>
+              <div class="category-list" role="tablist" aria-label="Dropdown categories">
+                <button
+                  *ngFor="let name of selectedGroupCategories()"
+                  type="button"
+                  class="category-chip"
+                  [class.is-active]="selectedCategory() === name"
+                  (click)="selectCategory(name)"
+                  [attr.aria-pressed]="selectedCategory() === name"
+                >
+                  <span class="category-label">{{ getCategoryDisplayLabel(name) }}</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="settings-controls">
+              <div class="filters-grid">
+                <div class="form-field">
+                  <label class="form-label" for="search-filter">Search</label>
+                  <input
+                    id="search-filter"
+                    type="text"
+                    class="input--text"
+                    [ngModel]="searchQuery()"
+                    (ngModelChange)="onSearchQueryChange($event)"
+                    placeholder="Search option name"
+                  />
+                </div>
+
+                <div class="form-field">
+                  <label class="form-label" for="status-filter">Status Filter</label>
+                  <select
+                    id="status-filter"
+                    class="input--text"
+                    [ngModel]="statusFilter()"
+                    (ngModelChange)="onStatusFilterChange($event)"
+                  >
+                    <option value="all">All</option>
+                    <option value="active">Active</option>
+                    <option value="inactive">Deactivated</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="toolbar-actions">
+                <div class="bulk-actions">
+                  <div class="delete-action">
+                    <button
+                      type="button"
+                      class="btn-delete-selected"
+                      [class.is-disabled]="selectedOptionsCount() === 0"
+                      [attr.aria-disabled]="selectedOptionsCount() === 0"
+                      (mouseenter)="showDeleteSelectionHint()"
+                      (focus)="showDeleteSelectionHint()"
+                      (click)="onDeleteSelectedClick()">
+                      <span class="material-icons">delete</span>
+                      Delete Selected
+                    </button>
+                    @if (deleteSelectionHint()) {
+                      <div class="delete-action__hint" role="status">
+                        Select an option first to delete.
+                      </div>
+                    }
+                  </div>
+                </div>
+
+                <app-action-button
+                  type="primary"
+                  label="Add Option"
+                  icon="add"
+                  [disabled]="!selectedCategory()"
+                  (clicked)="addOption()">
+                </app-action-button>
+              </div>
+            </div>
+
+          <div *ngIf="selectedCategory(); else selectCategoryHint">
+            <app-data-table
+              [columns]="tableColumns()"
+              [rows]="paginatedOptions()"
+              [sortColumn]="sortBy()"
+              [sortDirection]="sortDirection()"
+              (sortChange)="onSortChange($event)"
+              [dense]="true">
+              <ng-template #headerTemplate let-column="column">
+                @if (column.key === 'select') {
+                  <input
+                    type="checkbox"
+                    class="select-all-checkbox"
+                    [checked]="isAllFilteredOptionsSelected()"
+                    [disabled]="filteredOptions().length === 0"
+                    (click)="$event.stopPropagation()"
+                    (change)="toggleFilteredOptionsSelection($any($event.target).checked)"
+                    aria-label="Select all options"
+                  />
+                } @else {
+                  <span class="header-label">{{ column.label }}</span>
+                }
+              </ng-template>
+              <ng-template #rowTemplate let-row="row">
+                <tr [class.row--inactive]="row.status === 'Inactive'">
+                  <td class="select-cell">
+                    <input
+                      type="checkbox"
+                      class="row-checkbox"
+                      [checked]="isOptionSelected(row.id)"
+                      (change)="toggleOptionSelection(row.id, $any($event.target).checked)"
+                      [attr.aria-label]="'Select ' + row.value"
+                    />
+                  </td>
+
+                  <td>{{ row.value }}</td>
+
+                  @if (isRegionMetadataCategory()) {
+                    <td>{{ row.percentage ?? '-' }}%</td>
+                    <td>RM{{ row.limit ?? '-' }}</td>
+                    <td class="description-cell">{{ row.description || '-' }}</td>
+                  } @else if (isAccountCodeMetadataCategory()) {
+                    <td>{{ row.accountNumber || '-' }}</td>
+                  } @else {
+                    <td>
+                      <div class="shared-with-list" [class.shared-with-list--empty]="row.sharedWith.length === 0">
+                        @if (row.sharedWith.length > 0) {
+                          @for (sharedForm of row.sharedWith; track sharedForm) {
+                            <span class="shared-with-chip">
+                              <span class="material-icons">share</span>
+                              {{ sharedForm }}
+                            </span>
+                          }
+                        } @else {
+                          <span class="shared-with-empty">-</span>
+                        }
+                      </div>
+                    </td>
+                  }
+
+                  <td>
+                    <span class="status-chip" [class.status-chip--active]="row.status === 'Active'" [class.status-chip--inactive]="row.status === 'Inactive'">
+                      {{ row.status }}
+                    </span>
+                  </td>
+
+                  <td>{{ row.lastUpdated }}</td>
+
+                  <td class="actions-cell">
+                    <button class="icon-btn icon-btn--edit" type="button" title="Edit inline" (click)="editOption(row.id)">
+                      <span class="material-icons">edit</span>
+                    </button>
+
+                    <button *ngIf="row.status === 'Inactive'" class="btn btn-sm btn-status-activate" type="button" (click)="toggleStatus(row.id)">
+                      <span class="material-icons">check_circle</span>
+                      Activate
+                    </button>
+
+                    <button *ngIf="row.status === 'Active'" class="btn btn-sm btn-status-deactivate" type="button" (click)="toggleStatus(row.id)">
+                      <span class="material-icons">block</span>
+                      Deactivate
+                    </button>
+                  </td>
+                </tr>
+              </ng-template>
+            </app-data-table>
+
+            <app-pagination
+              [currentPage]="optionsPage()"
+              [totalPages]="optionsTotalPages()"
+              [pageSize]="optionsPageSize()"
+              [pageSizeOptions]="optionsPageSizeOptions"
+              (pageChange)="onOptionsPageChange($event)"
+              (pageSizeChange)="onOptionsPageSizeChange($event)">
+            </app-pagination>
+
+            <div *ngIf="filteredOptions().length === 0" class="empty-state">
+              <p>No options for this category. Click "Add Option" to create one.</p>
+            </div>
+          </div>
+
+              <ng-template #selectCategoryHint>
+                <div class="help-text">
+                  <p>Select a dropdown category to view or manage its options.</p>
+                </div>
+              </ng-template>
+            </div>
+          </div>
+
+          <app-add-option-modal
+            [isOpen]="showAddModal()"
+            [title]="editingOptionId() ? 'Edit Option' : 'Add Dropdown Option'"
+            [categoryLabel]="getCategoryDisplayLabel(selectedCategory())"
+            [optionNameLabel]="getOptionNameInputLabel()"
+            [availableForms]="shareableForms()"
+            [defaultSelectedForms]="defaultSelectedForms()"
+            [initial]="editingInitialPayload()"
+            [primaryActionLabel]="editingOptionId() ? 'Save' : 'Add Option'"
+            [showAccountNumberMetadata]="isAccountCodeMetadataCategory()"
+            [showRegionMetadata]="isRegionMetadataCategory()"
+            (close)="closeModal()"
+            (save)="onModalSave($event)">
+          </app-add-option-modal>
+    </div>
+  </div>
+</section>

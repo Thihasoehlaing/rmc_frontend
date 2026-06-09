@@ -51,49 +51,55 @@
         </div>
       </div>
 
-      <!-- 1. APU Lead Member Table -->
+      <!-- 1. Asia Pacific University of Technology & Innovation Lead Member Table -->
       <div class="card mt-5">
-        <app-custom-subheader title="APU Lead Member of Staff"></app-custom-subheader>
+        <app-custom-subheader title="Asia Pacific University of Technology & Innovation Lead Member of Staff"></app-custom-subheader>
 
         <div class="card__content">
+          <div class="card-body">
           <div class="list-section-header">
             <span class="list-count">{{ apuLeadMembers.length }} {{ apuLeadMembers.length === 1 ? 'Entry' : 'Entries' }}</span>
             <app-action-button type="primary" label="Add Entry" icon="add" (clicked)="openModal('leadMember')" [disabled]="isDisabled"></app-action-button>
           </div>
 
-        @if (apuLeadMembers.length > 0) {
-          <app-data-table
-            [columns]="apuLeadMembersColumns"
-            [rows]="apuLeadMembers.controls"
-            [dense]="true">
-            <ng-template #rowTemplate let-row let-index="index">
-              <tr>
-                <td style="text-align: center;" class="text-muted">{{ index + 1 }}</td>
-                <td>
-                  <div class="data-table__title data-table__title--small">{{ row.value.name }}</div>
-                </td>
-                <td>{{ row.value.functionalUnit }}</td>
-                <td>{{ row.value.email }}</td>
-                <td class="action-cell">
-                  <div class="data-table__actions" style="justify-content: center;">
-                    <button type="button" class="btn-icon btn-icon--edit"
-                      (click)="openModal('leadMember', index)" aria-label="Edit entry" [disabled]="isDisabled">
-                      <span class="material-icons">edit</span>
-                    </button>
-                    <button type="button" class="btn-icon btn-icon--delete"
-                      (click)="removeLeadMember(index)" aria-label="Remove entry" [disabled]="isDisabled">
-                      <span class="material-icons">delete</span>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            </ng-template>
-          </app-data-table>
-        } @else {
-          <div class="empty-state">
-            <p>No entries added yet. Click <strong>Add Entry</strong> to start adding items.</p>
+          @if (apuLeadMembers.length > 0) {
+            <div class="table-scroll">
+              <app-data-table
+                [columns]="apuLeadMembersColumns"
+                [rows]="apuLeadMembers.controls"
+                [hoverable]="true"
+                [striped]="true">
+                <ng-template #rowTemplate let-row let-index="index">
+                  <tr>
+                    <td class="col-no text-muted is-align-center">{{ index + 1 }}</td>
+                    <td>
+                      <div class="data-table__title data-table__title--small">{{ row.value.name }}</div>
+                    </td>
+                    <td>{{ row.value.functionalUnit }}</td>
+                    <td>{{ row.value.email }}</td>
+                    <td class="col-actions is-align-center">
+                      <div class="data-table__actions">
+                        <button type="button" class="btn-icon btn-icon--edit"
+                          (click)="openModal('leadMember', index)" aria-label="Edit entry" [disabled]="isDisabled">
+                          <span class="material-icons">edit</span>
+                        </button>
+                        <button type="button" class="btn-icon btn-icon--delete"
+                          (click)="removeLeadMember(index)" aria-label="Remove entry" [disabled]="isDisabled">
+                          <span class="material-icons">delete</span>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </ng-template>
+              </app-data-table>
+            </div>
+          } @else {
+            <div class="empty-state">
+              <span class="material-icons">group</span>
+              <p>No entries added yet. Click Add Entry to start adding items.</p>
+            </div>
+          }
           </div>
-        }
         </div>
       </div>
 
@@ -102,44 +108,50 @@
         <app-custom-subheader title="Milestones"></app-custom-subheader>
 
         <div class="card__content">
+          <div class="card-body">
           <div class="list-section-header">
             <span class="list-count">{{ milestones.length }} {{ milestones.length === 1 ? 'Entry' : 'Entries' }}</span>
             <app-action-button type="primary" label="Add Entry" icon="add" (clicked)="openModal('milestone')" [disabled]="isDisabled"></app-action-button>
           </div>
 
-        @if (milestones.length > 0) {
-          <app-data-table
-            [columns]="milestonesColumns"
-            [rows]="milestones.controls"
-            [dense]="true">
-            <ng-template #rowTemplate let-row let-index="index">
-              <tr>
-                <td style="text-align: center;" class="text-muted">{{ index + 1 }}</td>
-                <td>
-                  <div class="data-table__title data-table__title--small">{{ row.value.action }}</div>
-                </td>
-                <td>{{ row.value.startDate | date }}</td>
-                <td>{{ row.value.endDate | date }}</td>
-                <td class="action-cell">
-                  <div class="data-table__actions" style="justify-content: center;">
-                    <button type="button" class="btn-icon btn-icon--edit"
-                      (click)="openModal('milestone', index)" aria-label="Edit entry" [disabled]="isDisabled">
-                      <span class="material-icons">edit</span>
-                    </button>
-                    <button type="button" class="btn-icon btn-icon--delete"
-                      (click)="removeMilestone(index)" aria-label="Remove entry" [disabled]="isDisabled">
-                      <span class="material-icons">delete</span>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            </ng-template>
-          </app-data-table>
-        } @else {
-          <div class="empty-state">
-            <p>No entries added yet. Click <strong>Add Entry</strong> to start adding items.</p>
+          @if (milestones.length > 0) {
+            <div class="table-scroll">
+              <app-data-table
+                [columns]="milestonesColumns"
+                [rows]="milestones.controls"
+                [hoverable]="true"
+                [striped]="true">
+                <ng-template #rowTemplate let-row let-index="index">
+                  <tr>
+                    <td class="col-no text-muted is-align-center">{{ index + 1 }}</td>
+                    <td>
+                      <div class="data-table__title data-table__title--small">{{ row.value.action }}</div>
+                    </td>
+                    <td>{{ row.value.startDate | date }}</td>
+                    <td>{{ row.value.endDate | date }}</td>
+                    <td class="col-actions is-align-center">
+                      <div class="data-table__actions">
+                        <button type="button" class="btn-icon btn-icon--edit"
+                          (click)="openModal('milestone', index)" aria-label="Edit entry" [disabled]="isDisabled">
+                          <span class="material-icons">edit</span>
+                        </button>
+                        <button type="button" class="btn-icon btn-icon--delete"
+                          (click)="removeMilestone(index)" aria-label="Remove entry" [disabled]="isDisabled">
+                          <span class="material-icons">delete</span>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </ng-template>
+              </app-data-table>
+            </div>
+          } @else {
+            <div class="empty-state">
+              <span class="material-icons">timeline</span>
+              <p>No entries added yet. Click Add Entry to start adding items.</p>
+            </div>
+          }
           </div>
-        }
         </div>
       </div>
 
@@ -148,44 +160,50 @@
         <app-custom-subheader title="Outcomes"></app-custom-subheader>
 
         <div class="card__content">
+          <div class="card-body">
           <div class="list-section-header">
             <span class="list-count">{{ outcomes.length }} {{ outcomes.length === 1 ? 'Entry' : 'Entries' }}</span>
             <app-action-button type="primary" label="Add Entry" icon="add" (clicked)="openModal('outcome')" [disabled]="isDisabled"></app-action-button>
           </div>
 
-        @if (outcomes.length > 0) {
-          <app-data-table
-            [columns]="outcomesColumns"
-            [rows]="outcomes.controls"
-            [dense]="true">
-            <ng-template #rowTemplate let-row let-index="index">
-              <tr>
-                <td style="text-align: center;" class="text-muted">{{ index + 1 }}</td>
-                <td>
-                  <div class="data-table__title data-table__title--small">{{ row.value.outcome }}</div>
-                </td>
-                <td>{{ row.value.startDate | date }}</td>
-                <td>{{ row.value.endDate | date }}</td>
-                <td class="action-cell">
-                  <div class="data-table__actions" style="justify-content: center;">
-                    <button type="button" class="btn-icon btn-icon--edit"
-                      (click)="openModal('outcome', index)" aria-label="Edit entry" [disabled]="isDisabled">
-                      <span class="material-icons">edit</span>
-                    </button>
-                    <button type="button" class="btn-icon btn-icon--delete"
-                      (click)="removeOutcome(index)" aria-label="Remove entry" [disabled]="isDisabled">
-                      <span class="material-icons">delete</span>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            </ng-template>
-          </app-data-table>
-        } @else {
-          <div class="empty-state">
-            <p>No entries added yet. Click <strong>Add Entry</strong> to start adding items.</p>
+          @if (outcomes.length > 0) {
+            <div class="table-scroll">
+              <app-data-table
+                [columns]="outcomesColumns"
+                [rows]="outcomes.controls"
+                [hoverable]="true"
+                [striped]="true">
+                <ng-template #rowTemplate let-row let-index="index">
+                  <tr>
+                    <td class="col-no text-muted is-align-center">{{ index + 1 }}</td>
+                    <td>
+                      <div class="data-table__title data-table__title--small">{{ row.value.outcome }}</div>
+                    </td>
+                    <td>{{ row.value.startDate | date }}</td>
+                    <td>{{ row.value.endDate | date }}</td>
+                    <td class="col-actions is-align-center">
+                      <div class="data-table__actions">
+                        <button type="button" class="btn-icon btn-icon--edit"
+                          (click)="openModal('outcome', index)" aria-label="Edit entry" [disabled]="isDisabled">
+                          <span class="material-icons">edit</span>
+                        </button>
+                        <button type="button" class="btn-icon btn-icon--delete"
+                          (click)="removeOutcome(index)" aria-label="Remove entry" [disabled]="isDisabled">
+                          <span class="material-icons">delete</span>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </ng-template>
+              </app-data-table>
+            </div>
+          } @else {
+            <div class="empty-state">
+              <span class="material-icons">checklist</span>
+              <p>No entries added yet. Click Add Entry to start adding items.</p>
+            </div>
+          }
           </div>
-        }
         </div>
       </div>
 
@@ -194,47 +212,53 @@
         <app-custom-subheader title="Supporting Documentation"></app-custom-subheader>
 
         <div class="card__content">
+          <div class="card-body">
           <div class="list-section-header">
             <span class="list-count">{{ supportingDocs.length }} {{ supportingDocs.length === 1 ? 'Entry' : 'Entries' }}</span>
             <app-action-button type="primary" label="Add Entry" icon="add" (clicked)="openModal('suppDoc')" [disabled]="isDisabled"></app-action-button>
           </div>
 
-        @if (supportingDocs.length > 0) {
-          <app-data-table
-            [columns]="supportingDocsColumns"
-            [rows]="supportingDocs.controls"
-            [dense]="true">
-            <ng-template #rowTemplate let-row let-index="index">
-              <tr>
-                <td style="text-align: center;" class="text-muted">{{ index + 1 }}</td>
-                <td>
-                  <div class="data-table__title data-table__title--small">{{ row.value.documentType }}</div>
-                </td>
-                <td>
-                  <span class="material-icons text-muted" style="font-size: 16px; vertical-align: middle; margin-right: 4px;">description</span>
-                  {{ row.value.fileName }}
-                </td>
-                <td>{{ row.value.description }}</td>
-                <td class="action-cell">
-                  <div class="data-table__actions" style="justify-content: center;">
-                    <button type="button" class="btn-icon btn-icon--edit"
-                      (click)="openModal('suppDoc', index)" aria-label="Edit entry" [disabled]="isDisabled">
-                      <span class="material-icons">edit</span>
-                    </button>
-                    <button type="button" class="btn-icon btn-icon--delete"
-                      (click)="removeSupportingDoc(index)" aria-label="Remove entry" [disabled]="isDisabled">
-                      <span class="material-icons">delete</span>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            </ng-template>
-          </app-data-table>
-        } @else {
-          <div class="empty-state">
-            <p>No documents added yet. Click <strong>Add Entry</strong> to upload.</p>
+          @if (supportingDocs.length > 0) {
+            <div class="table-scroll">
+              <app-data-table
+                [columns]="supportingDocsColumns"
+                [rows]="supportingDocs.controls"
+                [hoverable]="true"
+                [striped]="true">
+                <ng-template #rowTemplate let-row let-index="index">
+                  <tr>
+                    <td class="col-no text-muted is-align-center">{{ index + 1 }}</td>
+                    <td>
+                      <div class="data-table__title data-table__title--small">{{ row.value.documentType }}</div>
+                    </td>
+                    <td>
+                      <span class="material-icons text-muted" style="font-size: 16px; vertical-align: middle; margin-right: 4px;">description</span>
+                      {{ row.value.fileName }}
+                    </td>
+                    <td>{{ row.value.description }}</td>
+                    <td class="col-actions is-align-center">
+                      <div class="data-table__actions">
+                        <button type="button" class="btn-icon btn-icon--edit"
+                          (click)="openModal('suppDoc', index)" aria-label="Edit entry" [disabled]="isDisabled">
+                          <span class="material-icons">edit</span>
+                        </button>
+                        <button type="button" class="btn-icon btn-icon--delete"
+                          (click)="removeSupportingDoc(index)" aria-label="Remove entry" [disabled]="isDisabled">
+                          <span class="material-icons">delete</span>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </ng-template>
+              </app-data-table>
+            </div>
+          } @else {
+            <div class="empty-state">
+              <span class="material-icons">description</span>
+              <p>No documents added yet. Click Add Entry to upload.</p>
+            </div>
+          }
           </div>
-        }
         </div>
       </div>
 
@@ -281,7 +305,7 @@
             <app-validation-message [control]="leadMemberForm.get('email')"></app-validation-message>
           </div>
 
-          <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-4); background: var(--color-surface-nested); border-top: 1px solid var(--border-default); margin-top: var(--space-4); box-sizing: border-box;">
+          <div class="modal-footer" style="display: flex; justify-content: space-between; padding: var(--space-4) 0 0 0; border-top: none; margin-top: var(--space-4);">
             <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancel</button>
             <button type="submit" class="btn btn-primary" [disabled]="leadMemberForm.invalid">Save</button>
           </div>
@@ -309,7 +333,7 @@
             <app-validation-message [control]="milestoneForm.get('endDate')"></app-validation-message>
           </div>
 
-          <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-4); background: var(--color-surface-nested); border-top: 1px solid var(--border-default); margin-top: var(--space-4); box-sizing: border-box;">
+          <div class="modal-footer" style="display: flex; justify-content: space-between; padding: var(--space-4) 0 0 0; border-top: none; margin-top: var(--space-4);">
             <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancel</button>
             <button type="submit" class="btn btn-primary" [disabled]="milestoneForm.invalid">Save</button>
           </div>
@@ -337,7 +361,7 @@
             <app-validation-message [control]="outcomeForm.get('endDate')"></app-validation-message>
           </div>
 
-          <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-4); background: var(--color-surface-nested); border-top: 1px solid var(--border-default); margin-top: var(--space-4); box-sizing: border-box;">
+          <div class="modal-footer" style="display: flex; justify-content: space-between; padding: var(--space-4) 0 0 0; border-top: none; margin-top: var(--space-4);">
             <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancel</button>
             <button type="submit" class="btn btn-primary" [disabled]="outcomeForm.invalid">Save</button>
           </div>
@@ -370,7 +394,7 @@
             <textarea class="form-control input--textarea" rows="3" formControlName="description" placeholder="Optional document description"></textarea>
           </div>
 
-          <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-4); background: var(--color-surface-nested); border-top: 1px solid var(--border-default); margin-top: var(--space-4); box-sizing: border-box;">
+          <div class="modal-footer" style="display: flex; justify-content: space-between; padding: var(--space-4) 0 0 0; border-top: none; margin-top: var(--space-4);">
             <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancel</button>
             <button type="submit" class="btn btn-primary" [disabled]="supportingDocForm.invalid">Save</button>
           </div>
@@ -379,5 +403,3 @@
     </div>
   </div>
 }
-
-

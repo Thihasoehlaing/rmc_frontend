@@ -1,18 +1,15 @@
 @use '../../../../../assets/styles/index' as *;
-@use '../../../styles/radio-group';
 
-// Override required field color for conference form
 .form-label.is-required::after {
   color: var(--color-error-dark);
 }
 
-// Style asterisks in modal to use error-dark color
 .asterisk {
   color: var(--color-error-dark);
 }
 
 .form-section {
-  padding: var(--space-4);
+  padding: 0;
 }
 
 .section-fields {
@@ -21,6 +18,9 @@
   gap: var(--space-6);
 }
 
+.form-column .form-field {
+  margin-bottom: var(--space-5);
+}
 
 .form-counter {
   font-size: var(--fs-xs);
@@ -29,22 +29,132 @@
   margin-top: var(--space-1);
 }
 
+.restricted-publisher-label {
+  line-height: 1.5;
+  /* make this specific label behave like a vertical stack to avoid inline-flex quirks */
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+
+  .label-line1 {
+    display: inline-block;
+    word-break: keep-all;
+
+    /* No inline asterisk here: we will suppress visual markers but keep validation */
+  }
+
+  .label-line2 {
+    display: block;
+    margin-top: var(--space-1);
+    margin-left: 0;
+  }
+
+  .required-inline {
+    color: var(--color-error-dark);
+    margin-left: var(--space-2);
+    font-size: 1.1em;
+    display: inline-block;
+    vertical-align: text-top;
+  }
+
+  /* hide the global pseudo-asterisk for this specific label to avoid duplication */
+  &.is-required::after {
+    display: none !important;
+    content: none !important;
+  }
+}
+
 .row--2 {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: var(--space-6);
+  align-items: start;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+    gap: var(--space-4);
+  }
+}
+
+.row--2--stacked {
+  grid-template-columns: 1fr;
+}
+
+.radio-divider-extended {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+
+  /* full-height vertical divider limited to only the wrapped radio section */
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 1px;
+    background: var(--border-default);
+    z-index: 0;
+  }
+
+  /* ensure form fields sit above the divider and provide breathing room */
+  .form-field {
+    position: relative;
+    z-index: 1;
+    padding-left: var(--space-2);
+    padding-right: var(--space-2);
+  }
+
+  /* prevent in-label note boxes from extending into the center divider */
+  .form-field .label-with-note app-note {
+    display: block;
+    max-width: calc(100% - var(--space-6));
+    box-sizing: border-box;
+    z-index: 2;
+  }
 
   @media (max-width: 768px) {
-    grid-template-columns: 1fr;
+    &::before {
+      display: none;
+    }
+
+    .form-field {
+      padding-left: 0;
+      padding-right: 0;
+    }
+  }
+
+  /* Improve vertical alignment between left/right columns */
+  --label-block-min-height: 52px;
+
+  /* Ensure both simple labels and labels-with-note reserve the same vertical space */
+  .form-field > .label-with-note,
+  .form-field > .form-label {
+    display: block;
+    min-height: var(--label-block-min-height);
+    box-sizing: border-box;
+    padding-top: var(--space-1);
+    padding-bottom: 0;
+  }
+
+  @media (max-width: 1024px) {
+    --label-block-min-height: 72px;
+  }
+
+  /* Keep radio lists aligned by giving them a consistent top gap */
+  .radio-group {
+    margin-top: 0;
   }
 }
 
 .row--3 {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: var(--space-6);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-4);
 
-  @media (max-width: 768px) {
+  @media (max-width: 900px) {
     grid-template-columns: 1fr;
   }
 }
@@ -84,9 +194,9 @@
 }
 
 .total-display {
-  padding-bottom: var(--space-4);
+  padding-bottom: var(--space-2);
   border-bottom: 2px solid var(--border-default);
-  margin-bottom: var(--space-4);
+  margin-bottom: var(--space-2);
 
   .total-label {
     font-size: var(--fs-md);
@@ -104,20 +214,43 @@
 }
 
 .form-field {
-  margin-bottom: var(--space-7);
+  min-width: 0;
+  margin-bottom: var(--space-4);
 
   &:last-child {
     margin-bottom: 0;
   }
 }
 
+.form-column {
+  min-width: 0;
+}
+
+.form-label {
+  align-items: flex-start;
+  line-height: var(--lh-relaxed);
+}
+
+.radio-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4) var(--space-6);
+  padding: var(--space-2) 0;
+}
+
+.radio-option {
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
 .sponsorship-subsections-container {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-6);
-  margin-bottom: var(--space-6);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
 
-  @media (max-width: 768px) {
+  @media (max-width: 900px) {
     grid-template-columns: 1fr;
   }
 }
@@ -139,23 +272,24 @@
   display: block;
   border-left: var(--space-1) solid var(--color-primary); // 4px accent border
   border-radius: var(--radius-sm);
-  letter-spacing: 0.5px; // no token: subtle letter-spacing for emphasis
+  letter-spacing: 0;
+  line-height: var(--lh-tight);
 }
 
 .subsection-fields-wrapper {
   display: flex;
   flex-direction: column;
-  gap: var(--space-6);
+  gap: var(--space-4);
   flex: 1;
   padding: var(--space-4);
   background-color: var(--color-surface);
-  border: 1px solid var(--border-default); // 1px border — allowed exception
-  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
 }
 
 .sponsorship-subsection .row--2 {
   grid-template-columns: 1fr;
-  gap: var(--space-6);
+  gap: var(--space-2);
 
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
@@ -164,7 +298,7 @@
 
 .tooltip-text {
   font-size: var(--fs-xs);
-  color: var(--color-text-muted);
+  color: var(--color-warning-dark);
   margin-top: var(--space-2);
   display: block;
   font-weight: var(--fw-normal);
@@ -174,15 +308,15 @@
 .subsection-fields {
   display: flex;
   flex-direction: column;
-  gap: var(--space-6);
+  gap: var(--space-2);
 }
 
 .sponsorship-subsection-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-6);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--space-4);
 
-  @media (max-width: 768px) {
+  @media (max-width: 900px) {
     grid-template-columns: 1fr;
   }
 }
@@ -191,7 +325,7 @@
   display: flex;
   gap: var(--space-3);
   padding: var(--space-4);
-  margin-bottom: var(--space-6);
+  margin-bottom: var(--space-4);
   background-color: var(--color-warning-light);
   border: 1px solid var(--color-warning);
   border-radius: var(--radius-md);
@@ -234,6 +368,11 @@
   max-width: 300px; // no token: input constraint width
 }
 
+.input--textarea {
+  resize: vertical;
+  overflow-y: auto;
+}
+
 .keywords-group {
   display: flex;
   flex-direction: column;
@@ -261,17 +400,17 @@
 .region-subsection {
   background: var(--color-surface-hover);
   border-left: var(--space-1) solid var(--color-primary);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   padding: var(--space-4);
   margin-top: var(--space-4);
 }
 
 .region-details-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--space-4);
 
-  @media (max-width: 768px) {
+  @media (max-width: 900px) {
     grid-template-columns: 1fr;
   }
 }
@@ -311,10 +450,14 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
-  padding: var(--space-4);
+  padding: var(--space-5);
   border: 1px solid var(--border-default);
   border-radius: var(--radius-md);
   background: var(--color-surface-hover);
+
+  @media (max-width: 768px) {
+    padding: var(--space-4);
+  }
 }
 
 .research-title {
@@ -345,6 +488,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
   margin-bottom: var(--space-3);
 }
 
@@ -431,6 +576,55 @@
   p {
     margin: 0;
     line-height: 1.5;
+  }
+}
+
+.sdg-keywords-container {
+  min-height: var(--input-height-sm);
+  padding: var(--space-2);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--input-bg-editable);
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.keyword-chip {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-full);
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+}
+
+.chip-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chip-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--space-5);
+  height: var(--space-5);
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+
+  .material-icons {
+    font-size: 16px;
   }
 }
 
@@ -587,10 +781,13 @@
   gap: var(--space-3);
   padding: var(--space-3) var(--space-4);
   border-top: 1px solid var(--border-default);
-  justify-content: flex-end;
+  justify-content: space-between;
   align-items: center;
   flex-shrink: 0;
+  grid-column: 1 / -1;
   width: 100%;
+  box-sizing: border-box;
+  margin: 0;
 
   .btn {
     min-width: 100px;
@@ -706,58 +903,3 @@
   margin: 0;
   padding: var(--space-2);
 }
-
-// SDG Keywords Container & Chips Styles
-.sdg-keywords-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  background: white;
-  min-height: 40px;
-  align-items: center;
-  cursor: pointer;
-  transition: border-color 0.2s, background-color 0.2s;
-
-  &:hover {
-    border-color: #999;
-    background: #fafafa;
-  }
-
-  &:focus-visible {
-    outline: 2px solid #0066cc;
-    outline-offset: -1px;
-  }
-}
-
-.keyword-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: #333;
-  color: white;
-  padding: 4px 12px;
-  border-radius: 4px;
-  font-size: 12px;
-  white-space: nowrap;
-}
-
-.chip-close {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  border: none;
-  color: white;
-  cursor: pointer;
-  padding: 0;
-  width: 16px;
-  height: 16px;
-
-  .material-icons {
-    font-size: 14px;
-  }
-}
-

@@ -1,0 +1,109 @@
+// Project Details Component Styles
+// Follows Journal form design system
+
+.form-section {
+  width: 100%;
+  min-width: 0;
+  overflow-x: clip;
+}
+
+.card {
+  width: 100%;
+  min-width: 0;
+}
+
+.input--soft-readonly {
+  background-color: var(--input-bg-readonly);
+  border: 1px solid var(--border-subtle);
+  color: var(--color-text-muted);
+  font-weight: 400;
+  cursor: default;
+  box-shadow: none;
+
+  &:focus {
+    outline: none;
+    border-color: var(--border-subtle);
+    box-shadow: none;
+  }
+}
+
+.section-fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  min-width: 0;
+}
+
+.section-fields .row {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.section-fields .row--2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.section-fields .row--3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+@media (max-width: 1024px) {
+  .section-fields .row--3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .section-fields .row--2,
+  .section-fields .row--3 {
+    grid-template-columns: 1fr;
+  }
+}
+
+.form-column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  min-width: 0;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.input--text,
+.input--textarea,
+.input--select {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.position-requested-note {
+  display: inline-block;
+  margin-top: var(--space-2);
+  width: fit-content;
+  max-width: 100%;
+  align-self: flex-start;
+
+  ::ng-deep .field-note {
+    display: inline-block;
+    max-width: 100%;
+  }
+}
+
+// Disabled radio option styling
+.radio-option--disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  
+  input[type='radio'] {
+    cursor: not-allowed;
+  }
+  
+  span {
+    color: var(--color-text-muted);
+  }
+}

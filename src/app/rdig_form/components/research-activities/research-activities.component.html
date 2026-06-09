@@ -30,7 +30,7 @@
                 <th class="col-month">Start (Mo)</th>
                 <th class="col-month">End (Mo)</th>
                 <th class="col-duration">Duration</th>
-                <th class="col-timeline">Timeline (Month 1 – {{ projectDuration() }})</th>
+                <th class="col-timeline">Timeline (Month 0 - 12)</th>
                 <th class="col-actions"></th>
               </tr>
             </thead>
@@ -89,7 +89,7 @@
         </div>
       }
 
-      <app-note text="Start Month is set automatically. End Month must be after Start Month, and the final activity must end at the project duration month." [isTooltip]="true"></app-note>
+      <app-note text="Start and End Month can be any value from 0 to 12, can be the same, and activities may overlap." [isTooltip]="true"></app-note>
     </div>
   </div>
 

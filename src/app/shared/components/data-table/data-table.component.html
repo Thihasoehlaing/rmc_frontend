@@ -11,12 +11,25 @@
         @if (showHeader) {
           <thead>
             <tr>
-              @for (column of columns; track column.key) {
+              @for (column of columns; track column.key; let i = $index) {
                 <th
                   scope="col"
                   [class.is-align-center]="headerAlign(column) === 'center'"
-                  [class.is-align-right]="headerAlign(column) === 'right'">
-                  {{ column.label }}
+                  [class.is-align-right]="headerAlign(column) === 'right'"
+                  [class.is-sortable]="column.sortable"
+                  [class.is-sorted]="sortColumn === column.key"
+                  (click)="onHeaderClick(column)">
+                  @if (headerTemplate) {
+                    <ng-container
+                      [ngTemplateOutlet]="headerTemplate"
+                      [ngTemplateOutletContext]="{ column: column, index: i }">
+                    </ng-container>
+                  } @else {
+                    <span class="header-label">{{ column.label }}</span>
+                  }
+                  <span class="sort-indicator" aria-hidden="true" [hidden]="!column.sortable">
+                    <span class="material-icons" aria-hidden="true">{{ sortColumn === column.key ? (sortDirection === 'asc' ? 'arrow_upward' : sortDirection === 'desc' ? 'arrow_downward' : 'unfold_more') : 'unfold_more' }}</span>
+                  </span>
                 </th>
               }
             </tr>
@@ -24,12 +37,12 @@
         }
 
         <tbody>
-          @if (rows.length > 0) {
-            @for (row of rows; track trackRow($index, row); let i = $index) {
+          @if (displayRows.length > 0) {
+            @for (row of displayRows; track trackRow($index, row); let i = $index) {
               @if (rowTemplate) {
                 <ng-container
                   [ngTemplateOutlet]="rowTemplate"
-                  [ngTemplateOutletContext]="{ $implicit: row, row: row, index: i, columns: columns }">
+                  [ngTemplateOutletContext]="{ $implicit: row, row: row, index: (currentPage * (pageSize || displayRows.length)) + i, columns: columns }">
                 </ng-container>
               } @else {
                 <tr [class.is-hoverable]="hoverable">
@@ -57,4 +70,30 @@
       </table>
     </div>
   </div>
+
+  @if (hasPagination && rows.length > 0) {
+    <div class="data-table__pagination">
+      <button
+        type="button"
+        class="btn btn-sm btn-secondary"
+        (click)="onPreviousPage()"
+        [disabled]="currentPage === 0"
+        aria-label="Previous page">
+        <span class="material-icons">chevron_left</span>
+      </button>
+
+      <span class="pagination-info">
+        Page {{ currentPage + 1 }} of {{ totalPages }}
+      </span>
+
+      <button
+        type="button"
+        class="btn btn-sm btn-secondary"
+        (click)="onNextPage()"
+        [disabled]="currentPage >= totalPages - 1"
+        aria-label="Next page">
+        <span class="material-icons">chevron_right</span>
+      </button>
+    </div>
+  }
 </div>

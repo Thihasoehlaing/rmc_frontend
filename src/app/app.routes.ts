@@ -22,11 +22,6 @@ export const routes: Routes = [
     children: [
       // Accessible to ALL authenticated users
       { path: 'dashboard', component: DashboardComponent },
-      {
-        path: 'inbox',
-        loadComponent: () =>
-          import('./submissions/inbox/inbox.component').then(m => m.InboxComponent),
-      },
       { path: 'profile', component: ProfileComponent },
       {
         path: 'showcase',
@@ -85,7 +80,7 @@ export const routes: Routes = [
       },
 
       // ── Conference Application ────────────────────────────────────────────
-      // Rule: Allow all authenticated users except fully blocked users
+      // Rule: ((full_time OR contract) AND academic) OR Admin
       {
         path: 'conference',
         canActivate: [permissionGuard],
@@ -95,12 +90,7 @@ export const routes: Routes = [
               {
                 anyOf: ['full_time', 'contract'],
                 allOf: ['academic'],
-              },
-              {
-                anyOf: ['HOS'],
-              },
-              {
-                anyOf: ['VC'],
+                excludeGroups: ['Reviewer', 'HOS'],
               },
               {
                 anyOf: ['Admin'],
@@ -120,7 +110,7 @@ export const routes: Routes = [
         data: {
           permission: {
             anyCondition: [
-              { anyOf: ['full_time', 'contract'], allOf: ['academic'] },        
+              { anyOf: ['full_time', 'contract'], allOf: ['academic'] },
               { anyOf: ['HOS'] },
               { anyOf: ['VC'] },
               { anyOf: ['Admin'] },            ],          } satisfies NavPermission,
@@ -132,37 +122,34 @@ export const routes: Routes = [
       },
 
       // ── RA/GRA Application ────────────────────────────────────────────────
-      // Rule: (HOS AND (full_time OR contract) AND academic) OR ra_gra_hos_pass
+      // Rule: (full_time OR contract) AND academic
       {
         path: 'ragra',
         canActivate: [permissionGuard],
         data: {
           permission: {
-            anyCondition: [
-              { anyOf: ['full_time', 'contract'], allOf: ['academic', 'HOS'] },
-              { anyOf: ['group_ra_gra_hos_pass'] },
-            ],
+            anyOf: ['full_time', 'contract'],
+            allOf: ['academic'],
           } satisfies NavPermission,
         },
         loadComponent: () =>
-          import('./ragra_form/ragra-form.component').then(m => m.RagraFormComponent),
+          import('./RA-GRA_form/RA-GRA_form.component').then(m => m.RagraFormComponent),
       },
 
-      // ── Travel Authorization Application ──────────────────────────────────
-      // Rule: ((full_time OR contract) AND academic) OR HOS
+      // ── Travel Authorization ─────────────────────────────────────────────
+      // Rule: all authenticated users EXCEPT Admin
       {
-        path: 'travel',
+        path: 'travel-authorization',
         canActivate: [permissionGuard],
         data: {
           permission: {
-            anyCondition: [
-              { anyOf: ['full_time', 'contract'], allOf: ['academic'] },
-              { anyOf: ['HOS'] },
-            ],
+            excludeGroups: ['Admin'],
           } satisfies NavPermission,
         },
         loadChildren: () =>
-          import('./travel_authorization_form/travel_authorization_form.routes').then(m => m.travelAuthorizationFormRoutes),
+          import('./travel_authorization_form/travel_authorization_form.routes').then(
+            m => m.travelAuthorizationFormRoutes
+          ),
       },
 
       // ── Partnership Application ───────────────────────────────────────────
@@ -187,13 +174,38 @@ export const routes: Routes = [
           ),
       },
 
-      // ── RMC Settings —  RMC group only ───────────────────────────────────
+      // ── Admin Settings — Admin group only ────────────────────────────────
       {
         path: 'settings',
         children: [
+          {
+            path: '',
+            redirectTo: 'admin-settings',
+            pathMatch: 'full'
+          },
             {
-                path: 'rdig-dropdown-options',
-                loadComponent: () => import('./settings/rdig-dropdown-options/rdig-dropdown-options').then(m => m.RdigDropdownOptions)
+                path: 'admin-settings',
+                loadComponent: () => import('./settings/admin-settings/admin-settings.component').then(m => m.AdminSettingsComponent)
+            },
+            {
+                path: 'guidelines',
+                loadComponent: () => import('./settings/guidelines/guidelines.component').then(m => m.GuidelinesComponent)
+            },
+            {
+                path: 'dropdowns',
+                loadComponent: () => import('./settings/dropdowns/dropdowns.component').then(m => m.DropdownsComponent)
+            },
+            {
+              path: 'rdig-dropdown-options',
+              loadComponent: () => import('./settings/dropdowns/dropdowns.component').then(m => m.DropdownsComponent)
+            },
+            {
+                path: 'batches',
+              loadComponent: () => import('./settings/batch-sitting/batch-sitting.component').then(m => m.BatchSittingComponent)
+            },
+            {
+                path: 'staff-access',
+                loadComponent: () => import('./settings/staff-access/staff-access.component').then(m => m.StaffAccessComponent)
             },
             {
                 path: 'batch-sitting',
@@ -203,13 +215,6 @@ export const routes: Routes = [
                 },
                 loadComponent: () =>
                     import('./settings/batch-sitting/batch-sitting.component').then(m => m.BatchSittingComponent),
-            },
-            {
-                path: 'dev-test-board',
-                loadChildren: () =>
-                  import('./dev_test_board_form/dev-test-board-form.routes').then(
-                    m => m.DEV_TEST_BOARD_ROUTES
-                  ),
             },
         ]
       },

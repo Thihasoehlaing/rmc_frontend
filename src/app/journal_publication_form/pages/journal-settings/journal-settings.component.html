@@ -100,7 +100,7 @@
                 </tr>
               </thead>
               <tbody>
-                @for (option of getFilteredAndSortedOptions(); track option.value) {
+                @for (option of paginatedOptions(); track option.value) {
                   <tr>
                     <td class="td-checkbox">
                       <input
@@ -116,7 +116,7 @@
                         {{ option.status || 'Active' }}
                       </span>
                     </td>
-                    <td class="option-date">{{ option.createdDate || getTodayDate() }}</td>
+                    <td class="option-date">{{ formatRowDate(option.createdDate) }}</td>
                     <td class="td-actions">
                       <button
                         type="button"
@@ -132,6 +132,18 @@
               </tbody>
             </table>
           </div>
+
+          <div class="table-footer">
+            <app-pagination
+              [currentPage]="optionsPage()"
+              [totalPages]="optionsTotalPages()"
+              [pageSize]="optionsPageSize()"
+              [pageSizeOptions]="optionsPageSizeOptions"
+              (pageChange)="onOptionsPageChange($event)"
+              (pageSizeChange)="onOptionsPageSizeChange($event)">
+            </app-pagination>
+          </div>
+          <div class="table-summary">{{ optionsPageStart() }}-{{ optionsPageEnd() }} of {{ getFilteredAndSortedOptions().length }} options</div>
         } @else {
           <div class="empty-state">
             <p>No options available. Click "Add Option" to create one.</p>

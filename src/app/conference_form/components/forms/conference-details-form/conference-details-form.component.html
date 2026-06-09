@@ -2,251 +2,301 @@
   <div class="section-fields">
 
     <section class="card">
-      <div class="card__header">
-        <h2 class="card__title">Conference Details</h2>
-      </div>
-      <div class="card__content">
-      <div class="row--2">
-        <div class="form-field">
-          <label class="form-label is-required">Conference Funding Request Type</label>
-          <div class="radio-group">
-            <label class="radio-label">
-              <input type="radio" value="with-paper" formControlName="fundingRequestType">
-              <span>Conference (with paper presentation)</span>
-            </label>
-            <label class="radio-label">
-              <input type="radio" value="without-paper" formControlName="fundingRequestType">
-              <span>Conference (without paper presentation)</span>
-            </label>
-          </div>
-        </div>
+      <app-custom-subheader title="Conference Details"></app-custom-subheader>
+      <div class="card__content section-fields">
 
-        <div class="form-field">
-          <label class="form-label is-required">Select conference type for current application</label>
-          <div class="radio-group">
-            <label class="radio-label">
-              <input type="radio" value="international" formControlName="conferenceType">
-              <span>International Conference</span>
-            </label>
-            <label class="radio-label">
-              <input type="radio" value="national" formControlName="conferenceType">
-              <span>National Conference</span>
-            </label>
-          </div>
-        </div>
-      </div>
+        <div class="row row--2">
 
-      <div class="row--2">
-        <div class="form-field">
-          <div class="label-with-note">
-            <label class="form-label is-required">Is Travelling Required?</label>
-            <app-note text="Tick Yes for Conference outside of APU" [isTooltip]="true"></app-note>
-          </div>
-          <div class="radio-group">
-            <label class="radio-label">
-              <input type="radio" value="yes" formControlName="travelRequired">
-              <span>Yes</span>
-            </label>
-            <label class="radio-label">
-              <input type="radio" value="no" formControlName="travelRequired">
-              <span>No</span>
-            </label>
-          </div>
-        </div>
-
-        <div class="form-field">
-          <div class="label-with-note">
-            <label class="form-label is-required">Please select whether you are the "First Author" or "Corresponding Author"</label>
-            <app-note text="Applicant must be either first or corresponding author" [isTooltip]="true"></app-note>
-          </div>
-          <div class="radio-group">
-            <label class="radio-label">
-              <input type="radio" value="first-author" formControlName="authorshipType">
-              <span>First Author</span>
-            </label>
-            <label class="radio-label">
-              <input type="radio" value="corresponding-author" formControlName="authorshipType">
-              <span>Corresponding Author</span>
-            </label>
-            <label class="radio-label">
-              <input type="radio" value="both" formControlName="authorshipType">
-              <span>First and Corresponding Author</span>
-            </label>
-          </div>
-        </div>
-      </div>
-
-    <!-- SCOPUS Publication Guaranteed -->
-    <div class="form-field">
-      <label class="form-label is-required">Select Conference Proceeding with Guaranteed Publication in SCOPUS-Indexed</label>
-      <div class="radio-group">
-        <label class="radio-label">
-          <input type="radio" value="yes" formControlName="scopusPublicationGuaranteed">
-          <span>Yes</span>
-        </label>
-        <label class="radio-label">
-          <input type="radio" value="no" formControlName="scopusPublicationGuaranteed">
-          <span>No</span>
-        </label>
-      </div>
-    </div>
-
-    <div class="form-field">
-      <div class="label-with-note">
-        <label class="form-label is-required">Is the publisher of your conference one of the restricted publishers (e.g., MDPI, Common Ground, Hindawi, or Frontier)?</label>
-        <app-note text="Expected Answer for Approval: No" [isTooltip]="true"></app-note>
-      </div>
-      <div class="radio-group">
-        <label class="radio-label">
-          <input type="radio" value="yes" formControlName="restrictedPublisher">
-          <span>Yes</span>
-        </label>
-        <label class="radio-label">
-          <input type="radio" value="no" formControlName="restrictedPublisher">
-          <span>No</span>
-        </label>
-      </div>
-    </div>
-
-    <!-- SDG Keywords and Conference Name -->
-    <div class="row--2">
-      <div class="form-field">
-        <label class="form-label is-required">Please key in 3 SDG keywords in abstract</label>
-        <div class="sdg-keywords-container" (click)="openSDGKeywordsModal()" role="button" tabindex="0" (keydown.enter)="openSDGKeywordsModal()" (keydown.space)="openSDGKeywordsModal()">
-          @for (keyword of getDisplayedKeywordsArray(); track keyword) {
-            <div class="keyword-chip">
-              <span class="chip-label">{{ keyword }}</span>
-              <button
-                type="button"
-                class="chip-close"
-                (click)="removeKeyword(keyword); $event.stopPropagation()"
-                aria-label="Remove keyword">
-                <span class="material-icons">close</span>
-              </button>
+          <!-- Left Column -->
+          <div class="form-column">
+            <div class="form-field">
+              <label class="form-label is-required">Conference Funding Request Type</label>
+              <div class="radio-group">
+                <label class="radio-option">
+                  <input type="radio" value="with-paper" formControlName="fundingRequestType">
+                  <span>Conference (with paper presentation)</span>
+                </label>
+                <label class="radio-option">
+                  <input type="radio" value="without-paper" formControlName="fundingRequestType">
+                  <span>Conference (without paper presentation)</span>
+                </label>
+              </div>
+              <app-validation-message [control]="form.get('fundingRequestType')"></app-validation-message>
             </div>
-          }
+
+            <div class="form-field">
+              <label class="form-label is-required">Select conference type for current application</label>
+              <div class="radio-group">
+                <label class="radio-option">
+                  <input type="radio" value="international" formControlName="conferenceType">
+                  <span>International Conference</span>
+                </label>
+                <label class="radio-option">
+                  <input type="radio" value="national" formControlName="conferenceType">
+                  <span>National Conference</span>
+                </label>
+              </div>
+              <app-validation-message [control]="form.get('conferenceType')"></app-validation-message>
+            </div>
+
+            <div class="form-field">
+              <label class="form-label is-required">Is Travelling Required?</label>
+              <app-note text="Tick Yes for Conference outside of Asia Pacific University of Technology & Innovation" [isTooltip]="false"></app-note>
+              <div class="radio-group">
+                <label class="radio-option">
+                  <input type="radio" value="yes" formControlName="travelRequired">
+                  <span>Yes</span>
+                </label>
+                <label class="radio-option">
+                  <input type="radio" value="no" formControlName="travelRequired">
+                  <span>No</span>
+                </label>
+              </div>
+              <app-validation-message [control]="form.get('travelRequired')"></app-validation-message>
+            </div>
+
+            <div class="form-field">
+              <label class="form-label is-required">Please select whether you are the "First Author" and/or "Corresponding Author"</label>
+              <app-note text="Applicant must be either first or corresponding author" [isTooltip]="false"></app-note>
+              <div class="radio-group">
+                <label class="radio-option">
+                  <input type="radio" value="first-author" formControlName="authorshipType">
+                  <span>First Author</span>
+                </label>
+                <label class="radio-option">
+                  <input type="radio" value="corresponding-author" formControlName="authorshipType">
+                  <span>Corresponding Author</span>
+                </label>
+                <label class="radio-option">
+                  <input type="radio" value="both" formControlName="authorshipType">
+                  <span>First and Corresponding Author</span>
+                </label>
+              </div>
+              <app-validation-message [control]="form.get('authorshipType')"></app-validation-message>
+            </div>
+
+            <div class="form-field">
+              <label class="form-label is-required">Is the publisher of your conference proceeding one of the restricted publishers (e.g., MDPI, Common Ground, Hindawi, or Frontier)?</label>
+              <app-note text="Expected Answer for Approval: No" [isTooltip]="false"></app-note>
+              <div class="radio-group">
+                <label class="radio-option">
+                  <input type="radio" value="yes" formControlName="restrictedPublisher">
+                  <span>Yes</span>
+                </label>
+                <label class="radio-option">
+                  <input type="radio" value="no" formControlName="restrictedPublisher">
+                  <span>No</span>
+                </label>
+              </div>
+              <app-validation-message [control]="form.get('restrictedPublisher')"></app-validation-message>
+            </div>
+
+            <div class="form-field">
+              <label class="form-label is-required">Is the publisher of your conference proceeding one of the restricted publishers (e.g., MDPI, Common Ground, Hindawi, or Frontier)?</label>
+              <app-note text="Expected Answer for Approval: No" [isTooltip]="false"></app-note>
+              <div class="radio-group">
+                <label class="radio-option">
+                  <input type="radio" value="yes" formControlName="restrictedPublisher">
+                  <span>Yes</span>
+                </label>
+                <label class="radio-option">
+                  <input type="radio" value="no" formControlName="restrictedPublisher">
+                  <span>No</span>
+                </label>
+              </div>
+              <app-validation-message [control]="form.get('restrictedPublisher')"></app-validation-message>
+            </div>
+          </div>
+
+          <!-- Right Column -->
+          <div class="form-column">
+            <div class="form-field">
+              <label class="form-label is-required">Have you cited at least 1 journal paper from APU JATI & EJBM?</label>
+              <div class="radio-group">
+                <label class="radio-option">
+                  <input type="radio" value="yes" formControlName="citedJournalPaper">
+                  <span>Yes</span>
+                </label>
+                <label class="radio-option">
+                  <input type="radio" value="no" formControlName="citedJournalPaper">
+                  <span>No</span>
+                </label>
+              </div>
+              <app-validation-message [control]="form.get('citedJournalPaper')"></app-validation-message>
+            </div>
+
+            @if (form.get('citedJournalPaper')?.value === 'no') {
+              <div class="form-field">
+                <label class="form-label is-required">If No, please explain</label>
+                <textarea class="input--textarea" formControlName="citedJournalPaperExplanation" placeholder="Enter explanation here" rows="3" maxlength="255" [class.is-invalid]="form.get('citedJournalPaperExplanation')?.invalid && form.get('citedJournalPaperExplanation')?.touched"></textarea>
+                <app-character-counter [current]="form.get('citedJournalPaperExplanation')?.value?.length || 0" [max]="255"></app-character-counter>
+                <app-validation-message [control]="form.get('citedJournalPaperExplanation')"></app-validation-message>
+              </div>
+            }
+
+            <div class="form-field">
+              <label class="form-label is-required">Is the conference proceeding with guaranteed publication Scopus-indexed?</label>
+              <div class="radio-group">
+                <label class="radio-option">
+                  <input type="radio" value="yes" formControlName="scopusPublicationGuaranteed">
+                  <span>Yes</span>
+                </label>
+                <label class="radio-option">
+                  <input type="radio" value="no" formControlName="scopusPublicationGuaranteed">
+                  <span>No</span>
+                </label>
+              </div>
+              <app-validation-message [control]="form.get('scopusPublicationGuaranteed')"></app-validation-message>
+            </div>
+
+            <div class="form-field">
+              <label class="form-label is-required">Select Local or Overseas</label>
+              <app-note text="Klang Valley includes Kuala Lumpur, Selangor, Cyberjaya & Putrajaya" [isTooltip]="false"></app-note>
+              <div class="radio-group">
+                <label class="radio-option">
+                  <input type="radio" value="klang-valley" formControlName="localOrOverseas">
+                  <span>Klang Valley</span>
+                </label>
+                <label class="radio-option">
+                  <input type="radio" value="local-except-kl" formControlName="localOrOverseas">
+                  <span>Local (Except Klang Valley)</span>
+                </label>
+                <label class="radio-option">
+                  <input type="radio" value="overseas" formControlName="localOrOverseas">
+                  <span>Overseas</span>
+                </label>
+                <label class="radio-option">
+                  <input type="radio" value="not-required" formControlName="localOrOverseas">
+                  <span>Not Required</span>
+                </label>
+              </div>
+              <app-validation-message [control]="form.get('localOrOverseas')"></app-validation-message>
+            </div>
+
+            <div class="form-field">
+              <label class="form-label is-required">Select Research or Non-Research Project</label>
+              <app-note text="If External Research Project is selected, all required funding will be fully subsidized from External Sources." [isTooltip]="false"></app-note>
+              <div class="radio-group">
+                <label class="radio-option">
+                  <input type="radio" value="external-research" formControlName="researchType">
+                  <span>External Research Project</span>
+                </label>
+                <label class="radio-option">
+                  <input type="radio" value="non-research" formControlName="researchType">
+                  <span>Non-Research Project</span>
+                </label>
+              </div>
+              <app-validation-message [control]="form.get('researchType')"></app-validation-message>
+            </div>
+          </div>
+
         </div>
-        <app-validation-message [control]="form.get('sdgKeyword1')"></app-validation-message>
-        <app-validation-message [control]="form.get('sdgKeyword2')"></app-validation-message>
-        <app-validation-message [control]="form.get('sdgKeyword3')"></app-validation-message>
       </div>
+    </section>
 
-      <div class="form-field">
-        <label class="form-label is-required">Conference Name</label>
-        <textarea
-          class="input--textarea shrink-input"
-          formControlName="conferenceName"
-          placeholder="Enter conference name"
-          maxlength="200"
-          rows="2"></textarea>
-        <div class="form-counter">{{ getCharacterCount('conferenceName') }} / 200 characters</div>
-      </div>
-    </div>
+    <!-- Text Fields Section -->
+    <section class="card">
+      <div class="card__content section-fields">
 
-    <!-- Conference Dates -->
-    <div class="row--2">
-      <div class="form-field">
-        <label class="form-label is-required">Conference Start Date</label>
-        <input
-          type="date"
-          class="input--text"
-          formControlName="conferenceStartDate">
-        <app-validation-message [control]="form.get('conferenceStartDate')"></app-validation-message>
-      </div>
+        <div class="row row--2">
 
-      <div class="form-field">
-        <label class="form-label is-required">Conference End Date</label>
-        <input
-          type="date"
-          class="input--text"
-          formControlName="conferenceEndDate">
-        <app-validation-message [control]="form.get('conferenceEndDate')"></app-validation-message>
-      </div>
-    </div>
+          <!-- Left Column -->
+          <div class="form-column">
+            <div class="form-field">
+              <label class="form-label is-required">Please key in 3 SDG keywords in abstract</label>
+              <div class="sdg-keywords-container" (click)="openSDGKeywordsModal()" role="button" tabindex="0" (keydown.enter)="openSDGKeywordsModal()" (keydown.space)="openSDGKeywordsModal()">
+                @for (keyword of getDisplayedKeywordsArray(); track keyword) {
+                  <div class="keyword-chip">
+                    <span class="chip-label">{{ keyword }}</span>
+                    <button
+                      type="button"
+                      class="chip-close"
+                      (click)="removeKeyword(keyword); $event.stopPropagation()"
+                      aria-label="Remove keyword">
+                      <span class="material-icons">close</span>
+                    </button>
+                  </div>
+                }
+              </div>
+              <app-validation-message [control]="form.get('sdgKeyword1')"></app-validation-message>
+              <app-validation-message [control]="form.get('sdgKeyword2')"></app-validation-message>
+              <app-validation-message [control]="form.get('sdgKeyword3')"></app-validation-message>
+            </div>
 
-    <div class="row--2">
-      <!-- Local or Overseas -->
-      <div class="form-field">
-        <div class="label-with-note">
-          <label class="form-label is-required">Select Local or Overseas</label>
-          <app-note text="Klang Valley includes Kuala Lumpur, Selangor, Cyberjaya & Putrajaya" [isTooltip]="true"></app-note>
+            <div class="form-field">
+              <label class="form-label is-required">Conference Start Date</label>
+              <input
+                type="date"
+                class="input--text"
+                [attr.min]="getTomorrowDate()"
+                formControlName="conferenceStartDate">
+              <app-validation-message [control]="form.get('conferenceStartDate')"></app-validation-message>
+            </div>
+
+            <div class="form-field">
+              <label class="form-label is-required">Conference Location</label>
+              <textarea
+                class="input--textarea"
+                formControlName="conferenceLocation"
+                placeholder="Enter conference location"
+                (input)="autoExpandTextarea($event)"
+                maxlength="200"
+                rows="2"></textarea>
+              <app-character-counter [current]="getCharacterCount('conferenceLocation')" [max]="200"></app-character-counter>
+              <app-validation-message [control]="form.get('conferenceLocation')"></app-validation-message>
+            </div>
+          </div>
+
+          <!-- Right Column -->
+          <div class="form-column">
+            <div class="form-field">
+              <label class="form-label is-required">Conference Name</label>
+              <textarea
+                class="input--textarea"
+                formControlName="conferenceName"
+                placeholder="Enter conference name"
+                maxlength="200"
+                rows="2"></textarea>
+              <app-character-counter [current]="getCharacterCount('conferenceName')" [max]="200"></app-character-counter>
+              <app-validation-message [control]="form.get('conferenceName')"></app-validation-message>
+            </div>
+
+            <div class="form-field">
+              <label class="form-label is-required">Conference End Date</label>
+              <input
+                type="date"
+                class="input--text"
+                [attr.min]="form.get('conferenceStartDate')?.value || getTomorrowDate()"
+                formControlName="conferenceEndDate">
+              <app-validation-message [control]="form.get('conferenceEndDate')"></app-validation-message>
+            </div>
+
+            <div class="form-field">
+              <label class="form-label is-required">Paper Title</label>
+              <textarea
+                class="input--textarea"
+                formControlName="paperTitle"
+                placeholder="Enter paper title"
+                (input)="autoExpandTextarea($event)"
+                maxlength="200"
+                rows="2"></textarea>
+              <app-character-counter [current]="getCharacterCount('paperTitle')" [max]="200"></app-character-counter>
+              <app-validation-message [control]="form.get('paperTitle')"></app-validation-message>
+            </div>
+          </div>
+
         </div>
-        <div class="radio-group">
-          <label class="radio-label">
-            <input type="radio" value="klang-valley" formControlName="localOrOverseas">
-            <span>Klang Valley</span>
-          </label>
-          <label class="radio-label">
-            <input type="radio" value="local-except-kl" formControlName="localOrOverseas">
-            <span>Local (Except Klang Valley)</span>
-          </label>
-          <label class="radio-label">
-            <input type="radio" value="overseas" formControlName="localOrOverseas">
-            <span>Overseas</span>
-          </label>
-          <label class="radio-label">
-            <input type="radio" value="not-required" formControlName="localOrOverseas">
-            <span>Not Required</span>
-          </label>
+
+        <div class="form-field">
+          <app-searchable-dropdown
+            label="Select Region *"
+            [options]="regionOptions()"
+            placeholder="[--SELECT REGION--]"
+            formControlName="selectedRegion">
+          </app-searchable-dropdown>
         </div>
       </div>
-
-      <div class="form-field">
-        <div class="label-with-note">
-          <label class="form-label is-required">Select Research or Non-Research Project</label>
-          <app-note text="If External Research Project is selected, all required funding will be fully subsidized from External Sources." [isTooltip]="true"></app-note>
-        </div>
-        <div class="radio-group">
-          <label class="radio-label">
-            <input type="radio" value="external-research" formControlName="researchType">
-            <span>External Research Project</span>
-          </label>
-          <label class="radio-label">
-            <input type="radio" value="internal-research" formControlName="researchType">
-            <span>Internal Research Project</span>
-          </label>
-          <label class="radio-label">
-            <input type="radio" value="non-research" formControlName="researchType">
-            <span>Non-Research Project</span>
-          </label>
-        </div>
-      </div>
-    </div>
-
-    <div class="row--2">
-      <div class="form-field">
-        <label class="form-label is-required">Conference Location</label>
-        <textarea
-          class="input--textarea shrink-input"
-          formControlName="conferenceLocation"
-          placeholder="Enter conference location"
-          (input)="autoExpandTextarea($event)"
-          maxlength="200"
-          rows="2"></textarea>
-        <div class="form-counter">{{ getCharacterCount('conferenceLocation') }} / 200 characters</div>
-      </div>
-
-      <div class="form-field">
-        <label class="form-label is-required">Paper Title</label>
-        <textarea
-          class="input--textarea shrink-input"
-          formControlName="paperTitle"
-          placeholder="Enter paper title"
-          (input)="autoExpandTextarea($event)"
-          maxlength="200"
-          rows="2"></textarea>
-        <div class="form-counter">{{ getCharacterCount('paperTitle') }} / 200 characters</div>
-      </div>
-    </div>
-
-    <div class="form-field">
-      <app-searchable-dropdown
-        label="Select Region *"
-        [options]="regionOptions()"
-        placeholder="[--SELECT REGION--]"
-        formControlName="selectedRegion">
-      </app-searchable-dropdown>
-    </div>
+    </section>
 
     @if (selectedRegion) {
       <div class="region-subsection">
@@ -305,160 +355,12 @@
         </div>
       </div>
     }
-      </div>
-    </section>
 
     <section class="card">
-      <div class="card__header">
-        <h2 class="card__title">Costing</h2>
-      </div>
+      <app-custom-subheader title="Costing"></app-custom-subheader>
       <div class="card__content">
 
-        <!-- Research Section - Shows when Local or Overseas is selected AND Internal Research Project is selected -->
-        @if (selectedLocalOrOverseas && researchType === 'internal-research') {
-          <div class="research-subsection">
-            <h4 class="research-title"><b>Research</b></h4>
 
-            <!-- Project Account Code -->
-            <div class="form-field">
-              <label class="form-label is-required">Project Account Code</label>
-              <input
-                type="text"
-                class="input--text"
-                formControlName="projectAccountCode"
-                placeholder="Enter project account code">
-            </div>
-
-            <!-- Detailed Breakdown for Research -->
-            <div class="form-field">
-              <label class="form-label">Detailed Breakdown for Research</label>
-              <div class="costing-breakdown">
-                <div class="list-section-header">
-                  <span class="list-count">{{ researchBreakdowns.length }} {{ researchBreakdowns.length === 1 ? 'Entry' : 'Entries' }}</span>
-                  <button type="button" class="btn btn-primary btn-sm" [disabled]="!canAddBreakdownEntries()" (click)="openBreakdownModal('research')">
-                    <span class="material-icons">add</span> Add Entry
-                  </button>
-                </div>
-
-                @if (researchBreakdowns.length > 0) {
-                  <div class="table-scroll">
-                    <app-data-table
-                      [columns]="researchBreakdownColumns"
-                      [rows]="getResearchBreakdownTableData()"
-                      [hoverable]="true"
-                      [striped]="true">
-                      <ng-template #rowTemplate let-row let-i="index">
-                        <tr>
-                          <td class="col-no text-muted is-align-center">{{ row.index }}</td>
-                          <td>{{ row.itemDescription }}</td>
-                          <td>{{ row.voteNumber }}</td>
-                          <td>{{ row.cost | number: '1.2-2' }}</td>
-                          <td>{{ row.exchangeRate | number: '1.2-2' }}</td>
-                          <td>{{ row.costInRM | number: '1.2-2' }}</td>
-                          <td class="col-actions is-align-center">
-                            <button type="button" class="btn-icon btn-icon--edit" [disabled]="!canAddBreakdownEntries()"
-                              (click)="openBreakdownModal('research', i)" aria-label="Edit entry">
-                              <span class="material-icons">edit</span>
-                            </button>
-                            <button type="button" class="btn-icon btn-icon--delete" [disabled]="!canAddBreakdownEntries()"
-                              (click)="deleteBreakdown('research', i)" aria-label="Remove entry">
-                              <span class="material-icons">delete</span>
-                            </button>
-                          </td>
-                        </tr>
-                      </ng-template>
-                    </app-data-table>
-                  </div>
-                } @else {
-                  <div class="empty-state">
-                    <span class="material-icons">receipt</span>
-                    <p>No breakdown entries added yet. Click <strong>Add Entry</strong> to start adding items.</p>
-                  </div>
-                }
-              </div>
-            </div>
-
-            <div class="total-display">
-              <span class="total-label">Total BEFORE SUBSIDY (RM)</span>
-              <div class="total-amount">{{ calculateBreakdownTotal('research') | number: '1.2-2' }}</div>
-            </div>
-
-            <!-- Sponsorship Subsections Container -->
-            <div class="sponsorship-subsections-container">
-              <!-- External Sponsorship Subsection -->
-              <div class="sponsorship-subsection">
-                <span class="subsection-title">External Sponsorship</span>
-                <div class="subsection-fields-wrapper">
-                  <div class="row--2">
-                    <div class="form-field">
-                      <label class="form-label">Sponsored Amount by External (RM)</label>
-                      <input
-                        type="number"
-                        class="input--text"
-                        formControlName="sponsoredAmountExternal">
-                    </div>
-                  </div>
-                  <div class="row--2">
-                    <div class="form-field">
-                      <label class="form-label">Sponsored by</label>
-                      <input
-                        type="text"
-                        class="input--text"
-                        formControlName="sponsoredBy">
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- APU Sponsorship Subsection -->
-              <div class="sponsorship-subsection">
-                <span class="subsection-title">APU Sponsorship</span>
-                <div class="subsection-fields-wrapper">
-                  <div class="row--2">
-                    <div class="form-field">
-                      <label class="form-label">Sponsorship Percentage by APU (%)</label>
-                      <input
-                        type="text"
-                        class="input--text"
-                        [value]="percentage | number: '1.2-2'"
-                        disabled
-                        aria-label="Sponsorship Percentage by APU (Read Only)">
-                    </div>
-                  </div>
-                  <div class="row--2">
-                    <div class="form-field">
-                      <label class="form-label">Sponsorship Amount by APU (RM)</label>
-                      <input
-                        type="text"
-                        class="input--text"
-                        [value]="getCappedSponsorshipAmount(sponsorshipAmountByAPU) | number: '1.2-2'"
-                        disabled
-                        aria-label="Sponsorship Amount by APU (Read Only)">
-                      <small class="tooltip-text">{{ isCapLimitTooltip(sponsorshipAmountByAPU) ? getCapLimitTooltip(sponsorshipAmountByAPU) : (isReductionTooltip(sponsorshipAmountByAPU, getCappedSponsorshipAmount(sponsorshipAmountByAPU)) ? getReductionTooltip(sponsorshipAmountByAPU, getCappedSponsorshipAmount(sponsorshipAmountByAPU)) : '') }}</small>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="form-field total-field">
-              <label class="form-label">Cost to be borne by Applicant (RM)</label>
-              <div class="total-value-display">{{ costBorneByApplicant | number: '1.2-2' }}</div>
-            </div>
-
-            <div class="form-field">
-              <label class="form-label">Remarks (Optional)</label>
-              <textarea
-                class="input--textarea"
-                formControlName="costingRemarks"
-                placeholder="Enter any additional remarks"
-                (input)="autoExpandTextarea($event)"
-                maxlength="500"
-                rows="3"></textarea>
-              <div class="form-counter">{{ getCharacterCount('costingRemarks') }} / 500 characters</div>
-            </div>
-          </div>
-        }
 
         @if (selectedLocalOrOverseas && researchType === 'external-research') {
           <div class="research-subsection">
@@ -489,7 +391,7 @@
                   <div class="table-scroll">
                     <app-data-table
                       [columns]="externalBreakdownColumns"
-                      [rows]="getExternalBreakdownTableData()"
+                      [rows]="getExternalBreakdownTableDataPaginated()"
                       [hoverable]="true"
                       [striped]="true">
                       <ng-template #rowTemplate let-row let-i="index">
@@ -497,6 +399,7 @@
                           <td class="col-no text-muted is-align-center">{{ row.index }}</td>
                           <td>{{ row.itemDescription }}</td>
                           <td>{{ row.voteNumber }}</td>
+                          <td>{{ row.description || '-' }}</td>
                           <td>{{ row.cost | number: '1.2-2' }}</td>
                           <td>{{ row.exchangeRate | number: '1.2-2' }}</td>
                           <td>{{ row.costInRM | number: '1.2-2' }}</td>
@@ -513,6 +416,17 @@
                         </tr>
                       </ng-template>
                     </app-data-table>
+                  </div>
+                  <div class="table-footer">
+                    <app-pagination
+                      [currentPage]="externalPage"
+                      [totalPages]="getExternalTotalPages()"
+                      [pageSize]="externalPageSize"
+                      [pageSizeOptions]="externalPageSizeOptions"
+                      (pageChange)="onExternalPageChange($event)"
+                      (pageSizeChange)="onExternalPageSizeChange($event)">
+                    </app-pagination>
+                    <div class="table-summary">{{ externalPageStart() }}–{{ externalPageEnd() }} of {{ getExternalBreakdownTableData().length }}</div>
                   </div>
                 } @else {
                   <div class="empty-state">
@@ -573,29 +487,29 @@
 
               <!-- APU Sponsorship Subsection -->
               <div class="sponsorship-subsection">
-                <span class="subsection-title">APU Sponsorship</span>
+                <span class="subsection-title">Asia Pacific University of Technology & Innovation Sponsorship</span>
                 <div class="subsection-fields-wrapper">
                   <div class="row--2">
                     <div class="form-field">
-                      <label class="form-label">Sponsorship Percentage by APU (%)</label>
+                      <label class="form-label">Sponsorship Percentage by Asia Pacific University of Technology & Innovation (%)</label>
                       <input
                         type="text"
                         class="input--text"
                         [value]="externalResearchPercentage | number: '1.0-0'"
                         readonly
-                        aria-label="Sponsorship Percentage by APU (Read Only)">
+                        aria-label="Sponsorship Percentage by Asia Pacific University of Technology & Innovation (Read Only)">
                     </div>
                   </div>
                   <div class="row--2">
                     <!-- Sponsorship Amount by APU (Read Only) -->
                     <div class="form-field">
-                      <label class="form-label">Sponsorship Amount by APU (RM)</label>
+                      <label class="form-label">Sponsorship Amount by Asia Pacific University of Technology & Innovation (RM)</label>
                       <input
                         type="text"
                         class="input--text"
                         [value]="getCappedSponsorshipAmount(externalResearchSponsorshipByAPU) | number: '1.2-2'"
                         readonly
-                        aria-label="Sponsorship Amount by APU (Read Only)">
+                        aria-label="Sponsorship Amount by Asia Pacific University of Technology & Innovation (Read Only)">
                       <small class="tooltip-text">{{ isCapLimitTooltip(externalResearchSponsorshipByAPU) ? getCapLimitTooltip(externalResearchSponsorshipByAPU) : (isReductionTooltip(externalResearchSponsorshipByAPU, getCappedSponsorshipAmount(externalResearchSponsorshipByAPU)) ? getReductionTooltip(externalResearchSponsorshipByAPU, getCappedSponsorshipAmount(externalResearchSponsorshipByAPU)) : '') }}</small>
                     </div>
                   </div>
@@ -627,16 +541,6 @@
           <div class="research-subsection">
             <h4 class="research-title"><b>Local</b></h4>
 
-            <!-- Project Account Code -->
-            <div class="form-field">
-              <label class="form-label is-required">Project Account Code</label>
-              <input
-                type="text"
-                class="input--text"
-                formControlName="localProjectAccountCode"
-                placeholder="Enter project account code">
-            </div>
-
             <!-- Detailed Breakdown for Local -->
             <div class="form-field">
               <label class="form-label">Detailed Breakdown for Local</label>
@@ -652,7 +556,7 @@
                   <div class="table-scroll">
                     <app-data-table
                       [columns]="localBreakdownColumns"
-                      [rows]="getLocalBreakdownTableData()"
+                      [rows]="getLocalBreakdownTableDataPaginated()"
                       [hoverable]="true"
                       [striped]="true">
                       <ng-template #rowTemplate let-row let-i="index">
@@ -660,6 +564,8 @@
                           <td class="col-no text-muted is-align-center">{{ row.index }}</td>
                           <td>{{ row.itemDescription }}</td>
                           <td>{{ row.voteNumber }}</td>
+                          <td>{{ row.description || '-' }}</td>
+                          <td>{{ row.supportingDocument || '-' }}</td>
                           <td>{{ row.cost | number: '1.2-2' }}</td>
                           <td>{{ row.exchangeRate | number: '1.2-2' }}</td>
                           <td>{{ row.costInRM | number: '1.2-2' }}</td>
@@ -676,6 +582,17 @@
                         </tr>
                       </ng-template>
                     </app-data-table>
+                  </div>
+                  <div class="table-footer">
+                    <app-pagination
+                      [currentPage]="localPage"
+                      [totalPages]="getLocalTotalPages()"
+                      [pageSize]="localPageSize"
+                      [pageSizeOptions]="localPageSizeOptions"
+                      (pageChange)="onLocalPageChange($event)"
+                      (pageSizeChange)="onLocalPageSizeChange($event)">
+                    </app-pagination>
+                    <div class="table-summary">{{ localPageStart() }}–{{ localPageEnd() }} of {{ getLocalBreakdownTableData().length }}</div>
                   </div>
                 } @else {
                   <div class="empty-state">
@@ -717,28 +634,28 @@
               </div>
 
               <div class="sponsorship-subsection">
-                <span class="subsection-title">APU Sponsorship</span>
+                <span class="subsection-title">Asia Pacific University of Technology & Innovation Sponsorship</span>
                 <div class="subsection-fields-wrapper">
                   <div class="row--2">
                     <div class="form-field">
-                      <label class="form-label">Sponsorship Percentage by APU (%)</label>
+                      <label class="form-label">Sponsorship Percentage by Asia Pacific University of Technology & Innovation (%)</label>
                       <input
                         type="text"
                         class="input--text"
                         [value]="percentage | number: '1.2-2'"
                         disabled
-                        aria-label="Sponsorship Percentage by APU (Read Only)">
+                        aria-label="Sponsorship Percentage by Asia Pacific University of Technology & Innovation (Read Only)">
                     </div>
                   </div>
                   <div class="row--2">
                     <div class="form-field">
-                      <label class="form-label">Sponsorship Amount by APU (RM)</label>
+                      <label class="form-label">Sponsorship Amount by Asia Pacific University of Technology & Innovation (RM)</label>
                       <input
                         type="text"
                         class="input--text"
                         [value]="getCappedSponsorshipAmount(localSponsorshipAmountByAPU) | number: '1.2-2'"
                         disabled
-                        aria-label="Sponsorship Amount by APU (Read Only)">
+                        aria-label="Sponsorship Amount by Asia Pacific University of Technology & Innovation (Read Only)">
                       <small class="tooltip-text">{{ isCapLimitTooltip(localSponsorshipAmountByAPU) ? getCapLimitTooltip(localSponsorshipAmountByAPU) : (isReductionTooltip(localSponsorshipAmountByAPU, getCappedSponsorshipAmount(localSponsorshipAmountByAPU)) ? getReductionTooltip(localSponsorshipAmountByAPU, getCappedSponsorshipAmount(localSponsorshipAmountByAPU)) : '') }}</small>
                     </div>
                   </div>
@@ -798,13 +715,17 @@
         <div class="form-group">
           <label [for]="breakdownType === 'local' ? 'accountCode' : 'voteNumber'">
             {{ (breakdownType === 'local') ? 'Account Code' : 'Vote Number' }}
+            @if (breakdownType === 'external-research') {
+              <span class="asterisk">(Auto-populated from Project Account Code)</span>
+            }
           </label>
           <input
             [id]="breakdownType === 'local' ? 'accountCode' : 'voteNumber'"
             type="text"
             class="form-control"
             formControlName="voteNumber"
-            [placeholder]="(breakdownType === 'local') ? 'V29000' : 'V29000'">
+            [placeholder]="(breakdownType === 'local') ? 'V29000' : 'V29000'"
+            [readonly]="breakdownType === 'external-research'">
           @if (breakdownForm.get('voteNumber')?.invalid && breakdownForm.get('voteNumber')?.touched) {
             <span class="error-message">{{ (breakdownType === 'local') ? 'Account code' : 'Vote number' }} is required</span>
           }
@@ -829,10 +750,8 @@
 
         <!-- Exchange Rate -->
         <div class="form-group">
-          <div class="label-with-note">
-            <label for="exchangeRate">Exchange Rate <span class="asterisk">*</span></label>
-            <app-note text="ℹ For Malaysia Ringgit/MYR, please put 1 as the exchange rate." [isTooltip]="true"></app-note>
-          </div>
+          <label for="exchangeRate" class="form-label">Exchange Rate <span class="asterisk">*</span></label>
+          <app-note text="For Malaysia Ringgit/MYR, please put 1 as the exchange rate." [isTooltip]="false"></app-note>
           <input
             id="exchangeRate"
             type="number"

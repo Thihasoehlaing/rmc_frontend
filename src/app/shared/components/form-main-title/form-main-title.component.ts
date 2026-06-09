@@ -9,7 +9,7 @@ import { GuidelinesModalComponent } from '../guidelines-modal/guidelines-modal.c
     template: `
     <div class="form-main-title-wrapper">
       <div class="form-main-title-text">
-        <span [innerHTML]="title"></span>
+        <span>{{ title }}</span>
         <span class="help-icon" (click)="onHelpClick()" title="View Guidelines">
           (<span class="question-mark">?</span>)
         </span>
@@ -17,9 +17,9 @@ import { GuidelinesModalComponent } from '../guidelines-modal/guidelines-modal.c
     </div>
 
     @if (!customModal) {
-      <app-guidelines-modal 
-        #guidelinesModal 
-        [title]="modalTitle" 
+      <app-guidelines-modal
+        #guidelinesModal
+        [title]="modalTitle"
         [endpoint]="endpoint">
       </app-guidelines-modal>
     }

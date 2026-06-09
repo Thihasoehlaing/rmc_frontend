@@ -1,11 +1,12 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { JournalOptionsService } from '../../../journal_publication_form/services/journal-options.service';
+import { JournalOptionsService, JournalOptionType } from '../../../journal_publication_form/services/journal-options.service';
 import { DropdownOption } from '../../../interfaces/components.interface';
 import { TableSortService, SortDirection } from '../../../shared/services/table-sort.service';
+import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
 
-type BreakdownTypeKey = 'research' | 'local';
+type BreakdownTypeKey = JournalOptionType;
 
 interface BreakdownTypeOption {
   value: BreakdownTypeKey;
@@ -21,7 +22,7 @@ interface ExtendedOption extends DropdownOption {
 @Component({
   selector: 'app-journal-settings',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, PaginationComponent],
   templateUrl: './journal-settings.component.html',
   styleUrl: './journal-settings.component.scss',
   providers: [TableSortService]
@@ -42,10 +43,15 @@ export class JournalSettingsComponent implements OnInit {
   sortBy = signal<'name' | 'date'>('date');
   headerSortColumn = signal<string | null>(null);
   headerSortDirection = signal<SortDirection>(null);
+  optionsPage = signal(1);
+  optionsPageSize = signal(15);
+  optionsPageSizeOptions = [5, 15, 30, 50];
 
   breakdownTypeOptions: BreakdownTypeOption[] = [
-    { value: 'research', label: 'Vote Number' },
-    { value: 'local', label: 'Account Code' }
+    { value: 'vote_number_description', label: 'Vote Number Description' },
+    { value: 'vote_number', label: 'Vote Number' },
+    { value: 'account_code_description', label: 'Account Code Description' },
+    { value: 'account_code', label: 'Account Code' }
   ];
 
   /**
@@ -90,10 +96,33 @@ export class JournalSettingsComponent implements OnInit {
     return filtered;
   });
 
+  optionsTotalPages = computed(() => {
+    return Math.max(1, Math.ceil(this.getFilteredAndSortedOptions().length / this.optionsPageSize()));
+  });
+
+  paginatedOptions = computed(() => {
+    const list = this.getFilteredAndSortedOptions();
+    const currentPage = Math.min(this.optionsPage(), this.optionsTotalPages());
+    const startIndex = (currentPage - 1) * this.optionsPageSize();
+    return list.slice(startIndex, startIndex + this.optionsPageSize());
+  });
+
+  optionsPageStart = computed(() => {
+    const total = this.getFilteredAndSortedOptions().length;
+    if (total === 0) return 0;
+    return ((Math.min(this.optionsPage(), this.optionsTotalPages()) - 1) * this.optionsPageSize()) + 1;
+  });
+
+  optionsPageEnd = computed(() => {
+    const total = this.getFilteredAndSortedOptions().length;
+    if (total === 0) return 0;
+    return Math.min(this.optionsPageStart() + this.optionsPageSize() - 1, total);
+  });
+
   ngOnInit() {
     this.initializeOptionForm();
-    // Set default to research
-    this.selectedBreakdownType.set('research');
+    // Set default to first category
+    this.selectedBreakdownType.set('vote_number_description');
   }
 
   private initializeOptionForm() {
@@ -105,17 +134,10 @@ export class JournalSettingsComponent implements OnInit {
   }
 
   /**
-   * Check if current breakdown type is research
+   * Check if current breakdown type is vote number description
    */
-  isResearchType(): boolean {
-    return this.selectedBreakdownType() === 'research';
-  }
-
-  /**
-   * Check if current breakdown type is local
-   */
-  isLocalType(): boolean {
-    return this.selectedBreakdownType() === 'local';
+  isVoteNumberDescriptionType(): boolean {
+    return this.selectedBreakdownType() === 'vote_number_description';
   }
 
   /**
@@ -124,6 +146,7 @@ export class JournalSettingsComponent implements OnInit {
   onSearchInput(event: Event): void {
     const target = event.target as HTMLInputElement;
     this.searchQuery.set(target.value);
+    this.optionsPage.set(1);
   }
 
   /**
@@ -132,6 +155,7 @@ export class JournalSettingsComponent implements OnInit {
   onFilterChange(event: Event): void {
     const target = event.target as HTMLSelectElement;
     this.filterStatus.set(target.value as 'All' | 'Active' | 'Inactive');
+    this.optionsPage.set(1);
   }
 
   /**
@@ -143,6 +167,7 @@ export class JournalSettingsComponent implements OnInit {
     // Reset header sorting when using dropdown
     this.headerSortColumn.set(null);
     this.headerSortDirection.set(null);
+    this.optionsPage.set(1);
   }
 
   /**
@@ -160,6 +185,7 @@ export class JournalSettingsComponent implements OnInit {
       this.headerSortColumn.set(columnName);
       this.headerSortDirection.set('asc');
     }
+    this.optionsPage.set(1);
   }
 
   /**
@@ -190,26 +216,11 @@ export class JournalSettingsComponent implements OnInit {
       return [];
     }
 
-    // For local breakdown type, show local options
-    if (type === 'local') {
-      const localOptions = this.JournalOptionsService.getOptionsForType('local');
-
-      return localOptions.map(opt => {
-        const metadata = this.getOptionMetadata('local', opt.value);
-        return {
-          ...opt,
-          createdDate: metadata?.createdDate,
-          status: metadata?.status || 'Active',
-          accountCode: metadata?.accountCode
-        } as ExtendedOption;
-      });
-    }
-
-    const baseOptions = this.JournalOptionsService.getOptionsForType(type as 'research' | 'local');
+    const baseOptions = this.JournalOptionsService.getOptionsForType(type);
 
     // Enhance with metadata from localStorage if available
     return baseOptions.map(opt => {
-      const metadata = this.getOptionMetadata(type as 'research' | 'local', opt.value);
+      const metadata = this.getOptionMetadata(type, opt.value);
       return {
         ...opt,
         createdDate: metadata?.createdDate,
@@ -222,12 +233,15 @@ export class JournalSettingsComponent implements OnInit {
   /**
    * Get metadata for an option (created date, status) from storage
    */
-  private getOptionMetadata(type: 'research' | 'local', value: string): { createdDate?: string; status?: 'Active' | 'Inactive'; accountCode?: string; } | null { 
-    // Retrieve metadata from localStorage
+  private getOptionMetadata(type: BreakdownTypeKey, value: string): { createdDate?: string; status?: 'Active' | 'Inactive'; accountCode?: string; } | null {
     const storageKey = `journal-option-metadata-${type}-${value}`;
-    const stored = localStorage.getItem(storageKey);
-    if (stored) {
-      return JSON.parse(stored);
+    try {
+      const stored = localStorage.getItem(storageKey);
+      if (stored) {
+        return JSON.parse(stored);
+      }
+    } catch {
+      // Silently discard malformed metadata
     }
     return { createdDate: this.getTodayDate(), status: 'Active' };
   }
@@ -235,7 +249,7 @@ export class JournalSettingsComponent implements OnInit {
   /**
    * Save option metadata to localStorage
    */
-  private saveOptionMetadata(type: 'research' | 'local', value: string, metadata: { status?: string; accountCode?: string; }) {
+  private saveOptionMetadata(type: BreakdownTypeKey, value: string, metadata: { status?: string; accountCode?: string; }) {
     const storageKey = `journal-option-metadata-${type}-${value}`;
     const existingMetadata = this.getOptionMetadata(type, value) || {};
     const updated = {
@@ -256,6 +270,16 @@ export class JournalSettingsComponent implements OnInit {
     this.searchQuery.set('');
     this.filterStatus.set('All');
     this.sortBy.set('date');
+    this.optionsPage.set(1);
+  }
+
+  onOptionsPageChange(page: number): void {
+    this.optionsPage.set(page);
+  }
+
+  onOptionsPageSizeChange(pageSize: number): void {
+    this.optionsPageSize.set(pageSize);
+    this.optionsPage.set(1);
   }
 
   /**
@@ -322,33 +346,26 @@ export class JournalSettingsComponent implements OnInit {
 
     try {
       this.errorMessage.set('');
-      let serviceType: 'research' | 'local' = 'local';
-      if (type === 'research') {
-        serviceType = 'research';
-      } else if (type === 'local') {
-        serviceType = 'local';
-      }
+      const serviceType: BreakdownTypeKey = type;
 
       if (this.editingOptionIndex() === null) {
-        // Add new option
         this.JournalOptionsService.addOption(serviceType, newOption);
       } else {
-        // Update existing option
         const currentOptions = this.getCurrentOptions();
-        const originalValue = currentOptions[this.editingOptionIndex()!].value; 
+        const originalValue = currentOptions[this.editingOptionIndex()!].value;
         this.JournalOptionsService.updateOption(serviceType, originalValue, newOption);
       }
 
-      // Store metadata in localStorage
       this.saveOptionMetadata(serviceType, newOption.value, {
         status,
         accountCode
       });
 
+      window.dispatchEvent(new CustomEvent('rmc-dropdowns-updated'));
+
       this.closeModal();
-    } catch (error) {
-      console.error('Error saving option:', error);
-      this.errorMessage.set((error as Error).message);
+    } catch {
+      this.errorMessage.set('Failed to save option. Please try again.');
     }
   }
 
@@ -361,19 +378,15 @@ export class JournalSettingsComponent implements OnInit {
     }
 
     const type = this.selectedBreakdownType()!;
-    let serviceType: 'research' | 'local' = 'local';
-    if (type === 'research') {
-      serviceType = 'research';
-    } else if (type === 'local') {
-      serviceType = 'local';
-    }
+    const serviceType: BreakdownTypeKey = type;
 
     try {
       this.JournalOptionsService.deleteOption(serviceType, optionValue);
-      this.selectedCheckboxes.set(new Set()); // Clear selection
+      this.selectedCheckboxes.set(new Set());
+      window.dispatchEvent(new CustomEvent('rmc-dropdowns-updated'));
     } catch (error) {
       console.error('Error deleting option:', error);
-      alert(`Error: ${(error as Error).message}`);
+      this.errorMessage.set('Failed to delete option. Please try again.');
     }
   }
 
@@ -391,12 +404,7 @@ export class JournalSettingsComponent implements OnInit {
     }
 
     const type = this.selectedBreakdownType()!;
-    let serviceType: 'research' | 'local' = 'local';
-    if (type === 'research') {
-      serviceType = 'research';
-    } else if (type === 'local') {
-      serviceType = 'local';
-    }
+    const serviceType: BreakdownTypeKey = type;
     const selectedValues = Array.from(this.selectedCheckboxes());
 
     try {
@@ -404,9 +412,10 @@ export class JournalSettingsComponent implements OnInit {
         this.JournalOptionsService.deleteOption(serviceType, value);
       });
       this.selectedCheckboxes.set(new Set());
+      window.dispatchEvent(new CustomEvent('rmc-dropdowns-updated'));
     } catch (error) {
       console.error('Error deleting options:', error);
-      alert(`Error: ${(error as Error).message}`);
+      this.errorMessage.set('Failed to delete one or more options. Please try again.');
     }
   }
 
@@ -438,8 +447,19 @@ export class JournalSettingsComponent implements OnInit {
    * Get the label for a breakdown type
    */
   getBreakdownTypeLabel(type: BreakdownTypeKey): string {
-    const option = this.breakdownTypeOptions.find(o => o.value === type);
+    const option = this.breakdownTypeOptions.find((o: BreakdownTypeOption) => o.value === type);
     return option?.label || type;
+  }
+
+  formatRowDate(date?: string | null): string {
+    if (!date) return this.getTodayDate();
+    try {
+      const d = new Date(date);
+      if (isNaN(d.getTime())) return String(date);
+      return d.toLocaleDateString('en-GB');
+    } catch {
+      return String(date);
+    }
   }
 }
 

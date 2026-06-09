@@ -1,9 +1,7 @@
 <form [formGroup]="form" class="form-section">
   <div class="section-fields">
     <section class="card">
-      <div class="card__header">
-        <h2 class="card__title">APU Staff Co-Author Details</h2>
-      </div>
+      <app-custom-subheader title="Asia Pacific University of Technology & Innovation Staff Co-Author Details"></app-custom-subheader>
       <div class="card__content">
         <div class="list-section-header">
           <span class="list-count">{{ testSubsections.length }} {{ testSubsections.length === 1 ? 'Entry' : 'Entries' }}</span>
@@ -14,7 +12,7 @@
           <div class="table-scroll">
             <app-data-table
               [columns]="apuStaffColumns"
-              [rows]="getApuStaffTableData()"
+              [rows]="getApuStaffTableDataPaginated()"
               [hoverable]="true"
               [striped]="true">
               <ng-template #rowTemplate let-row let-i="index">
@@ -39,6 +37,17 @@
               </ng-template>
             </app-data-table>
           </div>
+          <div class="table-footer">
+            <app-pagination
+              [currentPage]="apuStaffPage"
+              [totalPages]="getApuStaffTotalPages()"
+              [pageSize]="apuStaffPageSize"
+              [pageSizeOptions]="apuStaffPageSizeOptions"
+              (pageChange)="onApuStaffPageChange($event)"
+              (pageSizeChange)="onApuStaffPageSizeChange($event)">
+            </app-pagination>
+            <div class="table-summary">{{ apuStaffStart() }}–{{ apuStaffEnd() }} of {{ getApuStaffTableData().length }}</div>
+          </div>
         } @else {
           <div class="empty-state">
             <span class="material-icons">receipt</span>
@@ -49,9 +58,7 @@
     </section>
 
     <section class="card">
-      <div class="card__header">
-        <h2 class="card__title">APU Student Co-Authors</h2>
-      </div>
+      <app-custom-subheader title="Asia Pacific University of Technology & Innovation Student Co-Authors"></app-custom-subheader>
       <div class="card__content">
         <div class="list-section-header">
           <span class="list-count">{{ studentCoAuthors.length }} {{ studentCoAuthors.length === 1 ? 'Entry' : 'Entries' }}</span>
@@ -62,7 +69,7 @@
           <div class="table-scroll">
             <app-data-table
               [columns]="studentCoAuthorColumns"
-              [rows]="getStudentCoAuthorTableData()"
+              [rows]="getStudentCoAuthorTableDataPaginated()"
               [hoverable]="true"
               [striped]="true">
               <ng-template #rowTemplate let-row let-i="index">
@@ -88,6 +95,17 @@
               </ng-template>
             </app-data-table>
           </div>
+          <div class="table-footer">
+            <app-pagination
+              [currentPage]="studentPage"
+              [totalPages]="getStudentTotalPages()"
+              [pageSize]="studentPageSize"
+              [pageSizeOptions]="studentPageSizeOptions"
+              (pageChange)="onStudentPageChange($event)"
+              (pageSizeChange)="onStudentPageSizeChange($event)">
+            </app-pagination>
+            <div class="table-summary">{{ studentStart() }}–{{ studentEnd() }} of {{ getStudentCoAuthorTableData().length }}</div>
+          </div>
         } @else {
           <div class="empty-state">
             <span class="material-icons">receipt</span>
@@ -98,9 +116,7 @@
     </section>
 
     <section class="card">
-      <div class="card__header">
-        <h2 class="card__title">Non-APU Co-Authors</h2>
-      </div>
+      <app-custom-subheader title="Co-Authors Outside Asia Pacific University of Technology & Innovation"></app-custom-subheader>
       <div class="card__content">
         <div class="list-section-header">
           <span class="list-count">{{ nonApuCoAuthors.length }} {{ nonApuCoAuthors.length === 1 ? 'Entry' : 'Entries' }}</span>
@@ -111,7 +127,7 @@
           <div class="table-scroll">
             <app-data-table
               [columns]="nonApuCoAuthorColumns"
-              [rows]="getNonApuCoAuthorTableData()"
+              [rows]="getNonApuCoAuthorTableDataPaginated()"
               [hoverable]="true"
               [striped]="true">
               <ng-template #rowTemplate let-row let-i="index">
@@ -138,6 +154,17 @@
                 </tr>
               </ng-template>
             </app-data-table>
+          </div>
+          <div class="table-footer">
+            <app-pagination
+              [currentPage]="nonApuPage"
+              [totalPages]="getNonApuTotalPages()"
+              [pageSize]="nonApuPageSize"
+              [pageSizeOptions]="nonApuPageSizeOptions"
+              (pageChange)="onNonApuPageChange($event)"
+              (pageSizeChange)="onNonApuPageSizeChange($event)">
+            </app-pagination>
+            <div class="table-summary">{{ nonApuStart() }}–{{ nonApuEnd() }} of {{ getNonApuCoAuthorTableData().length }}</div>
           </div>
         } @else {
           <div class="empty-state">
@@ -186,7 +213,7 @@
           </div>
 
           <div class="form-group">
-            <label for="affiliation1">Affiliation <span class="asterisk">*</span></label>
+            <label for="affiliation1">Second Affiliation (if any) <span class="asterisk">*</span></label>
             <input type="text" id="affiliation1" class="form-control" formControlName="affiliation"
               placeholder="Ex. Taylor's University">
             @if (editForm.get('affiliation')?.invalid && editForm.get('affiliation')?.touched) {
@@ -200,9 +227,13 @@
           <div class="form-group">
             <label for="tpNumber">TP Number <span class="asterisk">*</span></label>
             <input type="text" id="tpNumber" class="form-control" formControlName="tpNumber"
-              placeholder="Ex. TPXXXXXX">
+              placeholder="Ex. 123456" maxlength="6" (input)="filterTpNumber($event)">
             @if (editForm.get('tpNumber')?.invalid && editForm.get('tpNumber')?.touched) {
-              <span class="error-message">TP Number is required</span>
+              @if (editForm.get('tpNumber')?.errors?.['required']) {
+                <span class="error-message">TP Number is required</span>
+              } @else if (editForm.get('tpNumber')?.errors?.['pattern']) {
+                <span class="error-message">TP Number must be exactly 6 digits</span>
+              }
             }
           </div>
 

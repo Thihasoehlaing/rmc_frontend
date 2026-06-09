@@ -184,14 +184,13 @@
 
       <!-- Select Location -->
       <div class="form-field">
-        <div class="label-with-note">
-          <label class="form-label">Select Location</label>
-          @if (isExternalTravel) {
-            <app-note
-              text="!! Events held within the Klang Valley are not eligible for claims"
-              [isTooltip]="true"></app-note>
-          }
-        </div>
+        <label class="form-label">Select Location</label>
+        @if (isExternalTravel) {
+          <app-note
+            text="!! Events held within the Klang Valley are not eligible for claims"
+            [isTooltip]="true"
+            class="note--below"></app-note>
+        }
         <div class="location-options">
           <!-- Overseas -->
           <label class="radio-wrapper">
@@ -283,12 +282,11 @@
 
       <!-- Staff Participation -->
       <div class="form-field">
-        <div class="label-with-note">
-          <label for="staffParticipation" class="form-label">Name of APU/APUT Staff Participation</label>
-          <app-note
-            text="Maximum 20 Participants"
-            [isTooltip]="true"></app-note>
-        </div>
+        <label for="staffParticipation" class="form-label">Name of Asia Pacific University of Technology & Innovation Staff Participation</label>
+        <app-note
+          text="Maximum 20 Participants"
+          [isTooltip]="false"
+          class="note--below"></app-note>
         <app-searchable-dropdown
           id="staffParticipation"
           [options]="staffParticipationOptions"
@@ -314,76 +312,53 @@
     <!-- Budget & Expenses Section -->
     <app-custom-header title="Budget & Expenses" icon="receipt"></app-custom-header>
 
-    <!-- Detailed Breakdown Section -->
-    <div class="breakdown-section">
-      <!-- Header with Title and Add Entry Button -->
-      <div class="breakdown-header">
-        <div class="breakdown-title-group">
-          <h3 class="breakdown-title">Detailed Breakdown for External Research Project</h3>
-          <span class="breakdown-count">{{ expenses.length }} {{ expenses.length === 1 ? 'Entry' : 'Entries' }}</span>
+    <!-- Detailed Breakdown for External Research Project -->
+    <div class="form-field">
+      <label class="form-label">Detailed Breakdown for External Research Project</label>
+      <div class="costing-breakdown">
+        <div class="list-section-header">
+          <span class="list-count">{{ expenses.length }} {{ expenses.length === 1 ? 'Entry' : 'Entries' }}</span>
+          <button type="button" class="btn btn-primary btn-sm" [disabled]="isFormReadOnly()" (click)="openExpenseModal()">
+            <span class="material-icons">add</span> Add Entry
+          </button>
         </div>
-        <button
-          type="button"
-          class="btn btn-primary btn-sm"
-          (click)="openExpenseModal()">
-          <span class="material-icons">add</span>
-          Add Entry
-        </button>
-      </div>
 
-      <!-- Expenses Table -->
-      @if (expenses.length > 0) {
-        <div class="expenses-table-container">
-          <table class="expenses-table">
-            <thead>
-              <tr>
-                <th class="col-index">#</th>
-                <th>Item Description</th>
-                <th>Vote Number</th>
-                <th>Cost (Foreign/MYR)</th>
-                <th>Exchange Rate</th>
-                <th>Cost in RM</th>
-                <th class="col-actions">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (expense of expenses; track $index) {
+        @if (expenses.length > 0) {
+          <div class="table-scroll">
+            <app-data-table
+              [columns]="externalBreakdownColumns"
+              [rows]="getExternalBreakdownTableData()"
+              [hoverable]="true"
+              [striped]="true">
+              <ng-template #rowTemplate let-row let-i="index">
                 <tr>
-                  <td class="col-index">{{ $index + 1 }}</td>
-                  <td>{{ expense.typeOfExpense }}</td>
-                  <td>{{ expense.accountCode }}</td>
-                  <td>{{ expense.amountForeignCurrency }}</td>
-                  <td>{{ expense.exchangeRate }}</td>
-                  <td>{{ expense.amountMYR }}</td>
-                  <td class="col-actions">
-                    <div class="action-buttons">
-                      <button
-                        type="button"
-                        class="btn-icon btn-icon--edit"
-                        (click)="editExpense($index)"
-                        aria-label="Edit entry">
-                        <span class="material-icons">edit</span>
-                      </button>
-                      <button
-                        type="button"
-                        class="btn-icon btn-icon--delete"
-                        (click)="removeExpense($index)"
-                        aria-label="Delete entry">
-                        <span class="material-icons">delete</span>
-                      </button>
-                    </div>
+                  <td class="col-no text-muted is-align-center">{{ row.index }}</td>
+                  <td>{{ row.itemDescription }}</td>
+                  <td>{{ row.voteNumber }}</td>
+                  <td>{{ row.cost | number: '1.2-2' }}</td>
+                  <td>{{ row.exchangeRate | number: '1.2-2' }}</td>
+                  <td>{{ row.costInRM | number: '1.2-2' }}</td>
+                  <td class="col-actions is-align-center">
+                    <button type="button" class="btn-icon btn-icon--edit" [disabled]="isFormReadOnly()"
+                      (click)="editExpense(i)" aria-label="Edit entry">
+                      <span class="material-icons">edit</span>
+                    </button>
+                    <button type="button" class="btn-icon btn-icon--delete" [disabled]="isFormReadOnly()"
+                      (click)="removeExpense(i)" aria-label="Remove entry">
+                      <span class="material-icons">delete</span>
+                    </button>
                   </td>
                 </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-      } @else {
-        <div class="empty-state">
-          <span class="material-icons">receipt</span>
-          <p>No breakdown entries added yet. Click <strong>Add Entry</strong> to start adding items.</p>
-        </div>
-      }
+              </ng-template>
+            </app-data-table>
+          </div>
+        } @else {
+          <div class="empty-state">
+            <span class="material-icons">receipt</span>
+            <p>No breakdown entries added yet. Click <strong>Add Entry</strong> to start adding items.</p>
+          </div>
+        }
+      </div>
     </div>
 
     <!-- Expense Entry Dialog Modal -->
@@ -424,12 +399,13 @@
             <label for="amountForeignCurrency" class="form-label is-required">Cost in Foreign Currency / MYR</label>
             <input
               id="amountForeignCurrency"
-              type="number"
-              step="0.01"
+              type="text"
+              inputmode="decimal"
               class="input--text"
               placeholder="Enter cost"
               formControlName="amountForeignCurrency"
-              (change)="calculateMYR()">
+              (keydown)="restrictDecimalInput($event, 'amountForeignCurrency')"
+              (input)="onDecimalFieldInput('amountForeignCurrency')">
             <app-validation-message
               [control]="expenseForm.get('amountForeignCurrency')"></app-validation-message>
           </div>
@@ -438,18 +414,17 @@
         <!-- Exchange Rate & Cost in RM -->
         <div class="row--2">
           <div class="form-field">
-            <div class="label-with-icon">
-              <label for="exchangeRate" class="form-label is-required">Exchange Rate</label>
-              <app-note text="ℹ For Malaysia Ringgit/MYR, please put 1 as the exchange rate." [isTooltip]="true"></app-note>
-            </div>
+            <label for="exchangeRate" class="form-label is-required">Exchange Rate</label>
+            <app-note text="For Malaysia Ringgit/MYR, please put 1 as the exchange rate." [isTooltip]="false"></app-note>
             <input
               id="exchangeRate"
-              type="number"
-              step="0.0001"
+              type="text"
+              inputmode="decimal"
               class="input--text"
               placeholder="1"
               formControlName="exchangeRate"
-              (change)="calculateMYR()">
+              (keydown)="restrictDecimalInput($event, 'exchangeRate')"
+              (input)="onDecimalFieldInput('exchangeRate')">
             <app-validation-message
               [control]="expenseForm.get('exchangeRate')"></app-validation-message>
           </div>
@@ -458,8 +433,7 @@
             <label for="amountMYR" class="form-label">Cost in RM (approximate)</label>
             <input
               id="amountMYR"
-              type="number"
-              step="0.01"
+              type="text"
               class="input--text"
               readonly
               placeholder="Auto-calculated"
@@ -498,9 +472,12 @@
           }
         </div>
 
+        <div class="form-field">
+          <button class="btn btn-primary btn-sm" type="submit" [disabled]="expenseForm.invalid">{{ editExpenseIndex !== null ? 'Update' : 'Add' }}</button>
+        </div>
+
         <div class="modal-footer-actions">
           <button class="btn btn-ghost btn-sm" type="button" (click)="closeExpenseModal()">Cancel</button>
-          <button class="btn btn-primary btn-sm" type="submit" [disabled]="expenseForm.invalid">{{ editExpenseIndex !== null ? 'Update' : 'Add' }}</button>
         </div>
       </form>
     </app-dialog>

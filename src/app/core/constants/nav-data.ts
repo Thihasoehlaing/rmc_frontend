@@ -14,12 +14,11 @@ import { NavGroup } from '../../interfaces/nav.interface';
  *   NavItem permission   -> hides just that item
  *
  * Application access rules:
- *   Conference Application  : (full_time OR contract) AND academic, OR HOS, OR VC, OR Admin
+ *   Conference Application  : (full_time OR contract) AND academic AND HOS AND VC
  *   Journal Publication     : (full_time OR contract) AND academic AND HOS AND VC
- *   RA/GRA Application      : (full_time OR contract) AND academic AND HOS AND group_ra_gra_hos_pass
- *   Travel Authorization    : (full_time OR contract) AND academic AND HOS
+ *   RA/GRA Application      : (full_time OR contract) AND academic
  *   RDIG Application        : (full_time OR contract) AND academic, NOT Reviewer, NOT blocked_hos_rdig
- *   RMC Settings            : RMC group only
+ *   Admin Settings          : Admin group only
  *   Submissions (Inbox...)  : All authenticated users
  */
 export const NAVIGATION_DATA: NavGroup[] = [
@@ -27,19 +26,14 @@ export const NAVIGATION_DATA: NavGroup[] = [
         groupName: '', // No visible section header — single unified nav list
         elements: [
 
-            // ── Dashboard ────────────────────────────────────────────────────────────
-            { label: 'Dashboard', icon: 'dashboard', route: '/dashboard' },
-
-            // ── Inbox ─────────────────────────────────────────────────────────────────
-            { label: 'Inbox', icon: 'mail', route: '/inbox' },
-
             // ── Submissions ──────────────────────────────────────────────────────────────
             // Collapsible folder visible to every authenticated user. Open by default.
             {
                 label: 'Submissions',
                 icon: 'inbox',
-                isExpanded: false,
+                isExpanded: true,
                 children: [
+                    { label: 'Inbox',               icon: 'mail',           route: '/submissions/inbox' },
                     { label: 'Draft',               icon: 'edit_note',      route: '/submissions/draft' },
                     { label: 'Pending Application', icon: 'schedule',       route: '/submissions/pending' },
                     { label: 'History',             icon: 'history',        route: '/submissions/history' },
@@ -97,28 +91,14 @@ export const NAVIGATION_DATA: NavGroup[] = [
                             ],
                         },
                     },
-                    // RA/GRA: (HOS AND (full_time OR contract) AND academic) OR ra_gra_hos_pass
+                    // RA/GRA: (full_time OR contract) AND academic
                     {
                         label: 'RA/GRA Application',
                         icon: 'person_add',
                         route: '/ragra',
                         permission: {
-                            anyCondition: [
-                                { anyOf: ['full_time', 'contract'], allOf: ['academic', 'HOS'] },
-                                { anyOf: ['group_ra_gra_hos_pass'] },
-                            ],
-                        },
-                    },
-                    // Travel Authorization: ((full_time OR contract) AND academic) OR HOS
-                    {
-                        label: 'Travel Authorization Application',
-                        icon: 'flight_takeoff',
-                        route: '/travel',
-                        permission: {
-                            anyCondition: [
-                                { anyOf: ['full_time', 'contract'], allOf: ['academic'] },
-                                { anyOf: ['HOS'] },
-                            ],
+                            anyOf: ['full_time', 'contract'],
+                            allOf: ['academic'],
                         },
                     },
                     // Partnership: (full_time OR contract) AND academic
@@ -141,20 +121,15 @@ export const NAVIGATION_DATA: NavGroup[] = [
                             allOf: ['academic'],
                         },
                     },
-                ],
-            },
-
-            // ── RMC Settings ─────────────────────────────────────────────────────────────
-            // Administrative configuration folder — RMC group only.
-            {
-                label: 'RMC Settings',
-                icon: 'settings',
-                permission: { anyOf: ['RMC', 'Admin'] },
-                children: [
-                    { label: 'RDIG Dropdown Options Management', route: '/settings/rdig-dropdown-options' },
-                    { label: 'Batch Sitting', icon: 'event_available', route: '/settings/batch-sitting' },
-                    { label: 'Conference Settings', icon: 'event_note', route: '/conference/settings' },
-                    { label: 'Dev Test Board', icon: 'build', route: '/settings/dev-test-board' },
+                    // Travel Authorization: visible to all authenticated users except Admin
+                    {
+                        label: 'Travel Authorization',
+                        icon: 'flight_takeoff',
+                        route: '/travel-authorization/application',
+                        permission: {
+                            excludeGroups: ['Admin'],
+                        },
+                    },
                 ],
             },
 
@@ -163,9 +138,13 @@ export const NAVIGATION_DATA: NavGroup[] = [
             {
                 label: 'Admin Settings',
                 icon: 'admin_panel_settings',
+                route: '/settings/admin-settings',
                 permission: { anyOf: ['Admin'] },
                 children: [
-                    { label: 'Journal Guidelines Settings', icon: 'rule', route: '/journal/guidelines-settings', permission: { anyOf: ['Admin'] } },
+                    { label: 'Guidelines', icon: 'description', route: '/settings/guidelines', permission: { anyOf: ['Admin'] } },
+                    { label: 'Dropdowns', icon: 'list', route: '/settings/dropdowns', permission: { anyOf: ['Admin'] } },
+                    { label: 'Batches', icon: 'batch_prediction', route: '/settings/batches', permission: { anyOf: ['Admin'] } },
+                    { label: 'Staff Access', icon: 'person_add', route: '/settings/staff-access', permission: { anyOf: ['Admin'] } },
                 ],
             },
         ],

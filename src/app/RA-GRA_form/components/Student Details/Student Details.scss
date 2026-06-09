@@ -1,0 +1,219 @@
+@use '../../../../assets/styles/index' as *;
+
+// Student Details Component Styles
+// Follows Journal form design system
+
+.form-section {
+  width: 100%;
+  min-width: 0;
+  overflow-x: clip;
+}
+
+.card {
+  width: 100%;
+  min-width: 0;
+}
+
+.input--soft-readonly {
+  background-color: var(--input-bg-readonly);
+  border: 1px solid var(--border-subtle);
+  color: var(--color-text-muted);
+  font-weight: 400;
+  cursor: default;
+  box-shadow: none;
+
+  &:focus {
+    outline: none;
+    border-color: var(--border-subtle);
+    box-shadow: none;
+  }
+}
+
+.input--readonly {
+  color: var(--color-text-muted);
+  background: var(--input-bg-readonly);
+  border-color: var(--border-subtle);
+  cursor: not-allowed;
+}
+
+.section-fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  min-width: 0;
+}
+
+.section-fields .row {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.section-fields .row--2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.section-fields .row--3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.section-fields .row--4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+@media (max-width: 1024px) {
+  .section-fields .row--3,
+  .section-fields .row--4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .section-fields .row--2,
+  .section-fields .row--3,
+  .section-fields .row--4 {
+    grid-template-columns: 1fr;
+  }
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+  width: 100%;
+}
+
+.input--text,
+.input--textarea,
+.input--select {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.label-with-note {
+  display: block;
+  margin-bottom: var(--space-2);
+
+  .form-label {
+    display: inline;
+    margin: 0;
+  }
+
+  app-note {
+    display: inline-block;
+    vertical-align: middle;
+    margin-left: var(--space-1);
+  }
+}
+
+// Upload Documents Styles - Matching Journal form exactly
+.section-fields.upload-grid {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: var(--space-6) var(--space-5) !important;
+  align-items: start !important;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr !important;
+  }
+
+  .form-field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    min-height: 100%;
+    
+    // Ensure consistent structure for all upload items
+    > * {
+      flex-shrink: 0;
+    }
+  }
+}
+
+.table-footer {
+  margin-top: var(--space-3);
+  width: 100%;
+}
+
+.table-summary {
+  margin: var(--space-2) 0 0 0;
+  color: var(--color-text-muted);
+  font-size: var(--fs-sm);
+  text-align: left;
+  width: 100%;
+}
+
+.upload-field-title {
+  font-size: var(--fs-md);
+  font-weight: var(--fw-bold);
+  color: var(--color-text);
+  margin: 0;
+  padding: 0;
+  line-height: 1.4;
+  min-height: calc(var(--fs-md) * 1.4 * 2); // Reserve space for 2 lines
+
+  &.is-required::after {
+    content: ' *';
+    color: var(--color-error-dark);
+  }
+}
+
+.upload-field-subtitle {
+  font-size: var(--fs-xs);
+  color: var(--color-text-muted);
+  margin: 0;
+  padding: 0;
+  line-height: 1.4;
+  min-height: calc(var(--fs-xs) * 1.4); // Reserve space for 1 line
+}
+
+.download-link-wrapper {
+  margin: 0;
+  min-height: 28px; // Reserve consistent space for download link (even if empty)
+  display: flex;
+  align-items: center;
+}
+
+.download-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--fs-sm);
+  color: var(--color-primary);
+  text-decoration: none;
+  font-weight: var(--fw-medium);
+  transition: color var(--transition-fast) var(--ease-default);
+  line-height: 1.4;
+
+  .material-icons {
+    font-size: 18px;
+  }
+
+  &:hover {
+    color: var(--color-primary-hover);
+    text-decoration: underline;
+  }
+}
+
+// Ensure file upload component has consistent height
+app-file-upload {
+  display: block;
+  width: 100%;
+}
+
+// Ensure notes have consistent spacing
+app-note {
+  display: block;
+  width: 100%;
+}
+
+// Ensure validation messages have consistent spacing
+.form-error-msg {
+  display: block;
+  width: 100%;
+  font-size: var(--fs-sm);
+  color: var(--color-error-dark);
+  margin: 0;
+  padding: 0;
+  line-height: 1.4;
+}

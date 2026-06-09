@@ -5,7 +5,7 @@ import { SearchableDropdownComponent } from '../searchable-dropdown/searchable-d
 import { FormMainTitleComponent } from '../form-main-title/form-main-title.component';
 import { CustomHeaderComponent } from '../custom-header/custom-header.component';
 import { CustomSubheaderComponent } from '../custom-subheader/custom-subheader.component';
-import { NoteComponent } from '../note/note.component';
+import { FieldNoteComponent } from '../field-note/field-note.component';
 import { ValidationMessageComponent } from '../validation-message/validation-message.component';
 import { CharacterCounterComponent } from '../character-counter/character-counter.component';
 import { StepIndicatorComponent, WizardStep, StepStatus } from '../step-indicator/step-indicator.component';
@@ -13,6 +13,7 @@ import { FormWizardNavComponent } from '../form-wizard-nav/form-wizard-nav.compo
 import { FormCommentPanelComponent, CommentItem } from '../form-comment-panel/form-comment-panel.component';
 import { FileUploadComponent } from '../file-upload/file-upload.component';
 import { DialogComponent } from '../dialog/dialog.component';
+import { PaginationComponent } from '../pagination/pagination.component';
 import { DropdownOption } from '../../../interfaces/components.interface';
 
 @Component({
@@ -26,7 +27,7 @@ import { DropdownOption } from '../../../interfaces/components.interface';
     FormMainTitleComponent,
     CustomHeaderComponent,
     CustomSubheaderComponent,
-    NoteComponent,
+    FieldNoteComponent,
     ValidationMessageComponent,
     CharacterCounterComponent,
     StepIndicatorComponent,
@@ -34,6 +35,7 @@ import { DropdownOption } from '../../../interfaces/components.interface';
     FormCommentPanelComponent,
     FileUploadComponent,
     DialogComponent,
+    PaginationComponent,
   ],
   templateUrl: './showcase.html',
   styleUrl: './showcase.scss',
@@ -100,6 +102,21 @@ export class ShowcaseComponent {
   lastUploadedFile = signal<File | null>(null);
   onFileSelected(file: File | null): void {
     this.lastUploadedFile.set(file);
+  }
+
+  // ── Pagination demo ────────────────────────────────────────
+  paginationCurrentPage = signal(1);
+  paginationTotalPages = 47;
+  paginationPageSize = signal(15);
+  paginationPageSizeOptions = [5, 15, 30, 50];
+
+  onPaginationPageChange(page: number): void {
+    this.paginationCurrentPage.set(page);
+  }
+
+  onPaginationPageSizeChange(pageSize: number): void {
+    this.paginationPageSize.set(pageSize);
+    this.paginationCurrentPage.set(1); // Reset to first page
   }
 
   // ── Color token rows for table ───────────────────────────────
@@ -173,7 +190,6 @@ export class ShowcaseComponent {
     { cls: '.form-counter',        purpose: 'Character counter, right-aligned',                  usage: '<div class="form-counter">{{n}}/300</div>' },
     { cls: '.keyword-counter',     purpose: 'Keyword count indicator — muted text',              usage: '<div class="keyword-counter">3/5</div>' },
     { cls: '.keyword-counter--over', purpose: 'Over-limit state — red + bold',                  usage: 'add to .keyword-counter when over limit' },
-    { cls: '.label-with-note',     purpose: 'Row combining a form-label with a Note tooltip',   usage: '<div class="label-with-note">' },
     { cls: '.badge',               purpose: 'Status indicator base — use with variant',          usage: '<span class="badge badge-success">' },
     { cls: '.badge-success',       purpose: 'Green — Approved',                                  usage: 'class="badge badge-success"' },
     { cls: '.badge-warning',       purpose: 'Amber — In Progress',                               usage: 'class="badge badge-warning"' },
@@ -202,15 +218,16 @@ export class ShowcaseComponent {
     { name: 'ActionButton', selector: '<app-action-button>', purpose: 'Pill action button wrapper for primary/secondary/danger variants.' },
     { name: 'CharacterCounter', selector: '<app-character-counter>', purpose: 'Character count helper for inputs and textareas.' },
     { name: 'CustomHeader', selector: '<app-custom-header>', purpose: 'Standard section header with optional icon.' },
-    { name: 'CustomSubheader', selector: '<app-custom-subheader>', purpose: 'Standard subsection header with optional tooltip.' },
+    { name: 'CustomSubheader', selector: '<app-custom-subheader>', purpose: 'Standard subsection header with optional field note.' },
     { name: 'DataTable', selector: '<app-data-table>', purpose: 'Reusable typed table with optional custom row template.' },
     { name: 'Dialog', selector: '<app-dialog>', purpose: 'Reusable modal wrapper with projected body and footer slots.' },
     { name: 'FileUpload', selector: '<app-file-upload>', purpose: 'Validated drag/drop or click file upload field.' },
+    { name: 'FieldNote', selector: '<app-field-note>', purpose: 'Field-level helper note block with projected text.' },
     { name: 'FormCommentPanel', selector: '<app-form-comment-panel>', purpose: 'Accordion panel for reviewer comments.' },
     { name: 'FormMainTitle', selector: '<app-form-main-title>', purpose: 'Page title with guidelines modal trigger.' },
     { name: 'FormWizardNav', selector: '<app-form-wizard-nav>', purpose: 'Form step navigation footer with save/submit actions.' },
     { name: 'GuidelinesModal', selector: '<app-guidelines-modal>', purpose: 'Guidelines modal that fetches remote HTML content.' },
-    { name: 'Note', selector: '<app-note>', purpose: 'Inline note or tooltip-style contextual hint.' },
+    { name: 'Pagination', selector: '<app-pagination>', purpose: 'Page navigation with adjustable items-per-page selector.' },
     { name: 'SearchableDropdown', selector: '<app-searchable-dropdown>', purpose: 'Single/multi select dropdown with search and chips.' },
     { name: 'StepIndicator', selector: '<app-step-indicator>', purpose: 'Clickable step progress indicator with status states.' },
     { name: 'ValidationMessage', selector: '<app-validation-message>', purpose: 'Consistent reactive form validation error renderer.' },
@@ -230,12 +247,11 @@ export class ShowcaseComponent {
       ]
     },
     {
-      name: 'NoteComponent',
-      selector: '<app-note>',
-      purpose: 'Displays warnings or hints. Two variants: inline banner (amber box with caution icon) and tooltip ("!" icon, shows note on hover).',
+      name: 'FieldNoteComponent',
+      selector: '<app-field-note>',
+      purpose: 'Displays a compact note directly under a field. The component owns only the design; each usage provides its own sentence as projected content.',
       inputs: [
-        { name: 'text',       type: 'string',  desc: 'The message text to display' },
-        { name: 'isTooltip',  type: 'boolean', desc: 'When true, renders as hover tooltip instead of inline. Default: false' },
+        { name: 'projected content', type: 'ng-content', desc: 'Field-specific note text placed between the opening and closing tags' },
       ]
     },
     {
@@ -317,12 +333,12 @@ export class ShowcaseComponent {
     {
       name: 'CustomSubheader',
       selector: '<app-custom-subheader>',
-      purpose: 'Standardized H3 sub-section heading with optional icon and inline tooltip.',
+      purpose: 'Standardized H3 sub-section heading with optional icon and field note.',
       inputs: [
         { name: 'title',   type: 'string', desc: 'Sub-section heading text' },
         { name: 'iconSvg', type: 'string', desc: 'Raw SVG string icon. Optional.' },
         { name: 'icon',    type: 'string', desc: 'Material Icons name. Optional.' },
-        { name: 'tooltip', type: 'string', desc: 'Tooltip text shown as NoteComponent icon. Optional.' },
+        { name: 'tooltip', type: 'string', desc: 'Optional helper text shown beside the heading.' },
       ]
     },
   ];

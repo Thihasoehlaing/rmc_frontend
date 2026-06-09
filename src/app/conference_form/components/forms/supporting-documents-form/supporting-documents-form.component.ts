@@ -3,13 +3,14 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { FileUploadComponent } from '../../../../shared/components/file-upload/file-upload.component';
 import { NoteComponent } from '../../../../shared/components/note/note.component';
+import { CustomSubheaderComponent } from '../../../../shared/components/custom-subheader/custom-subheader.component';
 import { ConferenceWorkflowService } from '../../../services/conference-workflow.service';
 import { ConferenceFormStateService } from '../../../services/conference-form-state.service';
 
 @Component({
   selector: 'app-supporting-documents-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FileUploadComponent, NoteComponent],
+  imports: [CommonModule, ReactiveFormsModule, FileUploadComponent, NoteComponent, CustomSubheaderComponent],
   templateUrl: './supporting-documents-form.component.html',
   styleUrl: './supporting-documents-form.component.scss'
 })
@@ -60,9 +61,7 @@ export class SupportingDocumentsFormComponent implements OnInit, OnDestroy {
       conferenceInvoice: ['', [Validators.required]],
       manuscriptInternallyReviewed: ['', [Validators.required]],
       reviewerName: ['', [Validators.required]],
-      manuscriptPreviouslyPublished: ['', [Validators.required]],
-      citedJournalPaper: ['', [Validators.required]],
-      citedJournalPaperExplanation: ['', [Validators.required]]
+      manuscriptPreviouslyPublished: ['', [Validators.required]]
     });
   }
 

@@ -84,7 +84,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
 
   // ── Wizard state ───────────────────────────────────────────────
   currentStep = signal<number>(1);
-  readonly totalSteps = 5;
+  readonly totalSteps = 4;
 
   isSaving = signal(false);
   submissionState = signal<'IDLE' | 'LOADING' | 'SUCCESS' | 'ERROR'>('IDLE');
@@ -134,8 +134,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
   readonly steps: WizardStep[] = [
     { label: 'Team Members', icon: 'group' },
     { label: 'Project Details', icon: 'description' },
-    { label: 'Research Output', icon: 'science' },
-    { label: 'Budget', icon: 'account_balance_wallet' },
+    { label: 'Research Output & Budget', icon: 'science' },
     { label: 'Declaration', icon: 'verified' }
   ];
 
@@ -148,7 +147,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
       { path: 'teamDetails.department', label: "School / Department" },
       { path: 'teamDetails.researchCluster', label: 'Research Cluster' },
       { path: 'teamDetails.leaderRoles', label: 'Roles of Project Leader' },
-      { path: 'teamDetails.internalResearchers', label: 'APU Co-Researchers (min 1)' },
+      { path: 'teamDetails.internalResearchers', label: 'Asia Pacific University of Technology & Innovation Co-Researchers (min 1)' },
       { path: 'teamDetails.externalResearchers', label: 'External Collaborators (min 2)' },
     ],
     // Step 2: Project Details
@@ -173,12 +172,12 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
       { path: 'projectDetails.literatureReview', label: 'Literature Review' },
       { path: 'projectDetails.methodology', label: 'Methodology' },
       { path: 'projectDetails.references', label: 'References' },
-      { path: 'projectDetails.benefits.apu', label: 'APU Benefit' },
+      { path: 'projectDetails.benefits.apu', label: 'Asia Pacific University of Technology & Innovation Benefit' },
       { path: 'projectDetails.benefits.students', label: 'Students Benefit' },
       { path: 'projectDetails.benefits.stakeholders', label: 'Stakeholders Benefit' },
       { path: 'projectDetails.visionMission', label: 'Vision & Mission Alignment' },
     ],
-    // Step 3: Research Output
+    // Step 3: Research Output & Budget
     [
       { path: 'outputs.journal.checked', label: 'Indexed Journal Publication (SCOPUS-Indexed Q1 and Q2)' },
       { path: 'outputs.journal.quantity', label: 'Indexed Journal Publication Quantity' },
@@ -186,9 +185,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
       { path: 'outputs.knowledgeTransfer.checked', label: 'Knowledge Transfer Programme' },
       { path: 'outputs.knowledgeTransfer.community', label: 'Knowledge Transfer Community' },
     ],
-    // Step 4: Budget
-    [],
-    // Step 5: Declaration
+    // Step 4: Declaration
     [
       { path: 'finalDeclaration.noveltyJustification', label: 'Novelty Justification' },
       { path: 'finalDeclaration.agreed', label: 'Declaration Agreement' },
@@ -197,11 +194,10 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
 
   /** Review form groups mapped by step index (0-based) */
   private readonly reviewGroupByStep = [
-    'reviewTeam',        // Step 1
-    'reviewProject',     // Step 2
-    'reviewOutput',      // Step 3
-    'reviewBudget',      // Step 4
-    'reviewDeclaration', // Step 5
+    ['reviewTeam'],                  // Step 1
+    ['reviewProject'],               // Step 2
+    ['reviewOutput', 'reviewBudget'], // Step 3
+    ['reviewDeclaration'],           // Step 4
   ];
 
   /** Returns labels for required-but-empty controls in a FormGroup */
@@ -245,26 +241,21 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
 
   private activitiesTimelineValidator = (control: AbstractControl): ValidationErrors | null => {
     const activities = control as FormArray;
-    const duration = Number(control.parent?.get('projectDetails.duration')?.value ?? 0);
+    const minMonth = 0;
+    const maxMonth = 12;
 
-    if (!duration) return null;
     if (!activities || activities.length === 0) return { activitiesTimeline: true };
-
-    let previousEnd = 0;
 
     for (let i = 0; i < activities.length; i++) {
       const activity = activities.at(i);
       const start = Number(activity.get('startMonth')?.value ?? 0);
       const end = Number(activity.get('endMonth')?.value ?? 0);
 
-      if (i === 0 && start !== 1) return { activitiesTimeline: true };
-      if (end <= start) return { activitiesTimeline: true };
-      if (i > 0 && start !== previousEnd) return { activitiesTimeline: true };
-
-      previousEnd = end;
+      if (!Number.isFinite(start) || !Number.isFinite(end)) return { activitiesTimeline: true };
+      if (start < minMonth || end < start || end > maxMonth) return { activitiesTimeline: true };
     }
 
-    return previousEnd === duration ? null : { activitiesTimeline: true };
+    return null;
   };
 
   getStepStatuses(): StepStatus[] {
@@ -300,18 +291,18 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
         }
       }
 
-      if (stepNum === 4 && this.rdigForm.get('budget')?.hasError('budgetRange')) {
+      if (stepNum === 3 && this.rdigForm.get('budget')?.hasError('budgetRange')) {
         missingFields.push('Total Amount Requested');
       }
 
       // Include required-but-empty review fields (set dynamically by ReviewBlockComponent
       // and ApprovalCardComponent when the current user's role is editable)
-      const reviewGroup = this.reviewGroupByStep[i];
-      if (reviewGroup) {
+      const reviewGroups = this.reviewGroupByStep[i] ?? [];
+      reviewGroups.forEach(reviewGroup => {
         missingFields.push(...this.getRequiredInvalidLabels(reviewGroup));
-      }
-      // Step 5 also includes approval decision controls
-      if (stepNum === 5) {
+      });
+      // Step 4 also includes approval decision controls
+      if (stepNum === 4) {
         missingFields.push(...this.getRequiredInvalidLabels('approvals'));
       }
 
@@ -991,7 +982,6 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
 
     if (!this.validationDisabled() && this.rdigForm.invalid) {
       this.rdigForm.markAllAsTouched();
-      console.warn('Form invalid — please review all steps.');
       this.submissionErrorMessage.set('Your form has missing or invalid fields. Please review all steps.');
       this.submissionState.set('ERROR');
       return;
@@ -1072,7 +1062,6 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
       isDraft:  false,
       savedAt:  new Date().toISOString(),
     };
-    console.log('Submitting', formData);
 
     const appId = this.loadedAppId();
     const isEdit = !!appId;
@@ -1120,7 +1109,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
         console.error('Save failed:', err);
         let errorMsg = 'Failed to process. Please try again.';
         if (err.status === 0) errorMsg = 'Could not connect to the server (Ensure the local db is running).';
-        
+
         this.submissionErrorMessage.set(errorMsg);
         this.submissionState.set('ERROR');
       }

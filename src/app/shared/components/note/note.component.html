@@ -1,20 +1,7 @@
-@if (isTooltip) {
-<div class="tooltip-container">
-  <div class="tooltip-icon">!</div>
-  <div class="tooltip-popup">
-    <div class="note-container">
-      <span class="note-icon">ℹ</span>
-      <span class="note-text">
-        {{text}}
-      </span>
-    </div>
-  </div>
-</div>
-} @else {
-<div class="note-container">
-  <span class="note-icon">ℹ</span>
-  <span class="note-text">
-    <strong>Note:</strong> {{text}}
-  </span>
-</div>
-}
+<app-field-note>
+  @if (text) {
+    {{ text }}
+  } @else {
+    <ng-content></ng-content>
+  }
+</app-field-note>

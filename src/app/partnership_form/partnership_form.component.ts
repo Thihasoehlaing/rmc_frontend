@@ -38,7 +38,7 @@ export class PartnershipFormComponent {
 
   currentStep = signal<number>(1);
   submitAttempted = signal<boolean>(false);
-  visitedSteps = new Set<number>([1]);
+  checkedSteps = new Set<number>();
   isSaving = signal<boolean>(false);
   isSubmitting = signal<boolean>(false);
 
@@ -114,15 +114,17 @@ export class PartnershipFormComponent {
 
   getStepStatuses(): StepStatus[] {
     return this.steps.map((_, i) => ({
-      visited: this.visitedSteps.has(i + 1),
+      visited: this.checkedSteps.has(i + 1),
       valid: true, // simplified until form logic is added
       missingFields: [],
     }));
   }
 
   goToStep(step: number): void {
+    if (step !== this.currentStep()) {
+      this.checkedSteps.add(this.currentStep());
+    }
     this.currentStep.set(step);
-    this.visitedSteps.add(step);
   }
 
   onPrev(): void {

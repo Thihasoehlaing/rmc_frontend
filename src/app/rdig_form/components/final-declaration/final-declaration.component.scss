@@ -11,6 +11,14 @@
   min-height: 180px;
 }
 
+.form-label span {
+  display: block;
+  color: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: var(--lh-relaxed);
+}
+
 // ── Declaration box ───────────────────────────────────────────
 .declaration-box {
   padding: var(--space-6);

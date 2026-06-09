@@ -67,6 +67,10 @@ export class BudgetSummaryComponent implements OnInit {
   get materialsSupplies() { return this.budgetForm.get('materialsSupplies') as FormArray; }
   get specialServices() { return this.budgetForm.get('specialServices') as FormArray; }
 
+  get otherRemarksControl(): FormControl {
+    return this.budgetForm.get('otherRemarks') as FormControl;
+  }
+
   readonly budgetCategoryLabels: Record<BudgetCategoryKey, string> = {
     studentAllowances: 'V11000 - Student Allowances',
     travelAccommodation: 'V21000 - Travelling and Accommodation',

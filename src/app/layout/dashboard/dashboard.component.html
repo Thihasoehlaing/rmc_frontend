@@ -42,7 +42,6 @@
         <p class="panel-eyebrow">Applications</p>
         <h2>Recent Applications</h2>
       </div>
-      <a routerLink="/submissions/pending" class="panel-link">View pending</a>
     </div>
 
     @if (loading()) {
@@ -50,32 +49,57 @@
         <span class="material-icons">hourglass_empty</span>
         <span>Loading recent applications...</span>
       </div>
-    } @else if (recentApps().length === 0) {
+    } @else if (visibleRecentApps().length === 0) {
       <div class="empty-state">
         <span class="material-icons">description</span>
         <p>No applications found yet.</p>
       </div>
     } @else {
       <div class="application-list">
-        @for (app of recentApps(); track $index) {
+        @for (app of paginatedApps(); track app.id ?? getTitle(app)) {
           <a
             class="application-row"
+            [class.application-row--action]="needsAction(app)"
             [routerLink]="getFormRoute(app)"
             [queryParams]="{ id: app.id }">
-            <div class="application-row__main">
-              <span class="application-row__type">{{ getFormTypeLabel(app) }}</span>
-              <strong>{{ getTitle(app) }}</strong>
-              <small>{{ formatDate(app) }}</small>
-            </div>
-            <span
-              class="status-chip"
-              [style.border-color]="getStatusColor(app)"
-              [style.color]="getStatusColor(app)">
-              {{ getStatusLabel(app) }}
+            <span class="application-row__icon" aria-hidden="true">
+              <span class="material-icons">description</span>
             </span>
+            <div class="application-row__main">
+              <strong>{{ getTitle(app) }}</strong>
+              <div class="application-row__meta">
+                <span>{{ getFormTypeLabel(app) }}</span>
+                <span>{{ formatDate(app) }}</span>
+              </div>
+            </div>
+            <div class="application-row__signal">
+              @if (needsAction(app)) {
+                <span class="action-indicator" title="Action required" aria-label="Action required"></span>
+              }
+              <span class="material-icons application-row__arrow" aria-hidden="true">chevron_right</span>
+            </div>
           </a>
         }
       </div>
+      @if (totalPages() > 1) {
+        <nav class="pagination-controls" aria-label="Recent applications pages">
+          <button type="button" (click)="previousPage()" [disabled]="currentPage() === 0" aria-label="Previous page">
+            <span class="material-icons">chevron_left</span>
+          </button>
+          @for (page of pageIndexes(); track page) {
+            <button
+              type="button"
+              (click)="goToPage(page)"
+              [class.active]="currentPage() === page"
+              [attr.aria-current]="currentPage() === page ? 'page' : null">
+              {{ page }}
+            </button>
+          }
+          <button type="button" (click)="nextPage()" [disabled]="currentPage() === totalPages() - 1" aria-label="Next page">
+            <span class="material-icons">chevron_right</span>
+          </button>
+        </nav>
+      }
     }
   </section>
 </main>

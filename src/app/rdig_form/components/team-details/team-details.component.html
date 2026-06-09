@@ -31,7 +31,7 @@
     <div class="card__content section-fields">
       <div class="form-field">
         <label class="form-label is-required">Research Cluster</label>
-        <app-searchable-dropdown [options]="clusters" [isMulti]="false" placeholder="Select research cluster..."
+        <app-searchable-dropdown [options]="clusters" [isMulti]="false"
           formControlName="researchCluster">
         </app-searchable-dropdown>
         <app-validation-message [control]="teamDetails.get('researchCluster')"></app-validation-message>
@@ -39,8 +39,7 @@
 
       <div class="form-field">
         <label class="form-label is-required">Roles of Project Leader</label>
-        <textarea class="input--textarea" formControlName="leaderRoles" [maxlength]="600"
-          placeholder="Describe your specific roles and contributions in this project...">
+        <textarea class="input--textarea" formControlName="leaderRoles" [maxlength]="600">
         </textarea>
         <app-character-counter [current]="teamDetails.get('leaderRoles')?.value?.length || 0" [max]="600">
         </app-character-counter>
@@ -56,6 +55,7 @@
     </app-custom-subheader>
 
     <div class="card__content">
+      <p class="form-hint">Please select APU Co-Researchers and provide their role(s) (Exclude RA/GRA)</p>
       <div class="category-header">
         <app-action-button
           type="primary" label="Add Member" icon="add"
@@ -120,6 +120,7 @@
     </app-custom-subheader>
 
     <div class="card__content">
+      <p class="form-hint">This is collaborative research with External Co-researchers</p>
       <div class="category-header">
         <app-action-button
           type="primary" label="Add Collaborator" icon="add"
@@ -244,22 +245,19 @@
           <app-searchable-dropdown
             [options]="researcherOptions"
             formControlName="staffId"
-            placeholder="Search and select staff..."
             valueMode="single">
           </app-searchable-dropdown>
           <app-validation-message [control]="internalForm.get('staffId')"></app-validation-message>
         </div>
         <div class="form-field">
           <label class="form-label">School / Department</label>
-          <input type="text" class="input--text" formControlName="department" readonly
-            placeholder="Auto-filled from selected staff">
+          <input type="text" class="input--text" formControlName="department" readonly>
         </div>
       </div>
 
       <div class="form-field">
         <label class="form-label is-required">Area of Expertise</label>
-        <input type="text" class="input--text" formControlName="expertise" [maxlength]="200"
-          placeholder="e.g. Machine Learning, Renewable Energy...">
+        <textarea class="input--textarea" formControlName="expertise" [maxlength]="200"></textarea>
         <app-character-counter [current]="internalForm.get('expertise')?.value?.length || 0" [max]="200">
         </app-character-counter>
         <app-validation-message [control]="internalForm.get('expertise')"></app-validation-message>
@@ -267,8 +265,7 @@
 
       <div class="form-field">
         <label class="form-label is-required">Roles in Project</label>
-        <textarea class="input--textarea" formControlName="roles" [maxlength]="600"
-          placeholder="Describe the specific roles and responsibilities...">
+        <textarea class="input--textarea" formControlName="roles" [maxlength]="600">
           </textarea>
         <app-character-counter [current]="internalForm.get('roles')?.value?.length || 0" [max]="600">
         </app-character-counter>
@@ -324,13 +321,12 @@
       <div class="row row--2">
         <div class="form-field">
           <label class="form-label is-required">Email Address</label>
-          <input type="email" class="input--text" formControlName="email" placeholder="e.g. aisha.rahman@university.edu">
+          <input type="email" class="input--text" formControlName="email">
           <app-validation-message [control]="externalForm.get('email')"></app-validation-message>
         </div>
         <div class="form-field">
           <label class="form-label is-required">Institution / Company</label>
-          <input type="text" class="input--text" formControlName="institution"
-            placeholder="e.g. Universiti Malaya or TechNova Sdn Bhd">
+          <input type="text" class="input--text" formControlName="institution">
           <app-validation-message [control]="externalForm.get('institution')"></app-validation-message>
         </div>
       </div>
@@ -354,8 +350,7 @@
         </div>
         <div class="form-field">
           <label class="form-label is-required">Position / Designation</label>
-          <input type="text" class="input--text" formControlName="position"
-            placeholder="e.g. Senior Researcher, Director, Lecturer">
+          <input type="text" class="input--text" formControlName="position">
           <app-validation-message [control]="externalForm.get('position')"></app-validation-message>
         </div>
       </div>
@@ -364,8 +359,7 @@
       <div class="row row--2">
         <div class="form-field">
           <label class="form-label is-required">School / Department / Faculty</label>
-          <input type="text" class="input--text" formControlName="department"
-            placeholder="e.g. Faculty of Computing and Informatics">
+          <input type="text" class="input--text" formControlName="department">
           <app-validation-message [control]="externalForm.get('department')"></app-validation-message>
         </div>
         <div class="form-field">
@@ -374,7 +368,6 @@
             [options]="countryOptions"
             [loading]="countriesLoading"
             [isMulti]="false"
-            placeholder="Search and select country..."
             valueMode="single"
             formControlName="country">
           </app-searchable-dropdown>
@@ -385,15 +378,14 @@
       <!-- Full width: Matched Funding -->
       <div class="form-field">
         <label class="form-label is-required">Matched Funding (RM equivalent)</label>
-        <input type="text" class="input--text" formControlName="funding" placeholder="e.g. 5000.00">
+        <input type="text" class="input--text" formControlName="funding">
         <app-validation-message [control]="externalForm.get('funding')"></app-validation-message>
       </div>
 
       <!-- Full width: Roles -->
       <div class="form-field">
         <label class="form-label is-required">Roles of Collaborator</label>
-        <textarea class="input--textarea" formControlName="roles" [maxlength]="600"
-          placeholder="e.g. Provide industry data, validate prototype, support field testing">
+        <textarea class="input--textarea" formControlName="roles" [maxlength]="600">
           </textarea>
         <app-character-counter [current]="externalForm.get('roles')?.value?.length || 0" [max]="600">
         </app-character-counter>
@@ -406,7 +398,6 @@
           label="Support Letter"
           accept=".pdf"
           [maxSizeMB]="10"
-          placeholder="Upload PDF support letter (max 10 MB)"
           (fileSelected)="onFileSelected($event)">
         </app-file-upload>
         <app-validation-message [control]="externalForm.get('supportLetter')"></app-validation-message>
@@ -423,3 +414,4 @@
 
   </app-dialog>
 }
+

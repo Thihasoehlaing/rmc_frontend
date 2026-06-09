@@ -15,7 +15,7 @@
         formGroupName="journal">
         <label class="item-trigger">
           <input type="checkbox" formControlName="checked">
-          <span class="item-label is-required">Indexed Journal Publication</span>
+          <span class="item-label is-required">Indexed Journal Publication (SCOPUS-Indexed Q1 and Q2)</span>
         </label>
         @if (outputForm.get('journal.checked')?.touched && outputForm.get('journal.checked')?.invalid) {
           <p class="validation-error">This output is required.</p>
@@ -24,9 +24,9 @@
           <div class="item-content">
             <div class="form-field">
               <label class="form-label is-required">Quantity:</label>
-              <div class="radio-group">
+              <div class="radio-field">
                 @for (q of [1, 2, 3, 4]; track q) {
-                  <label class="radio-option">
+                  <label class="radio-field__option">
                     <input type="radio" [value]="q" formControlName="quantity">
                     <span>{{ q }} {{ q === 1 ? 'Publication' : 'Publications' }}</span>
                   </label>
@@ -42,7 +42,7 @@
       <div class="output-item" [class.output-item--active]="outputForm.get('conceptualDesign')?.value">
         <label class="item-trigger">
           <input type="checkbox" formControlName="conceptualDesign">
-          <span class="item-label is-required">Conceptual Design / Product Development</span>
+          <span class="item-label is-required">Conceptual Design or Theoretical Framework</span>
         </label>
         @if (outputForm.get('conceptualDesign')?.touched && outputForm.get('conceptualDesign')?.invalid) {
           <p class="validation-error">This output is required.</p>
@@ -54,7 +54,7 @@
         formGroupName="knowledgeTransfer">
         <label class="item-trigger">
           <input type="checkbox" formControlName="checked">
-          <span class="item-label is-required">Knowledge Transfer Programme</span>
+          <span class="item-label is-required">Knowledge Transfer Programme - is a structured program which has documented programs approval, objectives, methodology, and financial arrangement.</span>
         </label>
         @if (outputForm.get('knowledgeTransfer.checked')?.touched && outputForm.get('knowledgeTransfer.checked')?.invalid) {
           <p class="validation-error">This output is required.</p>
@@ -63,8 +63,7 @@
           <div class="item-content">
             <div class="form-field">
               <label class="form-label is-required">Community to be impacted:</label>
-              <input type="text" class="input--text" formControlName="community"
-                placeholder="e.g. Local Entrepreneurs, Secondary Students">
+              <input type="text" class="input--text" formControlName="community">
               <app-validation-message [control]="outputForm.get('knowledgeTransfer.community')"></app-validation-message>
             </div>
           </div>
@@ -76,14 +75,13 @@
         formGroupName="externalGrant">
         <label class="item-trigger">
           <input type="checkbox" formControlName="checked">
-          <span class="item-label">Application to External Grant</span>
+          <span class="item-label">Application to external grant scheme</span>
         </label>
         @if (outputForm.get('externalGrant.checked')?.value) {
           <div class="item-content">
             <div class="form-field">
               <label class="form-label is-required">Grant scheme:</label>
-              <input type="text" class="input--text" formControlName="scheme"
-                placeholder="e.g. GET, CREST, PPRN, MOSTI, etc.">
+              <input type="text" class="input--text" formControlName="scheme">
               <app-validation-message [control]="outputForm.get('externalGrant.scheme')"></app-validation-message>
             </div>
           </div>
@@ -101,8 +99,7 @@
           <div class="item-content">
             <div class="form-field">
               <label class="form-label is-required">Describe other outputs:</label>
-              <input type="text" class="input--text" formControlName="details"
-                placeholder="Describe the output...">
+              <textarea class="input--textarea" formControlName="details"></textarea>
               <app-validation-message [control]="outputForm.get('others.details')"></app-validation-message>
             </div>
           </div>

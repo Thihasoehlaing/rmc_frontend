@@ -107,6 +107,18 @@ export class ApplicationService {
   }
 
   /**
+   * Admin visibility: all submitted applications across users.
+   * This is not an action queue.
+   */
+  getAdminApplications(): Observable<any[]> {
+    const params = this.identityParams();
+    if (!params) return of([]);
+    return this.http.get<any[]>(`${this.BASE}/applications`, {
+      params: params.set('view', 'admin'),
+    });
+  }
+
+  /**
    * History: applications that the current user has already acted on but that
    * are no longer in their active queue. For applicants this also covers
    * terminal applications (approved / rejected) regardless of history entries.
@@ -168,6 +180,10 @@ export class ApplicationService {
       Conference: 'Conference',
       Journal:    'Journal',
       RAGRA:      'RA/GRA',
+      Travel:     'Travel Authorization',
+      TravelAuthorization: 'Travel Authorization',
+      Partnership: 'Partnership',
+      Proposal:   'Proposal',
     };
     return labels[type] ?? (type || '—');
   }
@@ -181,6 +197,10 @@ export class ApplicationService {
       case 'Conference': return '/conference/application';
       case 'Journal':    return '/journal/application';
       case 'RAGRA':      return '/ragra';
+      case 'Travel':
+      case 'TravelAuthorization': return '/travel';
+      case 'Partnership': return '/partnership/application';
+      case 'Proposal':    return '/proposal';
       default:           return '/rdig';
     }
   }

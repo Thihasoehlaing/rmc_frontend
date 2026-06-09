@@ -179,9 +179,9 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
     ],
     // Step 3: Research Output & Budget
     [
-      { path: 'outputs.journal.checked', label: 'Indexed Journal Publication' },
+      { path: 'outputs.journal.checked', label: 'Indexed Journal Publication (SCOPUS-Indexed Q1 and Q2)' },
       { path: 'outputs.journal.quantity', label: 'Indexed Journal Publication Quantity' },
-      { path: 'outputs.conceptualDesign', label: 'Conceptual Design / Product Development' },
+      { path: 'outputs.conceptualDesign', label: 'Conceptual Design or Theoretical Framework' },
       { path: 'outputs.knowledgeTransfer.checked', label: 'Knowledge Transfer Programme' },
       { path: 'outputs.knowledgeTransfer.community', label: 'Knowledge Transfer Community' },
     ],
@@ -400,6 +400,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
         travelAccommodation: this.fb.array([]),
         materialsSupplies: this.fb.array([]),
         specialServices: this.fb.array([]),
+        otherRemarks: ['', Validators.maxLength(300)],
         totalRequest: [{ value: 0, disabled: true }]
       }, { validators: [this.budgetRangeValidator] }),
 

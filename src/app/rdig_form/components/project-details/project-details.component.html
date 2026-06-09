@@ -10,14 +10,14 @@
 
       <div class="form-field">
         <label class="form-label is-required">Application Type</label>
-        <div class="radio-group">
-          <label class="radio-option">
+        <div class="radio-field">
+          <label class="radio-field__option">
             <input type="radio" value="New" formControlName="applicationType">
-            <span>New Application — First-time submission for this research project</span>
+            <span>A New Application with Matching Grant (This is a project with an external international collaboration/funding)</span>
           </label>
-          <label class="radio-option">
+          <label class="radio-field__option">
             <input type="radio" value="Resubmission" formControlName="applicationType">
-            <span>Resubmission — Previously submitted and returned for revision</span>
+            <span>This application is an improved proposal of a previously rejected application</span>
           </label>
         </div>
         <app-validation-message [control]="projectDetails.get('applicationType')"></app-validation-message>
@@ -28,12 +28,11 @@
         <div class="checkbox-group">
           <label class="checkbox-option">
             <input type="checkbox" formControlName="ethics">
-            <span>I declare that this project does not involve human or animal subjects, or that ethics approval will be
-              sought if required.</span>
+            <span>I hereby declare that I do not have any on-going RDIG project.</span>
           </label>
           <label class="checkbox-option">
             <input type="checkbox" formControlName="conflict">
-            <span>I declare that there is no conflict of interest regarding this application.</span>
+            <span>I hereby declare that my co-researchers do not have any on-going RDIG project.</span>
           </label>
         </div>
       </div>
@@ -48,25 +47,25 @@
       <div class="row row--2">
         <div class="form-field">
           <label class="form-label is-required">Project Category</label>
-          <div class="radio-group">
-            <label class="radio-option">
+          <div class="radio-field">
+            <label class="radio-field__option">
               <input type="radio" value="S&T" formControlName="category">
               <span>Science & Technology (S&amp;T)</span>
             </label>
-            <label class="radio-option">
+            <label class="radio-field__option">
               <input type="radio" value="Non S&T" formControlName="category">
-              <span>Non-Science (Non S&amp;T)</span>
+              <span>Non Science &amp; Technology (Non S&amp;T)</span>
             </label>
           </div>
         </div>
         <div class="form-field">
           <label class="form-label is-required">Project Duration</label>
-          <div class="radio-group">
-            <label class="radio-option"><input type="radio" value="12" formControlName="duration"><span>12
+          <div class="radio-field">
+            <label class="radio-field__option"><input type="radio" value="12" formControlName="duration"><span>12
                 Months</span></label>
-            <label class="radio-option"><input type="radio" value="18" formControlName="duration"><span>18
+            <label class="radio-field__option"><input type="radio" value="18" formControlName="duration"><span>18
                 Months</span></label>
-            <label class="radio-option"><input type="radio" value="24" formControlName="duration"><span>24
+            <label class="radio-field__option"><input type="radio" value="24" formControlName="duration"><span>24
                 Months</span></label>
           </div>
           <app-validation-message [control]="projectDetails.get('duration')"></app-validation-message>
@@ -87,7 +86,7 @@
 
       <div class="form-field">
         <label class="form-label is-required">Project Title</label>
-        <input type="text" class="input--text" formControlName="title" placeholder="Enter full project title...">
+        <textarea class="input--textarea" formControlName="title" [maxlength]="200"></textarea>
         <app-character-counter [current]="projectDetails.get('title')?.value?.length ?? 0"
           [max]="200"></app-character-counter>
         <app-validation-message [control]="projectDetails.get('title')"></app-validation-message>
@@ -107,8 +106,7 @@
 
       <div class="form-field">
         <label class="form-label is-required">Research Area</label>
-        <input type="text" class="input--text" formControlName="researchArea"
-          placeholder="e.g. Sustainable Energy Systems">
+        <textarea class="input--textarea" formControlName="researchArea" [maxlength]="100"></textarea>
         <app-character-counter [current]="projectDetails.get('researchArea')?.value?.length ?? 0"
           [max]="100"></app-character-counter>
         <app-validation-message [control]="projectDetails.get('researchArea')"></app-validation-message>
@@ -220,8 +218,7 @@
       <div class="row row--2">
         <div class="form-field">
           <label class="form-label is-required">Executive Summary</label>
-          <textarea class="input--textarea" formControlName="executiveSummary"
-            placeholder="Summarise the research in 1–2 paragraphs..."></textarea>
+          <textarea class="input--textarea" formControlName="executiveSummary" [maxlength]="1500"></textarea>
           <app-character-counter [current]="projectDetails.get('executiveSummary')?.value?.length ?? 0"
             [max]="1500"></app-character-counter>
           <app-validation-message [control]="projectDetails.get('executiveSummary')"></app-validation-message>
@@ -231,8 +228,7 @@
             <label class="form-label is-required">Keywords</label>
             <app-note text="Maximum 5 keywords, separated by commas" [isTooltip]="true"></app-note>
           </div>
-          <textarea class="input--textarea" formControlName="keywords"
-            placeholder="keyword1, keyword2, keyword3..."></textarea>
+          <textarea class="input--textarea" formControlName="keywords" [maxlength]="200"></textarea>
           <div class="keyword-counter" [class.keyword-counter--over]="keywordCount > 5">{{ keywordCount }} / 5 keywords
           </div>
           <app-validation-message [control]="projectDetails.get('keywords')"></app-validation-message>
@@ -268,14 +264,14 @@
       <div class="row row--2">
         <div class="form-field">
           <label class="form-label is-required">Introduction</label>
-          <textarea class="input--textarea" formControlName="introduction"></textarea>
+          <textarea class="input--textarea" formControlName="introduction" [maxlength]="3000"></textarea>
           <app-character-counter [current]="projectDetails.get('introduction')?.value?.length ?? 0"
             [max]="3000"></app-character-counter>
           <app-validation-message [control]="projectDetails.get('introduction')"></app-validation-message>
         </div>
         <div class="form-field">
           <label class="form-label is-required">Problem Statement</label>
-          <textarea class="input--textarea" formControlName="problemStatement"></textarea>
+          <textarea class="input--textarea" formControlName="problemStatement" [maxlength]="3000"></textarea>
           <app-character-counter [current]="projectDetails.get('problemStatement')?.value?.length ?? 0"
             [max]="3000"></app-character-counter>
           <app-validation-message [control]="projectDetails.get('problemStatement')"></app-validation-message>
@@ -313,16 +309,14 @@
       <div class="row row--2">
         <div class="form-field">
           <label class="form-label is-required">Research Aim</label>
-          <textarea class="input--textarea" formControlName="researchAim"
-            placeholder="State the primary aim of this research..."></textarea>
+          <textarea class="input--textarea" formControlName="researchAim" [maxlength]="1000"></textarea>
           <app-character-counter [current]="projectDetails.get('researchAim')?.value?.length ?? 0"
             [max]="1000"></app-character-counter>
           <app-validation-message [control]="projectDetails.get('researchAim')"></app-validation-message>
         </div>
         <div class="form-field">
           <label class="form-label is-required">Research Questions / Objectives</label>
-          <textarea class="input--textarea" formControlName="researchQuestions"
-            placeholder="List the key research questions or objectives..."></textarea>
+          <textarea class="input--textarea" formControlName="researchQuestions" [maxlength]="1000"></textarea>
           <app-character-counter [current]="projectDetails.get('researchQuestions')?.value?.length ?? 0"
             [max]="1000"></app-character-counter>
           <app-validation-message [control]="projectDetails.get('researchQuestions')"></app-validation-message>
@@ -361,8 +355,7 @@
 
       <div class="form-field">
         <label class="form-label is-required">Hypothesis</label>
-        <textarea class="input--textarea" formControlName="hypothesis"
-          placeholder="State the hypothesis or expected outcomes..."></textarea>
+        <textarea class="input--textarea" formControlName="hypothesis" [maxlength]="1000"></textarea>
         <app-character-counter [current]="projectDetails.get('hypothesis')?.value?.length ?? 0"
           [max]="1000"></app-character-counter>
         <app-validation-message [control]="projectDetails.get('hypothesis')"></app-validation-message>
@@ -385,14 +378,14 @@
       <div class="row row--2">
         <div class="form-field">
           <label class="form-label is-required">Literature Review</label>
-          <textarea class="input--textarea" formControlName="literatureReview"></textarea>
+          <textarea class="input--textarea" formControlName="literatureReview" [maxlength]="5000"></textarea>
           <app-character-counter [current]="projectDetails.get('literatureReview')?.value?.length ?? 0"
             [max]="5000"></app-character-counter>
           <app-validation-message [control]="projectDetails.get('literatureReview')"></app-validation-message>
         </div>
         <div class="form-field">
           <label class="form-label is-required">Methodology</label>
-          <textarea class="input--textarea" formControlName="methodology"></textarea>
+          <textarea class="input--textarea" formControlName="methodology" [maxlength]="3000"></textarea>
           <app-character-counter [current]="projectDetails.get('methodology')?.value?.length ?? 0"
             [max]="3000"></app-character-counter>
           <app-validation-message [control]="projectDetails.get('methodology')"></app-validation-message>
@@ -429,8 +422,7 @@
 
       <div class="form-field">
         <label class="form-label is-required">References</label>
-        <textarea class="input--textarea" formControlName="references"
-          placeholder="List all references in APA format..."></textarea>
+        <textarea class="input--textarea" formControlName="references" [maxlength]="3000"></textarea>
         <app-character-counter [current]="projectDetails.get('references')?.value?.length ?? 0"
           [max]="3000"></app-character-counter>
         <app-validation-message [control]="projectDetails.get('references')"></app-validation-message>
@@ -458,22 +450,23 @@
       <p class="form-hint">How will this grant benefit Asia Pacific University of Technology & Innovation, students and wider stakeholders?</p>
       <div class="row row--3">
         <div class="form-field">
+        
           <label class="form-label is-required">Asia Pacific University of Technology & Innovation Benefit</label>
-          <textarea class="input--textarea" formControlName="apu"></textarea>
+          <textarea class="input--textarea" formControlName="apu">  [maxlength]="300"> </textarea>
           <app-character-counter [current]="projectDetails.get('benefits.apu')?.value?.length ?? 0"
             [max]="300"></app-character-counter>
           <app-validation-message [control]="projectDetails.get('benefits.apu')"></app-validation-message>
         </div>
         <div class="form-field">
           <label class="form-label is-required">Students Benefit</label>
-          <textarea class="input--textarea" formControlName="students"></textarea>
+          <textarea class="input--textarea" formControlName="students" [maxlength]="300"></textarea>
           <app-character-counter [current]="projectDetails.get('benefits.students')?.value?.length ?? 0"
             [max]="300"></app-character-counter>
           <app-validation-message [control]="projectDetails.get('benefits.students')"></app-validation-message>
         </div>
         <div class="form-field">
           <label class="form-label is-required">Stakeholders Benefit</label>
-          <textarea class="input--textarea" formControlName="stakeholders"></textarea>
+          <textarea class="input--textarea" formControlName="stakeholders" [maxlength]="300"></textarea>
           <app-character-counter [current]="projectDetails.get('benefits.stakeholders')?.value?.length ?? 0"
             [max]="300"></app-character-counter>
           <app-validation-message [control]="projectDetails.get('benefits.stakeholders')"></app-validation-message>

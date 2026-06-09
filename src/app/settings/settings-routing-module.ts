@@ -5,6 +5,7 @@ import { GuidelinesComponent } from './guidelines/guidelines.component';
 import { DropdownsComponent } from './dropdowns/dropdowns.component';
 import { BatchesComponent } from './batches/batches.component';
 import { StaffAccessComponent } from './staff-access/staff-access.component';
+import { ExternalProjectDataEntryComponent } from './external-project-data-entry/external-project-data-entry.component';
 
 const routes: Routes = [
   { path: 'admin-settings', component: AdminSettingsComponent },
@@ -13,6 +14,7 @@ const routes: Routes = [
   { path: 'rdig-dropdown-options', component: DropdownsComponent },
   { path: 'batches', component: BatchesComponent },
   { path: 'staff-access', component: StaffAccessComponent },
+  { path: 'external-project-data-entry', component: ExternalProjectDataEntryComponent },
 ];
 
 @NgModule({

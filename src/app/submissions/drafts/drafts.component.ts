@@ -1,8 +1,6 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { ApplicationService } from '../../services/application.service';        
-import { BatchSittingService } from '../../settings/batch-sitting.service';     
-import { BatchSitting } from '../../interfaces/batch-sitting.interface';        
+import { ApplicationService } from '../../services/application.service';
 import { SubmissionsSearchComponent } from '../../shared/components/submissions-search/submissions-search.component';
 
 @Component({
@@ -13,17 +11,15 @@ import { SubmissionsSearchComponent } from '../../shared/components/submissions-
   styleUrl: './drafts.component.scss',
 })
 export class DraftsComponent implements OnInit {
-  private appSvc    = inject(ApplicationService);
-  private batchSvc  = inject(BatchSittingService);
-  private router    = inject(Router);
+  private appSvc = inject(ApplicationService);
+  private router = inject(Router);
 
-  private raw       = signal<any[]>([]);
-  activeBatch       = signal<BatchSitting | null>(null);
-  loading           = signal(true);
-  error             = signal<string | null>(null);
+  private raw   = signal<any[]>([]);
+  loading       = signal(true);
+  error         = signal<string | null>(null);
 
-  searchQuery       = signal('');
-  sortAsc           = signal(false); // newest first by default
+  searchQuery = signal('');
+  sortAsc     = signal(false); // newest first by default
 
   // ── Derived list ────────────────────────────────────────────────
   readonly drafts = computed(() => {
@@ -39,14 +35,7 @@ export class DraftsComponent implements OnInit {
     });
   });
 
-  readonly hasBatch = computed(() => this.activeBatch() !== null);
-
   ngOnInit(): void {
-    this.batchSvc.loadAll().subscribe({
-      next: batches => this.activeBatch.set(batches.find(b => b.status === 'active') ?? null),
-      error: () => this.activeBatch.set(null),
-    });
-
     this.appSvc.getMyApplications().subscribe({
       next: apps => { this.raw.set(apps); this.loading.set(false); },
       error: () => {

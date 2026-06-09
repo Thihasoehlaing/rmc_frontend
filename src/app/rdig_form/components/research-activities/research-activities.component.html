@@ -87,9 +87,13 @@
           <span class="material-icons">event_note</span>
           <p>No activities added yet. Click <strong>Add Activity</strong> to start planning.</p>
         </div>
+        @if (projectDuration() > 0) {
+          <app-note [text]="'Start and End Month can be any value from 0 to ' + projectDuration() + ', can be the same, and activities may overlap.'"></app-note>
+        } @else {
+          <app-note text="Please select the 'Project Duration' field to configure and plan activities."></app-note>
+        }
       }
 
-      <app-note text="Start and End Month can be any value from 0 to 12, can be the same, and activities may overlap." [isTooltip]="true"></app-note>
     </div>
   </div>
 

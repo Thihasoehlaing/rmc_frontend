@@ -68,10 +68,8 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
   /** DEV ONLY - bypasses active-batch checks so the form can be opened for testing. */
   batchValidationDisabled = signal(false);
 
-  /** Existing applications remain readable even when no submission batch is active. */
-  readonly canShowForm = computed(() =>
-    !this.noBatchError() || !!this.loadedAppId() || this.batchValidationDisabled()
-  );
+  /** The form is always shown once batch loading completes — no hard-block gate. */
+  readonly canShowForm = computed(() => this.activeBatch() !== undefined);
 
   /** Days remaining until active batch endDate. Returns -999 when no batch loaded. */
   readonly deadlineDaysLeft = computed((): number => {
@@ -102,6 +100,9 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
 
   /** DEV ONLY — bypasses form validation to allow unrestricted navigation and submission. */
   validationDisabled = signal(false);
+
+  /** True when the closed-window submission-blocked modal is visible. */
+  showClosedWindowModal = signal(false);
 
   /** Tracks the live workflow state — persisted alongside form data */
   workflowState = signal<WorkflowState>({
@@ -969,13 +970,12 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
     const batch = this.activeBatch();
     const bypassBatchValidation = this.batchValidationDisabled();
     if (!batch && !bypassBatchValidation) {
-      alert('No active batch exists. Submission is not allowed until RMC opens a new batch.');
+      this.showClosedWindowModal.set(true);
       return;
     }
     const today = new Date().toISOString().substring(0, 10);
     if (batch && !bypassBatchValidation && (today < batch.startDate || today > batch.endDate)) {
-      this.submissionErrorMessage.set(`Submission is only allowed between ${batch.startDate} and ${batch.endDate}. The current batch window has expired or has not started yet.`);
-      this.submissionState.set('ERROR');
+      this.showClosedWindowModal.set(true);
       return;
     }
     // ── End batch constraint check ───────────────────────────────────────────

@@ -65,3 +65,16 @@
 .manage-icon {
   display: block;
 }
+
+// ── Grant Utilisation & Benefits — uniform box sizing & alignment ─────────────
+.benefits-row {
+  align-items: start; // each column stacks from its own top — labels don't push textareas down in siblings
+}
+
+.input--textarea-benefits {
+  box-sizing: border-box;
+  min-height: 120px;
+  height: 120px;
+  resize: vertical;
+  width: 100%;
+}

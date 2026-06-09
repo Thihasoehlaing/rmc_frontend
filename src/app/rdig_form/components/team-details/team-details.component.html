@@ -334,12 +334,7 @@
       <!-- Row 3: Org Type + Position -->
       <div class="row row--2">
         <div class="form-field">
-          <div class="label-with-manage">
-            <label class="form-label is-required">Type of Organisation</label>
-            <button type="button" class="manage-btn" (click)="manageOrgTypes()" title="Manage Organisation Types">
-              <span class="manage-icon">⚙️</span>
-            </button>
-          </div>
+          <label class="form-label is-required">Type of Organisation</label>
           <select class="input--select" formControlName="orgType">
             <option value="" disabled>Select organisation type...</option>
             @for (o of orgTypes; track o.value) {

@@ -11,24 +11,7 @@
     </div>
   </div>
 
-  <!-- ── Batch status notice ────────────────────────────────────────────────── -->
-  @if (!hasBatch()) {
-    <div class="notice notice--warning">
-      <span class="material-icons">event_busy</span>
-      <span>
-        <strong>No active batch.</strong>
-        You can open and edit your drafts, but submission is locked until RMC opens a new batch.
-      </span>
-    </div>
-  } @else {
-    <div class="notice notice--info">
-      <span class="material-icons">event_available</span>
-      <span>
-        Active batch: <strong>{{ activeBatch()?.batchName }}</strong>
-        &nbsp;·&nbsp; Window: <strong>{{ activeBatch()?.startDate }}</strong> – <strong>{{ activeBatch()?.endDate }}</strong>
-      </span>
-    </div>
-  }
+
 
   <!-- ── Loading ────────────────────────────────────────────────────────────── -->
   @if (loading()) {
@@ -79,8 +62,6 @@
                   {{ sortAsc() ? 'arrow_upward' : 'arrow_downward' }}
                 </span>
               </th>
-              <th>Batch</th>
-              <th>Submission Window</th>
               <th class="col-action"></th>
             </tr>
           </thead>
@@ -91,24 +72,6 @@
                   {{ app.projectDetails?.title?.trim() || '(Untitled Draft)' }}
                 </td>
                 <td class="col-date">{{ formatDate(app) }}</td>
-                <td>
-                  @if (app.metadata?.batch) {
-                    <span class="badge badge--neutral">Batch #{{ app.metadata.batch }}</span>
-                  } @else {
-                    <span class="muted">—</span>
-                  }
-                </td>
-                <td>
-                  @if (!hasBatch()) {
-                    <span class="badge badge--locked">
-                      <span class="material-icons">lock</span> Locked
-                    </span>
-                  } @else {
-                    <span class="badge badge--open">
-                      <span class="material-icons">lock_open</span> Open
-                    </span>
-                  }
-                </td>
                 <td class="col-action">
                   <button class="btn-open" (click)="openDraft(app)">
                     <span class="material-icons">edit</span>

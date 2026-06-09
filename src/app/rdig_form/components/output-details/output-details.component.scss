@@ -34,12 +34,13 @@
     width: 18px;
     height: 18px;
     flex-shrink: 0;
+    accent-color: var(--color-primary);
   }
 }
 
 .item-label {
   font-weight: var(--fw-semibold);
-  color: var(--color-heading);
+  color: var(--color-text);
   font-size: var(--fs-base);
 }
 

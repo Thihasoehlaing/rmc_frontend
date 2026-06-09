@@ -441,3 +441,87 @@
   30%, 50%, 70% { transform: translate3d(-7px, 0, 0); }
   40%, 60% { transform: translate3d(7px, 0, 0); }
 }
+
+// ── Closed-window warning banner (Req 5) ─────────────────────────────────────
+.closed-window-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-lg);
+  background: var(--color-warning-light);
+  border: 1px solid color-mix(in srgb, var(--color-warning) 40%, transparent);
+  color: var(--color-warning-dark);
+  font-size: var(--fs-sm);
+  margin-bottom: var(--space-4);
+
+  .material-icons {
+    font-size: var(--icon-md);
+    flex-shrink: 0;
+    color: var(--color-warning);
+  }
+}
+
+// ── Closed-window modal (Req 6) ───────────────────────────────────────────────
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: var(--color-overlay);
+  z-index: var(--z-modal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeInOverlay 0.2s ease-out;
+}
+
+.modal-card {
+  background: var(--color-surface);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl);
+  max-width: 460px;
+  width: 90%;
+  overflow: hidden;
+  animation: slideUpFade 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-5) var(--space-6);
+    background: var(--color-warning-light);
+    border-bottom: 1px solid color-mix(in srgb, var(--color-warning) 30%, transparent);
+  }
+
+  &__icon {
+    font-size: 28px;
+    color: var(--color-warning);
+  }
+
+  &__title {
+    font-size: var(--fs-lg);
+    font-weight: var(--fw-bold);
+    color: var(--color-warning-dark);
+    margin: 0;
+  }
+
+  &__body {
+    padding: var(--space-6);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    font-size: var(--fs-sm);
+    color: var(--color-text);
+    line-height: var(--lh-relaxed);
+
+    p { margin: 0; }
+  }
+
+  &__footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--space-3);
+    padding: var(--space-4) var(--space-6);
+    background: var(--color-surface-nested);
+    border-top: 1px solid var(--border-default);
+  }
+}

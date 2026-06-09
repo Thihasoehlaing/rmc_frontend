@@ -134,9 +134,6 @@
         <div class="form-field">
           <div class="label-with-manage">
             <label class="form-label is-required">Research Domain</label>
-            <button type="button" class="manage-btn" (click)="manageResearchDomains()" title="Manage Research Domains">
-              <span class="manage-icon">⚙️</span>
-            </button>
           </div>
           <app-searchable-dropdown [options]="domains" formControlName="domain"></app-searchable-dropdown>
           <app-validation-message [control]="projectDetails.get('domain')"></app-validation-message>
@@ -144,9 +141,6 @@
         <div class="form-field">
           <div class="label-with-manage">
             <label class="form-label is-required">Sub-Research Domain</label>
-            <button type="button" class="manage-btn" (click)="manageSubResearchDomains()" title="Manage Sub-Research Domains">
-              <span class="manage-icon">⚙️</span>
-            </button>
           </div>
           <app-searchable-dropdown [options]="filteredSubDomains" formControlName="subDomain"></app-searchable-dropdown>
           <app-validation-message [control]="projectDetails.get('subDomain')"></app-validation-message>
@@ -161,25 +155,15 @@
     <div class="card__content section-fields">
       <div class="row row--2">
         <div class="form-field">
-          <div class="label-with-note">
-            <label class="form-label is-required">ESG</label>
-            <app-note text="Min 1, Max 3" [isTooltip]="true"></app-note>
-            <button type="button" class="manage-btn" (click)="manageEsg()" title="Manage ESG Options">
-              <span class="manage-icon">⚙️</span>
-            </button>
-          </div>
+          <label class="form-label is-required">ESG</label>
           <app-searchable-dropdown [options]="esgs" [isMulti]="true" [maxSelections]="3" formControlName="esgs"></app-searchable-dropdown>
+          <app-note text="Min 1, Max 3"></app-note>
           <app-validation-message [control]="projectDetails.get('esgs')"></app-validation-message>
         </div>
         <div class="form-field">
-          <div class="label-with-note">
-            <label class="form-label is-required">SDG</label>
-            <app-note text="Min 1, Max 3" [isTooltip]="true"></app-note>
-            <button type="button" class="manage-btn" (click)="manageSdg()" title="Manage SDG Options">
-              <span class="manage-icon">⚙️</span>
-            </button>
-          </div>
+          <label class="form-label is-required">SDG</label>
           <app-searchable-dropdown [options]="sdgs" [isMulti]="true" [maxSelections]="3" formControlName="sdgs"></app-searchable-dropdown>
+          <app-note text="Min 1, Max 3"></app-note>
           <app-validation-message [control]="projectDetails.get('sdgs')"></app-validation-message>
         </div>
       </div>
@@ -224,11 +208,9 @@
           <app-validation-message [control]="projectDetails.get('executiveSummary')"></app-validation-message>
         </div>
         <div class="form-field">
-          <div class="label-with-note">
-            <label class="form-label is-required">Keywords</label>
-            <app-note text="Maximum 5 keywords, separated by commas" [isTooltip]="true"></app-note>
-          </div>
+          <label class="form-label is-required">Keywords</label>
           <textarea class="input--textarea" formControlName="keywords" [maxlength]="200"></textarea>
+          <app-note text="Maximum 5 keywords, separated by commas"></app-note>
           <div class="keyword-counter" [class.keyword-counter--over]="keywordCount > 5">{{ keywordCount }} / 5 keywords
           </div>
           <app-validation-message [control]="projectDetails.get('keywords')"></app-validation-message>
@@ -448,25 +430,24 @@
     <app-custom-subheader title="Grant Utilisation & Benefits"></app-custom-subheader>
     <div class="card__content section-fields">
       <p class="form-hint">How will this grant benefit Asia Pacific University of Technology & Innovation, students and wider stakeholders?</p>
-      <div class="row row--3">
+      <div class="row row--3 benefits-row">
         <div class="form-field">
-        
-          <label class="form-label is-required">Asia Pacific University of Technology & Innovation Benefit</label>
-          <textarea class="input--textarea" formControlName="apu">  [maxlength]="300"> </textarea>
+          <label class="form-label is-required">Asia Pacific University of Technology &amp; Innovation Benefit</label>
+          <textarea class="input--textarea input--textarea-benefits" formControlName="apu" [maxlength]="300"></textarea>
           <app-character-counter [current]="projectDetails.get('benefits.apu')?.value?.length ?? 0"
             [max]="300"></app-character-counter>
           <app-validation-message [control]="projectDetails.get('benefits.apu')"></app-validation-message>
         </div>
         <div class="form-field">
           <label class="form-label is-required">Students Benefit</label>
-          <textarea class="input--textarea" formControlName="students" [maxlength]="300"></textarea>
+          <textarea class="input--textarea input--textarea-benefits" formControlName="students" [maxlength]="300"></textarea>
           <app-character-counter [current]="projectDetails.get('benefits.students')?.value?.length ?? 0"
             [max]="300"></app-character-counter>
           <app-validation-message [control]="projectDetails.get('benefits.students')"></app-validation-message>
         </div>
         <div class="form-field">
           <label class="form-label is-required">Stakeholders Benefit</label>
-          <textarea class="input--textarea" formControlName="stakeholders" [maxlength]="300"></textarea>
+          <textarea class="input--textarea input--textarea-benefits" formControlName="stakeholders" [maxlength]="300"></textarea>
           <app-character-counter [current]="projectDetails.get('benefits.stakeholders')?.value?.length ?? 0"
             [max]="300"></app-character-counter>
           <app-validation-message [control]="projectDetails.get('benefits.stakeholders')"></app-validation-message>

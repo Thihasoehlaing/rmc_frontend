@@ -185,12 +185,6 @@
       <!-- Select Location -->
       <div class="form-field">
         <label class="form-label">Select Location</label>
-        @if (isExternalTravel) {
-          <app-note
-            text="!! Events held within the Klang Valley are not eligible for claims"
-            [isTooltip]="true"
-            class="note--below"></app-note>
-        }
         <div class="location-options">
           <!-- Overseas -->
           <label class="radio-wrapper">
@@ -283,15 +277,14 @@
       <!-- Staff Participation -->
       <div class="form-field">
         <label for="staffParticipation" class="form-label">Name of Asia Pacific University of Technology & Innovation Staff Participation</label>
-        <app-note
-          text="Maximum 20 Participants"
-          [isTooltip]="false"
-          class="note--below"></app-note>
         <app-searchable-dropdown
           id="staffParticipation"
           [options]="staffParticipationOptions"
           [isMulti]="true"
           formControlName="staffParticipation"></app-searchable-dropdown>
+        <app-note
+          text="Maximum 20 Participants"
+          [isTooltip]="false"></app-note>
         <app-validation-message
           [control]="travelAuthForm.get('staffParticipation')"></app-validation-message>
       </div>
@@ -415,7 +408,6 @@
         <div class="row--2">
           <div class="form-field">
             <label for="exchangeRate" class="form-label is-required">Exchange Rate</label>
-            <app-note text="For Malaysia Ringgit/MYR, please put 1 as the exchange rate." [isTooltip]="false"></app-note>
             <input
               id="exchangeRate"
               type="text"
@@ -425,6 +417,7 @@
               formControlName="exchangeRate"
               (keydown)="restrictDecimalInput($event, 'exchangeRate')"
               (input)="onDecimalFieldInput('exchangeRate')">
+            <app-note text="For Malaysia Ringgit/MYR, please put 1 as the exchange rate." [isTooltip]="false"></app-note>
             <app-validation-message
               [control]="expenseForm.get('exchangeRate')"></app-validation-message>
           </div>

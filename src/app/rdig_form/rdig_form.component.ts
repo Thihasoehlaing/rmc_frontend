@@ -65,8 +65,13 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
   /** True while the batch status is still being fetched. */
   readonly isBatchLoading = computed(() => this.activeBatch() === undefined);
 
+  /** DEV ONLY - bypasses active-batch checks so the form can be opened for testing. */
+  batchValidationDisabled = signal(false);
+
   /** Existing applications remain readable even when no submission batch is active. */
-  readonly canShowForm = computed(() => !this.noBatchError() || !!this.loadedAppId());
+  readonly canShowForm = computed(() =>
+    !this.noBatchError() || !!this.loadedAppId() || this.batchValidationDisabled()
+  );
 
   /** Days remaining until active batch endDate. Returns -999 when no batch loaded. */
   readonly deadlineDaysLeft = computed((): number => {
@@ -581,6 +586,11 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
     this.validationDisabled.update(v => !v);
   }
 
+  /** DEV ONLY - toggles active-batch validation for testing access and submission. */
+  toggleBatchValidation(): void {
+    this.batchValidationDisabled.update(v => !v);
+  }
+
   // ── Score computations ─────────────────────────────────────────
 
   /** Helper to read a number score from a form path */
@@ -965,12 +975,13 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
 
     // ── Batch constraint check ───────────────────────────────────────────────
     const batch = this.activeBatch();
-    if (!batch) {
+    const bypassBatchValidation = this.batchValidationDisabled();
+    if (!batch && !bypassBatchValidation) {
       alert('No active batch exists. Submission is not allowed until RMC opens a new batch.');
       return;
     }
     const today = new Date().toISOString().substring(0, 10);
-    if (today < batch.startDate || today > batch.endDate) {
+    if (batch && !bypassBatchValidation && (today < batch.startDate || today > batch.endDate)) {
       this.submissionErrorMessage.set(`Submission is only allowed between ${batch.startDate} and ${batch.endDate}. The current batch window has expired or has not started yet.`);
       this.submissionState.set('ERROR');
       return;
@@ -986,8 +997,8 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
     }
     this.submissionState.set('LOADING');
 
-    // Auto-assign the active batch id (server-side of truth — never client-selected).
-    this.rdigForm.get('metadata.batch')?.setValue(batch.id, { emitEvent: false });
+    // Auto-assign the active batch id unless dev batch validation is disabled.
+    this.rdigForm.get('metadata.batch')?.setValue(batch?.id ?? null, { emitEvent: false });
 
     // Stamp applicant's userId on first submit so downstream reviewers can target notifications back to them.
     if (!this.rdigForm.get('metadata.applicantUserId')?.value) {

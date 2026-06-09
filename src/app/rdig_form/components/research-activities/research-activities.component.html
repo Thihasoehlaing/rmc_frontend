@@ -40,8 +40,7 @@
                   <tr [formGroupName]="i">
                     <td class="col-no text-muted">{{ i + 1 }}</td>
                     <td>
-                      <input type="text" class="input--text" formControlName="name"
-                        placeholder="Describe the activity...">
+                      <input type="text" class="input--text" formControlName="name">
                       <app-validation-message [control]="activity.get('name')"></app-validation-message>
                     </td>
                     <td class="col-month">
@@ -150,3 +149,4 @@
   }
 
 </section>
+

@@ -26,7 +26,7 @@
 
   <!-- ?? V11000: Student Allowances ?????????????????????????? -->
   <div class="card">
-    <app-custom-subheader title="V11000 - Student Allowances (Graduate Research Assistants)"></app-custom-subheader>
+    <app-custom-subheader title="V11000 - Student Allowances"></app-custom-subheader>
     <div class="card__content">
       <div class="category-header">
         <app-action-button type="primary" label="Add Item" icon="add"
@@ -266,6 +266,21 @@
     </div>
   }
 
+  <div class="card">
+    <div class="card__content section-fields">
+      <div class="form-field">
+        <label class="form-label">Any other remarks for budget requested (Optional)</label>
+        <textarea
+          class="input--textarea"
+          formControlName="otherRemarks"
+          [maxlength]="300"
+          [readonly]="workflow.isFormReadOnly()"></textarea>
+        <app-character-counter [current]="otherRemarksControl.value?.length ?? 0" [max]="300"></app-character-counter>
+        <app-validation-message [control]="otherRemarksControl"></app-validation-message>
+      </div>
+    </div>
+  </div>
+
 </section>
 
 @if (addItemModalOpen) {
@@ -280,11 +295,10 @@
 
       <div class="form-field">
         <label class="form-label is-required">Description of Expense</label>
-        <input
-          type="text"
-          class="input--text"
+        <textarea
+          class="input--textarea"
           formControlName="description"
-          [placeholder]="activeCategoryHint">
+          [maxlength]="200"></textarea>
         <app-character-counter [current]="descriptionControl.value?.length ?? 0" [max]="200"></app-character-counter>
         <app-validation-message [control]="descriptionControl"></app-validation-message>
       </div>
@@ -298,8 +312,7 @@
             min="0.01"
             step="0.01"
             class="input--text"
-            formControlName="amount"
-            placeholder="0.00">
+            formControlName="amount">
           <app-validation-message [control]="amountControl"></app-validation-message>
         </div>
         <div class="form-field">
@@ -307,8 +320,7 @@
           <textarea
             class="input--textarea"
             formControlName="remarks"
-            [maxlength]="300"
-            placeholder="Justification or short details"></textarea>
+            [maxlength]="300"></textarea>
           <app-character-counter [current]="remarksControl.value?.length ?? 0" [max]="300"></app-character-counter>
           <app-validation-message [control]="remarksControl"></app-validation-message>
         </div>

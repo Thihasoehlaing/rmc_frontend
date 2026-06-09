@@ -144,6 +144,7 @@ import { AuthService } from '../../../services/auth.service';
           [currentStep]="currentStep()"
           [steps]="wizardSteps"
           [stepStatuses]="stepStatuses()"
+          [submitAttempted]="submitAttempted()"
           (stepClick)="goToStep($event)">
         </app-step-indicator>
 
@@ -408,6 +409,7 @@ export class ConferenceApplication implements OnInit {
   private auth = inject(AuthService);
 
   currentStep = signal(1);
+  submitAttempted = signal(false);
   isSaving = signal(false);
   isSubmitting = signal(false);
   applicantDetailsForm: FormGroup;
@@ -422,7 +424,7 @@ export class ConferenceApplication implements OnInit {
     this.showVcComments() || this.showHrComments()
   );
 
-  visitedSteps = new Set<number>([1]);
+  checkedSteps = new Set<number>();
 
 
   wizardSteps: WizardStep[] = [
@@ -433,10 +435,10 @@ export class ConferenceApplication implements OnInit {
   ];
 
   stepStatuses = signal<StepStatus[]>([
-    { visited: true, valid: false, missingFields: [] },
-    { visited: false, valid: false, missingFields: [] },
-    { visited: false, valid: false, missingFields: [] },
-    { visited: false, valid: false, missingFields: [] }
+    { visited: false, valid: false, missingFields: ['Complete Conference Details'] },
+    { visited: false, valid: false, missingFields: ['Complete Author Details'] },
+    { visited: false, valid: false, missingFields: ['Upload required documents'] },
+    { visited: false, valid: false, missingFields: ['Complete Declaration'] }
   ]);
 
   constructor(private fb: FormBuilder) {
@@ -509,24 +511,26 @@ export class ConferenceApplication implements OnInit {
   }
 
   goToStep(step: number) {
+    if (step !== this.currentStep()) {
+      this.markStepChecked(this.currentStep());
+    }
     this.currentStep.set(step);
-    this.markStepVisited(step);
   }
 
   nextStep() {
     if (this.currentStep() < this.wizardSteps.length) {
-      this.currentStep.update(step => step + 1);
-      this.markStepVisited(this.currentStep());
+      this.goToStep(this.currentStep() + 1);
     }
   }
 
   previousStep() {
     if (this.currentStep() > 1) {
-      this.currentStep.update(step => step - 1);
+      this.goToStep(this.currentStep() - 1);
     }
   }
 
-  private markStepVisited(step: number) {
+  private markStepChecked(step: number) {
+    this.checkedSteps.add(step);
     this.stepStatuses.update(statuses => {
       const updated = [...statuses];
       if (updated[step - 1]) {
@@ -543,6 +547,7 @@ export class ConferenceApplication implements OnInit {
 
   submitForm() {
     // TODO: Implement submit form functionality
+    this.submitAttempted.set(true);
     console.log('Submit form triggered');
   }
 }

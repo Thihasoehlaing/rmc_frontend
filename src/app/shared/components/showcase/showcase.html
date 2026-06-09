@@ -197,21 +197,21 @@
     <div class="radio-demo-row">
       <div class="form-field">
         <label class="form-label is-required">Application Type</label>
-        <div class="radio-group">
-          <label class="radio-option">
+          <div class="radio-field">
+            <label class="radio-field__option">
             <input type="radio" name="showcase-application-type" checked>
             <span>New Application</span>
           </label>
-          <label class="radio-option">
+            <label class="radio-field__option">
             <input type="radio" name="showcase-application-type">
             <span>Resubmission</span>
           </label>
-          <label class="radio-option">
+            <label class="radio-field__option">
             <input type="radio" name="showcase-application-type" disabled>
             <span>Disabled Option</span>
           </label>
-        </div>
-        <span class="form-hint">Use <code>.radio-group</code> and <code>.radio-option</code> for all native radio groups.</span>
+          </div>
+          <span class="form-hint">Use <code>.radio-field</code> and <code>.radio-field__option</code> for all native radio groups.</span>
       </div>
     </div>
 
@@ -236,11 +236,16 @@
           <td>Shared flex wrapper for radio options with responsive spacing.</td>
           <td><code>&lt;div class="radio-group"&gt;...&lt;/div&gt;</code></td>
         </tr>
-        <tr>
-          <td><code>.radio-option</code></td>
-          <td>Shared label style for native radio controls (checked, focus, disabled states).</td>
-          <td><code>&lt;label class="radio-option"&gt;&lt;input type="radio"&gt;&lt;span&gt;Label&lt;/span&gt;&lt;/label&gt;</code></td>
-        </tr>
+            <tr>
+              <td><code>.radio-field</code></td>
+              <td>Shared wrapper for native radio inputs</td>
+              <td><code>&lt;div class="radio-field"&gt;...&lt;/div&gt;</code></td>
+            </tr>
+            <tr>
+              <td><code>.radio-field__option</code></td>
+              <td>Styled radio option (label + input)</td>
+              <td><code>&lt;label class="radio-field__option"&gt;&lt;input type="radio"&gt;&lt;span&gt;Label&lt;/span&gt;&lt;/label&gt;</code></td>
+            </tr>
       </tbody>
     </table>
 

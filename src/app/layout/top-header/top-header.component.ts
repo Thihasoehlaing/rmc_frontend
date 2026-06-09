@@ -161,11 +161,21 @@ export class TopHeaderComponent implements OnInit, OnDestroy {
 
     // ── Breadcrumbs ──────────────────────────────────────────────
     private updateBreadcrumbs(url: string) {
-        const segments = url.split('/').filter(Boolean);
+        const cleanUrl = url.split('?')[0].split('#')[0];
+        const applicationLabel = this.getApplicationBreadcrumbLabel(cleanUrl);
         const crumbs: { label: string; route: string }[] = [
             { label: 'RMC', route: '/dashboard' }
         ];
 
+        if (applicationLabel) {
+            this.breadcrumbs.set([
+                ...crumbs,
+                { label: applicationLabel, route: cleanUrl }
+            ]);
+            return;
+        }
+
+        const segments = cleanUrl.split('/').filter(Boolean);
         let path = '';
         for (const seg of segments) {
             path += '/' + seg;
@@ -179,6 +189,20 @@ export class TopHeaderComponent implements OnInit, OnDestroy {
         return segment
             .replace(/-/g, ' ')
             .replace(/\b\w/g, c => c.toUpperCase());
+    }
+
+    private getApplicationBreadcrumbLabel(path: string): string | null {
+        const applicationRoutes: Record<string, string> = {
+            '/rdig': 'RDIG Application',
+            '/conference/application': 'Conference Application',
+            '/journal/application': 'Journal Publication',
+            '/ragra': 'RA/GRA Application',
+            '/travel': 'Travel Authorization Application',
+            '/partnership/application': 'Partnership Application',
+            '/proposal': 'Proposal Application',
+        };
+
+        return applicationRoutes[path] ?? null;
     }
 
     // ── Notifications ────────────────────────────────────────────

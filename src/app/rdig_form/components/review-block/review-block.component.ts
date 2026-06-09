@@ -33,7 +33,6 @@ import { syncRequiredValidator } from '../../../shared/utils/form.utils';
               [formControl]="commentControl"
               [maxlength]="maxChars"
               [readonly]="readonly"
-              [attr.placeholder]="readonly ? null : 'Enter comment...'"
             ></textarea>
             <app-character-counter
               [current]="commentControl.value?.length ?? 0"
@@ -176,3 +175,4 @@ export class ReviewBlockComponent implements OnChanges {
     }
   }
 }
+

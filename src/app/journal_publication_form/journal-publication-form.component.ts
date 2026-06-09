@@ -46,10 +46,10 @@ export class JournalPublicationFormComponent {
   ];
 
   stepStatuses: StepStatus[] = [
-    { visited: true, valid: true, missingFields: [] },
-    { visited: false, valid: false, missingFields: [] },
-    { visited: false, valid: false, missingFields: [] },
-    { visited: false, valid: false, missingFields: [] }
+    { visited: false, valid: true, missingFields: [] },
+    { visited: false, valid: false, missingFields: ['Complete Authors Details'] },
+    { visited: false, valid: false, missingFields: ['Complete Supporting Documents'] },
+    { visited: false, valid: false, missingFields: ['Complete Declaration'] }
   ];
 
   // Track form valid states
@@ -116,21 +116,17 @@ export class JournalPublicationFormComponent {
   }
 
   onStepClick(stepIndex: number) {
-    if (stepIndex > this.currentStep) {
-      this.validateCurrentStep(true);
-    } else {
-      this.validateCurrentStep(false);
-    }
+    if (stepIndex === this.currentStep) return;
 
-    // Mark current step as visited
+    this.validateCurrentStep(false);
     this.stepStatuses[this.currentStep - 1] = {
       visited: true,
-      valid: this.formValid[this.currentStep] || false, // Yellow if invalid, Green if valid
-      missingFields: []
+      valid: this.formValid[this.currentStep] || false,
+      missingFields: this.formValid[this.currentStep] ? [] : [this.getStepMissingLabel(this.currentStep)]
     };
 
-    // Move to the new step
     this.currentStep = stepIndex;
+    this.stepStatuses = [...this.stepStatuses];
   }
 
   // Call this from child components when their form changes
@@ -138,10 +134,13 @@ export class JournalPublicationFormComponent {
     this.formValid[stepNumber] = isValid;
     if (this.stepStatuses[stepNumber - 1]) {
       this.stepStatuses[stepNumber - 1].valid = isValid;
-      // Mark as visited instantly as well, so it updates to green if valid
-      this.stepStatuses[stepNumber - 1].visited = true;
+      this.stepStatuses[stepNumber - 1].missingFields = isValid ? [] : [this.getStepMissingLabel(stepNumber)];
       this.stepStatuses = [...this.stepStatuses]; // Trigger change detection
     }
+  }
+
+  private getStepMissingLabel(stepNumber: number): string {
+    return `Complete ${this.steps[stepNumber - 1]?.label ?? `Step ${stepNumber}`}`;
   }
 
   get totalSteps(): number {

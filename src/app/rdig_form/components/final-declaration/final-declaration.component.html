@@ -16,8 +16,9 @@
     </div>
     <div class="card__content section-fields">
       <div class="form-field">
-        <label class="form-label is-required">Novelty Justification</label>
-        <p class="form-hint">Please justify the novelty and originality of the proposed research in comparison to existing literature or products.</p>
+        <label class="form-label is-required">
+          <span>Please justify the novelty of your project</span>
+        </label>
         <textarea class="input--textarea input--textarea-tall" formControlName="noveltyJustification" [maxlength]="1000"></textarea>
         <app-character-counter [current]="declarationForm.get('noveltyJustification')?.value?.length ?? 0" [max]="1000"></app-character-counter>
         <app-validation-message [control]="declarationForm.get('noveltyJustification')"></app-validation-message>
@@ -31,14 +32,7 @@
       <span class="material-icons">gavel</span>
       Declaration and Agreement
     </h4>
-    <p>By submitting this application, I/We hereby declare that:</p>
-    <ul class="declaration-list">
-      <li>The information provided in this application is true and correct to the best of my/our knowledge.</li>
-      <li>This research proposal has not been submitted elsewhere for any other grant or award.</li>
-      <li>I/We agree to abide by the rules and regulations set forth by the Asia Pacific University (APU) Research Management Centre (RMC).</li>
-      <li>I/We understand that the RMC reserves the right to reject this application if any information provided is found to be false or misleading.</li>
-    </ul>
-    <p>I/We also agree to submit a progress report every six (6) months and a final report upon completion of the research project, as per the grant requirements.</p>
+    <p>I undertake that the information I have provided herein is complete, true and accurate. I agree to carry out the Project in accordance with the terms and conditions as stipulated in the APU Research Development Internal Grant Application. My involvement in this Project does not conflict with my University duties and I have no other conflict of interest to declare.</p>
   </div>
 
   <!-- ── Agreement Checkbox ──────────────────────────────────── -->

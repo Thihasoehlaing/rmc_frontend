@@ -155,6 +155,11 @@ server.get('/applications', (req, res) => {
     return res.json(mine)
   }
 
+  if (view === 'admin') {
+    if (!roles.includes('Admin')) return res.json([])
+    return res.json(apps.filter(a => !a.isDraft))
+  }
+
   // ── "history" view: acted on by the user but no longer their active task ─
   //
   // Visibility rules:
@@ -191,9 +196,6 @@ server.get('/applications', (req, res) => {
   }
 
   // ── Admin: unrestricted inbox (drafts excluded) ──────────────────────────
-  if (roles.includes('Admin')) {
-    return res.json(apps.filter(a => !a.isDraft))
-  }
 
   // ── Default "inbox" view: apps currently awaiting the user's action ───────
   // Drafts (isDraft === true) have nextRoles: [] so they never surface here,
@@ -281,3 +283,4 @@ server.use(router)
 server.listen(3000, () => {
   console.log('JSON Server running at http://localhost:3000  (batch-based filtering + date enforcement active)')
 })
+

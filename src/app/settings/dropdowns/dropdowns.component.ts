@@ -456,6 +456,10 @@ export class DropdownsComponent implements OnInit {
   }
 
   onDeleteSelectedClick(): void {
+    if (this.isRegionMetadataCategory()) {
+      return;
+    }
+
     if (this.selectedOptionsCount() === 0) {
       this.showDeleteSelectionHint();
       return;
@@ -474,6 +478,10 @@ export class DropdownsComponent implements OnInit {
   }
 
   deleteSelectedOptions(): void {
+    if (this.isRegionMetadataCategory()) {
+      return;
+    }
+
     const selectedIds = this.selectedOptionIds();
     if (selectedIds.size === 0) {
       this.showDeleteSelectionHint();
@@ -615,6 +623,10 @@ export class DropdownsComponent implements OnInit {
   }
 
   addOption() {
+    if (this.isRegionMetadataCategory()) {
+      return;
+    }
+
     this.editingOptionId.set(null);
     this.editingInitialPayload.set(null);
     this.newOptionValue.set('');

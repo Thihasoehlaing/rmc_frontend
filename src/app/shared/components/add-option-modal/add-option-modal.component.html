@@ -7,7 +7,12 @@
 
     <section class="dialog__body">
       <label class="form-label">{{ optionNameLabel }} *</label>
-      <input type="text" class="input--text" [(ngModel)]="name" placeholder="e.g. Applied Research" />
+      <input
+        type="text"
+        class="input--text"
+        [(ngModel)]="name"
+        [readonly]="nameReadonly"
+        placeholder="e.g. Applied Research" />
 
       <label class="form-label">Category</label>
       <div class="category-locked">{{ categoryLabel || 'Fixed' }} <span class="pill">Locked</span></div>
@@ -30,7 +35,12 @@
 
         <div class="form-field form-field--full">
           <label class="form-label">Description *</label>
-          <textarea class="input--textarea" [(ngModel)]="description" placeholder="Enter description" rows="3"></textarea>
+          <textarea
+            class="input--textarea"
+            [(ngModel)]="description"
+            [readonly]="descriptionReadonly"
+            placeholder="Enter description"
+            rows="3"></textarea>
         </div>
       </div>
 

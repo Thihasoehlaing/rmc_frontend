@@ -24,7 +24,7 @@
 
             </div>
 
-            
+
 
             <div class="card__stats">
               <div class="card__description">
@@ -109,33 +109,37 @@
 
               <div class="toolbar-actions">
                 <div class="bulk-actions">
-                  <div class="delete-action">
-                    <button
-                      type="button"
-                      class="btn-delete-selected"
-                      [class.is-disabled]="selectedOptionsCount() === 0"
-                      [attr.aria-disabled]="selectedOptionsCount() === 0"
-                      (mouseenter)="showDeleteSelectionHint()"
-                      (focus)="showDeleteSelectionHint()"
-                      (click)="onDeleteSelectedClick()">
-                      <span class="material-icons">delete</span>
-                      Delete Selected
-                    </button>
-                    @if (deleteSelectionHint()) {
-                      <div class="delete-action__hint" role="status">
-                        Select an option first to delete.
-                      </div>
-                    }
-                  </div>
+                  @if (!isRegionMetadataCategory()) {
+                    <div class="delete-action">
+                      <button
+                        type="button"
+                        class="btn-delete-selected"
+                        [class.is-disabled]="selectedOptionsCount() === 0"
+                        [attr.aria-disabled]="selectedOptionsCount() === 0"
+                        (mouseenter)="showDeleteSelectionHint()"
+                        (focus)="showDeleteSelectionHint()"
+                        (click)="onDeleteSelectedClick()">
+                        <span class="material-icons">delete</span>
+                        Delete Selected
+                      </button>
+                      @if (deleteSelectionHint()) {
+                        <div class="delete-action__hint" role="status">
+                          Select an option first to delete.
+                        </div>
+                      }
+                    </div>
+                  }
                 </div>
 
-                <app-action-button
-                  type="primary"
-                  label="Add Option"
-                  icon="add"
-                  [disabled]="!selectedCategory()"
-                  (clicked)="addOption()">
-                </app-action-button>
+                @if (!isRegionMetadataCategory()) {
+                  <app-action-button
+                    type="primary"
+                    label="Add Option"
+                    icon="add"
+                    [disabled]="!selectedCategory()"
+                    (clicked)="addOption()">
+                  </app-action-button>
+                }
               </div>
             </div>
 
@@ -259,6 +263,8 @@
             [primaryActionLabel]="editingOptionId() ? 'Save' : 'Add Option'"
             [showAccountNumberMetadata]="isAccountCodeMetadataCategory()"
             [showRegionMetadata]="isRegionMetadataCategory()"
+            [nameReadonly]="isRegionMetadataCategory() && !!editingOptionId()"
+            [descriptionReadonly]="isRegionMetadataCategory() && !!editingOptionId()"
             (close)="closeModal()"
             (save)="onModalSave($event)">
           </app-add-option-modal>

@@ -75,7 +75,7 @@
     .step__bubble {
       background: var(--color-success);
       border-color: var(--color-success);
-      color: #fff;
+      color: var(--color-text-inverse);
       box-shadow: 0 0 0 3px var(--color-success-light);
     }
     .step__label { color: var(--color-success-dark); }
@@ -84,36 +84,36 @@
   // ── Warning (visited but incomplete, before submit attempt) ───
   &--warning {
     .step__bubble {
-      background: var(--color-warning, #f59e0b);
-      border-color: var(--color-warning, #f59e0b);
-      color: #fff;
-      box-shadow: 0 0 0 3px var(--color-warning-light, #fef3c7);
+      background: var(--color-warning);
+      border-color: var(--color-warning);
+      color: var(--color-text-inverse);
+      box-shadow: 0 0 0 var(--form-space-1) var(--color-warning-light);
     }
     .step__label {
-      color: var(--color-warning-dark, #92400e);
+      color: var(--color-warning-dark);
       font-weight: var(--fw-medium);
     }
 
     .step-tooltip__accent {
-      background: var(--color-warning, #f59e0b);
+      background: var(--color-warning);
     }
   }
 
   // ── Error (submit attempted but still incomplete) ─────────────
   &--error {
     .step__bubble {
-      background: var(--color-error, #dc3545);
-      border-color: var(--color-error, #dc3545);
-      color: #fff;
-      box-shadow: 0 0 0 3px var(--color-error-light, #fee2e2);
+      background: var(--color-error);
+      border-color: var(--color-error);
+      color: var(--color-text-inverse);
+      box-shadow: 0 0 0 var(--form-space-1) var(--color-error-light);
     }
     .step__label {
-      color: var(--color-error, #dc3545);
+      color: var(--color-error);
       font-weight: var(--fw-bold);
     }
 
     .step-tooltip__accent {
-      background: var(--color-error, #dc3545);
+      background: var(--color-error);
     }
   }
 
@@ -122,7 +122,7 @@
     .step__bubble {
       background: var(--color-primary);
       border-color: var(--color-primary);
-      color: #fff;
+      color: var(--color-text-inverse);
       box-shadow: 0 0 0 3px var(--color-primary-light);
     }
     .step__label {

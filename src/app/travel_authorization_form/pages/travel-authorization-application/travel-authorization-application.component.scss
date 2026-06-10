@@ -1,12 +1,9 @@
 @use '../../../../assets/styles/index' as *;
 
 .travel-authorization-form {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-6);
-  padding: var(--space-6);
-  max-width: 1200px;
-  margin: 0 auto;
+  gap: var(--form-section-gap);
+  padding: var(--page-padding-compact) 0;
+  max-width: var(--page-max-width);
 }
 
 .page-header {
@@ -132,13 +129,11 @@
 }
 
 .form-container {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-6);
-  background: white;
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
-  padding: var(--space-6);
+  gap: var(--form-section-gap);
+  background: var(--color-background-surface);
+  border: var(--control-border-width) solid var(--color-border-default);
+  border-radius: var(--radius-xl);
+  padding: var(--form-space-6);
 }
 
 // Note: .form-field, .form-label, .input--text, .row--2 are global utility classes from _forms.scss
@@ -272,8 +267,9 @@
 }
 
 .form-hint {
-  font-size: var(--fs-xs);
-  color: var(--color-text-muted);
+  font-size: var(--font-size-caption);
+  line-height: var(--line-height-caption);
+  color: var(--color-text-secondary);
 }
 
 /* Ensure notes placed below labels stack correctly */
@@ -375,54 +371,6 @@
   gap: var(--space-2);
   align-items: center;
   justify-content: center;
-}
-
-.btn-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: var(--space-8);
-  height: var(--space-8);
-  padding: 0;
-  border: none;
-  border-radius: var(--radius-sm);
-  background: transparent;
-  cursor: pointer;
-  transition: all var(--transition-fast);
-  color: var(--color-text);
-
-  .material-icons {
-    font-size: var(--fs-md); // no token: material icon pixel size
-  }
-
-  &:hover {
-    background: var(--color-surface-hover);
-  }
-
-  &--edit {
-    color: var(--color-primary);
-
-    &:hover {
-      background: rgba(var(--color-primary-rgb), 0.1);
-    }
-  }
-
-  &--delete {
-    color: var(--color-error);
-
-    &:hover {
-      background: rgba(var(--color-error-rgb), 0.1);
-    }
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-
-    &:hover {
-      background: transparent;
-    }
-  }
 }
 
 .form-actions-footer {

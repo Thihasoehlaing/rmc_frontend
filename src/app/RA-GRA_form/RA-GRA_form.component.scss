@@ -17,35 +17,6 @@
   }
 }
 
-.form-header {
-  background: var(--color-surface);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-sm);
-  padding: var(--space-5) var(--space-6) 0;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-
-  app-form-main-title {
-    ::ng-deep .form-main-title-wrapper {
-      border-bottom: none;
-      margin-bottom: var(--space-2);
-      padding-bottom: var(--space-2);
-    }
-  }
-
-  app-step-indicator {
-    ::ng-deep .step-indicator {
-      border: none;
-      border-top: 1px solid var(--border-default);
-      border-radius: 0 0 var(--radius-xl) var(--radius-xl);
-      background: transparent;
-      padding: var(--space-4) var(--space-4) var(--space-5);
-    }
-  }
-}
-
 .form-container {
   background: var(--color-surface);
   border: 1px solid var(--border-default);
@@ -101,8 +72,8 @@
 }
 
 .radio-group--vertical {
-  flex-direction: column !important;
-  gap: var(--space-2) !important;
+  flex-direction: column;
+  gap: var(--space-2);
 }
 
 .label-with-note {

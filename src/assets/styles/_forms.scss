@@ -6,10 +6,10 @@
 .input--textarea {
   width: 100%;
   height: var(--input-height-sm);
-  font-family: var(--font-family-system);
-  font-size: var(--fs-base);
-  line-height: var(--lh-normal);
-  color: var(--color-label);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-control);
+  color: var(--color-text-primary);
   background: var(--input-bg-editable);
   padding: var(--size-input-padding);
   border: 1px solid var(--input-border-default);
@@ -72,7 +72,8 @@
 }
 
 .input--textarea {
-  min-height: 120px;
+  min-height: var(--control-min-height-multiline);
+  height: auto;
   resize: vertical;
 }
 
@@ -88,23 +89,24 @@
 .form-field {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: var(--form-label-gap);
+  min-width: 0;
 }
 
 .form-label {
-  font-family: var(--font-family-system);
-  color: var(--color-label);
-  font-weight: var(--fw-semibold);
-  font-size: var(--fs-sm);
+  font-family: var(--font-family-base);
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-medium);
+  font-size: var(--font-size-body);
   display: inline-flex;
   align-items: center;
-  line-height: 1.5;
+  line-height: var(--line-height-control);
 
   &.is-required::after {
     content: '*';
     color: var(--color-error);
-    margin-left: 0.25rem;
-    font-size: 1.1em;
+    margin-left: var(--form-space-1);
+    font-size: inherit;
   }
 }
 
@@ -191,23 +193,26 @@
 
 // 3. Feedback & Indicators
 .form-hint {
-  font-size: var(--fs-xs);
+  font-size: var(--font-size-caption);
+  line-height: var(--line-height-caption);
   color: var(--color-text-secondary);
-  margin-top: var(--space-1);
+  margin: var(--form-message-gap) 0 0;
 }
 
 .form-error-msg {
-  font-size: var(--fs-xs);
+  font-size: var(--font-size-caption);
+  line-height: var(--line-height-caption);
   color: var(--color-error);
   font-weight: var(--fw-medium);
-  margin-top: var(--space-1);
+  margin: var(--form-message-gap) 0 0;
   display: flex;
   align-items: center;
   gap: var(--space-1);
 }
 
 .form-counter {
-  font-size: var(--fs-xs);
+  font-size: var(--font-size-caption);
+  line-height: var(--line-height-caption);
   color: var(--color-letter-counter);
   text-align: right;
 }
@@ -217,11 +222,13 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: var(--input-height-sm);
-  padding: var(--size-input-padding);
-  border-radius: var(--radius-md);
-  font-weight: var(--fw-semibold);
-  font-size: var(--fs-base);
+  min-height: var(--button-height-standard);
+  height: var(--button-height-standard);
+  padding: 0 var(--form-space-4);
+  border-radius: var(--control-radius);
+  font-weight: var(--font-weight-medium);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-control);
   cursor: pointer;
   transition: all var(--transition-fast) var(--ease-default);
   border: 1px solid transparent;
@@ -256,11 +263,21 @@
 }
 
 .btn-secondary {
-  background-color: var(--button-bg-secondary);
-  color: var(--button-color-secondary);
+  background-color: var(--color-background-surface);
+  color: var(--color-primary);
+  border-color: var(--color-primary);
 
   &:hover:not(:disabled) {
-    background-color: var(--color-secondary-hover);
+    background-color: var(--color-primary-subtle);
+  }
+}
+
+.btn-danger {
+  background-color: var(--color-error);
+  color: var(--color-text-inverse);
+
+  &:hover:not(:disabled) {
+    background-color: var(--color-error-dark);
   }
 }
 
@@ -272,7 +289,8 @@
   align-items: center;
   justify-content: center;
   gap: var(--space-2);
-  min-height: 40px;
+  min-height: var(--button-height-standard);
+  height: var(--button-height-standard);
   padding: 0 var(--space-5);
   border-radius: var(--radius-full);
   border: 1px solid var(--color-primary);
@@ -304,34 +322,34 @@
 
 .btn-primary-pill {
   background: var(--color-primary);
-  color: #fff;
+  color: var(--color-text-inverse);
 
   &:hover:not(:disabled) {
-    background: #fff;
+    background: var(--color-background-surface);
     color: var(--color-primary);
     border-color: var(--color-primary);
   }
 }
 
 .btn-secondary-pill {
-  background: #fff;
+  background: var(--color-background-surface);
   color: var(--color-primary);
 
   &:hover:not(:disabled) {
     background: var(--color-primary);
-    color: #fff;
+    color: var(--color-text-inverse);
     border-color: var(--color-primary);
   }
 }
 
 .btn-danger-pill {
-  background: #fff;
+  background: var(--color-background-surface);
   color: var(--color-error);
   border: 1px solid var(--color-error);
 
   &:hover:not(:disabled) {
     background: var(--color-error);
-    color: #fff;
+    color: var(--color-text-inverse);
     border-color: var(--color-error);
   }
 }
@@ -347,7 +365,7 @@
 
 .btn-warning {
   background-color: var(--color-warning);
-  color: #000;
+  color: var(--color-text-primary);
 
   &:hover:not(:disabled) {
     background-color: var(--color-warning-dark);
@@ -424,9 +442,9 @@
 
 // 6. Card System
 .card {
-  background: var(--color-surface);
+  background: var(--color-background-surface);
   border-radius: var(--radius-lg);
-  border: 1px solid var(--border-default);
+  border: var(--control-border-width) solid var(--color-border-default);
   // NOTE: overflow:hidden intentionally omitted — tooltips/dropdowns must escape
 
   &__header {
@@ -460,19 +478,315 @@
 .section-fields {
   display: flex;
   flex-direction: column;
-  gap: var(--space-5);
+  gap: var(--form-field-gap);
 }
 
 .row--2 {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--space-5);
+  gap: var(--form-field-gap);
 }
 
 .row--3 {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
-  gap: var(--space-5);
+  gap: var(--form-field-gap);
+}
+
+.form-content,
+.form-section-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--form-section-gap);
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--form-grid-columns), minmax(0, 1fr));
+  gap: var(--form-field-gap);
+}
+
+.form-grid__span-3 { grid-column: span 3; }
+.form-grid__span-4 { grid-column: span 4; }
+.form-grid__span-6 { grid-column: span 6; }
+.form-grid__span-12 { grid-column: 1 / -1; }
+
+.form-page-container {
+  width: 100%;
+  max-width: var(--page-max-width);
+  margin: 0 auto;
+  padding: var(--page-padding-desktop);
+  box-sizing: border-box;
+}
+
+.application-form-page {
+  width: 100%;
+  max-width: var(--page-max-width);
+  min-width: 0;
+  margin: 0 auto;
+  padding: var(--page-padding-compact) 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--form-section-gap);
+  box-sizing: border-box;
+  font-family: var(--font-family-base);
+  color: var(--color-text-primary);
+}
+
+.application-form-surface {
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: var(--form-space-6);
+  box-sizing: border-box;
+  background: var(--color-background-surface);
+  border: var(--control-border-width) solid var(--color-border-default);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+}
+
+.application-form-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--form-section-gap);
+  min-width: 0;
+}
+
+.application-form-page h2,
+.application-form-page h3,
+.application-form-section-title {
+  margin: 0;
+  color: var(--color-heading);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-section-title);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-section);
+}
+
+.application-form-page label,
+.application-form-page input,
+.application-form-page select,
+.application-form-page textarea,
+.application-form-page button {
+  font-family: var(--font-family-base);
+}
+
+.application-form-page .form-field {
+  gap: var(--form-label-gap);
+}
+
+.application-form-page .form-label,
+.application-form-page .detail-label {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-control);
+}
+
+.application-form-page .input--text,
+.application-form-page .input--select,
+.application-form-page input[type='date'],
+.application-form-page input[type='number'] {
+  width: 100%;
+  height: var(--control-height-compact);
+  min-height: var(--control-height-compact);
+  padding: var(--control-padding-block) var(--control-padding-inline);
+  color: var(--color-text-primary);
+  background-color: var(--input-bg-editable);
+  border: var(--control-border-width) solid var(--input-border-default);
+  border-radius: var(--control-radius);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-control);
+}
+
+.application-form-page .input--textarea,
+.application-form-page textarea {
+  width: 100%;
+  min-height: var(--control-min-height-multiline);
+  padding: var(--control-padding-block) var(--control-padding-inline);
+  color: var(--color-text-primary);
+  background-color: var(--input-bg-editable);
+  border: var(--control-border-width) solid var(--input-border-default);
+  border-radius: var(--control-radius);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-body);
+}
+
+.application-form-page .input--text:focus,
+.application-form-page .input--select:focus,
+.application-form-page .input--textarea:focus,
+.application-form-page input[type='date']:focus,
+.application-form-page input[type='number']:focus,
+.application-form-page textarea:focus {
+  border-color: var(--color-border-focus);
+  box-shadow: var(--input-shadow-focus);
+  outline: none;
+}
+
+.application-form-page .input--text:disabled,
+.application-form-page .input--select:disabled,
+.application-form-page .input--textarea:disabled,
+.application-form-page input:disabled,
+.application-form-page textarea:disabled {
+  color: var(--color-text-muted);
+  background-color: var(--color-background-disabled);
+  border-color: var(--color-border-default);
+}
+
+.application-form-page .form-hint,
+.application-form-page .form-error-msg,
+.application-form-page .error-message,
+.application-form-page .form-counter {
+  font-size: var(--font-size-caption);
+  line-height: var(--line-height-caption);
+}
+
+.application-form-page .btn {
+  min-height: var(--button-height-standard);
+  height: var(--button-height-standard);
+  padding: 0 var(--form-space-4);
+  border-radius: var(--control-radius);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-control);
+}
+
+.application-form-page .btn-icon {
+  width: var(--button-size-icon);
+  height: var(--button-size-icon);
+  border-radius: var(--control-radius);
+}
+
+.application-form-page .radio-option,
+.application-form-page .radio-label,
+.application-form-page .radio-wrapper,
+.application-form-page .radio-field__option {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--form-space-2);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-body);
+  cursor: pointer;
+}
+
+.application-form-page .radio-option input[type='radio'],
+.application-form-page .radio-label input[type='radio'],
+.application-form-page .radio-wrapper input[type='radio'],
+.application-form-page .radio-field__option input[type='radio'] {
+  appearance: auto;
+  -webkit-appearance: radio;
+  display: inline-block;
+  width: auto;
+  height: auto;
+  min-height: 0;
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 0;
+  border: initial;
+  border-radius: initial;
+  background: initial;
+  box-shadow: none;
+  opacity: 1;
+  visibility: visible;
+  accent-color: auto;
+}
+
+.application-form-page .radio-option input[type='radio']::before,
+.application-form-page .radio-label input[type='radio']::before,
+.application-form-page .radio-wrapper input[type='radio']::before,
+.application-form-page .radio-field__option input[type='radio']::before {
+  content: none;
+  display: none;
+}
+
+.application-form-page table {
+  width: 100%;
+  color: var(--color-text-primary);
+  background: var(--color-background-surface);
+  border-color: var(--color-border-default);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+}
+
+.application-form-page th {
+  color: var(--color-text-primary);
+  background: var(--color-surface-nested);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+}
+
+.application-form-page th,
+.application-form-page td {
+  padding: var(--form-space-3) var(--form-space-4);
+  border-color: var(--color-border-default);
+}
+
+.application-form-dev-tools {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--form-space-2) var(--form-space-3);
+  padding: var(--form-space-2);
+  background: var(--color-warning-light);
+  border: var(--control-border-width) solid var(--color-warning);
+  border-radius: var(--control-radius);
+  color: var(--color-warning-dark);
+  font-size: var(--font-size-caption);
+  line-height: var(--line-height-caption);
+}
+
+.application-form-dev-tools__label {
+  color: var(--color-warning-dark);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+}
+
+.application-form-dev-tools__control {
+  width: min(var(--size-dev-select), 100%);
+}
+
+.application-form-dev-tools__option {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--form-space-2);
+  color: var(--color-warning-dark);
+  font-size: var(--font-size-caption);
+  cursor: pointer;
+}
+
+.application-form-comment-panel {
+  margin: 0;
+}
+
+@media (max-width: 900px) {
+  .row--2,
+  .row--3 {
+    grid-template-columns: 1fr;
+  }
+
+  .form-grid > * {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 600px) {
+  .form-page-container {
+    padding: var(--page-padding-compact);
+  }
+
+  .application-form-page {
+    gap: var(--form-space-4);
+    padding: var(--form-space-3) 0;
+  }
+
+  .application-form-surface {
+    padding: var(--form-space-4);
+  }
 }
 
 // 8. Icon Button (table actions, modal close, inline controls)
@@ -480,8 +794,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: var(--input-height-sm);
-  height: var(--input-height-sm);
+  width: var(--button-size-icon);
+  height: var(--button-size-icon);
   flex-shrink: 0;
   border-radius: var(--radius-md);
   border: none;
@@ -569,14 +883,15 @@ input[type="number"] {
 //     (complements the .form-label.is-required::after pseudo-element approach)
 .asterisk {
   color: var(--color-error);
-  margin-left: 0.25rem;
-  font-size: 1.1em;
+  margin-left: var(--form-space-1);
+  font-size: inherit;
 }
 
 // 13. Inline error/validation message spans
 //     Ensures any <span class="error-message"> is consistently red
 .error-message {
-  font-size: var(--fs-xs);
+  font-size: var(--font-size-caption);
+  line-height: var(--line-height-caption);
   color: var(--color-error);
   font-weight: var(--fw-medium);
   margin-top: var(--space-1);

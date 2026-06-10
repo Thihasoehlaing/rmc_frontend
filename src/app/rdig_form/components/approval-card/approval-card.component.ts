@@ -64,8 +64,8 @@ const DEFAULT_META: OptionMeta = { icon: 'radio_button_unchecked', type: 'defaul
     .approval-card {
       padding: var(--space-5) var(--space-6);
       background: var(--color-surface);
-      border: 1px solid var(--border-default);
-      border-left: 4px solid var(--color-primary);
+      border: var(--control-border-width) solid var(--color-border-default);
+      border-left: var(--control-border-width-accent) solid var(--color-primary);
       border-radius: var(--radius-lg);
 
       &--readonly {
@@ -81,7 +81,7 @@ const DEFAULT_META: OptionMeta = { icon: 'radio_button_unchecked', type: 'defaul
       margin-bottom: var(--space-4);
 
       .material-icons {
-        font-size: 22px;
+        font-size: var(--size-icon-section);
         color: var(--color-primary);
       }
     }
@@ -95,8 +95,8 @@ const DEFAULT_META: OptionMeta = { icon: 'radio_button_unchecked', type: 'defaul
     }
 
     .badge--readonly {
-      font-size: 10px;
-      padding: 2px 8px;
+      font-size: var(--font-size-caption);
+      padding: var(--form-space-1) var(--form-space-2);
       border-radius: var(--radius-full);
       background: var(--color-surface-hover);
       color: var(--color-text-secondary);
@@ -124,34 +124,34 @@ const DEFAULT_META: OptionMeta = { icon: 'radio_button_unchecked', type: 'defaul
       align-items: center;
       gap: var(--space-2);
       padding: var(--space-4) var(--space-5);
-      min-width: 110px;
-      border: 2px solid var(--border-default);
+      min-width: var(--size-approval-option-min-width);
+      border: var(--control-border-width-strong) solid var(--color-border-default);
       border-radius: var(--radius-lg);
       background: var(--color-surface);
       color: var(--color-text-secondary);
       cursor: pointer;
       font-family: inherit;
       transition:
-        border-color 0.2s ease,
-        background  0.2s ease,
-        color       0.2s ease,
-        transform   0.15s ease,
-        box-shadow  0.2s ease;
+        border-color var(--transition-standard),
+        background var(--transition-standard),
+        color var(--transition-standard),
+        transform var(--transition-standard),
+        box-shadow var(--transition-standard);
 
       .material-icons {
-        font-size: 28px;
+        font-size: var(--size-icon-section);
         line-height: 1;
       }
 
       span:last-child {
-        font-size: var(--fs-xs, 11px);
+        font-size: var(--font-size-caption);
         font-weight: var(--fw-bold);
-        letter-spacing: 0.5px;
+        letter-spacing: var(--letter-spacing-emphasis);
         text-transform: uppercase;
       }
 
       &:hover:not(:disabled) {
-        transform: translateY(-2px);
+        transform: translateY(var(--motion-lift-small));
         border-color: var(--border-hover);
         box-shadow: var(--shadow-sm);
       }
@@ -162,8 +162,8 @@ const DEFAULT_META: OptionMeta = { icon: 'radio_button_unchecked', type: 'defaul
       }
 
       &:focus-visible {
-        outline: 2px solid var(--color-primary);
-        outline-offset: 2px;
+        outline: var(--control-focus-ring-width) solid var(--color-primary);
+        outline-offset: var(--form-space-1);
       }
 
       // Active states per decision type
@@ -171,21 +171,21 @@ const DEFAULT_META: OptionMeta = { icon: 'radio_button_unchecked', type: 'defaul
         border-color: var(--color-success);
         background: color-mix(in srgb, var(--color-success) 10%, var(--color-surface));
         color: var(--color-success-dark);
-        box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-success) 15%, transparent);
+        box-shadow: 0 0 0 var(--form-space-1) color-mix(in srgb, var(--color-success) 15%, transparent);
       }
 
       &.active[data-type="resubmit"] {
         border-color: var(--color-warning);
         background: color-mix(in srgb, var(--color-warning) 12%, var(--color-surface));
         color: var(--color-warning-dark);
-        box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-warning) 15%, transparent);
+        box-shadow: 0 0 0 var(--form-space-1) color-mix(in srgb, var(--color-warning) 15%, transparent);
       }
 
       &.active[data-type="reject"] {
         border-color: var(--color-error);
         background: color-mix(in srgb, var(--color-error) 10%, var(--color-surface));
         color: var(--color-error);
-        box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-error) 15%, transparent);
+        box-shadow: 0 0 0 var(--form-space-1) color-mix(in srgb, var(--color-error) 15%, transparent);
       }
     }
   `]

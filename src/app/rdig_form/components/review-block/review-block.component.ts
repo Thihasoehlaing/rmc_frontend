@@ -65,8 +65,8 @@ import { syncRequiredValidator } from '../../../shared/utils/form.utils';
     .review-block {
       padding: var(--space-4) var(--space-5);
       background: var(--color-surface-nested);
-      border: 1px solid var(--border-default);
-      border-left: 4px solid var(--color-primary);
+      border: var(--control-border-width) solid var(--color-border-default);
+      border-left: var(--control-border-width-accent) solid var(--color-primary);
       border-radius: var(--radius-md);
 
       &--readonly {
@@ -83,12 +83,12 @@ import { syncRequiredValidator } from '../../../shared/utils/form.utils';
       font-size: var(--fs-xs);
       font-weight: var(--fw-bold);
       text-transform: uppercase;
-      letter-spacing: 0.4px;
+      letter-spacing: var(--letter-spacing-label);
       color: var(--color-text-secondary);
     }
 
     .review-block__icon {
-      font-size: 16px;
+      font-size: var(--font-size-subtitle);
       color: var(--color-primary);
     }
 
@@ -97,8 +97,8 @@ import { syncRequiredValidator } from '../../../shared/utils/form.utils';
     }
 
     .badge--readonly {
-      font-size: 10px;
-      padding: 2px 8px;
+      font-size: var(--font-size-caption);
+      padding: var(--form-space-1) var(--form-space-2);
       border-radius: var(--radius-full);
       background: var(--color-surface-hover);
       color: var(--color-text-secondary);
@@ -124,7 +124,7 @@ import { syncRequiredValidator } from '../../../shared/utils/form.utils';
     }
 
     .review-block__score {
-      flex: 0 0 100px;
+      flex: 0 0 var(--size-review-score-width);
 
       .form-label {
         font-size: var(--fs-xs);

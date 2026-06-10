@@ -10,6 +10,12 @@ import { NotificationService } from '../services/notification.service';
 import { FormMainTitleComponent } from '../shared/components/form-main-title/form-main-title.component';
 import { StepIndicatorComponent, WizardStep, StepStatus } from '../shared/components/step-indicator/step-indicator.component';
 import { FormWizardNavComponent } from '../shared/components/form-wizard-nav/form-wizard-nav.component';
+import {
+  FormAlertComponent,
+  FormPageContainerComponent,
+  ValidationSummaryComponent,
+  ValidationSummaryItem,
+} from '../shared/components/form-standard/form-standard.components';
 
 // Subpages
 import { TeamDetailsComponent } from './components/team-details/team-details.component';
@@ -34,6 +40,9 @@ import { WorkflowState, WorkflowHistoryEntry } from '../interfaces/rdig-applicat
     FormMainTitleComponent,
     StepIndicatorComponent,
     FormWizardNavComponent,
+    FormAlertComponent,
+    FormPageContainerComponent,
+    ValidationSummaryComponent,
     TeamDetailsComponent,
     ProjectDetailsComponent,
     ResearchActivitiesComponent,
@@ -89,6 +98,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
   submissionErrorMessage = signal('');
   isSubmitting = computed(() => this.submissionState() !== 'IDLE');
   submitAttempted = signal(false);
+  showValidationSummary = signal(false);
   isViewOnly = computed(() => !this.workflow.currentUserCanAct());
 
   /**
@@ -311,6 +321,24 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
     });
   }
 
+  get validationSummaryItems(): ValidationSummaryItem[] {
+    if (!this.showValidationSummary()) return [];
+
+    return this.getStepStatuses().flatMap((status, index) =>
+      status.missingFields.map(label => ({ label, step: index + 1 }))
+    );
+  }
+
+  onValidationItemSelected(item: ValidationSummaryItem): void {
+    this.goToStep(item.step);
+    setTimeout(() => {
+      const firstInvalid = document.querySelector<HTMLElement>(
+        '.rdig-app form .ng-invalid:not(form):not(fieldset)'
+      );
+      firstInvalid?.focus();
+    });
+  }
+
   // ── Master FormGroup ───────────────────────────────────────────
   rdigForm: FormGroup;
 
@@ -334,8 +362,14 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
         department: [{ value: this.auth.currentUser()?.department ?? '', disabled: true }, Validators.required],
         researchCluster: [null, Validators.required],
         leaderRoles: ['', [Validators.required, Validators.maxLength(600)]],
-        internalResearchers: this.fb.array([], [Validators.minLength(1), Validators.maxLength(2)]),
-        externalResearchers: this.fb.array([], [Validators.minLength(2), Validators.maxLength(10)])
+        internalResearchers: this.fb.array(
+          [],
+          [Validators.required, Validators.minLength(1), Validators.maxLength(2)]
+        ),
+        externalResearchers: this.fb.array(
+          [],
+          [Validators.required, Validators.minLength(2), Validators.maxLength(10)]
+        )
       }),
 
       // 3. Subpage 2 — Project Details
@@ -960,6 +994,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
 
   onSubmit(): void {
     this.submitAttempted.set(true);
+    this.showValidationSummary.set(false);
     if (this.isViewOnly()) {
       this.submissionErrorMessage.set('This application is open in history view only and cannot be submitted.');
       this.submissionState.set('ERROR');
@@ -983,7 +1018,12 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
     if (!this.validationDisabled() && this.rdigForm.invalid) {
       this.rdigForm.markAllAsTouched();
       this.submissionErrorMessage.set('Your form has missing or invalid fields. Please review all steps.');
-      this.submissionState.set('ERROR');
+      this.showValidationSummary.set(true);
+      setTimeout(() => {
+        const summary = document.querySelector<HTMLElement>('.validation-summary');
+        summary?.focus();
+        summary?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
       return;
     }
     this.submissionState.set('LOADING');

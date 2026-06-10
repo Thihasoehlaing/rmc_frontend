@@ -1,3 +1,4 @@
+<app-form-page-container>
 <div class="rdig-app">
 
   <!-- ── CLOSED-WINDOW MODAL (Req 6) ───────────────────────────── -->
@@ -50,7 +51,7 @@
           </div>
           <h2 class="submission-msg">Something went wrong</h2>
           <p class="submission-submsg">{{ submissionErrorMessage() }}</p>
-          <button type="button" class="btn btn--primary" style="margin-top: 1.5rem" (click)="submissionState.set('IDLE')">Go Back</button>
+          <button type="button" class="btn btn-primary submission-back-button" (click)="submissionState.set('IDLE')">Go Back</button>
         }
       </div>
     </div>
@@ -58,55 +59,59 @@
 
   <!-- ── 1. Page Title ─────────────────────────────────────────── -->
   <app-form-main-title
-    title="Asia Pacific University of Technology & Innovation Research and Development Internal Grant (RDIG) Application Form"
+    title="RDIG Application"
+    helpText="Click to view guidelines"
     modalTitle="RDIG Applicant Guidelines"
     endpoint="/api/guidelines/rdig">
   </app-form-main-title>
 
+  <app-step-indicator
+    [currentStep]="currentStep()"
+    [steps]="steps"
+    [stepStatuses]="getStepStatuses()"
+    [submitAttempted]="submitAttempted()"
+    (stepClick)="goToStep($event)">
+  </app-step-indicator>
+
   <!-- ── Batch loading / blocked state ──────────────────────────── -->
   @if (isBatchLoading()) {
-    <div class="batch-gate batch-gate--loading">
-      <span class="material-icons batch-gate__icon spinning">sync</span>
-      <p>Checking active batch…</p>
-    </div>
+    <app-form-alert intent="info" icon="sync" title="Checking active batch">
+      Please wait while the current submission window is loaded.
+    </app-form-alert>
   }
 
   @if (!isBatchLoading() && canShowForm()) {
     <!-- ── No-batch warning banner ─────────────────────────────── -->
     @if (noBatchError() && !batchValidationDisabled()) {
-      <div class="closed-window-banner">
-        <span class="material-icons">event_busy</span>
-        <span>
-          <strong>No active batch.</strong>
-          You can fill in and <strong>Save as Draft</strong> at any time, but submission is not available until a batch is opened.
-        </span>
-      </div>
+      <app-form-alert intent="warning" icon="event_busy" title="No active batch">
+        You can fill in and <strong>Save as Draft</strong> at any time, but submission is not available until a batch is opened.
+      </app-form-alert>
     }
 
     <!-- ── Active batch info banner ──────────────────────────── -->
     @if (activeBatch(); as ab) {
-      <div class="batch-info-banner"
-           [class.batch-info-banner--warning]="deadlineDaysLeft() <= 5 && deadlineDaysLeft() >= 0">
-        <span class="material-icons batch-info-banner__icon">event_available</span>
+      <app-form-alert
+        [intent]="deadlineDaysLeft() <= 5 && deadlineDaysLeft() >= 0 ? 'warning' : 'success'"
+        icon="event_available"
+        title="Active batch">
         <span>
-          Active Batch: <strong>{{ ab.batchName }}</strong>
+          <strong>{{ ab.batchName }}</strong>
           &nbsp;·&nbsp; Submission window: <strong>{{ ab.startDate }}</strong> to <strong>{{ ab.endDate }}</strong>
         </span>
         @if (deadlineDaysLeft() >= 0 && deadlineDaysLeft() <= 5) {
-          <span class="batch-deadline-warn">
+          <span formAlertAction class="batch-deadline-warn">
             <span class="material-icons">warning</span>
             {{ deadlineDaysLeft() }} day{{ deadlineDaysLeft() === 1 ? '' : 's' }} left!
           </span>
         }
-      </div>
+      </app-form-alert>
     }
 
 
     @if (isViewOnly()) {
-      <div class="view-only-banner">
-        <span class="material-icons">visibility</span>
-        <span>History view only. This application is not waiting for your action, so editing and submission are disabled.</span>
-      </div>
+      <app-form-alert intent="info" icon="visibility" title="History view only">
+        This application is not waiting for your action, so editing and submission are disabled.
+      </app-form-alert>
     }
 
     <!-- DEV TEST START: Application Status Override -->
@@ -164,13 +169,10 @@
   }
 
   <!-- ── 2. Step Indicator (clickable) ─────────────────────────── -->
-  <app-step-indicator
-    [currentStep]="currentStep()"
-    [steps]="steps"
-    [stepStatuses]="getStepStatuses()"
-    [submitAttempted]="submitAttempted()"
-    (stepClick)="goToStep($event)">
-  </app-step-indicator>
+  <app-validation-summary
+    [items]="validationSummaryItems"
+    (itemSelected)="onValidationItemSelected($event)">
+  </app-validation-summary>
 
   <!-- ── 3. Comment Toggle Buttons (shown per ABAC status) ──────── -->
   @if (workflow.showHosToggle() || workflow.showRmcToggle() ||
@@ -263,10 +265,10 @@
     </div>
 
     <!-- ── Form Container ─────────────────────────────────────── -->
-    <fieldset class="form-container">
+    <div class="form-container">
 
       <!-- ── Wizard step content ──────────────────────────────── -->
-      <div class="rdig-app__content">
+      <div class="rdig-app__content form-content">
 
         @if (currentStep() === 1) {
           <app-team-details
@@ -369,7 +371,7 @@
         }
 
       </div>
-    </fieldset>
+    </div>
 
     <!-- ── Shared wizard navigation footer ───────────────────── -->
     <app-form-wizard-nav
@@ -396,3 +398,4 @@
   } <!-- /if !isBatchLoading && !noBatchError -->
 
 </div>
+</app-form-page-container>

@@ -12,7 +12,7 @@
           <div class="table-scroll">
             <app-data-table
               [columns]="apuStaffColumns"
-              [rows]="getApuStaffTableDataPaginated()"
+              [rows]="getApuStaffTableData()"
               [hoverable]="true"
               [striped]="true">
               <ng-template #rowTemplate let-row let-i="index">
@@ -37,17 +37,6 @@
               </ng-template>
             </app-data-table>
           </div>
-          <div class="table-footer">
-            <app-pagination
-              [currentPage]="apuStaffPage"
-              [totalPages]="getApuStaffTotalPages()"
-              [pageSize]="apuStaffPageSize"
-              [pageSizeOptions]="apuStaffPageSizeOptions"
-              (pageChange)="onApuStaffPageChange($event)"
-              (pageSizeChange)="onApuStaffPageSizeChange($event)">
-            </app-pagination>
-            <div class="table-summary">{{ apuStaffStart() }}–{{ apuStaffEnd() }} of {{ getApuStaffTableData().length }}</div>
-          </div>
         } @else {
           <div class="empty-state">
             <span class="material-icons">receipt</span>
@@ -69,7 +58,7 @@
           <div class="table-scroll">
             <app-data-table
               [columns]="studentCoAuthorColumns"
-              [rows]="getStudentCoAuthorTableDataPaginated()"
+              [rows]="getStudentCoAuthorTableData()"
               [hoverable]="true"
               [striped]="true">
               <ng-template #rowTemplate let-row let-i="index">
@@ -95,17 +84,6 @@
               </ng-template>
             </app-data-table>
           </div>
-          <div class="table-footer">
-            <app-pagination
-              [currentPage]="studentPage"
-              [totalPages]="getStudentTotalPages()"
-              [pageSize]="studentPageSize"
-              [pageSizeOptions]="studentPageSizeOptions"
-              (pageChange)="onStudentPageChange($event)"
-              (pageSizeChange)="onStudentPageSizeChange($event)">
-            </app-pagination>
-            <div class="table-summary">{{ studentStart() }}–{{ studentEnd() }} of {{ getStudentCoAuthorTableData().length }}</div>
-          </div>
         } @else {
           <div class="empty-state">
             <span class="material-icons">receipt</span>
@@ -127,7 +105,7 @@
           <div class="table-scroll">
             <app-data-table
               [columns]="nonApuCoAuthorColumns"
-              [rows]="getNonApuCoAuthorTableDataPaginated()"
+              [rows]="getNonApuCoAuthorTableData()"
               [hoverable]="true"
               [striped]="true">
               <ng-template #rowTemplate let-row let-i="index">
@@ -154,17 +132,6 @@
                 </tr>
               </ng-template>
             </app-data-table>
-          </div>
-          <div class="table-footer">
-            <app-pagination
-              [currentPage]="nonApuPage"
-              [totalPages]="getNonApuTotalPages()"
-              [pageSize]="nonApuPageSize"
-              [pageSizeOptions]="nonApuPageSizeOptions"
-              (pageChange)="onNonApuPageChange($event)"
-              (pageSizeChange)="onNonApuPageSizeChange($event)">
-            </app-pagination>
-            <div class="table-summary">{{ nonApuStart() }}–{{ nonApuEnd() }} of {{ getNonApuCoAuthorTableData().length }}</div>
           </div>
         } @else {
           <div class="empty-state">

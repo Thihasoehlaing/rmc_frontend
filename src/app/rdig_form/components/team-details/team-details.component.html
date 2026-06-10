@@ -290,7 +290,7 @@
   <app-dialog
     [title]="(editingExternalIdx() !== null ? 'Edit' : 'Add') + ' External Collaborator'"
     [isOpen]="true"
-    width="900px"
+    width="var(--size-dialog-large)"
     (close)="showExternalModal.set(false)">
 
     <div class="section-fields" [formGroup]="externalForm">

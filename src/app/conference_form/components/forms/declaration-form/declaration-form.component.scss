@@ -1,40 +1,41 @@
 @use '../../../../../assets/styles/index' as *;
 
-// Override required field color for conference form
-.form-label.is-required::after {
-  color: var(--color-error-dark);
-}
-
 .form-section {
   padding: 0;
-}
-
-.card__title.declaration-title {
-  color: black;
-  font-weight: var(--fw-bold);
-  text-decoration: underline;
-  text-align: center;
-  font-size: var(--fs-2xl);
 }
 
 .section-fields {
   display: flex;
   flex-direction: column;
-  gap: var(--space-5);
+  gap: var(--form-section-gap);
 }
 
-.declaration-text {
-  background: var(--color-surface-hover);
-  padding: var(--space-5);
-  border-left: var(--space-1) solid var(--color-primary);
-  border-radius: var(--radius-md);
+.declaration-box {
+  padding: var(--space-6);
+  background: var(--color-surface-nested);
+  border-left: var(--control-border-width-accent) solid var(--color-primary);
+  border-radius: var(--radius-lg);
+  color: var(--color-text-secondary);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-relaxed);
 
-  p {
+  &__title {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
     margin: 0 0 var(--space-4);
+    color: var(--color-heading);
     font-size: var(--fs-base);
     font-weight: var(--fw-bold);
-    color: black;
-    line-height: var(--lh-relaxed);
+
+    .material-icons {
+      color: var(--color-primary);
+      font-size: var(--icon-md);
+    }
+  }
+
+  p {
+    margin: 0 0 var(--space-3);
 
     &:last-child {
       margin-bottom: 0;
@@ -42,55 +43,30 @@
   }
 }
 
-// Note: .form-field is defined globally in _forms.scss
-// Use global class directly; do not redefine locally
-
-.checkbox-field {
-  flex-direction: row;
-  gap: var(--space-3);
-  padding: var(--space-3);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
-}
-
-.checkbox-label {
+.agreement-trigger {
   display: flex;
   align-items: flex-start;
-  gap: var(--space-2);
-  font-size: var(--fs-sm);
-  color: black;
+  gap: var(--space-4);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
   cursor: pointer;
-  font-weight: var(--fw-normal);
-  line-height: var(--lh-relaxed);
-}
+  transition: background var(--transition-fast);
 
-.checkbox-input {
-  width: 18px; // no token: checkbox size
-  height: 18px; // no token: checkbox size
-  margin-top: var(--space-1);
-  cursor: pointer;
-  accent-color: var(--color-primary);
-  flex-shrink: 0;
-}
+  &:hover {
+    background: var(--color-surface-hover);
+  }
 
-.divider {
-  height: 1px; // 1px border — allowed exception
-  background: var(--border-default);
-  margin: var(--space-4) 0;
-}
+  input[type='checkbox'] {
+    width: var(--size-selection-control-large);
+    height: var(--size-selection-control-large);
+    flex-shrink: 0;
+    margin-top: var(--form-space-1);
+    accent-color: var(--color-primary);
+  }
 
-.declaration-footer {
-  background: var(--color-info-light);
-  border: 1px solid var(--color-info); // 1px border — allowed exception
-  padding: var(--space-4);
-  border-radius: var(--radius-sm);
-
-  .footer-note {
-    margin: 0;
-    font-size: var(--fs-sm);
-    color: var(--color-label);
-    font-weight: var(--fw-medium);
+  span {
+    color: var(--color-text);
+    font-size: var(--fs-base);
     line-height: var(--lh-relaxed);
   }
 }

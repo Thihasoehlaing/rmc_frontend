@@ -3,7 +3,7 @@
 .activities-section {
   display: flex;
   flex-direction: column;
-  gap: var(--space-6);
+  gap: var(--form-section-gap);
 }
 
 // ── Table layout ──────────────────────────────────────────────
@@ -26,7 +26,7 @@
 .list-table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 860px;
+  min-width: var(--size-table-min-wide);
 
   th {
     background: var(--color-surface-nested);
@@ -36,22 +36,22 @@
     text-transform: uppercase;
     font-weight: var(--fw-bold);
     color: var(--color-text-secondary);
-    border-bottom: 2px solid var(--border-default);
+    border-bottom: var(--control-border-width-strong) solid var(--color-border-default);
     white-space: nowrap;
   }
 
   td {
     padding: var(--space-3) var(--space-4);
-    border-bottom: 1px solid var(--border-default);
+    border-bottom: var(--control-border-width) solid var(--color-border-default);
     vertical-align: middle;
   }
 }
 
-.col-no       { width: 36px; text-align: center; }
-.col-month    { width: 80px; }
-.col-duration { width: 90px; text-align: center; }
-.col-timeline { width: 260px; }
-.col-actions  { width: 50px; text-align: center; }
+.col-no       { width: var(--size-table-column-number); text-align: center; }
+.col-month    { width: var(--size-table-column-month); }
+.col-duration { width: var(--size-table-column-duration); text-align: center; }
+.col-timeline { width: var(--size-table-column-timeline); }
+.col-actions  { width: var(--size-table-column-compact-action); text-align: center; }
 .text-muted   { color: var(--color-text-muted); font-size: var(--fs-sm); }
 
 // ── Duration badge ────────────────────────────────────────────
@@ -68,16 +68,16 @@
 // ── Timeline bar ─────────────────────────────────────────────
 .timeline-grid {
   display: flex;
-  gap: 2px;
-  height: 20px;
+  gap: var(--size-timeline-gap);
+  height: var(--size-timeline-height);
   background: var(--color-surface-nested);
-  padding: 2px;
+  padding: var(--size-timeline-gap);
   border-radius: var(--radius-sm);
 
   .month-cell {
     flex: 1;
     background: transparent;
-    border-radius: 1px;
+    border-radius: var(--size-timeline-radius);
 
     &.active {
       background: var(--color-primary);
@@ -96,9 +96,9 @@
   color: var(--color-text-muted);
   background: var(--color-surface-nested);
   border-radius: var(--radius-lg);
-  border: 2px dashed var(--border-default);
+  border: var(--control-border-width-strong) dashed var(--color-border-default);
 
-  .material-icons { font-size: 40px; opacity: 0.4; }
+  .material-icons { font-size: var(--size-icon-empty); opacity: 0.4; }
 }
 
 // ── Validation warnings panel ─────────────────────────────────
@@ -119,8 +119,8 @@
 .gantt-chart {
   display: flex;
   flex-direction: column;
-  min-width: 600px;
-  border: 1px solid var(--border-default);
+  min-width: var(--size-gantt-min-width);
+  border: var(--control-border-width) solid var(--color-border-default);
   border-radius: var(--radius-md);
   overflow: hidden;
   font-size: var(--fs-xs);
@@ -129,7 +129,7 @@
 .gantt-row {
   display: flex;
   align-items: stretch;
-  border-bottom: 1px solid var(--border-default);
+  border-bottom: var(--control-border-width) solid var(--color-border-default);
 
   &:last-child { border-bottom: none; }
 
@@ -143,10 +143,10 @@
 }
 
 .gantt-label {
-  width: 180px;
-  min-width: 180px;
+  width: var(--size-gantt-label-width);
+  min-width: var(--size-gantt-label-width);
   padding: var(--space-2) var(--space-3);
-  border-right: 1px solid var(--border-default);
+  border-right: var(--control-border-width) solid var(--color-border-default);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -161,9 +161,9 @@
 
 .gantt-month-cell {
   flex: 1;
-  min-width: 24px;
-  height: 36px;
-  border-right: 1px solid var(--border-default);
+  min-width: var(--size-gantt-cell-min-width);
+  height: var(--size-gantt-row-height);
+  border-right: var(--control-border-width) solid var(--color-border-default);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -173,8 +173,8 @@
   &:last-child { border-right: none; }
 
   &--header {
-    height: 28px;
-    font-size: 10px;
+    height: var(--size-gantt-header-height);
+    font-size: var(--font-size-caption);
     background: var(--color-surface-nested);
     color: var(--color-text-secondary);
     font-weight: var(--fw-bold);

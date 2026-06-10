@@ -9,115 +9,22 @@
   padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-full);
   background: var(--color-success-light);
-  border: 1px solid color-mix(in srgb, var(--color-success) 35%, transparent);
+  border: var(--control-border-width) solid color-mix(in srgb, var(--color-success) 35%, transparent);
   color: var(--color-success-dark);
   font-size: var(--fs-sm);
   font-weight: var(--fw-medium);
-  animation: toast-in 0.2s ease;
+  animation: toast-in var(--transition-standard);
 
-  .material-icons { font-size: 1rem; color: var(--color-success); }
+  .material-icons { font-size: var(--font-size-subtitle); color: var(--color-success); }
 }
 
 @keyframes toast-in {
-  from { opacity: 0; transform: translateY(4px); }
+  from { opacity: 0; transform: translateY(var(--motion-distance-small)); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
 // ── Batch gate (no active batch / loading) ────────────────────────────────────
-.batch-gate {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-3);
-  padding: var(--space-9) var(--space-6);
-  margin: var(--space-6) 0;
-  border-radius: var(--radius-xl);
-  text-align: center;
-
-  &--loading {
-    background: var(--color-info-light);
-    color: var(--color-info-dark);
-    border: 1px solid color-mix(in srgb, var(--color-info) 35%, var(--color-surface));
-  }
-
-  &--blocked {
-    background: var(--color-warning-light);
-    color: var(--color-warning-dark);
-    border: 1px solid color-mix(in srgb, var(--color-warning) 40%, var(--color-surface));
-  }
-
-  &__icon {
-    font-size: 48px;
-    opacity: 0.7;
-  }
-
-  &__title {
-    font-size: 1.2rem;
-    font-weight: 700;
-    margin: 0;
-  }
-
-  &__msg {
-    max-width: 30rem;
-    font-size: 0.95rem;
-    line-height: 1.6;
-    margin: 0;
-    color: var(--color-warning-dark);
-  }
-
-  &__action {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-2);
-    margin-top: var(--space-2);
-    padding: var(--space-2) var(--space-5);
-    border: 1px solid var(--color-warning);
-    border-radius: var(--radius-md);
-    background: var(--color-surface);
-    color: var(--color-warning-dark);
-    font-size: var(--fs-sm);
-    font-weight: var(--fw-semibold);
-    cursor: pointer;
-    transition: all var(--transition-fast);
-
-    .material-icons { font-size: var(--icon-sm); }
-
-    &:hover {
-      background: color-mix(in srgb, var(--color-warning) 12%, var(--color-surface));
-      border-color: var(--color-warning-dark);
-    }
-  }
-}
-
 // ── Active batch info banner ──────────────────────────────────────────────────
-.batch-info-banner {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  margin-bottom: var(--space-4);
-  padding: var(--space-3) var(--space-4);
-  border-radius: var(--radius-lg);
-  background: var(--color-success-light);
-  border: 1px solid color-mix(in srgb, var(--color-success) 36%, var(--color-surface));
-  color: var(--color-success-dark);
-  font-size: 0.88rem;
-
-  &--warning {
-    background: var(--color-warning-light);
-    border-color: color-mix(in srgb, var(--color-warning) 40%, var(--color-surface));
-    color: var(--color-warning-dark);
-  }
-
-  &--override {
-    background: color-mix(in srgb, var(--color-error) 8%, var(--color-surface));
-    border-color: color-mix(in srgb, var(--color-error) 35%, var(--color-surface));
-    color: var(--color-error-dark);
-  }
-
-  &__icon { font-size: var(--icon-md); flex-shrink: 0; }
-}
-
 .batch-deadline-warn {
   display: inline-flex;
   align-items: center;
@@ -129,73 +36,35 @@
   .material-icons { font-size: var(--icon-sm); }
 }
 
-.view-only-banner {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  margin-bottom: var(--space-4);
-  padding: var(--space-3) var(--space-4);
-  border: 1px solid color-mix(in srgb, var(--color-primary) 24%, var(--border-default));
-  border-radius: var(--radius-lg);
-  background: color-mix(in srgb, var(--color-primary) 7%, var(--color-surface));
-  color: var(--color-secondary);
-  font-size: var(--fs-sm);
-  font-weight: var(--fw-semibold);
-
-  .material-icons {
-    color: var(--color-primary);
-    font-size: var(--icon-md);
-    flex: 0 0 auto;
-  }
-}
-
 // ── Spinning icon ─────────────────────────────────────────────────────────────
 @keyframes spin { to { transform: rotate(360deg); } }
 .spinning { display: inline-block; animation: spin 1s linear infinite; }
 
 .rdig-app {
-  max-width: var(--page-max-width);
-  margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: var(--space-6);
-  padding: var(--space-4) 0;
+  gap: var(--form-section-gap);
 
   &__content {
     display: flex;
     flex-direction: column;
-    gap: var(--space-8);
+    gap: var(--form-section-gap);
     animation: stepFadeIn var(--transition-base) ease;
   }
 }
 
 // ── Form container (white card) ──────────────────────────────────
 .form-container {
-  background: var(--color-surface);
-  border: 1px solid var(--border-default);
+  background: var(--color-background-surface);
+  border: var(--control-border-width) solid var(--color-border-default);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-sm);
-  padding: var(--space-7) var(--space-6);
+  padding: var(--form-space-5);
 
   // Reset fieldset defaults
   margin: 0;
   min-width: 0;
 
-  &:disabled {
-    // All child inputs/selects/textareas/buttons are natively disabled by fieldset
-    // Just ensure visual feedback
-    opacity: 0.85;
-
-    input,
-    select,
-    textarea,
-    button:not(.btn--comment-toggle),
-    .input--text,
-    .input--select,
-    .input--textarea {
-      cursor: not-allowed;
-    }
-  }
 }
 
 // ── Comment toggle bar ───────────────────────────────────────────
@@ -334,17 +203,23 @@
 }
 
 .submission-msg {
-  font-size: 1.5rem;
-  font-weight: 700;
+  font-size: var(--font-size-page-title);
+  line-height: var(--line-height-title);
+  font-weight: var(--font-weight-semibold);
   color: var(--color-heading);
   margin: var(--space-5) 0 var(--space-2);
 }
 
 .submission-submsg {
-  font-size: 1rem;
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
   color: var(--color-text-secondary);
   line-height: var(--lh-relaxed);
   margin: 0;
+}
+
+.submission-back-button {
+  margin-top: var(--form-space-6);
 }
 
 // ── Circle and States ──
@@ -443,25 +318,6 @@
 }
 
 // ── Closed-window warning banner (Req 5) ─────────────────────────────────────
-.closed-window-banner {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-3) var(--space-4);
-  border-radius: var(--radius-lg);
-  background: var(--color-warning-light);
-  border: 1px solid color-mix(in srgb, var(--color-warning) 40%, transparent);
-  color: var(--color-warning-dark);
-  font-size: var(--fs-sm);
-  margin-bottom: var(--space-4);
-
-  .material-icons {
-    font-size: var(--icon-md);
-    flex-shrink: 0;
-    color: var(--color-warning);
-  }
-}
-
 // ── Closed-window modal (Req 6) ───────────────────────────────────────────────
 .modal-backdrop {
   position: fixed;

@@ -1,9 +1,9 @@
-<div class="travel-authorization-form">
+<div class="travel-authorization-form application-form-page">
   <!-- Page Header -->
-  <div class="page-header">
-    <h1 class="page-header__title">Travel Authorization Form - Research Project</h1>
-    <p class="page-header__subtitle">(Program and Budget Summary)</p>
-  </div>
+  <app-form-main-title
+    title="Travel Authorization"
+    [customModal]="false">
+  </app-form-main-title>
 
   <!-- DEV TEST START: Travel Status Override -->
   <div class="dev-test-override">
@@ -95,7 +95,7 @@
   }
 
   <!-- Form Container -->
-  <form [formGroup]="travelAuthForm" class="form-container">
+  <form [formGroup]="travelAuthForm" class="form-container application-form-surface">
     <!-- Personal Information Section -->
     <app-custom-header title="Personal Information" icon="assignment"></app-custom-header>
 

@@ -1,12 +1,12 @@
-<div class="partnership-app">
+<div class="partnership-app application-form-page">
 
   <!-- DEV TEST START: Application Status Override -->
-  <div style="margin: 16px 0; padding: 8px; background: #fffbe6; border: 1px solid #ffe58f; border-radius: 6px;">
-    <label style="font-weight: bold; color: #ad8b00;">DEV TEST: Application Status</label>
+  <div class="application-form-dev-tools">
+    <label class="application-form-dev-tools__label">DEV TEST: Application Status</label>
     <select
       [ngModel]="applicationStatus()" 
       (ngModelChange)="setSimulatedStatus($event)"
-      style="margin-left: 12px; width: 340px; padding: 4px 8px; border: 1px solid #ffe58f; border-radius: 4px;">
+      class="input--select application-form-dev-tools__control">
       <option value="draft">draft</option>
       <option value="submitted">submitted</option>
       <option value="pending_rmc_review">pending_rmc_review</option>
@@ -20,9 +20,9 @@
       <option value="pending_senior_executive_signing">pending_senior_executive_signing</option>
       <option value="completed">completed</option>
     </select>
-    <span style="margin-left: 12px; color: #ad8b00; font-size: 12px;">(Live ABAC override for developer testing)</span>
+    <span>(Live ABAC override for developer testing)</span>
     
-    <label style="margin-left: 20px; font-size: 13px; color: #ad8b00; cursor: pointer;">
+    <label class="application-form-dev-tools__option">
       <input type="checkbox" [ngModel]="isBusiness()" (ngModelChange)="isBusiness.set($event)"> Is Business Route? (Includes Legal)
     </label>
   </div>
@@ -30,7 +30,7 @@
 
   <!-- ── 1. Page Title ─────────────────────────────────────────── -->
   <app-form-main-title
-    title="Partnership Proposal Application Form" 
+    title="Partnership Application"
     modalTitle="Partnership Proposal Guidelines"
     endpoint="/api/guidelines/partnership">
   </app-form-main-title>
@@ -46,7 +46,7 @@
 
   <!-- ── 3. Comment Accordion (Historical/Current Comments) ──────────────── -->
   @if (partnershipComments().length > 0) {
-    <div style="margin-top: 32px; background: transparent; margin-bottom: 24px;">
+    <div class="application-form-comment-panel">
       <app-form-comment-panel [comments]="partnershipComments()"></app-form-comment-panel>
     </div>
   }

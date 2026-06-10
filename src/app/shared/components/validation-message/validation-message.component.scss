@@ -2,8 +2,9 @@
 
 .validation-error {
     color: var(--color-error);
-    font-size: var(--fs-xs);
-    margin-top: var(--space-1);
+    font-size: var(--font-size-caption);
+    line-height: var(--line-height-caption);
+    margin-top: var(--form-message-gap);
     margin-bottom: 0;
     display: block;
     font-weight: var(--fw-medium);

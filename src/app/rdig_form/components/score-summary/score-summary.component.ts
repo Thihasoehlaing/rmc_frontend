@@ -31,7 +31,7 @@ import { FormGroup } from '@angular/forms';
       flex-wrap: wrap;
       padding: var(--space-4) var(--space-5);
       background: var(--color-surface-nested);
-      border: 1px solid var(--border-default);
+      border: var(--control-border-width) solid var(--color-border-default);
       border-radius: var(--radius-lg);
     }
 
@@ -40,14 +40,14 @@ import { FormGroup } from '@angular/forms';
       align-items: center;
       gap: var(--space-2);
       flex: 1;
-      min-width: 220px;
+      min-width: var(--size-score-summary-min-width);
       padding: var(--space-3) var(--space-4);
       background: var(--color-surface);
       border-radius: var(--radius-md);
-      border: 1px solid var(--border-default);
+      border: var(--control-border-width) solid var(--color-border-default);
 
       .material-icons {
-        font-size: 20px;
+        font-size: var(--size-selection-control-large);
         color: var(--color-primary);
       }
     }

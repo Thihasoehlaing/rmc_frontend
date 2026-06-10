@@ -92,11 +92,11 @@ export class BudgetSummaryComponent implements OnInit {
   readonly budgetItemForm: FormGroup;
 
   readonly budgetColumns: DataTableColumn[] = [
-    { key: 'index', label: '#', width: '52px', align: 'center', headerAlign: 'center' },
+    { key: 'index', label: '#', width: 'var(--size-table-column-index)', align: 'center', headerAlign: 'center' },
     { key: 'description', label: 'Description of Expense', width: '40%' },
-    { key: 'amount', label: 'Amount (RM)', width: '160px' },
+    { key: 'amount', label: 'Amount (RM)', width: 'var(--size-table-column-amount)' },
     { key: 'remarks', label: 'Remarks' },
-    { key: 'actions', label: '', width: '92px', align: 'right', headerAlign: 'right' }
+    { key: 'actions', label: '', width: 'var(--size-table-column-actions)', align: 'right', headerAlign: 'right' }
   ];
 
   readonly trackByIndex = (index: number) => index;

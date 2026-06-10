@@ -26,7 +26,7 @@
   .subheader-text {
     text-transform: none;
     letter-spacing: 0;
-    font-size: var(--fs-base);
+    font-size: var(--font-size-subtitle);
   }
 }
 
@@ -51,12 +51,12 @@
 
 .subheader-text {
   margin: 0;
-  font-size: var(--fs-sm);
-  font-weight: var(--fw-bold);
+  font-size: var(--font-size-subtitle);
+  font-weight: var(--font-weight-semibold);
   color: var(--color-heading);
-  line-height: var(--lh-tight);
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
+  line-height: var(--line-height-control);
+  text-transform: none;
+  letter-spacing: 0;
 }
 
 app-field-note {

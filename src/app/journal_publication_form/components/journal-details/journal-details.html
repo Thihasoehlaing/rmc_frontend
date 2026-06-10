@@ -516,7 +516,6 @@
     <!-- Exchange Rate -->
     <div class="breakdown-field">
       <label for="exchangeRate" class="form-label">Exchange Rate <span class="asterisk">*</span></label>
-      <app-note text="For Malaysia Ringgit/MYR, please put 1 as the exchange rate." [isTooltip]="false"></app-note>
       <input
         id="exchangeRate"
         type="text"
@@ -525,6 +524,7 @@
         formControlName="exchangeRate"
         placeholder="e.g. 1, 4, 5"
         (input)="enforceInteger($event)">
+      <app-note text="For Malaysia Ringgit/MYR, please put 1 as the exchange rate."></app-note>
       @if (breakdownForm.get('exchangeRate')?.invalid && breakdownForm.get('exchangeRate')?.touched) {
         <span class="error-message">Exchange rate is required (whole numbers only)</span>
       }

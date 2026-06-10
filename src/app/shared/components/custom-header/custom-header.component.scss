@@ -26,15 +26,15 @@
 }
 
 .header-icon--material {
-  font-size: var(--icon-lg);
+  font-size: var(--size-icon-section);
   color: var(--color-primary);
   flex-shrink: 0;
 }
 
 .header-text {
   margin: 0;
-  font-size: var(--fs-base);
-  font-weight: var(--fw-bold);
+  font-size: var(--font-size-section-title);
+  font-weight: var(--font-weight-semibold);
   color: var(--color-heading);
-  line-height: var(--lh-tight);
+  line-height: var(--line-height-section);
 }

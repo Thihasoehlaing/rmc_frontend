@@ -86,20 +86,20 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
   fc(name: string): FormControl { return this.reviewTeam.get(name) as FormControl; }
 
   readonly internalColumns: DataTableColumn[] = [
-    { key: 'index', label: '#', width: '52px', align: 'center', headerAlign: 'center' },
+    { key: 'index', label: '#', width: 'var(--size-table-column-index)', align: 'center', headerAlign: 'center' },
     { key: 'staff', label: 'Staff Name / Department', width: '32%' },
     { key: 'expertise', label: 'Area of Expertise', width: '26%' },
     { key: 'roles', label: 'Role in Project', width: '26%' },
-    { key: 'actions', label: 'Actions', width: '96px', align: 'center', headerAlign: 'center' }
+    { key: 'actions', label: 'Actions', width: 'var(--size-table-column-actions)', align: 'center', headerAlign: 'center' }
   ];
 
   readonly externalColumns: DataTableColumn[] = [
-    { key: 'index', label: '#', width: '52px', align: 'center', headerAlign: 'center' },
+    { key: 'index', label: '#', width: 'var(--size-table-column-index)', align: 'center', headerAlign: 'center' },
     { key: 'collaborator', label: 'Collaborator', width: '32%' },
     { key: 'institution', label: 'Institution', width: '24%' },
     { key: 'country', label: 'Country', width: '14%', align: 'center', headerAlign: 'center' },
     { key: 'funding', label: 'Matched Funding', width: '16%', align: 'right', headerAlign: 'right' },
-    { key: 'actions', label: 'Actions', width: '96px', align: 'center', headerAlign: 'center' }
+    { key: 'actions', label: 'Actions', width: 'var(--size-table-column-actions)', align: 'center', headerAlign: 'center' }
   ];
 
   readonly trackByIndex = (index: number) => index;

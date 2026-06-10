@@ -11,12 +11,12 @@
           <div class="form-column">
             <div class="form-field">
               <label class="form-label is-required">Conference Funding Request Type</label>
-              <div class="radio-group">
-                <label class="radio-option">
+              <div class="radio-field">
+                <label class="radio-field__option">
                   <input type="radio" value="with-paper" formControlName="fundingRequestType">
                   <span>Conference (with paper presentation)</span>
                 </label>
-                <label class="radio-option">
+                <label class="radio-field__option">
                   <input type="radio" value="without-paper" formControlName="fundingRequestType">
                   <span>Conference (without paper presentation)</span>
                 </label>
@@ -26,12 +26,12 @@
 
             <div class="form-field">
               <label class="form-label is-required">Select conference type for current application</label>
-              <div class="radio-group">
-                <label class="radio-option">
+              <div class="radio-field">
+                <label class="radio-field__option">
                   <input type="radio" value="international" formControlName="conferenceType">
                   <span>International Conference</span>
                 </label>
-                <label class="radio-option">
+                <label class="radio-field__option">
                   <input type="radio" value="national" formControlName="conferenceType">
                   <span>National Conference</span>
                 </label>
@@ -41,69 +41,53 @@
 
             <div class="form-field">
               <label class="form-label is-required">Is Travelling Required?</label>
-              <app-note text="Tick Yes for Conference outside of Asia Pacific University of Technology & Innovation" [isTooltip]="false"></app-note>
-              <div class="radio-group">
-                <label class="radio-option">
+              <div class="radio-field">
+                <label class="radio-field__option">
                   <input type="radio" value="yes" formControlName="travelRequired">
                   <span>Yes</span>
                 </label>
-                <label class="radio-option">
+                <label class="radio-field__option">
                   <input type="radio" value="no" formControlName="travelRequired">
                   <span>No</span>
                 </label>
               </div>
+              <app-note text="Tick Yes for Conference outside of Asia Pacific University of Technology &amp; Innovation"></app-note>
               <app-validation-message [control]="form.get('travelRequired')"></app-validation-message>
             </div>
 
             <div class="form-field">
               <label class="form-label is-required">Please select whether you are the "First Author" and/or "Corresponding Author"</label>
-              <app-note text="Applicant must be either first or corresponding author" [isTooltip]="false"></app-note>
-              <div class="radio-group">
-                <label class="radio-option">
+              <div class="radio-field">
+                <label class="radio-field__option">
                   <input type="radio" value="first-author" formControlName="authorshipType">
                   <span>First Author</span>
                 </label>
-                <label class="radio-option">
+                <label class="radio-field__option">
                   <input type="radio" value="corresponding-author" formControlName="authorshipType">
                   <span>Corresponding Author</span>
                 </label>
-                <label class="radio-option">
+                <label class="radio-field__option">
                   <input type="radio" value="both" formControlName="authorshipType">
                   <span>First and Corresponding Author</span>
                 </label>
               </div>
+              <app-note text="Applicant must be either first or corresponding author"></app-note>
               <app-validation-message [control]="form.get('authorshipType')"></app-validation-message>
             </div>
 
             <div class="form-field">
               <label class="form-label is-required">Is the publisher of your conference proceeding one of the restricted publishers (e.g., MDPI, Common Ground, Hindawi, or Frontier)?</label>
-              <app-note text="Expected Answer for Approval: No" [isTooltip]="false"></app-note>
-              <div class="radio-group">
-                <label class="radio-option">
+              <div class="radio-field">
+                <label class="radio-field__option">
                   <input type="radio" value="yes" formControlName="restrictedPublisher">
                   <span>Yes</span>
                 </label>
-                <label class="radio-option">
+                <label class="radio-field__option">
                   <input type="radio" value="no" formControlName="restrictedPublisher">
                   <span>No</span>
                 </label>
               </div>
-              <app-validation-message [control]="form.get('restrictedPublisher')"></app-validation-message>
-            </div>
-
-            <div class="form-field">
-              <label class="form-label is-required">Is the publisher of your conference proceeding one of the restricted publishers (e.g., MDPI, Common Ground, Hindawi, or Frontier)?</label>
-              <app-note text="Expected Answer for Approval: No" [isTooltip]="false"></app-note>
-              <div class="radio-group">
-                <label class="radio-option">
-                  <input type="radio" value="yes" formControlName="restrictedPublisher">
-                  <span>Yes</span>
-                </label>
-                <label class="radio-option">
-                  <input type="radio" value="no" formControlName="restrictedPublisher">
-                  <span>No</span>
-                </label>
-              </div>
+              <app-note text="Expected Answer for Approval: No"></app-note>
               <app-validation-message [control]="form.get('restrictedPublisher')"></app-validation-message>
             </div>
           </div>
@@ -112,12 +96,12 @@
           <div class="form-column">
             <div class="form-field">
               <label class="form-label is-required">Have you cited at least 1 journal paper from APU JATI & EJBM?</label>
-              <div class="radio-group">
-                <label class="radio-option">
+              <div class="radio-field">
+                <label class="radio-field__option">
                   <input type="radio" value="yes" formControlName="citedJournalPaper">
                   <span>Yes</span>
                 </label>
-                <label class="radio-option">
+                <label class="radio-field__option">
                   <input type="radio" value="no" formControlName="citedJournalPaper">
                   <span>No</span>
                 </label>
@@ -136,12 +120,12 @@
 
             <div class="form-field">
               <label class="form-label is-required">Is the conference proceeding with guaranteed publication Scopus-indexed?</label>
-              <div class="radio-group">
-                <label class="radio-option">
+              <div class="radio-field">
+                <label class="radio-field__option">
                   <input type="radio" value="yes" formControlName="scopusPublicationGuaranteed">
                   <span>Yes</span>
                 </label>
-                <label class="radio-option">
+                <label class="radio-field__option">
                   <input type="radio" value="no" formControlName="scopusPublicationGuaranteed">
                   <span>No</span>
                 </label>
@@ -151,41 +135,41 @@
 
             <div class="form-field">
               <label class="form-label is-required">Select Local or Overseas</label>
-              <app-note text="Klang Valley includes Kuala Lumpur, Selangor, Cyberjaya & Putrajaya" [isTooltip]="false"></app-note>
-              <div class="radio-group">
-                <label class="radio-option">
+              <div class="radio-field">
+                <label class="radio-field__option">
                   <input type="radio" value="klang-valley" formControlName="localOrOverseas">
                   <span>Klang Valley</span>
                 </label>
-                <label class="radio-option">
+                <label class="radio-field__option">
                   <input type="radio" value="local-except-kl" formControlName="localOrOverseas">
                   <span>Local (Except Klang Valley)</span>
                 </label>
-                <label class="radio-option">
+                <label class="radio-field__option">
                   <input type="radio" value="overseas" formControlName="localOrOverseas">
                   <span>Overseas</span>
                 </label>
-                <label class="radio-option">
+                <label class="radio-field__option">
                   <input type="radio" value="not-required" formControlName="localOrOverseas">
                   <span>Not Required</span>
                 </label>
               </div>
+              <app-note text="Klang Valley includes Kuala Lumpur, Selangor, Cyberjaya &amp; Putrajaya"></app-note>
               <app-validation-message [control]="form.get('localOrOverseas')"></app-validation-message>
             </div>
 
             <div class="form-field">
               <label class="form-label is-required">Select Research or Non-Research Project</label>
-              <app-note text="If External Research Project is selected, all required funding will be fully subsidized from External Sources." [isTooltip]="false"></app-note>
-              <div class="radio-group">
-                <label class="radio-option">
+              <div class="radio-field">
+                <label class="radio-field__option">
                   <input type="radio" value="external-research" formControlName="researchType">
                   <span>External Research Project</span>
                 </label>
-                <label class="radio-option">
+                <label class="radio-field__option">
                   <input type="radio" value="non-research" formControlName="researchType">
                   <span>Non-Research Project</span>
                 </label>
               </div>
+              <app-note text="If External Research Project is selected, all required funding will be fully subsidized from External Sources."></app-note>
               <app-validation-message [control]="form.get('researchType')"></app-validation-message>
             </div>
           </div>
@@ -751,7 +735,6 @@
         <!-- Exchange Rate -->
         <div class="form-group">
           <label for="exchangeRate" class="form-label">Exchange Rate <span class="asterisk">*</span></label>
-          <app-note text="For Malaysia Ringgit/MYR, please put 1 as the exchange rate." [isTooltip]="false"></app-note>
           <input
             id="exchangeRate"
             type="number"
@@ -759,6 +742,7 @@
             formControlName="exchangeRate"
             placeholder="1.0"
             step="0.01">
+          <app-note text="For Malaysia Ringgit/MYR, please put 1 as the exchange rate."></app-note>
           @if (breakdownForm.get('exchangeRate')?.invalid && breakdownForm.get('exchangeRate')?.touched) {
             <span class="error-message">Exchange rate is required</span>
           }

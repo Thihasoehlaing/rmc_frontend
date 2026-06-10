@@ -3,7 +3,7 @@
 .budget-section {
   display: flex;
   flex-direction: column;
-  gap: var(--space-6);
+  gap: var(--form-section-gap);
 }
 
 // ── Total banner ──────────────────────────────────────────────
@@ -15,7 +15,7 @@
   gap: var(--space-4);
   padding: var(--space-6);
   background: var(--color-surface-nested);
-  border: 1px solid var(--border-default);
+  border: var(--control-border-width) solid var(--color-border-default);
   border-radius: var(--radius-xl);
 
   &--invalid {
@@ -58,17 +58,17 @@
 .budget-banner .badge {
   display: inline-flex;
   align-items: center;
-  min-height: 28px;
+  min-height: var(--size-icon-section);
   padding: var(--space-1) var(--space-3);
   border-radius: var(--radius-full);
-  border: 1px solid var(--border-default);
+  border: var(--control-border-width) solid var(--color-border-default);
   background: var(--color-surface);
   color: var(--color-text-primary);
   font-size: var(--fs-xs);
   font-weight: var(--fw-bold);
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  box-shadow: 0 1px 2px rgb(15 23 42 / 8%);
+  box-shadow: var(--shadow-xs);
 
   &--success {
     border-color: color-mix(in srgb, var(--color-success) 42%, var(--border-default));
@@ -77,15 +77,15 @@
   }
 
   &--warning {
-    border-color: color-mix(in srgb, var(--color-warning) 60%, #8a5a00);
+    border-color: color-mix(in srgb, var(--color-warning) 60%, var(--color-warning-dark));
     background: color-mix(in srgb, var(--color-warning) 16%, var(--color-surface));
-    color: #6b4100;
+    color: var(--color-warning-dark);
   }
 
   &--danger {
-    border-color: color-mix(in srgb, var(--color-error) 58%, #7f1d1d);
+    border-color: color-mix(in srgb, var(--color-error) 58%, var(--color-error-dark));
     background: color-mix(in srgb, var(--color-error) 10%, var(--color-surface));
-    color: #991b1b;
+    color: var(--color-error-dark);
   }
 }
 
@@ -117,7 +117,7 @@ app-data-table {
 .modal-note {
   margin: 0;
   padding: var(--space-3) var(--space-4);
-  border: 1px solid color-mix(in srgb, var(--color-info) 24%, transparent);
+  border: var(--control-border-width) solid color-mix(in srgb, var(--color-info) 24%, transparent);
   border-radius: var(--radius-md);
   background: color-mix(in srgb, var(--color-info) 8%, var(--color-surface));
   color: var(--color-info-dark);
@@ -139,7 +139,7 @@ app-data-table {
   font-size: var(--fs-sm);
   background: var(--color-surface-nested);
   border-radius: var(--radius-md);
-  border: 1px dashed var(--border-default);
+  border: var(--control-border-width) dashed var(--color-border-default);
 }
 
 // Action buttons styled via shared data-table component

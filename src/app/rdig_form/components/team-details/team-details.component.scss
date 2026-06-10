@@ -3,7 +3,7 @@
 .team-section {
   display: flex;
   flex-direction: column;
-  gap: var(--space-8);
+  gap: var(--form-section-gap);
 }
 
 // ── Add-button row above table ────────────────────────────────────
@@ -29,13 +29,13 @@
   gap: var(--space-3);
   padding: var(--space-10, var(--space-8));
   background: var(--color-surface-nested);
-  border: 2px dashed var(--border-default);
+  border: var(--control-border-width-strong) dashed var(--color-border-default);
   border-radius: var(--radius-lg);
   color: var(--color-text-secondary);
   text-align: center;
 
   .material-icons {
-    font-size: 40px;
+    font-size: var(--size-icon-empty);
     opacity: 0.4;
   }
 
@@ -64,19 +64,19 @@
   font-size: var(--fs-base);
   line-height: 1;
   opacity: 0.6;
-  transition: opacity 0.2s ease;
+  transition: opacity var(--transition-standard);
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 24px;
-  min-height: 24px;
+  min-width: var(--size-touch-target-min);
+  min-height: var(--size-touch-target-min);
 
   &:hover {
     opacity: 1;
   }
 
   &:focus-visible {
-    outline: 2px solid var(--focus-ring);
+    outline: var(--control-focus-ring-width) solid var(--focus-ring);
     border-radius: var(--radius-sm);
   }
 }

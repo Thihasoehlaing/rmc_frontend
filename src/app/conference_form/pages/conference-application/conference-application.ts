@@ -30,9 +30,9 @@ import { AuthService } from '../../../services/auth.service';
     ReviewBlockComponent
   ],
   template: `
-    <div class="conference-wizard">
+    <div class="conference-wizard application-form-page">
       <app-form-main-title
-        title="Conference"
+        title="Conference Application"
         modalTitle="Guidelines for Applicants"
         [customModal]="true"
         (helpClick)="openGuidelines()">
@@ -40,13 +40,21 @@ import { AuthService } from '../../../services/auth.service';
 
       <app-conference-guidelines-modal #guidelinesModal></app-conference-guidelines-modal>
 
+      <app-step-indicator
+        [currentStep]="currentStep()"
+        [steps]="wizardSteps"
+        [stepStatuses]="stepStatuses()"
+        [submitAttempted]="submitAttempted()"
+        (stepClick)="goToStep($event)">
+      </app-step-indicator>
+
       <!-- DEV TEST START: Application Status Override -->
-      <div class="dev-test-override">
-        <label class="dev-test-override__label">DEV TEST: Application Status</label>
+      <div class="dev-test-override application-form-dev-tools">
+        <label class="dev-test-override__label application-form-dev-tools__label">DEV TEST: Application Status</label>
         <select
           [formControl]="fc('metadata.applicationStatus')"
           (change)="onTestStatusChange($any($event.target).value)"
-          class="dev-test-override__select">
+          class="dev-test-override__select input--select application-form-dev-tools__control">
           <option value="normal_application">normal_application</option>
           <option value="hos_application">hos_application</option>
           <option value="hos_request_resubmission">hos_request_resubmission</option>
@@ -65,7 +73,7 @@ import { AuthService } from '../../../services/auth.service';
       </div>
 
       <!-- Applicant Details Section -->
-      <div class="applicant-details">
+      <div class="applicant-details application-form-surface">
         <h3 class="applicant-details__title">Applicant Details</h3>
         <form [formGroup]="applicantDetailsForm" class="applicant-details__content">
           <div class="detail-field">
@@ -99,7 +107,7 @@ import { AuthService } from '../../../services/auth.service';
       </div>
 
       <!-- Main Form Section with Shadow -->
-      <div class="main-section">
+      <div class="main-section application-form-content">
         <!-- Comment Toggle Buttons (shown per ABAC status) -->
         @if (workflow.showHosToggle() || workflow.showRmcToggle() ||
              workflow.showVcToggle() || workflow.showHrToggle()) {
@@ -148,17 +156,8 @@ import { AuthService } from '../../../services/auth.service';
           </div>
         }
 
-        <!-- Step Indicator -->
-        <app-step-indicator
-          [currentStep]="currentStep()"
-          [steps]="wizardSteps"
-          [stepStatuses]="stepStatuses()"
-          [submitAttempted]="submitAttempted()"
-          (stepClick)="goToStep($event)">
-        </app-step-indicator>
-
         <!-- Form Content -->
-        <div class="wizard-content">
+        <div class="wizard-content application-form-surface">
           @switch(currentStep()) {
             @case(1) {
               <app-conference-details-form

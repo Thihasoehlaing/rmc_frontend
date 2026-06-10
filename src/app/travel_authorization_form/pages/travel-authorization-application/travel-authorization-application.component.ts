@@ -32,6 +32,7 @@ interface FunctionalAreaOption {
     FormWizardNavComponent,
     ReviewBlockComponent,
     DataTableComponent,
+    FormMainTitleComponent,
   ],
   templateUrl: './travel-authorization-application.component.html',
   styleUrl: './travel-authorization-application.component.scss',

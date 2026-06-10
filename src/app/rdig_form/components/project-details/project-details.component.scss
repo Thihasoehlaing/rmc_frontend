@@ -3,7 +3,7 @@
 .project-section {
   display: flex;
   flex-direction: column;
-  gap: var(--space-6);
+  gap: var(--form-section-gap);
 }
 
 .checkbox-option {
@@ -15,7 +15,7 @@
   line-height: var(--lh-relaxed);
 
   input {
-    margin-top: 3px;
+    margin-top: var(--form-space-1);
     flex-shrink: 0;
   }
 }
@@ -27,7 +27,7 @@
   padding: var(--space-3);
   background: var(--color-surface-nested);
   border-radius: var(--radius-md);
-  border: 1px solid var(--border-default);
+  border: var(--control-border-width) solid var(--color-border-default);
 }
 
 .label-with-manage {
@@ -45,19 +45,19 @@
   font-size: var(--fs-base);
   line-height: 1;
   opacity: 0.6;
-  transition: opacity 0.2s ease;
+  transition: opacity var(--transition-standard);
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 24px;
-  min-height: 24px;
+  min-width: var(--size-touch-target-min);
+  min-height: var(--size-touch-target-min);
 
   &:hover {
     opacity: 1;
   }
 
   &:focus-visible {
-    outline: 2px solid var(--focus-ring);
+    outline: var(--control-focus-ring-width) solid var(--focus-ring);
     border-radius: var(--radius-sm);
   }
 }
@@ -73,8 +73,8 @@
 
 .input--textarea-benefits {
   box-sizing: border-box;
-  min-height: 120px;
-  height: 120px;
+  min-height: var(--control-min-height-multiline);
+  height: var(--control-min-height-multiline);
   resize: vertical;
   width: 100%;
 }

@@ -7,23 +7,33 @@ export type ActionButtonType = 'primary' | 'danger' | 'secondary';
   standalone: true,
   template: `
     <button
-      [class]="'btn-' + type + '-pill'"
-      [disabled]="disabled"
+      [class]="'btn btn-' + type"
+      [disabled]="disabled || loading"
+      [attr.aria-busy]="loading || null"
       [attr.title]="title || null"
       type="button"
       (click)="clicked.emit()">
-      @if (icon) {
+      @if (loading) {
+        <span class="material-icons spinning" aria-hidden="true">progress_activity</span>
+      } @else if (icon) {
         <span class="material-icons">{{ icon }}</span>
       }
-      {{ label }}
+      {{ loading ? loadingLabel : label }}
     </button>
-  `
+  `,
+  styles: [`
+    .material-icons { font-size: var(--size-icon-control); }
+    .spinning { animation: action-button-spin 1s linear infinite; }
+    @keyframes action-button-spin { to { transform: rotate(360deg); } }
+  `]
 })
 export class ActionButtonComponent {
   @Input() type: ActionButtonType = 'primary';
   @Input() label: string = '';
   @Input() icon: string = '';
   @Input() disabled: boolean = false;
+  @Input() loading = false;
+  @Input() loadingLabel = 'Please wait...';
   @Input() title: string = '';
   @Output() clicked = new EventEmitter<void>();
 }

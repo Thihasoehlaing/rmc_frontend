@@ -150,6 +150,7 @@ export const NAVIGATION_DATA: NavGroup[] = [
                     { label: 'Dropdowns', icon: 'list', route: '/settings/dropdowns', permission: { anyOf: ['Admin'] } },
                     { label: 'Batches', icon: 'batch_prediction', route: '/settings/batches', permission: { anyOf: ['Admin'] } },
                     { label: 'Staff Access', icon: 'person_add', route: '/settings/staff-access', permission: { anyOf: ['Admin'] } },
+                    { label: 'External Project Data Entry', icon: 'folder_open', route: '/settings/external-project-data-entry', permission: { anyOf: ['Admin'] } },
                 ],
             },
         ],

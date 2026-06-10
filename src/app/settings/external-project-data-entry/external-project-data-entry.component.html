@@ -1,0 +1,579 @@
+<section class="external-project-page">
+  <header class="external-project-page__header">
+    <h1 class="external-project-page__page-title">External Project Data Entry Process - Fill Application Form</h1>
+  </header>
+
+  <form [formGroup]="externalProjectForm" class="form-container external-project-form">
+    <div class="external-project-form__title-block">
+      <h2 class="external-project-form__title">External Project Data Entry</h2>
+      <div class="external-project-form__divider" aria-hidden="true"></div>
+    </div>
+
+    <div class="external-project-form__body">
+      <div class="form-field">
+        <label for="external-grant-category" class="form-label is-required">External Grant Category</label>
+        <div id="external-grant-category" class="radio-group radio-group--grid">
+          @for (category of grantCategories; track category) {
+            <label class="radio-option">
+              <input
+                type="radio"
+                class="radio-input"
+                formControlName="externalGrantCategory"
+                [value]="category">
+              <span>{{ category }}</span>
+            </label>
+          }
+        </div>
+      </div>
+
+      @if (showProjectFlow()) {
+        <section class="card">
+          <app-custom-subheader
+            icon="assignment"
+            title="National, International or Industry Project Details">
+          </app-custom-subheader>
+
+          <div class="card__content section-fields">
+            <div class="row row--3">
+              <div class="form-field">
+                <label class="form-label is-required">Project Code</label>
+                <input type="text" class="input--text" formControlName="projectCode">
+              </div>
+              <div class="form-field">
+                <label class="form-label">Account Code</label>
+                <input type="text" class="input--text" formControlName="accountCode">
+              </div>
+              <div class="form-field">
+                <label class="form-label is-required">Staff Name</label>
+                <input type="text" class="input--text" formControlName="staffName">
+              </div>
+            </div>
+
+            <div class="row row--3">
+              <div class="form-field">
+                <label class="form-label is-required">School/Department</label>
+                <input type="text" class="input--text" formControlName="schoolDepartment">
+              </div>
+              <div class="form-field">
+                <label class="form-label is-required">Sponsor Name</label>
+                <input type="text" class="input--text" formControlName="sponsorName">
+              </div>
+              <div class="form-field">
+                <label class="form-label is-required">Grant Name</label>
+                <input type="text" class="input--text" formControlName="grantName">
+              </div>
+            </div>
+
+            <div class="row row--3">
+              <div class="form-field">
+                <label class="form-label is-required">Start Date</label>
+                <input type="date" class="input--text" formControlName="startDate">
+              </div>
+              <div class="form-field">
+                <label class="form-label is-required">End Date</label>
+                <input type="date" class="input--text" formControlName="endDate">
+              </div>
+              <div class="form-field">
+                <label class="form-label">Duration of Project (Month)</label>
+                <input type="text" class="input--text input--readonly" formControlName="durationMonths" readonly>
+              </div>
+            </div>
+
+            <div class="form-field">
+              <label class="form-label is-required">Research Title</label>
+              <textarea
+                class="input--textarea"
+                formControlName="researchTitle"
+                [maxlength]="200"
+                rows="3">
+              </textarea>
+              <app-character-counter [current]="researchTitleLength()" [max]="200"></app-character-counter>
+            </div>
+
+            <div class="table-section">
+              <div class="category-header">
+                <h3 class="table-section__title">Internal Co-Researcher</h3>
+                <app-action-button type="primary" label="Add Entry" icon="add" (clicked)="addInternalCoResearcherRow()"></app-action-button>
+              </div>
+
+              <app-data-table
+                [columns]="internalCoResearcherColumns"
+                [rows]="internalCoResearchers"
+                [rowTrackFn]="trackByIndex"
+                [dense]="true">
+                <ng-template #rowTemplate let-row let-index="index">
+                  <tr>
+                    <td class="is-align-center">
+                      <input
+                        type="checkbox"
+                        [checked]="row.selected"
+                        (change)="updateInternalSelection(index, $any($event.target).checked)">
+                    </td>
+                    <td>
+                      <input
+                        type="text"
+                        class="input--text table-input"
+                        [value]="row.staffName"
+                        (input)="updateInternalCoResearcherStaffName(index, $any($event.target).value)">
+                    </td>
+                    <td>
+                      <input
+                        type="text"
+                        class="input--text table-input"
+                        [value]="row.schoolDepartment"
+                        (input)="updateInternalCoResearcherSchoolDepartment(index, $any($event.target).value)">
+                    </td>
+                  </tr>
+                </ng-template>
+              </app-data-table>
+            </div>
+
+            <div class="table-section">
+              <div class="category-header">
+                <h3 class="table-section__title">External Collaborators</h3>
+                <app-action-button type="primary" label="Add Entry" icon="add" (clicked)="addExternalCollaboratorRow()"></app-action-button>
+              </div>
+
+              <app-data-table
+                [columns]="externalCollaboratorColumns"
+                [rows]="externalCollaborators"
+                [rowTrackFn]="trackByIndex"
+                [dense]="true">
+                <ng-template #rowTemplate let-row let-index="index">
+                  <tr>
+                    <td class="is-align-center">
+                      <input
+                        type="checkbox"
+                        [checked]="row.selected"
+                        (change)="updateExternalSelection(index, $any($event.target).checked)">
+                    </td>
+                    <td>
+                      <input
+                        type="text"
+                        class="input--text table-input"
+                        [value]="row.name"
+                        (input)="updateExternalCollaboratorName(index, $any($event.target).value)">
+                    </td>
+                    <td>
+                      <input
+                        type="text"
+                        class="input--text table-input"
+                        [value]="row.affiliation"
+                        (input)="updateExternalCollaboratorAffiliation(index, $any($event.target).value)">
+                    </td>
+                  </tr>
+                </ng-template>
+              </app-data-table>
+            </div>
+
+            <div class="table-section">
+              <div class="category-header">
+                <h3 class="table-section__title">Expected Outcome</h3>
+                <app-action-button type="primary" label="Add Entry" icon="add" (clicked)="addExpectedOutcomeRow()"></app-action-button>
+              </div>
+
+              <app-data-table
+                [columns]="expectedOutcomeColumns"
+                [rows]="expectedOutcomes"
+                [rowTrackFn]="trackByIndex"
+                [dense]="true">
+                <ng-template #rowTemplate let-row let-index="index">
+                  <tr>
+                    <td class="is-align-center">
+                      <input
+                        type="checkbox"
+                        [checked]="row.selected"
+                        (change)="updateExpectedOutcomeSelection(index, $any($event.target).checked)">
+                    </td>
+                    <td>
+                      <input
+                        type="text"
+                        class="input--text table-input"
+                        [value]="row.description"
+                        (input)="updateExpectedOutcomeDescription(index, $any($event.target).value)">
+                    </td>
+                  </tr>
+                </ng-template>
+              </app-data-table>
+            </div>
+          </div>
+        </section>
+
+        <section class="card budget-summary-card">
+          <app-custom-subheader icon="account_balance_wallet" title="Budget Summary"></app-custom-subheader>
+
+          <div class="card__content section-fields budget-summary-card__content">
+            <div class="form-field budget-summary-card__total-field">
+              <label class="form-label">Total Budget Request (RM)</label>
+              <input type="text" class="input--text input--disabled-readonly" [value]="budgetSummaryTotal()" readonly>
+            </div>
+
+            @for (section of budgetSections; track section.key) {
+              <section class="card budget-item-card">
+                <app-custom-subheader [title]="section.title + ' (' + section.code + ')'" icon="folder"></app-custom-subheader>
+
+                <div class="card__content section-fields budget-item-card__content">
+                  <div class="row row--2 budget-item-card__summary-row">
+                    <div class="form-field">
+                      <label class="form-label is-required">Item</label>
+                      <input
+                        type="text"
+                        class="input--text input--readonly"
+                        readonly
+                        [value]="section.item"
+                        (input)="updateBudgetSectionItem(section.key, $any($event.target).value)">
+                    </div>
+
+                    <div class="form-field">
+                      <label class="form-label is-required">Total Amount (RM)</label>
+                      <input
+                        type="text"
+                        class="input--text input--readonly"
+                        readonly
+                        [value]="section.totalAmount || '0.00'">
+                    </div>
+                  </div>
+
+                  @if (section.requiresQuotation) {
+                    <div class="form-field">
+                      <app-file-upload
+                        [label]="section.quotationLabel"
+                        accept=".pdf,.jpg,.jpeg,.png"
+                        [maxSizeMB]="10"
+                        placeholder="Upload quotation document"
+                        (fileSelected)="onQuotationSelected(section.key, $event)">
+                      </app-file-upload>
+                    </div>
+                  }
+
+                  <div class="table-section">
+                    <div class="category-header">
+                      <h3 class="table-section__title">Detail Breakdown</h3>
+                      <app-action-button type="primary" label="Add Entry" icon="add" (clicked)="addBudgetRow(section.key)"></app-action-button>
+                    </div>
+
+                    <app-data-table
+                      [columns]="budgetBreakdownColumns"
+                      [rows]="section.rows"
+                      [rowTrackFn]="trackByIndex"
+                      [dense]="true">
+                      <ng-template #rowTemplate let-row let-index="index">
+                        <tr>
+                          <td class="is-align-center">
+                            <input
+                              type="checkbox"
+                              [checked]="row.selected"
+                              (change)="updateBudgetRowSelection(section.key, index, $any($event.target).checked)">
+                          </td>
+                          <td>
+                            <input
+                              type="text"
+                              class="input--text table-input"
+                              [class.input--disabled-readonly]="isInternationalSelected()"
+                              [readonly]="isInternationalSelected()"
+                              [value]="row.description"
+                              (input)="updateBudgetRowDescription(section.key, index, $any($event.target).value)">
+                          </td>
+                          <td>
+                            <input
+                              type="number"
+                              class="input--text table-input"
+                              [class.input--disabled-readonly]="isInternationalSelected()"
+                              [readonly]="isInternationalSelected()"
+                              min="0"
+                              step="0.01"
+                              [value]="row.amount"
+                              (input)="updateBudgetRowAmount(section.key, index, $any($event.target).value)">
+                          </td>
+                        </tr>
+                      </ng-template>
+                    </app-data-table>
+                  </div>
+
+                  @if (section.key === 'management-fee') {
+                    <div class="form-field">
+                      <label class="form-label">Remark</label>
+                      <textarea
+                        class="input--textarea"
+                        [value]="section.remark"
+                        maxlength="600"
+                        (input)="updateBudgetSectionRemark(section.key, $any($event.target).value)">
+                      </textarea>
+                      <app-character-counter [current]="section.remark.length" [max]="600"></app-character-counter>
+                    </div>
+
+                    <div class="form-field">
+                      <label class="form-label">Is Billing Required?</label>
+                      <div class="radio-group radio-group--grid radio-group--single-row">
+                        <label class="radio-option">
+                          <input
+                            type="radio"
+                            class="radio-input"
+                            [name]="section.key + '-billing'"
+                            [checked]="section.billingRequired === 'Yes'"
+                            (change)="updateBillingRequired(section.key, 'Yes')">
+                          <span>Yes</span>
+                        </label>
+                        <label class="radio-option">
+                          <input
+                            type="radio"
+                            class="radio-input"
+                            [name]="section.key + '-billing'"
+                            [checked]="section.billingRequired === 'No'"
+                            (change)="updateBillingRequired(section.key, 'No')">
+                          <span>No</span>
+                        </label>
+                      </div>
+                    </div>
+                  }
+                </div>
+              </section>
+            }
+          </div>
+        </section>
+      }
+
+      @if (isConsultancySelected()) {
+        <section class="card">
+          <app-custom-subheader
+            icon="work"
+            title="Consultancy Project Details">
+          </app-custom-subheader>
+
+          <div class="card__content section-fields">
+            <div class="row row--2">
+              <div class="form-field">
+                <label class="form-label is-required">Project Code</label>
+                <input type="text" class="input--text" formControlName="projectCode">
+              </div>
+              <div class="form-field">
+                <label class="form-label">Account Code</label>
+                <input type="text" class="input--text" formControlName="accountCode">
+              </div>
+            </div>
+
+            <div class="row row--2">
+              <div class="form-field">
+                <label class="form-label is-required">Staff Name</label>
+                <input type="text" class="input--text" formControlName="staffName">
+              </div>
+              <div class="form-field">
+                <label class="form-label is-required">School/Department</label>
+                <input type="text" class="input--text" formControlName="schoolDepartment">
+              </div>
+            </div>
+
+            <div class="row row--2">
+              <div class="form-field">
+                <label class="form-label is-required">Start Date</label>
+                <input type="date" class="input--text" formControlName="startDate">
+              </div>
+              <div class="form-field">
+                <label class="form-label is-required">Client/Stakeholder</label>
+                <input type="text" class="input--text" formControlName="clientStakeholder">
+              </div>
+            </div>
+
+            <div class="row row--2">
+              <div class="form-field">
+                <label class="form-label is-required">End Date</label>
+                <input type="date" class="input--text" formControlName="endDate">
+              </div>
+              <div class="form-field">
+                <label class="form-label">Duration of Project (Month)</label>
+                <input type="text" class="input--text input--readonly" formControlName="durationMonths" readonly>
+              </div>
+            </div>
+
+            <div class="form-field">
+              <label class="form-label is-required">Consultancy Title</label>
+              <textarea
+                class="input--textarea"
+                formControlName="consultancyTitle"
+                [maxlength]="200"
+                rows="3">
+              </textarea>
+              <app-character-counter [current]="consultancyTitleLength()" [max]="200"></app-character-counter>
+            </div>
+
+            <div class="table-section">
+              <div class="category-header">
+                <h3 class="table-section__title">Internal Co-Researcher</h3>
+                <app-action-button type="primary" label="Add Entry" icon="add" (clicked)="addInternalCoResearcherRow()"></app-action-button>
+              </div>
+
+              <app-data-table
+                [columns]="internalCoResearcherColumns"
+                [rows]="internalCoResearchers"
+                [rowTrackFn]="trackByIndex"
+                [dense]="true">
+                <ng-template #rowTemplate let-row let-index="index">
+                  <tr>
+                    <td class="is-align-center">
+                      <input
+                        type="checkbox"
+                        [checked]="row.selected"
+                        (change)="updateInternalSelection(index, $any($event.target).checked)">
+                    </td>
+                    <td>
+                      <input
+                        type="text"
+                        class="input--text table-input"
+                        [value]="row.staffName"
+                        (input)="updateInternalCoResearcherStaffName(index, $any($event.target).value)">
+                    </td>
+                    <td>
+                      <input
+                        type="text"
+                        class="input--text table-input"
+                        [value]="row.schoolDepartment"
+                        (input)="updateInternalCoResearcherSchoolDepartment(index, $any($event.target).value)">
+                    </td>
+                  </tr>
+                </ng-template>
+              </app-data-table>
+            </div>
+          </div>
+        </section>
+
+        <section class="card budget-summary-card">
+          <app-custom-subheader icon="account_balance_wallet" title="Budget Summary"></app-custom-subheader>
+
+          <div class="card__content section-fields budget-summary-card__content">
+            <div class="form-field budget-summary-card__total-field">
+              <label class="form-label">Total Budget Request (RM)</label>
+              <input type="text" class="input--text input--disabled-readonly" [value]="budgetSummaryTotal()" readonly>
+            </div>
+
+            @for (section of budgetSections; track section.key) {
+              <section class="card budget-item-card">
+                <app-custom-subheader [title]="section.title + ' (' + section.code + ')'" icon="folder"></app-custom-subheader>
+
+                <div class="card__content section-fields budget-item-card__content">
+                  <div class="row row--2 budget-item-card__summary-row">
+                    <div class="form-field">
+                      <label class="form-label is-required">Item</label>
+                      <input
+                        type="text"
+                        class="input--text input--readonly"
+                        readonly
+                        [value]="section.item"
+                        (input)="updateBudgetSectionItem(section.key, $any($event.target).value)">
+                    </div>
+
+                    <div class="form-field">
+                      <label class="form-label is-required">Total Amount (RM)</label>
+                      <input
+                        type="text"
+                        class="input--text input--readonly"
+                        readonly
+                        [value]="section.totalAmount || '0.00'">
+                    </div>
+                  </div>
+
+                  @if (section.requiresQuotation) {
+                    <div class="form-field">
+                      <app-file-upload
+                        [label]="section.quotationLabel"
+                        accept=".pdf,.jpg,.jpeg,.png"
+                        [maxSizeMB]="10"
+                        placeholder="Upload quotation document"
+                        (fileSelected)="onQuotationSelected(section.key, $event)">
+                      </app-file-upload>
+                    </div>
+                  }
+
+                  <div class="table-section">
+                    <div class="category-header">
+                      <h3 class="table-section__title">Detail Breakdown</h3>
+                      <app-action-button type="primary" label="Add Entry" icon="add" (clicked)="addBudgetRow(section.key)"></app-action-button>
+                    </div>
+
+                    <app-data-table
+                      [columns]="budgetBreakdownColumns"
+                      [rows]="section.rows"
+                      [rowTrackFn]="trackByIndex"
+                      [dense]="true">
+                      <ng-template #rowTemplate let-row let-index="index">
+                        <tr>
+                          <td class="is-align-center">
+                            <input
+                              type="checkbox"
+                              [checked]="row.selected"
+                              (change)="updateBudgetRowSelection(section.key, index, $any($event.target).checked)">
+                          </td>
+                          <td>
+                            <input
+                              type="text"
+                              class="input--text table-input"
+                              [class.input--disabled-readonly]="isInternationalSelected()"
+                              [readonly]="isInternationalSelected()"
+                              [value]="row.description"
+                              (input)="updateBudgetRowDescription(section.key, index, $any($event.target).value)">
+                          </td>
+                          <td>
+                            <input
+                              type="number"
+                              class="input--text table-input"
+                              [class.input--disabled-readonly]="isInternationalSelected()"
+                              [readonly]="isInternationalSelected()"
+                              min="0"
+                              step="0.01"
+                              [value]="row.amount"
+                              (input)="updateBudgetRowAmount(section.key, index, $any($event.target).value)">
+                          </td>
+                        </tr>
+                      </ng-template>
+                    </app-data-table>
+                  </div>
+
+                  @if (section.key === 'management-fee') {
+                    <div class="form-field">
+                      <label class="form-label">Remark</label>
+                      <textarea
+                        class="input--textarea"
+                        [value]="section.remark"
+                        maxlength="600"
+                        (input)="updateBudgetSectionRemark(section.key, $any($event.target).value)">
+                      </textarea>
+                      <app-character-counter [current]="section.remark.length" [max]="600"></app-character-counter>
+                    </div>
+
+                    <div class="form-field">
+                      <label class="form-label">Is Billing Required?</label>
+                      <div class="radio-group radio-group--grid radio-group--single-row">
+                        <label class="radio-option">
+                          <input
+                            type="radio"
+                            class="radio-input"
+                            [name]="section.key + '-billing'"
+                            [checked]="section.billingRequired === 'Yes'"
+                            (change)="updateBillingRequired(section.key, 'Yes')">
+                          <span>Yes</span>
+                        </label>
+                        <label class="radio-option">
+                          <input
+                            type="radio"
+                            class="radio-input"
+                            [name]="section.key + '-billing'"
+                            [checked]="section.billingRequired === 'No'"
+                            (change)="updateBillingRequired(section.key, 'No')">
+                          <span>No</span>
+                        </label>
+                      </div>
+                    </div>
+                  }
+                </div>
+              </section>
+            }
+          </div>
+        </section>
+      }
+    </div>
+
+    <footer class="external-project-form__actions">
+      <button type="button" class="btn btn-secondary" (click)="saveDraft()">Save As Draft</button>
+      <button type="button" class="btn btn-primary" (click)="complete()">Complete</button>
+    </footer>
+  </form>
+</section>

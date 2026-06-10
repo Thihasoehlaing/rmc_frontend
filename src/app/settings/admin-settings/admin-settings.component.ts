@@ -68,6 +68,13 @@ export class AdminSettingsComponent implements OnInit {
         itemCount: 0,
         route: '/settings/staff-access',
       },
+      {
+        title: 'External Project Data Entry',
+        description: 'Prepare the page shell for external project intake details.',
+        icon: 'folder_open',
+        itemCount: 0,
+        route: '/settings/external-project-data-entry',
+      },
     ];
   }
 }

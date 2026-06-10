@@ -30,6 +30,8 @@ export class AddOptionModalComponent implements OnChanges {
   @Input() primaryActionLabel = 'Add Option';
   @Input() showAccountNumberMetadata = false;
   @Input() showRegionMetadata = false;
+  @Input() nameReadonly = false;
+  @Input() descriptionReadonly = false;
 
   @Output() close = new EventEmitter<void>();
   @Output() save = new EventEmitter<AddOptionPayload>();
@@ -64,7 +66,7 @@ export class AddOptionModalComponent implements OnChanges {
   }
 
   get isValid(): boolean {
-    if (!this.name || this.appliesTo.length === 0) {
+    if (!this.name.trim() || this.appliesTo.length === 0) {
       return false;
     }
 

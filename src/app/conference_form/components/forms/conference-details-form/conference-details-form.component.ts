@@ -9,6 +9,7 @@ import { DataTableComponent, DataTableColumn } from '../../../../shared/componen
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
 import { DialogComponent } from '../../../../shared/components/dialog/dialog.component';
 import { CustomSubheaderComponent } from '../../../../shared/components/custom-subheader/custom-subheader.component';
+import { CustomHeaderComponent } from '../../../../shared/components/custom-header/custom-header.component';
 import { DropdownOption } from '../../../../interfaces/components.interface';
 import { ConferenceWorkflowService } from '../../../services/conference-workflow.service';
 import { ConferenceFormStateService } from '../../../services/conference-form-state.service';
@@ -17,7 +18,7 @@ import { BreakdownOptionsService } from '../../../services/breakdown-options.ser
 @Component({
   selector: 'app-conference-details-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, NoteComponent, SearchableDropdownComponent, ValidationMessageComponent, CharacterCounterComponent, DataTableComponent, DialogComponent, PaginationComponent, CustomSubheaderComponent],
+  imports: [CommonModule, ReactiveFormsModule, NoteComponent, SearchableDropdownComponent, ValidationMessageComponent, CharacterCounterComponent, DataTableComponent, DialogComponent, PaginationComponent, CustomHeaderComponent, CustomSubheaderComponent],
   templateUrl: './conference-details-form.component.html',
   styleUrl: './conference-details-form.component.scss'
 })

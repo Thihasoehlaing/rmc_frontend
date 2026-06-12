@@ -16,13 +16,16 @@
 }
 
 .form-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--form-section-gap);
   padding: 0;
 }
 
 .section-fields {
   display: flex;
   flex-direction: column;
-  gap: var(--space-6);
+  gap: var(--space-4);
 }
 
 // Note: .form-field, .form-label, .form-hint, .input--* are defined globally in _forms.scss
@@ -31,7 +34,7 @@
 .row--2 {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--space-6);
+  gap: var(--space-4);
 
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
@@ -157,6 +160,12 @@
 }
 
 // Modal styles
+.dialog-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -316,7 +325,7 @@
 .list-section-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: var(--space-3);
   flex-wrap: wrap;
   margin-bottom: var(--space-4);

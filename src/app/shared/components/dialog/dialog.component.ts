@@ -25,6 +25,9 @@ export class DialogComponent {
    */
   @Input() width: string | null = null;
 
+  /** Standard dialog width variant. */
+  @Input() size: 'small' | 'medium' | 'large' = 'medium';
+
   /** Emitted when the user clicks the ✕ button or the backdrop. */
   @Output() close = new EventEmitter<void>();
 

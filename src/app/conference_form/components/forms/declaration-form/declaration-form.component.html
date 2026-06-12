@@ -1,9 +1,9 @@
 <form [formGroup]="form" class="form-section">
-  <div class="card">
-    <app-custom-subheader title="Declaration and Agreement"></app-custom-subheader>
-
-    <div class="card__content">
-      <div class="section-fields">
+  <app-custom-header icon="verified" title="Declaration and Agreement"></app-custom-header>
+  <div class="section-fields">
+    <section class="card">
+      <app-custom-subheader title="Declaration"></app-custom-subheader>
+      <div class="card__content">
         <div class="declaration-box">
           <h4 class="declaration-box__title">
             <span class="material-icons">gavel</span>
@@ -14,9 +14,12 @@
           <p>Furthermore, under such omission or default by me, I do hereby authorise the University to deduct the amount sponsored being the cost incurred of the said fee from my monthly salary whenever due to me by monthly instalments of not more than RM300.00 per month until the full due amount has been settled or that I shall pay in full the outstanding amount, if I resign from the services of the University before the full and final payment.</p>
         </div>
 
-        <!-- Mandatory Agreement Checkboxes -->
-        <div class="card">
-          <div class="card__content">
+      </div>
+    </section>
+
+    <section class="card">
+      <app-custom-subheader title="Required Agreements"></app-custom-subheader>
+      <div class="card__content section-fields">
           <label class="agreement-trigger">
             <input
               type="checkbox"
@@ -24,11 +27,6 @@
               required>
             <span class="is-required">I have read and agree to the terms and conditions outlined in the Declaration and Agreement for Conference Funding.</span>
           </label>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="card__content">
           <label class="agreement-trigger">
             <input
               type="checkbox"
@@ -36,9 +34,7 @@
               required>
             <span class="is-required">I certify that the grant funder(s) has/have been appropriately acknowledged in the publication.</span>
           </label>
-          </div>
-        </div>
       </div>
-    </div>
+    </section>
   </div>
 </form>

@@ -9,13 +9,16 @@
 }
 
 .form-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--form-section-gap);
   padding: 0;
 }
 
 .section-fields {
   display: flex;
   flex-direction: column;
-  gap: var(--space-6);
+  gap: var(--space-4);
 }
 
 .form-column .form-field {
@@ -67,7 +70,7 @@
 .row--2 {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: var(--space-6);
+  gap: var(--space-4);
   align-items: start;
 
   @media (max-width: 900px) {
@@ -78,6 +81,25 @@
 
 .row--2--stacked {
   grid-template-columns: 1fr;
+}
+
+.conference-field-grid > .form-field {
+  margin-bottom: 0;
+}
+
+.location-selection-field {
+  order: 1;
+}
+
+.funding-request-field {
+  order: 2;
+}
+
+.conditional-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
 }
 
 .radio-divider-extended {
@@ -224,6 +246,15 @@
 
 .form-column {
   min-width: 0;
+}
+
+.conference-text-fields {
+  align-items: start;
+
+  .input--textarea {
+    min-height: var(--control-min-height-multiline);
+    height: var(--control-min-height-multiline);
+  }
 }
 
 .form-label {
@@ -483,7 +514,7 @@
 .list-section-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: var(--space-3);
   flex-wrap: wrap;
   margin-bottom: var(--space-3);
@@ -556,10 +587,11 @@
   justify-content: center;
   width: 100%;
   box-sizing: border-box;
+  min-height: 180px;
   padding: var(--space-8) var(--space-4);
   border: 1px solid var(--border-default);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-nested);
   text-align: center;
   color: var(--color-text-muted);
 
@@ -625,6 +657,27 @@
 }
 
 // Modal styles
+.dialog-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.dialog-form--two-column {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3) var(--space-4);
+
+  .form-group:first-child,
+  .form-group:last-child {
+    grid-column: 1 / -1;
+  }
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
 .modal-overlay {
   position: fixed;
   top: 0;

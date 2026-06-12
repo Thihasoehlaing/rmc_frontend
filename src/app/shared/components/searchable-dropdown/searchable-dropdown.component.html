@@ -5,7 +5,7 @@
 
   <!-- ── Label ──────────────────────────────────────────────────── -->
   @if (label) {
-    <label class="form-label">{{ label }}</label>
+    <label class="form-label" [class.is-required]="required">{{ label }}</label>
   }
 
   <!-- ── Trigger ────────────────────────────────────────────────── -->

@@ -50,6 +50,7 @@ export class SearchableDropdownComponent<T = number> implements ControlValueAcce
   // ── Inputs ───────────────────────────────────────────────────────
 
   @Input() label = '';
+  @Input() required = false;
   @Input() placeholder = 'Select an option...';
   @Input() isMulti = false;
   @Input() searchable = true;

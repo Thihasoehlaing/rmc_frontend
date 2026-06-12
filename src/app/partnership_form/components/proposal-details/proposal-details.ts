@@ -6,6 +6,7 @@ import { SearchableDropdownComponent } from '../../../shared/components/searchab
 import { DropdownOption } from '../../../interfaces/components.interface';
 import { CharacterCounterComponent } from '../../../shared/components/character-counter/character-counter.component';
 import { PartnershipOptionsService } from '../../services/partnership-options.service';
+import { TextareaAutosizeDirective } from '../../../shared/directives/textarea-autosize.directive';
 
 @Component({
   selector: 'app-proposal-details',
@@ -15,7 +16,8 @@ import { PartnershipOptionsService } from '../../services/partnership-options.se
     ReactiveFormsModule,
     CustomSubheaderComponent,
     SearchableDropdownComponent,
-    CharacterCounterComponent
+    CharacterCounterComponent,
+    TextareaAutosizeDirective
   ],
   templateUrl: './proposal-details.html',
   styleUrls: ['./proposal-details.scss']

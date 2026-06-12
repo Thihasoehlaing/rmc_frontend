@@ -12,6 +12,7 @@ import { NoteComponent } from '../../../shared/components/note/note.component';
 import { ReviewBlockComponent } from '../review-block/review-block.component';
 import { RdigWorkflowService } from '../../services/rdig-workflow.service';
 import { RdigDropdownOptionsService, DropdownOptionEntityEntity as DropdownOptionEntity } from '../../../settings/rdig-dropdown-options.service';
+import { TextareaAutosizeDirective } from '../../../shared/directives/textarea-autosize.directive';
 
 @Component({
     selector: 'app-project-details',
@@ -24,7 +25,8 @@ import { RdigDropdownOptionsService, DropdownOptionEntityEntity as DropdownOptio
         CharacterCounterComponent,
         ValidationMessageComponent,
         NoteComponent,
-        ReviewBlockComponent
+        ReviewBlockComponent,
+        TextareaAutosizeDirective
     ],
     templateUrl: './project-details.component.html',
     styleUrls: ['./project-details.component.scss']

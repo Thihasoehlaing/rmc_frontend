@@ -9,31 +9,31 @@
 
       <div class="form-field">
         <label class="form-label is-required">Affordability/Financial</label>
-        <textarea class="input--textarea" rows="4" formControlName="affordability" maxlength="2000"></textarea>
+        <textarea class="input--textarea input--autosize" appTextareaAutosize [minRows]="4" rows="4" formControlName="affordability" maxlength="2000"></textarea>
         <app-character-counter [current]="riskForm.get('affordability')?.value?.length ?? 0" [max]="2000"></app-character-counter>
       </div>
 
       <div class="form-field mt-3">
         <label class="form-label is-required">Sustainability</label>
-        <textarea class="input--textarea" rows="4" formControlName="sustainability" maxlength="2000"></textarea>
+        <textarea class="input--textarea input--autosize" appTextareaAutosize [minRows]="4" rows="4" formControlName="sustainability" maxlength="2000"></textarea>
         <app-character-counter [current]="riskForm.get('sustainability')?.value?.length ?? 0" [max]="2000"></app-character-counter>
       </div>
 
       <div class="form-field mt-3">
         <label class="form-label is-required">Strategic</label>
-        <textarea class="input--textarea" rows="4" formControlName="strategic" maxlength="2000"></textarea>
+        <textarea class="input--textarea input--autosize" appTextareaAutosize [minRows]="4" rows="4" formControlName="strategic" maxlength="2000"></textarea>
         <app-character-counter [current]="riskForm.get('strategic')?.value?.length ?? 0" [max]="2000"></app-character-counter>
       </div>
 
       <div class="form-field mt-3">
         <label class="form-label is-required">Student Focus</label>
-        <textarea class="input--textarea" rows="4" formControlName="studentFocus" maxlength="2000"></textarea>
+        <textarea class="input--textarea input--autosize" appTextareaAutosize [minRows]="4" rows="4" formControlName="studentFocus" maxlength="2000"></textarea>
         <app-character-counter [current]="riskForm.get('studentFocus')?.value?.length ?? 0" [max]="2000"></app-character-counter>
       </div>
 
       <div class="form-field mt-3">
         <label class="form-label is-required">Outcome of Risk Assessment</label>
-        <textarea class="input--textarea" rows="4" formControlName="outcome" maxlength="500"></textarea>
+        <textarea class="input--textarea input--autosize" appTextareaAutosize [minRows]="4" rows="4" formControlName="outcome" maxlength="500"></textarea>
         <app-character-counter [current]="riskForm.get('outcome')?.value?.length ?? 0" [max]="500"></app-character-counter>
       </div>
 
@@ -264,7 +264,7 @@
 
       <div class="form-field mt-5">
         <label class="form-label">Success Factor</label>
-        <textarea class="form-control input--textarea" rows="4" formControlName="successFactor" maxlength="500" placeholder="max 500 char"></textarea>
+        <textarea class="form-control input--textarea input--autosize" appTextareaAutosize [minRows]="4" rows="4" formControlName="successFactor" maxlength="500" placeholder="max 500 char"></textarea>
         <app-character-counter [current]="riskForm.get('successFactor')?.value?.length ?? 0" [max]="500"></app-character-counter>
       </div>
 

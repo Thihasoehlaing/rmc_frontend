@@ -45,67 +45,67 @@
 
       <div class="form-field mt-3">
         <label class="form-label is-required">Proposed Partner Name</label>
-        <textarea class="input--textarea" rows="2" formControlName="proposedPartnerName" maxlength="500"></textarea>
+        <textarea class="input--textarea input--autosize" appTextareaAutosize [minRows]="2" rows="2" formControlName="proposedPartnerName" maxlength="500"></textarea>
         <app-character-counter [current]="applicantForm.get('proposedPartnerName')?.value?.length ?? 0" [max]="500"></app-character-counter>
       </div>
 
       <div class="form-field mt-3">
         <label class="form-label is-required">Rationale</label>
-        <textarea class="input--textarea" rows="4" formControlName="rationale" maxlength="4000"></textarea>
+        <textarea class="input--textarea input--autosize" appTextareaAutosize [minRows]="4" rows="4" formControlName="rationale" maxlength="4000"></textarea>
         <app-character-counter [current]="applicantForm.get('rationale')?.value?.length ?? 0" [max]="4000"></app-character-counter>
       </div>
 
       <div class="form-field mt-3">
         <label class="form-label is-required">Benefits of the Partnership</label>
-        <textarea class="input--textarea" rows="4" formControlName="benefits" maxlength="4000"></textarea>
+        <textarea class="input--textarea input--autosize" appTextareaAutosize [minRows]="4" rows="4" formControlName="benefits" maxlength="4000"></textarea>
         <app-character-counter [current]="applicantForm.get('benefits')?.value?.length ?? 0" [max]="4000"></app-character-counter>
       </div>
 
       <div class="form-field mt-3">
         <label class="form-label is-required">Timescale</label>
-        <textarea class="input--textarea" rows="4" formControlName="timescale" maxlength="2000"></textarea>
+        <textarea class="input--textarea input--autosize" appTextareaAutosize [minRows]="4" rows="4" formControlName="timescale" maxlength="2000"></textarea>
         <app-character-counter [current]="applicantForm.get('timescale')?.value?.length ?? 0" [max]="2000"></app-character-counter>
       </div>
 
       <div class="form-field mt-3">
         <label class="form-label is-required">Management of Arrangement</label>
-        <textarea class="input--textarea" rows="4" formControlName="managementArrangement" maxlength="2000"></textarea>
+        <textarea class="input--textarea input--autosize" appTextareaAutosize [minRows]="4" rows="4" formControlName="managementArrangement" maxlength="2000"></textarea>
         <app-character-counter [current]="applicantForm.get('managementArrangement')?.value?.length ?? 0" [max]="2000"></app-character-counter>
       </div>
 
       <div class="form-field mt-3">
         <label class="form-label is-required">Constraints</label>
-        <textarea class="input--textarea" rows="4" formControlName="constraints" maxlength="2000"></textarea>
+        <textarea class="input--textarea input--autosize" appTextareaAutosize [minRows]="4" rows="4" formControlName="constraints" maxlength="2000"></textarea>
         <app-character-counter [current]="applicantForm.get('constraints')?.value?.length ?? 0" [max]="2000"></app-character-counter>
       </div>
 
       <div class="form-field mt-3">
         <label class="form-label is-required">Impact on Staff</label>
-        <textarea class="input--textarea" rows="4" formControlName="impactOnStaff" maxlength="2000"></textarea>
+        <textarea class="input--textarea input--autosize" appTextareaAutosize [minRows]="4" rows="4" formControlName="impactOnStaff" maxlength="2000"></textarea>
         <app-character-counter [current]="applicantForm.get('impactOnStaff')?.value?.length ?? 0" [max]="2000"></app-character-counter>
       </div>
 
       <div class="form-field mt-3">
         <label class="form-label is-required">Impact on Other Asia Pacific University of Technology & Innovation Functional Units</label>
-        <textarea class="input--textarea" rows="4" formControlName="impactOnOtherUnits" maxlength="2000"></textarea>
+        <textarea class="input--textarea input--autosize" appTextareaAutosize [minRows]="4" rows="4" formControlName="impactOnOtherUnits" maxlength="2000"></textarea>
         <app-character-counter [current]="applicantForm.get('impactOnOtherUnits')?.value?.length ?? 0" [max]="2000"></app-character-counter>
       </div>
 
       <div class="form-field mt-3">
         <label class="form-label is-required">Resource Implications of the Proposed Collaboration</label>
-        <textarea class="input--textarea" rows="4" formControlName="resourceImplications" maxlength="2000"></textarea>
+        <textarea class="input--textarea input--autosize" appTextareaAutosize [minRows]="4" rows="4" formControlName="resourceImplications" maxlength="2000"></textarea>
         <app-character-counter [current]="applicantForm.get('resourceImplications')?.value?.length ?? 0" [max]="2000"></app-character-counter>
       </div>
 
       <div class="form-field mt-3">
         <label class="form-label is-required">Other School/Research Centres Involved</label>
-        <textarea class="input--textarea" rows="4" formControlName="otherSchoolsInvolved" maxlength="2000"></textarea>
+        <textarea class="input--textarea input--autosize" appTextareaAutosize [minRows]="4" rows="4" formControlName="otherSchoolsInvolved" maxlength="2000"></textarea>
         <app-character-counter [current]="applicantForm.get('otherSchoolsInvolved')?.value?.length ?? 0" [max]="2000"></app-character-counter>
       </div>
 
       <div class="form-field mt-3">
         <label class="form-label is-required">Contact Made to Date</label>
-        <textarea class="input--textarea" rows="4" formControlName="contactMade" maxlength="2000"></textarea>
+        <textarea class="input--textarea input--autosize" appTextareaAutosize [minRows]="4" rows="4" formControlName="contactMade" maxlength="2000"></textarea>
         <app-character-counter [current]="applicantForm.get('contactMade')?.value?.length ?? 0" [max]="2000"></app-character-counter>
       </div>
 
@@ -120,13 +120,13 @@
 
       <div class="form-field mt-3">
         <label class="form-label is-required">Asia Pacific University of Technology & Innovation School Discussions to Date/Planned</label>
-        <textarea class="input--textarea" rows="4" formControlName="schoolDiscussions" maxlength="2000"></textarea>
+        <textarea class="input--textarea input--autosize" appTextareaAutosize [minRows]="4" rows="4" formControlName="schoolDiscussions" maxlength="2000"></textarea>
         <app-character-counter [current]="applicantForm.get('schoolDiscussions')?.value?.length ?? 0" [max]="2000"></app-character-counter>
       </div>
 
       <div class="form-field mt-3">
         <label class="form-label is-required">Programmes Identified for the Partnership and Projected Student Numbers</label>
-        <textarea class="input--textarea" rows="4" formControlName="programmesIdentified" maxlength="2000"></textarea>
+        <textarea class="input--textarea input--autosize" appTextareaAutosize [minRows]="4" rows="4" formControlName="programmesIdentified" maxlength="2000"></textarea>
         <app-character-counter [current]="applicantForm.get('programmesIdentified')?.value?.length ?? 0" [max]="2000"></app-character-counter>
       </div>
 

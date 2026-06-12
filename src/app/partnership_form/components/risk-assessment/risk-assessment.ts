@@ -8,6 +8,7 @@ import { ValidationMessageComponent } from '../../../shared/components/validatio
 import type { DataTableColumn } from '../../../shared/components/data-table/data-table.component';
 import { ActionButtonComponent } from '../../../shared/components/action-button/action-button.component';
 import { FileUploadComponent } from '../../../shared/components/file-upload/file-upload.component';
+import { TextareaAutosizeDirective } from '../../../shared/directives/textarea-autosize.directive';
 
 @Component({
   selector: 'app-risk-assessment',
@@ -20,7 +21,8 @@ import { FileUploadComponent } from '../../../shared/components/file-upload/file
     DataTableComponent,
     ValidationMessageComponent,
     ActionButtonComponent,
-    FileUploadComponent
+    FileUploadComponent,
+    TextareaAutosizeDirective
   ],
   templateUrl: './risk-assessment.html',
   styleUrls: ['./risk-assessment.scss']
@@ -283,4 +285,3 @@ export class RiskAssessment implements OnChanges, OnInit {
     }
   }
 }
-

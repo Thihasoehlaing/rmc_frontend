@@ -6,6 +6,8 @@
        (click)="onOverlayClick($event)">
 
     <div class="modal-dialog"
+         [class.modal-dialog--small]="size === 'small'"
+         [class.modal-dialog--large]="size === 'large'"
          [style.max-width]="width ?? null"
          (click)="$event.stopPropagation()">
 

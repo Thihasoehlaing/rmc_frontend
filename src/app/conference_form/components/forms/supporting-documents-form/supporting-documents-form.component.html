@@ -1,6 +1,7 @@
 <form [formGroup]="form" class="form-section">
+  <app-custom-header icon="description" title="Supporting Documents"></app-custom-header>
   <section class="card">
-    <app-custom-subheader title="Upload Supporting Documents"></app-custom-subheader>
+    <app-custom-subheader title="Acceptance Evidence and Financial Document"></app-custom-subheader>
     <div class="card__content">
     <div class="section-fields">
       <div class="form-field">
@@ -22,6 +23,36 @@
         }
       </div>
 
+      <!-- Conference Invoice -->
+      <div class="form-field">
+        <div class="upload-field-header">
+          <div class="title-with-tooltip">
+            <h3 class="upload-field-title is-required">Conference Invoice</h3>
+            <p class="upload-field-subtitle">Max file size: 10 MB. PDF ONLY</p>
+          </div>
+        </div>
+        <app-file-upload
+          #conferenceInvoiceUpload
+          label="Conference Invoice"
+          [accept]="PDF_ACCEPT"
+          [maxSizeMB]="MAX_FILE_SIZE_MB"
+          [disabled]="!canUploadDocuments()"
+          placeholder="Upload conference invoice PDF"
+          (fileSelected)="onFileSelected('conferenceInvoice', $any($event))">
+        </app-file-upload>
+        <app-note text="Please ensure billing name is: Asia Pacific University Sdn. Bhd."></app-note>
+        @if (form.get('conferenceInvoice')?.invalid && form.get('conferenceInvoice')?.touched) {
+          <span class="form-error-msg">Conference Invoice is required</span>
+        }
+      </div>
+    </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <app-custom-subheader title="Publication and Manuscript Files"></app-custom-subheader>
+    <div class="card__content">
+    <div class="section-fields">
       <div class="form-field">
         <div class="upload-field-header">
           <h3 class="upload-field-title is-required">Reviewers' Feedback</h3>
@@ -99,32 +130,6 @@
           <span class="form-error-msg">Final Paper Draft is required</span>
         }
       </div>
-
-      <!-- Conference Invoice -->
-      <div class="form-field">
-        <div class="upload-field-header">
-          <div class="title-with-tooltip">
-            <h3 class="upload-field-title is-required">Conference Invoice</h3>
-            <p class="upload-field-subtitle">Max file size: 10 MB. PDF ONLY</p>
-            <app-note
-              text="Please ensure billing name is: Asia Pacific University Sdn. Bhd."
-              [isTooltip]="true">
-            </app-note>
-          </div>
-        </div>
-        <app-file-upload
-          #conferenceInvoiceUpload
-          label="Conference Invoice"
-          [accept]="PDF_ACCEPT"
-          [maxSizeMB]="MAX_FILE_SIZE_MB"
-          [disabled]="!canUploadDocuments()"
-          placeholder="Upload conference invoice PDF"
-          (fileSelected)="onFileSelected('conferenceInvoice', $any($event))">
-        </app-file-upload>
-        @if (form.get('conferenceInvoice')?.invalid && form.get('conferenceInvoice')?.touched) {
-          <span class="form-error-msg">Conference Invoice is required</span>
-        }
-      </div>
     </div>
     </div>
   </section>
@@ -134,7 +139,7 @@
     <div class="card__content">
     <div class="section-fields">
       <!-- Name of Reviewer -->
-      <div class="form-field">
+      <div class="form-field manuscript-reviewer">
         <label class="form-label is-required">Name of Reviewer</label>
         <input
           type="text"
@@ -145,7 +150,7 @@
 
       <!-- Internal Review -->
       <div class="form-field">
-        <label class="form-label">The manuscript has been internally reviewed for the quality of content and English?</label>
+        <label class="form-label is-required">The manuscript has been internally reviewed for the quality of content and English?</label>
         <div class="radio-group">
           <label class="radio-label">
             <input type="radio" value="yes" formControlName="manuscriptInternallyReviewed">
@@ -159,10 +164,7 @@
       </div>
 
       <div class="form-field">
-        <div class="label-with-note">
-          <label class="form-label is-required">Has the manuscript and content been published in another journal or conference etc.?</label>
-          <app-note text=" Manuscript must not be published previously" [isTooltip]="true"></app-note>
-        </div>
+        <label class="form-label is-required">Has the manuscript and content been published in another journal or conference etc.?</label>
         <div class="radio-group">
           <label class="radio-label">
             <input type="radio" value="yes" formControlName="manuscriptPreviouslyPublished">
@@ -173,6 +175,7 @@
             <span>No</span>
           </label>
         </div>
+        <app-note text="Manuscript must not be published previously"></app-note>
       </div>
     </div>
     </div>

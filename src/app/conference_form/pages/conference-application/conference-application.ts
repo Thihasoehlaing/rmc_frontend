@@ -1,4 +1,4 @@
-import { Component, signal, computed, inject, OnInit, effect, ViewChild } from '@angular/core';
+import { Component, signal, computed, inject, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, FormControl, Validators } from '@angular/forms';
 import { StepIndicatorComponent, WizardStep, StepStatus } from '../../../shared/components/step-indicator/step-indicator.component';
@@ -77,28 +77,28 @@ import { AuthService } from '../../../services/auth.service';
         <h3 class="applicant-details__title">Applicant Details</h3>
         <form [formGroup]="applicantDetailsForm" class="applicant-details__content">
           <div class="detail-field">
-            <label class="detail-label">Applicant Name</label>
+            <label class="detail-label is-required">Applicant Name</label>
             <input
               type="text"
-              class="input--text"
+              class="input--text input--disabled-readonly"
               formControlName="applicantName"
               placeholder="Ex: Jessica Teh Sze Hui"
               readonly>
           </div>
           <div class="detail-field">
-            <label class="detail-label">Email</label>
+            <label class="detail-label is-required">Applicant Email</label>
             <input
               type="email"
-              class="input--text"
+              class="input--text input--disabled-readonly"
               formControlName="email"
               placeholder="TPXXXXXX@mail.apu.edu.my"
               readonly>
           </div>
           <div class="detail-field">
-            <label class="detail-label">School Name</label>
+            <label class="detail-label is-required">Applicant School / Department</label>
             <input
               type="text"
-              class="input--text"
+              class="input--text input--disabled-readonly"
               formControlName="schoolName"
               placeholder="Ex: School of Culinary Arts and Hospitality"
               readonly>
@@ -250,7 +250,7 @@ import { AuthService } from '../../../services/auth.service';
     .conference-wizard {
       display: flex;
       flex-direction: column;
-      gap: var(--space-6);
+      gap: var(--space-5);
       width: 100%;
       max-width: var(--page-max-width);
       margin: 0 auto;
@@ -296,7 +296,7 @@ import { AuthService } from '../../../services/auth.service';
       background: var(--color-surface);
       border: 1px solid var(--border-default);
       border-radius: var(--radius-xl);
-      padding: var(--space-6);
+      padding: var(--space-5);
       box-shadow: var(--shadow-sm);
 
       @media (max-width: 768px) {
@@ -333,15 +333,29 @@ import { AuthService } from '../../../services/auth.service';
     }
 
     .detail-label {
-      font-weight: var(--fw-bold);
-      color: var(--color-label);
-      font-size: var(--fs-sm);
+      font-weight: var(--font-weight-medium);
+      color: var(--color-text-primary);
+      font-size: var(--font-size-body);
+      line-height: var(--line-height-control);
+    }
+
+    .detail-label.is-required::after {
+      content: ' *';
+      color: var(--color-error-dark);
+    }
+
+    .input--disabled-readonly {
+      background: var(--color-surface-nested);
+      border-color: var(--border-default);
+      color: var(--color-text-muted);
+      cursor: not-allowed;
+      opacity: 1;
     }
 
     .main-section {
       display: flex;
       flex-direction: column;
-      gap: var(--space-6);
+      gap: var(--space-4);
     }
 
     .comment-toggle-bar {
@@ -415,16 +429,8 @@ import { AuthService } from '../../../services/auth.service';
 
     .wizard-content {
       flex: 1;
-      background: var(--color-surface);
-      border: 1px solid var(--border-default);
-      border-radius: var(--radius-xl);
-      box-shadow: var(--shadow-sm);
-      padding: var(--space-7) var(--space-6);
+      padding: var(--space-4);
       animation: stepFadeIn var(--transition-base) ease;
-
-      @media (max-width: 768px) {
-        padding: var(--space-4);
-      }
     }
 
     .review-comments-section {
@@ -516,15 +522,6 @@ export class ConferenceApplication implements OnInit {
         hrComment: ['', Validators.maxLength(500)]
       })
     });
-
-    effect(() => {
-      const readOnly = this.workflow.isFormReadOnly();
-      const applicantControls = ['applicantName', 'email', 'schoolName'];
-      applicantControls.forEach(name => {
-        const ctrl = this.applicantDetailsForm.get(name);
-        readOnly ? ctrl?.disable({ emitEvent: false }) : ctrl?.enable({ emitEvent: false });
-      });
-    });
   }
 
   /** Helper to get a FormControl from the form */
@@ -557,7 +554,8 @@ export class ConferenceApplication implements OnInit {
     if (user && !this.applicantDetailsForm.get('applicantName')?.value) {
       this.applicantDetailsForm.patchValue({
         applicantName: user.name,
-        email: user.email
+        email: user.email,
+        schoolName: user.department
       });
     }
 

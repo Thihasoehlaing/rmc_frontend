@@ -23,6 +23,13 @@ const rules = [
   { name: '!important', pattern: /!important\b/i },
 ];
 
+const conferenceTemplates = [
+  'src/app/conference_form/components/forms/conference-details-form/conference-details-form.component.html',
+  'src/app/conference_form/components/forms/author-details-form/author-details-form.component.html',
+  'src/app/conference_form/components/forms/supporting-documents-form/supporting-documents-form.component.html',
+  'src/app/conference_form/components/forms/declaration-form/declaration-form.component.html',
+];
+
 const failures = [];
 for (const relativePath of files) {
   const file = fileURLToPath(new URL(`../${relativePath}`, import.meta.url));
@@ -36,6 +43,28 @@ for (const relativePath of files) {
       }
     });
   });
+}
+
+for (const relativePath of conferenceTemplates) {
+  const file = fileURLToPath(new URL(`../${relativePath}`, import.meta.url));
+  const text = await readFile(file, 'utf8');
+  const tagPattern = /<\/?(?:section|div)\b[^>]*>/gi;
+  const stack = [];
+
+  for (const match of text.matchAll(tagPattern)) {
+    const tag = match[0];
+    const isClosing = tag.startsWith('</');
+    if (isClosing) {
+      stack.pop();
+      continue;
+    }
+
+    const isCard = /\bclass\s*=\s*"[^"]*\bcard\b[^"]*"/i.test(tag);
+    if (isCard && stack.some(entry => entry.isCard)) {
+      failures.push(`${relativePath} nested card`);
+    }
+    stack.push({ isCard });
+  }
 }
 
 if (failures.length) {

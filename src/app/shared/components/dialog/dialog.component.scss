@@ -45,6 +45,14 @@
   animation: dialog-in 340ms var(--ease-bounce) both;
 }
 
+.modal-dialog--small {
+  max-width: 600px;
+}
+
+.modal-dialog--large {
+  max-width: 900px;
+}
+
 // ── Header ───────────────────────────────────────────────────────────
 .modal-dialog__header {
   padding: var(--space-4) var(--space-4) var(--space-4) var(--space-6);
@@ -63,9 +71,8 @@
     color: var(--color-heading);
     margin: 0;
     line-height: var(--lh-tight);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    white-space: normal;
+    overflow-wrap: anywhere;
   }
 }
 

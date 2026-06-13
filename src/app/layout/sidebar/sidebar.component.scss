@@ -1,4 +1,4 @@
-@use '../../../assets/styles/index' as *;
+@use '../../../styles/index' as *;
 
 :host {
   display: block;
@@ -363,5 +363,35 @@
   // Tighter gap after the smaller icon
   .nav-label {
     margin-left: var(--space-2);
+  }
+}
+
+@include navigation-mobile {
+  :host {
+    position: relative;
+    z-index: var(--z-overlay);
+  }
+
+  .sidebar {
+    width: min(84vw, var(--sidebar-width));
+    transform: translateX(-100%);
+    transition:
+      transform var(--transition-normal),
+      box-shadow var(--transition-normal);
+    box-shadow: var(--shadow-xl);
+
+    &--mobile-open {
+      transform: translateX(0);
+    }
+  }
+
+  .sidebar__pin-btn {
+    display: none;
+  }
+}
+
+@include reduced-motion {
+  .sidebar {
+    transition: none;
   }
 }

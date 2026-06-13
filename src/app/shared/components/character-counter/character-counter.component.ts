@@ -11,7 +11,7 @@ import { CommonModule } from '@angular/common';
     </div>
   `,
     styles: [`
-    @use '../../../../assets/styles/index' as *;
+    @use '../../../../styles/index' as *;
 
     .character-counter {
       font-size: var(--fs-xs);

@@ -2,8 +2,8 @@ import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
-import { AuthService } from '../../services/auth.service';
-import { ApplicationService, TERMINAL_STATUSES } from '../../services/application.service';
+import { AuthService } from '../../core/services/auth.service';
+import { ApplicationService, TERMINAL_STATUSES } from '../../core/services/application.service';
 
 type DashboardApp = any;
 

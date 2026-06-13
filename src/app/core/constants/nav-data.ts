@@ -1,4 +1,4 @@
-import { NavGroup } from '../../interfaces/nav.interface';
+import { NavGroup } from '../interfaces/nav.interface';
 
 /**
  * NAVIGATION_DATA — central routing and permission configuration.

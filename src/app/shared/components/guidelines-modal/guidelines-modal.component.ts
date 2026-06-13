@@ -2,7 +2,7 @@ import { Component, Input, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { GuidelinesResponse } from '../../../interfaces/components.interface';
+import { GuidelinesResponse } from '../../../core/interfaces/components.interface';
 
 @Component({
   selector: 'app-guidelines-modal',

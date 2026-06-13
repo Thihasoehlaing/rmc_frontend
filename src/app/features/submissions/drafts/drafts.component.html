@@ -1,0 +1,91 @@
+<!-- Draft submissions -->
+<div class="submissions-page">
+
+  <!-- ── Page Header ────────────────────────────────────────────────────────── -->
+  <div class="submissions-header">
+    <div class="submissions-header__text">
+      <h1 class="submissions-title">
+        <span class="material-icons">edit_note</span>
+        Drafts
+      </h1>
+      <p class="submissions-subtitle">Saved applications not yet submitted to HOS</p>
+    </div>
+  </div>
+
+
+
+  <!-- ── Loading ────────────────────────────────────────────────────────────── -->
+  @if (loading()) {
+    <div class="state-message">
+      <span class="material-icons spinning">sync</span>
+      Loading drafts…
+    </div>
+  }
+
+  <!-- ── Error ──────────────────────────────────────────────────────────────── -->
+  @if (!loading() && error()) {
+    <div class="state-message state-error">
+      <span class="material-icons">error_outline</span>
+      {{ error() }}
+    </div>
+  }
+
+  @if (!loading() && !error()) {
+
+    <!-- ── Search ────────────────────────────────────────────────────────────── -->
+    <app-submissions-search
+      placeholder="Search drafts by title..."
+      [value]="searchQuery()"
+      (valueChange)="searchQuery.set($event)" />
+
+    <!-- ── Empty ─────────────────────────────────────────────────────────────── -->
+    @if (drafts().length === 0) {
+      <div class="state-message state-empty">
+        <span class="material-icons">edit_note</span>
+        @if (searchQuery()) {
+          No drafts match "{{ searchQuery() }}".
+        } @else {
+          No saved drafts. Click <strong>New Application</strong> to start one.
+        }
+      </div>
+    }
+
+    <!-- ── Table ─────────────────────────────────────────────────────────────── -->
+    @if (drafts().length > 0) {
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Project Title</th>
+              <th class="col-sortable" (click)="toggleSort()">
+                Last Saved
+                <span class="material-icons sort-icon">
+                  {{ sortAsc() ? 'arrow_upward' : 'arrow_downward' }}
+                </span>
+              </th>
+              <th class="col-action"></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (app of drafts(); track app.id) {
+              <tr>
+                <td class="col-title">
+                  {{ app.projectDetails?.title?.trim() || '(Untitled Draft)' }}
+                </td>
+                <td class="col-date">{{ formatDate(app) }}</td>
+                <td class="col-action">
+                  <button class="btn-open" (click)="openDraft(app)">
+                    <span class="material-icons">edit</span>
+                    Continue
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+  }
+
+</div>

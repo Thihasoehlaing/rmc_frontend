@@ -2,10 +2,10 @@ import { Component, inject, signal, computed } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { Router } from '@angular/router';
 import { SidebarService } from '../../core/services/sidebar.service';
-import { AuthService } from '../../services/auth.service';
-import { PermissionService } from '../../services/permission.service';
+import { AuthService } from '../../core/services/auth.service';
+import { PermissionService } from '../../core/services/permission.service';
 import { NAVIGATION_DATA } from '../../core/constants/nav-data';
-import { NavElement, NavFolder } from '../../interfaces/nav.interface';
+import { NavElement, NavFolder } from '../../core/interfaces/nav.interface';
 
 @Component({
   selector: 'app-sidebar',
@@ -106,6 +106,10 @@ export class SidebarComponent {
   }
 
   togglePin() { this.sidebarService.togglePin(); }
+
+  closeMobileSidebar(): void {
+    this.sidebarService.closeMobile();
+  }
 
   /** Log out and navigate to the login page. */
   logout(): void {

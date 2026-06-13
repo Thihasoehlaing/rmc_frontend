@@ -1,4 +1,4 @@
-@use '../../../assets/styles/index' as *;
+@use '../../../styles/index' as *;
 
 .top-header {
     height: var(--header-height);
@@ -16,6 +16,7 @@
     &__left {
         display: flex;
         align-items: center;
+        gap: var(--space-2);
         min-width: 0;
     }
 
@@ -83,9 +84,47 @@
     }
 }
 
-@media (max-width: 768px) {
+.top-header__menu {
+    display: none;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: var(--color-text-secondary);
+    background: transparent;
+    border: 0;
+    border-radius: var(--radius-full);
+    cursor: pointer;
+
+    &:hover {
+        color: var(--color-primary);
+        background: var(--color-surface-hover);
+    }
+}
+
+@include navigation-mobile {
+    .top-header__menu {
+        display: flex;
+    }
+
     .top-header {
-        padding: 0 var(--space-4);
+        &__search {
+            width: 220px;
+
+            &--focused,
+            &:focus-within {
+                width: 260px;
+            }
+        }
+    }
+
+}
+
+@include mobile {
+    .top-header {
+        padding: 0 var(--space-3);
 
         &__left {
             flex: 1 1 auto;
@@ -93,6 +132,11 @@
         }
 
         &__right {
+            gap: var(--space-2);
+        }
+
+        &__search,
+        &__actions .divider {
             display: none;
         }
     }
@@ -114,6 +158,7 @@
             white-space: nowrap;
         }
     }
+
 }
 
 // ── Search Dropdown ─────────────────────────────────────────────
@@ -585,5 +630,22 @@
         font-size: var(--fs-xs);
         font-weight: var(--fw-medium);
         color: var(--color-text-muted);
+    }
+}
+
+@include navigation-mobile {
+    .date-display {
+        display: none;
+    }
+}
+
+@include mobile {
+    .notification-dropdown {
+        position: fixed;
+        top: calc(var(--header-height) + var(--space-2));
+        right: var(--space-3);
+        left: var(--space-3);
+        width: auto;
+        max-height: calc(100dvh - var(--header-height) - var(--space-5));
     }
 }

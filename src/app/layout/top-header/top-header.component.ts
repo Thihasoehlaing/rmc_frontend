@@ -2,11 +2,12 @@ import { Component, signal, computed, inject, OnInit, OnDestroy, ElementRef, Hos
 import { Router, RouterLink, NavigationEnd } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { NAVIGATION_DATA } from '../../core/constants/nav-data';
-import { NavElement, NavFolder, NavItem } from '../../interfaces/nav.interface';
-import { PermissionService } from '../../services/permission.service';
-import { NotificationService } from '../../services/notification.service';
-import { AppNotification } from '../../interfaces/notification.interface';
-import { BatchSittingService } from '../../settings/batch-sitting.service';
+import { NavElement, NavFolder, NavItem } from '../../core/interfaces/nav.interface';
+import { PermissionService } from '../../core/services/permission.service';
+import { NotificationService } from '../../core/services/notification.service';
+import { AppNotification } from '../../core/interfaces/notification.interface';
+import { BatchSittingService } from '../../features/admin-settings/batch-sitting.service';
+import { SidebarService } from '../../core/services/sidebar.service';
 import { filter, Subscription } from 'rxjs';
 
 interface SearchResult {
@@ -30,6 +31,7 @@ export class TopHeaderComponent implements OnInit, OnDestroy {
     private permService = inject(PermissionService);
     readonly notifSvc   = inject(NotificationService);
     private batchSvc    = inject(BatchSittingService);
+    readonly sidebarService = inject(SidebarService);
     private routerSub!: Subscription;
 
     currentDate = new Date();

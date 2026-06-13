@@ -1,6 +1,14 @@
 <div class="app-shell" [class.app-shell--sidebar-pinned]="sidebarService.pinned()">
   <!-- Left Side: Sidebar -->
   <app-sidebar></app-sidebar>
+  @if (sidebarService.mobileOpen()) {
+    <button
+      type="button"
+      class="app-shell__backdrop"
+      aria-label="Close navigation menu"
+      (click)="sidebarService.closeMobile()">
+    </button>
+  }
 
   <!-- Right Side: Main Content -->
   <div class="app-shell__main">

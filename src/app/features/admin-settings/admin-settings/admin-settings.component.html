@@ -1,25 +1,57 @@
-<div class="admin-settings-container">
-  <div class="admin-settings-header">
-    <h1 class="admin-settings-title">Admin Settings</h1>
-    <p class="admin-settings-subtitle">Choose a category to manage its configuration in detail.</p>
-  </div>
+<main class="admin-settings">
+  <header class="settings-hero">
+    <div class="settings-hero__content">
+      <span class="settings-hero__eyebrow">System Administration</span>
+      <h1>Admin Settings</h1>
+      <p>Manage system content, configuration, access, and operational data from one place.</p>
+    </div>
 
-  <div class="admin-settings-grid">
-    <div *ngFor="let card of cards" class="card admin-card">
-      <a [routerLink]="card.route" class="admin-card__link" [attr.aria-label]="'Manage ' + card.title">
-        <div class="admin-card__content">
-          <div class="admin-card__icon-section">
-            <span class="material-icons admin-card__icon">{{ card.icon }}</span>
+    <div class="settings-hero__summary" aria-label="Available settings modules">
+      <span class="material-icons">admin_panel_settings</span>
+      <div>
+        <strong>{{ cards.length }}</strong>
+        <span>Management modules</span>
+      </div>
+    </div>
+  </header>
+
+  <section class="settings-section" aria-labelledby="settings-modules-title">
+    <div class="settings-section__heading">
+      <div>
+        <span class="section-kicker">Configuration Centre</span>
+        <h2 id="settings-modules-title">Choose a management area</h2>
+      </div>
+    </div>
+
+    <div class="settings-grid">
+      @for (card of cards; track card.route; let index = $index) {
+        <a
+          [routerLink]="card.route"
+          class="settings-card"
+          [class]="'settings-card settings-card--' + card.tone"
+          [attr.aria-label]="'Open ' + card.title">
+          <div class="settings-card__top">
+            <span class="settings-card__number">
+              {{ (index + 1).toString().padStart(2, '0') }}
+            </span>
+            <span class="settings-card__category">{{ card.category }}</span>
           </div>
-          <h2 class="admin-card__title">{{ card.title }}</h2>
-          <p class="admin-card__description">{{ card.description }}</p>
-        </div>
-        <div class="admin-card__footer">
-          <span class="admin-card__manage-link">
-            Manage
+
+          <div class="settings-card__icon">
+            <span class="material-icons">{{ card.icon }}</span>
+          </div>
+
+          <div class="settings-card__content">
+            <h3>{{ card.title }}</h3>
+            <p>{{ card.description }}</p>
+          </div>
+
+          <div class="settings-card__action">
+            <span>Open settings</span>
             <span class="material-icons">arrow_forward</span>
-          </span>
-        </div>
-      </a>
-  </div>
-</div>
+          </div>
+        </a>
+      }
+    </div>
+  </section>
+</main>

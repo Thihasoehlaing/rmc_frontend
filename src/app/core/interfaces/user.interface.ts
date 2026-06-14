@@ -28,14 +28,22 @@ export type UserGroup =
   | 'blocked_hos_rdig'
   | 'RMC'
   | 'Admin'
+  | 'SystemAdmin'
   | 'Reviewer'
   | 'Reviewer1'
   | 'Reviewer2'
   | 'RDIG_Chair'
   | 'CEO';
 
+export interface UserRole {
+  id: number;
+  code: string;
+  name: string;
+}
+
 export interface User {
   department: string;
+  distinguishedName?: string;
   id: string;
   name: string;
   email: string;
@@ -45,7 +53,8 @@ export interface User {
    * DEMO ONLY — plaintext password for mock authentication.
    * A real implementation must NEVER store passwords in the client.
    */
-  password: string;
+  password?: string;
+  role?: UserRole;
   /** All groups this user belongs to — drives every permission decision. */
   groups: UserGroup[];
 }

@@ -143,14 +143,32 @@ export const NAVIGATION_DATA: NavGroup[] = [
             {
                 label: 'Admin Settings',
                 icon: 'admin_panel_settings',
-                route: '/settings/admin-settings',
+                route: '/admin-settings',
                 permission: { anyOf: ['Admin'] },
                 children: [
-                    { label: 'Guidelines', icon: 'description', route: '/settings/guidelines', permission: { anyOf: ['Admin'] } },
-                    { label: 'Dropdowns', icon: 'list', route: '/settings/dropdowns', permission: { anyOf: ['Admin'] } },
-                    { label: 'Batches', icon: 'batch_prediction', route: '/settings/batches', permission: { anyOf: ['Admin'] } },
-                    { label: 'Staff Access', icon: 'person_add', route: '/settings/staff-access', permission: { anyOf: ['Admin'] } },
-                    { label: 'External Project Data Entry', icon: 'folder_open', route: '/settings/external-project-data-entry', permission: { anyOf: ['Admin'] } },
+                    { label: 'Guidelines', icon: 'description', route: '/admin-settings/guidelines', permission: { anyOf: ['Admin'] } },
+                    { label: 'Dropdowns', icon: 'list', route: '/admin-settings/dropdowns', permission: { anyOf: ['Admin'] } },
+                    { label: 'Batches', icon: 'batch_prediction', route: '/admin-settings/batches', permission: { anyOf: ['Admin'] } },
+                    { label: 'Staff Access', icon: 'person_add', route: '/admin-settings/staff-access', permission: { anyOf: ['Admin'] } },
+                    { label: 'External Project Data Entry', icon: 'folder_open', route: '/admin-settings/external-project-data-entry', permission: { anyOf: ['Admin'] } },
+                ],
+            },
+
+            // System configuration is restricted to SYSTEM_ADMIN users.
+            {
+                label: 'Settings',
+                icon: 'settings',
+                route: '/settings',
+                permission: { allOf: ['SystemAdmin'] },
+                children: [
+                    { label: 'Forms', icon: 'description', route: '/settings/forms', permission: { allOf: ['SystemAdmin'] } },
+                    { label: 'Dropdown Categories', icon: 'list_alt', route: '/settings/dropdown-categories', permission: { allOf: ['SystemAdmin'] } },
+                    { label: 'Staff Directory', icon: 'badge', route: '/settings/staff-directory', permission: { allOf: ['SystemAdmin'] } },
+                    { label: 'Users', icon: 'manage_accounts', route: '/settings/users', permission: { allOf: ['SystemAdmin'] } },
+                    { label: 'Roles', icon: 'verified_user', route: '/settings/roles', permission: { allOf: ['SystemAdmin'] } },
+                    { label: 'Blocked Users', icon: 'person_off', route: '/settings/blocked-users', permission: { allOf: ['SystemAdmin'] } },
+                    { label: 'Applicant Rules', icon: 'rule', route: '/settings/applicant-rules', permission: { allOf: ['SystemAdmin'] } },
+                    { label: 'Workflow Configuration', icon: 'account_tree', route: '/settings/workflow', permission: { allOf: ['SystemAdmin'] } },
                 ],
             },
         ],

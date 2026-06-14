@@ -1,0 +1,121 @@
+@use '../../../../styles/index' as *;
+
+.settings-scope {
+  max-width: var(--page-max-width);
+  margin: 0 auto;
+}
+
+.settings-scope__back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-5);
+  color: var(--color-primary);
+  text-decoration: none;
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+
+  .material-icons {
+    font-size: 19px;
+  }
+}
+
+.settings-scope__header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  margin-bottom: var(--space-6);
+  padding: var(--space-6);
+  background: var(--color-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+
+  h1 {
+    margin: var(--space-1) 0 var(--space-2);
+    color: var(--color-heading);
+    font-size: var(--fs-2xl);
+  }
+
+  p {
+    max-width: 760px;
+    color: var(--color-text-secondary);
+    line-height: var(--lh-normal);
+  }
+}
+
+.settings-scope__icon {
+  flex: 0 0 auto;
+  width: 64px;
+  height: 64px;
+  display: grid;
+  place-items: center;
+  color: white;
+  background: linear-gradient(135deg, #294c7d, #3574b9);
+  border-radius: var(--radius-xl);
+
+  .material-icons {
+    font-size: 32px;
+  }
+}
+
+.settings-scope__category,
+.settings-scope__eyebrow {
+  color: var(--color-primary);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-black);
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.settings-scope__panel {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-8);
+  padding: var(--space-6);
+  background: var(--color-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+
+  h2 {
+    margin: var(--space-2) 0;
+    color: var(--color-heading);
+    font-size: var(--fs-xl);
+  }
+
+  p {
+    max-width: 590px;
+    color: var(--color-text-secondary);
+    line-height: var(--lh-normal);
+  }
+}
+
+.settings-scope__endpoints {
+  min-width: 330px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+
+  code {
+    padding: var(--space-3);
+    color: #294c7d;
+    background: #eef5fc;
+    border: 1px solid #d8e8f8;
+    border-radius: var(--radius-md);
+    font-size: var(--fs-xs);
+    overflow-wrap: anywhere;
+  }
+}
+
+@media (max-width: 760px) {
+  .settings-scope__header,
+  .settings-scope__panel {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .settings-scope__endpoints {
+    width: 100%;
+    min-width: 0;
+  }
+}

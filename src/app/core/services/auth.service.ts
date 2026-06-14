@@ -1,5 +1,12 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { HttpClient, HttpContext, HttpErrorResponse } from '@angular/common/http';
+import { Injectable, computed, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
+import { Observable, catchError, map, switchMap, tap, throwError } from 'rxjs';
+
+import { environment } from '../../../environments/environment';
+import { SHOW_API_SUCCESS } from '../interceptors/api-message.interceptor';
 import { User, UserGroup } from '../interfaces/user.interface';
+import { ToastService } from './toast.service';
 
 /**
  * Dummy user registry for RBAC/ABAC testing.
@@ -146,20 +153,62 @@ const DUMMY_USERS: User[] = [
   },
 ];
 
+interface ApuTokenResponse {
+  data: {
+    groups: string[];
+    onPremisesDistinguishedName: string;
+  };
+  token: string;
+  user_id: string;
+}
+
+interface AuthCheckResponse {
+  data: {
+    user: {
+      department: string;
+      distinguished_name: string;
+      email: string;
+      id: number;
+      name: string;
+      role: {
+        code: string;
+        id: number;
+        name: string;
+      };
+      username: string;
+    };
+  };
+  message: string;
+  success: boolean;
+}
+
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
-  private readonly SESSION_KEY = 'rmc_session_user';
+  private readonly http = inject(HttpClient);
+  private readonly router = inject(Router);
+  private readonly toastService = inject(ToastService);
+  private readonly TOKEN_KEY = 'token';
+  private readonly USER_KEY = 'user';
+  private readonly LEGACY_SESSION_KEY = 'rmc_session_user';
 
   /** Internal writable signal — only this service may write to it. */
   private _currentUser = signal<User | null>(null);
 
   constructor() {
+    this.removeLegacyAuthCache();
+
+    const storedUser = this.readStoredUser();
+    if (storedUser && this.getAccessToken()) {
+      this._currentUser.set(this.mapCheckedUser(storedUser));
+      return;
+    }
+
     // Restore the session after a page refresh.
     // We store only the username; the full user object is looked up from the
     // in-memory DUMMY_USERS array so no sensitive data lives in sessionStorage.
-    const storedUsername = sessionStorage.getItem(this.SESSION_KEY);
+    const storedUsername = sessionStorage.getItem(this.LEGACY_SESSION_KEY);
     if (storedUsername) {
       const user = DUMMY_USERS.find(u => u.username === storedUsername) ?? null;
       this._currentUser.set(user);
@@ -178,6 +227,117 @@ export class AuthService {
    *
    * DEMO ONLY — replace with a real HTTP call in production.
    */
+  startApuLogin(returnTo = this.getCurrentRoute()): void {
+    this._currentUser.set(null);
+    localStorage.removeItem(this.TOKEN_KEY);
+    localStorage.removeItem(this.USER_KEY);
+
+    const query = new URLSearchParams({
+      endpoint: this.getSafeLoginEndpoint(returnTo),
+      redirect_url: this.getRedirectUrl(),
+      app_name: environment.authAppName,
+    });
+
+    window.location.replace(`${environment.authUrl}/login?${query.toString()}`);
+  }
+
+  getCurrentRoute(): string {
+    return this.router.url || '/login';
+  }
+
+  completeApuLogin(code: string): Observable<User> {
+    localStorage.removeItem(this.TOKEN_KEY);
+    localStorage.removeItem(this.USER_KEY);
+
+    return this.http
+      .post<ApuTokenResponse>(`${environment.authUrl}/token`, { code })
+      .pipe(
+        catchError(error =>
+          throwError(() =>
+            this.createAuthError('APU token exchange failed', error),
+          ),
+        ),
+        tap(response => this.storeToken(response)),
+        switchMap(() =>
+          this.checkAuthentication().pipe(
+            catchError(error =>
+              throwError(() =>
+                this.createAuthError('RMC authorization check failed', error),
+              ),
+            ),
+          ),
+        ),
+        tap(response => {
+          localStorage.setItem(
+            this.USER_KEY,
+            JSON.stringify(response.data.user),
+          );
+        }),
+        map(response => this.mapCheckedUser(response.data.user)),
+        tap(user => {
+          this._currentUser.set(user);
+          sessionStorage.removeItem(this.LEGACY_SESSION_KEY);
+        }),
+        catchError(error => {
+          localStorage.removeItem(this.USER_KEY);
+          return throwError(() => error);
+        }),
+      );
+  }
+
+  loadProfile(): Observable<User> {
+    const apiUrl = environment.apiUrl.replace(/\/$/, '');
+
+    return this.http
+      .get<AuthCheckResponse>(`${apiUrl}/api/auth/profile`, {
+        context: new HttpContext().set(SHOW_API_SUCCESS, true),
+      })
+      .pipe(
+        tap(response => {
+          if (!response.success || !response.data?.user) {
+            throw new Error(response.message || 'Profile could not be loaded.');
+          }
+
+          this.toastService.success(response.message);
+        }),
+        tap(response => {
+          localStorage.setItem(
+            this.USER_KEY,
+            JSON.stringify(response.data.user),
+          );
+        }),
+        map(response => this.mapCheckedUser(response.data.user)),
+        tap(user => this._currentUser.set(user)),
+      );
+  }
+
+  getAccessToken(): string | null {
+    return localStorage.getItem(this.TOKEN_KEY);
+  }
+
+  getSafeReturnRoute(value: string | null | undefined): string {
+    if (!value || !value.startsWith('/') || value.startsWith('//')) {
+      return '/dashboard';
+    }
+
+    const [route, query = ''] = value.split('?', 2);
+    if (route === '/login') {
+      return '/dashboard';
+    }
+
+    const params = new URLSearchParams(query);
+    const endpoint = params.get('endpoint');
+    if (endpoint) {
+      return this.getSafeReturnRoute(endpoint);
+    }
+
+    if (params.has('code')) {
+      return route === '/' ? '/dashboard' : route;
+    }
+
+    return value;
+  }
+
   login(usernameOrEmail: string, password: string): boolean {
     const identifier = usernameOrEmail.trim().toLowerCase();
     const user = DUMMY_USERS.find(
@@ -189,7 +349,7 @@ export class AuthService {
 
     this._currentUser.set(user);
     if (user) {
-      sessionStorage.setItem(this.SESSION_KEY, user.username);
+      sessionStorage.setItem(this.LEGACY_SESSION_KEY, user.username);
     }
     return user !== null;
   }
@@ -197,7 +357,13 @@ export class AuthService {
   /** Clear the current session. */
   logout(): void {
     this._currentUser.set(null);
-    sessionStorage.removeItem(this.SESSION_KEY);
+    localStorage.removeItem(this.TOKEN_KEY);
+    localStorage.removeItem(this.USER_KEY);
+    this.removeLegacyAuthCache();
+    sessionStorage.removeItem(this.LEGACY_SESSION_KEY);
+
+    const query = new URLSearchParams({ redirect_url: this.getRedirectUrl() });
+    window.location.replace(`${environment.authUrl}/logout?${query.toString()}`);
   }
 
   /** Returns true if the current user belongs to the given group. */
@@ -209,7 +375,7 @@ export class AuthService {
   getDemoAccounts(): { username: string; password: string; label: string; groups: string }[] {
     return DUMMY_USERS.map(u => ({
       username: u.username,
-      password: u.password,
+      password: u.password ?? '',
       label: u.name,
       groups: u.groups.join(', '),
     }));
@@ -236,5 +402,113 @@ export class AuthService {
         !u.groups.includes('blocked_hos_rdig')
       )
       .map(u => ({ id: u.id, name: u.name, department: u.department }));
+  }
+
+  private storeToken(response: ApuTokenResponse): void {
+    if (!response?.token) {
+      throw new Error('APU authentication did not return an access token.');
+    }
+
+    localStorage.setItem(this.TOKEN_KEY, response.token);
+  }
+
+  private checkAuthentication(): Observable<AuthCheckResponse> {
+    const apiUrl = environment.apiUrl.replace(/\/$/, '');
+
+    return this.http
+      .get<AuthCheckResponse>(`${apiUrl}/api/auth/check`)
+      .pipe(
+        tap(response => {
+          if (!response.success || !response.data?.user) {
+            throw new Error(response.message || 'Authentication check failed.');
+          }
+        }),
+      );
+  }
+
+  private mapCheckedUser(
+    checkedUser: AuthCheckResponse['data']['user'],
+  ): User {
+    return {
+      id: String(checkedUser.id),
+      name: checkedUser.name,
+      username: checkedUser.username,
+      email: checkedUser.email,
+      department: checkedUser.department,
+      distinguishedName: checkedUser.distinguished_name,
+      role: checkedUser.role,
+      groups: this.mapRoleToGroups(checkedUser.role.code),
+    };
+  }
+
+  private mapRoleToGroups(roleCode: string): UserGroup[] {
+    const roleGroups: Record<string, UserGroup[]> = {
+      SYSTEM_ADMIN: ['Admin', 'SystemAdmin'],
+      RMC_ADMIN: ['RMC', 'Admin'],
+      RMC_STAFF: ['RMC'],
+      RMC: ['RMC'],
+      REVIEWER: ['Reviewer'],
+      HOS: ['HOS'],
+      HOD: ['HOS'],
+      VC: ['VC'],
+      CEO: ['CEO'],
+      RDIG_CHAIR: ['RDIG_Chair'],
+    };
+
+    return roleGroups[roleCode.trim().toUpperCase()] ?? [];
+  }
+
+  private readStoredUser(): AuthCheckResponse['data']['user'] | null {
+    const stored = localStorage.getItem(this.USER_KEY);
+    if (!stored) return null;
+
+    try {
+      return JSON.parse(stored) as AuthCheckResponse['data']['user'];
+    } catch {
+      localStorage.removeItem(this.USER_KEY);
+      return null;
+    }
+  }
+
+  private removeLegacyAuthCache(): void {
+    localStorage.removeItem('u_id');
+    localStorage.removeItem('rmc_auth');
+    localStorage.removeItem('rmc_auth_profile');
+    localStorage.removeItem('rmc_apu_identity');
+  }
+
+  private createAuthError(stage: string, error: unknown): Error {
+    if (error instanceof HttpErrorResponse) {
+      const apiMessage = error.error?.message ?? error.error?.error;
+      if (typeof apiMessage === 'string' && apiMessage.trim()) {
+        return new Error(`${stage}: ${apiMessage}`);
+      }
+
+      if (error.status === 0) {
+        return new Error(
+          `${stage}: the service could not be reached from the browser.`,
+        );
+      }
+
+      return new Error(`${stage}: HTTP ${error.status}.`);
+    }
+
+    if (error instanceof Error && error.message) {
+      return new Error(`${stage}: ${error.message}`);
+    }
+
+    return new Error(`${stage}.`);
+  }
+
+  private getRedirectUrl(): string {
+    return environment.authRedirectUrl || window.location.origin;
+  }
+
+  private getSafeLoginEndpoint(value: string | null | undefined): string {
+    if (!value || !value.startsWith('/') || value.startsWith('//')) {
+      return '/login';
+    }
+
+    return value.split('?', 1)[0] || '/login';
   }
 }

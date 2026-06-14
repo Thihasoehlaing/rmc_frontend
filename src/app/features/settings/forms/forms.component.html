@@ -1,0 +1,240 @@
+<main class="forms-page">
+  <header class="forms-page__header">
+    <div>
+      <span class="forms-page__eyebrow">System Settings</span>
+      <h1>Forms</h1>
+      <p>Manage application forms, their codes, names, and availability.</p>
+    </div>
+    <button class="btn btn-primary forms-page__create-button" type="button" (click)="openCreateDialog()">
+      <span class="material-icons">add</span>
+      Create Form
+    </button>
+  </header>
+
+  <section class="forms-toolbar" aria-label="Form filters">
+    <label class="forms-filter forms-filter--search">
+      <span>Form Code or Name</span>
+      <input
+        class="input--text"
+        type="search"
+        placeholder="Search forms"
+        [ngModel]="searchTerm()"
+        (ngModelChange)="searchTerm.set($event)"
+        (keydown.enter)="search()">
+    </label>
+
+    <label class="forms-filter">
+      <span>Status</span>
+      <select
+        class="input--select"
+        [ngModel]="selectedStatus()"
+        (ngModelChange)="selectedStatus.set($event)">
+        <option value="">All</option>
+        <option value="Active">Active</option>
+        <option value="Inactive">Inactive</option>
+      </select>
+    </label>
+
+    <div class="forms-toolbar__actions">
+      <button class="btn btn-primary" type="button" (click)="search()">
+        <span class="material-icons">search</span>
+        Search
+      </button>
+      <button class="btn btn-secondary" type="button" (click)="resetFilters()">
+        <span class="material-icons">restart_alt</span>
+        Reset
+      </button>
+    </div>
+  </section>
+
+  <section class="forms-table-card">
+    @if (isLoading()) {
+      <div class="forms-loading" aria-label="Loading forms">
+        @for (row of [1, 2, 3, 4, 5]; track row) {
+          <div class="forms-skeleton-row">
+            @for (cell of [1, 2, 3, 4, 5]; track cell) {
+              <span></span>
+            }
+          </div>
+        }
+      </div>
+    } @else if (loadFailed()) {
+      <div class="forms-state">
+        <span class="material-icons">cloud_off</span>
+        <h2>Unable to load forms</h2>
+        <p>Check the API connection and try again.</p>
+        <button class="btn btn-primary" type="button" (click)="loadForms()">Try Again</button>
+      </div>
+    } @else if (forms().length === 0) {
+      <div class="forms-state">
+        <span class="material-icons">description</span>
+        <h2>No forms found</h2>
+        <p>Adjust the filters or create a new form.</p>
+      </div>
+    } @else {
+      <app-data-table
+        [columns]="columns"
+        [rows]="forms()"
+        [rowTrackFn]="rowTrackFn">
+        <ng-template #rowTemplate let-row let-index="index">
+          <tr>
+            <td class="is-align-center">{{ rowNumber(index) }}</td>
+            <td><span class="form-code">{{ row.form_code }}</span></td>
+            <td>
+              <div class="form-name">
+                <span class="material-icons">description</span>
+                <strong>{{ row.form_name }}</strong>
+              </div>
+            </td>
+            <td class="is-align-center">
+              <span class="status-badge" [class.status-badge--inactive]="!row.is_active">
+                {{ row.is_active ? 'Active' : 'Inactive' }}
+              </span>
+            </td>
+            <td class="is-align-center">
+              <div class="table-actions">
+                <button
+                  class="table-action"
+                  type="button"
+                  title="Edit form"
+                  aria-label="Edit form"
+                  (click)="openEditDialog(row)">
+                  <span class="material-icons">edit</span>
+                </button>
+                @if (row.is_active) {
+                  <button
+                    class="table-action table-action--danger"
+                    type="button"
+                    title="Deactivate form"
+                    aria-label="Deactivate form"
+                    (click)="openDeactivateDialog(row)">
+                    <span class="material-icons">block</span>
+                  </button>
+                }
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+      </app-data-table>
+    }
+  </section>
+
+  @if (!isLoading() && !loadFailed()) {
+    <app-pagination
+      [currentPage]="page()"
+      [totalPages]="totalPages()"
+      [pageSize]="pageSize()"
+      [pageSizeOptions]="pageSizeOptions"
+      (pageChange)="onPageChange($event)"
+      (pageSizeChange)="onPageSizeChange($event)">
+    </app-pagination>
+
+    <p class="forms-count">
+      @if (totalItems() > 0) {
+        Showing {{ pageStart() }}-{{ pageEnd() }} of {{ totalItems() }} forms
+      } @else {
+        Showing 0 forms
+      }
+    </p>
+  }
+
+  <app-dialog
+    [isOpen]="dialogMode() !== null"
+    [title]="dialogTitle()"
+    size="small"
+    (close)="closeFormDialog()">
+    @if (isDetailLoading()) {
+      <div class="form-detail-loading">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    } @else if (detailFailed()) {
+      <div class="dialog-state">
+        <span class="material-icons">error_outline</span>
+        <p>Unable to retrieve this form.</p>
+        <button class="btn btn-secondary" type="button" (click)="retryDetail()">Try Again</button>
+      </div>
+    } @else {
+      <div class="form-editor">
+        <label class="forms-filter">
+          <span>Form Code</span>
+          <input
+            class="input--text"
+            type="text"
+            maxlength="100"
+            placeholder="e.g. RDIG"
+            autocomplete="off"
+            [ngModel]="formCode()"
+            (ngModelChange)="onFormCodeChange($event)">
+          <small>Codes are stored in uppercase.</small>
+        </label>
+
+        <label class="forms-filter">
+          <span>Form Name</span>
+          <input
+            class="input--text"
+            type="text"
+            maxlength="255"
+            placeholder="Enter form name"
+            autocomplete="off"
+            [ngModel]="formName()"
+            (ngModelChange)="formName.set($event)">
+        </label>
+
+        <label class="active-switch">
+          <input
+            type="checkbox"
+            [ngModel]="formActive()"
+            (ngModelChange)="formActive.set($event)">
+          <span class="active-switch__control"></span>
+          <span>
+            <strong>Active form</strong>
+            <small>Available for use in the RMC application.</small>
+          </span>
+        </label>
+      </div>
+    }
+
+    <div dialog-footer class="form-dialog__footer">
+      <button class="btn btn-secondary" type="button" [disabled]="isSaving()" (click)="closeFormDialog()">
+        Cancel
+      </button>
+      @if (!isDetailLoading() && !detailFailed()) {
+        <button
+          class="btn btn-primary"
+          type="button"
+          [disabled]="isSaving() || !formCode().trim() || !formName().trim()"
+          (click)="saveForm()">
+          {{ isSaving() ? 'Saving...' : (dialogMode() === 'create' ? 'Create Form' : 'Save Changes') }}
+        </button>
+      }
+    </div>
+  </app-dialog>
+
+  <app-dialog
+    [isOpen]="formToDeactivate() !== null"
+    title="Deactivate Form"
+    size="small"
+    (close)="closeDeactivateDialog()">
+    @if (formToDeactivate(); as form) {
+      <div class="deactivate-confirmation">
+        <span class="material-icons">block</span>
+        <div>
+          <h3>Deactivate {{ form.form_code }}?</h3>
+          <p>
+            <strong>{{ form.form_name }}</strong> will no longer be available for active use.
+            Existing workflow and request data will not be deleted.
+          </p>
+        </div>
+      </div>
+    }
+
+    <div dialog-footer class="form-dialog__footer">
+      <button class="btn btn-secondary" type="button" [disabled]="isSaving()" (click)="closeDeactivateDialog()">Cancel</button>
+      <button class="btn btn-danger" type="button" [disabled]="isSaving()" (click)="confirmDeactivate()">
+        {{ isSaving() ? 'Deactivating...' : 'Deactivate Form' }}
+      </button>
+    </div>
+  </app-dialog>
+</main>

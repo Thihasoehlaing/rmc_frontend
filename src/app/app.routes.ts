@@ -1,7 +1,5 @@
 import { Routes } from '@angular/router';
 import { LayoutComponent } from './layout/layout.component';
-import { DashboardComponent } from './layout/dashboard/dashboard.component';
-import { ProfileComponent } from './layout/profile/profile.component';
 import { authGuard } from './core/guards/auth.guard';
 import { permissionGuard } from './core/guards/permission.guard';
 import { NavPermission } from './core/interfaces/permission.interface';
@@ -21,8 +19,20 @@ export const routes: Routes = [
     canActivate: [authGuard],
     children: [
       // Accessible to ALL authenticated users
-      { path: 'dashboard', component: DashboardComponent },
-      { path: 'profile', component: ProfileComponent },
+      {
+        path: 'dashboard',
+        loadComponent: () =>
+          import('./features/dashboard/dashboard.component').then(
+            m => m.DashboardComponent,
+          ),
+      },
+      {
+        path: 'profile',
+        loadComponent: () =>
+          import('./features/profile/profile.component').then(
+            m => m.ProfileComponent,
+          ),
+      },
       {
         path: 'showcase',
         loadComponent: () =>
@@ -176,17 +186,16 @@ export const routes: Routes = [
 
       // ── Admin Settings — Admin group only ────────────────────────────────
       {
-        path: 'settings',
+        path: 'admin-settings',
+        canActivate: [permissionGuard],
+        data: {
+          permission: { anyOf: ['Admin'] } satisfies NavPermission,
+        },
         children: [
           {
             path: '',
-            redirectTo: 'admin-settings',
-            pathMatch: 'full'
+            loadComponent: () => import('./features/admin-settings/admin-settings/admin-settings.component').then(m => m.AdminSettingsComponent)
           },
-            {
-                path: 'admin-settings',
-                loadComponent: () => import('./features/admin-settings/admin-settings/admin-settings.component').then(m => m.AdminSettingsComponent)
-            },
             {
                 path: 'guidelines',
                 loadComponent: () => import('./features/admin-settings/guidelines/guidelines.component').then(m => m.GuidelinesComponent)
@@ -221,6 +230,87 @@ export const routes: Routes = [
                     import('./features/admin-settings/batch-sitting/batch-sitting.component').then(m => m.BatchSittingComponent),
             },
         ]
+      },
+      {
+        path: 'settings',
+        canActivate: [permissionGuard],
+        data: {
+          permission: { allOf: ['SystemAdmin'] } satisfies NavPermission,
+        },
+        children: [
+          {
+            path: '',
+            loadComponent: () =>
+              import('./features/settings/settings.component').then(
+                m => m.SettingsComponent,
+              ),
+          },
+          {
+            path: 'forms',
+            loadComponent: () =>
+              import('./features/settings/forms/forms.component').then(
+                m => m.FormsComponent,
+              ),
+          },
+          {
+            path: 'dropdown-categories',
+            loadComponent: () =>
+              import('./features/settings/dropdown-categories/dropdown-categories.component').then(
+                m => m.DropdownCategoriesComponent,
+              ),
+          },
+          {
+            path: 'staff-directory',
+            data: { scope: 'staff-directory' },
+            loadComponent: () =>
+              import('./features/settings/settings-scope/settings-scope.component').then(
+                m => m.SettingsScopeComponent,
+              ),
+          },
+          {
+            path: 'users',
+            loadComponent: () =>
+              import('./features/settings/users/users.component').then(
+                m => m.UsersComponent,
+              ),
+          },
+          {
+            path: 'roles',
+            loadComponent: () =>
+              import('./features/settings/roles/roles.component').then(
+                m => m.RolesComponent,
+              ),
+          },
+          {
+            path: 'roles-users',
+            redirectTo: 'users',
+            pathMatch: 'full',
+          },
+          {
+            path: 'blocked-users',
+            data: { scope: 'blocked-users' },
+            loadComponent: () =>
+              import('./features/settings/settings-scope/settings-scope.component').then(
+                m => m.SettingsScopeComponent,
+              ),
+          },
+          {
+            path: 'applicant-rules',
+            data: { scope: 'applicant-rules' },
+            loadComponent: () =>
+              import('./features/settings/settings-scope/settings-scope.component').then(
+                m => m.SettingsScopeComponent,
+              ),
+          },
+          {
+            path: 'workflow',
+            data: { scope: 'workflow' },
+            loadComponent: () =>
+              import('./features/settings/settings-scope/settings-scope.component').then(
+                m => m.SettingsScopeComponent,
+              ),
+          },
+        ],
       },
 
       // Default redirect

@@ -72,6 +72,7 @@ export class AddGuidelineModalComponent {
   @Output() save = new EventEmitter<GuidelineConfig>();
   @Input() initialConfig: GuidelineConfig | null = null;
   @Input() editId: number | null = null;
+  @Input() isSaving = false;
 
   private fb = inject(FormBuilder);
 
@@ -267,9 +268,12 @@ export class AddGuidelineModalComponent {
   }
 
   onSave() {
-    if (this.editorForm.valid && this.guidelineConfig().blocks.length > 0) {
+    if (
+      !this.isSaving &&
+      this.editorForm.valid &&
+      this.guidelineConfig().blocks.length > 0
+    ) {
       this.save.emit(this.guidelineConfig());
-      this.close.emit();
     }
   }
 

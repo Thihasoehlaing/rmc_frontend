@@ -188,6 +188,14 @@ export class TopHeaderComponent implements OnInit, OnDestroy {
     }
 
     private formatSegment(segment: string): string {
+        const routeLabels: Record<string, string> = {
+            'workflow': 'Workflow Configuration',
+        };
+
+        if (routeLabels[segment]) {
+            return routeLabels[segment];
+        }
+
         return segment
             .replace(/-/g, ' ')
             .replace(/\b\w/g, c => c.toUpperCase());

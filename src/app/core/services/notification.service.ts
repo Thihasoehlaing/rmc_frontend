@@ -198,7 +198,7 @@ export class NotificationService {
         this.create(this.build('BATCH_IS_DONE', {
           batchName:    batch.batchName,
           recipientRole: 'RMC',
-          data: { batchId: batch.id, batchName: batch.batchName, route: '/settings/batch-sitting' },
+          data: { batchId: batch.id, batchName: batch.batchName, route: '/admin-settings/batch-sitting' },
         })).subscribe();
       }
 
@@ -206,7 +206,7 @@ export class NotificationService {
         this.create(this.build('UPCOMING_BATCH_PLAN', {
           batchName:    batch.batchName,
           recipientRole: 'RMC',
-          data: { batchId: batch.id, batchName: batch.batchName, route: '/settings/batch-sitting' },
+          data: { batchId: batch.id, batchName: batch.batchName, route: '/admin-settings/batch-sitting' },
         })).subscribe();
       }
     });

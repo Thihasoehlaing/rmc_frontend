@@ -2,7 +2,7 @@
   <!-- Header -->
   <div class="guidelines-header">
     <div class="guidelines-header__content">
-      <a href="/settings/admin-settings" class="guidelines-back-link" aria-label="Back to Admin Settings">
+      <a href="/admin-settings" class="guidelines-back-link" aria-label="Back to Admin Settings">
         <span class="material-icons">arrow_back</span>
       </a>
       <div>
@@ -34,74 +34,118 @@
       </select>
     </div>
     <div class="guidelines-actions">
-      <button class="btn btn-primary" (click)="addGuideline()">
+      <button class="btn btn-primary" (click)="addGuideline()" [disabled]="isLoading()">
         <span class="material-icons">add</span>
         Add Guideline
-      </button>
-      <button class="btn btn-secondary delete-action-btn" disabled>
-        <span class="material-icons">delete</span>
-        Delete
       </button>
     </div>
   </div>
 
   <!-- Table -->
   <div class="guidelines-table-wrapper">
-    <app-data-table
-      [columns]="columns"
-      [rows]="paginatedGuidelines()"
-      [rowTrackFn]="rowTrackFn"
-      [sortColumn]="sortBy()"
-      [sortDirection]="sortDirection()"
-      (sortChange)="onSortChange($event)">
-      <ng-template #rowTemplate let-row let-index="index" let-columns="columns">
-        <tr>
-          <td>{{ row.form }}</td>
-          <td>{{ row.title }}</td>
-          <td class="center">
-            <span class="guideline-status" [class.is-active]="row.isActive" [class.is-inactive]="!row.isActive">
-              {{ row.isActive ? 'Active' : 'Inactive' }}
-            </span>
-          </td>
-          <td class="center">{{ row.config.blocks.length }} blocks</td>
-          <td>{{ row.lastUpdated }}</td>
-          <td>{{ row.createdBy }}</td>
-          <td class="actions-cell">
-            <button class="icon-btn icon-btn--edit" type="button" title="Edit inline" (click)="editGuideline(row.id)">
-              <span class="material-icons">edit</span>
-            </button>
+    @if (isLoading()) {
+      <div class="guidelines-loading" aria-label="Loading guidelines">
+        @for (row of [1, 2, 3, 4, 5]; track row) {
+          <div class="guidelines-skeleton-row">
+            @for (cell of [1, 2, 3, 4, 5, 6, 7, 8]; track cell) {
+              <span class="guidelines-skeleton-cell"></span>
+            }
+          </div>
+        }
+      </div>
+    } @else if (loadFailed()) {
+      <div class="guidelines-state">
+        <span class="material-icons">cloud_off</span>
+        <h2>Unable to load guidelines</h2>
+        <p>Check the API connection and try again.</p>
+        <button class="btn btn-primary" type="button" (click)="loadGuidelines()">
+          Try Again
+        </button>
+      </div>
+    } @else {
+      <app-data-table
+        [columns]="columns"
+        [rows]="displayedGuidelines()"
+        [rowTrackFn]="rowTrackFn"
+        [sortColumn]="sortBy()"
+        [sortDirection]="sortDirection()"
+        (sortChange)="onSortChange($event)">
+        <ng-template #rowTemplate let-row let-index="index" let-columns="columns">
+          <tr>
+            <td class="center">{{ rowNumber(index) }}</td>
+            <td>{{ row.form }}</td>
+            <td>{{ row.title }}</td>
+            <td class="center">
+              <span class="guideline-status" [class.is-active]="row.isActive" [class.is-inactive]="!row.isActive">
+                {{ row.isActive ? 'Active' : 'Inactive' }}
+              </span>
+            </td>
+            <td class="center">{{ row.blockCount }} blocks</td>
+            <td>{{ row.lastUpdated }}</td>
+            <td>{{ row.createdBy }}</td>
+            <td class="actions-cell">
+              <button
+                class="icon-btn icon-btn--edit"
+                type="button"
+                title="Edit guideline"
+                [disabled]="loadingGuidelineId() !== null"
+                (click)="editGuideline(row.id)">
+                <span class="material-icons">edit</span>
+              </button>
 
-            <button *ngIf="!row.isActive" class="btn btn-sm btn-status-activate" type="button" (click)="toggleGuidelineStatus(row.id)">
-              <span class="material-icons">check_circle</span>
-              Activate
-            </button>
+              <button
+                *ngIf="!row.isActive"
+                class="btn btn-sm btn-status-activate"
+                type="button"
+                [disabled]="loadingGuidelineId() !== null"
+                (click)="toggleGuidelineStatus(row)">
+                <span class="material-icons">check_circle</span>
+                Activate
+              </button>
 
-            <button *ngIf="row.isActive" class="btn btn-sm btn-status-deactivate" type="button" (click)="toggleGuidelineStatus(row.id)">
-              <span class="material-icons">block</span>
-              Deactivate
-            </button>
-          </td>
-        </tr>
-      </ng-template>
-    </app-data-table>
+              <button
+                *ngIf="row.isActive"
+                class="btn btn-sm btn-status-deactivate"
+                type="button"
+                [disabled]="loadingGuidelineId() !== null"
+                (click)="toggleGuidelineStatus(row)">
+                <span class="material-icons">block</span>
+                Deactivate
+              </button>
+
+              <button
+                class="icon-btn icon-btn--delete"
+                type="button"
+                title="Delete guideline"
+                [disabled]="loadingGuidelineId() !== null"
+                (click)="deleteGuideline(row)">
+                <span class="material-icons">delete</span>
+              </button>
+            </td>
+          </tr>
+        </ng-template>
+      </app-data-table>
+    }
   </div>
 
-  <app-pagination
-    [currentPage]="guidelinePage()"
-    [totalPages]="guidelineTotalPages()"
-    [pageSize]="guidelinePageSize()"
-    [pageSizeOptions]="guidelinePageSizeOptions"
-    (pageChange)="onGuidelinePageChange($event)"
-    (pageSizeChange)="onGuidelinePageSizeChange($event)">
-  </app-pagination>
+  @if (!isLoading() && !loadFailed()) {
+    <app-pagination
+      [currentPage]="guidelinePage()"
+      [totalPages]="guidelineTotalPages()"
+      [pageSize]="guidelinePageSize()"
+      [pageSizeOptions]="guidelinePageSizeOptions"
+      (pageChange)="onGuidelinePageChange($event)"
+      (pageSizeChange)="onGuidelinePageSizeChange($event)">
+    </app-pagination>
+  }
 
   <!-- Footer -->
   <div class="guidelines-footer">
     <p class="guidelines-count">
-      @if (filteredGuidelines().length > 0) {
-        Showing {{ guidelinePageStart() }}-{{ guidelinePageEnd() }} of {{ filteredGuidelines().length }} guidelines
-      } @else {
-        Showing 0 of {{ guidelines().length }} guidelines
+      @if (!isLoading() && totalGuidelines() > 0) {
+        Showing {{ guidelinePageStart() }}-{{ guidelinePageEnd() }} of {{ totalGuidelines() }} guidelines
+      } @else if (!isLoading()) {
+        Showing 0 guidelines
       }
     </p>
   </div>
@@ -111,6 +155,7 @@
     *ngIf="showAddModal()"
     [initialConfig]="editingConfig()"
     [editId]="editingGuidelineId()"
+    [isSaving]="isSaving()"
     (close)="closeModal()"
     (save)="saveGuideline($event)"
   ></app-add-guideline-modal>

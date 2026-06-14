@@ -47,7 +47,16 @@
   display: flex;
   align-items: center;
   gap: var(--space-3);
+  height: 100%;
   overflow: hidden;
+  text-decoration: none;
+
+  &:hover,
+  &:focus,
+  &:active,
+  &:visited {
+    text-decoration: none;
+  }
 
   .logo-img {
     height: 36px;
@@ -58,10 +67,13 @@
   }
 
   .logo-text {
+    display: flex;
+    align-items: center;
     font-weight: var(--fw-bold);
     color: var(--color-heading);
     white-space: nowrap;
-    font-size: var(--fs-base);
+    font-size: var(--fs-lg);
+    line-height: 1;
     overflow: hidden;
     opacity: 1;
     transition: opacity var(--transition-fast);
@@ -370,6 +382,11 @@
   :host {
     position: relative;
     z-index: var(--z-overlay);
+  }
+
+  .sidebar__header {
+    flex-direction: row;
+    justify-content: flex-start;
   }
 
   .sidebar {

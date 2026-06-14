@@ -1,505 +1,428 @@
-import { Component, signal, TrackByFunction, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import {
+  Component,
+  OnDestroy,
+  OnInit,
+  TrackByFunction,
+  inject,
+  signal,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { AddGuidelineModalComponent, GuidelineConfig } from './add-guideline-modal/add-guideline-modal.component';
-import { DataTableComponent, DataTableColumn } from '../../../shared/components/data-table/data-table.component';
+import { finalize } from 'rxjs';
+
+import {
+  AddGuidelineModalComponent,
+  BlockType,
+  GuidelineConfig,
+} from './add-guideline-modal/add-guideline-modal.component';
+import {
+  GuidelineApi,
+  GuidelinePayload,
+  GuidelinesService,
+} from './guidelines.service';
+import {
+  DataTableColumn,
+  DataTableComponent,
+} from '../../../shared/components/data-table/data-table.component';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
-import { AuthService } from '../../../core/services/auth.service';
 
 interface Guideline {
   id: number;
   form: string;
+  formCode: string;
   title: string;
   isActive: boolean;
-  config: GuidelineConfig;
+  blockCount: number;
   lastUpdated: string;
   createdBy: string;
 }
 
-type GuidelineSortKey = 'form' | 'title' | 'blocks' | 'lastUpdated' | 'createdBy';
+type GuidelineSortKey =
+  | 'form'
+  | 'title'
+  | 'blocks'
+  | 'lastUpdated'
+  | 'createdBy';
+
+const FORM_LABELS: Record<string, string> = {
+  CONFERENCE: 'Conference Application',
+  JOURNAL: 'Journal Application',
+  PARTNERSHIP: 'Partnership Application',
+  RA_GRA: 'RA/GRA Application',
+  RDIG: 'RDIG Application',
+};
+
+const FORM_CODES: Record<string, string> = Object.fromEntries(
+  Object.entries(FORM_LABELS).map(([code, label]) => [label, code]),
+);
 
 @Component({
   selector: 'app-guidelines',
   standalone: true,
-  imports: [CommonModule, FormsModule, AddGuidelineModalComponent, DataTableComponent, PaginationComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    AddGuidelineModalComponent,
+    DataTableComponent,
+    PaginationComponent,
+  ],
   templateUrl: './guidelines.component.html',
   styleUrls: ['./guidelines.component.scss'],
 })
-export class GuidelinesComponent implements OnInit {
-  private auth = inject(AuthService);
-  private readonly STORAGE_KEY = 'rmc_guidelines_data';
+export class GuidelinesComponent implements OnInit, OnDestroy {
+  private readonly guidelinesService = inject(GuidelinesService);
+  private searchTimer?: ReturnType<typeof setTimeout>;
 
-  searchTerm = signal('');
-  selectedStatus = signal<string>('');
-  sortBy = signal<GuidelineSortKey>('form');
-  sortDirection = signal<'asc' | 'desc'>('asc');
-  showAddModal = signal(false);
-  editingGuidelineId = signal<number | null>(null);
-  editingConfig = signal<GuidelineConfig | null>(null);
-  guidelinePage = signal(1);
-  guidelinePageSize = signal(15);
-  guidelinePageSizeOptions = [5, 15, 30, 50];
+  readonly searchTerm = signal('');
+  readonly selectedStatus = signal('');
+  readonly sortBy = signal<GuidelineSortKey>('form');
+  readonly sortDirection = signal<'asc' | 'desc'>('asc');
+  readonly showAddModal = signal(false);
+  readonly editingGuidelineId = signal<number | null>(null);
+  readonly editingConfig = signal<GuidelineConfig | null>(null);
+  readonly guidelinePage = signal(1);
+  readonly guidelinePageSize = signal(5);
+  readonly guidelinePageSizeOptions = [5, 10, 15, 30, 50];
+  readonly guidelines = signal<Guideline[]>([]);
+  readonly totalGuidelines = signal(0);
+  readonly totalPages = signal(1);
+  readonly isLoading = signal(true);
+  readonly isSaving = signal(false);
+  readonly loadingGuidelineId = signal<number | null>(null);
+  readonly loadFailed = signal(false);
 
-  columns: readonly DataTableColumn[] = [
+  readonly columns: readonly DataTableColumn[] = [
+    { key: 'number', label: 'No.', width: '80px', align: 'center' },
     { key: 'form', label: 'Form', width: '180px', sortable: true },
     { key: 'title', label: 'Guideline Title', sortable: true },
     { key: 'status', label: 'Status', width: '120px' },
-    { key: 'blocks', label: 'Blocks', width: '120px', align: 'center', sortable: true },
-    { key: 'lastUpdated', label: 'Last Updated', width: '140px', sortable: true },
-    { key: 'createdBy', label: 'Created By', width: '160px', sortable: true },
-    { key: 'actions', label: 'Actions', width: '180px', align: 'right', headerAlign: 'right' },
+    {
+      key: 'blocks',
+      label: 'Blocks',
+      width: '120px',
+      align: 'center',
+      sortable: true,
+    },
+    {
+      key: 'lastUpdated',
+      label: 'Last Updated',
+      width: '140px',
+      sortable: true,
+    },
+    {
+      key: 'createdBy',
+      label: 'Created By',
+      width: '160px',
+      sortable: true,
+    },
+    {
+      key: 'actions',
+      label: 'Actions',
+      width: '230px',
+      align: 'right',
+      headerAlign: 'right',
+    },
   ];
 
-  rowTrackFn: TrackByFunction<unknown> = (index: number, row: unknown) => (row as Guideline).id;
+  readonly rowTrackFn: TrackByFunction<unknown> = (
+    _index: number,
+    row: unknown,
+  ) => (row as Guideline).id;
 
-  guidelines = signal<Guideline[]>([]);
-
-  ngOnInit() {
-    this.loadGuidelinesFromStorage();
+  ngOnInit(): void {
+    this.loadGuidelines();
   }
 
-  private loadGuidelinesFromStorage() {
-    try {
-      const stored = localStorage.getItem(this.STORAGE_KEY);
-      if (stored) {
-        const data = JSON.parse(stored) as Array<Partial<Guideline> & Pick<Guideline, 'id' | 'form' | 'title' | 'config' | 'lastUpdated' | 'createdBy'>>;
-        this.guidelines.set(
-          this.normalizeSingleActivePerForm(
-            data.map(item => ({
-              ...item,
-              isActive: Boolean(item.isActive),
-              lastUpdated: this.normalizeDisplayDate(item.lastUpdated),
-            })) as Guideline[]
-          )
-        );
-      } else {
-        this.guidelines.set(
-          this.normalizeSingleActivePerForm(
-            this.getDefaultGuidelines().map(item => ({
-              ...item,
-              lastUpdated: this.normalizeDisplayDate(item.lastUpdated),
-            }))
-          )
-        );
-      }
-    } catch (error) {
-      console.error('Failed to load guidelines from localStorage:', error);
-      this.guidelines.set(this.normalizeSingleActivePerForm(this.getDefaultGuidelines()));
+  ngOnDestroy(): void {
+    if (this.searchTimer) {
+      clearTimeout(this.searchTimer);
     }
   }
 
-  private saveGuidelinesToStorage() {
-    try {
-      // Persist a normalized copy to ensure only one active guideline per form is stored
-      const normalized = this.normalizeSingleActivePerForm(this.guidelines());
-      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(normalized));
-      // Also update the in-memory signal with the normalized list to keep UI consistent
-      this.guidelines.set(normalized);
-    } catch (error) {
-      console.error('Failed to save guidelines to localStorage:', error);
-    }
+  loadGuidelines(): void {
+    this.isLoading.set(true);
+    this.loadFailed.set(false);
+
+    this.guidelinesService
+      .list({
+        page: this.guidelinePage(),
+        perPage: this.guidelinePageSize(),
+        search: this.searchTerm(),
+        status: this.selectedStatus(),
+      })
+      .pipe(finalize(() => this.isLoading.set(false)))
+      .subscribe({
+        next: response => {
+          const pagination = response.data.pagination;
+          const totalPages = Math.max(1, pagination.total_pages);
+
+          if (
+            pagination.total_pages > 0 &&
+            this.guidelinePage() > pagination.total_pages
+          ) {
+            this.guidelinePage.set(pagination.total_pages);
+            this.loadGuidelines();
+            return;
+          }
+
+          this.guidelines.set(response.data.items.map(item => this.toRow(item)));
+          this.totalGuidelines.set(pagination.total_items);
+          this.totalPages.set(totalPages);
+        },
+        error: () => {
+          this.guidelines.set([]);
+          this.totalGuidelines.set(0);
+          this.totalPages.set(1);
+          this.loadFailed.set(true);
+        },
+      });
   }
 
-  private getDefaultGuidelines(): Guideline[] {
-    return [
-      {
-        id: 1,
-        form: 'Conference Application',
-      title: 'Conference Submission Rules 2026',
-      isActive: true,
-      config: {
-        title: 'Conference Submission Rules 2026',
-        formName: 'Conference Application',
-        backgroundToken: 'white',
-        textToken: 'var(--color-text-primary)',
-        buttonToken: 'var(--color-primary)',
-        buttonText: 'Close',
-        blocks: [
-          { id: '1-a', type: 'text', content: 'Rule 1: ...' },
-          { id: '1-b', type: 'text', content: 'Rule 2: ...' },
-        ],
-      },
-      lastUpdated: '01 Mar 2026',
-      createdBy: 'Prof. Zulkifli',
-    },
-    {
-      id: 2,
-      form: 'Journal Application',
-      title: 'Journal Manuscript Guidelines',
-      isActive: true,
-      config: {
-        title: 'Journal Manuscript Guidelines',
-        formName: 'Journal Application',
-        backgroundToken: 'white',
-        textToken: 'var(--color-text-primary)',
-        buttonToken: 'var(--color-primary)',
-        buttonText: 'Close',
-        blocks: [
-          { id: '2-a', type: 'text', content: 'Manuscript length...' },
-          { id: '2-b', type: 'highlight', content: 'Formatting notes...' },
-          { id: '2-c', type: 'info', content: 'Submission portal...' },
-        ],
-      },
-      lastUpdated: '15 Feb 2026',
-      createdBy: 'Ahmad Azri',
-    },
-    {
-      id: 3,
-      form: 'Partnership Application',
-      title: 'Partnership Proposal Checklist',
-      isActive: true,
-      config: {
-        title: 'Partnership Proposal Checklist',
-        formName: 'Partnership Application',
-        backgroundToken: 'white',
-        textToken: 'var(--color-text-primary)',
-        buttonToken: 'var(--color-primary)',
-        buttonText: 'Close',
-        blocks: [
-          { id: '3-a', type: 'text', content: 'Checklist item 1' },
-          { id: '3-b', type: 'text', content: 'Checklist item 2' },
-          { id: '3-c', type: 'text', content: 'Checklist item 3' },
-        ],
-      },
-      lastUpdated: '28 Jan 2026',
-      createdBy: 'Pn. Fauziah',
-    },
-    {
-      id: 4,
-      form: 'RA/GRA Application',
-      title: 'RA/GRA Application Requirements',
-      isActive: true,
-      config: {
-        title: 'RA/GRA Application Requirements',
-        formName: 'RA/GRA Application',
-        backgroundToken: 'white',
-        textToken: 'var(--color-text-primary)',
-        buttonToken: 'var(--color-primary)',
-        buttonText: 'Close',
-        blocks: [
-          { id: '4-a', type: 'text', content: 'Requirement A' },
-          { id: '4-b', type: 'text', content: 'Requirement B' },
-          { id: '4-c', type: 'text', content: 'Requirement C' },
-        ],
-      },
-      lastUpdated: '05 Apr 2026',
-      createdBy: 'Pn. Rohani',
-    },
-    {
-      id: 5,
-      form: 'RDIG Application',
-      title: 'RDIG Submission Guidelines v2.1',
-      isActive: true,
-      config: {
-        title: 'RDIG Submission Guidelines v2.1',
-        formName: 'RDIG Application',
-        backgroundToken: 'white',
-        textToken: 'var(--color-text-primary)',
-        buttonToken: 'var(--color-primary)',
-        buttonText: 'Close',
-        blocks: [
-          { id: '5-a', type: 'text', content: 'Step 1' },
-          { id: '5-b', type: 'text', content: 'Step 2' },
-          { id: '5-c', type: 'highlight', content: 'Important' },
-          { id: '5-d', type: 'info', content: 'Notes' },
-        ],
-      },
-      lastUpdated: '10 Apr 2026',
-      createdBy: 'Dr. Suhaimi',
-    },
-    ];
-  }
-
-
-
-  filteredGuidelines() {
-    // Ensure only one guideline is active per form at runtime
-    const normalizedList = this.normalizeSingleActivePerForm(this.guidelines());
-
-    // search by title and createdBy
-    const searchLower = this.searchTerm().toLowerCase();
-    let list = normalizedList.filter(g => {
-      const matchesSearch = g.title.toLowerCase().includes(searchLower) ||
-                           g.createdBy.toLowerCase().includes(searchLower);
-      const statusFilter = this.selectedStatus();
-      const matchesStatus = !statusFilter || (statusFilter === 'Active' ? g.isActive : !g.isActive);
-      return matchesSearch && matchesStatus;
-    });
-
-    // apply sorting
+  displayedGuidelines(): Guideline[] {
     const sortKey = this.sortBy();
-    const dir = this.sortDirection() === 'asc' ? 1 : -1;
-    list = [...list].sort((a, b) => {
-      return this.compareGuidelines(a, b, sortKey) * dir;
-    });
+    const direction = this.sortDirection() === 'asc' ? 1 : -1;
 
-    return list;
+    return [...this.guidelines()].sort(
+      (first, second) =>
+        this.compareGuidelines(first, second, sortKey) * direction,
+    );
   }
 
   guidelineTotalPages(): number {
-    return Math.max(1, Math.ceil(this.filteredGuidelines().length / this.guidelinePageSize()));
-  }
-
-  paginatedGuidelines(): Guideline[] {
-    const list = this.filteredGuidelines();
-    const currentPage = Math.min(this.guidelinePage(), this.guidelineTotalPages());
-    const startIndex = (currentPage - 1) * this.guidelinePageSize();
-    return list.slice(startIndex, startIndex + this.guidelinePageSize());
+    return this.totalPages();
   }
 
   guidelinePageStart(): number {
-    const total = this.filteredGuidelines().length;
-    if (total === 0) return 0;
-    return ((Math.min(this.guidelinePage(), this.guidelineTotalPages()) - 1) * this.guidelinePageSize()) + 1;
+    if (this.totalGuidelines() === 0) return 0;
+    return (this.guidelinePage() - 1) * this.guidelinePageSize() + 1;
   }
 
   guidelinePageEnd(): number {
-    const total = this.filteredGuidelines().length;
-    if (total === 0) return 0;
-    return Math.min(this.guidelinePageStart() + this.guidelinePageSize() - 1, total);
+    return Math.min(
+      this.guidelinePageStart() + this.guidelines().length - 1,
+      this.totalGuidelines(),
+    );
   }
 
-  onGuidelineSearchChange(value: string) {
+  rowNumber(index: number): number {
+    return (this.guidelinePage() - 1) * this.guidelinePageSize() + index + 1;
+  }
+
+  onGuidelineSearchChange(value: string): void {
     this.searchTerm.set(value);
     this.guidelinePage.set(1);
+
+    if (this.searchTimer) {
+      clearTimeout(this.searchTimer);
+    }
+
+    this.searchTimer = setTimeout(() => this.loadGuidelines(), 350);
   }
 
-  onGuidelineStatusChange(value: string) {
+  onGuidelineStatusChange(value: string): void {
     this.selectedStatus.set(value);
     this.guidelinePage.set(1);
+    this.loadGuidelines();
   }
 
-  onGuidelinePageChange(page: number) {
+  onGuidelinePageChange(page: number): void {
+    if (page === this.guidelinePage()) return;
     this.guidelinePage.set(page);
+    this.loadGuidelines();
   }
 
-  onGuidelinePageSizeChange(pageSize: number) {
+  onGuidelinePageSizeChange(pageSize: number): void {
     this.guidelinePageSize.set(pageSize);
     this.guidelinePage.set(1);
+    this.loadGuidelines();
   }
 
-  onSortChange(columnKey: string) {
-    // toggle sort if same column
+  onSortChange(columnKey: string): void {
     if (this.sortBy() === columnKey) {
-      this.sortDirection.update(d => (d === 'asc' ? 'desc' : 'asc'));
-    } else {
-      this.sortBy.set(columnKey as GuidelineSortKey);
-      this.sortDirection.set('asc');
+      this.sortDirection.update(direction =>
+        direction === 'asc' ? 'desc' : 'asc',
+      );
+      return;
     }
+
+    this.sortBy.set(columnKey as GuidelineSortKey);
+    this.sortDirection.set('asc');
   }
 
-  addGuideline() {
+  addGuideline(): void {
     this.editingGuidelineId.set(null);
     this.editingConfig.set(null);
     this.showAddModal.set(true);
   }
 
-  closeModal() {
+  closeModal(): void {
     this.showAddModal.set(false);
-  }
-
-  saveGuideline(config: GuidelineConfig) {
-    const now = this.formatDisplayDate(new Date());
-
-    const currentUserName = this.auth.currentUser()?.name ?? 'Unknown';
-
-    if (this.editingGuidelineId()) {
-      // update existing
-      const id = this.editingGuidelineId() as number;
-      this.guidelines.update(list =>
-        this.normalizeSingleActivePerForm(
-          list.map(g => g.id === id ? {
-            ...g,
-            form: config.formName,
-            title: config.title,
-            isActive: true,
-            config: config,
-            lastUpdated: now,
-            createdBy: currentUserName,
-          } : g)
-        )
-      );
-    } else {
-      const newGuideline: Guideline = {
-        id: Math.max(...this.guidelines().map(g => g.id), 0) + 1,
-        form: config.formName,
-        title: config.title,
-        isActive: true,
-        config: config,
-        lastUpdated: now,
-        createdBy: currentUserName,
-      };
-      this.guidelines.update(guidelines =>
-        this.normalizeSingleActivePerForm([...guidelines, newGuideline])
-      );
-    }
-
     this.editingGuidelineId.set(null);
     this.editingConfig.set(null);
-    this.showAddModal.set(false);
-    this.saveGuidelinesToStorage();
   }
 
-  activateGuideline(id: number) {
-    this.guidelines.update(guidelines =>
-      this.normalizeSingleActivePerForm(
-        guidelines.map(g => g.id === id ? { ...g, isActive: true } : g)
-      )
+  saveGuideline(config: GuidelineConfig): void {
+    if (this.isSaving()) return;
+
+    const editingId = this.editingGuidelineId();
+    const payload = this.toPayload(config);
+    const request = editingId
+      ? this.guidelinesService.update(editingId, payload)
+      : this.guidelinesService.create(payload);
+
+    this.isSaving.set(true);
+    request
+      .pipe(finalize(() => this.isSaving.set(false)))
+      .subscribe({
+        next: () => {
+          this.closeModal();
+          this.loadGuidelines();
+        },
+      });
+  }
+
+  toggleGuidelineStatus(guideline: Guideline): void {
+    if (this.loadingGuidelineId() !== null) return;
+
+    this.loadingGuidelineId.set(guideline.id);
+    this.guidelinesService
+      .updateStatus(guideline.id, !guideline.isActive)
+      .pipe(finalize(() => this.loadingGuidelineId.set(null)))
+      .subscribe({
+        next: () => this.loadGuidelines(),
+      });
+  }
+
+  deleteGuideline(guideline: Guideline): void {
+    const confirmed = window.confirm(
+      `Delete "${guideline.title}"? This action cannot be undone.`,
     );
-    this.saveGuidelinesToStorage();
+    if (!confirmed || this.loadingGuidelineId() !== null) return;
+
+    this.loadingGuidelineId.set(guideline.id);
+    this.guidelinesService
+      .delete(guideline.id)
+      .pipe(finalize(() => this.loadingGuidelineId.set(null)))
+      .subscribe({
+        next: () => {
+          if (this.guidelines().length === 1 && this.guidelinePage() > 1) {
+            this.guidelinePage.update(page => page - 1);
+          }
+          this.loadGuidelines();
+        },
+      });
   }
 
-  /**
-   * Toggle guideline status between Active and Inactive.
-   */
-  toggleGuidelineStatus(arg: number | Guideline) {
-    const id = typeof arg === 'number' ? arg : arg.id;
-    const found = this.guidelines().find(g => g.id === id);
-    if (!found) return;
+  editGuideline(id: number): void {
+    if (this.loadingGuidelineId() !== null) return;
 
-    // Flip the target guideline's isActive and ensure at most one per form
-    const updated = this.guidelines().map(g => {
-      if (g.id === id) {
-        return { ...g, isActive: !g.isActive };
-      }
-      // If we're activating the target, deactivate others in the same form
-      if (!found.isActive && g.form === found.form) {
-        return { ...g, isActive: false };
-      }
-      return g;
-    });
-
-    const normalized = this.normalizeSingleActivePerForm(updated);
-    this.guidelines.set(normalized);
-    this.saveGuidelinesToStorage();
+    this.loadingGuidelineId.set(id);
+    this.guidelinesService
+      .get(id)
+      .pipe(finalize(() => this.loadingGuidelineId.set(null)))
+      .subscribe({
+        next: response => {
+          this.editingGuidelineId.set(id);
+          this.editingConfig.set(this.toConfig(response.data));
+          this.showAddModal.set(true);
+        },
+      });
   }
 
-  deleteGuideline(id: number) {
-    this.guidelines.update(guidelines =>
-      guidelines.filter(g => g.id !== id)
-    );
-    this.saveGuidelinesToStorage();
+  private toRow(item: GuidelineApi): Guideline {
+    return {
+      id: item.id,
+      form: FORM_LABELS[item.form_code] ?? item.form_name ?? item.form_code,
+      formCode: item.form_code,
+      title: item.guideline_title || 'Untitled Guideline',
+      isActive: item.is_active,
+      blockCount: item.block_count,
+      lastUpdated: this.formatDisplayDate(
+        item.updated_at || item.created_at,
+      ),
+      createdBy: item.created_by || 'Unknown',
+    };
   }
 
-  editGuideline(id: number) {
-    const found = this.guidelines().find(g => g.id === id);
-    if (!found) return;
-    this.editingGuidelineId.set(id);
-    this.editingConfig.set(found.config);
-    this.showAddModal.set(true);
+  private toConfig(item: GuidelineApi): GuidelineConfig {
+    return {
+      title: item.guideline_title || 'Guidelines',
+      formName: FORM_LABELS[item.form_code] ?? item.form_name ?? item.form_code,
+      backgroundToken: item.background_token || 'white',
+      textToken: item.text_token || 'var(--color-text-primary)',
+      buttonToken: item.button_token || 'var(--color-primary)',
+      buttonText: item.button_text || 'Close',
+      blocks: (item.blocks ?? []).map(block => ({
+        id: String(block.id),
+        type: block.block_type as BlockType,
+        content: block.block_content,
+        styling: {
+          bgToken: block.background_token ?? undefined,
+          textToken: block.text_token ?? undefined,
+          fontSizeToken: block.font_size_token ?? undefined,
+          fontWeightToken: block.font_weight_token ?? undefined,
+        },
+      })),
+    };
   }
 
-  setSortBy(field: GuidelineSortKey) {
-    if (this.sortBy() === field) {
-      this.sortDirection.update(d => (d === 'asc' ? 'desc' : 'asc'));
-    } else {
-      this.sortBy.set(field);
-      this.sortDirection.set('asc');
-    }
+  private toPayload(config: GuidelineConfig): GuidelinePayload {
+    return {
+      form_code: FORM_CODES[config.formName] ?? config.formName,
+      guideline_title: config.title.trim(),
+      button_text: config.buttonText.trim(),
+      is_active: true,
+      background_token: config.backgroundToken,
+      text_token: config.textToken,
+      button_token: config.buttonToken,
+      blocks: config.blocks.map((block, index) => ({
+        block_type: block.type,
+        block_content: block.content.trim(),
+        display_order: index + 1,
+        background_token: block.styling?.bgToken || null,
+        text_token: block.styling?.textToken || null,
+        font_size_token: block.styling?.fontSizeToken || null,
+        font_weight_token: block.styling?.fontWeightToken || null,
+      })),
+    };
   }
 
-  private compareGuidelines(a: Guideline, b: Guideline, sortKey: GuidelineSortKey): number {
+  private compareGuidelines(
+    first: Guideline,
+    second: Guideline,
+    sortKey: GuidelineSortKey,
+  ): number {
     if (sortKey === 'blocks') {
-      return a.config.blocks.length - b.config.blocks.length;
+      return first.blockCount - second.blockCount;
     }
 
     if (sortKey === 'lastUpdated') {
-      return this.parseDisplayDate(a.lastUpdated) - this.parseDisplayDate(b.lastUpdated);
+      return (
+        this.parseDisplayDate(first.lastUpdated) -
+        this.parseDisplayDate(second.lastUpdated)
+      );
     }
 
-    return a[sortKey].localeCompare(b[sortKey]);
+    return first[sortKey].localeCompare(second[sortKey]);
   }
 
-  private formatDisplayDate(date: Date): string {
-    const day = `${date.getDate()}`.padStart(2, '0');
-    const month = `${date.getMonth() + 1}`.padStart(2, '0');
-    const year = date.getFullYear();
-    return `${day}/${month}/${year}`;
+  private formatDisplayDate(dateValue: string | null): string {
+    if (!dateValue) return '-';
+
+    const date = new Date(dateValue);
+    if (Number.isNaN(date.getTime())) return '-';
+
+    return new Intl.DateTimeFormat('en-GB', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    }).format(date);
   }
 
   private parseDisplayDate(dateValue: string): number {
-    const slashMatch = dateValue.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
-    if (slashMatch) {
-      const [, day, month, year] = slashMatch;
-      return new Date(Number(year), Number(month) - 1, Number(day)).getTime();
-    }
-
-    const match = dateValue.match(/^(\d{2})\s([A-Za-z]{3})\s(\d{4})$/);
-    if (match) {
-      const monthLookup: Record<string, number> = {
-        Jan: 0,
-        Feb: 1,
-        Mar: 2,
-        Apr: 3,
-        May: 4,
-        Jun: 5,
-        Jul: 6,
-        Aug: 7,
-        Sep: 8,
-        Oct: 9,
-        Nov: 10,
-        Dec: 11,
-      };
-
-      const [, day, monthText, year] = match;
-      const month = monthLookup[monthText];
-      if (month !== undefined) {
-        return new Date(Number(year), month, Number(day)).getTime();
-      }
-    }
-
-    const isoParsed = new Date(dateValue).getTime();
-    if (!Number.isNaN(isoParsed)) {
-      return isoParsed;
-    }
-
-    return 0;
-  }
-
-  private normalizeDisplayDate(dateValue?: string): string {
-    if (!dateValue) {
-      return this.formatDisplayDate(new Date());
-    }
-
-    const timestamp = this.parseDisplayDate(dateValue);
-    if (!timestamp) {
-      return this.formatDisplayDate(new Date());
-    }
-
-    return this.formatDisplayDate(new Date(timestamp));
-  }
-
-  private normalizeSingleActivePerForm(list: Guideline[]): Guideline[] {
-    const chosenByForm = new Map<string, number>();
-
-    for (const guideline of list) {
-      if (!chosenByForm.has(guideline.form)) {
-        chosenByForm.set(guideline.form, guideline.id);
-      }
-    }
-
-    const grouped = new Map<string, Guideline[]>();
-    for (const guideline of list) {
-      const group = grouped.get(guideline.form) ?? [];
-      group.push(guideline);
-      grouped.set(guideline.form, group);
-    }
-
-    for (const [form, group] of grouped.entries()) {
-      const active = group.filter(g => g.isActive);
-      if (active.length === 1) {
-        chosenByForm.set(form, active[0].id);
-        continue;
-      }
-
-      const sortedByDate = [...group].sort((a, b) => this.parseDisplayDate(b.lastUpdated) - this.parseDisplayDate(a.lastUpdated));
-      chosenByForm.set(form, sortedByDate[0].id);
-    }
-
-    return list.map(guideline => ({
-      ...guideline,
-      isActive: chosenByForm.get(guideline.form) === guideline.id,
-    }));
+    const [day, month, year] = dateValue.split('/').map(Number);
+    return day && month && year
+      ? new Date(year, month - 1, day).getTime()
+      : 0;
   }
 }
-

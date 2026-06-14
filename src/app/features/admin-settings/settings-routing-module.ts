@@ -8,7 +8,7 @@ import { StaffAccessComponent } from './staff-access/staff-access.component';
 import { ExternalProjectDataEntryComponent } from './external-project-data-entry/external-project-data-entry.component';
 
 const routes: Routes = [
-  { path: 'admin-settings', component: AdminSettingsComponent },
+  { path: '', component: AdminSettingsComponent },
   { path: 'guidelines', component: GuidelinesComponent },
   { path: 'dropdowns', component: DropdownsComponent },
   { path: 'rdig-dropdown-options', component: DropdownsComponent },

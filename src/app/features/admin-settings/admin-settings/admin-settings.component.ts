@@ -1,80 +1,63 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 interface AdminCard {
   title: string;
   description: string;
   icon: string;
-  itemCount: number;
+  category: string;
   route: string;
+  tone: 'blue' | 'violet' | 'amber' | 'teal' | 'slate';
 }
 
 @Component({
   selector: 'app-admin-settings',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [RouterLink],
   templateUrl: './admin-settings.component.html',
   styleUrls: ['./admin-settings.component.scss'],
 })
-export class AdminSettingsComponent implements OnInit {
-  cards: AdminCard[] = [];
-
-  ngOnInit(): void {
-    // Guidelines count: read persisted guidelines if available
-    let guidelinesCount = 0;
-    try {
-      const stored = localStorage.getItem('rmc_guidelines_data');
-      guidelinesCount = stored ? (JSON.parse(stored) as any[]).length : 0;
-    } catch {
-      guidelinesCount = 0;
-    }
-
-    // Dropdowns count: read persisted dropdowns if available
-    let dropdownsCount = 0;
-    try {
-      const stored = localStorage.getItem('rmc_dropdowns_data');
-      dropdownsCount = stored ? (JSON.parse(stored) as any[]).length : 0;
-    } catch {
-      dropdownsCount = 0;
-    }
-
-    this.cards = [
-      {
-        title: 'Guidelines',
-        description: 'Manage instruction notes & policies displayed on each form.',
-        icon: 'description',
-        itemCount: guidelinesCount || 0,
-        route: '/settings/guidelines',
-      },
-      {
-        title: 'Dropdowns',
-        description: 'Configure selectable options grouped by form and category.',
-        icon: 'list',
-        itemCount: dropdownsCount || 0,
-        route: '/settings/dropdowns',
-      },
-      {
-        title: 'Batches',
-        description: 'Create, activate, or close submission batches per form.',
-        icon: 'batch_prediction',
-        itemCount: 0,
-        route: '/settings/batches',
-      },
-      {
-        title: 'Staff Access',
-        description: 'Manage blocked staff and per-form access restrictions.',
-        icon: 'person_add',
-        itemCount: 0,
-        route: '/settings/staff-access',
-      },
-      {
-        title: 'External Project Data Entry',
-        description: 'Prepare the page shell for external project intake details.',
-        icon: 'folder_open',
-        itemCount: 0,
-        route: '/settings/external-project-data-entry',
-      },
-    ];
-  }
+export class AdminSettingsComponent {
+  readonly cards: AdminCard[] = [
+    {
+      title: 'Guidelines',
+      description: 'Manage instruction notes and policies displayed across application forms.',
+      icon: 'description',
+      category: 'Content',
+      route: '/admin-settings/guidelines',
+      tone: 'blue',
+    },
+    {
+      title: 'Dropdowns',
+      description: 'Configure reusable selectable options by form and category.',
+      icon: 'tune',
+      category: 'Configuration',
+      route: '/admin-settings/dropdowns',
+      tone: 'violet',
+    },
+    {
+      title: 'Batches',
+      description: 'Control submission periods, active batches, and application grouping.',
+      icon: 'calendar_month',
+      category: 'Scheduling',
+      route: '/admin-settings/batches',
+      tone: 'amber',
+    },
+    {
+      title: 'Staff Access',
+      description: 'Review staff eligibility and manage application access restrictions.',
+      icon: 'manage_accounts',
+      category: 'Access Control',
+      route: '/admin-settings/staff-access',
+      tone: 'teal',
+    },
+    {
+      title: 'External Project Data Entry',
+      description: 'Maintain external project intake and supporting project information.',
+      icon: 'folder_managed',
+      category: 'Project Data',
+      route: '/admin-settings/external-project-data-entry',
+      tone: 'slate',
+    },
+  ];
 }

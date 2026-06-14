@@ -605,7 +605,7 @@ export class DropdownsComponent implements OnInit {
   openGroup(g: DropdownGroup) {
     // If RDIG group is clicked, open the dedicated RDIG dropdown management page
     if (g.title.toLowerCase().includes('rdig')) {
-      this.router.navigate(['/settings/rdig-dropdown-options'], { queryParams: { group: g.id } });
+      this.router.navigate(['/admin-settings/rdig-dropdown-options'], { queryParams: { group: g.id } });
       return;
     }
 
@@ -615,7 +615,7 @@ export class DropdownsComponent implements OnInit {
   goBack() {
     const isRdigRoute = this.route.snapshot.routeConfig?.path === 'rdig-dropdown-options';
     if (isRdigRoute) {
-      this.router.navigate(['/settings/dropdowns']);
+      this.router.navigate(['/admin-settings/dropdowns']);
       return;
     }
 

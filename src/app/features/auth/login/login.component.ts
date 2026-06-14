@@ -1,65 +1,101 @@
-import { Component, inject, signal } from '@angular/core';
-import { Router } from '@angular/router';
-import { FormsModule } from '@angular/forms';
+import { HttpErrorResponse } from '@angular/common/http';
+import { Location } from '@angular/common';
+import { Component, OnInit, inject, signal } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+
 import { AuthService } from '../../../core/services/auth.service';
-import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [FormsModule],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
 })
-export class LoginComponent {
-  private authService = inject(AuthService);
-  private router = inject(Router);
+export class LoginComponent implements OnInit {
+  private readonly APU_RETRY_KEY = 'rmc_apu_login_retry';
+  private readonly authService = inject(AuthService);
+  private readonly location = inject(Location);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private returnRoute = '/dashboard';
 
-  // Form field bindings
-  username = '';
-  password = '';
+  readonly currentYear = new Date().getFullYear();
+  readonly isLoading = signal(false);
+  readonly loginError = signal('');
 
-  // UI state
-  loginError  = signal('');
-  showPassword = signal(false);
-  showDemoAccounts = signal(false);
-  readonly isProduction = environment.production;
+  ngOnInit(): void {
+    const code = this.route.snapshot.queryParamMap.get('code');
+    this.returnRoute = this.getReturnRoute();
 
-  /** Demo accounts pulled from AuthService so they stay in sync with DUMMY_USERS. */
-  readonly demoAccounts = this.isProduction ? [] : this.authService.getDemoAccounts();
+    if (!code) {
+      if (this.authService.isAuthenticated()) {
+        void this.router.navigateByUrl(this.returnRoute);
+        return;
+      }
 
-  /** Submit the login form. */
-  submit(): void {
-    this.loginError.set('');
-
-    if (!this.username.trim() || !this.password) {
-      this.loginError.set('Please enter your username / email and password.');
       return;
     }
 
-    const ok = this.authService.login(this.username, this.password);
-    if (ok) {
-      this.router.navigate(['/dashboard']);
-    } else {
-      this.loginError.set(
-        'Invalid username or password. Check the demo accounts panel below.'
-      );
-    }
+    // APU codes are single-use. Remove the code immediately so refresh cannot reuse it.
+    this.location.replaceState('/login');
+    this.isLoading.set(true);
+    this.authService.completeApuLogin(code).subscribe({
+      next: () => {
+        sessionStorage.removeItem(this.APU_RETRY_KEY);
+        void this.router.navigateByUrl(this.returnRoute);
+      },
+      error: (error: unknown) => {
+        if (
+          this.isExpiredOrInvalidCode(error) &&
+          !sessionStorage.getItem(this.APU_RETRY_KEY)
+        ) {
+          sessionStorage.setItem(this.APU_RETRY_KEY, '1');
+          this.authService.startApuLogin('/login');
+          return;
+        }
+
+        this.isLoading.set(false);
+        this.loginError.set(this.getErrorMessage(error));
+      },
+    });
   }
 
-  /** Pre-fill the form with a demo account's credentials. */
-  fillDemo(account: { username: string; password: string }): void {
-    this.username = account.username;
-    this.password = account.password;
+  loginWithApu(): void {
+    sessionStorage.removeItem(this.APU_RETRY_KEY);
     this.loginError.set('');
+    this.isLoading.set(true);
+    this.authService.startApuLogin(this.authService.getCurrentRoute());
   }
 
-  toggleShowPassword(): void {
-    this.showPassword.update(v => !v);
+  private getReturnRoute(): string {
+    return this.authService.getSafeReturnRoute(
+      this.route.snapshot.queryParamMap.get('returnTo'),
+    );
   }
 
-  toggleDemoAccounts(): void {
-    this.showDemoAccounts.update(v => !v);
+  private getErrorMessage(error: unknown): string {
+    if (error instanceof HttpErrorResponse) {
+      const apiMessage = error.error?.message ?? error.error?.error;
+      if (typeof apiMessage === 'string' && apiMessage.trim()) {
+        return apiMessage.charAt(0).toUpperCase() + apiMessage.slice(1);
+      }
+    }
+
+    if (error instanceof Error && error.message) {
+      return error.message;
+    }
+
+    return 'We could not complete your APU sign-in. Please try again.';
+  }
+
+  private isExpiredOrInvalidCode(error: unknown): boolean {
+    const message =
+      error instanceof Error
+        ? error.message
+        : error instanceof HttpErrorResponse
+          ? String(error.error?.message ?? error.error?.error ?? '')
+          : '';
+
+    return /code.*(?:expired|invalid)|(?:expired|invalid).*code/i.test(message);
   }
 }
-

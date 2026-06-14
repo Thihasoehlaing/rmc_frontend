@@ -1,0 +1,24 @@
+.roles-skeleton-row {
+  width: 1092px;
+  min-width: 1092px;
+  grid-template-columns: 72px 190px 230px 360px 120px 120px;
+}
+
+.role-description {
+  display: block;
+  overflow: hidden;
+  color: var(--color-text-secondary);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  &--empty {
+    color: var(--color-text-muted);
+    font-style: italic;
+  }
+}
+
+.role-description-input {
+  min-height: 96px;
+  resize: vertical;
+  font-family: inherit;
+}

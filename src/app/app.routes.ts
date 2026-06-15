@@ -268,6 +268,13 @@ export const routes: Routes = [
               ),
           },
           {
+            path: 'academic-staff',
+            loadComponent: () =>
+              import('./features/settings/academic-staff/academic-staff.component').then(
+                m => m.AcademicStaffComponent,
+              ),
+          },
+          {
             path: 'users',
             loadComponent: () =>
               import('./features/settings/users/users.component').then(
@@ -288,10 +295,9 @@ export const routes: Routes = [
           },
           {
             path: 'blocked-users',
-            data: { scope: 'blocked-users' },
             loadComponent: () =>
-              import('./features/settings/settings-scope/settings-scope.component').then(
-                m => m.SettingsScopeComponent,
+              import('./features/settings/blocked-users/blocked-users.component').then(
+                m => m.BlockedUsersComponent,
               ),
           },
           {

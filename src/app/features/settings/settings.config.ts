@@ -42,7 +42,7 @@ export const SETTINGS_MODULES: SettingsModuleConfig[] = [
   {
     key: 'staff-directory',
     title: 'Staff Directory',
-    description: 'Synchronize staff records and manage academic staff information.',
+    description: 'Synchronize and review staff records from the APU directory.',
     icon: 'badge',
     category: 'Directory',
     route: '/settings/staff-directory',
@@ -51,8 +51,17 @@ export const SETTINGS_MODULES: SettingsModuleConfig[] = [
       '/api/settings/staff/sync',
       '/api/settings/staff',
       '/api/settings/departments',
-      '/api/settings/academic-staff',
     ],
+  },
+  {
+    key: 'academic-staff',
+    title: 'Academic Staff',
+    description: 'Manage staff members available for academic workflows and selections.',
+    icon: 'school',
+    category: 'Directory',
+    route: '/settings/academic-staff',
+    tone: 'indigo',
+    endpoints: ['/api/settings/academic-staff'],
   },
   {
     key: 'users',

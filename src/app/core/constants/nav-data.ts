@@ -164,6 +164,7 @@ export const NAVIGATION_DATA: NavGroup[] = [
                     { label: 'Forms', icon: 'description', route: '/settings/forms', permission: { allOf: ['SystemAdmin'] } },
                     { label: 'Dropdown Categories', icon: 'list_alt', route: '/settings/dropdown-categories', permission: { allOf: ['SystemAdmin'] } },
                     { label: 'Staff Directory', icon: 'badge', route: '/settings/staff-directory', permission: { allOf: ['SystemAdmin'] } },
+                    { label: 'Academic Staff', icon: 'school', route: '/settings/academic-staff', permission: { allOf: ['SystemAdmin'] } },
                     { label: 'Users', icon: 'manage_accounts', route: '/settings/users', permission: { allOf: ['SystemAdmin'] } },
                     { label: 'Roles', icon: 'verified_user', route: '/settings/roles', permission: { allOf: ['SystemAdmin'] } },
                     { label: 'Blocked Users', icon: 'person_off', route: '/settings/blocked-users', permission: { allOf: ['SystemAdmin'] } },

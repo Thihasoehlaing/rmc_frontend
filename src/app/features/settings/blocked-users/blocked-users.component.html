@@ -1,0 +1,289 @@
+<main class="forms-page">
+  <header class="forms-page__header">
+    <div>
+      <span class="forms-page__eyebrow">System Settings</span>
+      <h1>Blocked Users</h1>
+      <p>Manage system-wide access restrictions while preserving block and unblock history.</p>
+    </div>
+    <button class="btn btn-primary forms-page__create-button" type="button" (click)="openCreateDialog()">
+      <span class="material-icons">person_off</span>
+      Block User
+    </button>
+  </header>
+
+  <section class="forms-toolbar" aria-label="Blocked user filters">
+    <label class="forms-filter forms-filter--search">
+      <span>Username, Reason, or Blocked By</span>
+      <input
+        class="input--text"
+        type="search"
+        placeholder="Search blocked users"
+        [ngModel]="searchTerm()"
+        (ngModelChange)="searchTerm.set($event)"
+        (keydown.enter)="search()">
+    </label>
+
+    <label class="forms-filter">
+      <span>Status</span>
+      <select
+        class="input--select"
+        [ngModel]="selectedStatus()"
+        (ngModelChange)="selectedStatus.set($event)">
+        <option value="">All</option>
+        <option value="Active">Blocked</option>
+        <option value="Inactive">Unblocked</option>
+      </select>
+    </label>
+
+    <div class="forms-toolbar__actions">
+      <button class="btn btn-primary" type="button" (click)="search()">
+        <span class="material-icons">search</span>
+        Search
+      </button>
+      <button class="btn btn-secondary" type="button" (click)="resetFilters()">
+        <span class="material-icons">restart_alt</span>
+        Reset
+      </button>
+    </div>
+  </section>
+
+  <section class="forms-table-card">
+    @if (isLoading()) {
+      <div class="forms-loading" aria-label="Loading blocked users">
+        @for (row of [1, 2, 3, 4, 5]; track row) {
+          <div class="forms-skeleton-row blocked-users-skeleton-row">
+            @for (cell of [1, 2, 3, 4, 5, 6]; track cell) {
+              <span></span>
+            }
+          </div>
+        }
+      </div>
+    } @else if (loadFailed()) {
+      <div class="forms-state">
+        <span class="material-icons">cloud_off</span>
+        <h2>Unable to load blocked users</h2>
+        <p>The current authentication or API host is unavailable. Try again when the service is reachable.</p>
+        <button class="btn btn-primary" type="button" (click)="loadBlockedUsers()">Try Again</button>
+      </div>
+    } @else if (blockedUsers().length === 0) {
+      <div class="forms-state">
+        <span class="material-icons">verified_user</span>
+        <h2>No blocked users found</h2>
+        <p>Adjust the filters or block a username from accessing the system.</p>
+      </div>
+    } @else {
+      <app-data-table
+        [columns]="columns"
+        [rows]="blockedUsers()"
+        [rowTrackFn]="rowTrackFn">
+        <ng-template #rowTemplate let-row let-index="index">
+          <tr>
+            <td class="is-align-center">{{ rowNumber(index) }}</td>
+            <td>
+              <div class="blocked-user-identity">
+                <span class="blocked-user-avatar">{{ initials(row) }}</span>
+                <div>
+                  <strong>{{ row.fullname || row.username }}</strong>
+                  <small>{{ row.email || '@' + row.username }}</small>
+                </div>
+              </div>
+            </td>
+            <td>
+              <span class="blocked-user-reason" [class.blocked-user-reason--empty]="!row.reason">
+                {{ row.reason || 'No reason provided' }}
+              </span>
+            </td>
+            <td class="is-align-center">
+              <span class="status-badge blocked-status" [class.status-badge--inactive]="!row.is_active">
+                {{ row.is_active ? 'Blocked' : 'Unblocked' }}
+              </span>
+            </td>
+            <td>
+              <div class="blocked-user-activity">
+                <strong>{{ row.is_active ? 'Blocked by' : 'Unblocked by' }} {{ activityOwner(row) }}</strong>
+                <small>{{ activityDate(row) }}</small>
+              </div>
+            </td>
+            <td class="is-align-center">
+              <div class="table-actions">
+                <button
+                  class="table-action"
+                  type="button"
+                  title="Edit blocked user"
+                  aria-label="Edit blocked user"
+                  (click)="openEditDialog(row)">
+                  <span class="material-icons">edit</span>
+                </button>
+                <button
+                  class="table-action"
+                  [class.table-action--success]="!row.is_active"
+                  [class.table-action--warning]="row.is_active"
+                  type="button"
+                  [title]="row.is_active ? 'Unblock user' : 'Block user again'"
+                  [attr.aria-label]="row.is_active ? 'Unblock user' : 'Block user again'"
+                  (click)="openStatusDialog(row)">
+                  <span class="material-icons">{{ row.is_active ? 'lock_open' : 'block' }}</span>
+                </button>
+                <button
+                  class="table-action table-action--danger"
+                  type="button"
+                  title="Delete block record"
+                  aria-label="Delete block record"
+                  (click)="openDeleteDialog(row)">
+                  <span class="material-icons">delete_outline</span>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+      </app-data-table>
+    }
+  </section>
+
+  @if (!isLoading() && !loadFailed()) {
+    <app-pagination
+      [currentPage]="page()"
+      [totalPages]="totalPages()"
+      [pageSize]="pageSize()"
+      [pageSizeOptions]="pageSizeOptions"
+      (pageChange)="onPageChange($event)"
+      (pageSizeChange)="onPageSizeChange($event)">
+    </app-pagination>
+
+    <p class="forms-count">
+      @if (totalItems() > 0) {
+        Showing {{ pageStart() }}-{{ pageEnd() }} of {{ totalItems() }} blocked-user records
+      } @else {
+        Showing 0 blocked-user records
+      }
+    </p>
+  }
+
+  <app-dialog
+    [isOpen]="dialogMode() !== null"
+    [title]="dialogTitle()"
+    size="small"
+    (close)="closeEditor()">
+    @if (isDetailLoading()) {
+      <div class="form-detail-loading"><span></span><span></span><span></span></div>
+    } @else if (detailFailed()) {
+      <div class="dialog-state">
+        <span class="material-icons">error_outline</span>
+        <p>Unable to retrieve this blocked-user record.</p>
+        <button class="btn btn-secondary" type="button" (click)="retryDetail()">Try Again</button>
+      </div>
+    } @else {
+      <div class="form-editor">
+        <label class="forms-filter">
+          <span>Microsoft Username</span>
+          <input
+            class="input--text"
+            type="text"
+            maxlength="100"
+            placeholder="e.g. thiha.hlaing"
+            autocomplete="off"
+            [ngModel]="username()"
+            (ngModelChange)="username.set($event)">
+          <small>Email addresses are accepted; only the username part will be stored.</small>
+        </label>
+
+        <label class="forms-filter">
+          <span>Reason</span>
+          <textarea
+            class="input--text blocked-user-reason-input"
+            maxlength="500"
+            rows="5"
+            placeholder="Explain why this user must not access the system"
+            [ngModel]="reason()"
+            (ngModelChange)="reason.set($event)">
+          </textarea>
+          <small>{{ reason().length }}/500 characters</small>
+        </label>
+
+        @if (dialogMode() === 'edit') {
+          <label class="active-switch">
+            <input
+              type="checkbox"
+              [ngModel]="blockActive()"
+              (ngModelChange)="blockActive.set($event)">
+            <span class="active-switch__control"></span>
+            <span>
+              <strong>Block is active</strong>
+              <small>When disabled, the user is unblocked while this history record remains.</small>
+            </span>
+          </label>
+        }
+      </div>
+    }
+
+    <div dialog-footer class="form-dialog__footer">
+      <button class="btn btn-secondary" type="button" [disabled]="isSaving()" (click)="closeEditor()">Cancel</button>
+      @if (!isDetailLoading() && !detailFailed()) {
+        <button
+          class="btn btn-primary"
+          type="button"
+          [disabled]="isSaving() || !normalizeUsername(username())"
+          (click)="saveBlockedUser()">
+          {{ isSaving() ? 'Saving...' : (dialogMode() === 'create' ? 'Block User' : 'Save Changes') }}
+        </button>
+      }
+    </div>
+  </app-dialog>
+
+  <app-dialog
+    [isOpen]="statusUser() !== null"
+    [title]="statusDialogTitle()"
+    size="small"
+    (close)="closeStatusDialog()">
+    @if (statusUser(); as user) {
+      <div class="deactivate-confirmation" [class.block-confirmation--success]="statusAction() === 'unblock'">
+        <span class="material-icons">{{ statusAction() === 'unblock' ? 'lock_open' : 'block' }}</span>
+        <div>
+          <h3>{{ statusAction() === 'unblock' ? 'Unblock' : 'Block' }} {{ user.fullname || user.username }}?</h3>
+          <p>
+            @if (statusAction() === 'unblock') {
+              This user will regain access. The block history and reason will remain available.
+            } @else {
+              This user will be blocked again using the existing reason and history record.
+            }
+          </p>
+        </div>
+      </div>
+    }
+    <div dialog-footer class="form-dialog__footer">
+      <button class="btn btn-secondary" type="button" [disabled]="isSaving()" (click)="closeStatusDialog()">Cancel</button>
+      <button
+        [class]="statusAction() === 'unblock' ? 'btn btn-primary' : 'btn btn-danger'"
+        type="button"
+        [disabled]="isSaving()"
+        (click)="confirmStatusChange()">
+        {{ isSaving() ? 'Saving...' : (statusAction() === 'unblock' ? 'Unblock User' : 'Block User Again') }}
+      </button>
+    </div>
+  </app-dialog>
+
+  <app-dialog
+    [isOpen]="userToDelete() !== null"
+    title="Delete Block Record"
+    size="small"
+    (close)="closeDeleteDialog()">
+    @if (userToDelete(); as user) {
+      <div class="deactivate-confirmation">
+        <span class="material-icons">delete_outline</span>
+        <div>
+          <h3>Delete {{ user.username }}?</h3>
+          <p>
+            This permanently deletes the block and unblock audit record.
+            If the record is active, the user will no longer be blocked.
+          </p>
+        </div>
+      </div>
+    }
+    <div dialog-footer class="form-dialog__footer">
+      <button class="btn btn-secondary" type="button" [disabled]="isSaving()" (click)="closeDeleteDialog()">Cancel</button>
+      <button class="btn btn-danger" type="button" [disabled]="isSaving()" (click)="confirmDelete()">
+        {{ isSaving() ? 'Deleting...' : 'Delete Record' }}
+      </button>
+    </div>
+  </app-dialog>
+</main>

@@ -1,13 +1,13 @@
 import { Component, Input, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { GuidelinesResponse } from '../../../interfaces/components.interface';
+import { GuidelinesResponse } from '../../../core/interfaces/components.interface';
 
 @Component({
   selector: 'app-guidelines-modal',
   standalone: true,
-  imports: [CommonModule, HttpClientModule],
+  imports: [CommonModule],
   templateUrl: './guidelines-modal.component.html',
   styleUrls: ['./guidelines-modal.component.scss']
 })

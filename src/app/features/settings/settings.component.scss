@@ -1,0 +1,15 @@
+.system-settings__hero {
+  background:
+    radial-gradient(circle at 88% 0%, rgb(255 255 255 / 13%) 0 105px, transparent 106px),
+    linear-gradient(135deg, #182845, #294c7d 58%, #3574b9);
+}
+
+.settings-card--rose {
+  --card-accent: #c24162;
+  --card-tint: #fff0f4;
+}
+
+.settings-card--indigo {
+  --card-accent: #4f46e5;
+  --card-tint: #eeedff;
+}

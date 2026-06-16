@@ -1,7 +1,15 @@
 <header class="top-header">
 
     <!-- Left: Dynamic Breadcrumb -->
-    <nav class="top-header__left" aria-label="Breadcrumb">
+    <div class="top-header__left">
+        <button
+            type="button"
+            class="top-header__menu"
+            aria-label="Open navigation menu"
+            (click)="sidebarService.toggleMobile()">
+            <span class="material-icons">menu</span>
+        </button>
+    <nav aria-label="Breadcrumb">
         <ol class="breadcrumb">
             @for (crumb of breadcrumbs(); track $index; let last = $last) {
                 <li class="breadcrumb__item" [class.breadcrumb__item--active]="last">
@@ -15,6 +23,7 @@
             }
         </ol>
     </nav>
+    </div>
 
     <!-- Right: Search, Notifications, Date -->
     <div class="top-header__right">

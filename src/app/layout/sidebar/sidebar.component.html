@@ -1,4 +1,5 @@
 <aside class="sidebar" [class.sidebar--collapsed]="!isExpanded()" [class.sidebar--expanded]="isExpanded()"
+  [class.sidebar--mobile-open]="sidebarService.mobileOpen()"
   [class.sidebar--fixed]="sidebarService.mode() === 'fixed'" (mouseenter)="onMouseEnter()"
   (mouseleave)="onMouseLeave()">
 
@@ -10,8 +11,8 @@
       <span class="material-icons">{{ pinned() ? 'push_pin' : 'push_pin' }}</span>
     </button>
     }
-    <a routerLink="/dashboard" class="sidebar__logo">
-      <img src="assets/styles/images/apu.png" alt="APU Logo" class="logo-img">
+    <a routerLink="/dashboard" class="sidebar__logo" (click)="closeMobileSidebar()">
+      <img src="assets/images/apu.png" alt="APU Logo" class="logo-img">
       @if (isExpanded()) {
       <span class="logo-text">RMC</span>
       }
@@ -69,7 +70,7 @@
           @if (isFolderExpanded(element) && isExpanded()) {
           <div class="nav-folder__children">
             @for (child of element.children; track child.label) {
-            <a [routerLink]="asItem(child).route" routerLinkActive="active"
+            <a [routerLink]="asItem(child).route" routerLinkActive="active" (click)="closeMobileSidebar()"
               class="nav-item nav-item--child" [title]="child.label">
               <span class="material-icons nav-icon">{{ asItem(child).icon || 'chevron_right' }}</span>
               <span class="nav-label">{{ child.label }}</span>
@@ -80,7 +81,8 @@
         </div>
         } @else {
         <!-- Single Item Entry -->
-        <a [routerLink]="asItem(element).route" routerLinkActive="active" class="nav-item" [title]="element.label">
+        <a [routerLink]="asItem(element).route" routerLinkActive="active" class="nav-item"
+          [title]="element.label" (click)="closeMobileSidebar()">
           <span class="material-icons nav-icon">{{ asItem(element).icon || 'description' }}</span>
           @if (isExpanded()) {
           <span class="nav-label">{{ element.label }}</span>

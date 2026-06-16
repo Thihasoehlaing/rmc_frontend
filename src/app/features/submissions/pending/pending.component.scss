@@ -1,0 +1,225 @@
+@use '../../../../styles/index' as *;
+
+// ── Page shell ────────────────────────────────────────────────────────────────
+.submissions-page {
+  padding: var(--space-7);
+  max-width: var(--page-max-width);
+  margin: 0 auto;
+}
+
+// ── Header ────────────────────────────────────────────────────────────────────
+.submissions-header {
+  margin-bottom: var(--space-6);
+}
+
+.submissions-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: 1.6rem;
+  font-weight: var(--fw-bold);
+  color: var(--color-text);
+  margin: 0 0 var(--space-1);
+
+  .material-icons { font-size: 1.8rem; color: var(--color-primary); }
+}
+
+.submissions-subtitle {
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+// ── State messages ────────────────────────────────────────────────────────────
+.state-message {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-6) var(--space-5);
+  border-radius: var(--radius-lg);
+  font-size: var(--fs-sm);
+  color: var(--color-text-secondary);
+  background: var(--color-surface);
+  border: 1px dashed var(--border-default);
+  margin-bottom: var(--space-5);
+
+  .material-icons { font-size: var(--fs-xl); }
+
+  &.state-error {
+    color: var(--color-error);
+    background: var(--color-error-light);
+    border-color: color-mix(in srgb, var(--color-error) 35%, transparent);
+  }
+
+  &.state-empty { color: var(--color-text-secondary); }
+}
+
+.spinning { animation: spin 1.2s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+// ── Toolbar (search + type filter) ───────────────────────────────────────────
+.toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+// ── Type filter ───────────────────────────────────────────────────────────────
+.type-filter {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  white-space: nowrap;
+
+  &__label {
+    font-size: var(--fs-sm);
+    font-weight: var(--fw-medium);
+    color: var(--color-text-secondary);
+  }
+
+  &__select {
+    padding: var(--space-2) var(--space-3);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-md);
+    font-size: var(--fs-sm);
+    background: var(--color-surface);
+    color: var(--color-text);
+    outline: none;
+    cursor: pointer;
+
+    &:focus { border-color: var(--color-primary); }
+  }
+}
+
+// ── Application type badge ────────────────────────────────────────────────────
+.type-badge {
+  display: inline-block;
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-sm);
+  font-size: 0.7rem;
+  font-weight: var(--fw-semibold);
+  background: color-mix(in srgb, var(--color-primary) 10%, transparent);
+  color: var(--color-primary);
+  white-space: nowrap;
+}
+
+// ── Table ─────────────────────────────────────────────────────────────────────
+.table-wrapper {
+  overflow-x: auto;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-default);
+  box-shadow: var(--shadow-sm);
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-sm);
+
+  thead tr {
+    background: var(--color-surface);
+    border-bottom: 1px solid var(--border-default);
+  }
+
+  th {
+    padding: var(--space-3) var(--space-4);
+    text-align: left;
+    font-weight: var(--fw-semibold);
+    color: var(--color-text-secondary);
+    white-space: nowrap;
+    user-select: none;
+  }
+
+  td {
+    padding: 14px var(--space-4);
+    border-bottom: 1px solid var(--border-default);
+    color: var(--color-text);
+    vertical-align: middle;
+  }
+
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover td { background: var(--color-surface-hover); }
+}
+
+.row--action-needed {
+  td { background: color-mix(in srgb, var(--color-warning) 5%, transparent) !important; }
+  &:hover td { background: color-mix(in srgb, var(--color-warning) 9%, transparent) !important; }
+}
+
+.col-sortable {
+  cursor: pointer;
+  &:hover { color: var(--color-text); }
+
+  .sort-icon {
+    font-size: 0.9rem;
+    vertical-align: middle;
+    margin-left: 2px;
+    color: var(--color-primary);
+  }
+}
+
+.col-title {
+  font-weight: var(--fw-medium);
+  max-width: 280px;
+}
+
+.col-date { color: var(--color-text-secondary); white-space: nowrap; }
+.col-muted { color: var(--color-text-secondary); }
+.col-action { width: 100px; text-align: center; }
+
+// ── Status badge ──────────────────────────────────────────────────────────────
+.status-badge {
+  display: inline-block;
+  padding: 3px var(--space-3);
+  border-radius: var(--radius-full);
+  border: 1px solid;
+  font-size: 0.75rem;
+  font-weight: var(--fw-semibold);
+  white-space: nowrap;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// ── Revision chip (inline with title) ────────────────────────────────────────
+.revision-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: var(--space-2);
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--color-warning) 15%, transparent);
+  color: var(--color-warning-dark);
+  font-size: 0.7rem;
+  font-weight: var(--fw-semibold);
+  vertical-align: middle;
+
+  .material-icons { font-size: 0.75rem; }
+}
+
+// ── Row action button ─────────────────────────────────────────────────────────
+.btn-open {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 5px var(--space-3);
+  border-radius: var(--radius-md);
+  font-size: 0.8rem;
+  font-weight: var(--fw-semibold);
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
+  background: transparent;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s;
+
+  .material-icons { font-size: 0.95rem; }
+
+  &:hover {
+    background: var(--color-primary);
+    color: var(--button-color-primary);
+  }
+}

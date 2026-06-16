@@ -1,0 +1,145 @@
+@use '../../../../../styles/index' as *;
+
+.budget-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--form-section-gap);
+}
+
+// ── Total banner ──────────────────────────────────────────────
+.budget-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  padding: var(--space-6);
+  background: var(--color-surface-nested);
+  border: var(--control-border-width) solid var(--color-border-default);
+  border-radius: var(--radius-xl);
+
+  &--invalid {
+    border-color: var(--color-error);
+    background: color-mix(in srgb, var(--color-error) 6%, var(--color-surface));
+
+    .total-amount {
+      color: var(--color-error);
+    }
+  }
+
+  &--warning {
+    border-color: var(--color-warning);
+    background: color-mix(in srgb, var(--color-warning) 9%, var(--color-surface));
+
+    .total-amount {
+      color: var(--color-warning-dark);
+    }
+  }
+}
+
+.budget-total {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+
+  .total-label {
+    font-size: var(--fs-sm);
+    color: var(--color-text-secondary);
+  }
+
+  .total-amount {
+    font-size: var(--fs-2xl);
+    font-weight: var(--fw-bold);
+    color: var(--color-primary);
+  }
+}
+
+// ── Warning box ───────────────────────────────────────────────
+.budget-banner .badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--size-icon-section);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  border: var(--control-border-width) solid var(--color-border-default);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-bold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  box-shadow: var(--shadow-xs);
+
+  &--success {
+    border-color: color-mix(in srgb, var(--color-success) 42%, var(--border-default));
+    background: color-mix(in srgb, var(--color-success) 8%, var(--color-surface));
+    color: var(--color-success-dark);
+  }
+
+  &--warning {
+    border-color: color-mix(in srgb, var(--color-warning) 60%, var(--color-warning-dark));
+    background: color-mix(in srgb, var(--color-warning) 16%, var(--color-surface));
+    color: var(--color-warning-dark);
+  }
+
+  &--danger {
+    border-color: color-mix(in srgb, var(--color-error) 58%, var(--color-error-dark));
+    background: color-mix(in srgb, var(--color-error) 10%, var(--color-surface));
+    color: var(--color-error-dark);
+  }
+}
+
+.category-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: var(--space-6);
+}
+
+app-data-table {
+  display: block;
+}
+
+.data-table__actions {
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+.amount-cell {
+  text-align: left;
+  font-weight: var(--fw-semibold);
+  color: var(--color-primary);
+}
+
+.action-cell {
+  padding-right: var(--space-4);
+}
+
+.modal-note {
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border: var(--control-border-width) solid color-mix(in srgb, var(--color-info) 24%, transparent);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--color-info) 8%, var(--color-surface));
+  color: var(--color-info-dark);
+  font-size: var(--fs-sm);
+}
+
+.section-fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+// ── Empty state ───────────────────────────────────────────────
+.empty-state {
+  margin: 0;
+  padding: var(--space-6);
+  text-align: center;
+  color: var(--color-text-muted);
+  font-size: var(--fs-sm);
+  background: var(--color-surface-nested);
+  border-radius: var(--radius-md);
+  border: var(--control-border-width) dashed var(--color-border-default);
+}
+
+// Action buttons styled via shared data-table component

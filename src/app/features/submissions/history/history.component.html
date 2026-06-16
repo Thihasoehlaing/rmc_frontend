@@ -1,0 +1,140 @@
+<!-- Submission history -->
+<div class="submissions-page">
+
+  <!-- ── Page Header ────────────────────────────────────────────────────────── -->
+  <div class="submissions-header">
+    <h1 class="submissions-title">
+      <span class="material-icons">history</span>
+      History
+    </h1>
+    <p class="submissions-subtitle">
+      Applications you have acted on that are no longer awaiting your action
+    </p>
+  </div>
+
+  <!-- ── Loading ────────────────────────────────────────────────────────────── -->
+  @if (loading()) {
+    <div class="state-message">
+      <span class="material-icons spinning">sync</span>
+      Loading history…
+    </div>
+  }
+
+  <!-- ── Error ──────────────────────────────────────────────────────────────── -->
+  @if (!loading() && error()) {
+    <div class="state-message state-error">
+      <span class="material-icons">error_outline</span>
+      {{ error() }}
+    </div>
+  }
+
+  @if (!loading() && !error()) {
+
+    <!-- ── Toolbar: search + type filter ───────────────────────────────────── -->
+    <div class="toolbar">
+
+      <app-submissions-search
+        placeholder="Search history by title..."
+        [value]="searchQuery()"
+        (valueChange)="searchQuery.set($event)" />
+
+      <!-- Application type filter — only rendered when multiple types exist -->
+      @if (availableTypes().length > 2) {
+        <div class="type-filter">
+          <label class="type-filter__label" for="hist-type-filter">Type</label>
+          <select
+            id="hist-type-filter"
+            class="type-filter__select"
+            [value]="selectedType()"
+            (change)="selectedType.set($any($event.target).value)">
+            @for (t of availableTypes(); track t) {
+              <option [value]="t">{{ t === 'all' ? 'All Types' : t }}</option>
+            }
+          </select>
+        </div>
+      }
+
+    </div>
+
+    <!-- ── Empty ─────────────────────────────────────────────────────────────── -->
+    @if (history().length === 0) {
+      <div class="state-message state-empty">
+        <span class="material-icons">history</span>
+        @if (searchQuery() || selectedType() !== 'all') {
+          No history entries match your current filters.
+        } @else {
+          No history yet. Applications you've acted on will appear here once complete.
+        }
+      </div>
+    }
+
+    <!-- ── Table ─────────────────────────────────────────────────────────────── -->
+    @if (history().length > 0) {
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Project Title</th>
+              <th>Type</th>
+              <th>Submitted By</th>
+              <th>Action / Decision</th>
+              <th>Role</th>
+              <th class="col-sortable" (click)="toggleSort()">
+                Date
+                <span class="material-icons sort-icon">
+                  {{ sortAsc() ? 'arrow_upward' : 'arrow_downward' }}
+                </span>
+              </th>
+              <th class="col-action"></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (app of history(); track app.id) {
+              <tr>
+                <!-- Project Title -->
+                <td class="col-title">
+                  {{ app.projectDetails?.title?.trim() || '(Untitled Application)' }}
+                </td>
+
+                <!-- Application Type -->
+                <td>
+                  <span class="type-badge">{{ getFormTypeLabel(app) }}</span>
+                </td>
+
+                <!-- Submitted By -->
+                <td class="col-muted">{{ getSubmittedBy(app) }}</td>
+
+                <!-- Action / Decision (green = approve, red = reject, neutral = other) -->
+                <td>
+                  <span class="action-chip" [ngClass]="getActionClass(app)">
+                    {{ getActionLabel(app) }}
+                  </span>
+                </td>
+
+                <!-- Role -->
+                <td class="col-muted">{{ getRoleLabel(app) }}</td>
+
+                <!-- Date (action date for reviewers, decision date for applicants) -->
+                <td class="col-date">{{ formatDate(app) }}</td>
+
+                <!-- Open -->
+                <td class="col-action">
+                  <a class="btn-open"
+                     [routerLink]="[getFormRoute(app)]"
+                     [queryParams]="{ id: app.id }">
+                    <span class="material-icons">visibility</span>
+                    View
+                  </a>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+  }
+
+</div>
+
+

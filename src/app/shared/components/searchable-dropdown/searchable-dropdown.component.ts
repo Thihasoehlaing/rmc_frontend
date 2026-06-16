@@ -9,7 +9,7 @@ import {
 } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
-import { DropdownOption } from '../../../interfaces/components.interface';
+import { DropdownOption } from '../../../core/interfaces/components.interface';
 
 /**
  * Enterprise-grade searchable dropdown — ControlValueAccessor-compatible.

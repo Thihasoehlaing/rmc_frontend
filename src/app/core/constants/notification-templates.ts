@@ -1,4 +1,4 @@
-import { NotificationScope, NotificationType, NotificationPriority } from '../../interfaces/notification.interface';
+import { NotificationScope, NotificationType, NotificationPriority } from '../interfaces/notification.interface';
 
 export interface NotificationTemplate {
   scope:           NotificationScope;

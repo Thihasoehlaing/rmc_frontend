@@ -1,5 +1,6 @@
-import { Component, Input, Output, EventEmitter, signal } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
 export interface PaginationConfig {
   currentPage: number;
@@ -11,7 +12,7 @@ export interface PaginationConfig {
 @Component({
   selector: 'app-pagination',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './pagination.component.html',
   styleUrl: './pagination.component.scss'
 })
@@ -24,16 +25,6 @@ export class PaginationComponent {
   @Output() pageChange = new EventEmitter<number>();
   @Output() pageSizeChange = new EventEmitter<number>();
 
-  selectedPageSize = signal(this.pageSize);
-
-  ngOnInit() {
-    this.selectedPageSize.set(this.pageSize);
-  }
-
-  ngOnChanges() {
-    this.selectedPageSize.set(this.pageSize);
-  }
-
   goToPage(page: number) {
     if (page >= 1 && page <= this.totalPages && page !== this.currentPage) {
       this.pageChange.emit(page);
@@ -41,7 +32,6 @@ export class PaginationComponent {
   }
 
   onPageSizeChange(newSize: number) {
-    this.selectedPageSize.set(newSize);
     this.pageSizeChange.emit(newSize);
   }
 

@@ -1,4 +1,10 @@
-@use './assets/styles/styles.scss';
+@use './styles/styles.scss';
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
 
 /* Global app-level overrides using CSS custom properties */
 body {

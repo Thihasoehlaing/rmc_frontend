@@ -11,10 +11,12 @@ export class SidebarService {
 
     // Temporary state: is the user hovering over the collapsed sidebar?
     private isHovered = signal<boolean>(false);
+    private isMobileOpen = signal<boolean>(false);
 
     // Derived states for public consumption
-    isExpanded = computed(() => this.isPinned() || this.isHovered());
+    isExpanded = computed(() => this.isPinned() || this.isHovered() || this.isMobileOpen());
     pinned = computed(() => this.isPinned());
+    mobileOpen = computed(() => this.isMobileOpen());
 
     // Derived mode for CSS classes
     mode = computed<SidebarMode>(() => {
@@ -30,5 +32,13 @@ export class SidebarService {
         if (!this.isPinned()) {
             this.isHovered.set(hovering);
         }
+    }
+
+    toggleMobile() {
+        this.isMobileOpen.update(open => !open);
+    }
+
+    closeMobile() {
+        this.isMobileOpen.set(false);
     }
 }

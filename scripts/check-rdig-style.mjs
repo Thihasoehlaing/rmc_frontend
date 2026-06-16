@@ -4,14 +4,14 @@ import { fileURLToPath } from 'node:url';
 
 const projectRoot = fileURLToPath(new URL('../', import.meta.url));
 const files = [
-  'src/app/conference_form/pages/conference-application/conference-application.ts',
-  'src/app/journal_publication_form/journal-publication-form.component.html',
-  'src/app/journal_publication_form/journal-publication-form.component.scss',
-  'src/app/RA-GRA_form/RA-GRA_form.component.html',
-  'src/app/RA-GRA_form/RA-GRA_form.component.scss',
-  'src/app/partnership_form/partnership_form.component.html',
-  'src/app/travel_authorization_form/pages/travel-authorization-application/travel-authorization-application.component.html',
-  'src/app/travel_authorization_form/pages/travel-authorization-application/travel-authorization-application.component.scss',
+  'src/app/features/conference/pages/conference-application/conference-application.ts',
+  'src/app/features/journal-publication/journal-publication-form.component.html',
+  'src/app/features/journal-publication/journal-publication-form.component.scss',
+  'src/app/features/ra-gra/RA-GRA_form.component.html',
+  'src/app/features/ra-gra/RA-GRA_form.component.scss',
+  'src/app/features/partnership/partnership_form.component.html',
+  'src/app/features/travel-authorization/pages/travel-authorization-application/travel-authorization-application.component.html',
+  'src/app/features/travel-authorization/pages/travel-authorization-application/travel-authorization-application.component.scss',
   'src/app/shared/components/form-main-title/form-main-title.component.scss',
   'src/app/shared/components/step-indicator/step-indicator.component.scss',
   'src/app/shared/components/form-wizard-nav/form-wizard-nav.component.scss',
@@ -24,10 +24,10 @@ const rules = [
 ];
 
 const conferenceTemplates = [
-  'src/app/conference_form/components/forms/conference-details-form/conference-details-form.component.html',
-  'src/app/conference_form/components/forms/author-details-form/author-details-form.component.html',
-  'src/app/conference_form/components/forms/supporting-documents-form/supporting-documents-form.component.html',
-  'src/app/conference_form/components/forms/declaration-form/declaration-form.component.html',
+  'src/app/features/conference/components/forms/conference-details-form/conference-details-form.component.html',
+  'src/app/features/conference/components/forms/author-details-form/author-details-form.component.html',
+  'src/app/features/conference/components/forms/supporting-documents-form/supporting-documents-form.component.html',
+  'src/app/features/conference/components/forms/declaration-form/declaration-form.component.html',
 ];
 
 const failures = [];

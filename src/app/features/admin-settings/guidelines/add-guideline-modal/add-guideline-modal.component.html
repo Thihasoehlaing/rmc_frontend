@@ -1,0 +1,324 @@
+<div class="modal-overlay" (click)="onClose()">
+  <div class="modal-dialog" (click)="$event.stopPropagation()">
+    <!-- Modal Header -->
+    <div class="modal-header">
+      <h2 class="modal-title">{{ editId ? 'Edit Guideline' : 'Add Guideline' }}</h2>
+      <button class="modal-close-btn" (click)="onClose()" title="Close" [disabled]="isSaving">
+        <span class="material-icons">close</span>
+      </button>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="modal-body">
+      <form [formGroup]="editorForm" class="editor-layout">
+        <!-- Left Panel: Form Configuration -->
+        <div class="editor-left">
+          <div class="form-section">
+            <h3 class="section-title">Guideline Settings</h3>
+
+            <!-- Title -->
+            <div class="form-field">
+              <label class="form-label">Title</label>
+              <input type="text" formControlName="title" class="input--text" />
+            </div>
+
+            <!-- Form Name -->
+            <div class="form-field">
+              <label class="form-label">Form</label>
+              <select formControlName="formName" class="input--select">
+                <option value="Conference Application">Conference Application</option>
+                <option value="Journal Application">Journal Application</option>
+                <option value="Partnership Application">Partnership Application</option>
+                <option value="RA/GRA Application">RA/GRA Application</option>
+                <option value="RDIG Application">RDIG Application</option>
+              </select>
+            </div>
+
+            <!-- Background Color -->
+            <div class="form-field">
+              <label class="form-label">Background</label>
+              <select formControlName="backgroundToken" class="input--select">
+                <option value="white">White</option>
+                <option value="var(--color-bg-light)">Light Gray</option>
+                <option value="var(--color-bg-light-blue)">Light Blue</option>
+                <option value="var(--color-bg-light-green)">Light Green</option>
+              </select>
+            </div>
+
+            <!-- Text Color -->
+            <div class="form-field">
+              <label class="form-label">Text Color</label>
+              <select formControlName="textToken" class="input--select">
+                <option value="var(--color-text-primary)">Primary</option>
+                <option value="var(--color-text-muted)">Muted</option>
+                <option value="var(--color-primary)">Blue</option>
+              </select>
+            </div>
+
+            <!-- Button Color -->
+            <div class="form-field">
+              <label class="form-label">Button Color</label>
+              <select formControlName="buttonToken" class="input--select">
+                <option value="var(--color-primary)">Primary</option>
+                <option value="var(--color-success)">Success</option>
+                <option value="var(--color-warning)">Warning</option>
+              </select>
+            </div>
+
+            <!-- Button Text -->
+            <div class="form-field">
+              <label class="form-label">Button Text</label>
+              <input type="text" formControlName="buttonText" class="input--text" />
+            </div>
+          </div>
+
+          <!-- Add Block Buttons -->
+          <div class="form-section">
+            <h3 class="section-title">Add Content Block</h3>
+            <div class="block-type-buttons">
+              <button
+                type="button"
+                *ngFor="let blockType of blockTypes"
+                (click)="addBlock(blockType.value)"
+                class="btn btn-secondary block-type-btn"
+                title="Add {{ blockType.label }}"
+              >
+                <span class="material-icons">{{ blockType.icon }}</span>
+                <span>{{ blockType.label }}</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Blocks Configuration -->
+          <div class="form-section">
+            <h3 class="section-title">Content Blocks ({{ guidelineConfig().blocks.length }})</h3>
+
+            <div *ngIf="guidelineConfig().blocks.length === 0" class="empty-blocks">
+              <p>No blocks added yet. Add one to get started.</p>
+            </div>
+
+            <div
+              cdkDropList
+              [cdkDropListData]="guidelineConfig().blocks"
+              (cdkDropListDropped)="reorderBlocks($event)"
+              class="block-drop-list"
+            >
+              <div *ngFor="let block of guidelineConfig().blocks; let i = index; trackBy: trackByBlockId" cdkDrag class="block-editor">
+                <div class="block-header">
+                  <div class="block-header__left">
+                    <button type="button" class="drag-handle" cdkDragHandle title="Drag to reorder">
+                      <span class="material-icons">drag_indicator</span>
+                    </button>
+                    <span class="block-type-badge" [class.is-highlight]="block.type === 'highlight'">{{ block.type }}</span>
+                  </div>
+                  <button type="button" (click)="removeBlock(block.id)" class="btn-remove" title="Remove block">
+                    <span class="material-icons">delete</span>
+                  </button>
+                </div>
+
+                <ng-container [formGroup]="blockForms.get(block.id)!">
+                  <!-- Block Content -->
+                  <div class="form-field">
+                    <label class="form-label">Content</label>
+                    <textarea formControlName="content" class="input--textarea" rows="4"></textarea>
+                  </div>
+
+                  <!-- Block Styling (conditional) -->
+                  <ng-container *ngIf="block.type === 'text' || block.type === 'highlight' || block.type === 'heading'">
+                    <div class="form-field">
+                      <label class="form-label">Font Size</label>
+                      <select formControlName="fontSizeToken" class="input--select">
+                        <option value="var(--fs-3xl)">Display (2rem)</option>
+                        <option value="var(--fs-2xl)">Large (1.75rem)</option>
+                        <option value="var(--fs-xl)">Medium (1.5rem)</option>
+                        <option value="var(--fs-lg)">Small (1.25rem)</option>
+                        <option value="var(--fs-base)">Body (1rem)</option>
+                      </select>
+                    </div>
+
+                    <div class="form-field">
+                      <label class="form-label">Font Weight</label>
+                      <select formControlName="fontWeightToken" class="input--select">
+                        <option value="var(--fw-regular)">Regular</option>
+                        <option value="var(--fw-medium)">Medium</option>
+                        <option value="var(--fw-semibold)">Semibold</option>
+                        <option value="var(--fw-bold)">Bold</option>
+                      </select>
+                    </div>
+                  </ng-container>
+
+                  <!-- Warning/Info Box Colors -->
+                  <ng-container *ngIf="block.type === 'warning' || block.type === 'info'">
+                    <div class="form-field">
+                      <label class="form-label">Background Color</label>
+                      <select formControlName="bgToken" class="input--select">
+                        <option value="var(--color-bg-light-yellow)">Yellow</option>
+                        <option value="var(--color-bg-light-blue)">Blue</option>
+                        <option value="var(--color-bg-light-green)">Green</option>
+                      </select>
+                    </div>
+                  </ng-container>
+                </ng-container>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Panel: Preview -->
+        <div class="editor-right">
+          <div class="preview-header">
+            <h3>Preview</h3>
+            <button type="button" (click)="togglePreviewFullscreen()" class="btn-fullscreen" title="Fullscreen">
+              <span class="material-icons">{{ isPreviewFullscreen() ? 'fullscreen_exit' : 'fullscreen' }}</span>
+            </button>
+          </div>
+
+          <div class="preview-container" [style.background-color]="guidelineConfig().backgroundToken">
+            <div
+              class="preview-modal"
+              [style.color]="guidelineConfig().textToken"
+            >
+              <h2 class="preview-title">{{ guidelineConfig().title }}</h2>
+
+              <div class="preview-blocks">
+                <div *ngFor="let block of guidelineConfig().blocks" [ngSwitch]="block.type" class="preview-block">
+                  <!-- Text Block -->
+                  <div
+                    *ngSwitchCase="'text'"
+                    class="block-text"
+                  >
+                    <span
+                      class="block-text__content"
+                      [style.font-size]="block.styling?.fontSizeToken"
+                      [style.font-weight]="block.styling?.fontWeightToken"
+                    >
+                      {{ block.content }}
+                    </span>
+                  </div>
+
+                  <!-- Highlight Block -->
+                  <div
+                    *ngSwitchCase="'highlight'"
+                    class="block-highlight"
+                    [style.background-color]="block.styling?.bgToken"
+                  >
+                    <span
+                      class="block-highlight__content"
+                      [style.font-size]="block.styling?.fontSizeToken"
+                      [style.font-weight]="block.styling?.fontWeightToken"
+                    >
+                      {{ block.content }}
+                    </span>
+                  </div>
+
+                  <!-- Heading Block -->
+                  <div
+                    *ngSwitchCase="'heading'"
+                    class="block-heading"
+                  >
+                    <span
+                      class="block-heading__content"
+                      [style.font-size]="block.styling?.fontSizeToken"
+                      [style.font-weight]="block.styling?.fontWeightToken"
+                    >
+                      {{ block.content }}
+                    </span>
+                  </div>
+
+                  <!-- Warning Block -->
+                  <div *ngSwitchCase="'warning'" class="block-warning" [style.background-color]="block.styling?.bgToken">
+                    <span class="material-icons warning-icon">warning</span>
+                    {{ block.content }}
+                  </div>
+
+                  <!-- Info Block -->
+                  <div *ngSwitchCase="'info'" class="block-info" [style.background-color]="block.styling?.bgToken">
+                    <span class="material-icons info-icon">info</span>
+                    {{ block.content }}
+                  </div>
+                </div>
+              </div>
+
+              <button class="preview-button" [style.background-color]="guidelineConfig().buttonToken">
+                {{ guidelineConfig().buttonText }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </form>
+
+      <div class="preview-fullscreen-overlay" *ngIf="isPreviewFullscreen()" (click)="togglePreviewFullscreen()">
+        <div class="preview-fullscreen-container" (click)="$event.stopPropagation()">
+          <div class="preview-fullscreen-header">
+            <h2>{{ guidelineConfig().title }}</h2>
+            <button type="button" class="btn-close" (click)="togglePreviewFullscreen()" title="Close fullscreen preview">
+              <span class="material-icons">close</span>
+            </button>
+          </div>
+
+          <div class="preview-fullscreen-body" [style.background-color]="guidelineConfig().backgroundToken" [style.color]="guidelineConfig().textToken">
+            <div class="preview-modal">
+              <h2 class="preview-title">{{ guidelineConfig().title }}</h2>
+
+              <div class="preview-blocks">
+                <div *ngFor="let block of guidelineConfig().blocks" [ngSwitch]="block.type" class="preview-block">
+                  <div *ngSwitchCase="'text'" class="block-text">
+                    <span
+                      class="block-text__content"
+                      [style.font-size]="block.styling?.fontSizeToken"
+                      [style.font-weight]="block.styling?.fontWeightToken"
+                    >
+                      {{ block.content }}
+                    </span>
+                  </div>
+
+                  <div *ngSwitchCase="'highlight'" class="block-highlight" [style.background-color]="block.styling?.bgToken">
+                    <span
+                      class="block-highlight__content"
+                      [style.font-size]="block.styling?.fontSizeToken"
+                      [style.font-weight]="block.styling?.fontWeightToken"
+                    >
+                      {{ block.content }}
+                    </span>
+                  </div>
+
+                  <div *ngSwitchCase="'heading'" class="block-heading">
+                    <span
+                      class="block-heading__content"
+                      [style.font-size]="block.styling?.fontSizeToken"
+                      [style.font-weight]="block.styling?.fontWeightToken"
+                    >
+                      {{ block.content }}
+                    </span>
+                  </div>
+
+                  <div *ngSwitchCase="'warning'" class="block-warning" [style.background-color]="block.styling?.bgToken">
+                    <span class="material-icons warning-icon">warning</span>
+                    {{ block.content }}
+                  </div>
+
+                  <div *ngSwitchCase="'info'" class="block-info" [style.background-color]="block.styling?.bgToken">
+                    <span class="material-icons info-icon">info</span>
+                    {{ block.content }}
+                  </div>
+                </div>
+              </div>
+
+              <button class="preview-button" [style.background-color]="guidelineConfig().buttonToken">
+                {{ guidelineConfig().buttonText }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="modal-footer">
+      <button type="button" (click)="onClose()" class="btn btn-secondary" [disabled]="isSaving">Cancel</button>
+      <button type="button" (click)="onSave()" class="btn btn-primary" [disabled]="isSaving || guidelineConfig().blocks.length === 0">
+        {{ isSaving ? 'Saving...' : 'Save Guideline' }}
+      </button>
+    </div>
+  </div>
+</div>

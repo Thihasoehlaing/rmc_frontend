@@ -1,0 +1,31 @@
+<main class="settings-scope">
+  <a routerLink="/settings" class="settings-scope__back">
+    <span class="material-icons">arrow_back</span>
+    Back to Settings
+  </a>
+
+  <header class="settings-scope__header">
+    <div class="settings-scope__icon">
+      <span class="material-icons">{{ scope().icon }}</span>
+    </div>
+    <div>
+      <span class="settings-scope__category">{{ scope().category }}</span>
+      <h1>{{ scope().title }}</h1>
+      <p>{{ scope().description }}</p>
+    </div>
+  </header>
+
+  <section class="settings-scope__panel">
+    <div>
+      <span class="settings-scope__eyebrow">Backend Scope</span>
+      <h2>API integration planned</h2>
+      <p>This page structure is ready. Its management table and forms will be connected in the next implementation pass.</p>
+    </div>
+
+    <div class="settings-scope__endpoints">
+      @for (endpoint of scope().endpoints; track endpoint) {
+        <code>{{ endpoint }}</code>
+      }
+    </div>
+  </section>
+</main>

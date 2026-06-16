@@ -14,7 +14,7 @@ import { FormCommentPanelComponent, CommentItem } from '../form-comment-panel/fo
 import { FileUploadComponent } from '../file-upload/file-upload.component';
 import { DialogComponent } from '../dialog/dialog.component';
 import { PaginationComponent } from '../pagination/pagination.component';
-import { DropdownOption } from '../../../interfaces/components.interface';
+import { DropdownOption } from '../../../core/interfaces/components.interface';
 
 @Component({
   selector: 'app-showcase',

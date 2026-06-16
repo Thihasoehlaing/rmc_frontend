@@ -1,0 +1,57 @@
+<main class="admin-settings system-settings">
+  <header class="settings-hero system-settings__hero">
+    <div class="settings-hero__content">
+      <span class="settings-hero__eyebrow">System Administration</span>
+      <h1>Settings</h1>
+      <p>Manage platform identity, application configuration, access rules, and workflow infrastructure.</p>
+    </div>
+
+    <div class="settings-hero__summary" aria-label="Available system settings modules">
+      <span class="material-icons">settings</span>
+      <div>
+        <strong>{{ cards.length }}</strong>
+        <span>System modules</span>
+      </div>
+    </div>
+  </header>
+
+  <section class="settings-section" aria-labelledby="system-settings-modules-title">
+    <div class="settings-section__heading">
+      <div>
+        <span class="section-kicker">System Control Centre</span>
+        <h2 id="system-settings-modules-title">Choose a configuration area</h2>
+      </div>
+      <p>These modules are available only to users with the System Admin role.</p>
+    </div>
+
+    <div class="settings-grid">
+      @for (card of cards; track card.route; let index = $index) {
+        <a
+          [routerLink]="card.route"
+          [class]="'settings-card settings-card--' + card.tone"
+          [attr.aria-label]="'Open ' + card.title">
+          <div class="settings-card__top">
+            <span class="settings-card__number">
+              {{ (index + 1).toString().padStart(2, '0') }}
+            </span>
+            <span class="settings-card__category">{{ card.category }}</span>
+          </div>
+
+          <div class="settings-card__icon">
+            <span class="material-icons">{{ card.icon }}</span>
+          </div>
+
+          <div class="settings-card__content">
+            <h3>{{ card.title }}</h3>
+            <p>{{ card.description }}</p>
+          </div>
+
+          <div class="settings-card__action">
+            <span>Open settings</span>
+            <span class="material-icons">arrow_forward</span>
+          </div>
+        </a>
+      }
+    </div>
+  </section>
+</main>

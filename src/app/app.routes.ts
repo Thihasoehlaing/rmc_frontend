@@ -2,328 +2,130 @@ import { Routes } from '@angular/router';
 import { LayoutComponent } from './layout/layout.component';
 import { authGuard } from './core/guards/auth.guard';
 import { permissionGuard } from './core/guards/permission.guard';
-import { NavPermission } from './core/interfaces/permission.interface';
+import {
+  adminSettingsPermission,
+  conferencePermission,
+  journalPermission,
+  partnershipPermission,
+  ragraPermission,
+  rdigPermission,
+  systemSettingsPermission,
+  travelAuthorizationPermission,
+} from './core/routing/app-route-permissions';
 
 export const routes: Routes = [
-  // ── Public routes ────────────────────────────────────────────────────────
   {
     path: 'login',
     loadComponent: () =>
       import('./features/auth/login/login.component').then(m => m.LoginComponent),
   },
-
-  // ── Protected layout — authGuard blocks unauthenticated users ────────────
   {
     path: '',
     component: LayoutComponent,
     canActivate: [authGuard],
     children: [
-      // Accessible to ALL authenticated users
       {
         path: 'dashboard',
-        loadComponent: () =>
-          import('./features/dashboard/dashboard.component').then(
-            m => m.DashboardComponent,
-          ),
+        loadChildren: () =>
+          import('./features/dashboard/dashboard.routes').then(m => m.dashboardRoutes),
       },
       {
         path: 'profile',
-        loadComponent: () =>
-          import('./features/profile/profile.component').then(
-            m => m.ProfileComponent,
-          ),
+        loadChildren: () =>
+          import('./features/profile/profile.routes').then(m => m.profileRoutes),
       },
       {
         path: 'showcase',
-        loadComponent: () =>
-          import('./shared/components/showcase/showcase').then(m => m.ShowcaseComponent),
+        loadChildren: () =>
+          import('./shared/components/showcase/showcase.routes').then(m => m.showcaseRoutes),
       },
-
-      // ── Submissions ──────────────────────────────────────────────────────
       {
         path: 'submissions',
-        children: [
-          {
-            path: 'inbox',
-            loadComponent: () =>
-              import('./features/submissions/inbox/inbox.component').then(m => m.InboxComponent),
-          },
-          {
-            path: 'draft',
-            loadComponent: () =>
-              import('./features/submissions/drafts/drafts.component').then(m => m.DraftsComponent),
-          },
-          {
-            path: 'pending',
-            loadComponent: () =>
-              import('./features/submissions/pending/pending.component').then(m => m.PendingComponent),
-          },
-          {
-            path: 'history',
-            loadComponent: () =>
-              import('./features/submissions/history/history.component').then(m => m.HistoryComponent),
-          },
-          // Admin history uses the same history component but role filtering
-          // already surfaces the correct applications server-side.
-          {
-            path: 'admin-history',
-            loadComponent: () =>
-              import('./features/submissions/history/history.component').then(m => m.HistoryComponent),
-          },
-        ],
+        loadChildren: () =>
+          import('./features/submissions/submissions.routes').then(m => m.submissionsRoutes),
       },
-
-      // ── RDIG Application ─────────────────────────────────────────────────
-      // Rule: (full_time OR contract) AND academic, NOT Reviewer, NOT HOS
       {
         path: 'rdig',
         canActivate: [permissionGuard],
         data: {
-          permission: {
-            anyOf: ['full_time', 'contract'],
-            allOf: ['academic'],
-            excludeGroups: ['Reviewer', 'HOS'],
-          } satisfies NavPermission,
+          permission: rdigPermission,
         },
-        loadComponent: () =>
-          import('./features/rdig/rdig_form.component').then(m => m.RdigApplicationComponent),
+        loadChildren: () =>
+          import('./features/rdig/rdig_form.routes').then(m => m.rdigApplicationRoutes),
       },
-
-      // ── Conference Application ────────────────────────────────────────────
-      // Rule: ((full_time OR contract) AND academic) OR Admin
       {
         path: 'conference',
         canActivate: [permissionGuard],
         data: {
-          permission: {
-            anyCondition: [
-              {
-                anyOf: ['full_time', 'contract'],
-                allOf: ['academic'],
-                excludeGroups: ['Reviewer', 'HOS'],
-              },
-              {
-                anyOf: ['Admin'],
-              },
-            ],
-          } satisfies NavPermission,
+          permission: conferencePermission,
         },
         loadChildren: () =>
           import('./features/conference/conference_form.routes').then(m => m.conferenceFormRoutes),
       },
-
-      // ── Journal Publication ───────────────────────────────────────────────
-      // Rule: ((full_time OR contract) AND academic) OR HOS OR VC OR Admin
       {
         path: 'journal',
         canActivate: [permissionGuard],
         data: {
-          permission: {
-            anyCondition: [
-              { anyOf: ['full_time', 'contract'], allOf: ['academic'] },
-              { anyOf: ['HOS'] },
-              { anyOf: ['VC'] },
-              { anyOf: ['Admin'] },            ],          } satisfies NavPermission,
+          permission: journalPermission,
         },
         loadChildren: () =>
           import('./features/journal-publication/journal_publication_form.routes').then(
-            m => m.journalPublicationFormRoutes
+            m => m.journalPublicationFormRoutes,
           ),
       },
-
-      // ── RA/GRA Application ────────────────────────────────────────────────
-      // Rule: (full_time OR contract) AND academic
       {
         path: 'ragra',
         canActivate: [permissionGuard],
         data: {
-          permission: {
-            anyOf: ['full_time', 'contract'],
-            allOf: ['academic'],
-          } satisfies NavPermission,
+          permission: ragraPermission,
         },
-        loadComponent: () =>
-          import('./features/ra-gra/RA-GRA_form.component').then(m => m.RagraFormComponent),
+        loadChildren: () =>
+          import('./features/ra-gra/RA-GRA_form.routes').then(m => m.ragraFormRoutes),
       },
-
-      // ── Travel Authorization ─────────────────────────────────────────────
-      // Rule: all authenticated users EXCEPT Admin
       {
         path: 'travel-authorization',
         canActivate: [permissionGuard],
         data: {
-          permission: {
-            excludeGroups: ['Admin'],
-          } satisfies NavPermission,
+          permission: travelAuthorizationPermission,
         },
         loadChildren: () =>
           import('./features/travel-authorization/travel_authorization_form.routes').then(
-            m => m.travelAuthorizationFormRoutes
+            m => m.travelAuthorizationFormRoutes,
           ),
       },
-
-      // ── Partnership Application ───────────────────────────────────────────
-      // Rule: (full_time OR contract) AND academic
       {
         path: 'partnership',
         canActivate: [permissionGuard],
         data: {
-          permission: {
-            anyCondition: [
-              {
-                anyOf: ['full_time', 'contract'],
-                allOf: ['academic'],
-              },
-              { anyOf: ['Admin'] },
-            ],
-          } satisfies NavPermission,
+          permission: partnershipPermission,
         },
         loadChildren: () =>
           import('./features/partnership/partnership_form.routes').then(
-            m => m.partnershipFormRoutes
+            m => m.partnershipFormRoutes,
           ),
       },
-
-      // ── Admin Settings — Admin group only ────────────────────────────────
       {
         path: 'admin-settings',
         canActivate: [permissionGuard],
         data: {
-          permission: { anyOf: ['Admin'] } satisfies NavPermission,
+          permission: adminSettingsPermission,
         },
-        children: [
-          {
-            path: '',
-            loadComponent: () => import('./features/admin-settings/admin-settings/admin-settings.component').then(m => m.AdminSettingsComponent)
-          },
-            {
-                path: 'guidelines',
-                loadComponent: () => import('./features/admin-settings/guidelines/guidelines.component').then(m => m.GuidelinesComponent)
-            },
-            {
-                path: 'dropdowns',
-                loadComponent: () => import('./features/admin-settings/dropdowns/dropdowns.component').then(m => m.DropdownsComponent)
-            },
-            {
-              path: 'rdig-dropdown-options',
-              loadComponent: () => import('./features/admin-settings/dropdowns/dropdowns.component').then(m => m.DropdownsComponent)
-            },
-            {
-                path: 'batches',
-              loadComponent: () => import('./features/admin-settings/batch-sitting/batch-sitting.component').then(m => m.BatchSittingComponent)
-            },
-            {
-                path: 'staff-access',
-                loadComponent: () => import('./features/admin-settings/staff-access/staff-access.component').then(m => m.StaffAccessComponent)
-            },
-            {
-              path: 'external-project-data-entry',
-              loadComponent: () => import('./features/admin-settings/external-project-data-entry/external-project-data-entry.component').then(m => m.ExternalProjectDataEntryComponent)
-            },
-            {
-                path: 'batch-sitting',
-                canActivate: [permissionGuard],
-                data: {
-                    permission: { allOf: ['RMC'] } satisfies NavPermission,
-                },
-                loadComponent: () =>
-                    import('./features/admin-settings/batch-sitting/batch-sitting.component').then(m => m.BatchSittingComponent),
-            },
-        ]
+        loadChildren: () =>
+          import('./features/admin-settings/admin-settings.routes').then(
+            m => m.adminSettingsRoutes,
+          ),
       },
       {
         path: 'settings',
         canActivate: [permissionGuard],
         data: {
-          permission: { allOf: ['SystemAdmin'] } satisfies NavPermission,
+          permission: systemSettingsPermission,
         },
-        children: [
-          {
-            path: '',
-            loadComponent: () =>
-              import('./features/settings/settings.component').then(
-                m => m.SettingsComponent,
-              ),
-          },
-          {
-            path: 'forms',
-            loadComponent: () =>
-              import('./features/settings/forms/forms.component').then(
-                m => m.FormsComponent,
-              ),
-          },
-          {
-            path: 'dropdown-categories',
-            loadComponent: () =>
-              import('./features/settings/dropdown-categories/dropdown-categories.component').then(
-                m => m.DropdownCategoriesComponent,
-              ),
-          },
-          {
-            path: 'staff-directory',
-            data: { scope: 'staff-directory' },
-            loadComponent: () =>
-              import('./features/settings/settings-scope/settings-scope.component').then(
-                m => m.SettingsScopeComponent,
-              ),
-          },
-          {
-            path: 'academic-staff',
-            loadComponent: () =>
-              import('./features/settings/academic-staff/academic-staff.component').then(
-                m => m.AcademicStaffComponent,
-              ),
-          },
-          {
-            path: 'users',
-            loadComponent: () =>
-              import('./features/settings/users/users.component').then(
-                m => m.UsersComponent,
-              ),
-          },
-          {
-            path: 'roles',
-            loadComponent: () =>
-              import('./features/settings/roles/roles.component').then(
-                m => m.RolesComponent,
-              ),
-          },
-          {
-            path: 'roles-users',
-            redirectTo: 'users',
-            pathMatch: 'full',
-          },
-          {
-            path: 'blocked-users',
-            loadComponent: () =>
-              import('./features/settings/blocked-users/blocked-users.component').then(
-                m => m.BlockedUsersComponent,
-              ),
-          },
-          {
-            path: 'applicant-rules',
-            data: { scope: 'applicant-rules' },
-            loadComponent: () =>
-              import('./features/settings/settings-scope/settings-scope.component').then(
-                m => m.SettingsScopeComponent,
-              ),
-          },
-          {
-            path: 'workflow',
-            data: { scope: 'workflow' },
-            loadComponent: () =>
-              import('./features/settings/settings-scope/settings-scope.component').then(
-                m => m.SettingsScopeComponent,
-              ),
-          },
-        ],
+        loadChildren: () =>
+          import('./features/settings/settings.routes').then(m => m.settingsRoutes),
       },
-
-      // Default redirect
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
     ],
   },
-
-  // Catch-all → redirect to login
   { path: '**', redirectTo: '/login' },
 ];

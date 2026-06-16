@@ -1,14 +1,19 @@
 import { Routes } from '@angular/router';
-import { PartnershipFormComponent } from './partnership_form.component';
-import { PartnershipSettingsComponent } from './pages/partnership-settings/partnership-settings.component';
 import { permissionGuard } from '../../core/guards/permission.guard';
 import { NavPermission } from '../../core/interfaces/permission.interface';
 
 export const partnershipFormRoutes: Routes = [
-  { path: 'application', component: PartnershipFormComponent },
+  {
+    path: 'application',
+    loadComponent: () =>
+      import('./partnership_form.component').then(m => m.PartnershipFormComponent),
+  },
   {
       path: 'settings',
-      component: PartnershipSettingsComponent,
+      loadComponent: () =>
+        import('./pages/partnership-settings/partnership-settings.component').then(
+          m => m.PartnershipSettingsComponent
+        ),
       canActivate: [permissionGuard],
       data: {
           permission: {

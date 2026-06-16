@@ -1,14 +1,17 @@
 import { Routes } from '@angular/router';
-import { ConferenceApplication } from './pages/conference-application/conference-application';
-import { ConferenceSettingsComponent } from './pages/conference-settings/conference-settings.component';
 import { permissionGuard } from '../../core/guards/permission.guard';
 import { NavPermission } from '../../core/interfaces/permission.interface';
 
 export const conferenceFormRoutes: Routes = [
-    { path: 'application', component: ConferenceApplication },
+    {
+        path: 'application',
+        loadComponent: () =>
+            import('./pages/conference-application/conference-application').then(m => m.ConferenceApplication),
+    },
     {
         path: 'settings',
-        component: ConferenceSettingsComponent,
+        loadComponent: () =>
+            import('./pages/conference-settings/conference-settings.component').then(m => m.ConferenceSettingsComponent),
         canActivate: [permissionGuard],
         data: {
             permission: {

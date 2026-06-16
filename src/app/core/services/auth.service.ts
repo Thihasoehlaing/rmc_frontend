@@ -354,6 +354,27 @@ export class AuthService {
     return user !== null;
   }
 
+  /**
+   * Development-only shortcut for local testers who cannot authenticate through APU.
+   * This intentionally reuses the mock account registry and never calls the SSO flow.
+   */
+  loginAsTestingUser(username = 'rmc_ahmad'): boolean {
+    if (environment.production) {
+      return false;
+    }
+
+    const user = DUMMY_USERS.find(u => u.username === username) ?? null;
+
+    this._currentUser.set(user);
+    if (user) {
+      localStorage.removeItem(this.TOKEN_KEY);
+      localStorage.removeItem(this.USER_KEY);
+      sessionStorage.setItem(this.LEGACY_SESSION_KEY, user.username);
+    }
+
+    return user !== null;
+  }
+
   /** Clear the current session. */
   logout(): void {
     this._currentUser.set(null);

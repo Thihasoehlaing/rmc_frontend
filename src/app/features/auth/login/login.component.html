@@ -50,6 +50,35 @@
         }
       </button>
 
+      @if (showTestingLogin) {
+        <div class="login-divider" aria-hidden="true">
+          <span></span>
+          <strong>or</strong>
+          <span></span>
+        </div>
+
+        <section class="testing-login-panel" aria-label="Testing login accounts">
+          <div class="testing-login-panel__header">
+            <span class="material-icons-outlined" aria-hidden="true">science</span>
+            <span>Testing Login</span>
+          </div>
+
+          <div class="testing-login-panel__accounts">
+            @for (account of testingAccounts; track account.username) {
+              <button
+                class="testing-account-button"
+                type="button"
+                [disabled]="isLoading()"
+                (click)="loginForTesting(account.username)"
+              >
+                <span>{{ account.label }}</span>
+                <small>{{ account.groups }}</small>
+              </button>
+            }
+          </div>
+        </section>
+      }
+
       <div class="login-alert login-alert--info">
         <span class="material-icons-outlined" aria-hidden="true">shield</span>
         <span>Your access and role will be verified securely after sign-in.</span>

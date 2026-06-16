@@ -3,6 +3,7 @@ import { Location } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
+import { environment } from '../../../../environments/environment';
 import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
@@ -20,6 +21,8 @@ export class LoginComponent implements OnInit {
   private returnRoute = '/dashboard';
 
   readonly currentYear = new Date().getFullYear();
+  readonly showTestingLogin = !environment.production;
+  readonly testingAccounts = this.authService.getDemoAccounts();
   readonly isLoading = signal(false);
   readonly loginError = signal('');
 
@@ -65,6 +68,19 @@ export class LoginComponent implements OnInit {
     this.loginError.set('');
     this.isLoading.set(true);
     this.authService.startApuLogin(this.authService.getCurrentRoute());
+  }
+
+  loginForTesting(username = 'dr_john'): void {
+    this.loginError.set('');
+    this.isLoading.set(true);
+
+    if (!this.authService.loginAsTestingUser(username)) {
+      this.isLoading.set(false);
+      this.loginError.set('Testing login is not available in this environment.');
+      return;
+    }
+
+    void this.router.navigateByUrl(this.returnRoute);
   }
 
   private getReturnRoute(): string {

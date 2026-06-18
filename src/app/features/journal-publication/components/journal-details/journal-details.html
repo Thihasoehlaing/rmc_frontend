@@ -455,43 +455,53 @@
   [isOpen]="isBreakdownModalOpen"
   [title]="getBreakdownModalTitle()"
   (close)="closeBreakdownModal()"
-  width="600px"
+  size="large"
 >
-  <form [formGroup]="breakdownForm" (ngSubmit)="submitBreakdownModal()" class="breakdown-form">
+  <form
+    [formGroup]="breakdownForm"
+    (ngSubmit)="submitBreakdownModal()"
+    class="breakdown-form breakdown-form--two-column">
     <!-- Item description -->
-    <div class="breakdown-field">
+    <div
+      class="breakdown-field"
+      [class.breakdown-field--full]="breakdownType !== 'non-research'">
       <label for="itemDescription" class="form-label">
         {{ breakdownType === 'external-research'
           ? 'Vote Number Description'
           : (breakdownType === 'non-research' ? 'Account Code Description' : 'Vote Number Description') }}
         <span class="asterisk">*</span>
       </label>
-      <app-searchable-dropdown
-        [options]="currentBreakdownOptions"
-        [placeholder]="breakdownType === 'external-research'
-          ? 'Search and select vote number description'
-          : (breakdownType === 'non-research'
-            ? 'Search and select account code description'
-            : 'Search and select item')"
-        formControlName="itemDescription">
-      </app-searchable-dropdown>
+      @if (breakdownType === 'non-research') {
+        <input
+          id="itemDescription"
+          type="text"
+          class="input--text input--readonly"
+          formControlName="itemDescription"
+          readonly>
+      } @else {
+        <app-searchable-dropdown
+          [options]="currentBreakdownOptions"
+          [placeholder]="breakdownType === 'external-research'
+            ? 'Search and select vote number description'
+            : 'Search and select item'"
+          formControlName="itemDescription">
+        </app-searchable-dropdown>
+      }
+      @if (breakdownForm.get('itemDescription')?.invalid && breakdownForm.get('itemDescription')?.touched) {
+        <span class="error-message">
+          {{ breakdownType === 'external-research'
+            ? 'Vote number description is required'
+            : (breakdownType === 'non-research'
+              ? 'Account code description is required'
+              : 'Item description is required') }}
+        </span>
+      }
     </div>
-
-    @if (breakdownForm.get('itemDescription')?.invalid && breakdownForm.get('itemDescription')?.touched) {
-      <span class="error-message">
-        {{ breakdownType === 'external-research'
-          ? 'Vote number description is required'
-          : (breakdownType === 'non-research'
-            ? 'Account code description is required'
-            : 'Item description is required') }}
-      </span>
-    }
 
     @if (breakdownType === 'external-research') {
       <div class="breakdown-field">
         <label for="externalAccountCode" class="form-label">
           Account Code
-          <span class="asterisk">(Auto-populated from Project Account Code)</span>
         </label>
         <input
           id="externalAccountCode"
@@ -523,9 +533,10 @@
         <input
           id="voteNumber"
           type="text"
-          class="input--text"
+          class="input--text input--readonly"
           formControlName="voteNumber"
-          [placeholder]="breakdownType === 'external-research' ? 'Enter vote number' : 'V29000'">
+          readonly
+          placeholder="Auto-Filled from vote number description">
         @if (breakdownForm.get('voteNumber')?.invalid && breakdownForm.get('voteNumber')?.touched) {
           <span class="error-message">Vote number is required</span>
         }
@@ -582,7 +593,7 @@
     </div>
 
     <!-- Description -->
-    <div class="breakdown-field">
+    <div class="breakdown-field breakdown-field--full">
       <label for="description" class="form-label">Description</label>
       <textarea
         id="description"
@@ -594,7 +605,7 @@
     </div>
 
     <!-- Supporting Documents -->
-    <div class="breakdown-field">
+    <div class="breakdown-field breakdown-field--full">
       <label class="form-label">Supporting Documents</label>
       <p class="form-hint">Max file size: 10MB. Allowed file types: PDF only.</p>
       <app-file-upload
@@ -613,7 +624,7 @@
       }
     </div>
 
-    <div class="breakdown-actions">
+    <div class="breakdown-actions breakdown-field--full">
       <button type="button" class="btn btn-secondary" (click)="closeBreakdownModal()">Cancel</button>
       <button type="submit" class="btn btn-primary" [disabled]="breakdownForm.invalid">Save</button>
     </div>
@@ -664,10 +675,3 @@
     <button type="button" class="btn btn-primary" (click)="confirmSDGKeywords()" [disabled]="sdgKeywordsForm.invalid">Confirm</button>
   </div>
 </app-dialog>
-
-
-
-
-
-
-

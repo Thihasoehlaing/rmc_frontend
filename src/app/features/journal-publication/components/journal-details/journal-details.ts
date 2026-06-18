@@ -41,6 +41,8 @@ import {
   styleUrl: './journal-details.scss'
 })
 export class JournalDetails implements OnInit, OnDestroy {
+  readonly nonResearchAccountCodeDescription = 'TRAINING PRESENTATION PUBLICATION';
+  readonly nonResearchAccountCode = '6203/100';
   auth = inject(AuthService);
   workflow = inject(JournalWorkflowService);
   private journalOptionsService = inject(JournalOptionsService);
@@ -69,7 +71,7 @@ export class JournalDetails implements OnInit, OnDestroy {
   researchBreakdowns: any[] = [];
   externalBreakdowns: any[] = [];
   NonResearchBreakdowns: any[] = [];
-  currentBreakdownOptions: { value: string; label: string; accountCode?: string }[] = [];
+  currentBreakdownOptions: { value: string; label: string; accountCode?: string; voteNumber?: string }[] = [];
 
   selectedFileName: string | null = null;
   selectedFile: File | null = null;
@@ -229,15 +231,19 @@ export class JournalDetails implements OnInit, OnDestroy {
     });
 
     this.breakdownForm.get('itemDescription')?.valueChanges.subscribe((value) => {
-      if (this.breakdownType !== 'non-research') {
+      if (this.breakdownType === 'non-research') {
+        this.breakdownForm.patchValue({
+          accountCode: this.nonResearchAccountCode,
+          accountCodeDescription: this.nonResearchAccountCodeDescription,
+        }, { emitEvent: false });
         return;
       }
 
-      const selected = this.findNonResearchOption(value);
-      this.breakdownForm.patchValue({
-        accountCode: selected?.accountCode || '',
-        accountCodeDescription: selected?.label || ''
-      }, { emitEvent: false });
+      const selected = this.findResearchOption(value);
+      this.breakdownForm.get('voteNumber')?.setValue(
+        selected?.voteNumber || '',
+        { emitEvent: false },
+      );
     });
 
     this.sdgKeywordsForm = this.fb.group({
@@ -314,15 +320,14 @@ export class JournalDetails implements OnInit, OnDestroy {
     setTimeout(() => {
       // Resolve dropdown options
       if (type === 'non-research') {
-        const localOpts = this.journalOptionsService.getOptionsForType('account_code_description');
-        this.currentBreakdownOptions = localOpts.map(opt => ({
-          value: opt.value,
-          label: opt.label,
-          accountCode: this.getOptionMetadata('account_code_description', opt.value)?.accountCode || ''
-        }));
+        this.currentBreakdownOptions = [];
       } else {
         const researchOpts = this.journalOptionsService.getOptionsForType('vote_number_description');
-        this.currentBreakdownOptions = researchOpts.map(opt => ({ value: opt.value, label: opt.label }));
+        this.currentBreakdownOptions = researchOpts.map(opt => ({
+          value: opt.value,
+          label: opt.label,
+          voteNumber: this.journalOptionsService.getConfiguredVoteNumber(opt.value),
+        }));
       }
 
       this.breakdownForm.reset({}, { emitEvent: false });
@@ -331,6 +336,7 @@ export class JournalDetails implements OnInit, OnDestroy {
 
       const voteNumberCtrl = this.breakdownForm.get('voteNumber');
       const accountCodeCtrl = this.breakdownForm.get('accountCode');
+      const itemDescriptionCtrl = this.breakdownForm.get('itemDescription');
 
       if (type === 'non-research') {
         voteNumberCtrl?.clearValidators();
@@ -338,13 +344,11 @@ export class JournalDetails implements OnInit, OnDestroy {
         accountCodeCtrl?.setValidators([Validators.required]);
         accountCodeCtrl?.disable({ emitEvent: false });
         accountCodeCtrl?.updateValueAndValidity({ emitEvent: false });
+        itemDescriptionCtrl?.disable({ emitEvent: false });
       } else {
+        itemDescriptionCtrl?.enable({ emitEvent: false });
         voteNumberCtrl?.setValidators([Validators.required]);
-        if (type === 'external-research') {
-          voteNumberCtrl?.enable({ emitEvent: false });
-        } else {
-          voteNumberCtrl?.disable({ emitEvent: false });
-        }
+        voteNumberCtrl?.disable({ emitEvent: false });
         voteNumberCtrl?.updateValueAndValidity({ emitEvent: false });
         if (type === 'external-research') {
           accountCodeCtrl?.setValidators([Validators.required]);
@@ -361,18 +365,16 @@ export class JournalDetails implements OnInit, OnDestroy {
         this.selectedFileName = entry.fileName || null;
         this.selectedFile = null;
         if (type === 'non-research') {
-          const selected = this.findNonResearchOption(entry.itemDescription);
           this.breakdownForm.patchValue({
             ...entry,
-            itemDescription: selected?.value || entry.itemDescription,
-            accountCode: entry.accountCode || '',
-            accountCodeDescription: selected?.label || entry.accountCodeDescription || ''
+            itemDescription: this.nonResearchAccountCodeDescription,
+            accountCode: this.nonResearchAccountCode,
+            accountCodeDescription: this.nonResearchAccountCodeDescription,
           }, { emitEvent: false });
         } else {
-          const isLegacyExternalEntry = type === 'external-research' && !entry.accountCode;
           this.breakdownForm.patchValue({
             ...entry,
-            voteNumber: isLegacyExternalEntry ? '' : entry.voteNumber,
+            voteNumber: entry.voteNumber || this.journalOptionsService.getConfiguredVoteNumber(entry.itemDescription),
             accountCode: type === 'external-research'
               ? (entry.accountCode || entry.voteNumber || this.form.get('projectAccountCode')?.value || '')
               : ''
@@ -380,7 +382,13 @@ export class JournalDetails implements OnInit, OnDestroy {
         }
       } else {
         this.breakdownEditingIndex = null;
-        if (type === 'external-research') {
+        if (type === 'non-research') {
+          this.breakdownForm.patchValue({
+            itemDescription: this.nonResearchAccountCodeDescription,
+            accountCode: this.nonResearchAccountCode,
+            accountCodeDescription: this.nonResearchAccountCodeDescription,
+          }, { emitEvent: false });
+        } else if (type === 'external-research') {
           // For External, auto-fill with Project Account Code
           const projectAccountCode = this.form.get('projectAccountCode')?.value || '';
           this.breakdownForm.patchValue({
@@ -412,6 +420,12 @@ export class JournalDetails implements OnInit, OnDestroy {
     return this.currentBreakdownOptions.find(opt => opt.value === value) || this.currentBreakdownOptions.find(opt => opt.label === value);
   }
 
+  private findResearchOption(value: string): { value: string; label: string; voteNumber?: string } | undefined {
+    if (!value) return undefined;
+    return this.currentBreakdownOptions.find(opt => opt.value === value) ||
+      this.currentBreakdownOptions.find(opt => opt.label === value);
+  }
+
   saveBreakdownEntry() {
     if (this.breakdownForm.invalid) {
       this.breakdownForm.markAllAsTouched();
@@ -432,10 +446,9 @@ export class JournalDetails implements OnInit, OnDestroy {
     let resolvedAccountCode = entry.accountCode || '';
     let resolvedAccountCodeDescription = entry.accountCodeDescription || '';
     if (this.breakdownType === 'non-research') {
-      const selected = this.findNonResearchOption(entry.itemDescription);
-      if (selected) {
-        resolvedAccountCodeDescription = selected.label || resolvedAccountCodeDescription;
-      }
+      entry.itemDescription = this.nonResearchAccountCodeDescription;
+      resolvedAccountCode = this.nonResearchAccountCode;
+      resolvedAccountCodeDescription = this.nonResearchAccountCodeDescription;
     }
 
     if (this.breakdownType === 'external-research') {

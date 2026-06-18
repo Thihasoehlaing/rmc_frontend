@@ -660,15 +660,24 @@
               : (breakdownType === 'local' ? 'Account Code Description' : 'Vote Number Description') }}
             <span class="asterisk">*</span>
           </label>
-          <app-searchable-dropdown
-            [options]="getBreakdownOptionsForType()"
-            [placeholder]="breakdownType === 'external-research'
-              ? 'Search and select vote number description'
-              : (breakdownType === 'local'
-                ? 'Search and select account code description'
-                : 'Search and select item')"
-            formControlName="itemDescription">
-          </app-searchable-dropdown>
+          @if (breakdownType === 'local' && isKlangValleyNonResearch()) {
+            <input
+              id="itemDescription"
+              type="text"
+              class="form-control"
+              formControlName="itemDescription"
+              readonly>
+          } @else {
+            <app-searchable-dropdown
+              [options]="getBreakdownOptionsForType()"
+              [placeholder]="breakdownType === 'external-research'
+                ? 'Search and select vote number description'
+                : (breakdownType === 'local'
+                  ? 'Search and select account code description'
+                  : 'Search and select item')"
+              formControlName="itemDescription">
+            </app-searchable-dropdown>
+          }
         </div>
 
           @if (breakdownForm.get('itemDescription')?.invalid && breakdownForm.get('itemDescription')?.touched) {
@@ -685,7 +694,6 @@
           <div class="form-group">
             <label for="accountCode">
               Account Code
-              <span class="asterisk">(Auto-populated from Project Account Code)</span>
             </label>
             <input
               id="accountCode"
@@ -708,12 +716,12 @@
             type="text"
             class="form-control"
             formControlName="voteNumber"
-            [readonly]="breakdownType === 'local'"
+            readonly
             [placeholder]="breakdownType === 'external-research'
-              ? 'Enter vote number'
+              ? 'Auto-Filled from vote number description'
               : (breakdownType === 'local'
                 ? 'Auto-filled from Account Code Description'
-                : 'V29000')">
+                : 'Auto-Filled from vote number description')">
           @if (breakdownForm.get('voteNumber')?.invalid && breakdownForm.get('voteNumber')?.touched) {
             <span class="error-message">
               {{ breakdownType === 'local' ? 'Account code' : 'Vote number' }} is required

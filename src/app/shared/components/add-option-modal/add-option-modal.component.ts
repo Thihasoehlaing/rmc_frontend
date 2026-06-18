@@ -29,6 +29,7 @@ export class AddOptionModalComponent implements OnChanges {
   @Input() initial: AddOptionPayload | null = null;
   @Input() primaryActionLabel = 'Add Option';
   @Input() showAccountNumberMetadata = false;
+  @Input() accountNumberLabel = 'Account Number';
   @Input() showRegionMetadata = false;
   @Input() nameReadonly = false;
   @Input() descriptionReadonly = false;

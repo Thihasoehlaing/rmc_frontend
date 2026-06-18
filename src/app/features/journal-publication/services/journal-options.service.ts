@@ -173,6 +173,14 @@ export class JournalOptionsService {
     }
   }
 
+  getConfiguredVoteNumber(optionValue: string | null | undefined): string {
+    return this.dropdownsStoreService.getConfiguredNumber(
+      this.formName,
+      'Vote Number Description',
+      optionValue,
+    );
+  }
+
   /**
    * Add a new option to a breakdown type
    */

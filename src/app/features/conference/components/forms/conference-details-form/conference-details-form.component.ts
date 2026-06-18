@@ -29,6 +29,8 @@ import {
   styleUrl: './conference-details-form.component.scss'
 })
 export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
+  readonly klangValleyAccountCodeDescription = 'TRAINING PRESENTATION PUBLICATION';
+  readonly klangValleyAccountCode = '6203/100';
   @Input() workflow?: ConferenceWorkflowService;
   @Input() isFormReadOnly: boolean = false;
 
@@ -142,6 +144,16 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     return this.breakdownOptionsService.getOptionsForType('external-research');
   }
 
+  get voteNumberDescriptionOptions(): DropdownOption[] {
+    return this.dropdownStore.entries()
+      .filter(option =>
+        option.formName === 'Conference Application' &&
+        option.category === 'Vote Number Description' &&
+        option.status === 'Active'
+      )
+      .map(option => ({ value: option.value, label: option.value }));
+  }
+
   regionFundingInfo: Record<string, string> = {
     'Americas': '50% & limit to a maximum of RM5,000',
     'ASEAN': '85% & limit to a maximum of RM5,000',
@@ -224,11 +236,12 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
   }
 
   getBreakdownOptionsForType(): DropdownOption[] {
-    if (this.breakdownType === 'research') {
-      return this.researchBreakdownOptions;
-    }
-    if (this.breakdownType === 'external-research') {
-      return this.externalBreakdownOptions;
+    if (this.breakdownType === 'research' || this.breakdownType === 'external-research') {
+      return this.voteNumberDescriptionOptions.length > 0
+        ? this.voteNumberDescriptionOptions
+        : this.breakdownType === 'research'
+          ? this.researchBreakdownOptions
+          : this.externalBreakdownOptions;
     }
     if (this.breakdownType === 'local') {
       return this.localBreakdownOptions;
@@ -370,7 +383,14 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     this.breakdownForm.get('itemDescription')?.valueChanges.subscribe((value) => {
       if (this.breakdownType === 'local') {
         this.breakdownForm.get('voteNumber')?.setValue(
-          this.getConfiguredLocalAccountCode(value),
+          this.isKlangValleyNonResearch()
+            ? this.klangValleyAccountCode
+            : this.getConfiguredLocalAccountCode(value),
+          { emitEvent: false }
+        );
+      } else if (this.breakdownType === 'research' || this.breakdownType === 'external-research') {
+        this.breakdownForm.get('voteNumber')?.setValue(
+          this.getConfiguredVoteNumber(value),
           { emitEvent: false }
         );
       }
@@ -675,6 +695,11 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     return this.form.get('researchType')?.value || '';
   }
 
+  isKlangValleyNonResearch(): boolean {
+    return this.selectedLocalOrOverseas === 'klang-valley' &&
+      this.researchType === 'non-research';
+  }
+
   get percentage(): string | number {
     return this.form.get('percentage')?.value || '';
   }
@@ -867,16 +892,20 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
   openBreakdownModal(type: 'research' | 'external-research' | 'local', index?: number) {
     this.breakdownType = type;
     this.isBreakdownModalOpen = true;
+    const useFixedKlangValleyAccount = type === 'local' && this.isKlangValleyNonResearch();
 
     if (index !== undefined) {
       // Editing existing entry
       this.breakdownEditingIndex = index;
       const array = this.getBreakdownArray(type);
       const data = array[index];
-      const isLegacyExternalEntry = type === 'external-research' && !data.accountCode;
       this.breakdownForm.patchValue({
-        itemDescription: data.itemDescription,
-        voteNumber: isLegacyExternalEntry ? '' : data.voteNumber,
+        itemDescription: useFixedKlangValleyAccount
+          ? this.klangValleyAccountCodeDescription
+          : data.itemDescription,
+        voteNumber: useFixedKlangValleyAccount
+          ? this.klangValleyAccountCode
+          : data.voteNumber || this.getConfiguredVoteNumber(data.itemDescription),
         accountCode: type === 'external-research'
           ? (data.accountCode || data.voteNumber || this.form.get('externalProjectAccountCode')?.value || '')
           : '',
@@ -891,7 +920,14 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
       this.breakdownEditingIndex = null;
       this.breakdownForm.reset({
         exchangeRate: 1,
-        voteNumber: type === 'external-research' || type === 'local' ? '' : 'V29000',
+        itemDescription: useFixedKlangValleyAccount
+          ? this.klangValleyAccountCodeDescription
+          : '',
+        voteNumber: useFixedKlangValleyAccount
+          ? this.klangValleyAccountCode
+          : type === 'external-research' || type === 'local'
+            ? ''
+            : 'V29000',
         accountCode: type === 'external-research'
           ? (this.form.get('externalProjectAccountCode')?.value || '')
           : ''
@@ -909,14 +945,25 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
 
     if (type === 'external-research') {
       this.breakdownForm.get('accountCode')?.disable({ emitEvent: false });
-      this.breakdownForm.get('voteNumber')?.enable({ emitEvent: false });
+      this.breakdownForm.get('voteNumber')?.disable({ emitEvent: false });
     } else if (type === 'local') {
       this.breakdownForm.get('accountCode')?.disable({ emitEvent: false });
+      if (useFixedKlangValleyAccount) {
+        this.breakdownForm.get('itemDescription')?.disable({ emitEvent: false });
+      }
       this.breakdownForm.get('voteNumber')?.disable({ emitEvent: false });
     } else {
       this.breakdownForm.get('accountCode')?.disable({ emitEvent: false });
-      this.breakdownForm.get('voteNumber')?.enable({ emitEvent: false });
+      this.breakdownForm.get('voteNumber')?.disable({ emitEvent: false });
     }
+  }
+
+  private getConfiguredVoteNumber(optionValue: string | null): string {
+    return this.dropdownStore.getConfiguredNumber(
+      'Conference Application',
+      'Vote Number Description',
+      optionValue,
+    );
   }
 
   private getConfiguredLocalAccountCode(optionValue: string | null): string {
@@ -948,6 +995,10 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     }
 
     const formData = this.breakdownForm.getRawValue(); // Use getRawValue to include disabled controls
+    if (this.breakdownType === 'local' && this.isKlangValleyNonResearch()) {
+      formData.itemDescription = this.klangValleyAccountCodeDescription;
+      formData.voteNumber = this.klangValleyAccountCode;
+    }
     // Calculate Cost in RM (Cost * Exchange Rate)
     const costInRM = (parseFloat(formData.cost) || 0) * (parseFloat(formData.exchangeRate) || 1);
     const array = this.getBreakdownArray(this.breakdownType!);

@@ -262,6 +262,7 @@
             [initial]="editingInitialPayload()"
             [primaryActionLabel]="editingOptionId() ? 'Save' : 'Add Option'"
             [showAccountNumberMetadata]="isAccountCodeMetadataCategory()"
+            [accountNumberLabel]="getAccountNumberMetadataLabel()"
             [showRegionMetadata]="isRegionMetadataCategory()"
             [nameReadonly]="isRegionMetadataCategory() && !!editingOptionId()"
             [descriptionReadonly]="isRegionMetadataCategory() && !!editingOptionId()"

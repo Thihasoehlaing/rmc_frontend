@@ -112,6 +112,40 @@
   min-width: 0;
 }
 
+.breakdown-form--two-column {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4) var(--space-6);
+  align-items: start;
+}
+
+.breakdown-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.breakdown-field--full {
+  grid-column: 1 / -1;
+}
+
+.breakdown-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+}
+
+@media (max-width: 768px) {
+  .breakdown-form--two-column {
+    grid-template-columns: 1fr;
+  }
+
+  .breakdown-field--full {
+    grid-column: auto;
+  }
+}
+
 .input--text,
 .input--textarea,
 .input--select {
@@ -474,4 +508,3 @@
 .manage-icon {
   display: block;
 }
-

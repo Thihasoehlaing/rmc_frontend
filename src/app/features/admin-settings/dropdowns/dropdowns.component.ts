@@ -179,10 +179,18 @@ export class DropdownsComponent implements OnInit {
     }
 
     if (this.isAccountCodeMetadataCategory()) {
+      const isVoteNumberDescription = this.isConferenceVoteNumberDescriptionCategory();
       return [
         selectionColumn,
-        { key: 'value', label: 'Option Name', sortable: true },
-        { key: 'accountNumber', label: 'Account Number' },
+        {
+          key: 'value',
+          label: isVoteNumberDescription ? 'Vote Number Description' : 'Option Name',
+          sortable: true,
+        },
+        {
+          key: 'accountNumber',
+          label: isVoteNumberDescription ? 'Vote Number' : 'Account Number',
+        },
         { key: 'status', label: 'Status', sortable: true },
         { key: 'lastUpdated', label: 'Created Date', sortable: true },
         { key: 'actions', label: 'Actions' },
@@ -247,12 +255,20 @@ export class DropdownsComponent implements OnInit {
     const groupTitle = this.selectedGroup()?.title;
     const category = this.selectedCategory();
     return (groupTitle === 'Conference Application' && category === 'Select Item Description') ||
-      (groupTitle === 'Journal Application' && category === 'Account Code');
+      (groupTitle === 'Journal Application' && category === 'Account Code') ||
+      (['Conference Application', 'Journal Application'].includes(groupTitle ?? '') &&
+        category === 'Vote Number Description');
   }
 
   private isAccountCodeMetadataOption(option: DropdownOption): boolean {
     return (option.formName === 'Conference Application' && option.category === 'Select Item Description') ||
-      (option.formName === 'Journal Application' && option.category === 'Account Code');
+      (option.formName === 'Journal Application' && option.category === 'Account Code') ||
+      (['Conference Application', 'Journal Application'].includes(option.formName) &&
+        option.category === 'Vote Number Description');
+  }
+
+  getAccountNumberMetadataLabel(): string {
+    return this.isConferenceVoteNumberDescriptionCategory() ? 'Vote Number' : 'Account Number';
   }
 
   isConferenceVoteNumberDescriptionCategory(): boolean {

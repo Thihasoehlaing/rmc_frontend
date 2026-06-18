@@ -36,6 +36,39 @@ export class DropdownsStoreService {
     return this.entries().filter(option => option.formName === formName && option.category === category);
   }
 
+  getConfiguredNumber(formName: string, category: string, optionName: string | null | undefined): string {
+    if (!optionName || typeof localStorage === 'undefined') {
+      return '';
+    }
+
+    const trimmed = optionName.trim();
+    const normalized = trimmed.toLowerCase();
+    const slug = normalized.replace(/\s+/g, '-');
+    const formSlug = formName.trim().toLowerCase().replace(/\s+/g, '-');
+    const categorySlug = category.trim().toLowerCase().replace(/\s+/g, '-');
+    const keys = [
+      `option-metadata-account-code-${formSlug}-${categorySlug}-${trimmed}`,
+      `option-metadata-account-code-${formSlug}-${categorySlug}-${normalized}`,
+      `option-metadata-account-code-${formSlug}-${categorySlug}-${slug}`,
+    ];
+
+    for (const key of keys) {
+      const stored = localStorage.getItem(key);
+      if (!stored) {
+        continue;
+      }
+
+      try {
+        const metadata = JSON.parse(stored) as { accountNumber?: string };
+        return metadata.accountNumber?.trim() ?? '';
+      } catch {
+        return '';
+      }
+    }
+
+    return '';
+  }
+
   hasOptions(formName: string, category: string): boolean {
     return this.getOptions(formName, category).length > 0;
   }

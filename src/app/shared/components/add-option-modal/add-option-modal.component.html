@@ -18,8 +18,12 @@
       <div class="category-locked">{{ categoryLabel || 'Fixed' }} <span class="pill">Locked</span></div>
 
       <div class="form-field metadata-field" *ngIf="showAccountNumberMetadata">
-        <label class="form-label">Account Number *</label>
-        <input type="text" class="input--text" [(ngModel)]="accountNumber" placeholder="Enter account number" />
+        <label class="form-label">{{ accountNumberLabel }} *</label>
+        <input
+          type="text"
+          class="input--text"
+          [(ngModel)]="accountNumber"
+          [placeholder]="'Enter ' + accountNumberLabel.toLowerCase()" />
       </div>
 
       <div class="region-metadata-grid" *ngIf="showRegionMetadata">

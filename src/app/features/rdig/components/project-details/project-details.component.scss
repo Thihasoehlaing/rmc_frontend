@@ -83,3 +83,8 @@
   resize: vertical;
   width: 100%;
 }
+
+.benefits-row .form-label {
+  align-items: flex-start;
+  min-height: calc(var(--line-height-control) * 2);
+}

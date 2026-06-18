@@ -81,19 +81,6 @@
   box-sizing: border-box;
 }
 
-.position-requested-note {
-  display: inline-block;
-  margin-top: var(--space-2);
-  width: fit-content;
-  max-width: 100%;
-  align-self: flex-start;
-
-  ::ng-deep .field-note {
-    display: inline-block;
-    max-width: 100%;
-  }
-}
-
 // Disabled radio option styling
 .radio-option--disabled {
   opacity: 0.5;

@@ -30,7 +30,7 @@
     <app-custom-subheader title="Research Cluster & Role"></app-custom-subheader>
     <div class="card__content section-fields">
       <div class="form-field">
-        <label class="form-label is-required">Research Cluster</label>
+        <label class="form-label is-required">Select Research Cluster</label>
         <app-searchable-dropdown [options]="clusters" [isMulti]="false"
           formControlName="researchCluster">
         </app-searchable-dropdown>
@@ -38,7 +38,7 @@
       </div>
 
       <div class="form-field">
-        <label class="form-label is-required">Roles of Project Leader</label>
+        <label class="form-label is-required">Select Roles of Project Leader</label>
         <textarea class="input--textarea" formControlName="leaderRoles" [maxlength]="600">
         </textarea>
         <app-character-counter [current]="teamDetails.get('leaderRoles')?.value?.length || 0" [max]="600">

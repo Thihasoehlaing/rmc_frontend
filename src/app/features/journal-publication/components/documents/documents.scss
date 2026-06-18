@@ -74,10 +74,6 @@
   max-width: 100%;
 }
 
-.title-with-tooltip app-note {
-  margin-left: 0;
-}
-
 .label-with-note {
   display: flex;
   flex-direction: column;
@@ -90,7 +86,4 @@
     margin: 0;
   }
 
-  app-note {
-    margin-left: 0;
-  }
 }

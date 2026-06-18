@@ -98,6 +98,7 @@
   </div>
 
   <!-- ── Gantt Chart Preview (always visible) ──────────────── -->
+  @if (activities.length > 0) {
   <div class="card gantt-card">
     <app-custom-subheader icon="bar_chart" title="Gantt Chart Preview"></app-custom-subheader>
     <div class="card__content gantt-content">
@@ -137,6 +138,8 @@
   </div>
 
   <!-- ── Review Comments on Activities ──────────────────────── -->
+  }
+
   @if (showAnyComments) {
     <div class="card">
       <div class="card__content section-fields">

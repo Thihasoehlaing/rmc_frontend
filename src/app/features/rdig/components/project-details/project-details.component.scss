@@ -40,6 +40,7 @@
 .input--autosize {
   overflow: hidden;
   resize: vertical;
+  min-height: calc(var(--line-height-control) * 3 + var(--space-6));
 }
 
 .manage-btn {
@@ -78,10 +79,23 @@
 
 .input--textarea-benefits {
   box-sizing: border-box;
-  min-height: var(--control-min-height-multiline);
-  height: var(--control-min-height-multiline);
+  min-height: calc(var(--line-height-control) * 3 + var(--space-6));
+  height: auto;
   resize: vertical;
   width: 100%;
+}
+
+.textarea-row {
+  grid-template-columns: 1fr;
+  gap: var(--space-1);
+
+  .form-field {
+    gap: var(--space-1);
+  }
+
+  app-validation-message:empty {
+    display: none;
+  }
 }
 
 .benefits-row .form-label {

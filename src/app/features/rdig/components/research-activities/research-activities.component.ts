@@ -68,7 +68,6 @@ export class ResearchActivitiesComponent implements OnInit, OnDestroy {
             const initial = parseInt(durationCtrl.value, 10);
             if (initial > 0) {
                 this.projectDuration.set(initial);
-                if (this.activities.length === 0) this.addActivity();
             }
 
             this.subs.push(
@@ -80,10 +79,6 @@ export class ResearchActivitiesComponent implements OnInit, OnDestroy {
                     }
                 })
             );
-        }
-
-        if (this.activities.length === 0 && this.projectDuration() > 0) {
-            this.addActivity();
         }
 
         // Watch activities changes for validation and duration updates

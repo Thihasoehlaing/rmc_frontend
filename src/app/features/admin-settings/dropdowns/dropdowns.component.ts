@@ -81,6 +81,7 @@ export class DropdownsComponent implements OnInit {
   private readonly CATEGORY_SHARING_CONFIG: CategorySharingConfig = {
     'Research Cluster': ['RDIG Application', 'RA/GRA Application'],
     'Type of Organisation': ['RDIG Application', 'Conference Application', 'Journal Application'],
+    'Project Account Code': ['Conference Application', 'Journal Application'],
   };
 
   private readonly DEFAULT_REGION_METADATA: Record<string, Required<Pick<RegionMetadata, 'percentage' | 'limit' | 'description'>>> = {
@@ -139,8 +140,8 @@ export class DropdownsComponent implements OnInit {
   groups = signal<DropdownGroup[]>([
     { id: 1, title: 'RDIG Application', categories: ['Research Cluster', 'Type of Organisation', 'Research Domain', 'Sub-Research Domain', 'ESG', 'SDG'], items: 17, shared: 11 },
     { id: 2, title: 'RA/GRA Application', categories: ['Research Cluster', 'Programme Type', 'Supervisor Type', 'Funding Type'], items: 16, shared: 10 },
-    { id: 3, title: 'Conference Application', categories: ['Select Region', 'Select Item Description', 'Vote Number Description', 'Type of Organisation'], items: 15, shared: 6 },
-    { id: 4, title: 'Journal Application', categories: ['Vote Number Description', 'Account Code', 'Type of Organisation'], items: 13, shared: 6 },
+    { id: 3, title: 'Conference Application', categories: ['Select Region', 'Project Account Code', 'Select Item Description', 'Vote Number Description', 'Type of Organisation'], items: 18, shared: 9 },
+    { id: 4, title: 'Journal Application', categories: ['Project Account Code', 'Vote Number Description', 'Account Code Description', 'Account Code', 'Type of Organisation'], items: 22, shared: 9 },
     { id: 5, title: 'Partnership Application', categories: ['Partnership Type', 'Partnership Category'], items: 2, shared: 0 },
   ]);
 
@@ -599,6 +600,18 @@ export class DropdownsComponent implements OnInit {
       { id: 45, formName: 'Journal Application', category: 'Type of Organisation', value: 'Government Agency', lastUpdated: '20 Apr 2026', createdBy: 'Admin', status: 'Active' },
       { id: 46, formName: 'Journal Application', category: 'Type of Organisation', value: 'Non-Profit Organization', lastUpdated: '20 Apr 2026', createdBy: 'Admin', status: 'Active' },
       { id: 47, formName: 'Journal Application', category: 'Type of Organisation', value: 'Other', lastUpdated: '20 Apr 2026', createdBy: 'Admin', status: 'Active' },
+      { id: 48, formName: 'Conference Application', category: 'Project Account Code', value: 'V29000', lastUpdated: '18 Jun 2026', createdBy: 'Admin', status: 'Active' },
+      { id: 49, formName: 'Journal Application', category: 'Project Account Code', value: 'V29000', lastUpdated: '18 Jun 2026', createdBy: 'Admin', status: 'Active' },
+      { id: 50, formName: 'Conference Application', category: 'Project Account Code', value: 'V29100', lastUpdated: '18 Jun 2026', createdBy: 'Admin', status: 'Active' },
+      { id: 51, formName: 'Journal Application', category: 'Project Account Code', value: 'V29100', lastUpdated: '18 Jun 2026', createdBy: 'Admin', status: 'Active' },
+      { id: 52, formName: 'Conference Application', category: 'Project Account Code', value: 'V29200', lastUpdated: '18 Jun 2026', createdBy: 'Admin', status: 'Active' },
+      { id: 53, formName: 'Journal Application', category: 'Project Account Code', value: 'V29200', lastUpdated: '18 Jun 2026', createdBy: 'Admin', status: 'Active' },
+      { id: 54, formName: 'Journal Application', category: 'Vote Number Description', value: 'Article Processing Charge', lastUpdated: '18 Jun 2026', createdBy: 'Admin', status: 'Active' },
+      { id: 55, formName: 'Journal Application', category: 'Vote Number Description', value: 'Publication Fee', lastUpdated: '18 Jun 2026', createdBy: 'Admin', status: 'Active' },
+      { id: 56, formName: 'Journal Application', category: 'Vote Number Description', value: 'Language Editing and Proofreading', lastUpdated: '18 Jun 2026', createdBy: 'Admin', status: 'Active' },
+      { id: 57, formName: 'Journal Application', category: 'Account Code Description', value: 'Professional Services', lastUpdated: '18 Jun 2026', createdBy: 'Admin', status: 'Active' },
+      { id: 58, formName: 'Journal Application', category: 'Account Code Description', value: 'Research Materials and Supplies', lastUpdated: '18 Jun 2026', createdBy: 'Admin', status: 'Active' },
+      { id: 59, formName: 'Journal Application', category: 'Account Code Description', value: 'Printing and Publication', lastUpdated: '18 Jun 2026', createdBy: 'Admin', status: 'Active' },
     ];
   }
 

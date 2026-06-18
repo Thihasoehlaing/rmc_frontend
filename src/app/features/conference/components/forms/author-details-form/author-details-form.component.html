@@ -172,12 +172,9 @@
           </div>
 
           <div class="form-group">
-            <label for="affiliation1">Second Affiliation (if any) <span class="asterisk">*</span></label>
+            <label for="affiliation1">Second Affiliation (If any)</label>
             <input type="text" id="affiliation1" class="form-control" formControlName="affiliation"
               placeholder="Ex. Taylor's University">
-            @if (editForm.get('affiliation')?.invalid && editForm.get('affiliation')?.touched) {
-              <span class="error-message">Affiliation is required</span>
-            }
           </div>
         }
 
@@ -215,12 +212,9 @@
           </div>
 
           <div class="form-group">
-            <label for="affiliation2">Affiliation <span class="asterisk">*</span></label>
+            <label for="affiliation2">Second Affiliation</label>
             <input type="text" id="affiliation2" class="form-control" formControlName="affiliation"
-              placeholder="Ex. Taylor's University">
-            @if (editForm.get('affiliation')?.invalid && editForm.get('affiliation')?.touched) {
-              <span class="error-message">Affiliation is required</span>
-            }
+              readonly>
           </div>
         }
 

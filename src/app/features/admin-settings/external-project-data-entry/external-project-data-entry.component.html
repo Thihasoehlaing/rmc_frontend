@@ -44,23 +44,28 @@
                 <input type="text" class="input--text" formControlName="accountCode">
               </div>
               <div class="form-field">
-                <label class="form-label is-required">Staff Name</label>
-                <input type="text" class="input--text" formControlName="staffName">
+                <label class="form-label is-required">Project Leader/Principle Investigator</label>
+                <app-searchable-dropdown
+                  [options]="projectLeaderOptions"
+                  [searchable]="true"
+                  placeholder="Search project leader..."
+                  formControlName="staffName">
+                </app-searchable-dropdown>
               </div>
             </div>
 
             <div class="row row--3">
               <div class="form-field">
-                <label class="form-label is-required">School/Department</label>
-                <input type="text" class="input--text" formControlName="schoolDepartment">
+                <label class="form-label is-required">Grant Name</label>
+                <input type="text" class="input--text" formControlName="grantName">
               </div>
               <div class="form-field">
                 <label class="form-label is-required">Sponsor Name</label>
                 <input type="text" class="input--text" formControlName="sponsorName">
               </div>
               <div class="form-field">
-                <label class="form-label is-required">Grant Name</label>
-                <input type="text" class="input--text" formControlName="grantName">
+                <label class="form-label is-required">School/Department</label>
+                <input type="text" class="input--text" formControlName="schoolDepartment">
               </div>
             </div>
 
@@ -71,7 +76,11 @@
               </div>
               <div class="form-field">
                 <label class="form-label is-required">End Date</label>
-                <input type="date" class="input--text" formControlName="endDate">
+                <input
+                  type="date"
+                  class="input--text"
+                  formControlName="endDate"
+                  [min]="minimumEndDate()">
               </div>
               <div class="form-field">
                 <label class="form-label">Duration of Project (Month)</label>
@@ -325,6 +334,13 @@
                         </label>
                       </div>
                     </div>
+
+                    @if (section.billingRequired === 'Yes') {
+                      <ng-container
+                        [ngTemplateOutlet]="billingInformation"
+                        [ngTemplateOutletContext]="{ $implicit: section, idSuffix: 'project' }">
+                      </ng-container>
+                    }
                   }
                 </div>
               </section>
@@ -354,8 +370,13 @@
 
             <div class="row row--2">
               <div class="form-field">
-                <label class="form-label is-required">Staff Name</label>
-                <input type="text" class="input--text" formControlName="staffName">
+                <label class="form-label is-required">Project Leader/Principle Investigator</label>
+                <app-searchable-dropdown
+                  [options]="projectLeaderOptions"
+                  [searchable]="true"
+                  placeholder="Search project leader..."
+                  formControlName="staffName">
+                </app-searchable-dropdown>
               </div>
               <div class="form-field">
                 <label class="form-label is-required">School/Department</label>
@@ -377,7 +398,11 @@
             <div class="row row--2">
               <div class="form-field">
                 <label class="form-label is-required">End Date</label>
-                <input type="date" class="input--text" formControlName="endDate">
+                <input
+                  type="date"
+                  class="input--text"
+                  formControlName="endDate"
+                  [min]="minimumEndDate()">
               </div>
               <div class="form-field">
                 <label class="form-label">Duration of Project (Month)</label>
@@ -562,6 +587,13 @@
                         </label>
                       </div>
                     </div>
+
+                    @if (section.billingRequired === 'Yes') {
+                      <ng-container
+                        [ngTemplateOutlet]="billingInformation"
+                        [ngTemplateOutletContext]="{ $implicit: section, idSuffix: 'consultancy' }">
+                      </ng-container>
+                    }
                   }
                 </div>
               </section>
@@ -577,3 +609,94 @@
     </footer>
   </form>
 </section>
+
+<ng-template #billingInformation let-section let-idSuffix="idSuffix">
+  <section class="card billing-information-card">
+    <app-custom-subheader icon="payments" title="Billing Information"></app-custom-subheader>
+
+    <div class="card__content section-fields billing-information-card__content">
+      <div class="row row--2">
+        <div class="form-field">
+          <label class="form-label is-required" [for]="section.key + '-' + idSuffix + '-billing-amount'">Billing Amount (RM)</label>
+          <input
+            type="number"
+            class="input--text"
+            [class.is-invalid]="isBillingFieldInvalid(section, 'amount')"
+            [id]="section.key + '-' + idSuffix + '-billing-amount'"
+            min="0.01"
+            step="0.01"
+            [value]="section.billingAmount"
+            (input)="updateBillingAmount(section.key, $any($event.target).value)">
+          @if (isBillingFieldInvalid(section, 'amount')) {
+            <span class="form-error-msg">Enter a billing amount greater than 0.</span>
+          }
+        </div>
+
+        <div class="form-field">
+          <label class="form-label is-required" [for]="section.key + '-' + idSuffix + '-billing-date'">Billing Date</label>
+          <input
+            type="date"
+            class="input--text"
+            [class.is-invalid]="isBillingFieldInvalid(section, 'date')"
+            [id]="section.key + '-' + idSuffix + '-billing-date'"
+            [value]="section.billingDate"
+            (input)="updateBillingDate(section.key, $any($event.target).value)">
+          @if (isBillingFieldInvalid(section, 'date')) {
+            <span class="form-error-msg">Select a billing date.</span>
+          }
+        </div>
+      </div>
+
+      <div class="table-section">
+        <div class="category-header">
+          <h3 class="table-section__title">Detail Breakdown</h3>
+          <app-action-button
+            type="primary"
+            label="Add Entry"
+            icon="add"
+            (clicked)="addBillingRow(section.key)">
+          </app-action-button>
+        </div>
+
+        <app-data-table
+          [columns]="billingBreakdownColumns"
+          [rows]="section.billingRows"
+          [rowTrackFn]="trackByIndex"
+          [dense]="true">
+          <ng-template #rowTemplate let-row let-index="index">
+            <tr>
+              <td class="is-align-center">
+                <input
+                  type="checkbox"
+                  [checked]="row.selected"
+                  (change)="updateBillingRowSelection(section.key, index, $any($event.target).checked)">
+              </td>
+              <td>
+                <input
+                  type="text"
+                  class="input--text table-input"
+                  placeholder="Enter billing description"
+                  [value]="row.description"
+                  (input)="updateBillingRowDescription(section.key, index, $any($event.target).value)">
+              </td>
+              <td>
+                <input
+                  type="number"
+                  class="input--text table-input"
+                  placeholder="0.00"
+                  min="0.01"
+                  step="0.01"
+                  [value]="row.amount"
+                  (input)="updateBillingRowAmount(section.key, index, $any($event.target).value)">
+              </td>
+            </tr>
+          </ng-template>
+        </app-data-table>
+
+        @if (isBillingBreakdownInvalid(section)) {
+          <span class="form-error-msg">Add at least one billing breakdown with a description and amount.</span>
+        }
+      </div>
+    </div>
+  </section>
+</ng-template>

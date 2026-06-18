@@ -190,9 +190,15 @@
 
   .dropdown-trigger {
     background: var(--input-bg-readonly, #f5f5f5);
-    border-color: var(--input-border-default);
-    opacity: 0.65;
+    color: var(--color-text-muted);
+    border-color: var(--border-subtle);
+    opacity: 1;
     cursor: not-allowed;
+  }
+
+  .value-text,
+  .placeholder {
+    color: var(--color-text-muted);
   }
 }
 

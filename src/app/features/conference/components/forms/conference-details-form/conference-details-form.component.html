@@ -180,7 +180,7 @@
               <span>Non-Research Project</span>
             </label>
           </div>
-          <app-note text="If External Research Project is selected, all required funding will be fully subsidized from External Sources."></app-note>
+          <app-note text="If External Research Project is selected, all required funding will be fully subsidised from External Sources."></app-note>
           <app-validation-message [control]="form.get('researchType')"></app-validation-message>
         </div>
 
@@ -200,6 +200,7 @@
               </div>
             }
           </div>
+          <app-note [text]="sdgKeywordNote"></app-note>
           <app-validation-message [control]="form.get('sdgKeyword1')"></app-validation-message>
           <app-validation-message [control]="form.get('sdgKeyword2')"></app-validation-message>
           <app-validation-message [control]="form.get('sdgKeyword3')"></app-validation-message>
@@ -213,12 +214,12 @@
         <div class="row row--2 conference-field-grid">
           <div class="form-field">
             <label class="form-label is-required">Conference Start Date</label>
-            <input type="date" class="input--text" [attr.min]="getTomorrowDate()" formControlName="conferenceStartDate">
+            <input type="date" class="input--text" [attr.min]="getMinimumConferenceStartDate()" formControlName="conferenceStartDate">
             <app-validation-message [control]="form.get('conferenceStartDate')"></app-validation-message>
           </div>
           <div class="form-field">
             <label class="form-label is-required">Conference End Date</label>
-            <input type="date" class="input--text" [attr.min]="form.get('conferenceStartDate')?.value || getTomorrowDate()" formControlName="conferenceEndDate">
+            <input type="date" class="input--text" [attr.min]="form.get('conferenceStartDate')?.value || getMinimumConferenceStartDate()" formControlName="conferenceEndDate">
             <app-validation-message [control]="form.get('conferenceEndDate')"></app-validation-message>
           </div>
         </div>
@@ -327,12 +328,13 @@
 
             <!-- Project Account Code -->
             <div class="form-field">
-              <label class="form-label is-required">Project Account Code</label>
-              <input
-                type="text"
-                class="input--text"
-                formControlName="externalProjectAccountCode"
-                placeholder="Enter project account code">
+              <app-searchable-dropdown
+                label="Project Account Code"
+                [required]="true"
+                [options]="projectAccountCodeOptions()"
+                placeholder="[--SELECT PROJECT ACCOUNT CODE--]"
+                formControlName="externalProjectAccountCode">
+              </app-searchable-dropdown>
             </div>
 
             <!-- Detailed Breakdown for External Research Project -->
@@ -650,37 +652,72 @@
     size="large"
     (close)="closeBreakdownModal()">
       <form id="breakdown-entry-form" [formGroup]="breakdownForm" (ngSubmit)="submitBreakdownModal()" class="dialog-form dialog-form--two-column">
-        <!-- Select Item Description -->
+        <!-- Item description -->
         <div class="form-group">
-          <label for="itemDescription">Select Item Description <span class="asterisk">*</span></label>
+          <label for="itemDescription">
+            {{ breakdownType === 'external-research'
+              ? 'Vote Number Description'
+              : (breakdownType === 'local' ? 'Account Code Description' : 'Vote Number Description') }}
+            <span class="asterisk">*</span>
+          </label>
           <app-searchable-dropdown
             [options]="getBreakdownOptionsForType()"
-            placeholder="Search and select item"
+            [placeholder]="breakdownType === 'external-research'
+              ? 'Search and select vote number description'
+              : (breakdownType === 'local'
+                ? 'Search and select account code description'
+                : 'Search and select item')"
             formControlName="itemDescription">
           </app-searchable-dropdown>
         </div>
 
           @if (breakdownForm.get('itemDescription')?.invalid && breakdownForm.get('itemDescription')?.touched) {
-            <span class="error-message">Item description is required</span>
+            <span class="error-message">
+              {{ breakdownType === 'external-research'
+                ? 'Vote number description is required'
+                : (breakdownType === 'local'
+                  ? 'Account code description is required'
+                  : 'Item description is required') }}
+            </span>
           }
 
-        <!-- Vote Number or Account Code -->
+        @if (breakdownType === 'external-research') {
+          <div class="form-group">
+            <label for="accountCode">
+              Account Code
+              <span class="asterisk">(Auto-populated from Project Account Code)</span>
+            </label>
+            <input
+              id="accountCode"
+              type="text"
+              class="form-control"
+              formControlName="accountCode"
+              readonly
+              placeholder="Auto-filled from Project Account Code">
+          </div>
+        }
+
+        <!-- Vote Number or local Account Code -->
         <div class="form-group">
           <label [for]="breakdownType === 'local' ? 'accountCode' : 'voteNumber'">
-            {{ (breakdownType === 'local') ? 'Account Code' : 'Vote Number' }}
-            @if (breakdownType === 'external-research') {
-              <span class="asterisk">(Auto-populated from Project Account Code)</span>
-            }
+            {{ breakdownType === 'local' ? 'Account Code' : 'Vote Number' }}
+            <span class="asterisk">*</span>
           </label>
           <input
             [id]="breakdownType === 'local' ? 'accountCode' : 'voteNumber'"
             type="text"
             class="form-control"
             formControlName="voteNumber"
-            [placeholder]="(breakdownType === 'local') ? 'V29000' : 'V29000'"
-            [readonly]="breakdownType === 'external-research'">
+            [readonly]="breakdownType === 'local'"
+            [placeholder]="breakdownType === 'external-research'
+              ? 'Enter vote number'
+              : (breakdownType === 'local'
+                ? 'Auto-filled from Account Code Description'
+                : 'V29000')">
           @if (breakdownForm.get('voteNumber')?.invalid && breakdownForm.get('voteNumber')?.touched) {
-            <span class="error-message">{{ (breakdownType === 'local') ? 'Account code' : 'Vote number' }} is required</span>
+            <span class="error-message">
+              {{ breakdownType === 'local' ? 'Account code' : 'Vote number' }} is required
+            </span>
           }
         </div>
 
@@ -791,7 +828,7 @@
         type="text"
         class="input--text"
         formControlName="keyword1"
-        placeholder="Enter first keyword">
+        [placeholder]="sdgKeywordPlaceholder">
       <app-validation-message [control]="sdgKeywordsForm.get('keyword1')"></app-validation-message>
     </div>
 
@@ -801,7 +838,7 @@
         type="text"
         class="input--text"
         formControlName="keyword2"
-        placeholder="Enter second keyword">
+        [placeholder]="sdgKeywordPlaceholder">
       <app-validation-message [control]="sdgKeywordsForm.get('keyword2')"></app-validation-message>
     </div>
 
@@ -811,7 +848,7 @@
         type="text"
         class="input--text"
         formControlName="keyword3"
-        placeholder="Enter third keyword">
+        [placeholder]="sdgKeywordPlaceholder">
       <app-validation-message [control]="sdgKeywordsForm.get('keyword3')"></app-validation-message>
     </div>
   </form>

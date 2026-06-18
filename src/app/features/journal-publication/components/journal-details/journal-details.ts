@@ -14,6 +14,12 @@ import { ValidationMessageComponent } from '../../../../shared/components/valida
 import { DataTableComponent, DataTableColumn } from '../../../../shared/components/data-table/data-table.component';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
 import { JournalOptionType, JournalOptionsService } from '../../services/journal-options.service';
+import { DropdownOption } from '../../../../core/interfaces/components.interface';
+import {
+  SDG_KEYWORD_EXAMPLE,
+  SDG_KEYWORD_NOTE,
+  sdgKeywordValidator
+} from '../../../../shared/validators/sdg-keyword.validator';
 
 @Component({
   selector: 'app-journal-details',
@@ -43,6 +49,8 @@ export class JournalDetails implements OnInit, OnDestroy {
   form!: FormGroup;
   breakdownForm!: FormGroup;
   sdgKeywordsForm!: FormGroup;
+  readonly sdgKeywordPlaceholder = SDG_KEYWORD_EXAMPLE;
+  readonly sdgKeywordNote = SDG_KEYWORD_NOTE;
   isBreakdownModalOpen = false;
   isSDGKeywordsModalOpen = false;
   breakdownType: 'internal-research' | 'external-research' | 'non-research' | null = null;
@@ -73,7 +81,7 @@ export class JournalDetails implements OnInit, OnDestroy {
 
   readonly breakdownColumns: DataTableColumn[] = [
     { key: 'index', label: '#', width: '50px', align: 'center', headerAlign: 'center' },
-    { key: 'itemDescription', label: 'Item Description' },
+    { key: 'itemDescription', label: 'Vote Number Description' },
     { key: 'voteNumber', label: 'Vote Number' },
     { key: 'cost', label: 'Cost (Foreign/MYR)' },
     { key: 'exchangeRate', label: 'Exchange Rate' },
@@ -84,7 +92,8 @@ export class JournalDetails implements OnInit, OnDestroy {
   ];
 
   readonly externalResearchBreakdownColumns: DataTableColumn[] = [
-    { key: 'itemDescription', label: 'Item Description' },
+    { key: 'itemDescription', label: 'Vote Number Description' },
+    { key: 'accountCode', label: 'Account Code' },
     { key: 'voteNumber', label: 'Vote Number' },
     { key: 'costInRM', label: 'Cost in RM (Approximate)' },
     { key: 'cost', label: 'Cost in Foreign Currency' },
@@ -126,6 +135,7 @@ export class JournalDetails implements OnInit, OnDestroy {
       this.journalOptionsService.voteNumberOptions();
       this.journalOptionsService.accountCodeDescriptionOptions();
       this.journalOptionsService.accountCodeOptions();
+      this.journalOptionsService.projectAccountCodeOptions();
       this.refreshDropdownOptions();
     });
   }
@@ -145,9 +155,9 @@ export class JournalDetails implements OnInit, OnDestroy {
       restrictedPublisher: ['', Validators.required],
       journalName: ['', [Validators.required, Validators.maxLength(150)]],
       paperTitle: ['', [Validators.required, Validators.maxLength(200)]],
-      sdgKeyword1: ['', Validators.required],
-      sdgKeyword2: [''],
-      sdgKeyword3: [''],
+      sdgKeyword1: ['', [Validators.required, sdgKeywordValidator]],
+      sdgKeyword2: ['', [Validators.required, sdgKeywordValidator]],
+      sdgKeyword3: ['', [Validators.required, sdgKeywordValidator]],
       citedApuPaper: ['', Validators.required],
       citedApuPaperExplanation: ['', [Validators.maxLength(255)]],
       projectAccountCode: [''],
@@ -218,10 +228,22 @@ export class JournalDetails implements OnInit, OnDestroy {
       costInRM: { value: '', disabled: true }
     });
 
+    this.breakdownForm.get('itemDescription')?.valueChanges.subscribe((value) => {
+      if (this.breakdownType !== 'non-research') {
+        return;
+      }
+
+      const selected = this.findNonResearchOption(value);
+      this.breakdownForm.patchValue({
+        accountCode: selected?.accountCode || '',
+        accountCodeDescription: selected?.label || ''
+      }, { emitEvent: false });
+    });
+
     this.sdgKeywordsForm = this.fb.group({
-      keyword1: ['', Validators.required],
-      keyword2: ['', Validators.required],
-      keyword3: ['', Validators.required]
+      keyword1: ['', [Validators.required, sdgKeywordValidator]],
+      keyword2: ['', [Validators.required, sdgKeywordValidator]],
+      keyword3: ['', [Validators.required, sdgKeywordValidator]]
     });
 
     this.refreshDropdownOptions();
@@ -234,6 +256,10 @@ export class JournalDetails implements OnInit, OnDestroy {
 
   get researchType() {
     return this.form?.get('researchType')?.value;
+  }
+
+  get projectAccountCodeOptions(): DropdownOption[] {
+    return this.journalOptionsService.projectAccountCodeOptions();
   }
 
   getBreakdownArray(type: string): any[] {
@@ -288,10 +314,14 @@ export class JournalDetails implements OnInit, OnDestroy {
     setTimeout(() => {
       // Resolve dropdown options
       if (type === 'non-research') {
-        const localOpts = this.journalOptionsService.getOptionsForType('account_code');
-        this.currentBreakdownOptions = localOpts.map(opt => ({ value: opt.value, label: opt.label, accountCode: '' }));
+        const localOpts = this.journalOptionsService.getOptionsForType('account_code_description');
+        this.currentBreakdownOptions = localOpts.map(opt => ({
+          value: opt.value,
+          label: opt.label,
+          accountCode: this.getOptionMetadata('account_code_description', opt.value)?.accountCode || ''
+        }));
       } else {
-        const researchOpts = this.journalOptionsService.getOptionsForType('vote_number');
+        const researchOpts = this.journalOptionsService.getOptionsForType('vote_number_description');
         this.currentBreakdownOptions = researchOpts.map(opt => ({ value: opt.value, label: opt.label }));
       }
 
@@ -305,13 +335,22 @@ export class JournalDetails implements OnInit, OnDestroy {
       if (type === 'non-research') {
         voteNumberCtrl?.clearValidators();
         voteNumberCtrl?.updateValueAndValidity({ emitEvent: false });
-        accountCodeCtrl?.enable({ emitEvent: false });
         accountCodeCtrl?.setValidators([Validators.required]);
+        accountCodeCtrl?.disable({ emitEvent: false });
         accountCodeCtrl?.updateValueAndValidity({ emitEvent: false });
       } else {
         voteNumberCtrl?.setValidators([Validators.required]);
+        if (type === 'external-research') {
+          voteNumberCtrl?.enable({ emitEvent: false });
+        } else {
+          voteNumberCtrl?.disable({ emitEvent: false });
+        }
         voteNumberCtrl?.updateValueAndValidity({ emitEvent: false });
-        accountCodeCtrl?.clearValidators();
+        if (type === 'external-research') {
+          accountCodeCtrl?.setValidators([Validators.required]);
+        } else {
+          accountCodeCtrl?.clearValidators();
+        }
         accountCodeCtrl?.disable({ emitEvent: false });
         accountCodeCtrl?.updateValueAndValidity({ emitEvent: false });
       }
@@ -330,14 +369,24 @@ export class JournalDetails implements OnInit, OnDestroy {
             accountCodeDescription: selected?.label || entry.accountCodeDescription || ''
           }, { emitEvent: false });
         } else {
-          this.breakdownForm.patchValue(entry, { emitEvent: false });
+          const isLegacyExternalEntry = type === 'external-research' && !entry.accountCode;
+          this.breakdownForm.patchValue({
+            ...entry,
+            voteNumber: isLegacyExternalEntry ? '' : entry.voteNumber,
+            accountCode: type === 'external-research'
+              ? (entry.accountCode || entry.voteNumber || this.form.get('projectAccountCode')?.value || '')
+              : ''
+          }, { emitEvent: false });
         }
       } else {
         this.breakdownEditingIndex = null;
         if (type === 'external-research') {
           // For External, auto-fill with Project Account Code
           const projectAccountCode = this.form.get('projectAccountCode')?.value || '';
-          this.breakdownForm.patchValue({ voteNumber: projectAccountCode, accountCode: projectAccountCode }, { emitEvent: false });
+          this.breakdownForm.patchValue({
+            voteNumber: '',
+            accountCode: projectAccountCode
+          }, { emitEvent: false });
         }
       }
 
@@ -392,7 +441,6 @@ export class JournalDetails implements OnInit, OnDestroy {
     if (this.breakdownType === 'external-research') {
       const projectAccountCode = this.form.get('projectAccountCode')?.value || '';
       resolvedAccountCode = projectAccountCode;
-      entry.voteNumber = projectAccountCode;
     }
 
     const entryToSave = {
@@ -579,13 +627,11 @@ export class JournalDetails implements OnInit, OnDestroy {
   private syncExternalBreakdownAccountCode(projectAccountCode: string): void {
     this.externalBreakdowns = this.externalBreakdowns.map(entry => ({
       ...entry,
-      voteNumber: projectAccountCode,
       accountCode: projectAccountCode
     }));
 
     if (this.breakdownType === 'external-research') {
       this.breakdownForm.patchValue({
-        voteNumber: projectAccountCode,
         accountCode: projectAccountCode
       }, { emitEvent: false });
     }

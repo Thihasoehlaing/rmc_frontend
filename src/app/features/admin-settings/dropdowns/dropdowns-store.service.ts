@@ -15,6 +15,9 @@ export interface StoredDropdownOption {
 })
 export class DropdownsStoreService {
   private readonly storageKey = 'rmc_dropdowns_data';
+  private readonly projectAccountCodeSeedKey = 'rmc_project_account_code_seed_v1';
+  private readonly journalItemDescriptionSeedKey = 'rmc_journal_item_description_seed_v1';
+  private readonly journalAccountCodeDescriptionSeedKey = 'rmc_journal_account_code_description_seed_v1';
   private readonly updateEventName = 'rmc-dropdowns-updated';
   private readonly entriesSignal = signal<StoredDropdownOption[]>([]);
 
@@ -162,7 +165,7 @@ export class DropdownsStoreService {
       }
 
       const parsed = JSON.parse(stored) as Partial<StoredDropdownOption>[];
-      this.entriesSignal.set(parsed.map(item => ({
+      const entries: StoredDropdownOption[] = parsed.map(item => ({
         id: item.id ?? 0,
         formName: item.formName ?? '',
         category: item.category ?? '',
@@ -170,11 +173,134 @@ export class DropdownsStoreService {
         lastUpdated: this.normalizeDisplayDate(item.lastUpdated),
         createdBy: item.createdBy ?? '',
         status: item.status === 'Inactive' ? 'Inactive' : 'Active',
-      })));
+      }));
+
+      const migratedEntries = this.seedJournalAccountCodeDescriptions(
+        this.seedJournalItemDescriptions(
+          this.seedProjectAccountCodes(entries)
+        )
+      );
+      this.entriesSignal.set(migratedEntries);
     } catch (error) {
       console.error('Failed to load dropdown options from storage', error);
       this.entriesSignal.set([]);
     }
+  }
+
+  private seedProjectAccountCodes(entries: StoredDropdownOption[]): StoredDropdownOption[] {
+    if (localStorage.getItem(this.projectAccountCodeSeedKey)) {
+      return entries;
+    }
+
+    const testCodes = ['V29000', 'V29100', 'V29200'];
+    const formNames = ['Conference Application', 'Journal Application'];
+    const nextEntries = [...entries];
+    let nextId = nextEntries.reduce((maxId, entry) => Math.max(maxId, entry.id), 0) + 1;
+    const now = this.formatDisplayDate(new Date());
+
+    for (const code of testCodes) {
+      for (const formName of formNames) {
+        const exists = nextEntries.some(entry =>
+          entry.formName === formName &&
+          entry.category === 'Project Account Code' &&
+          entry.value.toLowerCase() === code.toLowerCase()
+        );
+
+        if (!exists) {
+          nextEntries.push({
+            id: nextId++,
+            formName,
+            category: 'Project Account Code',
+            value: code,
+            lastUpdated: now,
+            createdBy: 'System Seed',
+            status: 'Active'
+          });
+        }
+      }
+    }
+
+    localStorage.setItem(this.storageKey, JSON.stringify(nextEntries));
+    localStorage.setItem(this.projectAccountCodeSeedKey, '1');
+    return nextEntries;
+  }
+
+  private seedJournalItemDescriptions(entries: StoredDropdownOption[]): StoredDropdownOption[] {
+    if (localStorage.getItem(this.journalItemDescriptionSeedKey)) {
+      return entries;
+    }
+
+    const testDescriptions = [
+      'Article Processing Charge',
+      'Publication Fee',
+      'Language Editing and Proofreading'
+    ];
+    const nextEntries = [...entries];
+    let nextId = nextEntries.reduce((maxId, entry) => Math.max(maxId, entry.id), 0) + 1;
+    const now = this.formatDisplayDate(new Date());
+
+    for (const description of testDescriptions) {
+      const exists = nextEntries.some(entry =>
+        entry.formName === 'Journal Application' &&
+        entry.category === 'Vote Number Description' &&
+        entry.value.toLowerCase() === description.toLowerCase()
+      );
+
+      if (!exists) {
+        nextEntries.push({
+          id: nextId++,
+          formName: 'Journal Application',
+          category: 'Vote Number Description',
+          value: description,
+          lastUpdated: now,
+          createdBy: 'System Seed',
+          status: 'Active'
+        });
+      }
+    }
+
+    localStorage.setItem(this.storageKey, JSON.stringify(nextEntries));
+    localStorage.setItem(this.journalItemDescriptionSeedKey, '1');
+    return nextEntries;
+  }
+
+  private seedJournalAccountCodeDescriptions(entries: StoredDropdownOption[]): StoredDropdownOption[] {
+    if (localStorage.getItem(this.journalAccountCodeDescriptionSeedKey)) {
+      return entries;
+    }
+
+    const testDescriptions = [
+      'Professional Services',
+      'Research Materials and Supplies',
+      'Printing and Publication'
+    ];
+    const nextEntries = [...entries];
+    let nextId = nextEntries.reduce((maxId, entry) => Math.max(maxId, entry.id), 0) + 1;
+    const now = this.formatDisplayDate(new Date());
+
+    for (const description of testDescriptions) {
+      const exists = nextEntries.some(entry =>
+        entry.formName === 'Journal Application' &&
+        entry.category === 'Account Code Description' &&
+        entry.value.toLowerCase() === description.toLowerCase()
+      );
+
+      if (!exists) {
+        nextEntries.push({
+          id: nextId++,
+          formName: 'Journal Application',
+          category: 'Account Code Description',
+          value: description,
+          lastUpdated: now,
+          createdBy: 'System Seed',
+          status: 'Active'
+        });
+      }
+    }
+
+    localStorage.setItem(this.storageKey, JSON.stringify(nextEntries));
+    localStorage.setItem(this.journalAccountCodeDescriptionSeedKey, '1');
+    return nextEntries;
   }
 
   private formatDisplayDate(date: Date): string {

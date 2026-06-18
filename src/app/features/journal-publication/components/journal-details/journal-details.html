@@ -62,13 +62,16 @@
               <label class="form-label is-required">Please select Scopus Quartile</label>
               <div class="radio-group">
                 <label class="radio-option">
-                  <input type="radio" formControlName="scopusQuartile" value="Q1"><span>Q1</span>
+                  <input type="radio" formControlName="scopusQuartile" value="Q1">
+                  <span><strong>Q1:</strong> 75th - 100th percentile</span>
                 </label>
                 <label class="radio-option">
-                  <input type="radio" formControlName="scopusQuartile" value="Q2"><span>Q2</span>
+                  <input type="radio" formControlName="scopusQuartile" value="Q2">
+                  <span><strong>Q2:</strong> 50th - 74th percentile</span>
                 </label>
                 <label class="radio-option">
-                  <input type="radio" formControlName="scopusQuartile" value="Q3"><span>Q3</span>
+                  <input type="radio" formControlName="scopusQuartile" value="Q3">
+                  <span><strong>Q3:</strong> 25th - 49th percentile</span>
                 </label>
               </div>
               <app-validation-message [control]="form.get('scopusQuartile')"></app-validation-message>
@@ -158,6 +161,7 @@
                   </div>
                 }
               </div>
+              <app-note [text]="sdgKeywordNote"></app-note>
               <app-validation-message [control]="form.get('sdgKeyword1')"></app-validation-message>
               <app-validation-message [control]="form.get('sdgKeyword2')"></app-validation-message>
               <app-validation-message [control]="form.get('sdgKeyword3')"></app-validation-message>
@@ -177,8 +181,13 @@
             <div class="research-subsection">
               @if (researchType !== 'non-research') {
                 <div class="form-field">
-                  <label class="form-label">Project Account Code</label>
-                  <input type="text" class="input--text" formControlName="projectAccountCode" placeholder="Enter project account code">
+                  <app-searchable-dropdown
+                    label="Project Account Code"
+                    [required]="true"
+                    [options]="projectAccountCodeOptions"
+                    placeholder="[--SELECT PROJECT ACCOUNT CODE--]"
+                    formControlName="projectAccountCode">
+                  </app-searchable-dropdown>
                 </div>
               }
 
@@ -449,45 +458,74 @@
   width="600px"
 >
   <form [formGroup]="breakdownForm" (ngSubmit)="submitBreakdownModal()" class="breakdown-form">
-    <!-- Select Item Description / Account Code Description -->
+    <!-- Item description -->
     <div class="breakdown-field">
       <label for="itemDescription" class="form-label">
-        {{ breakdownType === 'non-research' ? 'Select Account Code Description' : 'Select Item Description' }} <span class="asterisk">*</span>
+        {{ breakdownType === 'external-research'
+          ? 'Vote Number Description'
+          : (breakdownType === 'non-research' ? 'Account Code Description' : 'Vote Number Description') }}
+        <span class="asterisk">*</span>
       </label>
       <app-searchable-dropdown
         [options]="currentBreakdownOptions"
-        placeholder="Search and select item"
+        [placeholder]="breakdownType === 'external-research'
+          ? 'Search and select vote number description'
+          : (breakdownType === 'non-research'
+            ? 'Search and select account code description'
+            : 'Search and select item')"
         formControlName="itemDescription">
       </app-searchable-dropdown>
     </div>
 
     @if (breakdownForm.get('itemDescription')?.invalid && breakdownForm.get('itemDescription')?.touched) {
       <span class="error-message">
-        {{ breakdownType === 'non-research' ? 'Account code description is required' : 'Item description is required' }}
+        {{ breakdownType === 'external-research'
+          ? 'Vote number description is required'
+          : (breakdownType === 'non-research'
+            ? 'Account code description is required'
+            : 'Item description is required') }}
       </span>
     }
 
-    <!-- Vote Number or Account Code -->
+    @if (breakdownType === 'external-research') {
+      <div class="breakdown-field">
+        <label for="externalAccountCode" class="form-label">
+          Account Code
+          <span class="asterisk">(Auto-populated from Project Account Code)</span>
+        </label>
+        <input
+          id="externalAccountCode"
+          type="text"
+          class="input--text input--readonly"
+          formControlName="accountCode"
+          readonly
+          placeholder="Auto-filled from Project Account Code">
+      </div>
+    }
+
+    <!-- Vote Number or non-research Account Code -->
     @if (breakdownType === 'non-research') {
       <div class="breakdown-field">
         <label for="accountCode" class="form-label">Account Code</label>
         <input
           id="accountCode"
           type="text"
-          class="input--text"
+          class="input--text input--readonly"
           formControlName="accountCode"
-          placeholder="Enter account code">
+          readonly
+          placeholder="Auto-filled from Account Code Description">
       </div>
     } @else {
       <div class="breakdown-field">
-        <label for="voteNumber" class="form-label">Vote Number</label>
+        <label for="voteNumber" class="form-label">
+          Vote Number <span class="asterisk">*</span>
+        </label>
         <input
           id="voteNumber"
           type="text"
-          [class]="breakdownType === 'external-research' ? 'input--text input--readonly' : 'input--text input--readonly'"
+          class="input--text"
           formControlName="voteNumber"
-          readonly
-          [placeholder]="breakdownType === 'external-research' ? 'Auto-filled from Project Account Code' : 'V29000'">
+          [placeholder]="breakdownType === 'external-research' ? 'Enter vote number' : 'V29000'">
         @if (breakdownForm.get('voteNumber')?.invalid && breakdownForm.get('voteNumber')?.touched) {
           <span class="error-message">Vote number is required</span>
         }
@@ -596,7 +634,7 @@
         type="text"
         class="input--text"
         formControlName="keyword1"
-        placeholder="Enter first keyword">
+        [placeholder]="sdgKeywordPlaceholder">
       <app-validation-message [control]="sdgKeywordsForm.get('keyword1')"></app-validation-message>
     </div>
 
@@ -606,7 +644,7 @@
         type="text"
         class="input--text"
         formControlName="keyword2"
-        placeholder="Enter second keyword">
+        [placeholder]="sdgKeywordPlaceholder">
       <app-validation-message [control]="sdgKeywordsForm.get('keyword2')"></app-validation-message>
     </div>
 
@@ -616,7 +654,7 @@
         type="text"
         class="input--text"
         formControlName="keyword3"
-        placeholder="Enter third keyword">
+        [placeholder]="sdgKeywordPlaceholder">
       <app-validation-message [control]="sdgKeywordsForm.get('keyword3')"></app-validation-message>
     </div>
   </form>
@@ -626,13 +664,6 @@
     <button type="button" class="btn btn-primary" (click)="confirmSDGKeywords()" [disabled]="sdgKeywordsForm.invalid">Confirm</button>
   </div>
 </app-dialog>
-
-
-
-
-
-
-
 
 
 

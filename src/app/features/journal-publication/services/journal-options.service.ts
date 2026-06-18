@@ -47,12 +47,14 @@ export class JournalOptionsService {
   voteNumberOptions = signal<DropdownOption[]>([]);
   accountCodeDescriptionOptions = signal<DropdownOption[]>([]);
   accountCodeOptions = signal<DropdownOption[]>([]);
+  projectAccountCodeOptions = signal<DropdownOption[]>([]);
 
   constructor() {
     this.voteNumberDescriptionOptions.set([]);
     this.voteNumberOptions.set([]);
     this.accountCodeDescriptionOptions.set([]);
     this.accountCodeOptions.set([]);
+    this.projectAccountCodeOptions.set([]);
 
     // Sync with Admin Settings whenever dropdown entries are updated
     effect(() => {
@@ -80,10 +82,15 @@ export class JournalOptionsService {
       .filter(option => option.formName === this.formName && option.category === 'Account Code' && option.status === 'Active')
       .map(option => ({ value: option.value, label: option.value }));
 
+    const projectAccountCodeOptions = entries
+      .filter(option => option.formName === this.formName && option.category === 'Project Account Code' && option.status === 'Active')
+      .map(option => ({ value: option.value, label: option.value }));
+
     this.voteNumberDescriptionOptions.set(voteDescOptions);
     this.voteNumberOptions.set(voteNumOptions);
     this.accountCodeDescriptionOptions.set(accountDescOptions);
     this.accountCodeOptions.set(accountCodeOptions);
+    this.projectAccountCodeOptions.set(projectAccountCodeOptions);
   }
 
   /**

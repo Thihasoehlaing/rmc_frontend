@@ -193,6 +193,10 @@
   overflow-y: auto;
   animation: slideIn 0.3s ease-out;
 
+  &--wide {
+    max-width: 680px;
+  }
+
   @media (max-width: 640px) {
     max-width: 100%;
   }

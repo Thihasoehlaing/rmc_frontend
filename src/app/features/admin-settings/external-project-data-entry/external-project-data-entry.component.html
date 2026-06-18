@@ -65,7 +65,7 @@
               </div>
               <div class="form-field">
                 <label class="form-label is-required">School/Department</label>
-                <input type="text" class="input--text" formControlName="schoolDepartment">
+                <input type="text" class="input--text input--readonly" formControlName="schoolDepartment" readonly>
               </div>
             </div>
 
@@ -102,35 +102,37 @@
             <div class="table-section">
               <div class="category-header">
                 <h3 class="table-section__title">Internal Co-Researcher</h3>
-                <app-action-button type="primary" label="Add Entry" icon="add" (clicked)="addInternalCoResearcherRow()"></app-action-button>
+                <app-action-button type="primary" label="Add Entry" icon="add" (clicked)="openTableEntryDialog('internal')"></app-action-button>
               </div>
 
               <app-data-table
                 [columns]="internalCoResearcherColumns"
                 [rows]="internalCoResearchers"
                 [rowTrackFn]="trackByIndex"
+                [hoverable]="true"
+                [striped]="true"
                 [dense]="true">
                 <ng-template #rowTemplate let-row let-index="index">
                   <tr>
+                    <td class="text-muted is-align-center">{{ index + 1 }}</td>
+                    <td>
+                      <div class="data-table__stacked">
+                        <span class="data-table__avatar">{{ row.staffName.charAt(0) }}</span>
+                        <div class="data-table__title">{{ row.staffName }}</div>
+                      </div>
+                    </td>
+                    <td>{{ row.schoolDepartment }}</td>
                     <td class="is-align-center">
-                      <input
-                        type="checkbox"
-                        [checked]="row.selected"
-                        (change)="updateInternalSelection(index, $any($event.target).checked)">
-                    </td>
-                    <td>
-                      <input
-                        type="text"
-                        class="input--text table-input"
-                        [value]="row.staffName"
-                        (input)="updateInternalCoResearcherStaffName(index, $any($event.target).value)">
-                    </td>
-                    <td>
-                      <input
-                        type="text"
-                        class="input--text table-input"
-                        [value]="row.schoolDepartment"
-                        (input)="updateInternalCoResearcherSchoolDepartment(index, $any($event.target).value)">
+                      <div class="data-table__actions">
+                        <button type="button" class="btn-icon btn-icon--edit"
+                          (click)="openTableEntryDialog('internal', null, index)" aria-label="Edit internal co-researcher">
+                          <span class="material-icons">edit</span>
+                        </button>
+                        <button type="button" class="btn-icon btn-icon--delete"
+                          (click)="removeInternalCoResearcherRow(index)" aria-label="Remove internal co-researcher">
+                          <span class="material-icons">delete</span>
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 </ng-template>
@@ -140,35 +142,32 @@
             <div class="table-section">
               <div class="category-header">
                 <h3 class="table-section__title">External Collaborators</h3>
-                <app-action-button type="primary" label="Add Entry" icon="add" (clicked)="addExternalCollaboratorRow()"></app-action-button>
+                <app-action-button type="primary" label="Add Entry" icon="add" (clicked)="openTableEntryDialog('external')"></app-action-button>
               </div>
 
               <app-data-table
                 [columns]="externalCollaboratorColumns"
                 [rows]="externalCollaborators"
                 [rowTrackFn]="trackByIndex"
+                [hoverable]="true"
+                [striped]="true"
                 [dense]="true">
                 <ng-template #rowTemplate let-row let-index="index">
                   <tr>
+                    <td class="text-muted is-align-center">{{ index + 1 }}</td>
+                    <td><div class="data-table__title">{{ row.name }}</div></td>
+                    <td>{{ row.affiliation }}</td>
                     <td class="is-align-center">
-                      <input
-                        type="checkbox"
-                        [checked]="row.selected"
-                        (change)="updateExternalSelection(index, $any($event.target).checked)">
-                    </td>
-                    <td>
-                      <input
-                        type="text"
-                        class="input--text table-input"
-                        [value]="row.name"
-                        (input)="updateExternalCollaboratorName(index, $any($event.target).value)">
-                    </td>
-                    <td>
-                      <input
-                        type="text"
-                        class="input--text table-input"
-                        [value]="row.affiliation"
-                        (input)="updateExternalCollaboratorAffiliation(index, $any($event.target).value)">
+                      <div class="data-table__actions">
+                        <button type="button" class="btn-icon btn-icon--edit"
+                          (click)="openTableEntryDialog('external', null, index)" aria-label="Edit external collaborator">
+                          <span class="material-icons">edit</span>
+                        </button>
+                        <button type="button" class="btn-icon btn-icon--delete"
+                          (click)="removeExternalCollaboratorRow(index)" aria-label="Remove external collaborator">
+                          <span class="material-icons">delete</span>
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 </ng-template>
@@ -178,28 +177,31 @@
             <div class="table-section">
               <div class="category-header">
                 <h3 class="table-section__title">Expected Outcome</h3>
-                <app-action-button type="primary" label="Add Entry" icon="add" (clicked)="addExpectedOutcomeRow()"></app-action-button>
+                <app-action-button type="primary" label="Add Entry" icon="add" (clicked)="openTableEntryDialog('outcome')"></app-action-button>
               </div>
 
               <app-data-table
                 [columns]="expectedOutcomeColumns"
                 [rows]="expectedOutcomes"
                 [rowTrackFn]="trackByIndex"
+                [hoverable]="true"
+                [striped]="true"
                 [dense]="true">
                 <ng-template #rowTemplate let-row let-index="index">
                   <tr>
+                    <td class="text-muted is-align-center">{{ index + 1 }}</td>
+                    <td><div class="data-table__multiline">{{ row.description }}</div></td>
                     <td class="is-align-center">
-                      <input
-                        type="checkbox"
-                        [checked]="row.selected"
-                        (change)="updateExpectedOutcomeSelection(index, $any($event.target).checked)">
-                    </td>
-                    <td>
-                      <input
-                        type="text"
-                        class="input--text table-input"
-                        [value]="row.description"
-                        (input)="updateExpectedOutcomeDescription(index, $any($event.target).value)">
+                      <div class="data-table__actions">
+                        <button type="button" class="btn-icon btn-icon--edit"
+                          (click)="openTableEntryDialog('outcome', null, index)" aria-label="Edit expected outcome">
+                          <span class="material-icons">edit</span>
+                        </button>
+                        <button type="button" class="btn-icon btn-icon--delete"
+                          (click)="removeExpectedOutcomeRow(index)" aria-label="Remove expected outcome">
+                          <span class="material-icons">delete</span>
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 </ng-template>
@@ -243,56 +245,35 @@
                     </div>
                   </div>
 
-                  @if (section.requiresQuotation) {
-                    <div class="form-field">
-                      <app-file-upload
-                        [label]="section.quotationLabel"
-                        accept=".pdf,.jpg,.jpeg,.png"
-                        [maxSizeMB]="10"
-                        placeholder="Upload quotation document"
-                        (fileSelected)="onQuotationSelected(section.key, $event)">
-                      </app-file-upload>
-                    </div>
-                  }
-
                   <div class="table-section">
                     <div class="category-header">
                       <h3 class="table-section__title">Detail Breakdown</h3>
-                      <app-action-button type="primary" label="Add Entry" icon="add" (clicked)="addBudgetRow(section.key)"></app-action-button>
+                      <app-action-button type="primary" label="Add Entry" icon="add" (clicked)="openTableEntryDialog('budget', section.key)"></app-action-button>
                     </div>
 
                     <app-data-table
                       [columns]="budgetBreakdownColumns"
                       [rows]="section.rows"
                       [rowTrackFn]="trackByIndex"
+                      [hoverable]="true"
+                      [striped]="true"
                       [dense]="true">
                       <ng-template #rowTemplate let-row let-index="index">
                         <tr>
+                          <td class="text-muted is-align-center">{{ index + 1 }}</td>
+                          <td><div class="data-table__title data-table__title--small">{{ row.description }}</div></td>
+                          <td class="amount-cell">{{ row.amount | number:'1.2-2' }}</td>
                           <td class="is-align-center">
-                            <input
-                              type="checkbox"
-                              [checked]="row.selected"
-                              (change)="updateBudgetRowSelection(section.key, index, $any($event.target).checked)">
-                          </td>
-                          <td>
-                            <input
-                              type="text"
-                              class="input--text table-input"
-                              [class.input--disabled-readonly]="isInternationalSelected()"
-                              [readonly]="isInternationalSelected()"
-                              [value]="row.description"
-                              (input)="updateBudgetRowDescription(section.key, index, $any($event.target).value)">
-                          </td>
-                          <td>
-                            <input
-                              type="number"
-                              class="input--text table-input"
-                              [class.input--disabled-readonly]="isInternationalSelected()"
-                              [readonly]="isInternationalSelected()"
-                              min="0"
-                              step="0.01"
-                              [value]="row.amount"
-                              (input)="updateBudgetRowAmount(section.key, index, $any($event.target).value)">
+                            <div class="data-table__actions">
+                              <button type="button" class="btn-icon btn-icon--edit"
+                                (click)="openTableEntryDialog('budget', section.key, index)" aria-label="Edit budget entry">
+                                <span class="material-icons">edit</span>
+                              </button>
+                              <button type="button" class="btn-icon btn-icon--delete"
+                                (click)="removeBudgetRow(section.key, index)" aria-label="Remove budget entry">
+                                <span class="material-icons">delete</span>
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       </ng-template>
@@ -380,7 +361,7 @@
               </div>
               <div class="form-field">
                 <label class="form-label is-required">School/Department</label>
-                <input type="text" class="input--text" formControlName="schoolDepartment">
+                <input type="text" class="input--text input--readonly" formControlName="schoolDepartment" readonly>
               </div>
             </div>
 
@@ -424,35 +405,43 @@
             <div class="table-section">
               <div class="category-header">
                 <h3 class="table-section__title">Internal Co-Researcher</h3>
-                <app-action-button type="primary" label="Add Entry" icon="add" (clicked)="addInternalCoResearcherRow()"></app-action-button>
+                <app-action-button type="primary" label="Add Entry" icon="add" (clicked)="openTableEntryDialog('internal')"></app-action-button>
               </div>
 
               <app-data-table
                 [columns]="internalCoResearcherColumns"
                 [rows]="internalCoResearchers"
                 [rowTrackFn]="trackByIndex"
+                [hoverable]="true"
+                [striped]="true"
                 [dense]="true">
                 <ng-template #rowTemplate let-row let-index="index">
                   <tr>
+                    <td class="text-muted is-align-center">{{ index + 1 }}</td>
+                    <td>
+                      <div class="data-table__stacked">
+                        <span class="data-table__avatar">{{ row.staffName.charAt(0) }}</span>
+                        <div class="data-table__title">{{ row.staffName }}</div>
+                      </div>
+                    </td>
+                    <td>{{ row.schoolDepartment }}</td>
                     <td class="is-align-center">
-                      <input
-                        type="checkbox"
-                        [checked]="row.selected"
-                        (change)="updateInternalSelection(index, $any($event.target).checked)">
-                    </td>
-                    <td>
-                      <input
-                        type="text"
-                        class="input--text table-input"
-                        [value]="row.staffName"
-                        (input)="updateInternalCoResearcherStaffName(index, $any($event.target).value)">
-                    </td>
-                    <td>
-                      <input
-                        type="text"
-                        class="input--text table-input"
-                        [value]="row.schoolDepartment"
-                        (input)="updateInternalCoResearcherSchoolDepartment(index, $any($event.target).value)">
+                      <div class="data-table__actions">
+                        <button
+                          type="button"
+                          class="btn-icon btn-icon--edit"
+                          (click)="openTableEntryDialog('internal', null, index)"
+                          aria-label="Edit internal co-researcher">
+                          <span class="material-icons">edit</span>
+                        </button>
+                        <button
+                          type="button"
+                          class="btn-icon btn-icon--delete"
+                          (click)="removeInternalCoResearcherRow(index)"
+                          aria-label="Remove internal co-researcher">
+                          <span class="material-icons">delete</span>
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 </ng-template>
@@ -496,56 +485,41 @@
                     </div>
                   </div>
 
-                  @if (section.requiresQuotation) {
-                    <div class="form-field">
-                      <app-file-upload
-                        [label]="section.quotationLabel"
-                        accept=".pdf,.jpg,.jpeg,.png"
-                        [maxSizeMB]="10"
-                        placeholder="Upload quotation document"
-                        (fileSelected)="onQuotationSelected(section.key, $event)">
-                      </app-file-upload>
-                    </div>
-                  }
-
                   <div class="table-section">
                     <div class="category-header">
                       <h3 class="table-section__title">Detail Breakdown</h3>
-                      <app-action-button type="primary" label="Add Entry" icon="add" (clicked)="addBudgetRow(section.key)"></app-action-button>
+                      <app-action-button type="primary" label="Add Entry" icon="add" (clicked)="openTableEntryDialog('budget', section.key)"></app-action-button>
                     </div>
 
                     <app-data-table
                       [columns]="budgetBreakdownColumns"
                       [rows]="section.rows"
                       [rowTrackFn]="trackByIndex"
+                      [hoverable]="true"
+                      [striped]="true"
                       [dense]="true">
                       <ng-template #rowTemplate let-row let-index="index">
                         <tr>
+                          <td class="text-muted is-align-center">{{ index + 1 }}</td>
+                          <td><div class="data-table__title data-table__title--small">{{ row.description }}</div></td>
+                          <td class="amount-cell">{{ row.amount | number:'1.2-2' }}</td>
                           <td class="is-align-center">
-                            <input
-                              type="checkbox"
-                              [checked]="row.selected"
-                              (change)="updateBudgetRowSelection(section.key, index, $any($event.target).checked)">
-                          </td>
-                          <td>
-                            <input
-                              type="text"
-                              class="input--text table-input"
-                              [class.input--disabled-readonly]="isInternationalSelected()"
-                              [readonly]="isInternationalSelected()"
-                              [value]="row.description"
-                              (input)="updateBudgetRowDescription(section.key, index, $any($event.target).value)">
-                          </td>
-                          <td>
-                            <input
-                              type="number"
-                              class="input--text table-input"
-                              [class.input--disabled-readonly]="isInternationalSelected()"
-                              [readonly]="isInternationalSelected()"
-                              min="0"
-                              step="0.01"
-                              [value]="row.amount"
-                              (input)="updateBudgetRowAmount(section.key, index, $any($event.target).value)">
+                            <div class="data-table__actions">
+                              <button
+                                type="button"
+                                class="btn-icon btn-icon--edit"
+                                (click)="openTableEntryDialog('budget', section.key, index)"
+                                aria-label="Edit budget entry">
+                                <span class="material-icons">edit</span>
+                              </button>
+                              <button
+                                type="button"
+                                class="btn-icon btn-icon--delete"
+                                (click)="removeBudgetRow(section.key, index)"
+                                aria-label="Remove budget entry">
+                                <span class="material-icons">delete</span>
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       </ng-template>
@@ -654,7 +628,7 @@
             type="primary"
             label="Add Entry"
             icon="add"
-            (clicked)="addBillingRow(section.key)">
+            (clicked)="openTableEntryDialog('billing', section.key)">
           </app-action-button>
         </div>
 
@@ -662,32 +636,31 @@
           [columns]="billingBreakdownColumns"
           [rows]="section.billingRows"
           [rowTrackFn]="trackByIndex"
+          [hoverable]="true"
+          [striped]="true"
           [dense]="true">
           <ng-template #rowTemplate let-row let-index="index">
             <tr>
+              <td class="text-muted is-align-center">{{ index + 1 }}</td>
+              <td><div class="data-table__title data-table__title--small">{{ row.description }}</div></td>
+              <td class="amount-cell">{{ row.amount | number:'1.2-2' }}</td>
               <td class="is-align-center">
-                <input
-                  type="checkbox"
-                  [checked]="row.selected"
-                  (change)="updateBillingRowSelection(section.key, index, $any($event.target).checked)">
-              </td>
-              <td>
-                <input
-                  type="text"
-                  class="input--text table-input"
-                  placeholder="Enter billing description"
-                  [value]="row.description"
-                  (input)="updateBillingRowDescription(section.key, index, $any($event.target).value)">
-              </td>
-              <td>
-                <input
-                  type="number"
-                  class="input--text table-input"
-                  placeholder="0.00"
-                  min="0.01"
-                  step="0.01"
-                  [value]="row.amount"
-                  (input)="updateBillingRowAmount(section.key, index, $any($event.target).value)">
+                <div class="data-table__actions">
+                  <button
+                    type="button"
+                    class="btn-icon btn-icon--edit"
+                    (click)="openTableEntryDialog('billing', section.key, index)"
+                    aria-label="Edit billing entry">
+                    <span class="material-icons">edit</span>
+                  </button>
+                  <button
+                    type="button"
+                    class="btn-icon btn-icon--delete"
+                    (click)="removeBillingRow(section.key, index)"
+                    aria-label="Remove billing entry">
+                    <span class="material-icons">delete</span>
+                  </button>
+                </div>
               </td>
             </tr>
           </ng-template>
@@ -700,3 +673,106 @@
     </div>
   </section>
 </ng-template>
+
+<app-dialog
+  [title]="tableEntryDialogTitle()"
+  [isOpen]="tableEntryDialogOpen"
+  (close)="closeTableEntryDialog()">
+  <form id="external-table-entry-form" [formGroup]="tableEntryForm" (ngSubmit)="submitTableEntry()" class="dialog-form">
+    @if (activeTableEntryType === 'internal') {
+      <div class="form-field">
+        <label class="form-label is-required">Staff Name</label>
+        <app-searchable-dropdown
+          [options]="projectLeaderOptions"
+          [searchable]="true"
+          placeholder="Search staff..."
+          formControlName="staffName">
+        </app-searchable-dropdown>
+        @if (tableEntryForm.controls.staffName.invalid && tableEntryForm.controls.staffName.touched) {
+          <span class="form-error-msg">Select a staff member.</span>
+        }
+      </div>
+
+      <div class="form-field">
+        <label class="form-label">School/Department</label>
+        <input type="text" class="input--text input--readonly" formControlName="schoolDepartment" readonly>
+      </div>
+    }
+
+    @if (activeTableEntryType === 'external') {
+      <div class="form-field">
+        <label for="external-collaborator-name" class="form-label is-required">Name</label>
+        <input id="external-collaborator-name" type="text" class="input--text" formControlName="name">
+        @if (tableEntryForm.controls.name.invalid && tableEntryForm.controls.name.touched) {
+          <span class="form-error-msg">Enter the collaborator name.</span>
+        }
+      </div>
+
+      <div class="form-field">
+        <label for="external-collaborator-affiliation" class="form-label is-required">Affiliation</label>
+        <input id="external-collaborator-affiliation" type="text" class="input--text" formControlName="affiliation">
+        @if (tableEntryForm.controls.affiliation.invalid && tableEntryForm.controls.affiliation.touched) {
+          <span class="form-error-msg">Enter the collaborator affiliation.</span>
+        }
+      </div>
+    }
+
+    @if (activeTableEntryType === 'outcome') {
+      <div class="form-field">
+        <label for="expected-outcome-description" class="form-label is-required">Description</label>
+        <textarea
+          id="expected-outcome-description"
+          class="input--textarea"
+          formControlName="description"
+          rows="4">
+        </textarea>
+        @if (tableEntryForm.controls.description.invalid && tableEntryForm.controls.description.touched) {
+          <span class="form-error-msg">Enter the expected outcome.</span>
+        }
+      </div>
+    }
+
+    @if (activeTableEntryType === 'budget' || activeTableEntryType === 'billing') {
+      <div class="form-field">
+        <label for="table-entry-description" class="form-label is-required">Description</label>
+        <textarea
+          id="table-entry-description"
+          class="input--textarea"
+          formControlName="description"
+          rows="3">
+        </textarea>
+        @if (tableEntryForm.controls.description.invalid && tableEntryForm.controls.description.touched) {
+          <span class="form-error-msg">Enter a description.</span>
+        }
+      </div>
+
+      <div class="form-field">
+        <label for="table-entry-amount" class="form-label is-required">Amount (RM)</label>
+        <input
+          id="table-entry-amount"
+          type="number"
+          class="input--text"
+          formControlName="amount"
+          min="0.01"
+          step="0.01">
+        @if (tableEntryForm.controls.amount.invalid && tableEntryForm.controls.amount.touched) {
+          <span class="form-error-msg">Enter an amount greater than 0.</span>
+        }
+      </div>
+    }
+  </form>
+
+  <app-action-button
+    dialog-footer
+    type="secondary"
+    label="Cancel"
+    (clicked)="closeTableEntryDialog()">
+  </app-action-button>
+  <app-action-button
+    dialog-footer
+    type="primary"
+    icon="check"
+    [label]="editingTableRowIndex === null ? 'Add Entry' : 'Save Changes'"
+    (clicked)="submitTableEntry()">
+  </app-action-button>
+</app-dialog>

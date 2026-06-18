@@ -1,30 +1,39 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { merge } from 'rxjs';
 import { CustomSubheaderComponent } from '../../../shared/components/custom-subheader/custom-subheader.component';
 import { CharacterCounterComponent } from '../../../shared/components/character-counter/character-counter.component';
 import { DataTableComponent, DataTableColumn } from '../../../shared/components/data-table/data-table.component';
 import { ActionButtonComponent } from '../../../shared/components/action-button/action-button.component';
-import { FileUploadComponent } from '../../../shared/components/file-upload/file-upload.component';
 import { SearchableDropdownComponent } from '../../../shared/components/searchable-dropdown/searchable-dropdown.component';
+import { DialogComponent } from '../../../shared/components/dialog/dialog.component';
 import { DropdownOption } from '../../../core/interfaces/components.interface';
 
+type TableEntryType =
+  | 'internal'
+  | 'external'
+  | 'outcome'
+  | 'budget'
+  | 'billing';
+
 interface InternalCoResearcherRow {
-  selected: boolean;
   staffName: string;
   schoolDepartment: string;
 }
 
+interface StaffMember {
+  name: string;
+  schoolDepartment: string;
+}
+
 interface BudgetBreakdownRow {
-  selected: boolean;
   description: string;
   amount: string;
 }
 
 interface BillingBreakdownRow {
-  selected: boolean;
   description: string;
   amount: string;
 }
@@ -35,9 +44,6 @@ interface BudgetSection {
   code: string;
   item: string;
   totalAmount: string;
-  requiresQuotation: boolean;
-  quotationLabel: string;
-  quotationFileName: string;
   rows: BudgetBreakdownRow[];
   billingRequired: 'Yes' | 'No' | '';
   billingAmount: string;
@@ -47,13 +53,11 @@ interface BudgetSection {
 }
 
 interface ExternalCollaboratorRow {
-  selected: boolean;
   name: string;
   affiliation: string;
 }
 
 interface ExpectedOutcomeRow {
-  selected: boolean;
   description: string;
 }
 
@@ -67,8 +71,8 @@ interface ExpectedOutcomeRow {
     CharacterCounterComponent,
     DataTableComponent,
     ActionButtonComponent,
-    FileUploadComponent,
     SearchableDropdownComponent,
+    DialogComponent,
   ],
   templateUrl: './external-project-data-entry.component.html',
   styleUrls: ['./external-project-data-entry.component.scss'],
@@ -94,6 +98,15 @@ export class ExternalProjectDataEntryComponent {
     consultancyTitle: [''],
   });
 
+  readonly tableEntryForm = this.fb.group({
+    staffName: [''],
+    schoolDepartment: [''],
+    name: [''],
+    affiliation: [''],
+    description: [''],
+    amount: [''],
+  });
+
   protected readonly grantCategories = [
     'National',
     'International',
@@ -101,58 +114,72 @@ export class ExternalProjectDataEntryComponent {
     'Consultancy',
   ] as const;
 
-  readonly projectLeaderOptions: DropdownOption<string>[] = [
-    { value: 'Dr. Ahmad Al-Hassan', label: 'Dr. Ahmad Al-Hassan' },
-    { value: 'Dr. John Smith', label: 'Dr. John Smith' },
-    { value: 'Prof. Sarah Lim', label: 'Prof. Sarah Lim' },
-    { value: 'Assoc. Prof. Michael Tan', label: 'Assoc. Prof. Michael Tan' },
-    { value: 'Dr. Nur Aisyah Rahman', label: 'Dr. Nur Aisyah Rahman' },
-    { value: 'Dr. Daniel Wong', label: 'Dr. Daniel Wong' },
+  private readonly staffDirectory: readonly StaffMember[] = [
+    { name: 'Dr. Ahmad Al-Hassan', schoolDepartment: 'Research Management Centre' },
+    { name: 'Dr. John Smith', schoolDepartment: 'School of Business' },
+    { name: 'Prof. Sarah Lim', schoolDepartment: 'School of Business' },
+    { name: 'Assoc. Prof. Michael Tan', schoolDepartment: 'School of Computing & Technology' },
+    { name: 'Dr. Nur Aisyah Rahman', schoolDepartment: 'School of Engineering' },
+    { name: 'Dr. Daniel Wong', schoolDepartment: 'School of Media & Design' },
   ];
 
+  readonly projectLeaderOptions: DropdownOption<string>[] = this.staffDirectory.map(staff => ({
+    value: staff.name,
+    label: staff.name,
+  }));
+
   readonly internalCoResearcherColumns: readonly DataTableColumn[] = [
-    { key: 'selected', label: '', width: '56px', align: 'center', headerAlign: 'center' },
+    { key: 'index', label: '#', width: 'var(--size-table-column-index)', align: 'center', headerAlign: 'center' },
     { key: 'staffName', label: 'Staff Name' },
     { key: 'schoolDepartment', label: 'School/Department' },
+    { key: 'actions', label: 'Action', width: 'var(--size-table-column-actions)', align: 'right', headerAlign: 'right' },
   ];
 
   readonly externalCollaboratorColumns: readonly DataTableColumn[] = [
-    { key: 'selected', label: '', width: '56px', align: 'center', headerAlign: 'center' },
+    { key: 'index', label: '#', width: 'var(--size-table-column-index)', align: 'center', headerAlign: 'center' },
     { key: 'name', label: 'Name' },
     { key: 'affiliation', label: 'Affiliation' },
+    { key: 'actions', label: 'Action', width: 'var(--size-table-column-actions)', align: 'right', headerAlign: 'right' },
   ];
 
   readonly expectedOutcomeColumns: readonly DataTableColumn[] = [
-    { key: 'selected', label: '', width: '56px', align: 'center', headerAlign: 'center' },
+    { key: 'index', label: '#', width: 'var(--size-table-column-index)', align: 'center', headerAlign: 'center' },
     { key: 'description', label: 'Description' },
+    { key: 'actions', label: 'Action', width: 'var(--size-table-column-actions)', align: 'right', headerAlign: 'right' },
   ];
 
   readonly budgetBreakdownColumns: readonly DataTableColumn[] = [
-    { key: 'selected', label: '', width: '56px', align: 'center', headerAlign: 'center' },
-    { key: 'description', label: 'Description' },
-    { key: 'amount', label: 'Amount (RM)', width: '180px' },
+    { key: 'index', label: '#', width: 'var(--size-table-column-index)', align: 'center', headerAlign: 'center' },
+    { key: 'description', label: 'Description of Expense' },
+    { key: 'amount', label: 'Amount (RM)', width: 'var(--size-table-column-amount)' },
+    { key: 'actions', label: 'Action', width: 'var(--size-table-column-actions)', align: 'right', headerAlign: 'right' },
   ];
 
   readonly billingBreakdownColumns: readonly DataTableColumn[] = [
-    { key: 'selected', label: '', width: '56px', align: 'center', headerAlign: 'center' },
+    { key: 'index', label: '#', width: 'var(--size-table-column-index)', align: 'center', headerAlign: 'center' },
     { key: 'description', label: 'Description' },
-    { key: 'amount', label: 'Amount (RM)', width: '180px' },
+    { key: 'amount', label: 'Amount (RM)', width: 'var(--size-table-column-amount)' },
+    { key: 'actions', label: 'Action', width: 'var(--size-table-column-actions)', align: 'right', headerAlign: 'right' },
   ];
 
-  internalCoResearchers: InternalCoResearcherRow[] = [this.createInternalCoResearcherRow()];
-  externalCollaborators: ExternalCollaboratorRow[] = [this.createExternalCollaboratorRow()];
-  expectedOutcomes: ExpectedOutcomeRow[] = [this.createExpectedOutcomeRow()];
+  internalCoResearchers: InternalCoResearcherRow[] = [];
+  externalCollaborators: ExternalCollaboratorRow[] = [];
+  expectedOutcomes: ExpectedOutcomeRow[] = [];
   completeAttempted = false;
+  tableEntryDialogOpen = false;
+  activeTableEntryType: TableEntryType | null = null;
+  activeSectionKey: string | null = null;
+  editingTableRowIndex: number | null = null;
 
   readonly budgetSections: BudgetSection[] = [
-    this.createBudgetSection('student-allowances', 'Student Allowances', 'V11000', false),
-    this.createBudgetSection('travel-accommodation', 'Travelling and Accommodation', 'V21000', true),
-    this.createBudgetSection('rental', 'Rental', 'V24000', true),
-    this.createBudgetSection('materials-supplies', 'Research Materials and Supplies', 'V27000', true),
-    this.createBudgetSection('maintenance-repair', 'Maintenance & Minor Repair Services', 'V28000', true),
-    this.createBudgetSection('special-services', 'Special Services', 'V29000', true),
-    this.createBudgetSection('accessories-equipment', 'Accessories & Equipment', 'V35000', true),
-    this.createBudgetSection('management-fee', 'Management Fee', 'V40000', false, true),
+    this.createBudgetSection('student-allowances', 'Student Allowances', 'V11000'),
+    this.createBudgetSection('travel-accommodation', 'Travelling and Accommodation', 'V21000'),
+    this.createBudgetSection('rental', 'Rental', 'V24000'),
+    this.createBudgetSection('materials-supplies', 'Research Materials and Supplies', 'V27000'),
+    this.createBudgetSection('maintenance-repair', 'Maintenance & Minor Repair Services', 'V28000'),
+    this.createBudgetSection('special-services', 'Special Services', 'V29000'),
+    this.createBudgetSection('accessories-equipment', 'Accessories & Equipment', 'V35000'),
+    this.createBudgetSection('management-fee', 'Management Fee', 'V40000', true),
   ];
 
   constructor() {
@@ -162,6 +189,24 @@ export class ExternalProjectDataEntryComponent {
     )
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => this.updateProjectDuration());
+
+    this.externalProjectForm.controls.staffName.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(staffName => {
+        this.externalProjectForm.controls.schoolDepartment.setValue(
+          this.getStaffDepartment(staffName),
+          { emitEvent: false },
+        );
+      });
+
+    this.tableEntryForm.controls.staffName.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(staffName => {
+        this.tableEntryForm.controls.schoolDepartment.setValue(
+          this.getStaffDepartment(staffName),
+          { emitEvent: false },
+        );
+      });
   }
 
   isNationalSelected(): boolean {
@@ -225,24 +270,96 @@ export class ExternalProjectDataEntryComponent {
   }
 
 
-  addInternalCoResearcherRow(): void {
-    this.internalCoResearchers = [...this.internalCoResearchers, this.createInternalCoResearcherRow()];
+  openTableEntryDialog(
+    type: TableEntryType,
+    sectionKey: string | null = null,
+    index: number | null = null,
+  ): void {
+    this.activeTableEntryType = type;
+    this.activeSectionKey = sectionKey;
+    this.editingTableRowIndex = index;
+    this.configureTableEntryValidation(type);
+    this.tableEntryForm.reset(this.getTableEntryValue(type, sectionKey, index));
+    this.tableEntryDialogOpen = true;
   }
 
-  addExternalCollaboratorRow(): void {
-    this.externalCollaborators = [...this.externalCollaborators, this.createExternalCollaboratorRow()];
+  closeTableEntryDialog(): void {
+    this.tableEntryDialogOpen = false;
+    this.activeTableEntryType = null;
+    this.activeSectionKey = null;
+    this.editingTableRowIndex = null;
+    this.tableEntryForm.reset();
   }
 
-  addExpectedOutcomeRow(): void {
-    this.expectedOutcomes = [...this.expectedOutcomes, this.createExpectedOutcomeRow()];
+  tableEntryDialogTitle(): string {
+    const action = this.editingTableRowIndex === null ? 'Add' : 'Edit';
+    const labels: Record<TableEntryType, string> = {
+      internal: 'Internal Co-Researcher',
+      external: 'External Collaborator',
+      outcome: 'Expected Outcome',
+      budget: 'Budget Item',
+      billing: 'Billing Item',
+    };
+    return this.activeTableEntryType ? `${action} ${labels[this.activeTableEntryType]}` : '';
   }
 
-  addBudgetRow(sectionKey: string): void {
-    this.budgetSections.forEach(section => {
-      if (section.key === sectionKey) {
-        section.rows = [...section.rows, this.createBudgetBreakdownRow()];
-      }
-    });
+  submitTableEntry(): void {
+    if (!this.activeTableEntryType) {
+      return;
+    }
+
+    if (this.tableEntryForm.invalid) {
+      this.tableEntryForm.markAllAsTouched();
+      return;
+    }
+
+    const value = this.tableEntryForm.getRawValue();
+    const index = this.editingTableRowIndex;
+
+    switch (this.activeTableEntryType) {
+      case 'internal':
+        this.internalCoResearchers = this.upsertRow(
+          this.internalCoResearchers,
+          { staffName: value.staffName ?? '', schoolDepartment: value.schoolDepartment ?? '' },
+          index,
+        );
+        break;
+      case 'external':
+        this.externalCollaborators = this.upsertRow(
+          this.externalCollaborators,
+          { name: value.name ?? '', affiliation: value.affiliation ?? '' },
+          index,
+        );
+        break;
+      case 'outcome':
+        this.expectedOutcomes = this.upsertRow(
+          this.expectedOutcomes,
+          { description: value.description ?? '' },
+          index,
+        );
+        break;
+      case 'budget':
+        this.updateBudgetSection(this.activeSectionKey ?? '', section => {
+          section.rows = this.upsertRow(
+            section.rows,
+            { description: value.description ?? '', amount: value.amount ?? '' },
+            index,
+          );
+          this.recalculateBudgetSectionTotal(section);
+        });
+        break;
+      case 'billing':
+        this.updateBudgetSection(this.activeSectionKey ?? '', section => {
+          section.billingRows = this.upsertRow(
+            section.billingRows,
+            { description: value.description ?? '', amount: value.amount ?? '' },
+            index,
+          );
+        });
+        break;
+    }
+
+    this.closeTableEntryDialog();
   }
 
   updateBudgetSectionItem(sectionKey: string, value: string): void {
@@ -276,7 +393,7 @@ export class ExternalProjectDataEntryComponent {
         if (value === 'No') {
           section.billingAmount = '';
           section.billingDate = '';
-          section.billingRows = [this.createBillingBreakdownRow()];
+          section.billingRows = [];
         }
       }
     });
@@ -291,36 +408,6 @@ export class ExternalProjectDataEntryComponent {
   updateBillingDate(sectionKey: string, value: string): void {
     this.updateBudgetSection(sectionKey, section => {
       section.billingDate = value;
-    });
-  }
-
-  addBillingRow(sectionKey: string): void {
-    this.updateBudgetSection(sectionKey, section => {
-      section.billingRows = [...section.billingRows, this.createBillingBreakdownRow()];
-    });
-  }
-
-  updateBillingRowSelection(sectionKey: string, index: number, selected: boolean): void {
-    this.updateBudgetSection(sectionKey, section => {
-      section.billingRows = section.billingRows.map((row, rowIndex) =>
-        rowIndex === index ? { ...row, selected } : row
-      );
-    });
-  }
-
-  updateBillingRowDescription(sectionKey: string, index: number, description: string): void {
-    this.updateBudgetSection(sectionKey, section => {
-      section.billingRows = section.billingRows.map((row, rowIndex) =>
-        rowIndex === index ? { ...row, description } : row
-      );
-    });
-  }
-
-  updateBillingRowAmount(sectionKey: string, index: number, amount: string): void {
-    this.updateBudgetSection(sectionKey, section => {
-      section.billingRows = section.billingRows.map((row, rowIndex) =>
-        rowIndex === index ? { ...row, amount } : row
-      );
     });
   }
 
@@ -344,89 +431,34 @@ export class ExternalProjectDataEntryComponent {
     );
   }
 
-  updateBudgetRowSelection(sectionKey: string, index: number, selected: boolean): void {
-    this.budgetSections.forEach(section => {
-      if (section.key === sectionKey) {
-        section.rows = section.rows.map((row, rowIndex) => rowIndex === index ? { ...row, selected } : row);
-      }
-    });
-  }
-
-  updateBudgetRowDescription(sectionKey: string, index: number, description: string): void {
-    this.budgetSections.forEach(section => {
-      if (section.key === sectionKey) {
-        section.rows = section.rows.map((row, rowIndex) => rowIndex === index ? { ...row, description } : row);
-      }
-    });
-  }
-
-  updateBudgetRowAmount(sectionKey: string, index: number, amount: string): void {
-    this.budgetSections.forEach(section => {
-      if (section.key === sectionKey) {
-        section.rows = section.rows.map((row, rowIndex) => rowIndex === index ? { ...row, amount } : row);
-      }
-    });
-  }
-
-  onQuotationSelected(sectionKey: string, file: File | null): void {
-    this.budgetSections.forEach(section => {
-      if (section.key === sectionKey) {
-        section.quotationFileName = file?.name ?? '';
-      }
-    });
-  }
-
   budgetSummaryTotal(): string {
     const total = this.budgetSections.reduce((sum, section) => sum + this.parseAmount(section.totalAmount), 0);
     return total ? total.toFixed(2) : '0.00';
   }
 
-  updateInternalSelection(index: number, selected: boolean): void {
-    this.internalCoResearchers = this.internalCoResearchers.map((row, rowIndex) =>
-      rowIndex === index ? { ...row, selected } : row
-    );
+  removeInternalCoResearcherRow(index: number): void {
+    this.internalCoResearchers = this.internalCoResearchers.filter((_, rowIndex) => rowIndex !== index);
   }
 
-  updateExternalSelection(index: number, selected: boolean): void {
-    this.externalCollaborators = this.externalCollaborators.map((row, rowIndex) =>
-      rowIndex === index ? { ...row, selected } : row
-    );
+  removeExternalCollaboratorRow(index: number): void {
+    this.externalCollaborators = this.externalCollaborators.filter((_, rowIndex) => rowIndex !== index);
   }
 
-  updateExpectedOutcomeSelection(index: number, selected: boolean): void {
-    this.expectedOutcomes = this.expectedOutcomes.map((row, rowIndex) =>
-      rowIndex === index ? { ...row, selected } : row
-    );
+  removeExpectedOutcomeRow(index: number): void {
+    this.expectedOutcomes = this.expectedOutcomes.filter((_, rowIndex) => rowIndex !== index);
   }
 
-  updateInternalCoResearcherStaffName(index: number, staffName: string): void {
-    this.internalCoResearchers = this.internalCoResearchers.map((row, rowIndex) =>
-      rowIndex === index ? { ...row, staffName } : row
-    );
+  removeBudgetRow(sectionKey: string, index: number): void {
+    this.updateBudgetSection(sectionKey, section => {
+      section.rows = section.rows.filter((_, rowIndex) => rowIndex !== index);
+      this.recalculateBudgetSectionTotal(section);
+    });
   }
 
-  updateInternalCoResearcherSchoolDepartment(index: number, schoolDepartment: string): void {
-    this.internalCoResearchers = this.internalCoResearchers.map((row, rowIndex) =>
-      rowIndex === index ? { ...row, schoolDepartment } : row
-    );
-  }
-
-  updateExternalCollaboratorName(index: number, name: string): void {
-    this.externalCollaborators = this.externalCollaborators.map((row, rowIndex) =>
-      rowIndex === index ? { ...row, name } : row
-    );
-  }
-
-  updateExternalCollaboratorAffiliation(index: number, affiliation: string): void {
-    this.externalCollaborators = this.externalCollaborators.map((row, rowIndex) =>
-      rowIndex === index ? { ...row, affiliation } : row
-    );
-  }
-
-  updateExpectedOutcomeDescription(index: number, description: string): void {
-    this.expectedOutcomes = this.expectedOutcomes.map((row, rowIndex) =>
-      rowIndex === index ? { ...row, description } : row
-    );
+  removeBillingRow(sectionKey: string, index: number): void {
+    this.updateBudgetSection(sectionKey, section => {
+      section.billingRows = section.billingRows.filter((_, rowIndex) => rowIndex !== index);
+    });
   }
 
   trackByIndex(index: number): number {
@@ -446,60 +478,22 @@ export class ExternalProjectDataEntryComponent {
     this.externalProjectForm.markAllAsTouched();
   }
 
-  private createInternalCoResearcherRow(): InternalCoResearcherRow {
-    return {
-      selected: false,
-      staffName: '',
-      schoolDepartment: '',
-    };
+  private getStaffDepartment(staffName: string | null | undefined): string {
+    return this.staffDirectory.find(staff => staff.name === staffName)?.schoolDepartment ?? '';
   }
 
-  private createExternalCollaboratorRow(): ExternalCollaboratorRow {
-    return {
-      selected: false,
-      name: '',
-      affiliation: '',
-    };
-  }
-
-  private createExpectedOutcomeRow(): ExpectedOutcomeRow {
-    return {
-      selected: false,
-      description: '',
-    };
-  }
-
-  private createBudgetBreakdownRow(): BudgetBreakdownRow {
-    return {
-      selected: false,
-      description: '',
-      amount: '',
-    };
-  }
-
-  private createBillingBreakdownRow(): BillingBreakdownRow {
-    return {
-      selected: false,
-      description: '',
-      amount: '',
-    };
-  }
-
-  private createBudgetSection(key: string, title: string, code: string, requiresQuotation: boolean, isManagementFee = false): BudgetSection {
+  private createBudgetSection(key: string, title: string, code: string, isManagementFee = false): BudgetSection {
     return {
       key,
       title,
       code,
       item: `${title} (${code})`,
       totalAmount: '',
-      requiresQuotation,
-      quotationLabel: 'Uploaded Quotation',
-      quotationFileName: '',
-      rows: [this.createBudgetBreakdownRow()],
+      rows: [],
       billingRequired: isManagementFee ? 'No' : '',
       billingAmount: '',
       billingDate: '',
-      billingRows: [this.createBillingBreakdownRow()],
+      billingRows: [],
       remark: isManagementFee ? '' : '',
     };
   }
@@ -509,6 +503,68 @@ export class ExternalProjectDataEntryComponent {
     if (section) {
       update(section);
     }
+  }
+
+  private configureTableEntryValidation(type: TableEntryType): void {
+    Object.values(this.tableEntryForm.controls).forEach(control => {
+      control.clearValidators();
+      control.updateValueAndValidity({ emitEvent: false });
+    });
+
+    const requiredControls = {
+      internal: ['staffName'],
+      external: ['name', 'affiliation'],
+      outcome: ['description'],
+      budget: ['description', 'amount'],
+      billing: ['description', 'amount'],
+    } satisfies Record<TableEntryType, readonly (keyof typeof this.tableEntryForm.controls)[]>;
+
+    requiredControls[type].forEach(controlName => {
+      const control = this.tableEntryForm.controls[controlName];
+      control.setValidators(
+        controlName === 'amount'
+          ? [Validators.required, Validators.min(0.01)]
+          : [Validators.required],
+      );
+      control.updateValueAndValidity({ emitEvent: false });
+    });
+  }
+
+  private getTableEntryValue(
+    type: TableEntryType,
+    sectionKey: string | null,
+    index: number | null,
+  ): Partial<typeof this.tableEntryForm.value> {
+    if (index === null) {
+      return {};
+    }
+
+    if (type === 'internal') {
+      return this.internalCoResearchers[index] ?? {};
+    }
+    if (type === 'external') {
+      return this.externalCollaborators[index] ?? {};
+    }
+    if (type === 'outcome') {
+      return this.expectedOutcomes[index] ?? {};
+    }
+
+    const section = this.budgetSections.find(item => item.key === sectionKey);
+    return type === 'budget'
+      ? section?.rows[index] ?? {}
+      : section?.billingRows[index] ?? {};
+  }
+
+  private upsertRow<T>(rows: readonly T[], row: T, index: number | null): T[] {
+    return index === null
+      ? [...rows, row]
+      : rows.map((existingRow, rowIndex) => rowIndex === index ? row : existingRow);
+  }
+
+  private recalculateBudgetSectionTotal(section: BudgetSection): void {
+    section.totalAmount = section.rows
+      .reduce((total, row) => total + this.parseAmount(row.amount), 0)
+      .toFixed(2);
   }
 
   private parseAmount(value: string): number {

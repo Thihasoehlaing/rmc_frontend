@@ -166,8 +166,8 @@
   gap: var(--space-4);
   margin-top: var(--space-2);
   padding: 0;
-  background: var(--color-surface-nested);
-  border-color: var(--border-subtle);
+  background: var(--color-surface);
+  border-color: var(--color-surface);
   box-shadow: none;
 }
 
@@ -197,21 +197,20 @@
   gap: var(--space-3);
 }
 
-.table-input {
-  width: 100%;
-  min-height: var(--space-9);
+.amount-cell {
+  font-weight: var(--fw-semibold);
+  color: var(--color-text);
 }
 
-:host ::ng-deep td .table-input {
-  border: 1px solid var(--border-default); // 1px border — allowed exception
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
+:host ::ng-deep .data-table__actions {
+  justify-content: flex-end;
+  gap: var(--space-2);
 }
 
-:host ::ng-deep td input[type='checkbox'] {
-  width: var(--space-4);
-  height: var(--space-4);
-  accent-color: var(--color-primary);
+.dialog-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
 }
 
 .external-project-form__actions {

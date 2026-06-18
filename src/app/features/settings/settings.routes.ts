@@ -1,0 +1,64 @@
+import { Routes } from '@angular/router';
+
+export const settingsRoutes: Routes = [
+  {
+    path: '',
+    loadComponent: () =>
+      import('./settings.component').then(m => m.SettingsComponent),
+  },
+  {
+    path: 'forms',
+    loadComponent: () =>
+      import('./forms/forms.component').then(m => m.FormsComponent),
+  },
+  {
+    path: 'dropdown-categories',
+    loadComponent: () =>
+      import('./dropdown-categories/dropdown-categories.component').then(
+        m => m.DropdownCategoriesComponent,
+      ),
+  },
+  {
+    path: 'staff-directory',
+    data: { scope: 'staff-directory' },
+    loadComponent: () =>
+      import('./settings-scope/settings-scope.component').then(m => m.SettingsScopeComponent),
+  },
+  {
+    path: 'academic-staff',
+    loadComponent: () =>
+      import('./academic-staff/academic-staff.component').then(m => m.AcademicStaffComponent),
+  },
+  {
+    path: 'users',
+    loadComponent: () =>
+      import('./users/users.component').then(m => m.UsersComponent),
+  },
+  {
+    path: 'roles',
+    loadComponent: () =>
+      import('./roles/roles.component').then(m => m.RolesComponent),
+  },
+  {
+    path: 'roles-users',
+    redirectTo: 'users',
+    pathMatch: 'full',
+  },
+  {
+    path: 'blocked-users',
+    loadComponent: () =>
+      import('./blocked-users/blocked-users.component').then(m => m.BlockedUsersComponent),
+  },
+  {
+    path: 'applicant-rules',
+    data: { scope: 'applicant-rules' },
+    loadComponent: () =>
+      import('./settings-scope/settings-scope.component').then(m => m.SettingsScopeComponent),
+  },
+  {
+    path: 'workflow',
+    data: { scope: 'workflow' },
+    loadComponent: () =>
+      import('./settings-scope/settings-scope.component').then(m => m.SettingsScopeComponent),
+  },
+];

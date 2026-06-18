@@ -1,20 +1,19 @@
 import { Routes } from '@angular/router';
-import { JournalPublicationFormComponent } from './journal-publication-form.component';
-import { JournalSettingsComponent } from './pages/journal-settings/journal-settings.component';
-import { JournalGuidelinesSettingsComponent } from './pages/journal-guidelines-settings/journal-guidelines-settings.component';
 import { permissionGuard } from '../../core/guards/permission.guard';
 import { NavPermission } from '../../core/interfaces/permission.interface';
 
 export const journalPublicationFormRoutes: Routes = [
   {
     path: 'application',
-    component: JournalPublicationFormComponent,
+    loadComponent: () =>
+      import('./journal-publication-form.component').then(m => m.JournalPublicationFormComponent),
     canActivate: [permissionGuard]
     // No permission data = any authenticated user may access
   },
   {
       path: 'settings',
-      component: JournalSettingsComponent,
+      loadComponent: () =>
+        import('./pages/journal-settings/journal-settings.component').then(m => m.JournalSettingsComponent),
       canActivate: [permissionGuard],
       data: {
           permission: {
@@ -24,7 +23,10 @@ export const journalPublicationFormRoutes: Routes = [
   },
   {
       path: 'guidelines-settings',
-      component: JournalGuidelinesSettingsComponent,
+      loadComponent: () =>
+        import('./pages/journal-guidelines-settings/journal-guidelines-settings.component').then(
+          m => m.JournalGuidelinesSettingsComponent
+        ),
       canActivate: [permissionGuard],
       data: {
           permission: {

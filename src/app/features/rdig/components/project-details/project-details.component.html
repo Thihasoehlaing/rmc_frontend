@@ -35,6 +35,7 @@
             <span>I hereby declare that my co-researchers do not have any on-going RDIG project.</span>
           </label>
         </div>
+        <app-note text="You must click both checkboxes."></app-note>
       </div>
 
     </div>
@@ -133,14 +134,14 @@
       <div class="row row--2">
         <div class="form-field">
           <div class="label-with-manage">
-            <label class="form-label is-required">Research Domain</label>
+            <label class="form-label is-required">Select Research Domain</label>
           </div>
           <app-searchable-dropdown [options]="domains" formControlName="domain"></app-searchable-dropdown>
           <app-validation-message [control]="projectDetails.get('domain')"></app-validation-message>
         </div>
         <div class="form-field">
           <div class="label-with-manage">
-            <label class="form-label is-required">Sub-Research Domain</label>
+            <label class="form-label is-required">Select Sub-Research Domain</label>
           </div>
           <app-searchable-dropdown [options]="filteredSubDomains" formControlName="subDomain"></app-searchable-dropdown>
           <app-validation-message [control]="projectDetails.get('subDomain')"></app-validation-message>
@@ -155,13 +156,13 @@
     <div class="card__content section-fields">
       <div class="row row--2">
         <div class="form-field">
-          <label class="form-label is-required">ESG</label>
+          <label class="form-label is-required">Select the Appropriate ESG(s)</label>
           <app-searchable-dropdown [options]="esgs" [isMulti]="true" [maxSelections]="3" formControlName="esgs"></app-searchable-dropdown>
           <app-note text="Min 1, Max 3"></app-note>
           <app-validation-message [control]="projectDetails.get('esgs')"></app-validation-message>
         </div>
         <div class="form-field">
-          <label class="form-label is-required">SDG</label>
+          <label class="form-label is-required">Select the Appropriate SDG(s)</label>
           <app-searchable-dropdown [options]="sdgs" [isMulti]="true" [maxSelections]="3" formControlName="sdgs"></app-searchable-dropdown>
           <app-note text="Min 1, Max 3"></app-note>
           <app-validation-message [control]="projectDetails.get('sdgs')"></app-validation-message>
@@ -201,7 +202,7 @@
 
       <div class="row row--2">
         <div class="form-field">
-          <label class="form-label is-required">Executive Summary</label>
+          <label class="form-label is-required">Executive Summary of the Research Proposal</label>
           <textarea class="input--textarea input--autosize" appTextareaAutosize [minRows]="4" formControlName="executiveSummary" [maxlength]="1500"></textarea>
           <app-character-counter [current]="projectDetails.get('executiveSummary')?.value?.length ?? 0"
             [max]="1500"></app-character-counter>
@@ -220,11 +221,11 @@
       <!-- Reviewer comment + score on Executive Summary (0-10) -->
       @if (showAnyComments) {
         <div class="row row--2">
-          <app-review-block label="Reviewer 1 — Executive Summary" icon="rate_review"
+          <app-review-block label="Reviewer 1 — Executive Summary of the Research Proposal" icon="rate_review"
             [visible]="showR1Comments" [readonly]="!workflow.isReviewer1Editable()"
             [showScore]="true" [maxScore]="10" [scoreDisabled]="!workflow.isScoreEditable()"
             [commentControl]="fc('reviewer1SummaryComment')" [scoreControl]="fc('reviewer1SummaryScore')"></app-review-block>
-          <app-review-block label="Reviewer 2 — Executive Summary" icon="rate_review"
+          <app-review-block label="Reviewer 2 — Executive Summary of the Research Proposal" icon="rate_review"
             [visible]="showR2Comments" [readonly]="!workflow.isReviewer2Editable()"
             [showScore]="true" [maxScore]="10" [scoreDisabled]="!workflow.isScoreEditable()"
             [commentControl]="fc('reviewer2SummaryComment')" [scoreControl]="fc('reviewer2SummaryScore')"></app-review-block>
@@ -290,14 +291,14 @@
 
       <div class="row row--2">
         <div class="form-field">
-          <label class="form-label is-required">Research Aim</label>
+          <label class="form-label is-required">Research Aim and Objectives</label>
           <textarea class="input--textarea input--autosize" appTextareaAutosize [minRows]="4" formControlName="researchAim" [maxlength]="1000"></textarea>
           <app-character-counter [current]="projectDetails.get('researchAim')?.value?.length ?? 0"
             [max]="1000"></app-character-counter>
           <app-validation-message [control]="projectDetails.get('researchAim')"></app-validation-message>
         </div>
         <div class="form-field">
-          <label class="form-label is-required">Research Questions / Objectives</label>
+          <label class="form-label is-required">Research Questions</label>
           <textarea class="input--textarea input--autosize" appTextareaAutosize [minRows]="4" formControlName="researchQuestions" [maxlength]="1000"></textarea>
           <app-character-counter [current]="projectDetails.get('researchQuestions')?.value?.length ?? 0"
             [max]="1000"></app-character-counter>
@@ -308,11 +309,11 @@
       <!-- Reviewer comment + score on Research Aim (0-5) -->
       @if (showAnyComments) {
         <div class="row row--2">
-          <app-review-block label="Reviewer 1 — Research Aim" icon="rate_review"
+          <app-review-block label="Reviewer 1 — Research Aim and Objectives" icon="rate_review"
             [visible]="showR1Comments" [readonly]="!workflow.isReviewer1Editable()"
             [showScore]="true" [maxScore]="5" [scoreDisabled]="!workflow.isScoreEditable()"
             [commentControl]="fc('reviewer1AimComment')" [scoreControl]="fc('reviewer1AimScore')"></app-review-block>
-          <app-review-block label="Reviewer 2 — Research Aim" icon="rate_review"
+          <app-review-block label="Reviewer 2 — Research Aim and Objectives" icon="rate_review"
             [visible]="showR2Comments" [readonly]="!workflow.isReviewer2Editable()"
             [showScore]="true" [maxScore]="5" [scoreDisabled]="!workflow.isScoreEditable()"
             [commentControl]="fc('reviewer2AimComment')" [scoreControl]="fc('reviewer2AimScore')"></app-review-block>
@@ -336,7 +337,7 @@
       <!-- RMC comment on Aim section has been moved to after Research Activities -->
 
       <div class="form-field">
-        <label class="form-label is-required">Hypothesis</label>
+        <label class="form-label is-required">Hypothesis/Propositions</label>
         <textarea class="input--textarea input--autosize" appTextareaAutosize [minRows]="4" formControlName="hypothesis" [maxlength]="1000"></textarea>
         <app-character-counter [current]="projectDetails.get('hypothesis')?.value?.length ?? 0"
           [max]="1000"></app-character-counter>
@@ -366,7 +367,7 @@
           <app-validation-message [control]="projectDetails.get('literatureReview')"></app-validation-message>
         </div>
         <div class="form-field">
-          <label class="form-label is-required">Methodology</label>
+          <label class="form-label is-required">Research Methodology</label>
           <textarea class="input--textarea input--autosize" appTextareaAutosize [minRows]="4" formControlName="methodology" [maxlength]="3000"></textarea>
           <app-character-counter [current]="projectDetails.get('methodology')?.value?.length ?? 0"
             [max]="3000"></app-character-counter>
@@ -429,7 +430,7 @@
   <div class="card" formGroupName="benefits">
     <app-custom-subheader title="Grant Utilisation & Benefits"></app-custom-subheader>
     <div class="card__content section-fields">
-      <p class="form-hint">How will this grant benefit Asia Pacific University of Technology & Innovation, students and wider stakeholders?</p>
+      <p class="form-hint">Please state how the grant utilization benefits to APU, students & stakeholders </p>
       <div class="row row--3 benefits-row">
         <div class="form-field">
           <label class="form-label is-required">Asia Pacific University of Technology &amp; Innovation Benefit</label>
@@ -475,7 +476,7 @@
     <app-custom-subheader title="Alignment with Asia Pacific University of Technology & Innovation Vision & Mission"></app-custom-subheader>
     <div class="card__content section-fields">
       <div class="form-field">
-        <label class="form-label is-required">How does this research align with Asia Pacific University of Technology & Innovation's vision and mission?</label>
+        <label class="form-label is-required">Please state how the proposed project meets the Vision and Mission of APU</label>
         <textarea class="input--textarea input--autosize" appTextareaAutosize [minRows]="4" formControlName="visionMission"
           placeholder="Describe the alignment..."></textarea>
         <app-character-counter [current]="projectDetails.get('visionMission')?.value?.length ?? 0"

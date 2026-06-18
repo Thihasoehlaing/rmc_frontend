@@ -25,13 +25,16 @@
             <div class="form-field">
               <label class="form-label is-required">Quantity:</label>
               <div class="radio-field">
-                @for (q of [1, 2, 3, 4]; track q) {
+                @for (q of journalQuantityOptions; track q) {
                   <label class="radio-field__option">
                     <input type="radio" [value]="q" formControlName="quantity">
                     <span>{{ q }} {{ q === 1 ? 'Publication' : 'Publications' }}</span>
                   </label>
                 }
               </div>
+              @if (!projectDuration) {
+                <app-note text="Please complete the Project Duration field first."></app-note>
+              }
               <app-validation-message [control]="outputForm.get('journal.quantity')"></app-validation-message>
             </div>
           </div>
@@ -100,6 +103,7 @@
             <div class="form-field">
               <label class="form-label is-required">Describe other outputs:</label>
               <textarea class="input--textarea" formControlName="details"></textarea>
+              <app-note text="Please state matching grant amount and name of university/organisation and any other description."></app-note>
               <app-validation-message [control]="outputForm.get('others.details')"></app-validation-message>
             </div>
           </div>

@@ -117,7 +117,9 @@
         </app-data-table>
       } @else {
         <p class="empty-state">No items added.</p>
-      }      @if (showAnyComments) {
+      }
+      <app-note text="Please state location and estimated travel/accommodation cost for data collection in the description. Transportation claim for Klang Valley is not allowed."></app-note>
+      @if (showAnyComments) {
         <div class="row row--2">
           <app-review-block label="Reviewer 1 - Travel & Accommodation" icon="rate_review"
             [visible]="showR1Comments" [readonly]="!workflow.isReviewer1Editable()"
@@ -171,6 +173,7 @@
       } @else {
         <p class="empty-state">No items added.</p>
       }
+      <app-note text="Every item requires a quotation to be uploaded. Please provide evidence that software is not available in APU."></app-note>
       @if (showAnyComments) {
         <div class="row row--2">
           <app-review-block label="Reviewer 1 - Materials & Supplies" icon="rate_review"
@@ -224,7 +227,9 @@
         </app-data-table>
       } @else {
         <p class="empty-state">No items added.</p>
-      }      @if (showAnyComments) {
+      }
+      <app-note text="Editing Service requires quotation while Publication Fees requires APC Page to be uploaded. Training, conference presentation, honorarium and token for respondents are non-allowable items."></app-note>
+      @if (showAnyComments) {
         <div class="row row--2">
           <app-review-block label="Reviewer 1 - Special Services" icon="rate_review"
             [visible]="showR1Comments" [readonly]="!workflow.isReviewer1Editable()"
@@ -275,6 +280,7 @@
           formControlName="otherRemarks"
           [maxlength]="300"
           [readonly]="workflow.isFormReadOnly()"></textarea>
+        <app-note text="Please state matching grant amount and name of university/organisation and any other description."></app-note>
         <app-character-counter [current]="otherRemarksControl.value?.length ?? 0" [max]="300"></app-character-counter>
         <app-validation-message [control]="otherRemarksControl"></app-validation-message>
       </div>

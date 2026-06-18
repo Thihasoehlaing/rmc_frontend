@@ -35,29 +35,27 @@
     outline: none;
   }
 
-  // Disabled state
+  // Readonly / disabled field state. Keep values fully legible while making
+  // non-editable controls visually distinct from white editable controls.
+  &[readonly],
   &:disabled,
-  &.is-disabled {
+  &.is-disabled,
+  &.input--soft-readonly,
+  &.input--readonly,
+  &.input--disabled-readonly {
     background: var(--input-bg-readonly);
-    opacity: var(--disabled-opacity);
+    color: var(--color-text-muted);
+    opacity: 1;
     cursor: not-allowed;
-    border-color: var(--border-default);
-  }
+    border-color: var(--border-subtle);
+    box-shadow: none;
 
-  // Soft readonly state (visually readonly but value is included in form submission)
-  &.input--soft-readonly {
-    background: var(--input-bg-readonly);
-    cursor: not-allowed;
-    opacity: 0.8;
-    border-color: var(--border-default);
-  }
-
-  // Readonly state (similar to soft-readonly, alternative naming)
-  &.input--readonly {
-    background: var(--input-bg-readonly);
-    cursor: not-allowed;
-    opacity: 0.8;
-    border-color: var(--border-default);
+    &:hover,
+    &:focus,
+    &:focus-visible {
+      border-color: var(--border-subtle);
+      box-shadow: none;
+    }
   }
 
   // Error/Invalid state
@@ -69,6 +67,24 @@
       box-shadow: var(--input-shadow-error);
     }
   }
+}
+
+// Universal native form-field state. Some feature forms use local classes such
+// as `.form-control` instead of the shared `.input--*` classes, so attribute
+// selectors ensure the same readonly color is applied for every role and form.
+:where(
+  input:not([type='button']):not([type='submit']):not([type='reset']):not([type='checkbox']):not([type='radio']):not([type='file'])[readonly],
+  input:not([type='button']):not([type='submit']):not([type='reset']):not([type='checkbox']):not([type='radio']):not([type='file']):disabled,
+  textarea[readonly],
+  textarea:disabled,
+  select:disabled
+) {
+  color: var(--color-text-muted) !important;
+  background-color: var(--input-bg-readonly) !important;
+  border-color: var(--border-subtle) !important;
+  box-shadow: none !important;
+  opacity: 1 !important;
+  cursor: not-allowed;
 }
 
 .input--textarea {
@@ -633,7 +649,8 @@
 .application-form-page textarea:disabled {
   color: var(--color-text-muted);
   background-color: var(--color-background-disabled);
-  border-color: var(--color-border-default);
+  border-color: var(--border-subtle);
+  opacity: 1;
 }
 
 .application-form-page .form-hint,

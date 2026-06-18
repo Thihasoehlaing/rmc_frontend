@@ -1,11 +1,15 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder } from '@angular/forms';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { merge } from 'rxjs';
 import { CustomSubheaderComponent } from '../../../shared/components/custom-subheader/custom-subheader.component';
 import { CharacterCounterComponent } from '../../../shared/components/character-counter/character-counter.component';
 import { DataTableComponent, DataTableColumn } from '../../../shared/components/data-table/data-table.component';
 import { ActionButtonComponent } from '../../../shared/components/action-button/action-button.component';
 import { FileUploadComponent } from '../../../shared/components/file-upload/file-upload.component';
+import { SearchableDropdownComponent } from '../../../shared/components/searchable-dropdown/searchable-dropdown.component';
+import { DropdownOption } from '../../../core/interfaces/components.interface';
 
 interface InternalCoResearcherRow {
   selected: boolean;
@@ -14,6 +18,12 @@ interface InternalCoResearcherRow {
 }
 
 interface BudgetBreakdownRow {
+  selected: boolean;
+  description: string;
+  amount: string;
+}
+
+interface BillingBreakdownRow {
   selected: boolean;
   description: string;
   amount: string;
@@ -30,6 +40,9 @@ interface BudgetSection {
   quotationFileName: string;
   rows: BudgetBreakdownRow[];
   billingRequired: 'Yes' | 'No' | '';
+  billingAmount: string;
+  billingDate: string;
+  billingRows: BillingBreakdownRow[];
   remark: string;
 }
 
@@ -55,12 +68,14 @@ interface ExpectedOutcomeRow {
     DataTableComponent,
     ActionButtonComponent,
     FileUploadComponent,
+    SearchableDropdownComponent,
   ],
   templateUrl: './external-project-data-entry.component.html',
   styleUrls: ['./external-project-data-entry.component.scss'],
 })
 export class ExternalProjectDataEntryComponent {
   private readonly fb = inject(FormBuilder);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly externalProjectForm = this.fb.group({
     externalGrantCategory: [''],
@@ -86,6 +101,15 @@ export class ExternalProjectDataEntryComponent {
     'Consultancy',
   ] as const;
 
+  readonly projectLeaderOptions: DropdownOption<string>[] = [
+    { value: 'Dr. Ahmad Al-Hassan', label: 'Dr. Ahmad Al-Hassan' },
+    { value: 'Dr. John Smith', label: 'Dr. John Smith' },
+    { value: 'Prof. Sarah Lim', label: 'Prof. Sarah Lim' },
+    { value: 'Assoc. Prof. Michael Tan', label: 'Assoc. Prof. Michael Tan' },
+    { value: 'Dr. Nur Aisyah Rahman', label: 'Dr. Nur Aisyah Rahman' },
+    { value: 'Dr. Daniel Wong', label: 'Dr. Daniel Wong' },
+  ];
+
   readonly internalCoResearcherColumns: readonly DataTableColumn[] = [
     { key: 'selected', label: '', width: '56px', align: 'center', headerAlign: 'center' },
     { key: 'staffName', label: 'Staff Name' },
@@ -109,9 +133,16 @@ export class ExternalProjectDataEntryComponent {
     { key: 'amount', label: 'Amount (RM)', width: '180px' },
   ];
 
+  readonly billingBreakdownColumns: readonly DataTableColumn[] = [
+    { key: 'selected', label: '', width: '56px', align: 'center', headerAlign: 'center' },
+    { key: 'description', label: 'Description' },
+    { key: 'amount', label: 'Amount (RM)', width: '180px' },
+  ];
+
   internalCoResearchers: InternalCoResearcherRow[] = [this.createInternalCoResearcherRow()];
   externalCollaborators: ExternalCollaboratorRow[] = [this.createExternalCollaboratorRow()];
   expectedOutcomes: ExpectedOutcomeRow[] = [this.createExpectedOutcomeRow()];
+  completeAttempted = false;
 
   readonly budgetSections: BudgetSection[] = [
     this.createBudgetSection('student-allowances', 'Student Allowances', 'V11000', false),
@@ -123,6 +154,15 @@ export class ExternalProjectDataEntryComponent {
     this.createBudgetSection('accessories-equipment', 'Accessories & Equipment', 'V35000', true),
     this.createBudgetSection('management-fee', 'Management Fee', 'V40000', false, true),
   ];
+
+  constructor() {
+    merge(
+      this.externalProjectForm.controls.startDate.valueChanges,
+      this.externalProjectForm.controls.endDate.valueChanges,
+    )
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.updateProjectDuration());
+  }
 
   isNationalSelected(): boolean {
     return this.externalProjectForm.get('externalGrantCategory')?.value === 'National';
@@ -150,6 +190,38 @@ export class ExternalProjectDataEntryComponent {
 
   consultancyTitleLength(): number {
     return this.externalProjectForm.get('consultancyTitle')?.value?.length ?? 0;
+  }
+
+  minimumEndDate(): string {
+    return this.externalProjectForm.controls.startDate.value ?? '';
+  }
+
+  private updateProjectDuration(): void {
+    const startDate = this.parseDate(this.externalProjectForm.controls.startDate.value);
+    const endDate = this.parseDate(this.externalProjectForm.controls.endDate.value);
+    const endDateControl = this.externalProjectForm.controls.endDate;
+    const durationControl = this.externalProjectForm.controls.durationMonths;
+
+    if (startDate && endDate && endDate.timestamp < startDate.timestamp) {
+      endDateControl.setValue('', { emitEvent: false });
+      durationControl.setValue('', { emitEvent: false });
+      return;
+    }
+
+    if (!startDate || !endDate) {
+      durationControl.setValue('', { emitEvent: false });
+      return;
+    }
+
+    const calendarMonthDifference =
+      (endDate.year - startDate.year) * 12 + endDate.month - startDate.month;
+    const includesPartialMonth = endDate.day > startDate.day;
+    const durationMonths = Math.max(
+      1,
+      calendarMonthDifference + (includesPartialMonth ? 1 : 0),
+    );
+
+    durationControl.setValue(String(durationMonths), { emitEvent: false });
   }
 
 
@@ -201,8 +273,75 @@ export class ExternalProjectDataEntryComponent {
     this.budgetSections.forEach(section => {
       if (section.key === sectionKey) {
         section.billingRequired = value;
+        if (value === 'No') {
+          section.billingAmount = '';
+          section.billingDate = '';
+          section.billingRows = [this.createBillingBreakdownRow()];
+        }
       }
     });
+  }
+
+  updateBillingAmount(sectionKey: string, value: string): void {
+    this.updateBudgetSection(sectionKey, section => {
+      section.billingAmount = value;
+    });
+  }
+
+  updateBillingDate(sectionKey: string, value: string): void {
+    this.updateBudgetSection(sectionKey, section => {
+      section.billingDate = value;
+    });
+  }
+
+  addBillingRow(sectionKey: string): void {
+    this.updateBudgetSection(sectionKey, section => {
+      section.billingRows = [...section.billingRows, this.createBillingBreakdownRow()];
+    });
+  }
+
+  updateBillingRowSelection(sectionKey: string, index: number, selected: boolean): void {
+    this.updateBudgetSection(sectionKey, section => {
+      section.billingRows = section.billingRows.map((row, rowIndex) =>
+        rowIndex === index ? { ...row, selected } : row
+      );
+    });
+  }
+
+  updateBillingRowDescription(sectionKey: string, index: number, description: string): void {
+    this.updateBudgetSection(sectionKey, section => {
+      section.billingRows = section.billingRows.map((row, rowIndex) =>
+        rowIndex === index ? { ...row, description } : row
+      );
+    });
+  }
+
+  updateBillingRowAmount(sectionKey: string, index: number, amount: string): void {
+    this.updateBudgetSection(sectionKey, section => {
+      section.billingRows = section.billingRows.map((row, rowIndex) =>
+        rowIndex === index ? { ...row, amount } : row
+      );
+    });
+  }
+
+  isBillingFieldInvalid(section: BudgetSection, field: 'amount' | 'date'): boolean {
+    if (!this.completeAttempted || section.billingRequired !== 'Yes') {
+      return false;
+    }
+
+    return field === 'amount'
+      ? this.parseAmount(section.billingAmount) <= 0
+      : !section.billingDate;
+  }
+
+  isBillingBreakdownInvalid(section: BudgetSection): boolean {
+    if (!this.completeAttempted || section.billingRequired !== 'Yes') {
+      return false;
+    }
+
+    return !section.billingRows.some(row =>
+      row.description.trim().length > 0 && this.parseAmount(row.amount) > 0
+    );
   }
 
   updateBudgetRowSelection(sectionKey: string, index: number, selected: boolean): void {
@@ -303,6 +442,7 @@ export class ExternalProjectDataEntryComponent {
   }
 
   complete(): void {
+    this.completeAttempted = true;
     this.externalProjectForm.markAllAsTouched();
   }
 
@@ -337,6 +477,14 @@ export class ExternalProjectDataEntryComponent {
     };
   }
 
+  private createBillingBreakdownRow(): BillingBreakdownRow {
+    return {
+      selected: false,
+      description: '',
+      amount: '',
+    };
+  }
+
   private createBudgetSection(key: string, title: string, code: string, requiresQuotation: boolean, isManagementFee = false): BudgetSection {
     return {
       key,
@@ -349,12 +497,45 @@ export class ExternalProjectDataEntryComponent {
       quotationFileName: '',
       rows: [this.createBudgetBreakdownRow()],
       billingRequired: isManagementFee ? 'No' : '',
+      billingAmount: '',
+      billingDate: '',
+      billingRows: [this.createBillingBreakdownRow()],
       remark: isManagementFee ? '' : '',
     };
+  }
+
+  private updateBudgetSection(sectionKey: string, update: (section: BudgetSection) => void): void {
+    const section = this.budgetSections.find(item => item.key === sectionKey);
+    if (section) {
+      update(section);
+    }
   }
 
   private parseAmount(value: string): number {
     const numeric = Number.parseFloat(value);
     return Number.isFinite(numeric) ? numeric : 0;
+  }
+
+  private parseDate(value: string | null): {
+    year: number;
+    month: number;
+    day: number;
+    timestamp: number;
+  } | null {
+    if (!value) {
+      return null;
+    }
+
+    const [year, month, day] = value.split('-').map(Number);
+    if (!year || !month || !day) {
+      return null;
+    }
+
+    return {
+      year,
+      month,
+      day,
+      timestamp: Date.UTC(year, month - 1, day),
+    };
   }
 }

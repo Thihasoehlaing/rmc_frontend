@@ -199,7 +199,10 @@
 <!-- ── Modal Overlay ─────────────────────────────────────────────── -->
 @if (isModalOpen) {
   <div class="modal-overlay" (click)="closeModal()">
-    <div class="modal-dialog" (click)="$event.stopPropagation()">
+    <div
+      class="modal-dialog"
+      [class.modal-dialog--wide]="modalType === 'non-apu'"
+      (click)="$event.stopPropagation()">
 
       <div class="modal-header">
         <h3>{{ getModalTitle() }}</h3>
@@ -232,11 +235,9 @@
           </div>
 
           <div class="form-group">
-            <label for="affiliation1">Second Affiliation (if any)</label>
+            <label for="affiliation1">Second Affiliation</label>
             <input type="text" id="affiliation1" class="form-control" formControlName="affiliation"
-              placeholder="Ex. Asia Pacific University"
-              (input)="stripDigits($event)">
-            <app-validation-message [control]="editForm.get('affiliation')"></app-validation-message>
+              readonly>
           </div>
         }
 
@@ -272,11 +273,9 @@
           </div>
 
           <div class="form-group">
-            <label for="affiliation2">Second Affiliation (if any)</label>
+            <label for="affiliation2">Second Affiliation</label>
             <input type="text" id="affiliation2" class="form-control" formControlName="affiliation"
-              placeholder="Ex. Asia Pacific University"
-              (input)="stripDigits($event)">
-            <app-validation-message [control]="editForm.get('affiliation')"></app-validation-message>
+              readonly>
           </div>
         }
 
@@ -299,6 +298,7 @@
               formControlName="country"
               class="country-dropdown">
             </app-searchable-dropdown>
+            <app-note text="Please check with the SRI regarding prioritised IRN countries before submitting the form"></app-note>
             <app-validation-message [control]="editForm.get('country')"></app-validation-message>
           </div>
 

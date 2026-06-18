@@ -14,6 +14,12 @@ import { DropdownOption } from '../../../../../core/interfaces/components.interf
 import { ConferenceWorkflowService } from '../../../services/conference-workflow.service';
 import { ConferenceFormStateService } from '../../../services/conference-form-state.service';
 import { BreakdownOptionsService } from '../../../services/breakdown-options.service';
+import { DropdownsStoreService } from '../../../../admin-settings/dropdowns/dropdowns-store.service';
+import {
+  SDG_KEYWORD_EXAMPLE,
+  SDG_KEYWORD_NOTE,
+  sdgKeywordValidator
+} from '../../../../../shared/validators/sdg-keyword.validator';
 
 @Component({
   selector: 'app-conference-details-form',
@@ -27,9 +33,12 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
   @Input() isFormReadOnly: boolean = false;
 
   private breakdownOptionsService = inject(BreakdownOptionsService);
+  private readonly dropdownStore = inject(DropdownsStoreService);
   form!: FormGroup;
   breakdownForm!: FormGroup;
   sdgKeywordsForm!: FormGroup;
+  readonly sdgKeywordPlaceholder = SDG_KEYWORD_EXAMPLE;
+  readonly sdgKeywordNote = SDG_KEYWORD_NOTE;
   isBreakdownModalOpen = false;
   isSDGKeywordsModalOpen = false;
   breakdownType: 'research' | 'external-research' | 'local' | null = null;
@@ -80,6 +89,19 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
   regionOptions = computed(() => {
     return this.breakdownOptionsService.regionOptions();
   });
+
+  projectAccountCodeOptions = computed<DropdownOption[]>(() =>
+    this.dropdownStore.entries()
+      .filter(option =>
+        option.formName === 'Conference Application' &&
+        option.category === 'Project Account Code' &&
+        option.status === 'Active'
+      )
+      .map(option => ({
+        value: option.value,
+        label: option.value
+      }))
+  );
 
   // Build region descriptions dynamically from service metadata
   getRegionDescription(regionValue: string): string {
@@ -176,6 +198,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
   externalBreakdownColumns: readonly DataTableColumn[] = [
     { key: 'index', label: '#', width: '50px', align: 'center' },
     { key: 'itemDescription', label: 'Vote Number Description' },
+    { key: 'accountCode', label: 'Account Code' },
     { key: 'voteNumber', label: 'Vote Number' },
     { key: 'description', label: 'Description' },
     { key: 'cost', label: 'Cost (Foreign/MYR)' },
@@ -344,31 +367,41 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
   setupBreakdownFormWatchers() {
     this.breakdownForm.get('cost')?.valueChanges.subscribe(() => this.updateCostInRM());
     this.breakdownForm.get('exchangeRate')?.valueChanges.subscribe(() => this.updateCostInRM());
+    this.breakdownForm.get('itemDescription')?.valueChanges.subscribe((value) => {
+      if (this.breakdownType === 'local') {
+        this.breakdownForm.get('voteNumber')?.setValue(
+          this.getConfiguredLocalAccountCode(value),
+          { emitEvent: false }
+        );
+      }
+    });
   }
 
   /**
-   * Validator: Conference Start Date cannot be earlier than tomorrow
+   * Validator: Conference Start Date must be at least 3 weeks from today.
    */
   private minDateValidator(control: AbstractControl): ValidationErrors | null {
     if (!control.value) {
       return null;
     }
     const selectedDate = new Date(control.value);
-    const tomorrow = new Date();
-    tomorrow.setHours(0, 0, 0, 0);
-    tomorrow.setDate(tomorrow.getDate() + 1);
+    const minimumStartDate = this.getMinimumConferenceStartDateValue();
 
-    if (selectedDate < tomorrow) {
+    if (selectedDate < minimumStartDate) {
       return { 'minDate': { value: control.value } };
     }
     return null;
   }
 
-  getTomorrowDate(): string {
-    const tomorrow = new Date();
-    tomorrow.setHours(0, 0, 0, 0);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    return tomorrow.toISOString().split('T')[0];
+  getMinimumConferenceStartDate(): string {
+    return this.getMinimumConferenceStartDateValue().toISOString().split('T')[0];
+  }
+
+  private getMinimumConferenceStartDateValue(): Date {
+    const minimumStartDate = new Date();
+    minimumStartDate.setHours(0, 0, 0, 0);
+    minimumStartDate.setDate(minimumStartDate.getDate() + 21);
+    return minimumStartDate;
   }
 
   /**
@@ -415,12 +448,13 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
       this.syncCitedJournalPaperExplanationValidator(answer);
     });
 
-    // Watch for external project account code changes and update all vote numbers in external breakdowns
+    // Keep the external breakdown Account Code in sync with the selected project.
     this.form.get('externalProjectAccountCode')?.valueChanges.subscribe((value) => {
-      if (this.researchType === 'external-research' && value) {
+      if (this.researchType === 'external-research') {
         this.externalBreakdowns.forEach(breakdown => {
-          breakdown.voteNumber = value;
+          breakdown.accountCode = value || '';
         });
+        this.breakdownForm.get('accountCode')?.setValue(value || '', { emitEvent: false });
       }
     });
   }
@@ -569,6 +603,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     this.breakdownForm = this.fb.group({
       itemDescription: ['', [Validators.required]],
       voteNumber: ['', [Validators.required]],
+      accountCode: [{ value: '', disabled: true }],
       cost: ['', [Validators.required, Validators.min(0)]],
       exchangeRate: ['1', [Validators.required, Validators.min(0.01)]],
       costInRM: [{ value: '', disabled: true }],
@@ -578,9 +613,9 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
 
   initializeSDGKeywordsForm() {
     this.sdgKeywordsForm = this.fb.group({
-      keyword1: ['', [Validators.required]],
-      keyword2: ['', [Validators.required]],
-      keyword3: ['', [Validators.required]]
+      keyword1: ['', [Validators.required, sdgKeywordValidator]],
+      keyword2: ['', [Validators.required, sdgKeywordValidator]],
+      keyword3: ['', [Validators.required, sdgKeywordValidator]]
     });
   }
 
@@ -592,9 +627,9 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
       authorshipType: ['', [Validators.required]],
       scopusPublicationGuaranteed: ['', [Validators.required]],
       restrictedPublisher: ['', [Validators.required]],
-      sdgKeyword1: ['', [Validators.required]],
-      sdgKeyword2: ['', [Validators.required]],
-      sdgKeyword3: ['', [Validators.required]],
+      sdgKeyword1: ['', [Validators.required, sdgKeywordValidator]],
+      sdgKeyword2: ['', [Validators.required, sdgKeywordValidator]],
+      sdgKeyword3: ['', [Validators.required, sdgKeywordValidator]],
       conferenceName: ['', [Validators.required, Validators.maxLength(200)]],
       conferenceStartDate: ['', [Validators.required, this.minDateValidator.bind(this)]],
       conferenceEndDate: ['', [Validators.required, this.endDateValidator]],
@@ -838,9 +873,13 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
       this.breakdownEditingIndex = index;
       const array = this.getBreakdownArray(type);
       const data = array[index];
+      const isLegacyExternalEntry = type === 'external-research' && !data.accountCode;
       this.breakdownForm.patchValue({
         itemDescription: data.itemDescription,
-        voteNumber: data.voteNumber,
+        voteNumber: isLegacyExternalEntry ? '' : data.voteNumber,
+        accountCode: type === 'external-research'
+          ? (data.accountCode || data.voteNumber || this.form.get('externalProjectAccountCode')?.value || '')
+          : '',
         cost: data.cost,
         exchangeRate: data.exchangeRate,
         costInRM: data.costInRM,
@@ -850,12 +889,12 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     } else {
       // Adding new entry
       this.breakdownEditingIndex = null;
-      const voteNumberValue = type === 'external-research'
-        ? (this.form.get('externalProjectAccountCode')?.value || 'V29000')
-        : 'V29000';
       this.breakdownForm.reset({
         exchangeRate: 1,
-        voteNumber: voteNumberValue
+        voteNumber: type === 'external-research' || type === 'local' ? '' : 'V29000',
+        accountCode: type === 'external-research'
+          ? (this.form.get('externalProjectAccountCode')?.value || '')
+          : ''
       }, { emitEvent: false });
       this.selectedFileName = null;
       this.selectedFile = null;
@@ -868,11 +907,29 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
       this.breakdownForm.enable({ emitEvent: false });
     }
 
-    // Make voteNumber read-only for external-research type
     if (type === 'external-research') {
+      this.breakdownForm.get('accountCode')?.disable({ emitEvent: false });
+      this.breakdownForm.get('voteNumber')?.enable({ emitEvent: false });
+    } else if (type === 'local') {
+      this.breakdownForm.get('accountCode')?.disable({ emitEvent: false });
       this.breakdownForm.get('voteNumber')?.disable({ emitEvent: false });
     } else {
+      this.breakdownForm.get('accountCode')?.disable({ emitEvent: false });
       this.breakdownForm.get('voteNumber')?.enable({ emitEvent: false });
+    }
+  }
+
+  private getConfiguredLocalAccountCode(optionValue: string | null): string {
+    if (!optionValue) {
+      return '';
+    }
+
+    try {
+      const stored = localStorage.getItem(`option-metadata-local-${optionValue}`);
+      const metadata = stored ? JSON.parse(stored) : null;
+      return metadata?.accountCode || '';
+    } catch {
+      return '';
     }
   }
 

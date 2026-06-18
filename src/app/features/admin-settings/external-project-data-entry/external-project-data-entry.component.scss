@@ -160,7 +160,26 @@
   padding: 0;
 }
 
+.billing-information-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-top: var(--space-2);
+  padding: 0;
+  background: var(--color-surface-nested);
+  border-color: var(--border-subtle);
+  box-shadow: none;
+}
+
+.billing-information-card__content {
+  padding-top: 0;
+}
+
 :host ::ng-deep .budget-item-card .custom-subheader {
+  margin-bottom: 0;
+}
+
+:host ::ng-deep .billing-information-card .custom-subheader {
   margin-bottom: 0;
 }
 

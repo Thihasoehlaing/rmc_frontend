@@ -9,15 +9,17 @@ import { DropdownOption } from '../../../../core/interfaces/components.interface
 import { JournalWorkflowService } from '../../services/journal-workflow.service';
 import { DataTableComponent, DataTableColumn } from '../../../../shared/components/data-table/data-table.component';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
+import { NoteComponent } from '../../../../shared/components/note/note.component';
 
 @Component({
   selector: 'app-authors-details',
   templateUrl: './authors-details.html',
   styleUrls: ['./authors-details.scss'],
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, SearchableDropdownComponent, CustomHeaderComponent, ValidationMessageComponent, ActionButtonComponent, DataTableComponent, PaginationComponent]
+  imports: [CommonModule, ReactiveFormsModule, SearchableDropdownComponent, CustomHeaderComponent, ValidationMessageComponent, ActionButtonComponent, DataTableComponent, PaginationComponent, NoteComponent]
 })
 export class AuthorsDetails implements OnInit {
+  readonly apuAffiliation = 'Asia Pacific University';
   @Output() formValidityChange = new EventEmitter<boolean>();
   form!: FormGroup;
 
@@ -25,7 +27,7 @@ export class AuthorsDetails implements OnInit {
     { key: 'no', label: '#', width: '5%', align: 'center', headerAlign: 'center' },
     { key: 'staffName', label: 'Staff Name', width: '28%' },
     { key: 'schoolDepartment', label: 'School', width: '32%' },
-    { key: 'affiliation', label: 'Second Affiliation (if any)', width: '25%' },
+    { key: 'affiliation', label: 'Second Affiliation', width: '25%' },
     { key: 'actions', label: 'Actions', width: '10%', align: 'center', headerAlign: 'center' }
   ];
 
@@ -34,7 +36,7 @@ export class AuthorsDetails implements OnInit {
     { key: 'tpNumber', label: 'TP Number', width: '12%' },
     { key: 'fullName', label: 'Student Name', width: '25%' },
     { key: 'schoolDepartment', label: 'School', width: '26%' },
-    { key: 'affiliation', label: 'Second Affiliation (if any)', width: '22%' },
+    { key: 'affiliation', label: 'Second Affiliation', width: '22%' },
     { key: 'actions', label: 'Actions', width: '10%', align: 'center', headerAlign: 'center' }
   ];
 
@@ -138,7 +140,7 @@ export class AuthorsDetails implements OnInit {
     return this.fb.group({
       staffName: [''],
       schoolDepartment: [''],
-      affiliation: ['']
+      affiliation: [this.apuAffiliation]
     });
   }
 
@@ -148,7 +150,7 @@ export class AuthorsDetails implements OnInit {
       tpNumber: ['', [Validators.required, Validators.pattern('^(?!0+$)[0-9]{1,6}$')]],
       fullName: ['', [Validators.required]],
       schoolDepartment: ['', [Validators.required]],
-      affiliation: ['']
+      affiliation: [this.apuAffiliation]
     });
   }
 
@@ -277,7 +279,7 @@ export class AuthorsDetails implements OnInit {
         this.editForm = this.fb.group({
           staffName: [data.staffName],
           schoolDepartment: [data.schoolDepartment],
-          affiliation: [data.affiliation]
+          affiliation: [this.apuAffiliation]
         });
       } else if (type === 'student') {
         data = this.studentCoAuthors.at(index).value;
@@ -285,7 +287,7 @@ export class AuthorsDetails implements OnInit {
           tpNumber: [this.parseTPNumber(data.tpNumber), [Validators.required, Validators.pattern('^(?!0+$)[0-9]{1,6}$')]],
           fullName: [data.fullName, [Validators.required]],
           schoolDepartment: [data.schoolDepartment, [Validators.required]],
-          affiliation: [data.affiliation]
+          affiliation: [this.apuAffiliation]
         });
       } else if (type === 'non-apu') {
         data = this.nonApuCoAuthors.at(index).value;
@@ -305,14 +307,14 @@ export class AuthorsDetails implements OnInit {
         this.editForm = this.fb.group({
           staffName: [''],
           schoolDepartment: [''],
-          affiliation: ['']
+          affiliation: [this.apuAffiliation]
         });
       } else if (type === 'student') {
         this.editForm = this.fb.group({
           tpNumber: ['', [Validators.required, Validators.pattern('^(?!0+$)[0-9]{1,6}$')]],
           fullName: ['', [Validators.required]],
           schoolDepartment: ['', [Validators.required]],
-          affiliation: ['']
+          affiliation: [this.apuAffiliation]
         });
       } else if (type === 'non-apu') {
         this.editForm = this.fb.group({
@@ -339,7 +341,12 @@ export class AuthorsDetails implements OnInit {
       return;
     }
 
-    const formData = { ...this.editForm.value };
+    const formData = {
+      ...this.editForm.value,
+      ...(this.modalType === 'apu-staff' || this.modalType === 'student'
+        ? { affiliation: this.apuAffiliation }
+        : {})
+    };
 
     // Prepend "TP" prefix to the student TP number before saving
     if (this.modalType === 'student' && formData.tpNumber) {
@@ -456,4 +463,3 @@ export class AuthorsDetails implements OnInit {
     this.nonApuCoAuthorsCurrentPage = 1;
   }
 }
-

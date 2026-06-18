@@ -20,6 +20,7 @@ import { DropdownsStoreService, StoredDropdownOption } from '../../../../admin-s
   styleUrl: './author-details-form.component.scss'
 })
 export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
+  readonly apuAffiliation = 'Asia Pacific University';
   @Input() workflow?: ConferenceWorkflowService;
   @Input() isFormReadOnly: boolean = false;
 
@@ -76,7 +77,7 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
     { key: 'index', label: '#', width: '50px', align: 'center' },
     { key: 'staffName', label: 'Please select Staff Name' },
     { key: 'schoolDepartment', label: 'School/Department' },
-    { key: 'affiliation', label: 'Second Affiliation (if any)' },
+    { key: 'affiliation', label: 'Second Affiliation (If any)' },
     { key: 'actions', label: 'Actions', width: '100px', align: 'center' }
   ];
 
@@ -85,7 +86,7 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
     { key: 'tpNumber', label: 'TP Number' },
     { key: 'fullName', label: 'Full Name (as per IC/Passport)' },
     { key: 'schoolDepartment', label: 'School/Department' },
-    { key: 'affiliation', label: 'Affiliation' },
+    { key: 'affiliation', label: 'Second Affiliation' },
     { key: 'actions', label: 'Actions', width: '100px', align: 'center' }
   ];
 
@@ -137,13 +138,13 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
         testSubsections: (data: any) => this.fb.group({
           staffName: [data?.staffName || '', [Validators.required]],
           schoolDepartment: [data?.schoolDepartment || '', [Validators.required]],
-          affiliation: [data?.affiliation || '', [Validators.required]]
+          affiliation: [data?.affiliation || '']
         }),
         studentCoAuthors: (data: any) => this.fb.group({
           tpNumber: [data?.tpNumber || '', [Validators.required, Validators.pattern('^[0-9]{6}$')]],
           fullName: [data?.fullName || '', [Validators.required]],
           schoolDepartment: [data?.schoolDepartment || '', [Validators.required]],
-          affiliation: [data?.affiliation || '', [Validators.required]]
+          affiliation: [this.apuAffiliation]
         }),
         nonApuCoAuthors: (data: any) => this.fb.group({
           fullName: [data?.fullName || '', [Validators.required]],
@@ -171,7 +172,7 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
     return this.fb.group({
       staffName: ['', [Validators.required]],
       schoolDepartment: ['', [Validators.required]],
-      affiliation: ['', [Validators.required]]
+      affiliation: ['']
     });
   }
 
@@ -180,7 +181,7 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
       tpNumber: ['', [Validators.required, Validators.pattern('^[0-9]{6}$')]],
       fullName: ['', [Validators.required]],
       schoolDepartment: ['', [Validators.required]],
-      affiliation: ['', [Validators.required]]
+      affiliation: [this.apuAffiliation]
     });
   }
 
@@ -264,7 +265,7 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
         this.editForm = this.fb.group({
           staffName: [data.staffName, [Validators.required]],
           schoolDepartment: [data.schoolDepartment, [Validators.required]],
-          affiliation: [data.affiliation, [Validators.required]]
+          affiliation: [data.affiliation || '']
         });
       } else if (type === 'student') {
         data = this.studentCoAuthors.at(index).value;
@@ -272,7 +273,7 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
           tpNumber: [data.tpNumber, [Validators.required, Validators.pattern('^[0-9]{6}$')]],
           fullName: [data.fullName, [Validators.required]],
           schoolDepartment: [data.schoolDepartment, [Validators.required]],
-          affiliation: [data.affiliation, [Validators.required]]
+          affiliation: [this.apuAffiliation]
         });
       } else if (type === 'non-apu') {
         data = this.nonApuCoAuthors.at(index).value;
@@ -292,14 +293,14 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
         this.editForm = this.fb.group({
           staffName: ['', [Validators.required]],
           schoolDepartment: ['', [Validators.required]],
-          affiliation: ['', [Validators.required]]
+          affiliation: ['']
         });
       } else if (type === 'student') {
         this.editForm = this.fb.group({
           tpNumber: ['', [Validators.required, Validators.pattern('^[0-9]{6}$')]],
           fullName: ['', [Validators.required]],
           schoolDepartment: ['', [Validators.required]],
-          affiliation: ['', [Validators.required]]
+          affiliation: [this.apuAffiliation]
         });
       } else if (type === 'non-apu') {
         this.editForm = this.fb.group({
@@ -333,7 +334,12 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const formData = this.editForm.value;
+    const formData = {
+      ...this.editForm.value,
+      ...(this.modalType === 'student'
+        ? { affiliation: this.apuAffiliation }
+        : {})
+    };
 
     if (this.editingIndex !== null) {
       // Update existing entry

@@ -24,7 +24,7 @@ export class ValidationMessageComponent {
     if (errors['email']) return 'Invalid email address.';
     if (errors['maxlength']) return `Maximum ${errors['maxlength'].requiredLength} characters allowed.`;
     if (errors['minlength']) return `Minimum ${errors['minlength'].requiredLength} characters required.`;
-    if (errors['pattern']) return 'Invalid format.';
+    if (errors['pattern']) return errors['pattern'].message || 'Invalid format.';
     if (errors['requiredTrue']) return 'You must agree to continue.';
 
     return 'Invalid input.';

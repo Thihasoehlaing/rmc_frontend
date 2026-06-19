@@ -103,12 +103,15 @@
 
               <button
                 *ngIf="row.isActive"
-                class="btn btn-sm btn-status-deactivate"
+                class="icon-btn icon-btn--delete"
                 type="button"
+                title="Deactivate"
                 [disabled]="loadingGuidelineId() !== null"
-                (click)="toggleGuidelineStatus(row)">
-                <span class="material-icons">block</span>
-                Deactivate
+                (click)="openDeactivateDialog(row)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+                  <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
+                  <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
+                </svg>
               </button>
 
               <button
@@ -117,7 +120,10 @@
                 title="Delete guideline"
                 [disabled]="loadingGuidelineId() !== null"
                 (click)="deleteGuideline(row)">
-                <span class="material-icons">delete</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+                  <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
+                  <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
+                </svg>
               </button>
             </td>
           </tr>
@@ -157,5 +163,32 @@
     (close)="closeModal()"
     (save)="saveGuideline($event)"
   ></app-add-guideline-modal>
+
+  <!-- Deactivate Confirmation Dialog -->
+  <app-dialog
+    [isOpen]="guidelineToDeactivate() !== null"
+    title="Deactivate Guideline"
+    size="small"
+    (close)="closeDeactivateDialog()">
+    @if (guidelineToDeactivate(); as guideline) {
+      <div class="delete-confirmation">
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="delete-icon" viewBox="0 0 16 16">
+          <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
+          <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
+        </svg>
+        <div>
+          <h3>Are you sure you want to deactivate this guideline?</h3>
+          <p><strong>{{ guideline.title }}</strong> will no longer be available for active use.</p>
+        </div>
+      </div>
+    }
+
+    <div dialog-footer class="dialog-actions">
+      <button class="btn btn-secondary" type="button" [disabled]="loadingGuidelineId() !== null" (click)="closeDeactivateDialog()">Cancel</button>
+      <button class="btn btn-danger" type="button" [disabled]="loadingGuidelineId() !== null" (click)="confirmDeactivate()">
+        {{ loadingGuidelineId() !== null ? 'Deactivating...' : 'Deactivate' }}
+      </button>
+    </div>
+  </app-dialog>
 </div>
 

@@ -7,6 +7,7 @@ import { ActionButtonComponent } from '../../../shared/components/action-button/
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
 import { AddOptionModalComponent, AddOptionPayload } from '../../../shared/components/add-option-modal/add-option-modal.component';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
+import { DialogComponent } from '../../../shared/components/dialog/dialog.component';
 import type { DataTableColumn } from '../../../shared/components/data-table/data-table.component';
 
 interface DropdownOption {
@@ -63,7 +64,7 @@ interface CategorySharingConfig {
 @Component({
   selector: 'app-dropdowns',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, ActionButtonComponent, DataTableComponent, AddOptionModalComponent, PaginationComponent],
+  imports: [CommonModule, FormsModule, RouterModule, ActionButtonComponent, DataTableComponent, AddOptionModalComponent, PaginationComponent, DialogComponent],
   templateUrl: './dropdowns.component.html',
   styleUrls: ['./dropdowns.component.scss'],
 })
@@ -82,6 +83,7 @@ export class DropdownsComponent implements OnInit {
     'Research Cluster': ['RDIG Application', 'RA/GRA Application'],
     'Type of Organisation': ['RDIG Application', 'Conference Application', 'Journal Application'],
     'Project Account Code': ['Conference Application', 'Journal Application'],
+    'Vote Number Description': ['Conference Application', 'Journal Application'],
   };
 
   private readonly DEFAULT_REGION_METADATA: Record<string, Required<Pick<RegionMetadata, 'percentage' | 'limit' | 'description'>>> = {
@@ -140,8 +142,8 @@ export class DropdownsComponent implements OnInit {
   groups = signal<DropdownGroup[]>([
     { id: 1, title: 'RDIG Application', categories: ['Research Cluster', 'Type of Organisation', 'Research Domain', 'Sub-Research Domain', 'ESG', 'SDG'], items: 17, shared: 11 },
     { id: 2, title: 'RA/GRA Application', categories: ['Research Cluster', 'Programme Type', 'Supervisor Type', 'Funding Type'], items: 16, shared: 10 },
-    { id: 3, title: 'Conference Application', categories: ['Select Region', 'Project Account Code', 'Select Item Description', 'Vote Number Description', 'Type of Organisation'], items: 18, shared: 9 },
-    { id: 4, title: 'Journal Application', categories: ['Project Account Code', 'Vote Number Description', 'Account Code Description', 'Account Code', 'Type of Organisation'], items: 22, shared: 9 },
+    { id: 3, title: 'Conference Application', categories: ['Select Region', 'Project Account Code', 'Vote Number Description', 'Type of Organisation'], items: 18, shared: 9 },
+    { id: 4, title: 'Journal Application', categories: ['Project Account Code', 'Vote Number Description', 'Account Code Description', 'Type of Organisation'], items: 22, shared: 9 },
     { id: 5, title: 'Partnership Application', categories: ['Partnership Type', 'Partnership Category'], items: 2, shared: 0 },
   ]);
 
@@ -156,18 +158,18 @@ export class DropdownsComponent implements OnInit {
   editingOptionId = signal<number | null>(null);
   editingInitialPayload = signal<AddOptionPayload | null>(null);
   newOptionValue = signal<string>('');
-  selectedOptionIds = signal<Set<number>>(new Set());
-  deleteSelectionHint = signal(false);
   optionsPage = signal(1);
   optionsPageSize = signal(15);
   optionsPageSizeOptions = [5, 15, 30, 50];
+  optionToDelete = signal<DropdownOption | null>(null);
+  sharedFormsDialogData = signal<{ optionName: string; forms: string[] } | null>(null);
 
   tableColumns = computed<DataTableColumn[]>(() => {
-    const selectionColumn: DataTableColumn = { key: 'select', label: '', width: '56px', align: 'center' };
+    const sequenceColumn: DataTableColumn = { key: 'sequence', label: 'No.', width: '64px', align: 'center' };
 
     if (this.isRegionMetadataCategory()) {
       return [
-        selectionColumn,
+        sequenceColumn,
         { key: 'value', label: 'Region Name', sortable: true },
         { key: 'percentage', label: 'Percentage' },
         { key: 'limit', label: 'Limit (RM)' },
@@ -180,17 +182,29 @@ export class DropdownsComponent implements OnInit {
 
     if (this.isAccountCodeMetadataCategory()) {
       const isVoteNumberDescription = this.isConferenceVoteNumberDescriptionCategory();
+      const isProjectAccountCode = this.isProjectAccountCodeCategory();
       return [
-        selectionColumn,
+        sequenceColumn,
         {
           key: 'value',
-          label: isVoteNumberDescription ? 'Vote Number Description' : 'Option Name',
+          label: isVoteNumberDescription
+            ? 'Vote Number Description'
+            : isProjectAccountCode
+              ? 'Project Account Code'
+              : 'Option Name',
           sortable: true,
         },
         {
           key: 'accountNumber',
-          label: isVoteNumberDescription ? 'Vote Number' : 'Account Number',
+          label: isVoteNumberDescription
+            ? 'Vote Number'
+            : isProjectAccountCode
+              ? 'Account Code'
+              : 'Account Number',
         },
+        ...(isProjectAccountCode || isVoteNumberDescription
+          ? [{ key: 'sharedWith', label: 'Shared With' } satisfies DataTableColumn]
+          : []),
         { key: 'status', label: 'Status', sortable: true },
         { key: 'lastUpdated', label: 'Created Date', sortable: true },
         { key: 'actions', label: 'Actions' },
@@ -199,7 +213,7 @@ export class DropdownsComponent implements OnInit {
 
     if (this.isConferenceVoteNumberDescriptionCategory()) {
       return [
-        selectionColumn,
+        sequenceColumn,
         { key: 'value', label: 'Vote Number Description', sortable: true },
         { key: 'sharedWith', label: 'Shared With' },
         { key: 'status', label: 'Status', sortable: true },
@@ -209,7 +223,7 @@ export class DropdownsComponent implements OnInit {
     }
 
     return [
-      selectionColumn,
+      sequenceColumn,
       { key: 'value', label: 'Option Name', sortable: true },
       { key: 'sharedWith', label: 'Shared With' },
       { key: 'status', label: 'Status', sortable: true },
@@ -257,23 +271,27 @@ export class DropdownsComponent implements OnInit {
     return (groupTitle === 'Conference Application' && category === 'Select Item Description') ||
       (groupTitle === 'Journal Application' && category === 'Account Code') ||
       (['Conference Application', 'Journal Application'].includes(groupTitle ?? '') &&
+        category === 'Project Account Code') ||
+      (['Conference Application', 'Journal Application'].includes(groupTitle ?? '') &&
         category === 'Vote Number Description');
   }
 
-  private isAccountCodeMetadataOption(option: DropdownOption): boolean {
-    return (option.formName === 'Conference Application' && option.category === 'Select Item Description') ||
-      (option.formName === 'Journal Application' && option.category === 'Account Code') ||
-      (['Conference Application', 'Journal Application'].includes(option.formName) &&
-        option.category === 'Vote Number Description');
-  }
-
   getAccountNumberMetadataLabel(): string {
-    return this.isConferenceVoteNumberDescriptionCategory() ? 'Vote Number' : 'Account Number';
+    if (this.isConferenceVoteNumberDescriptionCategory()) {
+      return 'Vote Number';
+    }
+
+    return this.isProjectAccountCodeCategory() ? 'Account Code' : 'Account Number';
   }
 
   isConferenceVoteNumberDescriptionCategory(): boolean {
     return ['Conference Application', 'Journal Application'].includes(this.selectedGroup()?.title ?? '') &&
       this.selectedCategory() === 'Vote Number Description';
+  }
+
+  isProjectAccountCodeCategory(): boolean {
+    return ['Conference Application', 'Journal Application'].includes(this.selectedGroup()?.title ?? '') &&
+      this.selectedCategory() === 'Project Account Code';
   }
 
   getCategoryDisplayLabel(category: string): string {
@@ -293,9 +311,11 @@ export class DropdownsComponent implements OnInit {
   }
 
   getOptionNameInputLabel(): string {
-    return this.isConferenceVoteNumberDescriptionCategory()
-      ? 'Vote Number Description'
-      : 'Option Name';
+    if (this.isConferenceVoteNumberDescriptionCategory()) {
+      return 'Vote Number Description';
+    }
+
+    return this.isProjectAccountCodeCategory() ? 'Project Account Code' : 'Option Name';
   }
 
   // Computed list of categories with their counts for the currently selected group
@@ -353,7 +373,10 @@ export class DropdownsComponent implements OnInit {
         percentage: regionMetadata?.percentage,
         limit: regionMetadata?.limit,
         description: regionMetadata?.description,
-        sharedWith: this.isRegionMetadataCategory() || this.isAccountCodeMetadataCategory()
+        sharedWith: this.isRegionMetadataCategory() ||
+          (this.isAccountCodeMetadataCategory() &&
+            !this.isProjectAccountCodeCategory() &&
+            !this.isConferenceVoteNumberDescriptionCategory())
           ? []
           : this.getSharedWithForms(option),
       };
@@ -384,13 +407,6 @@ export class DropdownsComponent implements OnInit {
     return Math.min(this.optionsPageStart() + this.optionsPageSize() - 1, total);
   });
 
-  selectedOptionsCount = computed(() => this.selectedOptionIds().size);
-
-  isAllFilteredOptionsSelected = computed(() => {
-    const optionIds = this.filteredOptions().map(option => option.id);
-    return optionIds.length > 0 && optionIds.every(id => this.selectedOptionIds().has(id));
-  });
-
   ngOnInit(): void {
     this.loadOptionsFromStorage();
     this.route.queryParams.subscribe(params => {
@@ -411,22 +427,18 @@ export class DropdownsComponent implements OnInit {
     }
 
     this.selectedCategory.set(category);
-    // reset selected rows and status filter when switching categories
     this.searchQuery.set('');
     this.statusFilter.set('all');
-    this.clearSelection();
     this.optionsPage.set(1);
   }
 
   onSearchQueryChange(value: string) {
     this.searchQuery.set(value);
-    this.clearSelection();
     this.optionsPage.set(1);
   }
 
   onStatusFilterChange(value: DropdownStatusFilter) {
     this.statusFilter.set(value);
-    this.clearSelection();
     this.optionsPage.set(1);
   }
 
@@ -436,94 +448,7 @@ export class DropdownsComponent implements OnInit {
 
   onOptionsPageSizeChange(pageSize: number) {
     this.optionsPageSize.set(pageSize);
-    this.clearSelection();
     this.optionsPage.set(1);
-  }
-
-  isOptionSelected(id: number): boolean {
-    return this.selectedOptionIds().has(id);
-  }
-
-  toggleOptionSelection(id: number, selected: boolean): void {
-    this.selectedOptionIds.update(current => {
-      const next = new Set(current);
-      selected ? next.add(id) : next.delete(id);
-      return next;
-    });
-  }
-
-  toggleFilteredOptionsSelection(selected: boolean): void {
-    const filteredIds = this.filteredOptions().map(option => option.id);
-    if (selected) {
-      this.selectedOptionIds.set(new Set(filteredIds));
-      return;
-    }
-
-    this.selectedOptionIds.update(current => {
-      const next = new Set(current);
-      for (const id of filteredIds) {
-        next.delete(id);
-      }
-      return next;
-    });
-  }
-
-  clearSelection(): void {
-    this.selectedOptionIds.set(new Set());
-  }
-
-  onDeleteSelectedClick(): void {
-    if (this.isRegionMetadataCategory()) {
-      return;
-    }
-
-    if (this.selectedOptionsCount() === 0) {
-      this.showDeleteSelectionHint();
-      return;
-    }
-
-    this.deleteSelectedOptions();
-  }
-
-  showDeleteSelectionHint(): void {
-    if (this.selectedOptionsCount() > 0) {
-      return;
-    }
-
-    this.deleteSelectionHint.set(true);
-    window.setTimeout(() => this.deleteSelectionHint.set(false), 2200);
-  }
-
-  deleteSelectedOptions(): void {
-    if (this.isRegionMetadataCategory()) {
-      return;
-    }
-
-    const selectedIds = this.selectedOptionIds();
-    if (selectedIds.size === 0) {
-      this.showDeleteSelectionHint();
-      return;
-    }
-
-    const selectedRows = this.dropdownOptions().filter(option => selectedIds.has(option.id));
-    const count = selectedRows.length;
-    const confirmed = window.confirm(`Delete ${count} selected option${count === 1 ? '' : 's'}?`);
-    if (!confirmed) {
-      return;
-    }
-
-    this.dropdownOptions.update(options => options.filter(option => !selectedIds.has(option.id)));
-
-    for (const option of selectedRows) {
-      this.deleteMetadataForOption(option);
-    }
-
-    this.clearSelection();
-    this.saveOptionsToStorage();
-
-    if (this.optionsPage() > this.optionsTotalPages()) {
-      this.optionsPage.set(this.optionsTotalPages());
-    }
   }
 
   private loadOptionsFromStorage() {
@@ -827,6 +752,34 @@ export class DropdownsComponent implements OnInit {
     this.saveOptionsToStorage();
   }
 
+  openDeleteDialog(id: number) {
+    const option = this.dropdownOptions().find(o => o.id === id);
+    if (option) {
+      this.optionToDelete.set(option);
+    }
+  }
+
+  closeDeleteDialog() {
+    this.optionToDelete.set(null);
+  }
+
+  confirmDelete() {
+    const option = this.optionToDelete();
+    if (!option) return;
+
+    this.dropdownOptions.update(list => list.filter(o => o.id !== option.id));
+    this.saveOptionsToStorage();
+    this.optionToDelete.set(null);
+  }
+
+  openSharedFormsDialog(optionName: string, forms: string[]) {
+    this.sharedFormsDialogData.set({ optionName, forms });
+  }
+
+  closeSharedFormsDialog() {
+    this.sharedFormsDialogData.set(null);
+  }
+
 
   editOption(id: number) {
     const option = this.dropdownOptions().find(o => o.id === id);
@@ -983,10 +936,14 @@ export class DropdownsComponent implements OnInit {
       return;
     }
 
-    const formName = this.selectedGroup()?.title ?? '';
     const category = this.selectedCategory();
+    const selectedFormName = this.selectedGroup()?.title ?? '';
+    const targetFormNames = this.isProjectAccountCodeCategory() ||
+      this.isConferenceVoteNumberDescriptionCategory()
+      ? payload.appliesTo
+      : [selectedFormName];
     const previousMetadata = previousOptionName
-      ? this.getAccountCodeMetadata(previousOptionName, formName, category)
+      ? this.getAccountCodeMetadata(previousOptionName, selectedFormName, category)
       : {};
     const metadata: AccountCodeMetadata = {
       ...previousMetadata,
@@ -995,22 +952,9 @@ export class DropdownsComponent implements OnInit {
       createdDate: previousMetadata.createdDate || this.formatDisplayDate(new Date()),
     };
 
-    for (const key of this.getAccountCodeMetadataStorageKeys(optionName, formName, category)) {
-      localStorage.setItem(key, JSON.stringify(metadata));
-    }
-  }
-
-  private deleteMetadataForOption(option: DropdownOption): void {
-    if (option.formName === 'Conference Application' && option.category === 'Select Region') {
-      for (const key of this.getRegionMetadataStorageKeys(option.value)) {
-        localStorage.removeItem(key);
-      }
-      return;
-    }
-
-    if (this.isAccountCodeMetadataOption(option)) {
-      for (const key of this.getAccountCodeMetadataStorageKeys(option.value, option.formName, option.category)) {
-        localStorage.removeItem(key);
+    for (const formName of targetFormNames) {
+      for (const key of this.getAccountCodeMetadataStorageKeys(optionName, formName, category)) {
+        localStorage.setItem(key, JSON.stringify(metadata));
       }
     }
   }

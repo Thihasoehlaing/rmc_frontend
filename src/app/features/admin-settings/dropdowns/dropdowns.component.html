@@ -108,29 +108,6 @@
               </div>
 
               <div class="toolbar-actions">
-                <div class="bulk-actions">
-                  @if (!isRegionMetadataCategory()) {
-                    <div class="delete-action">
-                      <button
-                        type="button"
-                        class="btn-delete-selected"
-                        [class.is-disabled]="selectedOptionsCount() === 0"
-                        [attr.aria-disabled]="selectedOptionsCount() === 0"
-                        (mouseenter)="showDeleteSelectionHint()"
-                        (focus)="showDeleteSelectionHint()"
-                        (click)="onDeleteSelectedClick()">
-                        <span class="material-icons">delete</span>
-                        Delete Selected
-                      </button>
-                      @if (deleteSelectionHint()) {
-                        <div class="delete-action__hint" role="status">
-                          Select an option first to delete.
-                        </div>
-                      }
-                    </div>
-                  }
-                </div>
-
                 @if (!isRegionMetadataCategory()) {
                   <app-action-button
                     type="primary"
@@ -152,30 +129,12 @@
               (sortChange)="onSortChange($event)"
               [dense]="true">
               <ng-template #headerTemplate let-column="column">
-                @if (column.key === 'select') {
-                  <input
-                    type="checkbox"
-                    class="select-all-checkbox"
-                    [checked]="isAllFilteredOptionsSelected()"
-                    [disabled]="filteredOptions().length === 0"
-                    (click)="$event.stopPropagation()"
-                    (change)="toggleFilteredOptionsSelection($any($event.target).checked)"
-                    aria-label="Select all options"
-                  />
-                } @else {
-                  <span class="header-label">{{ column.label }}</span>
-                }
+                <span class="header-label">{{ column.label }}</span>
               </ng-template>
-              <ng-template #rowTemplate let-row="row">
+              <ng-template #rowTemplate let-row="row" let-rowIndex="index">
                 <tr [class.row--inactive]="row.status === 'Inactive'">
                   <td class="select-cell">
-                    <input
-                      type="checkbox"
-                      class="row-checkbox"
-                      [checked]="isOptionSelected(row.id)"
-                      (change)="toggleOptionSelection(row.id, $any($event.target).checked)"
-                      [attr.aria-label]="'Select ' + row.value"
-                    />
+                    {{ ((optionsPage() - 1) * optionsPageSize()) + rowIndex + 1 }}
                   </td>
 
                   <td>{{ row.value }}</td>
@@ -186,18 +145,48 @@
                     <td class="description-cell">{{ row.description || '-' }}</td>
                   } @else if (isAccountCodeMetadataCategory()) {
                     <td>{{ row.accountNumber || '-' }}</td>
+                    @if (isProjectAccountCodeCategory() || isConferenceVoteNumberDescriptionCategory()) {
+                      <td>
+                        <div class="shared-with-list" [class.shared-with-list--empty]="row.sharedWith.length === 0">
+                          @if (row.sharedWith.length === 0) {
+                            <span class="shared-with-empty">-</span>
+                          } @else if (row.sharedWith.length === 1) {
+                            <span class="shared-with-chip">
+                              <span class="material-icons">share</span>
+                              {{ row.sharedWith[0] }}
+                            </span>
+                          } @else {
+                            <button 
+                              class="shared-count-badge" 
+                              type="button"
+                              (click)="openSharedFormsDialog(row.value, row.sharedWith)"
+                              title="View shared forms">
+                              <span class="material-icons">share</span>
+                              <span class="count">{{ row.sharedWith.length }}</span>
+                            </button>
+                          }
+                        </div>
+                      </td>
+                    }
                   } @else {
                     <td>
                       <div class="shared-with-list" [class.shared-with-list--empty]="row.sharedWith.length === 0">
-                        @if (row.sharedWith.length > 0) {
-                          @for (sharedForm of row.sharedWith; track sharedForm) {
-                            <span class="shared-with-chip">
-                              <span class="material-icons">share</span>
-                              {{ sharedForm }}
-                            </span>
-                          }
-                        } @else {
+                        @if (row.sharedWith.length === 0) {
                           <span class="shared-with-empty">-</span>
+                        } @else if (row.sharedWith.length === 1) {
+                          <span class="shared-with-chip">
+                            <span class="material-icons">share</span>
+                            {{ row.sharedWith[0] }}
+                          </span>
+                        } @else {
+                          <button 
+                            class="shared-count-badge" 
+                            type="button"
+                            (click)="openSharedFormsDialog(row.value, row.sharedWith)"
+                            title="View shared forms">
+                            <span class="material-icons">share</span>
+                            <span class="count">{{ row.sharedWith.length }}</span>
+                          </button>
                         }
                       </div>
                     </td>
@@ -221,9 +210,11 @@
                       Activate
                     </button>
 
-                    <button *ngIf="row.status === 'Active'" class="btn btn-sm btn-status-deactivate" type="button" (click)="toggleStatus(row.id)">
-                      <span class="material-icons">block</span>
-                      Deactivate
+                    <button *ngIf="row.status === 'Active'" class="icon-btn icon-btn--delete" type="button" title="Delete" (click)="openDeleteDialog(row.id)">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+                        <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
+                        <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
+                      </svg>
                     </button>
                   </td>
                 </tr>
@@ -269,6 +260,59 @@
             (close)="closeModal()"
             (save)="onModalSave($event)">
           </app-add-option-modal>
+
+          <!-- Delete Confirmation Dialog -->
+          <app-dialog
+            [isOpen]="optionToDelete() !== null"
+            title="Delete Option"
+            size="small"
+            (close)="closeDeleteDialog()">
+            @if (optionToDelete(); as option) {
+              <div class="delete-confirmation">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="delete-icon" viewBox="0 0 16 16">
+                  <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
+                  <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
+                </svg>
+                <div>
+                  <h3>Are you sure you want to delete this option?</h3>
+                  <p><strong>{{ option.value }}</strong> will be permanently removed.</p>
+                </div>
+              </div>
+            }
+
+            <div dialog-footer class="dialog-actions">
+              <button class="btn btn-secondary" type="button" (click)="closeDeleteDialog()">Cancel</button>
+              <button class="btn btn-danger" type="button" (click)="confirmDelete()">Delete</button>
+            </div>
+          </app-dialog>
+
+          <!-- Shared Forms Dialog -->
+          <app-dialog
+            [isOpen]="sharedFormsDialogData() !== null"
+            title="Shared With Forms"
+            size="small"
+            (close)="closeSharedFormsDialog()">
+            @if (sharedFormsDialogData(); as data) {
+              <div class="shared-forms-dialog">
+                <div class="shared-forms-header">
+                  <p class="option-label">Option: <strong>{{ data.optionName }}</strong></p>
+                  <p class="forms-count">Shared with {{ data.forms.length }} form{{ data.forms.length !== 1 ? 's' : '' }}</p>
+                </div>
+                <div class="shared-forms-list">
+                  @for (form of data.forms; track form) {
+                    <div class="shared-form-item">
+                      <span class="material-icons">description</span>
+                      <span class="form-name">{{ form }}</span>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+
+            <div dialog-footer class="dialog-actions">
+              <button class="btn btn-primary" type="button" (click)="closeSharedFormsDialog()">Close</button>
+            </div>
+          </app-dialog>
     </div>
   </div>
 </section>

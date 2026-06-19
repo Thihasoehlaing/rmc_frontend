@@ -63,15 +63,15 @@ thead th {
 
 .sort-indicator,
 :host ::ng-deep .sort-indicator {
-  margin-left: 6px;
-  font-size: 11px;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: var(--space-2);
   color: var(--color-text-muted);
-}
-
-thead th.is-sorted .sort-indicator .material-icons,
-:host ::ng-deep thead th.is-sorted .sort-indicator .material-icons,
-:host ::ng-deep th.is-sorted .sort-indicator .material-icons {
-  color: var(--color-primary);
+  font-size: var(--fs-base);
+  font-weight: var(--fw-normal);
+  line-height: 1;
+  vertical-align: middle;
 }
 
 .header-label {

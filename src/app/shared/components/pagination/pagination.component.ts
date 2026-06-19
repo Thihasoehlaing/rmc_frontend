@@ -36,31 +36,26 @@ export class PaginationComponent {
   }
 
   get visiblePages(): number[] {
-    const pages: number[] = [];
-    const range = 2;
-
-    // Always show first page
-    if (this.totalPages > 0) {
-      pages.push(1);
+    if (this.totalPages <= 5) {
+      return Array.from({ length: this.totalPages }, (_, index) => index + 1);
     }
 
-    // Add range around current page
-    const start = Math.max(2, this.currentPage - range);
-    const end = Math.min(this.totalPages - 1, this.currentPage + range);
-
-    if (start > 2) pages.push(-1); // Ellipsis indicator
-
-    for (let i = start; i <= end; i++) {
-      pages.push(i);
+    if (this.currentPage <= 3) {
+      return [1, 2, 3, -1, this.totalPages];
     }
 
-    if (end < this.totalPages - 1) pages.push(-1); // Ellipsis indicator
-
-    // Always show last page
-    if (this.totalPages > 1) {
-      pages.push(this.totalPages);
+    if (this.currentPage >= this.totalPages - 2) {
+      return [1, -1, this.totalPages - 2, this.totalPages - 1, this.totalPages];
     }
 
-    return pages;
+    return [
+      1,
+      -1,
+      this.currentPage - 1,
+      this.currentPage,
+      this.currentPage + 1,
+      -2,
+      this.totalPages,
+    ];
   }
 }

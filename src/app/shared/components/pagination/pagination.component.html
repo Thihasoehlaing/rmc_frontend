@@ -1,15 +1,6 @@
 <div class="pagination-wrapper">
-  <div class="pagination-info">
-    <label for="page-size-select" class="pagination-label">Items per page:</label>
-    <select
-      id="page-size-select"
-      class="pagination-select"
-      [ngModel]="pageSize"
-      (ngModelChange)="onPageSizeChange($event)">
-      @for (size of pageSizeOptions; track size) {
-        <option [ngValue]="size">{{ size }}</option>
-      }
-    </select>
+  <div class="pagination-summary">
+    Page <strong>{{ currentPage }}</strong> of <strong>{{ totalPages }}</strong>
   </div>
 
   <div class="pagination-controls">
@@ -22,8 +13,8 @@
       <span class="material-icons">chevron_left</span>
     </button>
 
-    @for (page of visiblePages; track page) {
-      @if (page === -1) {
+    @for (page of visiblePages; track $index) {
+      @if (page < 0) {
         <span class="pagination-ellipsis">…</span>
       } @else {
         <button
@@ -45,9 +36,5 @@
       aria-label="Next page">
       <span class="material-icons">chevron_right</span>
     </button>
-  </div>
-
-  <div class="pagination-summary">
-    Page <strong>{{ currentPage }}</strong> of <strong>{{ totalPages }}</strong>
   </div>
 </div>

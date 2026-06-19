@@ -2,11 +2,16 @@ import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { ApplicationService } from '../../../core/services/application.service';
 import { SubmissionsSearchComponent } from '../../../shared/components/submissions-search/submissions-search.component';
+import { finalize } from 'rxjs';
+import {
+  SkeletonColumn,
+  SubmissionsTableSkeletonComponent,
+} from '../../../shared/components/submissions-table-skeleton/submissions-table-skeleton.component';
 
 @Component({
   selector: 'app-drafts',
   standalone: true,
-  imports: [SubmissionsSearchComponent],
+  imports: [SubmissionsSearchComponent, SubmissionsTableSkeletonComponent],
   templateUrl: './drafts.component.html',
   styleUrl: './drafts.component.scss',
 })
@@ -20,6 +25,11 @@ export class DraftsComponent implements OnInit {
 
   searchQuery = signal('');
   sortAsc     = signal(false); // newest first by default
+  readonly skeletonColumns: SkeletonColumn[] = [
+    { width: '55%' },
+    { width: '25%' },
+    { width: 'var(--size-table-column-actions)' },
+  ];
 
   // ── Derived list ────────────────────────────────────────────────
   readonly drafts = computed(() => {
@@ -36,11 +46,13 @@ export class DraftsComponent implements OnInit {
   });
 
   ngOnInit(): void {
-    this.appSvc.getMyApplications().subscribe({
-      next: apps => { this.raw.set(apps); this.loading.set(false); },
+    this.loading.set(true);
+    this.appSvc.getMyApplications()
+      .pipe(finalize(() => this.loading.set(false)))
+      .subscribe({
+      next: apps => this.raw.set(apps),
       error: () => {
         this.error.set('Could not reach the JSON server. Make sure `npm run db` is running.');
-        this.loading.set(false);
       },
     });
   }

@@ -186,10 +186,10 @@
 
 .users-loading {
   display: grid;
-  gap: 1px;
+  gap: var(--skeleton-border-width);
   min-width: 1196px;
   overflow-x: auto;
-  background: var(--border-subtle);
+  background: var(--skeleton-color-container);
 }
 
 .users-skeleton-row {
@@ -199,19 +199,20 @@
   align-items: center;
   gap: var(--space-4);
   padding: 0 var(--space-5);
-  background: var(--color-surface);
+  background: var(--skeleton-color-container);
 
   span {
-    height: 14px;
+    height: var(--skeleton-line-height);
     background: linear-gradient(
       90deg,
-      var(--color-background-disabled) 25%,
-      var(--color-surface-hover) 50%,
-      var(--color-background-disabled) 75%
+      var(--skeleton-color-placeholder) 25%,
+      var(--skeleton-color-container) 50%,
+      var(--skeleton-color-placeholder) 75%
     );
-    background-size: 200% 100%;
-    border-radius: var(--radius-full);
-    animation: user-skeleton 1.4s ease-in-out infinite;
+    background-size: var(--skeleton-background-size);
+    border-radius: var(--skeleton-line-radius);
+    animation: skeleton-shimmer var(--skeleton-animation-duration)
+      var(--skeleton-animation-easing) infinite;
   }
 }
 
@@ -255,11 +256,6 @@
 .role-pairing__footer {
   display: flex;
   gap: var(--space-3);
-}
-
-@keyframes user-skeleton {
-  from { background-position: 200% 0; }
-  to { background-position: -200% 0; }
 }
 
 @media (max-width: 900px) {

@@ -14,10 +14,11 @@
 
   <!-- ── Loading ────────────────────────────────────────────────────────────── -->
   @if (loading()) {
-    <div class="state-message">
-      <span class="material-icons spinning">sync</span>
-      Loading history…
-    </div>
+    <app-submissions-table-skeleton
+      [columns]="skeletonColumns"
+      [showTypeFilter]="true"
+      loadingLabel="Loading application history">
+    </app-submissions-table-skeleton>
   }
 
   <!-- ── Error ──────────────────────────────────────────────────────────────── -->

@@ -4,11 +4,16 @@ import { RouterLink } from '@angular/router';
 import { ApplicationService, TERMINAL_STATUSES } from '../../../core/services/application.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { SubmissionsSearchComponent } from '../../../shared/components/submissions-search/submissions-search.component';
+import { finalize } from 'rxjs';
+import {
+  SkeletonColumn,
+  SubmissionsTableSkeletonComponent,
+} from '../../../shared/components/submissions-table-skeleton/submissions-table-skeleton.component';
 
 @Component({
   selector: 'app-history',
   standalone: true,
-  imports: [RouterLink, NgClass, SubmissionsSearchComponent],
+  imports: [RouterLink, NgClass, SubmissionsSearchComponent, SubmissionsTableSkeletonComponent],
   templateUrl: './history.component.html',
   styleUrl: './history.component.scss',
 })
@@ -25,6 +30,15 @@ export class HistoryComponent implements OnInit {
 
   /** Filter by application type ('all' = no filter). */
   selectedType   = signal<string>('all');
+  readonly skeletonColumns: SkeletonColumn[] = [
+    { width: '24%' },
+    { width: '12%' },
+    { width: '16%' },
+    { width: '16%' },
+    { width: '12%' },
+    { width: '12%' },
+    { width: 'var(--size-table-column-actions)' },
+  ];
 
   private readonly currentUserName = this.auth.currentUser()?.name ?? '';
   private readonly currentUserId   = this.auth.currentUser()?.id   ?? '';
@@ -69,11 +83,13 @@ export class HistoryComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.appSvc.getApplicationHistory().subscribe({
-      next: apps => { this.raw.set(apps); this.loading.set(false); },
+    this.loading.set(true);
+    this.appSvc.getApplicationHistory()
+      .pipe(finalize(() => this.loading.set(false)))
+      .subscribe({
+      next: apps => this.raw.set(apps),
       error: () => {
         this.error.set('Could not reach the JSON server. Make sure `npm run db` is running.');
-        this.loading.set(false);
       },
     });
   }

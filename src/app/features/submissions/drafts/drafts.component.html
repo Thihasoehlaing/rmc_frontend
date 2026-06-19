@@ -16,10 +16,10 @@
 
   <!-- ── Loading ────────────────────────────────────────────────────────────── -->
   @if (loading()) {
-    <div class="state-message">
-      <span class="material-icons spinning">sync</span>
-      Loading drafts…
-    </div>
+    <app-submissions-table-skeleton
+      [columns]="skeletonColumns"
+      loadingLabel="Loading drafts">
+    </app-submissions-table-skeleton>
   }
 
   <!-- ── Error ──────────────────────────────────────────────────────────────── -->

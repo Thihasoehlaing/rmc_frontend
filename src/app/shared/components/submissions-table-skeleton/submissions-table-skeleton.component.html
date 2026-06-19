@@ -1,0 +1,44 @@
+<div
+  class="submissions-skeleton"
+  role="status"
+  aria-busy="true"
+  [attr.aria-label]="loadingLabel">
+  <span class="sr-only">{{ loadingLabel }}</span>
+
+  @if (showSearch || showTypeFilter) {
+    <div class="submissions-skeleton__toolbar">
+      @if (showSearch) {
+        <div class="skeleton-block submissions-skeleton__search"></div>
+      }
+      @if (showTypeFilter) {
+        <div class="skeleton-block submissions-skeleton__filter"></div>
+      }
+    </div>
+  }
+
+  <div class="submissions-skeleton__table-wrapper">
+    <table class="submissions-skeleton__table" aria-hidden="true">
+      <colgroup>
+        @for (column of columns; track $index) {
+          <col [style.width]="column.width">
+        }
+      </colgroup>
+      <thead>
+        <tr>
+          @for (column of columns; track $index) {
+            <th><span class="skeleton-block skeleton-block--header"></span></th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of rowItems; track row) {
+          <tr>
+            @for (column of columns; track $index) {
+              <td><span class="skeleton-block skeleton-block--cell"></span></td>
+            }
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

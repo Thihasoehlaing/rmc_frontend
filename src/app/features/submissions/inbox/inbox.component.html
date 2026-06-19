@@ -25,10 +25,10 @@
 
   <!-- Loading -->
   @if (loading()) {
-    <div class="state-message">
-      <span class="material-icons spinning">sync</span>
-      Loading applications…
-    </div>
+    <app-submissions-table-skeleton
+      [columns]="skeletonColumns"
+      loadingLabel="Loading inbox applications">
+    </app-submissions-table-skeleton>
   }
 
   <!-- Error -->

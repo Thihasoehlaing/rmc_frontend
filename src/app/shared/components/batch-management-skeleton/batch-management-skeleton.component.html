@@ -1,0 +1,26 @@
+<div class="batch-skeleton" role="status" aria-busy="true" [attr.aria-label]="loadingLabel">
+  <span class="sr-only">{{ loadingLabel }}</span>
+  <section class="batch-skeleton__section">
+    <div class="batch-skeleton__summary">
+      <span class="skeleton-block batch-skeleton__heading"></span>
+      <span class="skeleton-block batch-skeleton__badge"></span>
+    </div>
+    <div class="batch-skeleton__dates">
+      @for (date of [1, 2]; track date) {
+        <div class="batch-skeleton__field">
+          <span class="skeleton-block batch-skeleton__label"></span>
+          <span class="skeleton-block batch-skeleton__input"></span>
+        </div>
+      }
+    </div>
+    <div class="batch-skeleton__table">
+      @for (row of rowItems; track row) {
+        <div class="batch-skeleton__row">
+          <span class="skeleton-block"></span>
+          <span class="skeleton-block"></span>
+          <span class="skeleton-block"></span>
+        </div>
+      }
+    </div>
+  </section>
+</div>

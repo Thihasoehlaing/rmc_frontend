@@ -25,6 +25,7 @@ import {
   DataTableComponent,
 } from '../../../shared/components/data-table/data-table.component';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
+import { TableSkeletonComponent } from '../../../shared/components/table-skeleton/table-skeleton.component';
 
 interface Guideline {
   id: number;
@@ -65,6 +66,7 @@ const FORM_CODES: Record<string, string> = Object.fromEntries(
     AddGuidelineModalComponent,
     DataTableComponent,
     PaginationComponent,
+    TableSkeletonComponent,
   ],
   templateUrl: './guidelines.component.html',
   styleUrls: ['./guidelines.component.scss'],

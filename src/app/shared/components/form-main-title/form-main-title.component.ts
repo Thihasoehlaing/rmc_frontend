@@ -1,7 +1,20 @@
-import { AfterViewInit, Component, Input, Output, EventEmitter, ViewChild, signal } from '@angular/core';
+import {
+    AfterViewInit,
+    Component,
+    EventEmitter,
+    Input,
+    OnChanges,
+    OnDestroy,
+    Output,
+    SimpleChanges,
+    ViewChild,
+    signal,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { GuidelinesModalComponent } from '../guidelines-modal/guidelines-modal.component';
 import { FormIntent, StatusBadgeComponent } from '../form-standard/form-standard.components';
+
+export type GuidelineContext = 'new-application' | 'existing-application';
 
 @Component({
     selector: 'app-form-main-title',
@@ -42,7 +55,7 @@ import { FormIntent, StatusBadgeComponent } from '../form-standard/form-standard
   `,
     styleUrls: ['./form-main-title.component.scss']
 })
-export class FormMainTitleComponent implements AfterViewInit {
+export class FormMainTitleComponent implements AfterViewInit, OnChanges, OnDestroy {
     @Input() title = '';
     @Input() description = '';
     @Input() helpText = 'Click to view guidelines';
@@ -51,7 +64,7 @@ export class FormMainTitleComponent implements AfterViewInit {
     @Input() modalTitle = 'Guidelines for Applicants';
     @Input() endpoint = '';
     @Input() customModal = false;
-    @Input() autoOpenGuidelines = true;
+    @Input() guidelineContext: GuidelineContext = 'existing-application';
 
     @Output() helpClick = new EventEmitter<void>();
 
@@ -59,18 +72,37 @@ export class FormMainTitleComponent implements AfterViewInit {
     readonly showHelpMessage = signal(false);
     private awaitingInitialClose = false;
     private manuallyOpened = false;
+    private viewInitialized = false;
+    private automaticOpenScheduled = false;
+    private automaticOpenTimer?: ReturnType<typeof setTimeout>;
     private helpMessageTimer?: ReturnType<typeof setTimeout>;
 
     ngAfterViewInit(): void {
-        if (!this.autoOpenGuidelines || (!this.endpoint && !this.customModal)) return;
+        this.viewInitialized = true;
+        this.maybeAutoOpenGuidelines();
+    }
 
-        this.awaitingInitialClose = true;
-        setTimeout(() => this.openGuidelines());
+    ngOnChanges(changes: SimpleChanges): void {
+        if (changes['guidelineContext'] && this.guidelineContext === 'existing-application') {
+            clearTimeout(this.automaticOpenTimer);
+            this.awaitingInitialClose = false;
+        }
+
+        if (changes['guidelineContext'] && this.viewInitialized) {
+            this.maybeAutoOpenGuidelines();
+        }
+    }
+
+    ngOnDestroy(): void {
+        clearTimeout(this.automaticOpenTimer);
+        clearTimeout(this.helpMessageTimer);
     }
 
     onHelpClick(): void {
         this.manuallyOpened = true;
         this.awaitingInitialClose = false;
+        this.automaticOpenScheduled = true;
+        clearTimeout(this.automaticOpenTimer);
         clearTimeout(this.helpMessageTimer);
         this.showHelpMessage.set(false);
         this.openGuidelines();
@@ -93,5 +125,19 @@ export class FormMainTitleComponent implements AfterViewInit {
         } else if (this.guidelinesModal) {
             this.guidelinesModal.open();
         }
+    }
+
+    private maybeAutoOpenGuidelines(): void {
+        if (
+            this.guidelineContext !== 'new-application' ||
+            this.automaticOpenScheduled ||
+            (!this.endpoint && !this.customModal)
+        ) {
+            return;
+        }
+
+        this.automaticOpenScheduled = true;
+        this.awaitingInitialClose = true;
+        this.automaticOpenTimer = setTimeout(() => this.openGuidelines());
     }
 }

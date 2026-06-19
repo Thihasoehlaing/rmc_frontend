@@ -5,12 +5,13 @@
       <h1>Forms</h1>
       <p>Manage application forms, their codes, names, and availability.</p>
     </div>
-    <button class="btn btn-primary forms-page__create-button" type="button" (click)="openCreateDialog()">
+    <button class="btn btn-primary forms-page__create-button" type="button" (click)="openCreateDialog()" [disabled]="isLoading()">
       <span class="material-icons">add</span>
       Create Form
     </button>
   </header>
 
+  @if (!isLoading()) {
   <section class="forms-toolbar" aria-label="Form filters">
     <label class="forms-filter forms-filter--search">
       <span>Form Code or Name</span>
@@ -46,18 +47,15 @@
       </button>
     </div>
   </section>
+  }
 
   <section class="forms-table-card">
     @if (isLoading()) {
-      <div class="forms-loading" aria-label="Loading forms">
-        @for (row of [1, 2, 3, 4, 5]; track row) {
-          <div class="forms-skeleton-row">
-            @for (cell of [1, 2, 3, 4, 5]; track cell) {
-              <span></span>
-            }
-          </div>
-        }
-      </div>
+      <app-table-skeleton
+        [columns]="columns"
+        [showSearch]="false"
+        loadingLabel="Loading forms">
+      </app-table-skeleton>
     } @else if (loadFailed()) {
       <div class="forms-state">
         <span class="material-icons">cloud_off</span>
@@ -144,11 +142,7 @@
     size="small"
     (close)="closeFormDialog()">
     @if (isDetailLoading()) {
-      <div class="form-detail-loading">
-        <span></span>
-        <span></span>
-        <span></span>
-      </div>
+      <app-detail-panel-skeleton loadingLabel="Loading form details"></app-detail-panel-skeleton>
     } @else if (detailFailed()) {
       <div class="dialog-state">
         <span class="material-icons">error_outline</span>

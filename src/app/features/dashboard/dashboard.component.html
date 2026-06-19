@@ -19,6 +19,9 @@
     </section>
   }
 
+  @if (loading()) {
+    <app-dashboard-skeleton></app-dashboard-skeleton>
+  } @else {
   <section class="metrics-grid" aria-label="Application summary">
     @for (metric of metrics(); track metric.label) {
       <a
@@ -30,7 +33,7 @@
         </div>
         <div>
           <span class="metric-card__label">{{ metric.label }}</span>
-          <strong class="metric-card__value">{{ loading() ? '...' : metric.value }}</strong>
+          <strong class="metric-card__value">{{ metric.value }}</strong>
         </div>
       </a>
     }
@@ -44,12 +47,7 @@
       </div>
     </div>
 
-    @if (loading()) {
-      <div class="state-panel">
-        <span class="material-icons">hourglass_empty</span>
-        <span>Loading recent applications...</span>
-      </div>
-    } @else if (visibleRecentApps().length === 0) {
+    @if (visibleRecentApps().length === 0) {
       <div class="empty-state">
         <span class="material-icons">description</span>
         <p>No applications found yet.</p>
@@ -102,4 +100,5 @@
       }
     }
   </section>
+  }
 </main>

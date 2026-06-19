@@ -165,38 +165,6 @@
   box-shadow: var(--shadow-xs);
 }
 
-.guidelines-loading {
-  display: grid;
-  gap: var(--skeleton-border-width);
-  min-width: 900px;
-  background: var(--skeleton-color-container);
-}
-
-.guidelines-skeleton-row {
-  display: grid;
-  grid-template-columns: 80px 180px minmax(220px, 1fr) 120px 120px 140px 160px 230px;
-  gap: var(--space-4);
-  align-items: center;
-  min-height: 68px;
-  padding: 0 var(--space-5);
-  background: var(--skeleton-color-container);
-}
-
-.guidelines-skeleton-cell {
-  display: block;
-  height: var(--skeleton-line-height);
-  border-radius: var(--skeleton-line-radius);
-  background: linear-gradient(
-    90deg,
-    var(--skeleton-color-placeholder) 25%,
-    var(--skeleton-color-container) 50%,
-    var(--skeleton-color-placeholder) 75%
-  );
-  background-size: var(--skeleton-background-size);
-  animation: skeleton-shimmer var(--skeleton-animation-duration)
-    var(--skeleton-animation-easing) infinite;
-}
-
 .guidelines-state {
   display: flex;
   min-height: 320px;

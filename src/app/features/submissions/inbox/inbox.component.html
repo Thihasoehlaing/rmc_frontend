@@ -25,10 +25,10 @@
 
   <!-- Loading -->
   @if (loading()) {
-    <app-submissions-table-skeleton
+    <app-table-skeleton
       [columns]="skeletonColumns"
       loadingLabel="Loading inbox applications">
-    </app-submissions-table-skeleton>
+    </app-table-skeleton>
   }
 
   <!-- Error -->

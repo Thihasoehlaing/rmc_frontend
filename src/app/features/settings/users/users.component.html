@@ -5,12 +5,13 @@
       <h1>Users</h1>
       <p>Find authenticated users and manage RMC role pairing.</p>
     </div>
-    <button class="btn btn-primary users-page__pair-button" type="button" (click)="openPairDialog()">
+    <button class="btn btn-primary users-page__pair-button" type="button" (click)="openPairDialog()" [disabled]="isLoading()">
       <span class="material-icons">person_add</span>
       Pair User Role
     </button>
   </header>
 
+  @if (!isLoading()) {
   <section class="users-toolbar" aria-label="User filters">
     <label class="users-filter users-filter--wide">
       <span>Name or Email</span>
@@ -83,18 +84,15 @@
       </button>
     </div>
   </section>
+  }
 
   <section class="users-table-card">
     @if (isLoading()) {
-      <div class="users-loading" aria-label="Loading users">
-        @for (row of [1, 2, 3, 4, 5]; track row) {
-          <div class="users-skeleton-row">
-            @for (cell of [1, 2, 3, 4, 5, 6, 7]; track cell) {
-              <span></span>
-            }
-          </div>
-        }
-      </div>
+      <app-table-skeleton
+        [columns]="columns"
+        [showSearch]="false"
+        loadingLabel="Loading users">
+      </app-table-skeleton>
     } @else if (loadFailed()) {
       <div class="users-state">
         <span class="material-icons">cloud_off</span>

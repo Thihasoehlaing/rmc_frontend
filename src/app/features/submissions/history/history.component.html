@@ -14,11 +14,11 @@
 
   <!-- ── Loading ────────────────────────────────────────────────────────────── -->
   @if (loading()) {
-    <app-submissions-table-skeleton
+    <app-table-skeleton
       [columns]="skeletonColumns"
       [showTypeFilter]="true"
       loadingLabel="Loading application history">
-    </app-submissions-table-skeleton>
+    </app-table-skeleton>
   }
 
   <!-- ── Error ──────────────────────────────────────────────────────────────── -->

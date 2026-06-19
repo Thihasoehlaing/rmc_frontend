@@ -7,13 +7,13 @@ import { SubmissionsSearchComponent } from '../../../shared/components/submissio
 import { finalize } from 'rxjs';
 import {
   SkeletonColumn,
-  SubmissionsTableSkeletonComponent,
-} from '../../../shared/components/submissions-table-skeleton/submissions-table-skeleton.component';
+  TableSkeletonComponent,
+} from '../../../shared/components/table-skeleton/table-skeleton.component';
 
 @Component({
   selector: 'app-history',
   standalone: true,
-  imports: [RouterLink, NgClass, SubmissionsSearchComponent, SubmissionsTableSkeletonComponent],
+  imports: [RouterLink, NgClass, SubmissionsSearchComponent, TableSkeletonComponent],
   templateUrl: './history.component.html',
   styleUrl: './history.component.scss',
 })

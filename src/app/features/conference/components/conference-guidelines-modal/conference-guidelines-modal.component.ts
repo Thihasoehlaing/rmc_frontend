@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, EventEmitter, Output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -9,6 +9,7 @@ import { CommonModule } from '@angular/common';
   styleUrl: './conference-guidelines-modal.component.scss'
 })
 export class ConferenceGuidelinesModalComponent {
+  @Output() closed = new EventEmitter<void>();
   isOpen = signal(false);
 
   open() {
@@ -17,5 +18,6 @@ export class ConferenceGuidelinesModalComponent {
 
   close() {
     this.isOpen.set(false);
+    this.closed.emit();
   }
 }

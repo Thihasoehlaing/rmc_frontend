@@ -37,6 +37,7 @@ import { ActionButtonComponent } from '../../../shared/components/action-button/
 import { ValidationMessageComponent } from '../../../shared/components/validation-message/validation-message.component';
 import { DialogComponent } from '../../../shared/components/dialog/dialog.component';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
+import { BatchManagementSkeletonComponent } from '../../../shared/components/batch-management-skeleton/batch-management-skeleton.component';
 
 // ── Validators ────────────────────────────────────────────────────────────────
 
@@ -66,7 +67,7 @@ function stageWithinBatchValidator(startFn: () => string, endFn: () => string) {
 @Component({
   selector: 'app-batch-sitting',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule, ActionButtonComponent, ValidationMessageComponent, DialogComponent, PaginationComponent],
+  imports: [CommonModule, ReactiveFormsModule, ActionButtonComponent, ValidationMessageComponent, DialogComponent, PaginationComponent, BatchManagementSkeletonComponent],
   templateUrl: './batch-sitting.component.html',
   styleUrl: './batch-sitting.component.scss',
 })

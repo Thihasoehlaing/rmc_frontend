@@ -7,7 +7,10 @@ import { BatchSitting } from '../../core/interfaces/batch-sitting.interface';
 import { NotificationService } from '../../core/services/notification.service';
 
 // Shared layout components
-import { FormMainTitleComponent } from '../../shared/components/form-main-title/form-main-title.component';
+import {
+  FormMainTitleComponent,
+  GuidelineContext,
+} from '../../shared/components/form-main-title/form-main-title.component';
 import { StepIndicatorComponent, WizardStep, StepStatus } from '../../shared/components/step-indicator/step-indicator.component';
 import { FormWizardNavComponent } from '../../shared/components/form-wizard-nav/form-wizard-nav.component';
 import {
@@ -31,6 +34,8 @@ import { ReviewBlockComponent } from './components/review-block/review-block.com
 import { RdigWorkflowService, RdigStatus, getNextRoles } from './services/rdig-workflow.service';
 import { AuthService } from '../../core/services/auth.service';
 import { WorkflowState, WorkflowHistoryEntry } from '../../core/interfaces/rdig-application.interface';
+import { FormPageSkeletonComponent } from '../../shared/components/form-page-skeleton/form-page-skeleton.component';
+import { finalize } from 'rxjs';
 
 @Component({
   selector: 'app-rdig-application',
@@ -50,7 +55,8 @@ import { WorkflowState, WorkflowHistoryEntry } from '../../core/interfaces/rdig-
     BudgetSummaryComponent,
     FinalDeclarationComponent,
     ScoreSummaryComponent,
-    ReviewBlockComponent
+    ReviewBlockComponent,
+    FormPageSkeletonComponent
   ],
   templateUrl: './rdig_form.component.html',
   styleUrl: './rdig_form.component.scss',
@@ -64,6 +70,8 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private batchSvc  = inject(BatchSittingService);
   private notifSvc  = inject(NotificationService);
+  readonly guidelineContext: GuidelineContext =
+    this.route.snapshot.queryParamMap.has('id') ? 'existing-application' : 'new-application';
 
   /** The currently active batch loaded from the server on init. */
   activeBatch = signal<BatchSitting | null | undefined>(undefined); // undefined = loading
@@ -788,14 +796,14 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
    */
   loadApplication(id: string): void {
     this.isLoadingApplication.set(true);
-    this.http.get<any>(`http://localhost:3000/applications/${id}`).subscribe({
+    this.http.get<any>(`http://localhost:3000/applications/${id}`).pipe(
+      finalize(() => this.isLoadingApplication.set(false)),
+    ).subscribe({
       next: (data) => {
         this.patchFormFromSavedData(data);
-        this.isLoadingApplication.set(false);
       },
       error: (err) => {
         console.error('Failed to load application:', err);
-        this.isLoadingApplication.set(false);
         alert(`Could not load application ${id}. Make sure the JSON server is running (npm run db).`);
       },
     });

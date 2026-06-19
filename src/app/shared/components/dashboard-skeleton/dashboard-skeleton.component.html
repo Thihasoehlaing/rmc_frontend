@@ -1,0 +1,29 @@
+<div class="dashboard-skeleton" role="status" aria-busy="true" [attr.aria-label]="loadingLabel">
+  <span class="sr-only">{{ loadingLabel }}</span>
+  <div class="dashboard-skeleton__metrics">
+    @for (metric of metrics; track metric) {
+      <div class="dashboard-skeleton__metric">
+        <span class="skeleton-block dashboard-skeleton__icon"></span>
+        <div class="dashboard-skeleton__metric-copy">
+          <span class="skeleton-block dashboard-skeleton__label"></span>
+          <span class="skeleton-block dashboard-skeleton__value"></span>
+        </div>
+      </div>
+    }
+  </div>
+  <div class="dashboard-skeleton__panel">
+    <span class="skeleton-block dashboard-skeleton__eyebrow"></span>
+    <span class="skeleton-block dashboard-skeleton__heading"></span>
+    <div class="dashboard-skeleton__rows">
+      @for (row of rowItems; track row) {
+        <div class="dashboard-skeleton__row">
+          <span class="skeleton-block dashboard-skeleton__row-icon"></span>
+          <div class="dashboard-skeleton__row-copy">
+            <span class="skeleton-block dashboard-skeleton__row-title"></span>
+            <span class="skeleton-block dashboard-skeleton__row-meta"></span>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</div>

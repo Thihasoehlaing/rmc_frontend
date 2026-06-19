@@ -16,6 +16,8 @@ import {
 } from '../../../shared/components/data-table/data-table.component';
 import { DialogComponent } from '../../../shared/components/dialog/dialog.component';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
+import { DetailPanelSkeletonComponent } from '../../../shared/components/detail-panel-skeleton/detail-panel-skeleton.component';
+import { TableSkeletonComponent } from '../../../shared/components/table-skeleton/table-skeleton.component';
 import { Role, RolePayload, RolesService } from './roles.service';
 
 type DialogMode = 'create' | 'edit';
@@ -30,6 +32,8 @@ type StatusFilter = '' | 'Active' | 'Inactive';
     DataTableComponent,
     DialogComponent,
     PaginationComponent,
+    DetailPanelSkeletonComponent,
+    TableSkeletonComponent,
   ],
   templateUrl: './roles.component.html',
   styleUrls: [

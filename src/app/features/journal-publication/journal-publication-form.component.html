@@ -32,6 +32,7 @@
   <app-form-main-title
     #journalFormTitle
     title="Journal Publication"
+    [guidelineContext]="guidelineContext"
     [customModal]="true"
     (helpClick)="journalGuidelinesModal.open()"
     modalTitle="Journal Guidelines"

@@ -53,20 +53,6 @@
 
 // ── Loading ───────────────────────────────────────────────────────────────────
 
-.loading-state {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: var(--space-3);
-    padding: var(--space-10) 0;
-    color: var(--color-text-muted);
-}
-.loading-state__icon {
-    font-size: 40px;
-    animation: spin 1.4s linear infinite;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-
 // ── Sections Layout ───────────────────────────────────────────────────────────
 
 .batch-sections {

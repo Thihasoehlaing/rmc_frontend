@@ -8,13 +8,13 @@ import { SubmissionsSearchComponent } from '../../../shared/components/submissio
 import { finalize } from 'rxjs';
 import {
   SkeletonColumn,
-  SubmissionsTableSkeletonComponent,
-} from '../../../shared/components/submissions-table-skeleton/submissions-table-skeleton.component';
+  TableSkeletonComponent,
+} from '../../../shared/components/table-skeleton/table-skeleton.component';
 
 @Component({
   selector: 'app-inbox',
   standalone: true,
-  imports: [RouterLink, SubmissionsSearchComponent, SubmissionsTableSkeletonComponent],
+  imports: [RouterLink, SubmissionsSearchComponent, TableSkeletonComponent],
   templateUrl: './inbox.component.html',
   styleUrl: './inbox.component.scss',
   providers: [TableSortService]

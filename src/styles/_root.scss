@@ -55,6 +55,25 @@
     --form-message-gap: var(--form-space-1);
     --form-grid-columns: 12;
     --transition-standard: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+
+    // Shared skeleton loading system. Skeletons use exactly two fill colors:
+    // the container surface and the animated placeholder surface.
+    --skeleton-color-container: var(--color-surface);
+    --skeleton-color-placeholder: var(--color-surface-nested);
+    --skeleton-border-color: var(--border-default);
+    --skeleton-border-width: var(--control-border-width);
+    --skeleton-border-radius: var(--radius-lg);
+    --skeleton-block-radius: var(--radius-md);
+    --skeleton-line-radius: var(--radius-full);
+    --skeleton-shadow: var(--shadow-md);
+    --skeleton-animation-duration: 1.4s;
+    --skeleton-animation-easing: ease-in-out;
+    --skeleton-background-size: 200% 100%;
+    --skeleton-line-height: var(--space-3);
+    --skeleton-cell-height: var(--space-4);
+    --skeleton-icon-size: 2.125rem;
+    --skeleton-avatar-size: 4.75rem;
+    --skeleton-avatar-size-compact: 3.625rem;
     // Page & Background
     --color-page-bg: #{colors.$white}; // Main page/app background
     --color-background-page: var(--color-page-bg);

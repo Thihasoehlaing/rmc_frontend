@@ -1,5 +1,8 @@
 <div class="journal-app application-form-page">
-  <app-journal-guidelines-modal #journalGuidelinesModal></app-journal-guidelines-modal>
+  <app-journal-guidelines-modal
+    #journalGuidelinesModal
+    (closed)="journalFormTitle.onGuidelinesClosed()">
+  </app-journal-guidelines-modal>
 
   <!-- DEV TEST START: Application Status Override -->
   <div class="dev-test-override">
@@ -27,6 +30,7 @@
   <!-- DEV TEST END -->
 
   <app-form-main-title
+    #journalFormTitle
     title="Journal Publication"
     [customModal]="true"
     (helpClick)="journalGuidelinesModal.open()"

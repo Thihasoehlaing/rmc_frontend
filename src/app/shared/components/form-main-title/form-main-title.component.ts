@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, ViewChild, OnInit, signal } from '@angular/core';
+import { AfterViewInit, Component, Input, Output, EventEmitter, ViewChild, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { GuidelinesModalComponent } from '../guidelines-modal/guidelines-modal.component';
 import { FormIntent, StatusBadgeComponent } from '../form-standard/form-standard.components';
@@ -35,13 +35,14 @@ import { FormIntent, StatusBadgeComponent } from '../form-standard/form-standard
       <app-guidelines-modal
         #guidelinesModal
         [title]="modalTitle"
-        [endpoint]="endpoint">
+        [endpoint]="endpoint"
+        (closed)="onGuidelinesClosed()">
       </app-guidelines-modal>
     }
   `,
     styleUrls: ['./form-main-title.component.scss']
 })
-export class FormMainTitleComponent implements OnInit {
+export class FormMainTitleComponent implements AfterViewInit {
     @Input() title = '';
     @Input() description = '';
     @Input() helpText = 'Click to view guidelines';
@@ -50,17 +51,43 @@ export class FormMainTitleComponent implements OnInit {
     @Input() modalTitle = 'Guidelines for Applicants';
     @Input() endpoint = '';
     @Input() customModal = false;
+    @Input() autoOpenGuidelines = true;
 
     @Output() helpClick = new EventEmitter<void>();
 
     @ViewChild('guidelinesModal') guidelinesModal!: GuidelinesModalComponent;
-    readonly showHelpMessage = signal(true);
+    readonly showHelpMessage = signal(false);
+    private awaitingInitialClose = false;
+    private manuallyOpened = false;
+    private helpMessageTimer?: ReturnType<typeof setTimeout>;
 
-    ngOnInit(): void {
-        setTimeout(() => this.showHelpMessage.set(false), 3000);
+    ngAfterViewInit(): void {
+        if (!this.autoOpenGuidelines || (!this.endpoint && !this.customModal)) return;
+
+        this.awaitingInitialClose = true;
+        setTimeout(() => this.openGuidelines());
     }
 
-    onHelpClick() {
+    onHelpClick(): void {
+        this.manuallyOpened = true;
+        this.awaitingInitialClose = false;
+        clearTimeout(this.helpMessageTimer);
+        this.showHelpMessage.set(false);
+        this.openGuidelines();
+    }
+
+    onGuidelinesClosed(): void {
+        if (this.awaitingInitialClose && !this.manuallyOpened) {
+            this.awaitingInitialClose = false;
+            this.showHelpMessage.set(true);
+            this.helpMessageTimer = setTimeout(
+                () => this.showHelpMessage.set(false),
+                3000
+            );
+        }
+    }
+
+    private openGuidelines(): void {
         if (this.customModal) {
             this.helpClick.emit();
         } else if (this.guidelinesModal) {

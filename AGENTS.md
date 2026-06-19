@@ -41,6 +41,18 @@ Create a new shared component only when:
 
 Do not duplicate shared component behavior locally inside a feature page.
 
+## Skeleton Loading
+
+Use the shared skeleton loading system for every loading placeholder.
+
+Required:
+- Use the global `--skeleton-*` tokens for skeleton colors, animation, borders, shadow, radius, and sizing.
+- Use exactly the shared container and placeholder fill colors; do not introduce feature-specific skeleton colors.
+- Use the global `skeleton-shimmer` animation and reduced-motion behavior.
+- Reuse `<app-submissions-table-skeleton>` for submission-style tables and configure only its columns, rows, search, and filter shape.
+
+Do not define local skeleton keyframes, animation speeds, or hardcoded skeleton colors in feature styles.
+
 ## Global Classes
 
 Use the existing global UI classes instead of redefining styles in component SCSS.

@@ -5,11 +5,16 @@ import { BatchSittingService } from '../../admin-settings/batch-sitting.service'
 import { BatchSitting, WORKFLOW_STAGE_META } from '../../../core/interfaces/batch-sitting.interface';
 import { TableSortService, SortDirection } from '../../../shared/services/table-sort.service';
 import { SubmissionsSearchComponent } from '../../../shared/components/submissions-search/submissions-search.component';
+import { finalize } from 'rxjs';
+import {
+  SkeletonColumn,
+  SubmissionsTableSkeletonComponent,
+} from '../../../shared/components/submissions-table-skeleton/submissions-table-skeleton.component';
 
 @Component({
   selector: 'app-inbox',
   standalone: true,
-  imports: [RouterLink, SubmissionsSearchComponent],
+  imports: [RouterLink, SubmissionsSearchComponent, SubmissionsTableSkeletonComponent],
   templateUrl: './inbox.component.html',
   styleUrl: './inbox.component.scss',
   providers: [TableSortService]
@@ -26,6 +31,15 @@ export class InboxComponent implements OnInit {
   searchQuery             = signal('');
   headerSortColumn        = signal<string | null>(null);
   headerSortDirection     = signal<SortDirection>(null);
+  readonly skeletonColumns: SkeletonColumn[] = [
+    { width: '23%' },
+    { width: '11%' },
+    { width: '15%' },
+    { width: '14%' },
+    { width: '14%' },
+    { width: '15%' },
+    { width: 'var(--size-table-column-actions)' },
+  ];
 
   /** Badge colour per workflow status */
   readonly statusColors: Record<string, string> = {
@@ -99,14 +113,15 @@ export class InboxComponent implements OnInit {
     });
 
     // Filtering is done server-side for roles, then client-side for date windows.
-    this.applicationService.getInboxApplications().subscribe({
+    this.loading.set(true);
+    this.applicationService.getInboxApplications()
+      .pipe(finalize(() => this.loading.set(false)))
+      .subscribe({
       next: (apps) => {
         this.allApplications.set(apps);
-        this.loading.set(false);
       },
       error: () => {
         this.error.set('Could not reach the JSON server. Make sure `npm run db` is running.');
-        this.loading.set(false);
       },
     });
   }

@@ -2,11 +2,16 @@ import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ApplicationService, TERMINAL_STATUSES } from '../../../core/services/application.service';
 import { SubmissionsSearchComponent } from '../../../shared/components/submissions-search/submissions-search.component';
+import { finalize } from 'rxjs';
+import {
+  SkeletonColumn,
+  SubmissionsTableSkeletonComponent,
+} from '../../../shared/components/submissions-table-skeleton/submissions-table-skeleton.component';
 
 @Component({
   selector: 'app-pending',
   standalone: true,
-  imports: [RouterLink, SubmissionsSearchComponent],
+  imports: [RouterLink, SubmissionsSearchComponent, SubmissionsTableSkeletonComponent],
   templateUrl: './pending.component.html',
   styleUrl: './pending.component.scss',
 })
@@ -22,6 +27,14 @@ export class PendingComponent implements OnInit {
 
   /** Filter by application type ('all' = no filter). */
   selectedType   = signal<string>('all');
+  readonly skeletonColumns: SkeletonColumn[] = [
+    { width: '28%' },
+    { width: '13%' },
+    { width: '15%' },
+    { width: '16%' },
+    { width: '18%' },
+    { width: 'var(--size-table-column-actions)' },
+  ];
 
   // ── Available form types derived from loaded data ────────────────
   readonly availableTypes = computed(() => {
@@ -67,11 +80,13 @@ export class PendingComponent implements OnInit {
   });
 
   ngOnInit(): void {
-    this.appSvc.getMyApplications().subscribe({
-      next: apps => { this.raw.set(apps); this.loading.set(false); },
+    this.loading.set(true);
+    this.appSvc.getMyApplications()
+      .pipe(finalize(() => this.loading.set(false)))
+      .subscribe({
+      next: apps => this.raw.set(apps),
       error: () => {
         this.error.set('Could not reach the JSON server. Make sure `npm run db` is running.');
-        this.loading.set(false);
       },
     });
   }

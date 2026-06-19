@@ -101,7 +101,7 @@
                 <span>First and Corresponding Author</span>
               </label>
             </div>
-            <app-note text="Applicant must be either first or corresponding author"></app-note>
+            <app-note text="Applicant must be either first or corresponding author or both"></app-note>
             <app-validation-message [control]="form.get('authorshipType')"></app-validation-message>
           </div>
 
@@ -377,17 +377,7 @@
                       </ng-template>
                     </app-data-table>
                   </div>
-                  <div class="table-footer">
-                    <app-pagination
-                      [currentPage]="externalPage"
-                      [totalPages]="getExternalTotalPages()"
-                      [pageSize]="externalPageSize"
-                      [pageSizeOptions]="externalPageSizeOptions"
-                      (pageChange)="onExternalPageChange($event)"
-                      (pageSizeChange)="onExternalPageSizeChange($event)">
-                    </app-pagination>
-                    <div class="table-summary">{{ externalPageStart() }}–{{ externalPageEnd() }} of {{ getExternalBreakdownTableData().length }}</div>
-                  </div>
+                  <div class="table-summary">{{ getExternalBreakdownTableData().length }} item(s)</div>
                 } @else {
                   <div class="empty-state">
                     <span class="material-icons">receipt</span>
@@ -544,17 +534,7 @@
                       </ng-template>
                     </app-data-table>
                   </div>
-                  <div class="table-footer">
-                    <app-pagination
-                      [currentPage]="localPage"
-                      [totalPages]="getLocalTotalPages()"
-                      [pageSize]="localPageSize"
-                      [pageSizeOptions]="localPageSizeOptions"
-                      (pageChange)="onLocalPageChange($event)"
-                      (pageSizeChange)="onLocalPageSizeChange($event)">
-                    </app-pagination>
-                    <div class="table-summary">{{ localPageStart() }}–{{ localPageEnd() }} of {{ getLocalBreakdownTableData().length }}</div>
-                  </div>
+                  <div class="table-summary">{{ getLocalBreakdownTableData().length }} item(s)</div>
                 } @else {
                   <div class="empty-state">
                     <span class="material-icons">receipt</span>

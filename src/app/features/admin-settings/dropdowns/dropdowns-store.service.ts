@@ -10,12 +10,17 @@ export interface StoredDropdownOption {
   status: 'Active' | 'Inactive';
 }
 
+interface ProjectAccountCodeSeedOption {
+  value: string;
+  accountCode: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class DropdownsStoreService {
   private readonly storageKey = 'rmc_dropdowns_data';
-  private readonly projectAccountCodeSeedKey = 'rmc_project_account_code_seed_v1';
+  private readonly projectAccountCodeSeedKey = 'rmc_project_account_code_seed_v3';
   private readonly journalItemDescriptionSeedKey = 'rmc_journal_item_description_seed_v1';
   private readonly journalAccountCodeDescriptionSeedKey = 'rmc_journal_account_code_description_seed_v1';
   private readonly updateEventName = 'rmc-dropdowns-updated';
@@ -221,22 +226,45 @@ export class DropdownsStoreService {
   }
 
   private seedProjectAccountCodes(entries: StoredDropdownOption[]): StoredDropdownOption[] {
-    if (localStorage.getItem(this.projectAccountCodeSeedKey)) {
-      return entries;
-    }
-
-    const testCodes = ['V29000', 'V29100', 'V29200'];
+    const testCodes: ProjectAccountCodeSeedOption[] = [
+      // Research grant accounts
+      { value: 'V28000', accountCode: '6203/001' },
+      { value: 'V28100', accountCode: '6203/002' },
+      { value: 'V28200', accountCode: '6203/003' },
+      { value: 'V28300', accountCode: '6203/004' },
+      { value: 'V28400', accountCode: '6203/005' },
+      { value: 'V28500', accountCode: '6203/006' },
+      { value: 'V28600', accountCode: '6203/007' },
+      { value: 'V28700', accountCode: '6203/008' },
+      { value: 'V28800', accountCode: '6203/009' },
+      { value: 'V28900', accountCode: '6203/010' },
+      // Publication support accounts
+      { value: 'V29000', accountCode: '6203/100' },
+      { value: 'V29100', accountCode: '6203/200' },
+      { value: 'V29200', accountCode: '6203/300' },
+      { value: 'V29300', accountCode: '6203/400' },
+      { value: 'V29400', accountCode: '6203/500' },
+      { value: 'V29500', accountCode: '6203/600' },
+      { value: 'V29600', accountCode: '6203/700' },
+      { value: 'V29700', accountCode: '6203/800' },
+      { value: 'V29800', accountCode: '6203/900' },
+      { value: 'V29900', accountCode: '6203/1000' },
+      // Higher-tier accounts
+      { value: 'V30000', accountCode: '6203/1100' },
+      { value: 'V30100', accountCode: '6203/1200' },
+    ];
     const formNames = ['Conference Application', 'Journal Application'];
     const nextEntries = [...entries];
     let nextId = nextEntries.reduce((maxId, entry) => Math.max(maxId, entry.id), 0) + 1;
     const now = this.formatDisplayDate(new Date());
+    let hasChanges = false;
 
     for (const code of testCodes) {
       for (const formName of formNames) {
         const exists = nextEntries.some(entry =>
           entry.formName === formName &&
           entry.category === 'Project Account Code' &&
-          entry.value.toLowerCase() === code.toLowerCase()
+          entry.value.toLowerCase() === code.value.toLowerCase()
         );
 
         if (!exists) {
@@ -244,18 +272,44 @@ export class DropdownsStoreService {
             id: nextId++,
             formName,
             category: 'Project Account Code',
-            value: code,
+            value: code.value,
             lastUpdated: now,
             createdBy: 'System Seed',
             status: 'Active'
           });
+          hasChanges = true;
         }
+
+        hasChanges = this.seedProjectAccountCodeMetadata(formName, code) || hasChanges;
       }
     }
 
-    localStorage.setItem(this.storageKey, JSON.stringify(nextEntries));
-    localStorage.setItem(this.projectAccountCodeSeedKey, '1');
+    if (hasChanges || !localStorage.getItem(this.projectAccountCodeSeedKey)) {
+      localStorage.setItem(this.storageKey, JSON.stringify(nextEntries));
+      localStorage.setItem(this.projectAccountCodeSeedKey, '1');
+    }
+
     return nextEntries;
+  }
+
+  private seedProjectAccountCodeMetadata(formName: string, option: ProjectAccountCodeSeedOption): boolean {
+    const metadata = {
+      createdDate: this.formatDisplayDate(new Date()),
+      status: 'Active',
+      accountNumber: option.accountCode,
+    };
+
+    const keys = this.getAccountCodeMetadataStorageKeys(option.value, formName, 'Project Account Code');
+    const hasExistingMetadata = keys.some(key => !!localStorage.getItem(key));
+    if (hasExistingMetadata) {
+      return false;
+    }
+
+    for (const key of keys) {
+      localStorage.setItem(key, JSON.stringify(metadata));
+    }
+
+    return true;
   }
 
   private seedJournalItemDescriptions(entries: StoredDropdownOption[]): StoredDropdownOption[] {
@@ -381,5 +435,19 @@ export class DropdownsStoreService {
     }
 
     return this.formatDisplayDate(new Date(timestamp));
+  }
+
+  private getAccountCodeMetadataStorageKeys(optionName: string, formName: string, category: string): string[] {
+    const trimmed = optionName.trim();
+    const normalized = trimmed.toLowerCase();
+    const slug = normalized.replace(/\s+/g, '-');
+    const formSlug = formName.trim().toLowerCase().replace(/\s+/g, '-');
+    const categorySlug = category.trim().toLowerCase().replace(/\s+/g, '-');
+
+    return Array.from(new Set([
+      `option-metadata-account-code-${formSlug}-${categorySlug}-${trimmed}`,
+      `option-metadata-account-code-${formSlug}-${categorySlug}-${normalized}`,
+      `option-metadata-account-code-${formSlug}-${categorySlug}-${slug}`,
+    ]));
   }
 }

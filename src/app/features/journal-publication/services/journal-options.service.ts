@@ -42,6 +42,20 @@ export class JournalOptionsService {
     { value: 'journal-acc-2', label: 'ACCOUNT CODE B' }
   ];
 
+  private defaultProjectAccountCodeOptions: DropdownOption[] = [
+    { value: 'V29000', label: 'V29000' },
+    { value: 'V29100', label: 'V29100' },
+    { value: 'V29200', label: 'V29200' },
+    { value: 'V29300', label: 'V29300' },
+    { value: 'V29400', label: 'V29400' },
+    { value: 'V29500', label: 'V29500' },
+    { value: 'V29600', label: 'V29600' },
+    { value: 'V29700', label: 'V29700' },
+    { value: 'V29800', label: 'V29800' },
+    { value: 'V29900', label: 'V29900' },
+    { value: 'V30000', label: 'V30000' }
+  ];
+
   // Signals for reactive updates
   voteNumberDescriptionOptions = signal<DropdownOption[]>([]);
   voteNumberOptions = signal<DropdownOption[]>([]);
@@ -54,7 +68,7 @@ export class JournalOptionsService {
     this.voteNumberOptions.set([]);
     this.accountCodeDescriptionOptions.set([]);
     this.accountCodeOptions.set([]);
-    this.projectAccountCodeOptions.set([]);
+    this.projectAccountCodeOptions.set([...this.defaultProjectAccountCodeOptions]);
 
     // Sync with Admin Settings whenever dropdown entries are updated
     effect(() => {
@@ -90,7 +104,11 @@ export class JournalOptionsService {
     this.voteNumberOptions.set(voteNumOptions);
     this.accountCodeDescriptionOptions.set(accountDescOptions);
     this.accountCodeOptions.set(accountCodeOptions);
-    this.projectAccountCodeOptions.set(projectAccountCodeOptions);
+    this.projectAccountCodeOptions.set(
+      projectAccountCodeOptions.length > 0
+        ? projectAccountCodeOptions
+        : [...this.defaultProjectAccountCodeOptions]
+    );
   }
 
   /**
@@ -122,6 +140,7 @@ export class JournalOptionsService {
         this.voteNumberOptions.set(data.voteNumberOptions || this.defaultVoteNumberOptions);
         this.accountCodeDescriptionOptions.set(data.accountCodeDescriptionOptions || this.defaultAccountCodeDescriptionOptions);
         this.accountCodeOptions.set(data.accountCodeOptions || this.defaultAccountCodeOptions);
+        this.projectAccountCodeOptions.set(data.projectAccountCodeOptions || this.defaultProjectAccountCodeOptions);
       } catch (e) {
         console.error('Failed to parse stored journal options', e);
         this.loadDefaults();
@@ -139,6 +158,7 @@ export class JournalOptionsService {
     this.voteNumberOptions.set([...this.defaultVoteNumberOptions]);
     this.accountCodeDescriptionOptions.set([...this.defaultAccountCodeDescriptionOptions]);
     this.accountCodeOptions.set([...this.defaultAccountCodeOptions]);
+    this.projectAccountCodeOptions.set([...this.defaultProjectAccountCodeOptions]);
   }
 
   /**
@@ -149,7 +169,8 @@ export class JournalOptionsService {
       voteNumberDescriptionOptions: this.voteNumberDescriptionOptions(),
       voteNumberOptions: this.voteNumberOptions(),
       accountCodeDescriptionOptions: this.accountCodeDescriptionOptions(),
-      accountCodeOptions: this.accountCodeOptions()
+      accountCodeOptions: this.accountCodeOptions(),
+      projectAccountCodeOptions: this.projectAccountCodeOptions()
     };
     localStorage.setItem(this.storageKey, JSON.stringify(data));
   }

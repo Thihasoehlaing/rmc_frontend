@@ -139,6 +139,20 @@ export class DropdownsComponent implements OnInit {
     },
   };
 
+  private readonly DEFAULT_PROJECT_ACCOUNT_CODE_METADATA: Record<string, string> = {
+    v29000: '6203/100',
+    v29100: '6203/200',
+    v29200: '6203/300',
+    v29300: '6203/400',
+    v29400: '6203/500',
+    v29500: '6203/600',
+    v29600: '6203/700',
+    v29700: '6203/800',
+    v29800: '6203/900',
+    v29900: '6203/1000',
+    v30000: '6203/1100',
+  };
+
   groups = signal<DropdownGroup[]>([
     { id: 1, title: 'RDIG Application', categories: ['Research Cluster', 'Type of Organisation', 'Research Domain', 'Sub-Research Domain', 'ESG', 'SDG'], items: 17, shared: 11 },
     { id: 2, title: 'RA/GRA Application', categories: ['Research Cluster', 'Programme Type', 'Supervisor Type', 'Funding Type'], items: 16, shared: 10 },
@@ -475,10 +489,12 @@ export class DropdownsComponent implements OnInit {
       }
 
       this.seedDefaultRegionMetadata();
+      this.seedDefaultProjectAccountCodeMetadata();
     } catch (error) {
       console.error('Failed to load dropdown options from localStorage:', error);
       this.dropdownOptions.set(this.getDefaultOptions());
       this.seedDefaultRegionMetadata();
+      this.seedDefaultProjectAccountCodeMetadata();
     }
   }
 
@@ -553,6 +569,14 @@ export class DropdownsComponent implements OnInit {
       { id: 57, formName: 'Journal Application', category: 'Account Code Description', value: 'Professional Services', lastUpdated: '18 Jun 2026', createdBy: 'Admin', status: 'Active' },
       { id: 58, formName: 'Journal Application', category: 'Account Code Description', value: 'Research Materials and Supplies', lastUpdated: '18 Jun 2026', createdBy: 'Admin', status: 'Active' },
       { id: 59, formName: 'Journal Application', category: 'Account Code Description', value: 'Printing and Publication', lastUpdated: '18 Jun 2026', createdBy: 'Admin', status: 'Active' },
+      { id: 60, formName: 'Journal Application', category: 'Project Account Code', value: 'V29300', lastUpdated: '19 Jun 2026', createdBy: 'Admin', status: 'Active' },
+      { id: 61, formName: 'Journal Application', category: 'Project Account Code', value: 'V29400', lastUpdated: '19 Jun 2026', createdBy: 'Admin', status: 'Active' },
+      { id: 62, formName: 'Journal Application', category: 'Project Account Code', value: 'V29500', lastUpdated: '19 Jun 2026', createdBy: 'Admin', status: 'Active' },
+      { id: 63, formName: 'Journal Application', category: 'Project Account Code', value: 'V29600', lastUpdated: '19 Jun 2026', createdBy: 'Admin', status: 'Active' },
+      { id: 64, formName: 'Journal Application', category: 'Project Account Code', value: 'V29700', lastUpdated: '19 Jun 2026', createdBy: 'Admin', status: 'Active' },
+      { id: 65, formName: 'Journal Application', category: 'Project Account Code', value: 'V29800', lastUpdated: '19 Jun 2026', createdBy: 'Admin', status: 'Active' },
+      { id: 66, formName: 'Journal Application', category: 'Project Account Code', value: 'V29900', lastUpdated: '19 Jun 2026', createdBy: 'Admin', status: 'Active' },
+      { id: 67, formName: 'Journal Application', category: 'Project Account Code', value: 'V30000', lastUpdated: '19 Jun 2026', createdBy: 'Admin', status: 'Active' },
     ];
   }
 
@@ -906,6 +930,34 @@ export class DropdownsComponent implements OnInit {
       };
 
       for (const key of this.getRegionMetadataStorageKeys(option.value)) {
+        localStorage.setItem(key, JSON.stringify(metadata));
+      }
+    }
+  }
+
+  private seedDefaultProjectAccountCodeMetadata(): void {
+    const projectAccountCodeOptions = this.dropdownOptions().filter(option =>
+      ['Conference Application', 'Journal Application'].includes(option.formName) &&
+      option.category === 'Project Account Code'
+    );
+
+    for (const option of projectAccountCodeOptions) {
+      if (this.getStoredAccountCodeMetadata(option.value, option.formName, option.category)) {
+        continue;
+      }
+
+      const accountNumber = this.DEFAULT_PROJECT_ACCOUNT_CODE_METADATA[option.value.trim().toLowerCase()];
+      if (!accountNumber) {
+        continue;
+      }
+
+      const metadata: AccountCodeMetadata = {
+        createdDate: option.lastUpdated || this.formatDisplayDate(new Date()),
+        status: option.status,
+        accountNumber,
+      };
+
+      for (const key of this.getAccountCodeMetadataStorageKeys(option.value, option.formName, option.category)) {
         localStorage.setItem(key, JSON.stringify(metadata));
       }
     }

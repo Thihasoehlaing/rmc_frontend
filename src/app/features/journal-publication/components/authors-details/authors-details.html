@@ -44,17 +44,7 @@
                 </ng-template>
               </app-data-table>
             </div>
-            <div class="table-footer">
-              <app-pagination
-                [currentPage]="apuStaffCurrentPage"
-                [totalPages]="getApuStaffTotalPages()"
-                [pageSize]="apuStaffPageSize"
-                [pageSizeOptions]="ITEMS_PER_PAGE_OPTIONS"
-                (pageChange)="onApuStaffPageChange($event)"
-                (pageSizeChange)="onApuStaffPageSizeChange($event)">
-              </app-pagination>
-            </div>
-            <div class="table-summary">{{ getApuStaffPageStart() }}–{{ getApuStaffPageEnd() }} of {{ testSubsections.length }}</div>
+            <div class="table-summary">{{ testSubsections.length }} author(s)</div>
           } @else {
             <div class="empty-state">
               <span class="material-icons">group</span>
@@ -107,17 +97,7 @@
                 </ng-template>
               </app-data-table>
             </div>
-            <div class="table-footer">
-              <app-pagination
-                [currentPage]="studentCoAuthorsCurrentPage"
-                [totalPages]="getStudentCoAuthorsTotalPages()"
-                [pageSize]="studentCoAuthorsPageSize"
-                [pageSizeOptions]="ITEMS_PER_PAGE_OPTIONS"
-                (pageChange)="onStudentCoAuthorsPageChange($event)"
-                (pageSizeChange)="onStudentCoAuthorsPageSizeChange($event)">
-              </app-pagination>
-            </div>
-            <div class="table-summary">{{ getStudentCoAuthorsPageStart() }}–{{ getStudentCoAuthorsPageEnd() }} of {{ studentCoAuthors.length }}</div>
+            <div class="table-summary">{{ studentCoAuthors.length }} co-author(s)</div>
           } @else {
             <div class="empty-state">
               <span class="material-icons">school</span>
@@ -172,17 +152,7 @@
                 </ng-template>
               </app-data-table>
             </div>
-            <div class="table-footer">
-              <app-pagination
-                [currentPage]="nonApuCoAuthorsCurrentPage"
-                [totalPages]="getNonApuCoAuthorsTotalPages()"
-                [pageSize]="nonApuCoAuthorsPageSize"
-                [pageSizeOptions]="ITEMS_PER_PAGE_OPTIONS"
-                (pageChange)="onNonApuCoAuthorsPageChange($event)"
-                (pageSizeChange)="onNonApuCoAuthorsPageSizeChange($event)">
-              </app-pagination>
-            </div>
-            <div class="table-summary">{{ getNonApuCoAuthorsPageStart() }}–{{ getNonApuCoAuthorsPageEnd() }} of {{ nonApuCoAuthors.length }}</div>
+            <div class="table-summary">{{ nonApuCoAuthors.length }} co-author(s)</div>
           } @else {
             <div class="empty-state">
               <span class="material-icons">public</span>

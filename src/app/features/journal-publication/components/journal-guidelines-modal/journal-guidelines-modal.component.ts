@@ -1,4 +1,4 @@
-import { Component, signal, inject, computed } from '@angular/core';
+import { Component, EventEmitter, Output, signal, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { JournalGuidelinesService } from '../../services/journal-guidelines.service';
 
@@ -10,6 +10,7 @@ import { JournalGuidelinesService } from '../../services/journal-guidelines.serv
   styleUrl: './journal-guidelines-modal.component.scss'
 })
 export class JournalGuidelinesModalComponent {
+  @Output() closed = new EventEmitter<void>();
   isOpen = signal(false);
   private guidelinesService = inject(JournalGuidelinesService);
 
@@ -23,5 +24,6 @@ export class JournalGuidelinesModalComponent {
 
   close() {
     this.isOpen.set(false);
+    this.closed.emit();
   }
 }

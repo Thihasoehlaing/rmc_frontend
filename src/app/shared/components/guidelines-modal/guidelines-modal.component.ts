@@ -1,4 +1,4 @@
-import { Component, Input, signal } from '@angular/core';
+import { Component, EventEmitter, Input, Output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { inject } from '@angular/core';
@@ -16,6 +16,7 @@ export class GuidelinesModalComponent {
 
   @Input() title = 'Guidelines for Applicants';
   @Input() endpoint = '';
+  @Output() closed = new EventEmitter<void>();
 
   isOpen = signal(false);
   isLoading = signal(false);
@@ -31,6 +32,7 @@ export class GuidelinesModalComponent {
 
   close() {
     this.isOpen.set(false);
+    this.closed.emit();
   }
 
   private async fetchGuidelines() {

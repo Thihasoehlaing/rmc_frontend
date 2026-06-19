@@ -64,7 +64,9 @@
         </app-data-table>
       } @else {
         <p class="empty-state">No items added. Click <strong>Add Item</strong> to begin.</p>
-      }      @if (showAnyComments) {
+      }
+      <app-note text="RA/GRA Allowance – RM500 per month per RA/GRA. Please state number of month and number of student in the description."></app-note>
+      @if (showAnyComments) {
         <div class="row row--2">
           <app-review-block label="Reviewer 1 - Student Allowances" icon="rate_review"
             [visible]="showR1Comments" [readonly]="!workflow.isReviewer1Editable()"
@@ -309,7 +311,7 @@
         <app-validation-message [control]="descriptionControl"></app-validation-message>
       </div>
 
-      <div class="row row--2">
+      <div class="row row--2 textarea-row">
         <div class="form-field">
           <label class="form-label is-required">Amount (RM)</label>
           <input

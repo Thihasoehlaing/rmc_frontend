@@ -200,17 +200,17 @@
     <app-custom-subheader title="Project Proposal Narrative"></app-custom-subheader>
     <div class="card__content section-fields">
 
-      <div class="row row--2">
+      <div class="row row--2 textarea-row">
         <div class="form-field">
           <label class="form-label is-required">Executive Summary of the Research Proposal</label>
-          <textarea class="input--textarea input--autosize" appTextareaAutosize [minRows]="4" formControlName="executiveSummary" [maxlength]="1500"></textarea>
+          <textarea class="input--textarea input--autosize" appTextareaAutosize [minRows]="3" formControlName="executiveSummary" [maxlength]="1500"></textarea>
           <app-character-counter [current]="projectDetails.get('executiveSummary')?.value?.length ?? 0"
             [max]="1500"></app-character-counter>
           <app-validation-message [control]="projectDetails.get('executiveSummary')"></app-validation-message>
         </div>
         <div class="form-field">
           <label class="form-label is-required">Keywords</label>
-          <textarea class="input--textarea input--autosize" appTextareaAutosize [minRows]="4" formControlName="keywords" [maxlength]="200"></textarea>
+          <textarea class="input--textarea input--autosize" appTextareaAutosize [minRows]="3" formControlName="keywords" [maxlength]="200"></textarea>
           <app-note text="Maximum 5 keywords, separated by commas"></app-note>
           <div class="keyword-counter" [class.keyword-counter--over]="keywordCount > 5">{{ keywordCount }} / 5 keywords
           </div>
@@ -244,17 +244,17 @@
         </div>
       }
 
-      <div class="row row--2">
+      <div class="row row--2 textarea-row">
         <div class="form-field">
           <label class="form-label is-required">Introduction</label>
-          <textarea class="input--textarea input--autosize" appTextareaAutosize [minRows]="4" formControlName="introduction" [maxlength]="3000"></textarea>
+          <textarea class="input--textarea input--autosize" appTextareaAutosize [minRows]="3" formControlName="introduction" [maxlength]="3000"></textarea>
           <app-character-counter [current]="projectDetails.get('introduction')?.value?.length ?? 0"
             [max]="3000"></app-character-counter>
           <app-validation-message [control]="projectDetails.get('introduction')"></app-validation-message>
         </div>
         <div class="form-field">
           <label class="form-label is-required">Problem Statement</label>
-          <textarea class="input--textarea input--autosize" appTextareaAutosize [minRows]="4" formControlName="problemStatement" [maxlength]="3000"></textarea>
+          <textarea class="input--textarea input--autosize" appTextareaAutosize [minRows]="3" formControlName="problemStatement" [maxlength]="3000"></textarea>
           <app-character-counter [current]="projectDetails.get('problemStatement')?.value?.length ?? 0"
             [max]="3000"></app-character-counter>
           <app-validation-message [control]="projectDetails.get('problemStatement')"></app-validation-message>
@@ -289,17 +289,17 @@
         </div>
       }
 
-      <div class="row row--2">
+      <div class="row row--2 textarea-row">
         <div class="form-field">
           <label class="form-label is-required">Research Aim and Objectives</label>
-          <textarea class="input--textarea input--autosize" appTextareaAutosize [minRows]="4" formControlName="researchAim" [maxlength]="1000"></textarea>
+          <textarea class="input--textarea input--autosize" appTextareaAutosize [minRows]="3" formControlName="researchAim" [maxlength]="1000"></textarea>
           <app-character-counter [current]="projectDetails.get('researchAim')?.value?.length ?? 0"
             [max]="1000"></app-character-counter>
           <app-validation-message [control]="projectDetails.get('researchAim')"></app-validation-message>
         </div>
         <div class="form-field">
           <label class="form-label is-required">Research Questions</label>
-          <textarea class="input--textarea input--autosize" appTextareaAutosize [minRows]="4" formControlName="researchQuestions" [maxlength]="1000"></textarea>
+          <textarea class="input--textarea input--autosize" appTextareaAutosize [minRows]="3" formControlName="researchQuestions" [maxlength]="1000"></textarea>
           <app-character-counter [current]="projectDetails.get('researchQuestions')?.value?.length ?? 0"
             [max]="1000"></app-character-counter>
           <app-validation-message [control]="projectDetails.get('researchQuestions')"></app-validation-message>
@@ -338,7 +338,7 @@
 
       <div class="form-field">
         <label class="form-label is-required">Hypothesis/Propositions</label>
-        <textarea class="input--textarea input--autosize" appTextareaAutosize [minRows]="4" formControlName="hypothesis" [maxlength]="1000"></textarea>
+        <textarea class="input--textarea input--autosize" appTextareaAutosize [minRows]="3" formControlName="hypothesis" [maxlength]="1000"></textarea>
         <app-character-counter [current]="projectDetails.get('hypothesis')?.value?.length ?? 0"
           [max]="1000"></app-character-counter>
         <app-validation-message [control]="projectDetails.get('hypothesis')"></app-validation-message>
@@ -358,17 +358,17 @@
         </div>
       }
 
-      <div class="row row--2">
+      <div class="row row--2 textarea-row">
         <div class="form-field">
           <label class="form-label is-required">Literature Review</label>
-          <textarea class="input--textarea input--autosize" appTextareaAutosize [minRows]="4" formControlName="literatureReview" [maxlength]="5000"></textarea>
+          <textarea class="input--textarea input--autosize" appTextareaAutosize [minRows]="3" formControlName="literatureReview" [maxlength]="5000"></textarea>
           <app-character-counter [current]="projectDetails.get('literatureReview')?.value?.length ?? 0"
             [max]="5000"></app-character-counter>
           <app-validation-message [control]="projectDetails.get('literatureReview')"></app-validation-message>
         </div>
         <div class="form-field">
           <label class="form-label is-required">Research Methodology</label>
-          <textarea class="input--textarea input--autosize" appTextareaAutosize [minRows]="4" formControlName="methodology" [maxlength]="3000"></textarea>
+          <textarea class="input--textarea input--autosize" appTextareaAutosize [minRows]="3" formControlName="methodology" [maxlength]="3000"></textarea>
           <app-character-counter [current]="projectDetails.get('methodology')?.value?.length ?? 0"
             [max]="3000"></app-character-counter>
           <app-validation-message [control]="projectDetails.get('methodology')"></app-validation-message>
@@ -405,7 +405,7 @@
 
       <div class="form-field">
         <label class="form-label is-required">References</label>
-        <textarea class="input--textarea input--autosize" appTextareaAutosize [minRows]="4" formControlName="references" [maxlength]="3000"></textarea>
+        <textarea class="input--textarea input--autosize" appTextareaAutosize [minRows]="3" formControlName="references" [maxlength]="3000"></textarea>
         <app-character-counter [current]="projectDetails.get('references')?.value?.length ?? 0"
           [max]="3000"></app-character-counter>
         <app-validation-message [control]="projectDetails.get('references')"></app-validation-message>
@@ -431,24 +431,24 @@
     <app-custom-subheader title="Grant Utilisation & Benefits"></app-custom-subheader>
     <div class="card__content section-fields">
       <p class="form-hint">Please state how the grant utilization benefits to APU, students & stakeholders </p>
-      <div class="row row--3 benefits-row">
+      <div class="row row--3 benefits-row textarea-row">
         <div class="form-field">
           <label class="form-label is-required">Asia Pacific University of Technology &amp; Innovation Benefit</label>
-          <textarea class="input--textarea input--textarea-benefits input--autosize" appTextareaAutosize [minRows]="4" formControlName="apu" [maxlength]="300"></textarea>
+          <textarea class="input--textarea input--textarea-benefits input--autosize" appTextareaAutosize [minRows]="3" formControlName="apu" [maxlength]="300"></textarea>
           <app-character-counter [current]="projectDetails.get('benefits.apu')?.value?.length ?? 0"
             [max]="300"></app-character-counter>
           <app-validation-message [control]="projectDetails.get('benefits.apu')"></app-validation-message>
         </div>
         <div class="form-field">
           <label class="form-label is-required">Students Benefit</label>
-          <textarea class="input--textarea input--textarea-benefits input--autosize" appTextareaAutosize [minRows]="4" formControlName="students" [maxlength]="300"></textarea>
+          <textarea class="input--textarea input--textarea-benefits input--autosize" appTextareaAutosize [minRows]="3" formControlName="students" [maxlength]="300"></textarea>
           <app-character-counter [current]="projectDetails.get('benefits.students')?.value?.length ?? 0"
             [max]="300"></app-character-counter>
           <app-validation-message [control]="projectDetails.get('benefits.students')"></app-validation-message>
         </div>
         <div class="form-field">
           <label class="form-label is-required">Stakeholders Benefit</label>
-          <textarea class="input--textarea input--textarea-benefits input--autosize" appTextareaAutosize [minRows]="4" formControlName="stakeholders" [maxlength]="300"></textarea>
+          <textarea class="input--textarea input--textarea-benefits input--autosize" appTextareaAutosize [minRows]="3" formControlName="stakeholders" [maxlength]="300"></textarea>
           <app-character-counter [current]="projectDetails.get('benefits.stakeholders')?.value?.length ?? 0"
             [max]="300"></app-character-counter>
           <app-validation-message [control]="projectDetails.get('benefits.stakeholders')"></app-validation-message>
@@ -477,7 +477,7 @@
     <div class="card__content section-fields">
       <div class="form-field">
         <label class="form-label is-required">Please state how the proposed project meets the Vision and Mission of APU</label>
-        <textarea class="input--textarea input--autosize" appTextareaAutosize [minRows]="4" formControlName="visionMission"
+        <textarea class="input--textarea input--autosize" appTextareaAutosize [minRows]="3" formControlName="visionMission"
           placeholder="Describe the alignment..."></textarea>
         <app-character-counter [current]="projectDetails.get('visionMission')?.value?.length ?? 0"
           [max]="300"></app-character-counter>

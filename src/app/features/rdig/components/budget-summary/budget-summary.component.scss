@@ -130,6 +130,19 @@ app-data-table {
   gap: var(--space-4);
 }
 
+.textarea-row {
+  grid-template-columns: 1fr;
+  gap: var(--space-1);
+
+  .form-field {
+    gap: var(--space-1);
+  }
+
+  app-validation-message:empty {
+    display: none;
+  }
+}
+
 // ── Empty state ───────────────────────────────────────────────
 .empty-state {
   margin: 0;

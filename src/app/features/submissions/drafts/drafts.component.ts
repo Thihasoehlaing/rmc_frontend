@@ -5,13 +5,13 @@ import { SubmissionsSearchComponent } from '../../../shared/components/submissio
 import { finalize } from 'rxjs';
 import {
   SkeletonColumn,
-  SubmissionsTableSkeletonComponent,
-} from '../../../shared/components/submissions-table-skeleton/submissions-table-skeleton.component';
+  TableSkeletonComponent,
+} from '../../../shared/components/table-skeleton/table-skeleton.component';
 
 @Component({
   selector: 'app-drafts',
   standalone: true,
-  imports: [SubmissionsSearchComponent, SubmissionsTableSkeletonComponent],
+  imports: [SubmissionsSearchComponent, TableSkeletonComponent],
   templateUrl: './drafts.component.html',
   styleUrl: './drafts.component.scss',
 })

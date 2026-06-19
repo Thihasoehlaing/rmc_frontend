@@ -12,6 +12,8 @@ import { DeclarationFormComponent } from '../../components/forms/declaration-for
 import { ReviewBlockComponent } from '../../../rdig/components/review-block/review-block.component';
 import { ConferenceWorkflowService } from '../../services/conference-workflow.service';
 import { AuthService } from '../../../../core/services/auth.service';
+import { ActivatedRoute } from '@angular/router';
+import { GuidelineContext } from '../../../../shared/components/form-main-title/form-main-title.component';
 
 @Component({
   selector: 'app-conference-application',
@@ -32,13 +34,18 @@ import { AuthService } from '../../../../core/services/auth.service';
   template: `
     <div class="conference-wizard application-form-page">
       <app-form-main-title
+        #conferenceFormTitle
         title="Conference Application"
         modalTitle="Guidelines for Applicants"
+        [guidelineContext]="guidelineContext"
         [customModal]="true"
         (helpClick)="openGuidelines()">
       </app-form-main-title>
 
-      <app-conference-guidelines-modal #guidelinesModal></app-conference-guidelines-modal>
+      <app-conference-guidelines-modal
+        #guidelinesModal
+        (closed)="conferenceFormTitle.onGuidelinesClosed()">
+      </app-conference-guidelines-modal>
 
       <app-step-indicator
         [currentStep]="currentStep()"
@@ -471,6 +478,9 @@ export class ConferenceApplication implements OnInit {
 
   workflow = inject(ConferenceWorkflowService);
   private auth = inject(AuthService);
+  private route = inject(ActivatedRoute);
+  readonly guidelineContext: GuidelineContext =
+    this.route.snapshot.queryParamMap.has('id') ? 'existing-application' : 'new-application';
   @ViewChild('guidelinesModal') guidelinesModal?: ConferenceGuidelinesModalComponent;
 
   currentStep = signal(1);

@@ -2,12 +2,16 @@ import { Component, signal, computed, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, FormsModule } from '@angular/forms';
-import { FormMainTitleComponent } from '../../shared/components/form-main-title/form-main-title.component';
+import {
+  FormMainTitleComponent,
+  GuidelineContext,
+} from '../../shared/components/form-main-title/form-main-title.component';
 import { StepIndicatorComponent, WizardStep, StepStatus } from '../../shared/components/step-indicator/step-indicator.component';
 import { FormWizardNavComponent } from '../../shared/components/form-wizard-nav/form-wizard-nav.component';
 import { FormCommentPanelComponent, CommentItem } from '../../shared/components/form-comment-panel/form-comment-panel.component';
 import { ProposalDetails } from './components/proposal-details/proposal-details';
 import { RiskAssessment } from './components/risk-assessment/risk-assessment';
+import { ActivatedRoute } from '@angular/router';
 
 export type PartnershipStatus =
   | 'draft'
@@ -32,6 +36,9 @@ export type PartnershipStatus =
 })
 export class PartnershipFormComponent {
   private fb = inject(FormBuilder);
+  private route = inject(ActivatedRoute);
+  readonly guidelineContext: GuidelineContext =
+    this.route.snapshot.queryParamMap.has('id') ? 'existing-application' : 'new-application';
 
   applicationStatus = signal<PartnershipStatus>('draft');
   isBusiness = signal<boolean>(true); // Default to Business path per requirements, toggles Legal stage

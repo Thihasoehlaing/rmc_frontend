@@ -1,16 +1,17 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { forkJoin } from 'rxjs';
+import { finalize, forkJoin } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
 import { ApplicationService, TERMINAL_STATUSES } from '../../core/services/application.service';
+import { DashboardSkeletonComponent } from '../../shared/components/dashboard-skeleton/dashboard-skeleton.component';
 
 type DashboardApp = any;
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, DashboardSkeletonComponent],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss']
 })
@@ -131,22 +132,23 @@ export class DashboardComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.loading.set(true);
     forkJoin({
       inbox: this.appSvc.getInboxApplications(),
       mine: this.appSvc.getMyApplications(),
       admin: this.appSvc.getAdminApplications(),
       history: this.appSvc.getApplicationHistory(),
-    }).subscribe({
+    }).pipe(
+      finalize(() => this.loading.set(false)),
+    ).subscribe({
       next: ({ inbox, mine, admin, history }) => {
         this.inboxApps.set(inbox);
         this.myApps.set(mine);
         this.adminApps.set(admin);
         this.historyApps.set(history);
-        this.loading.set(false);
       },
       error: () => {
         this.error.set('Could not load dashboard data. Make sure the local database server is running.');
-        this.loading.set(false);
       },
     });
   }

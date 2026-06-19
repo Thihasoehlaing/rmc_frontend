@@ -1,12 +1,16 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component, inject, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 import { StepIndicatorComponent, WizardStep, StepStatus } from '../../shared/components/step-indicator/step-indicator.component';
-import { FormMainTitleComponent } from '../../shared/components/form-main-title/form-main-title.component';
+import {
+  FormMainTitleComponent,
+  GuidelineContext,
+} from '../../shared/components/form-main-title/form-main-title.component';
 import { FormWizardNavComponent } from '../../shared/components/form-wizard-nav/form-wizard-nav.component';
 import { ProjectDetailsComponent } from './components/Project Details/Project Details';
 import { StudentDetailsComponent } from './components/Student Details/Student Details';
 import { DeclarationComponent } from './components/Declaration/Declaration';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-ragra-form',
@@ -25,6 +29,9 @@ import { DeclarationComponent } from './components/Declaration/Declaration';
   styleUrl: './RA-GRA_form.component.scss'
 })
 export class RagraFormComponent {
+  private route = inject(ActivatedRoute);
+  readonly guidelineContext: GuidelineContext =
+    this.route.snapshot.queryParamMap.has('id') ? 'existing-application' : 'new-application';
 
   @ViewChild(ProjectDetailsComponent) projectDetailsComponent?: ProjectDetailsComponent;
   @ViewChild(StudentDetailsComponent) studentDetailsComponent?: StudentDetailsComponent;

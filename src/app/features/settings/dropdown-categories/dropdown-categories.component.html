@@ -5,12 +5,13 @@
       <h1>Dropdown Categories</h1>
       <p>Manage reusable dropdown groups used by application forms and options.</p>
     </div>
-    <button class="btn btn-primary forms-page__create-button" type="button" (click)="openCreateDialog()">
+    <button class="btn btn-primary forms-page__create-button" type="button" (click)="openCreateDialog()" [disabled]="isLoading()">
       <span class="material-icons">add</span>
       Create Category
     </button>
   </header>
 
+  @if (!isLoading()) {
   <section class="forms-toolbar" aria-label="Dropdown category filters">
     <label class="forms-filter forms-filter--search">
       <span>Category Code or Name</span>
@@ -43,18 +44,15 @@
       </button>
     </div>
   </section>
+  }
 
   <section class="forms-table-card">
     @if (isLoading()) {
-      <div class="forms-loading" aria-label="Loading dropdown categories">
-        @for (row of [1, 2, 3, 4, 5]; track row) {
-          <div class="forms-skeleton-row category-skeleton-row">
-            @for (cell of [1, 2, 3, 4, 5]; track cell) {
-              <span></span>
-            }
-          </div>
-        }
-      </div>
+      <app-table-skeleton
+        [columns]="columns"
+        [showSearch]="false"
+        loadingLabel="Loading dropdown categories">
+      </app-table-skeleton>
     } @else if (loadFailed()) {
       <div class="forms-state">
         <span class="material-icons">cloud_off</span>
@@ -121,7 +119,7 @@
 
   <app-dialog [isOpen]="dialogMode() !== null" [title]="dialogTitle()" size="small" (close)="closeEditor()">
     @if (isDetailLoading()) {
-      <div class="form-detail-loading"><span></span><span></span><span></span></div>
+      <app-detail-panel-skeleton loadingLabel="Loading dropdown category details"></app-detail-panel-skeleton>
     } @else if (detailFailed()) {
       <div class="dialog-state">
         <span class="material-icons">error_outline</span>

@@ -28,10 +28,7 @@
 
     <!-- ── Loading ────────────────────────────────────────────────────────── -->
     @if (isLoading()) {
-      <div class="loading-state">
-        <span class="material-icons loading-state__icon">hourglass_top</span>
-        <p>Loading batches…</p>
-      </div>
+      <app-batch-management-skeleton></app-batch-management-skeleton>
     }
 
     @if (!isLoading()) {

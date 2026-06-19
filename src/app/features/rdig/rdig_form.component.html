@@ -62,9 +62,13 @@
     title="RDIG Application"
     helpText="Click to view guidelines"
     modalTitle="RDIG Applicant Guidelines"
+    [guidelineContext]="guidelineContext"
     endpoint="/api/guidelines/rdig">
   </app-form-main-title>
 
+  @if (isLoadingApplication()) {
+    <app-form-page-skeleton></app-form-page-skeleton>
+  } @else {
   <app-step-indicator
     [currentStep]="currentStep()"
     [steps]="steps"
@@ -396,6 +400,7 @@
   </form>
 
   } <!-- /if !isBatchLoading && !noBatchError -->
+  }
 
 </div>
 </app-form-page-container>

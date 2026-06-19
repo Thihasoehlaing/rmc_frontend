@@ -1,23 +1,23 @@
 <div
-  class="submissions-skeleton"
+  class="table-skeleton"
   role="status"
   aria-busy="true"
   [attr.aria-label]="loadingLabel">
   <span class="sr-only">{{ loadingLabel }}</span>
 
   @if (showSearch || showTypeFilter) {
-    <div class="submissions-skeleton__toolbar">
+    <div class="table-skeleton__toolbar">
       @if (showSearch) {
-        <div class="skeleton-block submissions-skeleton__search"></div>
+        <div class="skeleton-block table-skeleton__search"></div>
       }
       @if (showTypeFilter) {
-        <div class="skeleton-block submissions-skeleton__filter"></div>
+        <div class="skeleton-block table-skeleton__filter"></div>
       }
     </div>
   }
 
-  <div class="submissions-skeleton__table-wrapper">
-    <table class="submissions-skeleton__table" aria-hidden="true">
+  <div class="table-skeleton__table-wrapper">
+    <table class="table-skeleton__table" aria-hidden="true" [style.min-width]="minWidth">
       <colgroup>
         @for (column of columns; track $index) {
           <col [style.width]="column.width">

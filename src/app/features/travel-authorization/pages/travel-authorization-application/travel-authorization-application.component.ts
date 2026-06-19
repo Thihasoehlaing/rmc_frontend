@@ -10,7 +10,11 @@ import { FileUploadComponent } from '../../../../shared/components/file-upload/f
 import { FormWizardNavComponent } from '../../../../shared/components/form-wizard-nav/form-wizard-nav.component';
 import { ReviewBlockComponent } from '../../../rdig/components/review-block/review-block.component';
 import { DataTableComponent, DataTableColumn } from '../../../../shared/components/data-table/data-table.component';
-import { FormMainTitleComponent } from '../../../../shared/components/form-main-title/form-main-title.component';
+import {
+  FormMainTitleComponent,
+  GuidelineContext,
+} from '../../../../shared/components/form-main-title/form-main-title.component';
+import { ActivatedRoute } from '@angular/router';
 
 interface FunctionalAreaOption {
   label: string;
@@ -39,6 +43,9 @@ interface FunctionalAreaOption {
 })
 export class TravelAuthorizationApplicationComponent implements OnInit {
   private fb = inject(FormBuilder);
+  private route = inject(ActivatedRoute);
+  readonly guidelineContext: GuidelineContext =
+    this.route.snapshot.queryParamMap.has('id') ? 'existing-application' : 'new-application';
 
   travelAuthForm!: FormGroup;
   expenseForm!: FormGroup;

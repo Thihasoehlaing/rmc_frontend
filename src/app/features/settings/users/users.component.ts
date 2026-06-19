@@ -16,6 +16,7 @@ import {
 import { ToastService } from '../../../core/services/toast.service';
 import { DialogComponent } from '../../../shared/components/dialog/dialog.component';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
+import { TableSkeletonComponent } from '../../../shared/components/table-skeleton/table-skeleton.component';
 import {
   DepartmentRecord,
   RoleRecord,
@@ -41,6 +42,7 @@ const EMPTY_FILTERS: UserListFilters = {
     DataTableComponent,
     DialogComponent,
     PaginationComponent,
+    TableSkeletonComponent,
   ],
   templateUrl: './users.component.html',
   styleUrl: './users.component.scss',

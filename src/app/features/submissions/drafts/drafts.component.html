@@ -16,10 +16,10 @@
 
   <!-- ── Loading ────────────────────────────────────────────────────────────── -->
   @if (loading()) {
-    <app-submissions-table-skeleton
+    <app-table-skeleton
       [columns]="skeletonColumns"
       loadingLabel="Loading drafts">
-    </app-submissions-table-skeleton>
+    </app-table-skeleton>
   }
 
   <!-- ── Error ──────────────────────────────────────────────────────────────── -->

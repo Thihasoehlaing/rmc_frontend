@@ -6,11 +6,15 @@ import { AuthorsDetails } from './components/authors-details/authors-details';
 import { DocumentsComponent } from './components/documents/documents';
 import { DeclarationComponent } from './components/declaration/declaration';
 import { StepIndicatorComponent, WizardStep, StepStatus } from '../../shared/components/step-indicator/step-indicator.component';
-import { FormMainTitleComponent } from '../../shared/components/form-main-title/form-main-title.component';
+import {
+  FormMainTitleComponent,
+  GuidelineContext,
+} from '../../shared/components/form-main-title/form-main-title.component';
 import { FormWizardNavComponent } from '../../shared/components/form-wizard-nav/form-wizard-nav.component';
 import { JournalWorkflowService, JournalStatus } from './services/journal-workflow.service';
 import { ReviewBlockComponent } from '../rdig/components/review-block/review-block.component';
 import { JournalGuidelinesModalComponent } from './components/journal-guidelines-modal/journal-guidelines-modal.component';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-journal-publication-form',
@@ -21,6 +25,9 @@ import { JournalGuidelinesModalComponent } from './components/journal-guidelines
 })
 export class JournalPublicationFormComponent {
   workflow = inject(JournalWorkflowService);
+  private route = inject(ActivatedRoute);
+  readonly guidelineContext: GuidelineContext =
+    this.route.snapshot.queryParamMap.has('id') ? 'existing-application' : 'new-application';
   statusControl = new FormControl<JournalStatus>('draft');
 
   reviewComments = {

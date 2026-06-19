@@ -14,6 +14,7 @@
   </div>
 
   <!-- Search and Actions -->
+  @if (!isLoading()) {
   <div class="guidelines-controls">
     <div class="guidelines-search">
       <span class="material-icons search-icon">search</span>
@@ -40,19 +41,16 @@
       </button>
     </div>
   </div>
+  }
 
   <!-- Table -->
   <div class="guidelines-table-wrapper">
     @if (isLoading()) {
-      <div class="guidelines-loading" aria-label="Loading guidelines">
-        @for (row of [1, 2, 3, 4, 5]; track row) {
-          <div class="guidelines-skeleton-row">
-            @for (cell of [1, 2, 3, 4, 5, 6, 7, 8]; track cell) {
-              <span class="guidelines-skeleton-cell"></span>
-            }
-          </div>
-        }
-      </div>
+      <app-table-skeleton
+        [columns]="columns"
+        [showSearch]="false"
+        loadingLabel="Loading guidelines">
+      </app-table-skeleton>
     } @else if (loadFailed()) {
       <div class="guidelines-state">
         <span class="material-icons">cloud_off</span>

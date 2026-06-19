@@ -1,0 +1,10 @@
+<div class="detail-skeleton" role="status" aria-busy="true" [attr.aria-label]="loadingLabel">
+  <span class="sr-only">{{ loadingLabel }}</span>
+  <span class="skeleton-block detail-skeleton__title"></span>
+  @for (row of rowItems; track row) {
+    <div class="detail-skeleton__field">
+      <span class="skeleton-block detail-skeleton__label"></span>
+      <span class="skeleton-block detail-skeleton__value"></span>
+    </div>
+  }
+</div>

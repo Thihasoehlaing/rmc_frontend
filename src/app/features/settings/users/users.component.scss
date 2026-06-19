@@ -184,38 +184,6 @@
   text-align: right;
 }
 
-.users-loading {
-  display: grid;
-  gap: var(--skeleton-border-width);
-  min-width: 1196px;
-  overflow-x: auto;
-  background: var(--skeleton-color-container);
-}
-
-.users-skeleton-row {
-  min-height: 70px;
-  display: grid;
-  grid-template-columns: 72px 250px 190px 170px 130px 250px 150px;
-  align-items: center;
-  gap: var(--space-4);
-  padding: 0 var(--space-5);
-  background: var(--skeleton-color-container);
-
-  span {
-    height: var(--skeleton-line-height);
-    background: linear-gradient(
-      90deg,
-      var(--skeleton-color-placeholder) 25%,
-      var(--skeleton-color-container) 50%,
-      var(--skeleton-color-placeholder) 75%
-    );
-    background-size: var(--skeleton-background-size);
-    border-radius: var(--skeleton-line-radius);
-    animation: skeleton-shimmer var(--skeleton-animation-duration)
-      var(--skeleton-animation-easing) infinite;
-  }
-}
-
 .users-state {
   min-height: 320px;
   display: flex;

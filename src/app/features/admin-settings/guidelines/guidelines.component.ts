@@ -25,6 +25,7 @@ import {
   DataTableComponent,
 } from '../../../shared/components/data-table/data-table.component';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
+import { DialogComponent } from '../../../shared/components/dialog/dialog.component';
 
 interface Guideline {
   id: number;
@@ -65,6 +66,7 @@ const FORM_CODES: Record<string, string> = Object.fromEntries(
     AddGuidelineModalComponent,
     DataTableComponent,
     PaginationComponent,
+    DialogComponent,
   ],
   templateUrl: './guidelines.component.html',
   styleUrls: ['./guidelines.component.scss'],
@@ -90,6 +92,7 @@ export class GuidelinesComponent implements OnInit, OnDestroy {
   readonly isSaving = signal(false);
   readonly loadingGuidelineId = signal<number | null>(null);
   readonly loadFailed = signal(false);
+  readonly guidelineToDeactivate = signal<Guideline | null>(null);
 
   readonly columns: readonly DataTableColumn[] = [
     { key: 'number', label: 'No.', width: '80px', align: 'center' },
@@ -288,6 +291,30 @@ export class GuidelinesComponent implements OnInit, OnDestroy {
     this.guidelinesService
       .updateStatus(guideline.id, !guideline.isActive)
       .pipe(finalize(() => this.loadingGuidelineId.set(null)))
+      .subscribe({
+        next: () => this.loadGuidelines(),
+      });
+  }
+
+  openDeactivateDialog(guideline: Guideline): void {
+    this.guidelineToDeactivate.set(guideline);
+  }
+
+  closeDeactivateDialog(): void {
+    this.guidelineToDeactivate.set(null);
+  }
+
+  confirmDeactivate(): void {
+    const guideline = this.guidelineToDeactivate();
+    if (!guideline || this.loadingGuidelineId() !== null) return;
+
+    this.loadingGuidelineId.set(guideline.id);
+    this.guidelinesService
+      .updateStatus(guideline.id, false)
+      .pipe(finalize(() => {
+        this.loadingGuidelineId.set(null);
+        this.guidelineToDeactivate.set(null);
+      }))
       .subscribe({
         next: () => this.loadGuidelines(),
       });

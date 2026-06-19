@@ -27,9 +27,15 @@
                   } @else {
                     <span class="header-label">{{ column.label }}</span>
                   }
-                  <span class="sort-indicator" aria-hidden="true" [hidden]="!column.sortable">
-                    <span class="material-icons" aria-hidden="true">{{ sortColumn === column.key ? (sortDirection === 'asc' ? 'arrow_upward' : sortDirection === 'desc' ? 'arrow_downward' : 'unfold_more') : 'unfold_more' }}</span>
-                  </span>
+                  @if (column.sortable) {
+                    <span class="sort-indicator" aria-hidden="true">
+                      @if (sortColumn === column.key) {
+                        <span>{{ sortDirection === 'desc' ? '↓' : '↑' }}</span>
+                      } @else {
+                        <span>↑</span><span>↓</span>
+                      }
+                    </span>
+                  }
                 </th>
               }
             </tr>

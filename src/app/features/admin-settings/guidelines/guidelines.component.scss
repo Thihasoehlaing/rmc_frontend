@@ -359,6 +359,14 @@
   color: var(--color-primary);
 }
 
+.icon-btn--delete {
+  color: var(--color-error-dark);
+
+  svg {
+    fill: var(--color-error-dark);
+  }
+}
+
 .btn-status-activate,
 .btn-status-deactivate {
   height: 36px;
@@ -448,5 +456,41 @@
       padding: var(--space-3) var(--space-4);
     }
   }
+}
+
+.delete-confirmation {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+  padding: var(--space-2) 0;
+
+  .delete-icon {
+    flex-shrink: 0;
+    fill: var(--color-error-dark);
+  }
+
+  h3 {
+    margin: 0 0 var(--space-2);
+    color: var(--color-label);
+    font-size: var(--fs-base);
+    font-weight: var(--fw-semibold);
+  }
+
+  p {
+    margin: 0;
+    color: var(--color-text-muted);
+    font-size: var(--fs-sm);
+
+    strong {
+      color: var(--color-label);
+      font-weight: var(--fw-semibold);
+    }
+  }
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
 }
 

@@ -1,0 +1,847 @@
+<form [formGroup]="form" class="form-section">
+  <app-custom-header icon="description" title="Conference Details"></app-custom-header>
+  <div class="section-fields">
+
+    <section class="card">
+      <app-custom-subheader title="Conference Request and Travel"></app-custom-subheader>
+      <div class="card__content section-fields">
+        <div class="row row--2 conference-field-grid">
+          <div class="form-field funding-request-field">
+            <label class="form-label is-required">Conference Funding Request Type</label>
+            <div class="radio-field">
+              <label class="radio-field__option">
+                <input type="radio" value="with-paper" formControlName="fundingRequestType">
+                <span>Conference (with paper presentation)</span>
+              </label>
+              <label class="radio-field__option">
+                <input type="radio" value="without-paper" formControlName="fundingRequestType">
+                <span>Conference (without paper presentation)</span>
+              </label>
+            </div>
+            <app-validation-message [control]="form.get('fundingRequestType')"></app-validation-message>
+          </div>
+
+          <div class="form-field location-selection-field">
+            <label class="form-label is-required">Select Local or Overseas</label>
+            <div class="radio-field">
+              <label class="radio-field__option">
+                <input type="radio" value="klang-valley" formControlName="localOrOverseas">
+                <span>Klang Valley</span>
+              </label>
+              <label class="radio-field__option">
+                <input type="radio" value="local-except-kl" formControlName="localOrOverseas">
+                <span>Local (Except Klang Valley)</span>
+              </label>
+              <label class="radio-field__option">
+                <input type="radio" value="overseas" formControlName="localOrOverseas">
+                <span>Overseas</span>
+              </label>
+              <label class="radio-field__option">
+                <input type="radio" value="not-required" formControlName="localOrOverseas">
+                <span>Not Required</span>
+              </label>
+            </div>
+            <app-note text="Klang Valley includes Kuala Lumpur, Selangor, Cyberjaya &amp; Putrajaya"></app-note>
+            <app-validation-message [control]="form.get('localOrOverseas')"></app-validation-message>
+          </div>
+        </div>
+
+        <div class="row row--2 conference-field-grid">
+          <div class="form-field">
+            <label class="form-label is-required">Is Travelling Required?</label>
+            <div class="radio-field">
+              <label class="radio-field__option">
+                <input type="radio" value="yes" formControlName="travelRequired">
+                <span>Yes</span>
+              </label>
+              <label class="radio-field__option">
+                <input type="radio" value="no" formControlName="travelRequired">
+                <span>No</span>
+              </label>
+            </div>
+            <app-note text="Tick Yes for Conference outside of Asia Pacific University of Technology &amp; Innovation"></app-note>
+            <app-validation-message [control]="form.get('travelRequired')"></app-validation-message>
+          </div>
+
+          <div class="form-field">
+            <label class="form-label is-required">Select conference type for current application</label>
+            <div class="radio-field">
+              <label class="radio-field__option">
+                <input type="radio" value="international" formControlName="conferenceType">
+                <span>International Conference</span>
+              </label>
+              <label class="radio-field__option">
+                <input type="radio" value="national" formControlName="conferenceType">
+                <span>National Conference</span>
+              </label>
+            </div>
+            <app-validation-message [control]="form.get('conferenceType')"></app-validation-message>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <app-custom-subheader title="Authorship and Publication Requirements"></app-custom-subheader>
+      <div class="card__content section-fields">
+        <div class="row row--2 conference-field-grid">
+          <div class="form-field">
+            <label class="form-label is-required">Please select whether you are the "First Author" and/or "Corresponding Author"</label>
+            <div class="radio-field">
+              <label class="radio-field__option">
+                <input type="radio" value="first-author" formControlName="authorshipType">
+                <span>First Author</span>
+              </label>
+              <label class="radio-field__option">
+                <input type="radio" value="corresponding-author" formControlName="authorshipType">
+                <span>Corresponding Author</span>
+              </label>
+              <label class="radio-field__option">
+                <input type="radio" value="both" formControlName="authorshipType">
+                <span>First and Corresponding Author</span>
+              </label>
+            </div>
+            <app-note text="Applicant must be either first or corresponding author or both"></app-note>
+            <app-validation-message [control]="form.get('authorshipType')"></app-validation-message>
+          </div>
+
+          <div class="form-field">
+            <label class="form-label is-required">Have you cited at least 1 journal paper from APU JATI &amp; EJBM?</label>
+            <div class="radio-field">
+              <label class="radio-field__option">
+                <input type="radio" value="yes" formControlName="citedJournalPaper">
+                <span>Yes</span>
+              </label>
+              <label class="radio-field__option">
+                <input type="radio" value="no" formControlName="citedJournalPaper">
+                <span>No</span>
+              </label>
+            </div>
+            <app-validation-message [control]="form.get('citedJournalPaper')"></app-validation-message>
+
+            @if (form.get('citedJournalPaper')?.value === 'no') {
+              <div class="conditional-field">
+                <label class="form-label is-required">If No, please explain</label>
+                <textarea class="input--textarea" formControlName="citedJournalPaperExplanation" placeholder="Enter explanation here" rows="3" maxlength="255" [class.is-invalid]="form.get('citedJournalPaperExplanation')?.invalid && form.get('citedJournalPaperExplanation')?.touched"></textarea>
+                <app-character-counter [current]="form.get('citedJournalPaperExplanation')?.value?.length || 0" [max]="255"></app-character-counter>
+                <app-validation-message [control]="form.get('citedJournalPaperExplanation')"></app-validation-message>
+              </div>
+            }
+          </div>
+        </div>
+
+        <div class="row row--2 conference-field-grid">
+          <div class="form-field">
+            <label class="form-label is-required">Is the publisher of your conference proceeding one of the restricted publishers (e.g., MDPI, Common Ground, Hindawi, or Frontier)?</label>
+            <div class="radio-field">
+              <label class="radio-field__option">
+                <input type="radio" value="yes" formControlName="restrictedPublisher">
+                <span>Yes</span>
+              </label>
+              <label class="radio-field__option">
+                <input type="radio" value="no" formControlName="restrictedPublisher">
+                <span>No</span>
+              </label>
+            </div>
+            <app-note text="Expected Answer for Approval: No"></app-note>
+            <app-validation-message [control]="form.get('restrictedPublisher')"></app-validation-message>
+          </div>
+
+          <div class="form-field">
+            <label class="form-label is-required">Is the conference proceeding with guaranteed publication Scopus-indexed?</label>
+            <div class="radio-field">
+              <label class="radio-field__option">
+                <input type="radio" value="yes" formControlName="scopusPublicationGuaranteed">
+                <span>Yes</span>
+              </label>
+              <label class="radio-field__option">
+                <input type="radio" value="no" formControlName="scopusPublicationGuaranteed">
+                <span>No</span>
+              </label>
+            </div>
+            <app-validation-message [control]="form.get('scopusPublicationGuaranteed')"></app-validation-message>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <app-custom-subheader title="Research Classification"></app-custom-subheader>
+      <div class="card__content section-fields">
+        <div class="form-field">
+          <label class="form-label is-required">Select Research or Non-Research Project</label>
+          <div class="radio-field">
+            <label class="radio-field__option">
+              <input type="radio" value="external-research" formControlName="researchType">
+              <span>External Research Project</span>
+            </label>
+            <label class="radio-field__option">
+              <input type="radio" value="non-research" formControlName="researchType">
+              <span>Non-Research Project</span>
+            </label>
+          </div>
+          <app-note text="If External Research Project is selected, all required funding will be fully subsidised from External Sources."></app-note>
+          <app-validation-message [control]="form.get('researchType')"></app-validation-message>
+        </div>
+
+        <div class="form-field">
+          <label class="form-label is-required">Please key in 3 SDG keywords in abstract</label>
+          <div class="sdg-keywords-container" (click)="openSDGKeywordsModal()" role="button" tabindex="0" (keydown.enter)="openSDGKeywordsModal()" (keydown.space)="openSDGKeywordsModal()">
+            @for (keyword of getDisplayedKeywordsArray(); track keyword) {
+              <div class="keyword-chip">
+                <span class="chip-label">{{ keyword }}</span>
+                <button
+                  type="button"
+                  class="chip-close"
+                  (click)="removeKeyword(keyword); $event.stopPropagation()"
+                  aria-label="Remove keyword">
+                  <span class="material-icons">close</span>
+                </button>
+              </div>
+            }
+          </div>
+          <app-note [text]="sdgKeywordNote"></app-note>
+          <app-validation-message [control]="form.get('sdgKeyword1')"></app-validation-message>
+          <app-validation-message [control]="form.get('sdgKeyword2')"></app-validation-message>
+          <app-validation-message [control]="form.get('sdgKeyword3')"></app-validation-message>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <app-custom-subheader title="Conference Schedule and Paper Details"></app-custom-subheader>
+      <div class="card__content section-fields">
+        <div class="row row--2 conference-field-grid">
+          <div class="form-field">
+            <label class="form-label is-required">Conference Start Date</label>
+            <input type="date" class="input--text" [attr.min]="getMinimumConferenceStartDate()" formControlName="conferenceStartDate">
+            <app-validation-message [control]="form.get('conferenceStartDate')"></app-validation-message>
+          </div>
+          <div class="form-field">
+            <label class="form-label is-required">Conference End Date</label>
+            <input type="date" class="input--text" [attr.min]="form.get('conferenceStartDate')?.value || getMinimumConferenceStartDate()" formControlName="conferenceEndDate">
+            <app-validation-message [control]="form.get('conferenceEndDate')"></app-validation-message>
+          </div>
+        </div>
+
+        <div class="row row--2 conference-field-grid conference-text-fields">
+          <div class="form-field">
+            <label class="form-label is-required">Conference Name</label>
+            <textarea class="input--textarea" formControlName="conferenceName" placeholder="Enter conference name" maxlength="200" rows="3"></textarea>
+            <app-character-counter [current]="getCharacterCount('conferenceName')" [max]="200"></app-character-counter>
+            <app-validation-message [control]="form.get('conferenceName')"></app-validation-message>
+          </div>
+          <div class="form-field">
+            <label class="form-label is-required">Conference Location</label>
+            <textarea class="input--textarea" formControlName="conferenceLocation" placeholder="Enter conference location" maxlength="200" rows="3"></textarea>
+            <app-character-counter [current]="getCharacterCount('conferenceLocation')" [max]="200"></app-character-counter>
+            <app-validation-message [control]="form.get('conferenceLocation')"></app-validation-message>
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label class="form-label is-required">Paper Title</label>
+          <textarea class="input--textarea" formControlName="paperTitle" placeholder="Enter paper title" maxlength="200" rows="3"></textarea>
+          <app-character-counter [current]="getCharacterCount('paperTitle')" [max]="200"></app-character-counter>
+          <app-validation-message [control]="form.get('paperTitle')"></app-validation-message>
+        </div>
+
+        <div class="form-field">
+          <app-searchable-dropdown
+            label="Select Region"
+            [required]="true"
+            [options]="regionOptions()"
+            placeholder="[--SELECT REGION--]"
+            formControlName="selectedRegion">
+          </app-searchable-dropdown>
+        </div>
+      </div>
+    </section>
+
+    @if (selectedRegion) {
+      <section class="card region-subsection">
+        <app-custom-subheader title="Region Funding Details"></app-custom-subheader>
+        <div class="card__content section-fields">
+
+        <!-- Funding Warning Box -->
+        <div class="funding-warning-box">
+          <div class="warning-icon">
+            <span class="material-icons">warning</span>
+          </div>
+          <div class="warning-content">
+            <p class="warning-title">Funding Limit for {{ getFullRegionName(selectedRegion) }}</p>
+            <p class="warning-text">{{ form.get('regionDescription')?.value }}</p>
+          </div>
+        </div>
+
+        <div class="region-details-grid">
+          <div class="form-field">
+            <label class="form-label">Region Name</label>
+            <input
+              type="text"
+              class="input--text"
+              formControlName="regionName"
+              [value]="selectedRegion"
+              readonly>
+          </div>
+
+          <div class="form-field">
+            <label class="form-label">Percentage</label>
+            <input
+              type="text"
+              class="input--text"
+              [value]="form.get('percentage')?.value || ''"
+              readonly>
+          </div>
+
+          <div class="form-field">
+            <label class="form-label">Limit</label>
+            <input
+              type="text"
+              class="input--text"
+              formControlName="limit"
+              [value]="5000"
+              readonly>
+          </div>
+
+          <div class="form-field">
+            <label class="form-label">Description</label>
+            <textarea
+              class="input--textarea"
+              formControlName="regionDescription"
+              placeholder="Additional funding details for this region"
+              rows="2"
+              readonly></textarea>
+          </div>
+        </div>
+        </div>
+      </section>
+    }
+
+    @if (selectedLocalOrOverseas && researchType) {
+      <app-custom-header icon="payments" title="Costing"></app-custom-header>
+
+        @if (selectedLocalOrOverseas && researchType === 'external-research') {
+          <section class="card">
+            <app-custom-subheader title="External Research Project Costing"></app-custom-subheader>
+            <div class="card__content section-fields">
+
+            <!-- Project Account Code -->
+            <div class="form-field">
+              <app-searchable-dropdown
+                label="Project Account Code"
+                [required]="true"
+                [options]="projectAccountCodeOptions()"
+                placeholder="[--SELECT PROJECT ACCOUNT CODE--]"
+                formControlName="externalProjectAccountCode">
+              </app-searchable-dropdown>
+            </div>
+
+            <!-- Detailed Breakdown for External Research Project -->
+            <div class="form-field">
+              <label class="form-label">Detailed Breakdown for External Research Project</label>
+              <div class="costing-breakdown">
+                <div class="list-section-header">
+                  <button type="button" class="btn btn-primary btn-sm" [disabled]="!canAddBreakdownEntries()" (click)="openBreakdownModal('external-research')">
+                    <span class="material-icons">add</span> Add Entry
+                  </button>
+                </div>
+
+                @if (externalBreakdowns.length > 0) {
+                  <div class="table-scroll">
+                    <app-data-table
+                      [columns]="externalBreakdownColumns"
+                      [rows]="getExternalBreakdownTableDataPaginated()"
+                      [hoverable]="true"
+                      [striped]="true">
+                      <ng-template #rowTemplate let-row let-i="index">
+                        <tr>
+                          <td class="col-no text-muted is-align-center">{{ row.index }}</td>
+                          <td>{{ row.itemDescription }}</td>
+                          <td>{{ row.voteNumber }}</td>
+                          <td>{{ row.description || '-' }}</td>
+                          <td>{{ row.cost | number: '1.2-2' }}</td>
+                          <td>{{ row.exchangeRate | number: '1.2-2' }}</td>
+                          <td>{{ row.costInRM | number: '1.2-2' }}</td>
+                          <td class="col-actions is-align-center">
+                            <button type="button" class="btn-icon btn-icon--edit" [disabled]="!canAddBreakdownEntries()"
+                              (click)="openBreakdownModal('external-research', i)" aria-label="Edit entry">
+                              <span class="material-icons">edit</span>
+                            </button>
+                            <button type="button" class="btn-icon btn-icon--delete" [disabled]="!canAddBreakdownEntries()"
+                              (click)="deleteBreakdown('external-research', i)" aria-label="Remove entry">
+                              <span class="material-icons">delete</span>
+                            </button>
+                          </td>
+                        </tr>
+                      </ng-template>
+                    </app-data-table>
+                  </div>
+                  <div class="table-summary">{{ getExternalBreakdownTableData().length }} item(s)</div>
+                } @else {
+                  <div class="empty-state">
+                    <span class="material-icons">receipt</span>
+                    <p>No breakdown entries added yet. Click <strong>Add Entry</strong> to start adding items.</p>
+                  </div>
+                }
+              </div>
+            </div>
+
+            <div class="total-display">
+              <span class="total-label">Total BEFORE SUBSIDY (RM)</span>
+              <div class="total-amount">{{ calculateBreakdownTotal('external-research') | number: '1.2-2' }}</div>
+            </div>
+
+            <!-- Sponsorship Subsections Container -->
+            <div class="sponsorship-subsections-container">
+              <!-- External Sponsorship Subsection -->
+              <div class="sponsorship-subsection">
+                <span class="subsection-title">External Sponsorship</span>
+                <div class="subsection-fields-wrapper">
+                  <div class="row--2">
+                    <div class="form-field">
+                      <label class="form-label">Sponsored Amount by External (RM)</label>
+                      @if (isExternalResearchProject) {
+                        <input
+                          type="text"
+                          class="input--text"
+                          [value]="externalResearchTotalCost | number: '1.2-2'"
+                          readonly>
+                      } @else {
+                        <input
+                          type="number"
+                          class="input--text"
+                          formControlName="externalSponsoredAmountExternal">
+                      }
+                    </div>
+                  </div>
+                  <div class="row--2">
+                    <div class="form-field">
+                      <label class="form-label">Sponsored by</label>
+                      @if (isExternalResearchProject) {
+                        <input
+                          type="text"
+                          class="input--text"
+                          value="Government Sector"
+                          readonly>
+                      } @else {
+                        <input
+                          type="text"
+                          class="input--text"
+                          formControlName="externalSponsoredBy">
+                      }
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- APU Sponsorship Subsection -->
+              <div class="sponsorship-subsection">
+                <span class="subsection-title">Asia Pacific University of Technology & Innovation Sponsorship</span>
+                <div class="subsection-fields-wrapper">
+                  <div class="row--2">
+                    <div class="form-field">
+                      <label class="form-label">Sponsorship Percentage by Asia Pacific University of Technology & Innovation (%)</label>
+                      <input
+                        type="text"
+                        class="input--text"
+                        [value]="externalResearchPercentage | number: '1.0-0'"
+                        readonly
+                        aria-label="Sponsorship Percentage by Asia Pacific University of Technology & Innovation (Read Only)">
+                    </div>
+                  </div>
+                  <div class="row--2">
+                    <!-- Sponsorship Amount by APU (Read Only) -->
+                    <div class="form-field">
+                      <label class="form-label">Sponsorship Amount by Asia Pacific University of Technology & Innovation (RM)</label>
+                      <input
+                        type="text"
+                        class="input--text"
+                        [value]="getCappedSponsorshipAmount(externalResearchSponsorshipByAPU) | number: '1.2-2'"
+                        readonly
+                        aria-label="Sponsorship Amount by Asia Pacific University of Technology & Innovation (Read Only)">
+                      <small class="tooltip-text">{{ isCapLimitTooltip(externalResearchSponsorshipByAPU) ? getCapLimitTooltip(externalResearchSponsorshipByAPU) : (isReductionTooltip(externalResearchSponsorshipByAPU, getCappedSponsorshipAmount(externalResearchSponsorshipByAPU)) ? getReductionTooltip(externalResearchSponsorshipByAPU, getCappedSponsorshipAmount(externalResearchSponsorshipByAPU)) : '') }}</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Cost to be borne by Applicant (Read Only) -->
+            <div class="form-field total-field">
+              <label class="form-label">Cost to be borne by Applicant (RM)</label>
+              <div class="total-value-display">{{ externalCostBorneByApplicant | number: '1.2-2' }}</div>
+            </div>
+
+            <div class="form-field">
+              <label class="form-label">Remarks (Optional)</label>
+              <textarea
+                class="input--textarea"
+                formControlName="externalCostingRemarks"
+                placeholder="Enter any additional remarks"
+                (input)="autoExpandTextarea($event)"
+                maxlength="500"
+                rows="3"></textarea>
+              <div class="form-counter">{{ getCharacterCount('externalCostingRemarks') }} / 500 characters</div>
+            </div>
+            </div>
+          </section>
+        }
+
+        @if ((selectedLocalOrOverseas === 'klang-valley' || selectedLocalOrOverseas === 'local-except-kl' || selectedLocalOrOverseas === 'not-required') && researchType === 'non-research') {
+          <section class="card">
+            <app-custom-subheader title="Local Conference Costing"></app-custom-subheader>
+            <div class="card__content section-fields">
+
+            <!-- Detailed Breakdown for Local -->
+            <div class="form-field">
+              <label class="form-label">Detailed Breakdown for Local</label>
+              <div class="costing-breakdown">
+                <div class="list-section-header">
+                  <button type="button" class="btn btn-primary btn-sm" [disabled]="!canAddBreakdownEntries()" (click)="openBreakdownModal('local')">
+                    <span class="material-icons">add</span> Add Entry
+                  </button>
+                </div>
+
+                @if (localBreakdowns.length > 0) {
+                  <div class="table-scroll">
+                    <app-data-table
+                      [columns]="localBreakdownColumns"
+                      [rows]="getLocalBreakdownTableDataPaginated()"
+                      [hoverable]="true"
+                      [striped]="true">
+                      <ng-template #rowTemplate let-row let-i="index">
+                        <tr>
+                          <td class="col-no text-muted is-align-center">{{ row.index }}</td>
+                          <td>{{ row.itemDescription }}</td>
+                          <td>{{ row.voteNumber }}</td>
+                          <td>{{ row.description || '-' }}</td>
+                          <td>{{ row.supportingDocument || '-' }}</td>
+                          <td>{{ row.cost | number: '1.2-2' }}</td>
+                          <td>{{ row.exchangeRate | number: '1.2-2' }}</td>
+                          <td>{{ row.costInRM | number: '1.2-2' }}</td>
+                          <td class="col-actions is-align-center">
+                            <button type="button" class="btn-icon btn-icon--edit" [disabled]="!canAddBreakdownEntries()"
+                              (click)="openBreakdownModal('local', i)" aria-label="Edit entry">
+                              <span class="material-icons">edit</span>
+                            </button>
+                            <button type="button" class="btn-icon btn-icon--delete" [disabled]="!canAddBreakdownEntries()"
+                              (click)="deleteBreakdown('local', i)" aria-label="Remove entry">
+                              <span class="material-icons">delete</span>
+                            </button>
+                          </td>
+                        </tr>
+                      </ng-template>
+                    </app-data-table>
+                  </div>
+                  <div class="table-summary">{{ getLocalBreakdownTableData().length }} item(s)</div>
+                } @else {
+                  <div class="empty-state">
+                    <span class="material-icons">receipt</span>
+                    <p>No breakdown entries added yet. Click <strong>Add Entry</strong> to start adding items.</p>
+                  </div>
+                }
+              </div>
+            </div>
+
+            <div class="total-display">
+              <span class="total-label">Total BEFORE SUBSIDY (RM)</span>
+              <div class="total-amount">{{ calculateBreakdownTotal('local') | number: '1.2-2' }}</div>
+            </div>
+
+            <div class="sponsorship-subsections-container">
+              <div class="sponsorship-subsection">
+                <span class="subsection-title">External Sponsorship</span>
+                <div class="subsection-fields-wrapper">
+                  <div class="row--2">
+                    <div class="form-field">
+                      <label class="form-label">Sponsored Amount by External (RM)</label>
+                      <input
+                        type="number"
+                        class="input--text"
+                        formControlName="localSponsoredAmountExternal">
+                    </div>
+                  </div>
+                  <div class="row--2">
+                    <div class="form-field">
+                      <label class="form-label">Sponsored by</label>
+                      <input
+                        type="text"
+                        class="input--text"
+                        formControlName="localSponsoredBy">
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="sponsorship-subsection">
+                <span class="subsection-title">Asia Pacific University of Technology & Innovation Sponsorship</span>
+                <div class="subsection-fields-wrapper">
+                  <div class="row--2">
+                    <div class="form-field">
+                      <label class="form-label">Sponsorship Percentage by Asia Pacific University of Technology & Innovation (%)</label>
+                      <input
+                        type="text"
+                        class="input--text"
+                        [value]="percentage | number: '1.2-2'"
+                        disabled
+                        aria-label="Sponsorship Percentage by Asia Pacific University of Technology & Innovation (Read Only)">
+                    </div>
+                  </div>
+                  <div class="row--2">
+                    <div class="form-field">
+                      <label class="form-label">Sponsorship Amount by Asia Pacific University of Technology & Innovation (RM)</label>
+                      <input
+                        type="text"
+                        class="input--text"
+                        [value]="getCappedSponsorshipAmount(localSponsorshipAmountByAPU) | number: '1.2-2'"
+                        disabled
+                        aria-label="Sponsorship Amount by Asia Pacific University of Technology & Innovation (Read Only)">
+                      <small class="tooltip-text">{{ isCapLimitTooltip(localSponsorshipAmountByAPU) ? getCapLimitTooltip(localSponsorshipAmountByAPU) : (isReductionTooltip(localSponsorshipAmountByAPU, getCappedSponsorshipAmount(localSponsorshipAmountByAPU)) ? getReductionTooltip(localSponsorshipAmountByAPU, getCappedSponsorshipAmount(localSponsorshipAmountByAPU)) : '') }}</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-field total-field">
+              <label class="form-label">Cost to be borne by Applicant (RM)</label>
+              <div class="total-value-display">{{ localCostBorneByApplicant | number: '1.2-2' }}</div>
+            </div>
+
+            <div class="form-field">
+              <label class="form-label">Remarks (Optional)</label>
+              <textarea
+                class="input--textarea"
+                formControlName="localCostingRemarks"
+                placeholder="Enter any additional remarks"
+                (input)="autoExpandTextarea($event)"
+                maxlength="500"
+                rows="3"></textarea>
+              <div class="form-counter">{{ getCharacterCount('localCostingRemarks') }} / 500 characters</div>
+            </div>
+            </div>
+          </section>
+        }
+    }
+
+@if (isBreakdownModalOpen) {
+  <app-dialog
+    [title]="getBreakdownModalTitle()"
+    [isOpen]="true"
+    size="large"
+    (close)="closeBreakdownModal()">
+      <form id="breakdown-entry-form" [formGroup]="breakdownForm" (ngSubmit)="submitBreakdownModal()" class="dialog-form dialog-form--two-column">
+        <!-- Item description -->
+        <div class="form-group">
+          <label for="itemDescription">
+            {{ breakdownType === 'external-research'
+              ? 'Vote Number Description'
+              : (breakdownType === 'local' ? 'Account Code Description' : 'Vote Number Description') }}
+            <span class="asterisk">*</span>
+          </label>
+          @if (breakdownType === 'local' && isKlangValleyNonResearch()) {
+            <input
+              id="itemDescription"
+              type="text"
+              class="form-control"
+              formControlName="itemDescription"
+              readonly>
+          } @else {
+            <app-searchable-dropdown
+              [options]="getBreakdownOptionsForType()"
+              [placeholder]="breakdownType === 'external-research'
+                ? 'Search and select vote number description'
+                : (breakdownType === 'local'
+                  ? 'Search and select account code description'
+                  : 'Search and select item')"
+              formControlName="itemDescription">
+            </app-searchable-dropdown>
+          }
+        </div>
+
+          @if (breakdownForm.get('itemDescription')?.invalid && breakdownForm.get('itemDescription')?.touched) {
+            <span class="error-message">
+              {{ breakdownType === 'external-research'
+                ? 'Vote number description is required'
+                : (breakdownType === 'local'
+                  ? 'Account code description is required'
+                  : 'Item description is required') }}
+            </span>
+          }
+
+        @if (breakdownType === 'external-research') {
+          <div class="form-group">
+            <label for="accountCode">
+              Account Code
+            </label>
+            <input
+              id="accountCode"
+              type="text"
+              class="form-control"
+              formControlName="accountCode"
+              readonly
+              placeholder="Auto-filled from Project Account Code">
+          </div>
+        }
+
+        <!-- Vote Number or local Account Code -->
+        <div class="form-group">
+          <label [for]="breakdownType === 'local' ? 'accountCode' : 'voteNumber'">
+            {{ breakdownType === 'local' ? 'Account Code' : 'Vote Number' }}
+            <span class="asterisk">*</span>
+          </label>
+          <input
+            [id]="breakdownType === 'local' ? 'accountCode' : 'voteNumber'"
+            type="text"
+            class="form-control"
+            formControlName="voteNumber"
+            readonly
+            [placeholder]="breakdownType === 'external-research'
+              ? 'Auto-Filled from vote number description'
+              : (breakdownType === 'local'
+                ? 'Auto-filled from Account Code Description'
+                : 'Auto-Filled from vote number description')">
+          @if (breakdownForm.get('voteNumber')?.invalid && breakdownForm.get('voteNumber')?.touched) {
+            <span class="error-message">
+              {{ breakdownType === 'local' ? 'Account code' : 'Vote number' }} is required
+            </span>
+          }
+        </div>
+
+        <!-- Cost in Foreign Currency / MYR -->
+        <div class="form-group">
+          <label for="cost">
+            {{ (breakdownType === 'local') ? 'Cost in Foreign Currency / MYR (RM)' : 'Cost in Foreign Currency / MYR' }} <span class="asterisk">*</span>
+          </label>
+          <input
+            id="cost"
+            type="number"
+            class="form-control"
+            formControlName="cost"
+            placeholder="Enter cost"
+            step="0.01">
+          @if (breakdownForm.get('cost')?.invalid && breakdownForm.get('cost')?.touched) {
+            <span class="error-message">Cost is required</span>
+          }
+        </div>
+
+        <!-- Exchange Rate -->
+        <div class="form-group">
+          <label for="exchangeRate" class="form-label">Exchange Rate <span class="asterisk">*</span></label>
+          <input
+            id="exchangeRate"
+            type="number"
+            class="form-control"
+            formControlName="exchangeRate"
+            placeholder="1.0"
+            step="0.01">
+          <app-note text="For Malaysia Ringgit/MYR, please put 1 as the exchange rate."></app-note>
+          @if (breakdownForm.get('exchangeRate')?.invalid && breakdownForm.get('exchangeRate')?.touched) {
+            <span class="error-message">Exchange rate is required</span>
+          }
+        </div>
+
+        <!-- Cost in RM (Read-only calculated field) -->
+        <div class="form-group">
+          <label for="costInRM">Cost in RM (approximate)</label>
+          <input
+            id="costInRM"
+            type="number"
+            class="form-control"
+            formControlName="costInRM"
+            readonly
+            placeholder="Auto-calculated"
+            step="0.01">
+        </div>
+
+        <div class="form-group">
+          <label for="description">Description</label>
+          <textarea
+            id="description"
+            class="form-control"
+            formControlName="description"
+            placeholder="Enter description (optional)"
+            rows="3"></textarea>
+        </div>
+
+        <!-- Supporting Documents Note -->
+        <div class="form-group">
+          <label>Supporting Documents</label>
+          <p class="form-hint">Max file size: 10MB. Allowed file types: PDF only.</p>
+          <div class="file-upload-wrapper">
+            <input
+              type="file"
+              id="supportingDoc"
+              class="file-input"
+              accept=".pdf"
+              (change)="onFileSelected($event)"
+              aria-label="Upload supporting document">
+            <label for="supportingDoc" class="file-upload-label">
+              <span class="material-icons">cloud_upload</span>
+              <span class="file-text">Click to upload or drag and drop</span>
+              <span class="file-hint">PDF up to 10MB</span>
+            </label>
+            @if (selectedFileName) {
+              <div class="file-selected">
+                <span class="material-icons">description</span>
+                <span class="file-name">{{ selectedFileName }}</span>
+                <button type="button" class="btn-remove" (click)="removeFile()" aria-label="Remove file">
+                  <span class="material-icons">close</span>
+                </button>
+              </div>
+            }
+          </div>
+        </div>
+
+      </form>
+
+    <button dialog-footer type="button" class="btn btn-secondary" (click)="closeBreakdownModal()">Cancel</button>
+    <button dialog-footer type="submit" form="breakdown-entry-form" class="btn btn-primary" [disabled]="breakdownForm.invalid || !canAddBreakdownEntries()">Save</button>
+  </app-dialog>
+}
+
+<!-- SDG Keywords Modal -->
+@if (isSDGKeywordsModalOpen) {
+  <app-dialog
+    [title]="'Enter SDG Keywords'"
+    [isOpen]="true"
+    size="small"
+    (close)="closeSDGKeywordsModal()">
+
+  <form class="dialog-form" [formGroup]="sdgKeywordsForm">
+    <div class="form-field">
+      <label class="form-label is-required">Keyword 1</label>
+      <input
+        type="text"
+        class="input--text"
+        formControlName="keyword1"
+        [placeholder]="sdgKeywordPlaceholder">
+      <app-validation-message [control]="sdgKeywordsForm.get('keyword1')"></app-validation-message>
+    </div>
+
+    <div class="form-field">
+      <label class="form-label is-required">Keyword 2</label>
+      <input
+        type="text"
+        class="input--text"
+        formControlName="keyword2"
+        [placeholder]="sdgKeywordPlaceholder">
+      <app-validation-message [control]="sdgKeywordsForm.get('keyword2')"></app-validation-message>
+    </div>
+
+    <div class="form-field">
+      <label class="form-label is-required">Keyword 3</label>
+      <input
+        type="text"
+        class="input--text"
+        formControlName="keyword3"
+        [placeholder]="sdgKeywordPlaceholder">
+      <app-validation-message [control]="sdgKeywordsForm.get('keyword3')"></app-validation-message>
+    </div>
+  </form>
+
+    <button dialog-footer type="button" class="btn btn-secondary" (click)="closeSDGKeywordsModal()">Cancel</button>
+    <button dialog-footer type="button" class="btn btn-primary" (click)="confirmSDGKeywords()" [disabled]="sdgKeywordsForm.invalid">Confirm</button>
+  </app-dialog>
+}

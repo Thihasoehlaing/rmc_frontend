@@ -1,0 +1,92 @@
+<main class="login-page">
+  <div class="login-page__circle login-page__circle--top"></div>
+  <div class="login-page__circle login-page__circle--bottom"></div>
+
+  <section class="login-container" aria-label="RMC login">
+    <aside class="login-brand">
+      <div class="login-brand__glow login-brand__glow--top" aria-hidden="true"></div>
+      <div class="login-brand__glow login-brand__glow--bottom" aria-hidden="true"></div>
+      <div class="login-brand__orbit" aria-hidden="true"></div>
+
+      <h1 class="login-brand__title">Research Management Centre</h1>
+      <p class="login-brand__subtitle">
+        Asia Pacific University of Technology &amp; Innovation
+      </p>
+
+      <div class="login-brand__security">
+        <span class="material-icons-outlined" aria-hidden="true">verified_user</span>
+        <span>Secure APU Account Access</span>
+      </div>
+    </aside>
+
+    <section class="login-card">
+      <header class="login-card__header">
+        <img
+          class="login-card__logo"
+          src="assets/images/apu.png"
+          alt="Asia Pacific University"
+        />
+      </header>
+
+      @if (loginError()) {
+        <div class="login-alert login-alert--error" role="alert">
+          <span class="material-icons-outlined">error_outline</span>
+          <span>{{ loginError() }}</span>
+        </div>
+      }
+
+      <button
+        class="apu-login-button"
+        type="button"
+        [disabled]="isLoading()"
+        (click)="loginWithApu()"
+      >
+        @if (isLoading()) {
+          <span class="apu-login-button__spinner" aria-hidden="true"></span>
+          <span>Connecting to APU...</span>
+        } @else {
+          <span class="material-icons-outlined" aria-hidden="true">login</span>
+          <span>Login with APU Account</span>
+        }
+      </button>
+
+      @if (showTestingLogin) {
+        <div class="login-divider" aria-hidden="true">
+          <span></span>
+          <strong>or</strong>
+          <span></span>
+        </div>
+
+        <section class="testing-login-panel" aria-label="Testing login accounts">
+          <div class="testing-login-panel__header">
+            <span class="material-icons-outlined" aria-hidden="true">science</span>
+            <span>Testing Login</span>
+          </div>
+
+          <div class="testing-login-panel__accounts">
+            @for (account of testingAccounts; track account.username) {
+              <button
+                class="testing-account-button"
+                type="button"
+                [disabled]="isLoading()"
+                (click)="loginForTesting(account.username)"
+              >
+                <span>{{ account.label }}</span>
+                <small>{{ account.groups }}</small>
+              </button>
+            }
+          </div>
+        </section>
+      }
+
+      <div class="login-alert login-alert--info">
+        <span class="material-icons-outlined" aria-hidden="true">shield</span>
+        <span>Your access and role will be verified securely after sign-in.</span>
+      </div>
+    </section>
+  </section>
+
+  <footer class="login-footer">
+    &copy; {{ currentYear }} RMC Research Management Centre &middot; Asia Pacific University
+  </footer>
+</main>

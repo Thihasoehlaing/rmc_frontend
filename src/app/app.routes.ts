@@ -1,0 +1,131 @@
+import { Routes } from '@angular/router';
+import { LayoutComponent } from './layout/layout.component';
+import { authGuard } from './core/guards/auth.guard';
+import { permissionGuard } from './core/guards/permission.guard';
+import {
+  adminSettingsPermission,
+  conferencePermission,
+  journalPermission,
+  partnershipPermission,
+  ragraPermission,
+  rdigPermission,
+  systemSettingsPermission,
+  travelAuthorizationPermission,
+} from './core/routing/app-route-permissions';
+
+export const routes: Routes = [
+  {
+    path: 'login',
+    loadComponent: () =>
+      import('./features/auth/login/login.component').then(m => m.LoginComponent),
+  },
+  {
+    path: '',
+    component: LayoutComponent,
+    canActivate: [authGuard],
+    children: [
+      {
+        path: 'dashboard',
+        loadChildren: () =>
+          import('./features/dashboard/dashboard.routes').then(m => m.dashboardRoutes),
+      },
+      {
+        path: 'profile',
+        loadChildren: () =>
+          import('./features/profile/profile.routes').then(m => m.profileRoutes),
+      },
+      {
+        path: 'showcase',
+        loadChildren: () =>
+          import('./shared/components/showcase/showcase.routes').then(m => m.showcaseRoutes),
+      },
+      {
+        path: 'submissions',
+        loadChildren: () =>
+          import('./features/submissions/submissions.routes').then(m => m.submissionsRoutes),
+      },
+      {
+        path: 'rdig',
+        canActivate: [permissionGuard],
+        data: {
+          permission: rdigPermission,
+        },
+        loadChildren: () =>
+          import('./features/rdig/rdig_form.routes').then(m => m.rdigApplicationRoutes),
+      },
+      {
+        path: 'conference',
+        canActivate: [permissionGuard],
+        data: {
+          permission: conferencePermission,
+        },
+        loadChildren: () =>
+          import('./features/conference/conference_form.routes').then(m => m.conferenceFormRoutes),
+      },
+      {
+        path: 'journal',
+        canActivate: [permissionGuard],
+        data: {
+          permission: journalPermission,
+        },
+        loadChildren: () =>
+          import('./features/journal-publication/journal_publication_form.routes').then(
+            m => m.journalPublicationFormRoutes,
+          ),
+      },
+      {
+        path: 'ragra',
+        canActivate: [permissionGuard],
+        data: {
+          permission: ragraPermission,
+        },
+        loadChildren: () =>
+          import('./features/ra-gra/RA-GRA_form.routes').then(m => m.ragraFormRoutes),
+      },
+      {
+        path: 'travel-authorization',
+        canActivate: [permissionGuard],
+        data: {
+          permission: travelAuthorizationPermission,
+        },
+        loadChildren: () =>
+          import('./features/travel-authorization/travel_authorization_form.routes').then(
+            m => m.travelAuthorizationFormRoutes,
+          ),
+      },
+      {
+        path: 'partnership',
+        canActivate: [permissionGuard],
+        data: {
+          permission: partnershipPermission,
+        },
+        loadChildren: () =>
+          import('./features/partnership/partnership_form.routes').then(
+            m => m.partnershipFormRoutes,
+          ),
+      },
+      {
+        path: 'admin-settings',
+        canActivate: [permissionGuard],
+        data: {
+          permission: adminSettingsPermission,
+        },
+        loadChildren: () =>
+          import('./features/admin-settings/admin-settings.routes').then(
+            m => m.adminSettingsRoutes,
+          ),
+      },
+      {
+        path: 'settings',
+        canActivate: [permissionGuard],
+        data: {
+          permission: systemSettingsPermission,
+        },
+        loadChildren: () =>
+          import('./features/settings/settings.routes').then(m => m.settingsRoutes),
+      },
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+    ],
+  },
+  { path: '**', redirectTo: '/login' },
+];

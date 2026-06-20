@@ -1,0 +1,25 @@
+<div class="app-shell" [class.app-shell--sidebar-pinned]="sidebarService.pinned()">
+  <!-- Left Side: Sidebar -->
+  <app-sidebar></app-sidebar>
+  @if (sidebarService.mobileOpen()) {
+    <button
+      type="button"
+      class="app-shell__backdrop"
+      aria-label="Close navigation menu"
+      (click)="sidebarService.closeMobile()">
+    </button>
+  }
+
+  <!-- Right Side: Main Content -->
+  <div class="app-shell__main">
+    <app-top-header></app-top-header>
+
+    <main class="app-shell__content">
+      <router-outlet></router-outlet>
+    </main>
+
+    <footer class="app-shell__footer">
+      <p>&copy; {{ currentYear }} RMC Research Management Centre. All rights reserved.</p>
+    </footer>
+  </div>
+</div>

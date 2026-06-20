@@ -1,0 +1,225 @@
+@use '../../../../../../styles/index' as *;
+@use '../../../styles/radio-group';
+
+// Style asterisks to use error-dark color
+.asterisk {
+  color: var(--color-error-dark);
+}
+
+// Override required field color for conference form
+.form-label.is-required::after {
+  color: var(--color-error-dark);
+}
+
+.is-required::after {
+  color: var(--color-error-dark);
+}
+
+.form-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--form-section-gap);
+  padding: 0;
+}
+
+.card {
+  margin-top: 0;
+}
+
+.section-header {
+  margin-bottom: var(--space-4);
+}
+
+.section-title {
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-bold);
+  color: black;
+  margin: 0;
+  padding: 0;
+}
+
+.section-title--blue {
+  color: var(--color-heading);
+}
+
+.upload-container {
+  border: 1px solid var(--border-default); // 1px border — allowed exception
+  border-radius: var(--radius-md);
+  padding: var(--space-6);
+  background: var(--color-surface);
+}
+
+.section-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+  align-items: stretch;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.manuscript-reviewer {
+  grid-column: 1 / -1;
+}
+
+// Note: .form-field is defined globally in _forms.scss
+// Use global class directly; do not redefine locally
+
+.upload-field-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-height: 52px;
+}
+
+.upload-field-title {
+  font-size: var(--fs-md);
+  font-weight: var(--fw-semibold);
+  color: var(--color-text);
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  line-height: var(--lh-tight);
+
+  &.is-required::after {
+    content: ' *';
+    color: var(--color-error-dark);
+  }
+}
+
+.upload-field-subtitle {
+  font-size: var(--fs-xs);
+  color: var(--color-text-muted);
+  margin: 0;
+  padding: 0;
+}
+
+.title-with-tooltip {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-1);
+  width: fit-content;
+  max-width: 100%;
+}
+
+.label-with-note {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-1);
+  width: fit-content;
+  max-width: 100%;
+}
+
+.label-with-note .form-label {
+  margin: 0;
+}
+
+.label-with-tooltip {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  width: fit-content;
+  max-width: 100%;
+}
+
+.radio-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4) var(--space-6);
+  padding: var(--space-2) 0;
+}
+
+.radio-label {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  color: var(--color-label);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-relaxed);
+  cursor: pointer;
+
+  input[type='radio'] {
+    margin-top: 2px;
+    accent-color: var(--color-primary);
+  }
+}
+
+// Note: .form-label is defined globally in _forms.scss
+// Use global class directly; do not redefine locally
+
+.form-hint {
+  // Note: base .form-hint is defined globally; this component uses default styles
+}
+
+.form-error-msg {
+  // Note: base .form-error-msg is defined globally; this component uses default styles
+}
+
+// NOTE: .input--text, .input--textarea are defined globally in _forms.scss
+// Do not redefine locally
+
+.divider {
+  height: 1px; // 1px border — allowed exception
+  background: var(--border-default);
+  margin: var(--space-4) 0;
+}
+
+.document-section-title {
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-bold);
+  color: var(--color-text);
+  margin: var(--space-2) 0;
+}
+
+.file-upload-area {
+  position: relative;
+  border: 2px dashed var(--border-default); // 2px sub-space
+  border-radius: var(--radius-md);
+  padding: var(--space-6);
+  background: var(--color-surface-hover);
+  text-align: center;
+  transition: all var(--transition-fast);
+  cursor: pointer;
+
+  &:hover {
+    border-color: var(--color-primary);
+    background: var(--color-surface-nested);
+  }
+}
+
+.file-input {
+  display: none;
+}
+
+.file-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  cursor: pointer;
+  user-select: none;
+}
+
+.file-icon {
+  font-size: var(--fs-2xl);
+}
+
+.file-text {
+  font-size: var(--fs-sm);
+  color: var(--color-label);
+  font-weight: var(--fw-medium);
+}
+
+.manuscript-section {
+  padding: var(--space-4);
+  margin-top: var(--space-6);
+  border: 1px solid var(--border-default); // 1px border — allowed exception
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}

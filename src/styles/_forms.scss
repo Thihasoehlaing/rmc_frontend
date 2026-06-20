@@ -1,0 +1,916 @@
+// Global reusable form classes using CSS custom properties
+
+// 1. Text Inputs, Selects, and Textareas
+.input--text,
+.input--select,
+.input--textarea {
+  width: 100%;
+  height: var(--input-height-sm);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-control);
+  color: var(--color-text-primary);
+  background: var(--input-bg-editable);
+  padding: var(--size-input-padding);
+  border: 1px solid var(--input-border-default);
+  border-radius: var(--radius-md);
+  box-sizing: border-box;
+  transition: all var(--transition-fast) var(--ease-default);
+  outline: none;
+  appearance: none;
+
+  &::placeholder {
+    color: var(--color-letter-counter);
+    opacity: 0.8;
+  }
+
+  &:hover:not(:disabled):not(.has-error):not(.is-invalid) {
+    border-color: var(--color-primary);
+  }
+
+  &:focus,
+  &:focus-visible {
+    border-color: var(--input-border-focus);
+    box-shadow: var(--input-shadow-focus);
+    outline: none;
+  }
+
+  // Readonly / disabled field state. Keep values fully legible while making
+  // non-editable controls visually distinct from white editable controls.
+  &[readonly],
+  &:disabled,
+  &.is-disabled,
+  &.input--soft-readonly,
+  &.input--readonly,
+  &.input--disabled-readonly {
+    background: var(--input-bg-readonly);
+    color: var(--color-text-muted);
+    opacity: 1;
+    cursor: not-allowed;
+    border-color: var(--border-subtle);
+    box-shadow: none;
+
+    &:hover,
+    &:focus,
+    &:focus-visible {
+      border-color: var(--border-subtle);
+      box-shadow: none;
+    }
+  }
+
+  // Error/Invalid state
+  &.has-error,
+  &.is-invalid {
+    border-color: var(--color-error);
+
+    &:focus {
+      box-shadow: var(--input-shadow-error);
+    }
+  }
+}
+
+// Universal native form-field state. Some feature forms use local classes such
+// as `.form-control` instead of the shared `.input--*` classes, so attribute
+// selectors ensure the same readonly color is applied for every role and form.
+:where(
+  input:not([type='button']):not([type='submit']):not([type='reset']):not([type='checkbox']):not([type='radio']):not([type='file'])[readonly],
+  input:not([type='button']):not([type='submit']):not([type='reset']):not([type='checkbox']):not([type='radio']):not([type='file']):disabled,
+  textarea[readonly],
+  textarea:disabled,
+  select:disabled
+) {
+  color: var(--color-text-muted) !important;
+  background-color: var(--input-bg-readonly) !important;
+  border-color: var(--border-subtle) !important;
+  box-shadow: none !important;
+  opacity: 1 !important;
+  cursor: not-allowed;
+}
+
+.input--textarea {
+  min-height: var(--control-min-height-multiline);
+  height: auto;
+  resize: vertical;
+}
+
+.input--select {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right var(--space-3) center;
+  background-size: 16px 12px;
+  padding-right: var(--space-9);
+}
+
+// 2. Form Labels & Layout
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--form-label-gap);
+  min-width: 0;
+}
+
+.form-label {
+  font-family: var(--font-family-base);
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-medium);
+  font-size: var(--font-size-body);
+  display: inline-flex;
+  align-items: center;
+  line-height: var(--line-height-control);
+
+  &.is-required::after {
+    content: '*';
+    color: var(--color-error);
+    margin-left: var(--form-space-1);
+    font-size: inherit;
+  }
+}
+
+// Shared radio button system
+.radio-field,
+.radio-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4) var(--space-6);
+  padding: var(--space-2) 0;
+}
+
+// Vertical radio group variant - stacks options vertically
+.radio-group--vertical {
+  flex-direction: column;
+  gap: var(--space-3);
+  flex-wrap: nowrap;
+}
+
+.radio-option {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-relaxed);
+  color: var(--color-label);
+  cursor: pointer;
+
+  input[type='radio'] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    margin: 1px 0 0;
+    border: 2px solid var(--border-hover);
+    border-radius: 50%;
+    background: var(--color-surface);
+    display: grid;
+    place-content: center;
+    flex-shrink: 0;
+    transition: border-color var(--transition-fast) var(--ease-default),
+      box-shadow var(--transition-fast) var(--ease-default),
+      background-color var(--transition-fast) var(--ease-default);
+
+    &::before {
+      content: '';
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      transform: scale(0);
+      transition: transform var(--transition-fast) var(--ease-default);
+      background: var(--color-primary);
+    }
+
+    &:hover {
+      border-color: var(--color-primary);
+    }
+
+    &:focus-visible {
+      outline: none;
+      border-color: var(--input-border-focus);
+      box-shadow: var(--input-shadow-focus);
+    }
+
+    &:checked {
+      border-color: var(--color-primary);
+
+      &::before {
+        transform: scale(1);
+      }
+    }
+
+    &:disabled {
+      background: var(--input-bg-readonly);
+      border-color: var(--border-default);
+      cursor: not-allowed;
+
+      &::before {
+        background: var(--color-text-muted);
+      }
+    }
+  }
+}
+
+// 3. Feedback & Indicators
+.form-hint {
+  font-size: var(--font-size-caption);
+  line-height: var(--line-height-caption);
+  color: var(--color-text-secondary);
+  margin: var(--form-message-gap) 0 0;
+}
+
+.form-error-msg {
+  font-size: var(--font-size-caption);
+  line-height: var(--line-height-caption);
+  color: var(--color-error);
+  font-weight: var(--fw-medium);
+  margin: var(--form-message-gap) 0 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.form-counter {
+  font-size: var(--font-size-caption);
+  line-height: var(--line-height-caption);
+  color: var(--color-letter-counter);
+  text-align: right;
+}
+
+// 4. Enhanced Button System
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--button-height-standard);
+  height: var(--button-height-standard);
+  padding: 0 var(--form-space-4);
+  border-radius: var(--control-radius);
+  font-weight: var(--font-weight-medium);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-control);
+  cursor: pointer;
+  transition: all var(--transition-fast) var(--ease-default);
+  border: 1px solid transparent;
+  gap: var(--space-2);
+  text-decoration: none;
+  white-space: nowrap;
+
+  &:disabled {
+    opacity: var(--disabled-opacity);
+    cursor: not-allowed;
+  }
+
+  &:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+
+  &:focus-visible {
+    box-shadow: var(--input-shadow-focus);
+    outline: none;
+  }
+}
+
+.btn-primary {
+  background-color: var(--button-bg-primary);
+  color: var(--button-color-primary);
+  box-shadow: var(--shadow-sm);
+
+  &:hover:not(:disabled) {
+    background-color: var(--color-primary-hover);
+    box-shadow: var(--shadow-md);
+  }
+}
+
+.btn-secondary {
+  background-color: var(--color-background-surface);
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+
+  &:hover:not(:disabled) {
+    background-color: var(--color-primary-subtle);
+  }
+}
+
+.btn-danger {
+  background-color: var(--color-error);
+  color: var(--color-text-inverse);
+
+  &:hover:not(:disabled) {
+    background-color: var(--color-error-dark);
+  }
+}
+
+// Reusable pill buttons (used by RDIG settings and available app-wide)
+.btn-primary-pill,
+.btn-secondary-pill,
+.btn-danger-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--button-height-standard);
+  height: var(--button-height-standard);
+  padding: 0 var(--space-5);
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-primary);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color var(--transition-fast) var(--ease-default),
+    color var(--transition-fast) var(--ease-default),
+    border-color var(--transition-fast) var(--ease-default),
+    box-shadow var(--transition-fast) var(--ease-default);
+
+  .material-icons,
+  .material-icons-outlined {
+    font-size: 18px;
+    line-height: 1;
+  }
+
+  &:disabled {
+    opacity: var(--disabled-opacity);
+    cursor: not-allowed;
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: var(--input-shadow-focus);
+  }
+}
+
+.btn-primary-pill {
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
+
+  &:hover:not(:disabled) {
+    background: var(--color-background-surface);
+    color: var(--color-primary);
+    border-color: var(--color-primary);
+  }
+}
+
+.btn-secondary-pill {
+  background: var(--color-background-surface);
+  color: var(--color-primary);
+
+  &:hover:not(:disabled) {
+    background: var(--color-primary);
+    color: var(--color-text-inverse);
+    border-color: var(--color-primary);
+  }
+}
+
+.btn-danger-pill {
+  background: var(--color-background-surface);
+  color: var(--color-error);
+  border: 1px solid var(--color-error);
+
+  &:hover:not(:disabled) {
+    background: var(--color-error);
+    color: var(--color-text-inverse);
+    border-color: var(--color-error);
+  }
+}
+
+.btn-success {
+  background-color: var(--color-success);
+  color: white;
+
+  &:hover:not(:disabled) {
+    background-color: var(--color-success-dark);
+  }
+}
+
+.btn-warning {
+  background-color: var(--color-warning);
+  color: var(--color-text-primary);
+
+  &:hover:not(:disabled) {
+    background-color: var(--color-warning-dark);
+  }
+}
+
+.btn-large {
+  width: var(--button-large-width);
+  height: var(--button-large-height);
+  padding: 0;
+}
+
+.btn-list {
+  width: var(--button-list-width);
+  height: var(--button-list-height);
+  padding: 0;
+}
+
+.btn-ghost {
+  background: transparent;
+  border-color: var(--border-hover);
+  color: var(--color-label);
+
+  &:hover:not(:disabled) {
+    background: var(--color-surface-hover);
+  }
+}
+
+// 5. Status Badge System
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25em 0.75em;
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-bold);
+  line-height: 1;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: baseline;
+  border-radius: var(--radius-full);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.badge-success {
+  background-color: var(--color-success-light);
+  color: var(--color-success-dark);
+}
+
+.badge-warning {
+  background-color: var(--color-warning-light);
+  color: var(--color-warning-dark);
+}
+
+.badge-danger {
+  background-color: var(--color-error-light);
+  color: var(--color-error-dark);
+}
+
+.badge-info {
+  background-color: var(--color-info-light);
+  color: var(--color-info-dark);
+}
+
+.badge--success {
+  background-color: var(--color-success-light);
+  color: var(--color-success-dark);
+}
+
+.badge--danger {
+  background-color: var(--color-error-light);
+  color: var(--color-error-dark);
+}
+
+// 6. Card System
+.card {
+  background: var(--color-background-surface);
+  border-radius: var(--radius-lg);
+  border: var(--control-border-width) solid var(--color-border-default);
+  // NOTE: overflow:hidden intentionally omitted — tooltips/dropdowns must escape
+
+  &__header {
+    padding: var(--space-4) var(--space-5);
+    background: var(--color-surface-nested);
+    border-bottom: 1px solid var(--border-default);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  }
+
+  &__title {
+    font-size: var(--fs-base);
+    font-weight: var(--fw-bold);
+    color: var(--color-heading);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+
+    .material-icons {
+      color: var(--color-primary);
+      font-size: 20px;
+    }
+  }
+
+  &__content {
+    padding: var(--space-5);
+  }
+}
+
+// 7. Section & Row Utilities
+.section-fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--form-field-gap);
+}
+
+.row--2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--form-field-gap);
+}
+
+.row--3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: var(--form-field-gap);
+}
+
+.form-content,
+.form-section-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--form-section-gap);
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--form-grid-columns), minmax(0, 1fr));
+  gap: var(--form-field-gap);
+}
+
+.form-grid__span-3 { grid-column: span 3; }
+.form-grid__span-4 { grid-column: span 4; }
+.form-grid__span-6 { grid-column: span 6; }
+.form-grid__span-12 { grid-column: 1 / -1; }
+
+.form-page-container {
+  width: 100%;
+  max-width: var(--page-max-width);
+  margin: 0 auto;
+  padding: var(--page-padding-desktop);
+  box-sizing: border-box;
+}
+
+.application-form-page {
+  width: 100%;
+  max-width: var(--page-max-width);
+  min-width: 0;
+  margin: 0 auto;
+  padding: var(--page-padding-compact) 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--form-section-gap);
+  box-sizing: border-box;
+  font-family: var(--font-family-base);
+  color: var(--color-text-primary);
+}
+
+.application-form-surface {
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: var(--form-space-6);
+  box-sizing: border-box;
+  background: var(--color-background-surface);
+  border: var(--control-border-width) solid var(--color-border-default);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+}
+
+.application-form-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--form-section-gap);
+  min-width: 0;
+}
+
+.application-form-page h2,
+.application-form-page h3,
+.application-form-section-title {
+  margin: 0;
+  color: var(--color-heading);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-section-title);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-section);
+}
+
+.application-form-page label,
+.application-form-page input,
+.application-form-page select,
+.application-form-page textarea,
+.application-form-page button {
+  font-family: var(--font-family-base);
+}
+
+.application-form-page .form-field {
+  gap: var(--form-label-gap);
+}
+
+.application-form-page .form-label,
+.application-form-page .detail-label {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-control);
+}
+
+.application-form-page .input--text,
+.application-form-page .input--select,
+.application-form-page input[type='date'],
+.application-form-page input[type='number'] {
+  width: 100%;
+  height: var(--control-height-compact);
+  min-height: var(--control-height-compact);
+  padding: var(--control-padding-block) var(--control-padding-inline);
+  color: var(--color-text-primary);
+  background-color: var(--input-bg-editable);
+  border: var(--control-border-width) solid var(--input-border-default);
+  border-radius: var(--control-radius);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-control);
+}
+
+.application-form-page .input--textarea,
+.application-form-page textarea {
+  width: 100%;
+  min-height: var(--control-min-height-multiline);
+  padding: var(--control-padding-block) var(--control-padding-inline);
+  color: var(--color-text-primary);
+  background-color: var(--input-bg-editable);
+  border: var(--control-border-width) solid var(--input-border-default);
+  border-radius: var(--control-radius);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-body);
+}
+
+.application-form-page .input--text:focus,
+.application-form-page .input--select:focus,
+.application-form-page .input--textarea:focus,
+.application-form-page input[type='date']:focus,
+.application-form-page input[type='number']:focus,
+.application-form-page textarea:focus {
+  border-color: var(--color-border-focus);
+  box-shadow: var(--input-shadow-focus);
+  outline: none;
+}
+
+.application-form-page .input--text:disabled,
+.application-form-page .input--select:disabled,
+.application-form-page .input--textarea:disabled,
+.application-form-page input:disabled,
+.application-form-page textarea:disabled {
+  color: var(--color-text-muted);
+  background-color: var(--color-background-disabled);
+  border-color: var(--border-subtle);
+  opacity: 1;
+}
+
+.application-form-page .form-hint,
+.application-form-page .form-error-msg,
+.application-form-page .error-message,
+.application-form-page .form-counter {
+  font-size: var(--font-size-caption);
+  line-height: var(--line-height-caption);
+}
+
+.application-form-page .btn {
+  min-height: var(--button-height-standard);
+  height: var(--button-height-standard);
+  padding: 0 var(--form-space-4);
+  border-radius: var(--control-radius);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-control);
+}
+
+.application-form-page .btn-icon {
+  width: var(--button-size-icon);
+  height: var(--button-size-icon);
+  border-radius: var(--control-radius);
+}
+
+.application-form-page .radio-option,
+.application-form-page .radio-label,
+.application-form-page .radio-wrapper,
+.application-form-page .radio-field__option {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--form-space-2);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-body);
+  cursor: pointer;
+}
+
+.application-form-page .radio-option input[type='radio'],
+.application-form-page .radio-label input[type='radio'],
+.application-form-page .radio-wrapper input[type='radio'],
+.application-form-page .radio-field__option input[type='radio'] {
+  appearance: auto;
+  -webkit-appearance: radio;
+  display: inline-block;
+  width: auto;
+  height: auto;
+  min-height: 0;
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 0;
+  border: initial;
+  border-radius: initial;
+  background: initial;
+  box-shadow: none;
+  opacity: 1;
+  visibility: visible;
+  accent-color: auto;
+}
+
+.application-form-page .radio-option input[type='radio']::before,
+.application-form-page .radio-label input[type='radio']::before,
+.application-form-page .radio-wrapper input[type='radio']::before,
+.application-form-page .radio-field__option input[type='radio']::before {
+  content: none;
+  display: none;
+}
+
+.application-form-page table {
+  width: 100%;
+  color: var(--color-text-primary);
+  background: var(--color-background-surface);
+  border-color: var(--color-border-default);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+}
+
+.application-form-page th {
+  color: var(--color-text-primary);
+  background: var(--color-surface-nested);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+}
+
+.application-form-page th,
+.application-form-page td {
+  padding: var(--form-space-3) var(--form-space-4);
+  border-color: var(--color-border-default);
+}
+
+.application-form-dev-tools {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--form-space-2) var(--form-space-3);
+  padding: var(--form-space-2);
+  background: var(--color-warning-light);
+  border: var(--control-border-width) solid var(--color-warning);
+  border-radius: var(--control-radius);
+  color: var(--color-warning-dark);
+  font-size: var(--font-size-caption);
+  line-height: var(--line-height-caption);
+}
+
+.application-form-dev-tools__label {
+  color: var(--color-warning-dark);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+}
+
+.application-form-dev-tools__control {
+  width: min(var(--size-dev-select), 100%);
+}
+
+.application-form-dev-tools__option {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--form-space-2);
+  color: var(--color-warning-dark);
+  font-size: var(--font-size-caption);
+  cursor: pointer;
+}
+
+.application-form-comment-panel {
+  margin: 0;
+}
+
+@media (max-width: 900px) {
+  .row--2,
+  .row--3 {
+    grid-template-columns: 1fr;
+  }
+
+  .form-grid > * {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 600px) {
+  .form-page-container {
+    padding: var(--page-padding-compact);
+  }
+
+  .application-form-page {
+    gap: var(--form-space-4);
+    padding: var(--form-space-3) 0;
+  }
+
+  .application-form-surface {
+    padding: var(--form-space-4);
+  }
+}
+
+// 8. Icon Button (table actions, modal close, inline controls)
+.btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--button-size-icon);
+  height: var(--button-size-icon);
+  flex-shrink: 0;
+  border-radius: var(--radius-md);
+  border: none;
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition:
+    background var(--transition-fast) var(--ease-default),
+    color var(--transition-fast) var(--ease-default);
+
+  .material-icons {
+    font-size: 18px;
+    line-height: 1;
+  }
+
+  &:disabled {
+    opacity: var(--disabled-opacity);
+    cursor: not-allowed;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+
+  &--edit {
+    color: var(--color-primary);
+    &:hover:not(:disabled) { background: var(--color-primary-light); }
+  }
+
+  &--delete {
+    color: var(--color-error);
+    &:hover:not(:disabled) { background: var(--color-error-light); }
+  }
+}
+
+// 8b. Button Size Variants
+.btn-sm {
+  height: var(--input-height-sm);
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--fs-sm);
+  border-radius: var(--radius-md);
+  gap: var(--space-1);
+
+  .material-icons {
+    font-size: 16px;
+  }
+}
+
+// 9. Number Input — hide spinners
+input[type="number"] {
+  -moz-appearance: textfield;
+
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+}
+
+.label-with-note {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+
+  .form-label {
+    margin-bottom: 0;
+  }
+}
+
+// 11. Keyword counter
+.keyword-counter {
+  font-size: var(--fs-xs);
+  color: var(--color-text-muted);
+  text-align: right;
+  margin-top: var(--space-1);
+
+  &--over {
+    color: var(--color-error);
+    font-weight: 600;
+  }
+}
+
+// 12. Required asterisk — standalone <span class="asterisk"> pattern
+//     (complements the .form-label.is-required::after pseudo-element approach)
+.asterisk {
+  color: var(--color-error);
+  margin-left: var(--form-space-1);
+  font-size: inherit;
+}
+
+// 13. Inline error/validation message spans
+//     Ensures any <span class="error-message"> is consistently red
+.error-message {
+  font-size: var(--font-size-caption);
+  line-height: var(--line-height-caption);
+  color: var(--color-error);
+  font-weight: var(--fw-medium);
+  margin-top: var(--space-1);
+  display: block;
+}

@@ -1,0 +1,69 @@
+<div class="profile-page">
+  <header class="profile-header">
+    <h1>My Profile</h1>
+    <span class="profile-status">
+      <span class="material-icons">verified</span>
+      Verified APU Account
+    </span>
+  </header>
+
+  @if (isLoading()) {
+    <div class="profile-skeleton" aria-label="Loading profile" aria-busy="true">
+      <div class="skeleton-avatar"></div>
+      <div class="skeleton-identity">
+        <div class="skeleton-line skeleton-line--label"></div>
+        <div class="skeleton-line skeleton-line--name"></div>
+        <div class="skeleton-line skeleton-line--email"></div>
+      </div>
+      <div class="skeleton-details">
+        <div class="skeleton-detail">
+          <div class="skeleton-icon"></div>
+          <div class="skeleton-detail__text">
+            <div class="skeleton-line skeleton-line--small"></div>
+            <div class="skeleton-line skeleton-line--value"></div>
+          </div>
+        </div>
+        <div class="skeleton-detail">
+          <div class="skeleton-icon"></div>
+          <div class="skeleton-detail__text">
+            <div class="skeleton-line skeleton-line--small"></div>
+            <div class="skeleton-line skeleton-line--wide"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  } @else if (loadError()) {
+    <div class="profile-message profile-message--error" role="alert">
+      <span class="material-icons">error_outline</span>
+      {{ loadError() }}
+    </div>
+  } @else if (profile(); as user) {
+    <section class="identity-card">
+      <div class="identity-primary">
+        <div class="identity-avatar">{{ initials() }}</div>
+        <div class="identity-summary">
+          <span class="identity-label">APU Account</span>
+          <h2>{{ user.name }}</h2>
+          <p>{{ user.email }}</p>
+        </div>
+      </div>
+
+      <div class="identity-details">
+        <div class="identity-detail">
+          <span class="identity-detail__icon material-icons">admin_panel_settings</span>
+          <div>
+            <span class="identity-detail__label">Role</span>
+            <strong>{{ user.role?.name || 'No role assigned' }}</strong>
+          </div>
+        </div>
+        <div class="identity-detail">
+          <span class="identity-detail__icon material-icons">business</span>
+          <div>
+            <span class="identity-detail__label">Department</span>
+            <strong>{{ user.department }}</strong>
+          </div>
+        </div>
+      </div>
+    </section>
+  }
+</div>

@@ -1,0 +1,205 @@
+<main class="users-page">
+  <header class="users-page__header">
+    <div>
+      <span class="users-page__eyebrow">System Settings</span>
+      <h1>Users</h1>
+      <p>Find authenticated users and manage RMC role pairing.</p>
+    </div>
+    <button class="btn btn-primary users-page__pair-button" type="button" (click)="openPairDialog()" [disabled]="isLoading()">
+      <span class="material-icons">person_add</span>
+      Pair User Role
+    </button>
+  </header>
+
+  @if (!isLoading()) {
+  <section class="users-toolbar" aria-label="User filters">
+    <label class="users-filter users-filter--wide">
+      <span>Name or Email</span>
+      <input
+        class="input--text"
+        type="search"
+        placeholder="Search full name or email"
+        [ngModel]="nameEmail()"
+        (ngModelChange)="nameEmail.set($event)"
+        (keydown.enter)="search()">
+    </label>
+
+    <label class="users-filter">
+      <span>Job Title</span>
+      <input
+        class="input--text"
+        type="search"
+        placeholder="Search job title"
+        [ngModel]="jobTitle()"
+        (ngModelChange)="jobTitle.set($event)"
+        (keydown.enter)="search()">
+    </label>
+
+    <label class="users-filter">
+      <span>Role</span>
+      <select
+        class="input--select"
+        [ngModel]="selectedRoleId()"
+        (ngModelChange)="selectedRoleId.set($event)">
+        <option [ngValue]="null">All Roles</option>
+        @for (role of roles(); track role.id) {
+          <option [ngValue]="role.id">{{ role.role_name }}</option>
+        }
+      </select>
+    </label>
+
+    <label class="users-filter">
+      <span>Account Type</span>
+      <select
+        class="input--select"
+        [ngModel]="selectedAccountType()"
+        (ngModelChange)="selectedAccountType.set($event)">
+        <option value="">All Types</option>
+        <option value="Staff">Staff</option>
+        <option value="Student">Student</option>
+      </select>
+    </label>
+
+    <label class="users-filter users-filter--wide">
+      <span>Department</span>
+      <select
+        class="input--select"
+        [ngModel]="selectedDepartmentId()"
+        (ngModelChange)="selectedDepartmentId.set($event)">
+        <option [ngValue]="null">All Departments</option>
+        @for (department of departments(); track department.id) {
+          <option [ngValue]="department.id">{{ department.department_name }}</option>
+        }
+      </select>
+    </label>
+
+    <div class="users-toolbar__actions">
+      <button class="btn btn-primary" type="button" (click)="search()">
+        <span class="material-icons">search</span>
+        Search
+      </button>
+      <button class="btn btn-secondary" type="button" (click)="resetFilters()">
+        <span class="material-icons">restart_alt</span>
+        Reset
+      </button>
+    </div>
+  </section>
+  }
+
+  <section class="users-table-card">
+    @if (isLoading()) {
+      <app-table-skeleton
+        [columns]="columns"
+        [showSearch]="false"
+        loadingLabel="Loading users">
+      </app-table-skeleton>
+    } @else if (loadFailed()) {
+      <div class="users-state">
+        <span class="material-icons">cloud_off</span>
+        <h2>Unable to load users</h2>
+        <p>Check the API connection and try again.</p>
+        <button class="btn btn-primary" type="button" (click)="loadInitialData()">Try Again</button>
+      </div>
+    } @else {
+      <app-data-table
+        [columns]="columns"
+        [rows]="users()"
+        [rowTrackFn]="rowTrackFn">
+        <ng-template #rowTemplate let-row let-index="index">
+          <tr>
+            <td class="is-align-center">{{ rowNumber(index) }}</td>
+            <td>
+              <div class="user-identity">
+                <span class="user-avatar">{{ initials(row) }}</span>
+                <div>
+                  <strong>{{ row.fullname || 'Name unavailable' }}</strong>
+                  <small>{{ row.email || 'No email' }}</small>
+                </div>
+              </div>
+            </td>
+            <td>{{ row.job_title || 'Not specified' }}</td>
+            <td>
+              @if (row.role_name) {
+                <span class="role-badge">{{ row.role_name }}</span>
+              } @else {
+                <span class="muted-value">Unassigned</span>
+              }
+            </td>
+            <td class="is-align-center">
+              <span class="account-type" [class.account-type--student]="row.is_student">
+                {{ row.is_student ? 'Student' : 'Staff' }}
+              </span>
+            </td>
+            <td>{{ row.department || 'Not available' }}</td>
+            <td>{{ formatDate(row.last_login_at) }}</td>
+          </tr>
+        </ng-template>
+      </app-data-table>
+    }
+  </section>
+
+  @if (!isLoading() && !loadFailed()) {
+    <app-pagination
+      [currentPage]="page()"
+      [totalPages]="totalPages()"
+      [pageSize]="pageSize()"
+      [pageSizeOptions]="pageSizeOptions"
+      (pageChange)="onPageChange($event)"
+      (pageSizeChange)="onPageSizeChange($event)">
+    </app-pagination>
+
+    <p class="users-count">
+      @if (totalItems() > 0) {
+        Showing {{ pageStart() }}-{{ pageEnd() }} of {{ totalItems() }} users
+      } @else {
+        Showing 0 users
+      }
+    </p>
+  }
+
+  <app-dialog
+    [isOpen]="isPairDialogOpen()"
+    title="Pair User Role"
+    size="small"
+    (close)="closePairDialog()">
+    <div class="role-pairing">
+      <p>Pair a Microsoft username with an RMC role. The user does not need to have logged in before.</p>
+
+      <label class="users-filter">
+        <span>Microsoft Username</span>
+        <input
+          class="input--text"
+          type="text"
+          placeholder="e.g. thiha.hlaing"
+          autocomplete="off"
+          [ngModel]="pairUsername()"
+          (ngModelChange)="pairUsername.set($event)"
+          (keydown.enter)="pairUserRole()">
+      </label>
+
+      <label class="users-filter">
+        <span>Role</span>
+        <select
+          class="input--select"
+          [ngModel]="pairRoleId()"
+          (ngModelChange)="pairRoleId.set($event)">
+          <option [ngValue]="null">Select a role</option>
+          @for (role of roles(); track role.id) {
+            <option [ngValue]="role.id">{{ role.role_name }}</option>
+          }
+        </select>
+      </label>
+    </div>
+
+    <div dialog-footer class="role-pairing__footer">
+      <button class="btn btn-secondary" type="button" [disabled]="isSaving()" (click)="closePairDialog()">Cancel</button>
+      <button
+        class="btn btn-primary"
+        type="button"
+        [disabled]="isSaving() || !pairUsername().trim() || pairRoleId() === null"
+        (click)="pairUserRole()">
+        {{ isSaving() ? 'Pairing...' : 'Pair User Role' }}
+      </button>
+    </div>
+  </app-dialog>
+</main>

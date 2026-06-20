@@ -1,0 +1,414 @@
+@use '../../../styles/index' as *;
+
+:host {
+  display: block;
+  z-index: 1000;
+}
+
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  background: var(--color-surface);
+  border-right: 1px solid var(--border-default);
+  display: flex;
+  flex-direction: column;
+  transition: width var(--transition-normal);
+  width: var(--sidebar-collapsed-width); // Dynamic width based on calculation
+  overflow-x: hidden;
+  box-shadow: var(--shadow-sm);
+
+  &--expanded,
+  &--fixed {
+    width: var(--sidebar-width); // Standard width token
+    box-shadow: var(--shadow-lg);
+  }
+
+  &--fixed {
+    box-shadow: none;
+  }
+}
+
+.sidebar__header {
+  height: var(--header-height);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--space-4) 0 var(--space-3);
+  border-bottom: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+  overflow: hidden;
+  // Keep header layout stable by reversing order: pin left, logo right
+  flex-direction: row-reverse;
+}
+
+.sidebar__logo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  height: 100%;
+  overflow: hidden;
+  text-decoration: none;
+
+  &:hover,
+  &:focus,
+  &:active,
+  &:visited {
+    text-decoration: none;
+  }
+
+  .logo-img {
+    height: 36px;
+    width: auto;
+    object-fit: contain;
+    flex-shrink: 0;
+    display: block;
+  }
+
+  .logo-text {
+    display: flex;
+    align-items: center;
+    font-weight: var(--fw-bold);
+    color: var(--color-heading);
+    white-space: nowrap;
+    font-size: var(--fs-lg);
+    line-height: 1;
+    overflow: hidden;
+    opacity: 1;
+    transition: opacity var(--transition-fast);
+  }
+}
+
+.sidebar__pin-btn {
+  background: transparent;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  padding: var(--space-1);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  // Always keep pin at its fixed position — no opacity hidden
+  transition: color var(--transition-fast), background var(--transition-fast);
+
+  &:hover {
+    background: var(--color-surface-hover);
+    color: var(--color-primary);
+  }
+
+  &.active {
+    color: var(--color-primary);
+  }
+
+  .material-icons {
+    font-size: var(--icon-size);
+  }
+}
+
+// --- Profile ---
+.sidebar__profile {
+  padding: var(--space-3) var(--space-3);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  background: var(--color-surface-hover);
+  margin: var(--space-2) var(--space-2) 0;
+  border-radius: var(--radius-lg);
+  transition: background var(--transition-fast);
+  cursor: pointer;
+  user-select: none;
+
+  &--expanded {
+    background: var(--color-surface-nested);
+  }
+
+  &--open {
+    background: var(--color-primary-light);
+  }
+
+  &:hover {
+    background: var(--color-surface-hover);
+  }
+}
+
+.profile-avatar {
+  width: 36px; // no token: specific avatar circle size
+  height: 36px; // no token: specific avatar circle size
+  min-width: 36px; // no token: prevent flex shrink below avatar size
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: var(--fw-bold);
+  font-size: var(--fs-sm);
+  flex-shrink: 0;
+}
+
+.profile-info {
+  flex: 1;
+  overflow: hidden;
+  min-width: 0;
+
+  .profile-name {
+    font-weight: var(--fw-semibold);
+    color: var(--color-heading);
+    font-size: var(--fs-sm);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .profile-email {
+    font-size: var(--fs-xs);
+    color: var(--color-text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+.profile-chevron {
+  font-size: var(--fs-lg); // ~18px — chevron icon scale
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+  transition: transform var(--transition-fast);
+
+  &.rotated {
+    transform: rotate(180deg);
+  }
+}
+
+// Profile dropdown (actions section)
+.profile-dropdown {
+  margin: var(--space-1) var(--space-2) var(--space-2);
+  background: var(--color-surface-nested);
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  border: 1px solid var(--border-default);
+  border-top: none;
+  overflow: hidden;
+
+  &__item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-2) var(--space-4);
+    font-size: var(--fs-sm);
+    font-weight: var(--fw-medium);
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    background: none;
+    border: none;
+    width: 100%;
+    cursor: pointer;
+    transition: background var(--transition-fast), color var(--transition-fast);
+    font-family: inherit;
+
+    .material-icons {
+      font-size: 18px;
+    }
+
+    &:hover {
+      background: var(--color-surface-hover);
+      color: var(--color-primary);
+    }
+
+    &--danger {
+      color: var(--color-error);
+
+      &:hover {
+        background: color-mix(in srgb, var(--color-error) 8%, transparent);
+        color: var(--color-error);
+      }
+    }
+  }
+}
+
+// --- Navigation ---
+.sidebar__nav {
+  flex: 1;
+  overflow-y: auto;
+  /* Remove horizontal padding here — nav items carry their own margin so the
+     hover background is inset and icons align with the profile avatar above. */
+  padding: 0 0 var(--space-4);
+
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--border-subtle);
+    border-radius: 2px;
+  }
+}
+
+.nav-group {
+  margin-bottom: var(--space-4);
+
+  &__title {
+    padding: var(--space-2) var(--space-3);
+    font-size: var(--fs-xs);
+    text-transform: uppercase;
+    font-weight: var(--fw-black);
+    color: var(--color-text-muted);
+    letter-spacing: 1px;
+  }
+}
+
+.nav-item,
+.nav-folder__trigger {
+  display: flex;
+  align-items: center;
+  /*
+   * 40 px ensures readable tap targets while staying compact.
+   * Keep top/bottom padding equal (--space-2 = 8 px each side) so rows are
+   * vertically balanced; horizontal padding aligns icon with the profile avatar.
+   *
+   * Alignment math:
+   *   sidebar edge → margin-left (8 px) → padding-left (12 px) → icon at 20 px ✓
+   *   profile avatar: margin(8) + padding(12) = 20 px                          ✓
+   */
+  min-height: 2.5rem;  // 40 px — compact, consistent row height
+  width: 100%;         // stretch full width so chevron reaches the right edge
+  margin: 2px var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  box-sizing: border-box;
+  border-radius: var(--radius-md);
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  transition: background var(--transition-fast), color var(--transition-fast);
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  font-family: inherit;
+  font-size: var(--fs-sm);
+
+  .nav-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--sidebar-icon-size);
+    color: var(--color-text-muted);
+    transition: color var(--transition-fast);
+    width: var(--sidebar-icon-size);
+    height: var(--sidebar-icon-size);
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+
+  // Label sits between the icon and the chevron; flex:1 pushes chevron to far right
+  .nav-label {
+    flex: 1;
+    display: block;
+    white-space: normal;
+    text-align: left;
+    font-weight: var(--fw-medium);
+    margin-left: var(--space-3);
+    line-height: var(--lh-tight);
+  }
+
+  &:hover {
+    background: var(--color-surface-hover);
+    color: var(--color-primary);
+    /* border-radius already set in base — no need to repeat */
+
+    .nav-icon {
+      color: var(--color-primary);
+    }
+  }
+
+  &.active {
+    background: var(--color-primary-light);
+    color: var(--color-primary);
+
+    .nav-icon {
+      color: var(--color-primary);
+    }
+  }
+}
+
+.nav-folder {
+  // The trigger takes up full available width inside the folder div
+  width: 100%;
+
+  .chevron {
+    font-size: var(--fs-lg);
+    transition: transform var(--transition-fast);
+    color: var(--color-text-muted);
+    flex-shrink: 0;
+    margin-left: auto; // extra safety — pushes chevron to far right
+  }
+
+  &--open {
+    .chevron {
+      transform: rotate(180deg);
+    }
+  }
+}
+
+.nav-folder__children {
+  margin-left: var(--space-3);
+  padding-left: var(--space-3);
+  border-left: 1px solid var(--border-subtle);
+  margin-top: var(--space-1);
+  margin-bottom: var(--space-1);
+}
+
+.nav-item--child {
+  min-height: 36px;
+  height: auto;
+  font-size: var(--fs-sm);
+  padding: var(--space-1) var(--space-3);
+  margin: 2px var(--space-1);
+  border-radius: var(--radius-sm);
+
+  // Smaller icons for nested items — keeps visual weight proportional to hierarchy level
+  .nav-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+
+  // Tighter gap after the smaller icon
+  .nav-label {
+    margin-left: var(--space-2);
+  }
+}
+
+@include navigation-mobile {
+  :host {
+    position: relative;
+    z-index: var(--z-overlay);
+  }
+
+  .sidebar__header {
+    flex-direction: row;
+    justify-content: flex-start;
+  }
+
+  .sidebar {
+    width: min(84vw, var(--sidebar-width));
+    transform: translateX(-100%);
+    transition:
+      transform var(--transition-normal),
+      box-shadow var(--transition-normal);
+    box-shadow: var(--shadow-xl);
+
+    &--mobile-open {
+      transform: translateX(0);
+    }
+  }
+
+  .sidebar__pin-btn {
+    display: none;
+  }
+}
+
+@include reduced-motion {
+  .sidebar {
+    transition: none;
+  }
+}

@@ -1,0 +1,119 @@
+<!-- Submission inbox -->
+<div class="inbox-page">
+
+  <div class="inbox-header">
+    <h1 class="inbox-title">
+      <span class="material-icons">inbox</span>
+      Inbox
+    </h1>
+    <p class="inbox-subtitle">Applications awaiting your action</p>
+  </div>
+
+  <!-- Deadline warning banner (within 5 days of batch end) -->
+  @if (showDeadlineWarning()) {
+    <div class="deadline-banner">
+      <span class="material-icons deadline-banner__icon">warning</span>
+      <span>
+        <strong>Deadline approaching!</strong>
+        The active batch closes in
+        <strong>{{ batchDeadlineDays() }} day{{ batchDeadlineDays() === 1 ? '' : 's' }}</strong>
+        ({{ activeBatch()?.endDate }}).
+        Complete all pending actions before the window closes.
+      </span>
+    </div>
+  }
+
+  <!-- Loading -->
+  @if (loading()) {
+    <app-table-skeleton
+      [columns]="skeletonColumns"
+      loadingLabel="Loading inbox applications">
+    </app-table-skeleton>
+  }
+
+  <!-- Error -->
+  @if (!loading() && error()) {
+    <div class="state-message state-error">
+      <span class="material-icons">error_outline</span>
+      {{ error() }}
+    </div>
+  }
+
+  @if (!loading() && !error()) {
+    <app-submissions-search
+      placeholder="Search inbox applications by title..."
+      [value]="searchQuery()"
+      (valueChange)="searchQuery.set($event)" />
+  }
+
+  <!-- Empty -->
+  @if (!loading() && !error() && applications().length === 0) {
+    <div class="state-message state-empty">
+      <span class="material-icons">check_circle_outline</span>
+      @if (searchQuery()) {
+        No inbox applications match your search.
+      } @else {
+        No applications pending your action within the current batch window.
+      }
+    </div>
+  }
+
+  <!-- Applications table -->
+  @if (!loading() && !error() && applications().length > 0) {
+    <div class="inbox-table-wrapper">
+      <table class="inbox-table">
+        <thead>
+          <tr>
+            <th class="sortable-header" (click)="onHeaderClick('title')" title="Click to sort">
+              Project Title{{ getSortIndicator('title') }}
+            </th>
+            <th>Type</th>
+            <th class="sortable-header" (click)="onHeaderClick('submittedBy')" title="Click to sort">
+              Submitted By{{ getSortIndicator('submittedBy') }}
+            </th>
+            <th class="sortable-header" (click)="onHeaderClick('status')" title="Click to sort">
+              Status{{ getSortIndicator('status') }}
+            </th>
+            <th>Next Actors</th>
+            <th class="sortable-header" (click)="onHeaderClick('lastAction')" title="Click to sort">
+              Last Action{{ getSortIndicator('lastAction') }}
+            </th>
+            <th class="col-action"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (app of getSortedApplications(); track app.id) {
+            <tr>
+              <td class="col-title">{{ getTitle(app) }}</td>
+              <td>
+                <span class="type-badge" style="background:#e0e7ff; color:#4338ca; padding:4px 8px; border-radius:12px; font-size:0.75rem; font-weight:600;">{{ getFormTypeLabel(app) }}</span>
+              </td>
+              <td>{{ getSubmittedBy(app) }}</td>
+              <td>
+                <span
+                  class="status-badge"
+                  [style.background]="getStatusColor(app) + '1a'"
+                  [style.color]="getStatusColor(app)"
+                  [style.border-color]="getStatusColor(app) + '55'">
+                  {{ getStatus(app) }}
+                </span>
+              </td>
+              <td>{{ getNextActors(app) }}</td>
+              <td class="col-last-action">{{ getLastAction(app) }}</td>
+              <td class="col-action">
+                <a
+                  class="btn-open"
+                  [routerLink]="[getFormRoute(app)]"
+                  [queryParams]="{ id: app.id }">
+                  <span class="material-icons">open_in_new</span>
+                  Open
+                </a>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+</div>

@@ -1,0 +1,22 @@
+/* global styles entry point */
+@use 'root';
+@use 'index';
+@use 'flexbox';
+@use 'forms';
+
+@keyframes skeleton-shimmer {
+  from {
+    background-position: 200% 0;
+  }
+
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [class*='skeleton'],
+  [class*='skeleton'] * {
+    animation: none !important;
+  }
+}

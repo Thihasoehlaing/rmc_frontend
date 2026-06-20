@@ -1,0 +1,140 @@
+<section class="output-section" [formGroup]="outputForm">
+
+  <!-- Page Header -->
+  <app-custom-header
+    icon="science"
+    title="Research Outputs"
+  ></app-custom-header>
+
+  <div class="card">
+    <app-custom-subheader title="Proposed Research Outputs (Select all that apply)"></app-custom-subheader>
+    <div class="card__content output-list">
+
+      <!-- ── Indexed Journal ──────────────────────────────────── -->
+      <div class="output-item" [class.output-item--active]="outputForm.get('journal.checked')?.value"
+        formGroupName="journal">
+        <label class="item-trigger">
+          <input type="checkbox" formControlName="checked">
+          <span class="item-label is-required">Indexed Journal Publication (SCOPUS-Indexed Q1 and Q2)</span>
+        </label>
+        @if (outputForm.get('journal.checked')?.touched && outputForm.get('journal.checked')?.invalid) {
+          <p class="validation-error">This output is required.</p>
+        }
+        @if (outputForm.get('journal.checked')?.value) {
+          <div class="item-content">
+            <div class="form-field">
+              <label class="form-label is-required">Quantity:</label>
+              <div class="radio-field">
+                @for (q of journalQuantityOptions; track q) {
+                  <label class="radio-field__option">
+                    <input type="radio" [value]="q" formControlName="quantity">
+                    <span>{{ q }} {{ q === 1 ? 'Publication' : 'Publications' }}</span>
+                  </label>
+                }
+              </div>
+              @if (!projectDuration) {
+                <app-note text="Please complete the Project Duration field first."></app-note>
+              }
+              <app-validation-message [control]="outputForm.get('journal.quantity')"></app-validation-message>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- ── Conceptual Design ─────────────────────────────────── -->
+      <div class="output-item" [class.output-item--active]="outputForm.get('conceptualDesign')?.value">
+        <label class="item-trigger">
+          <input type="checkbox" formControlName="conceptualDesign">
+          <span class="item-label is-required">Conceptual Design or Theoretical Framework</span>
+        </label>
+        @if (outputForm.get('conceptualDesign')?.touched && outputForm.get('conceptualDesign')?.invalid) {
+          <p class="validation-error">This output is required.</p>
+        }
+      </div>
+
+      <!-- ── Knowledge Transfer ────────────────────────────────── -->
+      <div class="output-item" [class.output-item--active]="outputForm.get('knowledgeTransfer.checked')?.value"
+        formGroupName="knowledgeTransfer">
+        <label class="item-trigger">
+          <input type="checkbox" formControlName="checked">
+          <span class="item-label is-required">Knowledge Transfer Programme - is a structured program which has documented programs approval, objectives, methodology, and financial arrangement.</span>
+        </label>
+        @if (outputForm.get('knowledgeTransfer.checked')?.touched && outputForm.get('knowledgeTransfer.checked')?.invalid) {
+          <p class="validation-error">This output is required.</p>
+        }
+        @if (outputForm.get('knowledgeTransfer.checked')?.value) {
+          <div class="item-content">
+            <div class="form-field">
+              <label class="form-label is-required">Community to be impacted:</label>
+              <input type="text" class="input--text" formControlName="community">
+              <app-validation-message [control]="outputForm.get('knowledgeTransfer.community')"></app-validation-message>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- ── External Grant ─────────────────────────────────────── -->
+      <div class="output-item" [class.output-item--active]="outputForm.get('externalGrant.checked')?.value"
+        formGroupName="externalGrant">
+        <label class="item-trigger">
+          <input type="checkbox" formControlName="checked">
+          <span class="item-label">Application to external grant scheme</span>
+        </label>
+        @if (outputForm.get('externalGrant.checked')?.value) {
+          <div class="item-content">
+            <div class="form-field">
+              <label class="form-label is-required">Grant scheme:</label>
+              <input type="text" class="input--text" formControlName="scheme">
+              <app-validation-message [control]="outputForm.get('externalGrant.scheme')"></app-validation-message>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- ── Others ─────────────────────────────────────────────── -->
+      <div class="output-item" [class.output-item--active]="outputForm.get('others.checked')?.value"
+        formGroupName="others">
+        <label class="item-trigger">
+          <input type="checkbox" formControlName="checked">
+          <span class="item-label">Others</span>
+        </label>
+        @if (outputForm.get('others.checked')?.value) {
+          <div class="item-content">
+            <div class="form-field">
+              <label class="form-label is-required">Describe other outputs:</label>
+              <textarea class="input--textarea" formControlName="details"></textarea>
+              <app-note text="Please state matching grant amount and name of university/organisation and any other description."></app-note>
+              <app-validation-message [control]="outputForm.get('others.details')"></app-validation-message>
+            </div>
+          </div>
+        }
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── Review Comments ──────────────────────────────────────── -->
+  @if (showAnyComments) {
+    <div class="card">
+      <div class="card__content section-fields">
+        <app-review-block label="HOS — Research Outputs" icon="supervisor_account"
+          [visible]="showHosComments" [readonly]="!workflow.isHosEditable()"
+          [commentControl]="fc('hosComment')"></app-review-block>
+
+        <div class="row row--2">
+          <app-review-block label="Reviewer 1 — Research Outputs" icon="rate_review"
+            [visible]="showR1Comments" [readonly]="!workflow.isReviewer1Editable()"
+            [commentControl]="fc('reviewer1Comment')"></app-review-block>
+          <app-review-block label="Reviewer 2 — Research Outputs" icon="rate_review"
+            [visible]="showR2Comments" [readonly]="!workflow.isReviewer2Editable()"
+            [commentControl]="fc('reviewer2Comment')"></app-review-block>
+        </div>
+
+        <app-review-block label="RMC — Research Outputs" icon="verified"
+          [visible]="showRmcComments" [readonly]="!workflow.isRmcEditable()"
+          [commentControl]="fc('rmcComment')"></app-review-block>
+      </div>
+    </div>
+  }
+
+</section>

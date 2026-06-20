@@ -1,0 +1,104 @@
+<main class="dashboard">
+  <header class="dashboard-header">
+    <div>
+      <p class="dashboard-kicker">RMC Portal</p>
+      <h1>Dashboard</h1>
+      <p class="dashboard-subtitle">Welcome back, {{ username() }}. Your work queue at a glance.</p>
+    </div>
+
+    <a routerLink="/showcase" class="showcase-link" aria-label="Open UI showcase for testing">
+      <span class="material-icons">palette</span>
+      <span>Showcase</span>
+    </a>
+  </header>
+
+  @if (error()) {
+    <section class="state-panel state-panel--error">
+      <span class="material-icons">error_outline</span>
+      <span>{{ error() }}</span>
+    </section>
+  }
+
+  @if (loading()) {
+    <app-dashboard-skeleton></app-dashboard-skeleton>
+  } @else {
+  <section class="metrics-grid" aria-label="Application summary">
+    @for (metric of metrics(); track metric.label) {
+      <a
+        class="metric-card"
+        [ngClass]="'metric-card--' + metric.tone"
+        [routerLink]="metric.route">
+        <div class="metric-card__icon">
+          <span class="material-icons">{{ metric.icon }}</span>
+        </div>
+        <div>
+          <span class="metric-card__label">{{ metric.label }}</span>
+          <strong class="metric-card__value">{{ metric.value }}</strong>
+        </div>
+      </a>
+    }
+  </section>
+
+  <section class="applications-panel">
+    <div class="panel-header">
+      <div>
+        <p class="panel-eyebrow">Applications</p>
+        <h2>Recent Applications</h2>
+      </div>
+    </div>
+
+    @if (visibleRecentApps().length === 0) {
+      <div class="empty-state">
+        <span class="material-icons">description</span>
+        <p>No applications found yet.</p>
+      </div>
+    } @else {
+      <div class="application-list">
+        @for (app of paginatedApps(); track app.id ?? getTitle(app)) {
+          <a
+            class="application-row"
+            [class.application-row--action]="needsAction(app)"
+            [routerLink]="getFormRoute(app)"
+            [queryParams]="{ id: app.id }">
+            <span class="application-row__icon" aria-hidden="true">
+              <span class="material-icons">description</span>
+            </span>
+            <div class="application-row__main">
+              <strong>{{ getTitle(app) }}</strong>
+              <div class="application-row__meta">
+                <span>{{ getFormTypeLabel(app) }}</span>
+                <span>{{ formatDate(app) }}</span>
+              </div>
+            </div>
+            <div class="application-row__signal">
+              @if (needsAction(app)) {
+                <span class="action-indicator" title="Action required" aria-label="Action required"></span>
+              }
+              <span class="material-icons application-row__arrow" aria-hidden="true">chevron_right</span>
+            </div>
+          </a>
+        }
+      </div>
+      @if (totalPages() > 1) {
+        <nav class="pagination-controls" aria-label="Recent applications pages">
+          <button type="button" (click)="previousPage()" [disabled]="currentPage() === 0" aria-label="Previous page">
+            <span class="material-icons">chevron_left</span>
+          </button>
+          @for (page of pageIndexes(); track page) {
+            <button
+              type="button"
+              (click)="goToPage(page)"
+              [class.active]="currentPage() === page"
+              [attr.aria-current]="currentPage() === page ? 'page' : null">
+              {{ page }}
+            </button>
+          }
+          <button type="button" (click)="nextPage()" [disabled]="currentPage() === totalPages() - 1" aria-label="Next page">
+            <span class="material-icons">chevron_right</span>
+          </button>
+        </nav>
+      }
+    }
+  </section>
+  }
+</main>

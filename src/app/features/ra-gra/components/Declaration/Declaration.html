@@ -1,0 +1,81 @@
+<section class="declaration-section" [formGroup]="declarationForm">
+
+  <!-- ══════════════════════════════════════════════════════════
+       SECTION 1 — Declaration (For Applicant)
+  ══════════════════════════════════════════════════════════════ -->
+  <div class="card">
+    <app-custom-subheader icon="verified" title="Declaration (For Applicant)"></app-custom-subheader>
+    <div class="card__content section-fields">
+
+      <!-- Family member disclosure checkbox -->
+      <div class="form-field">
+        <label class="agreement-trigger">
+          <input type="checkbox" formControlName="hasFamilyMember">
+          <span>
+            Do you have any family members or relatives studying at APIIT Education Group?
+            If yes, please provide details below.
+          </span>
+        </label>
+      </div>
+
+      <!-- Conditional details textarea — shown only when checkbox is checked -->
+      <div class="form-field" *ngIf="hasFamilyMember">
+        <label class="form-label is-required">Family Member / Relative Details</label>
+        <textarea
+          class="input--textarea"
+          formControlName="familyMemberDetails"
+          rows="4"
+          [class.is-invalid]="declarationForm.get('familyMemberDetails')?.invalid && declarationForm.get('familyMemberDetails')?.touched">
+        </textarea>
+        <app-validation-message [control]="declarationForm.get('familyMemberDetails')"></app-validation-message>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       SECTION 2 — RA/GRA Requisition Declaration and Agreement
+  ══════════════════════════════════════════════════════════════ -->
+
+  <!-- Centered heading above the declaration box -->
+  <div class="declaration-heading">
+    <h3 class="declaration-heading__text">RA/GRA Requisition – Declaration and Agreement</h3>
+  </div>
+
+  <!-- Declaration text box — same pattern as RDIG / Journal -->
+  <div class="declaration-box">
+    <h4 class="declaration-box__title">
+      <span class="material-icons">gavel</span>
+      Declaration and Agreement
+    </h4>
+    <p>
+      I hereby declare that the details provided in this RA/GRA Requisition Form are accurate
+      and complete to the best of my knowledge. I confirm that the job duties and responsibilities
+      of the appointed RA/GRA have been clearly specified and shall be included in the official
+      offer letter issued by the Human Resources Department.
+    </p>
+    <p>
+      I further agree that any omission, misrepresentation, or delay in providing accurate
+      information may result in the requisition being termination/non-appoint of the RA/GRA
+      by the University. I acknowledge that all related approvals, funding arrangements, and
+      employment terms will be governed by the University's policies and procedures.
+    </p>
+  </div>
+
+  <!-- Final agreement checkbox card — same pattern as RDIG / Journal -->
+  <div class="card">
+    <div class="card__content">
+      <div class="form-field">
+        <label class="agreement-trigger">
+          <input type="checkbox" formControlName="agreeToDeclaration">
+          <span class="is-required">
+            I have read and agree to the terms and conditions outlined in the Declaration
+            and Agreement for RA/GRA Requisition.
+          </span>
+        </label>
+        <app-validation-message [control]="declarationForm.get('agreeToDeclaration')"></app-validation-message>
+      </div>
+    </div>
+  </div>
+
+</section>

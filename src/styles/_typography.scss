@@ -1,0 +1,39 @@
+// Font family — Roboto is the standard across all forms
+$font-family-system: 'Roboto', Arial, sans-serif;
+
+// Button sizes
+$button-large-width: 96px;
+$button-large-height: 43px;
+
+$button-list-width: 57px;
+$button-list-height: 41px;
+
+// Font Size Scale (standardised)
+// xs   = 12px  — counters, helper text, badges
+// sm   = 14px  — form labels, body text, table cells, radio/checkbox labels
+// base = 16px  — primary body, standard inputs
+// md   = 18px  — card/section subheadings
+// lg   = 20px  — card titles
+// xl   = 24px  — page-level subtitles
+// 2xl  = 22px  — form main titles (kept compact)
+// 3xl  = 28px  — large display headings (rare)
+$fs-xs:   0.75rem;    // 12px
+$fs-sm:   0.875rem;   // 14px
+$fs-base: 1rem;       // 16px
+$fs-md:   1.125rem;   // 18px
+$fs-lg:   1.25rem;    // 20px
+$fs-xl:   1.375rem;   // 22px — form main title
+$fs-2xl:  1.375rem;   // 22px — alias kept for existing usages
+$fs-3xl:  1.75rem;    // 28px
+
+// Line Height
+$lh-tight:   1.2;
+$lh-normal:  1.5;
+$lh-relaxed: 1.75;
+
+// Font Weight
+$fw-normal:   400;
+$fw-medium:   500;
+$fw-semibold: 600;
+$fw-bold:     700;
+$fw-black:    900;

@@ -1,0 +1,115 @@
+@use '../../../../styles/index' as *;
+
+.file-upload-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+// ── Upload zone ────────────────────────────────────────────────────
+.file-upload-zone {
+  position: relative;
+  border: 2px dashed var(--border-default);
+  border-radius: var(--radius-md);
+  padding: var(--space-6);
+  text-align: center;
+  background: var(--color-surface-nested);
+  cursor: pointer;
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+
+  &:hover,
+  &--drag {
+    border-color: var(--color-primary);
+    background: var(--color-primary-light);
+  }
+
+  &--error {
+    border-color: var(--color-error);
+  }
+
+  &--disabled {
+    border-color: var(--border-light);
+    background: var(--color-surface);
+    cursor: not-allowed;
+
+    &:hover {
+      border-color: var(--border-light);
+      background: var(--color-surface);
+    }
+
+    .material-icons {
+      color: var(--color-text-muted);
+    }
+
+    input[type='file'] {
+      cursor: not-allowed;
+    }
+  }
+
+  .material-icons {
+    font-size: 32px; // no token: material icon pixel size
+    color: var(--color-primary);
+  }
+
+  // Hidden input covers entire zone so clicking anywhere opens picker
+  input[type='file'] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+}
+
+.upload-primary {
+  font-size: var(--fs-sm);
+  color: var(--color-text);
+  margin: 0;
+  font-weight: var(--fw-medium);
+}
+
+.upload-hint {
+  font-size: var(--fs-xs);
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+// ── Selected file indicator ────────────────────────────────────────
+.file-selected {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-success-dark);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-medium);
+
+  .material-icons {
+    font-size: 16px; // no token: material icon pixel size
+    color: var(--color-success);
+  }
+}
+
+.file-selected-content {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex: 1;
+
+  .view-document-link {
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: var(--fw-medium);
+    font-size: var(--fs-xs);
+    margin-left: auto;
+    cursor: pointer;
+    transition: color var(--transition-fast);
+
+    &:hover {
+      color: var(--color-primary-hover);
+      text-decoration: underline;
+    }
+  }
+}

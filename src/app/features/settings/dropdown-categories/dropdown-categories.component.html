@@ -1,0 +1,185 @@
+<main class="forms-page">
+  <header class="forms-page__header">
+    <div>
+      <span class="forms-page__eyebrow">System Settings</span>
+      <h1>Dropdown Categories</h1>
+      <p>Manage reusable dropdown groups used by application forms and options.</p>
+    </div>
+    <button class="btn btn-primary forms-page__create-button" type="button" (click)="openCreateDialog()" [disabled]="isLoading()">
+      <span class="material-icons">add</span>
+      Create Category
+    </button>
+  </header>
+
+  @if (!isLoading()) {
+  <section class="forms-toolbar" aria-label="Dropdown category filters">
+    <label class="forms-filter forms-filter--search">
+      <span>Category Code or Name</span>
+      <input
+        class="input--text"
+        type="search"
+        placeholder="Search categories"
+        [ngModel]="searchTerm()"
+        (ngModelChange)="searchTerm.set($event)"
+        (keydown.enter)="search()">
+    </label>
+
+    <label class="forms-filter">
+      <span>Status</span>
+      <select class="input--select" [ngModel]="selectedStatus()" (ngModelChange)="selectedStatus.set($event)">
+        <option value="">All</option>
+        <option value="Active">Active</option>
+        <option value="Inactive">Inactive</option>
+      </select>
+    </label>
+
+    <div class="forms-toolbar__actions">
+      <button class="btn btn-primary" type="button" (click)="search()">
+        <span class="material-icons">search</span>
+        Search
+      </button>
+      <button class="btn btn-secondary" type="button" (click)="resetFilters()">
+        <span class="material-icons">restart_alt</span>
+        Reset
+      </button>
+    </div>
+  </section>
+  }
+
+  <section class="forms-table-card">
+    @if (isLoading()) {
+      <app-table-skeleton
+        [columns]="columns"
+        [showSearch]="false"
+        loadingLabel="Loading dropdown categories">
+      </app-table-skeleton>
+    } @else if (loadFailed()) {
+      <div class="forms-state">
+        <span class="material-icons">cloud_off</span>
+        <h2>Unable to load categories</h2>
+        <p>Check the API connection and try again.</p>
+        <button class="btn btn-primary" type="button" (click)="loadCategories()">Try Again</button>
+      </div>
+    } @else if (categories().length === 0) {
+      <div class="forms-state">
+        <span class="material-icons">list_alt</span>
+        <h2>No categories found</h2>
+        <p>Adjust the filters or create a new category.</p>
+      </div>
+    } @else {
+      <app-data-table [columns]="columns" [rows]="categories()" [rowTrackFn]="rowTrackFn">
+        <ng-template #rowTemplate let-row let-index="index">
+          <tr>
+            <td class="is-align-center">{{ rowNumber(index) }}</td>
+            <td><span class="form-code">{{ row.category_code }}</span></td>
+            <td>
+              <div class="form-name">
+                <span class="material-icons">list_alt</span>
+                <strong>{{ row.category_name }}</strong>
+              </div>
+            </td>
+            <td class="is-align-center">
+              <span class="status-badge" [class.status-badge--inactive]="!row.is_active">
+                {{ row.is_active ? 'Active' : 'Inactive' }}
+              </span>
+            </td>
+            <td class="is-align-center">
+              <div class="table-actions">
+                <button class="table-action" type="button" title="Edit category" aria-label="Edit category" (click)="openEditDialog(row)">
+                  <span class="material-icons">edit</span>
+                </button>
+                <button class="table-action table-action--danger" type="button" title="Delete category" aria-label="Delete category" (click)="openDeleteDialog(row)">
+                  <span class="material-icons">delete_outline</span>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+      </app-data-table>
+    }
+  </section>
+
+  @if (!isLoading() && !loadFailed()) {
+    <app-pagination
+      [currentPage]="page()"
+      [totalPages]="totalPages()"
+      [pageSize]="pageSize()"
+      [pageSizeOptions]="pageSizeOptions"
+      (pageChange)="onPageChange($event)"
+      (pageSizeChange)="onPageSizeChange($event)">
+    </app-pagination>
+    <p class="forms-count">
+      @if (totalItems() > 0) {
+        Showing {{ pageStart() }}-{{ pageEnd() }} of {{ totalItems() }} categories
+      } @else {
+        Showing 0 categories
+      }
+    </p>
+  }
+
+  <app-dialog [isOpen]="dialogMode() !== null" [title]="dialogTitle()" size="small" (close)="closeEditor()">
+    @if (isDetailLoading()) {
+      <app-detail-panel-skeleton loadingLabel="Loading dropdown category details"></app-detail-panel-skeleton>
+    } @else if (detailFailed()) {
+      <div class="dialog-state">
+        <span class="material-icons">error_outline</span>
+        <p>Unable to retrieve this category.</p>
+        <button class="btn btn-secondary" type="button" (click)="retryDetail()">Try Again</button>
+      </div>
+    } @else {
+      <div class="form-editor">
+        <label class="forms-filter">
+          <span>Category Code</span>
+          <input class="input--text" type="text" maxlength="100" placeholder="e.g. ACCOUNT_CODE"
+            autocomplete="off" [ngModel]="categoryCode()" disabled>
+          <small>Generated automatically from the category name.</small>
+        </label>
+        <label class="forms-filter">
+          <span>Category Name</span>
+          <input class="input--text" type="text" maxlength="255" placeholder="Enter category name"
+            autocomplete="off" [ngModel]="categoryName()" (ngModelChange)="onNameChange($event)">
+        </label>
+        <label class="active-switch">
+          <input type="checkbox" [ngModel]="categoryActive()" (ngModelChange)="categoryActive.set($event)">
+          <span class="active-switch__control"></span>
+          <span>
+            <strong>Active category</strong>
+            <small>Available when configuring dropdown options.</small>
+          </span>
+        </label>
+      </div>
+    }
+
+    <div dialog-footer class="form-dialog__footer">
+      <button class="btn btn-secondary" type="button" [disabled]="isSaving()" (click)="closeEditor()">Cancel</button>
+      @if (!isDetailLoading() && !detailFailed()) {
+        <button class="btn btn-primary" type="button"
+          [disabled]="isSaving() || !categoryCode().trim() || !categoryName().trim()"
+          (click)="saveCategory()">
+          {{ isSaving() ? 'Saving...' : (dialogMode() === 'create' ? 'Create Category' : 'Save Changes') }}
+        </button>
+      }
+    </div>
+  </app-dialog>
+
+  <app-dialog [isOpen]="categoryToDelete() !== null" title="Delete Dropdown Category" size="small" (close)="closeDeleteDialog()">
+    @if (categoryToDelete(); as category) {
+      <div class="deactivate-confirmation">
+        <span class="material-icons">delete_outline</span>
+        <div>
+          <h3>Delete {{ category.category_code }}?</h3>
+          <p>
+            <strong>{{ category.category_name }}</strong> will be permanently deleted.
+            Categories already used by dropdown options or forms cannot be deleted.
+          </p>
+        </div>
+      </div>
+    }
+    <div dialog-footer class="form-dialog__footer">
+      <button class="btn btn-secondary" type="button" [disabled]="isSaving()" (click)="closeDeleteDialog()">Cancel</button>
+      <button class="btn btn-danger" type="button" [disabled]="isSaving()" (click)="confirmDelete()">
+        {{ isSaving() ? 'Deleting...' : 'Delete Category' }}
+      </button>
+    </div>
+  </app-dialog>
+</main>

@@ -1,0 +1,34 @@
+@if (isOpen) {
+  <div class="modal-overlay"
+       role="dialog"
+       aria-modal="true"
+       [attr.aria-labelledby]="'dialog-title-' + dialogId"
+       (click)="onOverlayClick($event)">
+
+    <div class="modal-dialog"
+         [class.modal-dialog--small]="size === 'small'"
+         [class.modal-dialog--large]="size === 'large'"
+         [style.max-width]="width ?? null"
+         (click)="$event.stopPropagation()">
+
+      <!-- Header ─────────────────────────────────────────────── -->
+      <header class="modal-dialog__header">
+        <h4 [id]="'dialog-title-' + dialogId">{{ title }}</h4>
+        <button type="button" class="modal-dialog__close" aria-label="Close dialog" (click)="close.emit()">
+          <span class="material-icons">close</span>
+        </button>
+      </header>
+
+      <!-- Body — projected by consumer ────────────────────────── -->
+      <div class="modal-dialog__body">
+        <ng-content></ng-content>
+      </div>
+
+      <!-- Footer — projected via [dialog-footer] attribute ───── -->
+      <footer class="modal-dialog__footer">
+        <ng-content select="[dialog-footer]"></ng-content>
+      </footer>
+
+    </div>
+  </div>
+}

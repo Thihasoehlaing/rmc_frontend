@@ -1,0 +1,52 @@
+<footer class="form-wizard-nav" aria-label="Form navigation">
+
+  <div class="nav-group nav-group--left">
+    <button
+      type="button"
+      class="btn btn-ghost btn--nav"
+      [disabled]="isFirstStep"
+      (click)="prev.emit()">
+      <span class="material-icons" aria-hidden="true">arrow_back</span>
+      Previous
+    </button>
+  </div>
+
+  <span class="nav-step-counter" aria-live="polite">
+    Step <strong>{{ currentStep }}</strong> of {{ totalSteps }}
+  </span>
+
+  <div class="nav-group nav-group--right">
+    @if (!readOnly) {
+      <button
+        type="button"
+        class="btn btn-ghost btn--action"
+        [disabled]="isSaving"
+        (click)="saveDraft.emit()">
+        <span class="material-icons" aria-hidden="true">save_alt</span>
+        @if (isSaving) { Saving... } @else { Save as Draft }
+      </button>
+    }
+
+    @if (!isLastStep) {
+      <button
+        type="button"
+        class="btn btn-primary btn--nav"
+        (click)="next.emit()">
+        Next
+        <span class="material-icons" aria-hidden="true">arrow_forward</span>
+      </button>
+    }
+
+    @if (isLastStep && !readOnly) {
+      <button
+        type="button"
+        class="btn btn-primary btn--submit"
+        [disabled]="isSubmitting"
+        (click)="submitForm.emit()">
+        <span class="material-icons" aria-hidden="true">send</span>
+        @if (isSubmitting) { Submitting... } @else { Submit Application }
+      </button>
+    }
+  </div>
+
+</footer>

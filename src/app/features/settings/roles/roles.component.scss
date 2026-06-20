@@ -1,0 +1,18 @@
+.role-description {
+  display: block;
+  overflow: hidden;
+  color: var(--color-text-secondary);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  &--empty {
+    color: var(--color-text-muted);
+    font-style: italic;
+  }
+}
+
+.role-description-input {
+  min-height: 96px;
+  resize: vertical;
+  font-family: inherit;
+}

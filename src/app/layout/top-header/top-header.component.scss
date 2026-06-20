@@ -1,0 +1,651 @@
+@use '../../../styles/index' as *;
+
+.top-header {
+    height: var(--header-height);
+    background: var(--color-surface);
+    border-bottom: 1px solid var(--border-default);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 var(--space-6);
+    position: sticky;
+    top: 0;
+    z-index: var(--z-sticky);
+    box-shadow: var(--shadow-xs);
+
+    &__left {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+        min-width: 0;
+    }
+
+    &__right {
+        display: flex;
+        align-items: center;
+        gap: var(--space-6);
+        min-width: 0;
+    }
+
+    // ── Search ──────────────────────────────────────────────────
+    &__search {
+        position: relative;
+        display: flex;
+        align-items: center;
+        background: var(--color-surface-hover);
+        border: 1px solid var(--border-default);
+        border-radius: var(--radius-full);
+        padding: 0 var(--space-4);
+        width: 300px;
+        height: 38px;
+        transition: all var(--transition-fast);
+
+        &--focused,
+        &:focus-within {
+            background: var(--color-surface);
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 3px var(--color-primary-light, rgba(42, 131, 255, 0.15));
+            width: 360px;
+        }
+
+        .search-icon {
+            color: var(--color-text-muted);
+            font-size: var(--icon-md);
+            margin-right: var(--space-2);
+            flex-shrink: 0;
+        }
+
+        input {
+            background: transparent;
+            border: none;
+            outline: none;
+            width: 100%;
+            font-size: var(--fs-sm);
+            font-family: inherit;
+            color: var(--color-label);
+
+            &::placeholder {
+                color: var(--color-text-muted);
+            }
+        }
+    }
+
+    &__actions {
+        display: flex;
+        align-items: center;
+        gap: var(--space-3);
+
+        .divider {
+            width: 1px;
+            height: var(--space-6);
+            background: var(--border-default);
+            margin: 0 var(--space-1);
+        }
+    }
+}
+
+.top-header__menu {
+    display: none;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: var(--color-text-secondary);
+    background: transparent;
+    border: 0;
+    border-radius: var(--radius-full);
+    cursor: pointer;
+
+    &:hover {
+        color: var(--color-primary);
+        background: var(--color-surface-hover);
+    }
+}
+
+@include navigation-mobile {
+    .top-header__menu {
+        display: flex;
+    }
+
+    .top-header {
+        &__search {
+            width: 220px;
+
+            &--focused,
+            &:focus-within {
+                width: 260px;
+            }
+        }
+    }
+
+}
+
+@include mobile {
+    .top-header {
+        padding: 0 var(--space-3);
+
+        &__left {
+            flex: 1 1 auto;
+            overflow: hidden;
+        }
+
+        &__right {
+            gap: var(--space-2);
+        }
+
+        &__search,
+        &__actions .divider {
+            display: none;
+        }
+    }
+
+    .breadcrumb {
+        min-width: 0;
+        overflow: hidden;
+
+        &__item {
+            min-width: 0;
+        }
+
+        &__link,
+        &__current {
+            display: inline-block;
+            max-width: 120px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+    }
+
+}
+
+// ── Search Dropdown ─────────────────────────────────────────────
+.search-dropdown {
+    position: absolute;
+    top: calc(100% + var(--space-2));
+    left: 0;
+    right: 0;
+    background: var(--color-surface);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    max-height: 360px;
+    overflow-y: auto;
+    z-index: var(--z-dropdown);
+
+    &__item {
+        display: flex;
+        align-items: center;
+        gap: var(--space-3);
+        width: 100%;
+        padding: var(--space-3) var(--space-4);
+        background: none;
+        border: none;
+        cursor: pointer;
+        text-align: left;
+        font-family: inherit;
+        transition: background var(--transition-fast);
+
+        &:hover {
+            background: var(--color-surface-hover);
+        }
+
+        &:not(:last-child) {
+            border-bottom: 1px solid var(--border-default);
+        }
+
+        .material-icons {
+            font-size: var(--icon-md);
+            color: var(--color-primary);
+            flex-shrink: 0;
+        }
+    }
+
+    &__text {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        min-width: 0;
+    }
+
+    &__label {
+        font-size: var(--fs-sm);
+        font-weight: var(--fw-medium);
+        color: var(--color-label);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    &__group {
+        font-size: var(--fs-xs);
+        color: var(--color-text-muted);
+    }
+
+    &__empty {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--space-2);
+        padding: var(--space-6);
+        color: var(--color-text-muted);
+        font-size: var(--fs-sm);
+
+        .material-icons { font-size: var(--icon-lg); }
+    }
+}
+
+// ── Breadcrumb ──────────────────────────────────────────────────
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    gap: var(--space-1);
+
+    &__item {
+        display: flex;
+        align-items: center;
+        gap: var(--space-1);
+    }
+
+    &__link {
+        font-size: var(--fs-sm);
+        font-weight: var(--fw-medium);
+        color: var(--color-text-muted);
+        text-decoration: none;
+        transition: color var(--transition-fast);
+
+        &:hover {
+            color: var(--color-primary);
+        }
+    }
+
+    &__current {
+        font-size: var(--fs-sm);
+        font-weight: var(--fw-bold);
+        color: var(--color-primary);
+    }
+
+    &__separator {
+        font-size: 16px;
+        color: var(--color-text-secondary);
+    }
+}
+
+// ── Action Button ───────────────────────────────────────────────
+.action-btn {
+    background: transparent;
+    border: none;
+    color: var(--color-text-secondary);
+    width: 38px;
+    height: 38px;
+    border-radius: var(--radius-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    position: relative;
+    transition: all var(--transition-fast);
+
+    &:hover {
+        background: var(--color-surface-hover);
+        color: var(--color-primary);
+    }
+
+    &--active {
+        background: var(--color-primary-light, rgba(42, 131, 255, 0.1));
+        color: var(--color-primary);
+    }
+}
+
+// ── Notification Badge ──────────────────────────────────────────
+@keyframes badge-bounce {
+    0%        { transform: scale(1) translateY(0); }
+    20%       { transform: scale(1.45) translateY(-3px); }
+    40%       { transform: scale(0.88) translateY(0); }
+    60%       { transform: scale(1.22) translateY(-2px); }
+    78%       { transform: scale(0.94) translateY(0); }
+    90%, 100% { transform: scale(1) translateY(0); }
+}
+
+.notification-badge {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    background: var(--color-error);
+    color: white;
+    font-size: 10px;
+    min-width: 16px;
+    height: 16px;
+    border-radius: var(--radius-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: var(--fw-bold);
+    border: 2px solid var(--color-surface);
+    line-height: 1;
+
+    &--pulse {
+        animation: badge-bounce 0.75s ease forwards;
+    }
+}
+
+// ── Notification Wrapper & Dropdown ─────────────────────────────
+.notification-wrapper {
+    position: relative;
+}
+
+.notification-dropdown {
+    position: absolute;
+    top: calc(100% + var(--space-2));
+    right: 0;
+    width: 380px;
+    background: var(--color-surface);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-xl);
+    z-index: var(--z-dropdown);
+    overflow: hidden;
+
+    &__header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: var(--space-4) var(--space-4) var(--space-3);
+        border-bottom: 1px solid var(--border-default);
+
+        h3 {
+            margin: 0;
+            font-size: var(--fs-base);
+            font-weight: var(--fw-bold);
+            color: var(--color-heading);
+        }
+    }
+
+    &__mark-all {
+        background: none;
+        border: none;
+        font-size: var(--fs-xs);
+        font-weight: var(--fw-semibold);
+        color: var(--color-primary);
+        cursor: pointer;
+        font-family: inherit;
+        padding: var(--space-1) var(--space-2);
+        border-radius: var(--radius-sm);
+        transition: background var(--transition-fast);
+
+        &:hover {
+            background: var(--color-primary-light, rgba(42, 131, 255, 0.1));
+        }
+    }
+
+    &__search {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+        margin: var(--space-2) var(--space-3);
+        padding: 0 var(--space-3);
+        background: var(--color-surface-hover);
+        border: 1px solid var(--border-default);
+        border-radius: var(--radius-full);
+        height: 34px;
+
+        .material-icons {
+            font-size: 16px;
+            color: var(--color-text-muted);
+            flex-shrink: 0;
+        }
+
+        input {
+            background: transparent;
+            border: none;
+            outline: none;
+            width: 100%;
+            font-size: var(--fs-xs);
+            font-family: inherit;
+            color: var(--color-label);
+
+            &::placeholder { color: var(--color-text-muted); }
+        }
+    }
+
+    &__list {
+        max-height: 340px;
+        overflow-y: auto;
+    }
+
+    &__empty {
+        padding: var(--space-6);
+        text-align: center;
+        color: var(--color-text-muted);
+        font-size: var(--fs-sm);
+    }
+}
+
+// ── Notification Item ───────────────────────────────────────────
+.notification-item {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    width: 100%;
+    background: none;
+    border: none;
+    border-bottom: 1px solid var(--border-default);
+    cursor: pointer;
+    font-family: inherit;
+    text-align: left;
+    transition: background var(--transition-fast);
+
+    &:hover {
+        background: var(--color-surface-hover);
+    }
+
+    &--unread {
+        background: var(--color-primary-light, rgba(42, 131, 255, 0.04));
+    }
+
+    &__icon {
+        width: 36px;
+        height: 36px;
+        border-radius: var(--radius-md);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+
+        .material-icons { font-size: 18px; }
+
+        // ACTION — blue (pending_actions)
+        &[data-type="ACTION"] {
+            background: rgba(42, 131, 255, 0.12);
+            color: var(--color-primary, #2A83FF);
+        }
+
+        // INFO — teal (info)
+        &[data-type="INFO"] {
+            background: rgba(8, 145, 178, 0.12);
+            color: #0891b2;
+        }
+
+        // REMINDER — amber (alarm)
+        &[data-type="REMINDER"] {
+            background: rgba(217, 119, 6, 0.12);
+            color: #d97706;
+        }
+
+        // ALERT — red (warning)
+        &[data-type="ALERT"] {
+            background: rgba(239, 68, 68, 0.12);
+            color: var(--color-error, #ef4444);
+        }
+    }
+
+    &__content {
+        flex: 1;
+        min-width: 0;
+    }
+
+    &__title {
+        font-size: var(--fs-sm);
+        font-weight: var(--fw-semibold);
+        color: var(--color-label);
+        margin-bottom: 2px;
+    }
+
+    &__message {
+        font-size: var(--fs-xs);
+        color: var(--color-text-muted);
+        line-height: var(--lh-normal);
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    &__time {
+        font-size: var(--fs-xs);
+        color: var(--color-text-secondary);
+        margin-top: var(--space-1);
+    }
+
+    &__dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--color-primary);
+        flex-shrink: 0;
+        margin-top: var(--space-2);
+    }
+
+    &__stale {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-size: var(--fs-xs);
+        color: var(--color-error, #ef4444);
+        margin-top: var(--space-1);
+        font-weight: var(--fw-medium);
+
+        .material-icons { font-size: 13px; }
+    }
+
+    // Expired: dimmed, no pointer cursor
+    &--expired {
+        opacity: 0.6;
+
+        .notification-item__icon { filter: grayscale(0.6); }
+    }
+
+    // Has a valid route and is still active
+    &--clickable { cursor: pointer; }
+}
+
+// ── Swipe-to-delete ─────────────────────────────────────────────
+.notif-swipe-wrap {
+    position: relative;
+    overflow: hidden;
+
+    // Delete zone: background stays static on the left, revealed as the button slides right
+    .notif-swipe-delete {
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 150px;
+        background: var(--color-error, #ef4444);
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        padding-left: var(--space-6);
+        z-index: 0;
+        opacity: 0; // JS drives opacity initially based on swipe distance
+        will-change: opacity;
+
+        .material-icons {
+            font-size: 24px;
+            color: #fff;
+            transform-origin: center;
+            will-change: transform;
+        }
+    }
+
+    // Once the swipe passes the threshold, intensify the cue
+    &--threshold .notif-swipe-delete {
+        background: #dc2626; // Darker red
+        box-shadow: inset 4px 0 12px rgba(0,0,0,0.15); // Add depth feeling
+    }
+
+    // Spring snap-back when releasing below threshold; ease-out for exit slide
+    &--snap .notification-item {
+        transition: transform 350ms cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 350ms ease;
+    }
+
+    &--snap .notif-swipe-delete {
+        transition: opacity 250ms ease;
+    }
+
+    // When past threshold and releasing, switch to spring to give a satisfying "launch" feel
+    &--threshold.notif-swipe-wrap--snap .notification-item {
+        transition: transform 400ms cubic-bezier(0.34, 1.56, 0.64, 1), opacity 300ms ease;
+    }
+
+    // When actively dragging, FORCE all transitions off so it tracks cursor perfectly
+    &--dragging .notification-item,
+    &--dragging .notif-swipe-delete,
+    &--dragging .notif-swipe-delete .material-icons {
+        transition: none !important;
+    }
+
+    .notification-item {
+        position: relative;
+        z-index: 1;
+        touch-action: pan-y; // allow vertical scroll, handle horizontal ourselves
+        will-change: transform;
+        background: var(--color-surface); // Ensure background is solid so delete icon is hidden when x=0
+    }
+}
+
+// ── Date Display ────────────────────────────────────────────────
+.date-display {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    line-height: var(--lh-tight);
+
+    &__day {
+        font-size: var(--fs-xs);
+        font-weight: var(--fw-bold);
+        color: var(--color-primary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    &__date {
+        font-size: var(--fs-xs);
+        font-weight: var(--fw-medium);
+        color: var(--color-text-muted);
+    }
+}
+
+@include navigation-mobile {
+    .date-display {
+        display: none;
+    }
+}
+
+@include mobile {
+    .notification-dropdown {
+        position: fixed;
+        top: calc(var(--header-height) + var(--space-2));
+        right: var(--space-3);
+        left: var(--space-3);
+        width: auto;
+        max-height: calc(100dvh - var(--header-height) - var(--space-5));
+    }
+}

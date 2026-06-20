@@ -1,0 +1,56 @@
+<div class="ragra-app application-form-page">
+
+  <app-form-main-title
+    title="RA/GRA Application"
+    modalTitle="RA/GRA Applicant Guidelines"
+    [guidelineContext]="guidelineContext"
+    endpoint="/api/guidelines/ra-gra">
+  </app-form-main-title>
+
+  <app-step-indicator
+    [currentStep]="currentStep"
+    [steps]="steps"
+    [stepStatuses]="stepStatuses"
+    [submitAttempted]="submitAttempted"
+    (stepClick)="onStepClick($event)">
+  </app-step-indicator>
+
+  <!-- ── 2. Main Form ──────────────────────────────────────────── -->
+  <fieldset class="form-container application-form-surface">
+    <div class="ragra-app__content">
+
+      <!-- Step 1: Applicant and Project Details -->
+      <app-ragra-project-details
+        *ngIf="currentStep === 1"
+        (formValidityChange)="updateFormValidity(1, $event)">
+      </app-ragra-project-details>
+
+      <!-- Step 2: Student Details -->
+      <app-ragra-student-details
+        *ngIf="currentStep === 2"
+        [positionRequested]="positionRequested"
+        (formValidityChange)="updateFormValidity(2, $event)">
+      </app-ragra-student-details>
+
+      <!-- Step 3: Declaration -->
+      <app-ragra-declaration
+        *ngIf="currentStep === 3"
+        (formValidityChange)="updateFormValidity(3, $event)">
+      </app-ragra-declaration>
+
+    </div>
+  </fieldset>
+
+  <!-- ── 3. Wizard Navigation Footer ─────────────────────────── -->
+  <app-form-wizard-nav
+    [currentStep]="currentStep"
+    [totalSteps]="totalSteps"
+    [isSaving]="isSaving"
+    [isSubmitting]="isSubmitting"
+    (prev)="onPrev()"
+    (next)="onNext()"
+    (saveDraft)="onSaveDraft()"
+    (submitForm)="onSubmit()">
+  </app-form-wizard-nav>
+
+</div>

@@ -1,0 +1,40 @@
+<div class="pagination-wrapper">
+  <div class="pagination-summary">
+    Page <strong>{{ currentPage }}</strong> of <strong>{{ totalPages }}</strong>
+  </div>
+
+  <div class="pagination-controls">
+    <button
+      class="pagination-btn"
+      [disabled]="currentPage === 1"
+      (click)="goToPage(currentPage - 1)"
+      title="Previous page"
+      aria-label="Previous page">
+      <span class="material-icons">chevron_left</span>
+    </button>
+
+    @for (page of visiblePages; track $index) {
+      @if (page < 0) {
+        <span class="pagination-ellipsis">…</span>
+      } @else {
+        <button
+          class="pagination-btn"
+          [class.pagination-btn--active]="page === currentPage"
+          (click)="goToPage(page)"
+          [attr.aria-label]="'Go to page ' + page"
+          [attr.aria-current]="page === currentPage ? 'page' : null">
+          {{ page }}
+        </button>
+      }
+    }
+
+    <button
+      class="pagination-btn"
+      [disabled]="currentPage === totalPages"
+      (click)="goToPage(currentPage + 1)"
+      title="Next page"
+      aria-label="Next page">
+      <span class="material-icons">chevron_right</span>
+    </button>
+  </div>
+</div>

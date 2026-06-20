@@ -1,0 +1,56 @@
+<nav class="step-indicator" aria-label="Form progress">
+  @for (step of steps; track step.label; let i = $index) {
+
+    <!-- Step node -->
+    <button
+      type="button"
+      class="step"
+      [class.step--complete]="isComplete(i)"
+      [class.step--active]="isActive(i) && !isWarning(i) && !isError(i)"
+      [class.step--error]="isError(i)"
+      [class.step--warning]="isWarning(i)"
+      [class.step--pending]="isPending(i)"
+      (click)="goToStep(i)"
+      [attr.aria-label]="getAriaLabel(i)"
+      [attr.aria-describedby]="showMissingTooltip(i) ? 'step-tooltip-' + i : null">
+
+      <div class="step__bubble">
+        @if (isComplete(i)) {
+          <span class="material-icons">check</span>
+        } @else if (isError(i)) {
+          <span class="material-icons">error</span>
+        } @else if (isWarning(i)) {
+          <span class="material-icons">warning_amber</span>
+        } @else {
+          <span class="material-icons">{{ step.icon }}</span>
+        }
+      </div>
+
+      <span class="step__label">{{ step.label }}</span>
+
+      @if (showMissingTooltip(i)) {
+        <div class="step-tooltip" [id]="'step-tooltip-' + i" role="tooltip">
+          <div class="step-tooltip__header">
+            <span class="step-tooltip__accent"></span>
+            <span class="step-tooltip__title">{{ getTooltipTitle(i) }}</span>
+            <span class="step-tooltip__count">{{ getMissingCountLabel(i) }}</span>
+          </div>
+          <ul class="step-tooltip__list">
+            @for (field of getMissingFields(i); track field) {
+              <li>{{ field }}</li>
+            }
+          </ul>
+        </div>
+      }
+    </button>
+
+    <!-- Connector (not after last step) -->
+    @if (i < steps.length - 1) {
+      <div
+        class="step-connector"
+        [class.step-connector--filled]="isConnectorFilled(i)">
+      </div>
+    }
+
+  }
+</nav>

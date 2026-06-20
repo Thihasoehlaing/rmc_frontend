@@ -1,0 +1,89 @@
+@use '../../../../../styles/index' as *;
+@use '../../../conference/styles/radio-group';
+
+.form-section {
+  padding: var(--space-4);
+}
+
+// Card title stays blue (--color-heading) — matches the screenshot
+// No override needed; global card__title handles it.
+
+.card {
+  margin-top: var(--space-6);
+
+  &:first-of-type {
+    margin-top: 0;
+  }
+}
+
+// Upload grid: 2-column layout matching the conference form
+// Use both classes together for higher specificity to override
+// the global .section-fields flex-column rule.
+.section-fields.upload-grid {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-6);
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+// Manuscript details: single column
+.section-fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.upload-field-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.upload-field-title {
+  font-size: var(--fs-md);
+  font-weight: var(--fw-bold);
+  color: var(--color-text);
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+
+  &.is-required::after {
+    content: ' *';
+    color: var(--color-error-dark);
+  }
+}
+
+.upload-field-subtitle {
+  font-size: var(--fs-xs);
+  color: var(--color-text-muted);
+  margin: 0;
+  padding: 0;
+}
+
+.title-with-tooltip {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-1);
+  width: fit-content;
+  max-width: 100%;
+}
+
+.label-with-note {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-1);
+  width: fit-content;
+  max-width: 100%;
+
+  .form-label {
+    margin: 0;
+  }
+
+}

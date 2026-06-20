@@ -1,0 +1,344 @@
+﻿<section class="budget-section" [formGroup]="budgetForm">
+
+  <!-- Page Header -->
+  <app-custom-header
+    icon="account_balance_wallet"
+    title="Budget Summary"
+  ></app-custom-header>
+
+  <!-- ?? Budget Totals Banner ?????????????????????????????????? -->
+  <div class="budget-banner"
+    [class.budget-banner--warning]="budgetAlertColor === 'yellow'"
+    [class.budget-banner--invalid]="budgetAlertColor === 'red'">
+    <div class="budget-total">
+      <span class="total-label">Total Amount Requested</span>
+      <span class="total-amount">RM {{ budgetForm.get('totalRequest')?.value | number:'1.2-2' }}</span>
+    </div>
+  @if (category === 'S&T' || category === 'Non S&T') {
+    <span class="badge" 
+          [class.badge--success]="budgetAlertColor === 'default' && !isBudgetInvalidRange" 
+          [class.badge--warning]="budgetAlertColor === 'yellow'"
+          [class.badge--danger]="budgetAlertColor === 'red'">
+      Requirement: {{ budgetRangeMessage }}
+    </span>
+  }
+  </div>
+
+  <!-- ?? V11000: Student Allowances ?????????????????????????? -->
+  <div class="card">
+    <app-custom-subheader title="V11000 - Student Allowances"></app-custom-subheader>
+    <div class="card__content">
+      <div class="category-header">
+        <app-action-button type="primary" label="Add Item" icon="add"
+          [disabled]="workflow.isFormReadOnly()" (clicked)="openAddItemModal('studentAllowances')">
+        </app-action-button>
+      </div>
+      @if (studentAllowances.length > 0) {
+        <app-data-table
+          [columns]="budgetColumns"
+          [rows]="studentAllowances.controls"
+          [rowTrackFn]="trackByIndex"
+          [dense]="true">
+          <ng-template #rowTemplate let-row let-index="index">
+            <tr>
+              <td class="text-muted">{{ index + 1 }}</td>
+              <td>
+                <div class="data-table__title data-table__title--small">{{ row.value.description }}</div>
+              </td>
+              <td class="amount-cell">{{ row.value.amount | number:'1.2-2' }}</td>
+              <td>
+                <div class="data-table__multiline">{{ row.value.remarks }}</div>
+              </td>
+              <td class="action-cell">
+                <div class="data-table__actions">
+                  <button type="button" class="btn-icon btn-icon--edit" [disabled]="workflow.isFormReadOnly()" (click)="openEditItemModal('studentAllowances', index)">
+                    <span class="material-icons">edit</span>
+                  </button>
+                  <button type="button" class="btn-icon btn-icon--delete" [disabled]="workflow.isFormReadOnly()" (click)="removeBudgetRow(studentAllowances, index)">
+                    <span class="material-icons">delete</span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+        </app-data-table>
+      } @else {
+        <p class="empty-state">No items added. Click <strong>Add Item</strong> to begin.</p>
+      }
+      <app-note text="RA/GRA Allowance – RM500 per month per RA/GRA. Please state number of month and number of student in the description."></app-note>
+      @if (showAnyComments) {
+        <div class="row row--2">
+          <app-review-block label="Reviewer 1 - Student Allowances" icon="rate_review"
+            [visible]="showR1Comments" [readonly]="!workflow.isReviewer1Editable()"
+            [commentControl]="fc('reviewer1StudentComment')"></app-review-block>
+          <app-review-block label="Reviewer 2 - Student Allowances" icon="rate_review"
+            [visible]="showR2Comments" [readonly]="!workflow.isReviewer2Editable()"
+            [commentControl]="fc('reviewer2StudentComment')"></app-review-block>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- ?? V21000: Travel & Accommodation ?????????????????????? -->
+  <div class="card">
+    <app-custom-subheader title="V21000 - Travelling and Accommodation"></app-custom-subheader>
+    <div class="card__content">
+      <div class="category-header">
+        <app-action-button type="primary" label="Add Item" icon="add"
+          [disabled]="workflow.isFormReadOnly()" (clicked)="openAddItemModal('travelAccommodation')">
+        </app-action-button>
+      </div>
+      @if (travelAccommodation.length > 0) {
+        <app-data-table
+          [columns]="budgetColumns"
+          [rows]="travelAccommodation.controls"
+          [rowTrackFn]="trackByIndex"
+          [dense]="true">
+          <ng-template #rowTemplate let-row let-index="index">
+            <tr>
+              <td class="text-muted">{{ index + 1 }}</td>
+              <td>
+                <div class="data-table__title data-table__title--small">{{ row.value.description }}</div>
+              </td>
+              <td class="amount-cell">{{ row.value.amount | number:'1.2-2' }}</td>
+              <td>
+                <div class="data-table__multiline">{{ row.value.remarks }}</div>
+              </td>
+              <td class="action-cell">
+                <div class="data-table__actions">
+                  <button type="button" class="btn-icon btn-icon--edit" [disabled]="workflow.isFormReadOnly()" (click)="openEditItemModal('travelAccommodation', index)">
+                    <span class="material-icons">edit</span>
+                  </button>
+                  <button type="button" class="btn-icon btn-icon--delete" [disabled]="workflow.isFormReadOnly()" (click)="removeBudgetRow(travelAccommodation, index)">
+                    <span class="material-icons">delete</span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+        </app-data-table>
+      } @else {
+        <p class="empty-state">No items added.</p>
+      }
+      <app-note text="Please state location and estimated travel/accommodation cost for data collection in the description. Transportation claim for Klang Valley is not allowed."></app-note>
+      @if (showAnyComments) {
+        <div class="row row--2">
+          <app-review-block label="Reviewer 1 - Travel & Accommodation" icon="rate_review"
+            [visible]="showR1Comments" [readonly]="!workflow.isReviewer1Editable()"
+            [commentControl]="fc('reviewer1TravelComment')"></app-review-block>
+          <app-review-block label="Reviewer 2 - Travel & Accommodation" icon="rate_review"
+            [visible]="showR2Comments" [readonly]="!workflow.isReviewer2Editable()"
+            [commentControl]="fc('reviewer2TravelComment')"></app-review-block>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- ?? V27000: Research Materials & Supplies ??????????????? -->
+  <div class="card">
+    <app-custom-subheader title="V27000 - Research Materials &amp; Supplies"></app-custom-subheader>
+    <div class="card__content">
+      <div class="category-header">
+        <app-action-button type="primary" label="Add Item" icon="add"
+          [disabled]="workflow.isFormReadOnly()" (clicked)="openAddItemModal('materialsSupplies')">
+        </app-action-button>
+      </div>
+      @if (materialsSupplies.length > 0) {
+        <app-data-table
+          [columns]="budgetColumns"
+          [rows]="materialsSupplies.controls"
+          [rowTrackFn]="trackByIndex"
+          [dense]="true">
+          <ng-template #rowTemplate let-row let-index="index">
+            <tr>
+              <td class="text-muted">{{ index + 1 }}</td>
+              <td>
+                <div class="data-table__title data-table__title--small">{{ row.value.description }}</div>
+              </td>
+              <td class="amount-cell">{{ row.value.amount | number:'1.2-2' }}</td>
+              <td>
+                <div class="data-table__multiline">{{ row.value.remarks }}</div>
+              </td>
+              <td class="action-cell">
+                <div class="data-table__actions">
+                  <button type="button" class="btn-icon btn-icon--edit" [disabled]="workflow.isFormReadOnly()" (click)="openEditItemModal('materialsSupplies', index)">
+                    <span class="material-icons">edit</span>
+                  </button>
+                  <button type="button" class="btn-icon btn-icon--delete" [disabled]="workflow.isFormReadOnly()" (click)="removeBudgetRow(materialsSupplies, index)">
+                    <span class="material-icons">delete</span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+        </app-data-table>
+      } @else {
+        <p class="empty-state">No items added.</p>
+      }
+      <app-note text="Every item requires a quotation to be uploaded. Please provide evidence that software is not available in APU."></app-note>
+      @if (showAnyComments) {
+        <div class="row row--2">
+          <app-review-block label="Reviewer 1 - Materials & Supplies" icon="rate_review"
+            [visible]="showR1Comments" [readonly]="!workflow.isReviewer1Editable()"
+            [commentControl]="fc('reviewer1MaterialsComment')"></app-review-block>
+          <app-review-block label="Reviewer 2 - Materials & Supplies" icon="rate_review"
+            [visible]="showR2Comments" [readonly]="!workflow.isReviewer2Editable()"
+            [commentControl]="fc('reviewer2MaterialsComment')"></app-review-block>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- ?? V29000: Special Services ???????????????????????????? -->
+  <div class="card">
+    <app-custom-subheader title="V29000 - Special Services"></app-custom-subheader>
+    <div class="card__content">
+      <div class="category-header">
+        <app-action-button type="primary" label="Add Item" icon="add"
+          [disabled]="workflow.isFormReadOnly()" (clicked)="openAddItemModal('specialServices')">
+        </app-action-button>
+      </div>
+      @if (specialServices.length > 0) {
+        <app-data-table
+          [columns]="budgetColumns"
+          [rows]="specialServices.controls"
+          [rowTrackFn]="trackByIndex"
+          [dense]="true">
+          <ng-template #rowTemplate let-row let-index="index">
+            <tr>
+              <td class="text-muted">{{ index + 1 }}</td>
+              <td>
+                <div class="data-table__title data-table__title--small">{{ row.value.description }}</div>
+              </td>
+              <td class="amount-cell">{{ row.value.amount | number:'1.2-2' }}</td>
+              <td>
+                <div class="data-table__multiline">{{ row.value.remarks }}</div>
+              </td>
+              <td class="action-cell">
+                <div class="data-table__actions">
+                  <button type="button" class="btn-icon btn-icon--edit" [disabled]="workflow.isFormReadOnly()" (click)="openEditItemModal('specialServices', index)">
+                    <span class="material-icons">edit</span>
+                  </button>
+                  <button type="button" class="btn-icon btn-icon--delete" [disabled]="workflow.isFormReadOnly()" (click)="removeBudgetRow(specialServices, index)">
+                    <span class="material-icons">delete</span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+        </app-data-table>
+      } @else {
+        <p class="empty-state">No items added.</p>
+      }
+      <app-note text="Editing Service requires quotation while Publication Fees requires APC Page to be uploaded. Training, conference presentation, honorarium and token for respondents are non-allowable items."></app-note>
+      @if (showAnyComments) {
+        <div class="row row--2">
+          <app-review-block label="Reviewer 1 - Special Services" icon="rate_review"
+            [visible]="showR1Comments" [readonly]="!workflow.isReviewer1Editable()"
+            [commentControl]="fc('reviewer1ServicesComment')"></app-review-block>
+          <app-review-block label="Reviewer 2 - Special Services" icon="rate_review"
+            [visible]="showR2Comments" [readonly]="!workflow.isReviewer2Editable()"
+            [commentControl]="fc('reviewer2ServicesComment')"></app-review-block>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- ?? Budget Review Comments ????????????????????????????????? -->
+  @if (showAnyComments) {
+    <div class="card">
+      <app-custom-subheader title="Budget Review"></app-custom-subheader>
+      <div class="card__content section-fields">
+
+        <!-- Final budget review: HOS, RMC, R1+score, R2+score -->
+        <app-review-block label="HOS - Budget Summary" icon="supervisor_account"
+          [visible]="showHosComments" [readonly]="!workflow.isHosEditable()"
+          [commentControl]="fc('hosComment')"></app-review-block>
+
+        <app-review-block label="RMC - Budget Summary" icon="verified"
+          [visible]="showRmcComments" [readonly]="!workflow.isRmcEditable()"
+          [commentControl]="fc('rmcComment')"></app-review-block>
+
+        <div class="row row--2">
+          <app-review-block label="Reviewer 1 - Budget Overall" icon="rate_review"
+            [visible]="showR1Comments" [readonly]="!workflow.isReviewer1Editable()"
+            [showScore]="true" [maxScore]="10" [scoreDisabled]="!workflow.isScoreEditable()"
+            [commentControl]="fc('reviewer1Comment')" [scoreControl]="fc('reviewer1Score')"></app-review-block>
+          <app-review-block label="Reviewer 2 - Budget Overall" icon="rate_review"
+            [visible]="showR2Comments" [readonly]="!workflow.isReviewer2Editable()"
+            [showScore]="true" [maxScore]="10" [scoreDisabled]="!workflow.isScoreEditable()"
+            [commentControl]="fc('reviewer2Comment')" [scoreControl]="fc('reviewer2Score')"></app-review-block>
+        </div>
+      </div>
+    </div>
+  }
+
+  <div class="card">
+    <div class="card__content section-fields">
+      <div class="form-field">
+        <label class="form-label">Any other remarks for budget requested (Optional)</label>
+        <textarea
+          class="input--textarea"
+          formControlName="otherRemarks"
+          [maxlength]="300"
+          [readonly]="workflow.isFormReadOnly()"></textarea>
+        <app-note text="Please state matching grant amount and name of university/organisation and any other description."></app-note>
+        <app-character-counter [current]="otherRemarksControl.value?.length ?? 0" [max]="300"></app-character-counter>
+        <app-validation-message [control]="otherRemarksControl"></app-validation-message>
+      </div>
+    </div>
+  </div>
+
+</section>
+
+@if (addItemModalOpen) {
+  <app-dialog
+    [title]="(editingRowIndex === null ? 'Add Budget Item - ' : 'Edit Budget Item - ') + activeCategoryLabel"
+    [isOpen]="true"
+    width="var(--size-dialog-medium)"
+    (close)="closeAddItemModal()">
+
+    <div class="section-fields" [formGroup]="budgetItemForm">
+      <p class="modal-note">Fill in all required fields before submitting this budget item.</p>
+
+      <div class="form-field">
+        <label class="form-label is-required">Description of Expense</label>
+        <textarea
+          class="input--textarea"
+          formControlName="description"
+          [maxlength]="200"></textarea>
+        <app-character-counter [current]="descriptionControl.value?.length ?? 0" [max]="200"></app-character-counter>
+        <app-validation-message [control]="descriptionControl"></app-validation-message>
+      </div>
+
+      <div class="row row--2 textarea-row">
+        <div class="form-field">
+          <label class="form-label is-required">Amount (RM)</label>
+          <input
+            type="number"
+            lang="en"
+            min="0.01"
+            step="0.01"
+            class="input--text"
+            formControlName="amount">
+          <app-validation-message [control]="amountControl"></app-validation-message>
+        </div>
+        <div class="form-field">
+          <label class="form-label is-required">Remarks</label>
+          <textarea
+            class="input--textarea"
+            formControlName="remarks"
+            [maxlength]="300"></textarea>
+          <app-character-counter [current]="remarksControl.value?.length ?? 0" [max]="300"></app-character-counter>
+          <app-validation-message [control]="remarksControl"></app-validation-message>
+        </div>
+      </div>
+    </div>
+
+    <app-action-button dialog-footer type="secondary" label="Cancel" (clicked)="closeAddItemModal()"></app-action-button>
+    <app-action-button dialog-footer type="primary" icon="check" [label]="modalSubmitLabel"
+      [disabled]="budgetItemForm.invalid" (clicked)="submitBudgetItem()">
+    </app-action-button>
+
+  </app-dialog>
+}

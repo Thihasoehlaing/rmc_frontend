@@ -1,0 +1,89 @@
+@use '../../../../styles/index' as *;
+
+.comment-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+// ── Button strip ──────────────────────────────────────────────────
+.comment-panel__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--color-surface-nested);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+}
+
+.btn--comment {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  height: 34px;
+  padding: 0 var(--space-4);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-medium);
+  background: var(--color-surface);
+  border: 1px solid var(--border-default);
+  color: var(--color-text-secondary);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+
+  .material-icons { font-size: 16px; }
+
+  &:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-primary-light, rgba(42, 131, 255, 0.06));
+  }
+}
+
+.btn--comment-active {
+  background: var(--color-primary-light, rgba(42, 131, 255, 0.1));
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  font-weight: var(--fw-semibold);
+}
+
+.btn--comment-toggle-all {
+  border-style: dashed;
+}
+
+// ── Open panel ────────────────────────────────────────────────────
+.comment-panel__body {
+  padding: var(--space-5) var(--space-6);
+  background: #fffbe6;
+  border: 1px solid #ffe58f;
+  border-left: 4px solid #faad14;
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.comment-panel__label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-bold);
+  color: #856404;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+
+  .material-icons { font-size: 16px; }
+}
+
+.comment-panel__content {
+  font-size: var(--fs-sm);
+  color: var(--color-label);
+  line-height: var(--lh-relaxed);
+}
+
+.comment-panel__empty {
+  color: var(--color-text-secondary);
+  font-style: italic;
+}

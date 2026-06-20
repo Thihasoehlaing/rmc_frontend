@@ -1,0 +1,111 @@
+@use '../../../../styles/index' as *;
+
+:host {
+  display: block;
+}
+
+.table-skeleton {
+  padding: var(--space-4);
+  background: var(--skeleton-color-container);
+  border: var(--skeleton-border-width) solid var(--skeleton-border-color);
+  border-radius: var(--skeleton-border-radius);
+  box-shadow: var(--skeleton-shadow);
+}
+
+.table-skeleton__toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.table-skeleton__search {
+  width: min(100%, var(--size-message-max-width));
+  height: var(--input-height-sm);
+}
+
+.table-skeleton__filter {
+  width: var(--button-min-width-action);
+  height: var(--input-height-sm);
+}
+
+.table-skeleton__table-wrapper {
+  overflow-x: auto;
+  background: var(--skeleton-color-container);
+  border: var(--skeleton-border-width) solid var(--skeleton-border-color);
+  border-radius: var(--skeleton-border-radius);
+}
+
+.table-skeleton__table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+
+  thead {
+    background: var(--skeleton-color-container);
+  }
+
+  th,
+  td {
+    padding: var(--space-3) var(--space-4);
+    border-bottom: var(--skeleton-border-width) solid var(--skeleton-border-color);
+  }
+
+  tbody tr:last-child td {
+    border-bottom: 0;
+  }
+}
+
+.skeleton-block {
+  display: block;
+  border-radius: var(--skeleton-block-radius);
+  background: linear-gradient(
+    90deg,
+    var(--skeleton-color-placeholder) 25%,
+    var(--skeleton-color-container) 50%,
+    var(--skeleton-color-placeholder) 75%
+  );
+  background-size: var(--skeleton-background-size);
+  animation: skeleton-shimmer var(--skeleton-animation-duration)
+    var(--skeleton-animation-easing) infinite;
+
+  &--header {
+    width: 70%;
+    height: var(--skeleton-line-height);
+  }
+
+  &--cell {
+    width: 84%;
+    height: var(--skeleton-cell-height);
+  }
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (max-width: 600px) {
+  .table-skeleton__toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .table-skeleton__search,
+  .table-skeleton__filter {
+    width: 100%;
+  }
+}
+
+@include reduced-motion {
+  .skeleton-block {
+    animation: none;
+  }
+}

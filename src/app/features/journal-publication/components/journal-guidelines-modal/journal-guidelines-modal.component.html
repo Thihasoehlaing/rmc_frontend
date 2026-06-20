@@ -1,0 +1,19 @@
+@if (isOpen()) {
+<div class="modal-overlay" (click)="close()">
+  <div class="modal-container" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Journal Publication Guidelines</h2>
+      <button class="btn-close" (click)="close()">&times;</button>
+    </div>
+
+    <div class="modal-body">
+      @for (guideline of journalGuidelines(); track guideline.id) {
+        <h3 class="section-title">{{ guideline.title }}</h3>
+        <div class="guideline-section" [innerHTML]="guideline.content"></div>
+      } @empty {
+        <p class="text-muted">No active guidelines found for this form.</p>
+      }
+    </div>
+  </div>
+</div>
+}

@@ -1,0 +1,84 @@
+@use '../../styles/index' as *;
+
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+  background: var(--color-surface-hover);
+
+  &__main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    margin-left: var(--sidebar-collapsed-width);
+    transition: margin-left var(--transition-normal);
+  }
+
+  &--sidebar-pinned {
+    .app-shell__main {
+      margin-left: var(--sidebar-width);
+    }
+  }
+
+  &__content {
+    flex: 1;
+    padding: var(--space-6) var(--space-8);
+    max-width: var(--page-max-width);
+    margin: 0 auto;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  &__footer {
+    padding: var(--space-3) var(--space-8);
+    background: var(--color-surface);
+    border-top: 1px solid var(--border-subtle);
+    text-align: center;
+    font-size: var(--fs-xs);
+    color: var(--color-text-muted);
+  }
+}
+
+@include navigation-mobile {
+  .app-shell__main {
+    margin-left: 0 !important;
+  }
+
+  .app-shell__content {
+    padding: var(--space-5) var(--space-4);
+  }
+
+  .app-shell__footer {
+    padding-inline: var(--space-4);
+  }
+}
+
+@include mobile {
+  .app-shell__content {
+    padding: var(--space-4) var(--space-3);
+  }
+
+  .app-shell__footer {
+    padding: var(--space-3);
+  }
+}
+
+.app-shell__backdrop {
+  display: none;
+}
+
+@include navigation-mobile {
+  .app-shell__backdrop {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: min(84vw, var(--sidebar-width));
+    z-index: calc(var(--z-overlay) - 1);
+    display: block;
+    padding: 0;
+    background: rgba(15, 23, 42, 0.48);
+    border: 0;
+    cursor: pointer;
+  }
+}

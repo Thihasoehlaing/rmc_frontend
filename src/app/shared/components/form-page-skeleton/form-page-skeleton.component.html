@@ -1,0 +1,21 @@
+<div class="form-page-skeleton" role="status" aria-busy="true" [attr.aria-label]="loadingLabel">
+  <span class="sr-only">{{ loadingLabel }}</span>
+  <div class="form-page-skeleton__steps">
+    @for (step of [1, 2, 3, 4]; track step) {
+      <span class="skeleton-block form-page-skeleton__step"></span>
+    }
+  </div>
+  @for (section of sectionItems; track section) {
+    <section class="form-page-skeleton__section">
+      <span class="skeleton-block form-page-skeleton__heading"></span>
+      <div class="form-page-skeleton__fields">
+        @for (field of fieldItems; track field) {
+          <div class="form-page-skeleton__field">
+            <span class="skeleton-block form-page-skeleton__label"></span>
+            <span class="skeleton-block form-page-skeleton__control"></span>
+          </div>
+        }
+      </div>
+    </section>
+  }
+</div>

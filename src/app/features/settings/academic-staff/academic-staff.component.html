@@ -1,0 +1,295 @@
+<main class="forms-page">
+  <header class="forms-page__header">
+    <div>
+      <span class="forms-page__eyebrow">System Settings</span>
+      <h1>Academic Staff</h1>
+      <p>Manage staff members available for academic workflows and selections.</p>
+    </div>
+    <button class="btn btn-primary forms-page__create-button" type="button" (click)="openCreateDialog()" [disabled]="isLoading()">
+      <span class="material-icons">person_add</span>
+      Add Academic Staff
+    </button>
+  </header>
+
+  @if (!isLoading()) {
+  <section class="forms-toolbar academic-staff-toolbar" aria-label="Academic staff filters">
+    <label class="forms-filter academic-staff-filter--search">
+      <span>Name, Email, Username, or Job Title</span>
+      <input
+        class="input--text"
+        type="search"
+        placeholder="Search academic staff"
+        [ngModel]="searchTerm()"
+        (ngModelChange)="searchTerm.set($event)"
+        (keydown.enter)="search()">
+    </label>
+
+    <label class="forms-filter">
+      <span>Department</span>
+      <select
+        class="input--select"
+        [ngModel]="selectedDepartmentId()"
+        (ngModelChange)="selectedDepartmentId.set($event)">
+        <option [ngValue]="null">All Departments</option>
+        @for (department of departments(); track department.id) {
+          <option [ngValue]="department.id">{{ department.department_name }}</option>
+        }
+      </select>
+    </label>
+
+    <label class="forms-filter">
+      <span>Status</span>
+      <select
+        class="input--select"
+        [ngModel]="selectedStatus()"
+        (ngModelChange)="selectedStatus.set($event)">
+        <option value="">All</option>
+        <option value="Active">Active</option>
+        <option value="Inactive">Inactive</option>
+      </select>
+    </label>
+
+    <div class="forms-toolbar__actions">
+      <button class="btn btn-primary" type="button" (click)="search()">
+        <span class="material-icons">search</span>
+        Search
+      </button>
+      <button class="btn btn-secondary" type="button" (click)="resetFilters()">
+        <span class="material-icons">restart_alt</span>
+        Reset
+      </button>
+    </div>
+  </section>
+  }
+
+  <section class="forms-table-card">
+    @if (isLoading()) {
+      <app-table-skeleton
+        [columns]="columns"
+        [showSearch]="false"
+        loadingLabel="Loading academic staff">
+      </app-table-skeleton>
+    } @else if (loadFailed()) {
+      <div class="forms-state">
+        <span class="material-icons">cloud_off</span>
+        <h2>Unable to load academic staff</h2>
+        <p>Check the API connection and try again.</p>
+        <button class="btn btn-primary" type="button" (click)="loadInitialData()">Try Again</button>
+      </div>
+    } @else if (academicStaff().length === 0) {
+      <div class="forms-state">
+        <span class="material-icons">school</span>
+        <h2>No academic staff found</h2>
+        <p>Adjust the filters or add a staff member to the academic list.</p>
+      </div>
+    } @else {
+      <app-data-table
+        [columns]="columns"
+        [rows]="academicStaff()"
+        [rowTrackFn]="rowTrackFn">
+        <ng-template #rowTemplate let-row let-index="index">
+          <tr>
+            <td class="is-align-center">{{ rowNumber(index) }}</td>
+            <td>
+              <div class="academic-staff-identity">
+                <span class="academic-staff-avatar">{{ initials(row) }}</span>
+                <div>
+                  <strong>{{ row.fullname || row.username }}</strong>
+                  <small>{{ row.email || row.staff_email || 'No email' }}</small>
+                </div>
+              </div>
+            </td>
+            <td>
+              @if (row.staff_code) {
+                <span class="form-code">{{ row.staff_code }}</span>
+              } @else {
+                <span class="academic-staff-muted">Not available</span>
+              }
+            </td>
+            <td>{{ row.job_title || 'Not specified' }}</td>
+            <td>{{ row.department || 'Not available' }}</td>
+            <td class="is-align-center">
+              <span class="status-badge" [class.status-badge--inactive]="!row.is_active">
+                {{ row.is_active ? 'Active' : 'Inactive' }}
+              </span>
+            </td>
+            <td class="is-align-center">
+              <div class="table-actions">
+                <button
+                  class="table-action"
+                  type="button"
+                  title="Edit academic staff"
+                  aria-label="Edit academic staff"
+                  (click)="openEditDialog(row)">
+                  <span class="material-icons">edit</span>
+                </button>
+                <button
+                  class="table-action table-action--danger"
+                  type="button"
+                  title="Remove from academic staff"
+                  aria-label="Remove from academic staff"
+                  (click)="openDeleteDialog(row)">
+                  <span class="material-icons">delete_outline</span>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+      </app-data-table>
+    }
+  </section>
+
+  @if (!isLoading() && !loadFailed()) {
+    <app-pagination
+      [currentPage]="page()"
+      [totalPages]="totalPages()"
+      [pageSize]="pageSize()"
+      [pageSizeOptions]="pageSizeOptions"
+      (pageChange)="onPageChange($event)"
+      (pageSizeChange)="onPageSizeChange($event)">
+    </app-pagination>
+
+    <p class="forms-count">
+      @if (totalItems() > 0) {
+        Showing {{ pageStart() }}-{{ pageEnd() }} of {{ totalItems() }} academic staff
+      } @else {
+        Showing 0 academic staff
+      }
+    </p>
+  }
+
+  <app-dialog
+    [isOpen]="dialogMode() !== null"
+    [title]="dialogTitle()"
+    size="small"
+    (close)="closeEditor()">
+    @if (isDetailLoading()) {
+      <app-detail-panel-skeleton loadingLabel="Loading academic staff details"></app-detail-panel-skeleton>
+    } @else if (detailFailed()) {
+      <div class="dialog-state">
+        <span class="material-icons">error_outline</span>
+        <p>
+          {{ dialogMode() === 'create'
+            ? 'Unable to load department and staff options.'
+            : 'Unable to retrieve this academic staff record.' }}
+        </p>
+        <button class="btn btn-secondary" type="button" (click)="retryDetail()">Try Again</button>
+      </div>
+    } @else {
+      <div class="form-editor">
+        <div class="academic-staff-picker">
+          <label class="forms-filter">
+            <span>Department</span>
+            <select
+              class="input--select"
+              [ngModel]="staffDepartmentId()"
+              (ngModelChange)="onStaffDepartmentChange($event)"
+              [disabled]="isStaffLoading()">
+              <option [ngValue]="null">All Departments</option>
+              @for (department of departments(); track department.id) {
+                <option [ngValue]="department.id">{{ department.department_name }}</option>
+              }
+            </select>
+            <small>Use a department to narrow the staff list.</small>
+          </label>
+
+          <label class="forms-filter">
+            <span>Find Staff</span>
+            <div class="academic-staff-picker__search">
+              <input
+                class="input--text"
+                type="search"
+                placeholder="Search name, email, or job title"
+                [ngModel]="staffSearch()"
+                (ngModelChange)="staffSearch.set($event)"
+                (keydown.enter)="loadStaffOptions()">
+              <button
+                class="btn btn-secondary"
+                type="button"
+                [disabled]="isStaffLoading()"
+                (click)="loadStaffOptions()">
+                <span class="material-icons">search</span>
+                Find
+              </button>
+            </div>
+          </label>
+
+          <label class="forms-filter">
+            <span>Staff Member</span>
+            <select
+              class="input--select"
+              [ngModel]="selectedStaffId()"
+              (ngModelChange)="selectedStaffId.set($event)"
+              [disabled]="isStaffLoading()">
+              <option [ngValue]="null">
+                {{ isStaffLoading() ? 'Loading staff...' : 'Select a staff member' }}
+              </option>
+              @for (staff of staffOptions(); track staff.staff_id) {
+                <option [ngValue]="staff.staff_id">
+                  {{ staff.fullname || staff.username }}
+                  {{ staff.email ? ' - ' + staff.email : '' }}
+                  {{ staff.job_title ? ' - ' + staff.job_title : '' }}
+                </option>
+              }
+            </select>
+            @if (staffLoadFailed()) {
+              <small class="academic-staff-error">Unable to load staff options. Try searching again.</small>
+            } @else {
+              <small>Search the synchronized Staff Directory when the person is not listed.</small>
+            }
+          </label>
+        </div>
+
+        <label class="active-switch">
+          <input
+            type="checkbox"
+            [ngModel]="academicStaffActive()"
+            (ngModelChange)="academicStaffActive.set($event)">
+          <span class="active-switch__control"></span>
+          <span>
+            <strong>Active academic staff</strong>
+            <small>Available in academic staff options and workflows.</small>
+          </span>
+        </label>
+      </div>
+    }
+
+    <div dialog-footer class="form-dialog__footer">
+      <button class="btn btn-secondary" type="button" [disabled]="isSaving()" (click)="closeEditor()">Cancel</button>
+      @if (!isDetailLoading() && !detailFailed()) {
+        <button
+          class="btn btn-primary"
+          type="button"
+          [disabled]="isSaving() || selectedStaffId() === null"
+          (click)="saveAcademicStaff()">
+          {{ isSaving() ? 'Saving...' : (dialogMode() === 'create' ? 'Add Academic Staff' : 'Save Changes') }}
+        </button>
+      }
+    </div>
+  </app-dialog>
+
+  <app-dialog
+    [isOpen]="academicStaffToDelete() !== null"
+    title="Remove Academic Staff"
+    size="small"
+    (close)="closeDeleteDialog()">
+    @if (academicStaffToDelete(); as item) {
+      <div class="deactivate-confirmation">
+        <span class="material-icons">person_remove</span>
+        <div>
+          <h3>Remove {{ item.fullname || item.username }}?</h3>
+          <p>
+            This removes the person from the academic staff list.
+            Their synchronized Staff Directory record will remain unchanged.
+          </p>
+        </div>
+      </div>
+    }
+    <div dialog-footer class="form-dialog__footer">
+      <button class="btn btn-secondary" type="button" [disabled]="isSaving()" (click)="closeDeleteDialog()">Cancel</button>
+      <button class="btn btn-danger" type="button" [disabled]="isSaving()" (click)="confirmDelete()">
+        {{ isSaving() ? 'Removing...' : 'Remove Academic Staff' }}
+      </button>
+    </div>
+  </app-dialog>
+</main>

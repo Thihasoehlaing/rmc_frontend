@@ -1,0 +1,44 @@
+<div
+  class="table-skeleton"
+  role="status"
+  aria-busy="true"
+  [attr.aria-label]="loadingLabel">
+  <span class="sr-only">{{ loadingLabel }}</span>
+
+  @if (showSearch || showTypeFilter) {
+    <div class="table-skeleton__toolbar">
+      @if (showSearch) {
+        <div class="skeleton-block table-skeleton__search"></div>
+      }
+      @if (showTypeFilter) {
+        <div class="skeleton-block table-skeleton__filter"></div>
+      }
+    </div>
+  }
+
+  <div class="table-skeleton__table-wrapper">
+    <table class="table-skeleton__table" aria-hidden="true" [style.min-width]="minWidth">
+      <colgroup>
+        @for (column of columns; track $index) {
+          <col [style.width]="column.width">
+        }
+      </colgroup>
+      <thead>
+        <tr>
+          @for (column of columns; track $index) {
+            <th><span class="skeleton-block skeleton-block--header"></span></th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of rowItems; track row) {
+          <tr>
+            @for (column of columns; track $index) {
+              <td><span class="skeleton-block skeleton-block--cell"></span></td>
+            }
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

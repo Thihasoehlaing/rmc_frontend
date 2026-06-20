@@ -1,0 +1,195 @@
+<main class="Journal-settings">
+  <header class="settings-header">
+    <h1>Journal Guidelines Settings</h1>
+  </header>
+
+  <section class="settings-container card">
+    <div class="card__content">
+
+      <!-- Action Buttons -->
+      <div class="action-buttons">
+        <button
+          type="button"
+          class="btn btn-primary"
+          (click)="openAddModal()"
+          aria-label="Add guideline">
+          + Add Guideline
+        </button>
+        <button
+          type="button"
+          class="btn btn-danger"
+          [disabled]="!hasSelectedCheckboxes"
+          (click)="deleteSelected()"
+          aria-label="Delete selected guidelines">
+          Delete
+        </button>
+      </div>
+
+      <!-- Search, Filter, and Sort Controls -->
+      <div class="controls-section">
+        <div class="search-box">
+          <input
+            type="text"
+            class="input--text search-input"
+            placeholder="Search guidelines..."
+            [value]="searchQuery()"
+            (input)="onSearchInput($event)"
+            aria-label="Search guidelines">
+        </div>
+
+        <div class="filter-sort-group">
+          <select
+            class="input--select filter-select"
+            [value]="filterStatus()"
+            (change)="onFilterChange($event)"
+            aria-label="Filter by status">
+            <option value="All">All Statuses</option>
+            <option value="Active">Active</option>
+            <option value="Inactive">Inactive</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Options Table -->
+      @if (filteredGuidelines().length > 0) {
+        <div class="options-table-wrapper">
+          <table class="options-table">
+            <thead>
+              <tr>
+                <th class="th-checkbox">
+                  <input type="checkbox" aria-label="Select all">
+                </th>
+                <th
+                  class="sortable-header"
+                  (click)="onSortChange('title')"
+                >
+                  Guideline Title
+                  <span class="material-icons sort-icon" style="font-size: 16px; vertical-align: middle;">
+                    {{ sortBy() === 'title' ? (sortDirection() === 'asc' ? 'arrow_upward' : 'arrow_downward') : 'sort' }}
+                  </span>
+                </th>
+                <th>Form Name</th>
+                <th>Section Name</th>
+                <th>Content Snippet</th>
+                <th>Status</th>
+                <th class="th-actions">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (g of paginatedGuidelines(); track g.id) {
+                <tr>
+                  <td class="td-checkbox">
+                    <input
+                      type="checkbox"
+                      [checked]="isOptionSelected(g.id)"
+                      (change)="toggleCheckbox(g.id)"
+                      [attr.aria-label]="'Select ' + g.title">
+                  </td>
+                  <td class="option-name">{{ g.title }}</td>
+                  <td class="option-account">{{ g.formName }}</td>
+                  <td class="option-account">{{ g.sectionName }}</td>
+                  <td class="option-date" style="max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" [title]="g.content">
+                    {{ g.content }}
+                  </td>
+                  <td class="option-status">
+                    <span class="status-badge" [class]="'status-' + (g.status | lowercase)">
+                      {{ g.status }}
+                    </span>
+                  </td>
+                  <td class="td-actions" style="display: flex; gap: 8px; justify-content: center; align-items: center; border-bottom: none;">
+                    <button type="button" class="btn-icon btn-icon--edit" (click)="editGuideline(g)" title="Edit" style="background: none; border: none; cursor: pointer; color: #007bff;">
+                      <span class="material-icons" style="font-size: 20px;">edit</span>
+                    </button>
+                    <button type="button" class="btn-icon btn-icon--delete" (click)="deleteSelected(g.id)" title="Delete" style="background: none; border: none; cursor: pointer; color: #dc3545;">
+                      <span class="material-icons" style="font-size: 20px;">delete</span>
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <div class="table-footer">
+          <app-pagination
+            [currentPage]="guidelinePage()"
+            [totalPages]="guidelineTotalPages()"
+            [pageSize]="guidelinePageSize()"
+            [pageSizeOptions]="guidelinePageSizeOptions"
+            (pageChange)="onGuidelinePageChange($event)"
+            (pageSizeChange)="onGuidelinePageSizeChange($event)">
+          </app-pagination>
+        </div>
+        <div class="table-summary">{{ guidelinePageStart() }}-{{ guidelinePageEnd() }} of {{ filteredGuidelines().length }} guidelines</div>
+      } @else {
+        <div class="empty-state">
+          <p>No guidelines found. Click "Add Guideline" to create one.</p>
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- Modal Overlay -->
+  @if (isModalOpen()) {
+    <div class="modal-overlay" (click)="closeModal()"></div>
+
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title">{{ editingId() ? 'Edit' : 'Add' }} Guideline</h3>
+        <button
+          type="button"
+          class="modal-close-btn"
+          (click)="closeModal()"
+          aria-label="Close modal">
+          ✕
+        </button>
+      </div>
+
+      <form [formGroup]="form" class="modal-body">
+        <div class="form-field">
+          <label class="form-label">Guideline Title <span class="required">*</span></label>
+          <input type="text" class="input--text" formControlName="title" placeholder="Enter title" />
+        </div>
+
+        <div class="form-field">
+           <label class="form-label">Form Name <span class="required">*</span></label>
+           <input type="text" class="input--text" formControlName="formName" placeholder="e.g. Journal Publication Form" />
+        </div>
+
+        <div class="form-field">
+           <label class="form-label">Section Name <span class="required">*</span></label>
+           <input type="text" class="input--text" formControlName="sectionName" placeholder="e.g. General" />
+        </div>
+
+        <div class="form-field">
+          <label class="form-label">Content <span class="required">*</span></label>
+          <textarea class="input--textarea" formControlName="content" rows="6" placeholder="Guideline details... HTML supported." (input)="autoExpandTextarea($event)"></textarea>
+        </div>
+
+        <div class="form-field">
+          <label class="form-label">Status</label>
+          <select class="input--select" formControlName="status">
+            <option value="Active">Active</option>
+            <option value="Inactive">Inactive</option>
+          </select>
+        </div>
+
+        <div class="modal-actions">
+          <button
+            type="button"
+            class="btn btn-ghost"
+            (click)="closeModal()">
+            Cancel
+          </button>
+          <button
+            type="button"
+            class="btn btn-primary"
+            (click)="save()"
+            [disabled]="form.invalid">
+            Save
+          </button>
+        </div>
+      </form>
+    </div>
+  }
+</main>

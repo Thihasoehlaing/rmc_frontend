@@ -1,0 +1,44 @@
+// Layout recommended values
+$page-max-width: 1200px;
+$sidebar-width: 260px;
+$sidebar-icon-size: 24px;
+$sidebar-collapsed-width: calc(25px * 2 + #{$sidebar-icon-size}); // Left/right padding + icon size
+$header-height: 64px;
+$border-radius: 6px;
+$input-height-sm: 36px;
+$size-input-padding: 8px 12px;
+
+// 8px Spacing Scale
+$space-1: 4px;
+$space-2: 8px;
+$space-3: 12px;
+$space-4: 16px;
+$space-5: 20px;
+$space-6: 24px;
+$space-7: 32px;
+$space-8: 40px;
+$space-9: 48px;
+$space-10: 56px;
+$space-11: 64px;
+$space-12: 96px;
+
+// Border Radius Scale
+$radius-sm: 4px;
+$radius-md: 6px;
+$radius-lg: 8px;
+$radius-xl: 12px;
+$radius-full: 9999px;
+
+// Icon Sizes
+$icon-size: 20px;
+$icon-sm: 16px;
+$icon-md: 20px;
+$icon-lg: 28px;
+
+// Z-Index Scale
+$z-dropdown: 100;
+$z-sticky: 200;
+$z-fixed: 300;
+$z-overlay: 400;
+$z-modal: 500;
+$z-toast: 600;

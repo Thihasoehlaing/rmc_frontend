@@ -1,0 +1,322 @@
+<main class="conference-settings">
+  <header class="settings-header">
+    <h1>Conference Settings</h1>
+  </header>
+
+  <section class="settings-container card">
+    <div class="card__content">
+      <div class="top-section">
+        <div class="selector-group">
+          <label class="form-label">Dropdown Category</label>
+          <select
+            class="input--select category-select"
+            #breakdownSelect
+            (change)="onBreakdownTypeChange(breakdownSelect.value)"
+            [value]="selectedBreakdownType() || ''">
+            <option value="" disabled>--Select--</option>
+            @for (type of breakdownTypeOptions; track type.value) {
+              <option [value]="type.value">{{ type.label }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      @if (selectedBreakdownType()) {
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+          <button
+            type="button"
+            class="btn btn-primary"
+            (click)="openAddModal()"
+            aria-label="Add option">
+            + Add Option
+          </button>
+        </div>
+
+        <!-- Search, Filter, and Sort Controls -->
+        <div class="controls-section">
+          <div class="search-box">
+            <input
+              type="text"
+              class="input--text search-input"
+              placeholder="Search options..."
+              [value]="searchQuery()"
+              (input)="onSearchInput($event)"
+              aria-label="Search options">
+          </div>
+
+          <div class="filter-sort-group">
+            <select
+              class="input--select filter-select"
+              [value]="filterStatus()"
+              (change)="onFilterChange($event)"
+              aria-label="Filter by status">
+              <option value="All">All Status</option>
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+            </select>
+
+            <select
+              class="input--select sort-select"
+              [value]="sortBy()"
+              (change)="onSortChange($event)"
+              aria-label="Sort options">
+              <option value="date">Newest First</option>
+              <option value="name">Name (A-Z)</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display: none;">
+          <app-data-table [columns]="[]" [rows]="[]"></app-data-table>
+        </div>
+
+        <!-- Options Table -->
+        @if (getFilteredAndSortedOptions().length > 0) {
+          <div class="table-scroll">
+            <table class="list-table">
+              <thead>
+                <tr>
+                  <th class="col-no">#</th>
+                  <th (click)="onHeaderClick('label')" [class.sortable]="isSortableColumn('label')" title="Click to sort">
+                    {{ isRegionType() ? 'Region Name' : (isLocalType() ? 'Item Description' : 'Vote Number') }}
+                    <span class="sort-indicator">{{ getSortIndicator('label') }}</span>
+                  </th>
+                  @if (isResearchType()) {
+                    <th (click)="onHeaderClick('description')" [class.sortable]="isSortableColumn('description')" title="Click to sort">
+                      Item Description
+                      <span class="sort-indicator">{{ getSortIndicator('description') }}</span>
+                    </th>
+                  }
+                  @if (isLocalType()) {
+                    <th (click)="onHeaderClick('accountCode')" [class.sortable]="isSortableColumn('accountCode')" title="Click to sort">
+                      Account Code
+                      <span class="sort-indicator">{{ getSortIndicator('accountCode') }}</span>
+                    </th>
+                  }
+                  @if (isRegionType()) {
+                    <th (click)="onHeaderClick('percentage')" [class.sortable]="isSortableColumn('percentage')" title="Click to sort">
+                      Percentage
+                      <span class="sort-indicator">{{ getSortIndicator('percentage') }}</span>
+                    </th>
+                    <th (click)="onHeaderClick('limit')" [class.sortable]="isSortableColumn('limit')" title="Click to sort">
+                      Limit (RM)
+                      <span class="sort-indicator">{{ getSortIndicator('limit') }}</span>
+                    </th>
+                  }
+                  @if (isResearchType() || isLocalType()) {
+                    <th (click)="onHeaderClick('foreignLocal')" [class.sortable]="isSortableColumn('foreignLocal')" title="Click to sort">
+                      Foreign / Local
+                      <span class="sort-indicator">{{ getSortIndicator('foreignLocal') }}</span>
+                    </th>
+                  }
+                  <th (click)="onHeaderClick('status')" [class.sortable]="isSortableColumn('status')" title="Click to sort">
+                    Status
+                    <span class="sort-indicator">{{ getSortIndicator('status') }}</span>
+                  </th>
+                  <th (click)="onHeaderClick('createdDate')" [class.sortable]="isSortableColumn('createdDate')" title="Click to sort">
+                    Created Date
+                    <span class="sort-indicator">{{ getSortIndicator('createdDate') }}</span>
+                  </th>
+                  <th class="col-actions">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of getFilteredAndSortedOptions(); track row.value; let i = $index) {
+                  <tr>
+                    <td class="col-no text-muted">{{ i + 1 }}</td>
+                    <td>{{ row.label }}</td>
+                    @if (isResearchType()) {
+                      <td>{{ row.description || '-' }}</td>
+                    }
+                    @if (isLocalType()) {
+                      <td>{{ row.accountCode || '-' }}</td>
+                    }
+                    @if (isRegionType()) {
+                      <td>{{ row.percentage || '-' }}%</td>
+                      <td>RM{{ row.limit || '-' }}</td>
+                    }
+                    @if (isResearchType() || isLocalType()) {
+                      <td>
+                        {{ row.foreignLocal ? (row.foreignLocal === 'foreign' ? 'Foreign' : 'Local') : '-' }}
+                      </td>
+                    }
+                    <td>{{ row.status || 'Active' }}</td>
+                    <td>{{ formatRowDate(row.createdDate) }}</td>
+                    <td class="col-actions">
+                      <div class="action-group">
+                        <button
+                          type="button"
+                          class="action-edit"
+                          (click)="editOption(row, getFilteredAndSortedOptions().indexOf(row))"
+                          aria-label="Edit option">
+                          <span class="material-icons">edit</span>
+                        </button>
+
+                        @if (row.status === 'Active') {
+                          <button
+                            type="button"
+                            class="action-pill deactivate"
+                            (click)="toggleOptionStatus(row)"
+                            aria-label="Deactivate option">
+                            <span class="material-icons">block</span>
+                            <span class="pill-label">Deactivate</span>
+                          </button>
+                        } @else {
+                          <button
+                            type="button"
+                            class="action-pill activate"
+                            (click)="toggleOptionStatus(row)"
+                            aria-label="Activate option">
+                            <span class="material-icons">check</span>
+                            <span class="pill-label">Activate</span>
+                          </button>
+                        }
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        } @else {
+          <div class="empty-state">
+            <p>No options available. Click "Add Option" to create one.</p>
+          </div>
+        }
+      }
+    </div>
+  </section>
+
+  <!-- Modal Overlay -->
+  @if (isModalOpen()) {
+    <div class="modal-overlay" (click)="closeModal()"></div>
+
+    <!-- Add/Edit Option Modal -->
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          {{ editingOptionIndex() === null ? 'Add Option' : 'Edit Option' }}
+        </h3>
+        <button
+          type="button"
+          class="modal-close-btn"
+          (click)="closeModal()"
+          aria-label="Close modal">
+          ✕
+        </button>
+      </div>
+
+      <form [formGroup]="optionForm" class="modal-body">
+        <div class="form-field">
+          <label class="form-label">
+            @if (!isResearchType()) {
+              <span class="required">*</span>
+            }
+            {{ isRegionType() ? 'Region Name' : (isLocalType() ? 'Item Description' : 'Vote Number') }}
+          </label>
+          <input
+            type="text"
+            class="input--text"
+            formControlName="label"
+            [placeholder]="isRegionType() ? 'Enter region name' : (isLocalType() ? 'Enter item description' : 'Enter vote number')">
+          @if (optionForm.get('label')?.invalid && optionForm.get('label')?.touched) {
+            <span class="form-error">
+              {{ isRegionType() ? 'Region Name' : (isLocalType() ? 'Item Description' : 'Vote Number') }} is required
+            </span>
+          }
+        </div>
+
+        @if (isResearchType()) {
+          <div class="form-field">
+            <label class="form-label">Item Description</label>
+            <textarea
+              class="input--textarea"
+              formControlName="description"
+              placeholder="Enter item description"
+              rows="3"></textarea>
+          </div>
+        }
+
+        @if (isLocalType()) {
+          <div class="form-field">
+            <label class="form-label">Account Code</label>
+            <input
+              type="text"
+              class="input--text"
+              formControlName="accountCode"
+              placeholder="Enter account code">
+          </div>
+        }
+
+        @if (isRegionType()) {
+          <div class="form-field">
+            <label class="form-label">Percentage (%)</label>
+            <input
+              type="number"
+              class="input--text"
+              formControlName="percentage"
+              placeholder="Enter percentage"
+              min="0"
+              max="100"
+              step="0.01">
+          </div>
+
+          <div class="form-field">
+            <label class="form-label">Limit (RM)</label>
+            <input
+              type="number"
+              class="input--text"
+              formControlName="limit"
+              placeholder="Enter limit amount"
+              min="0"
+              step="0.01">
+          </div>
+
+          <div class="form-field">
+            <label class="form-label">Description (Warning)</label>
+            <textarea
+              class="input--textarea"
+              formControlName="description"
+              placeholder="Enter region description/warning"
+              rows="3"></textarea>
+          </div>
+        }
+
+        @if (!isRegionType()) {
+          <div class="form-field">
+            <label class="form-label">Foreign / Local</label>
+            <select class="input--select" formControlName="foreignLocal">
+              <option value="">--Select--</option>
+              <option value="foreign">Foreign</option>
+              <option value="local">Local</option>
+            </select>
+          </div>
+        }
+
+        <div class="form-field">
+          <label class="form-label">Status</label>
+          <select class="input--select" formControlName="status">
+            <option value="Active">Active</option>
+            <option value="Inactive">Inactive</option>
+          </select>
+        </div>
+
+        <div class="modal-actions">
+          <button
+            type="button"
+            class="btn btn-primary"
+            (click)="saveOption()"
+            [disabled]="optionForm.invalid">
+            Save
+          </button>
+          <button
+            type="button"
+            class="btn btn-ghost"
+            (click)="closeModal()">
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  }

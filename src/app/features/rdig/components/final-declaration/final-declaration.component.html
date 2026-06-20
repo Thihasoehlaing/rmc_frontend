@@ -1,0 +1,188 @@
+<section class="declaration-section" [formGroup]="declarationForm">
+
+  <!-- Page Header -->
+  <app-custom-header
+    icon="verified"
+    title="Final Declaration"
+  ></app-custom-header>
+
+  <!-- ── Novelty Justification ───────────────────────────────── -->
+  <div class="card">
+    <div class="card__header">
+      <h3 class="card__title">
+        <span class="material-icons">lightbulb</span>
+        Novelty &amp; Originality
+      </h3>
+    </div>
+    <div class="card__content section-fields">
+      <div class="form-field">
+        <label class="form-label is-required">
+          <span>Please justify the novelty of your project</span>
+        </label>
+        <textarea class="input--textarea input--textarea-tall" formControlName="noveltyJustification" [maxlength]="1000"></textarea>
+        <app-character-counter [current]="declarationForm.get('noveltyJustification')?.value?.length ?? 0" [max]="1000"></app-character-counter>
+        <app-validation-message [control]="declarationForm.get('noveltyJustification')"></app-validation-message>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Declaration Text ────────────────────────────────────── -->
+  <div class="declaration-box">
+    <h4 class="declaration-box__title">
+      <span class="material-icons">gavel</span>
+      Declaration and Agreement
+    </h4>
+    <p>I undertake that the information I have provided herein is complete, true and accurate. I agree to carry out the Project in accordance with the terms and conditions as stipulated in the APU Research Development Internal Grant Application. My involvement in this Project does not conflict with my University duties and I have no other conflict of interest to declare.</p>
+  </div>
+
+  <!-- ── Agreement Checkbox ──────────────────────────────────── -->
+  <div class="card">
+    <div class="card__content">
+      <label class="agreement-trigger">
+        <input type="checkbox" formControlName="agreed">
+        <span>I have read and agree to the terms and conditions outlined in the Declaration and Agreement for RDIG Application. <strong>*</strong></span>
+      </label>
+      <app-validation-message [control]="declarationForm.get('agreed')"></app-validation-message>
+    </div>
+  </div>
+
+
+  <!-- ── Reviewer Assignment (only during pending_rmc after RMC approves) ── -->
+  @if (workflow.isReviewerAssignmentVisible() && ac('rmcStatus').value === 'approve') {
+    <div class="card">
+      <div class="card__header">
+        <h3 class="card__title">
+          <span class="material-icons">person_search</span>
+          Reviewer Assignment
+        </h3>
+      </div>
+      <div class="card__content section-fields">
+        <div class="row row--2">
+          <div class="form-field">
+            <label class="form-label">Reviewer 1</label>
+            <select class="input--select"
+              [formControl]="ac('reviewer1Assignment')"
+              [attr.disabled]="!workflow.isRmcEditable() ? '' : null">
+              <option value="">-- Select Reviewer --</option>
+              @for (r of reviewers; track r.id) {
+                <option [value]="r.id">{{ r.name }}</option>
+              }
+            </select>
+          </div>
+          <div class="form-field">
+            <label class="form-label">Reviewer 2</label>
+            <select class="input--select"
+              [formControl]="ac('reviewer2Assignment')"
+              [attr.disabled]="!workflow.isRmcEditable() ? '' : null">
+              <option value="">-- Select Reviewer --</option>
+              @for (r of reviewers; track r.id) {
+                <option [value]="r.id">{{ r.name }}</option>
+              }
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ── RDIG Chair & VC Comments ─────────────────────────────── -->
+  @if (showAnyComments) {
+    <div class="card">
+      <div class="card__content section-fields">
+        <app-review-block label="RDIG Chair — Comment" icon="admin_panel_settings"
+          [visible]="showRdigChairComments" [readonly]="!workflow.isRdigChairEditable()"
+          [commentControl]="fc('rdigChairComment')"></app-review-block>
+
+        <app-review-block label="Vice Chancellor — Comment" icon="account_balance"
+          [visible]="showVcComments" [readonly]="!workflow.isVcEditable()"
+          [commentControl]="fc('vcComment')"></app-review-block>
+      </div>
+    </div>
+  }
+
+  <!-- ── Approval Cards (auto-visible based on status, NOT dependent on toggle) ── -->
+  @if (workflow.isHosApprovalVisible() || workflow.isRmcApprovalVisible() ||
+       workflow.isReviewer1ApprovalVisible() || workflow.isReviewer2ApprovalVisible() || workflow.isRdigChairApprovalVisible() ||
+       workflow.isVcApprovalVisible() || workflow.isCeoApprovalVisible()) {
+    <div class="card">
+      <div class="card__header">
+        <h3 class="card__title">
+          <span class="material-icons">how_to_reg</span>
+          Approval Decisions
+        </h3>
+      </div>
+      <div class="card__content section-fields">
+        <app-approval-card
+          title="HOS Approval"
+          fieldLabel="Decision"
+          icon="supervisor_account"
+          [visible]="workflow.isHosApprovalVisible()"
+          [readonly]="!workflow.isHosEditable()"
+          [options]="workflow.hosApprovalOptions()"
+          [control]="ac('hosStatus')">
+        </app-approval-card>
+
+        <app-approval-card
+          title="RMC Approval"
+          fieldLabel="Decision"
+          icon="verified"
+          [visible]="workflow.isRmcApprovalVisible()"
+          [readonly]="!workflow.isRmcEditable()"
+          [options]="workflow.rmcApprovalOptions"
+          [control]="ac('rmcStatus')">
+        </app-approval-card>
+
+        <app-approval-card
+          title="Reviewer 1 Decision"
+          fieldLabel="Recommendation"
+          icon="rate_review"
+          [visible]="workflow.isReviewer1ApprovalVisible()"
+          [readonly]="!workflow.isReviewer1Editable()"
+          [options]="workflow.reviewer1DecisionOptions(reviewer1Total)"
+          [control]="ac('reviewer1Decision')">
+        </app-approval-card>
+
+        <app-approval-card
+          title="Reviewer 2 Decision"
+          fieldLabel="Recommendation"
+          icon="rate_review"
+          [visible]="workflow.isReviewer2ApprovalVisible()"
+          [readonly]="!workflow.isReviewer2Editable()"
+          [options]="workflow.reviewer2DecisionOptions(reviewer2Total)"
+          [control]="ac('reviewer2Decision')">
+        </app-approval-card>
+
+        <app-approval-card
+          title="RDIG Chair Approval"
+          fieldLabel="Decision"
+          icon="admin_panel_settings"
+          [visible]="workflow.isRdigChairApprovalVisible()"
+          [readonly]="!workflow.isRdigChairEditable()"
+          [options]="workflow.rmcApprovalOptions"
+          [control]="ac('rdigChairStatus')">
+        </app-approval-card>
+
+        <app-approval-card
+          title="VC Approval"
+          fieldLabel="Decision"
+          icon="account_balance"
+          [visible]="workflow.isVcApprovalVisible()"
+          [readonly]="!workflow.isVcEditable()"
+          [options]="workflow.rmcApprovalOptions"
+          [control]="ac('vcStatus')">
+        </app-approval-card>
+
+        <app-approval-card
+          title="CEO Approval"
+          fieldLabel="Decision"
+          icon="business"
+          [visible]="workflow.isCeoApprovalVisible()"
+          [readonly]="!workflow.isCeoEditable()"
+          [options]="workflow.rmcApprovalOptions"
+          [control]="ac('ceoStatus')">
+        </app-approval-card>
+      </div>
+    </div>
+  }
+
+</section>

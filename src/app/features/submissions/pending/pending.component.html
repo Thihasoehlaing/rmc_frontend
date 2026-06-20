@@ -1,0 +1,133 @@
+<!-- Pending submissions -->
+<div class="submissions-page">
+
+  <!-- ── Page Header ────────────────────────────────────────────────────────── -->
+  <div class="submissions-header">
+    <div class="submissions-header__text">
+      <h1 class="submissions-title">
+        <span class="material-icons">schedule</span>
+        Pending Applications
+      </h1>
+      <p class="submissions-subtitle">Your submitted applications currently in the review process</p>
+    </div>
+  </div>
+
+  <!-- ── Loading ────────────────────────────────────────────────────────────── -->
+  @if (loading()) {
+    <app-table-skeleton
+      [columns]="skeletonColumns"
+      [showTypeFilter]="true"
+      loadingLabel="Loading pending applications">
+    </app-table-skeleton>
+  }
+
+  <!-- ── Error ──────────────────────────────────────────────────────────────── -->
+  @if (!loading() && error()) {
+    <div class="state-message state-error">
+      <span class="material-icons">error_outline</span>
+      {{ error() }}
+    </div>
+  }
+
+  @if (!loading() && !error()) {
+
+    <!-- ── Toolbar: search + type filter ───────────────────────────────────── -->
+    <div class="toolbar">
+
+      <app-submissions-search
+        placeholder="Search pending applications by title..."
+        [value]="searchQuery()"
+        (valueChange)="searchQuery.set($event)" />
+
+      <!-- Application type filter — only rendered when multiple types exist -->
+      @if (availableTypes().length > 2) {
+        <div class="type-filter">
+          <label class="type-filter__label" for="pend-type-filter">Type</label>
+          <select
+            id="pend-type-filter"
+            class="type-filter__select"
+            [value]="selectedType()"
+            (change)="selectedType.set($any($event.target).value)">
+            @for (t of availableTypes(); track t) {
+              <option [value]="t">{{ t === 'all' ? 'All Types' : t }}</option>
+            }
+          </select>
+        </div>
+      }
+
+    </div>
+
+    <!-- ── Empty ─────────────────────────────────────────────────────────────── -->
+    @if (pending().length === 0) {
+      <div class="state-message state-empty">
+        <span class="material-icons">check_circle_outline</span>
+        @if (searchQuery() || selectedType() !== 'all') {
+          No pending applications match your current filters.
+        } @else {
+          No applications currently in review. Submit a new application to get started.
+        }
+      </div>
+    }
+
+    <!-- ── Table ─────────────────────────────────────────────────────────────── -->
+    @if (pending().length > 0) {
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Project Title</th>
+              <th>Type</th>
+              <th class="col-sortable" (click)="toggleSort()">
+                Submitted
+                <span class="material-icons sort-icon">
+                  {{ sortAsc() ? 'arrow_upward' : 'arrow_downward' }}
+                </span>
+              </th>
+              <th>Status</th>
+              <th>Awaiting</th>
+              <th class="col-action"></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (app of pending(); track app.id) {
+              <tr [class.row--action-needed]="isRevisionRequired(app)">
+                <td class="col-title">
+                  {{ app.projectDetails?.title?.trim() || '(Untitled Application)' }}
+                  @if (isRevisionRequired(app)) {
+                    <span class="revision-chip">
+                      <span class="material-icons">reply</span>
+                      Action needed
+                    </span>
+                  }
+                </td>
+                <td>
+                  <span class="type-badge">{{ getFormTypeLabel(app) }}</span>
+                </td>
+                <td class="col-date">{{ formatSubmitted(app) }}</td>
+                <td>
+                  <span class="status-badge"
+                    [style.background]="getStatusColor(app) + '1a'"
+                    [style.color]="getStatusColor(app)"
+                    [style.border-color]="getStatusColor(app) + '55'">
+                    {{ getStatusLabel(app) }}
+                  </span>
+                </td>
+                <td class="col-muted">{{ getNextActors(app) }}</td>
+                <td class="col-action">
+                  <a class="btn-open"
+                     [routerLink]="[getFormRoute(app)]"
+                     [queryParams]="{ id: app.id }">
+                    <span class="material-icons">open_in_new</span>
+                    Open
+                  </a>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+  }
+
+</div>

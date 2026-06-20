@@ -1,0 +1,64 @@
+@use '../../../../styles/index' as *;
+
+.custom-subheader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-4);
+  background-color: var(--color-surface);
+  border-bottom: 2px solid var(--color-primary);
+  margin-bottom: var(--space-4);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+// When placed as the first child inside a .card — acts as card section header
+:host-context(.card) {
+  .custom-subheader {
+    background-color: var(--color-surface-nested);
+    border-bottom: 1px solid var(--border-default);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    margin-bottom: 0;
+    padding: var(--space-3) var(--space-5);
+  }
+
+  .subheader-text {
+    text-transform: none;
+    letter-spacing: 0;
+    font-size: var(--font-size-subtitle);
+  }
+}
+
+.subheader-icon {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+
+  ::ng-deep svg {
+    width: var(--icon-md);
+    height: var(--icon-md);
+    fill: var(--color-primary);
+    opacity: 0.8;
+  }
+}
+
+.subheader-icon--material {
+  font-size: var(--icon-md);
+  color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.subheader-text {
+  margin: 0;
+  font-size: var(--font-size-subtitle);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-heading);
+  line-height: var(--line-height-control);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+app-field-note {
+  flex-basis: 100%;
+}

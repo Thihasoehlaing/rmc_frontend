@@ -1,0 +1,32 @@
+@use './styles/styles.scss';
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* Global app-level overrides using CSS custom properties */
+body {
+  background: var(--color-page-bg);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+  color: var(--color-text-primary);
+  margin: 0;
+  padding: 0;
+}
+
+/* Ensure all inputs, selects, buttons, textareas inherit Roboto */
+input, select, textarea, button {
+  font-family: var(--font-family-base);
+}
+
+/* ── Authors Details: center all table cells ─────────────────────
+   DataTableComponent uses ::ng-deep with high specificity, so the
+   only reliable override is here in the global stylesheet.        */
+app-authors-details app-data-table td,
+app-authors-details app-data-table th {
+  text-align: center !important;
+  vertical-align: middle !important;
+}

@@ -1,0 +1,314 @@
+@use '../../../../styles/index' as *;
+
+:host {
+  display: block;
+  width: 100%;
+  min-width: 0;
+}
+
+.data-table {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  border: 1px solid var(--border-default);
+  border-radius: 12px;
+  background: var(--color-surface);
+  box-shadow: var(--shadow-xs);
+}
+
+.data-table__frame {
+  border-radius: inherit;
+  overflow: hidden;
+}
+
+.data-table__scroll {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  background: var(--color-surface);
+}
+
+table {
+  width: max-content;
+  border-collapse: collapse;
+  table-layout: fixed;
+  min-width: 100%;
+}
+
+thead th {
+  padding: 10px 18px 10px 12px;
+  text-align: left;
+  font-size: 12px;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--color-label);
+  font-weight: var(--fw-semibold);
+  background: var(--color-table-header);
+  border-bottom: 1px solid var(--border-default);
+
+  &:first-child {
+    border-top-left-radius: 12px;
+    padding-left: 24px;
+  }
+
+  &:last-child {
+    border-top-right-radius: 12px;
+  }
+  &.is-sortable,
+  :host ::ng-deep th.is-sortable {
+    cursor: pointer;
+    user-select: none;
+  }
+}
+
+.sort-indicator,
+:host ::ng-deep .sort-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: var(--space-2);
+  color: var(--color-text-muted);
+  font-size: var(--fs-base);
+  font-weight: var(--fw-normal);
+  line-height: 1;
+  vertical-align: middle;
+}
+
+.header-label {
+  display: inline-block;
+}
+
+tbody td,
+:host ::ng-deep tbody td {
+  padding: 9px 18px 9px 12px;
+  vertical-align: middle;
+  border-bottom: 1px solid var(--border-default);
+  color: var(--color-label);
+  font-size: 12px;
+  text-align: left;
+
+  &:first-child {
+    padding-left: 24px;
+  }
+}
+
+.data-table--dense tbody td,
+:host ::ng-deep .data-table--dense tbody td {
+  padding: 7px 18px 7px 10px;
+
+  &:first-child {
+    padding-left: 20px;
+  }
+}
+
+tbody tr:last-child td,
+:host ::ng-deep tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.data-table__empty-row td,
+:host ::ng-deep .data-table__empty-row td {
+  padding: 28px 24px;
+  border-bottom: none;
+}
+
+.data-table__empty-state,
+:host ::ng-deep .data-table__empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 96px;
+  width: 100%;
+  border: 1px solid var(--border-default);
+  border-radius: 10px;
+  background: var(--color-surface);
+  padding: 24px 16px;
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+.data-table__empty-state .material-icons,
+:host ::ng-deep .data-table__empty-state .material-icons {
+  font-size: 28px;
+  line-height: 1;
+  color: var(--color-text-muted);
+}
+
+.data-table__empty-state p,
+:host ::ng-deep .data-table__empty-state p {
+  margin: 0;
+  font-size: 12px;
+}
+
+/* Alternating row colors — also applied via ::ng-deep so projected <tr> rows get striped */
+.data-table--striped tbody tr:nth-child(even),
+:host ::ng-deep .data-table--striped tbody tr:nth-child(even) {
+  background: #f3f3f3;
+}
+
+.data-table--striped tbody tr:nth-child(odd),
+:host ::ng-deep .data-table--striped tbody tr:nth-child(odd) {
+  background: var(--color-surface);
+}
+
+tbody tr:hover,
+:host ::ng-deep tbody tr:hover {
+  background: color-mix(in srgb, var(--color-surface-hover) 74%, var(--color-surface));
+}
+
+.is-align-center,
+:host ::ng-deep .is-align-center {
+  text-align: center;
+}
+
+.is-align-right,
+:host ::ng-deep .is-align-right {
+  text-align: right;
+  padding-right: 16px;
+}
+
+.data-table__stacked,
+:host ::ng-deep .data-table__stacked {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--space-3);
+}
+
+.data-table__avatar,
+:host ::ng-deep .data-table__avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  font-weight: var(--fw-semibold);
+  font-size: var(--fs-xs);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.data-table__title,
+:host ::ng-deep .data-table__title {
+  font-weight: var(--fw-semibold);
+  color: var(--color-label);
+  font-size: 12px;
+  line-height: 1.25;
+  text-align: left;
+}
+
+.data-table__title--small,
+:host ::ng-deep .data-table__title--small {
+  font-size: 12px;
+  font-weight: var(--fw-semibold);
+  color: var(--color-label);
+  text-align: left;
+}
+
+.data-table__subtitle,
+:host ::ng-deep .data-table__subtitle {
+  color: var(--color-text-secondary);
+  font-size: 11px;
+  text-align: left;
+}
+
+.data-table__multiline,
+:host ::ng-deep .data-table__multiline {
+  white-space: normal;
+  line-height: 1.25;
+  color: var(--color-label);
+  text-align: left;
+}
+
+.data-table__pill,
+:host ::ng-deep .data-table__pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-primary) 14%, transparent);
+  color: color-mix(in srgb, var(--color-primary) 92%, var(--color-secondary));
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  gap: var(--space-2);
+  white-space: nowrap;
+}
+
+.data-table__actions,
+:host ::ng-deep .data-table__actions {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+// Base .btn-icon styles come from global _forms.scss.
+// ::ng-deep is required here because buttons are inside projected <ng-template> content.
+:host ::ng-deep .btn-icon--edit {
+  color: var(--color-primary);
+  &:hover:not(:disabled) { background: var(--color-primary-light); }
+}
+
+:host ::ng-deep .btn-icon--delete {
+  color: var(--color-error);
+  &:hover:not(:disabled) { background: var(--color-error-light); }
+}
+
+:host ::ng-deep .btn-icon:disabled {
+  opacity: var(--disabled-opacity);
+  cursor: not-allowed;
+}
+
+.text-muted,
+:host ::ng-deep .text-muted {
+  color: var(--color-text-muted);
+  font-weight: var(--fw-normal);
+  text-align: left;
+}
+
+/* Pagination Controls */
+.data-table__pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  border-top: 1px solid var(--border-default);
+  background: var(--color-surface);
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
+}
+
+.pagination-info {
+  font-size: var(--fs-sm);
+  color: var(--color-text-muted);
+  font-weight: var(--fw-medium);
+}
+
+@media (max-width: 768px) {
+  .data-table {
+    border-radius: 10px;
+  }
+
+  thead th {
+    padding: 8px 10px;
+  }
+
+  tbody td {
+    padding: 8px 10px;
+  }
+
+  .data-table__pagination {
+    padding: var(--space-3);
+    gap: var(--space-3);
+  }
+
+  .pagination-info {
+    font-size: var(--fs-xs);
+  }
+}

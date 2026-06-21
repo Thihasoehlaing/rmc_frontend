@@ -1,59 +1,71 @@
+# =============================================================================
+# RMC Frontend — Bitbucket Pipelines
+# Builds Angular app and deploys to S3 frontend buckets.
+#
+# Branch mapping: master→staging/prod, dev→dev
+# Account: 723108571698 | Region: ap-southeast-1
+#
+# Required Repository Variables:
+#   AWS_ACCESS_KEY_ID      — IAM deployer access key
+#   AWS_SECRET_ACCESS_KEY  — IAM deployer secret key
+# =============================================================================
+
+image: node:22
+
 pipelines:
   branches:
-    dev:
-      - step:
-          name: Build and Deploy to Dev
-          image: node:22
-          caches:
-            - node
-          deployment: test
-          script:
-            - npm ci
-            - npx ng build --configuration=production
-            - echo "Build output:" && ls dist/
-            - pipe: atlassian/aws-s3-deploy:1.1.0
-              variables:
-                AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
-                AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
-                AWS_DEFAULT_REGION: "ap-southeast-1"
-                S3_BUCKET: "rmc-frontend-dev"
-                LOCAL_PATH: "dist/RMC_project/browser"
-                DELETE_FLAG: "true"
     master:
       - step:
-          name: Build and Deploy to Staging
-          image: node:22
+          name: Build & Deploy → staging
           caches:
             - node
-          deployment: staging
           script:
             - npm ci
-            - npx ng build --configuration=production
-            - echo "Build output:" && ls dist/
+            - npm run build -- --configuration=production
             - pipe: atlassian/aws-s3-deploy:1.1.0
               variables:
                 AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
                 AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
-                AWS_DEFAULT_REGION: "ap-southeast-1"
-                S3_BUCKET: "rmc-frontend-staging"
-                LOCAL_PATH: "dist/RMC_project/browser"
-                DELETE_FLAG: "true"
+                AWS_DEFAULT_REGION: 'ap-southeast-1'
+                S3_BUCKET: 'rmc-frontend-staging'
+                LOCAL_PATH: 'dist/RMC_project/browser'
+                DELETE_FLAG: 'true'
+          artifacts:
+            - dist/**
+
+    dev:
       - step:
-          name: Deploy to Production
-          image: node:22
+          name: Build & Deploy → dev
           caches:
             - node
-          trigger: manual
-          deployment: production
           script:
             - npm ci
-            - npx ng build --configuration=production
-            - echo "Build output:" && ls dist/
+            - npm run build -- --configuration=production
             - pipe: atlassian/aws-s3-deploy:1.1.0
               variables:
                 AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
                 AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
-                AWS_DEFAULT_REGION: "ap-southeast-1"
-                S3_BUCKET: "rmc-frontend-prod"
-                LOCAL_PATH: "dist/RMC_project/browser"
-                DELETE_FLAG: "true"
+                AWS_DEFAULT_REGION: 'ap-southeast-1'
+                S3_BUCKET: 'rmc-frontend-dev'
+                LOCAL_PATH: 'dist/RMC_project/browser'
+                DELETE_FLAG: 'true'
+          artifacts:
+            - dist/**
+
+  custom:
+    deploy-dev-frontend:
+      - step:
+          name: Build & Deploy → dev only
+          caches:
+            - node
+          script:
+            - npm ci
+            - npm run build -- --configuration=production
+            - pipe: atlassian/aws-s3-deploy:1.1.0
+              variables:
+                AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+                AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+                AWS_DEFAULT_REGION: 'ap-southeast-1'
+                S3_BUCKET: 'rmc-frontend-dev'
+                LOCAL_PATH: 'dist/RMC_project/browser'
+                DELETE_FLAG: 'true'

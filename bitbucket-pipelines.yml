@@ -10,13 +10,14 @@ pipelines:
           script:
             - npm ci
             - npx ng build --configuration=production
+            - echo "Build output:" && ls dist/
             - pipe: atlassian/aws-s3-deploy:1.1.0
               variables:
                 AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
                 AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
                 AWS_DEFAULT_REGION: "ap-southeast-1"
                 S3_BUCKET: "rmc-frontend-dev"
-                LOCAL_PATH: "dist/rmc-project/browser"
+                LOCAL_PATH: "dist/RMC_project/browser"
                 DELETE_FLAG: "true"
     master:
       - step:
@@ -28,13 +29,14 @@ pipelines:
           script:
             - npm ci
             - npx ng build --configuration=production
+            - echo "Build output:" && ls dist/
             - pipe: atlassian/aws-s3-deploy:1.1.0
               variables:
                 AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
                 AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
                 AWS_DEFAULT_REGION: "ap-southeast-1"
                 S3_BUCKET: "rmc-frontend-staging"
-                LOCAL_PATH: "dist/rmc-project/browser"
+                LOCAL_PATH: "dist/RMC_project/browser"
                 DELETE_FLAG: "true"
       - step:
           name: Deploy to Production
@@ -46,11 +48,12 @@ pipelines:
           script:
             - npm ci
             - npx ng build --configuration=production
+            - echo "Build output:" && ls dist/
             - pipe: atlassian/aws-s3-deploy:1.1.0
               variables:
                 AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
                 AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
                 AWS_DEFAULT_REGION: "ap-southeast-1"
                 S3_BUCKET: "rmc-frontend-prod"
-                LOCAL_PATH: "dist/rmc-project/browser"
+                LOCAL_PATH: "dist/RMC_project/browser"
                 DELETE_FLAG: "true"

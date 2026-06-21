@@ -2,7 +2,7 @@
 # RMC Frontend — Bitbucket Pipelines
 # Builds Angular app and deploys to S3 frontend buckets.
 #
-# Branch mapping: master→staging/prod, dev→dev
+# Branch mapping: master→prod, dev→dev
 # Account: 723108571698 | Region: ap-southeast-1
 #
 # Required Repository Variables:
@@ -16,7 +16,7 @@ pipelines:
   branches:
     master:
       - step:
-          name: Build & Deploy → staging
+          name: Build & Deploy → prod
           caches:
             - node
           script:
@@ -27,7 +27,7 @@ pipelines:
                 AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
                 AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
                 AWS_DEFAULT_REGION: 'ap-southeast-1'
-                S3_BUCKET: 'rmc-frontend-staging'
+                S3_BUCKET: 'rmc-frontend-prod'
                 LOCAL_PATH: 'dist/RMC_project/browser'
                 DELETE_FLAG: 'true'
           artifacts:
@@ -46,7 +46,7 @@ pipelines:
                 AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
                 AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
                 AWS_DEFAULT_REGION: 'ap-southeast-1'
-                S3_BUCKET: 'rmc-frontend-dev'
+                S3_BUCKET: 'frontend-rmc-dev'
                 LOCAL_PATH: 'dist/RMC_project/browser'
                 DELETE_FLAG: 'true'
           artifacts:
@@ -66,6 +66,6 @@ pipelines:
                 AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
                 AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
                 AWS_DEFAULT_REGION: 'ap-southeast-1'
-                S3_BUCKET: 'rmc-frontend-dev'
+                S3_BUCKET: 'frontend-rmc-dev'
                 LOCAL_PATH: 'dist/RMC_project/browser'
                 DELETE_FLAG: 'true'

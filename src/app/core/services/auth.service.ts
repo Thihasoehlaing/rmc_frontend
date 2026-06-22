@@ -174,7 +174,7 @@ interface AuthCheckResponse {
         code: string;
         id: number;
         name: string;
-      };
+      } | null;
       username: string;
     };
   };
@@ -272,6 +272,11 @@ export class AuthService {
             this.USER_KEY,
             JSON.stringify(response.data.user),
           );
+          if (!response.data.user.role) {
+            this.toastService.info(
+              'Your APU account is authenticated, but no RMC role has been assigned yet.',
+            );
+          }
         }),
         map(response => this.mapCheckedUser(response.data.user)),
         tap(user => {
@@ -450,19 +455,23 @@ export class AuthService {
   private mapCheckedUser(
     checkedUser: AuthCheckResponse['data']['user'],
   ): User {
+    const role = checkedUser.role ?? undefined;
+
     return {
       id: String(checkedUser.id),
-      name: checkedUser.name,
+      name: checkedUser.name || checkedUser.username,
       username: checkedUser.username,
-      email: checkedUser.email,
-      department: checkedUser.department,
+      email: checkedUser.email || '',
+      department: checkedUser.department || '',
       distinguishedName: checkedUser.distinguished_name,
-      role: checkedUser.role,
-      groups: this.mapRoleToGroups(checkedUser.role.code),
+      role,
+      groups: this.mapRoleToGroups(role?.code),
     };
   }
 
-  private mapRoleToGroups(roleCode: string): UserGroup[] {
+  private mapRoleToGroups(roleCode: string | null | undefined): UserGroup[] {
+    if (!roleCode) return [];
+
     const roleGroups: Record<string, UserGroup[]> = {
       SYSTEM_ADMIN: ['Admin', 'SystemAdmin'],
       RMC_ADMIN: ['RMC', 'Admin'],

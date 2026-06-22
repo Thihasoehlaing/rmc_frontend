@@ -1,11 +1,21 @@
 import { Component, OnInit, OnDestroy, Input, effect, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
+import {
+  ReactiveFormsModule,
+  FormBuilder,
+  FormGroup,
+  Validators,
+  AbstractControl,
+  ValidationErrors,
+} from '@angular/forms';
 import { NoteComponent } from '../../../../../shared/components/note/note.component';
 import { SearchableDropdownComponent } from '../../../../../shared/components/searchable-dropdown/searchable-dropdown.component';
 import { ValidationMessageComponent } from '../../../../../shared/components/validation-message/validation-message.component';
 import { CharacterCounterComponent } from '../../../../../shared/components/character-counter/character-counter.component';
-import { DataTableComponent, DataTableColumn } from '../../../../../shared/components/data-table/data-table.component';
+import {
+  DataTableComponent,
+  DataTableColumn,
+} from '../../../../../shared/components/data-table/data-table.component';
 import { PaginationComponent } from '../../../../../shared/components/pagination/pagination.component';
 import { DialogComponent } from '../../../../../shared/components/dialog/dialog.component';
 import { CustomSubheaderComponent } from '../../../../../shared/components/custom-subheader/custom-subheader.component';
@@ -18,15 +28,30 @@ import { DropdownsStoreService } from '../../../../admin-settings/dropdowns/drop
 import {
   SDG_KEYWORD_EXAMPLE,
   SDG_KEYWORD_NOTE,
-  sdgKeywordValidator
+  sdgKeywordValidator,
 } from '../../../../../shared/validators/sdg-keyword.validator';
+
+import { TableActionIconComponent } from '../../../../../shared/components/table-action-icon/table-action-icon.component';
 
 @Component({
   selector: 'app-conference-details-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, NoteComponent, SearchableDropdownComponent, ValidationMessageComponent, CharacterCounterComponent, DataTableComponent, DialogComponent, PaginationComponent, CustomHeaderComponent, CustomSubheaderComponent],
+  imports: [
+    TableActionIconComponent,
+    CommonModule,
+    ReactiveFormsModule,
+    NoteComponent,
+    SearchableDropdownComponent,
+    ValidationMessageComponent,
+    CharacterCounterComponent,
+    DataTableComponent,
+    DialogComponent,
+    PaginationComponent,
+    CustomHeaderComponent,
+    CustomSubheaderComponent,
+  ],
   templateUrl: './conference-details-form.component.html',
-  styleUrl: './conference-details-form.component.scss'
+  styleUrl: './conference-details-form.component.scss',
 })
 export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
   readonly klangValleyAccountCodeDescription = 'TRAINING PRESENTATION PUBLICATION';
@@ -53,7 +78,10 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
   selectedFileName: string | null = null;
   selectedFile: File | null = null;
 
-  constructor(private fb: FormBuilder, private formStateService: ConferenceFormStateService) {
+  constructor(
+    private fb: FormBuilder,
+    private formStateService: ConferenceFormStateService,
+  ) {
     // Apply form read-only effect if workflow is provided
     effect(() => {
       if (this.workflow?.isFormReadOnly()) {
@@ -77,32 +105,25 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
   localPageSize: number = 15;
   localPageSizeOptions: number[] = [5, 15, 30, 50];
 
-  regions = [
-    'Americas',
-    'ASEAN',
-    'Asia',
-    'Australasia',
-    'Europe',
-    'Malaysia',
-    'MEA',
-    'Pacific'
-  ];
+  regions = ['Americas', 'ASEAN', 'Asia', 'Australasia', 'Europe', 'Malaysia', 'MEA', 'Pacific'];
 
   regionOptions = computed(() => {
     return this.breakdownOptionsService.regionOptions();
   });
 
   projectAccountCodeOptions = computed<DropdownOption[]>(() =>
-    this.dropdownStore.entries()
-      .filter(option =>
-        option.formName === 'Conference Application' &&
-        option.category === 'Project Account Code' &&
-        option.status === 'Active'
+    this.dropdownStore
+      .entries()
+      .filter(
+        (option) =>
+          option.formName === 'Conference Application' &&
+          option.category === 'Project Account Code' &&
+          option.status === 'Active',
       )
-      .map(option => ({
+      .map((option) => ({
         value: option.value,
-        label: option.value
-      }))
+        label: option.value,
+      })),
   );
 
   // Build region descriptions dynamically from service metadata
@@ -119,14 +140,19 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     }
     // Fallback to default descriptions for predefined regions
     const defaultDescriptions: Record<string, string> = {
-      'americas': 'USA, Canada, Mexico and other parts of South America - (A maximum of 50% & limit to a maximum of RM5,000, whichever is lower)',
-      'asean': 'ASEAN Countries - (A maximum of 85% & limit to a maximum of RM5,000, whichever is lower)',
-      'asia': 'Japan, China, Korea, Central Asia, India, Sri Lanka, Pakistan - (A maximum of 70% & limit to a maximum of RM5,000, whichever is lower)',
-      'australasia': 'Australia, New Zealand, PNG, Timor Leste - (A maximum of 70% & limit to a maximum of RM5,000, whichever is lower)',
-      'europe': 'Europe - (A maximum of 50% & limit to a maximum of RM5,000, whichever is lower)',
-      'malaysia': 'Throughout Malaysia - (A maximum of 85% & limit to a maximum of RM5,000, whichever is lower)',
-      'mea': 'Middle East and Africa - (A maximum of 60% & limit to a maximum of RM5,000, whichever is lower)',
-      'pacific': 'Pacific Islands (Maldives etc.) - (A maximum of 70% & limit to a maximum of RM5,000, whichever is lower)'
+      americas:
+        'USA, Canada, Mexico and other parts of South America - (A maximum of 50% & limit to a maximum of RM5,000, whichever is lower)',
+      asean:
+        'ASEAN Countries - (A maximum of 85% & limit to a maximum of RM5,000, whichever is lower)',
+      asia: 'Japan, China, Korea, Central Asia, India, Sri Lanka, Pakistan - (A maximum of 70% & limit to a maximum of RM5,000, whichever is lower)',
+      australasia:
+        'Australia, New Zealand, PNG, Timor Leste - (A maximum of 70% & limit to a maximum of RM5,000, whichever is lower)',
+      europe: 'Europe - (A maximum of 50% & limit to a maximum of RM5,000, whichever is lower)',
+      malaysia:
+        'Throughout Malaysia - (A maximum of 85% & limit to a maximum of RM5,000, whichever is lower)',
+      mea: 'Middle East and Africa - (A maximum of 60% & limit to a maximum of RM5,000, whichever is lower)',
+      pacific:
+        'Pacific Islands (Maldives etc.) - (A maximum of 70% & limit to a maximum of RM5,000, whichever is lower)',
     };
     return defaultDescriptions[regionValue.toLowerCase()] || '';
   }
@@ -145,55 +171,56 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
   }
 
   get voteNumberDescriptionOptions(): DropdownOption[] {
-    return this.dropdownStore.entries()
-      .filter(option =>
-        option.formName === 'Conference Application' &&
-        option.category === 'Vote Number Description' &&
-        option.status === 'Active'
+    return this.dropdownStore
+      .entries()
+      .filter(
+        (option) =>
+          option.formName === 'Conference Application' &&
+          option.category === 'Vote Number Description' &&
+          option.status === 'Active',
       )
-      .map(option => ({ value: option.value, label: option.value }));
+      .map((option) => ({ value: option.value, label: option.value }));
   }
 
   regionFundingInfo: Record<string, string> = {
-    'Americas': '50% & limit to a maximum of RM5,000',
-    'ASEAN': '85% & limit to a maximum of RM5,000',
-    'Asia': '70% & limit to a maximum of RM5,000',
-    'Australasia': '70% & limit to a maximum of RM5,000',
-    'Europe': '50% & limit to a maximum of RM5,000',
-    'Malaysia': '85% & limit to a maximum of RM5,000',
-    'MEA': '60% & limit to a maximum of RM5,000',
-    'Pacific': '70% & limit to a maximum of RM5,000'
+    Americas: '50% & limit to a maximum of RM5,000',
+    ASEAN: '85% & limit to a maximum of RM5,000',
+    Asia: '70% & limit to a maximum of RM5,000',
+    Australasia: '70% & limit to a maximum of RM5,000',
+    Europe: '50% & limit to a maximum of RM5,000',
+    Malaysia: '85% & limit to a maximum of RM5,000',
+    MEA: '60% & limit to a maximum of RM5,000',
+    Pacific: '70% & limit to a maximum of RM5,000',
   };
 
   regionFullNames: Record<string, string> = {
-    'Americas': 'The Americas (USA, Canada, Mexico and other parts of South America)',
-    'ASEAN': 'ASEAN Countries',
-    'Asia': 'Asia (Japan, China, Korea, Central Asia, India, Sri Lanka, Pakistan)',
-    'Australasia': 'Australasia (Australia, New Zealand, PNG, Timor Leste)',
-    'Europe': 'Europe',
-    'Malaysia': 'Throughout Malaysia',
-    'MEA': 'Middle East and Africa',
-    'Pacific': 'Pacific Islands (Maldives etc.)'
+    Americas: 'The Americas (USA, Canada, Mexico and other parts of South America)',
+    ASEAN: 'ASEAN Countries',
+    Asia: 'Asia (Japan, China, Korea, Central Asia, India, Sri Lanka, Pakistan)',
+    Australasia: 'Australasia (Australia, New Zealand, PNG, Timor Leste)',
+    Europe: 'Europe',
+    Malaysia: 'Throughout Malaysia',
+    MEA: 'Middle East and Africa',
+    Pacific: 'Pacific Islands (Maldives etc.)',
   };
 
   regionDescriptions: Record<string, string> = {
-    'Americas': 'USA, Canada, Mexico and other parts of South America - (A maximum of 50% & limit to a maximum of RM5,000, whichever is lower)',
-    'ASEAN': 'ASEAN Countries - (A maximum of 85% & limit to a maximum of RM5,000, whichever is lower)',
-    'Asia': 'Japan, China, Korea, Central Asia, India, Sri Lanka, Pakistan - (A maximum of 70% & limit to a maximum of RM5,000, whichever is lower)',
-    'Australasia': 'Australia, New Zealand, PNG, Timor Leste - (A maximum of 70% & limit to a maximum of RM5,000, whichever is lower)',
-    'Europe': 'Europe - (A maximum of 50% & limit to a maximum of RM5,000, whichever is lower)',
-    'Malaysia': 'Throughout Malaysia - (A maximum of 85% & limit to a maximum of RM5,000, whichever is lower)',
-    'MEA': 'Middle East and Africa - (A maximum of 60% & limit to a maximum of RM5,000, whichever is lower)',
-    'Pacific': 'Pacific Islands (Maldives etc.) - (A maximum of 70% & limit to a maximum of RM5,000, whichever is lower)'
+    Americas:
+      'USA, Canada, Mexico and other parts of South America - (A maximum of 50% & limit to a maximum of RM5,000, whichever is lower)',
+    ASEAN:
+      'ASEAN Countries - (A maximum of 85% & limit to a maximum of RM5,000, whichever is lower)',
+    Asia: 'Japan, China, Korea, Central Asia, India, Sri Lanka, Pakistan - (A maximum of 70% & limit to a maximum of RM5,000, whichever is lower)',
+    Australasia:
+      'Australia, New Zealand, PNG, Timor Leste - (A maximum of 70% & limit to a maximum of RM5,000, whichever is lower)',
+    Europe: 'Europe - (A maximum of 50% & limit to a maximum of RM5,000, whichever is lower)',
+    Malaysia:
+      'Throughout Malaysia - (A maximum of 85% & limit to a maximum of RM5,000, whichever is lower)',
+    MEA: 'Middle East and Africa - (A maximum of 60% & limit to a maximum of RM5,000, whichever is lower)',
+    Pacific:
+      'Pacific Islands (Maldives etc.) - (A maximum of 70% & limit to a maximum of RM5,000, whichever is lower)',
   };
 
-  restrictedPublishers = [
-    'MDPI',
-    'Common Ground',
-    'Hindawi',
-    'Frontiers',
-    'Other'
-  ];
+  restrictedPublishers = ['MDPI', 'Common Ground', 'Hindawi', 'Frontiers', 'Other'];
 
   // DataTable column definitions for breakdown tables
   researchBreakdownColumns: readonly DataTableColumn[] = [
@@ -204,7 +231,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     { key: 'cost', label: 'Cost (Foreign/MYR)' },
     { key: 'exchangeRate', label: 'Exchange Rate' },
     { key: 'costInRM', label: 'Cost in RM' },
-    { key: 'actions', label: 'Actions', width: '100px', align: 'center' }
+    { key: 'actions', label: 'Actions', width: '100px', align: 'center' },
   ];
 
   externalBreakdownColumns: readonly DataTableColumn[] = [
@@ -216,7 +243,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     { key: 'cost', label: 'Cost (Foreign/MYR)' },
     { key: 'exchangeRate', label: 'Exchange Rate' },
     { key: 'costInRM', label: 'Cost in RM' },
-    { key: 'actions', label: 'Actions', width: '100px', align: 'center' }
+    { key: 'actions', label: 'Actions', width: '100px', align: 'center' },
   ];
 
   localBreakdownColumns: readonly DataTableColumn[] = [
@@ -228,7 +255,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     { key: 'cost', label: 'Cost (Foreign/MYR)' },
     { key: 'exchangeRate', label: 'Exchange Rate' },
     { key: 'costInRM', label: 'Cost in RM' },
-    { key: 'actions', label: 'Actions', width: '100px', align: 'center' }
+    { key: 'actions', label: 'Actions', width: '100px', align: 'center' },
   ];
 
   getFullRegionName(regionShort: string): string {
@@ -253,7 +280,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
   getResearchBreakdownTableData(): (any & { index: number })[] {
     return this.researchBreakdowns.map((item, index) => ({
       ...item,
-      index: index + 1
+      index: index + 1,
     }));
   }
 
@@ -275,7 +302,10 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
   }
 
   researchPageEnd(): number {
-    return Math.min(this.getResearchBreakdownTableData().length, this.researchPage * this.researchPageSize);
+    return Math.min(
+      this.getResearchBreakdownTableData().length,
+      this.researchPage * this.researchPageSize,
+    );
   }
 
   onResearchPageChange(page: number) {
@@ -290,7 +320,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
   getExternalBreakdownTableData(): (any & { index: number })[] {
     return this.externalBreakdowns.map((item, index) => ({
       ...item,
-      index: index + 1
+      index: index + 1,
     }));
   }
 
@@ -312,7 +342,10 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
   }
 
   externalPageEnd(): number {
-    return Math.min(this.getExternalBreakdownTableData().length, this.externalPage * this.externalPageSize);
+    return Math.min(
+      this.getExternalBreakdownTableData().length,
+      this.externalPage * this.externalPageSize,
+    );
   }
 
   onExternalPageChange(page: number) {
@@ -327,7 +360,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
   getLocalBreakdownTableData(): (any & { index: number })[] {
     return this.localBreakdowns.map((item, index) => ({
       ...item,
-      index: index + 1
+      index: index + 1,
     }));
   }
 
@@ -382,17 +415,18 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     this.breakdownForm.get('exchangeRate')?.valueChanges.subscribe(() => this.updateCostInRM());
     this.breakdownForm.get('itemDescription')?.valueChanges.subscribe((value) => {
       if (this.breakdownType === 'local') {
-        this.breakdownForm.get('voteNumber')?.setValue(
-          this.isKlangValleyNonResearch()
-            ? this.klangValleyAccountCode
-            : this.getConfiguredLocalAccountCode(value),
-          { emitEvent: false }
-        );
+        this.breakdownForm
+          .get('voteNumber')
+          ?.setValue(
+            this.isKlangValleyNonResearch()
+              ? this.klangValleyAccountCode
+              : this.getConfiguredLocalAccountCode(value),
+            { emitEvent: false },
+          );
       } else if (this.breakdownType === 'research' || this.breakdownType === 'external-research') {
-        this.breakdownForm.get('voteNumber')?.setValue(
-          this.getConfiguredVoteNumber(value),
-          { emitEvent: false }
-        );
+        this.breakdownForm
+          .get('voteNumber')
+          ?.setValue(this.getConfiguredVoteNumber(value), { emitEvent: false });
       }
     });
   }
@@ -408,7 +442,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     const minimumStartDate = this.getMinimumConferenceStartDateValue();
 
     if (selectedDate < minimumStartDate) {
-      return { 'minDate': { value: control.value } };
+      return { minDate: { value: control.value } };
     }
     return null;
   }
@@ -439,10 +473,10 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     }
 
     if (endDate < startDate) {
-      return { 'endDateBeforeStart': { value: control.value } };
+      return { endDateBeforeStart: { value: control.value } };
     }
     return null;
-  }
+  };
 
   /**
    * Setup watchers for main form fields
@@ -471,7 +505,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     // Keep the external breakdown Account Code in sync with the selected project.
     this.form.get('externalProjectAccountCode')?.valueChanges.subscribe((value) => {
       if (this.researchType === 'external-research') {
-        this.externalBreakdowns.forEach(breakdown => {
+        this.externalBreakdowns.forEach((breakdown) => {
           breakdown.accountCode = value || '';
         });
         this.breakdownForm.get('accountCode')?.setValue(value || '', { emitEvent: false });
@@ -479,7 +513,9 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     });
   }
 
-  private syncCitedJournalPaperExplanationValidator(answer: string | null = this.form?.get('citedJournalPaper')?.value ?? null) {
+  private syncCitedJournalPaperExplanationValidator(
+    answer: string | null = this.form?.get('citedJournalPaper')?.value ?? null,
+  ) {
     const explanationControl = this.form?.get('citedJournalPaperExplanation');
     if (!explanationControl) {
       return;
@@ -513,14 +549,14 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     }
     // Fallback to default percentages for predefined regions
     const percentageMap: Record<string, number> = {
-      'americas': 50,
-      'europe': 50,
-      'mea': 60,
-      'asia': 70,
-      'pacific': 70,
-      'australasia': 70,
-      'asean': 85,
-      'malaysia': 85
+      americas: 50,
+      europe: 50,
+      mea: 60,
+      asia: 70,
+      pacific: 70,
+      australasia: 70,
+      asean: 85,
+      malaysia: 85,
     };
     return percentageMap[region.toLowerCase()] || 0;
   }
@@ -569,11 +605,18 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
 
       const supportingDocuments = this.formStateService.getFormSection('supportingDocuments');
       if (supportingDocuments) {
-        if (stateWithoutRegion['citedJournalPaper'] === undefined && supportingDocuments['citedJournalPaper'] !== undefined) {
+        if (
+          stateWithoutRegion['citedJournalPaper'] === undefined &&
+          supportingDocuments['citedJournalPaper'] !== undefined
+        ) {
           stateWithoutRegion['citedJournalPaper'] = supportingDocuments['citedJournalPaper'];
         }
-        if (stateWithoutRegion['citedJournalPaperExplanation'] === undefined && supportingDocuments['citedJournalPaperExplanation'] !== undefined) {
-          stateWithoutRegion['citedJournalPaperExplanation'] = supportingDocuments['citedJournalPaperExplanation'];
+        if (
+          stateWithoutRegion['citedJournalPaperExplanation'] === undefined &&
+          supportingDocuments['citedJournalPaperExplanation'] !== undefined
+        ) {
+          stateWithoutRegion['citedJournalPaperExplanation'] =
+            supportingDocuments['citedJournalPaperExplanation'];
         }
       }
 
@@ -603,7 +646,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
         ...formData,
         researchBreakdown: this.researchBreakdowns,
         externalResearchBreakdown: this.externalBreakdowns,
-        localBreakdown: this.localBreakdowns
+        localBreakdown: this.localBreakdowns,
       };
       this.formStateService.saveFormSection('conferenceDetails', completeState);
     }
@@ -611,8 +654,10 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
 
   // Ensure page numbers are within valid bounds after initial load
   private normalizePages() {
-    if (this.researchPage > this.getResearchTotalPages()) this.researchPage = this.getResearchTotalPages();
-    if (this.externalPage > this.getExternalTotalPages()) this.externalPage = this.getExternalTotalPages();
+    if (this.researchPage > this.getResearchTotalPages())
+      this.researchPage = this.getResearchTotalPages();
+    if (this.externalPage > this.getExternalTotalPages())
+      this.externalPage = this.getExternalTotalPages();
     if (this.localPage > this.getLocalTotalPages()) this.localPage = this.getLocalTotalPages();
     if (this.researchPage < 1) this.researchPage = 1;
     if (this.externalPage < 1) this.externalPage = 1;
@@ -627,7 +672,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
       cost: ['', [Validators.required, Validators.min(0)]],
       exchangeRate: ['1', [Validators.required, Validators.min(0.01)]],
       costInRM: [{ value: '', disabled: true }],
-      description: ['']
+      description: [''],
     });
   }
 
@@ -635,7 +680,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     this.sdgKeywordsForm = this.fb.group({
       keyword1: ['', [Validators.required, sdgKeywordValidator]],
       keyword2: ['', [Validators.required, sdgKeywordValidator]],
-      keyword3: ['', [Validators.required, sdgKeywordValidator]]
+      keyword3: ['', [Validators.required, sdgKeywordValidator]],
     });
   }
 
@@ -674,7 +719,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
       externalCostingRemarks: [''],
       localSponsoredAmountExternal: [''],
       localSponsoredBy: [''],
-      localCostingRemarks: ['']
+      localCostingRemarks: [''],
     });
   }
 
@@ -696,8 +741,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
   }
 
   isKlangValleyNonResearch(): boolean {
-    return this.selectedLocalOrOverseas === 'klang-valley' &&
-      this.researchType === 'non-research';
+    return this.selectedLocalOrOverseas === 'klang-valley' && this.researchType === 'non-research';
   }
 
   get percentage(): string | number {
@@ -800,7 +844,10 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     if (this.isExternalResearchProject) {
       return 0; // External research project covers all costs
     }
-    return this.calculateCostBorneByApplicant('externalSponsoredAmountExternal', 'external-research');
+    return this.calculateCostBorneByApplicant(
+      'externalSponsoredAmountExternal',
+      'external-research',
+    );
   }
 
   /**
@@ -843,7 +890,9 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
    * Get sponsored by value for External Research - always "Government Sector"
    */
   get externalSponsoredByValue(): string {
-    return this.isExternalResearchProject ? 'Government Sector' : (this.form.get('externalSponsoredBy')?.value || '');
+    return this.isExternalResearchProject
+      ? 'Government Sector'
+      : this.form.get('externalSponsoredBy')?.value || '';
   }
 
   /**
@@ -877,7 +926,10 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
    * Cost = Total - Sponsored Amount by External - Sponsored Amount by APU
    * where Total = Sum of breakdown costs
    */
-  calculateCostBorneByApplicant(sponsorshipFieldName: string, breakdownType: 'research' | 'external-research' | 'local'): number {
+  calculateCostBorneByApplicant(
+    sponsorshipFieldName: string,
+    breakdownType: 'research' | 'external-research' | 'local',
+  ): number {
     const totalAmount = this.calculateBreakdownTotal(breakdownType);
     const sponsoredAmountExternal = parseFloat(this.form.get(sponsorshipFieldName)?.value) || 0;
     const sponsorshipAmountByAPU = this.calculateSponsorshipAmountByAPU(sponsorshipFieldName);
@@ -899,39 +951,48 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
       this.breakdownEditingIndex = index;
       const array = this.getBreakdownArray(type);
       const data = array[index];
-      this.breakdownForm.patchValue({
-        itemDescription: useFixedKlangValleyAccount
-          ? this.klangValleyAccountCodeDescription
-          : data.itemDescription,
-        voteNumber: useFixedKlangValleyAccount
-          ? this.klangValleyAccountCode
-          : data.voteNumber || this.getConfiguredVoteNumber(data.itemDescription),
-        accountCode: type === 'external-research'
-          ? (data.accountCode || data.voteNumber || this.form.get('externalProjectAccountCode')?.value || '')
-          : '',
-        cost: data.cost,
-        exchangeRate: data.exchangeRate,
-        costInRM: data.costInRM,
-        description: data.description
-      }, { emitEvent: false });
+      this.breakdownForm.patchValue(
+        {
+          itemDescription: useFixedKlangValleyAccount
+            ? this.klangValleyAccountCodeDescription
+            : data.itemDescription,
+          voteNumber: useFixedKlangValleyAccount
+            ? this.klangValleyAccountCode
+            : data.voteNumber || this.getConfiguredVoteNumber(data.itemDescription),
+          accountCode:
+            type === 'external-research'
+              ? data.accountCode ||
+                data.voteNumber ||
+                this.form.get('externalProjectAccountCode')?.value ||
+                ''
+              : '',
+          cost: data.cost,
+          exchangeRate: data.exchangeRate,
+          costInRM: data.costInRM,
+          description: data.description,
+        },
+        { emitEvent: false },
+      );
       this.selectedFileName = data.supportingDocument || null;
     } else {
       // Adding new entry
       this.breakdownEditingIndex = null;
-      this.breakdownForm.reset({
-        exchangeRate: 1,
-        itemDescription: useFixedKlangValleyAccount
-          ? this.klangValleyAccountCodeDescription
-          : '',
-        voteNumber: useFixedKlangValleyAccount
-          ? this.klangValleyAccountCode
-          : type === 'external-research' || type === 'local'
-            ? ''
-            : 'V29000',
-        accountCode: type === 'external-research'
-          ? (this.form.get('externalProjectAccountCode')?.value || '')
-          : ''
-      }, { emitEvent: false });
+      this.breakdownForm.reset(
+        {
+          exchangeRate: 1,
+          itemDescription: useFixedKlangValleyAccount ? this.klangValleyAccountCodeDescription : '',
+          voteNumber: useFixedKlangValleyAccount
+            ? this.klangValleyAccountCode
+            : type === 'external-research' || type === 'local'
+              ? ''
+              : 'V29000',
+          accountCode:
+            type === 'external-research'
+              ? this.form.get('externalProjectAccountCode')?.value || ''
+              : '',
+        },
+        { emitEvent: false },
+      );
       this.selectedFileName = null;
       this.selectedFile = null;
     }
@@ -1002,14 +1063,15 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     // Calculate Cost in RM (Cost * Exchange Rate)
     const costInRM = (parseFloat(formData.cost) || 0) * (parseFloat(formData.exchangeRate) || 1);
     const array = this.getBreakdownArray(this.breakdownType!);
-    const existingDocument = this.breakdownEditingIndex !== null
-      ? (array[this.breakdownEditingIndex]?.supportingDocument || null)
-      : null;
+    const existingDocument =
+      this.breakdownEditingIndex !== null
+        ? array[this.breakdownEditingIndex]?.supportingDocument || null
+        : null;
 
     const entry = {
       ...formData,
       costInRM: parseFloat(costInRM.toFixed(2)),
-      supportingDocument: this.selectedFileName || existingDocument
+      supportingDocument: this.selectedFileName || existingDocument,
     };
 
     if (this.breakdownEditingIndex !== null) {
@@ -1024,13 +1086,20 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     if (this.breakdownEditingIndex === null) {
       // new entry added -> jump to last page for that type
       if (this.breakdownType === 'research') this.researchPage = this.getResearchTotalPages();
-      if (this.breakdownType === 'external-research') this.externalPage = this.getExternalTotalPages();
+      if (this.breakdownType === 'external-research')
+        this.externalPage = this.getExternalTotalPages();
       if (this.breakdownType === 'local') this.localPage = this.getLocalTotalPages();
     } else {
       // updated entry -> ensure current page still valid
-      if (this.breakdownType === 'research' && this.researchPage > this.getResearchTotalPages()) this.researchPage = this.getResearchTotalPages();
-      if (this.breakdownType === 'external-research' && this.externalPage > this.getExternalTotalPages()) this.externalPage = this.getExternalTotalPages();
-      if (this.breakdownType === 'local' && this.localPage > this.getLocalTotalPages()) this.localPage = this.getLocalTotalPages();
+      if (this.breakdownType === 'research' && this.researchPage > this.getResearchTotalPages())
+        this.researchPage = this.getResearchTotalPages();
+      if (
+        this.breakdownType === 'external-research' &&
+        this.externalPage > this.getExternalTotalPages()
+      )
+        this.externalPage = this.getExternalTotalPages();
+      if (this.breakdownType === 'local' && this.localPage > this.getLocalTotalPages())
+        this.localPage = this.getLocalTotalPages();
     }
 
     this.closeBreakdownModal();
@@ -1040,9 +1109,12 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     const array = this.getBreakdownArray(type);
     array.splice(index, 1);
     // Ensure page bounds after deletion
-    if (type === 'research' && this.researchPage > this.getResearchTotalPages()) this.researchPage = this.getResearchTotalPages();
-    if (type === 'external-research' && this.externalPage > this.getExternalTotalPages()) this.externalPage = this.getExternalTotalPages();
-    if (type === 'local' && this.localPage > this.getLocalTotalPages()) this.localPage = this.getLocalTotalPages();
+    if (type === 'research' && this.researchPage > this.getResearchTotalPages())
+      this.researchPage = this.getResearchTotalPages();
+    if (type === 'external-research' && this.externalPage > this.getExternalTotalPages())
+      this.externalPage = this.getExternalTotalPages();
+    if (type === 'local' && this.localPage > this.getLocalTotalPages())
+      this.localPage = this.getLocalTotalPages();
   }
 
   onFileSelected(event: any) {
@@ -1093,9 +1165,9 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     if (!this.breakdownType) return '';
     const isEditing = this.breakdownEditingIndex !== null ? 'Edit' : 'Add';
     const titles = {
-      'research': `${isEditing} Research Breakdown Entry`,
+      research: `${isEditing} Research Breakdown Entry`,
       'external-research': `${isEditing} External Research Project Breakdown Entry`,
-      'local': `${isEditing} Local Breakdown Entry`
+      local: `${isEditing} Local Breakdown Entry`,
     };
     return titles[this.breakdownType];
   }
@@ -1107,7 +1179,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
       'normal_application',
       'hos_application',
       'hos_request_resubmission',
-      'rmc_request_resubmission'
+      'rmc_request_resubmission',
     ];
     return allowedStatuses.includes(status);
   }
@@ -1127,11 +1199,14 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     const keyword2 = this.form.get('sdgKeyword2')?.value || '';
     const keyword3 = this.form.get('sdgKeyword3')?.value || '';
 
-    this.sdgKeywordsForm.patchValue({
-      keyword1,
-      keyword2,
-      keyword3
-    }, { emitEvent: false });
+    this.sdgKeywordsForm.patchValue(
+      {
+        keyword1,
+        keyword2,
+        keyword3,
+      },
+      { emitEvent: false },
+    );
 
     this.isSDGKeywordsModalOpen = true;
   }
@@ -1154,11 +1229,14 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     const { keyword1, keyword2, keyword3 } = this.sdgKeywordsForm.value;
 
     // Update the main form with the keywords
-    this.form.patchValue({
-      sdgKeyword1: keyword1,
-      sdgKeyword2: keyword2,
-      sdgKeyword3: keyword3
-    }, { emitEvent: false });
+    this.form.patchValue(
+      {
+        sdgKeyword1: keyword1,
+        sdgKeyword2: keyword2,
+        sdgKeyword3: keyword3,
+      },
+      { emitEvent: false },
+    );
 
     this.closeSDGKeywordsModal();
   }
@@ -1171,7 +1249,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     const keyword2 = this.form.get('sdgKeyword2')?.value || '';
     const keyword3 = this.form.get('sdgKeyword3')?.value || '';
 
-    return [keyword1, keyword2, keyword3].filter(k => k);
+    return [keyword1, keyword2, keyword3].filter((k) => k);
   }
 
   /**

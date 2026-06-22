@@ -1,8 +1,6 @@
 <div class="team-section" [formGroup]="teamDetails">
-
   <!-- ── Page header ─────────────────────────────────────────── -->
-  <app-custom-header title="Project Team Members Details" icon="group">
-  </app-custom-header>
+  <app-custom-header title="Project Team Members Details" icon="group"> </app-custom-header>
 
   <!-- ── Section 1: Project Leader ───────────────────────────── -->
   <section class="card">
@@ -11,15 +9,30 @@
       <div class="row row--2">
         <div class="form-field">
           <label class="form-label is-required">Project Leader Name</label>
-          <input type="text" class="input--text input--disabled-readonly" formControlName="leaderName" readonly>
+          <input
+            type="text"
+            class="input--text input--disabled-readonly"
+            formControlName="leaderName"
+            readonly
+          />
         </div>
         <div class="form-field">
           <label class="form-label is-required">Project Leader's Email</label>
-          <input type="email" class="input--text input--disabled-readonly" formControlName="leaderEmail" readonly>
+          <input
+            type="email"
+            class="input--text input--disabled-readonly"
+            formControlName="leaderEmail"
+            readonly
+          />
         </div>
         <div class="form-field">
           <label class="form-label is-required">Project Leader's School / Department</label>
-          <input type="text" class="input--text input--disabled-readonly" formControlName="department" readonly>
+          <input
+            type="text"
+            class="input--text input--disabled-readonly"
+            formControlName="department"
+            readonly
+          />
         </div>
       </div>
     </div>
@@ -31,17 +44,25 @@
     <div class="card__content section-fields">
       <div class="form-field">
         <label class="form-label is-required">Select Research Cluster</label>
-        <app-searchable-dropdown [options]="clusters" [isMulti]="false"
-          formControlName="researchCluster">
+        <app-searchable-dropdown
+          [options]="clusters"
+          [isMulti]="false"
+          formControlName="researchCluster"
+        >
         </app-searchable-dropdown>
-        <app-validation-message [control]="teamDetails.get('researchCluster')"></app-validation-message>
+        <app-validation-message
+          [control]="teamDetails.get('researchCluster')"
+        ></app-validation-message>
       </div>
 
       <div class="form-field">
         <label class="form-label is-required">Select Roles of Project Leader</label>
         <textarea class="input--textarea" formControlName="leaderRoles" [maxlength]="600">
         </textarea>
-        <app-character-counter [current]="teamDetails.get('leaderRoles')?.value?.length || 0" [max]="600">
+        <app-character-counter
+          [current]="teamDetails.get('leaderRoles')?.value?.length || 0"
+          [max]="600"
+        >
         </app-character-counter>
         <app-validation-message [control]="teamDetails.get('leaderRoles')"></app-validation-message>
       </div>
@@ -50,131 +71,169 @@
 
   <!-- ── Section 3: Asia Pacific University of Technology & Innovation Co-Researchers (Internal) ──────────── -->
   <section class="card">
-    <app-custom-subheader title="Asia Pacific University of Technology & Innovation Co-Researchers (Internal)"
-      tooltip="Minimum 1, Maximum 2 internal co-researchers">
+    <app-custom-subheader
+      title="Asia Pacific University of Technology & Innovation Co-Researchers (Internal)"
+      tooltip="Minimum 1, Maximum 2 internal co-researchers"
+    >
     </app-custom-subheader>
 
     <div class="card__content">
-      <p class="form-hint">Please select APU Co-Researchers and provide their role(s) (Exclude RA/GRA)</p>
+      <p class="form-hint">
+        Please select APU Co-Researchers and provide their role(s) (Exclude RA/GRA)
+      </p>
       <div class="category-header">
         <app-action-button
-          type="primary" label="Add Member" icon="add"
+          type="primary"
+          label="Add Member"
+          icon="add"
           [disabled]="internalResearchers.length >= 2 || workflow.isFormReadOnly()"
-          (clicked)="openInternalModal()">
+          (clicked)="openInternalModal()"
+        >
         </app-action-button>
       </div>
 
       @if (internalResearchers.length === 0) {
-      <div class="empty-state">
-        <span class="material-icons">group_add</span>
-        <p>No internal co-researchers added yet. Add at least 1.</p>
-      </div>
+        <div class="empty-state">
+          <span class="material-icons">group_add</span>
+          <p>No internal co-researchers added yet. Add at least 1.</p>
+        </div>
       } @else {
-      <app-data-table
-        [columns]="internalColumns"
-        [rows]="internalResearchers.controls"
-        [rowTrackFn]="trackByIndex">
-        <ng-template #rowTemplate let-row let-index="index">
-          <tr>
-            <td class="text-muted">{{ index + 1 }}</td>
-            <td>
-              <div class="data-table__stacked">
-                <span class="data-table__avatar">{{ getInitials(row.value.staffName) }}</span>
-                <div>
-                  <div class="data-table__title">{{ row.value.staffName }}</div>
-                  <div class="data-table__subtitle">{{ row.value.department }}</div>
+        <app-data-table
+          [columns]="internalColumns"
+          [rows]="internalResearchers.controls"
+          [rowTrackFn]="trackByIndex"
+        >
+          <ng-template #rowTemplate let-row let-index="index">
+            <tr>
+              <td class="text-muted">{{ index + 1 }}</td>
+              <td>
+                <div class="data-table__stacked">
+                  <span class="data-table__avatar">{{ getInitials(row.value.staffName) }}</span>
+                  <div>
+                    <div class="data-table__title">{{ row.value.staffName }}</div>
+                    <div class="data-table__subtitle">{{ row.value.department }}</div>
+                  </div>
                 </div>
-              </div>
-            </td>
-            <td>
-              <div class="data-table__title data-table__title--small">{{ row.value.expertise }}</div>
-            </td>
-            <td>
-              <div class="data-table__multiline">{{ row.value.roles }}</div>
-            </td>
-            <td>
-              <div class="data-table__actions">
-                <button type="button" class="btn-icon btn-icon--edit" title="Edit"
-                  [disabled]="workflow.isFormReadOnly()"
-                  (click)="openEditInternalModal(index)">
-                  <span class="material-icons">edit</span>
-                </button>
-                <button type="button" class="btn-icon btn-icon--delete" title="Remove"
-                  [disabled]="workflow.isFormReadOnly()"
-                  (click)="removeInternal(index)">
-                  <span class="material-icons">delete</span>
-                </button>
-              </div>
-            </td>
-          </tr>
-        </ng-template>
-      </app-data-table>
+              </td>
+              <td>
+                <div class="data-table__title data-table__title--small">
+                  {{ row.value.expertise }}
+                </div>
+              </td>
+              <td>
+                <div class="data-table__multiline">{{ row.value.roles }}</div>
+              </td>
+              <td>
+                <div class="data-table__actions">
+                  <button
+                    type="button"
+                    class="btn-icon btn-icon--edit"
+                    title="Edit"
+                    [disabled]="workflow.isFormReadOnly()"
+                    (click)="openEditInternalModal(index)"
+                  >
+                    <app-table-action-icon action="edit"></app-table-action-icon>
+                  </button>
+                  <button
+                    type="button"
+                    class="btn-icon btn-icon--delete"
+                    title="Remove"
+                    [disabled]="workflow.isFormReadOnly()"
+                    (click)="removeInternal(index)"
+                  >
+                    <app-table-action-icon action="delete"></app-table-action-icon>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+        </app-data-table>
       }
     </div>
   </section>
 
   <!-- ── Section 4: External Co-Researchers ────────────────── -->
   <section class="card">
-    <app-custom-subheader title="External Co-Researchers / Collaborators"
-      tooltip="Minimum 2, Maximum 10 external collaborators">
+    <app-custom-subheader
+      title="External Co-Researchers / Collaborators"
+      tooltip="Minimum 2, Maximum 10 external collaborators"
+    >
     </app-custom-subheader>
 
     <div class="card__content">
       <p class="form-hint">This is collaborative research with External Co-researchers</p>
       <div class="category-header">
         <app-action-button
-          type="primary" label="Add Collaborator" icon="add"
+          type="primary"
+          label="Add Collaborator"
+          icon="add"
           [disabled]="externalResearchers.length >= 10 || workflow.isFormReadOnly()"
-          (clicked)="openExternalModal()">
+          (clicked)="openExternalModal()"
+        >
         </app-action-button>
       </div>
 
       @if (externalResearchers.length === 0) {
-      <div class="empty-state">
-        <span class="material-icons">public</span>
-        <p>No external collaborators added yet. Add at least 2.</p>
-      </div>
+        <div class="empty-state">
+          <span class="material-icons">public</span>
+          <p>No external collaborators added yet. Add at least 2.</p>
+        </div>
       } @else {
-      <app-data-table
-        [columns]="externalColumns"
-        [rows]="externalResearchers.controls"
-        [rowTrackFn]="trackByIndex">
-        <ng-template #rowTemplate let-row let-index="index">
-          <tr>
-            <td class="text-muted">{{ index + 1 }}</td>
-            <td>
-              <div class="data-table__stacked">
-                <span class="data-table__avatar">{{ getInitials(row.value.fullName || row.value.title) }}</span>
-                <div>
-                  <div class="data-table__title">{{ row.value.title }} {{ row.value.fullName }}</div>
-                  <div class="data-table__subtitle">{{ row.value.email }}</div>
-                  <span class="data-table__pill">{{ row.value.position }}</span>
+        <app-data-table
+          [columns]="externalColumns"
+          [rows]="externalResearchers.controls"
+          [rowTrackFn]="trackByIndex"
+        >
+          <ng-template #rowTemplate let-row let-index="index">
+            <tr>
+              <td class="text-muted">{{ index + 1 }}</td>
+              <td>
+                <div class="data-table__stacked">
+                  <span class="data-table__avatar">{{
+                    getInitials(row.value.fullName || row.value.title)
+                  }}</span>
+                  <div>
+                    <div class="data-table__title">
+                      {{ row.value.title }} {{ row.value.fullName }}
+                    </div>
+                    <div class="data-table__subtitle">{{ row.value.email }}</div>
+                    <span class="data-table__pill">{{ row.value.position }}</span>
+                  </div>
                 </div>
-              </div>
-            </td>
-            <td>
-              <div class="data-table__title data-table__title--small">{{ row.value.institution }}</div>
-              <div class="data-table__subtitle">{{ row.value.orgType }}</div>
-            </td>
-            <td>{{ row.value.country }}</td>
-            <td>RM {{ row.value.funding | number:'1.0-0' }}</td>
-            <td>
-              <div class="data-table__actions">
-                <button type="button" class="btn-icon btn-icon--edit" title="Edit"
-                  [disabled]="workflow.isFormReadOnly()"
-                  (click)="openEditExternalModal(index)">
-                  <span class="material-icons">edit</span>
-                </button>
-                <button type="button" class="btn-icon btn-icon--delete" title="Remove"
-                  [disabled]="workflow.isFormReadOnly()"
-                  (click)="removeExternal(index)">
-                  <span class="material-icons">delete</span>
-                </button>
-              </div>
-            </td>
-          </tr>
-        </ng-template>
-      </app-data-table>
+              </td>
+              <td>
+                <div class="data-table__title data-table__title--small">
+                  {{ row.value.institution }}
+                </div>
+                <div class="data-table__subtitle">{{ row.value.orgType }}</div>
+              </td>
+              <td>{{ row.value.country }}</td>
+              <td>RM {{ row.value.funding | number: '1.0-0' }}</td>
+              <td>
+                <div class="data-table__actions">
+                  <button
+                    type="button"
+                    class="btn-icon btn-icon--edit"
+                    title="Edit"
+                    [disabled]="workflow.isFormReadOnly()"
+                    (click)="openEditExternalModal(index)"
+                  >
+                    <app-table-action-icon action="edit"></app-table-action-icon>
+                  </button>
+                  <button
+                    type="button"
+                    class="btn-icon btn-icon--delete"
+                    title="Remove"
+                    [disabled]="workflow.isFormReadOnly()"
+                    (click)="removeExternal(index)"
+                  >
+                    <app-table-action-icon action="delete"></app-table-action-icon>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+        </app-data-table>
       }
     </div>
   </section>
@@ -189,7 +248,8 @@
           icon="supervisor_account"
           [visible]="showHosComments"
           [readonly]="!workflow.isHosEditable()"
-          [commentControl]="fc('hosComment')">
+          [commentControl]="fc('hosComment')"
+        >
         </app-review-block>
 
         <div class="row row--2">
@@ -199,9 +259,11 @@
             [visible]="showR1Comments"
             [readonly]="!workflow.isReviewer1Editable()"
             [showScore]="true"
-            [maxScore]="10" [scoreDisabled]="!workflow.isScoreEditable()"
+            [maxScore]="10"
+            [scoreDisabled]="!workflow.isScoreEditable()"
             [commentControl]="fc('reviewer1Comment')"
-            [scoreControl]="fc('reviewer1Score')">
+            [scoreControl]="fc('reviewer1Score')"
+          >
           </app-review-block>
 
           <app-review-block
@@ -210,9 +272,11 @@
             [visible]="showR2Comments"
             [readonly]="!workflow.isReviewer2Editable()"
             [showScore]="true"
-            [maxScore]="10" [scoreDisabled]="!workflow.isScoreEditable()"
+            [maxScore]="10"
+            [scoreDisabled]="!workflow.isScoreEditable()"
             [commentControl]="fc('reviewer2Comment')"
-            [scoreControl]="fc('reviewer2Score')">
+            [scoreControl]="fc('reviewer2Score')"
+          >
           </app-review-block>
         </div>
 
@@ -221,12 +285,12 @@
           icon="admin_panel_settings"
           [visible]="showRmcComments"
           [readonly]="!workflow.isRmcEditable()"
-          [commentControl]="fc('rmcComment')">
+          [commentControl]="fc('rmcComment')"
+        >
         </app-review-block>
       </div>
     </section>
   }
-
 </div>
 
 <!-- ══════════════════════════════════════════════════════════════ -->
@@ -236,8 +300,8 @@
   <app-dialog
     [title]="(editingInternalIdx() !== null ? 'Edit' : 'Add') + ' Internal Co-Researcher'"
     [isOpen]="true"
-    (close)="showInternalModal.set(false)">
-
+    (close)="showInternalModal.set(false)"
+  >
     <div class="section-fields" [formGroup]="internalForm">
       <div class="row row--2">
         <div class="form-field">
@@ -245,41 +309,55 @@
           <app-searchable-dropdown
             [options]="researcherOptions"
             formControlName="staffId"
-            valueMode="single">
+            valueMode="single"
+          >
           </app-searchable-dropdown>
           <app-validation-message [control]="internalForm.get('staffId')"></app-validation-message>
         </div>
         <div class="form-field">
           <label class="form-label">School / Department</label>
-          <input type="text" class="input--text" formControlName="department" readonly>
+          <input type="text" class="input--text" formControlName="department" readonly />
         </div>
       </div>
 
       <div class="form-field">
         <label class="form-label is-required">Area of Expertise</label>
         <textarea class="input--textarea" formControlName="expertise" [maxlength]="200"></textarea>
-        <app-character-counter [current]="internalForm.get('expertise')?.value?.length || 0" [max]="200">
+        <app-character-counter
+          [current]="internalForm.get('expertise')?.value?.length || 0"
+          [max]="200"
+        >
         </app-character-counter>
         <app-validation-message [control]="internalForm.get('expertise')"></app-validation-message>
       </div>
 
       <div class="form-field">
         <label class="form-label is-required">Roles in Project</label>
-        <textarea class="input--textarea" formControlName="roles" [maxlength]="600">
-          </textarea>
-        <app-character-counter [current]="internalForm.get('roles')?.value?.length || 0" [max]="600">
+        <textarea class="input--textarea" formControlName="roles" [maxlength]="600"> </textarea>
+        <app-character-counter
+          [current]="internalForm.get('roles')?.value?.length || 0"
+          [max]="600"
+        >
         </app-character-counter>
         <app-validation-message [control]="internalForm.get('roles')"></app-validation-message>
       </div>
     </div>
 
-    <app-action-button dialog-footer type="secondary" label="Cancel" (clicked)="showInternalModal.set(false)"></app-action-button>
-    <app-action-button dialog-footer type="primary" icon="check"
+    <app-action-button
+      dialog-footer
+      type="secondary"
+      label="Cancel"
+      (clicked)="showInternalModal.set(false)"
+    ></app-action-button>
+    <app-action-button
+      dialog-footer
+      type="primary"
+      icon="check"
       [label]="editingInternalIdx() !== null ? 'Save Changes' : 'Add Member'"
       [disabled]="internalForm.invalid"
-      (clicked)="saveInternal()">
+      (clicked)="saveInternal()"
+    >
     </app-action-button>
-
   </app-dialog>
 }
 
@@ -291,10 +369,9 @@
     [title]="(editingExternalIdx() !== null ? 'Edit' : 'Add') + ' External Collaborator'"
     [isOpen]="true"
     width="var(--size-dialog-large)"
-    (close)="showExternalModal.set(false)">
-
+    (close)="showExternalModal.set(false)"
+  >
     <div class="section-fields" [formGroup]="externalForm">
-
       <!-- Row 1: Title + Full Name -->
       <div class="row row--2">
         <div class="form-field">
@@ -302,16 +379,22 @@
           <select class="input--select" formControlName="title">
             <option value="" disabled>Select collaborator title...</option>
             @for (t of titles; track t.value) {
-            <option [value]="t.value">{{ t.label }}</option>
+              <option [value]="t.value">{{ t.label }}</option>
             }
           </select>
           <app-validation-message [control]="externalForm.get('title')"></app-validation-message>
         </div>
         <div class="form-field">
           <label class="form-label is-required">Full Name</label>
-          <input type="text" class="input--text" formControlName="fullName" placeholder="e.g. Dr. Aisha Rahman">
+          <input
+            type="text"
+            class="input--text"
+            formControlName="fullName"
+            placeholder="e.g. Dr. Aisha Rahman"
+          />
           <app-field-note>
-            External collaborators must be staff, researchers, or industry partners. Students are not eligible for this role.
+            External collaborators must be staff, researchers, or industry partners. Students are
+            not eligible for this role.
           </app-field-note>
           <app-validation-message [control]="externalForm.get('fullName')"></app-validation-message>
         </div>
@@ -321,13 +404,15 @@
       <div class="row row--2">
         <div class="form-field">
           <label class="form-label is-required">Email Address</label>
-          <input type="email" class="input--text" formControlName="email">
+          <input type="email" class="input--text" formControlName="email" />
           <app-validation-message [control]="externalForm.get('email')"></app-validation-message>
         </div>
         <div class="form-field">
           <label class="form-label is-required">Institution / Company</label>
-          <input type="text" class="input--text" formControlName="institution">
-          <app-validation-message [control]="externalForm.get('institution')"></app-validation-message>
+          <input type="text" class="input--text" formControlName="institution" />
+          <app-validation-message
+            [control]="externalForm.get('institution')"
+          ></app-validation-message>
         </div>
       </div>
 
@@ -338,14 +423,14 @@
           <select class="input--select" formControlName="orgType">
             <option value="" disabled>Select organisation type...</option>
             @for (o of orgTypes; track o.value) {
-            <option [value]="o.value">{{ o.label }}</option>
+              <option [value]="o.value">{{ o.label }}</option>
             }
           </select>
           <app-validation-message [control]="externalForm.get('orgType')"></app-validation-message>
         </div>
         <div class="form-field">
           <label class="form-label is-required">Position / Designation</label>
-          <input type="text" class="input--text" formControlName="position">
+          <input type="text" class="input--text" formControlName="position" />
           <app-validation-message [control]="externalForm.get('position')"></app-validation-message>
         </div>
       </div>
@@ -354,8 +439,10 @@
       <div class="row row--2">
         <div class="form-field">
           <label class="form-label is-required">School / Department / Faculty</label>
-          <input type="text" class="input--text" formControlName="department">
-          <app-validation-message [control]="externalForm.get('department')"></app-validation-message>
+          <input type="text" class="input--text" formControlName="department" />
+          <app-validation-message
+            [control]="externalForm.get('department')"
+          ></app-validation-message>
         </div>
         <div class="form-field">
           <label class="form-label is-required">Country</label>
@@ -364,7 +451,8 @@
             [loading]="countriesLoading"
             [isMulti]="false"
             valueMode="single"
-            formControlName="country">
+            formControlName="country"
+          >
           </app-searchable-dropdown>
           <app-validation-message [control]="externalForm.get('country')"></app-validation-message>
         </div>
@@ -373,16 +461,18 @@
       <!-- Full width: Matched Funding -->
       <div class="form-field">
         <label class="form-label is-required">Matched Funding (RM equivalent)</label>
-        <input type="text" class="input--text" formControlName="funding">
+        <input type="text" class="input--text" formControlName="funding" />
         <app-validation-message [control]="externalForm.get('funding')"></app-validation-message>
       </div>
 
       <!-- Full width: Roles -->
       <div class="form-field">
         <label class="form-label is-required">Roles of Collaborator</label>
-        <textarea class="input--textarea" formControlName="roles" [maxlength]="600">
-          </textarea>
-        <app-character-counter [current]="externalForm.get('roles')?.value?.length || 0" [max]="600">
+        <textarea class="input--textarea" formControlName="roles" [maxlength]="600"> </textarea>
+        <app-character-counter
+          [current]="externalForm.get('roles')?.value?.length || 0"
+          [max]="600"
+        >
         </app-character-counter>
         <app-validation-message [control]="externalForm.get('roles')"></app-validation-message>
       </div>
@@ -393,20 +483,29 @@
           label="Support Letter"
           accept=".pdf"
           [maxSizeMB]="10"
-          (fileSelected)="onFileSelected($event)">
+          (fileSelected)="onFileSelected($event)"
+        >
         </app-file-upload>
-        <app-validation-message [control]="externalForm.get('supportLetter')"></app-validation-message>
+        <app-validation-message
+          [control]="externalForm.get('supportLetter')"
+        ></app-validation-message>
       </div>
-
     </div>
 
-    <app-action-button dialog-footer type="secondary" label="Cancel" (clicked)="showExternalModal.set(false)"></app-action-button>
-    <app-action-button dialog-footer type="primary" icon="check"
+    <app-action-button
+      dialog-footer
+      type="secondary"
+      label="Cancel"
+      (clicked)="showExternalModal.set(false)"
+    ></app-action-button>
+    <app-action-button
+      dialog-footer
+      type="primary"
+      icon="check"
       [label]="editingExternalIdx() !== null ? 'Save Changes' : 'Add Collaborator'"
       [disabled]="externalForm.invalid"
-      (clicked)="saveExternal()">
+      (clicked)="saveExternal()"
+    >
     </app-action-button>
-
   </app-dialog>
 }
-

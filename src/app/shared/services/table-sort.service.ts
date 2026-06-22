@@ -7,6 +7,18 @@ export interface SortState {
   direction: SortDirection;
 }
 
+export function nextTableSortState(current: SortState, selectedColumn: string): SortState {
+  if (current.column !== selectedColumn) {
+    return { column: selectedColumn, direction: 'asc' };
+  }
+
+  const nextDirection: SortDirection =
+    current.direction === 'asc' ? 'desc' : current.direction === 'desc' ? null : 'asc';
+
+  return nextDirection
+    ? { column: selectedColumn, direction: nextDirection }
+    : { column: null, direction: null };
+}
 @Injectable()
 export class TableSortService {
   /**
@@ -14,19 +26,18 @@ export class TableSortService {
    * Cycle: asc -> desc -> null
    */
   getNextDirection(currentDirection: SortDirection): SortDirection {
-    if (currentDirection === 'asc') return 'desc';
-    if (currentDirection === 'desc') return null;
-    return 'asc';
+    return nextTableSortState({ column: 'active', direction: currentDirection }, 'active')
+      .direction;
+  }
+
+  getNextState(current: SortState, selectedColumn: string): SortState {
+    return nextTableSortState(current, selectedColumn);
   }
 
   /**
    * Sort array by column and direction
    */
-  sort<T extends Record<string, any>>(
-    data: T[],
-    column: string,
-    direction: SortDirection
-  ): T[] {
+  sort<T extends Record<string, any>>(data: T[], column: string, direction: SortDirection): T[] {
     if (!direction || !column) {
       return [...data];
     }

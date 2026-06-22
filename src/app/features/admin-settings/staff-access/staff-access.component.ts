@@ -1,8 +1,12 @@
 import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
+import {
+  DataTableColumn,
+  DataTableComponent,
+} from '../../../shared/components/data-table/data-table.component';
+import { nextTableSortState, SortDirection } from '../../../shared/services/table-sort.service';
 
 type AccessStatus = 'active' | 'blocked';
 type StatusFilter = 'all' | AccessStatus;
-type SortDirection = 'asc' | 'desc';
 type SortColumn = 'name' | 'staffId' | 'department' | 'role';
 
 interface StaffAccessRecord {
@@ -21,10 +25,28 @@ interface StaffAccessRecord {
 @Component({
   selector: 'app-staff-access',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [DataTableComponent],
   templateUrl: './staff-access.component.html',
   styleUrls: ['./staff-access.component.scss'],
 })
 export class StaffAccessComponent {
+  readonly columns: DataTableColumn[] = [
+    { key: 'name', label: 'Staff Name', sortable: true },
+    { key: 'staffId', label: 'Staff ID', sortable: true },
+    { key: 'department', label: 'Department', sortable: true },
+    { key: 'role', label: 'Role', sortable: true },
+    { key: 'email', label: 'Email' },
+    { key: 'status', label: 'Status' },
+    { key: 'blockedDate', label: 'Blocked Date' },
+    { key: 'reason', label: 'Reason' },
+    {
+      key: 'actions',
+      label: 'Actions',
+      width: 'var(--size-table-column-actions)',
+      align: 'center',
+      headerAlign: 'center',
+    },
+  ];
   readonly staffRecords = signal<StaffAccessRecord[]>([
     {
       id: 1,
@@ -151,10 +173,12 @@ export class StaffAccessComponent {
   readonly departmentFilter = signal('all');
   readonly statusFilter = signal<StatusFilter>('all');
   readonly searchFilter = signal('');
-  readonly sortColumn = signal<SortColumn>('name');
-  readonly sortDirection = signal<SortDirection>('asc');
+  readonly sortColumn = signal<SortColumn | null>(null);
+  readonly sortDirection = signal<SortDirection>(null);
 
-  readonly blockedCount = computed(() => this.staffRecords().filter((staff) => staff.status === 'blocked').length);
+  readonly blockedCount = computed(
+    () => this.staffRecords().filter((staff) => staff.status === 'blocked').length,
+  );
 
   readonly departmentOptions = computed(() => {
     const values = this.staffRecords().map((staff) => staff.department);
@@ -187,6 +211,7 @@ export class StaffAccessComponent {
   readonly sortedStaff = computed(() => {
     const column = this.sortColumn();
     const direction = this.sortDirection();
+    if (!column || !direction) return this.filteredStaff();
     const directionFactor = direction === 'asc' ? 1 : -1;
 
     return [...this.filteredStaff()].sort((first, second) => {
@@ -213,14 +238,14 @@ export class StaffAccessComponent {
     this.searchFilter.set(value);
   }
 
-  setSort(column: SortColumn): void {
-    if (this.sortColumn() === column) {
-      this.sortDirection.set(this.sortDirection() === 'asc' ? 'desc' : 'asc');
-      return;
-    }
-
-    this.sortColumn.set(column);
-    this.sortDirection.set('asc');
+  setSort(column: string): void {
+    if (!['name', 'staffId', 'department', 'role'].includes(column)) return;
+    const next = nextTableSortState(
+      { column: this.sortColumn(), direction: this.sortDirection() },
+      column,
+    );
+    this.sortColumn.set(next.column as SortColumn | null);
+    this.sortDirection.set(next.direction);
   }
 
   toggleAccess(staffId: number): void {

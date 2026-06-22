@@ -1,0 +1,88 @@
+:host {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: inherit;
+  line-height: 0;
+  flex-shrink: 0;
+}
+
+.svg-icon-container {
+  display: inline-flex;
+  color: inherit;
+  flex-shrink: 0;
+
+  ::ng-deep .svg-icon {
+    display: block;
+    fill: currentColor;
+    overflow: visible;
+  }
+}
+
+.svg-icon-container--trash {
+  color: var(--color-error-dark);
+}
+
+.svg-icon-container--spinner {
+  animation: svg-icon-rotate 2s linear infinite;
+
+  ::ng-deep .svg-icon__spinner-path {
+    stroke: var(--color-primary);
+    stroke-linecap: round;
+    animation: svg-icon-dash 1.5s ease-in-out infinite;
+  }
+}
+
+.svg-icon-container--success {
+  ::ng-deep .svg-icon__success-circle {
+    stroke: transparent;
+  }
+
+  ::ng-deep .svg-icon__success-check {
+    stroke: white;
+    stroke-width: 4;
+    stroke-miterlimit: 10;
+    stroke-dasharray: 48;
+    stroke-dashoffset: 48;
+    animation: svg-icon-draw-check 0.5s cubic-bezier(0.65, 0, 0.45, 1) 0.15s forwards;
+  }
+}
+
+@keyframes svg-icon-rotate {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes svg-icon-dash {
+  0% {
+    stroke-dasharray: 1, 150;
+    stroke-dashoffset: 0;
+  }
+  50% {
+    stroke-dasharray: 90, 150;
+    stroke-dashoffset: -35;
+  }
+  100% {
+    stroke-dasharray: 90, 150;
+    stroke-dashoffset: -124;
+  }
+}
+
+@keyframes svg-icon-draw-check {
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .svg-icon-container--spinner,
+  .svg-icon-container--spinner ::ng-deep .svg-icon__spinner-path,
+  .svg-icon-container--success ::ng-deep .svg-icon__success-check {
+    animation: none;
+  }
+
+  .svg-icon-container--success ::ng-deep .svg-icon__success-check {
+    stroke-dashoffset: 0;
+  }
+}

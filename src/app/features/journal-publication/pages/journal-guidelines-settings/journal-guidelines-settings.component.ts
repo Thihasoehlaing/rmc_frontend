@@ -1,15 +1,30 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { JournalGuidelinesService, JournalGuideline } from '../../services/journal-guidelines.service';
+import {
+  JournalGuidelinesService,
+  JournalGuideline,
+} from '../../services/journal-guidelines.service';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
+import {
+  DataTableColumn,
+  DataTableComponent,
+} from '../../../../shared/components/data-table/data-table.component';
+import { nextTableSortState, SortDirection } from '../../../../shared/services/table-sort.service';
+import { TableActionIconComponent } from '../../../../shared/components/table-action-icon/table-action-icon.component';
 
 @Component({
   selector: 'app-journal-guidelines-settings',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, PaginationComponent],
+  imports: [
+    TableActionIconComponent,
+    CommonModule,
+    ReactiveFormsModule,
+    PaginationComponent,
+    DataTableComponent,
+  ],
   templateUrl: './journal-guidelines-settings.component.html',
-  styleUrl: './journal-guidelines-settings.component.scss'
+  styleUrl: './journal-guidelines-settings.component.scss',
 })
 export class JournalGuidelinesSettingsComponent implements OnInit {
   private guidelinesService = inject(JournalGuidelinesService);
@@ -21,11 +36,32 @@ export class JournalGuidelinesSettingsComponent implements OnInit {
   editingId = signal<string | null>(null);
   selectedCheckboxes = signal<Set<string>>(new Set());
 
+  readonly columns: DataTableColumn[] = [
+    {
+      key: 'select',
+      label: '',
+      width: 'var(--size-table-column-number)',
+      align: 'center',
+      headerAlign: 'center',
+    },
+    { key: 'title', label: 'Guideline Title', sortable: true },
+    { key: 'formName', label: 'Form Name' },
+    { key: 'sectionName', label: 'Section Name' },
+    { key: 'content', label: 'Content Snippet' },
+    { key: 'status', label: 'Status' },
+    {
+      key: 'actions',
+      label: 'Actions',
+      width: 'var(--size-table-column-actions)',
+      align: 'center',
+      headerAlign: 'center',
+    },
+  ];
   // Filter signals
   searchQuery = signal<string>('');
   filterStatus = signal<'All' | 'Active' | 'Inactive'>('All');
-  sortBy = signal<'date' | 'title'>('date');
-  sortDirection = signal<'asc' | 'desc'>('asc');
+  sortBy = signal<'date' | 'title' | null>(null);
+  sortDirection = signal<SortDirection>(null);
   guidelinePage = signal(1);
   guidelinePageSize = signal(15);
   guidelinePageSizeOptions = [5, 15, 30, 50];
@@ -36,21 +72,24 @@ export class JournalGuidelinesSettingsComponent implements OnInit {
 
     const query = this.searchQuery().toLowerCase();
     if (query) {
-      result = result.filter(g =>
-        g.title.toLowerCase().includes(query) ||
-        g.sectionName.toLowerCase().includes(query) ||
-        g.formName.toLowerCase().includes(query)
+      result = result.filter(
+        (g) =>
+          g.title.toLowerCase().includes(query) ||
+          g.sectionName.toLowerCase().includes(query) ||
+          g.formName.toLowerCase().includes(query),
       );
     }
 
     const status = this.filterStatus();
     if (status !== 'All') {
-      result = result.filter(g => g.status === status);
+      result = result.filter((g) => g.status === status);
     }
 
     // Apply sorting
     const sort = this.sortBy();
-    const dir = this.sortDirection() === 'asc' ? 1 : -1;
+    const sortDirection = this.sortDirection();
+    if (!sort || !sortDirection) return result;
+    const dir = sortDirection === 'asc' ? 1 : -1;
     result.sort((a, b) => {
       if (sort === 'title') {
         const titleA = (a.title || '').toLowerCase();
@@ -80,7 +119,10 @@ export class JournalGuidelinesSettingsComponent implements OnInit {
   guidelinePageStart = computed(() => {
     const total = this.filteredGuidelines().length;
     if (total === 0) return 0;
-    return ((Math.min(this.guidelinePage(), this.guidelineTotalPages()) - 1) * this.guidelinePageSize()) + 1;
+    return (
+      (Math.min(this.guidelinePage(), this.guidelineTotalPages()) - 1) * this.guidelinePageSize() +
+      1
+    );
   });
 
   guidelinePageEnd = computed(() => {
@@ -90,7 +132,7 @@ export class JournalGuidelinesSettingsComponent implements OnInit {
   });
 
   get hasSelectedCheckboxes(): boolean {
-      return this.selectedCheckboxes().size > 0;
+    return this.selectedCheckboxes().size > 0;
   }
 
   onSearchInput(event: Event) {
@@ -106,22 +148,23 @@ export class JournalGuidelinesSettingsComponent implements OnInit {
   }
 
   onSortChange(column: 'date' | 'title') {
-    if (this.sortBy() === column) {
-      this.sortDirection.set(this.sortDirection() === 'asc' ? 'desc' : 'asc');
-    } else {
-      this.sortBy.set(column);
-      this.sortDirection.set('asc');
-    }
+    const next = nextTableSortState(
+      { column: this.sortBy(), direction: this.sortDirection() },
+      column,
+    );
+    this.sortBy.set(next.column as 'date' | 'title' | null);
+    this.sortDirection.set(next.direction);
     this.guidelinePage.set(1);
   }
 
   ngOnInit() {
-    this.loadGuidelines();    this.form = this.fb.group({
+    this.loadGuidelines();
+    this.form = this.fb.group({
       title: ['', Validators.required],
       formName: ['Journal Publication Form', Validators.required],
       sectionName: ['General', Validators.required],
       content: ['', Validators.required],
-      status: ['Active', Validators.required]
+      status: ['Active', Validators.required],
     });
   }
 
@@ -150,7 +193,11 @@ export class JournalGuidelinesSettingsComponent implements OnInit {
 
   openAddModal() {
     this.editingId.set(null);
-    this.form.reset({ formName: 'Journal Publication Form', sectionName: 'General', status: 'Active' });
+    this.form.reset({
+      formName: 'Journal Publication Form',
+      sectionName: 'General',
+      status: 'Active',
+    });
     this.isModalOpen.set(true);
   }
 
@@ -174,9 +221,17 @@ export class JournalGuidelinesSettingsComponent implements OnInit {
 
     const val = this.form.value;
     if (this.editingId()) {
-      this.guidelinesService.updateGuideline(this.editingId()!, { ...val, id: this.editingId()!, createdDate: new Date().toISOString() });
+      this.guidelinesService.updateGuideline(this.editingId()!, {
+        ...val,
+        id: this.editingId()!,
+        createdDate: new Date().toISOString(),
+      });
     } else {
-      this.guidelinesService.addGuideline({ ...val, id: crypto.randomUUID(), createdDate: new Date().toISOString() });
+      this.guidelinesService.addGuideline({
+        ...val,
+        id: crypto.randomUUID(),
+        createdDate: new Date().toISOString(),
+      });
     }
 
     this.loadGuidelines();
@@ -191,9 +246,11 @@ export class JournalGuidelinesSettingsComponent implements OnInit {
       }
       return;
     }
-    
+
     if (confirm('Are you sure you want to delete the selected guidelines?')) {
-      this.selectedCheckboxes().forEach(checkboxId => this.guidelinesService.deleteGuideline(checkboxId));
+      this.selectedCheckboxes().forEach((checkboxId) =>
+        this.guidelinesService.deleteGuideline(checkboxId),
+      );
       this.selectedCheckboxes.set(new Set());
       this.loadGuidelines();
     }

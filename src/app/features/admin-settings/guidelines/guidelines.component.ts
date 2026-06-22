@@ -1,12 +1,5 @@
 import { CommonModule } from '@angular/common';
-import {
-  Component,
-  OnDestroy,
-  OnInit,
-  TrackByFunction,
-  inject,
-  signal,
-} from '@angular/core';
+import { Component, OnDestroy, OnInit, TrackByFunction, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
 
@@ -15,17 +8,17 @@ import {
   BlockType,
   GuidelineConfig,
 } from './add-guideline-modal/add-guideline-modal.component';
-import {
-  GuidelineApi,
-  GuidelinePayload,
-  GuidelinesService,
-} from './guidelines.service';
+import { GuidelineApi, GuidelinePayload, GuidelinesService } from './guidelines.service';
 import {
   DataTableColumn,
   DataTableComponent,
 } from '../../../shared/components/data-table/data-table.component';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
 import { DialogComponent } from '../../../shared/components/dialog/dialog.component';
+import { nextTableSortState, SortDirection } from '../../../shared/services/table-sort.service';
+import { SvgIconComponent } from '../../../shared/components/svg-icon/svg-icon.component';
+import { SVG_ICON_TRASH } from '../../../shared/icons/svg-icons';
+import { TableActionIconComponent } from '../../../shared/components/table-action-icon/table-action-icon.component';
 
 interface Guideline {
   id: number;
@@ -38,12 +31,7 @@ interface Guideline {
   createdBy: string;
 }
 
-type GuidelineSortKey =
-  | 'form'
-  | 'title'
-  | 'blocks'
-  | 'lastUpdated'
-  | 'createdBy';
+type GuidelineSortKey = 'form' | 'title' | 'blocks' | 'lastUpdated' | 'createdBy';
 
 const FORM_LABELS: Record<string, string> = {
   CONFERENCE: 'Conference Application',
@@ -61,24 +49,28 @@ const FORM_CODES: Record<string, string> = Object.fromEntries(
   selector: 'app-guidelines',
   standalone: true,
   imports: [
+    TableActionIconComponent,
     CommonModule,
     FormsModule,
     AddGuidelineModalComponent,
     DataTableComponent,
     PaginationComponent,
     DialogComponent,
+    SvgIconComponent,
   ],
   templateUrl: './guidelines.component.html',
   styleUrls: ['./guidelines.component.scss'],
 })
 export class GuidelinesComponent implements OnInit, OnDestroy {
+  readonly trashIcon = SVG_ICON_TRASH;
+
   private readonly guidelinesService = inject(GuidelinesService);
   private searchTimer?: ReturnType<typeof setTimeout>;
 
   readonly searchTerm = signal('');
   readonly selectedStatus = signal('');
-  readonly sortBy = signal<GuidelineSortKey>('form');
-  readonly sortDirection = signal<'asc' | 'desc'>('asc');
+  readonly sortBy = signal<GuidelineSortKey | null>(null);
+  readonly sortDirection = signal<SortDirection>(null);
   readonly showAddModal = signal(false);
   readonly editingGuidelineId = signal<number | null>(null);
   readonly editingConfig = signal<GuidelineConfig | null>(null);
@@ -127,10 +119,8 @@ export class GuidelinesComponent implements OnInit, OnDestroy {
     },
   ];
 
-  readonly rowTrackFn: TrackByFunction<unknown> = (
-    _index: number,
-    row: unknown,
-  ) => (row as Guideline).id;
+  readonly rowTrackFn: TrackByFunction<unknown> = (_index: number, row: unknown) =>
+    (row as Guideline).id;
 
   ngOnInit(): void {
     this.loadGuidelines();
@@ -155,20 +145,17 @@ export class GuidelinesComponent implements OnInit, OnDestroy {
       })
       .pipe(finalize(() => this.isLoading.set(false)))
       .subscribe({
-        next: response => {
+        next: (response) => {
           const pagination = response.data.pagination;
           const totalPages = Math.max(1, pagination.total_pages);
 
-          if (
-            pagination.total_pages > 0 &&
-            this.guidelinePage() > pagination.total_pages
-          ) {
+          if (pagination.total_pages > 0 && this.guidelinePage() > pagination.total_pages) {
             this.guidelinePage.set(pagination.total_pages);
             this.loadGuidelines();
             return;
           }
 
-          this.guidelines.set(response.data.items.map(item => this.toRow(item)));
+          this.guidelines.set(response.data.items.map((item) => this.toRow(item)));
           this.totalGuidelines.set(pagination.total_items);
           this.totalPages.set(totalPages);
         },
@@ -183,11 +170,12 @@ export class GuidelinesComponent implements OnInit, OnDestroy {
 
   displayedGuidelines(): Guideline[] {
     const sortKey = this.sortBy();
-    const direction = this.sortDirection() === 'asc' ? 1 : -1;
+    const sortDirection = this.sortDirection();
+    if (!sortKey || !sortDirection) return this.guidelines();
+    const direction = sortDirection === 'asc' ? 1 : -1;
 
     return [...this.guidelines()].sort(
-      (first, second) =>
-        this.compareGuidelines(first, second, sortKey) * direction,
+      (first, second) => this.compareGuidelines(first, second, sortKey) * direction,
     );
   }
 
@@ -241,15 +229,12 @@ export class GuidelinesComponent implements OnInit, OnDestroy {
   }
 
   onSortChange(columnKey: string): void {
-    if (this.sortBy() === columnKey) {
-      this.sortDirection.update(direction =>
-        direction === 'asc' ? 'desc' : 'asc',
-      );
-      return;
-    }
-
-    this.sortBy.set(columnKey as GuidelineSortKey);
-    this.sortDirection.set('asc');
+    const next = nextTableSortState(
+      { column: this.sortBy(), direction: this.sortDirection() },
+      columnKey,
+    );
+    this.sortBy.set(next.column as GuidelineSortKey | null);
+    this.sortDirection.set(next.direction);
   }
 
   addGuideline(): void {
@@ -274,14 +259,12 @@ export class GuidelinesComponent implements OnInit, OnDestroy {
       : this.guidelinesService.create(payload);
 
     this.isSaving.set(true);
-    request
-      .pipe(finalize(() => this.isSaving.set(false)))
-      .subscribe({
-        next: () => {
-          this.closeModal();
-          this.loadGuidelines();
-        },
-      });
+    request.pipe(finalize(() => this.isSaving.set(false))).subscribe({
+      next: () => {
+        this.closeModal();
+        this.loadGuidelines();
+      },
+    });
   }
 
   toggleGuidelineStatus(guideline: Guideline): void {
@@ -311,19 +294,19 @@ export class GuidelinesComponent implements OnInit, OnDestroy {
     this.loadingGuidelineId.set(guideline.id);
     this.guidelinesService
       .updateStatus(guideline.id, false)
-      .pipe(finalize(() => {
-        this.loadingGuidelineId.set(null);
-        this.guidelineToDeactivate.set(null);
-      }))
+      .pipe(
+        finalize(() => {
+          this.loadingGuidelineId.set(null);
+          this.guidelineToDeactivate.set(null);
+        }),
+      )
       .subscribe({
         next: () => this.loadGuidelines(),
       });
   }
 
   deleteGuideline(guideline: Guideline): void {
-    const confirmed = window.confirm(
-      `Delete "${guideline.title}"? This action cannot be undone.`,
-    );
+    const confirmed = window.confirm(`Delete "${guideline.title}"? This action cannot be undone.`);
     if (!confirmed || this.loadingGuidelineId() !== null) return;
 
     this.loadingGuidelineId.set(guideline.id);
@@ -333,7 +316,7 @@ export class GuidelinesComponent implements OnInit, OnDestroy {
       .subscribe({
         next: () => {
           if (this.guidelines().length === 1 && this.guidelinePage() > 1) {
-            this.guidelinePage.update(page => page - 1);
+            this.guidelinePage.update((page) => page - 1);
           }
           this.loadGuidelines();
         },
@@ -348,7 +331,7 @@ export class GuidelinesComponent implements OnInit, OnDestroy {
       .get(id)
       .pipe(finalize(() => this.loadingGuidelineId.set(null)))
       .subscribe({
-        next: response => {
+        next: (response) => {
           this.editingGuidelineId.set(id);
           this.editingConfig.set(this.toConfig(response.data));
           this.showAddModal.set(true);
@@ -364,9 +347,7 @@ export class GuidelinesComponent implements OnInit, OnDestroy {
       title: item.guideline_title || 'Untitled Guideline',
       isActive: item.is_active,
       blockCount: item.block_count,
-      lastUpdated: this.formatDisplayDate(
-        item.updated_at || item.created_at,
-      ),
+      lastUpdated: this.formatDisplayDate(item.updated_at || item.created_at),
       createdBy: item.created_by || 'Unknown',
     };
   }
@@ -379,7 +360,7 @@ export class GuidelinesComponent implements OnInit, OnDestroy {
       textToken: item.text_token || 'var(--color-text-primary)',
       buttonToken: item.button_token || 'var(--color-primary)',
       buttonText: item.button_text || 'Close',
-      blocks: (item.blocks ?? []).map(block => ({
+      blocks: (item.blocks ?? []).map((block) => ({
         id: String(block.id),
         type: block.block_type as BlockType,
         content: block.block_content,
@@ -424,10 +405,7 @@ export class GuidelinesComponent implements OnInit, OnDestroy {
     }
 
     if (sortKey === 'lastUpdated') {
-      return (
-        this.parseDisplayDate(first.lastUpdated) -
-        this.parseDisplayDate(second.lastUpdated)
-      );
+      return this.parseDisplayDate(first.lastUpdated) - this.parseDisplayDate(second.lastUpdated);
     }
 
     return first[sortKey].localeCompare(second[sortKey]);
@@ -448,8 +426,6 @@ export class GuidelinesComponent implements OnInit, OnDestroy {
 
   private parseDisplayDate(dateValue: string): number {
     const [day, month, year] = dateValue.split('/').map(Number);
-    return day && month && year
-      ? new Date(year, month - 1, day).getTime()
-      : 0;
+    return day && month && year ? new Date(year, month - 1, day).getTime() : 0;
   }
 }

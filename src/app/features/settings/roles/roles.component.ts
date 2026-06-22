@@ -1,11 +1,5 @@
 import { CommonModule } from '@angular/common';
-import {
-  Component,
-  OnInit,
-  TrackByFunction,
-  inject,
-  signal,
-} from '@angular/core';
+import { Component, OnInit, TrackByFunction, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
 
@@ -20,6 +14,8 @@ import { DetailPanelSkeletonComponent } from '../../../shared/components/detail-
 import { TableSkeletonComponent } from '../../../shared/components/table-skeleton/table-skeleton.component';
 import { Role, RolePayload, RolesService } from './roles.service';
 
+import { TableActionIconComponent } from '../../../shared/components/table-action-icon/table-action-icon.component';
+
 type DialogMode = 'create' | 'edit';
 type StatusFilter = '' | 'Active' | 'Inactive';
 
@@ -27,6 +23,7 @@ type StatusFilter = '' | 'Active' | 'Inactive';
   selector: 'app-roles',
   standalone: true,
   imports: [
+    TableActionIconComponent,
     CommonModule,
     FormsModule,
     DataTableComponent,
@@ -36,10 +33,7 @@ type StatusFilter = '' | 'Active' | 'Inactive';
     TableSkeletonComponent,
   ],
   templateUrl: './roles.component.html',
-  styleUrls: [
-    '../forms/forms.component.scss',
-    './roles.component.scss',
-  ],
+  styleUrls: ['../forms/forms.component.scss', './roles.component.scss'],
 })
 export class RolesComponent implements OnInit {
   private readonly rolesService = inject(RolesService);
@@ -84,10 +78,8 @@ export class RolesComponent implements OnInit {
     },
   ];
 
-  readonly rowTrackFn: TrackByFunction<unknown> = (
-    _index: number,
-    row: unknown,
-  ) => (row as Role).id;
+  readonly rowTrackFn: TrackByFunction<unknown> = (_index: number, row: unknown) =>
+    (row as Role).id;
 
   ngOnInit(): void {
     this.loadRoles();
@@ -106,7 +98,7 @@ export class RolesComponent implements OnInit {
       })
       .pipe(finalize(() => this.isLoading.set(false)))
       .subscribe({
-        next: response => {
+        next: (response) => {
           const pagination = response.data.pagination;
           if (pagination.total_pages > 0 && this.page() > pagination.total_pages) {
             this.page.set(pagination.total_pages);
@@ -188,12 +180,7 @@ export class RolesComponent implements OnInit {
     this.roleName.set(value);
     if (this.dialogMode() !== 'create') return;
 
-    this.roleCode.set(
-      value
-        .trim()
-        .toUpperCase()
-        .replace(/\s+/g, '_'),
-    );
+    this.roleCode.set(value.trim().toUpperCase().replace(/\s+/g, '_'));
   }
 
   saveRole(): void {
@@ -214,16 +201,14 @@ export class RolesComponent implements OnInit {
         : this.rolesService.update(this.selectedRole()!.id, payload);
 
     this.isSaving.set(true);
-    request
-      .pipe(finalize(() => this.isSaving.set(false)))
-      .subscribe({
-        next: () => {
-          this.dialogMode.set(null);
-          this.selectedRole.set(null);
-          this.page.set(1);
-          this.loadRoles();
-        },
-      });
+    request.pipe(finalize(() => this.isSaving.set(false))).subscribe({
+      next: () => {
+        this.dialogMode.set(null);
+        this.selectedRole.set(null);
+        this.page.set(1);
+        this.loadRoles();
+      },
+    });
   }
 
   openDeleteDialog(role: Role): void {
@@ -260,16 +245,11 @@ export class RolesComponent implements OnInit {
   }
 
   pageStart(): number {
-    return this.totalItems() === 0
-      ? 0
-      : (this.page() - 1) * this.pageSize() + 1;
+    return this.totalItems() === 0 ? 0 : (this.page() - 1) * this.pageSize() + 1;
   }
 
   pageEnd(): number {
-    return Math.min(
-      this.pageStart() + this.roles().length - 1,
-      this.totalItems(),
-    );
+    return Math.min(this.pageStart() + this.roles().length - 1, this.totalItems());
   }
 
   private fetchRole(id: number): void {
@@ -280,7 +260,7 @@ export class RolesComponent implements OnInit {
       .get(id)
       .pipe(finalize(() => this.isDetailLoading.set(false)))
       .subscribe({
-        next: response => {
+        next: (response) => {
           this.selectedRole.set(response.data);
           this.roleCode.set(response.data.role_code);
           this.roleName.set(response.data.role_name);

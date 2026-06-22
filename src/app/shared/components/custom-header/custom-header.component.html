@@ -1,8 +1,8 @@
 <div class="custom-header">
   @if (icon) {
     <span class="material-icons header-icon--material">{{ icon }}</span>
-  } @else if (iconSvg) {
-    <div class="header-icon" [innerHTML]="iconSvg"></div>
+  } @else if (svgIcon) {
+    <app-svg-icon class="header-icon" [icon]="svgIcon"></app-svg-icon>
   }
-  <h2 class="header-text">{{title}}</h2>
+  <h2 class="header-text">{{ title }}</h2>
 </div>

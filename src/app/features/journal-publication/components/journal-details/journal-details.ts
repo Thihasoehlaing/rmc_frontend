@@ -1,4 +1,13 @@
-import { Component, OnInit, OnDestroy, inject, effect, Output, EventEmitter, ChangeDetectorRef } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  inject,
+  effect,
+  Output,
+  EventEmitter,
+  ChangeDetectorRef,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -11,20 +20,26 @@ import { CharacterCounterComponent } from '../../../../shared/components/charact
 import { CustomHeaderComponent } from '../../../../shared/components/custom-header/custom-header.component';
 import { FileUploadComponent } from '../../../../shared/components/file-upload/file-upload.component';
 import { ValidationMessageComponent } from '../../../../shared/components/validation-message/validation-message.component';
-import { DataTableComponent, DataTableColumn } from '../../../../shared/components/data-table/data-table.component';
+import {
+  DataTableComponent,
+  DataTableColumn,
+} from '../../../../shared/components/data-table/data-table.component';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
 import { JournalOptionType, JournalOptionsService } from '../../services/journal-options.service';
 import { DropdownOption } from '../../../../core/interfaces/components.interface';
 import {
   SDG_KEYWORD_EXAMPLE,
   SDG_KEYWORD_NOTE,
-  sdgKeywordValidator
+  sdgKeywordValidator,
 } from '../../../../shared/validators/sdg-keyword.validator';
+
+import { TableActionIconComponent } from '../../../../shared/components/table-action-icon/table-action-icon.component';
 
 @Component({
   selector: 'app-journal-details',
   standalone: true,
   imports: [
+    TableActionIconComponent,
     CommonModule,
     ReactiveFormsModule,
     CharacterCounterComponent,
@@ -35,10 +50,10 @@ import {
     NoteComponent,
     SearchableDropdownComponent,
     ValidationMessageComponent,
-    PaginationComponent
+    PaginationComponent,
   ],
   templateUrl: './journal-details.html',
-  styleUrl: './journal-details.scss'
+  styleUrl: './journal-details.scss',
 })
 export class JournalDetails implements OnInit, OnDestroy {
   readonly nonResearchAccountCodeDescription = 'TRAINING PRESENTATION PUBLICATION';
@@ -71,7 +86,12 @@ export class JournalDetails implements OnInit, OnDestroy {
   researchBreakdowns: any[] = [];
   externalBreakdowns: any[] = [];
   NonResearchBreakdowns: any[] = [];
-  currentBreakdownOptions: { value: string; label: string; accountCode?: string; voteNumber?: string }[] = [];
+  currentBreakdownOptions: {
+    value: string;
+    label: string;
+    accountCode?: string;
+    voteNumber?: string;
+  }[] = [];
 
   selectedFileName: string | null = null;
   selectedFile: File | null = null;
@@ -90,7 +110,7 @@ export class JournalDetails implements OnInit, OnDestroy {
     { key: 'costInRM', label: 'Cost in RM' },
     { key: 'description', label: 'Description' },
     { key: 'fileName', label: 'Supporting Doc' },
-    { key: 'actions', label: 'Actions', width: '100px', align: 'center', headerAlign: 'center' }
+    { key: 'actions', label: 'Actions', width: '100px', align: 'center', headerAlign: 'center' },
   ];
 
   readonly externalResearchBreakdownColumns: DataTableColumn[] = [
@@ -101,7 +121,7 @@ export class JournalDetails implements OnInit, OnDestroy {
     { key: 'cost', label: 'Cost in Foreign Currency' },
     { key: 'exchangeRate', label: 'Exchange Rate' },
     { key: 'description', label: 'Description' },
-    { key: 'actions', label: 'Actions', width: '100px', align: 'center', headerAlign: 'center' }
+    { key: 'actions', label: 'Actions', width: '100px', align: 'center', headerAlign: 'center' },
   ];
 
   readonly nonResearchBreakdownColumns: DataTableColumn[] = [
@@ -111,7 +131,7 @@ export class JournalDetails implements OnInit, OnDestroy {
     { key: 'exchangeRate', label: 'Exchange Rate' },
     { key: 'costInRM', label: 'Cost in RM (Approximate)' },
     { key: 'description', label: 'Description' },
-    { key: 'actions', label: 'Actions', width: '100px', align: 'center', headerAlign: 'center' }
+    { key: 'actions', label: 'Actions', width: '100px', align: 'center', headerAlign: 'center' },
   ];
 
   @Output() formValidityChange = new EventEmitter<boolean>();
@@ -170,10 +190,10 @@ export class JournalDetails implements OnInit, OnDestroy {
       sponsorshipPercentage: [{ value: 0, disabled: true }],
       sponsorshipAmountAPU: [{ value: 0, disabled: true }],
       costByApplicant: [{ value: 0, disabled: true }],
-      costingRemarks: ['', [Validators.maxLength(500)]]
+      costingRemarks: ['', [Validators.maxLength(500)]],
     });
 
-    this.form.statusChanges.subscribe(status => {
+    this.form.statusChanges.subscribe((status) => {
       this.formValidityChange.emit(status === 'VALID');
     });
 
@@ -227,29 +247,31 @@ export class JournalDetails implements OnInit, OnDestroy {
       costForeign: [''],
       exchangeRate: ['', [Validators.required, Validators.pattern(integerPattern)]],
       description: [''],
-      costInRM: { value: '', disabled: true }
+      costInRM: { value: '', disabled: true },
     });
 
     this.breakdownForm.get('itemDescription')?.valueChanges.subscribe((value) => {
       if (this.breakdownType === 'non-research') {
-        this.breakdownForm.patchValue({
-          accountCode: this.nonResearchAccountCode,
-          accountCodeDescription: this.nonResearchAccountCodeDescription,
-        }, { emitEvent: false });
+        this.breakdownForm.patchValue(
+          {
+            accountCode: this.nonResearchAccountCode,
+            accountCodeDescription: this.nonResearchAccountCodeDescription,
+          },
+          { emitEvent: false },
+        );
         return;
       }
 
       const selected = this.findResearchOption(value);
-      this.breakdownForm.get('voteNumber')?.setValue(
-        selected?.voteNumber || '',
-        { emitEvent: false },
-      );
+      this.breakdownForm
+        .get('voteNumber')
+        ?.setValue(selected?.voteNumber || '', { emitEvent: false });
     });
 
     this.sdgKeywordsForm = this.fb.group({
       keyword1: ['', [Validators.required, sdgKeywordValidator]],
       keyword2: ['', [Validators.required, sdgKeywordValidator]],
-      keyword3: ['', [Validators.required, sdgKeywordValidator]]
+      keyword3: ['', [Validators.required, sdgKeywordValidator]],
     });
 
     this.refreshDropdownOptions();
@@ -297,8 +319,11 @@ export class JournalDetails implements OnInit, OnDestroy {
   getBreakdownPageStart(type: string): number {
     const total = this.getBreakdownArray(type).length;
     if (total === 0) return 0;
-    const currentPage = Math.min(this.getBreakdownCurrentPage(type), this.getBreakdownTotalPages(type));
-    return ((currentPage - 1) * this.getBreakdownPageSize(type)) + 1;
+    const currentPage = Math.min(
+      this.getBreakdownCurrentPage(type),
+      this.getBreakdownTotalPages(type),
+    );
+    return (currentPage - 1) * this.getBreakdownPageSize(type) + 1;
   }
 
   getBreakdownPageEnd(type: string): number {
@@ -309,7 +334,10 @@ export class JournalDetails implements OnInit, OnDestroy {
 
   getPaginatedBreakdownArray(type: string): any[] {
     const rows = this.getBreakdownArray(type);
-    const currentPage = Math.min(this.getBreakdownCurrentPage(type), this.getBreakdownTotalPages(type));
+    const currentPage = Math.min(
+      this.getBreakdownCurrentPage(type),
+      this.getBreakdownTotalPages(type),
+    );
     const pageSize = this.getBreakdownPageSize(type);
     const startIndex = (currentPage - 1) * pageSize;
     return rows.slice(startIndex, startIndex + pageSize);
@@ -322,8 +350,9 @@ export class JournalDetails implements OnInit, OnDestroy {
       if (type === 'non-research') {
         this.currentBreakdownOptions = [];
       } else {
-        const researchOpts = this.journalOptionsService.getOptionsForType('vote_number_description');
-        this.currentBreakdownOptions = researchOpts.map(opt => ({
+        const researchOpts =
+          this.journalOptionsService.getOptionsForType('vote_number_description');
+        this.currentBreakdownOptions = researchOpts.map((opt) => ({
           value: opt.value,
           label: opt.label,
           voteNumber: this.journalOptionsService.getConfiguredVoteNumber(opt.value),
@@ -365,36 +394,54 @@ export class JournalDetails implements OnInit, OnDestroy {
         this.selectedFileName = entry.fileName || null;
         this.selectedFile = null;
         if (type === 'non-research') {
-          this.breakdownForm.patchValue({
-            ...entry,
-            itemDescription: this.nonResearchAccountCodeDescription,
-            accountCode: this.nonResearchAccountCode,
-            accountCodeDescription: this.nonResearchAccountCodeDescription,
-          }, { emitEvent: false });
+          this.breakdownForm.patchValue(
+            {
+              ...entry,
+              itemDescription: this.nonResearchAccountCodeDescription,
+              accountCode: this.nonResearchAccountCode,
+              accountCodeDescription: this.nonResearchAccountCodeDescription,
+            },
+            { emitEvent: false },
+          );
         } else {
-          this.breakdownForm.patchValue({
-            ...entry,
-            voteNumber: entry.voteNumber || this.journalOptionsService.getConfiguredVoteNumber(entry.itemDescription),
-            accountCode: type === 'external-research'
-              ? (entry.accountCode || entry.voteNumber || this.form.get('projectAccountCode')?.value || '')
-              : ''
-          }, { emitEvent: false });
+          this.breakdownForm.patchValue(
+            {
+              ...entry,
+              voteNumber:
+                entry.voteNumber ||
+                this.journalOptionsService.getConfiguredVoteNumber(entry.itemDescription),
+              accountCode:
+                type === 'external-research'
+                  ? entry.accountCode ||
+                    entry.voteNumber ||
+                    this.form.get('projectAccountCode')?.value ||
+                    ''
+                  : '',
+            },
+            { emitEvent: false },
+          );
         }
       } else {
         this.breakdownEditingIndex = null;
         if (type === 'non-research') {
-          this.breakdownForm.patchValue({
-            itemDescription: this.nonResearchAccountCodeDescription,
-            accountCode: this.nonResearchAccountCode,
-            accountCodeDescription: this.nonResearchAccountCodeDescription,
-          }, { emitEvent: false });
+          this.breakdownForm.patchValue(
+            {
+              itemDescription: this.nonResearchAccountCodeDescription,
+              accountCode: this.nonResearchAccountCode,
+              accountCodeDescription: this.nonResearchAccountCodeDescription,
+            },
+            { emitEvent: false },
+          );
         } else if (type === 'external-research') {
           // For External, auto-fill with Project Account Code
           const projectAccountCode = this.form.get('projectAccountCode')?.value || '';
-          this.breakdownForm.patchValue({
-            voteNumber: '',
-            accountCode: projectAccountCode
-          }, { emitEvent: false });
+          this.breakdownForm.patchValue(
+            {
+              voteNumber: '',
+              accountCode: projectAccountCode,
+            },
+            { emitEvent: false },
+          );
         }
       }
 
@@ -415,15 +462,24 @@ export class JournalDetails implements OnInit, OnDestroy {
     this.cdr.detectChanges();
   }
 
-  private findNonResearchOption(value: string): { value: string; label: string; accountCode?: string } | undefined {
+  private findNonResearchOption(
+    value: string,
+  ): { value: string; label: string; accountCode?: string } | undefined {
     if (!value) return undefined;
-    return this.currentBreakdownOptions.find(opt => opt.value === value) || this.currentBreakdownOptions.find(opt => opt.label === value);
+    return (
+      this.currentBreakdownOptions.find((opt) => opt.value === value) ||
+      this.currentBreakdownOptions.find((opt) => opt.label === value)
+    );
   }
 
-  private findResearchOption(value: string): { value: string; label: string; voteNumber?: string } | undefined {
+  private findResearchOption(
+    value: string,
+  ): { value: string; label: string; voteNumber?: string } | undefined {
     if (!value) return undefined;
-    return this.currentBreakdownOptions.find(opt => opt.value === value) ||
-      this.currentBreakdownOptions.find(opt => opt.label === value);
+    return (
+      this.currentBreakdownOptions.find((opt) => opt.value === value) ||
+      this.currentBreakdownOptions.find((opt) => opt.label === value)
+    );
   }
 
   saveBreakdownEntry() {
@@ -461,7 +517,7 @@ export class JournalDetails implements OnInit, OnDestroy {
       accountCode: resolvedAccountCode,
       accountCodeDescription: resolvedAccountCodeDescription,
       costInRM,
-      fileName: this.selectedFileName || entry.fileName || ''
+      fileName: this.selectedFileName || entry.fileName || '',
     };
 
     const type = this.breakdownType as string;
@@ -486,13 +542,17 @@ export class JournalDetails implements OnInit, OnDestroy {
   calculateBreakdownTotal(type: string): number {
     const array = this.getBreakdownArray(type);
     let total = 0;
-    array.forEach(item => {
+    array.forEach((item) => {
       total += parseFloat(item.costInRM) || 0;
     });
     return total;
   }
 
-  calculateSponsorshipCosting(totalCost: number, externalSponsorship: number, scopusQuartile: string) {
+  calculateSponsorshipCosting(
+    totalCost: number,
+    externalSponsorship: number,
+    scopusQuartile: string,
+  ) {
     let percentage = 0;
     if (scopusQuartile === 'Q1' || scopusQuartile === 'Q2') percentage = 100;
     else if (scopusQuartile === 'Q3') percentage = 50;
@@ -508,12 +568,13 @@ export class JournalDetails implements OnInit, OnDestroy {
     return {
       sponsorshipPercentage: percentage,
       apuSponsorshipAmount: apuFinal,
-      applicantCost: applicantCost
+      applicantCost: applicantCost,
     };
   }
 
   private normalizeAmount(value: unknown): number | null {
-    const amount = typeof value === 'number' ? value : parseFloat(String(value ?? '').replace(/,/g, ''));
+    const amount =
+      typeof value === 'number' ? value : parseFloat(String(value ?? '').replace(/,/g, ''));
     return Number.isFinite(amount) ? Math.round(amount * 100) / 100 : null;
   }
 
@@ -523,7 +584,7 @@ export class JournalDetails implements OnInit, OnDestroy {
     let totalRM = 0;
 
     // Calculate total from breakdown entries
-    breakdownArray.forEach(item => {
+    breakdownArray.forEach((item) => {
       totalRM += parseFloat(item.costInRM) || 0;
     });
 
@@ -625,33 +686,41 @@ export class JournalDetails implements OnInit, OnDestroy {
     }
 
     // Update form with calculated values (read-only fields)
-    this.form.patchValue({
-      totalRM: totalRM ? totalRM.toFixed(2) : '0.00',
-      sponsorshipPercentage: spPercent ? spPercent.toString() : '0',
-      sponsorshipAmountAPU: spAPU ? spAPU.toFixed(2) : '0.00',
-      costByApplicant: applicantCost ? applicantCost.toFixed(2) : '0.00'
-    }, { emitEvent: false });
+    this.form.patchValue(
+      {
+        totalRM: totalRM ? totalRM.toFixed(2) : '0.00',
+        sponsorshipPercentage: spPercent ? spPercent.toString() : '0',
+        sponsorshipAmountAPU: spAPU ? spAPU.toFixed(2) : '0.00',
+        costByApplicant: applicantCost ? applicantCost.toFixed(2) : '0.00',
+      },
+      { emitEvent: false },
+    );
 
     // Validate breakdown entries exist for certain project types
-    const isBreakdownValid = (pType === 'external-research' || pType === 'non-research') ? breakdownArray.length > 0 : true;
+    const isBreakdownValid =
+      pType === 'external-research' || pType === 'non-research' ? breakdownArray.length > 0 : true;
     this.formValidityChange.emit(this.form.valid && isBreakdownValid);
   }
 
   private syncExternalBreakdownAccountCode(projectAccountCode: string): void {
-    this.externalBreakdowns = this.externalBreakdowns.map(entry => ({
+    this.externalBreakdowns = this.externalBreakdowns.map((entry) => ({
       ...entry,
-      accountCode: projectAccountCode
+      accountCode: projectAccountCode,
     }));
 
     if (this.breakdownType === 'external-research') {
-      this.breakdownForm.patchValue({
-        accountCode: projectAccountCode
-      }, { emitEvent: false });
+      this.breakdownForm.patchValue(
+        {
+          accountCode: projectAccountCode,
+        },
+        { emitEvent: false },
+      );
     }
   }
 
   getBreakdownModalTitle(): string {
-    if (this.breakdownType === 'external-research') return 'Detailed Breakdown for External Research Project';
+    if (this.breakdownType === 'external-research')
+      return 'Detailed Breakdown for External Research Project';
     if (this.breakdownType === 'non-research') return 'Detailed Breakdown for Non-Research Project';
     return 'Breakdown';
   }
@@ -688,7 +757,7 @@ export class JournalDetails implements OnInit, OnDestroy {
   onFileSelected(event: any) {
     let file = event;
     if (event && event.target && event.target.files) {
-        file = event.target.files[0];
+      file = event.target.files[0];
     }
     if (file) {
       this.selectedFile = file;
@@ -778,7 +847,10 @@ export class JournalDetails implements OnInit, OnDestroy {
       return;
     }
     const { keyword1, keyword2, keyword3 } = this.sdgKeywordsForm.value;
-    this.form.patchValue({ sdgKeyword1: keyword1, sdgKeyword2: keyword2, sdgKeyword3: keyword3 }, { emitEvent: false });
+    this.form.patchValue(
+      { sdgKeyword1: keyword1, sdgKeyword2: keyword2, sdgKeyword3: keyword3 },
+      { emitEvent: false },
+    );
     this.closeSDGKeywordsModal();
   }
 
@@ -786,7 +858,7 @@ export class JournalDetails implements OnInit, OnDestroy {
     const keyword1 = this.form.get('sdgKeyword1')?.value || '';
     const keyword2 = this.form.get('sdgKeyword2')?.value || '';
     const keyword3 = this.form.get('sdgKeyword3')?.value || '';
-    return [keyword1, keyword2, keyword3].filter(k => k);
+    return [keyword1, keyword2, keyword3].filter((k) => k);
   }
 
   removeKeyword(keyword: string) {
@@ -815,11 +887,13 @@ export class JournalDetails implements OnInit, OnDestroy {
   }
 
   private getDropdownOptions(type: JournalOptionType): { value: string; label: string }[] {
-    return this.journalOptionsService.getOptionsForType(type).map(opt => ({ value: opt.value, label: opt.label }));
+    return this.journalOptionsService
+      .getOptionsForType(type)
+      .map((opt) => ({ value: opt.value, label: opt.label }));
   }
 
   getDropdownLabel(type: JournalOptionType, value: string): string {
-    const option = this.getDropdownOptions(type).find(opt => opt.value === value);
+    const option = this.getDropdownOptions(type).find((opt) => opt.value === value);
     return option?.label || value || '-';
   }
 

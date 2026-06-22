@@ -1,192 +1,161 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { NgClass } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { ApplicationService, TERMINAL_STATUSES } from '../../../core/services/application.service';
+import { ApplicationService } from '../../../core/services/application.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { SubmissionsSearchComponent } from '../../../shared/components/submissions-search/submissions-search.component';
+import { TableSortService, SortDirection } from '../../../shared/services/table-sort.service';
+import {
+  DataTableColumn,
+  DataTableComponent,
+} from '../../../shared/components/data-table/data-table.component';
 import { finalize } from 'rxjs';
 import {
   SkeletonColumn,
   TableSkeletonComponent,
 } from '../../../shared/components/table-skeleton/table-skeleton.component';
+import { TableActionIconComponent } from '../../../shared/components/table-action-icon/table-action-icon.component';
 
 @Component({
   selector: 'app-history',
   standalone: true,
-  imports: [RouterLink, NgClass, SubmissionsSearchComponent, TableSkeletonComponent],
+  imports: [
+    TableActionIconComponent,
+    RouterLink,
+    NgClass,
+    SubmissionsSearchComponent,
+    TableSkeletonComponent,
+    DataTableComponent,
+  ],
   templateUrl: './history.component.html',
   styleUrl: './history.component.scss',
+  providers: [TableSortService],
 })
 export class HistoryComponent implements OnInit {
   private appSvc = inject(ApplicationService);
-  private auth   = inject(AuthService);
-
-  private raw    = signal<any[]>([]);
-  loading        = signal(true);
-  error          = signal<string | null>(null);
-
-  searchQuery    = signal('');
-  sortAsc        = signal(false);
-
-  /** Filter by application type ('all' = no filter). */
-  selectedType   = signal<string>('all');
+  private auth = inject(AuthService);
+  private tableSort = inject(TableSortService);
+  private raw = signal<any[]>([]);
+  loading = signal(true);
+  error = signal<string | null>(null);
+  searchQuery = signal('');
+  selectedType = signal('all');
+  sortColumn = signal<string | null>(null);
+  sortDirection = signal<SortDirection>(null);
   readonly skeletonColumns: SkeletonColumn[] = [
-    { width: '24%' },
-    { width: '12%' },
-    { width: '16%' },
-    { width: '16%' },
+    { width: '22%' },
+    { width: '10%' },
+    { width: '13%' },
+    { width: '13%' },
+    { width: '10%' },
     { width: '12%' },
     { width: '12%' },
     { width: 'var(--size-table-column-actions)' },
   ];
-
+  readonly columns: DataTableColumn[] = [
+    { key: 'title', label: 'Project Title', width: '22%' },
+    { key: 'type', label: 'Type', width: '10%' },
+    { key: 'submittedBy', label: 'Submitted By', width: '13%' },
+    { key: 'decision', label: 'Action / Decision', width: '13%' },
+    { key: 'role', label: 'Role', width: '10%' },
+    { key: 'submissionDate', label: 'Submission Date', width: '12%', sortable: true },
+    { key: 'completedDate', label: 'Completed Date', width: '12%', sortable: true },
+    {
+      key: 'actions',
+      label: 'Actions',
+      width: 'var(--size-table-column-actions)',
+      align: 'center',
+      headerAlign: 'center',
+    },
+  ];
   private readonly currentUserName = this.auth.currentUser()?.name ?? '';
-  private readonly currentUserId   = this.auth.currentUser()?.id   ?? '';
-
-  // ── Available form types derived from loaded data ────────────────
-  readonly availableTypes = computed(() => {
-    const types = new Set(
-      this.raw()
-        .map(a => a.formType ?? '')
-        .filter(Boolean)
-    );
-    return ['all', ...Array.from(types).sort()];
-  });
-
-  // ── Derived list ─────────────────────────────────────────────────
+  private readonly currentUserId = this.auth.currentUser()?.id ?? '';
+  readonly availableTypes = computed(() => [
+    'all',
+    ...Array.from(
+      new Set(
+        this.raw()
+          .map((a) => a.formType ?? '')
+          .filter(Boolean),
+      ),
+    ).sort(),
+  ]);
   readonly history = computed(() => {
-    const q    = this.searchQuery().toLowerCase().trim();
-    const type = this.selectedType();
-
+    const q = this.searchQuery().toLowerCase().trim(),
+      type = this.selectedType();
     const items = this.raw()
-      .filter(app => type === 'all' || (app.formType ?? '') === type)
-      .filter(app => !q || this.appSvc.getTitle(app).toLowerCase().includes(q));
-
+      .filter((app) => type === 'all' || (app.formType ?? '') === type)
+      .filter((app) => !q || this.appSvc.getTitle(app).toLowerCase().includes(q));
+    if (!this.sortColumn() || !this.sortDirection()) return items;
     return [...items].sort((a, b) => {
-      const ta = this.resolvedDate(a);
-      const tb = this.resolvedDate(b);
-      return this.sortAsc() ? ta - tb : tb - ta;
+      const getter =
+        this.sortColumn() === 'submissionDate'
+          ? this.submittedTime.bind(this)
+          : this.completedTime.bind(this);
+      const d = getter(a) - getter(b);
+      return this.sortDirection() === 'asc' ? d : -d;
     });
   });
-
-  /** Epoch ms for sorting — uses decision date for applicants, action date for reviewers. */
-  private resolvedDate(app: any): number {
-    if (this.isApplicant(app)) {
-      // Sort by when the final decision was recorded (last history entry).
-      const entries: any[] = app.workflow?.history ?? [];
-      return entries.length
-        ? new Date(entries[entries.length - 1].timestamp).getTime()
-        : 0;
-    }
-    const action = this.appSvc.getUserAction(app, this.currentUserName);
-    return action ? new Date(action.timestamp).getTime() : 0;
-  }
-
   ngOnInit(): void {
-    this.loading.set(true);
-    this.appSvc.getApplicationHistory()
+    this.appSvc
+      .getApplicationHistory()
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe({
-      next: apps => this.raw.set(apps),
-      error: () => {
-        this.error.set('Could not reach the JSON server. Make sure `npm run db` is running.');
-      },
-    });
+        next: (apps) => this.raw.set(apps),
+        error: () =>
+          this.error.set('Could not reach the JSON server. Make sure `npm run db` is running.'),
+      });
   }
-
-  toggleSort(): void { this.sortAsc.update(v => !v); }
-
-  // ── Per-row helpers ──────────────────────────────────────────────
-
-  /**
-   * Returns true when the current user is the applicant (creator) of this
-   * specific application. Used to choose the applicant vs reviewer display path.
-   */
+  onSortChange(column: string): void {
+    if (column !== 'submissionDate' && column !== 'completedDate') return;
+    const next = this.tableSort.getNextState(
+      { column: this.sortColumn(), direction: this.sortDirection() },
+      column,
+    );
+    this.sortColumn.set(next.column);
+    this.sortDirection.set(next.direction);
+  }
+  private submittedTime(app: any): number {
+    return new Date(this.appSvc.getSubmittedAt(app) ?? 0).getTime();
+  }
+  private completedTime(app: any): number {
+    const h: any[] = app.workflow?.history ?? [];
+    return h.length ? new Date(h[h.length - 1].timestamp).getTime() : 0;
+  }
+  formatSubmissionDate = (app: any) => this.appSvc.formatDate(this.appSvc.getSubmittedAt(app));
+  formatCompletedDate(app: any): string {
+    const h: any[] = app.workflow?.history ?? [];
+    return this.appSvc.formatDate(h.length ? h[h.length - 1].timestamp : null);
+  }
   isApplicant(app: any): boolean {
     return (
       app.metadata?.applicantUserId === this.currentUserId ||
       (app.teamDetails?.leaderName ?? '') === this.currentUserName
     );
   }
-
-  /** The action entry this reviewer took on this application. */
   myAction(app: any): { action: string; timestamp: string; role: string } | null {
     return this.appSvc.getUserAction(app, this.currentUserName);
   }
-
-  /**
-   * Display label for the "Action / Decision" column.
-   *  – Reviewer : their specific action (Approved, Rejected, Forwarded…)
-   *  – Applicant : the final outcome (Approved / Rejected)
-   */
   getActionLabel(app: any): string {
-    if (this.isApplicant(app)) {
-      return this.getFinalDecision(app);
-    }
+    if (this.isApplicant(app)) return this.getFinalDecision(app);
     const a = this.myAction(app);
-    if (!a) return '—';
-    return a.action.charAt(0).toUpperCase() + a.action.slice(1).replace(/_/g, ' ');
+    return a ? a.action.charAt(0).toUpperCase() + a.action.slice(1).replace(/_/g, ' ') : '—';
   }
-
-  /**
-   * CSS modifier class for the action chip.
-   *  approve → green   reject → red   others → neutral
-   */
   getActionClass(app: any): string {
     const label = this.getActionLabel(app).toLowerCase();
-    if (label === 'approved') return 'action-chip--approve';
-    if (label === 'rejected') return 'action-chip--reject';
-    if (label.startsWith('reject')) return 'action-chip--reject';
-    if (label === 'approve' || label === 'submit') return 'action-chip--approve';
+    if (label === 'approved' || label === 'approve' || label === 'submit')
+      return 'action-chip--approve';
+    if (label === 'rejected' || label.startsWith('reject')) return 'action-chip--reject';
     return 'action-chip--neutral';
   }
-
-  /**
-   * Role label for the "Role" column.
-   *  – Reviewer : the role stored in their history entry
-   *  – Applicant : "Applicant"
-   */
   getRoleLabel(app: any): string {
-    if (this.isApplicant(app)) return 'Applicant';
-    return this.myAction(app)?.role ?? '—';
+    return this.isApplicant(app) ? 'Applicant' : (this.myAction(app)?.role ?? '—');
   }
-
-  /** Final outcome for an applicant's terminal application. */
   private getFinalDecision(app: any): string {
     const status = this.appSvc.getStatus(app);
-    if (status === 'approved') return 'Approved';
-    if (status.startsWith('rejected_')) return 'Rejected';
-    return '—';
+    return status === 'approved' ? 'Approved' : status.startsWith('rejected_') ? 'Rejected' : '—';
   }
-
-  /** Human-readable application type label. */
-  getFormTypeLabel(app: any): string {
-    return this.appSvc.getFormTypeLabel(app);
-  }
-
-  /** Angular route for opening the application form. */
-  getFormRoute(app: any): string {
-    return this.appSvc.getFormRoute(app);
-  }
-
-  /**
-   * Formatted date for the "Date" column.
-   *  – Reviewer : date they took their action
-   *  – Applicant : date of the final decision (last workflow history entry)
-   */
-  formatDate(app: any): string {
-    if (this.isApplicant(app)) {
-      const entries: any[] = app.workflow?.history ?? [];
-      const last = entries.length ? entries[entries.length - 1] : null;
-      return last ? this.appSvc.formatDate(last.timestamp) : '—';
-    }
-    const a = this.myAction(app);
-    return a ? this.appSvc.formatDate(a.timestamp) : '—';
-  }
-
-  /** Submitted-by name (who created this application). */
-  getSubmittedBy(app: any): string {
-    return app.teamDetails?.leaderName ?? '—';
-  }
+  getFormTypeLabel = (app: any) => this.appSvc.getFormTypeLabel(app);
+  getFormRoute = (app: any) => this.appSvc.getFormRoute(app);
+  getSubmittedBy = (app: any) => app.teamDetails?.leaderName ?? '—';
 }
-

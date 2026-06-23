@@ -3,18 +3,18 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { merge } from 'rxjs';
-import { CustomSubheaderComponent } from '../../../shared/components/custom-subheader/custom-subheader.component';
-import { CharacterCounterComponent } from '../../../shared/components/character-counter/character-counter.component';
+import { CustomSubheaderComponent } from '../../shared/components/custom-subheader/custom-subheader.component';
+import { CharacterCounterComponent } from '../../shared/components/character-counter/character-counter.component';
 import {
   DataTableComponent,
   DataTableColumn,
-} from '../../../shared/components/data-table/data-table.component';
-import { ActionButtonComponent } from '../../../shared/components/action-button/action-button.component';
-import { SearchableDropdownComponent } from '../../../shared/components/searchable-dropdown/searchable-dropdown.component';
-import { DialogComponent } from '../../../shared/components/dialog/dialog.component';
-import { DropdownOption } from '../../../core/interfaces/components.interface';
+} from '../../shared/components/data-table/data-table.component';
+import { ActionButtonComponent } from '../../shared/components/action-button/action-button.component';
+import { SearchableDropdownComponent } from '../../shared/components/searchable-dropdown/searchable-dropdown.component';
+import { DialogComponent } from '../../shared/components/dialog/dialog.component';
+import { DropdownOption } from '../../core/interfaces/components.interface';
 
-import { TableActionIconComponent } from '../../../shared/components/table-action-icon/table-action-icon.component';
+import { TableActionIconComponent } from '../../shared/components/table-action-icon/table-action-icon.component';
 
 type TableEntryType = 'internal' | 'external' | 'outcome' | 'budget' | 'billing';
 
@@ -663,3 +663,4 @@ export class ExternalProjectDataEntryComponent {
     };
   }
 }
+

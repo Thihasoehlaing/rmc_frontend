@@ -55,74 +55,54 @@
                 page.
               </p>
             </div>
+            @if (!isRegionMetadataCategory()) {
+              <app-action-button
+                class="settings-header-action"
+                type="primary"
+                label="Add Option"
+                icon="add"
+                [disabled]="!selectedCategory()"
+                (clicked)="addOption()"
+              ></app-action-button>
+            }
           </div>
         </div>
 
         <div class="card__content settings-card__content">
-          <div class="category-row">
-            <div class="category-summary">
-              <ng-container *ngIf="selectedCategory(); else totalSummary">
-                Options in current category
-              </ng-container>
-              <ng-template #totalSummary> All options for this form </ng-template>
+          <app-submissions-search
+            [placeholder]="getSearchPlaceholder()"
+            [value]="searchQuery()"
+            (search)="onSearchQueryChange($event)"
+            (refresh)="searchQuery.set(''); statusFilter.set('all'); optionsPage.set(1)"
+          >
+            <div search-top-row class="dropdown-category-filter">
+              <span class="form-label">Category</span>
+              <div class="category-list" role="tablist" aria-label="Dropdown categories">
+                <button
+                  *ngFor="let name of selectedGroupCategories()"
+                  type="button"
+                  class="category-chip"
+                  [class.is-active]="selectedCategory() === name"
+                  (click)="selectCategory(name)"
+                  [attr.aria-pressed]="selectedCategory() === name"
+                >
+                  <span class="category-label">{{ getCategoryDisplayLabel(name) }}</span>
+                </button>
+              </div>
             </div>
-            <div class="category-list" role="tablist" aria-label="Dropdown categories">
-              <button
-                *ngFor="let name of selectedGroupCategories()"
-                type="button"
-                class="category-chip"
-                [class.is-active]="selectedCategory() === name"
-                (click)="selectCategory(name)"
-                [attr.aria-pressed]="selectedCategory() === name"
+            <label search-filters>
+              <span></span>
+              <select
+                class="input--select"
+                [ngModel]="statusFilter()"
+                (ngModelChange)="onStatusFilterChange($event)"
               >
-                <span class="category-label">{{ getCategoryDisplayLabel(name) }}</span>
-              </button>
-            </div>
-          </div>
-
-          <div class="settings-controls">
-            <div class="filters-grid">
-              <div class="form-field">
-                <label class="form-label" for="search-filter">Search</label>
-                <input
-                  id="search-filter"
-                  type="text"
-                  class="input--text"
-                  [ngModel]="searchQuery()"
-                  (ngModelChange)="onSearchQueryChange($event)"
-                  placeholder="Search option name"
-                />
-              </div>
-
-              <div class="form-field">
-                <label class="form-label" for="status-filter">Status Filter</label>
-                <select
-                  id="status-filter"
-                  class="input--text"
-                  [ngModel]="statusFilter()"
-                  (ngModelChange)="onStatusFilterChange($event)"
-                >
-                  <option value="all">All</option>
-                  <option value="active">Active</option>
-                  <option value="inactive">Deactivated</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="toolbar-actions">
-              @if (!isRegionMetadataCategory()) {
-                <app-action-button
-                  type="primary"
-                  label="Add Option"
-                  icon="add"
-                  [disabled]="!selectedCategory()"
-                  (clicked)="addOption()"
-                >
-                </app-action-button>
-              }
-            </div>
-          </div>
-
+                <option value="all">All</option>
+                <option value="active">Active</option>
+                <option value="inactive">Deactivated</option>
+              </select>
+            </label>
+          </app-submissions-search>
           <div *ngIf="selectedCategory(); else selectCategoryHint">
             <app-data-table
               class="dropdown-options-table"
@@ -151,7 +131,7 @@
                   } @else if (isAccountCodeMetadataCategory()) {
                     <td>{{ row.accountNumber || '-' }}</td>
                     @if (
-                      isProjectAccountCodeCategory() || isConferenceVoteNumberDescriptionCategory()
+                      canShareSelectedCategory() && (isProjectAccountCodeCategory() || isConferenceVoteNumberDescriptionCategory())
                     ) {
                       <td>
                         <div
@@ -179,7 +159,7 @@
                         </div>
                       </td>
                     }
-                  } @else {
+                  } @else if (canShareSelectedCategory()) {
                     <td>
                       <div
                         class="shared-with-list"
@@ -229,12 +209,18 @@
                       <app-table-action-icon action="edit"></app-table-action-icon>
                     </button>
 
-                    @if (row.status === 'Inactive') {
-                      <button class="btn btn-sm btn-status-activate" type="button" (click)="toggleStatus(row.id)">
-                        <span class="material-icons">check_circle</span>
-                        Activate
-                      </button>
-                    }
+                    <button
+                      class="icon-btn"
+                      [class.icon-btn--activate]="row.status === 'Inactive'"
+                      [class.icon-btn--deactivate]="row.status === 'Active'"
+                      type="button"
+                      [title]="row.status === 'Inactive' ? 'Activate option' : 'Deactivate option'"
+                      (click)="toggleStatus(row.id)"
+                    >
+                      <app-table-action-icon
+                        [action]="row.status === 'Inactive' ? 'activate' : 'deactivate'"
+                      ></app-table-action-icon>
+                    </button>
 
                     <button
                       class="icon-btn icon-btn--delete"
@@ -284,6 +270,7 @@
         [showAccountNumberMetadata]="isAccountCodeMetadataCategory()"
         [accountNumberLabel]="getAccountNumberMetadataLabel()"
         [showRegionMetadata]="isRegionMetadataCategory()"
+        [allowFormSharing]="canShareSelectedCategory()"
         [nameReadonly]="isRegionMetadataCategory() && !!editingOptionId()"
         [descriptionReadonly]="isRegionMetadataCategory() && !!editingOptionId()"
         (close)="closeModal()"
@@ -355,3 +342,6 @@
     </div>
   </div>
 </section>
+
+
+

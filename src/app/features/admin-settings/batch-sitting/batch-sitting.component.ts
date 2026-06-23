@@ -47,7 +47,6 @@ import { AuthService } from '../../../core/services/auth.service';
 import { ActionButtonComponent } from '../../../shared/components/action-button/action-button.component';
 import { ValidationMessageComponent } from '../../../shared/components/validation-message/validation-message.component';
 import { DialogComponent } from '../../../shared/components/dialog/dialog.component';
-import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
 import { BatchManagementSkeletonComponent } from '../../../shared/components/batch-management-skeleton/batch-management-skeleton.component';
 import {
   DataTableColumn,
@@ -90,7 +89,6 @@ function stageWithinBatchValidator(startFn: () => string, endFn: () => string) {
     ActionButtonComponent,
     ValidationMessageComponent,
     DialogComponent,
-    PaginationComponent,
     BatchManagementSkeletonComponent,
     DataTableComponent,
   ],
@@ -750,3 +748,4 @@ export class BatchSittingComponent implements OnInit, OnDestroy {
     return new Date().toISOString().substring(0, 10);
   }
 }
+

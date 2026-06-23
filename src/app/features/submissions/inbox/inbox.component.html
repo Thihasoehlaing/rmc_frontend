@@ -39,7 +39,8 @@
     <app-submissions-search
       placeholder="Search inbox applications by title..."
       [value]="searchQuery()"
-      (valueChange)="searchQuery.set($event)"
+      (search)="onSearch($event)"
+      (refresh)="refreshInbox()"
     />
   }
 

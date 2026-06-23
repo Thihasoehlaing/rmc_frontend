@@ -17,22 +17,14 @@
   </header>
 
   @if (!isLoading()) {
-    <section class="forms-toolbar academic-staff-toolbar" aria-label="Academic staff filters">
-      <label class="forms-filter academic-staff-filter--search">
-        <span>Name, Email, Username, or Job Title</span>
-        <input
-          class="input--text"
-          type="search"
-          placeholder="Search academic staff"
-          [ngModel]="searchTerm()"
-          (ngModelChange)="searchTerm.set($event)"
-          (keydown.enter)="search()"
-        />
-      </label>
-
-      <label class="forms-filter">
-        <span>Department</span>
-        <select
+    <app-submissions-search
+      placeholder="Search academic staff"
+      [value]="searchTerm()"
+      (search)="searchTerm.set($event); search()"
+      (refresh)="resetFilters()"
+      ><label search-filters
+        ><span>Department</span
+        ><select
           class="input--select"
           [ngModel]="selectedDepartmentId()"
           (ngModelChange)="selectedDepartmentId.set($event)"
@@ -41,12 +33,10 @@
           @for (department of departments(); track department.id) {
             <option [ngValue]="department.id">{{ department.department_name }}</option>
           }
-        </select>
-      </label>
-
-      <label class="forms-filter">
-        <span>Status</span>
-        <select
+        </select></label
+      ><label search-filters
+        ><span>Status</span
+        ><select
           class="input--select"
           [ngModel]="selectedStatus()"
           (ngModelChange)="selectedStatus.set($event)"
@@ -54,23 +44,12 @@
           <option value="">All</option>
           <option value="Active">Active</option>
           <option value="Inactive">Inactive</option>
-        </select>
-      </label>
-
-      <div class="forms-toolbar__actions">
-        <button class="btn btn-primary" type="button" (click)="search()">
-          <span class="material-icons">search</span>
-          Search
-        </button>
-        <button class="btn btn-secondary" type="button" (click)="resetFilters()">
-          <span class="material-icons">restart_alt</span>
-          Reset
-        </button>
-      </div>
-    </section>
+        </select></label
+      >
+    </app-submissions-search>
   }
 
-  <section class="forms-table-card">
+  <section class="forms-table">
     @if (isLoading()) {
       <app-table-skeleton
         [columns]="columns"

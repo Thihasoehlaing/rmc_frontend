@@ -17,22 +17,14 @@
   </header>
 
   @if (!isLoading()) {
-    <section class="forms-toolbar" aria-label="Role filters">
-      <label class="forms-filter forms-filter--search">
-        <span>Role Code or Name</span>
-        <input
-          class="input--text"
-          type="search"
-          placeholder="Search roles"
-          [ngModel]="searchTerm()"
-          (ngModelChange)="searchTerm.set($event)"
-          (keydown.enter)="search()"
-        />
-      </label>
-
-      <label class="forms-filter">
-        <span>Status</span>
-        <select
+    <app-submissions-search
+      placeholder="Search roles"
+      [value]="searchTerm()"
+      (search)="searchTerm.set($event); search()"
+      (refresh)="resetFilters()"
+      ><label search-filters
+        ><span>Status</span
+        ><select
           class="input--select"
           [ngModel]="selectedStatus()"
           (ngModelChange)="selectedStatus.set($event)"
@@ -40,23 +32,12 @@
           <option value="">All</option>
           <option value="Active">Active</option>
           <option value="Inactive">Inactive</option>
-        </select>
-      </label>
-
-      <div class="forms-toolbar__actions">
-        <button class="btn btn-primary" type="button" (click)="search()">
-          <span class="material-icons">search</span>
-          Search
-        </button>
-        <button class="btn btn-secondary" type="button" (click)="resetFilters()">
-          <span class="material-icons">restart_alt</span>
-          Reset
-        </button>
-      </div>
-    </section>
+        </select></label
+      >
+    </app-submissions-search>
   }
 
-  <section class="forms-table-card">
+  <section class="forms-table">
     @if (isLoading()) {
       <app-table-skeleton [columns]="columns" [showSearch]="false" loadingLabel="Loading roles">
       </app-table-skeleton>

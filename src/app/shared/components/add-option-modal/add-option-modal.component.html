@@ -47,28 +47,29 @@
             rows="3"></textarea>
         </div>
       </div>
+      <ng-container *ngIf="allowFormSharing">
+        <label class="form-label">Category is fixed and matches the current dropdown group.</label>
+        <p class="helper-text" *ngIf="categoryLabel">
+          Only forms that already have the {{ categoryLabel }} category are shown.
+        </p>
+        <div class="forms-list">
+          <ng-container *ngIf="availableForms.length > 0; else noAvailableForms">
+            <button *ngFor="let f of availableForms" type="button" class="form-chip" [class.selected]="appliesTo.includes(f)" (click)="onToggleForm(f)">
+              {{ f }}
+            </button>
+          </ng-container>
+          <ng-template #noAvailableForms>
+            <div class="empty-share-targets">No forms are available for this category.</div>
+          </ng-template>
+        </div>
 
-      <label class="form-label">Category is fixed and matches the current dropdown group.</label>
-      <p class="helper-text" *ngIf="categoryLabel">
-        Only forms that already have the {{ categoryLabel }} category are shown.
-      </p>
-      <div class="forms-list">
-        <ng-container *ngIf="availableForms.length > 0; else noAvailableForms">
-          <button *ngFor="let f of availableForms" type="button" class="form-chip" [class.selected]="appliesTo.includes(f)" (click)="onToggleForm(f)">
-            {{ f }}
-          </button>
-        </ng-container>
-        <ng-template #noAvailableForms>
-          <div class="empty-share-targets">No forms are available for this category.</div>
-        </ng-template>
-      </div>
+        <p class="selection-error" *ngIf="showAppliesToError">At least one Dropdown should be selected</p>
 
-      <p class="selection-error" *ngIf="showAppliesToError">At least one Dropdown should be selected</p>
-
-      <div *ngIf="appliesTo.length" class="shared-note">
-        <span class="icon">🔗</span>
-        This option will be shared across {{ appliesTo.length }} form{{ appliesTo.length > 1 ? 's' : '' }}.
-      </div>
+        <div *ngIf="appliesTo.length" class="shared-note">
+          <span class="icon">🔗</span>
+          This option will be shared across {{ appliesTo.length }} form{{ appliesTo.length > 1 ? 's' : '' }}.
+        </div>
+      </ng-container>
 
       <label class="form-label">Status</label>
       <div class="status-toggle">
@@ -83,3 +84,5 @@
     </footer>
   </div>
 </div>
+
+

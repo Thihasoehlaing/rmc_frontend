@@ -181,7 +181,7 @@ tbody tr:hover,
 :host ::ng-deep .data-table__stacked {
   display: flex;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: center;
   gap: var(--space-3);
 }
 
@@ -250,7 +250,7 @@ tbody tr:hover,
 .data-table__actions,
 :host ::ng-deep .data-table__actions {
   display: flex;
-  justify-content: flex-start;
+  justify-content: center;
   align-items: center;
   gap: var(--space-1);
 }
@@ -330,4 +330,42 @@ tbody tr:hover,
   .pagination-info {
     font-size: var(--fs-xs);
   }
+}
+
+:host ::ng-deep .icon-btn,
+:host ::ng-deep .table-action,
+:host ::ng-deep .btn-icon {
+  transition:
+    background var(--transition-fast) var(--ease-default),
+    color var(--transition-fast) var(--ease-default),
+    transform var(--transition-fast) var(--ease-default),
+    box-shadow var(--transition-fast) var(--ease-default);
+}
+
+:host ::ng-deep .icon-btn:hover:not(:disabled),
+:host ::ng-deep .table-action:hover:not(:disabled),
+:host ::ng-deep .btn-icon:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-xs);
+}
+
+:host ::ng-deep .icon-btn--view:hover:not(:disabled),
+:host ::ng-deep .icon-btn--edit:hover:not(:disabled),
+:host ::ng-deep .table-action:not(.table-action--danger):not(.table-action--warning):not(.table-action--success):hover:not(:disabled) {
+  background: var(--color-primary-light);
+}
+
+:host ::ng-deep .icon-btn--delete:hover:not(:disabled),
+:host ::ng-deep .table-action--danger:hover:not(:disabled) {
+  background: var(--color-error-light);
+}
+
+:host ::ng-deep .icon-btn--deactivate:hover:not(:disabled),
+:host ::ng-deep .table-action--warning:hover:not(:disabled) {
+  background: var(--color-warning-light);
+}
+
+:host ::ng-deep .icon-btn--activate:hover:not(:disabled),
+:host ::ng-deep .table-action--success:hover:not(:disabled) {
+  background: var(--color-success-light);
 }

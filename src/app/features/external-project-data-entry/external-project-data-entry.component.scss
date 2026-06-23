@@ -1,4 +1,4 @@
-@use '../../../../styles/index' as *;
+@use '../../../styles/index' as *;
 
 .external-project-page {
   max-width: var(--page-max-width);
@@ -266,3 +266,4 @@
 .budget-summary-card__content {
   padding-top: 0;
 }
+

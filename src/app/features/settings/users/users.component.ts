@@ -1,11 +1,6 @@
+import { SubmissionsSearchComponent } from '../../../shared/components/submissions-search/submissions-search.component';
 import { CommonModule } from '@angular/common';
-import {
-  Component,
-  OnInit,
-  TrackByFunction,
-  inject,
-  signal,
-} from '@angular/core';
+import { Component, OnInit, TrackByFunction, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { finalize, forkJoin, switchMap, tap } from 'rxjs';
 
@@ -37,6 +32,7 @@ const EMPTY_FILTERS: UserListFilters = {
   selector: 'app-users',
   standalone: true,
   imports: [
+    SubmissionsSearchComponent,
     CommonModule,
     FormsModule,
     DataTableComponent,
@@ -85,10 +81,8 @@ export class UsersComponent implements OnInit {
     { key: 'lastLogin', label: 'Last Login', width: '150px' },
   ];
 
-  readonly rowTrackFn: TrackByFunction<unknown> = (
-    _index: number,
-    row: unknown,
-  ) => (row as UserRecord).id;
+  readonly rowTrackFn: TrackByFunction<unknown> = (_index: number, row: unknown) =>
+    (row as UserRecord).id;
 
   ngOnInit(): void {
     this.loadInitialData();
@@ -108,16 +102,12 @@ export class UsersComponent implements OnInit {
           this.departments.set(this.uniqueDepartments(departments.data));
         }),
         switchMap(() =>
-          this.usersService.list(
-            this.page(),
-            this.pageSize(),
-            this.appliedFilters(),
-          ),
+          this.usersService.list(this.page(), this.pageSize(), this.appliedFilters()),
         ),
         finalize(() => this.isLoading.set(false)),
       )
       .subscribe({
-        next: response => {
+        next: (response) => {
           this.applyUsersResponse(response.data.items, response.data.pagination);
           this.toastService.success(response.message);
         },
@@ -156,7 +146,7 @@ export class UsersComponent implements OnInit {
       .list(this.page(), this.pageSize(), this.appliedFilters())
       .pipe(finalize(() => this.isLoading.set(false)))
       .subscribe({
-        next: response => {
+        next: (response) => {
           const pagination = response.data.pagination;
           if (pagination.total_pages > 0 && this.page() > pagination.total_pages) {
             this.page.set(pagination.total_pages);
@@ -220,16 +210,11 @@ export class UsersComponent implements OnInit {
   }
 
   pageStart(): number {
-    return this.totalItems() === 0
-      ? 0
-      : (this.page() - 1) * this.pageSize() + 1;
+    return this.totalItems() === 0 ? 0 : (this.page() - 1) * this.pageSize() + 1;
   }
 
   pageEnd(): number {
-    return Math.min(
-      this.pageStart() + this.users().length - 1,
-      this.totalItems(),
-    );
+    return Math.min(this.pageStart() + this.users().length - 1, this.totalItems());
   }
 
   initials(user: UserRecord): string {
@@ -238,7 +223,7 @@ export class UsersComponent implements OnInit {
       .split(/\s+/)
       .filter(Boolean)
       .slice(0, 2)
-      .map(part => part.charAt(0).toUpperCase())
+      .map((part) => part.charAt(0).toUpperCase())
       .join('');
   }
 
@@ -273,9 +258,7 @@ export class UsersComponent implements OnInit {
     this.loadFailed.set(true);
   }
 
-  private uniqueDepartments(
-    departments: DepartmentRecord[],
-  ): DepartmentRecord[] {
+  private uniqueDepartments(departments: DepartmentRecord[]): DepartmentRecord[] {
     const unique = new Map<string, DepartmentRecord>();
     for (const department of departments) {
       const key = department.department_name.trim().toLowerCase();

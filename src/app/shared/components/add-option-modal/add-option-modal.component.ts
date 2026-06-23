@@ -33,6 +33,7 @@ export class AddOptionModalComponent implements OnChanges {
   @Input() showRegionMetadata = false;
   @Input() nameReadonly = false;
   @Input() descriptionReadonly = false;
+  @Input() allowFormSharing = true;
 
   @Output() close = new EventEmitter<void>();
   @Output() save = new EventEmitter<AddOptionPayload>();
@@ -67,7 +68,11 @@ export class AddOptionModalComponent implements OnChanges {
   }
 
   get isValid(): boolean {
-    if (!this.name.trim() || this.appliesTo.length === 0) {
+    if (!this.name.trim()) {
+      return false;
+    }
+
+    if (this.allowFormSharing && this.appliesTo.length === 0) {
       return false;
     }
 
@@ -85,7 +90,7 @@ export class AddOptionModalComponent implements OnChanges {
   }
 
   get showAppliesToError(): boolean {
-    return this.appliesTo.length === 0;
+    return this.allowFormSharing && this.appliesTo.length === 0;
   }
 
   onToggleForm(form: string) {
@@ -100,10 +105,11 @@ export class AddOptionModalComponent implements OnChanges {
 
   onSave() {
     if (!this.isValid) return;
+    const appliesTo = this.allowFormSharing ? [...this.appliesTo] : [...this.defaultSelectedForms];
     this.save.emit({
       name: this.name.trim(),
       status: this.status,
-      appliesTo: [...this.appliesTo],
+      appliesTo,
       accountNumber: this.showAccountNumberMetadata ? this.accountNumber.trim() : undefined,
       percentage: this.showRegionMetadata ? this.percentage : undefined,
       limit: this.showRegionMetadata ? this.limit : undefined,
@@ -111,3 +117,4 @@ export class AddOptionModalComponent implements OnChanges {
     });
   }
 }
+

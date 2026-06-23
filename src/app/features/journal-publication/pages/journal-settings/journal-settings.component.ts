@@ -5,6 +5,11 @@ import { JournalOptionsService, JournalOptionType } from '../../services/journal
 import { DropdownOption } from '../../../../core/interfaces/components.interface';
 import { TableSortService, SortDirection } from '../../../../shared/services/table-sort.service';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
+import {
+  DataTableColumn,
+  DataTableComponent,
+} from '../../../../shared/components/data-table/data-table.component';
+import { TableActionIconComponent } from '../../../../shared/components/table-action-icon/table-action-icon.component';
 
 type BreakdownTypeKey = JournalOptionType;
 
@@ -22,10 +27,16 @@ interface ExtendedOption extends DropdownOption {
 @Component({
   selector: 'app-journal-settings',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, PaginationComponent],
+  imports: [
+    TableActionIconComponent,
+    CommonModule,
+    ReactiveFormsModule,
+    PaginationComponent,
+    DataTableComponent,
+  ],
   templateUrl: './journal-settings.component.html',
   styleUrl: './journal-settings.component.scss',
-  providers: [TableSortService]
+  providers: [TableSortService],
 })
 export class JournalSettingsComponent implements OnInit {
   private JournalOptionsService = inject(JournalOptionsService);
@@ -47,11 +58,31 @@ export class JournalSettingsComponent implements OnInit {
   optionsPageSize = signal(15);
   optionsPageSizeOptions = [5, 15, 30, 50];
 
+  readonly tableColumns: DataTableColumn[] = [
+    {
+      key: 'select',
+      label: '',
+      width: 'var(--size-table-column-number)',
+      align: 'center',
+      headerAlign: 'center',
+    },
+    { key: 'label', label: 'Option Name', sortable: true },
+    { key: 'accountCode', label: 'Account Code', sortable: true },
+    { key: 'status', label: 'Status', sortable: true },
+    { key: 'createdDate', label: 'Created Date', sortable: true },
+    {
+      key: 'actions',
+      label: 'Actions',
+      width: 'var(--size-table-column-actions)',
+      align: 'center',
+      headerAlign: 'center',
+    },
+  ];
   breakdownTypeOptions: BreakdownTypeOption[] = [
     { value: 'vote_number_description', label: 'Vote Number Description' },
     { value: 'vote_number', label: 'Vote Number' },
     { value: 'account_code_description', label: 'Account Code Description' },
-    { value: 'account_code', label: 'Account Code' }
+    { value: 'account_code', label: 'Account Code' },
   ];
 
   /**
@@ -67,7 +98,7 @@ export class JournalSettingsComponent implements OnInit {
     const query = this.searchQuery().toLowerCase();
     const status = this.filterStatus();
 
-    let filtered = options.filter(opt => {
+    let filtered = options.filter((opt) => {
       const matchesSearch = opt.label.toLowerCase().includes(query);
       const matchesStatus = status === 'All' || opt.status === status;
       return matchesSearch && matchesStatus;
@@ -97,7 +128,10 @@ export class JournalSettingsComponent implements OnInit {
   });
 
   optionsTotalPages = computed(() => {
-    return Math.max(1, Math.ceil(this.getFilteredAndSortedOptions().length / this.optionsPageSize()));
+    return Math.max(
+      1,
+      Math.ceil(this.getFilteredAndSortedOptions().length / this.optionsPageSize()),
+    );
   });
 
   paginatedOptions = computed(() => {
@@ -110,7 +144,9 @@ export class JournalSettingsComponent implements OnInit {
   optionsPageStart = computed(() => {
     const total = this.getFilteredAndSortedOptions().length;
     if (total === 0) return 0;
-    return ((Math.min(this.optionsPage(), this.optionsTotalPages()) - 1) * this.optionsPageSize()) + 1;
+    return (
+      (Math.min(this.optionsPage(), this.optionsTotalPages()) - 1) * this.optionsPageSize() + 1
+    );
   });
 
   optionsPageEnd = computed(() => {
@@ -129,7 +165,7 @@ export class JournalSettingsComponent implements OnInit {
     this.optionForm = this.fb.group({
       label: ['', [Validators.required]],
       status: ['Active'],
-      accountCode: ['']
+      accountCode: [''],
     });
   }
 
@@ -174,17 +210,12 @@ export class JournalSettingsComponent implements OnInit {
    * Handle table header click for sorting
    */
   onHeaderClick(columnName: string): void {
-    const currentColumn = this.headerSortColumn();
-    const currentDirection = this.headerSortDirection();
-
-    if (currentColumn === columnName) {
-      // Same column: cycle through direction
-      this.headerSortDirection.set(this.tableSortService.getNextDirection(currentDirection));
-    } else {
-      // New column: start with ascending
-      this.headerSortColumn.set(columnName);
-      this.headerSortDirection.set('asc');
-    }
+    const next = this.tableSortService.getNextState(
+      { column: this.headerSortColumn(), direction: this.headerSortDirection() },
+      columnName,
+    );
+    this.headerSortColumn.set(next.column);
+    this.headerSortDirection.set(next.direction);
     this.optionsPage.set(1);
   }
 
@@ -219,13 +250,13 @@ export class JournalSettingsComponent implements OnInit {
     const baseOptions = this.JournalOptionsService.getOptionsForType(type);
 
     // Enhance with metadata from localStorage if available
-    return baseOptions.map(opt => {
+    return baseOptions.map((opt) => {
       const metadata = this.getOptionMetadata(type, opt.value);
       return {
         ...opt,
         createdDate: metadata?.createdDate,
         status: metadata?.status || 'Active',
-        accountCode: metadata?.accountCode
+        accountCode: metadata?.accountCode,
       } as ExtendedOption;
     });
   }
@@ -233,7 +264,10 @@ export class JournalSettingsComponent implements OnInit {
   /**
    * Get metadata for an option (created date, status) from storage
    */
-  private getOptionMetadata(type: BreakdownTypeKey, value: string): { createdDate?: string; status?: 'Active' | 'Inactive'; accountCode?: string; } | null {
+  private getOptionMetadata(
+    type: BreakdownTypeKey,
+    value: string,
+  ): { createdDate?: string; status?: 'Active' | 'Inactive'; accountCode?: string } | null {
     const storageKey = `journal-option-metadata-${type}-${value}`;
     try {
       const stored = localStorage.getItem(storageKey);
@@ -249,13 +283,17 @@ export class JournalSettingsComponent implements OnInit {
   /**
    * Save option metadata to localStorage
    */
-  private saveOptionMetadata(type: BreakdownTypeKey, value: string, metadata: { status?: string; accountCode?: string; }) {
+  private saveOptionMetadata(
+    type: BreakdownTypeKey,
+    value: string,
+    metadata: { status?: string; accountCode?: string },
+  ) {
     const storageKey = `journal-option-metadata-${type}-${value}`;
     const existingMetadata = this.getOptionMetadata(type, value) || {};
     const updated = {
       ...existingMetadata,
       ...metadata,
-      createdDate: existingMetadata.createdDate || this.getTodayDate()
+      createdDate: existingMetadata.createdDate || this.getTodayDate(),
     };
     localStorage.setItem(storageKey, JSON.stringify(updated));
   }
@@ -321,7 +359,7 @@ export class JournalSettingsComponent implements OnInit {
     this.optionForm.patchValue({
       label: option.label,
       status: option.status || 'Active',
-      accountCode: option.accountCode || ''
+      accountCode: option.accountCode || '',
     });
     this.isModalOpen.set(true);
   }
@@ -341,7 +379,7 @@ export class JournalSettingsComponent implements OnInit {
 
     const newOption: DropdownOption = {
       value: label.toLowerCase().replace(/\s+/g, '-'),
-      label: label
+      label: label,
     };
 
     try {
@@ -358,7 +396,7 @@ export class JournalSettingsComponent implements OnInit {
 
       this.saveOptionMetadata(serviceType, newOption.value, {
         status,
-        accountCode
+        accountCode,
       });
 
       window.dispatchEvent(new CustomEvent('rmc-dropdowns-updated'));
@@ -408,7 +446,7 @@ export class JournalSettingsComponent implements OnInit {
     const selectedValues = Array.from(this.selectedCheckboxes());
 
     try {
-      selectedValues.forEach(value => {
+      selectedValues.forEach((value) => {
         this.JournalOptionsService.deleteOption(serviceType, value);
       });
       this.selectedCheckboxes.set(new Set());
@@ -462,8 +500,3 @@ export class JournalSettingsComponent implements OnInit {
     }
   }
 }
-
-
-
-
-

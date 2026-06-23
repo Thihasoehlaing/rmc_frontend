@@ -1,20 +1,39 @@
-import { ChangeDetectionStrategy, Component, OnInit, OnDestroy, inject, signal, computed } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  OnDestroy,
+  inject,
+  signal,
+  computed,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
-  AbstractControl, FormBuilder, FormGroup, ReactiveFormsModule,
-  ValidationErrors, Validators,
+  AbstractControl,
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  ValidationErrors,
+  Validators,
 } from '@angular/forms';
 import { finalize, Subject, takeUntil } from 'rxjs';
 
 import { BatchSittingService } from '../batch-sitting.service';
 import {
-  BatchSitting, WORKFLOW_STAGE_META, WorkflowStageKey,
+  BatchSitting,
+  WORKFLOW_STAGE_META,
+  WorkflowStageKey,
 } from '../../../core/interfaces/batch-sitting.interface';
 import { AuthService } from '../../../core/services/auth.service';
 import { ActionButtonComponent } from '../../../shared/components/action-button/action-button.component';
 import { ValidationMessageComponent } from '../../../shared/components/validation-message/validation-message.component';
 import { DialogComponent } from '../../../shared/components/dialog/dialog.component';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
+import {
+  DataTableColumn,
+  DataTableComponent,
+} from '../../../shared/components/data-table/data-table.component';
+import { TableActionIconComponent } from '../../../shared/components/table-action-icon/table-action-icon.component';
 
 // ── Validators ────────────────────────────────────────────────────────────────
 
@@ -42,42 +61,70 @@ function stageWithinBatchValidator(startFn: () => string, endFn: () => string) {
 @Component({
   selector: 'app-batches',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule, ActionButtonComponent, ValidationMessageComponent, DialogComponent, PaginationComponent],
+  imports: [
+    TableActionIconComponent,
+    CommonModule,
+    ReactiveFormsModule,
+    ActionButtonComponent,
+    ValidationMessageComponent,
+    DialogComponent,
+    PaginationComponent,
+    DataTableComponent,
+  ],
   templateUrl: './batches.component.html',
   styleUrl: './batches.component.scss',
 })
 export class BatchesComponent implements OnInit, OnDestroy {
-  private readonly fb       = inject(FormBuilder);
-  private readonly svc      = inject(BatchSittingService);
-  private readonly auth     = inject(AuthService);
+  private readonly fb = inject(FormBuilder);
+  private readonly svc = inject(BatchSittingService);
+  private readonly auth = inject(AuthService);
   private readonly destroy$ = new Subject<void>();
 
+  readonly stageColumns: DataTableColumn[] = [
+    { key: 'stage', label: 'Stage' },
+    { key: 'start', label: 'Stage Start', width: '22%' },
+    { key: 'end', label: 'Stage End', width: '22%' },
+  ];
+  readonly historyColumns: DataTableColumn[] = [
+    { key: 'name', label: 'Batch Name' },
+    { key: 'start', label: 'Start Date' },
+    { key: 'end', label: 'End Date' },
+    { key: 'submissions', label: 'Submissions', align: 'center', headerAlign: 'center' },
+    { key: 'status', label: 'Status' },
+    {
+      key: 'actions',
+      label: 'Actions',
+      width: 'var(--size-table-column-actions)',
+      align: 'center',
+      headerAlign: 'center',
+    },
+  ];
   readonly stageMeta = WORKFLOW_STAGE_META;
-  readonly today     = new Date().toISOString().substring(0, 10);
+  readonly today = new Date().toISOString().substring(0, 10);
 
   // ── Data signals ──────────────────────────────────────────────────────────
-  activeBatch    = signal<BatchSitting | null>(null);
+  activeBatch = signal<BatchSitting | null>(null);
   plannedBatches = signal<BatchSitting[]>([]);
   historyBatches = signal<BatchSitting[]>([]);
 
   // ── UI signals ────────────────────────────────────────────────────────────
-  isLoading          = signal(true);
-  isSaving           = signal(false);
-  isEditingActive    = signal(false);
-  editingPlannedId   = signal<number | null>(null);
-  isAddingPlanned    = signal(false);
-  showEndConfirm     = signal(false);
-  viewingBatch       = signal<BatchSitting | null>(null);
-  feedback           = signal<{ type: 'success' | 'error'; text: string } | null>(null);
-  stagePage          = signal(1);
-  stagePageSize      = signal(15);
+  isLoading = signal(true);
+  isSaving = signal(false);
+  isEditingActive = signal(false);
+  editingPlannedId = signal<number | null>(null);
+  isAddingPlanned = signal(false);
+  showEndConfirm = signal(false);
+  viewingBatch = signal<BatchSitting | null>(null);
+  feedback = signal<{ type: 'success' | 'error'; text: string } | null>(null);
+  stagePage = signal(1);
+  stagePageSize = signal(15);
   stagePageSizeOptions = [5, 15, 30, 50];
-  historyPage        = signal(1);
-  historyPageSize    = signal(15);
+  historyPage = signal(1);
+  historyPageSize = signal(15);
   historyPageSizeOptions = [5, 15, 30, 50];
 
   // ── Forms ─────────────────────────────────────────────────────────────────
-  activeForm!:  FormGroup;
+  activeForm!: FormGroup;
   plannedForm!: FormGroup;
 
   ngOnInit() {
@@ -91,17 +138,23 @@ export class BatchesComponent implements OnInit, OnDestroy {
   }
 
   private initForms() {
-    this.activeForm = this.fb.group({
-      batchName: ['', [Validators.required, Validators.minLength(3)]],
-      startDate: ['', Validators.required],
-      endDate: ['', Validators.required],
-    }, { validators: endAfterStartValidator });
+    this.activeForm = this.fb.group(
+      {
+        batchName: ['', [Validators.required, Validators.minLength(3)]],
+        startDate: ['', Validators.required],
+        endDate: ['', Validators.required],
+      },
+      { validators: endAfterStartValidator },
+    );
 
-    this.plannedForm = this.fb.group({
-      batchName: ['', [Validators.required, Validators.minLength(3)]],
-      startDate: ['', Validators.required],
-      endDate: ['', Validators.required],
-    }, { validators: endAfterStartValidator });
+    this.plannedForm = this.fb.group(
+      {
+        batchName: ['', [Validators.required, Validators.minLength(3)]],
+        startDate: ['', Validators.required],
+        endDate: ['', Validators.required],
+      },
+      { validators: endAfterStartValidator },
+    );
   }
 
   stageTotalPages(): number {
@@ -151,7 +204,8 @@ export class BatchesComponent implements OnInit, OnDestroy {
 
   private load() {
     this.isLoading.set(true);
-    this.svc.loadAll()
+    this.svc
+      .loadAll()
       .pipe(
         finalize(() => this.isLoading.set(false)),
         takeUntil(this.destroy$),
@@ -159,8 +213,12 @@ export class BatchesComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (batches: BatchSitting[]) => {
           const active = batches.find((b: BatchSitting) => b.status === 'active');
-          const planned = batches.filter((b: BatchSitting) => b.status === 'planned').sort((a: BatchSitting, b: BatchSitting) => a.startDate.localeCompare(b.startDate));
-          const history = batches.filter((b: BatchSitting) => b.status === 'completed').sort((a: BatchSitting, b: BatchSitting) => (b.endedAt?.localeCompare(a.endedAt!) ?? 0));
+          const planned = batches
+            .filter((b: BatchSitting) => b.status === 'planned')
+            .sort((a: BatchSitting, b: BatchSitting) => a.startDate.localeCompare(b.startDate));
+          const history = batches
+            .filter((b: BatchSitting) => b.status === 'completed')
+            .sort((a: BatchSitting, b: BatchSitting) => b.endedAt?.localeCompare(a.endedAt!) ?? 0);
 
           this.activeBatch.set(active ?? null);
           this.plannedBatches.set(planned);
@@ -192,21 +250,28 @@ export class BatchesComponent implements OnInit, OnDestroy {
   saveActiveForm() {
     if (!this.activeForm.valid) {
       this.activeForm.markAllAsTouched();
-      this.setFeedback('error', 'Please fix validation errors before saving. Batch Name must be at least 3 characters.');
+      this.setFeedback(
+        'error',
+        'Please fix validation errors before saving. Batch Name must be at least 3 characters.',
+      );
       return;
     }
 
     this.isSaving.set(true);
     const payload = this.activeForm.value;
-    const isFutureStart = typeof payload.startDate === 'string' && payload.startDate > this.currentDateIso();
+    const isFutureStart =
+      typeof payload.startDate === 'string' && payload.startDate > this.currentDateIso();
 
     const obs$ = this.activeBatch()
       ? this.svc.update({ ...this.activeBatch()!, ...payload })
       : this.svc.create({
-        ...this.svc.buildBlankBatch(this.auth.currentUser()?.email || 'system', isFutureStart ? 'planned' : 'active'),
-        ...payload,
-        status: isFutureStart ? 'planned' : 'active',
-      } as any);
+          ...this.svc.buildBlankBatch(
+            this.auth.currentUser()?.email || 'system',
+            isFutureStart ? 'planned' : 'active',
+          ),
+          ...payload,
+          status: isFutureStart ? 'planned' : 'active',
+        } as any);
 
     obs$
       .pipe(
@@ -217,15 +282,20 @@ export class BatchesComponent implements OnInit, OnDestroy {
         next: (batch: BatchSitting) => {
           if (isFutureStart && !this.activeBatch()) {
             this.plannedBatches.update((list: BatchSitting[]) =>
-              [...list, batch].sort((a: BatchSitting, b: BatchSitting) => a.startDate.localeCompare(b.startDate))
+              [...list, batch].sort((a: BatchSitting, b: BatchSitting) =>
+                a.startDate.localeCompare(b.startDate),
+              ),
             );
           } else {
             this.activeBatch.set(batch);
           }
           this.isEditingActive.set(false);
-          this.setFeedback('success', isFutureStart
-            ? 'Start date is in the future. Batch was added to Upcoming Batches.'
-            : 'Batch saved successfully');
+          this.setFeedback(
+            'success',
+            isFutureStart
+              ? 'Start date is in the future. Batch was added to Upcoming Batches.'
+              : 'Batch saved successfully',
+          );
         },
         error: (err) => this.handleError(err, 'Failed to save batch'),
       });
@@ -255,7 +325,8 @@ export class BatchesComponent implements OnInit, OnDestroy {
       endedAt: new Date().toISOString(),
     };
 
-    this.svc.update(endedBatch)
+    this.svc
+      .update(endedBatch)
       .pipe(
         finalize(() => this.isSaving.set(false)),
         takeUntil(this.destroy$),
@@ -283,13 +354,21 @@ export class BatchesComponent implements OnInit, OnDestroy {
   savePlannedForm() {
     if (!this.plannedForm.valid) {
       this.plannedForm.markAllAsTouched();
-      this.setFeedback('error', 'Please fix validation errors before saving. Batch Name must be at least 3 characters.');
+      this.setFeedback(
+        'error',
+        'Please fix validation errors before saving. Batch Name must be at least 3 characters.',
+      );
       return;
     }
 
     this.isSaving.set(true);
     const payload = this.plannedForm.value;
-    this.svc.create({ ...this.svc.buildBlankBatch(this.auth.currentUser()?.email || 'system', 'planned'), ...payload, status: 'planned' } as any)
+    this.svc
+      .create({
+        ...this.svc.buildBlankBatch(this.auth.currentUser()?.email || 'system', 'planned'),
+        ...payload,
+        status: 'planned',
+      } as any)
       .pipe(
         finalize(() => this.isSaving.set(false)),
         takeUntil(this.destroy$),
@@ -314,7 +393,8 @@ export class BatchesComponent implements OnInit, OnDestroy {
     if (!confirm('Are you sure? This cannot be undone.')) return;
 
     this.isSaving.set(true);
-    this.svc.delete(id)
+    this.svc
+      .delete(id)
       .pipe(
         finalize(() => this.isSaving.set(false)),
         takeUntil(this.destroy$),
@@ -345,7 +425,8 @@ export class BatchesComponent implements OnInit, OnDestroy {
       updatedAt: new Date().toISOString(),
     };
 
-    this.svc.update(retrievedBatch)
+    this.svc
+      .update(retrievedBatch)
       .pipe(
         finalize(() => this.isSaving.set(false)),
         takeUntil(this.destroy$),

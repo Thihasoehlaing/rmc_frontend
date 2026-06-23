@@ -8,39 +8,46 @@
       <div>
         <p class="guidelines-breadcrumb">Admin Settings</p>
         <h1 class="guidelines-title">Guidelines</h1>
-        <p class="guidelines-subtitle">Build and manage instruction content shown to applicants in each form.</p>
+        <p class="guidelines-subtitle">
+          Build and manage instruction content shown to applicants in each form.
+        </p>
       </div>
     </div>
   </div>
 
   <!-- Search and Actions -->
   @if (!isLoading()) {
-  <div class="guidelines-controls">
-    <div class="guidelines-search">
-      <span class="material-icons search-icon">search</span>
-      <input
-        type="text"
-        placeholder="Search by title or creator..."
-        class="input--text"
-        [ngModel]="searchTerm()"
-        (ngModelChange)="onGuidelineSearchChange($event)"
-      />
+    <div class="guidelines-controls">
+      <div class="guidelines-search">
+        <span class="material-icons search-icon">search</span>
+        <input
+          type="text"
+          placeholder="Search by title or creator..."
+          class="input--text"
+          [ngModel]="searchTerm()"
+          (ngModelChange)="onGuidelineSearchChange($event)"
+        />
+      </div>
+      <div class="guidelines-filter">
+        <label for="status-filter" class="filter-label">Status:</label>
+        <select
+          id="status-filter"
+          class="input--select"
+          [ngModel]="selectedStatus()"
+          (ngModelChange)="onGuidelineStatusChange($event)"
+        >
+          <option value="">All</option>
+          <option value="Active">Active</option>
+          <option value="Inactive">Inactive</option>
+        </select>
+      </div>
+      <div class="guidelines-actions">
+        <button class="btn btn-primary" (click)="addGuideline()" [disabled]="isLoading()">
+          <span class="material-icons">add</span>
+          Add Guideline
+        </button>
+      </div>
     </div>
-    <div class="guidelines-filter">
-      <label for="status-filter" class="filter-label">Status:</label>
-      <select id="status-filter" class="input--select" [ngModel]="selectedStatus()" (ngModelChange)="onGuidelineStatusChange($event)">
-        <option value="">All</option>
-        <option value="Active">Active</option>
-        <option value="Inactive">Inactive</option>
-      </select>
-    </div>
-    <div class="guidelines-actions">
-      <button class="btn btn-primary" (click)="addGuideline()" [disabled]="isLoading()">
-        <span class="material-icons">add</span>
-        Add Guideline
-      </button>
-    </div>
-  </div>
   }
 
   <!-- Table -->
@@ -60,9 +67,7 @@
         <span class="material-icons">cloud_off</span>
         <h2>Unable to load guidelines</h2>
         <p>Check the API connection and try again.</p>
-        <button class="btn btn-primary" type="button" (click)="loadGuidelines()">
-          Try Again
-        </button>
+        <button class="btn btn-primary" type="button" (click)="loadGuidelines()">Try Again</button>
       </div>
     } @else {
       <app-data-table
@@ -71,14 +76,19 @@
         [rowTrackFn]="rowTrackFn"
         [sortColumn]="sortBy()"
         [sortDirection]="sortDirection()"
-        (sortChange)="onSortChange($event)">
+        (sortChange)="onSortChange($event)"
+      >
         <ng-template #rowTemplate let-row let-index="index" let-columns="columns">
           <tr>
             <td class="center">{{ rowNumber(index) }}</td>
             <td>{{ row.form }}</td>
             <td>{{ row.title }}</td>
             <td class="center">
-              <span class="guideline-status" [class.is-active]="row.isActive" [class.is-inactive]="!row.isActive">
+              <span
+                class="guideline-status"
+                [class.is-active]="row.isActive"
+                [class.is-inactive]="!row.isActive"
+              >
                 {{ row.isActive ? 'Active' : 'Inactive' }}
               </span>
             </td>
@@ -91,8 +101,9 @@
                 type="button"
                 title="Edit guideline"
                 [disabled]="loadingGuidelineId() !== null"
-                (click)="editGuideline(row.id)">
-                <span class="material-icons">edit</span>
+                (click)="editGuideline(row.id)"
+              >
+                <app-table-action-icon action="edit"></app-table-action-icon>
               </button>
 
               @if (!row.isActive) {
@@ -100,7 +111,8 @@
                   class="btn btn-sm btn-status-activate"
                   type="button"
                   [disabled]="loadingGuidelineId() !== null"
-                  (click)="toggleGuidelineStatus(row)">
+                  (click)="toggleGuidelineStatus(row)"
+                >
                   <span class="material-icons">check_circle</span>
                   Activate
                 </button>
@@ -111,11 +123,9 @@
                 type="button"
                 [title]="row.isActive ? 'Deactivate' : 'Delete guideline'"
                 [disabled]="loadingGuidelineId() !== null"
-                (click)="row.isActive ? openDeactivateDialog(row) : deleteGuideline(row)">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
-                  <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
-                  <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
-                </svg>
+                (click)="row.isActive ? openDeactivateDialog(row) : deleteGuideline(row)"
+              >
+                <app-table-action-icon action="delete"></app-table-action-icon>
               </button>
             </td>
           </tr>
@@ -131,7 +141,8 @@
       [pageSize]="guidelinePageSize()"
       [pageSizeOptions]="guidelinePageSizeOptions"
       (pageChange)="onGuidelinePageChange($event)"
-      (pageSizeChange)="onGuidelinePageSizeChange($event)">
+      (pageSizeChange)="onGuidelinePageSizeChange($event)"
+    >
     </app-pagination>
   }
 
@@ -139,7 +150,8 @@
   <div class="guidelines-footer">
     <p class="guidelines-count">
       @if (!isLoading() && totalGuidelines() > 0) {
-        Showing {{ guidelinePageStart() }}-{{ guidelinePageEnd() }} of {{ totalGuidelines() }} guidelines
+        Showing {{ guidelinePageStart() }}-{{ guidelinePageEnd() }} of
+        {{ totalGuidelines() }} guidelines
       } @else if (!isLoading()) {
         Showing 0 guidelines
       }
@@ -161,26 +173,37 @@
     [isOpen]="guidelineToDeactivate() !== null"
     title="Deactivate Guideline"
     size="small"
-    (close)="closeDeactivateDialog()">
+    (close)="closeDeactivateDialog()"
+  >
     @if (guidelineToDeactivate(); as guideline) {
       <div class="delete-confirmation">
-        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="delete-icon" viewBox="0 0 16 16">
-          <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
-          <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
-        </svg>
+        <app-svg-icon class="delete-icon" [icon]="trashIcon" size="48px"></app-svg-icon>
         <div>
           <h3>Are you sure you want to deactivate this guideline?</h3>
-          <p><strong>{{ guideline.title }}</strong> will no longer be available for active use.</p>
+          <p>
+            <strong>{{ guideline.title }}</strong> will no longer be available for active use.
+          </p>
         </div>
       </div>
     }
 
     <div dialog-footer class="dialog-actions">
-      <button class="btn btn-secondary" type="button" [disabled]="loadingGuidelineId() !== null" (click)="closeDeactivateDialog()">Cancel</button>
-      <button class="btn btn-danger" type="button" [disabled]="loadingGuidelineId() !== null" (click)="confirmDeactivate()">
+      <button
+        class="btn btn-secondary"
+        type="button"
+        [disabled]="loadingGuidelineId() !== null"
+        (click)="closeDeactivateDialog()"
+      >
+        Cancel
+      </button>
+      <button
+        class="btn btn-danger"
+        type="button"
+        [disabled]="loadingGuidelineId() !== null"
+        (click)="confirmDeactivate()"
+      >
         {{ loadingGuidelineId() !== null ? 'Deactivating...' : 'Deactivate' }}
       </button>
     </div>
   </app-dialog>
 </div>
-

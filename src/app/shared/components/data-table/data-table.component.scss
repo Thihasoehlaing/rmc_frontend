@@ -63,17 +63,25 @@ thead th {
 
 .sort-indicator,
 :host ::ng-deep .sort-indicator {
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
   margin-left: var(--space-2);
   color: var(--color-text-muted);
-  font-size: var(--fs-base);
+  font-size: var(--icon-sm);
   font-weight: var(--fw-normal);
   line-height: 1;
   vertical-align: middle;
+  transition: color var(--transition-fast);
+
+  &.is-active {
+    color: var(--color-primary);
+  }
 }
 
+.header-content {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  white-space: nowrap;
+}
 .header-label {
   display: inline-block;
 }
@@ -249,14 +257,25 @@ tbody tr:hover,
 
 // Base .btn-icon styles come from global _forms.scss.
 // ::ng-deep is required here because buttons are inside projected <ng-template> content.
+:host ::ng-deep .btn-icon--view {
+  color: var(--color-primary);
+
+  &:hover:not(:disabled) {
+    background: var(--color-primary-light);
+  }
+}
 :host ::ng-deep .btn-icon--edit {
   color: var(--color-primary);
-  &:hover:not(:disabled) { background: var(--color-primary-light); }
+  &:hover:not(:disabled) {
+    background: var(--color-primary-light);
+  }
 }
 
 :host ::ng-deep .btn-icon--delete {
   color: var(--color-error);
-  &:hover:not(:disabled) { background: var(--color-error-light); }
+  &:hover:not(:disabled) {
+    background: var(--color-error-light);
+  }
 }
 
 :host ::ng-deep .btn-icon:disabled {

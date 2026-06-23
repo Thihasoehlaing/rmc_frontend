@@ -1,6 +1,8 @@
 <section class="external-project-page">
   <header class="external-project-page__header">
-    <h1 class="external-project-page__page-title">External Project Data Entry Process - Fill Application Form</h1>
+    <h1 class="external-project-page__page-title">
+      External Project Data Entry Process - Fill Application Form
+    </h1>
   </header>
 
   <form [formGroup]="externalProjectForm" class="form-container external-project-form">
@@ -11,7 +13,9 @@
 
     <div class="external-project-form__body">
       <div class="form-field">
-        <label for="external-grant-category" class="form-label is-required">External Grant Category</label>
+        <label for="external-grant-category" class="form-label is-required"
+          >External Grant Category</label
+        >
         <div id="external-grant-category" class="radio-group radio-group--grid">
           @for (category of grantCategories; track category) {
             <label class="radio-option">
@@ -19,7 +23,8 @@
                 type="radio"
                 class="radio-input"
                 formControlName="externalGrantCategory"
-                [value]="category">
+                [value]="category"
+              />
               <span>{{ category }}</span>
             </label>
           }
@@ -30,18 +35,19 @@
         <section class="card">
           <app-custom-subheader
             icon="assignment"
-            title="National, International or Industry Project Details">
+            title="National, International or Industry Project Details"
+          >
           </app-custom-subheader>
 
           <div class="card__content section-fields">
             <div class="row row--3">
               <div class="form-field">
                 <label class="form-label is-required">Project Code</label>
-                <input type="text" class="input--text" formControlName="projectCode">
+                <input type="text" class="input--text" formControlName="projectCode" />
               </div>
               <div class="form-field">
                 <label class="form-label">Account Code</label>
-                <input type="text" class="input--text" formControlName="accountCode">
+                <input type="text" class="input--text" formControlName="accountCode" />
               </div>
               <div class="form-field">
                 <label class="form-label is-required">Project Leader/Principle Investigator</label>
@@ -49,7 +55,8 @@
                   [options]="projectLeaderOptions"
                   [searchable]="true"
                   placeholder="Search project leader..."
-                  formControlName="staffName">
+                  formControlName="staffName"
+                >
                 </app-searchable-dropdown>
               </div>
             </div>
@@ -57,22 +64,27 @@
             <div class="row row--3">
               <div class="form-field">
                 <label class="form-label is-required">Grant Name</label>
-                <input type="text" class="input--text" formControlName="grantName">
+                <input type="text" class="input--text" formControlName="grantName" />
               </div>
               <div class="form-field">
                 <label class="form-label is-required">Sponsor Name</label>
-                <input type="text" class="input--text" formControlName="sponsorName">
+                <input type="text" class="input--text" formControlName="sponsorName" />
               </div>
               <div class="form-field">
                 <label class="form-label is-required">School/Department</label>
-                <input type="text" class="input--text input--readonly" formControlName="schoolDepartment" readonly>
+                <input
+                  type="text"
+                  class="input--text input--readonly"
+                  formControlName="schoolDepartment"
+                  readonly
+                />
               </div>
             </div>
 
             <div class="row row--3">
               <div class="form-field">
                 <label class="form-label is-required">Start Date</label>
-                <input type="date" class="input--text" formControlName="startDate">
+                <input type="date" class="input--text" formControlName="startDate" />
               </div>
               <div class="form-field">
                 <label class="form-label is-required">End Date</label>
@@ -80,11 +92,17 @@
                   type="date"
                   class="input--text"
                   formControlName="endDate"
-                  [min]="minimumEndDate()">
+                  [min]="minimumEndDate()"
+                />
               </div>
               <div class="form-field">
                 <label class="form-label">Duration of Project (Month)</label>
-                <input type="text" class="input--text input--readonly" formControlName="durationMonths" readonly>
+                <input
+                  type="text"
+                  class="input--text input--readonly"
+                  formControlName="durationMonths"
+                  readonly
+                />
               </div>
             </div>
 
@@ -94,15 +112,24 @@
                 class="input--textarea"
                 formControlName="researchTitle"
                 [maxlength]="200"
-                rows="3">
+                rows="3"
+              >
               </textarea>
-              <app-character-counter [current]="researchTitleLength()" [max]="200"></app-character-counter>
+              <app-character-counter
+                [current]="researchTitleLength()"
+                [max]="200"
+              ></app-character-counter>
             </div>
 
             <div class="table-section">
               <div class="category-header">
                 <h3 class="table-section__title">Internal Co-Researcher</h3>
-                <app-action-button type="primary" label="Add Entry" icon="add" (clicked)="openTableEntryDialog('internal')"></app-action-button>
+                <app-action-button
+                  type="primary"
+                  label="Add Entry"
+                  icon="add"
+                  (clicked)="openTableEntryDialog('internal')"
+                ></app-action-button>
               </div>
 
               <app-data-table
@@ -111,310 +138,8 @@
                 [rowTrackFn]="trackByIndex"
                 [hoverable]="true"
                 [striped]="true"
-                [dense]="true">
-                <ng-template #rowTemplate let-row let-index="index">
-                  <tr>
-                    <td class="text-muted is-align-center">{{ index + 1 }}</td>
-                    <td>
-                      <div class="data-table__stacked">
-                        <span class="data-table__avatar">{{ row.staffName.charAt(0) }}</span>
-                        <div class="data-table__title">{{ row.staffName }}</div>
-                      </div>
-                    </td>
-                    <td>{{ row.schoolDepartment }}</td>
-                    <td class="is-align-center">
-                      <div class="data-table__actions">
-                        <button type="button" class="btn-icon btn-icon--edit"
-                          (click)="openTableEntryDialog('internal', null, index)" aria-label="Edit internal co-researcher">
-                          <span class="material-icons">edit</span>
-                        </button>
-                        <button type="button" class="btn-icon btn-icon--delete"
-                          (click)="removeInternalCoResearcherRow(index)" aria-label="Remove internal co-researcher">
-                          <span class="material-icons">delete</span>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                </ng-template>
-              </app-data-table>
-            </div>
-
-            <div class="table-section">
-              <div class="category-header">
-                <h3 class="table-section__title">External Collaborators</h3>
-                <app-action-button type="primary" label="Add Entry" icon="add" (clicked)="openTableEntryDialog('external')"></app-action-button>
-              </div>
-
-              <app-data-table
-                [columns]="externalCollaboratorColumns"
-                [rows]="externalCollaborators"
-                [rowTrackFn]="trackByIndex"
-                [hoverable]="true"
-                [striped]="true"
-                [dense]="true">
-                <ng-template #rowTemplate let-row let-index="index">
-                  <tr>
-                    <td class="text-muted is-align-center">{{ index + 1 }}</td>
-                    <td><div class="data-table__title">{{ row.name }}</div></td>
-                    <td>{{ row.affiliation }}</td>
-                    <td class="is-align-center">
-                      <div class="data-table__actions">
-                        <button type="button" class="btn-icon btn-icon--edit"
-                          (click)="openTableEntryDialog('external', null, index)" aria-label="Edit external collaborator">
-                          <span class="material-icons">edit</span>
-                        </button>
-                        <button type="button" class="btn-icon btn-icon--delete"
-                          (click)="removeExternalCollaboratorRow(index)" aria-label="Remove external collaborator">
-                          <span class="material-icons">delete</span>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                </ng-template>
-              </app-data-table>
-            </div>
-
-            <div class="table-section">
-              <div class="category-header">
-                <h3 class="table-section__title">Expected Outcome</h3>
-                <app-action-button type="primary" label="Add Entry" icon="add" (clicked)="openTableEntryDialog('outcome')"></app-action-button>
-              </div>
-
-              <app-data-table
-                [columns]="expectedOutcomeColumns"
-                [rows]="expectedOutcomes"
-                [rowTrackFn]="trackByIndex"
-                [hoverable]="true"
-                [striped]="true"
-                [dense]="true">
-                <ng-template #rowTemplate let-row let-index="index">
-                  <tr>
-                    <td class="text-muted is-align-center">{{ index + 1 }}</td>
-                    <td><div class="data-table__multiline">{{ row.description }}</div></td>
-                    <td class="is-align-center">
-                      <div class="data-table__actions">
-                        <button type="button" class="btn-icon btn-icon--edit"
-                          (click)="openTableEntryDialog('outcome', null, index)" aria-label="Edit expected outcome">
-                          <span class="material-icons">edit</span>
-                        </button>
-                        <button type="button" class="btn-icon btn-icon--delete"
-                          (click)="removeExpectedOutcomeRow(index)" aria-label="Remove expected outcome">
-                          <span class="material-icons">delete</span>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                </ng-template>
-              </app-data-table>
-            </div>
-          </div>
-        </section>
-
-        <section class="card budget-summary-card">
-          <app-custom-subheader icon="account_balance_wallet" title="Budget Summary"></app-custom-subheader>
-
-          <div class="card__content section-fields budget-summary-card__content">
-            <div class="form-field budget-summary-card__total-field">
-              <label class="form-label">Total Budget Request (RM)</label>
-              <input type="text" class="input--text input--disabled-readonly" [value]="budgetSummaryTotal()" readonly>
-            </div>
-
-            @for (section of budgetSections; track section.key) {
-              <section class="card budget-item-card">
-                <app-custom-subheader [title]="section.title + ' (' + section.code + ')'" icon="folder"></app-custom-subheader>
-
-                <div class="card__content section-fields budget-item-card__content">
-                  <div class="row row--2 budget-item-card__summary-row">
-                    <div class="form-field">
-                      <label class="form-label is-required">Item</label>
-                      <input
-                        type="text"
-                        class="input--text input--readonly"
-                        readonly
-                        [value]="section.item"
-                        (input)="updateBudgetSectionItem(section.key, $any($event.target).value)">
-                    </div>
-
-                    <div class="form-field">
-                      <label class="form-label is-required">Total Amount (RM)</label>
-                      <input
-                        type="text"
-                        class="input--text input--readonly"
-                        readonly
-                        [value]="section.totalAmount || '0.00'">
-                    </div>
-                  </div>
-
-                  <div class="table-section">
-                    <div class="category-header">
-                      <h3 class="table-section__title">Detail Breakdown</h3>
-                      <app-action-button type="primary" label="Add Entry" icon="add" (clicked)="openTableEntryDialog('budget', section.key)"></app-action-button>
-                    </div>
-
-                    <app-data-table
-                      [columns]="budgetBreakdownColumns"
-                      [rows]="section.rows"
-                      [rowTrackFn]="trackByIndex"
-                      [hoverable]="true"
-                      [striped]="true"
-                      [dense]="true">
-                      <ng-template #rowTemplate let-row let-index="index">
-                        <tr>
-                          <td class="text-muted is-align-center">{{ index + 1 }}</td>
-                          <td><div class="data-table__title data-table__title--small">{{ row.description }}</div></td>
-                          <td class="amount-cell">{{ row.amount | number:'1.2-2' }}</td>
-                          <td class="is-align-center">
-                            <div class="data-table__actions">
-                              <button type="button" class="btn-icon btn-icon--edit"
-                                (click)="openTableEntryDialog('budget', section.key, index)" aria-label="Edit budget entry">
-                                <span class="material-icons">edit</span>
-                              </button>
-                              <button type="button" class="btn-icon btn-icon--delete"
-                                (click)="removeBudgetRow(section.key, index)" aria-label="Remove budget entry">
-                                <span class="material-icons">delete</span>
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      </ng-template>
-                    </app-data-table>
-                  </div>
-
-                  @if (section.key === 'management-fee') {
-                    <div class="form-field">
-                      <label class="form-label">Remark</label>
-                      <textarea
-                        class="input--textarea"
-                        [value]="section.remark"
-                        maxlength="600"
-                        (input)="updateBudgetSectionRemark(section.key, $any($event.target).value)">
-                      </textarea>
-                      <app-character-counter [current]="section.remark.length" [max]="600"></app-character-counter>
-                    </div>
-
-                    <div class="form-field">
-                      <label class="form-label">Is Billing Required?</label>
-                      <div class="radio-group radio-group--grid radio-group--single-row">
-                        <label class="radio-option">
-                          <input
-                            type="radio"
-                            class="radio-input"
-                            [name]="section.key + '-billing'"
-                            [checked]="section.billingRequired === 'Yes'"
-                            (change)="updateBillingRequired(section.key, 'Yes')">
-                          <span>Yes</span>
-                        </label>
-                        <label class="radio-option">
-                          <input
-                            type="radio"
-                            class="radio-input"
-                            [name]="section.key + '-billing'"
-                            [checked]="section.billingRequired === 'No'"
-                            (change)="updateBillingRequired(section.key, 'No')">
-                          <span>No</span>
-                        </label>
-                      </div>
-                    </div>
-
-                    @if (section.billingRequired === 'Yes') {
-                      <ng-container
-                        [ngTemplateOutlet]="billingInformation"
-                        [ngTemplateOutletContext]="{ $implicit: section, idSuffix: 'project' }">
-                      </ng-container>
-                    }
-                  }
-                </div>
-              </section>
-            }
-          </div>
-        </section>
-      }
-
-      @if (isConsultancySelected()) {
-        <section class="card">
-          <app-custom-subheader
-            icon="work"
-            title="Consultancy Project Details">
-          </app-custom-subheader>
-
-          <div class="card__content section-fields">
-            <div class="row row--2">
-              <div class="form-field">
-                <label class="form-label is-required">Project Code</label>
-                <input type="text" class="input--text" formControlName="projectCode">
-              </div>
-              <div class="form-field">
-                <label class="form-label">Account Code</label>
-                <input type="text" class="input--text" formControlName="accountCode">
-              </div>
-            </div>
-
-            <div class="row row--2">
-              <div class="form-field">
-                <label class="form-label is-required">Project Leader/Principle Investigator</label>
-                <app-searchable-dropdown
-                  [options]="projectLeaderOptions"
-                  [searchable]="true"
-                  placeholder="Search project leader..."
-                  formControlName="staffName">
-                </app-searchable-dropdown>
-              </div>
-              <div class="form-field">
-                <label class="form-label is-required">School/Department</label>
-                <input type="text" class="input--text input--readonly" formControlName="schoolDepartment" readonly>
-              </div>
-            </div>
-
-            <div class="row row--2">
-              <div class="form-field">
-                <label class="form-label is-required">Start Date</label>
-                <input type="date" class="input--text" formControlName="startDate">
-              </div>
-              <div class="form-field">
-                <label class="form-label is-required">Client/Stakeholder</label>
-                <input type="text" class="input--text" formControlName="clientStakeholder">
-              </div>
-            </div>
-
-            <div class="row row--2">
-              <div class="form-field">
-                <label class="form-label is-required">End Date</label>
-                <input
-                  type="date"
-                  class="input--text"
-                  formControlName="endDate"
-                  [min]="minimumEndDate()">
-              </div>
-              <div class="form-field">
-                <label class="form-label">Duration of Project (Month)</label>
-                <input type="text" class="input--text input--readonly" formControlName="durationMonths" readonly>
-              </div>
-            </div>
-
-            <div class="form-field">
-              <label class="form-label is-required">Consultancy Title</label>
-              <textarea
-                class="input--textarea"
-                formControlName="consultancyTitle"
-                [maxlength]="200"
-                rows="3">
-              </textarea>
-              <app-character-counter [current]="consultancyTitleLength()" [max]="200"></app-character-counter>
-            </div>
-
-            <div class="table-section">
-              <div class="category-header">
-                <h3 class="table-section__title">Internal Co-Researcher</h3>
-                <app-action-button type="primary" label="Add Entry" icon="add" (clicked)="openTableEntryDialog('internal')"></app-action-button>
-              </div>
-
-              <app-data-table
-                [columns]="internalCoResearcherColumns"
-                [rows]="internalCoResearchers"
-                [rowTrackFn]="trackByIndex"
-                [hoverable]="true"
-                [striped]="true"
-                [dense]="true">
+                [dense]="true"
+              >
                 <ng-template #rowTemplate let-row let-index="index">
                   <tr>
                     <td class="text-muted is-align-center">{{ index + 1 }}</td>
@@ -431,15 +156,118 @@
                           type="button"
                           class="btn-icon btn-icon--edit"
                           (click)="openTableEntryDialog('internal', null, index)"
-                          aria-label="Edit internal co-researcher">
-                          <span class="material-icons">edit</span>
+                          aria-label="Edit internal co-researcher"
+                        >
+                          <app-table-action-icon action="edit"></app-table-action-icon>
                         </button>
                         <button
                           type="button"
                           class="btn-icon btn-icon--delete"
                           (click)="removeInternalCoResearcherRow(index)"
-                          aria-label="Remove internal co-researcher">
-                          <span class="material-icons">delete</span>
+                          aria-label="Remove internal co-researcher"
+                        >
+                          <app-table-action-icon action="delete"></app-table-action-icon>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </ng-template>
+              </app-data-table>
+            </div>
+
+            <div class="table-section">
+              <div class="category-header">
+                <h3 class="table-section__title">External Collaborators</h3>
+                <app-action-button
+                  type="primary"
+                  label="Add Entry"
+                  icon="add"
+                  (clicked)="openTableEntryDialog('external')"
+                ></app-action-button>
+              </div>
+
+              <app-data-table
+                [columns]="externalCollaboratorColumns"
+                [rows]="externalCollaborators"
+                [rowTrackFn]="trackByIndex"
+                [hoverable]="true"
+                [striped]="true"
+                [dense]="true"
+              >
+                <ng-template #rowTemplate let-row let-index="index">
+                  <tr>
+                    <td class="text-muted is-align-center">{{ index + 1 }}</td>
+                    <td>
+                      <div class="data-table__title">{{ row.name }}</div>
+                    </td>
+                    <td>{{ row.affiliation }}</td>
+                    <td class="is-align-center">
+                      <div class="data-table__actions">
+                        <button
+                          type="button"
+                          class="btn-icon btn-icon--edit"
+                          (click)="openTableEntryDialog('external', null, index)"
+                          aria-label="Edit external collaborator"
+                        >
+                          <app-table-action-icon action="edit"></app-table-action-icon>
+                        </button>
+                        <button
+                          type="button"
+                          class="btn-icon btn-icon--delete"
+                          (click)="removeExternalCollaboratorRow(index)"
+                          aria-label="Remove external collaborator"
+                        >
+                          <app-table-action-icon action="delete"></app-table-action-icon>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </ng-template>
+              </app-data-table>
+            </div>
+
+            <div class="table-section">
+              <div class="category-header">
+                <h3 class="table-section__title">Expected Outcome</h3>
+                <app-action-button
+                  type="primary"
+                  label="Add Entry"
+                  icon="add"
+                  (clicked)="openTableEntryDialog('outcome')"
+                ></app-action-button>
+              </div>
+
+              <app-data-table
+                [columns]="expectedOutcomeColumns"
+                [rows]="expectedOutcomes"
+                [rowTrackFn]="trackByIndex"
+                [hoverable]="true"
+                [striped]="true"
+                [dense]="true"
+              >
+                <ng-template #rowTemplate let-row let-index="index">
+                  <tr>
+                    <td class="text-muted is-align-center">{{ index + 1 }}</td>
+                    <td>
+                      <div class="data-table__multiline">{{ row.description }}</div>
+                    </td>
+                    <td class="is-align-center">
+                      <div class="data-table__actions">
+                        <button
+                          type="button"
+                          class="btn-icon btn-icon--edit"
+                          (click)="openTableEntryDialog('outcome', null, index)"
+                          aria-label="Edit expected outcome"
+                        >
+                          <app-table-action-icon action="edit"></app-table-action-icon>
+                        </button>
+                        <button
+                          type="button"
+                          class="btn-icon btn-icon--delete"
+                          (click)="removeExpectedOutcomeRow(index)"
+                          aria-label="Remove expected outcome"
+                        >
+                          <app-table-action-icon action="delete"></app-table-action-icon>
                         </button>
                       </div>
                     </td>
@@ -451,17 +279,28 @@
         </section>
 
         <section class="card budget-summary-card">
-          <app-custom-subheader icon="account_balance_wallet" title="Budget Summary"></app-custom-subheader>
+          <app-custom-subheader
+            icon="account_balance_wallet"
+            title="Budget Summary"
+          ></app-custom-subheader>
 
           <div class="card__content section-fields budget-summary-card__content">
             <div class="form-field budget-summary-card__total-field">
               <label class="form-label">Total Budget Request (RM)</label>
-              <input type="text" class="input--text input--disabled-readonly" [value]="budgetSummaryTotal()" readonly>
+              <input
+                type="text"
+                class="input--text input--disabled-readonly"
+                [value]="budgetSummaryTotal()"
+                readonly
+              />
             </div>
 
             @for (section of budgetSections; track section.key) {
               <section class="card budget-item-card">
-                <app-custom-subheader [title]="section.title + ' (' + section.code + ')'" icon="folder"></app-custom-subheader>
+                <app-custom-subheader
+                  [title]="section.title + ' (' + section.code + ')'"
+                  icon="folder"
+                ></app-custom-subheader>
 
                 <div class="card__content section-fields budget-item-card__content">
                   <div class="row row--2 budget-item-card__summary-row">
@@ -472,7 +311,8 @@
                         class="input--text input--readonly"
                         readonly
                         [value]="section.item"
-                        (input)="updateBudgetSectionItem(section.key, $any($event.target).value)">
+                        (input)="updateBudgetSectionItem(section.key, $any($event.target).value)"
+                      />
                     </div>
 
                     <div class="form-field">
@@ -481,14 +321,20 @@
                         type="text"
                         class="input--text input--readonly"
                         readonly
-                        [value]="section.totalAmount || '0.00'">
+                        [value]="section.totalAmount || '0.00'"
+                      />
                     </div>
                   </div>
 
                   <div class="table-section">
                     <div class="category-header">
                       <h3 class="table-section__title">Detail Breakdown</h3>
-                      <app-action-button type="primary" label="Add Entry" icon="add" (clicked)="openTableEntryDialog('budget', section.key)"></app-action-button>
+                      <app-action-button
+                        type="primary"
+                        label="Add Entry"
+                        icon="add"
+                        (clicked)="openTableEntryDialog('budget', section.key)"
+                      ></app-action-button>
                     </div>
 
                     <app-data-table
@@ -497,27 +343,34 @@
                       [rowTrackFn]="trackByIndex"
                       [hoverable]="true"
                       [striped]="true"
-                      [dense]="true">
+                      [dense]="true"
+                    >
                       <ng-template #rowTemplate let-row let-index="index">
                         <tr>
                           <td class="text-muted is-align-center">{{ index + 1 }}</td>
-                          <td><div class="data-table__title data-table__title--small">{{ row.description }}</div></td>
-                          <td class="amount-cell">{{ row.amount | number:'1.2-2' }}</td>
+                          <td>
+                            <div class="data-table__title data-table__title--small">
+                              {{ row.description }}
+                            </div>
+                          </td>
+                          <td class="amount-cell">{{ row.amount | number: '1.2-2' }}</td>
                           <td class="is-align-center">
                             <div class="data-table__actions">
                               <button
                                 type="button"
                                 class="btn-icon btn-icon--edit"
                                 (click)="openTableEntryDialog('budget', section.key, index)"
-                                aria-label="Edit budget entry">
-                                <span class="material-icons">edit</span>
+                                aria-label="Edit budget entry"
+                              >
+                                <app-table-action-icon action="edit"></app-table-action-icon>
                               </button>
                               <button
                                 type="button"
                                 class="btn-icon btn-icon--delete"
                                 (click)="removeBudgetRow(section.key, index)"
-                                aria-label="Remove budget entry">
-                                <span class="material-icons">delete</span>
+                                aria-label="Remove budget entry"
+                              >
+                                <app-table-action-icon action="delete"></app-table-action-icon>
                               </button>
                             </div>
                           </td>
@@ -533,9 +386,13 @@
                         class="input--textarea"
                         [value]="section.remark"
                         maxlength="600"
-                        (input)="updateBudgetSectionRemark(section.key, $any($event.target).value)">
+                        (input)="updateBudgetSectionRemark(section.key, $any($event.target).value)"
+                      >
                       </textarea>
-                      <app-character-counter [current]="section.remark.length" [max]="600"></app-character-counter>
+                      <app-character-counter
+                        [current]="section.remark.length"
+                        [max]="600"
+                      ></app-character-counter>
                     </div>
 
                     <div class="form-field">
@@ -547,7 +404,8 @@
                             class="radio-input"
                             [name]="section.key + '-billing'"
                             [checked]="section.billingRequired === 'Yes'"
-                            (change)="updateBillingRequired(section.key, 'Yes')">
+                            (change)="updateBillingRequired(section.key, 'Yes')"
+                          />
                           <span>Yes</span>
                         </label>
                         <label class="radio-option">
@@ -556,7 +414,8 @@
                             class="radio-input"
                             [name]="section.key + '-billing'"
                             [checked]="section.billingRequired === 'No'"
-                            (change)="updateBillingRequired(section.key, 'No')">
+                            (change)="updateBillingRequired(section.key, 'No')"
+                          />
                           <span>No</span>
                         </label>
                       </div>
@@ -565,7 +424,308 @@
                     @if (section.billingRequired === 'Yes') {
                       <ng-container
                         [ngTemplateOutlet]="billingInformation"
-                        [ngTemplateOutletContext]="{ $implicit: section, idSuffix: 'consultancy' }">
+                        [ngTemplateOutletContext]="{ $implicit: section, idSuffix: 'project' }"
+                      >
+                      </ng-container>
+                    }
+                  }
+                </div>
+              </section>
+            }
+          </div>
+        </section>
+      }
+
+      @if (isConsultancySelected()) {
+        <section class="card">
+          <app-custom-subheader icon="work" title="Consultancy Project Details">
+          </app-custom-subheader>
+
+          <div class="card__content section-fields">
+            <div class="row row--2">
+              <div class="form-field">
+                <label class="form-label is-required">Project Code</label>
+                <input type="text" class="input--text" formControlName="projectCode" />
+              </div>
+              <div class="form-field">
+                <label class="form-label">Account Code</label>
+                <input type="text" class="input--text" formControlName="accountCode" />
+              </div>
+            </div>
+
+            <div class="row row--2">
+              <div class="form-field">
+                <label class="form-label is-required">Project Leader/Principle Investigator</label>
+                <app-searchable-dropdown
+                  [options]="projectLeaderOptions"
+                  [searchable]="true"
+                  placeholder="Search project leader..."
+                  formControlName="staffName"
+                >
+                </app-searchable-dropdown>
+              </div>
+              <div class="form-field">
+                <label class="form-label is-required">School/Department</label>
+                <input
+                  type="text"
+                  class="input--text input--readonly"
+                  formControlName="schoolDepartment"
+                  readonly
+                />
+              </div>
+            </div>
+
+            <div class="row row--2">
+              <div class="form-field">
+                <label class="form-label is-required">Start Date</label>
+                <input type="date" class="input--text" formControlName="startDate" />
+              </div>
+              <div class="form-field">
+                <label class="form-label is-required">Client/Stakeholder</label>
+                <input type="text" class="input--text" formControlName="clientStakeholder" />
+              </div>
+            </div>
+
+            <div class="row row--2">
+              <div class="form-field">
+                <label class="form-label is-required">End Date</label>
+                <input
+                  type="date"
+                  class="input--text"
+                  formControlName="endDate"
+                  [min]="minimumEndDate()"
+                />
+              </div>
+              <div class="form-field">
+                <label class="form-label">Duration of Project (Month)</label>
+                <input
+                  type="text"
+                  class="input--text input--readonly"
+                  formControlName="durationMonths"
+                  readonly
+                />
+              </div>
+            </div>
+
+            <div class="form-field">
+              <label class="form-label is-required">Consultancy Title</label>
+              <textarea
+                class="input--textarea"
+                formControlName="consultancyTitle"
+                [maxlength]="200"
+                rows="3"
+              >
+              </textarea>
+              <app-character-counter
+                [current]="consultancyTitleLength()"
+                [max]="200"
+              ></app-character-counter>
+            </div>
+
+            <div class="table-section">
+              <div class="category-header">
+                <h3 class="table-section__title">Internal Co-Researcher</h3>
+                <app-action-button
+                  type="primary"
+                  label="Add Entry"
+                  icon="add"
+                  (clicked)="openTableEntryDialog('internal')"
+                ></app-action-button>
+              </div>
+
+              <app-data-table
+                [columns]="internalCoResearcherColumns"
+                [rows]="internalCoResearchers"
+                [rowTrackFn]="trackByIndex"
+                [hoverable]="true"
+                [striped]="true"
+                [dense]="true"
+              >
+                <ng-template #rowTemplate let-row let-index="index">
+                  <tr>
+                    <td class="text-muted is-align-center">{{ index + 1 }}</td>
+                    <td>
+                      <div class="data-table__stacked">
+                        <span class="data-table__avatar">{{ row.staffName.charAt(0) }}</span>
+                        <div class="data-table__title">{{ row.staffName }}</div>
+                      </div>
+                    </td>
+                    <td>{{ row.schoolDepartment }}</td>
+                    <td class="is-align-center">
+                      <div class="data-table__actions">
+                        <button
+                          type="button"
+                          class="btn-icon btn-icon--edit"
+                          (click)="openTableEntryDialog('internal', null, index)"
+                          aria-label="Edit internal co-researcher"
+                        >
+                          <app-table-action-icon action="edit"></app-table-action-icon>
+                        </button>
+                        <button
+                          type="button"
+                          class="btn-icon btn-icon--delete"
+                          (click)="removeInternalCoResearcherRow(index)"
+                          aria-label="Remove internal co-researcher"
+                        >
+                          <app-table-action-icon action="delete"></app-table-action-icon>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </ng-template>
+              </app-data-table>
+            </div>
+          </div>
+        </section>
+
+        <section class="card budget-summary-card">
+          <app-custom-subheader
+            icon="account_balance_wallet"
+            title="Budget Summary"
+          ></app-custom-subheader>
+
+          <div class="card__content section-fields budget-summary-card__content">
+            <div class="form-field budget-summary-card__total-field">
+              <label class="form-label">Total Budget Request (RM)</label>
+              <input
+                type="text"
+                class="input--text input--disabled-readonly"
+                [value]="budgetSummaryTotal()"
+                readonly
+              />
+            </div>
+
+            @for (section of budgetSections; track section.key) {
+              <section class="card budget-item-card">
+                <app-custom-subheader
+                  [title]="section.title + ' (' + section.code + ')'"
+                  icon="folder"
+                ></app-custom-subheader>
+
+                <div class="card__content section-fields budget-item-card__content">
+                  <div class="row row--2 budget-item-card__summary-row">
+                    <div class="form-field">
+                      <label class="form-label is-required">Item</label>
+                      <input
+                        type="text"
+                        class="input--text input--readonly"
+                        readonly
+                        [value]="section.item"
+                        (input)="updateBudgetSectionItem(section.key, $any($event.target).value)"
+                      />
+                    </div>
+
+                    <div class="form-field">
+                      <label class="form-label is-required">Total Amount (RM)</label>
+                      <input
+                        type="text"
+                        class="input--text input--readonly"
+                        readonly
+                        [value]="section.totalAmount || '0.00'"
+                      />
+                    </div>
+                  </div>
+
+                  <div class="table-section">
+                    <div class="category-header">
+                      <h3 class="table-section__title">Detail Breakdown</h3>
+                      <app-action-button
+                        type="primary"
+                        label="Add Entry"
+                        icon="add"
+                        (clicked)="openTableEntryDialog('budget', section.key)"
+                      ></app-action-button>
+                    </div>
+
+                    <app-data-table
+                      [columns]="budgetBreakdownColumns"
+                      [rows]="section.rows"
+                      [rowTrackFn]="trackByIndex"
+                      [hoverable]="true"
+                      [striped]="true"
+                      [dense]="true"
+                    >
+                      <ng-template #rowTemplate let-row let-index="index">
+                        <tr>
+                          <td class="text-muted is-align-center">{{ index + 1 }}</td>
+                          <td>
+                            <div class="data-table__title data-table__title--small">
+                              {{ row.description }}
+                            </div>
+                          </td>
+                          <td class="amount-cell">{{ row.amount | number: '1.2-2' }}</td>
+                          <td class="is-align-center">
+                            <div class="data-table__actions">
+                              <button
+                                type="button"
+                                class="btn-icon btn-icon--edit"
+                                (click)="openTableEntryDialog('budget', section.key, index)"
+                                aria-label="Edit budget entry"
+                              >
+                                <app-table-action-icon action="edit"></app-table-action-icon>
+                              </button>
+                              <button
+                                type="button"
+                                class="btn-icon btn-icon--delete"
+                                (click)="removeBudgetRow(section.key, index)"
+                                aria-label="Remove budget entry"
+                              >
+                                <app-table-action-icon action="delete"></app-table-action-icon>
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      </ng-template>
+                    </app-data-table>
+                  </div>
+
+                  @if (section.key === 'management-fee') {
+                    <div class="form-field">
+                      <label class="form-label">Remark</label>
+                      <textarea
+                        class="input--textarea"
+                        [value]="section.remark"
+                        maxlength="600"
+                        (input)="updateBudgetSectionRemark(section.key, $any($event.target).value)"
+                      >
+                      </textarea>
+                      <app-character-counter
+                        [current]="section.remark.length"
+                        [max]="600"
+                      ></app-character-counter>
+                    </div>
+
+                    <div class="form-field">
+                      <label class="form-label">Is Billing Required?</label>
+                      <div class="radio-group radio-group--grid radio-group--single-row">
+                        <label class="radio-option">
+                          <input
+                            type="radio"
+                            class="radio-input"
+                            [name]="section.key + '-billing'"
+                            [checked]="section.billingRequired === 'Yes'"
+                            (change)="updateBillingRequired(section.key, 'Yes')"
+                          />
+                          <span>Yes</span>
+                        </label>
+                        <label class="radio-option">
+                          <input
+                            type="radio"
+                            class="radio-input"
+                            [name]="section.key + '-billing'"
+                            [checked]="section.billingRequired === 'No'"
+                            (change)="updateBillingRequired(section.key, 'No')"
+                          />
+                          <span>No</span>
+                        </label>
+                      </div>
+                    </div>
+
+                    @if (section.billingRequired === 'Yes') {
+                      <ng-container
+                        [ngTemplateOutlet]="billingInformation"
+                        [ngTemplateOutletContext]="{ $implicit: section, idSuffix: 'consultancy' }"
+                      >
                       </ng-container>
                     }
                   }
@@ -591,7 +751,11 @@
     <div class="card__content section-fields billing-information-card__content">
       <div class="row row--2">
         <div class="form-field">
-          <label class="form-label is-required" [for]="section.key + '-' + idSuffix + '-billing-amount'">Billing Amount (RM)</label>
+          <label
+            class="form-label is-required"
+            [for]="section.key + '-' + idSuffix + '-billing-amount'"
+            >Billing Amount (RM)</label
+          >
           <input
             type="number"
             class="input--text"
@@ -600,21 +764,27 @@
             min="0.01"
             step="0.01"
             [value]="section.billingAmount"
-            (input)="updateBillingAmount(section.key, $any($event.target).value)">
+            (input)="updateBillingAmount(section.key, $any($event.target).value)"
+          />
           @if (isBillingFieldInvalid(section, 'amount')) {
             <span class="form-error-msg">Enter a billing amount greater than 0.</span>
           }
         </div>
 
         <div class="form-field">
-          <label class="form-label is-required" [for]="section.key + '-' + idSuffix + '-billing-date'">Billing Date</label>
+          <label
+            class="form-label is-required"
+            [for]="section.key + '-' + idSuffix + '-billing-date'"
+            >Billing Date</label
+          >
           <input
             type="date"
             class="input--text"
             [class.is-invalid]="isBillingFieldInvalid(section, 'date')"
             [id]="section.key + '-' + idSuffix + '-billing-date'"
             [value]="section.billingDate"
-            (input)="updateBillingDate(section.key, $any($event.target).value)">
+            (input)="updateBillingDate(section.key, $any($event.target).value)"
+          />
           @if (isBillingFieldInvalid(section, 'date')) {
             <span class="form-error-msg">Select a billing date.</span>
           }
@@ -628,7 +798,8 @@
             type="primary"
             label="Add Entry"
             icon="add"
-            (clicked)="openTableEntryDialog('billing', section.key)">
+            (clicked)="openTableEntryDialog('billing', section.key)"
+          >
           </app-action-button>
         </div>
 
@@ -638,27 +809,32 @@
           [rowTrackFn]="trackByIndex"
           [hoverable]="true"
           [striped]="true"
-          [dense]="true">
+          [dense]="true"
+        >
           <ng-template #rowTemplate let-row let-index="index">
             <tr>
               <td class="text-muted is-align-center">{{ index + 1 }}</td>
-              <td><div class="data-table__title data-table__title--small">{{ row.description }}</div></td>
-              <td class="amount-cell">{{ row.amount | number:'1.2-2' }}</td>
+              <td>
+                <div class="data-table__title data-table__title--small">{{ row.description }}</div>
+              </td>
+              <td class="amount-cell">{{ row.amount | number: '1.2-2' }}</td>
               <td class="is-align-center">
                 <div class="data-table__actions">
                   <button
                     type="button"
                     class="btn-icon btn-icon--edit"
                     (click)="openTableEntryDialog('billing', section.key, index)"
-                    aria-label="Edit billing entry">
-                    <span class="material-icons">edit</span>
+                    aria-label="Edit billing entry"
+                  >
+                    <app-table-action-icon action="edit"></app-table-action-icon>
                   </button>
                   <button
                     type="button"
                     class="btn-icon btn-icon--delete"
                     (click)="removeBillingRow(section.key, index)"
-                    aria-label="Remove billing entry">
-                    <span class="material-icons">delete</span>
+                    aria-label="Remove billing entry"
+                  >
+                    <app-table-action-icon action="delete"></app-table-action-icon>
                   </button>
                 </div>
               </td>
@@ -667,7 +843,9 @@
         </app-data-table>
 
         @if (isBillingBreakdownInvalid(section)) {
-          <span class="form-error-msg">Add at least one billing breakdown with a description and amount.</span>
+          <span class="form-error-msg"
+            >Add at least one billing breakdown with a description and amount.</span
+          >
         }
       </div>
     </div>
@@ -677,8 +855,14 @@
 <app-dialog
   [title]="tableEntryDialogTitle()"
   [isOpen]="tableEntryDialogOpen"
-  (close)="closeTableEntryDialog()">
-  <form id="external-table-entry-form" [formGroup]="tableEntryForm" (ngSubmit)="submitTableEntry()" class="dialog-form">
+  (close)="closeTableEntryDialog()"
+>
+  <form
+    id="external-table-entry-form"
+    [formGroup]="tableEntryForm"
+    (ngSubmit)="submitTableEntry()"
+    class="dialog-form"
+  >
     @if (activeTableEntryType === 'internal') {
       <div class="form-field">
         <label class="form-label is-required">Staff Name</label>
@@ -686,32 +870,54 @@
           [options]="projectLeaderOptions"
           [searchable]="true"
           placeholder="Search staff..."
-          formControlName="staffName">
+          formControlName="staffName"
+        >
         </app-searchable-dropdown>
-        @if (tableEntryForm.controls.staffName.invalid && tableEntryForm.controls.staffName.touched) {
+        @if (
+          tableEntryForm.controls.staffName.invalid && tableEntryForm.controls.staffName.touched
+        ) {
           <span class="form-error-msg">Select a staff member.</span>
         }
       </div>
 
       <div class="form-field">
         <label class="form-label">School/Department</label>
-        <input type="text" class="input--text input--readonly" formControlName="schoolDepartment" readonly>
+        <input
+          type="text"
+          class="input--text input--readonly"
+          formControlName="schoolDepartment"
+          readonly
+        />
       </div>
     }
 
     @if (activeTableEntryType === 'external') {
       <div class="form-field">
         <label for="external-collaborator-name" class="form-label is-required">Name</label>
-        <input id="external-collaborator-name" type="text" class="input--text" formControlName="name">
+        <input
+          id="external-collaborator-name"
+          type="text"
+          class="input--text"
+          formControlName="name"
+        />
         @if (tableEntryForm.controls.name.invalid && tableEntryForm.controls.name.touched) {
           <span class="form-error-msg">Enter the collaborator name.</span>
         }
       </div>
 
       <div class="form-field">
-        <label for="external-collaborator-affiliation" class="form-label is-required">Affiliation</label>
-        <input id="external-collaborator-affiliation" type="text" class="input--text" formControlName="affiliation">
-        @if (tableEntryForm.controls.affiliation.invalid && tableEntryForm.controls.affiliation.touched) {
+        <label for="external-collaborator-affiliation" class="form-label is-required"
+          >Affiliation</label
+        >
+        <input
+          id="external-collaborator-affiliation"
+          type="text"
+          class="input--text"
+          formControlName="affiliation"
+        />
+        @if (
+          tableEntryForm.controls.affiliation.invalid && tableEntryForm.controls.affiliation.touched
+        ) {
           <span class="form-error-msg">Enter the collaborator affiliation.</span>
         }
       </div>
@@ -724,9 +930,12 @@
           id="expected-outcome-description"
           class="input--textarea"
           formControlName="description"
-          rows="4">
+          rows="4"
+        >
         </textarea>
-        @if (tableEntryForm.controls.description.invalid && tableEntryForm.controls.description.touched) {
+        @if (
+          tableEntryForm.controls.description.invalid && tableEntryForm.controls.description.touched
+        ) {
           <span class="form-error-msg">Enter the expected outcome.</span>
         }
       </div>
@@ -739,9 +948,12 @@
           id="table-entry-description"
           class="input--textarea"
           formControlName="description"
-          rows="3">
+          rows="3"
+        >
         </textarea>
-        @if (tableEntryForm.controls.description.invalid && tableEntryForm.controls.description.touched) {
+        @if (
+          tableEntryForm.controls.description.invalid && tableEntryForm.controls.description.touched
+        ) {
           <span class="form-error-msg">Enter a description.</span>
         }
       </div>
@@ -754,7 +966,8 @@
           class="input--text"
           formControlName="amount"
           min="0.01"
-          step="0.01">
+          step="0.01"
+        />
         @if (tableEntryForm.controls.amount.invalid && tableEntryForm.controls.amount.touched) {
           <span class="form-error-msg">Enter an amount greater than 0.</span>
         }
@@ -766,13 +979,15 @@
     dialog-footer
     type="secondary"
     label="Cancel"
-    (clicked)="closeTableEntryDialog()">
+    (clicked)="closeTableEntryDialog()"
+  >
   </app-action-button>
   <app-action-button
     dialog-footer
     type="primary"
     icon="check"
     [label]="editingTableRowIndex === null ? 'Add Entry' : 'Save Changes'"
-    (clicked)="submitTableEntry()">
+    (clicked)="submitTableEntry()"
+  >
   </app-action-button>
 </app-dialog>

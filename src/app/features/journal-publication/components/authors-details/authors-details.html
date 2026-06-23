@@ -1,18 +1,26 @@
-
 <form [formGroup]="form" class="form-section">
   <app-custom-header icon="group" title="Authors Details"></app-custom-header>
   <div class="section-fields">
-
     <!-- ── Asia Pacific University of Technology & Innovation Staff Co-Author Details ─────────────────────────── -->
     <section class="card">
       <div class="card__header">
-        <h2 class="card__title"> Asia Pacific University of Technology & Innovation(APU) Staff Co-Authors</h2>
+        <h2 class="card__title">
+          Asia Pacific University of Technology & Innovation(APU) Staff Co-Authors
+        </h2>
       </div>
       <div class="card__content">
         <div class="card-body">
           <div class="list-section-header">
-            <span class="list-count">{{ testSubsections.length }} {{ testSubsections.length === 1 ? 'Entry' : 'Entries' }}</span>
-            <app-action-button type="primary" label="Add Entry" icon="add" (clicked)="openEditModal('apu-staff')"></app-action-button>
+            <span class="list-count"
+              >{{ testSubsections.length }}
+              {{ testSubsections.length === 1 ? 'Entry' : 'Entries' }}</span
+            >
+            <app-action-button
+              type="primary"
+              label="Add Entry"
+              icon="add"
+              (clicked)="openEditModal('apu-staff')"
+            ></app-action-button>
           </div>
 
           @if (testSubsections.length > 0) {
@@ -21,22 +29,42 @@
                 [columns]="apuStaffColumns"
                 [rows]="getPaginatedApuStaffControls()"
                 [hoverable]="true"
-                [striped]="true">
+                [striped]="true"
+              >
                 <ng-template #rowTemplate let-row let-index="index">
                   <tr>
-                    <td class="col-no text-muted is-align-center">{{ ((apuStaffCurrentPage - 1) * apuStaffPageSize) + index + 1 }}</td>
+                    <td class="col-no text-muted is-align-center">
+                      {{ (apuStaffCurrentPage - 1) * apuStaffPageSize + index + 1 }}
+                    </td>
                     <td>{{ row.value.staffName }}</td>
                     <td>{{ row.value.schoolDepartment }}</td>
                     <td>{{ row.value.affiliation }}</td>
                     <td class="col-actions is-align-center">
                       <div class="data-table__actions">
-                        <button type="button" class="btn-icon btn-icon--edit"
-                          (click)="openEditModal('apu-staff', ((apuStaffCurrentPage - 1) * apuStaffPageSize) + index)" aria-label="Edit entry">
-                          <span class="material-icons">edit</span>
+                        <button
+                          type="button"
+                          class="btn-icon btn-icon--edit"
+                          (click)="
+                            openEditModal(
+                              'apu-staff',
+                              (apuStaffCurrentPage - 1) * apuStaffPageSize + index
+                            )
+                          "
+                          aria-label="Edit entry"
+                        >
+                          <app-table-action-icon action="edit"></app-table-action-icon>
                         </button>
-                        <button type="button" class="btn-icon btn-icon--delete"
-                          (click)="deleteTestSubsection(((apuStaffCurrentPage - 1) * apuStaffPageSize) + index)" aria-label="Remove entry">
-                          <span class="material-icons">delete</span>
+                        <button
+                          type="button"
+                          class="btn-icon btn-icon--delete"
+                          (click)="
+                            deleteTestSubsection(
+                              (apuStaffCurrentPage - 1) * apuStaffPageSize + index
+                            )
+                          "
+                          aria-label="Remove entry"
+                        >
+                          <app-table-action-icon action="delete"></app-table-action-icon>
                         </button>
                       </div>
                     </td>
@@ -58,13 +86,23 @@
     <!-- ── Asia Pacific University of Technology & Innovation Student Co-Authors ───────────────────────────────── -->
     <section class="card">
       <div class="card__header">
-        <h2 class="card__title"> Asia Pacific University of Technology & Innovation(APU) Student Co-Authors</h2>
+        <h2 class="card__title">
+          Asia Pacific University of Technology & Innovation(APU) Student Co-Authors
+        </h2>
       </div>
       <div class="card__content">
         <div class="card-body">
           <div class="list-section-header">
-            <span class="list-count">{{ studentCoAuthors.length }} {{ studentCoAuthors.length === 1 ? 'Entry' : 'Entries' }}</span>
-            <app-action-button type="primary" label="Add Entry" icon="add" (clicked)="openEditModal('student')"></app-action-button>
+            <span class="list-count"
+              >{{ studentCoAuthors.length }}
+              {{ studentCoAuthors.length === 1 ? 'Entry' : 'Entries' }}</span
+            >
+            <app-action-button
+              type="primary"
+              label="Add Entry"
+              icon="add"
+              (clicked)="openEditModal('student')"
+            ></app-action-button>
           </div>
 
           @if (studentCoAuthors.length > 0) {
@@ -73,23 +111,43 @@
                 [columns]="studentColumns"
                 [rows]="getPaginatedStudentCoAuthorsControls()"
                 [hoverable]="true"
-                [striped]="true">
+                [striped]="true"
+              >
                 <ng-template #rowTemplate let-row let-index="index">
                   <tr>
-                    <td class="col-no text-muted is-align-center">{{ ((studentCoAuthorsCurrentPage - 1) * studentCoAuthorsPageSize) + index + 1 }}</td>
+                    <td class="col-no text-muted is-align-center">
+                      {{ (studentCoAuthorsCurrentPage - 1) * studentCoAuthorsPageSize + index + 1 }}
+                    </td>
                     <td>{{ row.value.tpNumber }}</td>
                     <td>{{ row.value.fullName }}</td>
                     <td>{{ row.value.schoolDepartment }}</td>
                     <td>{{ row.value.affiliation }}</td>
                     <td class="col-actions is-align-center">
                       <div class="data-table__actions">
-                        <button type="button" class="btn-icon btn-icon--edit"
-                          (click)="openEditModal('student', ((studentCoAuthorsCurrentPage - 1) * studentCoAuthorsPageSize) + index)" aria-label="Edit entry">
-                          <span class="material-icons">edit</span>
+                        <button
+                          type="button"
+                          class="btn-icon btn-icon--edit"
+                          (click)="
+                            openEditModal(
+                              'student',
+                              (studentCoAuthorsCurrentPage - 1) * studentCoAuthorsPageSize + index
+                            )
+                          "
+                          aria-label="Edit entry"
+                        >
+                          <app-table-action-icon action="edit"></app-table-action-icon>
                         </button>
-                        <button type="button" class="btn-icon btn-icon--delete"
-                          (click)="deleteStudentCoAuthor(((studentCoAuthorsCurrentPage - 1) * studentCoAuthorsPageSize) + index)" aria-label="Remove entry">
-                          <span class="material-icons">delete</span>
+                        <button
+                          type="button"
+                          class="btn-icon btn-icon--delete"
+                          (click)="
+                            deleteStudentCoAuthor(
+                              (studentCoAuthorsCurrentPage - 1) * studentCoAuthorsPageSize + index
+                            )
+                          "
+                          aria-label="Remove entry"
+                        >
+                          <app-table-action-icon action="delete"></app-table-action-icon>
                         </button>
                       </div>
                     </td>
@@ -111,13 +169,23 @@
     <!-- ── Co-Authors Outside Asia Pacific University of Technology & Innovation ───────────────────────────────────── -->
     <section class="card">
       <div class="card__header">
-        <h2 class="card__title"> Non-Asia Pacific University of Technology & Innovation(APU) Co-Authors</h2>
+        <h2 class="card__title">
+          Non-Asia Pacific University of Technology & Innovation(APU) Co-Authors
+        </h2>
       </div>
       <div class="card__content">
         <div class="card-body">
           <div class="list-section-header">
-            <span class="list-count">{{ nonApuCoAuthors.length }} {{ nonApuCoAuthors.length === 1 ? 'Entry' : 'Entries' }}</span>
-            <app-action-button type="primary" label="Add Entry" icon="add" (clicked)="openEditModal('non-apu')"></app-action-button>
+            <span class="list-count"
+              >{{ nonApuCoAuthors.length }}
+              {{ nonApuCoAuthors.length === 1 ? 'Entry' : 'Entries' }}</span
+            >
+            <app-action-button
+              type="primary"
+              label="Add Entry"
+              icon="add"
+              (clicked)="openEditModal('non-apu')"
+            ></app-action-button>
           </div>
 
           @if (nonApuCoAuthors.length > 0) {
@@ -126,10 +194,13 @@
                 [columns]="nonApuColumns"
                 [rows]="getPaginatedNonApuCoAuthorsControls()"
                 [hoverable]="true"
-                [striped]="true">
+                [striped]="true"
+              >
                 <ng-template #rowTemplate let-row let-index="index">
                   <tr>
-                    <td class="col-no text-muted is-align-center">{{ ((nonApuCoAuthorsCurrentPage - 1) * nonApuCoAuthorsPageSize) + index + 1 }}</td>
+                    <td class="col-no text-muted is-align-center">
+                      {{ (nonApuCoAuthorsCurrentPage - 1) * nonApuCoAuthorsPageSize + index + 1 }}
+                    </td>
                     <td>{{ row.value.fullName }}</td>
                     <td>{{ row.value.email }}</td>
                     <td>{{ row.value.country }}</td>
@@ -138,13 +209,30 @@
                     <td>{{ row.value.schoolDepartment }}</td>
                     <td class="col-actions is-align-center">
                       <div class="data-table__actions">
-                        <button type="button" class="btn-icon btn-icon--edit"
-                          (click)="openEditModal('non-apu', ((nonApuCoAuthorsCurrentPage - 1) * nonApuCoAuthorsPageSize) + index)" aria-label="Edit entry">
-                          <span class="material-icons">edit</span>
+                        <button
+                          type="button"
+                          class="btn-icon btn-icon--edit"
+                          (click)="
+                            openEditModal(
+                              'non-apu',
+                              (nonApuCoAuthorsCurrentPage - 1) * nonApuCoAuthorsPageSize + index
+                            )
+                          "
+                          aria-label="Edit entry"
+                        >
+                          <app-table-action-icon action="edit"></app-table-action-icon>
                         </button>
-                        <button type="button" class="btn-icon btn-icon--delete"
-                          (click)="deleteNonApuCoAuthor(((nonApuCoAuthorsCurrentPage - 1) * nonApuCoAuthorsPageSize) + index)" aria-label="Remove entry">
-                          <span class="material-icons">delete</span>
+                        <button
+                          type="button"
+                          class="btn-icon btn-icon--delete"
+                          (click)="
+                            deleteNonApuCoAuthor(
+                              (nonApuCoAuthorsCurrentPage - 1) * nonApuCoAuthorsPageSize + index
+                            )
+                          "
+                          aria-label="Remove entry"
+                        >
+                          <app-table-action-icon action="delete"></app-table-action-icon>
                         </button>
                       </div>
                     </td>
@@ -162,7 +250,6 @@
         </div>
       </div>
     </section>
-
   </div>
 </form>
 
@@ -172,8 +259,8 @@
     <div
       class="modal-dialog"
       [class.modal-dialog--wide]="modalType === 'non-apu'"
-      (click)="$event.stopPropagation()">
-
+      (click)="$event.stopPropagation()"
+    >
       <div class="modal-header">
         <h3>{{ getModalTitle() }}</h3>
         <button type="button" class="btn-close" (click)="closeModal()" aria-label="Close">
@@ -182,7 +269,6 @@
       </div>
 
       <form [formGroup]="editForm" (ngSubmit)="submitModal()" class="modal-body">
-
         <!-- ── APU Staff Form ──────────────────────────────────── -->
         @if (modalType === 'apu-staff') {
           <div class="form-group">
@@ -191,23 +277,36 @@
               [options]="staffOptions"
               [searchable]="true"
               placeholder="Search staff..."
-              formControlName="staffName">
+              formControlName="staffName"
+            >
             </app-searchable-dropdown>
             <app-validation-message [control]="editForm.get('staffName')"></app-validation-message>
           </div>
 
           <div class="form-group">
             <label for="schoolDept1">School / Department</label>
-            <input type="text" id="schoolDept1" class="form-control" formControlName="schoolDepartment"
+            <input
+              type="text"
+              id="schoolDept1"
+              class="form-control"
+              formControlName="schoolDepartment"
               placeholder="Ex. School of Computing and Technology"
-              (input)="stripDigits($event)">
-            <app-validation-message [control]="editForm.get('schoolDepartment')"></app-validation-message>
+              (input)="stripDigits($event)"
+            />
+            <app-validation-message
+              [control]="editForm.get('schoolDepartment')"
+            ></app-validation-message>
           </div>
 
           <div class="form-group">
             <label for="affiliation1">Second Affiliation</label>
-            <input type="text" id="affiliation1" class="form-control" formControlName="affiliation"
-              readonly>
+            <input
+              type="text"
+              id="affiliation1"
+              class="form-control"
+              formControlName="affiliation"
+              readonly
+            />
           </div>
         }
 
@@ -217,35 +316,59 @@
             <label for="tpNumber" class="is-required">TP Number</label>
             <div class="input-prefix-group">
               <span class="input-prefix">TP</span>
-              <input type="text" id="tpNumber" inputmode="numeric" class="form-control input-prefix-group__input"
+              <input
+                type="text"
+                id="tpNumber"
+                inputmode="numeric"
+                class="form-control input-prefix-group__input"
                 formControlName="tpNumber"
                 placeholder="e.g. 123456"
                 maxlength="6"
-                (input)="enforceTPNumber($event)">
+                (input)="enforceTPNumber($event)"
+              />
             </div>
             <app-validation-message [control]="editForm.get('tpNumber')"></app-validation-message>
           </div>
 
           <div class="form-group">
-            <label for="fullNameStudent" class="is-required">Full Name (as per IC / Passport)</label>
-            <input type="text" id="fullNameStudent" class="form-control" formControlName="fullName"
+            <label for="fullNameStudent" class="is-required"
+              >Full Name (as per IC / Passport)</label
+            >
+            <input
+              type="text"
+              id="fullNameStudent"
+              class="form-control"
+              formControlName="fullName"
               placeholder="Ex. Jessica Teh Sze Hui"
-              (input)="stripDigits($event)">
+              (input)="stripDigits($event)"
+            />
             <app-validation-message [control]="editForm.get('fullName')"></app-validation-message>
           </div>
 
           <div class="form-group">
             <label for="schoolDept2" class="is-required">School / Department</label>
-            <input type="text" id="schoolDept2" class="form-control" formControlName="schoolDepartment"
+            <input
+              type="text"
+              id="schoolDept2"
+              class="form-control"
+              formControlName="schoolDepartment"
               placeholder="Ex. School of Computing and Technology"
-              (input)="stripDigits($event)">
-            <app-validation-message [control]="editForm.get('schoolDepartment')"></app-validation-message>
+              (input)="stripDigits($event)"
+            />
+            <app-validation-message
+              [control]="editForm.get('schoolDepartment')"
+            ></app-validation-message>
           </div>
 
           <div class="form-group">
             <label for="affiliation2">Second Affiliation</label>
-            <input type="text" id="affiliation2" class="form-control" formControlName="affiliation"
-              readonly>
+            <input
+              type="text"
+              id="affiliation2"
+              class="form-control"
+              formControlName="affiliation"
+              readonly
+            />
           </div>
         }
 
@@ -253,9 +376,14 @@
         @if (modalType === 'non-apu') {
           <div class="form-group">
             <label for="fullNameNonApu" class="is-required">Full Name (as per IC / Passport)</label>
-            <input type="text" id="fullNameNonApu" class="form-control" formControlName="fullName"
+            <input
+              type="text"
+              id="fullNameNonApu"
+              class="form-control"
+              formControlName="fullName"
               placeholder="Ex. Jessica Teh Sze Hui"
-              (input)="stripDigits($event)">
+              (input)="stripDigits($event)"
+            />
             <app-validation-message [control]="editForm.get('fullName')"></app-validation-message>
           </div>
 
@@ -266,30 +394,51 @@
               [searchable]="true"
               placeholder="Search and select country..."
               formControlName="country"
-              class="country-dropdown">
+              class="country-dropdown"
+            >
             </app-searchable-dropdown>
-            <app-note text="Please check with the SRI regarding prioritised IRN countries before submitting the form"></app-note>
+            <app-note
+              text="Please check with the SRI regarding prioritised IRN countries before submitting the form"
+            ></app-note>
             <app-validation-message [control]="editForm.get('country')"></app-validation-message>
           </div>
 
           <div class="form-group">
             <label for="emailNonApu" class="is-required">Email</label>
-            <input type="email" id="emailNonApu" class="form-control" formControlName="email"
-              placeholder="Ex. user@example.com">
+            <input
+              type="email"
+              id="emailNonApu"
+              class="form-control"
+              formControlName="email"
+              placeholder="Ex. user@example.com"
+            />
             <app-validation-message [control]="editForm.get('email')"></app-validation-message>
           </div>
 
           <div class="form-group">
             <label for="schoolDept3" class="is-required">School / Department</label>
-            <input type="text" id="schoolDept3" class="form-control" formControlName="schoolDepartment"
+            <input
+              type="text"
+              id="schoolDept3"
+              class="form-control"
+              formControlName="schoolDepartment"
               placeholder="Ex. School of Computing and Technology"
-              (input)="stripDigits($event)">
-            <app-validation-message [control]="editForm.get('schoolDepartment')"></app-validation-message>
+              (input)="stripDigits($event)"
+            />
+            <app-validation-message
+              [control]="editForm.get('schoolDepartment')"
+            ></app-validation-message>
           </div>
 
           <div class="form-group">
-            <label for="typeOfOrganisation" class="is-required">Type of Organisation (Please Select One)</label>
-            <select id="typeOfOrganisation" class="form-control" formControlName="typeOfOrganisation">
+            <label for="typeOfOrganisation" class="is-required"
+              >Type of Organisation (Please Select One)</label
+            >
+            <select
+              id="typeOfOrganisation"
+              class="form-control"
+              formControlName="typeOfOrganisation"
+            >
               <option value="" disabled selected>--Select the Type of Organisation--</option>
               <option value="University">University</option>
               <option value="Research Institute">Research Institute</option>
@@ -298,15 +447,24 @@
               <option value="Non-Profit Organization">Non-Profit Organization</option>
               <option value="Other">Other</option>
             </select>
-            <app-validation-message [control]="editForm.get('typeOfOrganisation')"></app-validation-message>
+            <app-validation-message
+              [control]="editForm.get('typeOfOrganisation')"
+            ></app-validation-message>
           </div>
 
           <div class="form-group">
             <label for="institutionName" class="is-required">Institution / Company Name</label>
-            <input type="text" id="institutionName" class="form-control" formControlName="institutionName"
+            <input
+              type="text"
+              id="institutionName"
+              class="form-control"
+              formControlName="institutionName"
               placeholder="Ex. Shanghai Hypergryph Network Technology Co., Ltd."
-              (input)="stripDigits($event)">
-            <app-validation-message [control]="editForm.get('institutionName')"></app-validation-message>
+              (input)="stripDigits($event)"
+            />
+            <app-validation-message
+              [control]="editForm.get('institutionName')"
+            ></app-validation-message>
           </div>
         }
 
@@ -314,7 +472,6 @@
           <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancel</button>
           <button type="submit" class="btn btn-primary" [disabled]="editForm.invalid">Save</button>
         </div>
-
       </form>
     </div>
   </div>

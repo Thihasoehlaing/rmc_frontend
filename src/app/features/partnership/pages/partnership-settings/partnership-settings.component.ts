@@ -1,33 +1,42 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { PartnershipOptionsService, PartnershipDropdownOption } from '../../services/partnership-options.service';
+import {
+  PartnershipOptionsService,
+  PartnershipDropdownOption,
+} from '../../services/partnership-options.service';
 
 import { ActionButtonComponent } from '../../../../shared/components/action-button/action-button.component';
 import { ValidationMessageComponent } from '../../../../shared/components/validation-message/validation-message.component';
 import { DataTableComponent } from '../../../../shared/components/data-table/data-table.component';
+import { nextTableSortState, SortDirection } from '../../../../shared/services/table-sort.service';
 import { DialogComponent } from '../../../../shared/components/dialog/dialog.component';
+import { TableActionIconComponent } from '../../../../shared/components/table-action-icon/table-action-icon.component';
 
 @Component({
   selector: 'app-partnership-settings',
   standalone: true,
   imports: [
+    TableActionIconComponent,
     CommonModule,
     ReactiveFormsModule,
     ActionButtonComponent,
     ValidationMessageComponent,
     DataTableComponent,
-    DialogComponent
+    DialogComponent,
   ],
   templateUrl: './partnership-settings.component.html',
-  styleUrls: ['./partnership-settings.component.scss']
+  styleUrls: ['./partnership-settings.component.scss'],
 })
 export class PartnershipSettingsComponent implements OnInit {
   private optionsService = inject(PartnershipOptionsService);
   private fb = inject(FormBuilder);
 
   breakdownTypeOptions = [
-    { value: 'category', label: 'Asia Pacific University of Technology & Innovation Partnership Category' }
+    {
+      value: 'category',
+      label: 'Asia Pacific University of Technology & Innovation Partnership Category',
+    },
   ];
   selectedBreakdownType = signal<string | null>('category');
 
@@ -39,8 +48,8 @@ export class PartnershipSettingsComponent implements OnInit {
 
   searchQuery = signal<string>('');
   filterStatus = signal<string>('All');
-  sortBy = signal<string>('createdDate');
-  sortDirection = signal<'asc' | 'desc'>('desc');
+  sortBy = signal<string | null>(null);
+  sortDirection = signal<SortDirection>(null);
 
   selectedCheckboxes = signal<Set<string>>(new Set<string>());
 
@@ -49,18 +58,17 @@ export class PartnershipSettingsComponent implements OnInit {
     { key: 'label', label: 'Option Name', sortable: true },
     { key: 'status', label: 'Status', sortable: true },
     { key: 'createdDate', label: 'Created Date', sortable: true },
-    { key: 'actions', label: 'Actions' }
+    { key: 'actions', label: 'Actions' },
   ];
 
   constructor() {
     this.optionForm = this.fb.group({
       label: ['', [Validators.required, Validators.minLength(2)]],
-      status: ['Active']
+      status: ['Active'],
     });
   }
 
-  ngOnInit() {
-  }
+  ngOnInit() {}
 
   onBreakdownTypeChange(event: Event) {
     const type = (event.target as HTMLSelectElement).value;
@@ -85,7 +93,7 @@ export class PartnershipSettingsComponent implements OnInit {
 
     this.optionForm.patchValue({
       label: option.label,
-      status: option.status || 'Active'
+      status: option.status || 'Active',
     });
 
     this.errorMessage.set(null);
@@ -106,12 +114,17 @@ export class PartnershipSettingsComponent implements OnInit {
     try {
       const formValue = this.optionForm.value;
       const newOption: PartnershipDropdownOption = {
-        value: this.editingOptionIndex() === null ? this.generateOptionValue(formValue.label) : this.selectedOptionValue() as string,
+        value:
+          this.editingOptionIndex() === null
+            ? this.generateOptionValue(formValue.label)
+            : (this.selectedOptionValue() as string),
         label: formValue.label,
         status: formValue.status || 'Active',
-        createdDate: this.editingOptionIndex() === null
-          ? this.getTodayDate()
-          : this.optionsService.getOptions()[this.editingOptionIndex()!].createdDate || this.getTodayDate()
+        createdDate:
+          this.editingOptionIndex() === null
+            ? this.getTodayDate()
+            : this.optionsService.getOptions()[this.editingOptionIndex()!].createdDate ||
+              this.getTodayDate(),
       };
 
       if (this.editingOptionIndex() === null) {
@@ -133,7 +146,11 @@ export class PartnershipSettingsComponent implements OnInit {
   }
 
   private generateOptionValue(label: string): string {
-    return label.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+    return label
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '');
   }
 
   toggleCheckbox(value: string, isChecked: boolean) {
@@ -149,7 +166,7 @@ export class PartnershipSettingsComponent implements OnInit {
   toggleAllCheckboxes(event: Event) {
     const isChecked = (event.target as HTMLInputElement).checked;
     if (isChecked) {
-      const allValues = this.getFilteredAndSortedOptions().map(opt => opt.value);
+      const allValues = this.getFilteredAndSortedOptions().map((opt) => opt.value);
       this.selectedCheckboxes.set(new Set(allValues));
     } else {
       this.clearSelection();
@@ -172,7 +189,7 @@ export class PartnershipSettingsComponent implements OnInit {
     if (!this.selectedBreakdownType()) return;
     if (confirm('Are you sure you want to delete the selected options?')) {
       const selected = Array.from(this.selectedCheckboxes());
-      selected.forEach(value => {
+      selected.forEach((value) => {
         try {
           this.optionsService.deleteOption(value);
         } catch (e) {
@@ -195,13 +212,12 @@ export class PartnershipSettingsComponent implements OnInit {
 
   onHeaderClick(column: string) {
     if (!this.isSortableColumn(column)) return;
-
-    if (this.sortBy() === column) {
-      this.sortDirection.set(this.sortDirection() === 'asc' ? 'desc' : 'asc');
-    } else {
-      this.sortBy.set(column);
-      this.sortDirection.set(column === 'createdDate' ? 'desc' : 'asc');
-    }
+    const next = nextTableSortState(
+      { column: this.sortBy(), direction: this.sortDirection() },
+      column,
+    );
+    this.sortBy.set(next.column);
+    this.sortDirection.set(next.direction);
   }
 
   isSortableColumn(column: string): boolean {
@@ -215,18 +231,18 @@ export class PartnershipSettingsComponent implements OnInit {
 
     const query = this.searchQuery().trim().toLowerCase();
     if (query) {
-      options = options.filter(opt => opt.label.toLowerCase().includes(query));
+      options = options.filter((opt) => opt.label.toLowerCase().includes(query));
     }
 
     const status = this.filterStatus();
     if (status !== 'All') {
-      options = options.filter(opt =>
-        (opt.status || 'Active') === status
-      );
+      options = options.filter((opt) => (opt.status || 'Active') === status);
     }
 
     const sortBy = this.sortBy();
-    const sortDir = this.sortDirection() === 'asc' ? 1 : -1;
+    const direction = this.sortDirection();
+    if (!sortBy || !direction) return options;
+    const sortDir = direction === 'asc' ? 1 : -1;
 
     return options.sort((a, b) => {
       let valA: string, valB: string;
@@ -243,7 +259,9 @@ export class PartnershipSettingsComponent implements OnInit {
           break;
         case 'createdDate':
         default:
-          return (this.parseDisplayDate(a.createdDate) - this.parseDisplayDate(b.createdDate)) * sortDir;
+          return (
+            (this.parseDisplayDate(a.createdDate) - this.parseDisplayDate(b.createdDate)) * sortDir
+          );
       }
 
       if (valA < valB) return -1 * sortDir;
@@ -288,7 +306,18 @@ export class PartnershipSettingsComponent implements OnInit {
     const shortMonthMatch = dateValue.match(/^(\d{2})\s([A-Za-z]{3})\s(\d{4})$/);
     if (shortMonthMatch) {
       const monthLookup: Record<string, number> = {
-        Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5, Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11,
+        Jan: 0,
+        Feb: 1,
+        Mar: 2,
+        Apr: 3,
+        May: 4,
+        Jun: 5,
+        Jul: 6,
+        Aug: 7,
+        Sep: 8,
+        Oct: 9,
+        Nov: 10,
+        Dec: 11,
       };
       const [, day, monthText, year] = shortMonthMatch;
       const month = monthLookup[monthText];

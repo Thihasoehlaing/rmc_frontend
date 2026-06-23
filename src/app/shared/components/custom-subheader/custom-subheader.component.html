@@ -1,10 +1,10 @@
 <div class="custom-subheader">
   @if (icon) {
     <span class="material-icons subheader-icon--material">{{ icon }}</span>
-  } @else if (iconSvg) {
-    <div class="subheader-icon" [innerHTML]="iconSvg"></div>
+  } @else if (svgIcon) {
+    <app-svg-icon class="subheader-icon" [icon]="svgIcon"></app-svg-icon>
   }
-  <h3 class="subheader-text">{{title}}</h3>
+  <h3 class="subheader-text">{{ title }}</h3>
   @if (tooltip) {
     <app-field-note>{{ tooltip }}</app-field-note>
   }

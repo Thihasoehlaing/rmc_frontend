@@ -122,6 +122,7 @@
 
           <div *ngIf="selectedCategory(); else selectCategoryHint">
             <app-data-table
+              class="dropdown-options-table"
               [columns]="tableColumns()"
               [rows]="paginatedOptions()"
               [sortColumn]="sortBy()"
@@ -137,7 +138,7 @@
                     {{ ((optionsPage() - 1) * optionsPageSize()) + rowIndex + 1 }}
                   </td>
 
-                  <td>{{ row.value }}</td>
+                  <td class="option-name-cell">{{ row.value }}</td>
 
                   @if (isRegionMetadataCategory()) {
                     <td>{{ row.percentage ?? '-' }}%</td>
@@ -151,9 +152,9 @@
                           @if (row.sharedWith.length === 0) {
                             <span class="shared-with-empty">-</span>
                           } @else if (row.sharedWith.length === 1) {
-                            <span class="shared-with-chip">
+                            <span class="shared-with-chip" [title]="row.sharedWith[0]">
                               <span class="material-icons">share</span>
-                              {{ row.sharedWith[0] }}
+                              <span class="shared-with-chip__label">{{ row.sharedWith[0] }}</span>
                             </span>
                           } @else {
                             <button 
@@ -174,9 +175,9 @@
                         @if (row.sharedWith.length === 0) {
                           <span class="shared-with-empty">-</span>
                         } @else if (row.sharedWith.length === 1) {
-                          <span class="shared-with-chip">
+                          <span class="shared-with-chip" [title]="row.sharedWith[0]">
                             <span class="material-icons">share</span>
-                            {{ row.sharedWith[0] }}
+                            <span class="shared-with-chip__label">{{ row.sharedWith[0] }}</span>
                           </span>
                         } @else {
                           <button 
@@ -206,9 +207,22 @@
                     </button>
 
                     @if (row.status === 'Inactive') {
-                      <button class="btn btn-sm btn-status-activate" type="button" (click)="toggleStatus(row.id)">
-                        <span class="material-icons">check_circle</span>
-                        Activate
+                      <button
+                        class="icon-btn icon-btn--activate"
+                        type="button"
+                        title="Activate option"
+                        [attr.aria-label]="'Activate ' + row.value"
+                        (click)="toggleStatus(row.id)">
+                        <span class="material-icons">power_settings_new</span>
+                      </button>
+                    } @else {
+                      <button
+                        class="icon-btn icon-btn--deactivate"
+                        type="button"
+                        title="Deactivate option"
+                        [attr.aria-label]="'Deactivate ' + row.value"
+                        (click)="toggleStatus(row.id)">
+                        <span class="material-icons">power_settings_new</span>
                       </button>
                     }
 

@@ -377,6 +377,20 @@
   display: inline-block;
 }
 
+:host ::ng-deep .dropdown-options-table table {
+  width: 100%;
+  min-width: calc(var(--space-12) * 9);
+}
+
+:host ::ng-deep .dropdown-options-table thead th:last-child {
+  padding-left: calc(var(--space-9) + var(--space-1));
+}
+
+.option-name-cell {
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
 .select-cell {
   text-align: center;
 }
@@ -409,6 +423,8 @@
   flex-wrap: wrap;
   gap: var(--space-2);
   align-items: center;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .shared-with-list--empty {
@@ -419,8 +435,11 @@
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
+  min-width: 0;
+  max-width: 100%;
   min-height: 28px;
   padding: 0 var(--space-3);
+  box-sizing: border-box;
   border-radius: 999px;
   background: var(--color-primary-light);
   color: var(--color-primary);
@@ -430,7 +449,15 @@
 
   .material-icons {
     font-size: 14px;
+    flex-shrink: 0;
   }
+}
+
+.shared-with-chip__label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .shared-with-empty {
@@ -450,6 +477,7 @@
 .actions-cell {
   display: table-cell;
   position: static;
+  text-align: center;
   white-space: nowrap;
 
   > * + * {
@@ -482,6 +510,14 @@
 
 .icon-btn--edit {
   color: var(--color-primary);
+}
+
+.icon-btn--activate {
+  color: var(--color-success-dark);
+}
+
+.icon-btn--deactivate {
+  color: var(--color-warning-dark);
 }
 
 .icon-btn--delete {

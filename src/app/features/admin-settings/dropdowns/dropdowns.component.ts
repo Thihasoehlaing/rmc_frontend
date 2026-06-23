@@ -179,18 +179,45 @@ export class DropdownsComponent implements OnInit {
   sharedFormsDialogData = signal<{ optionName: string; forms: string[] } | null>(null);
 
   tableColumns = computed<DataTableColumn[]>(() => {
-    const sequenceColumn: DataTableColumn = { key: 'sequence', label: 'No.', width: '64px', align: 'center' };
+    const sharedColumnWidth =
+      'calc(var(--size-table-column-actions) + var(--space-12) + var(--space-3))';
+    const dateColumnWidth = 'calc(var(--size-table-column-actions) + var(--space-7))';
+    const actionsColumnWidth = 'calc(var(--size-table-column-actions) + var(--space-11))';
+    const sequenceColumn: DataTableColumn = {
+      key: 'sequence',
+      label: 'No.',
+      width: 'var(--space-11)',
+      align: 'center',
+    };
+    const statusColumn: DataTableColumn = {
+      key: 'status',
+      label: 'Status',
+      width: 'var(--size-table-column-actions)',
+      sortable: true,
+    };
+    const dateColumn: DataTableColumn = {
+      key: 'lastUpdated',
+      label: 'Created Date',
+      width: dateColumnWidth,
+      sortable: true,
+    };
+    const actionsColumn: DataTableColumn = {
+      key: 'actions',
+      label: 'Actions',
+      width: actionsColumnWidth,
+      align: 'center',
+    };
 
     if (this.isRegionMetadataCategory()) {
       return [
         sequenceColumn,
         { key: 'value', label: 'Region Name', sortable: true },
-        { key: 'percentage', label: 'Percentage' },
-        { key: 'limit', label: 'Limit (RM)' },
+        { key: 'percentage', label: 'Percentage', width: 'var(--size-table-column-actions)' },
+        { key: 'limit', label: 'Limit (RM)', width: dateColumnWidth },
         { key: 'description', label: 'Description' },
-        { key: 'status', label: 'Status', sortable: true },
-        { key: 'lastUpdated', label: 'Created Date', sortable: true },
-        { key: 'actions', label: 'Actions' },
+        statusColumn,
+        dateColumn,
+        actionsColumn,
       ];
     }
 
@@ -210,6 +237,7 @@ export class DropdownsComponent implements OnInit {
         },
         {
           key: 'accountNumber',
+          width: dateColumnWidth,
           label: isVoteNumberDescription
             ? 'Vote Number'
             : isProjectAccountCode
@@ -217,11 +245,11 @@ export class DropdownsComponent implements OnInit {
               : 'Account Number',
         },
         ...(isProjectAccountCode || isVoteNumberDescription
-          ? [{ key: 'sharedWith', label: 'Shared With' } satisfies DataTableColumn]
+          ? [{ key: 'sharedWith', label: 'Shared With', width: sharedColumnWidth } satisfies DataTableColumn]
           : []),
-        { key: 'status', label: 'Status', sortable: true },
-        { key: 'lastUpdated', label: 'Created Date', sortable: true },
-        { key: 'actions', label: 'Actions' },
+        statusColumn,
+        dateColumn,
+        actionsColumn,
       ];
     }
 
@@ -229,20 +257,20 @@ export class DropdownsComponent implements OnInit {
       return [
         sequenceColumn,
         { key: 'value', label: 'Vote Number Description', sortable: true },
-        { key: 'sharedWith', label: 'Shared With' },
-        { key: 'status', label: 'Status', sortable: true },
-        { key: 'lastUpdated', label: 'Created Date', sortable: true },
-        { key: 'actions', label: 'Actions' },
+        { key: 'sharedWith', label: 'Shared With', width: sharedColumnWidth },
+        statusColumn,
+        dateColumn,
+        actionsColumn,
       ];
     }
 
     return [
       sequenceColumn,
       { key: 'value', label: 'Option Name', sortable: true },
-      { key: 'sharedWith', label: 'Shared With' },
-      { key: 'status', label: 'Status', sortable: true },
-      { key: 'lastUpdated', label: 'Created Date', sortable: true },
-      { key: 'actions', label: 'Actions' },
+      { key: 'sharedWith', label: 'Shared With', width: sharedColumnWidth },
+      statusColumn,
+      dateColumn,
+      actionsColumn,
     ];
   });
 

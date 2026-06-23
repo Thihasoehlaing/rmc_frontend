@@ -182,25 +182,6 @@ interface AuthCheckResponse {
   success: boolean;
 }
 
-interface DevAuthUsersResponse {
-  data: {
-    users: {
-      username: string;
-      name: string;
-      email: string;
-      department: string;
-      job_title: string | null;
-      role: {
-        code: string;
-        id: number;
-        name: string;
-      } | null;
-    }[];
-  };
-  message: string;
-  success: boolean;
-}
-
 @Injectable({
   providedIn: 'root',
 })
@@ -221,6 +202,16 @@ export class AuthService {
     const storedUser = this.readStoredUser();
     if (storedUser && this.getAccessToken()) {
       this._currentUser.set(this.mapCheckedUser(storedUser));
+      return;
+    }
+
+    // Restore the session after a page refresh.
+    // We store only the username; the full user object is looked up from the
+    // in-memory DUMMY_USERS array so no sensitive data lives in sessionStorage.
+    const storedUsername = sessionStorage.getItem(this.LEGACY_SESSION_KEY);
+    if (storedUsername) {
+      const user = DUMMY_USERS.find(u => u.username === storedUsername) ?? null;
+      this._currentUser.set(user);
     }
   }
 
@@ -353,37 +344,40 @@ export class AuthService {
   }
 
   login(usernameOrEmail: string, password: string): boolean {
-    return false;
+    const identifier = usernameOrEmail.trim().toLowerCase();
+    const user = DUMMY_USERS.find(
+      u =>
+        (u.username.toLowerCase() === identifier ||
+          u.email.toLowerCase() === identifier) &&
+        u.password === password
+    ) ?? null;
+
+    this._currentUser.set(user);
+    if (user) {
+      sessionStorage.setItem(this.LEGACY_SESSION_KEY, user.username);
+    }
+    return user !== null;
   }
 
   /**
-   * Development-only shortcut for local workflow testing.
-   * This still goes through the backend auth middleware by using a dev token.
+   * Development-only shortcut for local testers who cannot authenticate through APU.
+   * This intentionally reuses the mock account registry and never calls the SSO flow.
    */
-  loginAsTestingUser(username = 'thiha.hlaing'): Observable<User> {
+  loginAsTestingUser(username = 'rmc_ahmad'): boolean {
     if (environment.production) {
-      return throwError(() => new Error('Testing login is not available in production.'));
+      return false;
     }
 
-    localStorage.setItem(this.TOKEN_KEY, `dev:${username}`);
-    localStorage.removeItem(this.USER_KEY);
-    sessionStorage.removeItem(this.LEGACY_SESSION_KEY);
+    const user = DUMMY_USERS.find(u => u.username === username) ?? null;
 
-    return this.checkAuthentication().pipe(
-      tap(response => {
-        localStorage.setItem(
-          this.USER_KEY,
-          JSON.stringify(response.data.user),
-        );
-      }),
-      map(response => this.mapCheckedUser(response.data.user)),
-      tap(user => this._currentUser.set(user)),
-      catchError(error => {
-        localStorage.removeItem(this.TOKEN_KEY);
-        localStorage.removeItem(this.USER_KEY);
-        return throwError(() => this.createAuthError('Testing login failed', error));
-      }),
-    );
+    this._currentUser.set(user);
+    if (user) {
+      localStorage.removeItem(this.TOKEN_KEY);
+      localStorage.removeItem(this.USER_KEY);
+      sessionStorage.setItem(this.LEGACY_SESSION_KEY, user.username);
+    }
+
+    return user !== null;
   }
 
   /** Clear the current session. */
@@ -403,27 +397,14 @@ export class AuthService {
     return this._currentUser()?.groups.includes(group) ?? false;
   }
 
-  /** Expose backend dev-auth accounts for display on the login page. */
-  getDemoAccounts(): Observable<{ username: string; label: string; groups: string }[]> {
-    const apiUrl = environment.apiUrl.replace(/\/$/, '');
-
-    if (environment.production) {
-      return throwError(() => new Error('Testing login is not available in production.'));
-    }
-
-    return this.http.get<DevAuthUsersResponse>(`${apiUrl}/api/auth/dev-users`).pipe(
-      map(response =>
-        response.data.users.map(user => ({
-          username: user.username,
-          label: user.name || user.username,
-          groups: [
-            user.role?.name || 'No role assigned',
-            user.department,
-            user.job_title,
-          ].filter(Boolean).join(' / '),
-        })),
-      ),
-    );
+  /** Expose demo accounts for display on the login page. */
+  getDemoAccounts(): { username: string; password: string; label: string; groups: string }[] {
+    return DUMMY_USERS.map(u => ({
+      username: u.username,
+      password: u.password ?? '',
+      label: u.name,
+      groups: u.groups.join(', '),
+    }));
   }
 
   /** Returns all users as potential reviewers for assignment dropdowns. */
@@ -497,16 +478,10 @@ export class AuthService {
       RMC_STAFF: ['RMC'],
       RMC: ['RMC'],
       REVIEWER: ['Reviewer'],
-      LECTURER: ['full_time', 'academic'],
-      HEAD_OF_SCHOOL: ['full_time', 'academic', 'HOS'],
-      HEAD_OF_DEPARTMENT: ['full_time', 'academic', 'HOS'],
       HOS: ['HOS'],
       HOD: ['HOS'],
-      VICE_CHANCELLOR: ['VC'],
       VC: ['VC'],
-      HUMAN_RESOURCE: ['HR'],
       CEO: ['CEO'],
-      FINANCE: ['Finance'],
       RDIG_CHAIR: ['RDIG_Chair'],
     };
 

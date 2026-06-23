@@ -46,10 +46,10 @@ $error: #b42318;
 .login-container {
   position: relative;
   z-index: 1;
-  width: min(100%, 880px);
+  width: min(100%, 1060px);
   min-height: 500px;
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
   overflow: hidden;
   border-radius: 20px;
   background: $white;
@@ -59,6 +59,7 @@ $error: #b42318;
 .login-brand {
   position: relative;
   isolation: isolate;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -149,17 +150,17 @@ $error: #b42318;
   &__title {
     position: relative;
     margin: 0;
-    white-space: nowrap;
-    font-size: clamp(1.2rem, 2.35vw, 1.55rem);
+    max-width: 100%;
+    font-size: clamp(1.35rem, 2.75vw, 2.15rem);
     line-height: 1.3;
   }
 
   &__subtitle {
     position: relative;
     margin: 0;
-    white-space: nowrap;
+    max-width: 100%;
     color: rgba($white, 0.68);
-    font-size: clamp(0.68rem, 1.25vw, 0.78rem);
+    font-size: clamp(0.82rem, 1.45vw, 1rem);
     line-height: 1.55;
   }
 
@@ -179,6 +180,7 @@ $error: #b42318;
 }
 
 .login-card {
+  min-width: 0;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -265,6 +267,7 @@ $error: #b42318;
 }
 
 .testing-login-panel {
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
@@ -298,6 +301,7 @@ $error: #b42318;
 
 .testing-account-button {
   width: 100%;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -313,15 +317,19 @@ $error: #b42318;
   cursor: pointer;
   transition: transform 150ms ease, border-color 150ms ease, background 150ms ease;
 
+  span,
   small {
     max-width: 100%;
     overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  small {
     color: rgba($muted, 0.9);
     font-size: 0.72rem;
     font-weight: 600;
     line-height: 1.35;
-    text-overflow: ellipsis;
-    white-space: nowrap;
   }
 
   &:hover:not(:disabled) {
@@ -383,7 +391,7 @@ $error: #b42318;
   }
 }
 
-@media (max-width: 720px) {
+@media (max-width: 900px) {
   .login-page {
     justify-content: flex-start;
     overflow-y: auto;
@@ -402,7 +410,7 @@ $error: #b42318;
     padding: 1.5rem;
 
     &__title {
-      font-size: 1.15rem;
+      font-size: 1.35rem;
     }
 
     &__subtitle,

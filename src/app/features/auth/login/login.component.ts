@@ -22,11 +22,13 @@ export class LoginComponent implements OnInit {
 
   readonly currentYear = new Date().getFullYear();
   readonly showTestingLogin = !environment.production;
-  readonly testingAccounts = this.authService.getDemoAccounts();
+  readonly testingAccounts = signal<{ username: string; label: string; groups: string }[]>([]);
   readonly isLoading = signal(false);
   readonly loginError = signal('');
 
   ngOnInit(): void {
+    this.loadTestingAccounts();
+
     const code = this.route.snapshot.queryParamMap.get('code');
     this.returnRoute = this.getReturnRoute();
 
@@ -74,13 +76,30 @@ export class LoginComponent implements OnInit {
     this.loginError.set('');
     this.isLoading.set(true);
 
-    if (!this.authService.loginAsTestingUser(username)) {
-      this.isLoading.set(false);
-      this.loginError.set('Testing login is not available in this environment.');
+    this.authService.loginAsTestingUser(username).subscribe({
+      next: () => {
+        this.isLoading.set(false);
+        void this.router.navigateByUrl(this.returnRoute);
+      },
+      error: (error: unknown) => {
+        this.isLoading.set(false);
+        this.loginError.set(this.getErrorMessage(error));
+      },
+    });
+  }
+
+  private loadTestingAccounts(): void {
+    if (!this.showTestingLogin) {
       return;
     }
 
-    void this.router.navigateByUrl(this.returnRoute);
+    this.authService.getDemoAccounts().subscribe({
+      next: accounts => this.testingAccounts.set(accounts),
+      error: () => {
+        this.isLoading.set(false);
+        this.testingAccounts.set([]);
+      },
+    });
   }
 
   private getReturnRoute(): string {

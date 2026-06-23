@@ -37,8 +37,8 @@ export type UserGroup =
 
 export interface UserRole {
   id: number;
-  code: string;
-  name: string;
+  code: string | null;
+  name: string | null;
 }
 
 export interface User {

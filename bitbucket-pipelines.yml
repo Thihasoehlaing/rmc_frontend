@@ -1,0 +1,71 @@
+# =============================================================================
+# RMC Frontend — Bitbucket Pipelines
+# Builds Angular app and deploys to S3 frontend buckets.
+#
+# Branch mapping: master→prod, dev→dev
+# Account: 723108571698 | Region: ap-southeast-1
+#
+# Required Repository Variables:
+#   AWS_ACCESS_KEY_ID      — IAM deployer access key
+#   AWS_SECRET_ACCESS_KEY  — IAM deployer secret key
+# =============================================================================
+
+image: node:22
+
+pipelines:
+  branches:
+    master:
+      - step:
+          name: Build & Deploy → prod
+          caches:
+            - node
+          script:
+            - npm ci
+            - npm run build -- --configuration=production
+            - pipe: atlassian/aws-s3-deploy:1.1.0
+              variables:
+                AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+                AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+                AWS_DEFAULT_REGION: 'ap-southeast-1'
+                S3_BUCKET: 'rmc-frontend-prod'
+                LOCAL_PATH: 'dist/RMC_project/browser'
+                DELETE_FLAG: 'true'
+          artifacts:
+            - dist/**
+
+    dev:
+      - step:
+          name: Build & Deploy → dev
+          caches:
+            - node
+          script:
+            - npm ci
+            - npm run build -- --configuration=production
+            - pipe: atlassian/aws-s3-deploy:1.1.0
+              variables:
+                AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+                AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+                AWS_DEFAULT_REGION: 'ap-southeast-1'
+                S3_BUCKET: 'frontend-rmc-dev'
+                LOCAL_PATH: 'dist/RMC_project/browser'
+                DELETE_FLAG: 'true'
+          artifacts:
+            - dist/**
+
+  custom:
+    deploy-dev-frontend:
+      - step:
+          name: Build & Deploy → dev only
+          caches:
+            - node
+          script:
+            - npm ci
+            - npm run build -- --configuration=production
+            - pipe: atlassian/aws-s3-deploy:1.1.0
+              variables:
+                AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+                AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+                AWS_DEFAULT_REGION: 'ap-southeast-1'
+                S3_BUCKET: 'frontend-rmc-dev'
+                LOCAL_PATH: 'dist/RMC_project/browser'
+                DELETE_FLAG: 'true'

@@ -1,7 +1,7 @@
 export const environment = {
   production: true,
-  apiUrl: '',
-  authUrl: 'https://dev-auth.apu.edu.my',
-  authRedirectUrl: '',
-  authAppName: 'rmc',
+  apiUrl: 'https://awe95wz0hd.execute-api.ap-southeast-1.amazonaws.com/dev',
+  authUrl: 'https://auth.apu.edu.my',
+  authRedirectUrl: 'https://d30bemrwjtr7v3.cloudfront.net',
+  authAppName: 'apspace',
 };

@@ -1,0 +1,160 @@
+<main class="forms-page">
+  <header class="forms-page__header">
+    <div>
+      <span class="forms-page__eyebrow">System Settings</span>
+      <h1>Staff Directory</h1>
+      <p>Browse APU staff synced from the central directory. Use Sync to refresh from the source.</p>
+    </div>
+    <button
+      class="btn btn-primary forms-page__create-button"
+      type="button"
+      (click)="syncDirectory()"
+      [disabled]="isSyncing() || isLoading()"
+    >
+      <span class="material-icons">{{ isSyncing() ? 'hourglass_top' : 'sync' }}</span>
+      {{ isSyncing() ? 'Syncing…' : 'Sync Staff Directory' }}
+    </button>
+  </header>
+
+  @if (!isLoading()) {
+    <section class="forms-toolbar academic-staff-toolbar" aria-label="Staff directory filters">
+      <label class="forms-filter academic-staff-filter--search">
+        <span>Name, Email, Username, or Job Title</span>
+        <input
+          class="input--text"
+          type="search"
+          placeholder="Search staff"
+          [ngModel]="searchTerm()"
+          (ngModelChange)="searchTerm.set($event)"
+          (keydown.enter)="search()"
+        />
+      </label>
+
+      <label class="forms-filter">
+        <span>Department</span>
+        <select
+          class="input--select"
+          [ngModel]="selectedDepartmentId()"
+          (ngModelChange)="selectedDepartmentId.set($event)"
+        >
+          <option [ngValue]="null">All Departments</option>
+          @for (department of departments(); track department.id) {
+            <option [ngValue]="department.id">{{ department.department_name }}</option>
+          }
+        </select>
+      </label>
+
+      <label class="forms-filter">
+        <span>Status</span>
+        <select
+          class="input--select"
+          [ngModel]="selectedStatus()"
+          (ngModelChange)="selectedStatus.set($event)"
+        >
+          <option value="">All</option>
+          <option value="Active">Active</option>
+          <option value="Inactive">Inactive</option>
+        </select>
+      </label>
+
+      <label class="forms-filter">
+        <span>Type</span>
+        <select
+          class="input--select"
+          [ngModel]="selectedType()"
+          (ngModelChange)="selectedType.set($event)"
+        >
+          <option value="">All Types</option>
+          <option value="staff">Staff</option>
+          <option value="academic">Academic</option>
+        </select>
+      </label>
+
+      <div class="forms-toolbar__actions">
+        <button class="btn btn-primary" type="button" (click)="search()">
+          <span class="material-icons">search</span>
+          Search
+        </button>
+        <button class="btn btn-secondary" type="button" (click)="resetFilters()">
+          <span class="material-icons">restart_alt</span>
+          Reset
+        </button>
+      </div>
+    </section>
+  }
+
+  <section class="forms-table-card">
+    @if (isLoading()) {
+      <app-table-skeleton
+        [columns]="columns"
+        [showSearch]="false"
+        loadingLabel="Loading staff directory"
+      >
+      </app-table-skeleton>
+    } @else if (loadFailed()) {
+      <div class="forms-state">
+        <span class="material-icons">cloud_off</span>
+        <h2>Unable to load staff directory</h2>
+        <p>Check the API connection and try again.</p>
+        <button class="btn btn-primary" type="button" (click)="loadInitialData()">Try Again</button>
+      </div>
+    } @else if (staff().length === 0) {
+      <div class="forms-state">
+        <span class="material-icons">groups</span>
+        <h2>No staff found</h2>
+        <p>Adjust the filters or run Sync to pull the latest directory from APU.</p>
+      </div>
+    } @else {
+      <app-data-table [columns]="columns" [rows]="staff()" [rowTrackFn]="rowTrackFn">
+        <ng-template #rowTemplate let-row let-index="index">
+          <tr>
+            <td class="is-align-center">{{ rowNumber(index) }}</td>
+            <td>
+              <div class="academic-staff-identity">
+                <span class="academic-staff-avatar">{{ initials(row) }}</span>
+                <div>
+                  <strong>{{ row.fullname || row.username }}</strong>
+                  <small>{{ row.email || row.staff_email || 'No email' }}</small>
+                </div>
+              </div>
+            </td>
+            <td>
+              @if (row.staff_code) {
+                <span class="form-code">{{ row.staff_code }}</span>
+              } @else {
+                <span class="academic-staff-muted">Not available</span>
+              }
+            </td>
+            <td>{{ row.job_title || 'Not specified' }}</td>
+            <td>{{ row.department || 'Not available' }}</td>
+            <td class="is-align-center">
+              <span class="status-badge" [class.status-badge--inactive]="!row.is_active">
+                {{ row.is_active ? 'Active' : 'Inactive' }}
+              </span>
+            </td>
+          </tr>
+        </ng-template>
+      </app-data-table>
+    }
+  </section>
+
+  @if (!isLoading() && !loadFailed()) {
+    <app-pagination
+      [currentPage]="page()"
+      [totalPages]="totalPages()"
+      [pageSize]="pageSize()"
+      [pageSizeOptions]="pageSizeOptions"
+      (pageChange)="onPageChange($event)"
+      (pageSizeChange)="onPageSizeChange($event)"
+    >
+    </app-pagination>
+
+    <p class="forms-count">
+      @if (totalItems() > 0) {
+        Showing {{ pageStart() }}-{{ pageEnd() }} of {{ totalItems() }} staff
+      } @else {
+        Showing 0 staff
+      }
+    </p>
+  }
+</main>

@@ -155,6 +155,7 @@ export const NAVIGATION_DATA: NavGroup[] = [
                     { label: 'Dropdowns', icon: 'list', route: '/admin-settings/dropdowns', permission: { anyOf: ['Admin'] } },
                     { label: 'Batches', icon: 'batch_prediction', route: '/admin-settings/batches', permission: { anyOf: ['Admin'] } },
                     { label: 'Staff Access', icon: 'person_add', route: '/admin-settings/staff-access', permission: { anyOf: ['Admin'] } },
+                    { label: 'Staff Directory', icon: 'badge', route: '/admin-settings/staff-directory', permission: { anyOf: ['Admin'] } },
                 ],
             },
 

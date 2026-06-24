@@ -34,6 +34,11 @@ export const adminSettingsRoutes: Routes = [
       import('./staff-access/staff-access.component').then(m => m.StaffAccessComponent),
   },
   {
+    path: 'staff-directory',
+    loadComponent: () =>
+      import('./staff-directory/staff-directory.component').then(m => m.StaffDirectoryComponent),
+  },
+  {
     path: 'batch-sitting',
     canActivate: [permissionGuard],
     data: {

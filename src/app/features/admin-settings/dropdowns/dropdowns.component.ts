@@ -172,6 +172,18 @@ export class DropdownsComponent implements OnInit {
       description:
         'Pacific Islands (Maldives etc.) - (A maximum of 70% & limit to a maximum of RM5,000, whichever is lower)',
     },
+    'antarctica micro grant zone': {
+      percentage: 25,
+      limit: 1500,
+      description:
+        'UI test region with a small percentage and limit to verify compact numeric metadata.',
+    },
+    'very long remote island research mobility region for table layout testing': {
+      percentage: 95,
+      limit: 12500,
+      description:
+        'UI test region with intentionally long text to verify description wrapping, row height, and table alignment.',
+    },
   };
 
   private readonly DEFAULT_PROJECT_ACCOUNT_CODE_METADATA: Record<string, string> = {
@@ -186,6 +198,8 @@ export class DropdownsComponent implements OnInit {
     v29800: '6203/900',
     v29900: '6203/1000',
     v30000: '6203/1100',
+    'ui-tiny': '6203/QA',
+    'ui-account-code-with-extremely-long-label-for-wrapping-0001': '6203/QA-LONG-0001',
   };
 
   groups = signal<DropdownGroup[]>([
@@ -344,10 +358,16 @@ export class DropdownsComponent implements OnInit {
       return [
         sequenceColumn,
         { key: 'value', label: 'Vote Number Description', sortable: true },
-      ...(includeSharedColumn
-        ? [{ key: 'sharedWith', label: 'Shared With', width: sharedColumnWidth } satisfies DataTableColumn]
-        : []),
-      statusColumn,
+        ...(includeSharedColumn
+          ? [
+              {
+                key: 'sharedWith',
+                label: 'Shared With',
+                width: sharedColumnWidth,
+              } satisfies DataTableColumn,
+            ]
+          : []),
+        statusColumn,
         dateColumn,
         actionsColumn,
       ];
@@ -357,7 +377,13 @@ export class DropdownsComponent implements OnInit {
       sequenceColumn,
       { key: 'value', label: 'Option Name', sortable: true },
       ...(includeSharedColumn
-        ? [{ key: 'sharedWith', label: 'Shared With', width: sharedColumnWidth } satisfies DataTableColumn]
+        ? [
+            {
+              key: 'sharedWith',
+              label: 'Shared With',
+              width: sharedColumnWidth,
+            } satisfies DataTableColumn,
+          ]
         : []),
       statusColumn,
       dateColumn,
@@ -650,14 +676,55 @@ export class DropdownsComponent implements OnInit {
         );
       }
 
+      const defaultOptionsAdded = this.ensureDefaultOptionsPresent();
       this.seedDefaultRegionMetadata();
       this.seedDefaultProjectAccountCodeMetadata();
+      if (defaultOptionsAdded) {
+        this.saveOptionsToStorage();
+      }
     } catch (error) {
       console.error('Failed to load dropdown options from localStorage:', error);
       this.dropdownOptions.set(this.getDefaultOptions());
       this.seedDefaultRegionMetadata();
       this.seedDefaultProjectAccountCodeMetadata();
     }
+  }
+
+  private ensureDefaultOptionsPresent(): boolean {
+    const existingKeys = new Set(
+      this.dropdownOptions().map((option) => this.getOptionIdentityKey(option)),
+    );
+    let nextId = Math.max(...this.dropdownOptions().map((option) => option.id), 0) + 1;
+    const missingOptions: DropdownOption[] = [];
+
+    for (const option of this.getDefaultOptions()) {
+      const key = this.getOptionIdentityKey(option);
+      if (existingKeys.has(key)) {
+        continue;
+      }
+
+      missingOptions.push({
+        ...option,
+        id: nextId++,
+        lastUpdated: this.normalizeDisplayDate(option.lastUpdated),
+      });
+      existingKeys.add(key);
+    }
+
+    if (missingOptions.length === 0) {
+      return false;
+    }
+
+    this.dropdownOptions.update((options) => [...options, ...missingOptions]);
+    return true;
+  }
+
+  private getOptionIdentityKey(
+    option: Pick<DropdownOption, 'formName' | 'category' | 'value'>,
+  ): string {
+    return [option.formName, option.category, option.value]
+      .map((part) => part.trim().toLowerCase())
+      .join('|');
   }
 
   private saveOptionsToStorage() {
@@ -670,7 +737,7 @@ export class DropdownsComponent implements OnInit {
   }
 
   private getDefaultOptions(): DropdownOption[] {
-    return [
+    const baseOptions: DropdownOption[] = [
       {
         id: 1,
         formName: 'Conference Application',
@@ -1274,6 +1341,364 @@ export class DropdownsComponent implements OnInit {
         lastUpdated: '19 Jun 2026',
         createdBy: 'Admin',
         status: 'Active',
+      },
+    ];
+
+    return [...baseOptions, ...this.getDropdownUiTestOptions()];
+  }
+
+  private getDropdownUiTestOptions(): DropdownOption[] {
+    return [
+      {
+        id: 1001,
+        formName: 'RDIG Application',
+        category: 'Research Cluster',
+        value: 'AI',
+        lastUpdated: '01 Jun 2026',
+        createdBy: 'QA Seed',
+        status: 'Active',
+      },
+      {
+        id: 1002,
+        formName: 'RA/GRA Application',
+        category: 'Research Cluster',
+        value: 'AI',
+        lastUpdated: '02 Jun 2026',
+        createdBy: 'QA Seed',
+        status: 'Active',
+      },
+      {
+        id: 1003,
+        formName: 'RDIG Application',
+        category: 'Research Cluster',
+        value: 'Interdisciplinary Climate Adaptation and Community Resilience Research Cluster',
+        lastUpdated: '03 Jun 2026',
+        createdBy: 'QA Seed',
+        status: 'Active',
+      },
+      {
+        id: 1004,
+        formName: 'RDIG Application',
+        category: 'Research Cluster',
+        value: 'Inactive Pair Visibility Cluster',
+        lastUpdated: '04 Jun 2026',
+        createdBy: 'QA Seed',
+        status: 'Active',
+      },
+      {
+        id: 1005,
+        formName: 'RA/GRA Application',
+        category: 'Research Cluster',
+        value: 'Inactive Pair Visibility Cluster',
+        lastUpdated: '05 Jun 2026',
+        createdBy: 'QA Seed',
+        status: 'Inactive',
+      },
+      {
+        id: 1006,
+        formName: 'RDIG Application',
+        category: 'Type of Organisation',
+        value: 'A',
+        lastUpdated: '06 Jun 2026',
+        createdBy: 'QA Seed',
+        status: 'Active',
+      },
+      {
+        id: 1007,
+        formName: 'Conference Application',
+        category: 'Type of Organisation',
+        value: 'A',
+        lastUpdated: '07 Jun 2026',
+        createdBy: 'QA Seed',
+        status: 'Active',
+      },
+      {
+        id: 1008,
+        formName: 'Journal Application',
+        category: 'Type of Organisation',
+        value: 'A',
+        lastUpdated: '08 Jun 2026',
+        createdBy: 'QA Seed',
+        status: 'Active',
+      },
+      {
+        id: 1009,
+        formName: 'RDIG Application',
+        category: 'Type of Organisation',
+        value: 'Government Innovation Lab With A Very Long Organisation Name For Wrapping Tests',
+        lastUpdated: '09 Jun 2026',
+        createdBy: 'QA Seed',
+        status: 'Active',
+      },
+      {
+        id: 1010,
+        formName: 'Conference Application',
+        category: 'Type of Organisation',
+        value: 'Government Innovation Lab With A Very Long Organisation Name For Wrapping Tests',
+        lastUpdated: '10 Jun 2026',
+        createdBy: 'QA Seed',
+        status: 'Active',
+      },
+      {
+        id: 1011,
+        formName: 'RDIG Application',
+        category: 'Type of Organisation',
+        value: 'Independent Micro Studio',
+        lastUpdated: '11 Jun 2026',
+        createdBy: 'QA Seed',
+        status: 'Inactive',
+      },
+      {
+        id: 1012,
+        formName: 'RDIG Application',
+        category: 'Research Domain',
+        value: 'IoT',
+        lastUpdated: '12 Jun 2026',
+        createdBy: 'QA Seed',
+        status: 'Active',
+      },
+      {
+        id: 1013,
+        formName: 'RDIG Application',
+        category: 'Research Domain',
+        value: 'Human-Centred Artificial Intelligence Governance and Ethics',
+        lastUpdated: '13 Jun 2026',
+        createdBy: 'QA Seed',
+        status: 'Inactive',
+      },
+      {
+        id: 1014,
+        formName: 'RDIG Application',
+        category: 'Sub-Research Domain',
+        value: 'XR',
+        lastUpdated: '14 Jun 2026',
+        createdBy: 'QA Seed',
+        status: 'Active',
+      },
+      {
+        id: 1015,
+        formName: 'RDIG Application',
+        category: 'Sub-Research Domain',
+        value: 'Privacy Preserving Federated Learning for Edge Healthcare Devices',
+        lastUpdated: '15 Jun 2026',
+        createdBy: 'QA Seed',
+        status: 'Inactive',
+      },
+      {
+        id: 1016,
+        formName: 'RDIG Application',
+        category: 'ESG',
+        value: 'E',
+        lastUpdated: '16 Jun 2026',
+        createdBy: 'QA Seed',
+        status: 'Active',
+      },
+      {
+        id: 1017,
+        formName: 'RDIG Application',
+        category: 'ESG',
+        value: 'Long Environmental Social Governance Label For Badge Width Testing',
+        lastUpdated: '17 Jun 2026',
+        createdBy: 'QA Seed',
+        status: 'Inactive',
+      },
+      {
+        id: 1018,
+        formName: 'RDIG Application',
+        category: 'SDG',
+        value: '1',
+        lastUpdated: '18 Jun 2026',
+        createdBy: 'QA Seed',
+        status: 'Active',
+      },
+      {
+        id: 1019,
+        formName: 'RDIG Application',
+        category: 'SDG',
+        value: 'SDG 17 Partnerships for the Goals With Extended Description',
+        lastUpdated: '19 Jun 2026',
+        createdBy: 'QA Seed',
+        status: 'Inactive',
+      },
+      {
+        id: 1020,
+        formName: 'RA/GRA Application',
+        category: 'Programme Type',
+        value: 'MSc',
+        lastUpdated: '20 Jun 2026',
+        createdBy: 'QA Seed',
+        status: 'Active',
+      },
+      {
+        id: 1021,
+        formName: 'RA/GRA Application',
+        category: 'Programme Type',
+        value: 'Doctor of Philosophy by Research With Industry Collaboration Track',
+        lastUpdated: '21 Jun 2026',
+        createdBy: 'QA Seed',
+        status: 'Inactive',
+      },
+      {
+        id: 1022,
+        formName: 'RA/GRA Application',
+        category: 'Supervisor Type',
+        value: 'Main',
+        lastUpdated: '22 Jun 2026',
+        createdBy: 'QA Seed',
+        status: 'Active',
+      },
+      {
+        id: 1023,
+        formName: 'RA/GRA Application',
+        category: 'Supervisor Type',
+        value: 'External Co-Supervisor From Partner Institution',
+        lastUpdated: '23 Jun 2026',
+        createdBy: 'QA Seed',
+        status: 'Inactive',
+      },
+      {
+        id: 1024,
+        formName: 'RA/GRA Application',
+        category: 'Funding Type',
+        value: 'Self',
+        lastUpdated: '24 Jun 2026',
+        createdBy: 'QA Seed',
+        status: 'Active',
+      },
+      {
+        id: 1025,
+        formName: 'RA/GRA Application',
+        category: 'Funding Type',
+        value: 'University-Industry Matched Scholarship With Long Sponsor Name',
+        lastUpdated: '25 May 2026',
+        createdBy: 'QA Seed',
+        status: 'Inactive',
+      },
+      {
+        id: 1026,
+        formName: 'Conference Application',
+        category: 'Select Region',
+        value: 'Antarctica Micro Grant Zone',
+        lastUpdated: '26 May 2026',
+        createdBy: 'QA Seed',
+        status: 'Inactive',
+      },
+      {
+        id: 1027,
+        formName: 'Conference Application',
+        category: 'Select Region',
+        value: 'Very Long Remote Island Research Mobility Region For Table Layout Testing',
+        lastUpdated: '27 May 2026',
+        createdBy: 'QA Seed',
+        status: 'Active',
+      },
+      {
+        id: 1028,
+        formName: 'Conference Application',
+        category: 'Project Account Code',
+        value: 'UI-TINY',
+        lastUpdated: '28 May 2026',
+        createdBy: 'QA Seed',
+        status: 'Active',
+      },
+      {
+        id: 1029,
+        formName: 'Journal Application',
+        category: 'Project Account Code',
+        value: 'UI-TINY',
+        lastUpdated: '29 May 2026',
+        createdBy: 'QA Seed',
+        status: 'Active',
+      },
+      {
+        id: 1030,
+        formName: 'Conference Application',
+        category: 'Project Account Code',
+        value: 'UI-ACCOUNT-CODE-WITH-EXTREMELY-LONG-LABEL-FOR-WRAPPING-0001',
+        lastUpdated: '30 May 2026',
+        createdBy: 'QA Seed',
+        status: 'Inactive',
+      },
+      {
+        id: 1031,
+        formName: 'Conference Application',
+        category: 'Vote Number Description',
+        value: 'APC',
+        lastUpdated: '31 May 2026',
+        createdBy: 'QA Seed',
+        status: 'Active',
+      },
+      {
+        id: 1032,
+        formName: 'Journal Application',
+        category: 'Vote Number Description',
+        value: 'APC',
+        lastUpdated: '01 Jun 2026',
+        createdBy: 'QA Seed',
+        status: 'Active',
+      },
+      {
+        id: 1033,
+        formName: 'Conference Application',
+        category: 'Vote Number Description',
+        value: 'International Keynote Travel Support With A Long Vote Description',
+        lastUpdated: '02 Jun 2026',
+        createdBy: 'QA Seed',
+        status: 'Inactive',
+      },
+      {
+        id: 1034,
+        formName: 'Journal Application',
+        category: 'Account Code Description',
+        value: 'Copyediting',
+        lastUpdated: '03 Jun 2026',
+        createdBy: 'QA Seed',
+        status: 'Active',
+      },
+      {
+        id: 1035,
+        formName: 'Journal Application',
+        category: 'Account Code Description',
+        value: 'Long Account Code Description For Indexing Publication Charges And Archival Fees',
+        lastUpdated: '04 Jun 2026',
+        createdBy: 'QA Seed',
+        status: 'Inactive',
+      },
+      {
+        id: 1036,
+        formName: 'Partnership Application',
+        category: 'Partnership Type',
+        value: 'MoU',
+        lastUpdated: '05 Jun 2026',
+        createdBy: 'QA Seed',
+        status: 'Active',
+      },
+      {
+        id: 1037,
+        formName: 'Partnership Application',
+        category: 'Partnership Type',
+        value: 'Strategic Research and Commercialisation Collaboration Agreement',
+        lastUpdated: '06 Jun 2026',
+        createdBy: 'QA Seed',
+        status: 'Inactive',
+      },
+      {
+        id: 1038,
+        formName: 'Partnership Application',
+        category: 'Partnership Category',
+        value: 'Industry',
+        lastUpdated: '07 Jun 2026',
+        createdBy: 'QA Seed',
+        status: 'Active',
+      },
+      {
+        id: 1039,
+        formName: 'Partnership Application',
+        category: 'Partnership Category',
+        value: 'International Multi-Campus Research Network With Extended Category Text',
+        lastUpdated: '08 Jun 2026',
+        createdBy: 'QA Seed',
+        status: 'Inactive',
       },
     ];
   }
@@ -1912,9 +2337,3 @@ export class DropdownsComponent implements OnInit {
     return this.formatDisplayDate(new Date(timestamp));
   }
 }
-
-
-
-
-
-

@@ -1,0 +1,38 @@
+<div
+  class="text-editor"
+  [class.is-disabled]="isDisabled()"
+  [class.is-focused]="isFocused()"
+  [class.is-invalid]="invalid || isOverLimit()"
+  [class.is-readonly]="readOnly"
+>
+  @if (label) {
+    <label class="form-label" [class.is-required]="required">{{ label }}</label>
+  }
+
+  <div class="text-editor__shell">
+    <div
+      #editorHost
+      class="text-editor__quill"
+      [attr.aria-required]="required"
+      [attr.aria-invalid]="invalid || isOverLimit()"
+      [attr.aria-label]="label || placeholder || 'Rich text editor'"
+      [attr.aria-describedby]="
+        helperText || (showCounter && maxLength !== null) ? describedById : null
+      "
+    ></div>
+  </div>
+
+  @if (helperText || (showCounter && maxLength !== null)) {
+    <div class="text-editor__footer" [id]="describedById">
+      @if (helperText) {
+        <span class="form-hint">{{ helperText }}</span>
+      }
+
+      @if (showCounter && maxLength !== null && !readOnly) {
+        <span class="form-counter" [class.text-editor__counter--over]="isOverLimit()">
+          {{ characterCount() }} / {{ maxLength }}
+        </span>
+      }
+    </div>
+  }
+</div>

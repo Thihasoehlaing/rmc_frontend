@@ -21,6 +21,7 @@ import {
 import { FileUploadComponent } from '../file-upload/file-upload.component';
 import { DialogComponent } from '../dialog/dialog.component';
 import { PaginationComponent } from '../pagination/pagination.component';
+import { TextEditorComponent } from '../text-editor/text-editor.component';
 import { DropdownOption } from '../../../core/interfaces/components.interface';
 import { SvgIconComponent } from '../svg-icon/svg-icon.component';
 import { SVG_ICONS, SVG_ICON_BEAKER } from '../../icons/svg-icons';
@@ -45,6 +46,7 @@ import { SVG_ICONS, SVG_ICON_BEAKER } from '../../icons/svg-icons';
     FileUploadComponent,
     DialogComponent,
     PaginationComponent,
+    TextEditorComponent,
     SvgIconComponent,
   ],
   templateUrl: './showcase.html',
@@ -72,6 +74,19 @@ export class ShowcaseComponent {
   get charCurrent(): number {
     return this.textareaVal.length;
   }
+
+  textEditorControl = new FormControl(
+    [
+      '<h1>Guidelines for Applicants</h1>',
+      '<p><strong>Use this shared editor</strong> for formatted guidance, reviewer notes, or rich descriptions.</p>',
+      '<h2>What it supports</h2>',
+      '<ul><li>Headings copied from rich sources</li><li>Bold, italic, underline, and links</li><li>Nested lists, tables, and paragraph spacing</li></ul>',
+      '<table><tbody><tr><td><strong>Item</strong></td><td><strong>Owner</strong></td><td><strong>Status</strong></td></tr><tr><td>Eligibility checklist</td><td>Applicant</td><td>Required</td></tr><tr><td>Reviewer notes</td><td>Panel</td><td>Optional</td></tr></tbody></table>',
+      '<p class="ql-align-center"><a href="https://www.apu.edu.my" target="_blank" rel="noopener noreferrer">Example centered link</a></p>',
+    ].join(''),
+    { nonNullable: true },
+  );
+  textEditorMax = 2000;
 
   demoSteps: WizardStep[] = [
     { label: 'Team Details', icon: 'group' },
@@ -470,6 +485,12 @@ export class ShowcaseComponent {
       name: 'StepIndicator',
       selector: '<app-step-indicator>',
       purpose: 'Clickable step progress indicator with status states.',
+    },
+    {
+      name: 'TextEditor',
+      selector: '<app-text-editor>',
+      purpose:
+        'Reusable rich text editor with tables, sanitized HTML output, and reactive form support.',
     },
     {
       name: 'ValidationMessage',

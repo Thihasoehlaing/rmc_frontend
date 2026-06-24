@@ -735,6 +735,101 @@
       </table>
     </div>
 
+    <!-- ── TextEditor ────────────────────────────────────────────── -->
+    <div class="component-block">
+      <div class="component-block__header">
+        <span class="comp-name">TextEditor</span>
+        <code class="comp-selector">&lt;app-text-editor&gt;</code>
+        <p class="comp-desc">
+          Quill-powered rich text editor for formatted guidance, reviewer notes, and long-form
+          descriptions. It implements <code>ControlValueAccessor</code>, preserves rich paste where
+          possible, supports tables, stores sanitized HTML, and supports read-only rendering.
+        </p>
+      </div>
+      <div class="component-block__demo">
+        <div class="text-editor-demo">
+          <div class="text-editor-demo__editor">
+            <app-text-editor
+              label="Guidance content"
+              [required]="true"
+              placeholder="Write formatted content for applicants…"
+              helperText="Paste formatted content from Word, Google Docs, ChatGPT, or another rich source."
+              [maxLength]="textEditorMax"
+              [formControl]="textEditorControl"
+            ></app-text-editor>
+          </div>
+
+          <div class="text-editor-demo__preview">
+            <app-text-editor
+              label="Read-only rendering"
+              [readOnly]="true"
+              [showCounter]="false"
+              [formControl]="textEditorControl"
+            ></app-text-editor>
+          </div>
+
+          <div class="editor-output-card" aria-live="polite">
+            <span class="demo-label">Saved sanitized HTML value</span>
+            <code>{{ textEditorControl.value }}</code>
+          </div>
+        </div>
+      </div>
+      <table class="props-table">
+        <thead>
+          <tr>
+            <th>Input</th>
+            <th>Type</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>label</code></td>
+            <td>string</td>
+            <td>Optional field label rendered above the editor</td>
+          </tr>
+          <tr>
+            <td><code>required</code></td>
+            <td>boolean</td>
+            <td>Adds the standard required label marker and ARIA required state</td>
+          </tr>
+          <tr>
+            <td><code>placeholder</code></td>
+            <td>string</td>
+            <td>Placeholder shown while the editor is empty</td>
+          </tr>
+          <tr>
+            <td><code>helperText</code></td>
+            <td>string</td>
+            <td>Helper copy shown below the editor</td>
+          </tr>
+          <tr>
+            <td><code>maxLength</code></td>
+            <td>number | null</td>
+            <td>Optional plain-text character limit with counter</td>
+          </tr>
+          <tr>
+            <td><code>readOnly</code></td>
+            <td>boolean</td>
+            <td>Renders the saved rich text without showing an editing toolbar</td>
+          </tr>
+          <tr>
+            <td><code>toolbarOptions</code></td>
+            <td>Quill toolbar config</td>
+            <td>
+              Optional Quill toolbar configuration. Default includes headings, bold, italic,
+              underline, lists, nesting, alignment, links, tables, and clear formatting.
+            </td>
+          </tr>
+          <tr>
+            <td><code>formControl</code></td>
+            <td>FormControl&lt;string&gt;</td>
+            <td>Bind via <code>[formControl]</code> or <code>formControlName</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
     <!-- ── SearchableDropdown ─────────────────────────────────────── -->
     <div class="component-block">
       <div class="component-block__header">

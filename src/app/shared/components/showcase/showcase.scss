@@ -436,6 +436,37 @@
   }
 }
 
+.text-editor-demo {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-5);
+  align-items: start;
+}
+
+.text-editor-demo__editor,
+.text-editor-demo__preview {
+  min-width: 0;
+}
+
+.editor-output-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-nested);
+
+  code {
+    display: block;
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+    color: var(--color-primary);
+    font-size: var(--fs-xs);
+    line-height: var(--lh-normal);
+  }
+}
+
 // ─── Props tables ──────────────────────────────────────────────────
 .props-table {
   width: 100%;
@@ -516,4 +547,10 @@
 .section-description {
   color: var(--color-text-muted);
   line-height: 1.6;
+}
+
+@media (max-width: 768px) {
+  .text-editor-demo {
+    grid-template-columns: 1fr;
+  }
 }

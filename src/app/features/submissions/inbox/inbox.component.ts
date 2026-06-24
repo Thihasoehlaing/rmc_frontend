@@ -140,27 +140,38 @@ export class InboxComponent implements OnInit {
   });
 
   ngOnInit(): void {
-    // Load active batch for date-window filtering
+    this.loadInbox();
+  }
+
+  onSearch(query: string): void {
+    this.searchQuery.set(query);
+  }
+
+  refreshInbox(): void {
+    this.searchQuery.set('');
+    this.loadInbox();
+  }
+
+  private loadInbox(): void {
+    this.loading.set(true);
+    this.error.set(null);
+
     this.batchSvc.loadAll().subscribe({
-      next: (batches) => this.activeBatch.set(batches.find((b) => b.status === 'active') ?? null),
+      next: (batches) =>
+        this.activeBatch.set(batches.find((batch) => batch.status === 'active') ?? null),
       error: () => this.activeBatch.set(null),
     });
 
-    // Filtering is done server-side for roles, then client-side for date windows.
-    this.loading.set(true);
     this.applicationService
       .getInboxApplications()
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe({
-        next: (apps) => {
-          this.allApplications.set(apps);
-        },
+        next: (apps) => this.allApplications.set(apps),
         error: () => {
           this.error.set('Could not reach the JSON server. Make sure `npm run db` is running.');
         },
       });
   }
-
   getTitle(app: any): string {
     return app.projectDetails?.title?.trim() || '(Untitled Application)';
   }

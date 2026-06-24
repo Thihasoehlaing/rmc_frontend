@@ -104,15 +104,6 @@
               </div>
               <ng-container *ngTemplateOutlet="stageReadTable; context: { batch: activeBatch() }">
               </ng-container>
-              <app-pagination
-                [currentPage]="stagePage()"
-                [totalPages]="stageTotalPages()"
-                [pageSize]="stagePageSize()"
-                [pageSizeOptions]="stagePageSizeOptions"
-                (pageChange)="onStagePageChange($event)"
-                (pageSizeChange)="onStagePageSizeChange($event)"
-              >
-              </app-pagination>
             </div>
           }
 
@@ -505,7 +496,7 @@
 <!-- Shared template: read-only stage table                                     -->
 <!-- ══════════════════════════════════════════════════════════════════════════ -->
 <ng-template #stageReadTable let-batch="batch">
-  <app-data-table [columns]="stageColumns" [rows]="paginatedStageMeta()">
+  <app-data-table [columns]="stageColumns" [rows]="stageMeta">
     <ng-template #rowTemplate let-stage
       ><tr>
         <td>
@@ -517,15 +508,6 @@
       </tr></ng-template
     >
   </app-data-table>
-  <app-pagination
-    [currentPage]="stagePage()"
-    [totalPages]="stageTotalPages()"
-    [pageSize]="stagePageSize()"
-    [pageSizeOptions]="stagePageSizeOptions"
-    (pageChange)="onStagePageChange($event)"
-    (pageSizeChange)="onStagePageSizeChange($event)"
-  >
-  </app-pagination>
 </ng-template>
 
 <!-- ══════════════════════════════════════════════════════════════════════════ -->
@@ -624,7 +606,7 @@
       }
 
       <div formGroupName="stages">
-        <app-data-table [columns]="stageColumns" [rows]="paginatedStageMeta()">
+        <app-data-table [columns]="stageColumns" [rows]="stageMeta">
           <ng-template #rowTemplate let-stage
             ><tr [formGroupName]="stage.key" [class.row--disabled]="!stagesEnabled(form)">
               <td>
@@ -682,15 +664,6 @@
           >
         </app-data-table>
       </div>
-      <app-pagination
-        [currentPage]="stagePage()"
-        [totalPages]="stageTotalPages()"
-        [pageSize]="stagePageSize()"
-        [pageSizeOptions]="stagePageSizeOptions"
-        (pageChange)="onStagePageChange($event)"
-        (pageSizeChange)="onStagePageSizeChange($event)"
-      >
-      </app-pagination>
     </div>
 
     <!-- ── Form Actions ───────────────────────────────────────────────────── -->
@@ -714,3 +687,5 @@
     </div>
   </div>
 </ng-template>
+
+

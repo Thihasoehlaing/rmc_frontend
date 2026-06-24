@@ -1,17 +1,29 @@
-<div class="submissions-search" [class.submissions-search--focused]="focused()">
-  <span class="material-icons submissions-search__icon">search</span>
-  <input
-    class="submissions-search__input"
-    type="text"
-    [placeholder]="placeholder()"
-    [value]="value()"
-    (input)="onInput($event)"
-    (focus)="focused.set(true)"
-    (blur)="focused.set(false)" />
-
-  @if (value()) {
-    <button class="submissions-search__clear" type="button" (click)="clear()" title="Clear search">
-      <span class="material-icons">close</span>
+<div class="submissions-search-top-row">
+  <ng-content select="[search-top-row]"></ng-content>
+</div>
+<div class="submissions-search-controls">
+  <div class="submissions-search" [class.submissions-search--focused]="focused()">
+    <span class="material-icons submissions-search__icon">search</span>
+    <input
+      class="submissions-search__input"
+      type="search"
+      [placeholder]="placeholder()"
+      [value]="draftValue()"
+      (input)="onInput($event)"
+      (keydown.enter)="submitSearch()"
+      (focus)="focused.set(true)"
+      (blur)="focused.set(false)"
+    />
+  </div>
+  <div class="submissions-search-filters">
+    <ng-content select="[search-filters]"></ng-content>
+  </div>
+  <div class="submissions-search-actions">
+    <button type="button" class="btn btn-primary" (click)="submitSearch()">
+      <span class="material-icons">search</span>Search
     </button>
-  }
+    <button type="button" class="btn btn-secondary" (click)="refreshSearch()">
+      <span class="material-icons">refresh</span>Reset
+    </button>
+  </div>
 </div>

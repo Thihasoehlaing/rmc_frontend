@@ -1,13 +1,17 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { SvgIconComponent } from '../svg-icon/svg-icon.component';
 import {
+  SVG_ICON_ACTIVATE,
+  SVG_ICON_DEACTIVATE,
+  SVG_ICON_BLOCK_USER,
   SVG_ICON_EDIT,
   SVG_ICON_TRASH,
   SVG_ICON_VIEW,
+  SVG_ICON_SHIELD_USER,
   SvgIconDefinition,
 } from '../../icons/svg-icons';
 
-export type TableActionIcon = 'edit' | 'delete' | 'view';
+export type TableActionIcon = 'edit' | 'delete' | 'view' | 'activate' | 'deactivate' | 'blockUser' | 'unblockUser';
 
 @Component({
   selector: 'app-table-action-icon',
@@ -26,8 +30,18 @@ export class TableActionIconComponent {
         return SVG_ICON_EDIT;
       case 'delete':
         return SVG_ICON_TRASH;
+      case 'activate':
+        return SVG_ICON_ACTIVATE;
+      case 'deactivate':
+        return SVG_ICON_DEACTIVATE;
+      case 'blockUser':
+        return SVG_ICON_BLOCK_USER;
+      case 'unblockUser':
+        return SVG_ICON_SHIELD_USER;
       default:
         return SVG_ICON_VIEW;
     }
   }
 }
+
+

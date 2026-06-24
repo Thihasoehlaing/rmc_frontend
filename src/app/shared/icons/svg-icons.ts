@@ -21,6 +21,28 @@ export const SVG_ICON_VIEW: SvgIconDefinition = {
   viewBox: '0 0 24 24',
   markup: `<path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"></path><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="2"></circle>`,
 };
+export const SVG_ICON_ACTIVATE: SvgIconDefinition = {
+  name: 'SVG_ICON_ACTIVATE',
+  viewBox: '0 0 24 24',
+  markup: `<path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 6 9 17l-5-5"></path>`,
+};
+
+export const SVG_ICON_DEACTIVATE: SvgIconDefinition = {
+  name: 'SVG_ICON_DEACTIVATE',
+  viewBox: '0 0 24 24',
+  markup: `<circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"></circle><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2" d="M5.7 5.7 18.3 18.3"></path>`,
+};
+export const SVG_ICON_SHIELD_USER: SvgIconDefinition = {
+  name: 'SVG_ICON_SHIELD_USER',
+  viewBox: '0 0 24 24',
+  markup: `<path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3 5 6v5c0 4.4 2.9 8.4 7 10 4.1-1.6 7-5.6 7-10V6l-7-3Z"></path><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm-4 5c.7-1.7 2.2-3 4-3s3.3 1.3 4 3"></path>`,
+};
+
+export const SVG_ICON_BLOCK_USER: SvgIconDefinition = {
+  name: 'SVG_ICON_BLOCK_USER',
+  viewBox: '0 0 24 24',
+  markup: `<circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"></circle><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2" d="M5.7 5.7 18.3 18.3"></path><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm-3.5 4.5c.5-1.5 1.8-2.5 3.5-2.5"></path>`,
+};
 export const SVG_ICON_LOADING_SPINNER: SvgIconDefinition = {
   name: 'SVG_ICON_LOADING_SPINNER',
   viewBox: '0 0 50 50',
@@ -49,8 +71,14 @@ export const SVG_ICONS = [
   SVG_ICON_EDIT,
   SVG_ICON_TRASH,
   SVG_ICON_VIEW,
+  SVG_ICON_ACTIVATE,
+  SVG_ICON_DEACTIVATE,
+  SVG_ICON_SHIELD_USER,
+  SVG_ICON_BLOCK_USER,
   SVG_ICON_LOADING_SPINNER,
   SVG_ICON_SUCCESS_CHECK,
   SVG_ICON_BEAKER,
   SVG_ICON_CHEVRON_DOWN,
 ] as const;
+
+

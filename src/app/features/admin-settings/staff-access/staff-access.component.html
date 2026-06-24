@@ -1,21 +1,21 @@
 <section class="staff-access-page">
   <header class="staff-access-page__header">
     <div class="staff-access-page__title-wrap">
-      <h1 class="staff-access-page__title">RDIG Application</h1>
+      <h1 class="staff-access-page__title"><span class="material-icons" aria-hidden="true">admin_panel_settings</span>RDIG Application</h1>
       <p class="staff-access-page__subtitle">
         {{ staffRecords().length }} staff loaded from database Â·
         <span class="staff-access-page__blocked-count">{{ blockedCount() }} blocked</span>
       </p>
     </div>
-
-    <a href="/admin-settings" class="staff-access-page__source" aria-label="Back to Admin Settings">
-      <span class="material-icons" aria-hidden="true">database</span>
-      Staff fetched from university database
-    </a>
   </header>
 
-  <section class="staff-access-filters" aria-label="Staff access filters">
-    <label class="staff-access-filter-field">
+  <app-submissions-search
+    placeholder="Search staff name..."
+    [value]="searchFilter()"
+    (search)="setSearchFilter($event)"
+    (refresh)="resetFilters()"
+  >
+    <label search-filters>
       <span class="staff-access-filter-label">Department</span>
       <select
         class="input--select"
@@ -29,8 +29,7 @@
         }
       </select>
     </label>
-
-    <label class="staff-access-filter-field">
+    <label search-filters>
       <span class="staff-access-filter-label">Access Status</span>
       <select
         class="input--select"
@@ -43,23 +42,7 @@
         <option value="blocked">Blocked</option>
       </select>
     </label>
-
-    <label class="staff-access-filter-field staff-access-filter-field--search">
-      <span class="staff-access-filter-label">Search</span>
-      <div class="staff-access-search-wrap">
-        <span class="material-icons staff-access-search-icon" aria-hidden="true">search</span>
-        <input
-          class="input--text staff-access-search-input"
-          [value]="searchFilter()"
-          (input)="setSearchFilter(searchInput.value)"
-          #searchInput
-          placeholder="Search name, ID, role..."
-          type="search"
-        />
-      </div>
-    </label>
-  </section>
-
+  </app-submissions-search>
   <section class="staff-access-table-shell" aria-label="Staff access list">
     <app-data-table
       [columns]="columns"
@@ -79,9 +62,9 @@
           <td>
             <span class="staff-access-id-chip">{{ staff.staffId }}</span>
           </td>
-          <td>{{ staff.department }}</td>
-          <td>{{ staff.role }}</td>
-          <td>{{ staff.email }}</td>
+          <td><span class="staff-access-text" [title]="staff.department">{{ staff.department }}</span></td>
+          <td><span class="staff-access-text" [title]="staff.role">{{ staff.role }}</span></td>
+          <td><span class="staff-access-email" [title]="staff.email">{{ staff.email }}</span></td>
           <td>
             <span
               class="badge"
@@ -91,20 +74,20 @@
             >
           </td>
           <td>{{ staff.blockedDate || 'â€”' }}</td>
-          <td>{{ staff.reason || 'â€”' }}</td>
+          <td><span class="staff-access-text" [title]="staff.reason || '—'">{{ staff.reason || '—' }}</span></td>
           <td>
             <div class="data-table__actions">
               <button
-                class="btn btn-sm staff-access-action"
+                class="icon-btn staff-access-action"
                 [class.staff-access-action--block]="staff.status === 'active'"
                 [class.staff-access-action--unblock]="staff.status === 'blocked'"
                 type="button"
+                [title]="staff.status === 'active' ? 'Block staff access' : 'Unblock staff access'"
                 (click)="toggleAccess(staff.id)"
               >
-                <span class="material-icons">{{
-                  staff.status === 'active' ? 'block' : 'shield'
-                }}</span
-                >{{ staff.status === 'active' ? 'Block' : 'Unblock' }}
+                <app-table-action-icon
+                  [action]="staff.status === 'active' ? 'blockUser' : 'unblockUser'"
+                ></app-table-action-icon>
               </button>
             </div>
           </td>
@@ -118,3 +101,7 @@
     {{ blockedCount() }} blocked from this form
   </p>
 </section>
+
+
+
+

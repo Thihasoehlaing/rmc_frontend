@@ -16,6 +16,7 @@ import type { DataTableColumn } from '../../../shared/components/data-table/data
 import { SvgIconComponent } from '../../../shared/components/svg-icon/svg-icon.component';
 import { SVG_ICON_TRASH } from '../../../shared/icons/svg-icons';
 import { TableActionIconComponent } from '../../../shared/components/table-action-icon/table-action-icon.component';
+import { SubmissionsSearchComponent } from '../../../shared/components/submissions-search/submissions-search.component';
 
 interface DropdownOption {
   id: number;
@@ -73,6 +74,7 @@ interface CategorySharingConfig {
   standalone: true,
   imports: [
     TableActionIconComponent,
+    SubmissionsSearchComponent,
     CommonModule,
     FormsModule,
     RouterModule,
@@ -259,7 +261,33 @@ export class DropdownsComponent implements OnInit {
   sharedFormsDialogData = signal<{ optionName: string; forms: string[] } | null>(null);
 
   tableColumns = computed<DataTableColumn[]>(() => {
-    const sequenceColumn: DataTableColumn = { key: 'sequence', label: 'No.', width: '64px', align: 'center' };
+    const dateColumnWidth = 'var(--size-table-column-amount)';
+    const sharedColumnWidth = 'var(--size-table-column-timeline)';
+    const includeSharedColumn = this.canShareSelectedCategory();
+    const statusColumn: DataTableColumn = {
+      key: 'status',
+      label: 'Status',
+      width: 'var(--size-table-column-actions)',
+    };
+    const dateColumn: DataTableColumn = {
+      key: 'lastUpdated',
+      label: 'Last Updated',
+      width: dateColumnWidth,
+      sortable: true,
+    };
+    const actionsColumn: DataTableColumn = {
+      key: 'actions',
+      label: 'Actions',
+      width: '10rem',
+      align: 'center',
+      headerAlign: 'center',
+    };
+    const sequenceColumn: DataTableColumn = {
+      key: 'sequence',
+      label: 'No.',
+      width: '64px',
+      align: 'center',
+    };
 
     if (this.isRegionMetadataCategory()) {
       return [
@@ -297,8 +325,14 @@ export class DropdownsComponent implements OnInit {
               ? 'Account Code'
               : 'Account Number',
         },
-        ...(isProjectAccountCode || isVoteNumberDescription
-          ? [{ key: 'sharedWith', label: 'Shared With', width: sharedColumnWidth } satisfies DataTableColumn]
+        ...(includeSharedColumn && (isProjectAccountCode || isVoteNumberDescription)
+          ? [
+              {
+                key: 'sharedWith',
+                label: 'Shared With',
+                width: sharedColumnWidth,
+              } satisfies DataTableColumn,
+            ]
           : []),
         statusColumn,
         dateColumn,
@@ -310,8 +344,10 @@ export class DropdownsComponent implements OnInit {
       return [
         sequenceColumn,
         { key: 'value', label: 'Vote Number Description', sortable: true },
-        { key: 'sharedWith', label: 'Shared With', width: sharedColumnWidth },
-        statusColumn,
+      ...(includeSharedColumn
+        ? [{ key: 'sharedWith', label: 'Shared With', width: sharedColumnWidth } satisfies DataTableColumn]
+        : []),
+      statusColumn,
         dateColumn,
         actionsColumn,
       ];
@@ -320,7 +356,9 @@ export class DropdownsComponent implements OnInit {
     return [
       sequenceColumn,
       { key: 'value', label: 'Option Name', sortable: true },
-      { key: 'sharedWith', label: 'Shared With', width: sharedColumnWidth },
+      ...(includeSharedColumn
+        ? [{ key: 'sharedWith', label: 'Shared With', width: sharedColumnWidth } satisfies DataTableColumn]
+        : []),
       statusColumn,
       dateColumn,
       actionsColumn,
@@ -334,6 +372,11 @@ export class DropdownsComponent implements OnInit {
     () => this.groups().find((g) => g.id === this.selectedGroupId()) ?? null,
   );
   selectedGroupCategories = computed(() => this.selectedGroup()?.categories ?? []);
+  canShareSelectedCategory(): boolean {
+    const category = this.selectedCategory();
+    const allowedForms = category ? this.CATEGORY_SHARING_CONFIG[category] : null;
+    return !!allowedForms && allowedForms.length > 1;
+  }
   shareableForms = computed(() => {
     const category = this.selectedCategory();
     if (!category) {
@@ -425,6 +468,26 @@ export class DropdownsComponent implements OnInit {
     return this.isProjectAccountCodeCategory() ? 'Project Account Code' : 'Option Name';
   }
 
+  getSearchPlaceholder(): string {
+    if (this.isRegionMetadataCategory()) {
+      return 'Search region name, percentage, limit, or description';
+    }
+
+    if (this.isConferenceVoteNumberDescriptionCategory()) {
+      return 'Search vote number or description';
+    }
+
+    if (this.isProjectAccountCodeCategory()) {
+      return 'Search project account code or account code';
+    }
+
+    if (this.isAccountCodeMetadataCategory()) {
+      return 'Search option name or account number';
+    }
+
+    return `Search ${this.getOptionNameInputLabel().toLowerCase()}`;
+  }
+
   // Computed list of categories with their counts for the currently selected group
   categoryCounts = computed(() => {
     const group = this.selectedGroup();
@@ -450,7 +513,7 @@ export class DropdownsComponent implements OnInit {
 
     const query = this.searchQuery().trim().toLowerCase();
     if (query) {
-      filtered = filtered.filter((o) => o.value.toLowerCase().includes(query));
+      filtered = filtered.filter((option) => this.optionMatchesSearch(option, query));
     }
 
     const status = this.statusFilter();
@@ -1734,6 +1797,24 @@ export class DropdownsComponent implements OnInit {
     return Number.isFinite(parsed) ? parsed : undefined;
   }
 
+  private optionMatchesSearch(option: DropdownOption, query: string): boolean {
+    const searchableValues: Array<string | number | undefined> = [option.value];
+
+    if (this.isRegionMetadataCategory()) {
+      const metadata = this.getRegionMetadata(option.value);
+      searchableValues.push(metadata.percentage, metadata.limit, metadata.description);
+    }
+
+    if (this.isAccountCodeMetadataCategory()) {
+      const metadata = this.getAccountCodeMetadata(option.value, option.formName, option.category);
+      searchableValues.push(metadata.accountNumber);
+    }
+
+    return searchableValues
+      .filter((value): value is string | number => value !== undefined && value !== null)
+      .some((value) => String(value).toLowerCase().includes(query));
+  }
+
   private compareOptions(a: DropdownOption, b: DropdownOption, sortKey: DropdownSortKey): number {
     if (sortKey === 'lastUpdated') {
       return this.parseDisplayDate(a.lastUpdated) - this.parseDisplayDate(b.lastUpdated);
@@ -1831,3 +1912,9 @@ export class DropdownsComponent implements OnInit {
     return this.formatDisplayDate(new Date(timestamp));
   }
 }
+
+
+
+
+
+

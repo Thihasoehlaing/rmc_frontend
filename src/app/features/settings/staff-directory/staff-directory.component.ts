@@ -29,8 +29,8 @@ import {
   ],
   templateUrl: './staff-directory.component.html',
   styleUrls: [
-    '../../settings/forms/forms.component.scss',
-    '../../settings/academic-staff/academic-staff.component.scss',
+    '../forms/forms.component.scss',
+    '../academic-staff/academic-staff.component.scss',
     './staff-directory.component.scss',
   ],
 })

@@ -8,14 +8,14 @@ import {
   ApiResponse,
   DepartmentRecord,
   StaffRecord,
-} from '../../settings/academic-staff/academic-staff.service';
+} from '../academic-staff/academic-staff.service';
 
 export type {
   ApiPagination,
   ApiResponse,
   DepartmentRecord,
   StaffRecord,
-} from '../../settings/academic-staff/academic-staff.service';
+} from '../academic-staff/academic-staff.service';
 
 export type StaffStatusFilter = '' | 'Active' | 'Inactive';
 

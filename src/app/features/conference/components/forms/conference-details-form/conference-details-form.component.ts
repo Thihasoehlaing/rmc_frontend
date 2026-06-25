@@ -758,7 +758,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
 
   /**
    * Get Sponsorship Amount by APU for External Research project
-   * Formula: A = min((T × P / 100), T - E)
+   * Formula: A = T - E
    */
   get externalSponsorshipAmountByAPU(): number {
     return this.calculateSponsorshipAmountByAPU('externalSponsoredAmountExternal');
@@ -766,50 +766,37 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
 
   /**
    * Get Sponsorship Amount by APU for Local Conference
-   * Formula: A = min((T × P / 100), T - E)
+   * Formula for non-research: A = (T - E) × P / 100
    */
   get localSponsorshipAmountByAPU(): number {
     return this.calculateSponsorshipAmountByAPU('localSponsoredAmountExternal');
   }
 
   /**
-   * Check if sponsorship amount exceeds RM 5,000 limit for Non-Research projects
+   * Non-research sponsorship is now percentage based, without the previous RM 5,000 cap.
    */
-  isAPUSponsorshipExceededLimit(sponsorshipAmount: number): boolean {
-    const researchTypeValue = this.researchType;
-    if (researchTypeValue === 'non-research') {
-      return sponsorshipAmount > 5000;
-    }
+  isAPUSponsorshipExceededLimit(_sponsorshipAmount: number): boolean {
     return false;
   }
 
   /**
-   * Get capped sponsorship amount (max RM 5,000 for internal/non-research projects)
+   * Kept for existing template bindings; the current rule does not cap APU sponsorship.
    */
   getCappedSponsorshipAmount(sponsorshipAmount: number): number {
-    if (this.isAPUSponsorshipExceededLimit(sponsorshipAmount)) {
-      return 5000;
-    }
     return sponsorshipAmount;
   }
 
   /**
-   * Get tooltip for capping message - shows when amount is capped at RM 5,000
+   * Kept for existing template bindings; no cap tooltip is needed under current rules.
    */
-  getCapLimitTooltip(sponsorshipAmount: number): string | null {
-    if (this.isAPUSponsorshipExceededLimit(sponsorshipAmount)) {
-      return "APU's sponsorship will only cover up to RM 5,000";
-    }
+  getCapLimitTooltip(_sponsorshipAmount: number): string | null {
     return null;
   }
 
   /**
    * Get tooltip for reduction message - shows when calculated amount is more than displayed amount
    */
-  getReductionTooltip(sponsorshipAmount: number, cappedAmount: number): string | null {
-    if (sponsorshipAmount > cappedAmount) {
-      return "External Sponsorship covers more than APU's offer. Displayed amount is after reduction.";
-    }
+  getReductionTooltip(_sponsorshipAmount: number, _cappedAmount: number): string | null {
     return null;
   }
 
@@ -872,37 +859,31 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     return this.calculateBreakdownTotal('external-research');
   }
 
-  /**
-   * Get percentage for External Research - always 0
-   */
   get externalResearchPercentage(): number {
-    return this.isExternalResearchProject ? 0 : parseFloat(this.percentage.toString()) || 0;
+    if (!this.isExternalResearchProject) {
+      return parseFloat(this.percentage.toString()) || 0;
+    }
+
+    return this.calculateEffectiveSponsorshipPercentage(
+      this.externalResearchTotalCost,
+      this.externalResearchSponsorshipByAPU,
+    );
   }
 
-  /**
-   * Get sponsorship amount by APU for External Research - always 0
-   */
   get externalResearchSponsorshipByAPU(): number {
-    return this.isExternalResearchProject ? 0 : this.externalSponsorshipAmountByAPU;
-  }
-
-  /**
-   * Get sponsored by value for External Research - always "Government Sector"
-   */
-  get externalSponsoredByValue(): string {
-    return this.isExternalResearchProject
-      ? 'Government Sector'
-      : this.form.get('externalSponsoredBy')?.value || '';
+    return this.externalSponsorshipAmountByAPU;
   }
 
   /**
    * Calculate Sponsorship Amount by APU using the formula:
-   * A = min((T × P / 100), T - E)
+   * A = T - E for external research.
+   * A = min(T × P / 100, T - E) for non-research local costing.
+   * A = min((T × P / 100), T - E) for other paths.
    * where T = Total Amount, P = Percentage, E = Sponsored Amount by External
    */
   calculateSponsorshipAmountByAPU(sponsorshipFieldName: string): number {
     const percentage = parseFloat(this.percentage.toString()) || 0;
-    const sponsoredAmountExternal = parseFloat(this.form.get(sponsorshipFieldName)?.value) || 0;
+    const sponsoredAmountExternal = this.getNonNegativeFormAmount(sponsorshipFieldName);
 
     // Get the corresponding breakdown type to calculate total
     let breakdownType: 'research' | 'external-research' | 'local' = 'research';
@@ -913,10 +894,23 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     }
 
     const totalAmount = this.calculateBreakdownTotal(breakdownType);
+    const remainingAmount = Math.max(totalAmount - sponsoredAmountExternal, 0);
+
+    if (breakdownType === 'external-research') {
+      if (!this.hasFormAmountInput(sponsorshipFieldName)) {
+        return 0;
+      }
+
+      return remainingAmount;
+    }
+
+    if (this.isNonResearchCostingBreakdown(breakdownType)) {
+      const regionSponsorshipAmount = (totalAmount * percentage) / 100;
+      return Math.max(0, Math.min(regionSponsorshipAmount, remainingAmount));
+    }
 
     // Formula: A = min((T × P / 100), T - E), with minimum value of 0
     const percentageAmount = (totalAmount * percentage) / 100;
-    const remainingAmount = totalAmount - sponsoredAmountExternal;
 
     return Math.max(0, Math.min(percentageAmount, remainingAmount));
   }
@@ -931,7 +925,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     breakdownType: 'research' | 'external-research' | 'local',
   ): number {
     const totalAmount = this.calculateBreakdownTotal(breakdownType);
-    const sponsoredAmountExternal = parseFloat(this.form.get(sponsorshipFieldName)?.value) || 0;
+    const sponsoredAmountExternal = this.getNonNegativeFormAmount(sponsorshipFieldName);
     const sponsorshipAmountByAPU = this.calculateSponsorshipAmountByAPU(sponsorshipFieldName);
     const cappedSponsorshipAmount = this.getCappedSponsorshipAmount(sponsorshipAmountByAPU);
 
@@ -939,6 +933,33 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     const costBorneByApplicant = totalAmount - sponsoredAmountExternal - cappedSponsorshipAmount;
 
     return Math.max(0, costBorneByApplicant);
+  }
+
+  private isNonResearchCostingBreakdown(
+    breakdownType: 'research' | 'external-research' | 'local',
+  ): boolean {
+    return this.researchType === 'non-research' && breakdownType === 'local';
+  }
+
+  private calculateEffectiveSponsorshipPercentage(
+    totalAmount: number,
+    sponsorshipAmount: number,
+  ): number {
+    if (totalAmount <= 0) {
+      return 0;
+    }
+
+    return Math.round((sponsorshipAmount / totalAmount) * 10000) / 100;
+  }
+
+  private getNonNegativeFormAmount(controlName: string): number {
+    const amount = parseFloat(this.form.get(controlName)?.value) || 0;
+    return Math.max(amount, 0);
+  }
+
+  private hasFormAmountInput(controlName: string): boolean {
+    const value = this.form.get(controlName)?.value;
+    return value !== null && value !== undefined && String(value).trim() !== '';
   }
 
   openBreakdownModal(type: 'research' | 'external-research' | 'local', index?: number) {

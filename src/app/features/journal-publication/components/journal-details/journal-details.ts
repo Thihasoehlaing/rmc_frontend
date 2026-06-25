@@ -185,7 +185,7 @@ export class JournalDetails implements OnInit, OnDestroy {
       projectAccountCode: [''],
       externalProjectAccountCode: [''],
       totalRM: [{ value: 0, disabled: true }],
-      sponsoredAmountExternal: [{ value: 0, disabled: false }],
+      sponsoredAmountExternal: [{ value: '', disabled: false }],
       sponsoredBy: [''],
       sponsorshipPercentage: [{ value: 0, disabled: true }],
       sponsorshipAmountAPU: [{ value: 0, disabled: true }],
@@ -553,23 +553,54 @@ export class JournalDetails implements OnInit, OnDestroy {
     externalSponsorship: number,
     scopusQuartile: string,
   ) {
-    let percentage = 0;
-    if (scopusQuartile === 'Q1' || scopusQuartile === 'Q2') percentage = 100;
-    else if (scopusQuartile === 'Q3') percentage = 50;
+    const remainingAmount = this.getRemainingAfterExternal(totalCost, externalSponsorship);
+    let apuFinal = 0;
 
-    let hiddenPercentageBridge = percentage / 100;
+    if (scopusQuartile === 'Q1' || scopusQuartile === 'Q2') {
+      apuFinal = remainingAmount;
+    } else if (scopusQuartile === 'Q3') {
+      apuFinal = Math.min(totalCost * 0.5, remainingAmount);
+    }
 
-    let apuBase = Math.min(totalCost * hiddenPercentageBridge, 5000);
-    let remainingAmount = Math.max(totalCost - externalSponsorship, 0);
-    let apuFinal = Math.min(apuBase, remainingAmount);
-
-    let applicantCost = Math.max(totalCost - externalSponsorship - apuFinal, 0);
+    const applicantCost = Math.max(remainingAmount - apuFinal, 0);
 
     return {
-      sponsorshipPercentage: percentage,
+      sponsorshipPercentage: this.calculateEffectiveApuPercentage(totalCost, apuFinal),
       apuSponsorshipAmount: apuFinal,
       applicantCost: applicantCost,
     };
+  }
+
+  private getRemainingAfterExternal(totalRM: number, externalSponsorship: number): number {
+    return Math.max(totalRM - externalSponsorship, 0);
+  }
+
+  private calculateEffectiveApuPercentage(totalRM: number, apuSponsorshipAmount: number): number {
+    if (totalRM <= 0) {
+      return 0;
+    }
+
+    return this.roundAmount((apuSponsorshipAmount / totalRM) * 100);
+  }
+
+  private hasExternalSponsorshipInput(): boolean {
+    const value = this.form.get('sponsoredAmountExternal')?.value;
+    return value !== null && value !== undefined && String(value).trim() !== '';
+  }
+
+  private roundAmount(amount: number): number {
+    return Math.round(amount * 100) / 100;
+  }
+
+  private clearControlError(controlName: string, errorKey: string): void {
+    const control = this.form.get(controlName);
+    const errors = control?.errors;
+    if (!control || !errors?.[errorKey]) {
+      return;
+    }
+
+    delete errors[errorKey];
+    control.setErrors(Object.keys(errors).length ? errors : null);
   }
 
   private normalizeAmount(value: unknown): number | null {
@@ -605,42 +636,19 @@ export class JournalDetails implements OnInit, OnDestroy {
     // A) External Research Project
     // ──────────────────────────────────────────────────────────────
     if (pType === 'external-research') {
-      // Validate "Sponsored By" field
       if (manualExternal > 0) {
         this.form.get('sponsoredBy')?.setValidators([Validators.required]);
       } else {
         this.form.get('sponsoredBy')?.clearValidators();
       }
       this.form.get('sponsoredBy')?.updateValueAndValidity({ emitEvent: false });
+      this.clearControlError('sponsoredAmountExternal', 'maxExceeded');
 
-      // Validate external amount doesn't exceed total
-      const extAmountCtrl = this.form.get('sponsoredAmountExternal');
-      if (extAmountCtrl) {
-        if (manualExternal > totalRM && totalRM >= 0) {
-          extAmountCtrl.setErrors({ ...extAmountCtrl.errors, maxExceeded: true });
-        } else {
-          const errors = extAmountCtrl.errors;
-          if (errors) {
-            delete errors['maxExceeded'];
-            extAmountCtrl.setErrors(Object.keys(errors).length ? errors : null);
-          }
-        }
-      }
-
-      // Calculate remaining balance
-      const remainingBalance = Math.max(totalRM - manualExternal, 0);
-
-      // For Q1, Q2, Q3: 100% sponsorship
-      if (q === 'Q1' || q === 'Q2' || q === 'Q3') {
-        spPercent = 100;
-        spAPU = remainingBalance;
-        applicantCost = 0;
-      } else {
-        // No quartile selected or invalid quartile
-        spPercent = 0;
-        spAPU = 0;
-        applicantCost = remainingBalance;
-      }
+      spAPU = this.hasExternalSponsorshipInput()
+        ? this.getRemainingAfterExternal(totalRM, manualExternal)
+        : 0;
+      spPercent = this.calculateEffectiveApuPercentage(totalRM, spAPU);
+      applicantCost = 0;
     }
     // ──────────────────────────────────────────────────────────────
     // C) Non-Research Project
@@ -654,20 +662,16 @@ export class JournalDetails implements OnInit, OnDestroy {
       }
       this.form.get('sponsoredBy')?.updateValueAndValidity({ emitEvent: false });
 
-      // Calculate remaining balance
-      const remainingBalance = Math.max(totalRM - manualExternal, 0);
+      const remainingBalance = this.getRemainingAfterExternal(totalRM, manualExternal);
 
-      // Q1 or Q2: 100% sponsorship
       if (q === 'Q1' || q === 'Q2') {
-        spPercent = 100;
         spAPU = remainingBalance;
+        spPercent = this.calculateEffectiveApuPercentage(totalRM, spAPU);
         applicantCost = 0;
-      }
-      // D) Q3: 50% sponsorship
-      else if (q === 'Q3') {
-        spPercent = 50;
-        spAPU = remainingBalance * 0.5;
-        applicantCost = remainingBalance * 0.5;
+      } else if (q === 'Q3') {
+        spAPU = Math.min(totalRM * 0.5, remainingBalance);
+        spPercent = this.calculateEffectiveApuPercentage(totalRM, spAPU);
+        applicantCost = Math.max(remainingBalance - spAPU, 0);
       }
       // No quartile or invalid quartile
       else {

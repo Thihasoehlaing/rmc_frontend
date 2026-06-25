@@ -23,7 +23,7 @@
           </div>
 
           <div class="form-field location-selection-field">
-            <label class="form-label is-required">Select Local or Overseas</label>
+            <label class="form-label is-required">Select Conference Venue</label>
             <div class="radio-field">
               <label class="radio-field__option">
                 <input type="radio" value="klang-valley" formControlName="localOrOverseas" />
@@ -36,10 +36,6 @@
               <label class="radio-field__option">
                 <input type="radio" value="overseas" formControlName="localOrOverseas" />
                 <span>Overseas</span>
-              </label>
-              <label class="radio-field__option">
-                <input type="radio" value="not-required" formControlName="localOrOverseas" />
-                <span>Not Required</span>
               </label>
             </div>
             <app-note
@@ -522,34 +518,23 @@
                   <div class="row--2">
                     <div class="form-field">
                       <label class="form-label">Sponsored Amount by External (RM)</label>
-                      @if (isExternalResearchProject) {
-                        <input
-                          type="text"
-                          class="input--text"
-                          [value]="externalResearchTotalCost | number: '1.2-2'"
-                          readonly
-                        />
-                      } @else {
-                        <input
-                          type="number"
-                          class="input--text"
-                          formControlName="externalSponsoredAmountExternal"
-                        />
-                      }
+                      <input
+                        type="number"
+                        class="input--text"
+                        formControlName="externalSponsoredAmountExternal"
+                        min="0"
+                        step="any"
+                      />
                     </div>
                   </div>
                   <div class="row--2">
                     <div class="form-field">
                       <label class="form-label">Sponsored by</label>
-                      @if (isExternalResearchProject) {
-                        <input type="text" class="input--text" value="Government Sector" readonly />
-                      } @else {
-                        <input
-                          type="text"
-                          class="input--text"
-                          formControlName="externalSponsoredBy"
-                        />
-                      }
+                      <input
+                        type="text"
+                        class="input--text"
+                        formControlName="externalSponsoredBy"
+                      />
                     </div>
                   </div>
                 </div>
@@ -557,32 +542,24 @@
 
               <!-- APU Sponsorship Subsection -->
               <div class="sponsorship-subsection">
-                <span class="subsection-title"
-                  >Asia Pacific University of Technology & Innovation Sponsorship</span
-                >
+                <span class="subsection-title">APU Sponsorship</span>
                 <div class="subsection-fields-wrapper">
                   <div class="row--2">
                     <div class="form-field">
-                      <label class="form-label"
-                        >Sponsorship Percentage by Asia Pacific University of Technology &
-                        Innovation (%)</label
-                      >
+                      <label class="form-label">Sponsorship Percentage by APU (%)</label>
                       <input
                         type="text"
                         class="input--text"
                         [value]="externalResearchPercentage | number: '1.0-0'"
                         readonly
-                        aria-label="Sponsorship Percentage by Asia Pacific University of Technology & Innovation (Read Only)"
+                        aria-label="Sponsorship Percentage by APU (Read Only)"
                       />
                     </div>
                   </div>
                   <div class="row--2">
                     <!-- Sponsorship Amount by APU (Read Only) -->
                     <div class="form-field">
-                      <label class="form-label"
-                        >Sponsorship Amount by Asia Pacific University of Technology & Innovation
-                        (RM)</label
-                      >
+                      <label class="form-label">Sponsorship Amount by APU (RM)</label>
                       <input
                         type="text"
                         class="input--text"
@@ -591,7 +568,7 @@
                             | number: '1.2-2'
                         "
                         readonly
-                        aria-label="Sponsorship Amount by Asia Pacific University of Technology & Innovation (Read Only)"
+                        aria-label="Sponsorship Amount by APU (Read Only)"
                       />
                       <small class="tooltip-text">{{
                         isCapLimitTooltip(externalResearchSponsorshipByAPU)
@@ -638,18 +615,13 @@
         </section>
       }
 
-      @if (
-        (selectedLocalOrOverseas === 'klang-valley' ||
-          selectedLocalOrOverseas === 'local-except-kl' ||
-          selectedLocalOrOverseas === 'not-required') &&
-        researchType === 'non-research'
-      ) {
+      @if (selectedLocalOrOverseas && researchType === 'non-research') {
         <section class="card">
-          <app-custom-subheader title="Local Conference Costing"></app-custom-subheader>
+          <app-custom-subheader title="Non-Research Project Costing"></app-custom-subheader>
           <div class="card__content section-fields">
-            <!-- Detailed Breakdown for Local -->
+            <!-- Detailed Breakdown for Non-Research -->
             <div class="form-field">
-              <label class="form-label">Detailed Breakdown for Local</label>
+              <label class="form-label">Detailed Breakdown for Non-Research</label>
               <div class="costing-breakdown">
                 <div class="list-section-header">
                   <button
@@ -735,6 +707,8 @@
                         type="number"
                         class="input--text"
                         formControlName="localSponsoredAmountExternal"
+                        min="0"
+                        step="any"
                       />
                     </div>
                   </div>
@@ -748,31 +722,23 @@
               </div>
 
               <div class="sponsorship-subsection">
-                <span class="subsection-title"
-                  >Asia Pacific University of Technology & Innovation Sponsorship</span
-                >
+                <span class="subsection-title">APU Sponsorship</span>
                 <div class="subsection-fields-wrapper">
                   <div class="row--2">
                     <div class="form-field">
-                      <label class="form-label"
-                        >Sponsorship Percentage by Asia Pacific University of Technology &
-                        Innovation (%)</label
-                      >
+                      <label class="form-label">Sponsorship Percentage by APU (%)</label>
                       <input
                         type="text"
                         class="input--text"
                         [value]="percentage | number: '1.2-2'"
                         disabled
-                        aria-label="Sponsorship Percentage by Asia Pacific University of Technology & Innovation (Read Only)"
+                        aria-label="Sponsorship Percentage by APU (Read Only)"
                       />
                     </div>
                   </div>
                   <div class="row--2">
                     <div class="form-field">
-                      <label class="form-label"
-                        >Sponsorship Amount by Asia Pacific University of Technology & Innovation
-                        (RM)</label
-                      >
+                      <label class="form-label">Sponsorship Amount by APU (RM)</label>
                       <input
                         type="text"
                         class="input--text"
@@ -780,7 +746,7 @@
                           getCappedSponsorshipAmount(localSponsorshipAmountByAPU) | number: '1.2-2'
                         "
                         disabled
-                        aria-label="Sponsorship Amount by Asia Pacific University of Technology & Innovation (Read Only)"
+                        aria-label="Sponsorship Amount by APU (Read Only)"
                       />
                       <small class="tooltip-text">{{
                         isCapLimitTooltip(localSponsorshipAmountByAPU)

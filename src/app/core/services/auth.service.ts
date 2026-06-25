@@ -210,7 +210,7 @@ export class AuthService {
     // in-memory DUMMY_USERS array so no sensitive data lives in sessionStorage.
     const storedUsername = sessionStorage.getItem(this.LEGACY_SESSION_KEY);
     if (storedUsername) {
-      const user = DUMMY_USERS.find(u => u.username === storedUsername) ?? null;
+      const user = DUMMY_USERS.find((u) => u.username === storedUsername) ?? null;
       this._currentUser.set(user);
     }
   }
@@ -249,45 +249,36 @@ export class AuthService {
     localStorage.removeItem(this.TOKEN_KEY);
     localStorage.removeItem(this.USER_KEY);
 
-    return this.http
-      .post<ApuTokenResponse>(`${environment.authUrl}/token`, { code })
-      .pipe(
-        catchError(error =>
-          throwError(() =>
-            this.createAuthError('APU token exchange failed', error),
+    return this.http.post<ApuTokenResponse>(`${environment.authUrl}/token`, { code }).pipe(
+      catchError((error) =>
+        throwError(() => this.createAuthError('APU token exchange failed', error)),
+      ),
+      tap((response) => this.storeToken(response)),
+      switchMap(() =>
+        this.checkAuthentication().pipe(
+          catchError((error) =>
+            throwError(() => this.createAuthError('RMC authorization check failed', error)),
           ),
         ),
-        tap(response => this.storeToken(response)),
-        switchMap(() =>
-          this.checkAuthentication().pipe(
-            catchError(error =>
-              throwError(() =>
-                this.createAuthError('RMC authorization check failed', error),
-              ),
-            ),
-          ),
-        ),
-        tap(response => {
-          localStorage.setItem(
-            this.USER_KEY,
-            JSON.stringify(response.data.user),
+      ),
+      tap((response) => {
+        localStorage.setItem(this.USER_KEY, JSON.stringify(response.data.user));
+        if (!response.data.user.role) {
+          this.toastService.info(
+            'Your APU account is authenticated, but no RMC role has been assigned yet.',
           );
-          if (!response.data.user.role) {
-            this.toastService.info(
-              'Your APU account is authenticated, but no RMC role has been assigned yet.',
-            );
-          }
-        }),
-        map(response => this.mapCheckedUser(response.data.user)),
-        tap(user => {
-          this._currentUser.set(user);
-          sessionStorage.removeItem(this.LEGACY_SESSION_KEY);
-        }),
-        catchError(error => {
-          localStorage.removeItem(this.USER_KEY);
-          return throwError(() => error);
-        }),
-      );
+        }
+      }),
+      map((response) => this.mapCheckedUser(response.data.user)),
+      tap((user) => {
+        this._currentUser.set(user);
+        sessionStorage.removeItem(this.LEGACY_SESSION_KEY);
+      }),
+      catchError((error) => {
+        localStorage.removeItem(this.USER_KEY);
+        return throwError(() => error);
+      }),
+    );
   }
 
   loadProfile(): Observable<User> {
@@ -298,21 +289,18 @@ export class AuthService {
         context: new HttpContext().set(SHOW_API_SUCCESS, true),
       })
       .pipe(
-        tap(response => {
+        tap((response) => {
           if (!response.success || !response.data?.user) {
             throw new Error(response.message || 'Profile could not be loaded.');
           }
 
           this.toastService.success(response.message);
         }),
-        tap(response => {
-          localStorage.setItem(
-            this.USER_KEY,
-            JSON.stringify(response.data.user),
-          );
+        tap((response) => {
+          localStorage.setItem(this.USER_KEY, JSON.stringify(response.data.user));
         }),
-        map(response => this.mapCheckedUser(response.data.user)),
-        tap(user => this._currentUser.set(user)),
+        map((response) => this.mapCheckedUser(response.data.user)),
+        tap((user) => this._currentUser.set(user)),
       );
   }
 
@@ -345,12 +333,12 @@ export class AuthService {
 
   login(usernameOrEmail: string, password: string): boolean {
     const identifier = usernameOrEmail.trim().toLowerCase();
-    const user = DUMMY_USERS.find(
-      u =>
-        (u.username.toLowerCase() === identifier ||
-          u.email.toLowerCase() === identifier) &&
-        u.password === password
-    ) ?? null;
+    const user =
+      DUMMY_USERS.find(
+        (u) =>
+          (u.username.toLowerCase() === identifier || u.email.toLowerCase() === identifier) &&
+          u.password === password,
+      ) ?? null;
 
     this._currentUser.set(user);
     if (user) {
@@ -368,7 +356,7 @@ export class AuthService {
       return false;
     }
 
-    const user = DUMMY_USERS.find(u => u.username === username) ?? null;
+    const user = DUMMY_USERS.find((u) => u.username === username) ?? null;
 
     this._currentUser.set(user);
     if (user) {
@@ -382,11 +370,19 @@ export class AuthService {
 
   /** Clear the current session. */
   logout(): void {
+    const isTestingSession =
+      !!sessionStorage.getItem(this.LEGACY_SESSION_KEY) && !localStorage.getItem(this.TOKEN_KEY);
+
     this._currentUser.set(null);
     localStorage.removeItem(this.TOKEN_KEY);
     localStorage.removeItem(this.USER_KEY);
     this.removeLegacyAuthCache();
     sessionStorage.removeItem(this.LEGACY_SESSION_KEY);
+
+    if (isTestingSession) {
+      void this.router.navigateByUrl('/login');
+      return;
+    }
 
     const query = new URLSearchParams({ redirect_url: this.getRedirectUrl() });
     window.location.replace(`${environment.authUrl}/logout?${query.toString()}`);
@@ -399,7 +395,7 @@ export class AuthService {
 
   /** Expose demo accounts for display on the login page. */
   getDemoAccounts(): { username: string; password: string; label: string; groups: string }[] {
-    return DUMMY_USERS.map(u => ({
+    return DUMMY_USERS.map((u) => ({
       username: u.username,
       password: u.password ?? '',
       label: u.name,
@@ -409,7 +405,7 @@ export class AuthService {
 
   /** Returns all users as potential reviewers for assignment dropdowns. */
   getPotentialReviewers(): { id: string; name: string }[] {
-    return DUMMY_USERS.map(u => ({ id: u.id, name: u.name }));
+    return DUMMY_USERS.map((u) => ({ id: u.id, name: u.name }));
   }
 
   /**
@@ -419,15 +415,14 @@ export class AuthService {
    */
   getEligibleCoResearchers(): { id: string; name: string; department: string }[] {
     const currentId = this._currentUser()?.id;
-    return DUMMY_USERS
-      .filter(u =>
+    return DUMMY_USERS.filter(
+      (u) =>
         u.id !== currentId &&
         (u.groups.includes('full_time') || u.groups.includes('contract')) &&
         u.groups.includes('academic') &&
         !u.groups.includes('Reviewer') &&
-        !u.groups.includes('blocked_hos_rdig')
-      )
-      .map(u => ({ id: u.id, name: u.name, department: u.department }));
+        !u.groups.includes('blocked_hos_rdig'),
+    ).map((u) => ({ id: u.id, name: u.name, department: u.department }));
   }
 
   private storeToken(response: ApuTokenResponse): void {
@@ -441,20 +436,16 @@ export class AuthService {
   private checkAuthentication(): Observable<AuthCheckResponse> {
     const apiUrl = environment.apiUrl.replace(/\/$/, '');
 
-    return this.http
-      .get<AuthCheckResponse>(`${apiUrl}/api/auth/check`)
-      .pipe(
-        tap(response => {
-          if (!response.success || !response.data?.user) {
-            throw new Error(response.message || 'Authentication check failed.');
-          }
-        }),
-      );
+    return this.http.get<AuthCheckResponse>(`${apiUrl}/api/auth/check`).pipe(
+      tap((response) => {
+        if (!response.success || !response.data?.user) {
+          throw new Error(response.message || 'Authentication check failed.');
+        }
+      }),
+    );
   }
 
-  private mapCheckedUser(
-    checkedUser: AuthCheckResponse['data']['user'],
-  ): User {
+  private mapCheckedUser(checkedUser: AuthCheckResponse['data']['user']): User {
     const role = checkedUser.role ?? undefined;
 
     return {
@@ -515,9 +506,7 @@ export class AuthService {
       }
 
       if (error.status === 0) {
-        return new Error(
-          `${stage}: the service could not be reached from the browser.`,
-        );
+        return new Error(`${stage}: the service could not be reached from the browser.`);
       }
 
       return new Error(`${stage}: HTTP ${error.status}.`);

@@ -136,67 +136,6 @@
           </app-form-alert>
         }
 
-        <!-- DEV TEST START: Application Status Override -->
-        <div class="dev-test-panel">
-          <label class="dev-test-panel__label">DEV TEST: Application Status</label>
-          <select
-            [value]="workflowState().currentStatus"
-            (change)="onTestStatusChange($any($event.target).value)"
-            [disabled]="isViewOnly()"
-            class="dev-test-panel__select"
-          >
-            <option value="fill_application">fill_application</option>
-            <option value="pending_applicant_resubmission_hos">
-              pending_applicant_resubmission_hos
-            </option>
-            <option value="pending_applicant_resubmission_reviewers">
-              pending_applicant_resubmission_reviewers
-            </option>
-            <option value="pending_hos">pending_hos</option>
-            <option value="pending_hos_review">pending_hos_review</option>
-            <option value="rejected_hos">rejected_hos</option>
-            <option value="pending_rmc">pending_rmc</option>
-            <option value="pending_rmc_review">pending_rmc_review</option>
-            <option value="rejected_rmc">rejected_rmc</option>
-            <option value="pending_reviewers">pending_reviewers</option>
-            <option value="pending_rdig_chair">pending_rdig_chair</option>
-            <option value="rejected_rdig_chair">rejected_rdig_chair</option>
-            <option value="pending_vc">pending_vc</option>
-            <option value="rejected_vc">rejected_vc</option>
-            <option value="pending_ceo">pending_ceo</option>
-            <option value="rejected_ceo">rejected_ceo</option>
-            <option value="approved">approved</option>
-          </select>
-          <span class="dev-test-panel__note">(Live ABAC override for developer testing)</span>
-          <button
-            type="button"
-            (click)="toggleValidation()"
-            [disabled]="isViewOnly()"
-            class="validation-toggle"
-            [class.validation-toggle--off]="validationDisabled()"
-          >
-            {{
-              validationDisabled()
-                ? '⚠ Validation OFF — Click to Re-enable'
-                : '✓ Validation ON — Click to Disable'
-            }}
-          </button>
-          <button
-            type="button"
-            (click)="toggleBatchValidation()"
-            [disabled]="isViewOnly() && !batchValidationDisabled()"
-            class="validation-toggle"
-            [class.validation-toggle--off]="batchValidationDisabled()"
-          >
-            {{
-              batchValidationDisabled()
-                ? 'Batch Validation OFF — Click to Re-enable'
-                : 'Batch Validation ON — Click to Disable'
-            }}
-          </button>
-        </div>
-        <!-- DEV TEST END -->
-
         <!-- ── 1b. Score Summary (visible based on ABAC status + reviewers_version) ── -->
         @if (workflow.isScoreSummaryVisible()) {
           <app-score-summary [reviewer1Total]="reviewer1Total" [reviewer2Total]="reviewer2Total">

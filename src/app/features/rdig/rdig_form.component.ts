@@ -147,7 +147,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
 
   /** Tracks the live workflow state — persisted alongside form data */
   workflowState = signal<WorkflowState>({
-    currentStatus: 'fill_application',
+    currentStatus: 'draft',
     nextRoles: ['Applicant'],
     nextUsers: [],
     history: [],
@@ -656,22 +656,6 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
     });
   }
 
-  /**
-   * DEV TEST: Live override for applicationStatus (ABAC testing)
-   * Syncs the workflow.status signal and workflowState whenever the test field changes.
-   * Remove this method and the corresponding HTML when test is no longer needed.
-   */
-  onTestStatusChange(val: string): void {
-    const s = val as RdigStatus;
-    this.workflow.status.set(s);
-    this.workflowState.update((ws) => ({
-      ...ws,
-      currentStatus: s,
-      nextRoles: getNextRoles(s),
-    }));
-    this.workflow.currentUserCanAct.set(this.canCurrentUserActOnCurrentState());
-  }
-
   /** DEV ONLY — toggles validation bypass for testing navigation and submission. */
   toggleValidation(): void {
     this.validationDisabled.update((v) => !v);
@@ -805,7 +789,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
   /**
    * Push persisted workflow/version values into the workflow service signals.
    * Status is read from workflowState (set by patchFormFromSavedData or
-   * defaulting to 'fill_application' for new applications).
+   * defaulting to 'draft' for new applications).
    */
   private syncWorkflowFromForm(): void {
     const status = this.workflowState().currentStatus as RdigStatus;
@@ -838,7 +822,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
     const ownerByName = app.teamDetails?.leaderName && app.teamDetails.leaderName === user.name;
     const isOwner = !!(ownerById || ownerByName);
 
-    if ((wf.currentStatus === 'fill_application' || app.isDraft === true) && isOwner) return true;
+    if ((wf.currentStatus === 'draft' || app.isDraft === true) && isOwner) return true;
 
     if (nextUsers.includes(String(user.id))) return true;
 
@@ -1015,7 +999,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
 
     // Determine whether this is a brand-new application (not yet formally submitted
     // to any reviewer) or an in-progress application being partially saved.
-    const isNewApp = currentStatus === 'fill_application';
+    const isNewApp = currentStatus === 'draft';
 
     // For new (unsubmitted) apps: hide from everyone's inbox by clearing nextRoles.
     // For in-process apps (e.g. pending_applicant_resubmission_*): keep existing
@@ -1204,7 +1188,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
         }
 
         // First formal submission (applicant → HOS): register this app in the batch's applicationIds array.
-        if (currentStatus === 'fill_application' && batch && savedId != null) {
+        if (currentStatus === 'draft' && batch && savedId != null) {
           this.batchSvc.addApplicationId(batch.id, Number(savedId)).subscribe();
         }
 
@@ -1296,7 +1280,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
           recipientDepartment: appDepartment,
         });
         // Confirm submission to applicant on first submit only
-        if (currentStatus === 'fill_application') {
+        if (currentStatus === 'draft') {
           fire('APPLICATION_SUBMITTED_CONFIRMED', {
             recipientUserId: this.auth.currentUser()?.id,
             data: { route: null }, // This is strictly an FYI; strip the link

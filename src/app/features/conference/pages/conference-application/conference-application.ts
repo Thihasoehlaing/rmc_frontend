@@ -1,7 +1,18 @@
 import { Component, signal, computed, inject, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, FormControl, Validators } from '@angular/forms';
-import { StepIndicatorComponent, WizardStep, StepStatus } from '../../../../shared/components/step-indicator/step-indicator.component';
+import {
+  ReactiveFormsModule,
+  FormBuilder,
+  FormGroup,
+  FormArray,
+  FormControl,
+  Validators,
+} from '@angular/forms';
+import {
+  StepIndicatorComponent,
+  WizardStep,
+  StepStatus,
+} from '../../../../shared/components/step-indicator/step-indicator.component';
 import { FormWizardNavComponent } from '../../../../shared/components/form-wizard-nav/form-wizard-nav.component';
 import { ConferenceGuidelinesModalComponent } from '../../components/conference-guidelines-modal/conference-guidelines-modal.component';
 import { FormMainTitleComponent } from '../../../../shared/components/form-main-title/form-main-title.component';
@@ -29,7 +40,7 @@ import { GuidelineContext } from '../../../../shared/components/form-main-title/
     AuthorDetailsFormComponent,
     SupportingDocumentsFormComponent,
     DeclarationFormComponent,
-    ReviewBlockComponent
+    ReviewBlockComponent,
   ],
   template: `
     <div class="conference-wizard application-form-page">
@@ -39,12 +50,14 @@ import { GuidelineContext } from '../../../../shared/components/form-main-title/
         modalTitle="Guidelines for Applicants"
         [guidelineContext]="guidelineContext"
         [customModal]="true"
-        (helpClick)="openGuidelines()">
+        (helpClick)="openGuidelines()"
+      >
       </app-form-main-title>
 
       <app-conference-guidelines-modal
         #guidelinesModal
-        (closed)="conferenceFormTitle.onGuidelinesClosed()">
+        (closed)="conferenceFormTitle.onGuidelinesClosed()"
+      >
       </app-conference-guidelines-modal>
 
       <app-step-indicator
@@ -52,32 +65,9 @@ import { GuidelineContext } from '../../../../shared/components/form-main-title/
         [steps]="wizardSteps"
         [stepStatuses]="stepStatuses()"
         [submitAttempted]="submitAttempted()"
-        (stepClick)="goToStep($event)">
+        (stepClick)="goToStep($event)"
+      >
       </app-step-indicator>
-
-      <!-- DEV TEST START: Application Status Override -->
-      <div class="dev-test-override application-form-dev-tools">
-        <label class="dev-test-override__label application-form-dev-tools__label">DEV TEST: Application Status</label>
-        <select
-          [formControl]="fc('metadata.applicationStatus')"
-          (change)="onTestStatusChange($any($event.target).value)"
-          class="dev-test-override__select input--select application-form-dev-tools__control">
-          <option value="normal_application">normal_application</option>
-          <option value="hos_application">hos_application</option>
-          <option value="hos_request_resubmission">hos_request_resubmission</option>
-          <option value="rmc_request_resubmission">rmc_request_resubmission</option>
-          <option value="hos_pending">hos_pending</option>
-          <option value="hos_reject">hos_reject</option>
-          <option value="rmc_pending">rmc_pending</option>
-          <option value="rmc_reject">rmc_reject</option>
-          <option value="vc_pending">vc_pending</option>
-          <option value="vc_reject">vc_reject</option>
-          <option value="hr_pending">hr_pending</option>
-          <option value="hr_reject">hr_reject</option>
-          <option value="Approved">Approved</option>
-        </select>
-        <span class="dev-test-override__hint">(Live ABAC override for developer testing)</span>
-      </div>
 
       <!-- Applicant Details Section -->
       <div class="applicant-details application-form-surface">
@@ -90,7 +80,8 @@ import { GuidelineContext } from '../../../../shared/components/form-main-title/
               class="input--text input--disabled-readonly"
               formControlName="applicantName"
               placeholder="Ex: Jessica Teh Sze Hui"
-              readonly>
+              readonly
+            />
           </div>
           <div class="detail-field">
             <label class="detail-label is-required">Applicant Email</label>
@@ -99,7 +90,8 @@ import { GuidelineContext } from '../../../../shared/components/form-main-title/
               class="input--text input--disabled-readonly"
               formControlName="email"
               placeholder="TPXXXXXX@mail.apu.edu.my"
-              readonly>
+              readonly
+            />
           </div>
           <div class="detail-field">
             <label class="detail-label is-required">Applicant School / Department</label>
@@ -108,7 +100,8 @@ import { GuidelineContext } from '../../../../shared/components/form-main-title/
               class="input--text input--disabled-readonly"
               formControlName="schoolName"
               placeholder="Ex: School of Culinary Arts and Hospitality"
-              readonly>
+              readonly
+            />
           </div>
         </form>
       </div>
@@ -116,78 +109,92 @@ import { GuidelineContext } from '../../../../shared/components/form-main-title/
       <!-- Main Form Section with Shadow -->
       <div class="main-section application-form-content">
         <!-- Comment Toggle Buttons (shown per ABAC status) -->
-        @if (workflow.showHosToggle() || workflow.showRmcToggle() ||
-             workflow.showVcToggle() || workflow.showHrToggle()) {
+        @if (
+          workflow.showHosToggle() ||
+          workflow.showRmcToggle() ||
+          workflow.showVcToggle() ||
+          workflow.showHrToggle()
+        ) {
           <div class="comment-toggle-bar">
-
             @if (workflow.showHosToggle()) {
-              <button type="button"
+              <button
+                type="button"
                 class="btn btn--comment-toggle"
                 [class.btn--comment-toggle-active]="showHosComments()"
-                (click)="toggleHosComments()">
+                (click)="toggleHosComments()"
+              >
                 <span class="material-icons">supervisor_account</span>
                 {{ showHosComments() ? 'Hide HOS Comments' : 'HOS Comments' }}
               </button>
             }
 
             @if (workflow.showRmcToggle()) {
-              <button type="button"
+              <button
+                type="button"
                 class="btn btn--comment-toggle"
                 [class.btn--comment-toggle-active]="showRmcComments()"
-                (click)="toggleRmcComments()">
+                (click)="toggleRmcComments()"
+              >
                 <span class="material-icons">verified</span>
                 {{ showRmcComments() ? 'Hide RMC Comments' : 'RMC Comments' }}
               </button>
             }
 
             @if (workflow.showVcToggle()) {
-              <button type="button"
+              <button
+                type="button"
                 class="btn btn--comment-toggle"
                 [class.btn--comment-toggle-active]="showVcComments()"
-                (click)="toggleVcComments()">
+                (click)="toggleVcComments()"
+              >
                 <span class="material-icons">account_balance</span>
                 {{ showVcComments() ? 'Hide VC Comments' : 'VC Comments' }}
               </button>
             }
 
             @if (workflow.showHrToggle()) {
-              <button type="button"
+              <button
+                type="button"
                 class="btn btn--comment-toggle"
                 [class.btn--comment-toggle-active]="showHrComments()"
-                (click)="toggleHrComments()">
+                (click)="toggleHrComments()"
+              >
                 <span class="material-icons">people</span>
                 {{ showHrComments() ? 'Hide HR Comments' : 'HR Comments' }}
               </button>
             }
-
           </div>
         }
 
         <!-- Form Content -->
         <div class="wizard-content application-form-surface">
-          @switch(currentStep()) {
-            @case(1) {
+          @switch (currentStep()) {
+            @case (1) {
               <app-conference-details-form
                 [workflow]="workflow"
-                [isFormReadOnly]="workflow.isFormReadOnly()">
+                [isFormReadOnly]="workflow.isFormReadOnly()"
+              >
               </app-conference-details-form>
             }
-            @case(2) {
+            @case (2) {
               <app-author-details-form
                 [workflow]="workflow"
-                [isFormReadOnly]="workflow.isFormReadOnly()">
+                [isFormReadOnly]="workflow.isFormReadOnly()"
+              >
               </app-author-details-form>
             }
-            @case(3) {
+            @case (3) {
               <app-supporting-documents-form
                 [workflow]="workflow"
-                [isFormReadOnly]="workflow.isFormReadOnly()">
+                [isFormReadOnly]="workflow.isFormReadOnly()"
+              >
               </app-supporting-documents-form>
             }
-            @case(4) {
+            @case (4) {
               <app-declaration-form
                 [workflow]="workflow"
-                [isFormReadOnly]="workflow.isFormReadOnly()">
+                [isFormReadOnly]="workflow.isFormReadOnly()"
+              >
               </app-declaration-form>
             }
           }
@@ -203,7 +210,8 @@ import { GuidelineContext } from '../../../../shared/components/form-main-title/
                 icon="supervisor_account"
                 [visible]="true"
                 [readonly]="!workflow.isHosEditable()"
-                [commentControl]="fc('reviewComments.hosComment')">
+                [commentControl]="fc('reviewComments.hosComment')"
+              >
               </app-review-block>
             }
 
@@ -213,7 +221,8 @@ import { GuidelineContext } from '../../../../shared/components/form-main-title/
                 icon="verified"
                 [visible]="true"
                 [readonly]="!workflow.isRmcEditable()"
-                [commentControl]="fc('reviewComments.rmcComment')">
+                [commentControl]="fc('reviewComments.rmcComment')"
+              >
               </app-review-block>
             }
 
@@ -223,7 +232,8 @@ import { GuidelineContext } from '../../../../shared/components/form-main-title/
                 icon="account_balance"
                 [visible]="true"
                 [readonly]="!workflow.isVcEditable()"
-                [commentControl]="fc('reviewComments.vcComment')">
+                [commentControl]="fc('reviewComments.vcComment')"
+              >
               </app-review-block>
             }
 
@@ -233,7 +243,8 @@ import { GuidelineContext } from '../../../../shared/components/form-main-title/
                 icon="people"
                 [visible]="true"
                 [readonly]="!workflow.isHrEditable()"
-                [commentControl]="fc('reviewComments.hrComment')">
+                [commentControl]="fc('reviewComments.hrComment')"
+              >
               </app-review-block>
             }
           </div>
@@ -248,7 +259,8 @@ import { GuidelineContext } from '../../../../shared/components/form-main-title/
           (prev)="previousStep()"
           (next)="nextStep()"
           (saveDraft)="saveDraft()"
-          (submitForm)="submitForm()">
+          (submitForm)="submitForm()"
+        >
         </app-form-wizard-nav>
       </div>
     </div>
@@ -268,35 +280,6 @@ import { GuidelineContext } from '../../../../shared/components/form-main-title/
         gap: var(--space-4);
         padding: var(--space-3) 0;
       }
-    }
-
-    /* DEV TEST: Application Status Override — temporary styling */
-    .dev-test-override {
-      display: flex;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: var(--space-2) var(--space-3);
-      margin: var(--space-4) 0 0;
-      padding: var(--space-2);
-      background: var(--color-warning-light);
-      border: 1px solid color-mix(in srgb, var(--color-warning) 35%, var(--color-surface));
-      border-radius: var(--radius-md);
-    }
-
-    .dev-test-override__label {
-      font-weight: var(--fw-bold);
-      color: var(--color-dev-text);
-    }
-
-    .dev-test-override__select {
-      padding: var(--space-1) var(--space-2);
-      border: 1px solid var(--color-dev-warning-border);
-      border-radius: var(--radius-sm);
-    }
-
-    .dev-test-override__hint {
-      color: var(--color-dev-text);
-      font-size: var(--fs-xs);
     }
 
     .applicant-details {
@@ -467,16 +450,15 @@ import { GuidelineContext } from '../../../../shared/components/form-main-title/
         transform: translateY(0);
       }
     }
-
-  `
+  `,
 })
 export class ConferenceApplication implements OnInit {
-
   workflow = inject(ConferenceWorkflowService);
   private auth = inject(AuthService);
   private route = inject(ActivatedRoute);
-  readonly guidelineContext: GuidelineContext =
-    this.route.snapshot.queryParamMap.has('id') ? 'existing-application' : 'new-application';
+  readonly guidelineContext: GuidelineContext = this.route.snapshot.queryParamMap.has('id')
+    ? 'existing-application'
+    : 'new-application';
   @ViewChild('guidelinesModal') guidelinesModal?: ConferenceGuidelinesModalComponent;
 
   currentStep = signal(1);
@@ -490,32 +472,34 @@ export class ConferenceApplication implements OnInit {
   showVcComments = signal(false);
   showHrComments = signal(false);
 
-  showAnyComments = computed(() =>
-    this.showHosComments() || this.showRmcComments() ||
-    this.showVcComments() || this.showHrComments()
+  showAnyComments = computed(
+    () =>
+      this.showHosComments() ||
+      this.showRmcComments() ||
+      this.showVcComments() ||
+      this.showHrComments(),
   );
 
   checkedSteps = new Set<number>();
-
 
   wizardSteps: WizardStep[] = [
     { label: 'Conference Details', icon: 'info' },
     { label: 'Author Details', icon: 'person' },
     { label: 'Documents', icon: 'description' },
-    { label: 'Declaration', icon: 'check_circle' }
+    { label: 'Declaration', icon: 'check_circle' },
   ];
 
   stepStatuses = signal<StepStatus[]>([
     { visited: false, valid: false, missingFields: ['Complete Conference Details'] },
     { visited: false, valid: false, missingFields: ['Complete Author Details'] },
     { visited: false, valid: false, missingFields: ['Upload required documents'] },
-    { visited: false, valid: false, missingFields: ['Complete Declaration'] }
+    { visited: false, valid: false, missingFields: ['Complete Declaration'] },
   ]);
 
   constructor(private fb: FormBuilder) {
     this.applicantDetailsForm = this.fb.group({
       metadata: this.fb.group({
-        applicationStatus: ['fill_application']
+        applicationStatus: ['draft'],
       }),
       applicantName: [''],
       email: [''],
@@ -525,8 +509,8 @@ export class ConferenceApplication implements OnInit {
         hosComment: ['', Validators.maxLength(500)],
         rmcComment: ['', Validators.maxLength(500)],
         vcComment: ['', Validators.maxLength(500)],
-        hrComment: ['', Validators.maxLength(500)]
-      })
+        hrComment: ['', Validators.maxLength(500)],
+      }),
     });
   }
 
@@ -535,24 +519,23 @@ export class ConferenceApplication implements OnInit {
     return this.applicantDetailsForm.get(path) as FormControl;
   }
 
-  /**
-   * DEV TEST: Live override for applicationStatus (ABAC testing)
-   * Syncs the workflow.status signal whenever the test field changes.
-   * Remove this method and the corresponding HTML when test is no longer needed.
-   */
-  onTestStatusChange(val: string): void {
-    this.workflow.status.set(val as any);
-  }
-
   openGuidelines(): void {
     this.guidelinesModal?.open();
   }
 
   // ── Comment toggles ────────────────────────────────────────────
-  toggleHosComments(): void { this.showHosComments.update(v => !v); }
-  toggleRmcComments(): void { this.showRmcComments.update(v => !v); }
-  toggleVcComments(): void { this.showVcComments.update(v => !v); }
-  toggleHrComments(): void { this.showHrComments.update(v => !v); }
+  toggleHosComments(): void {
+    this.showHosComments.update((v) => !v);
+  }
+  toggleRmcComments(): void {
+    this.showRmcComments.update((v) => !v);
+  }
+  toggleVcComments(): void {
+    this.showVcComments.update((v) => !v);
+  }
+  toggleHrComments(): void {
+    this.showHrComments.update((v) => !v);
+  }
 
   // ── Auto-fill applicant info + sync ABAC attributes to workflow ────
   ngOnInit(): void {
@@ -561,7 +544,7 @@ export class ConferenceApplication implements OnInit {
       this.applicantDetailsForm.patchValue({
         applicantName: user.name,
         email: user.email,
-        schoolName: user.department
+        schoolName: user.department,
       });
     }
 
@@ -572,7 +555,7 @@ export class ConferenceApplication implements OnInit {
     }
 
     // Listen for status changes
-    statusCtrl?.valueChanges.subscribe(val => {
+    statusCtrl?.valueChanges.subscribe((val) => {
       if (val) this.workflow.status.set(val as any);
     });
   }
@@ -598,7 +581,7 @@ export class ConferenceApplication implements OnInit {
 
   private markStepChecked(step: number) {
     this.checkedSteps.add(step);
-    this.stepStatuses.update(statuses => {
+    this.stepStatuses.update((statuses) => {
       const updated = [...statuses];
       if (updated[step - 1]) {
         updated[step - 1].visited = true;

@@ -1,17 +1,21 @@
-import { Component, inject, ViewChild, effect } from '@angular/core';
+import { Component, inject, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { JournalDetails } from './components/journal-details/journal-details';
 import { AuthorsDetails } from './components/authors-details/authors-details';
 import { DocumentsComponent } from './components/documents/documents';
 import { DeclarationComponent } from './components/declaration/declaration';
-import { StepIndicatorComponent, WizardStep, StepStatus } from '../../shared/components/step-indicator/step-indicator.component';
+import {
+  StepIndicatorComponent,
+  WizardStep,
+  StepStatus,
+} from '../../shared/components/step-indicator/step-indicator.component';
 import {
   FormMainTitleComponent,
   GuidelineContext,
 } from '../../shared/components/form-main-title/form-main-title.component';
 import { FormWizardNavComponent } from '../../shared/components/form-wizard-nav/form-wizard-nav.component';
-import { JournalWorkflowService, JournalStatus } from './services/journal-workflow.service';
+import { JournalWorkflowService } from './services/journal-workflow.service';
 import { ReviewBlockComponent } from '../rdig/components/review-block/review-block.component';
 import { JournalGuidelinesModalComponent } from './components/journal-guidelines-modal/journal-guidelines-modal.component';
 import { ActivatedRoute } from '@angular/router';
@@ -19,23 +23,34 @@ import { ActivatedRoute } from '@angular/router';
 @Component({
   selector: 'app-journal-publication-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, JournalDetails, AuthorsDetails, DocumentsComponent, DeclarationComponent, StepIndicatorComponent, FormMainTitleComponent, FormWizardNavComponent, ReviewBlockComponent, JournalGuidelinesModalComponent],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    JournalDetails,
+    AuthorsDetails,
+    DocumentsComponent,
+    DeclarationComponent,
+    StepIndicatorComponent,
+    FormMainTitleComponent,
+    FormWizardNavComponent,
+    ReviewBlockComponent,
+    JournalGuidelinesModalComponent,
+  ],
   templateUrl: './journal-publication-form.component.html',
   styleUrl: './journal-publication-form.component.scss',
 })
 export class JournalPublicationFormComponent {
   workflow = inject(JournalWorkflowService);
   private route = inject(ActivatedRoute);
-  readonly guidelineContext: GuidelineContext =
-    this.route.snapshot.queryParamMap.has('id') ? 'existing-application' : 'new-application';
-  statusControl = new FormControl<JournalStatus>('draft');
-
+  readonly guidelineContext: GuidelineContext = this.route.snapshot.queryParamMap.has('id')
+    ? 'existing-application'
+    : 'new-application';
   reviewComments = {
     hosComment: new FormControl(''),
     rmcComment: new FormControl(''),
     vcComment: new FormControl(''),
     hrComment: new FormControl(''),
-    ceoComment: new FormControl('')
+    ceoComment: new FormControl(''),
   };
 
   @ViewChild(JournalDetails) journalDetailsComponent?: JournalDetails;
@@ -49,14 +64,14 @@ export class JournalPublicationFormComponent {
     { label: 'Journal Details', icon: 'article' },
     { label: 'Authors Details', icon: 'group' },
     { label: 'Upload Supporting Documents & Manuscript Details', icon: 'upload_file' },
-    { label: 'Declaration', icon: 'verified' }
+    { label: 'Declaration', icon: 'verified' },
   ];
 
   stepStatuses: StepStatus[] = [
     { visited: false, valid: true, missingFields: [] },
     { visited: false, valid: false, missingFields: ['Complete Authors Details'] },
     { visited: false, valid: false, missingFields: ['Complete Supporting Documents'] },
-    { visited: false, valid: false, missingFields: ['Complete Declaration'] }
+    { visited: false, valid: false, missingFields: ['Complete Declaration'] },
   ];
 
   // Track form valid states
@@ -64,30 +79,11 @@ export class JournalPublicationFormComponent {
     1: false,
     2: false,
     3: false,
-    4: false
+    4: false,
   };
 
   submitAttempted = false;
   selectedCommentSection: 'hos' | 'rmc' | 'vc' | 'hr' | 'ceo' | null = null;
-
-  constructor() {
-    // Sync workflow status changes to the form control
-    effect(() => {
-      const status = this.workflow.status();
-      if (this.statusControl.value !== status) {
-        this.statusControl.setValue(status, { emitEvent: false });
-      }
-    });
-
-    // Sync form control changes to workflow
-    this.statusControl.valueChanges.subscribe((newStatus) => {
-      if (newStatus) {
-        this.workflow.status.set(newStatus as JournalStatus);
-        // Reset selected comment section when status changes
-        this.selectedCommentSection = null;
-      }
-    });
-  }
 
   validateCurrentStep(markAsTouched: boolean = true): boolean {
     let isValid = true;
@@ -117,7 +113,7 @@ export class JournalPublicationFormComponent {
         }
         break;
     }
-    
+
     this.formValid[this.currentStep] = isValid;
     return isValid;
   }
@@ -129,7 +125,9 @@ export class JournalPublicationFormComponent {
     this.stepStatuses[this.currentStep - 1] = {
       visited: true,
       valid: this.formValid[this.currentStep] || false,
-      missingFields: this.formValid[this.currentStep] ? [] : [this.getStepMissingLabel(this.currentStep)]
+      missingFields: this.formValid[this.currentStep]
+        ? []
+        : [this.getStepMissingLabel(this.currentStep)],
     };
 
     this.currentStep = stepIndex;
@@ -141,7 +139,9 @@ export class JournalPublicationFormComponent {
     this.formValid[stepNumber] = isValid;
     if (this.stepStatuses[stepNumber - 1]) {
       this.stepStatuses[stepNumber - 1].valid = isValid;
-      this.stepStatuses[stepNumber - 1].missingFields = isValid ? [] : [this.getStepMissingLabel(stepNumber)];
+      this.stepStatuses[stepNumber - 1].missingFields = isValid
+        ? []
+        : [this.getStepMissingLabel(stepNumber)];
       this.stepStatuses = [...this.stepStatuses]; // Trigger change detection
     }
   }
@@ -184,7 +184,9 @@ export class JournalPublicationFormComponent {
     setTimeout(() => {
       this.isSaving = false;
       this.saveSuccess = true;
-      setTimeout(() => { this.saveSuccess = false; }, 3000);
+      setTimeout(() => {
+        this.saveSuccess = false;
+      }, 3000);
     }, 1000);
   }
 

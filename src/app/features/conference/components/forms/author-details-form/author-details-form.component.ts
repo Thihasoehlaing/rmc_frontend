@@ -410,6 +410,7 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
     if (!this.workflow) return true;
     const status = this.workflow.status();
     const allowedStatuses = [
+      'draft',
       'normal_application',
       'hos_application',
       'hos_request_resubmission',

@@ -2,7 +2,10 @@
 # RMC Frontend — Bitbucket Pipelines
 # Builds Angular app and deploys to S3 frontend buckets.
 #
-# Branch mapping: master→prod, dev→dev
+# Branch mapping:
+#   dev    → dev (lightweight build)
+#   master → staging (auto) → prod (manual)
+#
 # Account: 723108571698 | Region: ap-southeast-1
 #
 # Required Repository Variables:
@@ -16,7 +19,25 @@ pipelines:
   branches:
     master:
       - step:
+          name: Build & Deploy → staging
+          caches:
+            - node
+          script:
+            - npm ci
+            - npm run build -- --configuration=staging
+            - pipe: atlassian/aws-s3-deploy:1.1.0
+              variables:
+                AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+                AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+                AWS_DEFAULT_REGION: 'ap-southeast-1'
+                S3_BUCKET: 'rmc-frontend-staging'
+                LOCAL_PATH: 'dist/RMC_project/browser'
+                DELETE_FLAG: 'true'
+          artifacts:
+            - dist/**
+      - step:
           name: Build & Deploy → prod
+          trigger: manual
           caches:
             - node
           script:
@@ -40,7 +61,7 @@ pipelines:
             - node
           script:
             - npm ci
-            - npm run build -- --configuration=production
+            - npm run build -- --configuration=dev
             - pipe: atlassian/aws-s3-deploy:1.1.0
               variables:
                 AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
@@ -60,7 +81,7 @@ pipelines:
             - node
           script:
             - npm ci
-            - npm run build -- --configuration=production
+            - npm run build -- --configuration=dev
             - pipe: atlassian/aws-s3-deploy:1.1.0
               variables:
                 AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID

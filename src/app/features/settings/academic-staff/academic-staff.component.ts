@@ -1,11 +1,6 @@
+import { SubmissionsSearchComponent } from '../../../shared/components/submissions-search/submissions-search.component';
 import { CommonModule } from '@angular/common';
-import {
-  Component,
-  OnInit,
-  TrackByFunction,
-  inject,
-  signal,
-} from '@angular/core';
+import { Component, OnInit, TrackByFunction, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { finalize, forkJoin, switchMap, tap } from 'rxjs';
 
@@ -26,6 +21,8 @@ import {
   StaffRecord,
 } from './academic-staff.service';
 
+import { TableActionIconComponent } from '../../../shared/components/table-action-icon/table-action-icon.component';
+
 type DialogMode = 'create' | 'edit';
 type StatusFilter = '' | 'Active' | 'Inactive';
 
@@ -33,6 +30,8 @@ type StatusFilter = '' | 'Active' | 'Inactive';
   selector: 'app-academic-staff',
   standalone: true,
   imports: [
+    SubmissionsSearchComponent,
+    TableActionIconComponent,
     CommonModule,
     FormsModule,
     DataTableComponent,
@@ -42,10 +41,7 @@ type StatusFilter = '' | 'Active' | 'Inactive';
     TableSkeletonComponent,
   ],
   templateUrl: './academic-staff.component.html',
-  styleUrls: [
-    '../forms/forms.component.scss',
-    './academic-staff.component.scss',
-  ],
+  styleUrls: ['../forms/forms.component.scss', './academic-staff.component.scss'],
 })
 export class AcademicStaffComponent implements OnInit {
   private readonly academicStaffService = inject(AcademicStaffService);
@@ -99,10 +95,8 @@ export class AcademicStaffComponent implements OnInit {
     },
   ];
 
-  readonly rowTrackFn: TrackByFunction<unknown> = (
-    _index: number,
-    row: unknown,
-  ) => (row as AcademicStaffRecord).id;
+  readonly rowTrackFn: TrackByFunction<unknown> = (_index: number, row: unknown) =>
+    (row as AcademicStaffRecord).id;
 
   ngOnInit(): void {
     this.loadInitialData();
@@ -115,18 +109,13 @@ export class AcademicStaffComponent implements OnInit {
     this.academicStaffService
       .listDepartments()
       .pipe(
-        tap(response =>
-          this.departments.set(this.uniqueDepartments(response.data)),
-        ),
+        tap((response) => this.departments.set(this.uniqueDepartments(response.data))),
         switchMap(() => this.listRequest()),
         finalize(() => this.isLoading.set(false)),
       )
       .subscribe({
-        next: response => {
-          this.applyListResponse(
-            response.data.items,
-            response.data.pagination,
-          );
+        next: (response) => {
+          this.applyListResponse(response.data.items, response.data.pagination);
           this.toastService.success(response.message);
         },
         error: () => this.handleLoadError(),
@@ -140,12 +129,9 @@ export class AcademicStaffComponent implements OnInit {
     this.listRequest()
       .pipe(finalize(() => this.isLoading.set(false)))
       .subscribe({
-        next: response => {
+        next: (response) => {
           const pagination = response.data.pagination;
-          if (
-            pagination.total_pages > 0 &&
-            this.page() > pagination.total_pages
-          ) {
+          if (pagination.total_pages > 0 && this.page() > pagination.total_pages) {
             this.page.set(pagination.total_pages);
             this.loadAcademicStaff();
             return;
@@ -238,13 +224,10 @@ export class AcademicStaffComponent implements OnInit {
       })
       .pipe(finalize(() => this.isStaffLoading.set(false)))
       .subscribe({
-        next: response => {
+        next: (response) => {
           const options = [...response.data.items];
           const selected = this.selectedAcademicStaff();
-          if (
-            selected &&
-            !options.some(option => option.staff_id === selected.staff_id)
-          ) {
+          if (selected && !options.some((option) => option.staff_id === selected.staff_id)) {
             options.unshift(selected);
           }
           this.staffOptions.set(options);
@@ -274,22 +257,17 @@ export class AcademicStaffComponent implements OnInit {
     const request =
       mode === 'create'
         ? this.academicStaffService.create(payload)
-        : this.academicStaffService.update(
-            this.selectedAcademicStaff()!.id,
-            payload,
-          );
+        : this.academicStaffService.update(this.selectedAcademicStaff()!.id, payload);
 
     this.isSaving.set(true);
-    request
-      .pipe(finalize(() => this.isSaving.set(false)))
-      .subscribe({
-        next: () => {
-          this.dialogMode.set(null);
-          this.selectedAcademicStaff.set(null);
-          this.page.set(1);
-          this.loadAcademicStaff();
-        },
-      });
+    request.pipe(finalize(() => this.isSaving.set(false))).subscribe({
+      next: () => {
+        this.dialogMode.set(null);
+        this.selectedAcademicStaff.set(null);
+        this.page.set(1);
+        this.loadAcademicStaff();
+      },
+    });
   }
 
   openDeleteDialog(item: AcademicStaffRecord): void {
@@ -318,9 +296,7 @@ export class AcademicStaffComponent implements OnInit {
   }
 
   dialogTitle(): string {
-    return this.dialogMode() === 'create'
-      ? 'Add Academic Staff'
-      : 'Edit Academic Staff';
+    return this.dialogMode() === 'create' ? 'Add Academic Staff' : 'Edit Academic Staff';
   }
 
   initials(item: AcademicStaffRecord): string {
@@ -329,7 +305,7 @@ export class AcademicStaffComponent implements OnInit {
       .split(/\s+/)
       .filter(Boolean)
       .slice(0, 2)
-      .map(part => part.charAt(0).toUpperCase())
+      .map((part) => part.charAt(0).toUpperCase())
       .join('');
   }
 
@@ -338,16 +314,11 @@ export class AcademicStaffComponent implements OnInit {
   }
 
   pageStart(): number {
-    return this.totalItems() === 0
-      ? 0
-      : (this.page() - 1) * this.pageSize() + 1;
+    return this.totalItems() === 0 ? 0 : (this.page() - 1) * this.pageSize() + 1;
   }
 
   pageEnd(): number {
-    return Math.min(
-      this.pageStart() + this.academicStaff().length - 1,
-      this.totalItems(),
-    );
+    return Math.min(this.pageStart() + this.academicStaff().length - 1, this.totalItems());
   }
 
   private fetchAcademicStaff(id: number): void {
@@ -360,19 +331,17 @@ export class AcademicStaffComponent implements OnInit {
     })
       .pipe(
         tap(({ departments, staff }) => {
-          this.departments.set(
-            this.uniqueDepartments(departments.data),
-          );
+          this.departments.set(this.uniqueDepartments(departments.data));
           this.staffOptions.set(staff.data.items);
         }),
         switchMap(() => this.academicStaffService.get(id)),
         finalize(() => this.isDetailLoading.set(false)),
       )
       .subscribe({
-        next: detail => {
+        next: (detail) => {
           const item = detail.data;
           const options = [...this.staffOptions()];
-          if (!options.some(option => option.staff_id === item.staff_id)) {
+          if (!options.some((option) => option.staff_id === item.staff_id)) {
             options.unshift(item);
           }
 
@@ -397,9 +366,7 @@ export class AcademicStaffComponent implements OnInit {
       .pipe(finalize(() => this.isDetailLoading.set(false)))
       .subscribe({
         next: ({ departments, staff }) => {
-          this.departments.set(
-            this.uniqueDepartments(departments.data),
-          );
+          this.departments.set(this.uniqueDepartments(departments.data));
           this.staffOptions.set(staff.data.items);
         },
         error: () => {
@@ -435,9 +402,7 @@ export class AcademicStaffComponent implements OnInit {
     this.loadFailed.set(true);
   }
 
-  private uniqueDepartments(
-    departments: DepartmentRecord[],
-  ): DepartmentRecord[] {
+  private uniqueDepartments(departments: DepartmentRecord[]): DepartmentRecord[] {
     const unique = new Map<string, DepartmentRecord>();
     for (const department of departments) {
       const key = department.department_name.trim().toLowerCase();

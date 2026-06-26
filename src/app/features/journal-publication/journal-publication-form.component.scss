@@ -17,57 +17,6 @@
   }
 }
 
-.dev-test-override {
-  margin: var(--space-4) 0;
-  padding: var(--space-2);
-  background: var(--color-warning-light);
-  border: 1px solid color-mix(in srgb, var(--color-warning) 35%, var(--color-surface));
-  border-radius: var(--radius-md);
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-3);
-  align-items: center;
-  justify-content: flex-start;
-  width: 100%;
-}
-
-.dev-test-override__label {
-  font-weight: var(--fw-bold);
-  color: var(--color-warning-dark);
-}
-
-.dev-test-override__select {
-  margin-left: var(--space-3);
-  width: min(21.25rem, 100%);
-  padding: var(--space-1) var(--space-2);
-  border: 1px solid color-mix(in srgb, var(--color-warning) 35%, var(--color-surface));
-  border-radius: var(--radius-sm);
-  background: var(--color-surface);
-  color: var(--color-text);
-}
-
-.dev-test-override__note {
-  margin-left: var(--space-3);
-  color: var(--color-warning-dark);
-  font-size: 12px;
-}
-
-@media (max-width: 768px) {
-  .dev-test-override {
-    align-items: stretch;
-  }
-
-  .dev-test-override__select {
-    margin-left: 0;
-    width: 100%;
-  }
-
-  .dev-test-override__label,
-  .dev-test-override__note {
-    margin-left: 0;
-  }
-}
-
 .form-container {
   background: var(--color-surface);
   border: 1px solid var(--border-default);
@@ -81,12 +30,11 @@
   margin: 0;
   min-width: 0;
 
-
-.review-comments-section {
-  width: 100%;
-  min-width: 0;
-  box-sizing: border-box;
-}
+  .review-comments-section {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
   &:disabled {
     // All child inputs/selects/textareas/buttons are natively disabled by fieldset
     // Just ensure visual feedback
@@ -139,7 +87,9 @@
   cursor: pointer;
   transition: all var(--transition-fast);
 
-  .material-icons { font-size: 18px; }
+  .material-icons {
+    font-size: 18px;
+  }
 
   &:hover {
     border-color: var(--color-primary);
@@ -153,7 +103,9 @@
   color: var(--button-color-primary);
   border-color: var(--color-primary);
 
-  .material-icons { color: var(--button-color-primary); }
+  .material-icons {
+    color: var(--button-color-primary);
+  }
 
   &:hover {
     background: var(--color-primary-hover);
@@ -264,7 +216,7 @@
 
     li {
       margin-bottom: var(--space-2);
-      
+
       &::marker {
         color: var(--color-text-muted);
       }

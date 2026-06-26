@@ -34,13 +34,6 @@ export const adminSettingsRoutes: Routes = [
       import('./staff-access/staff-access.component').then(m => m.StaffAccessComponent),
   },
   {
-    path: 'external-project-data-entry',
-    loadComponent: () =>
-      import('./external-project-data-entry/external-project-data-entry.component').then(
-        m => m.ExternalProjectDataEntryComponent,
-      ),
-  },
-  {
     path: 'batch-sitting',
     canActivate: [permissionGuard],
     data: {
@@ -50,3 +43,4 @@ export const adminSettingsRoutes: Routes = [
       import('./batch-sitting/batch-sitting.component').then(m => m.BatchSittingComponent),
   },
 ];
+

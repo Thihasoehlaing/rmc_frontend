@@ -1,0 +1,13 @@
+<span
+  class="svg-icon-container"
+  [class.svg-icon-container--spinner]="icon.name === 'SVG_ICON_LOADING_SPINNER'"
+  [class.svg-icon-container--success]="icon.name === 'SVG_ICON_SUCCESS_CHECK'"
+  [class.svg-icon-container--trash]="icon.name === 'SVG_ICON_TRASH'"
+  [style.width]="size"
+  [style.height]="size"
+  [attr.aria-hidden]="label ? null : 'true'"
+  [attr.aria-label]="label || null"
+  [attr.role]="label ? 'img' : null"
+  [innerHTML]="svgMarkup"
+>
+</span>

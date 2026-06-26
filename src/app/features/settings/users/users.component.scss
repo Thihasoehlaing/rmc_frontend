@@ -260,3 +260,9 @@
     text-align: center;
   }
 }
+
+.users-table {
+  width: 100%;
+  min-width: 0;
+  margin-bottom: var(--space-4);
+}

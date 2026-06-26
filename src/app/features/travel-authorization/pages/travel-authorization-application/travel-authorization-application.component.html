@@ -4,7 +4,8 @@
     title="Travel Authorization"
     modalTitle="Travel Authorization Guidelines"
     [guidelineContext]="guidelineContext"
-    endpoint="/api/guidelines/travel-authorization">
+    endpoint="/api/guidelines/travel-authorization"
+  >
   </app-form-main-title>
 
   <!-- DEV TEST START: Travel Status Override -->
@@ -13,7 +14,8 @@
     <select
       [value]="travelStatus()"
       (change)="onTestStatusChange($any($event.target).value)"
-      class="dev-test-override__select">
+      class="dev-test-override__select"
+    >
       @for (status of travelStatusOptions; track status.value) {
         <option [value]="status.value">{{ status.label }}</option>
       }
@@ -22,73 +24,95 @@
   </div>
 
   <!-- Comment Toggle Buttons -->
-  @if (showHosToggle() || showRmcToggle() || showVcToggle() || showHrToggle() || showCeoToggle() || showFinanceToggle() || showCooToggle()) {
+  @if (
+    showHosToggle() ||
+    showRmcToggle() ||
+    showVcToggle() ||
+    showHrToggle() ||
+    showCeoToggle() ||
+    showFinanceToggle() ||
+    showCooToggle()
+  ) {
     <div class="comment-toggle-bar">
       @if (showHosToggle()) {
-        <button type="button"
+        <button
+          type="button"
           class="btn btn--comment-toggle"
           [class.btn--comment-toggle-active]="showHosComments()"
-          (click)="toggleHosComments()">
+          (click)="toggleHosComments()"
+        >
           <span class="material-icons">supervisor_account</span>
           {{ showHosComments() ? 'Hide HOS Comments' : 'HOS Comments' }}
         </button>
       }
 
       @if (showRmcToggle()) {
-        <button type="button"
+        <button
+          type="button"
           class="btn btn--comment-toggle"
           [class.btn--comment-toggle-active]="showRmcComments()"
-          (click)="toggleRmcComments()">
+          (click)="toggleRmcComments()"
+        >
           <span class="material-icons">verified</span>
           {{ showRmcComments() ? 'Hide RMC Comments' : 'RMC Comments' }}
         </button>
       }
 
       @if (showVcToggle()) {
-        <button type="button"
+        <button
+          type="button"
           class="btn btn--comment-toggle"
           [class.btn--comment-toggle-active]="showVcComments()"
-          (click)="toggleVcComments()">
+          (click)="toggleVcComments()"
+        >
           <span class="material-icons">account_balance</span>
           {{ showVcComments() ? 'Hide VC Comments' : 'VC Comments' }}
         </button>
       }
 
       @if (showHrToggle()) {
-        <button type="button"
+        <button
+          type="button"
           class="btn btn--comment-toggle"
           [class.btn--comment-toggle-active]="showHrComments()"
-          (click)="toggleHrComments()">
+          (click)="toggleHrComments()"
+        >
           <span class="material-icons">people</span>
           {{ showHrComments() ? 'Hide HR Comments' : 'HR Comments' }}
         </button>
       }
 
       @if (showCeoToggle()) {
-        <button type="button"
+        <button
+          type="button"
           class="btn btn--comment-toggle"
           [class.btn--comment-toggle-active]="showCeoComments()"
-          (click)="toggleCeoComments()">
+          (click)="toggleCeoComments()"
+        >
           <span class="material-icons">person_3</span>
           {{ showCeoComments() ? 'Hide CEO Comments' : 'CEO Comments' }}
         </button>
       }
 
       @if (showFinanceToggle()) {
-        <button type="button"
+        <button
+          type="button"
           class="btn btn--comment-toggle"
           [class.btn--comment-toggle-active]="showFinanceComments()"
-          (click)="toggleFinanceComments()">
+          (click)="toggleFinanceComments()"
+        >
           <span class="material-icons">attach_money</span>
           {{ showFinanceComments() ? 'Hide Finance Comments' : 'Finance Comments' }}
         </button>
       }
 
       @if (showCooToggle()) {
-        <button type="button"
+        <button
+          type="button"
           class="btn btn--comment-toggle"
           [class.btn--comment-toggle-active]="showCooComments()"
-          (click)="toggleCooComments()">
+          (click)="toggleCooComments()"
+        >
           <span class="material-icons">business</span>
           {{ showCooComments() ? 'Hide COO Comments' : 'COO Comments' }}
         </button>
@@ -105,25 +129,17 @@
       <!-- Applicant Name -->
       <div class="form-field">
         <label for="applicantName" class="form-label">Applicant Name</label>
-        <input
-          id="applicantName"
-          type="text"
-          class="input--text"
-          formControlName="applicantName">
+        <input id="applicantName" type="text" class="input--text" formControlName="applicantName" />
         <app-validation-message
-          [control]="travelAuthForm.get('applicantName')"></app-validation-message>
+          [control]="travelAuthForm.get('applicantName')"
+        ></app-validation-message>
       </div>
 
       <!-- Staff ID -->
       <div class="form-field">
         <label for="staffId" class="form-label">Staff ID</label>
-        <input
-          id="staffId"
-          type="text"
-          class="input--text"
-          formControlName="staffId">
-        <app-validation-message
-          [control]="travelAuthForm.get('staffId')"></app-validation-message>
+        <input id="staffId" type="text" class="input--text" formControlName="staffId" />
+        <app-validation-message [control]="travelAuthForm.get('staffId')"></app-validation-message>
       </div>
     </div>
 
@@ -135,21 +151,20 @@
           id="functionalArea"
           [options]="functionalAreaOptions"
           [isMulti]="false"
-          formControlName="functionalArea"></app-searchable-dropdown>
+          formControlName="functionalArea"
+        ></app-searchable-dropdown>
         <app-validation-message
-          [control]="travelAuthForm.get('functionalArea')"></app-validation-message>
+          [control]="travelAuthForm.get('functionalArea')"
+        ></app-validation-message>
       </div>
 
       <!-- Staff Email -->
       <div class="form-field">
         <label for="staffEmail" class="form-label">Staff Email</label>
-        <input
-          id="staffEmail"
-          type="email"
-          class="input--text"
-          formControlName="staffEmail">
+        <input id="staffEmail" type="email" class="input--text" formControlName="staffEmail" />
         <app-validation-message
-          [control]="travelAuthForm.get('staffEmail')"></app-validation-message>
+          [control]="travelAuthForm.get('staffEmail')"
+        ></app-validation-message>
       </div>
     </div>
 
@@ -167,7 +182,8 @@
               name="travelType"
               value="external"
               class="radio-input"
-              formControlName="travelType">
+              formControlName="travelType"
+            />
             <span>External</span>
           </label>
           <label class="radio-wrapper">
@@ -176,12 +192,14 @@
               name="travelType"
               value="internal"
               class="radio-input"
-              formControlName="travelType">
+              formControlName="travelType"
+            />
             <span>Internal</span>
           </label>
         </div>
         <app-validation-message
-          [control]="travelAuthForm.get('travelType')"></app-validation-message>
+          [control]="travelAuthForm.get('travelType')"
+        ></app-validation-message>
       </div>
 
       <!-- Select Location -->
@@ -195,7 +213,8 @@
               name="location"
               value="overseas"
               class="radio-input"
-              formControlName="location">
+              formControlName="location"
+            />
             <span>Overseas</span>
           </label>
 
@@ -206,7 +225,8 @@
               name="location"
               value="local-except-klang-valley"
               class="radio-input"
-              formControlName="location">
+              formControlName="location"
+            />
             <span>Local (Except Klang Valley)</span>
           </label>
 
@@ -218,13 +238,13 @@
                 name="location"
                 value="klang-valley"
                 class="radio-input"
-                formControlName="location">
+                formControlName="location"
+              />
               <span>Klang Valley</span>
             </label>
           }
         </div>
-        <app-validation-message
-          [control]="travelAuthForm.get('location')"></app-validation-message>
+        <app-validation-message [control]="travelAuthForm.get('location')"></app-validation-message>
         @if (isExternalTravel && travelAuthForm.get('location')?.value === 'klang-valley') {
           <div class="warning-message">
             !! Events held within the Klang Valley are not eligible for claims
@@ -238,25 +258,19 @@
       <!-- Departure Date -->
       <div class="form-field">
         <label for="departureDate" class="form-label">Departure Date</label>
-        <input
-          id="departureDate"
-          type="date"
-          class="input--text"
-          formControlName="departureDate">
+        <input id="departureDate" type="date" class="input--text" formControlName="departureDate" />
         <app-validation-message
-          [control]="travelAuthForm.get('departureDate')"></app-validation-message>
+          [control]="travelAuthForm.get('departureDate')"
+        ></app-validation-message>
       </div>
 
       <!-- Return Date -->
       <div class="form-field">
         <label for="returnDate" class="form-label">Return Date</label>
-        <input
-          id="returnDate"
-          type="date"
-          class="input--text"
-          formControlName="returnDate">
+        <input id="returnDate" type="date" class="input--text" formControlName="returnDate" />
         <app-validation-message
-          [control]="travelAuthForm.get('returnDate')"></app-validation-message>
+          [control]="travelAuthForm.get('returnDate')"
+        ></app-validation-message>
       </div>
     </div>
 
@@ -271,24 +285,28 @@
           id="reasonForRequest"
           class="input--textarea"
           formControlName="reasonForRequest"
-          rows="4"></textarea>
+          rows="4"
+        ></textarea>
         <app-validation-message
-          [control]="travelAuthForm.get('reasonForRequest')"></app-validation-message>
+          [control]="travelAuthForm.get('reasonForRequest')"
+        ></app-validation-message>
       </div>
 
       <!-- Staff Participation -->
       <div class="form-field">
-        <label for="staffParticipation" class="form-label">Name of Asia Pacific University of Technology & Innovation Staff Participation</label>
+        <label for="staffParticipation" class="form-label"
+          >Name of Asia Pacific University of Technology & Innovation Staff Participation</label
+        >
         <app-searchable-dropdown
           id="staffParticipation"
           [options]="staffParticipationOptions"
           [isMulti]="true"
-          formControlName="staffParticipation"></app-searchable-dropdown>
-        <app-note
-          text="Maximum 20 Participants"
-          [isTooltip]="false"></app-note>
+          formControlName="staffParticipation"
+        ></app-searchable-dropdown>
+        <app-note text="Maximum 20 Participants" [isTooltip]="false"></app-note>
         <app-validation-message
-          [control]="travelAuthForm.get('staffParticipation')"></app-validation-message>
+          [control]="travelAuthForm.get('staffParticipation')"
+        ></app-validation-message>
       </div>
     </div>
 
@@ -299,9 +317,11 @@
         id="programmeLocation"
         type="text"
         class="input--text"
-        formControlName="programmeLocation">
+        formControlName="programmeLocation"
+      />
       <app-validation-message
-        [control]="travelAuthForm.get('programmeLocation')"></app-validation-message>
+        [control]="travelAuthForm.get('programmeLocation')"
+      ></app-validation-message>
     </div>
 
     <!-- Budget & Expenses Section -->
@@ -312,8 +332,15 @@
       <label class="form-label">Detailed Breakdown for External Research Project</label>
       <div class="costing-breakdown">
         <div class="list-section-header">
-          <span class="list-count">{{ expenses.length }} {{ expenses.length === 1 ? 'Entry' : 'Entries' }}</span>
-          <button type="button" class="btn btn-primary btn-sm" [disabled]="isFormReadOnly()" (click)="openExpenseModal()">
+          <span class="list-count"
+            >{{ expenses.length }} {{ expenses.length === 1 ? 'Entry' : 'Entries' }}</span
+          >
+          <button
+            type="button"
+            class="btn btn-primary btn-sm"
+            [disabled]="isFormReadOnly()"
+            (click)="openExpenseModal()"
+          >
             <span class="material-icons">add</span> Add Entry
           </button>
         </div>
@@ -324,7 +351,8 @@
               [columns]="externalBreakdownColumns"
               [rows]="getExternalBreakdownTableData()"
               [hoverable]="true"
-              [striped]="true">
+              [striped]="true"
+            >
               <ng-template #rowTemplate let-row let-i="index">
                 <tr>
                   <td class="col-no text-muted is-align-center">{{ row.index }}</td>
@@ -334,13 +362,23 @@
                   <td>{{ row.exchangeRate | number: '1.2-2' }}</td>
                   <td>{{ row.costInRM | number: '1.2-2' }}</td>
                   <td class="col-actions is-align-center">
-                    <button type="button" class="btn-icon btn-icon--edit" [disabled]="isFormReadOnly()"
-                      (click)="editExpense(i)" aria-label="Edit entry">
-                      <span class="material-icons">edit</span>
+                    <button
+                      type="button"
+                      class="btn-icon btn-icon--edit"
+                      [disabled]="isFormReadOnly()"
+                      (click)="editExpense(i)"
+                      aria-label="Edit entry"
+                    >
+                      <app-table-action-icon action="edit"></app-table-action-icon>
                     </button>
-                    <button type="button" class="btn-icon btn-icon--delete" [disabled]="isFormReadOnly()"
-                      (click)="removeExpense(i)" aria-label="Remove entry">
-                      <span class="material-icons">delete</span>
+                    <button
+                      type="button"
+                      class="btn-icon btn-icon--delete"
+                      [disabled]="isFormReadOnly()"
+                      (click)="removeExpense(i)"
+                      aria-label="Remove entry"
+                    >
+                      <app-table-action-icon action="delete"></app-table-action-icon>
                     </button>
                   </td>
                 </tr>
@@ -350,7 +388,10 @@
         } @else {
           <div class="empty-state">
             <span class="material-icons">receipt</span>
-            <p>No breakdown entries added yet. Click <strong>Add Entry</strong> to start adding items.</p>
+            <p>
+              No breakdown entries added yet. Click <strong>Add Entry</strong> to start adding
+              items.
+            </p>
           </div>
         }
       </div>
@@ -359,11 +400,15 @@
     <!-- Expense Entry Dialog Modal -->
     <app-dialog
       [isOpen]="isExpenseModalOpen"
-      [title]="editExpenseIndex !== null ? 'Edit External Research Project Breakdown Entry' : 'Add External Research Project Breakdown Entry'"
+      [title]="
+        editExpenseIndex !== null
+          ? 'Edit External Research Project Breakdown Entry'
+          : 'Add External Research Project Breakdown Entry'
+      "
       (close)="closeExpenseModal()"
-      width="700px">
+      width="700px"
+    >
       <form [formGroup]="expenseForm" (ngSubmit)="submitExpense()" class="expense-form-modal">
-
         <!-- Select Item Description -->
         <div class="form-field">
           <label for="description" class="form-label is-required">Select Item Description</label>
@@ -371,9 +416,11 @@
             id="description"
             [options]="expenseTypeOptions"
             [isMulti]="false"
-            formControlName="typeOfExpense"></app-searchable-dropdown>
+            formControlName="typeOfExpense"
+          ></app-searchable-dropdown>
           <app-validation-message
-            [control]="expenseForm.get('typeOfExpense')"></app-validation-message>
+            [control]="expenseForm.get('typeOfExpense')"
+          ></app-validation-message>
         </div>
 
         <!-- Vote Number & Cost in Foreign Currency -->
@@ -385,13 +432,17 @@
               type="text"
               class="input--text"
               placeholder="V29000"
-              formControlName="accountCode">
+              formControlName="accountCode"
+            />
             <app-validation-message
-              [control]="expenseForm.get('accountCode')"></app-validation-message>
+              [control]="expenseForm.get('accountCode')"
+            ></app-validation-message>
           </div>
 
           <div class="form-field">
-            <label for="amountForeignCurrency" class="form-label is-required">Cost in Foreign Currency / MYR</label>
+            <label for="amountForeignCurrency" class="form-label is-required"
+              >Cost in Foreign Currency / MYR</label
+            >
             <input
               id="amountForeignCurrency"
               type="text"
@@ -400,9 +451,11 @@
               placeholder="Enter cost"
               formControlName="amountForeignCurrency"
               (keydown)="restrictDecimalInput($event, 'amountForeignCurrency')"
-              (input)="onDecimalFieldInput('amountForeignCurrency')">
+              (input)="onDecimalFieldInput('amountForeignCurrency')"
+            />
             <app-validation-message
-              [control]="expenseForm.get('amountForeignCurrency')"></app-validation-message>
+              [control]="expenseForm.get('amountForeignCurrency')"
+            ></app-validation-message>
           </div>
         </div>
 
@@ -418,10 +471,15 @@
               placeholder="1"
               formControlName="exchangeRate"
               (keydown)="restrictDecimalInput($event, 'exchangeRate')"
-              (input)="onDecimalFieldInput('exchangeRate')">
-            <app-note text="For Malaysia Ringgit/MYR, please put 1 as the exchange rate." [isTooltip]="false"></app-note>
+              (input)="onDecimalFieldInput('exchangeRate')"
+            />
+            <app-note
+              text="For Malaysia Ringgit/MYR, please put 1 as the exchange rate."
+              [isTooltip]="false"
+            ></app-note>
             <app-validation-message
-              [control]="expenseForm.get('exchangeRate')"></app-validation-message>
+              [control]="expenseForm.get('exchangeRate')"
+            ></app-validation-message>
           </div>
 
           <div class="form-field">
@@ -432,7 +490,8 @@
               class="input--text"
               readonly
               placeholder="Auto-calculated"
-              formControlName="amountMYR">
+              formControlName="amountMYR"
+            />
           </div>
         </div>
 
@@ -444,7 +503,8 @@
             class="input--textarea"
             placeholder="Enter description (optional)"
             formControlName="description"
-            rows="3"></textarea>
+            rows="3"
+          ></textarea>
         </div>
 
         <!-- Supporting Documents -->
@@ -454,13 +514,19 @@
           <app-file-upload
             [accept]="'.pdf'"
             [maxSizeMB]="10"
-            (fileSelected)="onFileSelected($event)">
+            (fileSelected)="onFileSelected($event)"
+          >
           </app-file-upload>
           @if (selectedFileName) {
             <div class="file-selected-item">
               <span class="material-icons file-selected-item__icon">description</span>
               <span class="file-selected-item__name">{{ selectedFileName }}</span>
-              <button type="button" class="btn btn-ghost btn-xs file-selected-item__remove" (click)="removeFile()" aria-label="Remove file">
+              <button
+                type="button"
+                class="btn btn-ghost btn-xs file-selected-item__remove"
+                (click)="removeFile()"
+                aria-label="Remove file"
+              >
                 <span class="material-icons">close</span>
               </button>
             </div>
@@ -468,11 +534,15 @@
         </div>
 
         <div class="form-field">
-          <button class="btn btn-primary btn-sm" type="submit" [disabled]="expenseForm.invalid">{{ editExpenseIndex !== null ? 'Update' : 'Add' }}</button>
+          <button class="btn btn-primary btn-sm" type="submit" [disabled]="expenseForm.invalid">
+            {{ editExpenseIndex !== null ? 'Update' : 'Add' }}
+          </button>
         </div>
 
         <div class="modal-footer-actions">
-          <button class="btn btn-ghost btn-sm" type="button" (click)="closeExpenseModal()">Cancel</button>
+          <button class="btn btn-ghost btn-sm" type="button" (click)="closeExpenseModal()">
+            Cancel
+          </button>
         </div>
       </form>
     </app-dialog>
@@ -483,50 +553,53 @@
     <div class="section-fields">
       <div class="form-field">
         <label class="checkbox-label">
-          <input
-            type="checkbox"
-            formControlName="declarationAgreed">
+          <input type="checkbox" formControlName="declarationAgreed" />
           <span class="checkbox-text">
-            I hereby declare that the information provided in this form is true, accurate, and complete to the best of my knowledge.
+            I hereby declare that the information provided in this form is true, accurate, and
+            complete to the best of my knowledge.
           </span>
         </label>
-        <app-validation-message [control]="travelAuthForm.get('declarationAgreed')"></app-validation-message>
+        <app-validation-message
+          [control]="travelAuthForm.get('declarationAgreed')"
+        ></app-validation-message>
       </div>
 
       <div class="form-field">
         <label class="checkbox-label">
-          <input
-            type="checkbox"
-            formControlName="declarationFalseMisleading">
+          <input type="checkbox" formControlName="declarationFalseMisleading" />
           <span class="checkbox-text">
-            I understand that any false or misleading information may result in disciplinary action and/or rejection of the application.
+            I understand that any false or misleading information may result in disciplinary action
+            and/or rejection of the application.
           </span>
         </label>
-        <app-validation-message [control]="travelAuthForm.get('declarationFalseMisleading')"></app-validation-message>
+        <app-validation-message
+          [control]="travelAuthForm.get('declarationFalseMisleading')"
+        ></app-validation-message>
       </div>
 
       <div class="form-field">
         <label class="checkbox-label">
-          <input
-            type="checkbox"
-            formControlName="declarationTermsPolicies">
+          <input type="checkbox" formControlName="declarationTermsPolicies" />
           <span class="checkbox-text">
-            I confirm that I have read and understood the terms, policies, and procedures related to this request.
+            I confirm that I have read and understood the terms, policies, and procedures related to
+            this request.
           </span>
         </label>
-        <app-validation-message [control]="travelAuthForm.get('declarationTermsPolicies')"></app-validation-message>
+        <app-validation-message
+          [control]="travelAuthForm.get('declarationTermsPolicies')"
+        ></app-validation-message>
       </div>
 
       <div class="form-field">
         <label class="checkbox-label">
-          <input
-            type="checkbox"
-            formControlName="declarationAccuracy">
+          <input type="checkbox" formControlName="declarationAccuracy" />
           <span class="checkbox-text">
             I confirm that all information entered is correct and accurate.
           </span>
         </label>
-        <app-validation-message [control]="travelAuthForm.get('declarationAccuracy')"></app-validation-message>
+        <app-validation-message
+          [control]="travelAuthForm.get('declarationAccuracy')"
+        ></app-validation-message>
       </div>
     </div>
 
@@ -535,8 +608,8 @@
       [currentStep]="1"
       [totalSteps]="1"
       [isSubmitting]="isSubmitting()"
-      (submitForm)="onSubmitForm()"></app-form-wizard-nav>
-
+      (submitForm)="onSubmitForm()"
+    ></app-form-wizard-nav>
   </form>
 
   <!-- Review Comments Section -->
@@ -550,7 +623,8 @@
           icon="supervisor_account"
           [visible]="true"
           [readonly]="!getHosCommentState().editable"
-          [commentControl]="fc('reviewComments.hosComment')">
+          [commentControl]="fc('reviewComments.hosComment')"
+        >
         </app-review-block>
       }
 
@@ -560,7 +634,8 @@
           icon="verified"
           [visible]="true"
           [readonly]="!getRmcCommentState().editable"
-          [commentControl]="fc('reviewComments.rmcComment')">
+          [commentControl]="fc('reviewComments.rmcComment')"
+        >
         </app-review-block>
       }
 
@@ -570,7 +645,8 @@
           icon="account_balance"
           [visible]="true"
           [readonly]="!getVcCommentState().editable"
-          [commentControl]="fc('reviewComments.vcComment')">
+          [commentControl]="fc('reviewComments.vcComment')"
+        >
         </app-review-block>
       }
 
@@ -580,7 +656,8 @@
           icon="people"
           [visible]="true"
           [readonly]="!getHrCommentState().editable"
-          [commentControl]="fc('reviewComments.hrComment')">
+          [commentControl]="fc('reviewComments.hrComment')"
+        >
         </app-review-block>
       }
 
@@ -590,7 +667,8 @@
           icon="person_3"
           [visible]="true"
           [readonly]="!getCeoCommentState().editable"
-          [commentControl]="fc('reviewComments.ceoComment')">
+          [commentControl]="fc('reviewComments.ceoComment')"
+        >
         </app-review-block>
       }
 
@@ -600,7 +678,8 @@
           icon="attach_money"
           [visible]="true"
           [readonly]="!getFinanceCommentState().editable"
-          [commentControl]="fc('reviewComments.financeComment')">
+          [commentControl]="fc('reviewComments.financeComment')"
+        >
         </app-review-block>
       }
 
@@ -610,7 +689,8 @@
           icon="business"
           [visible]="true"
           [readonly]="!getCooCommentState().editable"
-          [commentControl]="fc('reviewComments.cooComment')">
+          [commentControl]="fc('reviewComments.cooComment')"
+        >
         </app-review-block>
       }
     </div>

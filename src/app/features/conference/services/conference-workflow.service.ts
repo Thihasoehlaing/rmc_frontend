@@ -6,6 +6,7 @@ import { AuthService } from '../../../core/services/auth.service';
  * Controls visibility, editability, and workflow progression.
  */
 export type ConferenceStatus =
+  | 'draft'
   | 'normal_application'
   | 'hos_application'
   | 'hos_request_resubmission'
@@ -22,6 +23,7 @@ export type ConferenceStatus =
 
 /** Statuses where the applicant can edit form fields */
 const APPLICANT_EDITABLE: ConferenceStatus[] = [
+  'draft',
   'normal_application',
   'hos_application',
   'hos_request_resubmission',
@@ -30,18 +32,15 @@ const APPLICANT_EDITABLE: ConferenceStatus[] = [
 
 @Injectable({ providedIn: 'root' })
 export class ConferenceWorkflowService {
-
   private auth = inject(AuthService);
 
   /** Current application status — driven purely by form metadata (ABAC) */
-  status = signal<ConferenceStatus>('normal_application');
+  status = signal<ConferenceStatus>('draft');
 
   // ── Applicant editing ─────────────────────────────────────────
 
   /** True when the applicant can edit all form fields */
-  isApplicantEditable = computed(() =>
-    APPLICANT_EDITABLE.includes(this.status())
-  );
+  isApplicantEditable = computed(() => APPLICANT_EDITABLE.includes(this.status()));
 
   /** True when form fields should be read-only */
   isFormReadOnly = computed(() => !this.isApplicantEditable());
@@ -77,7 +76,7 @@ export class ConferenceWorkflowService {
       'hr_pending',
       'hr_reject',
       'Approved',
-    ].includes(this.status())
+    ].includes(this.status()),
   );
 
   /** Show RMC toggle from rmc_pending onward */
@@ -91,28 +90,16 @@ export class ConferenceWorkflowService {
       'hr_pending',
       'hr_reject',
       'Approved',
-    ].includes(this.status())
+    ].includes(this.status()),
   );
 
   /** Show VC toggle from vc_pending onward */
   showVcToggle = computed(() =>
-    [
-      'vc_pending',
-      'vc_reject',
-      'hr_pending',
-      'hr_reject',
-      'Approved',
-    ].includes(this.status())
+    ['vc_pending', 'vc_reject', 'hr_pending', 'hr_reject', 'Approved'].includes(this.status()),
   );
 
   /** Show HR toggle from hr_pending onward */
-  showHrToggle = computed(() =>
-    [
-      'hr_pending',
-      'hr_reject',
-      'Approved',
-    ].includes(this.status())
-  );
+  showHrToggle = computed(() => ['hr_pending', 'hr_reject', 'Approved'].includes(this.status()));
 
   // ── Approval card visibility (each stage only exposes the current actor's approval) ─
 
@@ -127,7 +114,6 @@ export class ConferenceWorkflowService {
 
   /** HR approval card — visible during hr_pending */
   isHrApprovalVisible = computed(() => this.status() === 'hr_pending');
-
 
   /** HOS approval options */
   readonly hosApprovalOptions = [

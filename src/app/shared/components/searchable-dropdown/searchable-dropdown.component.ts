@@ -1,15 +1,26 @@
 import {
-  Component, Input, forwardRef, signal, computed,
-  HostListener, ElementRef, inject, DestroyRef
+  Component,
+  Input,
+  forwardRef,
+  signal,
+  computed,
+  HostListener,
+  ElementRef,
+  inject,
+  DestroyRef,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
-  ControlValueAccessor, NG_VALUE_ACCESSOR,
-  ReactiveFormsModule, FormControl
+  ControlValueAccessor,
+  NG_VALUE_ACCESSOR,
+  ReactiveFormsModule,
+  FormControl,
 } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { DropdownOption } from '../../../core/interfaces/components.interface';
+import { SvgIconComponent } from '../svg-icon/svg-icon.component';
+import { SVG_ICON_CHEVRON_DOWN } from '../../icons/svg-icons';
 
 /**
  * Enterprise-grade searchable dropdown — ControlValueAccessor-compatible.
@@ -32,18 +43,19 @@ import { DropdownOption } from '../../../core/interfaces/components.interface';
 @Component({
   selector: 'app-searchable-dropdown',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, SvgIconComponent],
   templateUrl: './searchable-dropdown.component.html',
   styleUrls: ['./searchable-dropdown.component.scss'],
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
       useExisting: forwardRef(() => SearchableDropdownComponent),
-      multi: true
-    }
-  ]
+      multi: true,
+    },
+  ],
 })
 export class SearchableDropdownComponent<T = number> implements ControlValueAccessor {
+  readonly chevronDownIcon = SVG_ICON_CHEVRON_DOWN;
   private readonly elementRef = inject(ElementRef);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -79,8 +91,12 @@ export class SearchableDropdownComponent<T = number> implements ControlValueAcce
   private readonly _options = signal<DropdownOption<T>[]>([]);
 
   @Input()
-  set options(val: DropdownOption<T>[]) { this._options.set(val ?? []); }
-  get options(): DropdownOption<T>[] { return this._options(); }
+  set options(val: DropdownOption<T>[]) {
+    this._options.set(val ?? []);
+  }
+  get options(): DropdownOption<T>[] {
+    return this._options();
+  }
 
   // ── Internal signals ─────────────────────────────────────────────
 
@@ -117,7 +133,7 @@ export class SearchableDropdownComponent<T = number> implements ControlValueAcce
   readonly filteredOptions = computed<DropdownOption<T>[]>(() => {
     const q = this.searchQuery().toLowerCase().trim();
     if (!this.searchable || !q) return this._options();
-    return this._options().filter(o => o.label.toLowerCase().includes(q));
+    return this._options().filter((o) => o.label.toLowerCase().includes(q));
   });
 
   // ── ARIA IDs ─────────────────────────────────────────────────────
@@ -133,12 +149,9 @@ export class SearchableDropdownComponent<T = number> implements ControlValueAcce
 
   constructor() {
     // Wire the search text-box to the debounced signal
-    this.searchCtrl.valueChanges.pipe(
-      debounceTime(150),
-      distinctUntilChanged(),
-      takeUntilDestroyed(this.destroyRef)
-    ).subscribe(q => this.searchQuery.set(q));
-
+    this.searchCtrl.valueChanges
+      .pipe(debounceTime(150), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
+      .subscribe((q) => this.searchQuery.set(q));
   }
 
   // ── ControlValueAccessor ─────────────────────────────────────────
@@ -150,7 +163,7 @@ export class SearchableDropdownComponent<T = number> implements ControlValueAcce
     }
 
     if (Array.isArray(value)) {
-      this.selectedValues.set(value.filter(v => !this.isEmptySelectionValue(v)));
+      this.selectedValues.set(value.filter((v) => !this.isEmptySelectionValue(v)));
       return;
     }
 
@@ -191,8 +204,9 @@ export class SearchableDropdownComponent<T = number> implements ControlValueAcce
     this._onTouched();
     if (this.searchable) {
       requestAnimationFrame(() => {
-        const input = (this.elementRef.nativeElement as Element)
-          .querySelector<HTMLElement>('.sd-search-input');
+        const input = (this.elementRef.nativeElement as Element).querySelector<HTMLElement>(
+          '.sd-search-input',
+        );
         input?.focus();
       });
     }
@@ -215,13 +229,12 @@ export class SearchableDropdownComponent<T = number> implements ControlValueAcce
 
     if (this.isMulti) {
       const current = this.selectedValues();
-      const existing = current.findIndex(v => this.compareWith(v, option.value));
+      const existing = current.findIndex((v) => this.compareWith(v, option.value));
       if (existing === -1 && this.maxSelections !== null && current.length >= this.maxSelections) {
         return;
       }
-      const next = existing === -1
-        ? [...current, option.value]
-        : current.filter((_, i) => i !== existing);
+      const next =
+        existing === -1 ? [...current, option.value] : current.filter((_, i) => i !== existing);
       this.selectedValues.set(next);
       this._onChange(next);
     } else {
@@ -235,7 +248,7 @@ export class SearchableDropdownComponent<T = number> implements ControlValueAcce
   removeChip(value: T, event: Event): void {
     if (this.isDisabled()) return;
     event.stopPropagation();
-    const next = this.selectedValues().filter(v => !this.compareWith(v, value));
+    const next = this.selectedValues().filter((v) => !this.compareWith(v, value));
     this.selectedValues.set(next);
     this._onChange(next);
   }
@@ -249,7 +262,7 @@ export class SearchableDropdownComponent<T = number> implements ControlValueAcce
   }
 
   isSelected(value: T): boolean {
-    return this.selectedValues().some(v => this.compareWith(v, value));
+    return this.selectedValues().some((v) => this.compareWith(v, value));
   }
 
   isOptionDisabled(option: DropdownOption<T>): boolean {
@@ -294,7 +307,10 @@ export class SearchableDropdownComponent<T = number> implements ControlValueAcce
           event.preventDefault();
         } else {
           const opt = this.filteredOptions()[this.focusedIndex()];
-          if (opt) { this.selectOption(opt); event.preventDefault(); }
+          if (opt) {
+            this.selectOption(opt);
+            event.preventDefault();
+          }
         }
         break;
 
@@ -307,22 +323,24 @@ export class SearchableDropdownComponent<T = number> implements ControlValueAcce
         break;
 
       case 'Escape':
-        if (this.isOpen()) { this.close(); event.preventDefault(); }
+        if (this.isOpen()) {
+          this.close();
+          event.preventDefault();
+        }
         break;
 
       case 'ArrowDown':
         if (!this.isOpen()) {
           this.open();
         } else {
-          this.focusedIndex.update(i =>
-            Math.min(i + 1, this.filteredOptions().length - 1));
+          this.focusedIndex.update((i) => Math.min(i + 1, this.filteredOptions().length - 1));
         }
         event.preventDefault();
         break;
 
       case 'ArrowUp':
         if (this.isOpen()) {
-          this.focusedIndex.update(i => Math.max(i - 1, 0));
+          this.focusedIndex.update((i) => Math.max(i - 1, 0));
           event.preventDefault();
         }
         break;

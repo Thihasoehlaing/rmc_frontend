@@ -1,4 +1,13 @@
-import { Component, ContentChild, Input, TemplateRef, TrackByFunction, Output, EventEmitter, computed } from '@angular/core';
+import {
+  Component,
+  ContentChild,
+  Input,
+  TemplateRef,
+  TrackByFunction,
+  Output,
+  EventEmitter,
+  computed,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NgTemplateOutlet } from '@angular/common';
 
@@ -30,7 +39,7 @@ export interface DataTableHeaderContext {
   standalone: true,
   imports: [NgTemplateOutlet, CommonModule],
   templateUrl: './data-table.component.html',
-  styleUrl: './data-table.component.scss'
+  styleUrl: './data-table.component.scss',
 })
 export class DataTableComponent {
   @Input({ required: true }) columns: readonly DataTableColumn[] = [];
@@ -39,6 +48,7 @@ export class DataTableComponent {
   @Input() sortColumn: string | null = null;
   @Input() sortDirection: 'asc' | 'desc' | null = null;
   @Input() showHeader = true;
+  @Input() showSortIndicator = true;
   @Input() dense = false;
   @Input() hoverable = true;
   @Input() striped = true;
@@ -87,6 +97,10 @@ export class DataTableComponent {
     return column.align || 'left';
   }
 
+  sortIcon(column: DataTableColumn): string {
+    if (this.sortColumn !== column.key || !this.sortDirection) return 'unfold_more';
+    return this.sortDirection === 'desc' ? 'arrow_downward' : 'arrow_upward';
+  }
   onHeaderClick(column: DataTableColumn) {
     if (column.sortable) {
       this.sortChange.emit(column.key);

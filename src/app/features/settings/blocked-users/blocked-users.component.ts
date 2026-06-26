@@ -1,11 +1,6 @@
+import { SubmissionsSearchComponent } from '../../../shared/components/submissions-search/submissions-search.component';
 import { CommonModule } from '@angular/common';
-import {
-  Component,
-  OnInit,
-  TrackByFunction,
-  inject,
-  signal,
-} from '@angular/core';
+import { Component, OnInit, TrackByFunction, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
 
@@ -25,6 +20,8 @@ import {
   UpdateBlockedUserPayload,
 } from './blocked-users.service';
 
+import { TableActionIconComponent } from '../../../shared/components/table-action-icon/table-action-icon.component';
+
 type DialogMode = 'create' | 'edit';
 type StatusFilter = '' | 'Active' | 'Inactive';
 type StatusAction = 'unblock' | 'block';
@@ -33,6 +30,8 @@ type StatusAction = 'unblock' | 'block';
   selector: 'app-blocked-users',
   standalone: true,
   imports: [
+    SubmissionsSearchComponent,
+    TableActionIconComponent,
     CommonModule,
     FormsModule,
     DataTableComponent,
@@ -42,10 +41,7 @@ type StatusAction = 'unblock' | 'block';
     TableSkeletonComponent,
   ],
   templateUrl: './blocked-users.component.html',
-  styleUrls: [
-    '../forms/forms.component.scss',
-    './blocked-users.component.scss',
-  ],
+  styleUrls: ['../forms/forms.component.scss', './blocked-users.component.scss'],
 })
 export class BlockedUsersComponent implements OnInit {
   private readonly blockedUsersService = inject(BlockedUsersService);
@@ -93,10 +89,8 @@ export class BlockedUsersComponent implements OnInit {
     },
   ];
 
-  readonly rowTrackFn: TrackByFunction<unknown> = (
-    _index: number,
-    row: unknown,
-  ) => (row as BlockedUser).id;
+  readonly rowTrackFn: TrackByFunction<unknown> = (_index: number, row: unknown) =>
+    (row as BlockedUser).id;
 
   ngOnInit(): void {
     this.loadBlockedUsers();
@@ -115,12 +109,9 @@ export class BlockedUsersComponent implements OnInit {
       })
       .pipe(finalize(() => this.isLoading.set(false)))
       .subscribe({
-        next: response => {
+        next: (response) => {
           const pagination = response.data.pagination;
-          if (
-            pagination.total_pages > 0 &&
-            this.page() > pagination.total_pages
-          ) {
+          if (pagination.total_pages > 0 && this.page() > pagination.total_pages) {
             this.page.set(pagination.total_pages);
             this.loadBlockedUsers();
             return;
@@ -207,25 +198,20 @@ export class BlockedUsersComponent implements OnInit {
     const request =
       mode === 'create'
         ? this.blockedUsersService.create(basePayload)
-        : this.blockedUsersService.update(
-            this.selectedBlockedUser()!.id,
-            {
-              ...basePayload,
-              is_active: this.blockActive(),
-            } satisfies UpdateBlockedUserPayload,
-          );
+        : this.blockedUsersService.update(this.selectedBlockedUser()!.id, {
+            ...basePayload,
+            is_active: this.blockActive(),
+          } satisfies UpdateBlockedUserPayload);
 
     this.isSaving.set(true);
-    request
-      .pipe(finalize(() => this.isSaving.set(false)))
-      .subscribe({
-        next: () => {
-          this.dialogMode.set(null);
-          this.selectedBlockedUser.set(null);
-          this.page.set(1);
-          this.loadBlockedUsers();
-        },
-      });
+    request.pipe(finalize(() => this.isSaving.set(false))).subscribe({
+      next: () => {
+        this.dialogMode.set(null);
+        this.selectedBlockedUser.set(null);
+        this.page.set(1);
+        this.loadBlockedUsers();
+      },
+    });
   }
 
   openStatusDialog(user: BlockedUser): void {
@@ -283,9 +269,7 @@ export class BlockedUsersComponent implements OnInit {
   }
 
   dialogTitle(): string {
-    return this.dialogMode() === 'create'
-      ? 'Block User'
-      : 'Edit Blocked User';
+    return this.dialogMode() === 'create' ? 'Block User' : 'Edit Blocked User';
   }
 
   statusDialogTitle(): string {
@@ -298,7 +282,7 @@ export class BlockedUsersComponent implements OnInit {
       .split(/\s+/)
       .filter(Boolean)
       .slice(0, 2)
-      .map(part => part.charAt(0).toUpperCase())
+      .map((part) => part.charAt(0).toUpperCase())
       .join('');
   }
 
@@ -321,15 +305,11 @@ export class BlockedUsersComponent implements OnInit {
   }
 
   activityOwner(user: BlockedUser): string {
-    return user.is_active
-      ? user.blocked_by || 'Unknown'
-      : user.unblocked_by || 'Unknown';
+    return user.is_active ? user.blocked_by || 'Unknown' : user.unblocked_by || 'Unknown';
   }
 
   activityDate(user: BlockedUser): string {
-    return this.formatDate(
-      user.is_active ? user.blocked_at : user.unblocked_at,
-    );
+    return this.formatDate(user.is_active ? user.blocked_at : user.unblocked_at);
   }
 
   rowNumber(index: number): number {
@@ -337,16 +317,11 @@ export class BlockedUsersComponent implements OnInit {
   }
 
   pageStart(): number {
-    return this.totalItems() === 0
-      ? 0
-      : (this.page() - 1) * this.pageSize() + 1;
+    return this.totalItems() === 0 ? 0 : (this.page() - 1) * this.pageSize() + 1;
   }
 
   pageEnd(): number {
-    return Math.min(
-      this.pageStart() + this.blockedUsers().length - 1,
-      this.totalItems(),
-    );
+    return Math.min(this.pageStart() + this.blockedUsers().length - 1, this.totalItems());
   }
 
   private fetchBlockedUser(id: number): void {
@@ -357,7 +332,7 @@ export class BlockedUsersComponent implements OnInit {
       .get(id)
       .pipe(finalize(() => this.isDetailLoading.set(false)))
       .subscribe({
-        next: response => {
+        next: (response) => {
           this.selectedBlockedUser.set(response.data);
           this.username.set(response.data.username);
           this.reason.set(response.data.reason ?? '');

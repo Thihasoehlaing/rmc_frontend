@@ -1,6 +1,13 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
-import { ReactiveFormsModule, FormGroup, FormArray, FormBuilder, FormControl, Validators } from '@angular/forms';
+import {
+  ReactiveFormsModule,
+  FormGroup,
+  FormArray,
+  FormBuilder,
+  FormControl,
+  Validators,
+} from '@angular/forms';
 import { CustomHeaderComponent } from '../../../../shared/components/custom-header/custom-header.component';
 import { CustomSubheaderComponent } from '../../../../shared/components/custom-subheader/custom-subheader.component';
 import { CharacterCounterComponent } from '../../../../shared/components/character-counter/character-counter.component';
@@ -13,12 +20,19 @@ import { ValidationMessageComponent } from '../../../../shared/components/valida
 import { ActionButtonComponent } from '../../../../shared/components/action-button/action-button.component';
 import { NoteComponent } from '../../../../shared/components/note/note.component';
 
-type BudgetCategoryKey = 'studentAllowances' | 'travelAccommodation' | 'materialsSupplies' | 'specialServices';
+import { TableActionIconComponent } from '../../../../shared/components/table-action-icon/table-action-icon.component';
+
+type BudgetCategoryKey =
+  | 'studentAllowances'
+  | 'travelAccommodation'
+  | 'materialsSupplies'
+  | 'specialServices';
 
 @Component({
   selector: 'app-budget-summary',
   standalone: true,
   imports: [
+    TableActionIconComponent,
     DecimalPipe,
     ReactiveFormsModule,
     CustomHeaderComponent,
@@ -32,7 +46,7 @@ type BudgetCategoryKey = 'studentAllowances' | 'travelAccommodation' | 'material
     NoteComponent,
   ],
   templateUrl: './budget-summary.component.html',
-  styleUrl: './budget-summary.component.scss'
+  styleUrl: './budget-summary.component.scss',
 })
 export class BudgetSummaryComponent implements OnInit {
   @Input({ required: true }) parentForm!: FormGroup;
@@ -46,9 +60,15 @@ export class BudgetSummaryComponent implements OnInit {
   @Input() submitAttempted = false;
 
   get showAnyComments(): boolean {
-    return this.showHosComments || this.showRmcComments ||
-      this.showR1Comments || this.showR2Comments ||
-      this.showRdigChairComments || this.showVcComments || this.showCeoComments;
+    return (
+      this.showHosComments ||
+      this.showRmcComments ||
+      this.showR1Comments ||
+      this.showR2Comments ||
+      this.showRdigChairComments ||
+      this.showVcComments ||
+      this.showCeoComments
+    );
   }
   @Input() workflow!: RdigWorkflowService;
 
@@ -64,10 +84,18 @@ export class BudgetSummaryComponent implements OnInit {
     return this.projectDetails.get('category')?.value;
   }
 
-  get studentAllowances() { return this.budgetForm.get('studentAllowances') as FormArray; }
-  get travelAccommodation() { return this.budgetForm.get('travelAccommodation') as FormArray; }
-  get materialsSupplies() { return this.budgetForm.get('materialsSupplies') as FormArray; }
-  get specialServices() { return this.budgetForm.get('specialServices') as FormArray; }
+  get studentAllowances() {
+    return this.budgetForm.get('studentAllowances') as FormArray;
+  }
+  get travelAccommodation() {
+    return this.budgetForm.get('travelAccommodation') as FormArray;
+  }
+  get materialsSupplies() {
+    return this.budgetForm.get('materialsSupplies') as FormArray;
+  }
+  get specialServices() {
+    return this.budgetForm.get('specialServices') as FormArray;
+  }
 
   get otherRemarksControl(): FormControl {
     return this.budgetForm.get('otherRemarks') as FormControl;
@@ -77,14 +105,14 @@ export class BudgetSummaryComponent implements OnInit {
     studentAllowances: 'V11000 - Student Allowances',
     travelAccommodation: 'V21000 - Travelling and Accommodation',
     materialsSupplies: 'V27000 - Research Materials and Supplies',
-    specialServices: 'V29000 - Special Services'
+    specialServices: 'V29000 - Special Services',
   };
 
   readonly budgetCategoryHints: Record<BudgetCategoryKey, string> = {
-    studentAllowances: 'Example: Master\'s Student GRA (6 months)',
+    studentAllowances: "Example: Master's Student GRA (6 months)",
     travelAccommodation: 'Example: Conference travel - international',
     materialsSupplies: 'Example: Lab consumables, survey tools',
-    specialServices: 'Example: Statistical consultancy, software license'
+    specialServices: 'Example: Statistical consultancy, software license',
   };
 
   addItemModalOpen = false;
@@ -94,11 +122,23 @@ export class BudgetSummaryComponent implements OnInit {
   readonly budgetItemForm: FormGroup;
 
   readonly budgetColumns: DataTableColumn[] = [
-    { key: 'index', label: '#', width: 'var(--size-table-column-index)', align: 'center', headerAlign: 'center' },
+    {
+      key: 'index',
+      label: '#',
+      width: 'var(--size-table-column-index)',
+      align: 'center',
+      headerAlign: 'center',
+    },
     { key: 'description', label: 'Description of Expense', width: '40%' },
     { key: 'amount', label: 'Amount (RM)', width: 'var(--size-table-column-amount)' },
     { key: 'remarks', label: 'Remarks' },
-    { key: 'actions', label: '', width: 'var(--size-table-column-actions)', align: 'right', headerAlign: 'right' }
+    {
+      key: 'actions',
+      label: '',
+      width: 'var(--size-table-column-actions)',
+      align: 'right',
+      headerAlign: 'right',
+    },
   ];
 
   readonly trackByIndex = (index: number) => index;
@@ -119,7 +159,7 @@ export class BudgetSummaryComponent implements OnInit {
     this.budgetItemForm = this.fb.group({
       description: ['', [Validators.required, Validators.maxLength(200)]],
       amount: [null as number | null, [Validators.required, Validators.min(0.01)]],
-      remarks: ['', [Validators.required, Validators.maxLength(300)]]
+      remarks: ['', [Validators.required, Validators.maxLength(300)]],
     });
   }
 
@@ -133,7 +173,7 @@ export class BudgetSummaryComponent implements OnInit {
     const row = this.fb.group({
       description: ['', Validators.required],
       amount: [null, [Validators.required, Validators.min(0.01)]],
-      remarks: ['', [Validators.required, Validators.maxLength(300)]]
+      remarks: ['', [Validators.required, Validators.maxLength(300)]],
     });
     array.push(row);
   }
@@ -158,7 +198,7 @@ export class BudgetSummaryComponent implements OnInit {
     this.budgetItemForm.reset({
       description: row.get('description')?.value ?? '',
       amount: row.get('amount')?.value ?? null,
-      remarks: row.get('remarks')?.value ?? ''
+      remarks: row.get('remarks')?.value ?? '',
     });
     this.budgetItemForm.markAsPristine();
     this.budgetItemForm.markAsUntouched();
@@ -182,15 +222,17 @@ export class BudgetSummaryComponent implements OnInit {
     const payload = {
       description: this.descriptionControl.value,
       amount: this.amountControl.value,
-      remarks: this.remarksControl.value
+      remarks: this.remarksControl.value,
     };
 
     if (this.editingRowIndex === null) {
-      categoryArray.push(this.fb.group({
-        description: [payload.description, Validators.required],
-        amount: [payload.amount, [Validators.required, Validators.min(0.01)]],
-        remarks: [payload.remarks, [Validators.required, Validators.maxLength(300)]],
-      }));
+      categoryArray.push(
+        this.fb.group({
+          description: [payload.description, Validators.required],
+          amount: [payload.amount, [Validators.required, Validators.min(0.01)]],
+          remarks: [payload.remarks, [Validators.required, Validators.maxLength(300)]],
+        }),
+      );
     } else {
       categoryArray.at(this.editingRowIndex)?.patchValue(payload);
     }
@@ -221,9 +263,13 @@ export class BudgetSummaryComponent implements OnInit {
   }
 
   calculateTotal() {
-    const sum = (arr: FormArray) => arr.controls.reduce((acc, ctrl) => acc + (ctrl.get('amount')?.value || 0), 0);
-    const total = sum(this.studentAllowances) + sum(this.travelAccommodation) +
-      sum(this.materialsSupplies) + sum(this.specialServices);
+    const sum = (arr: FormArray) =>
+      arr.controls.reduce((acc, ctrl) => acc + (ctrl.get('amount')?.value || 0), 0);
+    const total =
+      sum(this.studentAllowances) +
+      sum(this.travelAccommodation) +
+      sum(this.materialsSupplies) +
+      sum(this.specialServices);
 
     this.budgetForm.get('totalRequest')?.setValue(total, { emitEvent: false });
     this.budgetForm.updateValueAndValidity({ emitEvent: false });

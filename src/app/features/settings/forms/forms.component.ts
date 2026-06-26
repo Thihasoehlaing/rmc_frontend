@@ -1,11 +1,5 @@
 import { CommonModule } from '@angular/common';
-import {
-  Component,
-  OnInit,
-  TrackByFunction,
-  inject,
-  signal,
-} from '@angular/core';
+import { Component, OnInit, TrackByFunction, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
 
@@ -18,11 +12,9 @@ import { DialogComponent } from '../../../shared/components/dialog/dialog.compon
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
 import { DetailPanelSkeletonComponent } from '../../../shared/components/detail-panel-skeleton/detail-panel-skeleton.component';
 import { TableSkeletonComponent } from '../../../shared/components/table-skeleton/table-skeleton.component';
-import {
-  ManagedForm,
-  ManagedFormPayload,
-  FormsService,
-} from './forms.service';
+import { ManagedForm, ManagedFormPayload, FormsService } from './forms.service';
+
+import { TableActionIconComponent } from '../../../shared/components/table-action-icon/table-action-icon.component';
 
 type FormDialogMode = 'create' | 'edit';
 type FormStatusFilter = '' | 'Active' | 'Inactive';
@@ -31,6 +23,7 @@ type FormStatusFilter = '' | 'Active' | 'Inactive';
   selector: 'app-forms-settings',
   standalone: true,
   imports: [
+    TableActionIconComponent,
     CommonModule,
     FormsModule,
     DataTableComponent,
@@ -84,10 +77,8 @@ export class FormsComponent implements OnInit {
     },
   ];
 
-  readonly rowTrackFn: TrackByFunction<unknown> = (
-    _index: number,
-    row: unknown,
-  ) => (row as ManagedForm).id;
+  readonly rowTrackFn: TrackByFunction<unknown> = (_index: number, row: unknown) =>
+    (row as ManagedForm).id;
 
   ngOnInit(): void {
     this.loadForms();
@@ -106,7 +97,7 @@ export class FormsComponent implements OnInit {
       })
       .pipe(finalize(() => this.isLoading.set(false)))
       .subscribe({
-        next: response => {
+        next: (response) => {
           const pagination = response.data.pagination;
           if (pagination.total_pages > 0 && this.page() > pagination.total_pages) {
             this.page.set(pagination.total_pages);
@@ -187,12 +178,7 @@ export class FormsComponent implements OnInit {
     const mode = this.dialogMode();
     const code = this.formCode().trim().toUpperCase();
     const name = this.formName().trim();
-    if (
-      (mode !== 'create' && mode !== 'edit') ||
-      !code ||
-      !name ||
-      this.isSaving()
-    ) {
+    if ((mode !== 'create' && mode !== 'edit') || !code || !name || this.isSaving()) {
       return;
     }
 
@@ -207,17 +193,15 @@ export class FormsComponent implements OnInit {
         : this.formsService.update(this.selectedForm()!.id, payload);
 
     this.isSaving.set(true);
-    request
-      .pipe(finalize(() => this.isSaving.set(false)))
-      .subscribe({
-        next: () => {
-          this.dialogMode.set(null);
-          this.selectedForm.set(null);
-          this.detailFailed.set(false);
-          this.page.set(1);
-          this.loadForms();
-        },
-      });
+    request.pipe(finalize(() => this.isSaving.set(false))).subscribe({
+      next: () => {
+        this.dialogMode.set(null);
+        this.selectedForm.set(null);
+        this.detailFailed.set(false);
+        this.page.set(1);
+        this.loadForms();
+      },
+    });
   }
 
   onFormCodeChange(value: string): void {
@@ -265,16 +249,11 @@ export class FormsComponent implements OnInit {
   }
 
   pageStart(): number {
-    return this.totalItems() === 0
-      ? 0
-      : (this.page() - 1) * this.pageSize() + 1;
+    return this.totalItems() === 0 ? 0 : (this.page() - 1) * this.pageSize() + 1;
   }
 
   pageEnd(): number {
-    return Math.min(
-      this.pageStart() + this.forms().length - 1,
-      this.totalItems(),
-    );
+    return Math.min(this.pageStart() + this.forms().length - 1, this.totalItems());
   }
 
   private openDetailDialog(form: ManagedForm, mode: 'edit'): void {
@@ -291,7 +270,7 @@ export class FormsComponent implements OnInit {
       .get(id)
       .pipe(finalize(() => this.isDetailLoading.set(false)))
       .subscribe({
-        next: response => {
+        next: (response) => {
           this.selectedForm.set(response.data);
           this.formCode.set(response.data.form_code);
           this.formName.set(response.data.form_name);

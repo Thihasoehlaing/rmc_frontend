@@ -3,20 +3,20 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { merge } from 'rxjs';
-import { CustomSubheaderComponent } from '../../../shared/components/custom-subheader/custom-subheader.component';
-import { CharacterCounterComponent } from '../../../shared/components/character-counter/character-counter.component';
-import { DataTableComponent, DataTableColumn } from '../../../shared/components/data-table/data-table.component';
-import { ActionButtonComponent } from '../../../shared/components/action-button/action-button.component';
-import { SearchableDropdownComponent } from '../../../shared/components/searchable-dropdown/searchable-dropdown.component';
-import { DialogComponent } from '../../../shared/components/dialog/dialog.component';
-import { DropdownOption } from '../../../core/interfaces/components.interface';
+import { CustomSubheaderComponent } from '../../shared/components/custom-subheader/custom-subheader.component';
+import { CharacterCounterComponent } from '../../shared/components/character-counter/character-counter.component';
+import {
+  DataTableComponent,
+  DataTableColumn,
+} from '../../shared/components/data-table/data-table.component';
+import { ActionButtonComponent } from '../../shared/components/action-button/action-button.component';
+import { SearchableDropdownComponent } from '../../shared/components/searchable-dropdown/searchable-dropdown.component';
+import { DialogComponent } from '../../shared/components/dialog/dialog.component';
+import { DropdownOption } from '../../core/interfaces/components.interface';
 
-type TableEntryType =
-  | 'internal'
-  | 'external'
-  | 'outcome'
-  | 'budget'
-  | 'billing';
+import { TableActionIconComponent } from '../../shared/components/table-action-icon/table-action-icon.component';
+
+type TableEntryType = 'internal' | 'external' | 'outcome' | 'budget' | 'billing';
 
 interface InternalCoResearcherRow {
   staffName: string;
@@ -65,6 +65,7 @@ interface ExpectedOutcomeRow {
   selector: 'app-external-project-data-entry',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    TableActionIconComponent,
     CommonModule,
     ReactiveFormsModule,
     CustomSubheaderComponent,
@@ -123,43 +124,103 @@ export class ExternalProjectDataEntryComponent {
     { name: 'Dr. Daniel Wong', schoolDepartment: 'School of Media & Design' },
   ];
 
-  readonly projectLeaderOptions: DropdownOption<string>[] = this.staffDirectory.map(staff => ({
+  readonly projectLeaderOptions: DropdownOption<string>[] = this.staffDirectory.map((staff) => ({
     value: staff.name,
     label: staff.name,
   }));
 
   readonly internalCoResearcherColumns: readonly DataTableColumn[] = [
-    { key: 'index', label: '#', width: 'var(--size-table-column-index)', align: 'center', headerAlign: 'center' },
+    {
+      key: 'index',
+      label: '#',
+      width: 'var(--size-table-column-index)',
+      align: 'center',
+      headerAlign: 'center',
+    },
     { key: 'staffName', label: 'Staff Name' },
     { key: 'schoolDepartment', label: 'School/Department' },
-    { key: 'actions', label: 'Action', width: 'var(--size-table-column-actions)', align: 'right', headerAlign: 'right' },
+    {
+      key: 'actions',
+      label: 'Action',
+      width: 'var(--size-table-column-actions)',
+      align: 'right',
+      headerAlign: 'right',
+    },
   ];
 
   readonly externalCollaboratorColumns: readonly DataTableColumn[] = [
-    { key: 'index', label: '#', width: 'var(--size-table-column-index)', align: 'center', headerAlign: 'center' },
+    {
+      key: 'index',
+      label: '#',
+      width: 'var(--size-table-column-index)',
+      align: 'center',
+      headerAlign: 'center',
+    },
     { key: 'name', label: 'Name' },
     { key: 'affiliation', label: 'Affiliation' },
-    { key: 'actions', label: 'Action', width: 'var(--size-table-column-actions)', align: 'right', headerAlign: 'right' },
+    {
+      key: 'actions',
+      label: 'Action',
+      width: 'var(--size-table-column-actions)',
+      align: 'right',
+      headerAlign: 'right',
+    },
   ];
 
   readonly expectedOutcomeColumns: readonly DataTableColumn[] = [
-    { key: 'index', label: '#', width: 'var(--size-table-column-index)', align: 'center', headerAlign: 'center' },
+    {
+      key: 'index',
+      label: '#',
+      width: 'var(--size-table-column-index)',
+      align: 'center',
+      headerAlign: 'center',
+    },
     { key: 'description', label: 'Description' },
-    { key: 'actions', label: 'Action', width: 'var(--size-table-column-actions)', align: 'right', headerAlign: 'right' },
+    {
+      key: 'actions',
+      label: 'Action',
+      width: 'var(--size-table-column-actions)',
+      align: 'right',
+      headerAlign: 'right',
+    },
   ];
 
   readonly budgetBreakdownColumns: readonly DataTableColumn[] = [
-    { key: 'index', label: '#', width: 'var(--size-table-column-index)', align: 'center', headerAlign: 'center' },
+    {
+      key: 'index',
+      label: '#',
+      width: 'var(--size-table-column-index)',
+      align: 'center',
+      headerAlign: 'center',
+    },
     { key: 'description', label: 'Description of Expense' },
     { key: 'amount', label: 'Amount (RM)', width: 'var(--size-table-column-amount)' },
-    { key: 'actions', label: 'Action', width: 'var(--size-table-column-actions)', align: 'right', headerAlign: 'right' },
+    {
+      key: 'actions',
+      label: 'Action',
+      width: 'var(--size-table-column-actions)',
+      align: 'right',
+      headerAlign: 'right',
+    },
   ];
 
   readonly billingBreakdownColumns: readonly DataTableColumn[] = [
-    { key: 'index', label: '#', width: 'var(--size-table-column-index)', align: 'center', headerAlign: 'center' },
+    {
+      key: 'index',
+      label: '#',
+      width: 'var(--size-table-column-index)',
+      align: 'center',
+      headerAlign: 'center',
+    },
     { key: 'description', label: 'Description' },
     { key: 'amount', label: 'Amount (RM)', width: 'var(--size-table-column-amount)' },
-    { key: 'actions', label: 'Action', width: 'var(--size-table-column-actions)', align: 'right', headerAlign: 'right' },
+    {
+      key: 'actions',
+      label: 'Action',
+      width: 'var(--size-table-column-actions)',
+      align: 'right',
+      headerAlign: 'right',
+    },
   ];
 
   internalCoResearchers: InternalCoResearcherRow[] = [];
@@ -192,7 +253,7 @@ export class ExternalProjectDataEntryComponent {
 
     this.externalProjectForm.controls.staffName.valueChanges
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(staffName => {
+      .subscribe((staffName) => {
         this.externalProjectForm.controls.schoolDepartment.setValue(
           this.getStaffDepartment(staffName),
           { emitEvent: false },
@@ -201,11 +262,10 @@ export class ExternalProjectDataEntryComponent {
 
     this.tableEntryForm.controls.staffName.valueChanges
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(staffName => {
-        this.tableEntryForm.controls.schoolDepartment.setValue(
-          this.getStaffDepartment(staffName),
-          { emitEvent: false },
-        );
+      .subscribe((staffName) => {
+        this.tableEntryForm.controls.schoolDepartment.setValue(this.getStaffDepartment(staffName), {
+          emitEvent: false,
+        });
       });
   }
 
@@ -226,7 +286,11 @@ export class ExternalProjectDataEntryComponent {
   }
 
   showProjectFlow(): boolean {
-    return this.isNationalSelected() || this.isInternationalSelected() || this.isPrivateIndustrySelected();
+    return (
+      this.isNationalSelected() ||
+      this.isInternationalSelected() ||
+      this.isPrivateIndustrySelected()
+    );
   }
 
   researchTitleLength(): number {
@@ -261,14 +325,10 @@ export class ExternalProjectDataEntryComponent {
     const calendarMonthDifference =
       (endDate.year - startDate.year) * 12 + endDate.month - startDate.month;
     const includesPartialMonth = endDate.day > startDate.day;
-    const durationMonths = Math.max(
-      1,
-      calendarMonthDifference + (includesPartialMonth ? 1 : 0),
-    );
+    const durationMonths = Math.max(1, calendarMonthDifference + (includesPartialMonth ? 1 : 0));
 
     durationControl.setValue(String(durationMonths), { emitEvent: false });
   }
-
 
   openTableEntryDialog(
     type: TableEntryType,
@@ -339,7 +399,7 @@ export class ExternalProjectDataEntryComponent {
         );
         break;
       case 'budget':
-        this.updateBudgetSection(this.activeSectionKey ?? '', section => {
+        this.updateBudgetSection(this.activeSectionKey ?? '', (section) => {
           section.rows = this.upsertRow(
             section.rows,
             { description: value.description ?? '', amount: value.amount ?? '' },
@@ -349,7 +409,7 @@ export class ExternalProjectDataEntryComponent {
         });
         break;
       case 'billing':
-        this.updateBudgetSection(this.activeSectionKey ?? '', section => {
+        this.updateBudgetSection(this.activeSectionKey ?? '', (section) => {
           section.billingRows = this.upsertRow(
             section.billingRows,
             { description: value.description ?? '', amount: value.amount ?? '' },
@@ -363,7 +423,7 @@ export class ExternalProjectDataEntryComponent {
   }
 
   updateBudgetSectionItem(sectionKey: string, value: string): void {
-    this.budgetSections.forEach(section => {
+    this.budgetSections.forEach((section) => {
       if (section.key === sectionKey) {
         section.item = value;
       }
@@ -371,7 +431,7 @@ export class ExternalProjectDataEntryComponent {
   }
 
   updateBudgetSectionTotal(sectionKey: string, value: string): void {
-    this.budgetSections.forEach(section => {
+    this.budgetSections.forEach((section) => {
       if (section.key === sectionKey) {
         section.totalAmount = value;
       }
@@ -379,7 +439,7 @@ export class ExternalProjectDataEntryComponent {
   }
 
   updateBudgetSectionRemark(sectionKey: string, value: string): void {
-    this.budgetSections.forEach(section => {
+    this.budgetSections.forEach((section) => {
       if (section.key === sectionKey) {
         section.remark = value;
       }
@@ -387,7 +447,7 @@ export class ExternalProjectDataEntryComponent {
   }
 
   updateBillingRequired(sectionKey: string, value: 'Yes' | 'No'): void {
-    this.budgetSections.forEach(section => {
+    this.budgetSections.forEach((section) => {
       if (section.key === sectionKey) {
         section.billingRequired = value;
         if (value === 'No') {
@@ -400,13 +460,13 @@ export class ExternalProjectDataEntryComponent {
   }
 
   updateBillingAmount(sectionKey: string, value: string): void {
-    this.updateBudgetSection(sectionKey, section => {
+    this.updateBudgetSection(sectionKey, (section) => {
       section.billingAmount = value;
     });
   }
 
   updateBillingDate(sectionKey: string, value: string): void {
-    this.updateBudgetSection(sectionKey, section => {
+    this.updateBudgetSection(sectionKey, (section) => {
       section.billingDate = value;
     });
   }
@@ -416,9 +476,7 @@ export class ExternalProjectDataEntryComponent {
       return false;
     }
 
-    return field === 'amount'
-      ? this.parseAmount(section.billingAmount) <= 0
-      : !section.billingDate;
+    return field === 'amount' ? this.parseAmount(section.billingAmount) <= 0 : !section.billingDate;
   }
 
   isBillingBreakdownInvalid(section: BudgetSection): boolean {
@@ -426,22 +484,29 @@ export class ExternalProjectDataEntryComponent {
       return false;
     }
 
-    return !section.billingRows.some(row =>
-      row.description.trim().length > 0 && this.parseAmount(row.amount) > 0
+    return !section.billingRows.some(
+      (row) => row.description.trim().length > 0 && this.parseAmount(row.amount) > 0,
     );
   }
 
   budgetSummaryTotal(): string {
-    const total = this.budgetSections.reduce((sum, section) => sum + this.parseAmount(section.totalAmount), 0);
+    const total = this.budgetSections.reduce(
+      (sum, section) => sum + this.parseAmount(section.totalAmount),
+      0,
+    );
     return total ? total.toFixed(2) : '0.00';
   }
 
   removeInternalCoResearcherRow(index: number): void {
-    this.internalCoResearchers = this.internalCoResearchers.filter((_, rowIndex) => rowIndex !== index);
+    this.internalCoResearchers = this.internalCoResearchers.filter(
+      (_, rowIndex) => rowIndex !== index,
+    );
   }
 
   removeExternalCollaboratorRow(index: number): void {
-    this.externalCollaborators = this.externalCollaborators.filter((_, rowIndex) => rowIndex !== index);
+    this.externalCollaborators = this.externalCollaborators.filter(
+      (_, rowIndex) => rowIndex !== index,
+    );
   }
 
   removeExpectedOutcomeRow(index: number): void {
@@ -449,14 +514,14 @@ export class ExternalProjectDataEntryComponent {
   }
 
   removeBudgetRow(sectionKey: string, index: number): void {
-    this.updateBudgetSection(sectionKey, section => {
+    this.updateBudgetSection(sectionKey, (section) => {
       section.rows = section.rows.filter((_, rowIndex) => rowIndex !== index);
       this.recalculateBudgetSectionTotal(section);
     });
   }
 
   removeBillingRow(sectionKey: string, index: number): void {
-    this.updateBudgetSection(sectionKey, section => {
+    this.updateBudgetSection(sectionKey, (section) => {
       section.billingRows = section.billingRows.filter((_, rowIndex) => rowIndex !== index);
     });
   }
@@ -479,10 +544,15 @@ export class ExternalProjectDataEntryComponent {
   }
 
   private getStaffDepartment(staffName: string | null | undefined): string {
-    return this.staffDirectory.find(staff => staff.name === staffName)?.schoolDepartment ?? '';
+    return this.staffDirectory.find((staff) => staff.name === staffName)?.schoolDepartment ?? '';
   }
 
-  private createBudgetSection(key: string, title: string, code: string, isManagementFee = false): BudgetSection {
+  private createBudgetSection(
+    key: string,
+    title: string,
+    code: string,
+    isManagementFee = false,
+  ): BudgetSection {
     return {
       key,
       title,
@@ -499,14 +569,14 @@ export class ExternalProjectDataEntryComponent {
   }
 
   private updateBudgetSection(sectionKey: string, update: (section: BudgetSection) => void): void {
-    const section = this.budgetSections.find(item => item.key === sectionKey);
+    const section = this.budgetSections.find((item) => item.key === sectionKey);
     if (section) {
       update(section);
     }
   }
 
   private configureTableEntryValidation(type: TableEntryType): void {
-    Object.values(this.tableEntryForm.controls).forEach(control => {
+    Object.values(this.tableEntryForm.controls).forEach((control) => {
       control.clearValidators();
       control.updateValueAndValidity({ emitEvent: false });
     });
@@ -519,7 +589,7 @@ export class ExternalProjectDataEntryComponent {
       billing: ['description', 'amount'],
     } satisfies Record<TableEntryType, readonly (keyof typeof this.tableEntryForm.controls)[]>;
 
-    requiredControls[type].forEach(controlName => {
+    requiredControls[type].forEach((controlName) => {
       const control = this.tableEntryForm.controls[controlName];
       control.setValidators(
         controlName === 'amount'
@@ -549,16 +619,14 @@ export class ExternalProjectDataEntryComponent {
       return this.expectedOutcomes[index] ?? {};
     }
 
-    const section = this.budgetSections.find(item => item.key === sectionKey);
-    return type === 'budget'
-      ? section?.rows[index] ?? {}
-      : section?.billingRows[index] ?? {};
+    const section = this.budgetSections.find((item) => item.key === sectionKey);
+    return type === 'budget' ? (section?.rows[index] ?? {}) : (section?.billingRows[index] ?? {});
   }
 
   private upsertRow<T>(rows: readonly T[], row: T, index: number | null): T[] {
     return index === null
       ? [...rows, row]
-      : rows.map((existingRow, rowIndex) => rowIndex === index ? row : existingRow);
+      : rows.map((existingRow, rowIndex) => (rowIndex === index ? row : existingRow));
   }
 
   private recalculateBudgetSectionTotal(section: BudgetSection): void {
@@ -595,3 +663,4 @@ export class ExternalProjectDataEntryComponent {
     };
   }
 }
+

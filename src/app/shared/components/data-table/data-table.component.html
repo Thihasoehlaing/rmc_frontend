@@ -4,7 +4,7 @@
       <table>
         <colgroup>
           @for (column of columns; track column.key) {
-            <col [style.width]="column.width || 'auto'">
+            <col [style.width]="column.width || 'auto'" />
           }
         </colgroup>
 
@@ -18,24 +18,28 @@
                   [class.is-align-right]="headerAlign(column) === 'right'"
                   [class.is-sortable]="column.sortable"
                   [class.is-sorted]="sortColumn === column.key"
-                  (click)="onHeaderClick(column)">
-                  @if (headerTemplate) {
-                    <ng-container
-                      [ngTemplateOutlet]="headerTemplate"
-                      [ngTemplateOutletContext]="{ column: column, index: i }">
-                    </ng-container>
-                  } @else {
-                    <span class="header-label">{{ column.label }}</span>
-                  }
-                  @if (column.sortable) {
-                    <span class="sort-indicator" aria-hidden="true">
-                      @if (sortColumn === column.key) {
-                        <span>{{ sortDirection === 'desc' ? '↓' : '↑' }}</span>
-                      } @else {
-                        <span>↑</span><span>↓</span>
-                      }
-                    </span>
-                  }
+                  (click)="onHeaderClick(column)"
+                >
+                  <span class="header-content">
+                    @if (headerTemplate) {
+                      <ng-container
+                        [ngTemplateOutlet]="headerTemplate"
+                        [ngTemplateOutletContext]="{ column: column, index: i }"
+                      >
+                      </ng-container>
+                    } @else {
+                      <span class="header-label">{{ column.label }}</span>
+                    }
+                    @if (column.sortable && showSortIndicator) {
+                      <span
+                        class="material-icons sort-indicator"
+                        [class.is-active]="sortColumn === column.key && !!sortDirection"
+                        aria-hidden="true"
+                      >
+                        {{ sortIcon(column) }}
+                      </span>
+                    }
+                  </span>
                 </th>
               }
             </tr>
@@ -48,14 +52,21 @@
               @if (rowTemplate) {
                 <ng-container
                   [ngTemplateOutlet]="rowTemplate"
-                  [ngTemplateOutletContext]="{ $implicit: row, row: row, index: (currentPage * (pageSize || displayRows.length)) + i, columns: columns }">
+                  [ngTemplateOutletContext]="{
+                    $implicit: row,
+                    row: row,
+                    index: currentPage * (pageSize || displayRows.length) + i,
+                    columns: columns,
+                  }"
+                >
                 </ng-container>
               } @else {
                 <tr [class.is-hoverable]="hoverable">
                   @for (column of columns; track column.key) {
                     <td
                       [class.is-align-center]="cellAlign(column) === 'center'"
-                      [class.is-align-right]="cellAlign(column) === 'right'">
+                      [class.is-align-right]="cellAlign(column) === 'right'"
+                    >
                       {{ resolveValue(row, column.key) ?? '—' }}
                     </td>
                   }
@@ -84,20 +95,20 @@
         class="btn btn-sm btn-secondary"
         (click)="onPreviousPage()"
         [disabled]="currentPage === 0"
-        aria-label="Previous page">
+        aria-label="Previous page"
+      >
         <span class="material-icons">chevron_left</span>
       </button>
 
-      <span class="pagination-info">
-        Page {{ currentPage + 1 }} of {{ totalPages }}
-      </span>
+      <span class="pagination-info"> Page {{ currentPage + 1 }} of {{ totalPages }} </span>
 
       <button
         type="button"
         class="btn btn-sm btn-secondary"
         (click)="onNextPage()"
         [disabled]="currentPage >= totalPages - 1"
-        aria-label="Next page">
+        aria-label="Next page"
+      >
         <span class="material-icons">chevron_right</span>
       </button>
     </div>

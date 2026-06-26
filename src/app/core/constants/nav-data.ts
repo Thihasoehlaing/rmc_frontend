@@ -126,7 +126,12 @@ export const NAVIGATION_DATA: NavGroup[] = [
                             allOf: ['academic'],
                         },
                     },
-                    // Travel Authorization: visible to all authenticated users except Admin
+                    {
+                        label: 'External Project Data Entry',
+                        icon: 'folder_open',
+                        route: '/external-project-data-entry',
+                        permission: { anyOf: ['RMC', 'Admin'] },
+                    },                    // Travel Authorization: visible to all authenticated users except Admin
                     {
                         label: 'Travel Authorization',
                         icon: 'flight_takeoff',
@@ -150,7 +155,6 @@ export const NAVIGATION_DATA: NavGroup[] = [
                     { label: 'Dropdowns', icon: 'list', route: '/admin-settings/dropdowns', permission: { anyOf: ['Admin'] } },
                     { label: 'Batches', icon: 'batch_prediction', route: '/admin-settings/batches', permission: { anyOf: ['Admin'] } },
                     { label: 'Staff Access', icon: 'person_add', route: '/admin-settings/staff-access', permission: { anyOf: ['Admin'] } },
-                    { label: 'External Project Data Entry', icon: 'folder_open', route: '/admin-settings/external-project-data-entry', permission: { anyOf: ['Admin'] } },
                 ],
             },
 
@@ -175,3 +179,4 @@ export const NAVIGATION_DATA: NavGroup[] = [
         ],
     },
 ];
+

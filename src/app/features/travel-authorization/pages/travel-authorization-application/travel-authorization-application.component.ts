@@ -1,6 +1,13 @@
 import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormControl, AbstractControl } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+  FormControl,
+  AbstractControl,
+} from '@angular/forms';
 import { SearchableDropdownComponent } from '../../../../shared/components/searchable-dropdown/searchable-dropdown.component';
 import { ValidationMessageComponent } from '../../../../shared/components/validation-message/validation-message.component';
 import { CustomHeaderComponent } from '../../../../shared/components/custom-header/custom-header.component';
@@ -9,12 +16,17 @@ import { DialogComponent } from '../../../../shared/components/dialog/dialog.com
 import { FileUploadComponent } from '../../../../shared/components/file-upload/file-upload.component';
 import { FormWizardNavComponent } from '../../../../shared/components/form-wizard-nav/form-wizard-nav.component';
 import { ReviewBlockComponent } from '../../../rdig/components/review-block/review-block.component';
-import { DataTableComponent, DataTableColumn } from '../../../../shared/components/data-table/data-table.component';
+import {
+  DataTableComponent,
+  DataTableColumn,
+} from '../../../../shared/components/data-table/data-table.component';
 import {
   FormMainTitleComponent,
   GuidelineContext,
 } from '../../../../shared/components/form-main-title/form-main-title.component';
 import { ActivatedRoute } from '@angular/router';
+
+import { TableActionIconComponent } from '../../../../shared/components/table-action-icon/table-action-icon.component';
 
 interface FunctionalAreaOption {
   label: string;
@@ -25,6 +37,7 @@ interface FunctionalAreaOption {
   selector: 'app-travel-authorization-application',
   standalone: true,
   imports: [
+    TableActionIconComponent,
     CommonModule,
     SearchableDropdownComponent,
     ReactiveFormsModule,
@@ -44,8 +57,9 @@ interface FunctionalAreaOption {
 export class TravelAuthorizationApplicationComponent implements OnInit {
   private fb = inject(FormBuilder);
   private route = inject(ActivatedRoute);
-  readonly guidelineContext: GuidelineContext =
-    this.route.snapshot.queryParamMap.has('id') ? 'existing-application' : 'new-application';
+  readonly guidelineContext: GuidelineContext = this.route.snapshot.queryParamMap.has('id')
+    ? 'existing-application'
+    : 'new-application';
 
   travelAuthForm!: FormGroup;
   expenseForm!: FormGroup;
@@ -66,14 +80,15 @@ export class TravelAuthorizationApplicationComponent implements OnInit {
   showCooComments = signal(false);
 
   // Computed signal to check if any comments are visible
-  showAnyComments = computed(() =>
-    (this.showHosToggle() && this.getHosCommentState().visible) ||
-    (this.showRmcToggle() && this.getRmcCommentState().visible) ||
-    (this.showVcToggle() && this.getVcCommentState().visible) ||
-    (this.showHrToggle() && this.getHrCommentState().visible) ||
-    (this.showCeoToggle() && this.getCeoCommentState().visible) ||
-    (this.showFinanceToggle() && this.getFinanceCommentState().visible) ||
-    (this.showCooToggle() && this.getCooCommentState().visible)
+  showAnyComments = computed(
+    () =>
+      (this.showHosToggle() && this.getHosCommentState().visible) ||
+      (this.showRmcToggle() && this.getRmcCommentState().visible) ||
+      (this.showVcToggle() && this.getVcCommentState().visible) ||
+      (this.showHrToggle() && this.getHrCommentState().visible) ||
+      (this.showCeoToggle() && this.getCeoCommentState().visible) ||
+      (this.showFinanceToggle() && this.getFinanceCommentState().visible) ||
+      (this.showCooToggle() && this.getCooCommentState().visible),
   );
 
   // DEV TEST: Status override for testing
@@ -149,7 +164,7 @@ export class TravelAuthorizationApplicationComponent implements OnInit {
     { key: 'cost', label: 'Cost (Foreign/MYR)' },
     { key: 'exchangeRate', label: 'Exchange Rate' },
     { key: 'costInRM', label: 'Cost in RM' },
-    { key: 'actions', label: 'Actions', width: '100px', align: 'center' }
+    { key: 'actions', label: 'Actions', width: '100px', align: 'center' },
   ];
 
   ngOnInit() {
@@ -213,31 +228,31 @@ export class TravelAuthorizationApplicationComponent implements OnInit {
 
   // Toggle methods for comment visibility
   toggleHosComments(): void {
-    this.showHosComments.update(val => !val);
+    this.showHosComments.update((val) => !val);
   }
 
   toggleRmcComments(): void {
-    this.showRmcComments.update(val => !val);
+    this.showRmcComments.update((val) => !val);
   }
 
   toggleVcComments(): void {
-    this.showVcComments.update(val => !val);
+    this.showVcComments.update((val) => !val);
   }
 
   toggleHrComments(): void {
-    this.showHrComments.update(val => !val);
+    this.showHrComments.update((val) => !val);
   }
 
   toggleCeoComments(): void {
-    this.showCeoComments.update(val => !val);
+    this.showCeoComments.update((val) => !val);
   }
 
   toggleFinanceComments(): void {
-    this.showFinanceComments.update(val => !val);
+    this.showFinanceComments.update((val) => !val);
   }
 
   toggleCooComments(): void {
-    this.showCooComments.update(val => !val);
+    this.showCooComments.update((val) => !val);
   }
 
   /**
@@ -378,13 +393,9 @@ export class TravelAuthorizationApplicationComponent implements OnInit {
    */
   showFinanceToggle(): boolean {
     const status = this.travelStatus();
-    return [
-      'pending_finance',
-      'finance_reject',
-      'pending_coo',
-      'coo_reject',
-      'approved',
-    ].includes(status);
+    return ['pending_finance', 'finance_reject', 'pending_coo', 'coo_reject', 'approved'].includes(
+      status,
+    );
   }
 
   /**
@@ -392,11 +403,7 @@ export class TravelAuthorizationApplicationComponent implements OnInit {
    */
   showCooToggle(): boolean {
     const status = this.travelStatus();
-    return [
-      'pending_coo',
-      'coo_reject',
-      'approved',
-    ].includes(status);
+    return ['pending_coo', 'coo_reject', 'approved'].includes(status);
   }
 
   /**
@@ -404,7 +411,9 @@ export class TravelAuthorizationApplicationComponent implements OnInit {
    */
   getHosCommentState(): { visible: boolean; editable: boolean } {
     const status = this.travelStatus();
-    const visible = ['applicant_resub', 'pending_rmc', 'rmc_reject', 'hos_reject', 'approved'].includes(status) || this.showHosComments();
+    const visible =
+      ['applicant_resub', 'pending_rmc', 'rmc_reject', 'hos_reject', 'approved'].includes(status) ||
+      this.showHosComments();
     const editable = status === 'pending_hos';
     return { visible, editable };
   }
@@ -414,7 +423,16 @@ export class TravelAuthorizationApplicationComponent implements OnInit {
    */
   getRmcCommentState(): { visible: boolean; editable: boolean } {
     const status = this.travelStatus();
-    const visible = ['applicant_resub', 'hos_resub', 'hos_request_resubmission', 'rmc_request_resubmission', 'pending_rmc', 'rmc_reject', 'approved'].includes(status) || this.showRmcComments();
+    const visible =
+      [
+        'applicant_resub',
+        'hos_resub',
+        'hos_request_resubmission',
+        'rmc_request_resubmission',
+        'pending_rmc',
+        'rmc_reject',
+        'approved',
+      ].includes(status) || this.showRmcComments();
     const editable = status === 'pending_rmc';
     return { visible, editable };
   }
@@ -424,7 +442,8 @@ export class TravelAuthorizationApplicationComponent implements OnInit {
    */
   getVcCommentState(): { visible: boolean; editable: boolean } {
     const status = this.travelStatus();
-    const visible = ['pending_vc', 'vc_reject', 'approved'].includes(status) || this.showVcComments();
+    const visible =
+      ['pending_vc', 'vc_reject', 'approved'].includes(status) || this.showVcComments();
     const editable = status === 'pending_vc';
     return { visible, editable };
   }
@@ -434,7 +453,8 @@ export class TravelAuthorizationApplicationComponent implements OnInit {
    */
   getHrCommentState(): { visible: boolean; editable: boolean } {
     const status = this.travelStatus();
-    const visible = ['pending_hr', 'hr_reject', 'approved'].includes(status) || this.showHrComments();
+    const visible =
+      ['pending_hr', 'hr_reject', 'approved'].includes(status) || this.showHrComments();
     const editable = status === 'pending_hr';
     return { visible, editable };
   }
@@ -444,7 +464,8 @@ export class TravelAuthorizationApplicationComponent implements OnInit {
    */
   getCeoCommentState(): { visible: boolean; editable: boolean } {
     const status = this.travelStatus();
-    const visible = ['pending_ceo', 'ceo_reject', 'approved'].includes(status) || this.showCeoComments();
+    const visible =
+      ['pending_ceo', 'ceo_reject', 'approved'].includes(status) || this.showCeoComments();
     const editable = status === 'pending_ceo';
     return { visible, editable };
   }
@@ -454,7 +475,9 @@ export class TravelAuthorizationApplicationComponent implements OnInit {
    */
   getFinanceCommentState(): { visible: boolean; editable: boolean } {
     const status = this.travelStatus();
-    const visible = ['pending_finance', 'finance_reject', 'approved'].includes(status) || this.showFinanceComments();
+    const visible =
+      ['pending_finance', 'finance_reject', 'approved'].includes(status) ||
+      this.showFinanceComments();
     const editable = status === 'pending_finance';
     return { visible, editable };
   }
@@ -464,7 +487,8 @@ export class TravelAuthorizationApplicationComponent implements OnInit {
    */
   getCooCommentState(): { visible: boolean; editable: boolean } {
     const status = this.travelStatus();
-    const visible = ['pending_coo', 'coo_reject', 'approved'].includes(status) || this.showCooComments();
+    const visible =
+      ['pending_coo', 'coo_reject', 'approved'].includes(status) || this.showCooComments();
     const editable = status === 'pending_coo';
     return { visible, editable };
   }
@@ -481,7 +505,10 @@ export class TravelAuthorizationApplicationComponent implements OnInit {
       accountCode: ['', [Validators.required]],
       typeOfExpense: ['', [Validators.required]],
       description: [''],
-      amountForeignCurrency: ['', [Validators.required, Validators.pattern('^[0-9]+(?:\\.[0-9]+)?$')]],
+      amountForeignCurrency: [
+        '',
+        [Validators.required, Validators.pattern('^[0-9]+(?:\\.[0-9]+)?$')],
+      ],
       exchangeRate: ['', [Validators.required, Validators.pattern('^[0-9]+(?:\\.[0-9]+)?$')]],
       amountMYR: [{ value: '', disabled: true }],
       fileUpload: [''],
@@ -568,7 +595,10 @@ export class TravelAuthorizationApplicationComponent implements OnInit {
     this.calculateMYR();
   }
 
-  restrictDecimalInput(event: KeyboardEvent, controlName: 'amountForeignCurrency' | 'exchangeRate'): void {
+  restrictDecimalInput(
+    event: KeyboardEvent,
+    controlName: 'amountForeignCurrency' | 'exchangeRate',
+  ): void {
     const allowedKeys = [
       'Backspace',
       'Delete',
@@ -584,7 +614,10 @@ export class TravelAuthorizationApplicationComponent implements OnInit {
       'Clear',
     ];
 
-    if ((event.ctrlKey || event.metaKey) && ['a', 'c', 'v', 'x', 'z'].includes(event.key.toLowerCase())) {
+    if (
+      (event.ctrlKey || event.metaKey) &&
+      ['a', 'c', 'v', 'x', 'z'].includes(event.key.toLowerCase())
+    ) {
       return;
     }
 

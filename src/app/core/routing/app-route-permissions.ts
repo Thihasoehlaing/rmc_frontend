@@ -56,3 +56,8 @@ export const adminSettingsPermission = {
 export const systemSettingsPermission = {
   allOf: ['SystemAdmin'],
 } satisfies NavPermission;
+
+export const externalProjectDataEntryPermission = {
+  anyOf: ['RMC', 'Admin'],
+} satisfies NavPermission;
+

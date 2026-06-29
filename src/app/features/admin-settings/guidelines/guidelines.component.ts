@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit, TrackByFunction, inject, signal } from '@angular/core';
+import { Component, OnInit, TrackByFunction, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
 
@@ -19,6 +19,11 @@ import { nextTableSortState, SortDirection } from '../../../shared/services/tabl
 import { SvgIconComponent } from '../../../shared/components/svg-icon/svg-icon.component';
 import { SVG_ICON_TRASH } from '../../../shared/icons/svg-icons';
 import { TableActionIconComponent } from '../../../shared/components/table-action-icon/table-action-icon.component';
+import { SubmissionsSearchComponent } from '../../../shared/components/submissions-search/submissions-search.component';
+import {
+  SkeletonColumn,
+  TableSkeletonComponent,
+} from '../../../shared/components/table-skeleton/table-skeleton.component';
 
 interface Guideline {
   id: number;
@@ -50,6 +55,8 @@ const FORM_CODES: Record<string, string> = Object.fromEntries(
   standalone: true,
   imports: [
     TableActionIconComponent,
+    SubmissionsSearchComponent,
+    TableSkeletonComponent,
     CommonModule,
     FormsModule,
     AddGuidelineModalComponent,
@@ -61,11 +68,10 @@ const FORM_CODES: Record<string, string> = Object.fromEntries(
   templateUrl: './guidelines.component.html',
   styleUrls: ['./guidelines.component.scss'],
 })
-export class GuidelinesComponent implements OnInit, OnDestroy {
+export class GuidelinesComponent implements OnInit {
   readonly trashIcon = SVG_ICON_TRASH;
 
   private readonly guidelinesService = inject(GuidelinesService);
-  private searchTimer?: ReturnType<typeof setTimeout>;
 
   readonly searchTerm = signal('');
   readonly selectedStatus = signal('');
@@ -86,11 +92,21 @@ export class GuidelinesComponent implements OnInit, OnDestroy {
   readonly loadFailed = signal(false);
   readonly guidelineToDeactivate = signal<Guideline | null>(null);
 
+  readonly skeletonColumns: readonly SkeletonColumn[] = [
+    { width: '80px' },
+    { width: '180px' },
+    { width: '32%' },
+    { width: '120px' },
+    { width: '120px' },
+    { width: '140px' },
+    { width: '160px' },
+    { width: '132px' },
+  ];
   readonly columns: readonly DataTableColumn[] = [
     { key: 'number', label: 'No.', width: '80px', align: 'center' },
     { key: 'form', label: 'Form', width: '180px', sortable: true },
-    { key: 'title', label: 'Guideline Title', sortable: true },
-    { key: 'status', label: 'Status', width: '120px' },
+    { key: 'title', label: 'Guideline Title', width: '32%', sortable: true },
+    { key: 'status', label: 'Status', width: '132px', align: 'center', headerAlign: 'center' },
     {
       key: 'blocks',
       label: 'Blocks',
@@ -113,7 +129,7 @@ export class GuidelinesComponent implements OnInit, OnDestroy {
     {
       key: 'actions',
       label: 'Actions',
-      width: '230px',
+      width: '132px',
       align: 'right',
       headerAlign: 'right',
     },
@@ -124,12 +140,6 @@ export class GuidelinesComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadGuidelines();
-  }
-
-  ngOnDestroy(): void {
-    if (this.searchTimer) {
-      clearTimeout(this.searchTimer);
-    }
   }
 
   loadGuidelines(): void {
@@ -200,14 +210,16 @@ export class GuidelinesComponent implements OnInit, OnDestroy {
   }
 
   onGuidelineSearchChange(value: string): void {
-    this.searchTerm.set(value);
+    this.searchTerm.set(value.trim());
     this.guidelinePage.set(1);
+    this.loadGuidelines();
+  }
 
-    if (this.searchTimer) {
-      clearTimeout(this.searchTimer);
-    }
-
-    this.searchTimer = setTimeout(() => this.loadGuidelines(), 350);
+  resetGuidelineFilters(): void {
+    this.searchTerm.set('');
+    this.selectedStatus.set('');
+    this.guidelinePage.set(1);
+    this.loadGuidelines();
   }
 
   onGuidelineStatusChange(value: string): void {

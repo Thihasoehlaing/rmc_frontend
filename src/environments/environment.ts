@@ -1,7 +1,8 @@
 export const environment = {
   production: false,
-  apiUrl: 'http://localhost:8000',
+  apiUrl: 'http://127.0.0.1:8000',
   authUrl: 'https://dev-auth.apu.edu.my',
-  authRedirectUrl: 'http://localhost:4200',
+  authRedirectUrl: 'http://127.0.0.1:4200',
   authAppName: 'quix',
 };
+  

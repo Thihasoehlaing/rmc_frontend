@@ -6,6 +6,7 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angula
 import { FileUploadComponent } from '../../../../shared/components/file-upload/file-upload.component';
 import { NoteComponent } from '../../../../shared/components/note/note.component'; 
 import { JournalWorkflowService } from '../../services/journal-workflow.service';
+import { JournalFormData, JournalRequestPayload } from '../../services/journal-application-api.service';
 
 @Component({
   selector: 'app-documents',
@@ -63,6 +64,31 @@ export class DocumentsComponent implements OnInit {
     this.documentsForm.statusChanges.subscribe(status => {
       this.formValidityChange.emit(status === 'VALID');
     });
+  }
+
+  getJournalPayload(): JournalRequestPayload {
+    const value = this.documentsForm.getRawValue();
+    return {
+      reviewer_name: value.reviewerName || null,
+      is_manuscript_internally_reviewed: value.manuscriptInternallyReviewed === 'yes',
+      is_published_elsewhere: value.manuscriptPreviouslyPublished === 'yes',
+    };
+  }
+
+  hydrateFromApi(data: JournalFormData): void {
+    const journal = data.journal;
+    if (!journal || !this.documentsForm) {
+      return;
+    }
+
+    this.documentsForm.patchValue(
+      {
+        reviewerName: journal.reviewer_name || '',
+        manuscriptInternallyReviewed: journal.is_manuscript_internally_reviewed ? 'yes' : 'no',
+        manuscriptPreviouslyPublished: journal.is_published_elsewhere ? 'yes' : 'no',
+      },
+      { emitEvent: false },
+    );
   }
 
   onDocumentSelected(controlName: string, file: File | null) {

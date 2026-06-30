@@ -62,6 +62,24 @@
   gap: var(--space-5);
 }
 
+.external-project-form__messages {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.external-project-form__message {
+  margin: 0;
+}
+
+.external-project-form__message--warning {
+  color: var(--color-warning-dark, #9a6700);
+}
+
+.external-project-form__message--success {
+  color: var(--color-success-dark, #1a7f37);
+}
+
 .section-fields {
   display: flex;
   flex-direction: column;

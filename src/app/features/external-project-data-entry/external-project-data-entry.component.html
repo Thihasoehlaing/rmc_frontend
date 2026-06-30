@@ -11,6 +11,29 @@
       <div class="external-project-form__divider" aria-hidden="true"></div>
     </div>
 
+    @if (loadError || actionError || saveSuccess || submitSuccess) {
+      <div class="external-project-form__messages" aria-live="polite">
+        @if (loadError) {
+          <p class="form-hint external-project-form__message external-project-form__message--warning">
+            {{ loadError }}
+          </p>
+        }
+        @if (actionError) {
+          <p class="form-error-msg external-project-form__message">{{ actionError }}</p>
+        }
+        @if (saveSuccess) {
+          <p class="form-hint external-project-form__message external-project-form__message--success">
+            External project draft saved.
+          </p>
+        }
+        @if (submitSuccess) {
+          <p class="form-hint external-project-form__message external-project-form__message--success">
+            External project submitted.
+          </p>
+        }
+      </div>
+    }
+
     <div class="external-project-form__body">
       <div class="form-field">
         <label for="external-grant-category" class="form-label is-required"
@@ -24,6 +47,7 @@
                 class="radio-input"
                 formControlName="externalGrantCategory"
                 [value]="category"
+                [disabled]="isSaving || isSubmitting"
               />
               <span>{{ category }}</span>
             </label>
@@ -738,8 +762,22 @@
     </div>
 
     <footer class="external-project-form__actions">
-      <button type="button" class="btn btn-secondary" (click)="saveDraft()">Save As Draft</button>
-      <button type="button" class="btn btn-primary" (click)="complete()">Complete</button>
+      <button
+        type="button"
+        class="btn btn-secondary"
+        [disabled]="isOptionsLoading || isSaving || isSubmitting"
+        (click)="saveDraft()"
+      >
+        {{ isSaving || isOptionsLoading ? 'Saving...' : 'Save As Draft' }}
+      </button>
+      <button
+        type="button"
+        class="btn btn-primary"
+        [disabled]="isOptionsLoading || isSaving || isSubmitting"
+        (click)="complete()"
+      >
+        {{ isSubmitting ? 'Submitting...' : 'Complete' }}
+      </button>
     </footer>
   </form>
 </section>

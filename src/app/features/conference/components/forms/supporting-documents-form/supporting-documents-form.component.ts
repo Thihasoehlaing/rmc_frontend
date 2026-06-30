@@ -98,11 +98,17 @@ export class SupportingDocumentsFormComponent implements OnInit, OnDestroy {
     }
   }
 
+  /** Flushes the live form into the shared state service — called by the wizard before saving. */
+  flushFormState(): void {
+    this.saveFormState();
+  }
+
   onFileSelected(controlName: string, file: File) {
     this.form.patchValue({
       [controlName]: file.name,
     });
     this.form.get(controlName)?.markAsTouched();
+    this.formStateService.setPendingFile(`supportingDocuments.${controlName}`, file);
   }
 
   canUploadDocuments(): boolean {

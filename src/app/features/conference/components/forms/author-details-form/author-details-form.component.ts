@@ -13,10 +13,7 @@ import { DialogComponent } from '../../../../../shared/components/dialog/dialog.
 import { DropdownOption } from '../../../../../core/interfaces/components.interface';
 import { ConferenceWorkflowService } from '../../../services/conference-workflow.service';
 import { ConferenceFormStateService } from '../../../services/conference-form-state.service';
-import {
-  DropdownsStoreService,
-  StoredDropdownOption,
-} from '../../../../admin-settings/dropdowns/dropdowns-store.service';
+import { MasterDataService } from '../../../../../core/services/master-data.service';
 
 import { TableActionIconComponent } from '../../../../../shared/components/table-action-icon/table-action-icon.component';
 
@@ -44,31 +41,14 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
 
   form!: FormGroup;
   editForm!: FormGroup;
-  private readonly dropdownStore = inject(DropdownsStoreService);
+  private readonly masterData = inject(MasterDataService);
 
   // Modal state
   isModalOpen = false;
   editingIndex: number | null = null;
 
-  private readonly defaultStaffOptions: DropdownOption[] = [
-    { value: 'Vivian Banshee', label: 'Vivian Banshee' },
-    { value: 'John Smith', label: 'John Smith' },
-    { value: 'Sarah Johnson', label: 'Sarah Johnson' },
-    { value: 'Michael Brown', label: 'Michael Brown' },
-    { value: 'Emily Davis', label: 'Emily Davis' },
-    { value: 'Robert Wilson', label: 'Robert Wilson' },
-    { value: 'Jessica Taylor', label: 'Jessica Taylor' },
-    { value: 'James Anderson', label: 'James Anderson' },
-  ];
-
-  private readonly defaultOrganisationTypeOptions: DropdownOption[] = [
-    { value: 'University', label: 'University' },
-    { value: 'Research Institute', label: 'Research Institute' },
-    { value: 'Company', label: 'Company' },
-    { value: 'Government Agency', label: 'Government Agency' },
-    { value: 'Non-Profit Organization', label: 'Non-Profit Organization' },
-    { value: 'Other', label: 'Other' },
-  ];
+  staffOptions: DropdownOption[] = [];
+  organisationTypeOptions: DropdownOption[] = [];
 
   constructor(
     private fb: FormBuilder,
@@ -84,17 +64,6 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
     });
   }
   modalType: 'apu-staff' | 'student' | 'non-apu' | null = null;
-
-  get staffOptions(): DropdownOption[] {
-    return this.getConferenceDropdownOptions('Staff Name', this.defaultStaffOptions);
-  }
-
-  get organisationTypeOptions(): DropdownOption[] {
-    return this.getConferenceDropdownOptions(
-      'Type of Organisation',
-      this.defaultOrganisationTypeOptions,
-    );
-  }
 
   // DataTable column definitions
   apuStaffColumns: readonly DataTableColumn[] = [
@@ -128,6 +97,15 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.initializeForm();
     this.loadFormState();
+
+    this.masterData.searchAcademicStaff().subscribe((res) => {
+      this.staffOptions = (res.data ?? []).map((s) => ({ value: s.fullname, label: s.fullname }));
+    });
+    this.masterData.getDropdownOptions('TYPE_OF_ORGANISATION').subscribe((res) => {
+      this.organisationTypeOptions = (res.data ?? [])
+        .filter((o) => o.status === 'ACTIVE')
+        .map((o) => ({ value: o.option_name, label: o.option_name }));
+    });
   }
 
   ngOnDestroy() {
@@ -197,6 +175,11 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
     }
   }
 
+  /** Flushes the live form into the shared state service — called by the wizard before saving. */
+  flushFormState(): void {
+    this.saveFormState();
+  }
+
   createTestSubsection(): FormGroup {
     return this.fb.group({
       staffName: ['', [Validators.required]],
@@ -257,18 +240,6 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
       ...control.value,
       index: index + 1,
     }));
-  }
-
-  private getConferenceDropdownOptions(
-    category: string,
-    defaults: DropdownOption[],
-  ): DropdownOption[] {
-    const options = this.dropdownStore
-      .getOptions('Conference Application', category)
-      .filter((option: StoredDropdownOption) => option.status === 'Active')
-      .map((option: StoredDropdownOption) => ({ value: option.value, label: option.value }));
-
-    return options.length > 0 ? options : defaults;
   }
 
   deleteTestSubsection(index: number) {

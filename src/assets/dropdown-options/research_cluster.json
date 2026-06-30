@@ -1,7 +1,0 @@
-[
-  { "id": 1, "value": "Socio-Economic Impact", "isActive": true },
-  { "id": 2, "value": "Technology & Innovation", "isActive": true },
-  { "id": 3, "value": "Environmental Sustainability", "isActive": true },
-  { "id": 4, "value": "Health & Biomedical Sciences", "isActive": true },
-  { "id": 5, "value": "Digital Transformation", "isActive": true }
-]

@@ -25,6 +25,23 @@
   >
   </app-step-indicator>
 
+  @if (loadError || actionError || saveSuccess || submitSuccess) {
+    <div class="journal-app__messages" aria-live="polite">
+      @if (loadError) {
+        <p class="form-hint journal-app__message journal-app__message--warning">{{ loadError }}</p>
+      }
+      @if (actionError) {
+        <p class="form-error-msg journal-app__message">{{ actionError }}</p>
+      }
+      @if (saveSuccess) {
+        <p class="form-hint journal-app__message journal-app__message--success">Journal draft saved.</p>
+      }
+      @if (submitSuccess) {
+        <p class="form-hint journal-app__message journal-app__message--success">Journal application submitted.</p>
+      }
+    </div>
+  }
+
   <!-- ── External Review Comment Buttons ───────────────────────── -->
   <ng-container
     *ngIf="
@@ -95,26 +112,33 @@
   </ng-container>
 
   <!-- ── 3. Main Form ──────────────────────────────────────────── -->
-  <fieldset class="form-container application-form-surface" [disabled]="workflow.isFormReadOnly()">
+  <fieldset
+    class="form-container application-form-surface"
+    [disabled]="workflow.isFormReadOnly() || isOptionsLoading || isSaving || isSubmitting"
+  >
+    @if (isOptionsLoading) {
+      <div class="journal-app__loading" aria-live="polite">Loading journal options...</div>
+    } @else {
     <div class="journal-app__content">
       <app-journal-details
-        *ngIf="currentStep === 1"
+        [hidden]="currentStep !== 1"
         (formValidityChange)="updateFormValidity(1, $event)"
       ></app-journal-details>
       <app-authors-details
-        *ngIf="currentStep === 2"
+        [hidden]="currentStep !== 2"
         (formValidityChange)="updateFormValidity(2, $event)"
       ></app-authors-details>
       <app-documents
-        *ngIf="currentStep === 3"
+        [hidden]="currentStep !== 3"
         (formValidityChange)="updateFormValidity(3, $event)"
       ></app-documents>
       <app-declaration
-        *ngIf="currentStep === 4"
+        [hidden]="currentStep !== 4"
         (formValidityChange)="updateFormValidity(4, $event)"
       >
       </app-declaration>
     </div>
+    }
   </fieldset>
 
   <!-- ── External Review Comment Panels (outside form disabling) ─────── -->
@@ -189,8 +213,9 @@
   <app-form-wizard-nav
     [currentStep]="currentStep"
     [totalSteps]="totalSteps"
-    [isSaving]="isSaving"
+    [isSaving]="isSaving || isOptionsLoading"
     [isSubmitting]="isSubmitting"
+    [readOnly]="workflow.isFormReadOnly() || isOptionsLoading"
     (prev)="onPrev()"
     (next)="onNext()"
     (saveDraft)="onSaveDraft()"

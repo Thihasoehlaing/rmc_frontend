@@ -15,6 +15,30 @@
     min-width: 0;
     animation: stepFadeIn var(--transition-base) ease;
   }
+
+  &__messages {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  &__message {
+    margin: 0;
+  }
+
+  &__message--success {
+    color: var(--color-success);
+  }
+
+  &__message--warning {
+    color: var(--color-warning);
+  }
+
+  &__loading {
+    color: var(--color-text-secondary);
+    font-size: var(--fs-sm);
+    padding: var(--space-4) 0;
+  }
 }
 
 .form-container {

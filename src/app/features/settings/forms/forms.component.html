@@ -1,4 +1,4 @@
-<main class="forms-page">
+<main class="forms-page forms-page--settings">
   <header class="forms-page__header">
     <div>
       <span class="forms-page__eyebrow">System Settings</span>
@@ -16,47 +16,71 @@
     </button>
   </header>
 
-  @if (!isLoading()) {
-    <section class="forms-toolbar" aria-label="Form filters">
-      <label class="forms-filter forms-filter--search">
-        <span>Form Code or Name</span>
+  <section class="forms-toolbar" aria-label="Form filters">
+    <h2 class="forms-toolbar__title">Search &amp; Filters</h2>
+
+    <label class="forms-filter forms-filter--search">
+      <span class="forms-search-input">
+        <span class="material-icons" aria-hidden="true">search</span>
         <input
           class="input--text"
           type="search"
-          placeholder="Search forms"
+          aria-label="Search forms by code or name"
+          placeholder="Search forms by code or name..."
           [ngModel]="searchTerm()"
           (ngModelChange)="searchTerm.set($event)"
           (keydown.enter)="search()"
+          [disabled]="isLoading()"
         />
-      </label>
+      </span>
+    </label>
 
-      <label class="forms-filter">
-        <span>Status</span>
-        <select
-          class="input--select"
-          [ngModel]="selectedStatus()"
-          (ngModelChange)="selectedStatus.set($event)"
-        >
-          <option value="">All</option>
-          <option value="Active">Active</option>
-          <option value="Inactive">Inactive</option>
-        </select>
-      </label>
+    <label class="forms-filter">
+      <span>Status</span>
+      <select
+        class="input--select"
+        [ngModel]="selectedStatus()"
+        (ngModelChange)="selectedStatus.set($event)"
+        [disabled]="isLoading()"
+      >
+        <option value="">All</option>
+        <option value="Active">Active</option>
+        <option value="Inactive">Inactive</option>
+      </select>
+    </label>
 
-      <div class="forms-toolbar__actions">
-        <button class="btn btn-primary" type="button" (click)="search()">
-          <span class="material-icons">search</span>
-          Search
-        </button>
-        <button class="btn btn-secondary" type="button" (click)="resetFilters()">
-          <span class="material-icons">restart_alt</span>
-          Reset
-        </button>
-      </div>
-    </section>
-  }
+    <div class="forms-toolbar__actions">
+      <button class="btn btn-primary" type="button" (click)="search()" [disabled]="isLoading()">
+        <span class="material-icons">search</span>
+        Search
+      </button>
+      <button class="btn btn-secondary" type="button" (click)="resetFilters()" [disabled]="isLoading()">
+        <span class="material-icons">restart_alt</span>
+        Reset
+      </button>
+    </div>
+  </section>
 
   <section class="forms-table-card">
+    <header class="forms-table-card__header">
+      <div>
+        <div class="forms-table-card__title-row">
+          <h2>Forms</h2>
+          <span class="forms-table-card__count">{{ totalItems() }}</span>
+        </div>
+        <p>Manage and configure all application forms in the system.</p>
+      </div>
+      <button
+        class="btn btn-secondary forms-table-card__refresh"
+        type="button"
+        (click)="loadForms()"
+        [disabled]="isLoading()"
+      >
+        <span class="material-icons">refresh</span>
+        Refresh
+      </button>
+    </header>
+
     @if (isLoading()) {
       <app-table-skeleton [columns]="columns" [showSearch]="false" loadingLabel="Loading forms">
       </app-table-skeleton>
@@ -83,7 +107,6 @@
             </td>
             <td>
               <div class="form-name">
-                <span class="material-icons">description</span>
                 <strong>{{ row.form_name }}</strong>
               </div>
             </td>
@@ -98,6 +121,7 @@
                   class="table-action"
                   type="button"
                   title="Edit form"
+                  data-tooltip="Edit form"
                   aria-label="Edit form"
                   (click)="openEditDialog(row)"
                 >
@@ -108,6 +132,7 @@
                     class="table-action table-action--danger"
                     type="button"
                     title="Deactivate form"
+                    data-tooltip="Deactivate form"
                     aria-label="Deactivate form"
                     (click)="openDeactivateDialog(row)"
                   >
@@ -120,27 +145,41 @@
         </ng-template>
       </app-data-table>
     }
+
+    @if (!isLoading() && !loadFailed()) {
+      <footer class="forms-table-card__footer">
+        <p class="forms-count">
+          @if (totalItems() > 0) {
+            Showing {{ pageStart() }} to {{ pageEnd() }} of {{ totalItems() }} results
+          } @else {
+            Showing 0 results
+          }
+        </p>
+
+        <app-pagination
+          [currentPage]="page()"
+          [totalPages]="totalPages()"
+          [pageSize]="pageSize()"
+          [pageSizeOptions]="pageSizeOptions"
+          (pageChange)="onPageChange($event)"
+          (pageSizeChange)="onPageSizeChange($event)"
+        >
+        </app-pagination>
+
+        <label class="forms-page-size" aria-label="Items per page">
+          <select
+            class="input--select"
+            [ngModel]="pageSize()"
+            (ngModelChange)="onPageSizeChange($event)"
+          >
+            @for (size of pageSizeOptions; track size) {
+              <option [ngValue]="size">{{ size }} per page</option>
+            }
+          </select>
+        </label>
+      </footer>
+    }
   </section>
-
-  @if (!isLoading() && !loadFailed()) {
-    <app-pagination
-      [currentPage]="page()"
-      [totalPages]="totalPages()"
-      [pageSize]="pageSize()"
-      [pageSizeOptions]="pageSizeOptions"
-      (pageChange)="onPageChange($event)"
-      (pageSizeChange)="onPageSizeChange($event)"
-    >
-    </app-pagination>
-
-    <p class="forms-count">
-      @if (totalItems() > 0) {
-        Showing {{ pageStart() }}-{{ pageEnd() }} of {{ totalItems() }} forms
-      } @else {
-        Showing 0 forms
-      }
-    </p>
-  }
 
   <app-dialog
     [isOpen]="dialogMode() !== null"

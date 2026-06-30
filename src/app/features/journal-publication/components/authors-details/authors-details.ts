@@ -13,6 +13,12 @@ import {
 } from '../../../../shared/components/data-table/data-table.component';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
 import { NoteComponent } from '../../../../shared/components/note/note.component';
+import {
+  JournalFormData,
+  JournalNonApuAuthorPayload,
+  JournalStaffAuthorPayload,
+  JournalStudentAuthorPayload,
+} from '../../services/journal-application-api.service';
 
 import { TableActionIconComponent } from '../../../../shared/components/table-action-icon/table-action-icon.component';
 
@@ -215,6 +221,102 @@ export class AuthorsDetails implements OnInit {
     this.form.statusChanges.subscribe((status) => {
       this.formValidityChange.emit(status === 'VALID');
     });
+  }
+
+  getStaffAuthorPayloads(): JournalStaffAuthorPayload[] {
+    return this.testSubsections.controls
+      .map((control, index) => {
+        const value = control.value;
+        return {
+          staff_name: value.staffName || null,
+          staff_department: value.schoolDepartment || null,
+          affiliation: value.affiliation || this.apuAffiliation,
+          display_order: index + 1,
+        };
+      })
+      .filter((item) => !!item.staff_name || !!item.staff_department);
+  }
+
+  getStudentAuthorPayloads(): JournalStudentAuthorPayload[] {
+    return this.studentCoAuthors.controls
+      .map((control, index) => {
+        const value = control.value;
+        return {
+          tp_number: value.tpNumber || null,
+          full_name: value.fullName || null,
+          school_department: value.schoolDepartment || null,
+          affiliation: value.affiliation || this.apuAffiliation,
+          display_order: index + 1,
+        };
+      })
+      .filter((item) => !!item.tp_number || !!item.full_name);
+  }
+
+  getNonApuAuthorPayloads(): JournalNonApuAuthorPayload[] {
+    return this.nonApuCoAuthors.controls
+      .map((control, index) => {
+        const value = control.value;
+        return {
+          full_name: value.fullName || null,
+          country: value.country || null,
+          email: value.email || null,
+          organisation_type: value.typeOfOrganisation || null,
+          school_department: value.schoolDepartment || null,
+          institution_company_name: value.institutionName || null,
+          display_order: index + 1,
+        };
+      })
+      .filter((item) => !!item.full_name || !!item.email);
+  }
+
+  hydrateFromApi(data: JournalFormData): void {
+    if (!this.form) {
+      return;
+    }
+
+    this.testSubsections.clear();
+    this.studentCoAuthors.clear();
+    this.nonApuCoAuthors.clear();
+
+    for (const item of data.apu_staff_co_authors || []) {
+      const group = this.createTestSubsection();
+      group.patchValue(
+        {
+          staffName: item.staff_name || '',
+          schoolDepartment: item.staff_department || '',
+          affiliation: item.affiliation || this.apuAffiliation,
+        },
+        { emitEvent: false },
+      );
+      this.testSubsections.push(group);
+    }
+
+    for (const item of data.apu_student_co_authors || []) {
+      this.studentCoAuthors.push(
+        this.fb.group({
+          tpNumber: [item.tp_number || '', [Validators.required]],
+          fullName: [item.full_name || '', [Validators.required]],
+          schoolDepartment: [item.school_department || '', [Validators.required]],
+          affiliation: [item.affiliation || this.apuAffiliation],
+        }),
+      );
+    }
+
+    for (const item of data.non_apu_co_authors || []) {
+      const group = this.createNonApuCoAuthor();
+      group.patchValue(
+        {
+          fullName: item.full_name || '',
+          country: item.country || '',
+          email: item.email || '',
+          schoolDepartment: item.school_department || '',
+          typeOfOrganisation: item.organisation_type || '',
+          institutionName: item.institution_company_name || '',
+        },
+        { emitEvent: false },
+      );
+      this.nonApuCoAuthors.push(group);
+    }
   }
 
   createTestSubsection(): FormGroup {

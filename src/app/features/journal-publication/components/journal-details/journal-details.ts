@@ -32,6 +32,11 @@ import {
   SDG_KEYWORD_NOTE,
   sdgKeywordValidator,
 } from '../../../../shared/validators/sdg-keyword.validator';
+import {
+  JournalCostingPayload,
+  JournalFormData,
+  JournalRequestPayload,
+} from '../../services/journal-application-api.service';
 
 import { TableActionIconComponent } from '../../../../shared/components/table-action-icon/table-action-icon.component';
 
@@ -288,6 +293,89 @@ export class JournalDetails implements OnInit, OnDestroy {
 
   get projectAccountCodeOptions(): DropdownOption[] {
     return this.journalOptionsService.projectAccountCodeOptions();
+  }
+
+  getJournalPayload(): JournalRequestPayload {
+    const value = this.form.getRawValue();
+    return {
+      author_role: value.authorshipType || null,
+      journal_name: value.journalName || null,
+      scopus_quartile: value.scopusQuartile || null,
+      project_type: value.researchType || null,
+      project_account_code: value.projectAccountCode || null,
+      is_restricted_publisher: this.toBoolean(value.restrictedPublisher),
+      cited_apu_jati_ejbm: value.citedApuPaper === 'Yes',
+      cited_apu_jati_ejbm_explanation: value.citedApuPaperExplanation || null,
+      paper_title: value.paperTitle || null,
+      sdg_keyword_1: value.sdgKeyword1 || null,
+      sdg_keyword_2: value.sdgKeyword2 || null,
+      sdg_keyword_3: value.sdgKeyword3 || null,
+      external_sponsorship_amount: this.toMoneyString(value.sponsoredAmountExternal),
+      external_sponsored_by: value.sponsoredBy || null,
+      apu_sponsorship_percentage: this.toMoneyString(value.sponsorshipPercentage),
+      apu_sponsorship_amount: this.toMoneyString(value.sponsorshipAmountAPU),
+      cost_to_be_borne_by_applicant: this.toMoneyString(value.costByApplicant),
+      remarks: value.costingRemarks || null,
+    };
+  }
+
+  getCostingPayloads(): JournalCostingPayload[] {
+    const projectType = this.researchType || '';
+    return this.getBreakdownArray(projectType)
+      .map((entry) => this.toCostingPayload(projectType, entry))
+      .filter((entry) => entry.cost_in_rm);
+  }
+
+  hydrateFromApi(data: JournalFormData): void {
+    const journal = data.journal;
+    if (!journal || !this.form) {
+      return;
+    }
+
+    this.form.patchValue(
+      {
+        authorshipType: journal.author_role || '',
+        scopusQuartile: journal.scopus_quartile || '',
+        researchType: journal.project_type || '',
+        restrictedPublisher: journal.is_restricted_publisher ? 'yes' : 'no',
+        journalName: journal.journal_name || '',
+        paperTitle: journal.paper_title || '',
+        sdgKeyword1: journal.sdg_keyword_1 || '',
+        sdgKeyword2: journal.sdg_keyword_2 || '',
+        sdgKeyword3: journal.sdg_keyword_3 || '',
+        citedApuPaper: journal.cited_apu_jati_ejbm ? 'Yes' : 'No',
+        citedApuPaperExplanation: journal.cited_apu_jati_ejbm_explanation || '',
+        projectAccountCode: journal.project_account_code || '',
+        sponsoredAmountExternal: journal.external_sponsorship_amount || '',
+        sponsoredBy: journal.external_sponsored_by || '',
+        sponsorshipPercentage: journal.apu_sponsorship_percentage || '0',
+        sponsorshipAmountAPU: journal.apu_sponsorship_amount || '0.00',
+        costByApplicant: journal.cost_to_be_borne_by_applicant || '0.00',
+        costingRemarks: journal.remarks || '',
+      },
+      { emitEvent: false },
+    );
+
+    this.researchBreakdowns = [];
+    this.externalBreakdowns = [];
+    this.NonResearchBreakdowns = [];
+    const targetType = journal.project_type || '';
+    const target = this.getBreakdownArray(targetType);
+    for (const item of data.costing_items || []) {
+      target.push({
+        itemDescription: item.vote_number_description_snapshot || '',
+        voteNumber: item.vote_number_snapshot || '',
+        accountCodeDescription: item.account_code_description_snapshot || '',
+        accountCode: item.account_code_snapshot || '',
+        cost: item.cost_in_foreign_currency || item.cost_in_rm || '',
+        exchangeRate: item.exchange_rate || '',
+        costInRM: item.cost_in_rm || '',
+        description: item.description || '',
+      });
+    }
+
+    this.calculateTotals();
+    this.cdr.detectChanges();
   }
 
   getBreakdownArray(type: string): any[] {
@@ -590,6 +678,42 @@ export class JournalDetails implements OnInit, OnDestroy {
 
   private roundAmount(amount: number): number {
     return Math.round(amount * 100) / 100;
+  }
+
+  private toBoolean(value: unknown): boolean {
+    return String(value ?? '').toLowerCase() === 'yes';
+  }
+
+  private toMoneyString(value: unknown): string | null {
+    const amount = this.normalizeAmount(value);
+    return amount === null ? null : amount.toFixed(2);
+  }
+
+  private toCostingPayload(projectType: string, entry: any): JournalCostingPayload {
+    const projectAccountCode = this.form.get('projectAccountCode')?.value || '';
+    const accountCode =
+      projectType === 'non-research'
+        ? this.nonResearchAccountCode
+        : entry.accountCode || projectAccountCode || '';
+
+    return {
+      project_account_code_id:
+        projectType === 'non-research'
+          ? null
+          : this.journalOptionsService.getProjectAccountCodeId(projectAccountCode),
+      vote_number_id:
+        projectType === 'non-research'
+          ? null
+          : this.journalOptionsService.getVoteNumberId(entry.itemDescription),
+      account_code_id:
+        projectType === 'external-research'
+          ? null
+          : this.journalOptionsService.getAccountCodeId(accountCode),
+      cost_in_foreign_currency: this.toMoneyString(entry.cost),
+      exchange_rate: this.toMoneyString(entry.exchangeRate),
+      cost_in_rm: this.toMoneyString(entry.costInRM),
+      description: entry.description || null,
+    };
   }
 
   private clearControlError(controlName: string, errorKey: string): void {

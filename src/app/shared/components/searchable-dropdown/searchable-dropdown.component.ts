@@ -1,6 +1,8 @@
 import {
   Component,
   Input,
+  Output,
+  EventEmitter,
   forwardRef,
   signal,
   computed,
@@ -85,6 +87,7 @@ export class SearchableDropdownComponent<T = number> implements ControlValueAcce
    * @example [compareWith]="(a, b) => a.id === b.id"
    */
   @Input() compareWith: (a: T, b: T) => boolean = (a, b) => a === b;
+  @Output() searchChange = new EventEmitter<string>();
 
   // ── Options (signal-backed so computed can react to changes) ─────
 
@@ -133,7 +136,7 @@ export class SearchableDropdownComponent<T = number> implements ControlValueAcce
   readonly filteredOptions = computed<DropdownOption<T>[]>(() => {
     const q = this.searchQuery().toLowerCase().trim();
     if (!this.searchable || !q) return this._options();
-    return this._options().filter((o) => o.label.toLowerCase().includes(q));
+    return this._options().filter((option) => this.optionSearchText(option).includes(q));
   });
 
   // ── ARIA IDs ─────────────────────────────────────────────────────
@@ -151,7 +154,10 @@ export class SearchableDropdownComponent<T = number> implements ControlValueAcce
     // Wire the search text-box to the debounced signal
     this.searchCtrl.valueChanges
       .pipe(debounceTime(150), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
-      .subscribe((q) => this.searchQuery.set(q));
+      .subscribe((q) => {
+        this.searchQuery.set(q);
+        this.searchChange.emit(q);
+      });
   }
 
   // ── ControlValueAccessor ─────────────────────────────────────────
@@ -258,6 +264,8 @@ export class SearchableDropdownComponent<T = number> implements ControlValueAcce
     event.stopPropagation();
     this.selectedValues.set([]);
     this._onChange(this.isMulti || this.valueMode === 'array' ? [] : null);
+    this._resetSearch();
+    this.searchChange.emit('');
     this.isOpen.set(false);
   }
 
@@ -277,11 +285,27 @@ export class SearchableDropdownComponent<T = number> implements ControlValueAcce
   get displayValue(): string {
     const sel = this.selectedValues();
     if (sel.length === 0) return '';
-    return this.labelMap().get(sel[0]) ?? String(sel[0]);
+    return this.selectedOption(sel[0])?.displayLabel ?? this.labelMap().get(sel[0]) ?? String(sel[0]);
   }
 
   getChipLabel(value: T): string {
-    return this.labelMap().get(value) ?? String(value);
+    return this.selectedOption(value)?.displayLabel ?? this.labelMap().get(value) ?? String(value);
+  }
+
+  private selectedOption(value: T): DropdownOption<T> | undefined {
+    return this._options().find((option) => this.compareWith(option.value, value));
+  }
+
+  private optionSearchText(option: DropdownOption<T>): string {
+    return [
+      option.label,
+      option.description,
+      option.displayLabel,
+      option.searchText,
+    ]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase();
   }
 
   /** Returns the DOM element ID for an option at a given list index. */

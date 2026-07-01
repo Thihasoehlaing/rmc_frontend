@@ -76,6 +76,11 @@ export class DeclarationFormComponent implements OnInit, OnDestroy {
     }
   }
 
+  /** Flushes the live form into the shared state service — called by the wizard before saving. */
+  flushFormState(): void {
+    this.saveFormState();
+  }
+
   canEditDeclaration(): boolean {
     if (!this.workflow) return true;
     const status = this.workflow.status();

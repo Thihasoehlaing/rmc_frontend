@@ -11,7 +11,7 @@ import { ValidationMessageComponent } from '../../../../shared/components/valida
 import { NoteComponent } from '../../../../shared/components/note/note.component';
 import { ReviewBlockComponent } from '../review-block/review-block.component';
 import { RdigWorkflowService } from '../../services/rdig-workflow.service';
-import { RdigDropdownOptionsService, DropdownOptionEntityEntity as DropdownOptionEntity } from '../../../admin-settings/rdig-dropdown-options.service';
+import { MasterDataService } from '../../../../core/services/master-data.service';
 import { TextareaAutosizeDirective } from '../../../../shared/directives/textarea-autosize.directive';
 
 @Component({
@@ -48,7 +48,7 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy {
     }
     @Input() workflow!: RdigWorkflowService;
 
-    private readonly dropdownService = inject(RdigDropdownOptionsService);
+    private readonly masterData = inject(MasterDataService);
     private readonly router = inject(Router);
     private readonly destroy$ = new Subject<void>();
 
@@ -64,63 +64,33 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy {
     esgs: { label: string; value: string }[] = [];
     sdgs: { label: string; value: string }[] = [];
 
-    private allSubDomainOptions: DropdownOptionEntity[] = [];
-
-    private onDropdownsUpdated = (): void => {
-      // Force reload all dropdown options from service
-      this.dropdownService.loadOptions('research_domain').subscribe();
-      this.dropdownService.loadOptions('sub_research_domain').subscribe();
-      this.dropdownService.loadOptions('esg_factors').subscribe();
-      this.dropdownService.loadOptions('sdg_alignment').subscribe();
-    };
-
     ngOnInit(): void {
-        // Load all categories from the service
-        this.dropdownService.loadOptions('research_domain').subscribe();
-        this.dropdownService.loadOptions('sub_research_domain').subscribe();
-        this.dropdownService.loadOptions('esg_factors').subscribe();
-        this.dropdownService.loadOptions('sdg_alignment').subscribe();
-
-        // Map domains (only Active)
-        this.dropdownService.getOptions('research_domain')
+        // Domains, ESGs and SDGs come from the real backend master-data lists.
+        this.masterData.getResearchDomains()
             .pipe(takeUntil(this.destroy$))
-            .subscribe(options => {
-                this.domains = options
-                    .filter(o => o.status === 'Active')
-                    .map(o => ({ label: o.optionName, value: o.id.toString() }));
+            .subscribe(res => {
+                this.domains = (res.data ?? [])
+                    .filter(o => o.is_active)
+                    .map(o => ({ label: o.domain_name, value: o.id.toString() }));
             });
 
-        // Cache all active sub-domains for filtering
-        this.dropdownService.getOptions('sub_research_domain')
+        this.masterData.getEsgs()
             .pipe(takeUntil(this.destroy$))
-            .subscribe(options => {
-                this.allSubDomainOptions = options.filter(o => o.status === 'Active');
-                // Re-apply current domain filter if a domain is already selected
-                const currentDomain = this.projectDetails.get('domain')?.value;
-                if (currentDomain) {
-                    this.filterSubDomains(currentDomain);
-                }
+            .subscribe(res => {
+                this.esgs = (res.data ?? [])
+                    .filter(o => o.is_active)
+                    .map(o => ({ label: o.esg_name, value: o.id.toString() }));
             });
 
-        // Map ESG (only Active)
-        this.dropdownService.getOptions('esg_factors')
+        this.masterData.getSdgs()
             .pipe(takeUntil(this.destroy$))
-            .subscribe(options => {
-                this.esgs = options
-                    .filter(o => o.status === 'Active')
-                    .map(o => ({ label: o.optionName, value: o.id.toString() }));
+            .subscribe(res => {
+                this.sdgs = (res.data ?? [])
+                    .filter(o => o.is_active)
+                    .map(o => ({ label: o.sdg_name, value: o.id.toString() }));
             });
 
-        // Map SDG (only Active)
-        this.dropdownService.getOptions('sdg_alignment')
-            .pipe(takeUntil(this.destroy$))
-            .subscribe(options => {
-                this.sdgs = options
-                    .filter(o => o.status === 'Active')
-                    .map(o => ({ label: o.optionName, value: o.id.toString() }));
-            });
-
-        // React to domain selection changes → filter sub-domains
+        // React to domain selection changes → fetch that domain's sub-domains
         this.projectDetails.get('domain')?.valueChanges
             .pipe(takeUntil(this.destroy$))
             .subscribe(domainIdStr => {
@@ -133,9 +103,6 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy {
         if (currentDomain) {
             this.filterSubDomains(currentDomain);
         }
-
-        // Listen for dropdown updates from admin settings
-        window.addEventListener('rmc-dropdowns-updated', this.onDropdownsUpdated);
     }
 
     private filterSubDomains(domainIdStr: string): void {
@@ -144,13 +111,16 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy {
             return;
         }
         const domainId = parseInt(domainIdStr, 10);
-        this.filteredSubDomains = this.allSubDomainOptions
-            .filter(o => o.parentDomainId === domainId)
-            .map(o => ({ label: o.optionName, value: o.id.toString() }));
+        this.masterData.getSubResearchDomains(domainId)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe(res => {
+                this.filteredSubDomains = (res.data ?? [])
+                    .filter(o => o.is_active)
+                    .map(o => ({ label: o.sub_domain_name, value: o.id.toString() }));
+            });
     }
 
     ngOnDestroy(): void {
-        window.removeEventListener('rmc-dropdowns-updated', this.onDropdownsUpdated);
         this.destroy$.next();
         this.destroy$.complete();
     }

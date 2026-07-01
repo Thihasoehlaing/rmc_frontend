@@ -11,7 +11,6 @@ import {
 } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { BatchSittingService } from '../admin-settings/batch-sitting.service';
 import { BatchSitting } from '../../core/interfaces/batch-sitting.interface';
 import { NotificationService } from '../../core/services/notification.service';
 
@@ -51,9 +50,10 @@ import {
   WorkflowHistoryEntry,
 } from '../../core/interfaces/rdig-application.interface';
 import { FormPageSkeletonComponent } from '../../shared/components/form-page-skeleton/form-page-skeleton.component';
-import { finalize } from 'rxjs';
+import { Observable, catchError, finalize, forkJoin, map, of, switchMap, tap } from 'rxjs';
 import { SvgIconComponent } from '../../shared/components/svg-icon/svg-icon.component';
 import { SVG_ICON_LOADING_SPINNER, SVG_ICON_SUCCESS_CHECK } from '../../shared/icons/svg-icons';
+import { RdigApiService, RdigRequestDto } from './services/rdig-api.service';
 
 @Component({
   selector: 'app-rdig-application',
@@ -89,8 +89,8 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
   private http = inject(HttpClient);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private batchSvc = inject(BatchSittingService);
   private notifSvc = inject(NotificationService);
+  private rdigApi = inject(RdigApiService);
   readonly guidelineContext: GuidelineContext = this.route.snapshot.queryParamMap.has('id')
     ? 'existing-application'
     : 'new-application';
@@ -203,8 +203,6 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
     // Step 2: Project Details
     [
       { path: 'projectDetails.applicationType', label: 'Application Type' },
-      { path: 'projectDetails.declarations.ethics', label: 'Ethics Declaration' },
-      { path: 'projectDetails.declarations.conflict', label: 'Conflict of Interest' },
       { path: 'projectDetails.duration', label: 'Project Duration' },
       { path: 'projectDetails.title', label: 'Project Title' },
       { path: 'projectDetails.researchArea', label: 'Research Area' },
@@ -400,6 +398,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
         applicationVersion: [1],
         reviewers_version: [1],
         applicantUserId: [null], // stamped on first submit — used to target rejection/revision notifications
+        rdigRequestId: [null], // the real backend's rdig_request_id — kept separate from the json-server id
       }),
 
       // 2. Subpage 1 — Team Members (pre-filled from the logged-in user)
@@ -432,8 +431,8 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
       projectDetails: this.fb.group({
         applicationType: ['', Validators.required],
         declarations: this.fb.group({
-          ethics: [false, Validators.requiredTrue],
-          conflict: [false, Validators.requiredTrue],
+          ethics: [false],
+          conflict: [false],
         }),
         category: ['S&T'],
         duration: ['', Validators.required],
@@ -749,11 +748,21 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
 
   // ── Sync ABAC attributes to workflow ───────────────────────────
   ngOnInit(): void {
-    // Load the active batch — gates form access and is auto-assigned on submit.
-    this.batchSvc.loadAll().subscribe({
-      next: (batches) => {
-        const active = batches.find((b) => b.status === 'active') ?? null;
-        this.activeBatch.set(active);
+    // Load the active batch from the real backend — gates form access and submission.
+    this.rdigApi.getActiveBatch().subscribe({
+      next: (res) => {
+        const batch = res.data?.batch;
+        this.activeBatch.set(
+          batch
+            ? ({
+                id: batch.id,
+                batchName: batch.batch_name,
+                status: batch.status,
+                startDate: batch.start_date,
+                endDate: batch.end_date,
+              } as BatchSitting)
+            : null,
+        );
       },
       error: () => this.activeBatch.set(null),
     });
@@ -908,27 +917,52 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
       this.rdigForm.get('teamDetails.internalResearchers') as FormArray,
       data.teamDetails?.internalResearchers ?? [],
     );
+    this.captureLoadedBackendIds(
+      'internalResearchers',
+      this.rdigForm.get('teamDetails.internalResearchers') as FormArray,
+    );
     this.rebuildArray(
       this.rdigForm.get('teamDetails.externalResearchers') as FormArray,
       data.teamDetails?.externalResearchers ?? [],
     );
+    this.captureLoadedBackendIds(
+      'externalResearchers',
+      this.rdigForm.get('teamDetails.externalResearchers') as FormArray,
+    );
     this.rebuildArray(this.rdigForm.get('activities') as FormArray, data.activities ?? []);
     this.rdigForm.get('activities')?.updateValueAndValidity({ emitEvent: false });
+    this.captureLoadedBackendIds('activities', this.rdigForm.get('activities') as FormArray);
     this.rebuildArray(
       this.rdigForm.get('budget.studentAllowances') as FormArray,
       data.budget?.studentAllowances ?? [],
+    );
+    this.captureLoadedBackendIds(
+      'studentAllowances',
+      this.rdigForm.get('budget.studentAllowances') as FormArray,
     );
     this.rebuildArray(
       this.rdigForm.get('budget.travelAccommodation') as FormArray,
       data.budget?.travelAccommodation ?? [],
     );
+    this.captureLoadedBackendIds(
+      'travelAccommodation',
+      this.rdigForm.get('budget.travelAccommodation') as FormArray,
+    );
     this.rebuildArray(
       this.rdigForm.get('budget.materialsSupplies') as FormArray,
       data.budget?.materialsSupplies ?? [],
     );
+    this.captureLoadedBackendIds(
+      'materialsSupplies',
+      this.rdigForm.get('budget.materialsSupplies') as FormArray,
+    );
     this.rebuildArray(
       this.rdigForm.get('budget.specialServices') as FormArray,
       data.budget?.specialServices ?? [],
+    );
+    this.captureLoadedBackendIds(
+      'specialServices',
+      this.rdigForm.get('budget.specialServices') as FormArray,
     );
     this.rdigForm.get('budget')?.updateValueAndValidity({ emitEvent: false });
 
@@ -952,6 +986,296 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
   private rebuildArray(arr: FormArray, items: any[]): void {
     arr.clear({ emitEvent: false });
     items.forEach((item) => arr.push(this.fb.group(item), { emitEvent: false }));
+  }
+
+  // ── Real RDIG backend integration ───────────────────────────────
+  // Applicant-facing lifecycle (create/save/load/submit) writes through to the
+  // real backend. The HOS/RMC/Reviewer/RDIG Chair/VC/CEO review workflow keeps
+  // running against the local json-server store for now — that part of the
+  // backend's generic workflow engine is a separate, later integration pass.
+
+  /** Backend child-resource ids present at load time, per FormArray, used to diff on save. */
+  private loadedChildBackendIds: Record<string, Set<number>> = {
+    internalResearchers: new Set<number>(),
+    externalResearchers: new Set<number>(),
+    activities: new Set<number>(),
+    studentAllowances: new Set<number>(),
+    travelAccommodation: new Set<number>(),
+    materialsSupplies: new Set<number>(),
+    specialServices: new Set<number>(),
+  };
+
+  /** Backend budget_section_id for each fixed section code (V11000/V21000/V27000/V29000), resolved lazily. */
+  private budgetSectionIdByCode: Record<string, number> | null = null;
+
+  /** Records which rows already have a backend id, so the next save knows what to delete. */
+  private captureLoadedBackendIds(key: string, array: FormArray): void {
+    const ids = new Set<number>();
+    for (let i = 0; i < array.length; i++) {
+      const backendId = array.at(i).get('backendId')?.value;
+      if (backendId) ids.add(Number(backendId));
+    }
+    this.loadedChildBackendIds[key] = ids;
+  }
+
+  /** Maps the Angular form's camelCase fields to the backend's snake_case RdigRequest schema. */
+  private buildRdigRequestDto(): Partial<RdigRequestDto> {
+    const raw = this.rdigForm.getRawValue();
+    const pd = raw.projectDetails ?? {};
+    const team = raw.teamDetails ?? {};
+    const outputs = raw.outputs ?? {};
+    const budget = raw.budget ?? {};
+    const finalDecl = raw.finalDeclaration ?? {};
+
+    return {
+      application_type: pd.applicationType || null,
+      project_category: pd.category || null,
+      project_duration_months: pd.duration ? Number(pd.duration) || null : null,
+      project_title: pd.title || null,
+      research_area: pd.researchArea || null,
+      research_cluster_id: team.researchCluster ? Number(team.researchCluster) : null,
+      research_domain_id: pd.domain ? Number(pd.domain) : null,
+      sub_research_domain_id: pd.subDomain ? Number(pd.subDomain) : null,
+      executive_summary: pd.executiveSummary || null,
+      keywords: pd.keywords || null,
+      introduction: pd.introduction || null,
+      problem_statement: pd.problemStatement || null,
+      research_aim_objectives: pd.researchAim || null,
+      research_questions: pd.researchQuestions || null,
+      hypothesis_propositions: pd.hypothesis || null,
+      literature_review: pd.literatureReview || null,
+      research_methodology: pd.methodology || null,
+      references_text: pd.references || null,
+      benefit_to_apu: pd.benefits?.apu || null,
+      benefit_to_students: pd.benefits?.students || null,
+      benefit_to_stakeholders: pd.benefits?.stakeholders || null,
+      vision_mission_alignment: pd.visionMission || null,
+      project_leader_name: team.leaderName || null,
+      project_leader_email: team.leaderEmail || null,
+      project_leader_department: team.department || null,
+      project_leader_role_in_project: team.leaderRoles || null,
+      declaration_agreement_accepted: !!finalDecl.agreed,
+      novelty_justification: finalDecl.noveltyJustification || null,
+      budget_remarks: budget.otherRemarks || null,
+      total_budget_request: budget.totalRequest != null ? String(budget.totalRequest) : null,
+      indexed_journal_selected: !!outputs.journal?.checked,
+      indexed_journal_quantity: outputs.journal?.quantity ?? null,
+      conceptual_design_selected: !!outputs.conceptualDesign,
+      knowledge_transfer_programme_selected: !!outputs.knowledgeTransfer?.checked,
+      application_external_grant_selected: !!outputs.externalGrant?.checked,
+      other_output_selected: !!outputs.others?.checked,
+      other_output_specification: outputs.others?.details || null,
+    };
+  }
+
+  /** Generic create/update/delete sync for one FormArray against its backend child-resource endpoints. */
+  private syncFormArray<T>(
+    key: string,
+    array: FormArray,
+    toPayload: (raw: any) => T,
+    create: (payload: T) => Observable<{ data: { id?: number } }>,
+    update: (backendId: number, payload: T) => Observable<unknown>,
+    remove: (backendId: number) => Observable<unknown>,
+  ): Observable<unknown> {
+    const currentIds = new Set<number>();
+    const ops: Observable<unknown>[] = [];
+
+    for (let i = 0; i < array.length; i++) {
+      const group = array.at(i) as FormGroup;
+      const raw = group.getRawValue();
+      const backendId = group.get('backendId')?.value as number | null | undefined;
+      const payload = toPayload(raw);
+
+      if (backendId) {
+        currentIds.add(Number(backendId));
+        ops.push(update(Number(backendId), payload));
+      } else {
+        ops.push(
+          create(payload).pipe(
+            tap((res) => {
+              const newId = res?.data?.id;
+              if (newId) {
+                group.setControl('backendId', new FormControl(newId), { emitEvent: false });
+                currentIds.add(newId);
+              }
+            }),
+          ),
+        );
+      }
+    }
+
+    const previously = this.loadedChildBackendIds[key] ?? new Set<number>();
+    for (const oldId of previously) {
+      if (!currentIds.has(oldId)) {
+        ops.push(remove(oldId));
+      }
+    }
+
+    const result$: Observable<unknown> = ops.length ? forkJoin(ops) : of(null);
+    return result$.pipe(
+      tap(() => {
+        this.loadedChildBackendIds[key] = currentIds;
+      }),
+    );
+  }
+
+  /** Uploads the support-letter file for any external researcher row that has a pending File object. */
+  private uploadPendingSupportLetters(id: number): Observable<unknown> {
+    const array = this.rdigForm.get('teamDetails.externalResearchers') as FormArray;
+    const uploads: Observable<unknown>[] = [];
+
+    for (let i = 0; i < array.length; i++) {
+      const group = array.at(i) as FormGroup;
+      const file = group.get('supportLetter')?.value;
+      if (file instanceof File) {
+        uploads.push(
+          this.rdigApi.uploadAttachment(id, file, 'rdig_collaborator_support_letter').pipe(
+            tap((res) => {
+              const attachmentId = res?.data?.id ?? null;
+              group.setControl(
+                'supportLetterAttachmentId',
+                new FormControl(attachmentId),
+                { emitEvent: false },
+              );
+              // Clear the raw File so it isn't re-uploaded on the next save in this session.
+              group.get('supportLetter')?.setValue(null, { emitEvent: false });
+            }),
+          ),
+        );
+      }
+    }
+
+    return uploads.length ? forkJoin(uploads) : of(null);
+  }
+
+  /** Resolves the four fixed budget sections (V11000/V21000/V27000/V29000) to their backend ids. */
+  private resolveBudgetSectionIds(id: number): Observable<Record<string, number>> {
+    if (this.budgetSectionIdByCode) return of(this.budgetSectionIdByCode);
+    return this.rdigApi.listBudgetSections(id).pipe(
+      map((res) => {
+        const sectionMap: Record<string, number> = {};
+        for (const section of res.data ?? []) {
+          const sectionId = (section as any).id ?? section.budget_section_id;
+          if (section.section_code && sectionId) sectionMap[section.section_code] = sectionId;
+        }
+        this.budgetSectionIdByCode = sectionMap;
+        return sectionMap;
+      }),
+    );
+  }
+
+  /** Bulk-replaces the ESG/SDG selections (the only child resources with a bulk-replace endpoint). */
+  private syncEsgSdgSelections(id: number): Observable<unknown> {
+    const esgs: string[] = this.rdigForm.get('projectDetails.esgs')?.value ?? [];
+    const sdgs: string[] = this.rdigForm.get('projectDetails.sdgs')?.value ?? [];
+    const esgIds = esgs.map((v) => Number(v)).filter((n) => Number.isFinite(n));
+    const sdgIds = sdgs.map((v) => Number(v)).filter((n) => Number.isFinite(n));
+
+    return forkJoin([
+      this.rdigApi.replaceEsgSelections(id, esgIds),
+      this.rdigApi.replaceSdgSelections(id, sdgIds),
+    ]);
+  }
+
+  /** Persists every applicant-owned child array against its backend child-resource endpoints. */
+  private syncChildArrays(id: number): Observable<unknown> {
+    const budgetSectionCodeByFormKey: Record<string, string> = {
+      studentAllowances: 'V11000',
+      travelAccommodation: 'V21000',
+      materialsSupplies: 'V27000',
+      specialServices: 'V29000',
+    };
+
+    return this.uploadPendingSupportLetters(id).pipe(
+      switchMap(() => this.resolveBudgetSectionIds(id)),
+      switchMap((sectionIds) =>
+        forkJoin([
+          this.syncFormArray(
+            'internalResearchers',
+            this.rdigForm.get('teamDetails.internalResearchers') as FormArray,
+            (raw) => ({
+              staff_id: raw.staffId || null,
+              staff_name: raw.staffName || null,
+              staff_department: raw.department || null,
+              area_of_expertise: raw.expertise || null,
+              role_in_project: raw.roles || null,
+            }),
+            (payload) => this.rdigApi.createCoResearcher(id, payload),
+            (backendId, payload) => this.rdigApi.updateCoResearcher(id, backendId, payload),
+            (backendId) => this.rdigApi.deleteCoResearcher(id, backendId),
+          ),
+          this.syncFormArray(
+            'externalResearchers',
+            this.rdigForm.get('teamDetails.externalResearchers') as FormArray,
+            (raw) => ({
+              title: raw.title || null,
+              full_name: raw.fullName || null,
+              email: raw.email || null,
+              institution_company_name: raw.institution || null,
+              organisation_type: raw.orgType || null,
+              position: raw.position || null,
+              department: raw.department || null,
+              country_code: raw.country || null,
+              matched_funding_amount: raw.funding != null ? String(raw.funding) : null,
+              role_in_project: raw.roles || null,
+              support_letter_attachment_id: raw.supportLetterAttachmentId ?? null,
+            }),
+            (payload) => this.rdigApi.createCollaborator(id, payload),
+            (backendId, payload) => this.rdigApi.updateCollaborator(id, backendId, payload),
+            (backendId) => this.rdigApi.deleteCollaborator(id, backendId),
+          ),
+          this.syncFormArray(
+            'activities',
+            this.rdigForm.get('activities') as FormArray,
+            (raw) => ({
+              activity_name: raw.name || null,
+              start_month: raw.startMonth ?? null,
+              end_month: raw.endMonth ?? null,
+              duration_months: raw.duration ?? null,
+            }),
+            (payload) => this.rdigApi.createResearchActivity(id, payload),
+            (backendId, payload) => this.rdigApi.updateResearchActivity(id, backendId, payload),
+            (backendId) => this.rdigApi.deleteResearchActivity(id, backendId),
+          ),
+          ...Object.entries(budgetSectionCodeByFormKey).map(([formKey, code]) =>
+            this.syncFormArray(
+              formKey,
+              this.rdigForm.get(`budget.${formKey}`) as FormArray,
+              (raw) => ({
+                rdig_budget_section_id: sectionIds[code],
+                description: raw.description || null,
+                amount_rm: raw.amount != null ? String(raw.amount) : null,
+                remarks: raw.remarks || null,
+              }),
+              (payload) => this.rdigApi.createBudgetItem(id, payload),
+              (backendId, payload) => this.rdigApi.updateBudgetItem(id, backendId, payload),
+              (backendId) => this.rdigApi.deleteBudgetItem(id, backendId),
+            ),
+          ),
+          this.syncEsgSdgSelections(id),
+        ]),
+      ),
+    );
+  }
+
+  /** Creates/updates the RDIG draft on the real backend, then syncs every child array. Resolves to the backend id. */
+  private syncToRealBackend(): Observable<number> {
+    const dto = this.buildRdigRequestDto();
+    const existingIdRaw = this.rdigForm.get('metadata.rdigRequestId')?.value;
+    const existingId = existingIdRaw ? Number(existingIdRaw) : null;
+
+    const ensureDraft$: Observable<number> = existingId
+      ? this.rdigApi.updateDraft(existingId, dto).pipe(map(() => existingId))
+      : this.rdigApi.createDraft(dto).pipe(
+          map((res) => {
+            const newId = (res.data as any)?.id ?? res.data?.request_id;
+            if (!newId) throw new Error('Backend did not return a new RDIG request id.');
+            this.rdigForm.get('metadata.rdigRequestId')?.setValue(newId, { emitEvent: false });
+            return newId;
+          }),
+        );
+
+    return ensureDraft$.pipe(switchMap((id) => this.syncChildArrays(id).pipe(map(() => id))));
   }
 
   // ── Wizard navigation ──────────────────────────────────────────
@@ -995,6 +1319,19 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
     }
 
     this.isSaving.set(true);
+
+    this.syncToRealBackend()
+      .pipe(
+        catchError((err) => {
+          console.error('RDIG backend sync failed — draft will still save locally:', err);
+          return of(null);
+        }),
+      )
+      .subscribe(() => this.saveDraftToLocalStore());
+  }
+
+  /** Existing json-server-backed draft save — drives the dashboard list views and the local workflow simulation. */
+  private saveDraftToLocalStore(): void {
     const currentStatus = this.workflowState().currentStatus;
 
     // Determine whether this is a brand-new application (not yet formally submitted
@@ -1161,6 +1498,38 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
 
     this.submissionState.set('LOADING');
 
+    // ── Real backend sync (applicant lifecycle only) ──────────────
+    // Creates/updates the RDIG draft + child arrays on the real backend, then
+    // calls the matching lifecycle endpoint for applicant-driven transitions
+    // (draft → submit, returned-for-revision → resubmit). HOS/RMC/Reviewer/RDIG
+    // Chair/VC/CEO actions have no backend endpoint yet, so they only run the
+    // draft sync to keep the applicant's own fields up to date there.
+    this.syncToRealBackend()
+      .pipe(
+        switchMap((id) => {
+          if (currentStatus === 'draft') return this.rdigApi.submit(id);
+          if (
+            currentStatus === 'pending_applicant_resubmission_hos' ||
+            currentStatus === 'pending_applicant_resubmission_reviewers'
+          ) {
+            return this.rdigApi.resubmit(id);
+          }
+          return of(null);
+        }),
+        catchError((err) => {
+          console.error('RDIG backend submit sync failed — continuing with local workflow:', err);
+          return of(null);
+        }),
+      )
+      .subscribe(() => this.submitToLocalStore(currentStatus, batch, transition));
+  }
+
+  /** Existing json-server-backed submission — drives the dashboard list views and the local workflow simulation. */
+  private submitToLocalStore(
+    currentStatus: RdigStatus,
+    batch: BatchSitting | null | undefined,
+    transition: any,
+  ): void {
     // Clear the draft flag on formal submission so the application moves to
     // the appropriate inbox / pending view and not back to Drafts.
     const formData = {
@@ -1187,10 +1556,9 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
           this.loadedAppId.set(savedId);
         }
 
-        // First formal submission (applicant → HOS): register this app in the batch's applicationIds array.
-        if (currentStatus === 'draft' && batch && savedId != null) {
-          this.batchSvc.addApplicationId(batch.id, Number(savedId)).subscribe();
-        }
+        // Note: batch.id now comes from the real backend's /rdig/active-batch, which has no
+        // correspondence to the local admin-settings batch-sitting store, so application ids
+        // are no longer registered there.
 
         // First, clear any existing action notifications for the current user (e.g. they just approved it)
         if (savedId != null) {

@@ -50,8 +50,18 @@ export const SETTINGS_MODULES: SettingsModuleConfig[] = [
     endpoints: [
       '/api/settings/staff/sync',
       '/api/settings/staff',
-      '/api/settings/departments',
+      '/api/master-data/departments',
     ],
+  },
+  {
+    key: 'departments',
+    title: 'Departments',
+    description: 'Review synced department names, staff counts, and department types.',
+    icon: 'apartment',
+    category: 'Directory',
+    route: '/settings/departments',
+    tone: 'teal',
+    endpoints: ['/api/settings/departments'],
   },
   {
     key: 'academic-staff',

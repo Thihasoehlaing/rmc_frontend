@@ -47,7 +47,7 @@ export class StaffDirectoryService {
   private readonly apiUrl = environment.apiUrl.replace(/\/$/, '');
   private readonly staffUrl = `${this.apiUrl}/api/settings/staff`;
   private readonly syncUrl = `${this.staffUrl}/sync`;
-  private readonly departmentsUrl = `${this.apiUrl}/api/settings/departments`;
+  private readonly departmentsUrl = `${this.apiUrl}/api/master-data/departments`;
 
   list(
     params: StaffListParams,

@@ -1,14 +1,17 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, formatDate } from '@angular/common';
 import { Component, OnInit, TrackByFunction, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { finalize, switchMap, tap } from 'rxjs';
 
+import { DropdownOption } from '../../../core/interfaces/components.interface';
 import { ToastService } from '../../../core/services/toast.service';
 import {
   DataTableColumn,
   DataTableComponent,
 } from '../../../shared/components/data-table/data-table.component';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
+import { SearchableDropdownComponent } from '../../../shared/components/searchable-dropdown/searchable-dropdown.component';
 import { TableSkeletonComponent } from '../../../shared/components/table-skeleton/table-skeleton.component';
 import {
   DepartmentRecord,
@@ -25,6 +28,7 @@ import {
     FormsModule,
     DataTableComponent,
     PaginationComponent,
+    SearchableDropdownComponent,
     TableSkeletonComponent,
   ],
   templateUrl: './staff-directory.component.html',
@@ -37,22 +41,25 @@ import {
 export class StaffDirectoryComponent implements OnInit {
   private readonly staffService = inject(StaffDirectoryService);
   private readonly toastService = inject(ToastService);
+  private readonly router = inject(Router);
 
   readonly staff = signal<StaffRecord[]>([]);
   readonly departments = signal<DepartmentRecord[]>([]);
 
-  readonly searchTerm = signal('');
+  readonly nameSearch = signal('');
+  readonly emailSearch = signal('');
   readonly selectedDepartmentId = signal<number | null>(null);
   readonly selectedStatus = signal<StaffStatusFilter>('');
   readonly selectedType = signal<string>('');
-  readonly appliedSearch = signal('');
+  readonly appliedName = signal('');
+  readonly appliedEmail = signal('');
   readonly appliedDepartmentId = signal<number | null>(null);
   readonly appliedStatus = signal<StaffStatusFilter>('');
   readonly appliedType = signal<string>('');
 
   readonly page = signal(1);
-  readonly pageSize = signal(10);
-  readonly pageSizeOptions = [5, 10, 15, 30, 50];
+  readonly pageSize = signal(20);
+  readonly pageSizeOptions = [20, 50, 100];
   readonly totalItems = signal(0);
   readonly totalPages = signal(1);
 
@@ -63,9 +70,10 @@ export class StaffDirectoryComponent implements OnInit {
   readonly columns: readonly DataTableColumn[] = [
     { key: 'number', label: 'No.', width: '72px', align: 'center' },
     { key: 'staff', label: 'Staff', width: '280px' },
-    { key: 'staffCode', label: 'Staff Code', width: '140px' },
     { key: 'jobTitle', label: 'Job Title', width: '210px' },
     { key: 'department', label: 'Department', width: '260px' },
+    { key: 'type', label: 'Type', width: '130px', align: 'center' },
+    { key: 'syncedAt', label: 'Synced At', width: '190px' },
     { key: 'status', label: 'Status', width: '120px', align: 'center' },
   ];
 
@@ -74,6 +82,13 @@ export class StaffDirectoryComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadInitialData();
+  }
+
+  departmentOptions(): DropdownOption<number>[] {
+    return this.departments().map((department) => ({
+      value: department.id,
+      label: department.department_name,
+    }));
   }
 
   loadInitialData(): void {
@@ -118,7 +133,8 @@ export class StaffDirectoryComponent implements OnInit {
   }
 
   search(): void {
-    this.appliedSearch.set(this.searchTerm().trim());
+    this.appliedName.set(this.nameSearch().trim());
+    this.appliedEmail.set(this.emailSearch().trim());
     this.appliedDepartmentId.set(this.selectedDepartmentId());
     this.appliedStatus.set(this.selectedStatus());
     this.appliedType.set(this.selectedType());
@@ -127,11 +143,13 @@ export class StaffDirectoryComponent implements OnInit {
   }
 
   resetFilters(): void {
-    this.searchTerm.set('');
+    this.nameSearch.set('');
+    this.emailSearch.set('');
     this.selectedDepartmentId.set(null);
     this.selectedStatus.set('');
     this.selectedType.set('');
-    this.appliedSearch.set('');
+    this.appliedName.set('');
+    this.appliedEmail.set('');
     this.appliedDepartmentId.set(null);
     this.appliedStatus.set('');
     this.appliedType.set('');
@@ -167,6 +185,10 @@ export class StaffDirectoryComponent implements OnInit {
       });
   }
 
+  goToDepartments(): void {
+    this.router.navigate(['/settings/departments']);
+  }
+
   initials(item: StaffRecord): string {
     const source = item.fullname || item.email || item.username || '';
     return source
@@ -189,11 +211,25 @@ export class StaffDirectoryComponent implements OnInit {
     return Math.min(this.pageStart() + this.staff().length - 1, this.totalItems());
   }
 
+  staffTypeLabel(item: StaffRecord): string {
+    const type = item.staff_type?.trim().toLowerCase();
+    if (type === 'fulltime') return 'fulltime';
+    if (type === 'parttime') return 'parttime';
+    return type || 'Not specified';
+  }
+
+  formatSyncedAt(value: string | null | undefined): string {
+    if (!value) return 'Not synced';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return 'Not synced';
+    return formatDate(date, 'yyyy-MM-dd hh:mm:ss a', 'en-MY');
+  }
+
   private listRequest() {
     return this.staffService.list({
       page: this.page(),
       perPage: this.pageSize(),
-      search: this.appliedSearch(),
+      search: [this.appliedName(), this.appliedEmail()].filter(Boolean).join(' '),
       departmentId: this.appliedDepartmentId(),
       status: this.appliedStatus(),
       type: this.appliedType(),

@@ -1,0 +1,43 @@
+.departments-toolbar {
+  grid-template-columns: minmax(280px, 1fr) auto;
+}
+
+.departments-header-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  flex: 0 0 auto;
+
+  .material-icons {
+    font-size: 19px;
+  }
+}
+
+.department-name {
+  color: var(--color-heading);
+  font-weight: var(--fw-semibold);
+}
+
+.department-type {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 96px;
+  padding: 5px 10px;
+  color: #334155;
+  background: #f1f5f9;
+  border-radius: var(--radius-full);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+}
+
+@media (max-width: 720px) {
+  .forms-page--settings .departments-toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .departments-header-button {
+    align-self: flex-start;
+  }
+}

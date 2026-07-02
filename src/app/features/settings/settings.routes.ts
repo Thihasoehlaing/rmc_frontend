@@ -24,6 +24,11 @@ export const settingsRoutes: Routes = [
       import('./staff-directory/staff-directory.component').then(m => m.StaffDirectoryComponent),
   },
   {
+    path: 'departments',
+    loadComponent: () =>
+      import('./departments/departments.component').then(m => m.DepartmentsComponent),
+  },
+  {
     path: 'academic-staff',
     loadComponent: () =>
       import('./academic-staff/academic-staff.component').then(m => m.AcademicStaffComponent),

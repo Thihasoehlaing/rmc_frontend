@@ -1,0 +1,138 @@
+<main class="forms-page forms-page--settings">
+  <header class="forms-page__header">
+    <div>
+      <span class="forms-page__eyebrow">System Settings</span>
+      <h1>Departments</h1>
+      <p>Review departments synced from the staff directory source.</p>
+    </div>
+    <button
+      class="btn btn-secondary departments-header-button"
+      type="button"
+      (click)="goToStaffDirectory()"
+      [disabled]="isLoading()"
+    >
+      <span class="material-icons">badge</span>
+      Staff Directory
+    </button>
+  </header>
+
+  <section class="forms-toolbar departments-toolbar" aria-label="Department filters">
+    <h2 class="forms-toolbar__title">Search &amp; Filters</h2>
+
+    <label class="forms-filter forms-filter--search">
+      <span>Department Name</span>
+      <span class="forms-search-input">
+        <span class="material-icons" aria-hidden="true">search</span>
+        <input
+          class="input--text"
+          type="search"
+          aria-label="Search departments by name"
+          placeholder="Search by department name"
+          [ngModel]="nameSearch()"
+          (ngModelChange)="nameSearch.set($event)"
+          (keydown.enter)="search()"
+          [disabled]="isLoading()"
+        />
+      </span>
+    </label>
+
+    <div class="forms-toolbar__actions">
+      <button class="btn btn-primary" type="button" (click)="search()" [disabled]="isLoading()">
+        <span class="material-icons">search</span>
+        Search
+      </button>
+      <button class="btn btn-secondary" type="button" (click)="resetFilters()" [disabled]="isLoading()">
+        <span class="material-icons">restart_alt</span>
+        Reset
+      </button>
+    </div>
+  </section>
+
+  <section class="forms-table-card">
+    <header class="forms-table-card__header">
+      <div>
+        <div class="forms-table-card__title-row">
+          <h2>Departments</h2>
+          <span class="forms-table-card__count">{{ totalItems() }}</span>
+        </div>
+        <p>View department names, staff coverage, and department type.</p>
+      </div>
+      <button
+        class="btn btn-secondary forms-table-card__refresh"
+        type="button"
+        (click)="loadDepartments()"
+        [disabled]="isLoading()"
+      >
+        <span class="material-icons">refresh</span>
+        Refresh
+      </button>
+    </header>
+
+    @if (isLoading()) {
+      <app-table-skeleton [columns]="columns" [showSearch]="false" loadingLabel="Loading departments">
+      </app-table-skeleton>
+    } @else if (loadFailed()) {
+      <div class="forms-state">
+        <span class="material-icons">cloud_off</span>
+        <h2>Unable to load departments</h2>
+        <p>Check the API connection and try again.</p>
+        <button class="btn btn-primary" type="button" (click)="loadDepartments()">Try Again</button>
+      </div>
+    } @else if (departments().length === 0) {
+      <div class="forms-state">
+        <span class="material-icons">apartment</span>
+        <h2>No departments found</h2>
+        <p>Adjust the department name filter and try again.</p>
+      </div>
+    } @else {
+      <app-data-table [columns]="columns" [rows]="departments()" [rowTrackFn]="rowTrackFn">
+        <ng-template #rowTemplate let-row let-index="index">
+          <tr>
+            <td class="is-align-center">{{ rowNumber(index) }}</td>
+            <td>
+              <strong class="department-name">{{ row.department_name }}</strong>
+            </td>
+            <td class="is-align-center">{{ row.staff_count }}</td>
+            <td>
+              <span class="department-type">{{ row.department_type }}</span>
+            </td>
+          </tr>
+        </ng-template>
+      </app-data-table>
+    }
+
+    @if (!isLoading() && !loadFailed()) {
+      <footer class="forms-table-card__footer">
+        <p class="forms-count">
+          @if (totalItems() > 0) {
+            Showing {{ pageStart() }} to {{ pageEnd() }} of {{ totalItems() }} departments
+          } @else {
+            Showing 0 departments
+          }
+        </p>
+
+        <app-pagination
+          [currentPage]="page()"
+          [totalPages]="totalPages()"
+          [pageSize]="pageSize()"
+          [pageSizeOptions]="pageSizeOptions"
+          (pageChange)="onPageChange($event)"
+          (pageSizeChange)="onPageSizeChange($event)"
+        >
+        </app-pagination>
+
+        <label class="forms-page-size" aria-label="Items per page">
+          <select
+            class="input--select"
+            [ngModel]="pageSize()"
+            (ngModelChange)="onPageSizeChange($event)"
+          >
+            @for (size of pageSizeOptions; track size) {
+              <option [ngValue]="size">{{ size }} per page</option>
+            }
+          </select>
+        </label>
+      </footer>
+    }
+  </section>
+</main>

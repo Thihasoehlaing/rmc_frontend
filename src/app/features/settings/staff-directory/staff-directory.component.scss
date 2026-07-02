@@ -1,3 +1,71 @@
 :host {
   display: block;
 }
+
+.staff-directory-header-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.staff-directory-toolbar {
+  grid-template-columns:
+    minmax(170px, 0.8fr)
+    minmax(190px, 0.9fr)
+    minmax(135px, 0.55fr)
+    minmax(300px, 1.35fr)
+    minmax(135px, 0.55fr)
+    auto;
+}
+
+.staff-type-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 78px;
+  padding: 5px 10px;
+  color: #334155;
+  background: #f1f5f9;
+  border-radius: var(--radius-full);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+}
+
+.staff-synced-at {
+  color: var(--color-text-secondary);
+  font-size: var(--fs-sm);
+  white-space: nowrap;
+}
+
+@media (max-width: 1280px) {
+  .forms-page--settings .staff-directory-toolbar {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+
+    .forms-toolbar__actions {
+      grid-column: 1 / -1;
+    }
+  }
+}
+
+@media (max-width: 900px) {
+  .forms-page--settings .staff-directory-toolbar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .forms-page--settings .staff-directory-toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .staff-directory-header-actions {
+    width: 100%;
+    justify-content: stretch;
+
+    .btn {
+      flex: 1 1 180px;
+    }
+  }
+}

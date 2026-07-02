@@ -37,6 +37,8 @@ export interface StaffRecord {
   department: string | null;
   job_title: string | null;
   photo_url: string | null;
+  staff_type?: string | null;
+  synced_at?: string | null;
   is_active: boolean;
   label: string | null;
 }
@@ -95,7 +97,7 @@ export class AcademicStaffService {
     `${this.apiUrl}/api/settings/academic-staff`;
   private readonly staffUrl = `${this.apiUrl}/api/settings/staff`;
   private readonly departmentsUrl =
-    `${this.apiUrl}/api/settings/departments`;
+    `${this.apiUrl}/api/master-data/departments`;
 
   list(params: {
     page: number;

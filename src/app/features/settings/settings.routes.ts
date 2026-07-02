@@ -20,9 +20,8 @@ export const settingsRoutes: Routes = [
   },
   {
     path: 'staff-directory',
-    data: { scope: 'staff-directory' },
     loadComponent: () =>
-      import('./settings-scope/settings-scope.component').then(m => m.SettingsScopeComponent),
+      import('./staff-directory/staff-directory.component').then(m => m.StaffDirectoryComponent),
   },
   {
     path: 'academic-staff',

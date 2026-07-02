@@ -1,0 +1,15 @@
+:host .forms-page--settings .table-action:active,
+:host .forms-page--settings .table-action:not(.table-action--danger):hover,
+:host .forms-page--settings .table-action:not(.table-action--danger):focus-visible {
+  color: var(--color-primary) !important;
+  background: var(--color-primary-light) !important;
+  border-color: var(--color-primary) !important;
+}
+
+:host .forms-page--settings .table-action--danger:hover,
+:host .forms-page--settings .table-action--danger:focus-visible,
+:host .forms-page--settings .table-action--danger:active {
+  color: var(--color-error) !important;
+  background: var(--color-error-light) !important;
+  border-color: var(--color-error) !important;
+}

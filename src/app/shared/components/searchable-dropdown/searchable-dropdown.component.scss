@@ -273,12 +273,32 @@
 }
 
 // ── Option label text (truncate long text) ────────────────────────
-.option-label {
+.option-text {
   flex: 1;
   min-width: 0; // allow text to shrink below content size
+  display: grid;
+  gap: 2px;
+}
+
+.option-label,
+.option-description {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.option-label {
+  font-weight: var(--fw-semibold);
+}
+
+.option-description {
+  color: var(--color-text-muted);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-normal);
+}
+
+.option-item.selected .option-description {
+  color: color-mix(in srgb, var(--color-primary) 74%, var(--color-text-muted));
 }
 
 // ── Multi-select checkbox ─────────────────────────────────────────

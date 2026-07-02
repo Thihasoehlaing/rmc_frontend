@@ -41,8 +41,21 @@ export interface StaffRecord {
   label: string | null;
 }
 
-export interface AcademicStaffRecord extends StaffRecord {
-  departments: DepartmentRecord[];
+export interface AcademicStaffRecord {
+  id: number;
+  staff_id?: number;
+  staff?: Partial<StaffRecord>;
+  username?: string | null;
+  staff_code?: string | null;
+  fullname?: string | null;
+  email?: string | null;
+  staff_email?: string | null;
+  department?: string | null;
+  job_title?: string | null;
+  photo_url?: string | null;
+  departments?: DepartmentRecord[];
+  label?: string | null;
+  is_active: boolean;
   staff_is_active: boolean;
   created_by: string | null;
   updated_by: string | null;
@@ -51,8 +64,22 @@ export interface AcademicStaffRecord extends StaffRecord {
 }
 
 export interface AcademicStaffPayload {
-  staff_id: number;
+  username: string;
   is_active: boolean;
+}
+
+export interface AcademicStaffByDepartmentPayload {
+  department_id: number;
+  type?: 'fulltime' | 'parttime' | 'contract';
+  is_active: boolean;
+}
+
+export interface AcademicStaffByDepartmentResult {
+  department_id: number;
+  department_name: string;
+  added_count: number;
+  skipped_count: number;
+  added: AcademicStaffRecord[];
 }
 
 interface PaginatedData<T> {
@@ -74,6 +101,9 @@ export class AcademicStaffService {
     page: number;
     perPage: number;
     search?: string;
+    name?: string;
+    email?: string;
+    jobTitle?: string;
     departmentId?: number | null;
     status?: '' | 'Active' | 'Inactive';
   }): Observable<ApiResponse<PaginatedData<AcademicStaffRecord>>> {
@@ -83,6 +113,15 @@ export class AcademicStaffService {
 
     if (params.search?.trim()) {
       httpParams = httpParams.set('search', params.search.trim());
+    }
+    if (params.name?.trim()) {
+      httpParams = httpParams.set('name', params.name.trim());
+    }
+    if (params.email?.trim()) {
+      httpParams = httpParams.set('email', params.email.trim());
+    }
+    if (params.jobTitle?.trim()) {
+      httpParams = httpParams.set('job_title', params.jobTitle.trim());
     }
     if (params.departmentId !== null && params.departmentId !== undefined) {
       httpParams = httpParams.set('department_id', params.departmentId);
@@ -125,6 +164,15 @@ export class AcademicStaffService {
   delete(id: number): Observable<ApiResponse<AcademicStaffRecord>> {
     return this.http.delete<ApiResponse<AcademicStaffRecord>>(
       `${this.academicStaffUrl}/${id}`,
+    );
+  }
+
+  createByDepartment(
+    payload: AcademicStaffByDepartmentPayload,
+  ): Observable<ApiResponse<AcademicStaffByDepartmentResult>> {
+    return this.http.post<ApiResponse<AcademicStaffByDepartmentResult>>(
+      `${this.academicStaffUrl}/by-department`,
+      payload,
     );
   }
 

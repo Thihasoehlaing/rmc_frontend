@@ -118,7 +118,12 @@
               </div>
             }
 
-            <span class="option-label">{{ opt.label }}</span>
+            <span class="option-text">
+              <span class="option-label">{{ opt.label }}</span>
+              @if (opt.description) {
+                <span class="option-description">{{ opt.description }}</span>
+              }
+            </span>
 
             <!-- Single-select checkmark -->
             @if (!isMulti && isSelected(opt.value)) {

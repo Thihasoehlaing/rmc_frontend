@@ -1,14 +1,5 @@
-import {
-  Component,
-  Input,
-  OnInit,
-  OnDestroy,
-  inject,
-  signal,
-  ChangeDetectorRef,
-} from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import {
   ReactiveFormsModule,
@@ -20,6 +11,7 @@ import {
 } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { COUNTRY_LIST } from '../../../../core/constants/countries.constant';
 import { SearchableDropdownComponent } from '../../../../shared/components/searchable-dropdown/searchable-dropdown.component';
 import { CharacterCounterComponent } from '../../../../shared/components/character-counter/character-counter.component';
 import { ValidationMessageComponent } from '../../../../shared/components/validation-message/validation-message.component';
@@ -29,23 +21,13 @@ import { FileUploadComponent } from '../../../../shared/components/file-upload/f
 import { DialogComponent } from '../../../../shared/components/dialog/dialog.component';
 import { ReviewBlockComponent } from '../review-block/review-block.component';
 import { RdigWorkflowService } from '../../services/rdig-workflow.service';
-import { RdigDropdownOptionsService } from '../../../admin-settings/rdig-dropdown-options.service';
-import { COUNTRY_LIST } from '../../../../core/constants/countries.constant';
-import { environment } from '../../../../../environments/environment';
+import { MasterDataService, AcademicStaffOption } from '../../../../core/services/master-data.service';
 import { DataTableComponent } from '../../../../shared/components/data-table/data-table.component';
 import type { DataTableColumn } from '../../../../shared/components/data-table/data-table.component';
 import { ActionButtonComponent } from '../../../../shared/components/action-button/action-button.component';
 import { FieldNoteComponent } from '../../../../shared/components/field-note/field-note.component';
 
 import { TableActionIconComponent } from '../../../../shared/components/table-action-icon/table-action-icon.component';
-
-interface AcademicStaffApiItem {
-  id: number;
-  staff: {
-    fullname: string | null;
-    department: string | null;
-  };
-}
 
 @Component({
   selector: 'app-team-details',
@@ -70,14 +52,14 @@ interface AcademicStaffApiItem {
   styleUrl: './team-details.component.scss',
 })
 export class TeamDetailsComponent implements OnInit, OnDestroy {
-  private readonly dropdownService = inject(RdigDropdownOptionsService);
-  private readonly http = inject(HttpClient);
+  private readonly masterData = inject(MasterDataService);
   private readonly router = inject(Router);
-  private readonly cdr = inject(ChangeDetectorRef);
   private readonly destroy$ = new Subject<void>();
 
+  /** Academic staff list loaded from the real backend — used for the internal co-researcher dropdown. */
+  private academicStaffList: AcademicStaffOption[] = [];
   staffOptions: { label: string; value: string }[] = [];
-  private academicStaffData: AcademicStaffApiItem[] = [];
+
   @Input({ required: true }) parentForm!: FormGroup;
   @Input() showHosComments = false;
   @Input() showRmcComments = false;
@@ -215,41 +197,27 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.dropdownService.loadOptions('research_cluster').subscribe();
-    this.dropdownService
-      .getOptions('research_cluster')
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((options) => {
-        this.clusters = options
-          .filter((o) => o.status === 'Active')
-          .map((o) => ({ label: o.optionName, value: o.id.toString() }));
-      });
-
-    this.dropdownService.loadOptions('type_of_organisation').subscribe();
-    this.dropdownService
-      .getOptions('type_of_organisation')
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((options) => {
-        this.orgTypes = options
-          .filter((o) => o.status === 'Active')
-          .map((o) => ({
-            label: o.optionName,
-            value: o.optionName.toLowerCase().replace(/\s+/g, '-'),
-          }));
-      });
-
-    // Load academic staff from API
-    this.http
-      .get<{ success: boolean; data: AcademicStaffApiItem[] }>(`${environment.apiUrl}/api/academic-staff`)
+    this.masterData
+      .getResearchClusters()
       .pipe(takeUntil(this.destroy$))
       .subscribe((res) => {
-        if (res.success && res.data) {
-          this.academicStaffData = res.data;
-          this.staffOptions = res.data.map((item) => ({
-            label: item.staff.fullname ?? '',
-            value: item.id.toString(),
-          }));
-        }
+        this.clusters = (res.data ?? [])
+          .filter((o) => o.is_active)
+          .map((o) => ({ label: o.cluster_name, value: o.id.toString() }));
+      });
+
+    this.loadOrganisationTypes();
+
+    // Load academic staff list from the real backend for the internal co-researcher dropdown
+    this.masterData
+      .searchAcademicStaff()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((res) => {
+        this.academicStaffList = res.data ?? [];
+        this.staffOptions = this.academicStaffList.map((s) => ({
+          label: s.fullname,
+          value: s.id.toString(),
+        }));
       });
 
     // Auto-populate name + department when a researcher is selected from the dropdown
@@ -258,26 +226,9 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
       .valueChanges.pipe(takeUntil(this.destroy$))
       .subscribe((id) => this.onResearcherSelected(id));
 
-    this.countryOptions = COUNTRY_LIST;
-    this.countriesLoading = false;
+    this.loadCountryOptions();
 
-    // Listen for dropdown updates from admin settings
-    const onDropdownsUpdated = (): void => {
-      this.dropdownService.loadOptions('type_of_organisation').subscribe();
-      this.dropdownService
-        .getOptions('type_of_organisation')
-        .pipe(takeUntil(this.destroy$))
-        .subscribe((options) => {
-          this.orgTypes = options
-            .filter((o) => o.status === 'Active')
-            .map((o) => ({
-              label: o.optionName,
-              value: o.optionName.toLowerCase().replace(/\s+/g, '-'),
-            }));
-          this.cdr.detectChanges();
-        });
-    };
-
+    const onDropdownsUpdated = (): void => this.loadOrganisationTypes();
     window.addEventListener('rmc-dropdowns-updated', onDropdownsUpdated);
     this.destroy$.subscribe(() => {
       window.removeEventListener('rmc-dropdowns-updated', onDropdownsUpdated);
@@ -300,16 +251,35 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
   }
 
   /** Called when the user picks a researcher from the dropdown. */
-  onResearcherSelected(staffIdStr: string): void {
-    const item = this.academicStaffData.find((s) => s.id.toString() === staffIdStr);
-    if (item) {
+  onResearcherSelected(staffId: string): void {
+    const staff = this.academicStaffList.find((s) => s.id.toString() === staffId);
+    if (staff) {
       this.internalForm.patchValue({
-        staffName: item.staff.fullname ?? '',
-        department: item.staff.department ?? '',
+        staffName: staff.fullname,
+        department: staff.department,
       });
     } else {
       this.internalForm.patchValue({ staffName: '', department: '' });
     }
+  }
+
+  private loadOrganisationTypes(): void {
+    this.masterData
+      .getDropdownOptions('TYPE_OF_ORGANISATION')
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((res) => {
+        this.orgTypes = (res.data ?? [])
+          .filter((o) => o.status === 'ACTIVE')
+          .map((o) => ({
+            label: o.option_name,
+            value: o.option_name.toLowerCase().replace(/\s+/g, '-'),
+          }));
+      });
+  }
+
+  private loadCountryOptions(): void {
+    this.countryOptions = COUNTRY_LIST;
+    this.countriesLoading = false;
   }
 
   openInternalModal(): void {

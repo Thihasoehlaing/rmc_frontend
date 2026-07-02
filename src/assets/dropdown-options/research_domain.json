@@ -1,7 +1,0 @@
-[
-  { "id": 1, "value": "Cloud Computing & IoT", "isActive": true },
-  { "id": 2, "value": "Artificial Intelligence", "isActive": true },
-  { "id": 3, "value": "Sustainability & Green Tech", "isActive": true },
-  { "id": 4, "value": "Biomedical Sciences", "isActive": true },
-  { "id": 5, "value": "Data Science & Analytics", "isActive": true }
-]

@@ -1,20 +1,16 @@
-import { Injectable, effect, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, of, tap, map, catchError } from 'rxjs';
-import { DropdownsStoreService } from './dropdowns/dropdowns-store.service';
-import type { StoredDropdownOption } from './dropdowns/dropdowns-store.service';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { environment } from '../../../environments/environment';
+import { BehaviorSubject, Observable, of, forkJoin } from 'rxjs';
+import { map, tap, catchError, switchMap } from 'rxjs/operators';
 
-/**
- * Server-side dropdown record returned from the settings API.
- * Named DropdownOptionEntityEntity to distinguish it from the UI-facing
- * DropdownOptionEntity<T> in shared/interfaces/components.interface.ts.
- */
 export interface DropdownOptionEntityEntity {
   id: number;
   optionName: string;
   status: 'Active' | 'Inactive';
   createdDate: string;
-  parentDomainId?: number; // Only for sub-research domain
+  parentDomainId?: number;
+  code?: string;
 }
 
 export type DropdownCategoryKey =
@@ -34,13 +30,52 @@ export const CATEGORY_LABELS: Record<DropdownCategoryKey, string> = {
   sdg_alignment: 'SDG',
 };
 
-@Injectable({
-  providedIn: 'root'
-})
+// Raw API shapes from master-data endpoints
+interface RawCluster { id: number; cluster_name: string; is_active: boolean; }
+interface RawDomain  { id: number; domain_name: string;  is_active: boolean; }
+interface RawSubDomain { id: number; research_domain_id: number; sub_domain_name: string; is_active: boolean; }
+interface RawEsg { id: number; esg_code: string; esg_name: string; is_active: boolean; }
+interface RawSdg { id: number; sdg_code: string; sdg_name: string; is_active: boolean; }
+interface RawDropdownOption { id: number; option_name: string; status: string; dropdown_category_id?: number; }
+
+// Raw API shapes from admin-settings endpoints (paginated)
+export interface AdminCluster    { id: number; cluster_name: string;    is_active: boolean; }
+export interface AdminDomain     { id: number; domain_name: string;     is_active: boolean; }
+export interface AdminSubDomain  { id: number; research_domain_id: number; sub_domain_name: string; is_active: boolean; }
+export interface AdminEsg        { id: number; esg_code: string; esg_name: string; is_active: boolean; }
+export interface AdminSdg        { id: number; sdg_code: string; sdg_name: string; is_active: boolean; }
+export interface AdminTypeOfOrg  { id: number; option_name: string; status: string; dropdown_category_id: number; }
+
+export interface AdminPagination {
+  current_page: number;
+  per_page: number;
+  total_items: number;
+  total_pages: number;
+  has_next: boolean;
+  has_prev: boolean;
+}
+
+export interface AdminPagedResult<T> {
+  items: T[];
+  pagination: AdminPagination;
+}
+
+interface ApiResponse<T> { success: boolean; message: string; data: T; }
+
+export interface AdminListParams {
+  search?: string;
+  status?: string;
+  page?: number;
+  per_page?: number;
+}
+
+type StoreState = Record<DropdownCategoryKey, DropdownOptionEntityEntity[]>;
+
+@Injectable({ providedIn: 'root' })
 export class RdigDropdownOptionsService {
-  private readonly dropdownStore = inject(DropdownsStoreService);
-  private readonly formName = 'RDIG Application';
-  private store = new BehaviorSubject<Record<DropdownCategoryKey, DropdownOptionEntityEntity[]>>({
+  private readonly http = inject(HttpClient);
+
+  private store = new BehaviorSubject<StoreState>({
     research_cluster: [],
     type_of_organisation: [],
     research_domain: [],
@@ -48,208 +83,323 @@ export class RdigDropdownOptionsService {
     esg_factors: [],
     sdg_alignment: [],
   });
-  private baseState: Record<DropdownCategoryKey, DropdownOptionEntityEntity[]> = {
-    research_cluster: [],
-    type_of_organisation: [],
-    research_domain: [],
-    sub_research_domain: [],
-    esg_factors: [],
-    sdg_alignment: [],
-  };
+
   private loaded = new Set<DropdownCategoryKey>();
+
   store$ = this.store.asObservable();
 
-  constructor(private http: HttpClient) {
-    effect(() => {
-      this.syncFromSettingsStore(this.dropdownStore.entries());
-    });
-  }
+  // ─── Form-facing reads ────────────────────────────────────────────────────
 
   loadOptions(category: DropdownCategoryKey): Observable<DropdownOptionEntityEntity[]> {
     if (this.loaded.has(category)) {
       return of(this.store.getValue()[category]);
     }
-
-    return this.http.get<Array<{ id: number; value: string; isActive: boolean; parentDomainId?: number }>>(`assets/dropdown-options/${category}.json`).pipe(
-      map(rows => rows.map(row => ({
-        id: row.id,
-        optionName: row.value,
-        status: row.isActive ? ('Active' as const) : ('Inactive' as const),
-        createdDate: this.formatDisplayDate(new Date()),
-        parentDomainId: row.parentDomainId,
-      }))),
-      tap(options => {
-        this.loaded.add(category);
-        this.baseState = { ...this.baseState, [category]: options };
-        this.store.next({ ...this.store.getValue(), [category]: options });
-        this.syncFromSettingsStore(this.dropdownStore.entries());
-      }),
-      catchError(err => {
-        console.error(`Failed to load ${category}`, err);
-        this.loaded.add(category);
-        return of([]);
-      })
-    );
+    return this.fetchFormOptions(category);
   }
 
   getOptions(category: DropdownCategoryKey): Observable<DropdownOptionEntityEntity[]> {
-    return this.store$.pipe(map(state => state[category]));
+    return this.store$.pipe(map((state) => state[category]));
   }
 
   getOptionsSnapshot(category: DropdownCategoryKey): DropdownOptionEntityEntity[] {
     return this.store.getValue()[category];
   }
 
-  private syncFromSettingsStore(entries: StoredDropdownOption[]): void {
-    const categoryMappings: Array<{ category: DropdownCategoryKey; formName: string; categoryName: string }> = [
-      { category: 'research_cluster', formName: this.formName, categoryName: 'Research Cluster' },
-      { category: 'type_of_organisation', formName: this.formName, categoryName: 'Type of Organisation' },
-      { category: 'research_domain', formName: this.formName, categoryName: 'Research Domain' },
-      { category: 'sub_research_domain', formName: this.formName, categoryName: 'Sub-Research Domain' },
-      { category: 'esg_factors', formName: this.formName, categoryName: 'ESG' },
-      { category: 'sdg_alignment', formName: this.formName, categoryName: 'SDG' },
-    ];
+  private fetchFormOptions(category: DropdownCategoryKey): Observable<DropdownOptionEntityEntity[]> {
+    let fetch$: Observable<DropdownOptionEntityEntity[]>;
 
-    let nextState = { ...this.baseState };
-    let hasOverrides = false;
+    switch (category) {
+      case 'research_cluster':
+        fetch$ = this.http.get<ApiResponse<RawCluster[]>>(`${environment.apiUrl}/api/master-data/research-clusters`).pipe(
+          map((r) => (r.data ?? []).map((c) => ({
+            id: c.id,
+            optionName: c.cluster_name,
+            status: c.is_active ? ('Active' as const) : ('Inactive' as const),
+            createdDate: '',
+          }))),
+          catchError(() => of([])),
+        );
+        break;
 
-    for (const mapping of categoryMappings) {
-      const sharedEntries = entries.filter(option =>
-        option.formName === mapping.formName &&
-        option.category === mapping.categoryName
-      );
+      case 'type_of_organisation':
+        fetch$ = this.http.get<ApiResponse<RawDropdownOption[]>>(`${environment.apiUrl}/api/dropdowns/TYPE_OF_ORGANISATION/options`).pipe(
+          map((r) => (r.data ?? []).map((o) => ({
+            id: o.id,
+            optionName: o.option_name,
+            status: (o.status ?? '').toLowerCase() === 'inactive' ? ('Inactive' as const) : ('Active' as const),
+            createdDate: '',
+          }))),
+          catchError(() => of([])),
+        );
+        break;
 
-      if (sharedEntries.length === 0) {
-        continue;
-      }
+      case 'research_domain':
+        fetch$ = this.http.get<ApiResponse<RawDomain[]>>(`${environment.apiUrl}/api/master-data/research-domains`).pipe(
+          map((r) => (r.data ?? []).map((d) => ({
+            id: d.id,
+            optionName: d.domain_name,
+            status: d.is_active ? ('Active' as const) : ('Inactive' as const),
+            createdDate: '',
+          }))),
+          catchError(() => of([])),
+        );
+        break;
 
-      hasOverrides = true;
-      nextState = {
-        ...nextState,
-        [mapping.category]: sharedEntries.map(entry => ({
-          id: entry.id,
-          optionName: entry.value,
-          status: entry.status,
-          createdDate: this.normalizeDisplayDate(entry.lastUpdated),
-        })),
-      };
+      case 'sub_research_domain':
+        // Load all domains first, then fetch sub-domains for each in parallel
+        fetch$ = this.fetchFormOptions('research_domain').pipe(
+          switchMap((domains) => {
+            const activeDomains = domains.filter((d) => d.status === 'Active');
+            if (!activeDomains.length) return of([]);
+            return forkJoin(
+              activeDomains.map((domain) =>
+                this.http.get<ApiResponse<RawSubDomain[]>>(
+                  `${environment.apiUrl}/api/master-data/research-domains/${domain.id}/sub-domains`,
+                ).pipe(
+                  map((r) => (r.data ?? []).map((sd) => ({
+                    id: sd.id,
+                    optionName: sd.sub_domain_name,
+                    status: sd.is_active ? ('Active' as const) : ('Inactive' as const),
+                    createdDate: '',
+                    parentDomainId: sd.research_domain_id,
+                  }))),
+                  catchError(() => of([])),
+                ),
+              ),
+            ).pipe(map((arrays) => arrays.flat()));
+          }),
+        );
+        break;
+
+      case 'esg_factors':
+        fetch$ = this.http.get<ApiResponse<RawEsg[]>>(`${environment.apiUrl}/api/master-data/esgs`).pipe(
+          map((r) => (r.data ?? []).map((e) => ({
+            id: e.id,
+            optionName: e.esg_name,
+            status: e.is_active ? ('Active' as const) : ('Inactive' as const),
+            createdDate: '',
+            code: e.esg_code,
+          }))),
+          catchError(() => of([])),
+        );
+        break;
+
+      case 'sdg_alignment':
+        fetch$ = this.http.get<ApiResponse<RawSdg[]>>(`${environment.apiUrl}/api/master-data/sdgs`).pipe(
+          map((r) => (r.data ?? []).map((s) => ({
+            id: s.id,
+            optionName: s.sdg_name,
+            status: s.is_active ? ('Active' as const) : ('Inactive' as const),
+            createdDate: '',
+            code: s.sdg_code,
+          }))),
+          catchError(() => of([])),
+        );
+        break;
+
+      default:
+        fetch$ = of([]);
     }
 
-    if (hasOverrides) {
-      this.store.next(nextState);
-    } else {
-      this.store.next(nextState);
-    }
-  }
-
-  addOption(category: DropdownCategoryKey, option: Pick<DropdownOptionEntityEntity, 'optionName' | 'status' | 'parentDomainId'>): void {
-    const currentState = this.store.getValue();
-    const options = currentState[category];
-    const newId = options.length > 0 ? Math.max(...options.map(o => o.id)) + 1 : 1;
-    const newOption: DropdownOptionEntityEntity = {
-      id: newId,
-      optionName: option.optionName,
-      status: option.status,
-      createdDate: this.formatDisplayDate(new Date()),
-      parentDomainId: option.parentDomainId,
-    };
-
-    const updatedOptions = [...options, newOption];
-    this.store.next({ ...currentState, [category]: updatedOptions });
-    this.persistCategory(category, updatedOptions);
-  }
-
-  updateOption(category: DropdownCategoryKey, updatedOption: DropdownOptionEntityEntity): void {
-    const currentState = this.store.getValue();
-    const options = currentState[category];
-    const updatedOptions = options.map(o => o.id === updatedOption.id ? { ...o, ...updatedOption } : o);
-
-    this.store.next({ ...currentState, [category]: updatedOptions });
-    this.persistCategory(category, updatedOptions);
-  }
-
-  deleteOptions(category: DropdownCategoryKey, ids: number[]): void {
-    if (!ids.length) return;
-    const currentState = this.store.getValue();
-    const next = currentState[category].filter(item => !ids.includes(item.id));
-    this.store.next({ ...currentState, [category]: next });
-    this.persistCategory(category, next);
-  }
-
-  toggleStatus(category: DropdownCategoryKey, id: number): void {
-    const currentState = this.store.getValue();
-    const next: DropdownOptionEntityEntity[] = currentState[category].map(item => {
-      if (item.id !== id) return item;
-      return {
-        ...item,
-        status: item.status === 'Active' ? 'Inactive' : 'Active',
-      };
-    });
-    this.store.next({ ...currentState, [category]: next });
-    this.persistCategory(category, next);
-  }
-
-  private persistCategory(category: DropdownCategoryKey, options: DropdownOptionEntityEntity[]): void {
-    const storedOptions: Array<Omit<StoredDropdownOption, 'formName' | 'category'>> = options.map<Omit<StoredDropdownOption, 'formName' | 'category'>>(option => ({
-      id: option.id,
-      value: option.optionName,
-      lastUpdated: this.normalizeDisplayDate(option.createdDate),
-      createdBy: 'Admin',
-      status: option.status,
-    }));
-
-    this.dropdownStore.replaceCategoryOptions(
-      this.formName,
-      CATEGORY_LABELS[category],
-      storedOptions,
+    return fetch$.pipe(
+      tap((options) => {
+        this.loaded.add(category);
+        this.store.next({ ...this.store.getValue(), [category]: options });
+      }),
     );
   }
 
-  private formatDisplayDate(date: Date): string {
-    const day = `${date.getDate()}`.padStart(2, '0');
-    const month = `${date.getMonth() + 1}`.padStart(2, '0');
-    const year = date.getFullYear();
-    return `${day}/${month}/${year}`;
+  // ─── Admin list (paginated, with search & status filter) ─────────────────
+
+  adminListClusters(params: AdminListParams): Observable<ApiResponse<AdminPagedResult<AdminCluster>>> {
+    return this.http.get<ApiResponse<AdminPagedResult<AdminCluster>>>(
+      `${environment.apiUrl}/api/admin-settings/research-clusters`,
+      { params: this.buildParams(params) },
+    );
   }
 
-  private parseDisplayDate(dateValue: string): number {
-    const slashMatch = dateValue.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
-    if (slashMatch) {
-      const [, day, month, year] = slashMatch;
-      return new Date(Number(year), Number(month) - 1, Number(day)).getTime();
-    }
-
-    const shortMonthMatch = dateValue.match(/^(\d{2})\s([A-Za-z]{3})\s(\d{4})$/);
-    if (shortMonthMatch) {
-      const monthLookup: Record<string, number> = {
-        Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5, Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11,
-      };
-      const [, day, monthText, year] = shortMonthMatch;
-      const month = monthLookup[monthText];
-      if (month !== undefined) {
-        return new Date(Number(year), month, Number(day)).getTime();
-      }
-    }
-
-    const isoParsed = new Date(dateValue).getTime();
-    if (!Number.isNaN(isoParsed)) {
-      return isoParsed;
-    }
-
-    return 0;
+  adminListDomains(params: AdminListParams): Observable<ApiResponse<AdminPagedResult<AdminDomain>>> {
+    return this.http.get<ApiResponse<AdminPagedResult<AdminDomain>>>(
+      `${environment.apiUrl}/api/admin-settings/research-domains`,
+      { params: this.buildParams(params) },
+    );
   }
 
-  private normalizeDisplayDate(dateValue?: string): string {
-    if (!dateValue) {
-      return this.formatDisplayDate(new Date());
-    }
+  adminListSubDomains(domainId: number, params: AdminListParams): Observable<ApiResponse<AdminPagedResult<AdminSubDomain>>> {
+    return this.http.get<ApiResponse<AdminPagedResult<AdminSubDomain>>>(
+      `${environment.apiUrl}/api/admin-settings/research-domains/${domainId}/sub-domains`,
+      { params: this.buildParams(params) },
+    );
+  }
 
-    const timestamp = this.parseDisplayDate(dateValue);
-    if (!timestamp) {
-      return this.formatDisplayDate(new Date());
-    }
+  adminListEsgs(params: AdminListParams): Observable<ApiResponse<AdminPagedResult<AdminEsg>>> {
+    return this.http.get<ApiResponse<AdminPagedResult<AdminEsg>>>(
+      `${environment.apiUrl}/api/admin-settings/esgs`,
+      { params: this.buildParams(params) },
+    );
+  }
 
-    return this.formatDisplayDate(new Date(timestamp));
+  adminListSdgs(params: AdminListParams): Observable<ApiResponse<AdminPagedResult<AdminSdg>>> {
+    return this.http.get<ApiResponse<AdminPagedResult<AdminSdg>>>(
+      `${environment.apiUrl}/api/admin-settings/sdgs`,
+      { params: this.buildParams(params) },
+    );
+  }
+
+  adminListTypeOfOrg(params: AdminListParams): Observable<ApiResponse<AdminPagedResult<AdminTypeOfOrg>>> {
+    const p = this.buildParams(params).set('category_code', 'TYPE_OF_ORGANISATION');
+    return this.http.get<ApiResponse<AdminPagedResult<AdminTypeOfOrg>>>(
+      `${environment.apiUrl}/api/admin-settings/dropdown-options`,
+      { params: p },
+    );
+  }
+
+  // ─── Admin create ─────────────────────────────────────────────────────────
+
+  adminCreateCluster(data: { cluster_name: string; is_active?: boolean }): Observable<ApiResponse<AdminCluster>> {
+    return this.http.post<ApiResponse<AdminCluster>>(`${environment.apiUrl}/api/admin-settings/research-clusters`, data).pipe(
+      tap(() => this.invalidateAndRefresh('research_cluster')),
+    );
+  }
+
+  adminCreateDomain(data: { domain_name: string; is_active?: boolean }): Observable<ApiResponse<AdminDomain>> {
+    return this.http.post<ApiResponse<AdminDomain>>(`${environment.apiUrl}/api/admin-settings/research-domains`, data).pipe(
+      tap(() => this.invalidateAndRefresh('research_domain')),
+    );
+  }
+
+  adminCreateSubDomain(domainId: number, data: { sub_domain_name: string; is_active?: boolean }): Observable<ApiResponse<AdminSubDomain>> {
+    return this.http.post<ApiResponse<AdminSubDomain>>(
+      `${environment.apiUrl}/api/admin-settings/research-domains/${domainId}/sub-domains`, data,
+    ).pipe(tap(() => this.invalidateAndRefresh('sub_research_domain')));
+  }
+
+  adminCreateEsg(data: { esg_code: string; esg_name: string; is_active?: boolean }): Observable<ApiResponse<AdminEsg>> {
+    return this.http.post<ApiResponse<AdminEsg>>(`${environment.apiUrl}/api/admin-settings/esgs`, data).pipe(
+      tap(() => this.invalidateAndRefresh('esg_factors')),
+    );
+  }
+
+  adminCreateSdg(data: { sdg_code: string; sdg_name: string; is_active?: boolean }): Observable<ApiResponse<AdminSdg>> {
+    return this.http.post<ApiResponse<AdminSdg>>(`${environment.apiUrl}/api/admin-settings/sdgs`, data).pipe(
+      tap(() => this.invalidateAndRefresh('sdg_alignment')),
+    );
+  }
+
+  adminCreateTypeOfOrg(categoryId: number, data: { option_name: string; is_active?: boolean }): Observable<ApiResponse<AdminTypeOfOrg>> {
+    const body = {
+      dropdown_category_id: categoryId,
+      option_name: data.option_name,
+      status: data.is_active === false ? 'INACTIVE' : 'ACTIVE',
+    };
+    return this.http.post<ApiResponse<AdminTypeOfOrg>>(`${environment.apiUrl}/api/admin-settings/dropdown-options`, body).pipe(
+      tap(() => this.invalidateAndRefresh('type_of_organisation')),
+    );
+  }
+
+  // ─── Admin update ─────────────────────────────────────────────────────────
+
+  adminUpdateCluster(id: number, data: { cluster_name?: string; is_active?: boolean }): Observable<ApiResponse<AdminCluster>> {
+    return this.http.put<ApiResponse<AdminCluster>>(`${environment.apiUrl}/api/admin-settings/research-clusters/${id}`, data).pipe(
+      tap(() => this.invalidateAndRefresh('research_cluster')),
+    );
+  }
+
+  adminUpdateDomain(id: number, data: { domain_name?: string; is_active?: boolean }): Observable<ApiResponse<AdminDomain>> {
+    return this.http.put<ApiResponse<AdminDomain>>(`${environment.apiUrl}/api/admin-settings/research-domains/${id}`, data).pipe(
+      tap(() => this.invalidateAndRefresh('research_domain')),
+    );
+  }
+
+  // Note: item-level sub-domain ops use the FLAT route (/admin-settings/sub-domains/{id}),
+  // unlike list/create which are nested under a domain. The backend resolves the sub-domain
+  // by its own id here, so no domain_id is needed.
+  adminUpdateSubDomain(id: number, data: { sub_domain_name?: string; is_active?: boolean }): Observable<ApiResponse<AdminSubDomain>> {
+    return this.http.put<ApiResponse<AdminSubDomain>>(
+      `${environment.apiUrl}/api/admin-settings/sub-domains/${id}`, data,
+    ).pipe(tap(() => this.invalidateAndRefresh('sub_research_domain')));
+  }
+
+  adminUpdateEsg(id: number, data: { esg_code?: string; esg_name?: string; is_active?: boolean }): Observable<ApiResponse<AdminEsg>> {
+    return this.http.put<ApiResponse<AdminEsg>>(`${environment.apiUrl}/api/admin-settings/esgs/${id}`, data).pipe(
+      tap(() => this.invalidateAndRefresh('esg_factors')),
+    );
+  }
+
+  adminUpdateSdg(id: number, data: { sdg_code?: string; sdg_name?: string; is_active?: boolean }): Observable<ApiResponse<AdminSdg>> {
+    return this.http.put<ApiResponse<AdminSdg>>(`${environment.apiUrl}/api/admin-settings/sdgs/${id}`, data).pipe(
+      tap(() => this.invalidateAndRefresh('sdg_alignment')),
+    );
+  }
+
+  adminUpdateTypeOfOrg(id: number, data: { option_name?: string; is_active?: boolean }): Observable<ApiResponse<AdminTypeOfOrg>> {
+    const body: Record<string, unknown> = {};
+    if (data.option_name !== undefined) body['option_name'] = data.option_name;
+    if (data.is_active !== undefined) body['status'] = data.is_active ? 'ACTIVE' : 'INACTIVE';
+    return this.http.put<ApiResponse<AdminTypeOfOrg>>(`${environment.apiUrl}/api/admin-settings/dropdown-options/${id}`, body).pipe(
+      tap(() => this.invalidateAndRefresh('type_of_organisation')),
+    );
+  }
+
+  // ─── Admin delete ─────────────────────────────────────────────────────────
+
+  adminDeleteCluster(id: number): Observable<ApiResponse<AdminCluster>> {
+    return this.http.delete<ApiResponse<AdminCluster>>(`${environment.apiUrl}/api/admin-settings/research-clusters/${id}`).pipe(
+      tap(() => this.invalidateAndRefresh('research_cluster')),
+    );
+  }
+
+  adminDeleteDomain(id: number): Observable<ApiResponse<AdminDomain>> {
+    return this.http.delete<ApiResponse<AdminDomain>>(`${environment.apiUrl}/api/admin-settings/research-domains/${id}`).pipe(
+      tap(() => { this.invalidateAndRefresh('research_domain'); this.invalidateAndRefresh('sub_research_domain'); }),
+    );
+  }
+
+  // Flat item route — see adminUpdateSubDomain note.
+  adminDeleteSubDomain(id: number): Observable<ApiResponse<AdminSubDomain>> {
+    return this.http.delete<ApiResponse<AdminSubDomain>>(
+      `${environment.apiUrl}/api/admin-settings/sub-domains/${id}`,
+    ).pipe(tap(() => this.invalidateAndRefresh('sub_research_domain')));
+  }
+
+  adminDeleteEsg(id: number): Observable<ApiResponse<AdminEsg>> {
+    return this.http.delete<ApiResponse<AdminEsg>>(`${environment.apiUrl}/api/admin-settings/esgs/${id}`).pipe(
+      tap(() => this.invalidateAndRefresh('esg_factors')),
+    );
+  }
+
+  adminDeleteSdg(id: number): Observable<ApiResponse<AdminSdg>> {
+    return this.http.delete<ApiResponse<AdminSdg>>(`${environment.apiUrl}/api/admin-settings/sdgs/${id}`).pipe(
+      tap(() => this.invalidateAndRefresh('sdg_alignment')),
+    );
+  }
+
+  adminDeleteTypeOfOrg(id: number): Observable<ApiResponse<AdminTypeOfOrg>> {
+    return this.http.delete<ApiResponse<AdminTypeOfOrg>>(`${environment.apiUrl}/api/admin-settings/dropdown-options/${id}`).pipe(
+      tap(() => this.invalidateAndRefresh('type_of_organisation')),
+    );
+  }
+
+  // ─── Helpers ──────────────────────────────────────────────────────────────
+
+  /**
+   * Marks the form-facing cache for this category as stale and notifies any
+   * mounted RDIG/Journal form components (they listen for this event and call
+   * loadOptions() themselves). Deliberately does NOT fetch here — the caller
+   * already has the up-to-date row from the create/update/delete response, and
+   * fetching eagerly would fire an extra, unnecessary network request.
+   */
+  private invalidateAndRefresh(category: DropdownCategoryKey): void {
+    this.loaded.delete(category);
+    window.dispatchEvent(new CustomEvent('rmc-dropdowns-updated'));
+  }
+
+  private buildParams(p: AdminListParams): HttpParams {
+    let params = new HttpParams();
+    if (p.search) params = params.set('search', p.search);
+    if (p.status && p.status !== 'all') params = params.set('status', p.status);
+    if (p.page) params = params.set('page', p.page.toString());
+    if (p.per_page) params = params.set('per_page', p.per_page.toString());
+    return params;
   }
 }
-

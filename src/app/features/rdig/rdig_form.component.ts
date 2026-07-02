@@ -203,8 +203,6 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
     // Step 2: Project Details
     [
       { path: 'projectDetails.applicationType', label: 'Application Type' },
-      { path: 'projectDetails.declarations.ethics', label: 'Ethics Declaration' },
-      { path: 'projectDetails.declarations.conflict', label: 'Conflict of Interest' },
       { path: 'projectDetails.duration', label: 'Project Duration' },
       { path: 'projectDetails.title', label: 'Project Title' },
       { path: 'projectDetails.researchArea', label: 'Research Area' },
@@ -432,8 +430,8 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
       projectDetails: this.fb.group({
         applicationType: ['', Validators.required],
         declarations: this.fb.group({
-          ethics: [false, Validators.requiredTrue],
-          conflict: [false, Validators.requiredTrue],
+          ethics: [false],
+          conflict: [false],
         }),
         category: ['S&T'],
         duration: ['', Validators.required],

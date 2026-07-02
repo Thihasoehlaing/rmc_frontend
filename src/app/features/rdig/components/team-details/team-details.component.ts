@@ -18,8 +18,8 @@ import {
   FormControl,
   Validators,
 } from '@angular/forms';
-import { of, Subject } from 'rxjs';
-import { catchError, map, takeUntil } from 'rxjs/operators';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { SearchableDropdownComponent } from '../../../../shared/components/searchable-dropdown/searchable-dropdown.component';
 import { CharacterCounterComponent } from '../../../../shared/components/character-counter/character-counter.component';
 import { ValidationMessageComponent } from '../../../../shared/components/validation-message/validation-message.component';
@@ -30,7 +30,8 @@ import { DialogComponent } from '../../../../shared/components/dialog/dialog.com
 import { ReviewBlockComponent } from '../review-block/review-block.component';
 import { RdigWorkflowService } from '../../services/rdig-workflow.service';
 import { RdigDropdownOptionsService } from '../../../admin-settings/rdig-dropdown-options.service';
-import { AuthService } from '../../../../core/services/auth.service';
+import { COUNTRY_LIST } from '../../../../core/constants/countries.constant';
+import { environment } from '../../../../../environments/environment';
 import { DataTableComponent } from '../../../../shared/components/data-table/data-table.component';
 import type { DataTableColumn } from '../../../../shared/components/data-table/data-table.component';
 import { ActionButtonComponent } from '../../../../shared/components/action-button/action-button.component';
@@ -38,12 +39,12 @@ import { FieldNoteComponent } from '../../../../shared/components/field-note/fie
 
 import { TableActionIconComponent } from '../../../../shared/components/table-action-icon/table-action-icon.component';
 
-interface RestCountry {
-  name?: {
-    common?: string;
-    official?: string;
+interface AcademicStaffApiItem {
+  id: number;
+  staff: {
+    fullname: string | null;
+    department: string | null;
   };
-  cca2?: string;
 }
 
 @Component({
@@ -70,17 +71,13 @@ interface RestCountry {
 })
 export class TeamDetailsComponent implements OnInit, OnDestroy {
   private readonly dropdownService = inject(RdigDropdownOptionsService);
-  private readonly authService = inject(AuthService);
   private readonly http = inject(HttpClient);
   private readonly router = inject(Router);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly destroy$ = new Subject<void>();
 
-  /** Eligible internal co-researchers: (full_time|contract) AND academic, NOT Reviewer/blocked */
-  readonly eligibleResearchers = this.authService.getEligibleCoResearchers();
-  readonly researcherOptions: { label: string; value: string }[] = this.eligibleResearchers.map(
-    (r) => ({ label: r.name, value: r.id }),
-  );
+  staffOptions: { label: string; value: string }[] = [];
+  private academicStaffData: AcademicStaffApiItem[] = [];
   @Input({ required: true }) parentForm!: FormGroup;
   @Input() showHosComments = false;
   @Input() showRmcComments = false;
@@ -241,13 +238,28 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
           }));
       });
 
+    // Load academic staff from API
+    this.http
+      .get<{ success: boolean; data: AcademicStaffApiItem[] }>(`${environment.apiUrl}/api/academic-staff`)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((res) => {
+        if (res.success && res.data) {
+          this.academicStaffData = res.data;
+          this.staffOptions = res.data.map((item) => ({
+            label: item.staff.fullname ?? '',
+            value: item.id.toString(),
+          }));
+        }
+      });
+
     // Auto-populate name + department when a researcher is selected from the dropdown
     this.internalForm
       .get('staffId')!
       .valueChanges.pipe(takeUntil(this.destroy$))
       .subscribe((id) => this.onResearcherSelected(id));
 
-    this.loadCountryOptions();
+    this.countryOptions = COUNTRY_LIST;
+    this.countriesLoading = false;
 
     // Listen for dropdown updates from admin settings
     const onDropdownsUpdated = (): void => {
@@ -288,52 +300,16 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
   }
 
   /** Called when the user picks a researcher from the dropdown. */
-  onResearcherSelected(userId: string): void {
-    const researcher = this.eligibleResearchers.find((r) => r.id === userId);
-    if (researcher) {
+  onResearcherSelected(staffIdStr: string): void {
+    const item = this.academicStaffData.find((s) => s.id.toString() === staffIdStr);
+    if (item) {
       this.internalForm.patchValue({
-        staffName: researcher.name,
-        department: researcher.department,
+        staffName: item.staff.fullname ?? '',
+        department: item.staff.department ?? '',
       });
     } else {
       this.internalForm.patchValue({ staffName: '', department: '' });
     }
-  }
-
-  private loadCountryOptions(): void {
-    this.countriesLoading = true;
-    this.http
-      .get<RestCountry[]>('https://restcountries.com/v3.1/all?fields=name,cca2')
-      .pipe(
-        map((countries) => this.normalizeCountryOptions(countries)),
-        catchError((error) => {
-          console.error('Failed to load country options from REST Countries API', error);
-          return of([]);
-        }),
-        takeUntil(this.destroy$),
-      )
-      .subscribe((options) => {
-        this.countryOptions = options;
-        this.countriesLoading = false;
-      });
-  }
-
-  private normalizeCountryOptions(countries: RestCountry[]): { label: string; value: string }[] {
-    const optionsByName = new Map<string, { label: string; value: string }>();
-
-    countries.forEach((country) => {
-      const rawName = country.name?.common?.trim();
-      if (!rawName) return;
-
-      const name = rawName.toLowerCase() === 'israel' ? 'Palestine' : rawName;
-      const key = name.toLowerCase();
-
-      if (!optionsByName.has(key)) {
-        optionsByName.set(key, { label: name, value: name });
-      }
-    });
-
-    return Array.from(optionsByName.values()).sort((a, b) => a.label.localeCompare(b.label));
   }
 
   openInternalModal(): void {

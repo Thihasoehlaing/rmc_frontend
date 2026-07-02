@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, Input, effect, inject, computed } from '@angular/core';
+import { Component, OnInit, OnDestroy, Input, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   ReactiveFormsModule,
@@ -24,7 +24,7 @@ import { DropdownOption } from '../../../../../core/interfaces/components.interf
 import { ConferenceWorkflowService } from '../../../services/conference-workflow.service';
 import { ConferenceFormStateService } from '../../../services/conference-form-state.service';
 import { BreakdownOptionsService } from '../../../services/breakdown-options.service';
-import { DropdownsStoreService } from '../../../../admin-settings/dropdowns/dropdowns-store.service';
+import { MasterDataService, RegionOption } from '../../../../../core/services/master-data.service';
 import {
   SDG_KEYWORD_EXAMPLE,
   SDG_KEYWORD_NOTE,
@@ -60,7 +60,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
   @Input() isFormReadOnly: boolean = false;
 
   private breakdownOptionsService = inject(BreakdownOptionsService);
-  private readonly dropdownStore = inject(DropdownsStoreService);
+  private readonly masterData = inject(MasterDataService);
   form!: FormGroup;
   breakdownForm!: FormGroup;
   sdgKeywordsForm!: FormGroup;
@@ -107,24 +107,11 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
 
   regions = ['Americas', 'ASEAN', 'Asia', 'Australasia', 'Europe', 'Malaysia', 'MEA', 'Pacific'];
 
-  regionOptions = computed(() => {
-    return this.breakdownOptionsService.regionOptions();
-  });
+  /** Regions fetched from the real backend master-data list, keyed by id. */
+  private regionsById = new Map<string, RegionOption>();
+  regionOptions = signal<DropdownOption[]>([]);
 
-  projectAccountCodeOptions = computed<DropdownOption[]>(() =>
-    this.dropdownStore
-      .entries()
-      .filter(
-        (option) =>
-          option.formName === 'Conference Application' &&
-          option.category === 'Project Account Code' &&
-          option.status === 'Active',
-      )
-      .map((option) => ({
-        value: option.value,
-        label: option.value,
-      })),
-  );
+  projectAccountCodeOptions = signal<DropdownOption[]>([]);
 
   // Build region descriptions dynamically from service metadata
   getRegionDescription(regionValue: string): string {
@@ -157,30 +144,22 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     return defaultDescriptions[regionValue.toLowerCase()] || '';
   }
 
-  // Get breakdown options from service (reactive)
+  // Fallback options, used only if the real backend lists below haven't loaded yet.
   get researchBreakdownOptions(): DropdownOption[] {
     return this.breakdownOptionsService.getOptionsForType('research');
-  }
-
-  get localBreakdownOptions(): DropdownOption[] {
-    return this.breakdownOptionsService.getOptionsForType('local');
   }
 
   get externalBreakdownOptions(): DropdownOption[] {
     return this.breakdownOptionsService.getOptionsForType('external-research');
   }
 
-  get voteNumberDescriptionOptions(): DropdownOption[] {
-    return this.dropdownStore
-      .entries()
-      .filter(
-        (option) =>
-          option.formName === 'Conference Application' &&
-          option.category === 'Vote Number Description' &&
-          option.status === 'Active',
-      )
-      .map((option) => ({ value: option.value, label: option.value }));
-  }
+  /** Vote numbers from the real backend master-data list (used for research/external breakdowns). */
+  private voteNumbersCache: { code: string; description: string }[] = [];
+  voteNumberDescriptionOptions: DropdownOption[] = [];
+
+  /** Local-conference account codes from the real backend (location_type = LOCAL). */
+  private localAccountCodesCache: { code: string; description: string }[] = [];
+  localBreakdownOptions: DropdownOption[] = [];
 
   regionFundingInfo: Record<string, string> = {
     Americas: '50% & limit to a maximum of RM5,000',
@@ -403,6 +382,38 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     this.loadFormState();
     this.syncCitedJournalPaperExplanationValidator();
     this.normalizePages();
+    this.loadMasterData();
+  }
+
+  /** Loads regions, vote numbers and local account codes from the real backend. */
+  private loadMasterData(): void {
+    this.masterData.getRegions().subscribe((res) => {
+      const regions = res.data ?? [];
+      this.regionsById = new Map(regions.map((r) => [r.id.toString(), r]));
+      this.regionOptions.set(regions.map((r) => ({ value: r.id.toString(), label: r.region_name })));
+    });
+
+    this.masterData.getProjectAccountCodes().subscribe((res) => {
+      this.projectAccountCodeOptions.set(
+        (res.data ?? []).map((c) => ({ value: c.code, label: `${c.code} - ${c.description}` })),
+      );
+    });
+
+    this.masterData.getVoteNumbers().subscribe((res) => {
+      this.voteNumbersCache = res.data ?? [];
+      this.voteNumberDescriptionOptions = this.voteNumbersCache.map((c) => ({
+        value: c.description,
+        label: c.description,
+      }));
+    });
+
+    this.masterData.getAccountCodes().subscribe((res) => {
+      this.localAccountCodesCache = (res.data ?? []).filter((c) => c.location_type === 'LOCAL');
+      this.localBreakdownOptions = this.localAccountCodesCache.map((c) => ({
+        value: c.description,
+        label: c.description,
+      }));
+    });
   }
 
   ngOnDestroy() {
@@ -485,10 +496,13 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     // Watch for region changes and auto-set percentage, limit, and description
     this.form.get('selectedRegion')?.valueChanges.subscribe((region) => {
       if (region) {
-        const percentage = this.getRegionPercentage(region);
-        const description = this.getRegionDescription(region);
+        const backendRegion = this.regionsById.get(region);
+        const percentage = backendRegion ? Number(backendRegion.percentage) : this.getRegionPercentage(region);
+        const limit = backendRegion ? Number(backendRegion.limit_amount) : 5000;
+        const description = backendRegion ? backendRegion.description : this.getRegionDescription(region);
+        this.form.get('regionName')?.patchValue(backendRegion?.region_name ?? region, { emitEvent: false });
         this.form.get('percentage')?.patchValue(percentage, { emitEvent: false });
-        this.form.get('limit')?.patchValue(5000, { emitEvent: false });
+        this.form.get('limit')?.patchValue(limit, { emitEvent: false });
         this.form.get('regionDescription')?.patchValue(description, { emitEvent: false });
       }
     });
@@ -650,6 +664,11 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
       };
       this.formStateService.saveFormSection('conferenceDetails', completeState);
     }
+  }
+
+  /** Flushes the live form into the shared state service — called by the wizard before saving. */
+  flushFormState(): void {
+    this.saveFormState();
   }
 
   // Ensure page numbers are within valid bounds after initial load
@@ -1041,11 +1060,8 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
   }
 
   private getConfiguredVoteNumber(optionValue: string | null): string {
-    return this.dropdownStore.getConfiguredNumber(
-      'Conference Application',
-      'Vote Number Description',
-      optionValue,
-    );
+    if (!optionValue) return '';
+    return this.voteNumbersCache.find((v) => v.description === optionValue)?.code || '';
   }
 
   private getConfiguredLocalAccountCode(optionValue: string | null): string {
@@ -1053,13 +1069,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
       return '';
     }
 
-    try {
-      const stored = localStorage.getItem(`option-metadata-local-${optionValue}`);
-      const metadata = stored ? JSON.parse(stored) : null;
-      return metadata?.accountCode || '';
-    } catch {
-      return '';
-    }
+    return this.localAccountCodesCache.find((c) => c.description === optionValue)?.code || '';
   }
 
   closeBreakdownModal() {
@@ -1089,10 +1099,22 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
         ? array[this.breakdownEditingIndex]?.supportingDocument || null
         : null;
 
+    const existingFileKey =
+      this.breakdownEditingIndex !== null
+        ? array[this.breakdownEditingIndex]?.pendingFileKey || null
+        : null;
+    const pendingFileKey = this.selectedFile
+      ? `breakdown.${this.breakdownType}.${Date.now()}.${Math.random().toString(36).slice(2)}`
+      : existingFileKey;
+    if (this.selectedFile && pendingFileKey) {
+      this.formStateService.setPendingFile(pendingFileKey, this.selectedFile);
+    }
+
     const entry = {
       ...formData,
       costInRM: parseFloat(costInRM.toFixed(2)),
       supportingDocument: this.selectedFileName || existingDocument,
+      pendingFileKey,
     };
 
     if (this.breakdownEditingIndex !== null) {

@@ -2,6 +2,9 @@
 export interface DropdownOption<T = any> {
     value: T;
     label: string;
+    description?: string;
+    displayLabel?: string;
+    searchText?: string;
     disabled?: boolean;
 }
 

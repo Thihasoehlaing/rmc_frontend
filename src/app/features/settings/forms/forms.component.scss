@@ -495,9 +495,10 @@
       border-color: var(--border-subtle);
 
       &:hover,
-      &:focus-visible {
-        color: var(--color-surface);
-        background: var(--color-error);
+      &:focus-visible,
+      &:active {
+        color: var(--color-error);
+        background: var(--color-error-light);
         border-color: var(--color-error);
       }
     }

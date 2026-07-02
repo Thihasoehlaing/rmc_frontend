@@ -1,55 +1,136 @@
-<main class="forms-page">
+<main class="forms-page forms-page--settings">
   <header class="forms-page__header">
     <div>
       <span class="forms-page__eyebrow">System Settings</span>
       <h1>Academic Staff</h1>
       <p>Manage staff members available for academic workflows and selections.</p>
     </div>
-    <button
-      class="btn btn-primary forms-page__create-button"
-      type="button"
-      (click)="openCreateDialog()"
-      [disabled]="isLoading()"
-    >
-      <span class="material-icons">person_add</span>
-      Add Academic Staff
-    </button>
+    <div class="academic-staff-header-actions">
+      <button
+        class="btn btn-secondary"
+        type="button"
+        (click)="openDepartmentDialog()"
+        [disabled]="isLoading()"
+      >
+        <span class="material-icons">groups</span>
+        Add by Department
+      </button>
+      <button
+        class="btn btn-primary forms-page__create-button"
+        type="button"
+        (click)="openCreateDialog()"
+        [disabled]="isLoading()"
+      >
+        <span class="material-icons">person_add</span>
+        Add Academic Staff
+      </button>
+    </div>
   </header>
 
-  @if (!isLoading()) {
-    <app-submissions-search
-      placeholder="Search academic staff"
-      [value]="searchTerm()"
-      (search)="searchTerm.set($event); search()"
-      (refresh)="resetFilters()"
-      ><label search-filters
-        ><span>Department</span
-        ><select
-          class="input--select"
-          [ngModel]="selectedDepartmentId()"
-          (ngModelChange)="selectedDepartmentId.set($event)"
-        >
-          <option [ngValue]="null">All Departments</option>
-          @for (department of departments(); track department.id) {
-            <option [ngValue]="department.id">{{ department.department_name }}</option>
-          }
-        </select></label
-      ><label search-filters
-        ><span>Status</span
-        ><select
-          class="input--select"
-          [ngModel]="selectedStatus()"
-          (ngModelChange)="selectedStatus.set($event)"
-        >
-          <option value="">All</option>
-          <option value="Active">Active</option>
-          <option value="Inactive">Inactive</option>
-        </select></label
-      >
-    </app-submissions-search>
-  }
+  <section class="forms-toolbar academic-staff-toolbar" aria-label="Academic staff filters">
+    <h2 class="forms-toolbar__title">Search &amp; Filters</h2>
 
-  <section class="forms-table">
+    <label class="forms-filter academic-staff-filter--search">
+      <span>Name</span>
+      <input
+        class="input--text"
+        type="search"
+        aria-label="Search academic staff by name"
+        placeholder="Search by name"
+        [ngModel]="nameSearch()"
+        (ngModelChange)="nameSearch.set($event)"
+        (keydown.enter)="search()"
+        [disabled]="isLoading()"
+      />
+    </label>
+
+    <label class="forms-filter">
+      <span>Email</span>
+      <input
+        class="input--text"
+        type="search"
+        aria-label="Search academic staff by email"
+        placeholder="Search by email"
+        [ngModel]="emailSearch()"
+        (ngModelChange)="emailSearch.set($event)"
+        (keydown.enter)="search()"
+        [disabled]="isLoading()"
+      />
+    </label>
+
+    <label class="forms-filter">
+      <span>Job Title</span>
+      <input
+        class="input--text"
+        type="search"
+        aria-label="Search academic staff by job title"
+        placeholder="Search by job title"
+        [ngModel]="jobTitleSearch()"
+        (ngModelChange)="jobTitleSearch.set($event)"
+        (keydown.enter)="search()"
+        [disabled]="isLoading()"
+      />
+    </label>
+
+    <label class="forms-filter">
+      <span>Department</span>
+      <app-searchable-dropdown
+        [options]="departmentOptions()"
+        [searchable]="true"
+        placeholder="Search department..."
+        [ngModel]="selectedDepartmentId()"
+        (ngModelChange)="selectedDepartmentId.set($event)"
+        [loading]="isLoading()"
+      >
+      </app-searchable-dropdown>
+    </label>
+
+    <label class="forms-filter">
+      <span>Status</span>
+      <select
+        class="input--select"
+        [ngModel]="selectedStatus()"
+        (ngModelChange)="selectedStatus.set($event)"
+        [disabled]="isLoading()"
+      >
+        <option value="">All</option>
+        <option value="Active">Active</option>
+        <option value="Inactive">Inactive</option>
+      </select>
+    </label>
+
+    <div class="forms-toolbar__actions">
+      <button class="btn btn-primary" type="button" (click)="search()" [disabled]="isLoading()">
+        <span class="material-icons">search</span>
+        Search
+      </button>
+      <button class="btn btn-secondary" type="button" (click)="resetFilters()" [disabled]="isLoading()">
+        <span class="material-icons">restart_alt</span>
+        Reset
+      </button>
+    </div>
+  </section>
+
+  <section class="forms-table-card">
+    <header class="forms-table-card__header">
+      <div>
+        <div class="forms-table-card__title-row">
+          <h2>Academic Staff</h2>
+          <span class="forms-table-card__count">{{ totalItems() }}</span>
+        </div>
+        <p>Manage staff members available for academic workflows and selections.</p>
+      </div>
+      <button
+        class="btn btn-secondary forms-table-card__refresh"
+        type="button"
+        (click)="loadInitialData()"
+        [disabled]="isLoading()"
+      >
+        <span class="material-icons">refresh</span>
+        Refresh
+      </button>
+    </header>
+
     @if (isLoading()) {
       <app-table-skeleton
         [columns]="columns"
@@ -79,20 +160,13 @@
               <div class="academic-staff-identity">
                 <span class="academic-staff-avatar">{{ initials(row) }}</span>
                 <div>
-                  <strong>{{ row.fullname || row.username }}</strong>
-                  <small>{{ row.email || row.staff_email || 'No email' }}</small>
+                  <strong>{{ staffName(row) }}</strong>
+                  <small>{{ staffEmail(row) || 'No email' }}</small>
                 </div>
               </div>
             </td>
-            <td>
-              @if (row.staff_code) {
-                <span class="form-code">{{ row.staff_code }}</span>
-              } @else {
-                <span class="academic-staff-muted">Not available</span>
-              }
-            </td>
-            <td>{{ row.job_title || 'Not specified' }}</td>
-            <td>{{ row.department || 'Not available' }}</td>
+            <td>{{ staffJobTitle(row) || 'Not specified' }}</td>
+            <td>{{ staffDepartment(row) || 'Not available' }}</td>
             <td class="is-align-center">
               <span class="status-badge" [class.status-badge--inactive]="!row.is_active">
                 {{ row.is_active ? 'Active' : 'Inactive' }}
@@ -124,27 +198,41 @@
         </ng-template>
       </app-data-table>
     }
+
+    @if (!isLoading() && !loadFailed()) {
+      <footer class="forms-table-card__footer">
+        <p class="forms-count">
+          @if (totalItems() > 0) {
+            Showing {{ pageStart() }} to {{ pageEnd() }} of {{ totalItems() }} results
+          } @else {
+            Showing 0 results
+          }
+        </p>
+
+        <app-pagination
+          [currentPage]="page()"
+          [totalPages]="totalPages()"
+          [pageSize]="pageSize()"
+          [pageSizeOptions]="pageSizeOptions"
+          (pageChange)="onPageChange($event)"
+          (pageSizeChange)="onPageSizeChange($event)"
+        >
+        </app-pagination>
+
+        <label class="forms-page-size" aria-label="Items per page">
+          <select
+            class="input--select"
+            [ngModel]="pageSize()"
+            (ngModelChange)="onPageSizeChange($event)"
+          >
+            @for (size of pageSizeOptions; track size) {
+              <option [ngValue]="size">{{ size }} per page</option>
+            }
+          </select>
+        </label>
+      </footer>
+    }
   </section>
-
-  @if (!isLoading() && !loadFailed()) {
-    <app-pagination
-      [currentPage]="page()"
-      [totalPages]="totalPages()"
-      [pageSize]="pageSize()"
-      [pageSizeOptions]="pageSizeOptions"
-      (pageChange)="onPageChange($event)"
-      (pageSizeChange)="onPageSizeChange($event)"
-    >
-    </app-pagination>
-
-    <p class="forms-count">
-      @if (totalItems() > 0) {
-        Showing {{ pageStart() }}-{{ pageEnd() }} of {{ totalItems() }} academic staff
-      } @else {
-        Showing 0 academic staff
-      }
-    </p>
-  }
 
   <app-dialog
     [isOpen]="dialogMode() !== null"
@@ -173,62 +261,30 @@
         <div class="academic-staff-picker">
           <label class="forms-filter">
             <span>Department</span>
-            <select
-              class="input--select"
+            <app-searchable-dropdown
+              [options]="departmentOptions()"
+              [searchable]="true"
+              placeholder="All Departments"
               [ngModel]="staffDepartmentId()"
               (ngModelChange)="onStaffDepartmentChange($event)"
-              [disabled]="isStaffLoading()"
+              [loading]="isStaffLoading()"
             >
-              <option [ngValue]="null">All Departments</option>
-              @for (department of departments(); track department.id) {
-                <option [ngValue]="department.id">{{ department.department_name }}</option>
-              }
-            </select>
+            </app-searchable-dropdown>
             <small>Use a department to narrow the staff list.</small>
           </label>
 
           <label class="forms-filter">
-            <span>Find Staff</span>
-            <div class="academic-staff-picker__search">
-              <input
-                class="input--text"
-                type="search"
-                placeholder="Search name, email, or job title"
-                [ngModel]="staffSearch()"
-                (ngModelChange)="staffSearch.set($event)"
-                (keydown.enter)="loadStaffOptions()"
-              />
-              <button
-                class="btn btn-secondary"
-                type="button"
-                [disabled]="isStaffLoading()"
-                (click)="loadStaffOptions()"
-              >
-                <span class="material-icons">search</span>
-                Find
-              </button>
-            </div>
-          </label>
-
-          <label class="forms-filter">
             <span>Staff Member</span>
-            <select
-              class="input--select"
+            <app-searchable-dropdown
+              [options]="staffMemberOptions()"
+              [searchable]="true"
+              placeholder="Select a staff member"
               [ngModel]="selectedStaffId()"
               (ngModelChange)="selectedStaffId.set($event)"
-              [disabled]="isStaffLoading()"
+              (searchChange)="onStaffSearchChange($event)"
+              [loading]="isStaffLoading()"
             >
-              <option [ngValue]="null">
-                {{ isStaffLoading() ? 'Loading staff...' : 'Select a staff member' }}
-              </option>
-              @for (staff of staffOptions(); track staff.staff_id) {
-                <option [ngValue]="staff.staff_id">
-                  {{ staff.fullname || staff.username }}
-                  {{ staff.email ? ' - ' + staff.email : '' }}
-                  {{ staff.job_title ? ' - ' + staff.job_title : '' }}
-                </option>
-              }
-            </select>
+            </app-searchable-dropdown>
             @if (staffLoadFailed()) {
               <small class="academic-staff-error"
                 >Unable to load staff options. Try searching again.</small
@@ -283,6 +339,64 @@
   </app-dialog>
 
   <app-dialog
+    [isOpen]="departmentDialogOpen()"
+    title="Add Academic Staff by Department"
+    size="small"
+    (close)="closeDepartmentDialog()"
+  >
+    <div class="form-editor">
+      <div class="academic-staff-picker">
+        <label class="forms-filter">
+          <span>Department</span>
+          <app-searchable-dropdown
+            [options]="departmentOptions()"
+            [searchable]="true"
+            placeholder="Select department"
+            [ngModel]="selectedBulkDepartmentId()"
+            (ngModelChange)="selectedBulkDepartmentId.set($event)"
+            [loading]="isLoading()"
+          >
+          </app-searchable-dropdown>
+          <small>All active eligible staff from this department will be added.</small>
+        </label>
+      </div>
+
+      <label class="active-switch">
+        <input
+          type="checkbox"
+          [ngModel]="bulkAcademicStaffActive()"
+          (ngModelChange)="bulkAcademicStaffActive.set($event)"
+          [disabled]="isBulkSaving()"
+        />
+        <span class="active-switch__control"></span>
+        <span>
+          <strong>Active academic staff</strong>
+          <small>Newly added staff will be available in academic workflows.</small>
+        </span>
+      </label>
+    </div>
+
+    <div dialog-footer class="form-dialog__footer">
+      <button
+        class="btn btn-secondary"
+        type="button"
+        [disabled]="isBulkSaving()"
+        (click)="closeDepartmentDialog()"
+      >
+        Cancel
+      </button>
+      <button
+        class="btn btn-primary"
+        type="button"
+        [disabled]="isBulkSaving() || selectedBulkDepartmentId() === null"
+        (click)="saveAcademicStaffByDepartment()"
+      >
+        {{ isBulkSaving() ? 'Adding...' : 'Add by Department' }}
+      </button>
+    </div>
+  </app-dialog>
+
+  <app-dialog
     [isOpen]="academicStaffToDelete() !== null"
     title="Remove Academic Staff"
     size="small"
@@ -292,7 +406,7 @@
       <div class="deactivate-confirmation">
         <span class="material-icons">person_remove</span>
         <div>
-          <h3>Remove {{ item.fullname || item.username }}?</h3>
+          <h3>Remove {{ staffName(item) }}?</h3>
           <p>
             This removes the person from the academic staff list. Their synchronized Staff Directory
             record will remain unchanged.

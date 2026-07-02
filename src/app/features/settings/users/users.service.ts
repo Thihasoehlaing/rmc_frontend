@@ -53,8 +53,8 @@ export interface DepartmentRecord {
 }
 
 export interface UserListFilters {
-  nameEmail: string;
-  jobTitle: string;
+  name: string;
+  email: string;
   roleId: number | null;
   accountType: '' | 'Staff' | 'Student';
   departmentId: number | null;
@@ -71,7 +71,7 @@ export class UsersService {
   private readonly apiUrl = environment.apiUrl.replace(/\/$/, '');
   private readonly usersUrl = `${this.apiUrl}/api/settings/users`;
   private readonly rolesUrl = `${this.apiUrl}/api/settings/roles`;
-  private readonly departmentsUrl = `${this.apiUrl}/api/settings/departments`;
+  private readonly departmentsUrl = `${this.apiUrl}/api/master-data/departments`;
 
   list(
     page: number,
@@ -82,11 +82,11 @@ export class UsersService {
       .set('page', page)
       .set('per_page', perPage);
 
-    if (filters.nameEmail.trim()) {
-      params = params.set('name_email', filters.nameEmail.trim());
+    if (filters.name.trim()) {
+      params = params.set('name', filters.name.trim());
     }
-    if (filters.jobTitle.trim()) {
-      params = params.set('job_title', filters.jobTitle.trim());
+    if (filters.email.trim()) {
+      params = params.set('email', filters.email.trim());
     }
     if (filters.roleId !== null) {
       params = params.set('role_id', filters.roleId);
@@ -104,8 +104,15 @@ export class UsersService {
     );
   }
 
-  listRoleOptions(): Observable<ApiResponse<RoleRecord[]>> {
-    return this.http.get<ApiResponse<RoleRecord[]>>(`${this.rolesUrl}/options`);
+  listRoles(): Observable<ApiResponse<PaginatedData<RoleRecord>>> {
+    const params = new HttpParams()
+      .set('page', 1)
+      .set('per_page', 100)
+      .set('status', 'Active');
+
+    return this.http.get<ApiResponse<PaginatedData<RoleRecord>>>(this.rolesUrl, {
+      params,
+    });
   }
 
   listDepartments(): Observable<ApiResponse<DepartmentRecord[]>> {
@@ -119,6 +126,13 @@ export class UsersService {
     return this.http.post<ApiResponse<UserRecord>>(
       `${this.apiUrl}/api/settings/user-role`,
       { username, role_id: roleId },
+    );
+  }
+
+  assignUserRole(userId: number, roleId: number): Observable<ApiResponse<UserRecord>> {
+    return this.http.patch<ApiResponse<UserRecord>>(
+      `${this.usersUrl}/${userId}/role`,
+      { role_id: roleId },
     );
   }
 }

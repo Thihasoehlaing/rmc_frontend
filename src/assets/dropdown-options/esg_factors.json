@@ -1,5 +1,0 @@
-[
-  { "id": 1, "value": "Environmental", "isActive": true },
-  { "id": 2, "value": "Social",        "isActive": true },
-  { "id": 3, "value": "Governance",    "isActive": true }
-]

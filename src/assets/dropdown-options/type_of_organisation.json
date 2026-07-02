@@ -1,8 +1,0 @@
-[
-  { "id": 1, "value": "University",              "isActive": true },
-  { "id": 2, "value": "Research Institute",      "isActive": true },
-  { "id": 3, "value": "Company",                 "isActive": true },
-  { "id": 4, "value": "Government Agency",       "isActive": true },
-  { "id": 5, "value": "Non-Profit Organization", "isActive": true },
-  { "id": 6, "value": "Other",                   "isActive": true }
-]

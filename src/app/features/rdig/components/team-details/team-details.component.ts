@@ -206,17 +206,7 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
           .map((o) => ({ label: o.cluster_name, value: o.id.toString() }));
       });
 
-    this.masterData
-      .getDropdownOptions('TYPE_OF_ORGANISATION')
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((res) => {
-        this.orgTypes = (res.data ?? [])
-          .filter((o) => o.status === 'ACTIVE')
-          .map((o) => ({
-            label: o.option_name,
-            value: o.option_name.toLowerCase().replace(/\s+/g, '-'),
-          }));
-      });
+    this.loadOrganisationTypes();
 
     // Load academic staff list from the real backend for the internal co-researcher dropdown
     this.masterData
@@ -237,6 +227,12 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
       .subscribe((id) => this.onResearcherSelected(id));
 
     this.loadCountryOptions();
+
+    const onDropdownsUpdated = (): void => this.loadOrganisationTypes();
+    window.addEventListener('rmc-dropdowns-updated', onDropdownsUpdated);
+    this.destroy$.subscribe(() => {
+      window.removeEventListener('rmc-dropdowns-updated', onDropdownsUpdated);
+    });
   }
 
   ngOnDestroy(): void {
@@ -265,6 +261,20 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
     } else {
       this.internalForm.patchValue({ staffName: '', department: '' });
     }
+  }
+
+  private loadOrganisationTypes(): void {
+    this.masterData
+      .getDropdownOptions('TYPE_OF_ORGANISATION')
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((res) => {
+        this.orgTypes = (res.data ?? [])
+          .filter((o) => o.status === 'ACTIVE')
+          .map((o) => ({
+            label: o.option_name,
+            value: o.option_name.toLowerCase().replace(/\s+/g, '-'),
+          }));
+      });
   }
 
   private loadCountryOptions(): void {

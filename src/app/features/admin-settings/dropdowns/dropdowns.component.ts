@@ -2,7 +2,15 @@ import { Component, TrackByFunction, signal, inject, OnInit, computed } from '@a
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { Observable, of } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { AuthService } from '../../../core/services/auth.service';
+import { ToastService } from '../../../core/services/toast.service';
+import {
+  RdigDropdownOptionsService,
+  AdminListParams,
+  AdminPagination,
+} from '../rdig-dropdown-options.service';
 import { ActionButtonComponent } from '../../../shared/components/action-button/action-button.component';
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
 import { nextTableSortState, SortDirection } from '../../../shared/services/table-sort.service';
@@ -17,6 +25,7 @@ import { SvgIconComponent } from '../../../shared/components/svg-icon/svg-icon.c
 import { SVG_ICON_TRASH } from '../../../shared/icons/svg-icons';
 import { TableActionIconComponent } from '../../../shared/components/table-action-icon/table-action-icon.component';
 import { SubmissionsSearchComponent } from '../../../shared/components/submissions-search/submissions-search.component';
+import { SearchableDropdownComponent } from '../../../shared/components/searchable-dropdown/searchable-dropdown.component';
 
 interface DropdownOption {
   id: number;
@@ -26,6 +35,16 @@ interface DropdownOption {
   lastUpdated: string;
   createdBy: string;
   status: 'Active' | 'Inactive';
+  /** Only used for RDIG Sub-Research Domain (API-backed) rows. */
+  parentDomainId?: number;
+}
+
+/** A row loaded from the real backend for an RDIG API-backed category. */
+interface ApiRow {
+  id: number;
+  value: string;
+  status: 'Active' | 'Inactive';
+  parentDomainId?: number;
 }
 
 interface DropdownOptionView extends DropdownOption {
@@ -84,6 +103,7 @@ interface CategorySharingConfig {
     PaginationComponent,
     DialogComponent,
     SvgIconComponent,
+    SearchableDropdownComponent,
   ],
   templateUrl: './dropdowns.component.html',
   styleUrls: ['./dropdowns.component.scss'],
@@ -94,7 +114,67 @@ export class DropdownsComponent implements OnInit {
   private auth = inject(AuthService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private rdigService = inject(RdigDropdownOptionsService);
+  private toast = inject(ToastService);
   private readonly STORAGE_KEY = 'rmc_dropdowns_data';
+
+  /**
+   * RDIG categories that are backed by the real backend API (Add/Edit/Delete/Toggle
+   * go to the server, not localStorage). "Type of Organisation" is intentionally
+   * excluded — its API is not ready yet, so it stays on the existing localStorage path.
+   */
+  private readonly RDIG_API_CATEGORIES = [
+    'Research Cluster',
+    'Research Domain',
+    'Sub-Research Domain',
+    'ESG',
+    'SDG',
+  ];
+
+  /** Rows loaded from the API for the currently selected RDIG API category. */
+  apiRows = signal<ApiRow[]>([]);
+  apiLoading = signal(false);
+  /** Active research domains — populates the "Research Domain" picker for the Sub-Research Domain tab. */
+  subDomainParents = signal<{ label: string; value: string }[]>([]);
+  /**
+   * The domain the admin is currently viewing/managing sub-domains for. The
+   * backend only exposes sub-domains scoped to one domain at a time (no "list
+   * all" endpoint), so the admin must pick a domain before anything loads —
+   * this keeps every Sub-Research Domain fetch down to a single request
+   * instead of fanning out to every domain at once.
+   */
+  selectedSubDomainParentId = signal<number | null>(null);
+  /**
+   * Pagination metadata returned by the backend, set only for categories that
+   * have a real flat/scoped list endpoint (see isServerPaginated). Null means
+   * the current category's table is paginated client-side instead.
+   */
+  apiPagination = signal<AdminPagination | null>(null);
+
+  /**
+   * Categories with a real backend list endpoint that supports page/per_page
+   * directly. Sub-Research Domain qualifies once a parent domain is selected
+   * (research-domains/{id}/sub-domains is itself fully paginated).
+   */
+  private readonly SERVER_PAGINATED_CATEGORIES = [
+    'Research Cluster',
+    'Research Domain',
+    'Sub-Research Domain',
+    'ESG',
+    'SDG',
+  ];
+
+  /** True when the current group is RDIG and the category is API-backed. */
+  isApiMode(): boolean {
+    return (
+      this.selectedGroup()?.title === 'RDIG Application' &&
+      this.RDIG_API_CATEGORIES.includes(this.selectedCategory())
+    );
+  }
+
+  isServerPaginated(): boolean {
+    return this.SERVER_PAGINATED_CATEGORIES.includes(this.selectedCategory());
+  }
 
   /**
    * Defines which forms are allowed to share options for each category.
@@ -531,6 +611,11 @@ export class DropdownsComponent implements OnInit {
       return [];
     }
 
+    // RDIG API-backed categories are served from the backend, not localStorage.
+    if (this.isApiMode()) {
+      return this.apiFilteredOptions();
+    }
+
     let filtered = this.dropdownOptions();
 
     filtered = filtered.filter(
@@ -582,6 +667,13 @@ export class DropdownsComponent implements OnInit {
 
   paginatedOptions = computed(() => {
     const list = this.filteredOptions();
+
+    // Server-paginated categories: the backend already returned exactly this
+    // page's rows (per_page = optionsPageSize), so no further slicing needed.
+    if (this.isApiMode() && this.isServerPaginated()) {
+      return list;
+    }
+
     const totalPages = this.optionsTotalPages();
     const currentPage = Math.min(this.optionsPage(), totalPages);
     const startIndex = (currentPage - 1) * this.optionsPageSize();
@@ -589,10 +681,18 @@ export class DropdownsComponent implements OnInit {
   });
 
   optionsTotalPages = computed(() => {
+    if (this.isApiMode() && this.isServerPaginated()) {
+      return Math.max(1, this.apiPagination()?.total_pages ?? 1);
+    }
     return Math.max(1, Math.ceil(this.filteredOptions().length / this.optionsPageSize()));
   });
 
   optionsPageStart = computed(() => {
+    if (this.isApiMode() && this.isServerPaginated()) {
+      const total = this.apiPagination()?.total_items ?? 0;
+      if (total === 0) return 0;
+      return (this.optionsPage() - 1) * this.optionsPageSize() + 1;
+    }
     const total = this.filteredOptions().length;
     if (total === 0) return 0;
     return (
@@ -601,6 +701,11 @@ export class DropdownsComponent implements OnInit {
   });
 
   optionsPageEnd = computed(() => {
+    if (this.isApiMode() && this.isServerPaginated()) {
+      const total = this.apiPagination()?.total_items ?? 0;
+      if (total === 0) return 0;
+      return Math.min(this.optionsPageStart() + this.optionsPageSize() - 1, total);
+    }
     const total = this.filteredOptions().length;
     if (total === 0) return 0;
     return Math.min(this.optionsPageStart() + this.optionsPageSize() - 1, total);
@@ -630,25 +735,263 @@ export class DropdownsComponent implements OnInit {
     this.searchQuery.set('');
     this.statusFilter.set('all');
     this.optionsPage.set(1);
+    this.apiRows.set([]);
+    this.apiPagination.set(null);
+
+    if (category === 'Sub-Research Domain') {
+      // Nothing loads until the admin picks a domain — avoids fetching every
+      // domain's sub-domains at once.
+      this.selectedSubDomainParentId.set(null);
+      this.loadSubDomainParentOptions();
+      return;
+    }
+
+    if (this.isApiMode()) {
+      this.loadApiCategory();
+    }
+  }
+
+  /** Populates the "Research Domain" picker shown on the Sub-Research Domain tab. */
+  private loadSubDomainParentOptions(): void {
+    this.rdigService.adminListDomains({ per_page: 100, status: 'active' }).subscribe({
+      next: (res) => {
+        if (res.success) {
+          this.subDomainParents.set(
+            (res.data?.items ?? []).map((d) => ({ label: d.domain_name, value: String(d.id) })),
+          );
+        }
+      },
+      error: () => this.subDomainParents.set([]),
+    });
+  }
+
+  /** Called when the admin picks (or changes) which domain's sub-domains to view. */
+  onSubDomainParentSelected(domainIdStr: string | null): void {
+    const id = domainIdStr ? Number(domainIdStr) : null;
+    this.selectedSubDomainParentId.set(id);
+    this.searchQuery.set('');
+    this.statusFilter.set('all');
+    this.optionsPage.set(1);
+    if (id) {
+      this.loadApiCategory();
+    } else {
+      this.apiRows.set([]);
+      this.apiPagination.set(null);
+    }
+  }
+
+  // ─── RDIG API-backed category support ─────────────────────────────────────
+
+  private loadApiCategory(): void {
+    if (!this.isApiMode()) {
+      return;
+    }
+    if (this.selectedCategory() === 'Sub-Research Domain' && !this.selectedSubDomainParentId()) {
+      // Nothing to load until a domain is chosen.
+      this.apiRows.set([]);
+      this.apiPagination.set(null);
+      return;
+    }
+    this.apiLoading.set(true);
+    this.apiListObservable().subscribe({
+      next: ({ rows, pagination }) => {
+        // If a mutation removed the last row on a page beyond page 1, step back
+        // to the new last page instead of showing an empty table.
+        if (pagination && pagination.total_pages > 0 && this.optionsPage() > pagination.total_pages) {
+          this.optionsPage.set(pagination.total_pages);
+          this.apiLoading.set(false);
+          this.loadApiCategory();
+          return;
+        }
+        this.apiRows.set(rows);
+        this.apiPagination.set(pagination);
+        this.apiLoading.set(false);
+      },
+      error: () => {
+        this.apiRows.set([]);
+        this.apiPagination.set(null);
+        this.apiLoading.set(false);
+        this.toast.error('Failed to load options from the server.');
+      },
+    });
+  }
+
+  private apiListObservable(): Observable<{ rows: ApiRow[]; pagination: AdminPagination | null }> {
+    const category = this.selectedCategory();
+    const params: AdminListParams = {
+      page: this.optionsPage(),
+      per_page: this.optionsPageSize(),
+    };
+    const query = this.searchQuery().trim();
+    if (query) params.search = query;
+    const status = this.statusFilter();
+    if (status !== 'all') params.status = status;
+
+    switch (category) {
+      case 'Research Cluster':
+        return this.rdigService.adminListClusters(params).pipe(
+          map((r) => ({
+            rows: (r.data?.items ?? []).map((c) => ({
+              id: c.id,
+              value: c.cluster_name,
+              status: c.is_active ? ('Active' as const) : ('Inactive' as const),
+            })),
+            pagination: r.data?.pagination ?? null,
+          })),
+        );
+      case 'Research Domain':
+        return this.rdigService.adminListDomains(params).pipe(
+          map((r) => ({
+            rows: (r.data?.items ?? []).map((d) => ({
+              id: d.id,
+              value: d.domain_name,
+              status: d.is_active ? ('Active' as const) : ('Inactive' as const),
+            })),
+            pagination: r.data?.pagination ?? null,
+          })),
+        );
+      case 'Sub-Research Domain': {
+        // Scoped to the domain the admin picked — a single paginated request,
+        // no fan-out across every domain.
+        const domainId = this.selectedSubDomainParentId();
+        if (!domainId) {
+          return of({ rows: [], pagination: null });
+        }
+        return this.rdigService.adminListSubDomains(domainId, params).pipe(
+          map((r) => ({
+            rows: (r.data?.items ?? []).map((sd) => ({
+              id: sd.id,
+              value: sd.sub_domain_name,
+              status: sd.is_active ? ('Active' as const) : ('Inactive' as const),
+              parentDomainId: sd.research_domain_id,
+            })),
+            pagination: r.data?.pagination ?? null,
+          })),
+        );
+      }
+      case 'ESG':
+        return this.rdigService.adminListEsgs(params).pipe(
+          map((r) => ({
+            rows: (r.data?.items ?? []).map((e) => ({
+              id: e.id,
+              value: e.esg_name,
+              status: e.is_active ? ('Active' as const) : ('Inactive' as const),
+            })),
+            pagination: r.data?.pagination ?? null,
+          })),
+        );
+      case 'SDG':
+        return this.rdigService.adminListSdgs(params).pipe(
+          map((r) => ({
+            rows: (r.data?.items ?? []).map((s) => ({
+              id: s.id,
+              value: s.sdg_name,
+              status: s.is_active ? ('Active' as const) : ('Inactive' as const),
+            })),
+            pagination: r.data?.pagination ?? null,
+          })),
+        );
+      default:
+        return of({ rows: [], pagination: null });
+    }
+  }
+
+  /** ESG/SDG only expose a name in the UI, but the API requires a code. Derive one from the name. */
+  private deriveCode(name: string): string {
+    return name.trim().slice(0, 50);
+  }
+
+  private showApiError(err: unknown): void {
+    const message =
+      (err as { error?: { message?: string } })?.error?.message ??
+      'The action could not be completed. Please try again.';
+    this.toast.error(message);
+  }
+
+  private apiFilteredOptions(): DropdownOptionView[] {
+    const category = this.selectedCategory();
+    const formName = this.selectedGroup()?.title ?? '';
+    let rows = this.apiRows();
+
+    // Server-paginated categories already had search/status applied by the
+    // backend for the current page. Sub-Research Domain has no such endpoint,
+    // so its full dataset is loaded up front and filtered here instead.
+    if (!this.isServerPaginated()) {
+      const query = this.searchQuery().trim().toLowerCase();
+      if (query) {
+        rows = rows.filter((r) => r.value.toLowerCase().includes(query));
+      }
+
+      const status = this.statusFilter();
+      if (status !== 'all') {
+        const target = status === 'active' ? 'Active' : 'Inactive';
+        rows = rows.filter((r) => r.status === target);
+      }
+    }
+
+    const sortKey = this.sortBy();
+    const direction = this.sortDirection();
+    if (sortKey && direction && sortKey !== 'lastUpdated') {
+      const dir = direction === 'asc' ? 1 : -1;
+      rows = [...rows].sort((a, b) => {
+        const av = sortKey === 'status' ? a.status : a.value;
+        const bv = sortKey === 'status' ? b.status : b.value;
+        return av.localeCompare(bv) * dir;
+      });
+    }
+
+    return rows.map((r) => ({
+      id: r.id,
+      formName,
+      category,
+      value: r.value,
+      lastUpdated: '',
+      createdBy: '',
+      status: r.status,
+      sharedWith: [],
+      parentDomainId: r.parentDomainId,
+    }));
   }
 
   onSearchQueryChange(value: string) {
     this.searchQuery.set(value);
     this.optionsPage.set(1);
+    if (this.isApiMode() && this.isServerPaginated()) {
+      this.loadApiCategory();
+    }
   }
 
   onStatusFilterChange(value: DropdownStatusFilter) {
     this.statusFilter.set(value);
     this.optionsPage.set(1);
+    if (this.isApiMode() && this.isServerPaginated()) {
+      this.loadApiCategory();
+    }
   }
 
   onOptionsPageChange(page: number) {
     this.optionsPage.set(page);
+    if (this.isApiMode() && this.isServerPaginated()) {
+      this.loadApiCategory();
+    }
   }
 
   onOptionsPageSizeChange(pageSize: number) {
     this.optionsPageSize.set(pageSize);
     this.optionsPage.set(1);
+    if (this.isApiMode() && this.isServerPaginated()) {
+      this.loadApiCategory();
+    }
+  }
+
+  /** Handles the search bar's "reset" action — clears filters and, for server-paginated categories, refetches page 1. */
+  onResetFilters(): void {
+    this.searchQuery.set('');
+    this.statusFilter.set('all');
+    this.optionsPage.set(1);
+    if (this.isApiMode() && this.isServerPaginated()) {
+      this.loadApiCategory();
+    }
   }
 
   private loadOptionsFromStorage() {
@@ -1736,7 +2079,183 @@ export class DropdownsComponent implements OnInit {
     this.showAddModal.set(true);
   }
 
+  /** Create/update an RDIG API-backed option via the backend, then reload the table. */
+  private apiSave(payload: AddOptionPayload): void {
+    const category = this.selectedCategory();
+    const isActive = payload.status === 'Active';
+    const name = payload.name.trim();
+    const editId = this.editingOptionId();
+    const parentDomainId = editId
+      ? this.apiRows().find((r) => r.id === editId)?.parentDomainId
+      : payload.parentDomainId ?? undefined;
+
+    // Reassigning a sub-domain to a different Research Domain: the backend has
+    // no "move" endpoint, so this is handled separately as delete + recreate.
+    if (
+      category === 'Sub-Research Domain' &&
+      editId &&
+      payload.parentDomainId &&
+      payload.parentDomainId !== this.selectedSubDomainParentId()
+    ) {
+      this.moveSubDomainToNewDomain(editId, payload.parentDomainId, name, isActive);
+      return;
+    }
+
+    let req: Observable<{ success: boolean; message?: string; data?: { id: number } }> | null =
+      null;
+
+    if (editId) {
+      switch (category) {
+        case 'Research Cluster':
+          req = this.rdigService.adminUpdateCluster(editId, { cluster_name: name, is_active: isActive });
+          break;
+        case 'Research Domain':
+          req = this.rdigService.adminUpdateDomain(editId, { domain_name: name, is_active: isActive });
+          break;
+        case 'Sub-Research Domain': {
+          req = this.rdigService.adminUpdateSubDomain(editId, {
+            sub_domain_name: name,
+            is_active: isActive,
+          });
+          break;
+        }
+        case 'ESG':
+          // Keep the existing code untouched on edit — only the name/status change.
+          req = this.rdigService.adminUpdateEsg(editId, { esg_name: name, is_active: isActive });
+          break;
+        case 'SDG':
+          req = this.rdigService.adminUpdateSdg(editId, { sdg_name: name, is_active: isActive });
+          break;
+      }
+    } else {
+      switch (category) {
+        case 'Research Cluster':
+          req = this.rdigService.adminCreateCluster({ cluster_name: name, is_active: isActive });
+          break;
+        case 'Research Domain':
+          req = this.rdigService.adminCreateDomain({ domain_name: name, is_active: isActive });
+          break;
+        case 'Sub-Research Domain': {
+          const parentId = this.selectedSubDomainParentId();
+          if (!parentId) return;
+          req = this.rdigService.adminCreateSubDomain(parentId, {
+            sub_domain_name: name,
+            is_active: isActive,
+          });
+          break;
+        }
+        case 'ESG':
+          req = this.rdigService.adminCreateEsg({
+            esg_code: this.deriveCode(name),
+            esg_name: name,
+            is_active: isActive,
+          });
+          break;
+        case 'SDG':
+          req = this.rdigService.adminCreateSdg({
+            sdg_code: this.deriveCode(name),
+            sdg_name: name,
+            is_active: isActive,
+          });
+          break;
+      }
+    }
+
+    if (!req) return;
+
+    req.subscribe({
+      next: (res) => {
+        if (res && res.success === false) {
+          this.toast.error(res.message ?? 'Save failed.');
+          return;
+        }
+
+        if (this.isServerPaginated()) {
+          // Re-fetch the current page so totals/page counts stay accurate.
+          this.loadApiCategory();
+        } else if (editId) {
+          // Sub-Research Domain: all rows are already loaded — patch in place.
+          this.apiRows.update((rows) =>
+            rows.map((r) => (r.id === editId ? { ...r, value: name, status: payload.status } : r)),
+          );
+        } else {
+          const newId = res?.data?.id;
+          if (newId) {
+            this.apiRows.update((rows) => [
+              ...rows,
+              { id: newId, value: name, status: payload.status, parentDomainId },
+            ]);
+          }
+        }
+
+        this.toast.success(editId ? 'Option updated.' : 'Option added.');
+        this.closeModal();
+      },
+      error: (err) => this.showApiError(err),
+    });
+  }
+
+  /**
+   * The backend has no endpoint to reassign a sub-domain's parent domain — the
+   * update route only accepts name/status. This works around that by deleting
+   * the row under its old domain and recreating it under the new one.
+   *
+   * Safety: the delete happens first. If the backend rejects it (e.g. the
+   * sub-domain is already referenced by a submitted RDIG application), nothing
+   * is lost — the error surfaces and the original row stays untouched. The one
+   * real risk is a failure between the two calls (e.g. a duplicate name in the
+   * target domain, or a dropped connection): the old row would already be gone
+   * without a replacement. That failure path shows an explicit warning so nothing
+   * is lost silently.
+   */
+  private moveSubDomainToNewDomain(
+    subDomainId: number,
+    newDomainId: number,
+    name: string,
+    isActive: boolean,
+  ): void {
+    this.rdigService.adminDeleteSubDomain(subDomainId).subscribe({
+      next: (deleteRes) => {
+        if (deleteRes && deleteRes.success === false) {
+          this.toast.error(deleteRes.message ?? 'Could not move this sub-domain.');
+          return;
+        }
+
+        this.rdigService
+          .adminCreateSubDomain(newDomainId, { sub_domain_name: name, is_active: isActive })
+          .subscribe({
+            next: (createRes) => {
+              if (createRes && createRes.success === false) {
+                this.toast.error(
+                  `Removed from the old domain, but couldn't add it to the new one: ${createRes.message ?? 'unknown error'}. Please re-add "${name}" manually.`,
+                );
+                this.closeModal();
+                this.loadApiCategory();
+                return;
+              }
+              this.toast.success('Sub-domain moved to the new research domain.');
+              this.closeModal();
+              this.loadApiCategory();
+            },
+            error: () => {
+              this.toast.error(
+                `Removed from the old domain, but couldn't add it to the new one due to a network error. Please re-add "${name}" manually.`,
+              );
+              this.closeModal();
+              this.loadApiCategory();
+            },
+          });
+      },
+      error: (err) => this.showApiError(err),
+    });
+  }
+
   onModalSave(payload: AddOptionPayload) {
+    if (this.isApiMode()) {
+      this.apiSave(payload);
+      return;
+    }
+
     const now = this.formatDisplayDate(new Date());
     const currentUserName = this.auth.currentUser()?.name ?? 'Unknown';
 
@@ -1904,6 +2423,11 @@ export class DropdownsComponent implements OnInit {
   }
 
   toggleStatus(id: number) {
+    if (this.isApiMode()) {
+      this.apiToggleStatus(id);
+      return;
+    }
+
     this.dropdownOptions.update((list) =>
       list.map((o) => {
         if (o.id !== id) {
@@ -1918,7 +2442,67 @@ export class DropdownsComponent implements OnInit {
     this.saveOptionsToStorage();
   }
 
+  private apiToggleStatus(id: number): void {
+    const row = this.apiRows().find((r) => r.id === id);
+    if (!row) return;
+    const isActive = row.status !== 'Active'; // toggled target
+    const category = this.selectedCategory();
+
+    let req: Observable<{ success: boolean; message?: string }> | null = null;
+    switch (category) {
+      case 'Research Cluster':
+        req = this.rdigService.adminUpdateCluster(id, { is_active: isActive });
+        break;
+      case 'Research Domain':
+        req = this.rdigService.adminUpdateDomain(id, { is_active: isActive });
+        break;
+      case 'Sub-Research Domain':
+        req = this.rdigService.adminUpdateSubDomain(id, { is_active: isActive });
+        break;
+      case 'ESG':
+        req = this.rdigService.adminUpdateEsg(id, { is_active: isActive });
+        break;
+      case 'SDG':
+        req = this.rdigService.adminUpdateSdg(id, { is_active: isActive });
+        break;
+    }
+
+    if (!req) return;
+    req.subscribe({
+      next: () => {
+        if (this.isServerPaginated()) {
+          // A status change can move the row off the current filtered/paged
+          // view (e.g. status filter = Active), so re-fetch to stay accurate.
+          this.loadApiCategory();
+          return;
+        }
+        const nextStatus: 'Active' | 'Inactive' = isActive ? 'Active' : 'Inactive';
+        this.apiRows.update((rows) =>
+          rows.map((r) => (r.id === id ? { ...r, status: nextStatus } : r)),
+        );
+      },
+      error: (err) => this.showApiError(err),
+    });
+  }
+
   openDeleteDialog(id: number) {
+    if (this.isApiMode()) {
+      const row = this.apiRows().find((r) => r.id === id);
+      if (row) {
+        this.optionToDelete.set({
+          id: row.id,
+          formName: this.selectedGroup()?.title ?? '',
+          category: this.selectedCategory(),
+          value: row.value,
+          lastUpdated: '',
+          createdBy: '',
+          status: row.status,
+          parentDomainId: row.parentDomainId,
+        });
+      }
+      return;
+    }
+
     const option = this.dropdownOptions().find((o) => o.id === id);
     if (option) {
       this.optionToDelete.set(option);
@@ -1932,6 +2516,48 @@ export class DropdownsComponent implements OnInit {
   confirmDelete() {
     const option = this.optionToDelete();
     if (!option) return;
+
+    if (this.isApiMode()) {
+      const category = this.selectedCategory();
+      const id = option.id;
+      let req: Observable<{ success: boolean; message?: string }> | null = null;
+      switch (category) {
+        case 'Research Cluster':
+          req = this.rdigService.adminDeleteCluster(id);
+          break;
+        case 'Research Domain':
+          req = this.rdigService.adminDeleteDomain(id);
+          break;
+        case 'Sub-Research Domain':
+          req = this.rdigService.adminDeleteSubDomain(id);
+          break;
+        case 'ESG':
+          req = this.rdigService.adminDeleteEsg(id);
+          break;
+        case 'SDG':
+          req = this.rdigService.adminDeleteSdg(id);
+          break;
+      }
+      this.optionToDelete.set(null);
+      if (!req) return;
+      req.subscribe({
+        next: (res) => {
+          if (res && res.success === false) {
+            this.toast.error(res.message ?? 'Delete failed.');
+            return;
+          }
+          if (this.isServerPaginated()) {
+            // Re-fetch so totals/page counts (and last-page underflow) stay accurate.
+            this.loadApiCategory();
+          } else {
+            this.apiRows.update((rows) => rows.filter((r) => r.id !== id));
+          }
+          this.toast.success('Option deleted.');
+        },
+        error: (err) => this.showApiError(err),
+      });
+      return;
+    }
 
     this.dropdownOptions.update((list) => list.filter((o) => o.id !== option.id));
     this.saveOptionsToStorage();
@@ -1947,6 +2573,22 @@ export class DropdownsComponent implements OnInit {
   }
 
   editOption(id: number) {
+    if (this.isApiMode()) {
+      const row = this.apiRows().find((r) => r.id === id);
+      if (row) {
+        this.newOptionValue.set(row.value);
+        this.editingOptionId.set(id);
+        this.editingInitialPayload.set({
+          name: row.value,
+          status: row.status,
+          appliesTo: [],
+          parentDomainId: row.parentDomainId ?? null,
+        });
+        this.showAddModal.set(true);
+      }
+      return;
+    }
+
     const option = this.dropdownOptions().find((o) => o.id === id);
     if (option) {
       this.newOptionValue.set(option.value);

@@ -61,7 +61,7 @@
                 type="primary"
                 label="Add Option"
                 icon="add"
-                [disabled]="!selectedCategory()"
+                [disabled]="!selectedCategory() || (selectedCategory() === 'Sub-Research Domain' && !selectedSubDomainParentId())"
                 (clicked)="addOption()"
               ></app-action-button>
             }
@@ -73,7 +73,7 @@
             [placeholder]="getSearchPlaceholder()"
             [value]="searchQuery()"
             (search)="onSearchQueryChange($event)"
-            (refresh)="searchQuery.set(''); statusFilter.set('all'); optionsPage.set(1)"
+            (refresh)="onResetFilters()"
           >
             <div search-top-row class="dropdown-category-filter">
               <span class="form-label">Category</span>
@@ -90,6 +90,22 @@
                 </button>
               </div>
             </div>
+            <div
+              search-top-row
+              class="sub-domain-parent-filter"
+              *ngIf="selectedCategory() === 'Sub-Research Domain'"
+            >
+              <span class="form-label">Research Domain</span>
+              <app-searchable-dropdown
+                class="sub-domain-parent-select"
+                [options]="subDomainParents()"
+                [isMulti]="false"
+                valueMode="single"
+                placeholder="Select a research domain to manage its sub-domains"
+                [ngModel]="selectedSubDomainParentId() ? selectedSubDomainParentId()!.toString() : null"
+                (ngModelChange)="onSubDomainParentSelected($event)"
+              ></app-searchable-dropdown>
+            </div>
             <label search-filters>
               <span></span>
               <select
@@ -104,6 +120,7 @@
             </label>
           </app-submissions-search>
           <div *ngIf="selectedCategory(); else selectCategoryHint">
+           <ng-container *ngIf="selectedCategory() !== 'Sub-Research Domain' || selectedSubDomainParentId(); else selectSubDomainParentHint">
             <app-data-table
               class="dropdown-options-table"
               [columns]="tableColumns()"
@@ -248,6 +265,13 @@
             <div *ngIf="filteredOptions().length === 0" class="empty-state">
               <p>No options for this category. Click "Add Option" to create one.</p>
             </div>
+           </ng-container>
+
+           <ng-template #selectSubDomainParentHint>
+             <div class="help-text">
+               <p>Select a research domain above to view and manage its sub-domains.</p>
+             </div>
+           </ng-template>
           </div>
 
           <ng-template #selectCategoryHint>
@@ -270,7 +294,10 @@
         [showAccountNumberMetadata]="isAccountCodeMetadataCategory()"
         [accountNumberLabel]="getAccountNumberMetadataLabel()"
         [showRegionMetadata]="isRegionMetadataCategory()"
-        [allowFormSharing]="canShareSelectedCategory()"
+        [allowFormSharing]="canShareSelectedCategory() && !isApiMode()"
+        [showParentDomain]="isApiMode() && selectedCategory() === 'Sub-Research Domain' && !!editingOptionId()"
+        [parentDomainLabel]="'Research Domain'"
+        [parentDomainOptions]="subDomainParents()"
         [nameReadonly]="isRegionMetadataCategory() && !!editingOptionId()"
         [descriptionReadonly]="isRegionMetadataCategory() && !!editingOptionId()"
         (close)="closeModal()"

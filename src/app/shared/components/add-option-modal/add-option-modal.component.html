@@ -14,6 +14,17 @@
         [readonly]="nameReadonly"
         placeholder="e.g. Applied Research" />
 
+      <div class="form-field" *ngIf="showParentDomain">
+        <label class="form-label">{{ parentDomainLabel }} *</label>
+        <app-searchable-dropdown
+          [options]="parentDomainOptions"
+          [isMulti]="false"
+          valueMode="single"
+          placeholder="Select a research domain"
+          [(ngModel)]="parentDomainId"
+        ></app-searchable-dropdown>
+      </div>
+
       <label class="form-label">Category</label>
       <div class="category-locked">{{ categoryLabel || 'Fixed' }} <span class="pill">Locked</span></div>
 

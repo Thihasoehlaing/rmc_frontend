@@ -55,14 +55,12 @@ export const settingsRoutes: Routes = [
   },
   {
     path: 'applicant-rules',
-    data: { scope: 'applicant-rules' },
     loadComponent: () =>
-      import('./settings-scope/settings-scope.component').then(m => m.SettingsScopeComponent),
+      import('./applicant-rules/applicant-rules.component').then(m => m.ApplicantRulesComponent),
   },
   {
     path: 'workflow',
-    data: { scope: 'workflow' },
     loadComponent: () =>
-      import('./settings-scope/settings-scope.component').then(m => m.SettingsScopeComponent),
+      import('./workflow/workflow.component').then(m => m.WorkflowComponent),
   },
 ];

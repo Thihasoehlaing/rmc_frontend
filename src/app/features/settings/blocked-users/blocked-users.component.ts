@@ -1,4 +1,3 @@
-import { SubmissionsSearchComponent } from '../../../shared/components/submissions-search/submissions-search.component';
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, TrackByFunction, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -30,7 +29,6 @@ type StatusAction = 'unblock' | 'block';
   selector: 'app-blocked-users',
   standalone: true,
   imports: [
-    SubmissionsSearchComponent,
     TableActionIconComponent,
     CommonModule,
     FormsModule,

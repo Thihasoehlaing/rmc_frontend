@@ -1,11 +1,18 @@
 <section class="staff-access-page">
   <header class="staff-access-page__header">
     <div class="staff-access-page__title-wrap">
-      <h1 class="staff-access-page__title"><span class="material-icons" aria-hidden="true">admin_panel_settings</span>RDIG Application</h1>
+      <h1 class="staff-access-page__title">
+        <span class="material-icons" aria-hidden="true">admin_panel_settings</span>
+        Staff Access
+      </h1>
       <p class="staff-access-page__subtitle">
-        {{ staffRecords().length }} staff loaded from database Â·
-        <span class="staff-access-page__blocked-count">{{ blockedCount() }} blocked</span>
+        Manage staff access availability for restricted application workflows.
       </p>
+    </div>
+
+    <div class="staff-access-summary" aria-label="Blocked staff count">
+      <span class="staff-access-summary__value">{{ blockedCount() }}</span>
+      <span class="staff-access-summary__label">Blocked staff</span>
     </div>
   </header>
 
@@ -43,6 +50,7 @@
       </select>
     </label>
   </app-submissions-search>
+
   <section class="staff-access-table-shell" aria-label="Staff access list">
     <app-data-table
       [columns]="columns"
@@ -51,57 +59,47 @@
       [sortDirection]="sortDirection()"
       (sortChange)="setSort($event)"
     >
-      <ng-template #rowTemplate let-staff
-        ><tr [class.staff-access-row--blocked]="staff.status === 'blocked'">
+      <ng-template #rowTemplate let-staff>
+        <tr [class.staff-access-row--blocked]="staff.status === 'blocked'">
           <td>
             <div class="data-table__stacked">
-              <span class="data-table__avatar">{{ staff.initials }}</span
-              ><span class="data-table__title">{{ staff.name }}</span>
+              <span class="data-table__avatar">{{ staff.initials }}</span>
+              <span class="data-table__title">{{ staff.name }}</span>
             </div>
           </td>
-          <td>
-            <span class="staff-access-id-chip">{{ staff.staffId }}</span>
-          </td>
           <td><span class="staff-access-text" [title]="staff.department">{{ staff.department }}</span></td>
-          <td><span class="staff-access-text" [title]="staff.role">{{ staff.role }}</span></td>
           <td><span class="staff-access-email" [title]="staff.email">{{ staff.email }}</span></td>
-          <td>
+          <td class="center">
             <span
               class="badge"
               [class.badge-success]="staff.status === 'active'"
               [class.badge-danger]="staff.status === 'blocked'"
-              >{{ staff.status === 'active' ? 'Active' : 'Blocked' }}</span
-            >
+            >{{ staff.status === 'active' ? 'Active' : 'Blocked' }}</span>
           </td>
-          <td>{{ staff.blockedDate || 'â€”' }}</td>
-          <td><span class="staff-access-text" [title]="staff.reason || '—'">{{ staff.reason || '—' }}</span></td>
           <td>
-            <div class="data-table__actions">
-              <button
-                class="icon-btn staff-access-action"
-                [class.staff-access-action--block]="staff.status === 'active'"
-                [class.staff-access-action--unblock]="staff.status === 'blocked'"
-                type="button"
-                [title]="staff.status === 'active' ? 'Block staff access' : 'Unblock staff access'"
-                (click)="toggleAccess(staff.id)"
-              >
-                <app-table-action-icon
-                  [action]="staff.status === 'active' ? 'blockUser' : 'unblockUser'"
-                ></app-table-action-icon>
-              </button>
-            </div>
+            @if (staff.blockedDate) {
+              {{ staff.blockedDate }}
+            } @else {
+              <span class="staff-access-muted-badge">Not blocked</span>
+            }
           </td>
-        </tr></ng-template
-      >
+          <td class="actions-cell">
+            <button
+              class="icon-btn"
+              [class.icon-btn--block]="staff.status === 'active'"
+              [class.icon-btn--unblock]="staff.status === 'blocked'"
+              type="button"
+              [title]="staff.status === 'active' ? 'Block staff access' : 'Unblock staff access'"
+              (click)="toggleAccess(staff.id)"
+            >
+              <app-table-action-icon
+                [action]="staff.status === 'active' ? 'blockUser' : 'unblockUser'"
+              ></app-table-action-icon>
+            </button>
+          </td>
+        </tr>
+      </ng-template>
     </app-data-table>
   </section>
-
-  <p class="staff-access-footer">
-    Showing {{ sortedStaff().length }} of {{ staffRecords().length }} staff Â·
-    {{ blockedCount() }} blocked from this form
-  </p>
 </section>
-
-
-
 

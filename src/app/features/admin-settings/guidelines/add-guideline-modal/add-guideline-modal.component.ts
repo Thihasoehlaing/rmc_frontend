@@ -1,7 +1,21 @@
-import { Component, signal, inject, ViewEncapsulation, EventEmitter, Output, Input, OnInit } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnChanges,
+  Output,
+  SimpleChanges,
+  ViewChild,
+  signal,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { DragDropModule, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
+import { FormsModule } from '@angular/forms';
+import {
+  QuillToolbarOptions,
+  TextEditorComponent,
+} from '../../../../shared/components/text-editor/text-editor.component';
+import { GuidelinesModalComponent } from '../../../../shared/components/guidelines-modal/guidelines-modal.component';
+import { DialogComponent } from '../../../../shared/components/dialog/dialog.component';
 
 export type BlockType = 'text' | 'highlight' | 'heading' | 'warning' | 'info';
 
@@ -27,257 +41,188 @@ export interface GuidelineConfig {
   blocks: ModalBlock[];
 }
 
-const DESIGN_TOKENS = {
-  colors: [
-    { label: 'Primary Blue', value: 'var(--color-primary)' },
-    { label: 'Text Primary', value: 'var(--color-text-primary)' },
-    { label: 'Text Muted', value: 'var(--color-text-muted)' },
-    { label: 'Success Green', value: 'var(--color-success)' },
-    { label: 'Warning Orange', value: 'var(--color-warning)' },
-    { label: 'Error Red', value: 'var(--color-error)' },
-    { label: 'Info Cyan', value: 'var(--color-info)' },
-  ],
-  backgrounds: [
-    { label: 'White', value: 'white' },
-    { label: 'Light Gray', value: 'var(--color-bg-light)' },
-    { label: 'Light Blue', value: 'var(--color-bg-light-blue)' },
-    { label: 'Light Green', value: 'var(--color-bg-light-green)' },
-  ],
-  fontSizes: [
-    { label: 'Display Heading (2rem)', value: 'var(--fs-3xl)' },
-    { label: 'Section Heading (1.75rem)', value: 'var(--fs-2xl)' },
-    { label: 'Large Title (1.5rem)', value: 'var(--fs-xl)' },
-    { label: 'Sub-title (1.25rem)', value: 'var(--fs-lg)' },
-    { label: 'Body Text (1rem)', value: 'var(--fs-base)' },
-    { label: 'Small Text (0.85rem)', value: 'var(--fs-sm)' },
-  ],
-  fontWeights: [
-    { label: 'Regular (400)', value: 'var(--fw-regular)' },
-    { label: 'Medium (500)', value: 'var(--fw-medium)' },
-    { label: 'Semibold (600)', value: 'var(--fw-semibold)' },
-    { label: 'Bold (700)', value: 'var(--fw-bold)' },
-  ],
-};
-
 @Component({
   selector: 'app-add-guideline-modal',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, DragDropModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    TextEditorComponent,
+    GuidelinesModalComponent,
+    DialogComponent,
+  ],
   templateUrl: './add-guideline-modal.component.html',
   styleUrls: ['./add-guideline-modal.component.scss'],
-  encapsulation: ViewEncapsulation.None,
 })
-export class AddGuidelineModalComponent {
+export class AddGuidelineModalComponent implements OnChanges {
   @Output() close = new EventEmitter<void>();
   @Output() save = new EventEmitter<GuidelineConfig>();
   @Input() initialConfig: GuidelineConfig | null = null;
   @Input() editId: number | null = null;
   @Input() isSaving = false;
 
-  private fb = inject(FormBuilder);
+  @ViewChild('previewModal') previewModal?: GuidelinesModalComponent;
 
-  editorForm: FormGroup;
-  guidelineConfig = signal<GuidelineConfig>({
-    title: 'Guidelines',
-    formName: 'Conference Application',
-    backgroundToken: 'white',
-    textToken: 'var(--color-text-primary)',
-    buttonToken: 'var(--color-primary)',
-    buttonText: 'Close',
-    blocks: [],
-  });
-
-  blockForms: Map<string, FormGroup> = new Map();
-
-  colorTokens = DESIGN_TOKENS.colors;
-  backgroundTokens = DESIGN_TOKENS.backgrounds;
-  fontSizeTokens = DESIGN_TOKENS.fontSizes;
-  fontWeightTokens = DESIGN_TOKENS.fontWeights;
-
-  formOptions = [
-    { label: 'Conference Application', value: 'Conference Application' },
-    { label: 'Journal Application', value: 'Journal Application' },
-    { label: 'Partnership Application', value: 'Partnership Application' },
-    { label: 'RA/GRA Application', value: 'RA/GRA Application' },
-    { label: 'RDIG Application', value: 'RDIG Application' },
+  readonly formOptions = [
+    'Conference Application',
+    'Journal Application',
+    'Partnership Application',
+    'RA/GRA Application',
+    'RDIG Application',
   ];
 
-  blockTypes: { label: string; value: BlockType; icon: string }[] = [
-    { label: 'Text', value: 'text', icon: 'text_fields' },
-    { label: 'Highlight', value: 'highlight', icon: 'highlight' },
-    { label: 'Heading', value: 'heading', icon: 'title' },
-    { label: 'Warning', value: 'warning', icon: 'warning' },
-    { label: 'Info', value: 'info', icon: 'info' },
+  readonly editorToolbarOptions: QuillToolbarOptions = [
+    [{ header: [1, 2, 3, false] }],
+    ['bold', 'italic', 'underline'],
+    [{ list: 'bullet' }, { list: 'ordered' }],
+    ['link'],
+    ['clean'],
   ];
 
-  isPreviewFullscreen = signal(false);
+  guidelineContent = signal('');
+  guidelineConfig = signal<GuidelineConfig>(this.getDefaultConfig());
 
-  constructor() {
-    this.editorForm = this.fb.group({
-      title: ['Guidelines', Validators.required],
-      formName: ['Conference Application', Validators.required],
-      backgroundToken: ['white', Validators.required],
-      textToken: ['var(--color-text-primary)', Validators.required],
-      buttonToken: ['var(--color-primary)', Validators.required],
-      buttonText: ['Close', Validators.required],
-    });
-
-    this.editorForm.valueChanges.subscribe((values) => {
-      const currentConfig = this.guidelineConfig();
-      this.guidelineConfig.set({
-        ...currentConfig,
-        title: values.title,
-        formName: values.formName,
-        backgroundToken: values.backgroundToken,
-        textToken: values.textToken,
-        buttonToken: values.buttonToken,
-        buttonText: values.buttonText,
-      });
-    });
-
-    // If the modal is instantiated with an initial config (edit mode), load it.
-    if (this.initialConfig) {
-      this.loadInitialConfig(this.initialConfig);
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['initialConfig']) {
+      if (this.initialConfig) {
+        this.loadInitialConfig(this.initialConfig);
+      } else {
+        this.resetConfig();
+      }
     }
   }
 
-  ngOnInit() {
-    if (this.initialConfig) {
-      this.loadInitialConfig(this.initialConfig);
-    }
+  onTitleChange(title: string): void {
+    this.guidelineConfig.update((config) => ({ ...config, title }));
   }
 
-  private loadInitialConfig(config: GuidelineConfig) {
-    // set the main form values
-    this.editorForm.patchValue({
-      title: config.title,
-      formName: config.formName,
-      backgroundToken: config.backgroundToken,
-      textToken: config.textToken,
-      buttonToken: config.buttonToken,
-      buttonText: config.buttonText,
-    });
-
-    // set the guideline signal and create block forms
-    this.guidelineConfig.set({ ...config });
-
-    // clear any existing block forms then recreate from config
-    this.blockForms.forEach((_, key) => this.blockForms.delete(key));
-    config.blocks.forEach((b) => this.createBlockForm(b));
+  onFormChange(formName: string): void {
+    this.guidelineConfig.update((config) => ({ ...config, formName }));
   }
 
-  addBlock(type: BlockType) {
-    const id = Date.now().toString();
-    const defaults = {
-      text: { fontSize: 'var(--fs-base)', fontWeight: 'var(--fw-regular)' },
-      highlight: { fontSize: 'var(--fs-base)', fontWeight: 'var(--fw-bold)' },
-      heading: { fontSize: 'var(--fs-2xl)', fontWeight: 'var(--fw-bold)' },
-      warning: { fontSize: 'var(--fs-base)', fontWeight: 'var(--fw-regular)' },
-      info: { fontSize: 'var(--fs-base)', fontWeight: 'var(--fw-regular)' },
-    };
-
-    const newBlock: ModalBlock = {
-      id,
-      type,
-      content: '',
-      styling: {
-        bgToken:
-          type === 'highlight'
-            ? 'var(--color-warning-light)'
-            : type === 'warning'
-              ? 'var(--color-bg-light-yellow)'
-              : type === 'info'
-                ? 'var(--color-bg-light-blue)'
-                : undefined,
-        textToken: 'var(--color-text-primary)',
-        fontSizeToken: defaults[type].fontSize,
-        fontWeightToken: defaults[type].fontWeight,
-      },
-    };
-
-    const currentConfig = this.guidelineConfig();
-    this.guidelineConfig.set({
-      ...currentConfig,
-      blocks: [...currentConfig.blocks, newBlock],
-    });
-
-    this.createBlockForm(newBlock);
+  onContentChange(content: string): void {
+    this.guidelineContent.set(content);
+    this.syncContentBlock(content);
   }
 
-  createBlockForm(block: ModalBlock) {
-    const form = this.fb.group({
-      content: [block.content, Validators.required],
-      bgToken: [block.styling?.bgToken || '#ffffff'],
-      textToken: [block.styling?.textToken || 'var(--color-text-primary)'],
-      fontSizeToken: [block.styling?.fontSizeToken || 'var(--fs-base)'],
-      fontWeightToken: [block.styling?.fontWeightToken || 'var(--fw-regular)'],
-    });
-
-    form.valueChanges.subscribe((values) => {
-      this.updateBlock(block.id, values);
-    });
-
-    this.blockForms.set(block.id, form);
+  openPreview(): void {
+    this.previewModal?.open();
   }
 
-  updateBlock(id: string, values: any) {
-    const currentConfig = this.guidelineConfig();
-    const updatedBlocks = currentConfig.blocks.map((block) =>
-      block.id === id
-        ? {
-            ...block,
-            content: values.content,
-            styling: {
-              bgToken: values.bgToken,
-              textToken: values.textToken,
-              fontSizeToken: values.fontSizeToken,
-              fontWeightToken: values.fontWeightToken,
-            },
-          }
-        : block
-    );
-    this.guidelineConfig.set({ ...currentConfig, blocks: updatedBlocks });
-  }
-
-  reorderBlocks(event: CdkDragDrop<ModalBlock[]>) {
-    if (event.previousIndex === event.currentIndex) {
-      return;
-    }
-
-    const currentConfig = this.guidelineConfig();
-    const reorderedBlocks = [...currentConfig.blocks];
-    moveItemInArray(reorderedBlocks, event.previousIndex, event.currentIndex);
-    this.guidelineConfig.set({ ...currentConfig, blocks: reorderedBlocks });
-  }
-
-  removeBlock(id: string) {
-    const currentConfig = this.guidelineConfig();
-    this.guidelineConfig.set({
-      ...currentConfig,
-      blocks: currentConfig.blocks.filter((b) => b.id !== id),
-    });
-    this.blockForms.delete(id);
-  }
-
-  togglePreviewFullscreen() {
-    this.isPreviewFullscreen.update((val) => !val);
-  }
-
-  onClose() {
+  onClose(): void {
     this.close.emit();
   }
 
-  onSave() {
-    if (
-      !this.isSaving &&
-      this.editorForm.valid &&
-      this.guidelineConfig().blocks.length > 0
-    ) {
+  onSave(): void {
+    if (!this.isSaving && !this.isSaveDisabled()) {
       this.save.emit(this.guidelineConfig());
     }
   }
 
-  trackByBlockId(index: number, block: ModalBlock) {
-    return block.id;
+  isSaveDisabled(): boolean {
+    return this.isContentEmpty() || this.guidelineConfig().title.trim().length === 0;
+  }
+
+  isContentEmpty(): boolean {
+    return this.getPlainText(this.guidelineContent()).trim().length === 0;
+  }
+
+  private loadInitialConfig(config: GuidelineConfig): void {
+    const content = this.blocksToHtml(config.blocks);
+    this.guidelineContent.set(content);
+    this.guidelineConfig.set({
+      ...config,
+      blocks: this.isHtmlEmpty(content) ? [] : [this.createContentBlock(content)],
+    });
+  }
+
+  private resetConfig(): void {
+    this.guidelineContent.set('');
+    this.guidelineConfig.set(this.getDefaultConfig());
+  }
+
+  private getDefaultConfig(): GuidelineConfig {
+    return {
+      title: 'Guidelines',
+      formName: 'Conference Application',
+      backgroundToken: 'white',
+      textToken: 'var(--color-text-primary)',
+      buttonToken: 'var(--color-primary)',
+      buttonText: 'Close',
+      blocks: [],
+    };
+  }
+
+  private syncContentBlock(content: string): void {
+    const currentConfig = this.guidelineConfig();
+    this.guidelineConfig.set({
+      ...currentConfig,
+      blocks: this.isHtmlEmpty(content) ? [] : [this.createContentBlock(content)],
+    });
+  }
+
+  private createContentBlock(content: string): ModalBlock {
+    return {
+      id: 'guideline-content',
+      type: 'text',
+      content,
+      styling: {
+        textToken: 'var(--color-text-primary)',
+        fontSizeToken: 'var(--fs-base)',
+        fontWeightToken: 'var(--fw-regular)',
+      },
+    };
+  }
+
+  private blocksToHtml(blocks: ModalBlock[]): string {
+    if (blocks.length === 0) {
+      return '';
+    }
+
+    if (blocks.length === 1 && this.containsHtml(blocks[0].content)) {
+      return blocks[0].content;
+    }
+
+    return blocks.map((block) => this.blockToHtml(block)).join('');
+  }
+
+  private blockToHtml(block: ModalBlock): string {
+    if (this.containsHtml(block.content)) {
+      return block.content;
+    }
+
+    const content = this.escapeHtml(block.content).replace(/\r?\n/g, '<br>');
+
+    if (block.type === 'heading') {
+      return `<h2>${content}</h2>`;
+    }
+
+    return `<p>${content}</p>`;
+  }
+
+  private containsHtml(value: string): boolean {
+    return /<\/?[a-z][\s\S]*>/i.test(value);
+  }
+
+  private isHtmlEmpty(html: string): boolean {
+    return this.getPlainText(html).trim().length === 0;
+  }
+
+  private getPlainText(html: string): string {
+    return html
+      .replace(/<style[\s\S]*?<\/style>/gi, '')
+      .replace(/<script[\s\S]*?<\/script>/gi, '')
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/&nbsp;/gi, ' ')
+      .replace(/\s+/g, ' ');
+  }
+
+  private escapeHtml(value: string): string {
+    return value
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
   }
 }

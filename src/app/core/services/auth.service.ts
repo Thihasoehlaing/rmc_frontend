@@ -174,9 +174,28 @@ interface AuthCheckResponse {
         code: string;
         id: number;
         name: string;
-      };
+      } | null;
       username: string;
     };
+  };
+  message: string;
+  success: boolean;
+}
+
+interface DevAuthUsersResponse {
+  data: {
+    users: {
+      username: string;
+      name: string;
+      email: string;
+      department: string;
+      job_title: string | null;
+      role: {
+        code: string;
+        id: number;
+        name: string;
+      } | null;
+    }[];
   };
   message: string;
   success: boolean;
@@ -202,16 +221,6 @@ export class AuthService {
     const storedUser = this.readStoredUser();
     if (storedUser && this.getAccessToken()) {
       this._currentUser.set(this.mapCheckedUser(storedUser));
-      return;
-    }
-
-    // Restore the session after a page refresh.
-    // We store only the username; the full user object is looked up from the
-    // in-memory DUMMY_USERS array so no sensitive data lives in sessionStorage.
-    const storedUsername = sessionStorage.getItem(this.LEGACY_SESSION_KEY);
-    if (storedUsername) {
-      const user = DUMMY_USERS.find(u => u.username === storedUsername) ?? null;
-      this._currentUser.set(user);
     }
   }
 
@@ -272,6 +281,11 @@ export class AuthService {
             this.USER_KEY,
             JSON.stringify(response.data.user),
           );
+          if (!response.data.user.role) {
+            this.toastService.info(
+              'Your APU account is authenticated, but no RMC role has been assigned yet.',
+            );
+          }
         }),
         map(response => this.mapCheckedUser(response.data.user)),
         tap(user => {
@@ -339,40 +353,37 @@ export class AuthService {
   }
 
   login(usernameOrEmail: string, password: string): boolean {
-    const identifier = usernameOrEmail.trim().toLowerCase();
-    const user = DUMMY_USERS.find(
-      u =>
-        (u.username.toLowerCase() === identifier ||
-          u.email.toLowerCase() === identifier) &&
-        u.password === password
-    ) ?? null;
-
-    this._currentUser.set(user);
-    if (user) {
-      sessionStorage.setItem(this.LEGACY_SESSION_KEY, user.username);
-    }
-    return user !== null;
+    return false;
   }
 
   /**
-   * Development-only shortcut for local testers who cannot authenticate through APU.
-   * This intentionally reuses the mock account registry and never calls the SSO flow.
+   * Development-only shortcut for local workflow testing.
+   * This still goes through the backend auth middleware by using a dev token.
    */
-  loginAsTestingUser(username = 'rmc_ahmad'): boolean {
+  loginAsTestingUser(username = 'thiha.hlaing'): Observable<User> {
     if (environment.production) {
-      return false;
+      return throwError(() => new Error('Testing login is not available in production.'));
     }
 
-    const user = DUMMY_USERS.find(u => u.username === username) ?? null;
+    localStorage.setItem(this.TOKEN_KEY, `dev:${username}`);
+    localStorage.removeItem(this.USER_KEY);
+    sessionStorage.removeItem(this.LEGACY_SESSION_KEY);
 
-    this._currentUser.set(user);
-    if (user) {
-      localStorage.removeItem(this.TOKEN_KEY);
-      localStorage.removeItem(this.USER_KEY);
-      sessionStorage.setItem(this.LEGACY_SESSION_KEY, user.username);
-    }
-
-    return user !== null;
+    return this.checkAuthentication().pipe(
+      tap(response => {
+        localStorage.setItem(
+          this.USER_KEY,
+          JSON.stringify(response.data.user),
+        );
+      }),
+      map(response => this.mapCheckedUser(response.data.user)),
+      tap(user => this._currentUser.set(user)),
+      catchError(error => {
+        localStorage.removeItem(this.TOKEN_KEY);
+        localStorage.removeItem(this.USER_KEY);
+        return throwError(() => this.createAuthError('Testing login failed', error));
+      }),
+    );
   }
 
   /** Clear the current session. */
@@ -392,14 +403,27 @@ export class AuthService {
     return this._currentUser()?.groups.includes(group) ?? false;
   }
 
-  /** Expose demo accounts for display on the login page. */
-  getDemoAccounts(): { username: string; password: string; label: string; groups: string }[] {
-    return DUMMY_USERS.map(u => ({
-      username: u.username,
-      password: u.password ?? '',
-      label: u.name,
-      groups: u.groups.join(', '),
-    }));
+  /** Expose backend dev-auth accounts for display on the login page. */
+  getDemoAccounts(): Observable<{ username: string; label: string; groups: string }[]> {
+    const apiUrl = environment.apiUrl.replace(/\/$/, '');
+
+    if (environment.production) {
+      return throwError(() => new Error('Testing login is not available in production.'));
+    }
+
+    return this.http.get<DevAuthUsersResponse>(`${apiUrl}/api/auth/dev-users`).pipe(
+      map(response =>
+        response.data.users.map(user => ({
+          username: user.username,
+          label: user.name || user.username,
+          groups: [
+            user.role?.name || 'No role assigned',
+            user.department,
+            user.job_title,
+          ].filter(Boolean).join(' / '),
+        })),
+      ),
+    );
   }
 
   /** Returns all users as potential reviewers for assignment dropdowns. */
@@ -450,29 +474,39 @@ export class AuthService {
   private mapCheckedUser(
     checkedUser: AuthCheckResponse['data']['user'],
   ): User {
+    const role = checkedUser.role ?? undefined;
+
     return {
       id: String(checkedUser.id),
-      name: checkedUser.name,
+      name: checkedUser.name || checkedUser.username,
       username: checkedUser.username,
-      email: checkedUser.email,
-      department: checkedUser.department,
+      email: checkedUser.email || '',
+      department: checkedUser.department || '',
       distinguishedName: checkedUser.distinguished_name,
-      role: checkedUser.role,
-      groups: this.mapRoleToGroups(checkedUser.role.code),
+      role,
+      groups: this.mapRoleToGroups(role?.code),
     };
   }
 
-  private mapRoleToGroups(roleCode: string): UserGroup[] {
+  private mapRoleToGroups(roleCode: string | null | undefined): UserGroup[] {
+    if (!roleCode) return [];
+
     const roleGroups: Record<string, UserGroup[]> = {
       SYSTEM_ADMIN: ['Admin', 'SystemAdmin'],
       RMC_ADMIN: ['RMC', 'Admin'],
       RMC_STAFF: ['RMC'],
       RMC: ['RMC'],
       REVIEWER: ['Reviewer'],
+      LECTURER: ['full_time', 'academic'],
+      HEAD_OF_SCHOOL: ['full_time', 'academic', 'HOS'],
+      HEAD_OF_DEPARTMENT: ['full_time', 'academic', 'HOS'],
       HOS: ['HOS'],
       HOD: ['HOS'],
+      VICE_CHANCELLOR: ['VC'],
       VC: ['VC'],
+      HUMAN_RESOURCE: ['HR'],
       CEO: ['CEO'],
+      FINANCE: ['Finance'],
       RDIG_CHAIR: ['RDIG_Chair'],
     };
 

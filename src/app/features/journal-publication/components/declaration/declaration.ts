@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { JournalWorkflowService } from '../../services/journal-workflow.service';
 import { ValidationMessageComponent } from '../../../../shared/components/validation-message/validation-message.component';
+import { JournalFormData, JournalRequestPayload } from '../../services/journal-application-api.service';
 
 @Component({
   selector: 'app-declaration',
@@ -54,5 +55,28 @@ export class DeclarationComponent implements OnInit {
 
     // Emit initial validity
     this.formValidityChange.emit(this.declarationForm.valid);
+  }
+
+  getJournalPayload(): JournalRequestPayload {
+    const value = this.declarationForm.getRawValue();
+    return {
+      declaration_terms_accepted: !!value.agreeToTerms,
+      declaration_funder_acknowledged: !!value.acknowledgeGrantFunder,
+    };
+  }
+
+  hydrateFromApi(data: JournalFormData): void {
+    const journal = data.journal;
+    if (!journal || !this.declarationForm) {
+      return;
+    }
+
+    this.declarationForm.patchValue(
+      {
+        agreeToTerms: !!journal.declaration_terms_accepted,
+        acknowledgeGrantFunder: !!journal.declaration_funder_acknowledged,
+      },
+      { emitEvent: false },
+    );
   }
 }

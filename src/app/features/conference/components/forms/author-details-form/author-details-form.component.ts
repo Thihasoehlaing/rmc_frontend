@@ -3,21 +3,36 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
 import { SearchableDropdownComponent } from '../../../../../shared/components/searchable-dropdown/searchable-dropdown.component';
 import { ActionButtonComponent } from '../../../../../shared/components/action-button/action-button.component';
-import { DataTableComponent, DataTableColumn } from '../../../../../shared/components/data-table/data-table.component';
+import {
+  DataTableComponent,
+  DataTableColumn,
+} from '../../../../../shared/components/data-table/data-table.component';
 import { CustomSubheaderComponent } from '../../../../../shared/components/custom-subheader/custom-subheader.component';
 import { CustomHeaderComponent } from '../../../../../shared/components/custom-header/custom-header.component';
 import { DialogComponent } from '../../../../../shared/components/dialog/dialog.component';
 import { DropdownOption } from '../../../../../core/interfaces/components.interface';
 import { ConferenceWorkflowService } from '../../../services/conference-workflow.service';
 import { ConferenceFormStateService } from '../../../services/conference-form-state.service';
-import { DropdownsStoreService, StoredDropdownOption } from '../../../../admin-settings/dropdowns/dropdowns-store.service';
+import { MasterDataService } from '../../../../../core/services/master-data.service';
+
+import { TableActionIconComponent } from '../../../../../shared/components/table-action-icon/table-action-icon.component';
 
 @Component({
   selector: 'app-author-details-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, SearchableDropdownComponent, ActionButtonComponent, DataTableComponent, CustomHeaderComponent, CustomSubheaderComponent, DialogComponent],
+  imports: [
+    TableActionIconComponent,
+    CommonModule,
+    ReactiveFormsModule,
+    SearchableDropdownComponent,
+    ActionButtonComponent,
+    DataTableComponent,
+    CustomHeaderComponent,
+    CustomSubheaderComponent,
+    DialogComponent,
+  ],
   templateUrl: './author-details-form.component.html',
-  styleUrl: './author-details-form.component.scss'
+  styleUrl: './author-details-form.component.scss',
 })
 export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
   readonly apuAffiliation = 'Asia Pacific University';
@@ -26,33 +41,19 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
 
   form!: FormGroup;
   editForm!: FormGroup;
-  private readonly dropdownStore = inject(DropdownsStoreService);
+  private readonly masterData = inject(MasterDataService);
 
   // Modal state
   isModalOpen = false;
   editingIndex: number | null = null;
 
-  private readonly defaultStaffOptions: DropdownOption[] = [
-    { value: 'Vivian Banshee', label: 'Vivian Banshee' },
-    { value: 'John Smith', label: 'John Smith' },
-    { value: 'Sarah Johnson', label: 'Sarah Johnson' },
-    { value: 'Michael Brown', label: 'Michael Brown' },
-    { value: 'Emily Davis', label: 'Emily Davis' },
-    { value: 'Robert Wilson', label: 'Robert Wilson' },
-    { value: 'Jessica Taylor', label: 'Jessica Taylor' },
-    { value: 'James Anderson', label: 'James Anderson' }
-  ];
+  staffOptions: DropdownOption[] = [];
+  organisationTypeOptions: DropdownOption[] = [];
 
-  private readonly defaultOrganisationTypeOptions: DropdownOption[] = [
-    { value: 'University', label: 'University' },
-    { value: 'Research Institute', label: 'Research Institute' },
-    { value: 'Company', label: 'Company' },
-    { value: 'Government Agency', label: 'Government Agency' },
-    { value: 'Non-Profit Organization', label: 'Non-Profit Organization' },
-    { value: 'Other', label: 'Other' }
-  ];
-
-  constructor(private fb: FormBuilder, private formStateService: ConferenceFormStateService) {
+  constructor(
+    private fb: FormBuilder,
+    private formStateService: ConferenceFormStateService,
+  ) {
     // Apply form read-only effect if workflow is provided
     effect(() => {
       if (this.workflow?.isFormReadOnly()) {
@@ -64,21 +65,13 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
   }
   modalType: 'apu-staff' | 'student' | 'non-apu' | null = null;
 
-  get staffOptions(): DropdownOption[] {
-    return this.getConferenceDropdownOptions('Staff Name', this.defaultStaffOptions);
-  }
-
-  get organisationTypeOptions(): DropdownOption[] {
-    return this.getConferenceDropdownOptions('Type of Organisation', this.defaultOrganisationTypeOptions);
-  }
-
   // DataTable column definitions
   apuStaffColumns: readonly DataTableColumn[] = [
     { key: 'index', label: '#', width: '50px', align: 'center' },
     { key: 'staffName', label: 'Please select Staff Name' },
     { key: 'schoolDepartment', label: 'School/Department' },
     { key: 'affiliation', label: 'Second Affiliation (If any)' },
-    { key: 'actions', label: 'Actions', width: '100px', align: 'center' }
+    { key: 'actions', label: 'Actions', width: '100px', align: 'center' },
   ];
 
   studentCoAuthorColumns: readonly DataTableColumn[] = [
@@ -87,7 +80,7 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
     { key: 'fullName', label: 'Full Name (as per IC/Passport)' },
     { key: 'schoolDepartment', label: 'School/Department' },
     { key: 'affiliation', label: 'Second Affiliation' },
-    { key: 'actions', label: 'Actions', width: '100px', align: 'center' }
+    { key: 'actions', label: 'Actions', width: '100px', align: 'center' },
   ];
 
   nonApuCoAuthorColumns: readonly DataTableColumn[] = [
@@ -98,12 +91,21 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
     { key: 'organisationType', label: 'Type of Organisation' },
     { key: 'schoolDepartment', label: 'School/Department' },
     { key: 'institutionName', label: 'Institution/Company Name' },
-    { key: 'actions', label: 'Actions', width: '100px', align: 'center' }
+    { key: 'actions', label: 'Actions', width: '100px', align: 'center' },
   ];
 
   ngOnInit() {
     this.initializeForm();
     this.loadFormState();
+
+    this.masterData.searchAcademicStaff().subscribe((res) => {
+      this.staffOptions = (res.data ?? []).map((s) => ({ value: s.fullname, label: s.fullname }));
+    });
+    this.masterData.getDropdownOptions('TYPE_OF_ORGANISATION').subscribe((res) => {
+      this.organisationTypeOptions = (res.data ?? [])
+        .filter((o) => o.status === 'ACTIVE')
+        .map((o) => ({ value: o.option_name, label: o.option_name }));
+    });
   }
 
   ngOnDestroy() {
@@ -123,7 +125,7 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
       isPresenter: [true],
       testSubsections: this.fb.array([]),
       studentCoAuthors: this.fb.array([]),
-      nonApuCoAuthors: this.fb.array([])
+      nonApuCoAuthors: this.fb.array([]),
     });
   }
 
@@ -135,25 +137,31 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
     if (savedState) {
       // Define array field creators for FormArray restoration
       const arrayFields = {
-        testSubsections: (data: any) => this.fb.group({
-          staffName: [data?.staffName || '', [Validators.required]],
-          schoolDepartment: [data?.schoolDepartment || '', [Validators.required]],
-          affiliation: [data?.affiliation || '']
-        }),
-        studentCoAuthors: (data: any) => this.fb.group({
-          tpNumber: [data?.tpNumber || '', [Validators.required, Validators.pattern('^[0-9]{6}$')]],
-          fullName: [data?.fullName || '', [Validators.required]],
-          schoolDepartment: [data?.schoolDepartment || '', [Validators.required]],
-          affiliation: [this.apuAffiliation]
-        }),
-        nonApuCoAuthors: (data: any) => this.fb.group({
-          fullName: [data?.fullName || '', [Validators.required]],
-          country: [data?.country || '', [Validators.required]],
-          email: [data?.email || '', [Validators.required, Validators.email]],
-          organisationType: [data?.organisationType || '', [Validators.required]],
-          schoolDepartment: [data?.schoolDepartment || '', [Validators.required]],
-          institutionName: [data?.institutionName || '', [Validators.required]]
-        })
+        testSubsections: (data: any) =>
+          this.fb.group({
+            staffName: [data?.staffName || '', [Validators.required]],
+            schoolDepartment: [data?.schoolDepartment || '', [Validators.required]],
+            affiliation: [data?.affiliation || ''],
+          }),
+        studentCoAuthors: (data: any) =>
+          this.fb.group({
+            tpNumber: [
+              data?.tpNumber || '',
+              [Validators.required, Validators.pattern('^[0-9]{6}$')],
+            ],
+            fullName: [data?.fullName || '', [Validators.required]],
+            schoolDepartment: [data?.schoolDepartment || '', [Validators.required]],
+            affiliation: [this.apuAffiliation],
+          }),
+        nonApuCoAuthors: (data: any) =>
+          this.fb.group({
+            fullName: [data?.fullName || '', [Validators.required]],
+            country: [data?.country || '', [Validators.required]],
+            email: [data?.email || '', [Validators.required, Validators.email]],
+            organisationType: [data?.organisationType || '', [Validators.required]],
+            schoolDepartment: [data?.schoolDepartment || '', [Validators.required]],
+            institutionName: [data?.institutionName || '', [Validators.required]],
+          }),
       };
 
       // Use the enhanced restore method that handles FormArrays
@@ -161,18 +169,22 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
     }
   }
 
-
   private saveFormState() {
     if (this.form) {
       this.formStateService.saveFormSection('authorDetails', this.form.getRawValue());
     }
   }
 
+  /** Flushes the live form into the shared state service — called by the wizard before saving. */
+  flushFormState(): void {
+    this.saveFormState();
+  }
+
   createTestSubsection(): FormGroup {
     return this.fb.group({
       staffName: ['', [Validators.required]],
       schoolDepartment: ['', [Validators.required]],
-      affiliation: ['']
+      affiliation: [''],
     });
   }
 
@@ -181,7 +193,7 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
       tpNumber: ['', [Validators.required, Validators.pattern('^[0-9]{6}$')]],
       fullName: ['', [Validators.required]],
       schoolDepartment: ['', [Validators.required]],
-      affiliation: [this.apuAffiliation]
+      affiliation: [this.apuAffiliation],
     });
   }
 
@@ -192,7 +204,7 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
       email: ['', [Validators.required, Validators.email]],
       organisationType: ['', [Validators.required]],
       schoolDepartment: ['', [Validators.required]],
-      institutionName: ['', [Validators.required]]
+      institutionName: ['', [Validators.required]],
     });
   }
 
@@ -212,30 +224,22 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
   getApuStaffTableData(): (any & { index: number })[] {
     return this.testSubsections.controls.map((control, index) => ({
       ...control.value,
-      index: index + 1
+      index: index + 1,
     }));
   }
 
   getStudentCoAuthorTableData(): (any & { index: number })[] {
     return this.studentCoAuthors.controls.map((control, index) => ({
       ...control.value,
-      index: index + 1
+      index: index + 1,
     }));
   }
 
   getNonApuCoAuthorTableData(): (any & { index: number })[] {
     return this.nonApuCoAuthors.controls.map((control, index) => ({
       ...control.value,
-      index: index + 1
+      index: index + 1,
     }));
-  }
-
-  private getConferenceDropdownOptions(category: string, defaults: DropdownOption[]): DropdownOption[] {
-    const options = this.dropdownStore.getOptions('Conference Application', category)
-      .filter((option: StoredDropdownOption) => option.status === 'Active')
-      .map((option: StoredDropdownOption) => ({ value: option.value, label: option.value }));
-
-    return options.length > 0 ? options : defaults;
   }
 
   deleteTestSubsection(index: number) {
@@ -265,7 +269,7 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
         this.editForm = this.fb.group({
           staffName: [data.staffName, [Validators.required]],
           schoolDepartment: [data.schoolDepartment, [Validators.required]],
-          affiliation: [data.affiliation || '']
+          affiliation: [data.affiliation || ''],
         });
       } else if (type === 'student') {
         data = this.studentCoAuthors.at(index).value;
@@ -273,7 +277,7 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
           tpNumber: [data.tpNumber, [Validators.required, Validators.pattern('^[0-9]{6}$')]],
           fullName: [data.fullName, [Validators.required]],
           schoolDepartment: [data.schoolDepartment, [Validators.required]],
-          affiliation: [this.apuAffiliation]
+          affiliation: [this.apuAffiliation],
         });
       } else if (type === 'non-apu') {
         data = this.nonApuCoAuthors.at(index).value;
@@ -283,7 +287,7 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
           email: [data.email, [Validators.required, Validators.email]],
           organisationType: [data.organisationType, [Validators.required]],
           schoolDepartment: [data.schoolDepartment, [Validators.required]],
-          institutionName: [data.institutionName, [Validators.required]]
+          institutionName: [data.institutionName, [Validators.required]],
         });
       }
     } else {
@@ -293,14 +297,14 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
         this.editForm = this.fb.group({
           staffName: ['', [Validators.required]],
           schoolDepartment: ['', [Validators.required]],
-          affiliation: ['']
+          affiliation: [''],
         });
       } else if (type === 'student') {
         this.editForm = this.fb.group({
           tpNumber: ['', [Validators.required, Validators.pattern('^[0-9]{6}$')]],
           fullName: ['', [Validators.required]],
           schoolDepartment: ['', [Validators.required]],
-          affiliation: [this.apuAffiliation]
+          affiliation: [this.apuAffiliation],
         });
       } else if (type === 'non-apu') {
         this.editForm = this.fb.group({
@@ -309,7 +313,7 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
           email: ['', [Validators.required, Validators.email]],
           organisationType: ['', [Validators.required]],
           schoolDepartment: ['', [Validators.required]],
-          institutionName: ['', [Validators.required]]
+          institutionName: ['', [Validators.required]],
         });
       }
     }
@@ -336,9 +340,7 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
 
     const formData = {
       ...this.editForm.value,
-      ...(this.modalType === 'student'
-        ? { affiliation: this.apuAffiliation }
-        : {})
+      ...(this.modalType === 'student' ? { affiliation: this.apuAffiliation } : {}),
     };
 
     if (this.editingIndex !== null) {
@@ -369,8 +371,8 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
     const isEditing = this.editingIndex !== null ? 'Edit' : 'Add';
     const titles = {
       'apu-staff': `${isEditing} Asia Pacific University of Technology & Innovation Staff Co-Author`,
-      'student': `${isEditing} Asia Pacific University of Technology & Innovation Student Co-Author`,
-      'non-apu': `${isEditing} Co-Author Outside Asia Pacific University of Technology & Innovation`
+      student: `${isEditing} Asia Pacific University of Technology & Innovation Student Co-Author`,
+      'non-apu': `${isEditing} Co-Author Outside Asia Pacific University of Technology & Innovation`,
     };
     return titles[this.modalType];
   }
@@ -379,10 +381,11 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
     if (!this.workflow) return true;
     const status = this.workflow.status();
     const allowedStatuses = [
+      'draft',
       'normal_application',
       'hos_application',
       'hos_request_resubmission',
-      'rmc_request_resubmission'
+      'rmc_request_resubmission',
     ];
     return allowedStatuses.includes(status);
   }

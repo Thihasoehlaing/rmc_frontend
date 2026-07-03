@@ -1,32 +1,48 @@
-<main class="forms-page">
+<main class="forms-page forms-page--settings">
   <header class="forms-page__header">
     <div>
       <span class="forms-page__eyebrow">System Settings</span>
       <h1>Roles</h1>
       <p>Manage system roles used for authorization and user access.</p>
     </div>
-    <button class="btn btn-primary forms-page__create-button" type="button" (click)="openCreateDialog()" [disabled]="isLoading()">
+    <button
+      class="btn btn-primary forms-page__create-button"
+      type="button"
+      (click)="openCreateDialog()"
+      [disabled]="isLoading()"
+    >
       <span class="material-icons">add</span>
       Create Role
     </button>
   </header>
 
-  @if (!isLoading()) {
   <section class="forms-toolbar" aria-label="Role filters">
+    <h2 class="forms-toolbar__title">Search &amp; Filters</h2>
+
     <label class="forms-filter forms-filter--search">
-      <span>Role Code or Name</span>
-      <input
-        class="input--text"
-        type="search"
-        placeholder="Search roles"
-        [ngModel]="searchTerm()"
-        (ngModelChange)="searchTerm.set($event)"
-        (keydown.enter)="search()">
+      <span class="forms-search-input">
+        <span class="material-icons" aria-hidden="true">search</span>
+        <input
+          class="input--text"
+          type="search"
+          aria-label="Search roles by code or name"
+          placeholder="Search roles by code or name..."
+          [ngModel]="searchTerm()"
+          (ngModelChange)="searchTerm.set($event)"
+          (keydown.enter)="search()"
+          [disabled]="isLoading()"
+        />
+      </span>
     </label>
 
     <label class="forms-filter">
       <span>Status</span>
-      <select class="input--select" [ngModel]="selectedStatus()" (ngModelChange)="selectedStatus.set($event)">
+      <select
+        class="input--select"
+        [ngModel]="selectedStatus()"
+        (ngModelChange)="selectedStatus.set($event)"
+        [disabled]="isLoading()"
+      >
         <option value="">All</option>
         <option value="Active">Active</option>
         <option value="Inactive">Inactive</option>
@@ -34,24 +50,39 @@
     </label>
 
     <div class="forms-toolbar__actions">
-      <button class="btn btn-primary" type="button" (click)="search()">
+      <button class="btn btn-primary" type="button" (click)="search()" [disabled]="isLoading()">
         <span class="material-icons">search</span>
         Search
       </button>
-      <button class="btn btn-secondary" type="button" (click)="resetFilters()">
+      <button class="btn btn-secondary" type="button" (click)="resetFilters()" [disabled]="isLoading()">
         <span class="material-icons">restart_alt</span>
         Reset
       </button>
     </div>
   </section>
-  }
 
   <section class="forms-table-card">
+    <header class="forms-table-card__header">
+      <div>
+        <div class="forms-table-card__title-row">
+          <h2>Roles</h2>
+          <span class="forms-table-card__count">{{ totalItems() }}</span>
+        </div>
+        <p>Manage authorization roles and review how many users are assigned.</p>
+      </div>
+      <button
+        class="btn btn-secondary forms-table-card__refresh"
+        type="button"
+        (click)="loadRoles()"
+        [disabled]="isLoading()"
+      >
+        <span class="material-icons">refresh</span>
+        Refresh
+      </button>
+    </header>
+
     @if (isLoading()) {
-      <app-table-skeleton
-        [columns]="columns"
-        [showSearch]="false"
-        loadingLabel="Loading roles">
+      <app-table-skeleton [columns]="columns" [showSearch]="false" loadingLabel="Loading roles">
       </app-table-skeleton>
     } @else if (loadFailed()) {
       <div class="forms-state">
@@ -71,12 +102,17 @@
         <ng-template #rowTemplate let-row let-index="index">
           <tr>
             <td class="is-align-center">{{ rowNumber(index) }}</td>
-            <td><span class="form-code">{{ row.role_code }}</span></td>
+            <td>
+              <span class="form-code">{{ row.role_code }}</span>
+            </td>
             <td>
               <div class="form-name">
                 <span class="material-icons">verified_user</span>
                 <strong>{{ row.role_name }}</strong>
               </div>
+            </td>
+            <td class="is-align-center">
+              <span class="role-user-count">{{ row.user_count || 0 }}</span>
             </td>
             <td>
               <span class="role-description" [class.role-description--empty]="!row.description">
@@ -90,11 +126,23 @@
             </td>
             <td class="is-align-center">
               <div class="table-actions">
-                <button class="table-action" type="button" title="Edit role" aria-label="Edit role" (click)="openEditDialog(row)">
-                  <span class="material-icons">edit</span>
+                <button
+                  class="table-action"
+                  type="button"
+                  title="Edit role"
+                  aria-label="Edit role"
+                  (click)="openEditDialog(row)"
+                >
+                  <app-table-action-icon action="edit"></app-table-action-icon>
                 </button>
-                <button class="table-action table-action--danger" type="button" title="Delete role" aria-label="Delete role" (click)="openDeleteDialog(row)">
-                  <span class="material-icons">delete_outline</span>
+                <button
+                  class="table-action table-action--danger"
+                  type="button"
+                  title="Delete role"
+                  aria-label="Delete role"
+                  (click)="openDeleteDialog(row)"
+                >
+                  <app-table-action-icon action="delete"></app-table-action-icon>
                 </button>
               </div>
             </td>
@@ -102,27 +150,48 @@
         </ng-template>
       </app-data-table>
     }
+
+    @if (!isLoading() && !loadFailed()) {
+      <footer class="forms-table-card__footer">
+        <p class="forms-count">
+          @if (totalItems() > 0) {
+            Showing {{ pageStart() }} to {{ pageEnd() }} of {{ totalItems() }} roles
+          } @else {
+            Showing 0 roles
+          }
+        </p>
+
+        <app-pagination
+          [currentPage]="page()"
+          [totalPages]="totalPages()"
+          [pageSize]="pageSize()"
+          [pageSizeOptions]="pageSizeOptions"
+          (pageChange)="onPageChange($event)"
+          (pageSizeChange)="onPageSizeChange($event)"
+        >
+        </app-pagination>
+
+        <label class="forms-page-size" aria-label="Items per page">
+          <select
+            class="input--select"
+            [ngModel]="pageSize()"
+            (ngModelChange)="onPageSizeChange($event)"
+          >
+            @for (size of pageSizeOptions; track size) {
+              <option [ngValue]="size">{{ size }} per page</option>
+            }
+          </select>
+        </label>
+      </footer>
+    }
   </section>
 
-  @if (!isLoading() && !loadFailed()) {
-    <app-pagination
-      [currentPage]="page()"
-      [totalPages]="totalPages()"
-      [pageSize]="pageSize()"
-      [pageSizeOptions]="pageSizeOptions"
-      (pageChange)="onPageChange($event)"
-      (pageSizeChange)="onPageSizeChange($event)">
-    </app-pagination>
-    <p class="forms-count">
-      @if (totalItems() > 0) {
-        Showing {{ pageStart() }}-{{ pageEnd() }} of {{ totalItems() }} roles
-      } @else {
-        Showing 0 roles
-      }
-    </p>
-  }
-
-  <app-dialog [isOpen]="dialogMode() !== null" [title]="dialogTitle()" size="small" (close)="closeEditor()">
+  <app-dialog
+    [isOpen]="dialogMode() !== null"
+    [title]="dialogTitle()"
+    size="small"
+    (close)="closeEditor()"
+  >
     @if (isDetailLoading()) {
       <app-detail-panel-skeleton loadingLabel="Loading role details"></app-detail-panel-skeleton>
     } @else if (detailFailed()) {
@@ -135,15 +204,29 @@
       <div class="form-editor">
         <label class="forms-filter">
           <span>Role Code</span>
-          <input class="input--text" type="text" maxlength="100" placeholder="e.g. SYSTEM_ADMIN"
-            autocomplete="off" [ngModel]="roleCode()" disabled>
+          <input
+            class="input--text"
+            type="text"
+            maxlength="100"
+            placeholder="e.g. SYSTEM_ADMIN"
+            autocomplete="off"
+            [ngModel]="roleCode()"
+            disabled
+          />
           <small>Generated automatically from the role name.</small>
         </label>
 
         <label class="forms-filter">
           <span>Role Name</span>
-          <input class="input--text" type="text" maxlength="255" placeholder="Enter role name"
-            autocomplete="off" [ngModel]="roleName()" (ngModelChange)="onNameChange($event)">
+          <input
+            class="input--text"
+            type="text"
+            maxlength="255"
+            placeholder="Enter role name"
+            autocomplete="off"
+            [ngModel]="roleName()"
+            (ngModelChange)="onNameChange($event)"
+          />
         </label>
 
         <label class="forms-filter">
@@ -154,13 +237,18 @@
             rows="4"
             placeholder="Describe this role's responsibility"
             [ngModel]="roleDescription()"
-            (ngModelChange)="roleDescription.set($event)">
+            (ngModelChange)="roleDescription.set($event)"
+          >
           </textarea>
           <small>{{ roleDescription().length }}/500 characters</small>
         </label>
 
         <label class="active-switch">
-          <input type="checkbox" [ngModel]="roleActive()" (ngModelChange)="roleActive.set($event)">
+          <input
+            type="checkbox"
+            [ngModel]="roleActive()"
+            (ngModelChange)="roleActive.set($event)"
+          />
           <span class="active-switch__control"></span>
           <span>
             <strong>Active role</strong>
@@ -171,33 +259,62 @@
     }
 
     <div dialog-footer class="form-dialog__footer">
-      <button class="btn btn-secondary" type="button" [disabled]="isSaving()" (click)="closeEditor()">Cancel</button>
+      <button
+        class="btn btn-secondary"
+        type="button"
+        [disabled]="isSaving()"
+        (click)="closeEditor()"
+      >
+        Cancel
+      </button>
       @if (!isDetailLoading() && !detailFailed()) {
-        <button class="btn btn-primary" type="button"
+        <button
+          class="btn btn-primary"
+          type="button"
           [disabled]="isSaving() || !roleCode().trim() || !roleName().trim()"
-          (click)="saveRole()">
-          {{ isSaving() ? 'Saving...' : (dialogMode() === 'create' ? 'Create Role' : 'Save Changes') }}
+          (click)="saveRole()"
+        >
+          {{
+            isSaving() ? 'Saving...' : dialogMode() === 'create' ? 'Create Role' : 'Save Changes'
+          }}
         </button>
       }
     </div>
   </app-dialog>
 
-  <app-dialog [isOpen]="roleToDelete() !== null" title="Delete Role" size="small" (close)="closeDeleteDialog()">
+  <app-dialog
+    [isOpen]="roleToDelete() !== null"
+    title="Delete Role"
+    size="small"
+    (close)="closeDeleteDialog()"
+  >
     @if (roleToDelete(); as role) {
       <div class="deactivate-confirmation">
-        <span class="material-icons">delete_outline</span>
+        <app-table-action-icon action="delete"></app-table-action-icon>
         <div>
           <h3>Delete {{ role.role_code }}?</h3>
           <p>
-            <strong>{{ role.role_name }}</strong> will be permanently deleted.
-            Roles currently assigned to users cannot be deleted.
+            <strong>{{ role.role_name }}</strong> will be permanently deleted. Roles currently
+            assigned to users cannot be deleted.
           </p>
         </div>
       </div>
     }
     <div dialog-footer class="form-dialog__footer">
-      <button class="btn btn-secondary" type="button" [disabled]="isSaving()" (click)="closeDeleteDialog()">Cancel</button>
-      <button class="btn btn-danger" type="button" [disabled]="isSaving()" (click)="confirmDelete()">
+      <button
+        class="btn btn-secondary"
+        type="button"
+        [disabled]="isSaving()"
+        (click)="closeDeleteDialog()"
+      >
+        Cancel
+      </button>
+      <button
+        class="btn btn-danger"
+        type="button"
+        [disabled]="isSaving()"
+        (click)="confirmDelete()"
+      >
         {{ isSaving() ? 'Deleting...' : 'Delete Role' }}
       </button>
     </div>

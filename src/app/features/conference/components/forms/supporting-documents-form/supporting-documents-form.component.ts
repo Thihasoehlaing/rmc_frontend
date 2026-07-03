@@ -11,9 +11,16 @@ import { ConferenceFormStateService } from '../../../services/conference-form-st
 @Component({
   selector: 'app-supporting-documents-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FileUploadComponent, NoteComponent, CustomHeaderComponent, CustomSubheaderComponent],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    FileUploadComponent,
+    NoteComponent,
+    CustomHeaderComponent,
+    CustomSubheaderComponent,
+  ],
   templateUrl: './supporting-documents-form.component.html',
-  styleUrl: './supporting-documents-form.component.scss'
+  styleUrl: './supporting-documents-form.component.scss',
 })
 export class SupportingDocumentsFormComponent implements OnInit, OnDestroy {
   @Input() workflow?: ConferenceWorkflowService;
@@ -22,17 +29,23 @@ export class SupportingDocumentsFormComponent implements OnInit, OnDestroy {
   form!: FormGroup;
 
   // References to file upload components for manual reset if needed
-  @ViewChild('acceptanceNotificationUpload', { static: false }) acceptanceNotificationUpload?: FileUploadComponent;
-  @ViewChild('reviewersFeedbackUpload', { static: false }) reviewersFeedbackUpload?: FileUploadComponent;
+  @ViewChild('acceptanceNotificationUpload', { static: false })
+  acceptanceNotificationUpload?: FileUploadComponent;
+  @ViewChild('reviewersFeedbackUpload', { static: false })
+  reviewersFeedbackUpload?: FileUploadComponent;
   @ViewChild('scopusEvidenceUpload', { static: false }) scopusEvidenceUpload?: FileUploadComponent;
   @ViewChild('turnitinReportUpload', { static: false }) turnitinReportUpload?: FileUploadComponent;
   @ViewChild('finalPaperUpload', { static: false }) finalPaperUpload?: FileUploadComponent;
-  @ViewChild('conferenceInvoiceUpload', { static: false }) conferenceInvoiceUpload?: FileUploadComponent;
+  @ViewChild('conferenceInvoiceUpload', { static: false })
+  conferenceInvoiceUpload?: FileUploadComponent;
   // File constants
   readonly PDF_ACCEPT = '.pdf';
   readonly MAX_FILE_SIZE_MB = 10;
 
-  constructor(private fb: FormBuilder, private formStateService: ConferenceFormStateService) {
+  constructor(
+    private fb: FormBuilder,
+    private formStateService: ConferenceFormStateService,
+  ) {
     effect(() => {
       if (this.workflow?.isFormReadOnly()) {
         this.form?.disable({ emitEvent: false });
@@ -62,7 +75,7 @@ export class SupportingDocumentsFormComponent implements OnInit, OnDestroy {
       conferenceInvoice: ['', [Validators.required]],
       manuscriptInternallyReviewed: ['', [Validators.required]],
       reviewerName: ['', [Validators.required]],
-      manuscriptPreviouslyPublished: ['', [Validators.required]]
+      manuscriptPreviouslyPublished: ['', [Validators.required]],
     });
   }
 
@@ -85,21 +98,28 @@ export class SupportingDocumentsFormComponent implements OnInit, OnDestroy {
     }
   }
 
+  /** Flushes the live form into the shared state service — called by the wizard before saving. */
+  flushFormState(): void {
+    this.saveFormState();
+  }
+
   onFileSelected(controlName: string, file: File) {
     this.form.patchValue({
-      [controlName]: file.name
+      [controlName]: file.name,
     });
     this.form.get(controlName)?.markAsTouched();
+    this.formStateService.setPendingFile(`supportingDocuments.${controlName}`, file);
   }
 
   canUploadDocuments(): boolean {
     if (!this.workflow) return true;
     const status = this.workflow.status();
     const allowedStatuses = [
+      'draft',
       'normal_application',
       'hos_application',
       'hos_request_resubmission',
-      'rmc_request_resubmission'
+      'rmc_request_resubmission',
     ];
     return allowedStatuses.includes(status);
   }

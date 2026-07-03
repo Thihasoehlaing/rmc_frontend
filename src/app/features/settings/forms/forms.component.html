@@ -1,27 +1,38 @@
-<main class="forms-page">
+<main class="forms-page forms-page--settings">
   <header class="forms-page__header">
     <div>
       <span class="forms-page__eyebrow">System Settings</span>
       <h1>Forms</h1>
       <p>Manage application forms, their codes, names, and availability.</p>
     </div>
-    <button class="btn btn-primary forms-page__create-button" type="button" (click)="openCreateDialog()" [disabled]="isLoading()">
+    <button
+      class="btn btn-primary forms-page__create-button"
+      type="button"
+      (click)="openCreateDialog()"
+      [disabled]="isLoading()"
+    >
       <span class="material-icons">add</span>
       Create Form
     </button>
   </header>
 
-  @if (!isLoading()) {
   <section class="forms-toolbar" aria-label="Form filters">
+    <h2 class="forms-toolbar__title">Search &amp; Filters</h2>
+
     <label class="forms-filter forms-filter--search">
-      <span>Form Code or Name</span>
-      <input
-        class="input--text"
-        type="search"
-        placeholder="Search forms"
-        [ngModel]="searchTerm()"
-        (ngModelChange)="searchTerm.set($event)"
-        (keydown.enter)="search()">
+      <span class="forms-search-input">
+        <span class="material-icons" aria-hidden="true">search</span>
+        <input
+          class="input--text"
+          type="search"
+          aria-label="Search forms by code or name"
+          placeholder="Search forms by code or name..."
+          [ngModel]="searchTerm()"
+          (ngModelChange)="searchTerm.set($event)"
+          (keydown.enter)="search()"
+          [disabled]="isLoading()"
+        />
+      </span>
     </label>
 
     <label class="forms-filter">
@@ -29,7 +40,9 @@
       <select
         class="input--select"
         [ngModel]="selectedStatus()"
-        (ngModelChange)="selectedStatus.set($event)">
+        (ngModelChange)="selectedStatus.set($event)"
+        [disabled]="isLoading()"
+      >
         <option value="">All</option>
         <option value="Active">Active</option>
         <option value="Inactive">Inactive</option>
@@ -37,24 +50,39 @@
     </label>
 
     <div class="forms-toolbar__actions">
-      <button class="btn btn-primary" type="button" (click)="search()">
+      <button class="btn btn-primary" type="button" (click)="search()" [disabled]="isLoading()">
         <span class="material-icons">search</span>
         Search
       </button>
-      <button class="btn btn-secondary" type="button" (click)="resetFilters()">
+      <button class="btn btn-secondary" type="button" (click)="resetFilters()" [disabled]="isLoading()">
         <span class="material-icons">restart_alt</span>
         Reset
       </button>
     </div>
   </section>
-  }
 
   <section class="forms-table-card">
+    <header class="forms-table-card__header">
+      <div>
+        <div class="forms-table-card__title-row">
+          <h2>Forms</h2>
+          <span class="forms-table-card__count">{{ totalItems() }}</span>
+        </div>
+        <p>Manage and configure all application forms in the system.</p>
+      </div>
+      <button
+        class="btn btn-secondary forms-table-card__refresh"
+        type="button"
+        (click)="loadForms()"
+        [disabled]="isLoading()"
+      >
+        <span class="material-icons">refresh</span>
+        Refresh
+      </button>
+    </header>
+
     @if (isLoading()) {
-      <app-table-skeleton
-        [columns]="columns"
-        [showSearch]="false"
-        loadingLabel="Loading forms">
+      <app-table-skeleton [columns]="columns" [showSearch]="false" loadingLabel="Loading forms">
       </app-table-skeleton>
     } @else if (loadFailed()) {
       <div class="forms-state">
@@ -70,17 +98,15 @@
         <p>Adjust the filters or create a new form.</p>
       </div>
     } @else {
-      <app-data-table
-        [columns]="columns"
-        [rows]="forms()"
-        [rowTrackFn]="rowTrackFn">
+      <app-data-table [columns]="columns" [rows]="forms()" [rowTrackFn]="rowTrackFn">
         <ng-template #rowTemplate let-row let-index="index">
           <tr>
             <td class="is-align-center">{{ rowNumber(index) }}</td>
-            <td><span class="form-code">{{ row.form_code }}</span></td>
+            <td>
+              <span class="form-code">{{ row.form_code }}</span>
+            </td>
             <td>
               <div class="form-name">
-                <span class="material-icons">description</span>
                 <strong>{{ row.form_name }}</strong>
               </div>
             </td>
@@ -95,17 +121,21 @@
                   class="table-action"
                   type="button"
                   title="Edit form"
+                  data-tooltip="Edit form"
                   aria-label="Edit form"
-                  (click)="openEditDialog(row)">
-                  <span class="material-icons">edit</span>
+                  (click)="openEditDialog(row)"
+                >
+                  <app-table-action-icon action="edit"></app-table-action-icon>
                 </button>
                 @if (row.is_active) {
                   <button
                     class="table-action table-action--danger"
                     type="button"
                     title="Deactivate form"
+                    data-tooltip="Deactivate form"
                     aria-label="Deactivate form"
-                    (click)="openDeactivateDialog(row)">
+                    (click)="openDeactivateDialog(row)"
+                  >
                     <span class="material-icons">block</span>
                   </button>
                 }
@@ -115,32 +145,48 @@
         </ng-template>
       </app-data-table>
     }
+
+    @if (!isLoading() && !loadFailed()) {
+      <footer class="forms-table-card__footer">
+        <p class="forms-count">
+          @if (totalItems() > 0) {
+            Showing {{ pageStart() }} to {{ pageEnd() }} of {{ totalItems() }} results
+          } @else {
+            Showing 0 results
+          }
+        </p>
+
+        <app-pagination
+          [currentPage]="page()"
+          [totalPages]="totalPages()"
+          [pageSize]="pageSize()"
+          [pageSizeOptions]="pageSizeOptions"
+          (pageChange)="onPageChange($event)"
+          (pageSizeChange)="onPageSizeChange($event)"
+        >
+        </app-pagination>
+
+        <label class="forms-page-size" aria-label="Items per page">
+          <select
+            class="input--select"
+            [ngModel]="pageSize()"
+            (ngModelChange)="onPageSizeChange($event)"
+          >
+            @for (size of pageSizeOptions; track size) {
+              <option [ngValue]="size">{{ size }} per page</option>
+            }
+          </select>
+        </label>
+      </footer>
+    }
   </section>
-
-  @if (!isLoading() && !loadFailed()) {
-    <app-pagination
-      [currentPage]="page()"
-      [totalPages]="totalPages()"
-      [pageSize]="pageSize()"
-      [pageSizeOptions]="pageSizeOptions"
-      (pageChange)="onPageChange($event)"
-      (pageSizeChange)="onPageSizeChange($event)">
-    </app-pagination>
-
-    <p class="forms-count">
-      @if (totalItems() > 0) {
-        Showing {{ pageStart() }}-{{ pageEnd() }} of {{ totalItems() }} forms
-      } @else {
-        Showing 0 forms
-      }
-    </p>
-  }
 
   <app-dialog
     [isOpen]="dialogMode() !== null"
     [title]="dialogTitle()"
     size="small"
-    (close)="closeFormDialog()">
+    (close)="closeFormDialog()"
+  >
     @if (isDetailLoading()) {
       <app-detail-panel-skeleton loadingLabel="Loading form details"></app-detail-panel-skeleton>
     } @else if (detailFailed()) {
@@ -160,7 +206,8 @@
             placeholder="e.g. RDIG"
             autocomplete="off"
             [ngModel]="formCode()"
-            (ngModelChange)="onFormCodeChange($event)">
+            (ngModelChange)="onFormCodeChange($event)"
+          />
           <small>Codes are stored in uppercase.</small>
         </label>
 
@@ -173,14 +220,16 @@
             placeholder="Enter form name"
             autocomplete="off"
             [ngModel]="formName()"
-            (ngModelChange)="formName.set($event)">
+            (ngModelChange)="formName.set($event)"
+          />
         </label>
 
         <label class="active-switch">
           <input
             type="checkbox"
             [ngModel]="formActive()"
-            (ngModelChange)="formActive.set($event)">
+            (ngModelChange)="formActive.set($event)"
+          />
           <span class="active-switch__control"></span>
           <span>
             <strong>Active form</strong>
@@ -191,7 +240,12 @@
     }
 
     <div dialog-footer class="form-dialog__footer">
-      <button class="btn btn-secondary" type="button" [disabled]="isSaving()" (click)="closeFormDialog()">
+      <button
+        class="btn btn-secondary"
+        type="button"
+        [disabled]="isSaving()"
+        (click)="closeFormDialog()"
+      >
         Cancel
       </button>
       @if (!isDetailLoading() && !detailFailed()) {
@@ -199,8 +253,11 @@
           class="btn btn-primary"
           type="button"
           [disabled]="isSaving() || !formCode().trim() || !formName().trim()"
-          (click)="saveForm()">
-          {{ isSaving() ? 'Saving...' : (dialogMode() === 'create' ? 'Create Form' : 'Save Changes') }}
+          (click)="saveForm()"
+        >
+          {{
+            isSaving() ? 'Saving...' : dialogMode() === 'create' ? 'Create Form' : 'Save Changes'
+          }}
         </button>
       }
     </div>
@@ -210,7 +267,8 @@
     [isOpen]="formToDeactivate() !== null"
     title="Deactivate Form"
     size="small"
-    (close)="closeDeactivateDialog()">
+    (close)="closeDeactivateDialog()"
+  >
     @if (formToDeactivate(); as form) {
       <div class="deactivate-confirmation">
         <span class="material-icons">block</span>
@@ -225,8 +283,20 @@
     }
 
     <div dialog-footer class="form-dialog__footer">
-      <button class="btn btn-secondary" type="button" [disabled]="isSaving()" (click)="closeDeactivateDialog()">Cancel</button>
-      <button class="btn btn-danger" type="button" [disabled]="isSaving()" (click)="confirmDeactivate()">
+      <button
+        class="btn btn-secondary"
+        type="button"
+        [disabled]="isSaving()"
+        (click)="closeDeactivateDialog()"
+      >
+        Cancel
+      </button>
+      <button
+        class="btn btn-danger"
+        type="button"
+        [disabled]="isSaving()"
+        (click)="confirmDeactivate()"
+      >
         {{ isSaving() ? 'Deactivating...' : 'Deactivate Form' }}
       </button>
     </div>

@@ -33,12 +33,14 @@ export type UserGroup =
   | 'Reviewer1'
   | 'Reviewer2'
   | 'RDIG_Chair'
-  | 'CEO';
+  | 'CEO'
+  | 'HR'
+  | 'Finance';
 
 export interface UserRole {
   id: number;
-  code: string;
-  name: string;
+  code: string | null;
+  name: string | null;
 }
 
 export interface User {

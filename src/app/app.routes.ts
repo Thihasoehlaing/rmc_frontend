@@ -11,6 +11,7 @@ import {
   rdigPermission,
   systemSettingsPermission,
   travelAuthorizationPermission,
+  externalProjectDataEntryPermission,
 } from './core/routing/app-route-permissions';
 
 export const routes: Routes = [
@@ -105,6 +106,16 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'external-project-data-entry',
+        canActivate: [permissionGuard],
+        data: {
+          permission: externalProjectDataEntryPermission,
+        },
+        loadComponent: () =>
+          import('./features/external-project-data-entry/external-project-data-entry.component').then(
+            m => m.ExternalProjectDataEntryComponent,
+          ),
+      },      {
         path: 'admin-settings',
         canActivate: [permissionGuard],
         data: {
@@ -129,3 +140,5 @@ export const routes: Routes = [
   },
   { path: '**', redirectTo: '/login' },
 ];
+
+

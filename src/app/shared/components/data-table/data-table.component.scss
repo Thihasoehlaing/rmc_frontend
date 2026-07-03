@@ -10,7 +10,7 @@
   width: 100%;
   min-width: 0;
   box-sizing: border-box;
-  border: 1px solid var(--border-default);
+  border: 1px solid #edf0f3;
   border-radius: 12px;
   background: var(--color-surface);
   box-shadow: var(--shadow-xs);
@@ -43,8 +43,8 @@ thead th {
   text-transform: none;
   color: var(--color-label);
   font-weight: var(--fw-semibold);
-  background: var(--color-table-header);
-  border-bottom: 1px solid var(--border-default);
+  background: #f7f8fa;
+  border-bottom: 1px solid #edf0f3;
 
   &:first-child {
     border-top-left-radius: 12px;
@@ -63,17 +63,25 @@ thead th {
 
 .sort-indicator,
 :host ::ng-deep .sort-indicator {
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
   margin-left: var(--space-2);
   color: var(--color-text-muted);
-  font-size: var(--fs-base);
+  font-size: var(--icon-sm);
   font-weight: var(--fw-normal);
   line-height: 1;
   vertical-align: middle;
+  transition: color var(--transition-fast);
+
+  &.is-active {
+    color: var(--color-primary);
+  }
 }
 
+.header-content {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  white-space: nowrap;
+}
 .header-label {
   display: inline-block;
 }
@@ -82,7 +90,7 @@ tbody td,
 :host ::ng-deep tbody td {
   padding: 9px 18px 9px 12px;
   vertical-align: middle;
-  border-bottom: 1px solid var(--border-default);
+  border-bottom: 1px solid #f0f2f5;
   color: var(--color-label);
   font-size: 12px;
   text-align: left;
@@ -145,7 +153,7 @@ tbody tr:last-child td,
 /* Alternating row colors — also applied via ::ng-deep so projected <tr> rows get striped */
 .data-table--striped tbody tr:nth-child(even),
 :host ::ng-deep .data-table--striped tbody tr:nth-child(even) {
-  background: #f3f3f3;
+  background: #fbfcfd;
 }
 
 .data-table--striped tbody tr:nth-child(odd),
@@ -173,7 +181,7 @@ tbody tr:hover,
 :host ::ng-deep .data-table__stacked {
   display: flex;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: center;
   gap: var(--space-3);
 }
 
@@ -242,21 +250,32 @@ tbody tr:hover,
 .data-table__actions,
 :host ::ng-deep .data-table__actions {
   display: flex;
-  justify-content: flex-start;
+  justify-content: center;
   align-items: center;
   gap: var(--space-1);
 }
 
 // Base .btn-icon styles come from global _forms.scss.
 // ::ng-deep is required here because buttons are inside projected <ng-template> content.
+:host ::ng-deep .btn-icon--view {
+  color: var(--color-primary);
+
+  &:hover:not(:disabled) {
+    background: var(--color-primary-light);
+  }
+}
 :host ::ng-deep .btn-icon--edit {
   color: var(--color-primary);
-  &:hover:not(:disabled) { background: var(--color-primary-light); }
+  &:hover:not(:disabled) {
+    background: var(--color-primary-light);
+  }
 }
 
 :host ::ng-deep .btn-icon--delete {
   color: var(--color-error);
-  &:hover:not(:disabled) { background: var(--color-error-light); }
+  &:hover:not(:disabled) {
+    background: var(--color-error-light);
+  }
 }
 
 :host ::ng-deep .btn-icon:disabled {
@@ -311,4 +330,42 @@ tbody tr:hover,
   .pagination-info {
     font-size: var(--fs-xs);
   }
+}
+
+:host ::ng-deep .icon-btn,
+:host ::ng-deep .table-action,
+:host ::ng-deep .btn-icon {
+  transition:
+    background var(--transition-fast) var(--ease-default),
+    color var(--transition-fast) var(--ease-default),
+    transform var(--transition-fast) var(--ease-default),
+    box-shadow var(--transition-fast) var(--ease-default);
+}
+
+:host ::ng-deep .icon-btn:hover:not(:disabled),
+:host ::ng-deep .table-action:hover:not(:disabled),
+:host ::ng-deep .btn-icon:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-xs);
+}
+
+:host ::ng-deep .icon-btn--view:hover:not(:disabled),
+:host ::ng-deep .icon-btn--edit:hover:not(:disabled),
+:host ::ng-deep .table-action:not(.table-action--danger):not(.table-action--warning):not(.table-action--success):hover:not(:disabled) {
+  background: var(--color-primary-light);
+}
+
+:host ::ng-deep .icon-btn--delete:hover:not(:disabled),
+:host ::ng-deep .table-action--danger:hover:not(:disabled) {
+  background: var(--color-error-light);
+}
+
+:host ::ng-deep .icon-btn--deactivate:hover:not(:disabled),
+:host ::ng-deep .table-action--warning:hover:not(:disabled) {
+  background: var(--color-warning-light);
+}
+
+:host ::ng-deep .icon-btn--activate:hover:not(:disabled),
+:host ::ng-deep .table-action--success:hover:not(:disabled) {
+  background: var(--color-success-light);
 }

@@ -1,10 +1,17 @@
-import { Component, Input, OnInit, OnDestroy, inject, signal, ChangeDetectorRef } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { ReactiveFormsModule, FormGroup, FormArray, FormBuilder, FormControl, Validators } from '@angular/forms';
-import { of, Subject } from 'rxjs';
-import { catchError, map, takeUntil } from 'rxjs/operators';
+import {
+  ReactiveFormsModule,
+  FormGroup,
+  FormArray,
+  FormBuilder,
+  FormControl,
+  Validators,
+} from '@angular/forms';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+import { COUNTRY_LIST } from '../../../../core/constants/countries.constant';
 import { SearchableDropdownComponent } from '../../../../shared/components/searchable-dropdown/searchable-dropdown.component';
 import { CharacterCounterComponent } from '../../../../shared/components/character-counter/character-counter.component';
 import { ValidationMessageComponent } from '../../../../shared/components/validation-message/validation-message.component';
@@ -14,25 +21,19 @@ import { FileUploadComponent } from '../../../../shared/components/file-upload/f
 import { DialogComponent } from '../../../../shared/components/dialog/dialog.component';
 import { ReviewBlockComponent } from '../review-block/review-block.component';
 import { RdigWorkflowService } from '../../services/rdig-workflow.service';
-import { RdigDropdownOptionsService } from '../../../admin-settings/rdig-dropdown-options.service';
-import { AuthService } from '../../../../core/services/auth.service';
+import { MasterDataService, AcademicStaffOption } from '../../../../core/services/master-data.service';
 import { DataTableComponent } from '../../../../shared/components/data-table/data-table.component';
 import type { DataTableColumn } from '../../../../shared/components/data-table/data-table.component';
 import { ActionButtonComponent } from '../../../../shared/components/action-button/action-button.component';
 import { FieldNoteComponent } from '../../../../shared/components/field-note/field-note.component';
 
-interface RestCountry {
-  name?: {
-    common?: string;
-    official?: string;
-  };
-  cca2?: string;
-}
+import { TableActionIconComponent } from '../../../../shared/components/table-action-icon/table-action-icon.component';
 
 @Component({
   selector: 'app-team-details',
   standalone: true,
   imports: [
+    TableActionIconComponent,
     DecimalPipe,
     ReactiveFormsModule,
     SearchableDropdownComponent,
@@ -48,20 +49,17 @@ interface RestCountry {
     FieldNoteComponent,
   ],
   templateUrl: './team-details.component.html',
-  styleUrl: './team-details.component.scss'
+  styleUrl: './team-details.component.scss',
 })
 export class TeamDetailsComponent implements OnInit, OnDestroy {
-  private readonly dropdownService = inject(RdigDropdownOptionsService);
-  private readonly authService = inject(AuthService);
-  private readonly http = inject(HttpClient);
+  private readonly masterData = inject(MasterDataService);
   private readonly router = inject(Router);
-  private readonly cdr = inject(ChangeDetectorRef);
   private readonly destroy$ = new Subject<void>();
 
-  /** Eligible internal co-researchers: (full_time|contract) AND academic, NOT Reviewer/blocked */
-  readonly eligibleResearchers = this.authService.getEligibleCoResearchers();
-  readonly researcherOptions: { label: string; value: string }[] =
-    this.eligibleResearchers.map(r => ({ label: r.name, value: r.id }));
+  /** Academic staff list loaded from the real backend — used for the internal co-researcher dropdown. */
+  private academicStaffList: AcademicStaffOption[] = [];
+  staffOptions: { label: string; value: string }[] = [];
+
   @Input({ required: true }) parentForm!: FormGroup;
   @Input() showHosComments = false;
   @Input() showRmcComments = false;
@@ -72,34 +70,80 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
   @Input() showCeoComments = false;
 
   get showAnyComments(): boolean {
-    return this.showHosComments || this.showRmcComments ||
-      this.showR1Comments || this.showR2Comments ||
-      this.showRdigChairComments || this.showVcComments || this.showCeoComments;
+    return (
+      this.showHosComments ||
+      this.showRmcComments ||
+      this.showR1Comments ||
+      this.showR2Comments ||
+      this.showRdigChairComments ||
+      this.showVcComments ||
+      this.showCeoComments
+    );
   }
   @Input() workflow!: RdigWorkflowService;
 
-  get teamDetails() { return this.parentForm.get('teamDetails') as FormGroup; }
-  get internalResearchers() { return this.teamDetails.get('internalResearchers') as FormArray; }
-  get externalResearchers() { return this.teamDetails.get('externalResearchers') as FormArray; }
+  get teamDetails() {
+    return this.parentForm.get('teamDetails') as FormGroup;
+  }
+  get internalResearchers() {
+    return this.teamDetails.get('internalResearchers') as FormArray;
+  }
+  get externalResearchers() {
+    return this.teamDetails.get('externalResearchers') as FormArray;
+  }
 
-  get reviewTeam() { return this.parentForm.get('reviewTeam') as FormGroup; }
-  fc(name: string): FormControl { return this.reviewTeam.get(name) as FormControl; }
+  get reviewTeam() {
+    return this.parentForm.get('reviewTeam') as FormGroup;
+  }
+  fc(name: string): FormControl {
+    return this.reviewTeam.get(name) as FormControl;
+  }
 
   readonly internalColumns: DataTableColumn[] = [
-    { key: 'index', label: '#', width: 'var(--size-table-column-index)', align: 'center', headerAlign: 'center' },
+    {
+      key: 'index',
+      label: '#',
+      width: 'var(--size-table-column-index)',
+      align: 'center',
+      headerAlign: 'center',
+    },
     { key: 'staff', label: 'Staff Name / Department', width: '32%' },
     { key: 'expertise', label: 'Area of Expertise', width: '26%' },
     { key: 'roles', label: 'Role in Project', width: '26%' },
-    { key: 'actions', label: 'Actions', width: 'var(--size-table-column-actions)', align: 'center', headerAlign: 'center' }
+    {
+      key: 'actions',
+      label: 'Actions',
+      width: 'var(--size-table-column-actions)',
+      align: 'center',
+      headerAlign: 'center',
+    },
   ];
 
   readonly externalColumns: DataTableColumn[] = [
-    { key: 'index', label: '#', width: 'var(--size-table-column-index)', align: 'center', headerAlign: 'center' },
+    {
+      key: 'index',
+      label: '#',
+      width: 'var(--size-table-column-index)',
+      align: 'center',
+      headerAlign: 'center',
+    },
     { key: 'collaborator', label: 'Collaborator', width: '32%' },
     { key: 'institution', label: 'Institution', width: '24%' },
     { key: 'country', label: 'Country', width: '14%', align: 'center', headerAlign: 'center' },
-    { key: 'funding', label: 'Matched Funding', width: '16%', align: 'right', headerAlign: 'right' },
-    { key: 'actions', label: 'Actions', width: 'var(--size-table-column-actions)', align: 'center', headerAlign: 'center' }
+    {
+      key: 'funding',
+      label: 'Matched Funding',
+      width: '16%',
+      align: 'right',
+      headerAlign: 'right',
+    },
+    {
+      key: 'actions',
+      label: 'Actions',
+      width: 'var(--size-table-column-actions)',
+      align: 'center',
+      headerAlign: 'center',
+    },
   ];
 
   readonly trackByIndex = (index: number) => index;
@@ -125,7 +169,7 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
     { label: 'Ms.', value: 'Ms.' },
     { label: 'Ts.', value: 'Ts.' },
     { label: 'Ir.', value: 'Ir.' },
-    { label: 'Dato\'', value: 'Dato\'' }
+    { label: "Dato'", value: "Dato'" },
   ];
 
   constructor(private fb: FormBuilder) {
@@ -134,7 +178,7 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
       staffName: [''],
       department: [''],
       expertise: ['', [Validators.required, Validators.maxLength(200)]],
-      roles: ['', [Validators.required, Validators.maxLength(600)]]
+      roles: ['', [Validators.required, Validators.maxLength(600)]],
     });
 
     this.externalForm = this.fb.group({
@@ -148,49 +192,43 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
       country: ['', Validators.required],
       funding: ['', [Validators.required, Validators.pattern('^[0-9]+(\\.[0-9]{1,2})?$')]],
       roles: ['', [Validators.required, Validators.maxLength(600)]],
-      supportLetter: [null, Validators.required]
+      supportLetter: [null, Validators.required],
     });
   }
 
   ngOnInit(): void {
-    this.dropdownService.loadOptions('research_cluster').subscribe();
-    this.dropdownService.getOptions('research_cluster')
+    this.masterData
+      .getResearchClusters()
       .pipe(takeUntil(this.destroy$))
-      .subscribe(options => {
-        this.clusters = options
-          .filter(o => o.status === 'Active')
-          .map(o => ({ label: o.optionName, value: o.id.toString() }));
+      .subscribe((res) => {
+        this.clusters = (res.data ?? [])
+          .filter((o) => o.is_active)
+          .map((o) => ({ label: o.cluster_name, value: o.id.toString() }));
       });
 
-    this.dropdownService.loadOptions('type_of_organisation').subscribe();
-    this.dropdownService.getOptions('type_of_organisation')
+    this.loadOrganisationTypes();
+
+    // Load academic staff list from the real backend for the internal co-researcher dropdown
+    this.masterData
+      .searchAcademicStaff()
       .pipe(takeUntil(this.destroy$))
-      .subscribe(options => {
-        this.orgTypes = options
-          .filter(o => o.status === 'Active')
-          .map(o => ({ label: o.optionName, value: o.optionName.toLowerCase().replace(/\s+/g, '-') }));
+      .subscribe((res) => {
+        this.academicStaffList = res.data ?? [];
+        this.staffOptions = this.academicStaffList.map((s) => ({
+          label: s.fullname,
+          value: s.id.toString(),
+        }));
       });
 
     // Auto-populate name + department when a researcher is selected from the dropdown
-    this.internalForm.get('staffId')!.valueChanges
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(id => this.onResearcherSelected(id));
+    this.internalForm
+      .get('staffId')!
+      .valueChanges.pipe(takeUntil(this.destroy$))
+      .subscribe((id) => this.onResearcherSelected(id));
 
     this.loadCountryOptions();
 
-    // Listen for dropdown updates from admin settings
-    const onDropdownsUpdated = (): void => {
-      this.dropdownService.loadOptions('type_of_organisation').subscribe();
-      this.dropdownService.getOptions('type_of_organisation')
-        .pipe(takeUntil(this.destroy$))
-        .subscribe(options => {
-          this.orgTypes = options
-            .filter(o => o.status === 'Active')
-            .map(o => ({ label: o.optionName, value: o.optionName.toLowerCase().replace(/\s+/g, '-') }));
-          this.cdr.detectChanges();
-        });
-    };
-
+    const onDropdownsUpdated = (): void => this.loadOrganisationTypes();
     window.addEventListener('rmc-dropdowns-updated', onDropdownsUpdated);
     this.destroy$.subscribe(() => {
       window.removeEventListener('rmc-dropdowns-updated', onDropdownsUpdated);
@@ -213,52 +251,35 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
   }
 
   /** Called when the user picks a researcher from the dropdown. */
-  onResearcherSelected(userId: string): void {
-    const researcher = this.eligibleResearchers.find(r => r.id === userId);
-    if (researcher) {
+  onResearcherSelected(staffId: string): void {
+    const staff = this.academicStaffList.find((s) => s.id.toString() === staffId);
+    if (staff) {
       this.internalForm.patchValue({
-        staffName: researcher.name,
-        department: researcher.department,
+        staffName: staff.fullname,
+        department: staff.department,
       });
     } else {
       this.internalForm.patchValue({ staffName: '', department: '' });
     }
   }
 
-  private loadCountryOptions(): void {
-    this.countriesLoading = true;
-    this.http.get<RestCountry[]>('https://restcountries.com/v3.1/all?fields=name,cca2')
-      .pipe(
-        map(countries => this.normalizeCountryOptions(countries)),
-        catchError(error => {
-          console.error('Failed to load country options from REST Countries API', error);
-          return of([]);
-        }),
-        takeUntil(this.destroy$)
-      )
-      .subscribe(options => {
-        this.countryOptions = options;
-        this.countriesLoading = false;
+  private loadOrganisationTypes(): void {
+    this.masterData
+      .getDropdownOptions('TYPE_OF_ORGANISATION')
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((res) => {
+        this.orgTypes = (res.data ?? [])
+          .filter((o) => o.status === 'ACTIVE')
+          .map((o) => ({
+            label: o.option_name,
+            value: o.option_name.toLowerCase().replace(/\s+/g, '-'),
+          }));
       });
   }
 
-  private normalizeCountryOptions(countries: RestCountry[]): { label: string; value: string }[] {
-    const optionsByName = new Map<string, { label: string; value: string }>();
-
-    countries.forEach(country => {
-      const rawName = country.name?.common?.trim();
-      if (!rawName) return;
-
-      const name = rawName.toLowerCase() === 'israel' ? 'Palestine' : rawName;
-      const key = name.toLowerCase();
-
-      if (!optionsByName.has(key)) {
-        optionsByName.set(key, { label: name, value: name });
-      }
-    });
-
-    return Array.from(optionsByName.values())
-      .sort((a, b) => a.label.localeCompare(b.label));
+  private loadCountryOptions(): void {
+    this.countryOptions = COUNTRY_LIST;
+    this.countriesLoading = false;
   }
 
   openInternalModal(): void {

@@ -1,4 +1,13 @@
-import { Component, OnInit, OnDestroy, inject, effect, Output, EventEmitter, ChangeDetectorRef } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  inject,
+  effect,
+  Output,
+  EventEmitter,
+  ChangeDetectorRef,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -11,20 +20,31 @@ import { CharacterCounterComponent } from '../../../../shared/components/charact
 import { CustomHeaderComponent } from '../../../../shared/components/custom-header/custom-header.component';
 import { FileUploadComponent } from '../../../../shared/components/file-upload/file-upload.component';
 import { ValidationMessageComponent } from '../../../../shared/components/validation-message/validation-message.component';
-import { DataTableComponent, DataTableColumn } from '../../../../shared/components/data-table/data-table.component';
+import {
+  DataTableComponent,
+  DataTableColumn,
+} from '../../../../shared/components/data-table/data-table.component';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
 import { JournalOptionType, JournalOptionsService } from '../../services/journal-options.service';
 import { DropdownOption } from '../../../../core/interfaces/components.interface';
 import {
   SDG_KEYWORD_EXAMPLE,
   SDG_KEYWORD_NOTE,
-  sdgKeywordValidator
+  sdgKeywordValidator,
 } from '../../../../shared/validators/sdg-keyword.validator';
+import {
+  JournalCostingPayload,
+  JournalFormData,
+  JournalRequestPayload,
+} from '../../services/journal-application-api.service';
+
+import { TableActionIconComponent } from '../../../../shared/components/table-action-icon/table-action-icon.component';
 
 @Component({
   selector: 'app-journal-details',
   standalone: true,
   imports: [
+    TableActionIconComponent,
     CommonModule,
     ReactiveFormsModule,
     CharacterCounterComponent,
@@ -35,10 +55,10 @@ import {
     NoteComponent,
     SearchableDropdownComponent,
     ValidationMessageComponent,
-    PaginationComponent
+    PaginationComponent,
   ],
   templateUrl: './journal-details.html',
-  styleUrl: './journal-details.scss'
+  styleUrl: './journal-details.scss',
 })
 export class JournalDetails implements OnInit, OnDestroy {
   readonly nonResearchAccountCodeDescription = 'TRAINING PRESENTATION PUBLICATION';
@@ -71,7 +91,12 @@ export class JournalDetails implements OnInit, OnDestroy {
   researchBreakdowns: any[] = [];
   externalBreakdowns: any[] = [];
   NonResearchBreakdowns: any[] = [];
-  currentBreakdownOptions: { value: string; label: string; accountCode?: string; voteNumber?: string }[] = [];
+  currentBreakdownOptions: {
+    value: string;
+    label: string;
+    accountCode?: string;
+    voteNumber?: string;
+  }[] = [];
 
   selectedFileName: string | null = null;
   selectedFile: File | null = null;
@@ -90,7 +115,7 @@ export class JournalDetails implements OnInit, OnDestroy {
     { key: 'costInRM', label: 'Cost in RM' },
     { key: 'description', label: 'Description' },
     { key: 'fileName', label: 'Supporting Doc' },
-    { key: 'actions', label: 'Actions', width: '100px', align: 'center', headerAlign: 'center' }
+    { key: 'actions', label: 'Actions', width: '100px', align: 'center', headerAlign: 'center' },
   ];
 
   readonly externalResearchBreakdownColumns: DataTableColumn[] = [
@@ -101,7 +126,7 @@ export class JournalDetails implements OnInit, OnDestroy {
     { key: 'cost', label: 'Cost in Foreign Currency' },
     { key: 'exchangeRate', label: 'Exchange Rate' },
     { key: 'description', label: 'Description' },
-    { key: 'actions', label: 'Actions', width: '100px', align: 'center', headerAlign: 'center' }
+    { key: 'actions', label: 'Actions', width: '100px', align: 'center', headerAlign: 'center' },
   ];
 
   readonly nonResearchBreakdownColumns: DataTableColumn[] = [
@@ -111,7 +136,7 @@ export class JournalDetails implements OnInit, OnDestroy {
     { key: 'exchangeRate', label: 'Exchange Rate' },
     { key: 'costInRM', label: 'Cost in RM (Approximate)' },
     { key: 'description', label: 'Description' },
-    { key: 'actions', label: 'Actions', width: '100px', align: 'center', headerAlign: 'center' }
+    { key: 'actions', label: 'Actions', width: '100px', align: 'center', headerAlign: 'center' },
   ];
 
   @Output() formValidityChange = new EventEmitter<boolean>();
@@ -165,15 +190,15 @@ export class JournalDetails implements OnInit, OnDestroy {
       projectAccountCode: [''],
       externalProjectAccountCode: [''],
       totalRM: [{ value: 0, disabled: true }],
-      sponsoredAmountExternal: [{ value: 0, disabled: false }],
+      sponsoredAmountExternal: [{ value: '', disabled: false }],
       sponsoredBy: [''],
       sponsorshipPercentage: [{ value: 0, disabled: true }],
       sponsorshipAmountAPU: [{ value: 0, disabled: true }],
       costByApplicant: [{ value: 0, disabled: true }],
-      costingRemarks: ['', [Validators.maxLength(500)]]
+      costingRemarks: ['', [Validators.maxLength(500)]],
     });
 
-    this.form.statusChanges.subscribe(status => {
+    this.form.statusChanges.subscribe((status) => {
       this.formValidityChange.emit(status === 'VALID');
     });
 
@@ -227,29 +252,31 @@ export class JournalDetails implements OnInit, OnDestroy {
       costForeign: [''],
       exchangeRate: ['', [Validators.required, Validators.pattern(integerPattern)]],
       description: [''],
-      costInRM: { value: '', disabled: true }
+      costInRM: { value: '', disabled: true },
     });
 
     this.breakdownForm.get('itemDescription')?.valueChanges.subscribe((value) => {
       if (this.breakdownType === 'non-research') {
-        this.breakdownForm.patchValue({
-          accountCode: this.nonResearchAccountCode,
-          accountCodeDescription: this.nonResearchAccountCodeDescription,
-        }, { emitEvent: false });
+        this.breakdownForm.patchValue(
+          {
+            accountCode: this.nonResearchAccountCode,
+            accountCodeDescription: this.nonResearchAccountCodeDescription,
+          },
+          { emitEvent: false },
+        );
         return;
       }
 
       const selected = this.findResearchOption(value);
-      this.breakdownForm.get('voteNumber')?.setValue(
-        selected?.voteNumber || '',
-        { emitEvent: false },
-      );
+      this.breakdownForm
+        .get('voteNumber')
+        ?.setValue(selected?.voteNumber || '', { emitEvent: false });
     });
 
     this.sdgKeywordsForm = this.fb.group({
       keyword1: ['', [Validators.required, sdgKeywordValidator]],
       keyword2: ['', [Validators.required, sdgKeywordValidator]],
-      keyword3: ['', [Validators.required, sdgKeywordValidator]]
+      keyword3: ['', [Validators.required, sdgKeywordValidator]],
     });
 
     this.refreshDropdownOptions();
@@ -266,6 +293,89 @@ export class JournalDetails implements OnInit, OnDestroy {
 
   get projectAccountCodeOptions(): DropdownOption[] {
     return this.journalOptionsService.projectAccountCodeOptions();
+  }
+
+  getJournalPayload(): JournalRequestPayload {
+    const value = this.form.getRawValue();
+    return {
+      author_role: value.authorshipType || null,
+      journal_name: value.journalName || null,
+      scopus_quartile: value.scopusQuartile || null,
+      project_type: value.researchType || null,
+      project_account_code: value.projectAccountCode || null,
+      is_restricted_publisher: this.toBoolean(value.restrictedPublisher),
+      cited_apu_jati_ejbm: value.citedApuPaper === 'Yes',
+      cited_apu_jati_ejbm_explanation: value.citedApuPaperExplanation || null,
+      paper_title: value.paperTitle || null,
+      sdg_keyword_1: value.sdgKeyword1 || null,
+      sdg_keyword_2: value.sdgKeyword2 || null,
+      sdg_keyword_3: value.sdgKeyword3 || null,
+      external_sponsorship_amount: this.toMoneyString(value.sponsoredAmountExternal),
+      external_sponsored_by: value.sponsoredBy || null,
+      apu_sponsorship_percentage: this.toMoneyString(value.sponsorshipPercentage),
+      apu_sponsorship_amount: this.toMoneyString(value.sponsorshipAmountAPU),
+      cost_to_be_borne_by_applicant: this.toMoneyString(value.costByApplicant),
+      remarks: value.costingRemarks || null,
+    };
+  }
+
+  getCostingPayloads(): JournalCostingPayload[] {
+    const projectType = this.researchType || '';
+    return this.getBreakdownArray(projectType)
+      .map((entry) => this.toCostingPayload(projectType, entry))
+      .filter((entry) => entry.cost_in_rm);
+  }
+
+  hydrateFromApi(data: JournalFormData): void {
+    const journal = data.journal;
+    if (!journal || !this.form) {
+      return;
+    }
+
+    this.form.patchValue(
+      {
+        authorshipType: journal.author_role || '',
+        scopusQuartile: journal.scopus_quartile || '',
+        researchType: journal.project_type || '',
+        restrictedPublisher: journal.is_restricted_publisher ? 'yes' : 'no',
+        journalName: journal.journal_name || '',
+        paperTitle: journal.paper_title || '',
+        sdgKeyword1: journal.sdg_keyword_1 || '',
+        sdgKeyword2: journal.sdg_keyword_2 || '',
+        sdgKeyword3: journal.sdg_keyword_3 || '',
+        citedApuPaper: journal.cited_apu_jati_ejbm ? 'Yes' : 'No',
+        citedApuPaperExplanation: journal.cited_apu_jati_ejbm_explanation || '',
+        projectAccountCode: journal.project_account_code || '',
+        sponsoredAmountExternal: journal.external_sponsorship_amount || '',
+        sponsoredBy: journal.external_sponsored_by || '',
+        sponsorshipPercentage: journal.apu_sponsorship_percentage || '0',
+        sponsorshipAmountAPU: journal.apu_sponsorship_amount || '0.00',
+        costByApplicant: journal.cost_to_be_borne_by_applicant || '0.00',
+        costingRemarks: journal.remarks || '',
+      },
+      { emitEvent: false },
+    );
+
+    this.researchBreakdowns = [];
+    this.externalBreakdowns = [];
+    this.NonResearchBreakdowns = [];
+    const targetType = journal.project_type || '';
+    const target = this.getBreakdownArray(targetType);
+    for (const item of data.costing_items || []) {
+      target.push({
+        itemDescription: item.vote_number_description_snapshot || '',
+        voteNumber: item.vote_number_snapshot || '',
+        accountCodeDescription: item.account_code_description_snapshot || '',
+        accountCode: item.account_code_snapshot || '',
+        cost: item.cost_in_foreign_currency || item.cost_in_rm || '',
+        exchangeRate: item.exchange_rate || '',
+        costInRM: item.cost_in_rm || '',
+        description: item.description || '',
+      });
+    }
+
+    this.calculateTotals();
+    this.cdr.detectChanges();
   }
 
   getBreakdownArray(type: string): any[] {
@@ -297,8 +407,11 @@ export class JournalDetails implements OnInit, OnDestroy {
   getBreakdownPageStart(type: string): number {
     const total = this.getBreakdownArray(type).length;
     if (total === 0) return 0;
-    const currentPage = Math.min(this.getBreakdownCurrentPage(type), this.getBreakdownTotalPages(type));
-    return ((currentPage - 1) * this.getBreakdownPageSize(type)) + 1;
+    const currentPage = Math.min(
+      this.getBreakdownCurrentPage(type),
+      this.getBreakdownTotalPages(type),
+    );
+    return (currentPage - 1) * this.getBreakdownPageSize(type) + 1;
   }
 
   getBreakdownPageEnd(type: string): number {
@@ -309,7 +422,10 @@ export class JournalDetails implements OnInit, OnDestroy {
 
   getPaginatedBreakdownArray(type: string): any[] {
     const rows = this.getBreakdownArray(type);
-    const currentPage = Math.min(this.getBreakdownCurrentPage(type), this.getBreakdownTotalPages(type));
+    const currentPage = Math.min(
+      this.getBreakdownCurrentPage(type),
+      this.getBreakdownTotalPages(type),
+    );
     const pageSize = this.getBreakdownPageSize(type);
     const startIndex = (currentPage - 1) * pageSize;
     return rows.slice(startIndex, startIndex + pageSize);
@@ -322,8 +438,9 @@ export class JournalDetails implements OnInit, OnDestroy {
       if (type === 'non-research') {
         this.currentBreakdownOptions = [];
       } else {
-        const researchOpts = this.journalOptionsService.getOptionsForType('vote_number_description');
-        this.currentBreakdownOptions = researchOpts.map(opt => ({
+        const researchOpts =
+          this.journalOptionsService.getOptionsForType('vote_number_description');
+        this.currentBreakdownOptions = researchOpts.map((opt) => ({
           value: opt.value,
           label: opt.label,
           voteNumber: this.journalOptionsService.getConfiguredVoteNumber(opt.value),
@@ -365,36 +482,54 @@ export class JournalDetails implements OnInit, OnDestroy {
         this.selectedFileName = entry.fileName || null;
         this.selectedFile = null;
         if (type === 'non-research') {
-          this.breakdownForm.patchValue({
-            ...entry,
-            itemDescription: this.nonResearchAccountCodeDescription,
-            accountCode: this.nonResearchAccountCode,
-            accountCodeDescription: this.nonResearchAccountCodeDescription,
-          }, { emitEvent: false });
+          this.breakdownForm.patchValue(
+            {
+              ...entry,
+              itemDescription: this.nonResearchAccountCodeDescription,
+              accountCode: this.nonResearchAccountCode,
+              accountCodeDescription: this.nonResearchAccountCodeDescription,
+            },
+            { emitEvent: false },
+          );
         } else {
-          this.breakdownForm.patchValue({
-            ...entry,
-            voteNumber: entry.voteNumber || this.journalOptionsService.getConfiguredVoteNumber(entry.itemDescription),
-            accountCode: type === 'external-research'
-              ? (entry.accountCode || entry.voteNumber || this.form.get('projectAccountCode')?.value || '')
-              : ''
-          }, { emitEvent: false });
+          this.breakdownForm.patchValue(
+            {
+              ...entry,
+              voteNumber:
+                entry.voteNumber ||
+                this.journalOptionsService.getConfiguredVoteNumber(entry.itemDescription),
+              accountCode:
+                type === 'external-research'
+                  ? entry.accountCode ||
+                    entry.voteNumber ||
+                    this.form.get('projectAccountCode')?.value ||
+                    ''
+                  : '',
+            },
+            { emitEvent: false },
+          );
         }
       } else {
         this.breakdownEditingIndex = null;
         if (type === 'non-research') {
-          this.breakdownForm.patchValue({
-            itemDescription: this.nonResearchAccountCodeDescription,
-            accountCode: this.nonResearchAccountCode,
-            accountCodeDescription: this.nonResearchAccountCodeDescription,
-          }, { emitEvent: false });
+          this.breakdownForm.patchValue(
+            {
+              itemDescription: this.nonResearchAccountCodeDescription,
+              accountCode: this.nonResearchAccountCode,
+              accountCodeDescription: this.nonResearchAccountCodeDescription,
+            },
+            { emitEvent: false },
+          );
         } else if (type === 'external-research') {
           // For External, auto-fill with Project Account Code
           const projectAccountCode = this.form.get('projectAccountCode')?.value || '';
-          this.breakdownForm.patchValue({
-            voteNumber: '',
-            accountCode: projectAccountCode
-          }, { emitEvent: false });
+          this.breakdownForm.patchValue(
+            {
+              voteNumber: '',
+              accountCode: projectAccountCode,
+            },
+            { emitEvent: false },
+          );
         }
       }
 
@@ -415,15 +550,24 @@ export class JournalDetails implements OnInit, OnDestroy {
     this.cdr.detectChanges();
   }
 
-  private findNonResearchOption(value: string): { value: string; label: string; accountCode?: string } | undefined {
+  private findNonResearchOption(
+    value: string,
+  ): { value: string; label: string; accountCode?: string } | undefined {
     if (!value) return undefined;
-    return this.currentBreakdownOptions.find(opt => opt.value === value) || this.currentBreakdownOptions.find(opt => opt.label === value);
+    return (
+      this.currentBreakdownOptions.find((opt) => opt.value === value) ||
+      this.currentBreakdownOptions.find((opt) => opt.label === value)
+    );
   }
 
-  private findResearchOption(value: string): { value: string; label: string; voteNumber?: string } | undefined {
+  private findResearchOption(
+    value: string,
+  ): { value: string; label: string; voteNumber?: string } | undefined {
     if (!value) return undefined;
-    return this.currentBreakdownOptions.find(opt => opt.value === value) ||
-      this.currentBreakdownOptions.find(opt => opt.label === value);
+    return (
+      this.currentBreakdownOptions.find((opt) => opt.value === value) ||
+      this.currentBreakdownOptions.find((opt) => opt.label === value)
+    );
   }
 
   saveBreakdownEntry() {
@@ -461,7 +605,7 @@ export class JournalDetails implements OnInit, OnDestroy {
       accountCode: resolvedAccountCode,
       accountCodeDescription: resolvedAccountCodeDescription,
       costInRM,
-      fileName: this.selectedFileName || entry.fileName || ''
+      fileName: this.selectedFileName || entry.fileName || '',
     };
 
     const type = this.breakdownType as string;
@@ -486,34 +630,106 @@ export class JournalDetails implements OnInit, OnDestroy {
   calculateBreakdownTotal(type: string): number {
     const array = this.getBreakdownArray(type);
     let total = 0;
-    array.forEach(item => {
+    array.forEach((item) => {
       total += parseFloat(item.costInRM) || 0;
     });
     return total;
   }
 
-  calculateSponsorshipCosting(totalCost: number, externalSponsorship: number, scopusQuartile: string) {
-    let percentage = 0;
-    if (scopusQuartile === 'Q1' || scopusQuartile === 'Q2') percentage = 100;
-    else if (scopusQuartile === 'Q3') percentage = 50;
+  calculateSponsorshipCosting(
+    totalCost: number,
+    externalSponsorship: number,
+    scopusQuartile: string,
+  ) {
+    const remainingAmount = this.getRemainingAfterExternal(totalCost, externalSponsorship);
+    let apuFinal = 0;
 
-    let hiddenPercentageBridge = percentage / 100;
+    if (scopusQuartile === 'Q1' || scopusQuartile === 'Q2') {
+      apuFinal = remainingAmount;
+    } else if (scopusQuartile === 'Q3') {
+      apuFinal = Math.min(totalCost * 0.5, remainingAmount);
+    }
 
-    let apuBase = Math.min(totalCost * hiddenPercentageBridge, 5000);
-    let remainingAmount = Math.max(totalCost - externalSponsorship, 0);
-    let apuFinal = Math.min(apuBase, remainingAmount);
-
-    let applicantCost = Math.max(totalCost - externalSponsorship - apuFinal, 0);
+    const applicantCost = Math.max(remainingAmount - apuFinal, 0);
 
     return {
-      sponsorshipPercentage: percentage,
+      sponsorshipPercentage: this.calculateEffectiveApuPercentage(totalCost, apuFinal),
       apuSponsorshipAmount: apuFinal,
-      applicantCost: applicantCost
+      applicantCost: applicantCost,
     };
   }
 
+  private getRemainingAfterExternal(totalRM: number, externalSponsorship: number): number {
+    return Math.max(totalRM - externalSponsorship, 0);
+  }
+
+  private calculateEffectiveApuPercentage(totalRM: number, apuSponsorshipAmount: number): number {
+    if (totalRM <= 0) {
+      return 0;
+    }
+
+    return this.roundAmount((apuSponsorshipAmount / totalRM) * 100);
+  }
+
+  private hasExternalSponsorshipInput(): boolean {
+    const value = this.form.get('sponsoredAmountExternal')?.value;
+    return value !== null && value !== undefined && String(value).trim() !== '';
+  }
+
+  private roundAmount(amount: number): number {
+    return Math.round(amount * 100) / 100;
+  }
+
+  private toBoolean(value: unknown): boolean {
+    return String(value ?? '').toLowerCase() === 'yes';
+  }
+
+  private toMoneyString(value: unknown): string | null {
+    const amount = this.normalizeAmount(value);
+    return amount === null ? null : amount.toFixed(2);
+  }
+
+  private toCostingPayload(projectType: string, entry: any): JournalCostingPayload {
+    const projectAccountCode = this.form.get('projectAccountCode')?.value || '';
+    const accountCode =
+      projectType === 'non-research'
+        ? this.nonResearchAccountCode
+        : entry.accountCode || projectAccountCode || '';
+
+    return {
+      project_account_code_id:
+        projectType === 'non-research'
+          ? null
+          : this.journalOptionsService.getProjectAccountCodeId(projectAccountCode),
+      vote_number_id:
+        projectType === 'non-research'
+          ? null
+          : this.journalOptionsService.getVoteNumberId(entry.itemDescription),
+      account_code_id:
+        projectType === 'external-research'
+          ? null
+          : this.journalOptionsService.getAccountCodeId(accountCode),
+      cost_in_foreign_currency: this.toMoneyString(entry.cost),
+      exchange_rate: this.toMoneyString(entry.exchangeRate),
+      cost_in_rm: this.toMoneyString(entry.costInRM),
+      description: entry.description || null,
+    };
+  }
+
+  private clearControlError(controlName: string, errorKey: string): void {
+    const control = this.form.get(controlName);
+    const errors = control?.errors;
+    if (!control || !errors?.[errorKey]) {
+      return;
+    }
+
+    delete errors[errorKey];
+    control.setErrors(Object.keys(errors).length ? errors : null);
+  }
+
   private normalizeAmount(value: unknown): number | null {
-    const amount = typeof value === 'number' ? value : parseFloat(String(value ?? '').replace(/,/g, ''));
+    const amount =
+      typeof value === 'number' ? value : parseFloat(String(value ?? '').replace(/,/g, ''));
     return Number.isFinite(amount) ? Math.round(amount * 100) / 100 : null;
   }
 
@@ -523,7 +739,7 @@ export class JournalDetails implements OnInit, OnDestroy {
     let totalRM = 0;
 
     // Calculate total from breakdown entries
-    breakdownArray.forEach(item => {
+    breakdownArray.forEach((item) => {
       totalRM += parseFloat(item.costInRM) || 0;
     });
 
@@ -544,42 +760,19 @@ export class JournalDetails implements OnInit, OnDestroy {
     // A) External Research Project
     // ──────────────────────────────────────────────────────────────
     if (pType === 'external-research') {
-      // Validate "Sponsored By" field
       if (manualExternal > 0) {
         this.form.get('sponsoredBy')?.setValidators([Validators.required]);
       } else {
         this.form.get('sponsoredBy')?.clearValidators();
       }
       this.form.get('sponsoredBy')?.updateValueAndValidity({ emitEvent: false });
+      this.clearControlError('sponsoredAmountExternal', 'maxExceeded');
 
-      // Validate external amount doesn't exceed total
-      const extAmountCtrl = this.form.get('sponsoredAmountExternal');
-      if (extAmountCtrl) {
-        if (manualExternal > totalRM && totalRM >= 0) {
-          extAmountCtrl.setErrors({ ...extAmountCtrl.errors, maxExceeded: true });
-        } else {
-          const errors = extAmountCtrl.errors;
-          if (errors) {
-            delete errors['maxExceeded'];
-            extAmountCtrl.setErrors(Object.keys(errors).length ? errors : null);
-          }
-        }
-      }
-
-      // Calculate remaining balance
-      const remainingBalance = Math.max(totalRM - manualExternal, 0);
-
-      // For Q1, Q2, Q3: 100% sponsorship
-      if (q === 'Q1' || q === 'Q2' || q === 'Q3') {
-        spPercent = 100;
-        spAPU = remainingBalance;
-        applicantCost = 0;
-      } else {
-        // No quartile selected or invalid quartile
-        spPercent = 0;
-        spAPU = 0;
-        applicantCost = remainingBalance;
-      }
+      spAPU = this.hasExternalSponsorshipInput()
+        ? this.getRemainingAfterExternal(totalRM, manualExternal)
+        : 0;
+      spPercent = this.calculateEffectiveApuPercentage(totalRM, spAPU);
+      applicantCost = 0;
     }
     // ──────────────────────────────────────────────────────────────
     // C) Non-Research Project
@@ -593,20 +786,16 @@ export class JournalDetails implements OnInit, OnDestroy {
       }
       this.form.get('sponsoredBy')?.updateValueAndValidity({ emitEvent: false });
 
-      // Calculate remaining balance
-      const remainingBalance = Math.max(totalRM - manualExternal, 0);
+      const remainingBalance = this.getRemainingAfterExternal(totalRM, manualExternal);
 
-      // Q1 or Q2: 100% sponsorship
       if (q === 'Q1' || q === 'Q2') {
-        spPercent = 100;
         spAPU = remainingBalance;
+        spPercent = this.calculateEffectiveApuPercentage(totalRM, spAPU);
         applicantCost = 0;
-      }
-      // D) Q3: 50% sponsorship
-      else if (q === 'Q3') {
-        spPercent = 50;
-        spAPU = remainingBalance * 0.5;
-        applicantCost = remainingBalance * 0.5;
+      } else if (q === 'Q3') {
+        spAPU = Math.min(totalRM * 0.5, remainingBalance);
+        spPercent = this.calculateEffectiveApuPercentage(totalRM, spAPU);
+        applicantCost = Math.max(remainingBalance - spAPU, 0);
       }
       // No quartile or invalid quartile
       else {
@@ -625,33 +814,41 @@ export class JournalDetails implements OnInit, OnDestroy {
     }
 
     // Update form with calculated values (read-only fields)
-    this.form.patchValue({
-      totalRM: totalRM ? totalRM.toFixed(2) : '0.00',
-      sponsorshipPercentage: spPercent ? spPercent.toString() : '0',
-      sponsorshipAmountAPU: spAPU ? spAPU.toFixed(2) : '0.00',
-      costByApplicant: applicantCost ? applicantCost.toFixed(2) : '0.00'
-    }, { emitEvent: false });
+    this.form.patchValue(
+      {
+        totalRM: totalRM ? totalRM.toFixed(2) : '0.00',
+        sponsorshipPercentage: spPercent ? spPercent.toString() : '0',
+        sponsorshipAmountAPU: spAPU ? spAPU.toFixed(2) : '0.00',
+        costByApplicant: applicantCost ? applicantCost.toFixed(2) : '0.00',
+      },
+      { emitEvent: false },
+    );
 
     // Validate breakdown entries exist for certain project types
-    const isBreakdownValid = (pType === 'external-research' || pType === 'non-research') ? breakdownArray.length > 0 : true;
+    const isBreakdownValid =
+      pType === 'external-research' || pType === 'non-research' ? breakdownArray.length > 0 : true;
     this.formValidityChange.emit(this.form.valid && isBreakdownValid);
   }
 
   private syncExternalBreakdownAccountCode(projectAccountCode: string): void {
-    this.externalBreakdowns = this.externalBreakdowns.map(entry => ({
+    this.externalBreakdowns = this.externalBreakdowns.map((entry) => ({
       ...entry,
-      accountCode: projectAccountCode
+      accountCode: projectAccountCode,
     }));
 
     if (this.breakdownType === 'external-research') {
-      this.breakdownForm.patchValue({
-        accountCode: projectAccountCode
-      }, { emitEvent: false });
+      this.breakdownForm.patchValue(
+        {
+          accountCode: projectAccountCode,
+        },
+        { emitEvent: false },
+      );
     }
   }
 
   getBreakdownModalTitle(): string {
-    if (this.breakdownType === 'external-research') return 'Detailed Breakdown for External Research Project';
+    if (this.breakdownType === 'external-research')
+      return 'Detailed Breakdown for External Research Project';
     if (this.breakdownType === 'non-research') return 'Detailed Breakdown for Non-Research Project';
     return 'Breakdown';
   }
@@ -688,7 +885,7 @@ export class JournalDetails implements OnInit, OnDestroy {
   onFileSelected(event: any) {
     let file = event;
     if (event && event.target && event.target.files) {
-        file = event.target.files[0];
+      file = event.target.files[0];
     }
     if (file) {
       this.selectedFile = file;
@@ -778,7 +975,10 @@ export class JournalDetails implements OnInit, OnDestroy {
       return;
     }
     const { keyword1, keyword2, keyword3 } = this.sdgKeywordsForm.value;
-    this.form.patchValue({ sdgKeyword1: keyword1, sdgKeyword2: keyword2, sdgKeyword3: keyword3 }, { emitEvent: false });
+    this.form.patchValue(
+      { sdgKeyword1: keyword1, sdgKeyword2: keyword2, sdgKeyword3: keyword3 },
+      { emitEvent: false },
+    );
     this.closeSDGKeywordsModal();
   }
 
@@ -786,7 +986,7 @@ export class JournalDetails implements OnInit, OnDestroy {
     const keyword1 = this.form.get('sdgKeyword1')?.value || '';
     const keyword2 = this.form.get('sdgKeyword2')?.value || '';
     const keyword3 = this.form.get('sdgKeyword3')?.value || '';
-    return [keyword1, keyword2, keyword3].filter(k => k);
+    return [keyword1, keyword2, keyword3].filter((k) => k);
   }
 
   removeKeyword(keyword: string) {
@@ -815,11 +1015,13 @@ export class JournalDetails implements OnInit, OnDestroy {
   }
 
   private getDropdownOptions(type: JournalOptionType): { value: string; label: string }[] {
-    return this.journalOptionsService.getOptionsForType(type).map(opt => ({ value: opt.value, label: opt.label }));
+    return this.journalOptionsService
+      .getOptionsForType(type)
+      .map((opt) => ({ value: opt.value, label: opt.label }));
   }
 
   getDropdownLabel(type: JournalOptionType, value: string): string {
-    const option = this.getDropdownOptions(type).find(opt => opt.value === value);
+    const option = this.getDropdownOptions(type).find((opt) => opt.value === value);
     return option?.label || value || '-';
   }
 

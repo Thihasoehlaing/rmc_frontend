@@ -51,13 +51,6 @@ export class AdminSettingsComponent {
       route: '/admin-settings/staff-access',
       tone: 'teal',
     },
-    {
-      title: 'External Project Data Entry',
-      description: 'Maintain external project intake and supporting project information.',
-      icon: 'folder_managed',
-      category: 'Project Data',
-      route: '/admin-settings/external-project-data-entry',
-      tone: 'slate',
-    },
   ];
 }
+

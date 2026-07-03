@@ -226,7 +226,8 @@
   background: var(--color-surface);
   color: var(--color-primary);
   cursor: pointer;
-  transition: background var(--transition-fast) var(--ease-default),
+  transition:
+    background var(--transition-fast) var(--ease-default),
     border-color var(--transition-fast) var(--ease-default),
     transform var(--transition-fast) var(--ease-default),
     box-shadow var(--transition-fast) var(--ease-default);
@@ -304,7 +305,9 @@
   font-size: var(--fs-sm);
   font-weight: var(--fw-medium);
   cursor: pointer;
-  transition: transform var(--transition-fast) var(--ease-default), box-shadow var(--transition-fast) var(--ease-default);
+  transition:
+    transform var(--transition-fast) var(--ease-default),
+    box-shadow var(--transition-fast) var(--ease-default);
 
   .count {
     display: inline-flex;
@@ -336,7 +339,6 @@
     }
   }
 }
-
 
 .category-row {
   display: flex;
@@ -377,12 +379,30 @@
   display: inline-block;
 }
 
+:host ::ng-deep .dropdown-options-table table {
+  width: 100%;
+  min-width: calc(var(--space-12) * 9);
+}
+
+:host ::ng-deep .dropdown-options-table thead th:last-child {
+  padding-inline: var(--space-5);
+}
+
+.option-name-cell {
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
 .select-cell {
   text-align: center;
 }
 
 .row--inactive {
-  opacity: 0.8;
+  opacity: 1;
+}
+
+.row--inactive .option-name-cell {
+  color: var(--color-text-muted);
 }
 
 .status-chip {
@@ -409,6 +429,8 @@
   flex-wrap: wrap;
   gap: var(--space-2);
   align-items: center;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .shared-with-list--empty {
@@ -419,8 +441,11 @@
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
+  min-width: 0;
+  max-width: 100%;
   min-height: 28px;
   padding: 0 var(--space-3);
+  box-sizing: border-box;
   border-radius: 999px;
   background: var(--color-primary-light);
   color: var(--color-primary);
@@ -430,7 +455,15 @@
 
   .material-icons {
     font-size: 14px;
+    flex-shrink: 0;
   }
+}
+
+.shared-with-chip__label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .shared-with-empty {
@@ -450,7 +483,9 @@
 .actions-cell {
   display: table-cell;
   position: static;
+  text-align: center;
   white-space: nowrap;
+  padding-inline: var(--space-5);
 
   > * + * {
     margin-left: var(--space-2);
@@ -469,7 +504,9 @@
   background: transparent;
   padding: 0;
   cursor: pointer;
-  transition: background var(--transition-fast) var(--ease-default), color var(--transition-fast) var(--ease-default);
+  transition:
+    background var(--transition-fast) var(--ease-default),
+    color var(--transition-fast) var(--ease-default);
 
   .material-icons {
     font-size: 18px;
@@ -482,6 +519,14 @@
 
 .icon-btn--edit {
   color: var(--color-primary);
+}
+
+.icon-btn--activate {
+  color: var(--color-success-dark);
+}
+
+.icon-btn--deactivate {
+  color: var(--color-warning-dark);
 }
 
 .icon-btn--delete {
@@ -505,7 +550,9 @@
   align-items: center;
   gap: var(--space-2);
   border-radius: var(--radius-md);
-  transition: background var(--transition-fast) var(--ease-default), color var(--transition-fast) var(--ease-default);
+  transition:
+    background var(--transition-fast) var(--ease-default),
+    color var(--transition-fast) var(--ease-default);
 
   .material-icons {
     font-size: 16px;
@@ -680,9 +727,10 @@
   font-weight: var(--fw-semibold);
   white-space: nowrap;
   cursor: pointer;
-  transition: background var(--transition-fast) var(--ease-default), 
-              transform var(--transition-fast) var(--ease-default),
-              box-shadow var(--transition-fast) var(--ease-default);
+  transition:
+    background var(--transition-fast) var(--ease-default),
+    transform var(--transition-fast) var(--ease-default),
+    box-shadow var(--transition-fast) var(--ease-default);
 
   .material-icons {
     font-size: 14px;
@@ -840,4 +888,227 @@
       width: 100%;
     }
   }
+}
+
+// Standardized management-page layout
+.settings-card {
+  max-width: var(--page-max-width);
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.settings-card__header,
+.settings-card__content {
+  padding-inline: 0;
+  background: transparent;
+  border: 0;
+}
+
+.settings-card__header-row {
+  align-items: flex-end;
+}
+
+.settings-header-action {
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.dropdown-category-filter {
+  flex: 1 1 28rem;
+}
+
+.dropdown-options-table {
+  display: block;
+}
+
+// Responsive RDIG dropdown controls
+.settings-card__header {
+  padding-bottom: var(--space-2);
+}
+
+.settings-card__content {
+  gap: var(--space-3);
+  padding-top: var(--space-2);
+}
+
+:host ::ng-deep app-submissions-search {
+  margin-bottom: var(--space-2);
+  padding: var(--space-4);
+}
+
+:host ::ng-deep app-submissions-search .submissions-search-top-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-bottom: var(--space-3);
+}
+
+:host ::ng-deep app-submissions-search .submissions-search-controls {
+  display: grid;
+  grid-template-columns: minmax(18rem, 1fr) minmax(10rem, 14rem) auto;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+:host ::ng-deep app-submissions-search .submissions-search {
+  width: 100%;
+  max-width: none;
+}
+
+:host ::ng-deep app-submissions-search .submissions-search--focused,
+:host ::ng-deep app-submissions-search .submissions-search:focus-within {
+  width: 100%;
+}
+
+:host ::ng-deep app-submissions-search .submissions-search-filters {
+  width: 100%;
+  min-width: 0;
+}
+
+:host ::ng-deep app-submissions-search .submissions-search-filters [search-filters] {
+  width: 100%;
+  min-width: 0;
+}
+
+:host ::ng-deep app-submissions-search .submissions-search-actions {
+  justify-content: flex-end;
+  margin-left: 0;
+  white-space: nowrap;
+}
+
+.dropdown-category-filter {
+  flex: 0 0 auto;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+
+  .form-label {
+    margin: 0;
+    white-space: nowrap;
+  }
+
+  .category-list {
+    gap: var(--space-2);
+    padding: 0;
+  }
+}
+
+.sub-domain-parent-filter {
+  display: grid;
+  grid-template-columns: auto minmax(0, 26rem);
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border-subtle);
+
+  .form-label {
+    margin: 0;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 900px) {
+  .settings-card__header-row {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  :host ::ng-deep app-submissions-search .submissions-search-controls {
+    grid-template-columns: minmax(0, 1fr) minmax(9rem, 12rem);
+  }
+
+  :host ::ng-deep app-submissions-search .submissions-search-actions {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 640px) {
+  .settings-header-action {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .dropdown-category-filter {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  :host ::ng-deep app-submissions-search {
+    padding: var(--space-3);
+  }
+
+  :host ::ng-deep app-submissions-search .submissions-search-controls {
+    display: flex;
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  :host ::ng-deep app-submissions-search .submissions-search-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  :host ::ng-deep app-submissions-search .submissions-search-actions .btn {
+    width: 100%;
+  }
+}
+
+// Match the status filter to the search control.
+:host ::ng-deep app-submissions-search .submissions-search-filters [search-filters] {
+  gap: 0;
+}
+
+:host ::ng-deep app-submissions-search .submissions-search-filters [search-filters] > span {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+:host ::ng-deep app-submissions-search .submissions-search-filters .input--select {
+  height: 38px;
+  min-height: 38px;
+  padding-block: 0;
+  padding-inline: var(--space-4) var(--space-9);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-full);
+  background-color: white;
+  font-size: var(--fs-sm);
+  line-height: 38px;
+}
+
+:host ::ng-deep app-submissions-search .submissions-search-filters .input--select:hover {
+  border-color: color-mix(in srgb, var(--color-primary) 24%, var(--border-default));
+  box-shadow: var(--shadow-sm);
+}
+
+:host ::ng-deep app-submissions-search .submissions-search-filters .input--select:focus {
+  border-color: var(--color-primary);
+  box-shadow: var(--input-shadow-focus);
+  outline: none;
+}
+
+
+
+
+.icon-btn--edit:hover:not(:disabled) {
+  background: var(--color-primary-light);
+}
+
+.icon-btn--activate:hover:not(:disabled) {
+  background: var(--color-success-light);
+}
+
+.icon-btn--deactivate:hover:not(:disabled) {
+  background: var(--color-warning-light);
+}
+
+.icon-btn--delete:hover:not(:disabled) {
+  background: var(--color-error-light);
 }

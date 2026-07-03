@@ -1,110 +1,142 @@
-<main class="users-page">
-  <header class="users-page__header">
+<main class="forms-page forms-page--settings">
+  <header class="forms-page__header">
     <div>
-      <span class="users-page__eyebrow">System Settings</span>
+      <span class="forms-page__eyebrow">System Settings</span>
       <h1>Users</h1>
       <p>Find authenticated users and manage RMC role pairing.</p>
     </div>
-    <button class="btn btn-primary users-page__pair-button" type="button" (click)="openPairDialog()" [disabled]="isLoading()">
+    <button
+      class="btn btn-primary forms-page__create-button"
+      type="button"
+      (click)="openPairDialog()"
+      [disabled]="isLoading()"
+    >
       <span class="material-icons">person_add</span>
       Pair User Role
     </button>
   </header>
 
-  @if (!isLoading()) {
-  <section class="users-toolbar" aria-label="User filters">
-    <label class="users-filter users-filter--wide">
-      <span>Name or Email</span>
+  <section class="forms-toolbar users-toolbar" aria-label="User filters">
+    <h2 class="forms-toolbar__title">Search &amp; Filters</h2>
+
+    <label class="forms-filter users-filter-name">
+      <span>Name</span>
       <input
         class="input--text"
         type="search"
-        placeholder="Search full name or email"
-        [ngModel]="nameEmail()"
-        (ngModelChange)="nameEmail.set($event)"
-        (keydown.enter)="search()">
+        aria-label="Search users by name"
+        placeholder="Search by name"
+        [ngModel]="nameSearch()"
+        (ngModelChange)="nameSearch.set($event)"
+        (keydown.enter)="search()"
+        [disabled]="isLoading()"
+      />
     </label>
 
-    <label class="users-filter">
-      <span>Job Title</span>
+    <label class="forms-filter users-filter-email">
+      <span>Email</span>
       <input
         class="input--text"
         type="search"
-        placeholder="Search job title"
-        [ngModel]="jobTitle()"
-        (ngModelChange)="jobTitle.set($event)"
-        (keydown.enter)="search()">
+        aria-label="Search users by email"
+        placeholder="Search by email"
+        [ngModel]="emailSearch()"
+        (ngModelChange)="emailSearch.set($event)"
+        (keydown.enter)="search()"
+        [disabled]="isLoading()"
+      />
     </label>
 
-    <label class="users-filter">
-      <span>Role</span>
-      <select
-        class="input--select"
-        [ngModel]="selectedRoleId()"
-        (ngModelChange)="selectedRoleId.set($event)">
-        <option [ngValue]="null">All Roles</option>
-        @for (role of roles(); track role.id) {
-          <option [ngValue]="role.id">{{ role.role_name }}</option>
-        }
-      </select>
-    </label>
-
-    <label class="users-filter">
+    <label class="forms-filter users-filter-account-type">
       <span>Account Type</span>
       <select
         class="input--select"
         [ngModel]="selectedAccountType()"
-        (ngModelChange)="selectedAccountType.set($event)">
-        <option value="">All Types</option>
+        (ngModelChange)="selectedAccountType.set($event)"
+        [disabled]="isLoading()"
+      >
+        <option value="">All</option>
         <option value="Staff">Staff</option>
         <option value="Student">Student</option>
       </select>
     </label>
 
-    <label class="users-filter users-filter--wide">
+    <label class="forms-filter users-filter-department">
       <span>Department</span>
-      <select
-        class="input--select"
+      <app-searchable-dropdown
+        [options]="departmentOptions()"
+        [searchable]="true"
+        placeholder="Search department..."
         [ngModel]="selectedDepartmentId()"
-        (ngModelChange)="selectedDepartmentId.set($event)">
-        <option [ngValue]="null">All Departments</option>
-        @for (department of departments(); track department.id) {
-          <option [ngValue]="department.id">{{ department.department_name }}</option>
-        }
-      </select>
+        (ngModelChange)="selectedDepartmentId.set($event)"
+        [loading]="isLoading()"
+      >
+      </app-searchable-dropdown>
     </label>
 
-    <div class="users-toolbar__actions">
-      <button class="btn btn-primary" type="button" (click)="search()">
+    <label class="forms-filter users-filter-role">
+      <span>Role</span>
+      <app-searchable-dropdown
+        [options]="roleOptions()"
+        [searchable]="true"
+        placeholder="Search role..."
+        [ngModel]="selectedRoleId()"
+        (ngModelChange)="selectedRoleId.set($event)"
+        [loading]="isLoading()"
+      >
+      </app-searchable-dropdown>
+    </label>
+
+    <div class="forms-toolbar__actions">
+      <button class="btn btn-primary" type="button" (click)="search()" [disabled]="isLoading()">
         <span class="material-icons">search</span>
         Search
       </button>
-      <button class="btn btn-secondary" type="button" (click)="resetFilters()">
+      <button class="btn btn-secondary" type="button" (click)="resetFilters()" [disabled]="isLoading()">
         <span class="material-icons">restart_alt</span>
         Reset
       </button>
     </div>
   </section>
-  }
 
-  <section class="users-table-card">
+  <section class="forms-table-card">
+    <header class="forms-table-card__header">
+      <div>
+        <div class="forms-table-card__title-row">
+          <h2>Users</h2>
+          <span class="forms-table-card__count">{{ totalItems() }}</span>
+        </div>
+        <p>Review users and assign system roles.</p>
+      </div>
+      <button
+        class="btn btn-secondary forms-table-card__refresh"
+        type="button"
+        (click)="loadInitialData()"
+        [disabled]="isLoading()"
+      >
+        <span class="material-icons">refresh</span>
+        Refresh
+      </button>
+    </header>
+
     @if (isLoading()) {
-      <app-table-skeleton
-        [columns]="columns"
-        [showSearch]="false"
-        loadingLabel="Loading users">
+      <app-table-skeleton [columns]="columns" [showSearch]="false" loadingLabel="Loading users">
       </app-table-skeleton>
     } @else if (loadFailed()) {
-      <div class="users-state">
+      <div class="forms-state">
         <span class="material-icons">cloud_off</span>
         <h2>Unable to load users</h2>
         <p>Check the API connection and try again.</p>
         <button class="btn btn-primary" type="button" (click)="loadInitialData()">Try Again</button>
       </div>
+    } @else if (users().length === 0) {
+      <div class="forms-state">
+        <span class="material-icons">manage_accounts</span>
+        <h2>No users found</h2>
+        <p>Adjust the filters or pair a new user role.</p>
+      </div>
     } @else {
-      <app-data-table
-        [columns]="columns"
-        [rows]="users()"
-        [rowTrackFn]="rowTrackFn">
+      <app-data-table [columns]="columns" [rows]="users()" [rowTrackFn]="rowTrackFn">
         <ng-template #rowTemplate let-row let-index="index">
           <tr>
             <td class="is-align-center">{{ rowNumber(index) }}</td>
@@ -132,40 +164,70 @@
             </td>
             <td>{{ row.department || 'Not available' }}</td>
             <td>{{ formatDate(row.last_login_at) }}</td>
+            <td class="is-align-center">
+              <div class="table-actions">
+                <button
+                  class="table-action"
+                  type="button"
+                  title="Assign user role"
+                  data-tooltip="Assign user role"
+                  aria-label="Assign user role"
+                  (click)="openAssignRoleDialog(row)"
+                >
+                  <span class="material-icons">manage_accounts</span>
+                </button>
+              </div>
+            </td>
           </tr>
         </ng-template>
       </app-data-table>
     }
+
+    @if (!isLoading() && !loadFailed()) {
+      <footer class="forms-table-card__footer">
+        <p class="forms-count">
+          @if (totalItems() > 0) {
+            Showing {{ pageStart() }} to {{ pageEnd() }} of {{ totalItems() }} users
+          } @else {
+            Showing 0 users
+          }
+        </p>
+
+        <app-pagination
+          [currentPage]="page()"
+          [totalPages]="totalPages()"
+          [pageSize]="pageSize()"
+          [pageSizeOptions]="pageSizeOptions"
+          (pageChange)="onPageChange($event)"
+          (pageSizeChange)="onPageSizeChange($event)"
+        >
+        </app-pagination>
+
+        <label class="forms-page-size" aria-label="Items per page">
+          <select
+            class="input--select"
+            [ngModel]="pageSize()"
+            (ngModelChange)="onPageSizeChange($event)"
+          >
+            @for (size of pageSizeOptions; track size) {
+              <option [ngValue]="size">{{ size }} per page</option>
+            }
+          </select>
+        </label>
+      </footer>
+    }
   </section>
-
-  @if (!isLoading() && !loadFailed()) {
-    <app-pagination
-      [currentPage]="page()"
-      [totalPages]="totalPages()"
-      [pageSize]="pageSize()"
-      [pageSizeOptions]="pageSizeOptions"
-      (pageChange)="onPageChange($event)"
-      (pageSizeChange)="onPageSizeChange($event)">
-    </app-pagination>
-
-    <p class="users-count">
-      @if (totalItems() > 0) {
-        Showing {{ pageStart() }}-{{ pageEnd() }} of {{ totalItems() }} users
-      } @else {
-        Showing 0 users
-      }
-    </p>
-  }
 
   <app-dialog
     [isOpen]="isPairDialogOpen()"
     title="Pair User Role"
     size="small"
-    (close)="closePairDialog()">
+    (close)="closePairDialog()"
+  >
     <div class="role-pairing">
       <p>Pair a Microsoft username with an RMC role. The user does not need to have logged in before.</p>
 
-      <label class="users-filter">
+      <label class="forms-filter">
         <span>Microsoft Username</span>
         <input
           class="input--text"
@@ -174,31 +236,78 @@
           autocomplete="off"
           [ngModel]="pairUsername()"
           (ngModelChange)="pairUsername.set($event)"
-          (keydown.enter)="pairUserRole()">
+          (keydown.enter)="pairUserRole()"
+        />
       </label>
 
-      <label class="users-filter">
+      <label class="forms-filter">
         <span>Role</span>
-        <select
-          class="input--select"
+        <app-searchable-dropdown
+          [options]="roleOptions()"
+          [searchable]="true"
+          placeholder="Search role..."
           [ngModel]="pairRoleId()"
-          (ngModelChange)="pairRoleId.set($event)">
-          <option [ngValue]="null">Select a role</option>
-          @for (role of roles(); track role.id) {
-            <option [ngValue]="role.id">{{ role.role_name }}</option>
-          }
-        </select>
+          (ngModelChange)="pairRoleId.set($event)"
+        >
+        </app-searchable-dropdown>
       </label>
     </div>
 
     <div dialog-footer class="role-pairing__footer">
-      <button class="btn btn-secondary" type="button" [disabled]="isSaving()" (click)="closePairDialog()">Cancel</button>
+      <button class="btn btn-secondary" type="button" [disabled]="isSaving()" (click)="closePairDialog()">
+        Cancel
+      </button>
       <button
         class="btn btn-primary"
         type="button"
         [disabled]="isSaving() || !pairUsername().trim() || pairRoleId() === null"
-        (click)="pairUserRole()">
+        (click)="pairUserRole()"
+      >
         {{ isSaving() ? 'Pairing...' : 'Pair User Role' }}
+      </button>
+    </div>
+  </app-dialog>
+
+  <app-dialog
+    [isOpen]="userForRoleAssignment() !== null"
+    title="Assign User Role"
+    size="small"
+    (close)="closeAssignRoleDialog()"
+  >
+    @if (userForRoleAssignment(); as user) {
+      <div class="role-pairing">
+        <p>Assign a system role for <strong>{{ user.fullname || user.username }}</strong>.</p>
+
+        <label class="forms-filter">
+          <span>Role</span>
+          <app-searchable-dropdown
+            [options]="roleOptions()"
+            [searchable]="true"
+            placeholder="Search role..."
+            [ngModel]="assignRoleId()"
+            (ngModelChange)="assignRoleId.set($event)"
+          >
+          </app-searchable-dropdown>
+        </label>
+      </div>
+    }
+
+    <div dialog-footer class="role-pairing__footer">
+      <button
+        class="btn btn-secondary"
+        type="button"
+        [disabled]="isSaving()"
+        (click)="closeAssignRoleDialog()"
+      >
+        Cancel
+      </button>
+      <button
+        class="btn btn-primary"
+        type="button"
+        [disabled]="isSaving() || assignRoleId() === null"
+        (click)="assignUserRole()"
+      >
+        {{ isSaving() ? 'Assigning...' : 'Assign Role' }}
       </button>
     </div>
   </app-dialog>

@@ -1,41 +1,70 @@
-import { Component, inject, ViewChild, effect } from '@angular/core';
+import { Component, inject, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { firstValueFrom } from 'rxjs';
 import { JournalDetails } from './components/journal-details/journal-details';
 import { AuthorsDetails } from './components/authors-details/authors-details';
 import { DocumentsComponent } from './components/documents/documents';
 import { DeclarationComponent } from './components/declaration/declaration';
-import { StepIndicatorComponent, WizardStep, StepStatus } from '../../shared/components/step-indicator/step-indicator.component';
+import {
+  StepIndicatorComponent,
+  WizardStep,
+  StepStatus,
+} from '../../shared/components/step-indicator/step-indicator.component';
 import {
   FormMainTitleComponent,
   GuidelineContext,
 } from '../../shared/components/form-main-title/form-main-title.component';
 import { FormWizardNavComponent } from '../../shared/components/form-wizard-nav/form-wizard-nav.component';
-import { JournalWorkflowService, JournalStatus } from './services/journal-workflow.service';
+import { JournalWorkflowService } from './services/journal-workflow.service';
 import { ReviewBlockComponent } from '../rdig/components/review-block/review-block.component';
 import { JournalGuidelinesModalComponent } from './components/journal-guidelines-modal/journal-guidelines-modal.component';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
+import {
+  JournalApplicationApiService,
+  JournalFormData,
+  JournalRequestPayload,
+} from './services/journal-application-api.service';
+import { JournalOptionsService } from './services/journal-options.service';
 
 @Component({
   selector: 'app-journal-publication-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, JournalDetails, AuthorsDetails, DocumentsComponent, DeclarationComponent, StepIndicatorComponent, FormMainTitleComponent, FormWizardNavComponent, ReviewBlockComponent, JournalGuidelinesModalComponent],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    JournalDetails,
+    AuthorsDetails,
+    DocumentsComponent,
+    DeclarationComponent,
+    StepIndicatorComponent,
+    FormMainTitleComponent,
+    FormWizardNavComponent,
+    ReviewBlockComponent,
+    JournalGuidelinesModalComponent,
+  ],
   templateUrl: './journal-publication-form.component.html',
   styleUrl: './journal-publication-form.component.scss',
 })
 export class JournalPublicationFormComponent {
   workflow = inject(JournalWorkflowService);
   private route = inject(ActivatedRoute);
-  readonly guidelineContext: GuidelineContext =
-    this.route.snapshot.queryParamMap.has('id') ? 'existing-application' : 'new-application';
-  statusControl = new FormControl<JournalStatus>('draft');
-
+  private router = inject(Router);
+  private journalApi = inject(JournalApplicationApiService);
+  private journalOptions = inject(JournalOptionsService);
+  requestId: number | null = this.readRequestId();
+  isOptionsLoading = false;
+  loadError: string | null = null;
+  actionError: string | null = null;
+  readonly guidelineContext: GuidelineContext = this.route.snapshot.queryParamMap.has('id')
+    ? 'existing-application'
+    : 'new-application';
   reviewComments = {
     hosComment: new FormControl(''),
     rmcComment: new FormControl(''),
     vcComment: new FormControl(''),
     hrComment: new FormControl(''),
-    ceoComment: new FormControl('')
+    ceoComment: new FormControl(''),
   };
 
   @ViewChild(JournalDetails) journalDetailsComponent?: JournalDetails;
@@ -49,14 +78,14 @@ export class JournalPublicationFormComponent {
     { label: 'Journal Details', icon: 'article' },
     { label: 'Authors Details', icon: 'group' },
     { label: 'Upload Supporting Documents & Manuscript Details', icon: 'upload_file' },
-    { label: 'Declaration', icon: 'verified' }
+    { label: 'Declaration', icon: 'verified' },
   ];
 
   stepStatuses: StepStatus[] = [
     { visited: false, valid: true, missingFields: [] },
     { visited: false, valid: false, missingFields: ['Complete Authors Details'] },
     { visited: false, valid: false, missingFields: ['Complete Supporting Documents'] },
-    { visited: false, valid: false, missingFields: ['Complete Declaration'] }
+    { visited: false, valid: false, missingFields: ['Complete Declaration'] },
   ];
 
   // Track form valid states
@@ -64,30 +93,11 @@ export class JournalPublicationFormComponent {
     1: false,
     2: false,
     3: false,
-    4: false
+    4: false,
   };
 
   submitAttempted = false;
   selectedCommentSection: 'hos' | 'rmc' | 'vc' | 'hr' | 'ceo' | null = null;
-
-  constructor() {
-    // Sync workflow status changes to the form control
-    effect(() => {
-      const status = this.workflow.status();
-      if (this.statusControl.value !== status) {
-        this.statusControl.setValue(status, { emitEvent: false });
-      }
-    });
-
-    // Sync form control changes to workflow
-    this.statusControl.valueChanges.subscribe((newStatus) => {
-      if (newStatus) {
-        this.workflow.status.set(newStatus as JournalStatus);
-        // Reset selected comment section when status changes
-        this.selectedCommentSection = null;
-      }
-    });
-  }
 
   validateCurrentStep(markAsTouched: boolean = true): boolean {
     let isValid = true;
@@ -117,7 +127,7 @@ export class JournalPublicationFormComponent {
         }
         break;
     }
-    
+
     this.formValid[this.currentStep] = isValid;
     return isValid;
   }
@@ -129,7 +139,9 @@ export class JournalPublicationFormComponent {
     this.stepStatuses[this.currentStep - 1] = {
       visited: true,
       valid: this.formValid[this.currentStep] || false,
-      missingFields: this.formValid[this.currentStep] ? [] : [this.getStepMissingLabel(this.currentStep)]
+      missingFields: this.formValid[this.currentStep]
+        ? []
+        : [this.getStepMissingLabel(this.currentStep)],
     };
 
     this.currentStep = stepIndex;
@@ -141,7 +153,9 @@ export class JournalPublicationFormComponent {
     this.formValid[stepNumber] = isValid;
     if (this.stepStatuses[stepNumber - 1]) {
       this.stepStatuses[stepNumber - 1].valid = isValid;
-      this.stepStatuses[stepNumber - 1].missingFields = isValid ? [] : [this.getStepMissingLabel(stepNumber)];
+      this.stepStatuses[stepNumber - 1].missingFields = isValid
+        ? []
+        : [this.getStepMissingLabel(stepNumber)];
       this.stepStatuses = [...this.stepStatuses]; // Trigger change detection
     }
   }
@@ -159,7 +173,39 @@ export class JournalPublicationFormComponent {
   saveSuccess = false;
   submitSuccess = false;
 
+  constructor() {
+    this.loadOptionsAndInitialForm();
+  }
+
+  private loadOptionsAndInitialForm(): void {
+    this.loadError = null;
+    this.journalOptions.reloadFromStorage();
+
+    this.journalOptions.loadBackendOptions().subscribe({
+      next: () => {
+        this.loadError = null;
+      },
+      error: () => {
+        this.loadError = 'Using local options because backend options could not be loaded.';
+      },
+    });
+
+    if (this.requestId) {
+      setTimeout(() => void this.loadExistingForm(this.requestId as number));
+    }
+  }
+
+  private async loadExistingForm(requestId: number): Promise<void> {
+    try {
+      const response = await firstValueFrom(this.journalApi.getForm(requestId));
+      this.hydrateFromApi(response.data);
+    } catch {
+      this.actionError = 'Unable to load this journal application.';
+    }
+  }
+
   onNext() {
+    if (this.isSaving || this.isSubmitting || this.isOptionsLoading) return;
     if (this.currentStep < this.totalSteps) {
       const prevStep = this.currentStep;
       this.onStepClick(this.currentStep + 1);
@@ -170,6 +216,7 @@ export class JournalPublicationFormComponent {
   }
 
   onPrev() {
+    if (this.isSaving || this.isSubmitting || this.isOptionsLoading) return;
     if (this.currentStep > 1) {
       const prevStep = this.currentStep;
       this.onStepClick(this.currentStep - 1);
@@ -179,16 +226,27 @@ export class JournalPublicationFormComponent {
     }
   }
 
-  onSaveDraft() {
+  async onSaveDraft() {
+    if (this.isSaving || this.isSubmitting || this.isOptionsLoading) return;
     this.isSaving = true;
-    setTimeout(() => {
-      this.isSaving = false;
+    this.actionError = null;
+    this.saveSuccess = false;
+
+    try {
+      await this.saveDraftToBackend();
       this.saveSuccess = true;
-      setTimeout(() => { this.saveSuccess = false; }, 3000);
-    }, 1000);
+      setTimeout(() => {
+        this.saveSuccess = false;
+      }, 3000);
+    } catch (error) {
+      this.actionError = this.extractErrorMessage(error, 'Unable to save journal draft.');
+    } finally {
+      this.isSaving = false;
+    }
   }
 
-  onSubmit() {
+  async onSubmit() {
+    if (this.isSaving || this.isSubmitting || this.isOptionsLoading) return;
     this.submitAttempted = true;
     this.validateCurrentStep(true);
 
@@ -204,10 +262,18 @@ export class JournalPublicationFormComponent {
     }
 
     this.isSubmitting = true;
-    setTimeout(() => {
-      this.isSubmitting = false;
+    this.actionError = null;
+    this.submitSuccess = false;
+
+    try {
+      const requestId = await this.saveDraftToBackend();
+      await firstValueFrom(this.journalApi.submit(requestId));
       this.submitSuccess = true;
-    }, 1000);
+    } catch (error) {
+      this.actionError = this.extractErrorMessage(error, 'Unable to submit journal application.');
+    } finally {
+      this.isSubmitting = false;
+    }
   }
 
   toggleCommentSection(section: 'hos' | 'rmc' | 'vc' | 'hr' | 'ceo') {
@@ -217,4 +283,101 @@ export class JournalPublicationFormComponent {
       this.selectedCommentSection = section;
     }
   }
+
+  private async saveDraftToBackend(): Promise<number> {
+    const payload = this.buildJournalPayload();
+    const requestId = await this.ensureDraftRequest(payload);
+
+    await firstValueFrom(this.journalApi.updateDraft(requestId, payload));
+    await this.replaceCostingItems(requestId);
+    await this.replaceAuthors(requestId);
+
+    const refreshed = await firstValueFrom(this.journalApi.getForm(requestId));
+    this.hydrateFromApi(refreshed.data);
+    return requestId;
+  }
+
+  private async ensureDraftRequest(payload: JournalRequestPayload): Promise<number> {
+    if (this.requestId) {
+      return this.requestId;
+    }
+
+    const response = await firstValueFrom(this.journalApi.createDraft(payload));
+    const requestId = Number(response.data.request?.id ?? response.data.request?.request_id);
+    this.requestId = requestId;
+    await this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { id: requestId },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
+    return requestId;
+  }
+
+  private buildJournalPayload(): JournalRequestPayload {
+    return {
+      ...(this.journalDetailsComponent?.getJournalPayload() ?? {}),
+      ...(this.documentsComponent?.getJournalPayload() ?? {}),
+      ...(this.declarationComponent?.getJournalPayload() ?? {}),
+    };
+  }
+
+  private async replaceCostingItems(requestId: number): Promise<void> {
+    const existing = await firstValueFrom(this.journalApi.getForm(requestId));
+    for (const item of existing.data.costing_items || []) {
+      await firstValueFrom(this.journalApi.deleteCostingItem(requestId, item.id));
+    }
+
+    for (const payload of this.journalDetailsComponent?.getCostingPayloads() ?? []) {
+      await firstValueFrom(this.journalApi.createCostingItem(requestId, payload));
+    }
+  }
+
+  private async replaceAuthors(requestId: number): Promise<void> {
+    const existing = await firstValueFrom(this.journalApi.getForm(requestId));
+
+    for (const item of existing.data.apu_staff_co_authors || []) {
+      await firstValueFrom(this.journalApi.deleteStaffAuthor(requestId, item.id));
+    }
+    for (const item of existing.data.apu_student_co_authors || []) {
+      await firstValueFrom(this.journalApi.deleteStudentAuthor(requestId, item.id));
+    }
+    for (const item of existing.data.non_apu_co_authors || []) {
+      await firstValueFrom(this.journalApi.deleteNonApuAuthor(requestId, item.id));
+    }
+
+    for (const payload of this.authorsDetailsComponent?.getStaffAuthorPayloads() ?? []) {
+      await firstValueFrom(this.journalApi.createStaffAuthor(requestId, payload));
+    }
+    for (const payload of this.authorsDetailsComponent?.getStudentAuthorPayloads() ?? []) {
+      await firstValueFrom(this.journalApi.createStudentAuthor(requestId, payload));
+    }
+    for (const payload of this.authorsDetailsComponent?.getNonApuAuthorPayloads() ?? []) {
+      await firstValueFrom(this.journalApi.createNonApuAuthor(requestId, payload));
+    }
+  }
+
+  private hydrateFromApi(data: JournalFormData): void {
+    this.journalDetailsComponent?.hydrateFromApi(data);
+    this.authorsDetailsComponent?.hydrateFromApi(data);
+    this.documentsComponent?.hydrateFromApi(data);
+    this.declarationComponent?.hydrateFromApi(data);
+
+    const status = data.request?.status_code;
+    if (status) {
+      this.workflow.status.set(status as any);
+    }
+  }
+
+  private readRequestId(): number | null {
+    const rawId = this.route.snapshot.queryParamMap.get('id');
+    const requestId = Number(rawId);
+    return Number.isFinite(requestId) && requestId > 0 ? requestId : null;
+  }
+
+  private extractErrorMessage(error: unknown, fallback: string): string {
+    const maybeError = error as { error?: { message?: string }; message?: string };
+    return maybeError?.error?.message || maybeError?.message || fallback;
+  }
+
 }

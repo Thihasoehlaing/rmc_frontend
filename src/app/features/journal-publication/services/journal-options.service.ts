@@ -1,6 +1,8 @@
 import { Injectable, signal, inject, effect } from '@angular/core';
+import { forkJoin, map, Observable, tap, timeout } from 'rxjs';
 import { DropdownOption } from '../../../core/interfaces/components.interface';
 import { DropdownsStoreService, StoredDropdownOption } from '../../admin-settings/dropdowns/dropdowns-store.service';
+import { FinanceOption, JournalApplicationApiService } from './journal-application-api.service';
 
 export type JournalOptionType =
   | 'vote_number_description'
@@ -16,7 +18,13 @@ export class JournalOptionsService {
   private versionKey = 'rmc_journal_options_version';
   private currentVersion = '2.0';
   private dropdownsStoreService = inject(DropdownsStoreService);
+  private journalApi = inject(JournalApplicationApiService);
   private readonly formName = 'Journal Application';
+  private backendOptionsLoaded = false;
+  private projectAccountCodeIds = new Map<string, number>();
+  private voteNumberIdsByDescription = new Map<string, number>();
+  private voteNumberCodesByDescription = new Map<string, string>();
+  private accountCodeIds = new Map<string, number>();
 
   // Default options for Vote Number Description
   private defaultVoteNumberDescriptionOptions: DropdownOption[] = [
@@ -72,8 +80,90 @@ export class JournalOptionsService {
 
     // Sync with Admin Settings whenever dropdown entries are updated
     effect(() => {
+      if (this.backendOptionsLoaded) {
+        return;
+      }
       this.syncFromSettingsStore(this.dropdownsStoreService.entries());
     });
+  }
+
+  loadBackendOptions(): Observable<void> {
+    return forkJoin({
+      projectAccountCodes: this.journalApi.listProjectAccountCodes(),
+      voteNumbers: this.journalApi.listVoteNumbers(),
+      accountCodes: this.journalApi.listAccountCodes(),
+    }).pipe(
+      timeout({ first: 8000 }),
+      tap(({ projectAccountCodes, voteNumbers, accountCodes }) => {
+        this.applyBackendOptions(
+          projectAccountCodes.data ?? [],
+          voteNumbers.data ?? [],
+          accountCodes.data ?? [],
+        );
+      }),
+      map(() => void 0),
+    );
+  }
+
+  getProjectAccountCodeId(code: string | null | undefined): number | null {
+    return this.projectAccountCodeIds.get(String(code ?? '')) ?? null;
+  }
+
+  getVoteNumberId(description: string | null | undefined): number | null {
+    return this.voteNumberIdsByDescription.get(String(description ?? '')) ?? null;
+  }
+
+  getAccountCodeId(code: string | null | undefined): number | null {
+    return this.accountCodeIds.get(String(code ?? '')) ?? null;
+  }
+
+  private applyBackendOptions(
+    projectAccountCodes: FinanceOption[],
+    voteNumbers: FinanceOption[],
+    accountCodes: FinanceOption[],
+  ): void {
+    this.backendOptionsLoaded = true;
+    this.projectAccountCodeIds = new Map(projectAccountCodes.map((item) => [item.code, item.id]));
+    this.voteNumberIdsByDescription = new Map(
+      voteNumbers.map((item) => [item.description || item.code, item.id]),
+    );
+    this.voteNumberCodesByDescription = new Map(
+      voteNumbers.map((item) => [item.description || item.code, item.code]),
+    );
+    this.accountCodeIds = new Map(accountCodes.map((item) => [item.code, item.id]));
+
+    this.projectAccountCodeOptions.set(
+      projectAccountCodes.length
+        ? projectAccountCodes.map((item) => ({
+            value: item.code,
+            label: item.description ? `${item.code} - ${item.description}` : item.code,
+          }))
+        : [...this.defaultProjectAccountCodeOptions],
+    );
+    this.voteNumberDescriptionOptions.set(
+      voteNumbers.map((item) => ({
+        value: item.description || item.code,
+        label: item.description || item.code,
+      })),
+    );
+    this.voteNumberOptions.set(
+      voteNumbers.map((item) => ({
+        value: item.code,
+        label: item.description ? `${item.code} - ${item.description}` : item.code,
+      })),
+    );
+    this.accountCodeOptions.set(
+      accountCodes.map((item) => ({
+        value: item.code,
+        label: item.description ? `${item.code} - ${item.description}` : item.code,
+      })),
+    );
+    this.accountCodeDescriptionOptions.set(
+      accountCodes.map((item) => ({
+        value: item.description || item.code,
+        label: item.description || item.code,
+      })),
+    );
   }
 
   /**
@@ -195,6 +285,11 @@ export class JournalOptionsService {
   }
 
   getConfiguredVoteNumber(optionValue: string | null | undefined): string {
+    const backendVoteNumber = this.voteNumberCodesByDescription.get(String(optionValue ?? ''));
+    if (backendVoteNumber) {
+      return backendVoteNumber;
+    }
+
     return this.dropdownsStoreService.getConfiguredNumber(
       this.formName,
       'Vote Number Description',

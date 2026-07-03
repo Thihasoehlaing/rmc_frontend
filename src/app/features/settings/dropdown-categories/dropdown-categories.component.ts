@@ -1,11 +1,5 @@
 import { CommonModule } from '@angular/common';
-import {
-  Component,
-  OnInit,
-  TrackByFunction,
-  inject,
-  signal,
-} from '@angular/core';
+import { Component, OnInit, TrackByFunction, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
 
@@ -24,6 +18,8 @@ import {
   DropdownCategoriesService,
 } from './dropdown-categories.service';
 
+import { TableActionIconComponent } from '../../../shared/components/table-action-icon/table-action-icon.component';
+
 type DialogMode = 'create' | 'edit';
 type StatusFilter = '' | 'Active' | 'Inactive';
 
@@ -31,6 +27,7 @@ type StatusFilter = '' | 'Active' | 'Inactive';
   selector: 'app-dropdown-categories',
   standalone: true,
   imports: [
+    TableActionIconComponent,
     CommonModule,
     FormsModule,
     DataTableComponent,
@@ -40,10 +37,7 @@ type StatusFilter = '' | 'Active' | 'Inactive';
     TableSkeletonComponent,
   ],
   templateUrl: './dropdown-categories.component.html',
-  styleUrls: [
-    '../forms/forms.component.scss',
-    './dropdown-categories.component.scss',
-  ],
+  styleUrls: ['../forms/forms.component.scss', './dropdown-categories.component.scss'],
 })
 export class DropdownCategoriesComponent implements OnInit {
   private readonly categoriesService = inject(DropdownCategoriesService);
@@ -86,10 +80,8 @@ export class DropdownCategoriesComponent implements OnInit {
     },
   ];
 
-  readonly rowTrackFn: TrackByFunction<unknown> = (
-    _index: number,
-    row: unknown,
-  ) => (row as DropdownCategory).id;
+  readonly rowTrackFn: TrackByFunction<unknown> = (_index: number, row: unknown) =>
+    (row as DropdownCategory).id;
 
   ngOnInit(): void {
     this.loadCategories();
@@ -108,7 +100,7 @@ export class DropdownCategoriesComponent implements OnInit {
       })
       .pipe(finalize(() => this.isLoading.set(false)))
       .subscribe({
-        next: response => {
+        next: (response) => {
           const pagination = response.data.pagination;
           if (pagination.total_pages > 0 && this.page() > pagination.total_pages) {
             this.page.set(pagination.total_pages);
@@ -202,26 +194,19 @@ export class DropdownCategoriesComponent implements OnInit {
         : this.categoriesService.update(this.selectedCategory()!.id, payload);
 
     this.isSaving.set(true);
-    request
-      .pipe(finalize(() => this.isSaving.set(false)))
-      .subscribe({
-        next: () => {
-          this.dialogMode.set(null);
-          this.selectedCategory.set(null);
-          this.page.set(1);
-          this.loadCategories();
-        },
-      });
+    request.pipe(finalize(() => this.isSaving.set(false))).subscribe({
+      next: () => {
+        this.dialogMode.set(null);
+        this.selectedCategory.set(null);
+        this.page.set(1);
+        this.loadCategories();
+      },
+    });
   }
 
   onNameChange(value: string): void {
     this.categoryName.set(value);
-    this.categoryCode.set(
-      value
-        .trim()
-        .toUpperCase()
-        .replace(/\s+/g, '_'),
-    );
+    this.categoryCode.set(value.trim().toUpperCase().replace(/\s+/g, '_'));
   }
 
   openDeleteDialog(category: DropdownCategory): void {
@@ -250,9 +235,7 @@ export class DropdownCategoriesComponent implements OnInit {
   }
 
   dialogTitle(): string {
-    return this.dialogMode() === 'create'
-      ? 'Create Dropdown Category'
-      : 'Edit Dropdown Category';
+    return this.dialogMode() === 'create' ? 'Create Dropdown Category' : 'Edit Dropdown Category';
   }
 
   rowNumber(index: number): number {
@@ -260,16 +243,11 @@ export class DropdownCategoriesComponent implements OnInit {
   }
 
   pageStart(): number {
-    return this.totalItems() === 0
-      ? 0
-      : (this.page() - 1) * this.pageSize() + 1;
+    return this.totalItems() === 0 ? 0 : (this.page() - 1) * this.pageSize() + 1;
   }
 
   pageEnd(): number {
-    return Math.min(
-      this.pageStart() + this.categories().length - 1,
-      this.totalItems(),
-    );
+    return Math.min(this.pageStart() + this.categories().length - 1, this.totalItems());
   }
 
   private fetchCategory(id: number): void {
@@ -279,7 +257,7 @@ export class DropdownCategoriesComponent implements OnInit {
       .get(id)
       .pipe(finalize(() => this.isDetailLoading.set(false)))
       .subscribe({
-        next: response => {
+        next: (response) => {
           this.selectedCategory.set(response.data);
           this.categoryCode.set(response.data.category_code);
           this.categoryName.set(response.data.category_name);

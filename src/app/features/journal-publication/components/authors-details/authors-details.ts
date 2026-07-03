@@ -7,16 +7,38 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } fr
 import { SearchableDropdownComponent } from '../../../../shared/components/searchable-dropdown/searchable-dropdown.component';
 import { DropdownOption } from '../../../../core/interfaces/components.interface';
 import { JournalWorkflowService } from '../../services/journal-workflow.service';
-import { DataTableComponent, DataTableColumn } from '../../../../shared/components/data-table/data-table.component';
+import {
+  DataTableComponent,
+  DataTableColumn,
+} from '../../../../shared/components/data-table/data-table.component';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
 import { NoteComponent } from '../../../../shared/components/note/note.component';
+import {
+  JournalFormData,
+  JournalNonApuAuthorPayload,
+  JournalStaffAuthorPayload,
+  JournalStudentAuthorPayload,
+} from '../../services/journal-application-api.service';
+
+import { TableActionIconComponent } from '../../../../shared/components/table-action-icon/table-action-icon.component';
 
 @Component({
   selector: 'app-authors-details',
   templateUrl: './authors-details.html',
   styleUrls: ['./authors-details.scss'],
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, SearchableDropdownComponent, CustomHeaderComponent, ValidationMessageComponent, ActionButtonComponent, DataTableComponent, PaginationComponent, NoteComponent]
+  imports: [
+    TableActionIconComponent,
+    CommonModule,
+    ReactiveFormsModule,
+    SearchableDropdownComponent,
+    CustomHeaderComponent,
+    ValidationMessageComponent,
+    ActionButtonComponent,
+    DataTableComponent,
+    PaginationComponent,
+    NoteComponent,
+  ],
 })
 export class AuthorsDetails implements OnInit {
   readonly apuAffiliation = 'Asia Pacific University';
@@ -28,7 +50,7 @@ export class AuthorsDetails implements OnInit {
     { key: 'staffName', label: 'Staff Name', width: '28%' },
     { key: 'schoolDepartment', label: 'School', width: '32%' },
     { key: 'affiliation', label: 'Second Affiliation', width: '25%' },
-    { key: 'actions', label: 'Actions', width: '10%', align: 'center', headerAlign: 'center' }
+    { key: 'actions', label: 'Actions', width: '10%', align: 'center', headerAlign: 'center' },
   ];
 
   readonly studentColumns: DataTableColumn[] = [
@@ -37,7 +59,7 @@ export class AuthorsDetails implements OnInit {
     { key: 'fullName', label: 'Student Name', width: '25%' },
     { key: 'schoolDepartment', label: 'School', width: '26%' },
     { key: 'affiliation', label: 'Second Affiliation', width: '22%' },
-    { key: 'actions', label: 'Actions', width: '10%', align: 'center', headerAlign: 'center' }
+    { key: 'actions', label: 'Actions', width: '10%', align: 'center', headerAlign: 'center' },
   ];
 
   readonly nonApuColumns: DataTableColumn[] = [
@@ -48,7 +70,7 @@ export class AuthorsDetails implements OnInit {
     { key: 'typeOfOrganisation', label: 'Type of Organisation', width: '13%' },
     { key: 'institutionName', label: 'Institution/Company Name', width: '16%' },
     { key: 'schoolDepartment', label: 'School/Department', width: '18%' },
-    { key: 'actions', label: 'Actions', width: '10%', align: 'center', headerAlign: 'center' }
+    { key: 'actions', label: 'Actions', width: '10%', align: 'center', headerAlign: 'center' },
   ];
 
   isModalOpen: boolean = false;
@@ -75,25 +97,90 @@ export class AuthorsDetails implements OnInit {
     { value: 'Emily Davis', label: 'Emily Davis' },
     { value: 'Robert Wilson', label: 'Robert Wilson' },
     { value: 'Jessica Taylor', label: 'Jessica Taylor' },
-    { value: 'James Anderson', label: 'James Anderson' }
+    { value: 'James Anderson', label: 'James Anderson' },
   ];
 
   // Country dropdown — searchable list used in the Non-APU co-author modal
   readonly countryOptions: DropdownOption<string>[] = [
-    'Afghanistan','Albania','Algeria','Argentina','Australia','Austria',
-    'Bangladesh','Belgium','Brazil','Cambodia','Canada','Chile','China',
-    'Colombia','Czech Republic','Denmark','Egypt','Ethiopia','Finland',
-    'France','Germany','Ghana','Greece','Hong Kong','Hungary','India',
-    'Indonesia','Iran','Iraq','Ireland','Israel','Italy','Japan','Jordan',
-    'Kazakhstan','Kenya','Kuwait','Lebanon','Libya','Malaysia','Mexico',
-    'Morocco','Myanmar','Nepal','Netherlands','New Zealand','Nigeria',
-    'Norway','Oman','Pakistan','Palestine','Philippines','Poland',
-    'Portugal','Qatar','Romania','Russia','Saudi Arabia','Singapore',
-    'South Africa','South Korea','Spain','Sri Lanka','Sudan','Sweden',
-    'Switzerland','Syria','Taiwan','Thailand','Tunisia','Turkey',
-    'Ukraine','United Arab Emirates','United Kingdom','United States',
-    'Vietnam','Yemen','Zimbabwe'
-  ].map(c => ({ value: c, label: c }));
+    'Afghanistan',
+    'Albania',
+    'Algeria',
+    'Argentina',
+    'Australia',
+    'Austria',
+    'Bangladesh',
+    'Belgium',
+    'Brazil',
+    'Cambodia',
+    'Canada',
+    'Chile',
+    'China',
+    'Colombia',
+    'Czech Republic',
+    'Denmark',
+    'Egypt',
+    'Ethiopia',
+    'Finland',
+    'France',
+    'Germany',
+    'Ghana',
+    'Greece',
+    'Hong Kong',
+    'Hungary',
+    'India',
+    'Indonesia',
+    'Iran',
+    'Iraq',
+    'Ireland',
+    'Israel',
+    'Italy',
+    'Japan',
+    'Jordan',
+    'Kazakhstan',
+    'Kenya',
+    'Kuwait',
+    'Lebanon',
+    'Libya',
+    'Malaysia',
+    'Mexico',
+    'Morocco',
+    'Myanmar',
+    'Nepal',
+    'Netherlands',
+    'New Zealand',
+    'Nigeria',
+    'Norway',
+    'Oman',
+    'Pakistan',
+    'Palestine',
+    'Philippines',
+    'Poland',
+    'Portugal',
+    'Qatar',
+    'Romania',
+    'Russia',
+    'Saudi Arabia',
+    'Singapore',
+    'South Africa',
+    'South Korea',
+    'Spain',
+    'Sri Lanka',
+    'Sudan',
+    'Sweden',
+    'Switzerland',
+    'Syria',
+    'Taiwan',
+    'Thailand',
+    'Tunisia',
+    'Turkey',
+    'Ukraine',
+    'United Arab Emirates',
+    'United Kingdom',
+    'United States',
+    'Vietnam',
+    'Yemen',
+    'Zimbabwe',
+  ].map((c) => ({ value: c, label: c }));
 
   workflow = inject(JournalWorkflowService);
 
@@ -128,19 +215,115 @@ export class AuthorsDetails implements OnInit {
       isPresenter: [true],
       testSubsections: this.fb.array([]),
       studentCoAuthors: this.fb.array([]),
-      nonApuCoAuthors: this.fb.array([])
+      nonApuCoAuthors: this.fb.array([]),
     });
 
-    this.form.statusChanges.subscribe(status => {
+    this.form.statusChanges.subscribe((status) => {
       this.formValidityChange.emit(status === 'VALID');
     });
+  }
+
+  getStaffAuthorPayloads(): JournalStaffAuthorPayload[] {
+    return this.testSubsections.controls
+      .map((control, index) => {
+        const value = control.value;
+        return {
+          staff_name: value.staffName || null,
+          staff_department: value.schoolDepartment || null,
+          affiliation: value.affiliation || this.apuAffiliation,
+          display_order: index + 1,
+        };
+      })
+      .filter((item) => !!item.staff_name || !!item.staff_department);
+  }
+
+  getStudentAuthorPayloads(): JournalStudentAuthorPayload[] {
+    return this.studentCoAuthors.controls
+      .map((control, index) => {
+        const value = control.value;
+        return {
+          tp_number: value.tpNumber || null,
+          full_name: value.fullName || null,
+          school_department: value.schoolDepartment || null,
+          affiliation: value.affiliation || this.apuAffiliation,
+          display_order: index + 1,
+        };
+      })
+      .filter((item) => !!item.tp_number || !!item.full_name);
+  }
+
+  getNonApuAuthorPayloads(): JournalNonApuAuthorPayload[] {
+    return this.nonApuCoAuthors.controls
+      .map((control, index) => {
+        const value = control.value;
+        return {
+          full_name: value.fullName || null,
+          country: value.country || null,
+          email: value.email || null,
+          organisation_type: value.typeOfOrganisation || null,
+          school_department: value.schoolDepartment || null,
+          institution_company_name: value.institutionName || null,
+          display_order: index + 1,
+        };
+      })
+      .filter((item) => !!item.full_name || !!item.email);
+  }
+
+  hydrateFromApi(data: JournalFormData): void {
+    if (!this.form) {
+      return;
+    }
+
+    this.testSubsections.clear();
+    this.studentCoAuthors.clear();
+    this.nonApuCoAuthors.clear();
+
+    for (const item of data.apu_staff_co_authors || []) {
+      const group = this.createTestSubsection();
+      group.patchValue(
+        {
+          staffName: item.staff_name || '',
+          schoolDepartment: item.staff_department || '',
+          affiliation: item.affiliation || this.apuAffiliation,
+        },
+        { emitEvent: false },
+      );
+      this.testSubsections.push(group);
+    }
+
+    for (const item of data.apu_student_co_authors || []) {
+      this.studentCoAuthors.push(
+        this.fb.group({
+          tpNumber: [item.tp_number || '', [Validators.required]],
+          fullName: [item.full_name || '', [Validators.required]],
+          schoolDepartment: [item.school_department || '', [Validators.required]],
+          affiliation: [item.affiliation || this.apuAffiliation],
+        }),
+      );
+    }
+
+    for (const item of data.non_apu_co_authors || []) {
+      const group = this.createNonApuCoAuthor();
+      group.patchValue(
+        {
+          fullName: item.full_name || '',
+          country: item.country || '',
+          email: item.email || '',
+          schoolDepartment: item.school_department || '',
+          typeOfOrganisation: item.organisation_type || '',
+          institutionName: item.institution_company_name || '',
+        },
+        { emitEvent: false },
+      );
+      this.nonApuCoAuthors.push(group);
+    }
   }
 
   createTestSubsection(): FormGroup {
     return this.fb.group({
       staffName: [''],
       schoolDepartment: [''],
-      affiliation: [this.apuAffiliation]
+      affiliation: [this.apuAffiliation],
     });
   }
 
@@ -150,7 +333,7 @@ export class AuthorsDetails implements OnInit {
       tpNumber: ['', [Validators.required, Validators.pattern('^(?!0+$)[0-9]{1,6}$')]],
       fullName: ['', [Validators.required]],
       schoolDepartment: ['', [Validators.required]],
-      affiliation: [this.apuAffiliation]
+      affiliation: [this.apuAffiliation],
     });
   }
 
@@ -161,7 +344,7 @@ export class AuthorsDetails implements OnInit {
       email: ['', [Validators.required, Validators.email]],
       schoolDepartment: ['', [Validators.required]],
       typeOfOrganisation: ['', [Validators.required]],
-      institutionName: ['', [Validators.required]]
+      institutionName: ['', [Validators.required]],
     });
   }
 
@@ -190,42 +373,81 @@ export class AuthorsDetails implements OnInit {
   }
 
   getApuStaffPageStart(): number {
-    return this.testSubsections.length === 0 ? 0 : ((Math.min(this.apuStaffCurrentPage, this.getApuStaffTotalPages()) - 1) * this.apuStaffPageSize) + 1;
+    return this.testSubsections.length === 0
+      ? 0
+      : (Math.min(this.apuStaffCurrentPage, this.getApuStaffTotalPages()) - 1) *
+          this.apuStaffPageSize +
+          1;
   }
 
   getApuStaffPageEnd(): number {
-    return this.testSubsections.length === 0 ? 0 : Math.min(this.getApuStaffPageStart() + this.apuStaffPageSize - 1, this.testSubsections.length);
+    return this.testSubsections.length === 0
+      ? 0
+      : Math.min(
+          this.getApuStaffPageStart() + this.apuStaffPageSize - 1,
+          this.testSubsections.length,
+        );
   }
 
   getStudentCoAuthorsPageStart(): number {
-    return this.studentCoAuthors.length === 0 ? 0 : ((Math.min(this.studentCoAuthorsCurrentPage, this.getStudentCoAuthorsTotalPages()) - 1) * this.studentCoAuthorsPageSize) + 1;
+    return this.studentCoAuthors.length === 0
+      ? 0
+      : (Math.min(this.studentCoAuthorsCurrentPage, this.getStudentCoAuthorsTotalPages()) - 1) *
+          this.studentCoAuthorsPageSize +
+          1;
   }
 
   getStudentCoAuthorsPageEnd(): number {
-    return this.studentCoAuthors.length === 0 ? 0 : Math.min(this.getStudentCoAuthorsPageStart() + this.studentCoAuthorsPageSize - 1, this.studentCoAuthors.length);
+    return this.studentCoAuthors.length === 0
+      ? 0
+      : Math.min(
+          this.getStudentCoAuthorsPageStart() + this.studentCoAuthorsPageSize - 1,
+          this.studentCoAuthors.length,
+        );
   }
 
   getNonApuCoAuthorsPageStart(): number {
-    return this.nonApuCoAuthors.length === 0 ? 0 : ((Math.min(this.nonApuCoAuthorsCurrentPage, this.getNonApuCoAuthorsTotalPages()) - 1) * this.nonApuCoAuthorsPageSize) + 1;
+    return this.nonApuCoAuthors.length === 0
+      ? 0
+      : (Math.min(this.nonApuCoAuthorsCurrentPage, this.getNonApuCoAuthorsTotalPages()) - 1) *
+          this.nonApuCoAuthorsPageSize +
+          1;
   }
 
   getNonApuCoAuthorsPageEnd(): number {
-    return this.nonApuCoAuthors.length === 0 ? 0 : Math.min(this.getNonApuCoAuthorsPageStart() + this.nonApuCoAuthorsPageSize - 1, this.nonApuCoAuthors.length);
+    return this.nonApuCoAuthors.length === 0
+      ? 0
+      : Math.min(
+          this.getNonApuCoAuthorsPageStart() + this.nonApuCoAuthorsPageSize - 1,
+          this.nonApuCoAuthors.length,
+        );
   }
 
   getPaginatedApuStaffControls() {
-    const startIndex = (Math.min(this.apuStaffCurrentPage, this.getApuStaffTotalPages()) - 1) * this.apuStaffPageSize;
+    const startIndex =
+      (Math.min(this.apuStaffCurrentPage, this.getApuStaffTotalPages()) - 1) *
+      this.apuStaffPageSize;
     return this.testSubsections.controls.slice(startIndex, startIndex + this.apuStaffPageSize);
   }
 
   getPaginatedStudentCoAuthorsControls() {
-    const startIndex = (Math.min(this.studentCoAuthorsCurrentPage, this.getStudentCoAuthorsTotalPages()) - 1) * this.studentCoAuthorsPageSize;
-    return this.studentCoAuthors.controls.slice(startIndex, startIndex + this.studentCoAuthorsPageSize);
+    const startIndex =
+      (Math.min(this.studentCoAuthorsCurrentPage, this.getStudentCoAuthorsTotalPages()) - 1) *
+      this.studentCoAuthorsPageSize;
+    return this.studentCoAuthors.controls.slice(
+      startIndex,
+      startIndex + this.studentCoAuthorsPageSize,
+    );
   }
 
   getPaginatedNonApuCoAuthorsControls() {
-    const startIndex = (Math.min(this.nonApuCoAuthorsCurrentPage, this.getNonApuCoAuthorsTotalPages()) - 1) * this.nonApuCoAuthorsPageSize;
-    return this.nonApuCoAuthors.controls.slice(startIndex, startIndex + this.nonApuCoAuthorsPageSize);
+    const startIndex =
+      (Math.min(this.nonApuCoAuthorsCurrentPage, this.getNonApuCoAuthorsTotalPages()) - 1) *
+      this.nonApuCoAuthorsPageSize;
+    return this.nonApuCoAuthors.controls.slice(
+      startIndex,
+      startIndex + this.nonApuCoAuthorsPageSize,
+    );
   }
 
   get testSubsections(): FormArray {
@@ -279,15 +501,18 @@ export class AuthorsDetails implements OnInit {
         this.editForm = this.fb.group({
           staffName: [data.staffName],
           schoolDepartment: [data.schoolDepartment],
-          affiliation: [this.apuAffiliation]
+          affiliation: [this.apuAffiliation],
         });
       } else if (type === 'student') {
         data = this.studentCoAuthors.at(index).value;
         this.editForm = this.fb.group({
-          tpNumber: [this.parseTPNumber(data.tpNumber), [Validators.required, Validators.pattern('^(?!0+$)[0-9]{1,6}$')]],
+          tpNumber: [
+            this.parseTPNumber(data.tpNumber),
+            [Validators.required, Validators.pattern('^(?!0+$)[0-9]{1,6}$')],
+          ],
           fullName: [data.fullName, [Validators.required]],
           schoolDepartment: [data.schoolDepartment, [Validators.required]],
-          affiliation: [this.apuAffiliation]
+          affiliation: [this.apuAffiliation],
         });
       } else if (type === 'non-apu') {
         data = this.nonApuCoAuthors.at(index).value;
@@ -297,7 +522,7 @@ export class AuthorsDetails implements OnInit {
           email: [data.email, [Validators.required, Validators.email]],
           schoolDepartment: [data.schoolDepartment, [Validators.required]],
           typeOfOrganisation: [data.typeOfOrganisation, [Validators.required]],
-          institutionName: [data.institutionName, [Validators.required]]
+          institutionName: [data.institutionName, [Validators.required]],
         });
       }
     } else {
@@ -307,14 +532,14 @@ export class AuthorsDetails implements OnInit {
         this.editForm = this.fb.group({
           staffName: [''],
           schoolDepartment: [''],
-          affiliation: [this.apuAffiliation]
+          affiliation: [this.apuAffiliation],
         });
       } else if (type === 'student') {
         this.editForm = this.fb.group({
           tpNumber: ['', [Validators.required, Validators.pattern('^(?!0+$)[0-9]{1,6}$')]],
           fullName: ['', [Validators.required]],
           schoolDepartment: ['', [Validators.required]],
-          affiliation: [this.apuAffiliation]
+          affiliation: [this.apuAffiliation],
         });
       } else if (type === 'non-apu') {
         this.editForm = this.fb.group({
@@ -323,7 +548,7 @@ export class AuthorsDetails implements OnInit {
           email: ['', [Validators.required, Validators.email]],
           schoolDepartment: ['', [Validators.required]],
           typeOfOrganisation: ['', [Validators.required]],
-          institutionName: ['', [Validators.required]]
+          institutionName: ['', [Validators.required]],
         });
       }
     }
@@ -345,7 +570,7 @@ export class AuthorsDetails implements OnInit {
       ...this.editForm.value,
       ...(this.modalType === 'apu-staff' || this.modalType === 'student'
         ? { affiliation: this.apuAffiliation }
-        : {})
+        : {}),
     };
 
     // Prepend "TP" prefix to the student TP number before saving
@@ -381,8 +606,8 @@ export class AuthorsDetails implements OnInit {
     const isEditing = this.editingIndex !== null ? 'Edit' : 'Add';
     const titles = {
       'apu-staff': `${isEditing} Asia Pacific University of Technology & Innovation Staff Co-Author`,
-      'student': `${isEditing} Asia Pacific University of Technology & Innovation Student Co-Author`,
-      'non-apu': `${isEditing} Co-Author Outside Asia Pacific University of Technology & Innovation`
+      student: `${isEditing} Asia Pacific University of Technology & Innovation Student Co-Author`,
+      'non-apu': `${isEditing} Co-Author Outside Asia Pacific University of Technology & Innovation`,
     };
     return titles[this.modalType];
   }

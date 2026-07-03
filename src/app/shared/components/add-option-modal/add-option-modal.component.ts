@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Input, Output, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { SearchableDropdownComponent } from '../searchable-dropdown/searchable-dropdown.component';
 
 export interface AddOptionPayload {
   name: string;
@@ -10,6 +11,7 @@ export interface AddOptionPayload {
   percentage?: number | null;
   limit?: number | null;
   description?: string;
+  parentDomainId?: number | null;
 }
 
 @Component({
@@ -17,7 +19,7 @@ export interface AddOptionPayload {
   templateUrl: './add-option-modal.component.html',
   styleUrls: ['./add-option-modal.component.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, SearchableDropdownComponent],
 })
 export class AddOptionModalComponent implements OnChanges {
   @Input() isOpen = false;
@@ -33,6 +35,11 @@ export class AddOptionModalComponent implements OnChanges {
   @Input() showRegionMetadata = false;
   @Input() nameReadonly = false;
   @Input() descriptionReadonly = false;
+  @Input() allowFormSharing = true;
+  /** When true, show a required "Parent Research Domain" dropdown (used for Sub-Research Domain). */
+  @Input() showParentDomain = false;
+  @Input() parentDomainLabel = 'Parent Research Domain';
+  @Input() parentDomainOptions: { label: string; value: string }[] = [];
 
   @Output() close = new EventEmitter<void>();
   @Output() save = new EventEmitter<AddOptionPayload>();
@@ -44,6 +51,7 @@ export class AddOptionModalComponent implements OnChanges {
   percentage: number | null = null;
   limit: number | null = null;
   description: string = '';
+  parentDomainId: string = '';
 
   ngOnChanges(changes: SimpleChanges) {
     const init = this.initial;
@@ -55,6 +63,7 @@ export class AddOptionModalComponent implements OnChanges {
       this.percentage = init.percentage ?? null;
       this.limit = init.limit ?? null;
       this.description = init.description || '';
+      this.parentDomainId = init.parentDomainId != null ? String(init.parentDomainId) : '';
     } else {
       this.name = '';
       this.status = 'Active';
@@ -63,11 +72,20 @@ export class AddOptionModalComponent implements OnChanges {
       this.percentage = null;
       this.limit = null;
       this.description = '';
+      this.parentDomainId = '';
     }
   }
 
   get isValid(): boolean {
-    if (!this.name.trim() || this.appliesTo.length === 0) {
+    if (!this.name.trim()) {
+      return false;
+    }
+
+    if (this.showParentDomain && !this.parentDomainId) {
+      return false;
+    }
+
+    if (this.allowFormSharing && this.appliesTo.length === 0) {
       return false;
     }
 
@@ -85,7 +103,7 @@ export class AddOptionModalComponent implements OnChanges {
   }
 
   get showAppliesToError(): boolean {
-    return this.appliesTo.length === 0;
+    return this.allowFormSharing && this.appliesTo.length === 0;
   }
 
   onToggleForm(form: string) {
@@ -100,14 +118,17 @@ export class AddOptionModalComponent implements OnChanges {
 
   onSave() {
     if (!this.isValid) return;
+    const appliesTo = this.allowFormSharing ? [...this.appliesTo] : [...this.defaultSelectedForms];
     this.save.emit({
       name: this.name.trim(),
       status: this.status,
-      appliesTo: [...this.appliesTo],
+      appliesTo,
       accountNumber: this.showAccountNumberMetadata ? this.accountNumber.trim() : undefined,
       percentage: this.showRegionMetadata ? this.percentage : undefined,
       limit: this.showRegionMetadata ? this.limit : undefined,
       description: this.showRegionMetadata ? this.description.trim() : undefined,
+      parentDomainId: this.showParentDomain ? Number(this.parentDomainId) : undefined,
     });
   }
 }
+

@@ -2,8 +2,8 @@
   class="searchable-dropdown"
   [class.is-open]="isOpen()"
   [class.is-multi]="isMulti"
-  [class.is-disabled]="isDisabled() || loading">
-
+  [class.is-disabled]="isDisabled() || loading"
+>
   <!-- ── Label ──────────────────────────────────────────────────── -->
   @if (label) {
     <label class="form-label" [class.is-required]="required">{{ label }}</label>
@@ -21,13 +21,12 @@
     [attr.aria-disabled]="isDisabled() || loading"
     [class.has-value]="hasSelection()"
     [class.is-disabled]="isDisabled() || loading"
-    (click)="toggleDropdown()">
-
+    (click)="toggleDropdown()"
+  >
     <div class="display-container">
       @if (!hasSelection()) {
         <!-- Placeholder / loading text -->
         <span class="placeholder">{{ loading ? 'Loading…' : placeholder }}</span>
-
       } @else if (isMulti) {
         <!-- Multi-select: chip list -->
         <div class="chips-container">
@@ -39,14 +38,14 @@
                   type="button"
                   class="chip-remove"
                   [attr.aria-label]="'Remove ' + getChipLabel(val)"
-                  (click)="removeChip(val, $event)">
+                  (click)="removeChip(val, $event)"
+                >
                   &times;
                 </button>
               }
             </div>
           }
         </div>
-
       } @else {
         <!-- Single-select: display text -->
         <span class="value-text">{{ displayValue }}</span>
@@ -61,11 +60,12 @@
           type="button"
           class="clear-btn"
           aria-label="Clear selection"
-          (click)="clearSelection($event)">
+          (click)="clearSelection($event)"
+        >
           &times;
         </button>
       }
-      <span class="arrow-icon" aria-hidden="true"></span>
+      <app-svg-icon class="arrow-icon" [icon]="chevronDownIcon" size="10px"></app-svg-icon>
     </div>
   </div>
 
@@ -76,8 +76,8 @@
       [id]="listboxId"
       role="listbox"
       [attr.aria-multiselectable]="isMulti"
-      [attr.aria-label]="label || placeholder">
-
+      [attr.aria-label]="label || placeholder"
+    >
       <!-- Search input -->
       @if (searchable) {
         <div class="search-container">
@@ -90,7 +90,8 @@
             aria-autocomplete="list"
             (click)="$event.stopPropagation()"
             (keydown.arrowdown)="$event.preventDefault()"
-            (keydown.arrowup)="$event.preventDefault()" />
+            (keydown.arrowup)="$event.preventDefault()"
+          />
         </div>
       }
 
@@ -106,28 +107,29 @@
             [class.disabled]="isOptionDisabled(opt)"
             [attr.aria-selected]="isSelected(opt.value)"
             [attr.aria-disabled]="isOptionDisabled(opt)"
-            (click)="selectOption(opt); $event.stopPropagation()">
-
+            (click)="selectOption(opt); $event.stopPropagation()"
+          >
             <!-- Checkbox indicator (multi-select) -->
             @if (isMulti) {
-              <div
-                class="checkbox-box"
-                [class.checked]="isSelected(opt.value)"
-                aria-hidden="true">
+              <div class="checkbox-box" [class.checked]="isSelected(opt.value)" aria-hidden="true">
                 @if (isSelected(opt.value)) {
                   <span class="check-mark"></span>
                 }
               </div>
             }
 
-            <span class="option-label">{{ opt.label }}</span>
+            <span class="option-text">
+              <span class="option-label">{{ opt.label }}</span>
+              @if (opt.description) {
+                <span class="option-description">{{ opt.description }}</span>
+              }
+            </span>
 
             <!-- Single-select checkmark -->
             @if (!isMulti && isSelected(opt.value)) {
               <span class="check-mark-single" aria-hidden="true"></span>
             }
           </div>
-
         } @empty {
           @if (loading) {
             <div class="no-results">

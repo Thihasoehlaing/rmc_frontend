@@ -10,10 +10,13 @@ import { ActionButtonComponent } from '../../../../shared/components/action-butt
 import { FileUploadComponent } from '../../../../shared/components/file-upload/file-upload.component';
 import { TextareaAutosizeDirective } from '../../../../shared/directives/textarea-autosize.directive';
 
+import { TableActionIconComponent } from '../../../../shared/components/table-action-icon/table-action-icon.component';
+
 @Component({
   selector: 'app-risk-assessment',
   standalone: true,
   imports: [
+    TableActionIconComponent,
     CommonModule,
     ReactiveFormsModule,
     CustomSubheaderComponent,
@@ -22,10 +25,10 @@ import { TextareaAutosizeDirective } from '../../../../shared/directives/textare
     ValidationMessageComponent,
     ActionButtonComponent,
     FileUploadComponent,
-    TextareaAutosizeDirective
+    TextareaAutosizeDirective,
   ],
   templateUrl: './risk-assessment.html',
-  styleUrls: ['./risk-assessment.scss']
+  styleUrls: ['./risk-assessment.scss'],
 })
 export class RiskAssessment implements OnChanges, OnInit {
   private fb = inject(FormBuilder);
@@ -37,7 +40,7 @@ export class RiskAssessment implements OnChanges, OnInit {
     { key: 'name', label: 'Name' },
     { key: 'functionalUnit', label: 'Functional Unit' },
     { key: 'email', label: 'Email' },
-    { key: 'actions', label: 'Actions', width: '100px', align: 'center', headerAlign: 'center' }
+    { key: 'actions', label: 'Actions', width: '100px', align: 'center', headerAlign: 'center' },
   ];
 
   readonly milestonesColumns: DataTableColumn[] = [
@@ -45,7 +48,7 @@ export class RiskAssessment implements OnChanges, OnInit {
     { key: 'action', label: 'Action/Milestone' },
     { key: 'startDate', label: 'Start Date', width: '150px' },
     { key: 'endDate', label: 'End Date', width: '150px' },
-    { key: 'actions', label: 'Actions', width: '100px', align: 'center', headerAlign: 'center' }
+    { key: 'actions', label: 'Actions', width: '100px', align: 'center', headerAlign: 'center' },
   ];
 
   readonly outcomesColumns: DataTableColumn[] = [
@@ -53,7 +56,7 @@ export class RiskAssessment implements OnChanges, OnInit {
     { key: 'outcome', label: 'Outcome' },
     { key: 'startDate', label: 'Start Date', width: '150px' },
     { key: 'endDate', label: 'End Date', width: '150px' },
-    { key: 'actions', label: 'Actions', width: '100px', align: 'center', headerAlign: 'center' }
+    { key: 'actions', label: 'Actions', width: '100px', align: 'center', headerAlign: 'center' },
   ];
 
   readonly supportingDocsColumns: DataTableColumn[] = [
@@ -61,7 +64,7 @@ export class RiskAssessment implements OnChanges, OnInit {
     { key: 'documentType', label: 'Document Type' },
     { key: 'file', label: 'File' },
     { key: 'description', label: 'Description' },
-    { key: 'actions', label: 'Actions', width: '100px', align: 'center', headerAlign: 'center' }
+    { key: 'actions', label: 'Actions', width: '100px', align: 'center', headerAlign: 'center' },
   ];
 
   isModalOpen = false;
@@ -71,38 +74,38 @@ export class RiskAssessment implements OnChanges, OnInit {
   leadMemberForm: FormGroup = this.fb.group({
     name: ['', Validators.required],
     functionalUnit: ['', Validators.required],
-    email: ['', [Validators.required, Validators.email]]
+    email: ['', [Validators.required, Validators.email]],
   });
 
   milestoneForm: FormGroup = this.fb.group({
     action: ['', Validators.required],
     startDate: ['', Validators.required],
-    endDate: ['', Validators.required]
+    endDate: ['', Validators.required],
   });
 
   outcomeForm: FormGroup = this.fb.group({
     outcome: ['', Validators.required],
     startDate: ['', Validators.required],
-    endDate: ['', Validators.required]
+    endDate: ['', Validators.required],
   });
 
   supportingDocForm: FormGroup = this.fb.group({
     documentType: ['', Validators.required],
     fileName: ['', Validators.required],
-    description: ['']
+    description: [''],
   });
 
   riskForm: FormGroup = this.fb.group({
-    affordability: ['', [Validators.required, Validators.maxLength(2000)]],     
-    sustainability: ['', [Validators.required, Validators.maxLength(2000)]],    
+    affordability: ['', [Validators.required, Validators.maxLength(2000)]],
+    sustainability: ['', [Validators.required, Validators.maxLength(2000)]],
     strategic: ['', [Validators.required, Validators.maxLength(2000)]],
-    studentFocus: ['', [Validators.required, Validators.maxLength(2000)]],      
+    studentFocus: ['', [Validators.required, Validators.maxLength(2000)]],
     outcome: ['', [Validators.required, Validators.maxLength(500)]],
     successFactor: ['', [Validators.maxLength(500)]],
     apuLeadMembers: this.fb.array([]),
     milestones: this.fb.array([]),
     outcomes: this.fb.array([]),
-    supportingDocs: this.fb.array([])
+    supportingDocs: this.fb.array([]),
   });
 
   get apuLeadMembers(): FormArray {
@@ -151,7 +154,7 @@ export class RiskAssessment implements OnChanges, OnInit {
       }
     } else if (type === 'outcome') {
       if (this.editingIndex !== null) {
-        this.outcomeForm.patchValue(this.outcomes.at(this.editingIndex).value); 
+        this.outcomeForm.patchValue(this.outcomes.at(this.editingIndex).value);
       } else {
         this.outcomeForm.reset();
       }
@@ -196,7 +199,7 @@ export class RiskAssessment implements OnChanges, OnInit {
     const form = this.currentForm;
 
     if (form.invalid) {
-      Object.keys(form.controls).forEach(key => {
+      Object.keys(form.controls).forEach((key) => {
         const control = form.get(key);
         if (control) {
           control.markAsTouched();
@@ -207,43 +210,51 @@ export class RiskAssessment implements OnChanges, OnInit {
 
     if (this.modalType === 'leadMember') {
       if (this.editingIndex !== null) {
-        this.apuLeadMembers.at(this.editingIndex).patchValue(form.value);       
+        this.apuLeadMembers.at(this.editingIndex).patchValue(form.value);
       } else {
-        this.apuLeadMembers.push(this.fb.group({
-          name: [form.value.name, Validators.required],
-          functionalUnit: [form.value.functionalUnit, Validators.required],     
-          email: [form.value.email, [Validators.required, Validators.email]]    
-        }));
+        this.apuLeadMembers.push(
+          this.fb.group({
+            name: [form.value.name, Validators.required],
+            functionalUnit: [form.value.functionalUnit, Validators.required],
+            email: [form.value.email, [Validators.required, Validators.email]],
+          }),
+        );
       }
     } else if (this.modalType === 'milestone') {
       if (this.editingIndex !== null) {
         this.milestones.at(this.editingIndex).patchValue(form.value);
       } else {
-        this.milestones.push(this.fb.group({
-          action: [form.value.action, Validators.required],
-          startDate: [form.value.startDate, Validators.required],
-          endDate: [form.value.endDate, Validators.required]
-        }));
+        this.milestones.push(
+          this.fb.group({
+            action: [form.value.action, Validators.required],
+            startDate: [form.value.startDate, Validators.required],
+            endDate: [form.value.endDate, Validators.required],
+          }),
+        );
       }
     } else if (this.modalType === 'outcome') {
       if (this.editingIndex !== null) {
         this.outcomes.at(this.editingIndex).patchValue(form.value);
       } else {
-        this.outcomes.push(this.fb.group({
-          outcome: [form.value.outcome, Validators.required],
-          startDate: [form.value.startDate, Validators.required],
-          endDate: [form.value.endDate, Validators.required]
-        }));
+        this.outcomes.push(
+          this.fb.group({
+            outcome: [form.value.outcome, Validators.required],
+            startDate: [form.value.startDate, Validators.required],
+            endDate: [form.value.endDate, Validators.required],
+          }),
+        );
       }
     } else if (this.modalType === 'suppDoc') {
       if (this.editingIndex !== null) {
-        this.supportingDocs.at(this.editingIndex).patchValue(form.value);       
+        this.supportingDocs.at(this.editingIndex).patchValue(form.value);
       } else {
-        this.supportingDocs.push(this.fb.group({
-          documentType: [form.value.documentType, Validators.required],
-          fileName: [form.value.fileName, Validators.required],
-          description: [form.value.description]
-        }));
+        this.supportingDocs.push(
+          this.fb.group({
+            documentType: [form.value.documentType, Validators.required],
+            fileName: [form.value.fileName, Validators.required],
+            description: [form.value.description],
+          }),
+        );
       }
     }
 
@@ -268,11 +279,11 @@ export class RiskAssessment implements OnChanges, OnInit {
 
   getModalTitle(): string {
     if (this.modalType === 'milestone') {
-      return this.editingIndex !== null ? 'Edit Milestone' : 'Add Milestone';   
+      return this.editingIndex !== null ? 'Edit Milestone' : 'Add Milestone';
     } else if (this.modalType === 'outcome') {
       return this.editingIndex !== null ? 'Edit Outcome' : 'Add Outcome';
     } else if (this.modalType === 'suppDoc') {
-      return this.editingIndex !== null ? 'Edit Document' : 'Add Document';     
+      return this.editingIndex !== null ? 'Edit Document' : 'Add Document';
     }
     return this.editingIndex !== null ? 'Edit APU Lead Member' : 'Add APU Lead Member';
   }

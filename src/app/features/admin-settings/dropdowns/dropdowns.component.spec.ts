@@ -19,4 +19,40 @@ describe('DropdownsComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('should deactivate an active dropdown option', () => {
+    component.dropdownOptions.set([
+      {
+        id: 1,
+        formName: 'Conference Application',
+        category: 'Select Region',
+        value: 'ASEAN',
+        lastUpdated: '20 Jun 2026',
+        createdBy: 'Admin',
+        status: 'Active',
+      },
+    ]);
+
+    component.toggleStatus(1);
+
+    expect(component.dropdownOptions()[0].status).toBe('Inactive');
+  });
+
+  it('should activate an inactive dropdown option', () => {
+    component.dropdownOptions.set([
+      {
+        id: 1,
+        formName: 'Conference Application',
+        category: 'Select Region',
+        value: 'ASEAN',
+        lastUpdated: '20 Jun 2026',
+        createdBy: 'Admin',
+        status: 'Inactive',
+      },
+    ]);
+
+    component.toggleStatus(1);
+
+    expect(component.dropdownOptions()[0].status).toBe('Active');
+  });
 });

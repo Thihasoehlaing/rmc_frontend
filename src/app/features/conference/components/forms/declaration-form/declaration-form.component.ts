@@ -11,7 +11,7 @@ import { ConferenceFormStateService } from '../../../services/conference-form-st
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, CustomHeaderComponent, CustomSubheaderComponent],
   templateUrl: './declaration-form.component.html',
-  styleUrl: './declaration-form.component.scss'
+  styleUrl: './declaration-form.component.scss',
 })
 export class DeclarationFormComponent implements OnInit, OnDestroy {
   @Input() workflow?: ConferenceWorkflowService;
@@ -19,7 +19,10 @@ export class DeclarationFormComponent implements OnInit, OnDestroy {
 
   form!: FormGroup;
 
-  constructor(private fb: FormBuilder, private formStateService: ConferenceFormStateService) {
+  constructor(
+    private fb: FormBuilder,
+    private formStateService: ConferenceFormStateService,
+  ) {
     // Apply form read-only effect if workflow is provided
     // For Declaration, use canEditDeclaration() which allows hos_application
     effect(() => {
@@ -50,7 +53,7 @@ export class DeclarationFormComponent implements OnInit, OnDestroy {
       confirmCompliance: [false, [Validators.requiredTrue]],
       confirmPostReturn: [false, [Validators.requiredTrue]],
       agreeToTerms: [false, [Validators.requiredTrue]],
-      acknowledgeGrantFunder: [false, [Validators.requiredTrue]]
+      acknowledgeGrantFunder: [false, [Validators.requiredTrue]],
     });
   }
 
@@ -73,14 +76,20 @@ export class DeclarationFormComponent implements OnInit, OnDestroy {
     }
   }
 
+  /** Flushes the live form into the shared state service — called by the wizard before saving. */
+  flushFormState(): void {
+    this.saveFormState();
+  }
+
   canEditDeclaration(): boolean {
     if (!this.workflow) return true;
     const status = this.workflow.status();
     const allowedStatuses = [
+      'draft',
       'normal_application',
       'hos_application',
       'hos_request_resubmission',
-      'rmc_request_resubmission'
+      'rmc_request_resubmission',
     ];
     return allowedStatuses.includes(status);
   }

@@ -1,9 +1,15 @@
 import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
+import {
+  DataTableColumn,
+  DataTableComponent,
+} from '../../../shared/components/data-table/data-table.component';
+import { nextTableSortState, SortDirection } from '../../../shared/services/table-sort.service';
+import { SubmissionsSearchComponent } from '../../../shared/components/submissions-search/submissions-search.component';
+import { TableActionIconComponent } from '../../../shared/components/table-action-icon/table-action-icon.component';
 
 type AccessStatus = 'active' | 'blocked';
 type StatusFilter = 'all' | AccessStatus;
-type SortDirection = 'asc' | 'desc';
-type SortColumn = 'name' | 'staffId' | 'department' | 'role';
+type SortColumn = 'blockedDate';
 
 interface StaffAccessRecord {
   id: number;
@@ -21,10 +27,28 @@ interface StaffAccessRecord {
 @Component({
   selector: 'app-staff-access',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [DataTableComponent, SubmissionsSearchComponent, TableActionIconComponent],
   templateUrl: './staff-access.component.html',
   styleUrls: ['./staff-access.component.scss'],
 })
 export class StaffAccessComponent {
+  readonly columns: DataTableColumn[] = [
+    { key: 'name', label: 'Staff Name', width: '20rem' },
+    { key: 'staffId', label: 'Staff ID', width: '7rem' },
+    { key: 'department', label: 'Department', width: '10rem' },
+    { key: 'role', label: 'Role', width: '11rem' },
+    { key: 'email', label: 'Email', width: '15rem' },
+    { key: 'status', label: 'Status', width: '8rem', align: 'center', headerAlign: 'center' },
+    { key: 'blockedDate', label: 'Blocked Date', sortable: true, width: '10rem' },
+    { key: 'reason', label: 'Reason', width: '15rem' },
+    {
+      key: 'actions',
+      label: 'Actions',
+      width: '8rem',
+      align: 'center',
+      headerAlign: 'center',
+    },
+  ];
   readonly staffRecords = signal<StaffAccessRecord[]>([
     {
       id: 1,
@@ -151,10 +175,12 @@ export class StaffAccessComponent {
   readonly departmentFilter = signal('all');
   readonly statusFilter = signal<StatusFilter>('all');
   readonly searchFilter = signal('');
-  readonly sortColumn = signal<SortColumn>('name');
-  readonly sortDirection = signal<SortDirection>('asc');
+  readonly sortColumn = signal<SortColumn | null>(null);
+  readonly sortDirection = signal<SortDirection>(null);
 
-  readonly blockedCount = computed(() => this.staffRecords().filter((staff) => staff.status === 'blocked').length);
+  readonly blockedCount = computed(
+    () => this.staffRecords().filter((staff) => staff.status === 'blocked').length,
+  );
 
   readonly departmentOptions = computed(() => {
     const values = this.staffRecords().map((staff) => staff.department);
@@ -177,22 +203,18 @@ export class StaffAccessComponent {
         return true;
       }
 
-      return [staff.name, staff.staffId, staff.department, staff.role, staff.email]
-        .join(' ')
-        .toLowerCase()
-        .includes(search);
+      return staff.name.toLowerCase().includes(search);
     });
   });
 
   readonly sortedStaff = computed(() => {
     const column = this.sortColumn();
     const direction = this.sortDirection();
+    if (!column || !direction) return this.filteredStaff();
     const directionFactor = direction === 'asc' ? 1 : -1;
 
     return [...this.filteredStaff()].sort((first, second) => {
-      const firstValue = first[column].toLowerCase();
-      const secondValue = second[column].toLowerCase();
-      return firstValue.localeCompare(secondValue) * directionFactor;
+      return (this.parseBlockedDate(first.blockedDate) - this.parseBlockedDate(second.blockedDate)) * directionFactor;
     });
   });
 
@@ -209,18 +231,23 @@ export class StaffAccessComponent {
     this.statusFilter.set('all');
   }
 
+  resetFilters(): void {
+    this.searchFilter.set('');
+    this.departmentFilter.set('all');
+    this.statusFilter.set('all');
+  }
   setSearchFilter(value: string): void {
     this.searchFilter.set(value);
   }
 
-  setSort(column: SortColumn): void {
-    if (this.sortColumn() === column) {
-      this.sortDirection.set(this.sortDirection() === 'asc' ? 'desc' : 'asc');
-      return;
-    }
-
-    this.sortColumn.set(column);
-    this.sortDirection.set('asc');
+  setSort(column: string): void {
+    if (column !== 'blockedDate') return;
+    const next = nextTableSortState(
+      { column: this.sortColumn(), direction: this.sortDirection() },
+      column,
+    );
+    this.sortColumn.set(next.column as SortColumn | null);
+    this.sortDirection.set(next.direction);
   }
 
   toggleAccess(staffId: number): void {
@@ -249,6 +276,12 @@ export class StaffAccessComponent {
     );
   }
 
+  private parseBlockedDate(value: string): number {
+    if (!value) return 0;
+    const parsed = Date.parse(value);
+    return Number.isNaN(parsed) ? 0 : parsed;
+  }
+
   private formatDate(value: Date): string {
     const day = value.getDate().toString().padStart(2, '0');
     const month = value.toLocaleString('en-US', { month: 'short' });
@@ -256,3 +289,6 @@ export class StaffAccessComponent {
     return `${day} ${month} ${year}`;
   }
 }
+
+
+

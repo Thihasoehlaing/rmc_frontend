@@ -1,4 +1,5 @@
 @use './styles/styles.scss';
+@import 'quill/dist/quill.snow.css';
 
 *,
 *::before,
@@ -18,7 +19,10 @@ body {
 }
 
 /* Ensure all inputs, selects, buttons, textareas inherit Roboto */
-input, select, textarea, button {
+input,
+select,
+textarea,
+button {
   font-family: var(--font-family-base);
 }
 

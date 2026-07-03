@@ -78,6 +78,27 @@ export interface ConferenceFormState {
 export class ConferenceFormStateService {
   private formState = signal<ConferenceFormState>({});
 
+  /**
+   * In-memory-only registry for File objects picked by sub-forms (file pickers only
+   * persist the filename string into form state, since File can't survive
+   * JSON.stringify/localStorage). Keyed by an arbitrary stable string the caller
+   * controls. Lives on this singleton service so it survives wizard step navigation
+   * (which destroys/recreates the sub-form components) but not a page reload.
+   */
+  private pendingFiles = new Map<string, File>();
+
+  setPendingFile(key: string, file: File): void {
+    this.pendingFiles.set(key, file);
+  }
+
+  getPendingFile(key: string): File | undefined {
+    return this.pendingFiles.get(key);
+  }
+
+  clearPendingFile(key: string): void {
+    this.pendingFiles.delete(key);
+  }
+
   constructor() {
     // Initialize from localStorage if available
     this.loadFromStorage();

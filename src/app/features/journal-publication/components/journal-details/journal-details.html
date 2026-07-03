@@ -2,7 +2,6 @@
   <app-custom-header icon="description" title="Journal Details"></app-custom-header>
 
   <div class="section-fields">
-
     <!-- Top Information Box -->
     <section class="card">
       <div class="card__header">
@@ -12,15 +11,30 @@
         <div class="row row--2">
           <div class="form-field">
             <label class="form-label">Applicant Name</label>
-            <input type="text" class="input--text input--soft-readonly" [value]="auth.currentUser()?.name || ''" readonly>
+            <input
+              type="text"
+              class="input--text input--soft-readonly"
+              [value]="auth.currentUser()?.name || ''"
+              readonly
+            />
           </div>
           <div class="form-field">
             <label class="form-label">Email</label>
-            <input type="text" class="input--text input--soft-readonly" [value]="auth.currentUser()?.email || ''" readonly>
+            <input
+              type="text"
+              class="input--text input--soft-readonly"
+              [value]="auth.currentUser()?.email || ''"
+              readonly
+            />
           </div>
           <div class="form-field">
             <label class="form-label">School / Functional Unit</label>
-            <input type="text" class="input--text input--soft-readonly" [value]="auth.currentUser()?.department || ''" readonly>
+            <input
+              type="text"
+              class="input--text input--soft-readonly"
+              [value]="auth.currentUser()?.department || ''"
+              readonly
+            />
           </div>
         </div>
       </div>
@@ -32,99 +46,146 @@
         <h2 class="card__title">Journal Details</h2>
       </div>
       <div class="card__content section-fields">
-
         <div class="row row--2">
-
           <!-- Left Column -->
           <div class="form-column">
             <div class="form-field">
-              <label class="form-label is-required">Please select whether you are the “First Author” or “Corresponding Author”</label>
+              <label class="form-label is-required"
+                >Please select whether you are the “First Author” or “Corresponding Author”</label
+              >
 
               <div class="radio-group">
                 <label class="radio-option">
-                  <input type="radio" formControlName="authorshipType" value="first-author">
+                  <input type="radio" formControlName="authorshipType" value="first-author" />
                   <span>First Author</span>
                 </label>
                 <label class="radio-option">
-                  <input type="radio" formControlName="authorshipType" value="co-author">
+                  <input type="radio" formControlName="authorshipType" value="co-author" />
                   <span>Corresponding Author</span>
                 </label>
                 <label class="radio-option">
-                  <input type="radio" formControlName="authorshipType" value="corresponding-author">
+                  <input
+                    type="radio"
+                    formControlName="authorshipType"
+                    value="corresponding-author"
+                  />
                   <span>First and Corresponding Author</span>
                 </label>
               </div>
-              <app-note text="Applicant must be either first or corresponding author or both" [isTooltip]="false"></app-note>
-              <app-validation-message [control]="form.get('authorshipType')"></app-validation-message>
+              <app-note
+                text="Applicant must be either first or corresponding author or both"
+                [isTooltip]="false"
+              ></app-note>
+              <app-validation-message
+                [control]="form.get('authorshipType')"
+              ></app-validation-message>
             </div>
 
             <div class="form-field">
               <label class="form-label is-required">Please select Scopus Quartile</label>
               <div class="radio-group">
                 <label class="radio-option">
-                  <input type="radio" formControlName="scopusQuartile" value="Q1">
+                  <input type="radio" formControlName="scopusQuartile" value="Q1" />
                   <span><strong>Q1:</strong> 75th - 100th percentile</span>
                 </label>
                 <label class="radio-option">
-                  <input type="radio" formControlName="scopusQuartile" value="Q2">
+                  <input type="radio" formControlName="scopusQuartile" value="Q2" />
                   <span><strong>Q2:</strong> 50th - 74th percentile</span>
                 </label>
                 <label class="radio-option">
-                  <input type="radio" formControlName="scopusQuartile" value="Q3">
+                  <input type="radio" formControlName="scopusQuartile" value="Q3" />
                   <span><strong>Q3:</strong> 25th - 49th percentile</span>
                 </label>
               </div>
-              <app-validation-message [control]="form.get('scopusQuartile')"></app-validation-message>
+              <app-validation-message
+                [control]="form.get('scopusQuartile')"
+              ></app-validation-message>
             </div>
 
             <div class="form-field">
               <label class="form-label is-required">Select Research or Non-Research Project</label>
               <div class="radio-group">
                 <label class="radio-option">
-                  <input type="radio" formControlName="researchType" value="external-research"><span>External Research Project</span>
+                  <input
+                    type="radio"
+                    formControlName="researchType"
+                    value="external-research"
+                  /><span>External Research Project</span>
                 </label>
                 <label class="radio-option">
-                  <input type="radio" formControlName="researchType" value="non-research"><span>Non-Research Project</span>
+                  <input type="radio" formControlName="researchType" value="non-research" /><span
+                    >Non-Research Project</span
+                  >
                 </label>
               </div>
               <app-validation-message [control]="form.get('researchType')"></app-validation-message>
             </div>
 
             <div class="form-field">
-              <label class="form-label is-required">Is the publisher of your journal one of the restricted publishers (e.g., MDPI, Common Ground, Hindawi, or Frontier)?</label>
+              <label class="form-label is-required"
+                >Is the publisher of your journal one of the restricted publishers (e.g., MDPI,
+                Common Ground, Hindawi, or Frontier)?</label
+              >
               <div class="radio-group">
                 <label class="radio-option">
-                  <input type="radio" formControlName="restrictedPublisher" value="yes"><span>Yes</span>
+                  <input type="radio" formControlName="restrictedPublisher" value="yes" /><span
+                    >Yes</span
+                  >
                 </label>
                 <label class="radio-option">
-                  <input type="radio" formControlName="restrictedPublisher" value="no"><span>No</span>
+                  <input type="radio" formControlName="restrictedPublisher" value="no" /><span
+                    >No</span
+                  >
                 </label>
               </div>
               <app-note text="Expected Answer for Approval: No" [isTooltip]="false"></app-note>
-              <app-validation-message [control]="form.get('restrictedPublisher')"></app-validation-message>
+              <app-validation-message
+                [control]="form.get('restrictedPublisher')"
+              ></app-validation-message>
             </div>
 
             <div class="form-field">
-              <label class="form-label is-required">Have you cited at least 1 journal paper from Asia Pacific University of Technology & Innovation JATI &amp; EJBM?</label>
+              <label class="form-label is-required"
+                >Have you cited at least 1 journal paper from Asia Pacific University of Technology
+                & Innovation JATI &amp; EJBM?</label
+              >
               <div class="radio-group">
                 <label class="radio-option">
-                  <input type="radio" formControlName="citedApuPaper" value="Yes">
+                  <input type="radio" formControlName="citedApuPaper" value="Yes" />
                   <span>Yes</span>
                 </label>
                 <label class="radio-option">
-                  <input type="radio" formControlName="citedApuPaper" value="No">
+                  <input type="radio" formControlName="citedApuPaper" value="No" />
                   <span>No</span>
                 </label>
               </div>
-              <app-validation-message [control]="form.get('citedApuPaper')"></app-validation-message>
+              <app-validation-message
+                [control]="form.get('citedApuPaper')"
+              ></app-validation-message>
             </div>
 
             @if (form.get('citedApuPaper')?.value === 'No') {
               <div class="form-field">
                 <label class="form-label is-required">If No, please explain</label>
-                <textarea class="input--textarea" formControlName="citedApuPaperExplanation" placeholder="Enter explanation here" rows="3" maxlength="255" [class.is-invalid]="form.get('citedApuPaperExplanation')?.invalid && form.get('citedApuPaperExplanation')?.touched" (input)="autoExpandTextarea($event)"></textarea>
-                <app-character-counter [current]="form.get('citedApuPaperExplanation')?.value?.length || 0" [max]="255"></app-character-counter>
-                <app-validation-message [control]="form.get('citedApuPaperExplanation')"></app-validation-message>
+                <textarea
+                  class="input--textarea"
+                  formControlName="citedApuPaperExplanation"
+                  placeholder="Enter explanation here"
+                  rows="3"
+                  maxlength="255"
+                  [class.is-invalid]="
+                    form.get('citedApuPaperExplanation')?.invalid &&
+                    form.get('citedApuPaperExplanation')?.touched
+                  "
+                  (input)="autoExpandTextarea($event)"
+                ></textarea>
+                <app-character-counter
+                  [current]="form.get('citedApuPaperExplanation')?.value?.length || 0"
+                  [max]="255"
+                ></app-character-counter>
+                <app-validation-message
+                  [control]="form.get('citedApuPaperExplanation')"
+                ></app-validation-message>
               </div>
             }
           </div>
@@ -133,21 +194,52 @@
           <div class="form-column">
             <div class="form-field">
               <label class="form-label is-required">Journal Name</label>
-              <textarea class="input--textarea input--textarea-compact" formControlName="journalName" maxlength="150" rows="1" [class.is-invalid]="form.get('journalName')?.invalid && form.get('journalName')?.touched" (input)="autoExpandTextarea($event)"></textarea>
-              <app-character-counter [current]="getCharacterCount('journalName')" [max]="150"></app-character-counter>
+              <textarea
+                class="input--textarea input--textarea-compact"
+                formControlName="journalName"
+                maxlength="150"
+                rows="1"
+                [class.is-invalid]="
+                  form.get('journalName')?.invalid && form.get('journalName')?.touched
+                "
+                (input)="autoExpandTextarea($event)"
+              ></textarea>
+              <app-character-counter
+                [current]="getCharacterCount('journalName')"
+                [max]="150"
+              ></app-character-counter>
               <app-validation-message [control]="form.get('journalName')"></app-validation-message>
             </div>
 
             <div class="form-field">
               <label class="form-label is-required">Paper Title</label>
-              <textarea class="input--textarea input--textarea-compact" formControlName="paperTitle" maxlength="200" rows="1" [class.is-invalid]="form.get('paperTitle')?.invalid && form.get('paperTitle')?.touched" (input)="autoExpandTextarea($event)"></textarea>
-              <app-character-counter [current]="getCharacterCount('paperTitle')" [max]="200"></app-character-counter>
+              <textarea
+                class="input--textarea input--textarea-compact"
+                formControlName="paperTitle"
+                maxlength="200"
+                rows="1"
+                [class.is-invalid]="
+                  form.get('paperTitle')?.invalid && form.get('paperTitle')?.touched
+                "
+                (input)="autoExpandTextarea($event)"
+              ></textarea>
+              <app-character-counter
+                [current]="getCharacterCount('paperTitle')"
+                [max]="200"
+              ></app-character-counter>
               <app-validation-message [control]="form.get('paperTitle')"></app-validation-message>
             </div>
 
             <div class="form-field">
               <label class="form-label is-required">Please key in 3 SDG keywords in abstract</label>
-              <div class="sdg-keywords-container" (click)="openSDGKeywordsModal()" role="button" tabindex="0" (keydown.enter)="openSDGKeywordsModal()" (keydown.space)="openSDGKeywordsModal()">
+              <div
+                class="sdg-keywords-container"
+                (click)="openSDGKeywordsModal()"
+                role="button"
+                tabindex="0"
+                (keydown.enter)="openSDGKeywordsModal()"
+                (keydown.space)="openSDGKeywordsModal()"
+              >
                 @for (keyword of getDisplayedKeywordsArray(); track keyword) {
                   <div class="keyword-chip">
                     <span class="chip-label">{{ keyword }}</span>
@@ -155,7 +247,8 @@
                       type="button"
                       class="chip-close"
                       (click)="removeKeyword(keyword); $event.stopPropagation()"
-                      aria-label="Remove keyword">
+                      aria-label="Remove keyword"
+                    >
                       <span class="material-icons">close</span>
                     </button>
                   </div>
@@ -167,17 +260,16 @@
               <app-validation-message [control]="form.get('sdgKeyword3')"></app-validation-message>
             </div>
           </div>
-
         </div>
       </div>
     </section>
 
-      <!-- Costing Section -->
-      @if (researchType) {
-        <section class="card">
-          <app-custom-header icon="payments" title="Costing"></app-custom-header>
-          <div class="card__content costing-section">
-            <div class="costing-content">
+    <!-- Costing Section -->
+    @if (researchType) {
+      <section class="card">
+        <app-custom-header icon="payments" title="Costing"></app-custom-header>
+        <div class="card__content costing-section">
+          <div class="costing-content">
             <div class="research-subsection">
               @if (researchType !== 'non-research') {
                 <div class="form-field">
@@ -186,19 +278,33 @@
                     [required]="true"
                     [options]="projectAccountCodeOptions"
                     placeholder="[--SELECT PROJECT ACCOUNT CODE--]"
-                    formControlName="projectAccountCode">
+                    formControlName="projectAccountCode"
+                  >
                   </app-searchable-dropdown>
                 </div>
               }
 
               <div class="form-field">
                 <label class="form-label">
-                  {{ researchType === 'non-research' ? 'Detailed Breakdown for Non-Research Project' : 'Detailed Breakdown for Research' }}
+                  {{
+                    researchType === 'non-research'
+                      ? 'Detailed Breakdown for Non-Research Project'
+                      : 'Detailed Breakdown for Research'
+                  }}
                 </label>
                 <div class="costing-breakdown">
                   <div class="list-section-header">
-                    <span class="list-count">{{ getBreakdownArray(researchType || '').length }} {{ getBreakdownArray(researchType || '').length === 1 ? 'Entry' : 'Entries' }}</span>
-                    <button type="button" class="btn btn-primary btn-sm" (click)="openBreakdownModal(researchType || '')">
+                    <span class="list-count"
+                      >{{ getBreakdownArray(researchType || '').length }}
+                      {{
+                        getBreakdownArray(researchType || '').length === 1 ? 'Entry' : 'Entries'
+                      }}</span
+                    >
+                    <button
+                      type="button"
+                      class="btn btn-primary btn-sm"
+                      (click)="openBreakdownModal(researchType || '')"
+                    >
                       <span class="material-icons">add</span> Add Entry
                     </button>
                   </div>
@@ -210,35 +316,51 @@
                           [columns]="nonResearchBreakdownColumns"
                           [rows]="getPaginatedBreakdownArray('non-research')"
                           [hoverable]="true"
-                          [striped]="true">
+                          [striped]="true"
+                        >
                           <ng-template #rowTemplate let-row let-index="index">
                             <tr>
-                              <td>{{ row.accountCodeDescription || row.itemDescription || '—' }}</td>
+                              <td>
+                                {{ row.accountCodeDescription || row.itemDescription || '—' }}
+                              </td>
                               <td>{{ row.accountCode || '—' }}</td>
                               <td>{{ row.cost | number: '1.2-2' }}</td>
                               <td>{{ row.exchangeRate | number: '1.2-2' }}</td>
                               <td>{{ row.costInRM | number: '1.2-2' }}</td>
                               <td>{{ row.description || '—' }}</td>
                               <td class="col-actions is-align-center">
-                                <button type="button" class="btn-icon btn-icon--edit" (click)="openBreakdownModal('non-research', index)" aria-label="Edit entry">
-                                  <span class="material-icons">edit</span>
+                                <button
+                                  type="button"
+                                  class="btn-icon btn-icon--edit"
+                                  (click)="openBreakdownModal('non-research', index)"
+                                  aria-label="Edit entry"
+                                >
+                                  <app-table-action-icon action="edit"></app-table-action-icon>
                                 </button>
-                                <button type="button" class="btn-icon btn-icon--delete" (click)="deleteBreakdown('non-research', index)" aria-label="Remove entry">
-                                  <span class="material-icons">delete</span>
+                                <button
+                                  type="button"
+                                  class="btn-icon btn-icon--delete"
+                                  (click)="deleteBreakdown('non-research', index)"
+                                  aria-label="Remove entry"
+                                >
+                                  <app-table-action-icon action="delete"></app-table-action-icon>
                                 </button>
                               </td>
                             </tr>
                           </ng-template>
                         </app-data-table>
                       </div>
-                      <div class="table-summary">{{ getBreakdownArray('non-research').length }} item(s)</div>
+                      <div class="table-summary">
+                        {{ getBreakdownArray('non-research').length }} item(s)
+                      </div>
                     } @else if (researchType === 'external-research') {
                       <div class="table-scroll research-table">
                         <app-data-table
                           [columns]="externalResearchBreakdownColumns"
                           [rows]="getPaginatedBreakdownArray('external-research')"
                           [hoverable]="true"
-                          [striped]="true">
+                          [striped]="true"
+                        >
                           <ng-template #rowTemplate let-row let-index="index">
                             <tr>
                               <td>{{ row.itemDescription }}</td>
@@ -248,11 +370,21 @@
                               <td>{{ row.exchangeRate | number: '1.2-2' }}</td>
                               <td>{{ row.description || '—' }}</td>
                               <td class="col-actions is-align-center">
-                                <button type="button" class="btn-icon btn-icon--edit" (click)="openBreakdownModal('external-research', index)" aria-label="Edit entry">
-                                  <span class="material-icons">edit</span>
+                                <button
+                                  type="button"
+                                  class="btn-icon btn-icon--edit"
+                                  (click)="openBreakdownModal('external-research', index)"
+                                  aria-label="Edit entry"
+                                >
+                                  <app-table-action-icon action="edit"></app-table-action-icon>
                                 </button>
-                                <button type="button" class="btn-icon btn-icon--delete" (click)="deleteBreakdown('external-research', index)" aria-label="Remove entry">
-                                  <span class="material-icons">delete</span>
+                                <button
+                                  type="button"
+                                  class="btn-icon btn-icon--delete"
+                                  (click)="deleteBreakdown('external-research', index)"
+                                  aria-label="Remove entry"
+                                >
+                                  <app-table-action-icon action="delete"></app-table-action-icon>
                                 </button>
                               </td>
                             </tr>
@@ -266,17 +398,21 @@
                           [pageSize]="externalResearchBreakdownPageSize"
                           [pageSizeOptions]="ITEMS_PER_PAGE_OPTIONS"
                           (pageChange)="onExternalResearchBreakdownPageChange($event)"
-                          (pageSizeChange)="onExternalResearchBreakdownPageSizeChange($event)">
+                          (pageSizeChange)="onExternalResearchBreakdownPageSizeChange($event)"
+                        >
                         </app-pagination>
                       </div>
-                      <div class="table-summary">{{ getBreakdownArray('external-research').length }} item(s)</div>
+                      <div class="table-summary">
+                        {{ getBreakdownArray('external-research').length }} item(s)
+                      </div>
                     } @else {
                       <div class="table-scroll research-table">
                         <app-data-table
                           [columns]="breakdownColumns"
                           [rows]="getPaginatedBreakdownArray(researchType || '')"
                           [hoverable]="true"
-                          [striped]="true">
+                          [striped]="true"
+                        >
                           <ng-template #rowTemplate let-row let-index="index">
                             <tr>
                               <td class="col-no text-muted is-align-center">{{ index + 1 }}</td>
@@ -297,11 +433,21 @@
                                 }
                               </td>
                               <td class="col-actions is-align-center">
-                                <button type="button" class="btn-icon btn-icon--edit" (click)="openBreakdownModal(researchType || '', index)" aria-label="Edit entry">
-                                  <span class="material-icons">edit</span>
+                                <button
+                                  type="button"
+                                  class="btn-icon btn-icon--edit"
+                                  (click)="openBreakdownModal(researchType || '', index)"
+                                  aria-label="Edit entry"
+                                >
+                                  <app-table-action-icon action="edit"></app-table-action-icon>
                                 </button>
-                                <button type="button" class="btn-icon btn-icon--delete" (click)="deleteBreakdown(researchType || '', index)" aria-label="Remove entry">
-                                  <span class="material-icons">delete</span>
+                                <button
+                                  type="button"
+                                  class="btn-icon btn-icon--delete"
+                                  (click)="deleteBreakdown(researchType || '', index)"
+                                  aria-label="Remove entry"
+                                >
+                                  <app-table-action-icon action="delete"></app-table-action-icon>
                                 </button>
                               </td>
                             </tr>
@@ -315,10 +461,13 @@
                           [pageSize]="internalResearchBreakdownPageSize"
                           [pageSizeOptions]="ITEMS_PER_PAGE_OPTIONS"
                           (pageChange)="onInternalResearchBreakdownPageChange($event)"
-                          (pageSizeChange)="onInternalResearchBreakdownPageSizeChange($event)">
+                          (pageSizeChange)="onInternalResearchBreakdownPageSizeChange($event)"
+                        >
                         </app-pagination>
                       </div>
-                      <div class="table-summary">{{ getBreakdownArray(researchType || '').length }} item(s)</div>
+                      <div class="table-summary">
+                        {{ getBreakdownArray(researchType || '').length }} item(s)
+                      </div>
                     }
                   } @else {
                     <div class="empty-state">
@@ -332,7 +481,9 @@
               @if (researchType === 'non-research') {
                 <div class="total-display">
                   <span class="total-label">Total in RM</span>
-                  <div class="total-amount">{{ calculateBreakdownTotal(researchType || '') | number: '1.2-2' }}</div>
+                  <div class="total-amount">
+                    {{ calculateBreakdownTotal(researchType || '') | number: '1.2-2' }}
+                  </div>
                 </div>
 
                 <div class="sponsorship-subsections-container">
@@ -342,11 +493,25 @@
                       <div class="row row--2">
                         <div class="form-field">
                           <label class="form-label">Sponsorship Amount by External (RM)</label>
-                          <input type="number" class="input--text" formControlName="sponsoredAmountExternal" placeholder="0.00" min="0" step="any" (input)="clampPositiveMain('sponsoredAmountExternal', $event)">
+                          <input
+                            type="number"
+                            class="input--text"
+                            formControlName="sponsoredAmountExternal"
+                            placeholder="0.00"
+                            min="0"
+                            step="any"
+                            (input)="clampPositiveMain('sponsoredAmountExternal', $event)"
+                          />
                         </div>
                         <div class="form-field">
                           <label class="form-label">Sponsored By</label>
-                          <input type="text" class="input--text" formControlName="sponsoredBy" placeholder="Sponsor Name" (input)="stripDigits($event)">
+                          <input
+                            type="text"
+                            class="input--text"
+                            formControlName="sponsoredBy"
+                            placeholder="Sponsor Name"
+                            (input)="stripDigits($event)"
+                          />
                         </div>
                       </div>
                     </div>
@@ -357,12 +522,22 @@
                     <div class="subsection-fields-wrapper">
                       <div class="row row--2">
                         <div class="form-field">
-                          <label class="form-label">Sponsorship Percentage Requested (%)</label>
-                          <input type="number" class="input--text input--readonly" formControlName="sponsorshipPercentage" readonly>
+                          <label class="form-label">Sponsorship Percentage Requested APU (%)</label>
+                          <input
+                            type="number"
+                            class="input--text input--readonly"
+                            formControlName="sponsorshipPercentage"
+                            readonly
+                          />
                         </div>
                         <div class="form-field">
                           <label class="form-label">Sponsorship Amount by APU </label>
-                          <input type="number" class="input--text input--readonly" formControlName="sponsorshipAmountAPU" readonly>
+                          <input
+                            type="number"
+                            class="input--text input--readonly"
+                            formControlName="sponsorshipAmountAPU"
+                            readonly
+                          />
                         </div>
                       </div>
                     </div>
@@ -371,19 +546,38 @@
 
                 <div class="form-field total-field">
                   <label class="form-label">Cost to be Borne by Applicant (RM)</label>
-                  <input type="number" class="input--text input--readonly" formControlName="costByApplicant" readonly>
+                  <input
+                    type="number"
+                    class="input--text input--readonly"
+                    formControlName="costByApplicant"
+                    readonly
+                  />
                 </div>
 
                 <div class="form-field">
                   <label class="form-label">Remarks (Optional)</label>
-                  <textarea class="input--textarea" formControlName="costingRemarks" placeholder="Additional remarks" rows="3" maxlength="500" (input)="autoExpandTextarea($event)"></textarea>
-                  <app-character-counter [current]="form.get('costingRemarks')?.value?.length || 0" [max]="500"></app-character-counter>
-                  <app-validation-message [control]="form.get('costingRemarks')"></app-validation-message>
+                  <textarea
+                    class="input--textarea"
+                    formControlName="costingRemarks"
+                    placeholder="Additional remarks"
+                    rows="3"
+                    maxlength="500"
+                    (input)="autoExpandTextarea($event)"
+                  ></textarea>
+                  <app-character-counter
+                    [current]="form.get('costingRemarks')?.value?.length || 0"
+                    [max]="500"
+                  ></app-character-counter>
+                  <app-validation-message
+                    [control]="form.get('costingRemarks')"
+                  ></app-validation-message>
                 </div>
               } @else {
                 <div class="total-display">
                   <span class="total-label">Total in RM</span>
-                  <div class="total-amount">{{ calculateBreakdownTotal(researchType || '') | number: '1.2-2' }}</div>
+                  <div class="total-amount">
+                    {{ calculateBreakdownTotal(researchType || '') | number: '1.2-2' }}
+                  </div>
                 </div>
 
                 <div class="sponsorship-subsections-container">
@@ -393,11 +587,25 @@
                       <div class="row row--2">
                         <div class="form-field">
                           <label class="form-label">Sponsorship Amount by External (RM)</label>
-                          <input type="number" class="input--text" formControlName="sponsoredAmountExternal" placeholder="0.00" min="0" step="any" (input)="clampPositiveMain('sponsoredAmountExternal', $event)">
+                          <input
+                            type="number"
+                            class="input--text"
+                            formControlName="sponsoredAmountExternal"
+                            placeholder="0.00"
+                            min="0"
+                            step="any"
+                            (input)="clampPositiveMain('sponsoredAmountExternal', $event)"
+                          />
                         </div>
                         <div class="form-field">
                           <label class="form-label">Sponsored By</label>
-                          <input type="text" class="input--text" formControlName="sponsoredBy" placeholder="Sponsor Name" (input)="stripDigits($event)">
+                          <input
+                            type="text"
+                            class="input--text"
+                            formControlName="sponsoredBy"
+                            placeholder="Sponsor Name"
+                            (input)="stripDigits($event)"
+                          />
                         </div>
                       </div>
                     </div>
@@ -408,12 +616,22 @@
                     <div class="subsection-fields-wrapper">
                       <div class="row row--2">
                         <div class="form-field">
-                          <label class="form-label">Sponsorship Percentage Requested (%)</label>
-                          <input type="number" class="input--text input--readonly" formControlName="sponsorshipPercentage" readonly>
+                          <label class="form-label">Sponsorship Percentage Requested APU (%)</label>
+                          <input
+                            type="number"
+                            class="input--text input--readonly"
+                            formControlName="sponsorshipPercentage"
+                            readonly
+                          />
                         </div>
                         <div class="form-field">
                           <label class="form-label">Sponsorship Amount by APU (RM)</label>
-                          <input type="number" class="input--text input--readonly" formControlName="sponsorshipAmountAPU" readonly>
+                          <input
+                            type="number"
+                            class="input--text input--readonly"
+                            formControlName="sponsorshipAmountAPU"
+                            readonly
+                          />
                         </div>
                       </div>
                     </div>
@@ -422,25 +640,42 @@
 
                 <div class="form-field total-field">
                   <label class="form-label">Cost to be Borne by Applicant (RM)</label>
-                  <input type="number" class="input--text input--readonly" formControlName="costByApplicant" readonly>
+                  <input
+                    type="number"
+                    class="input--text input--readonly"
+                    formControlName="costByApplicant"
+                    readonly
+                  />
                 </div>
 
                 <div class="form-field">
                   <label class="form-label">Remarks (Optional)</label>
-                  <textarea class="input--textarea" formControlName="costingRemarks" placeholder="Additional remarks" rows="3" maxlength="500" (input)="autoExpandTextarea($event)"></textarea>
-                  <app-character-counter [current]="form.get('costingRemarks')?.value?.length || 0" [max]="500"></app-character-counter>
-                  <app-validation-message [control]="form.get('costingRemarks')"></app-validation-message>
+                  <textarea
+                    class="input--textarea"
+                    formControlName="costingRemarks"
+                    placeholder="Additional remarks"
+                    rows="3"
+                    maxlength="500"
+                    (input)="autoExpandTextarea($event)"
+                  ></textarea>
+                  <app-character-counter
+                    [current]="form.get('costingRemarks')?.value?.length || 0"
+                    [max]="500"
+                  ></app-character-counter>
+                  <app-validation-message
+                    [control]="form.get('costingRemarks')"
+                  ></app-validation-message>
                 </div>
               }
             </div>
-            </div>
           </div>
-        </section>
-      }
-    </div>
-  </form>
+        </div>
+      </section>
+    }
+  </div>
+</form>
 
-  <!-- Breakdown Modal Overlays -->
+<!-- Breakdown Modal Overlays -->
 <app-dialog
   [isOpen]="isBreakdownModalOpen"
   [title]="getBreakdownModalTitle()"
@@ -450,15 +685,18 @@
   <form
     [formGroup]="breakdownForm"
     (ngSubmit)="submitBreakdownModal()"
-    class="breakdown-form breakdown-form--two-column">
+    class="breakdown-form breakdown-form--two-column"
+  >
     <!-- Item description -->
-    <div
-      class="breakdown-field"
-      [class.breakdown-field--full]="breakdownType !== 'non-research'">
+    <div class="breakdown-field" [class.breakdown-field--full]="breakdownType !== 'non-research'">
       <label for="itemDescription" class="form-label">
-        {{ breakdownType === 'external-research'
-          ? 'Vote Number Description'
-          : (breakdownType === 'non-research' ? 'Account Code Description' : 'Vote Number Description') }}
+        {{
+          breakdownType === 'external-research'
+            ? 'Vote Number Description'
+            : breakdownType === 'non-research'
+              ? 'Account Code Description'
+              : 'Vote Number Description'
+        }}
         <span class="asterisk">*</span>
       </label>
       @if (breakdownType === 'non-research') {
@@ -467,39 +705,47 @@
           type="text"
           class="input--text input--readonly"
           formControlName="itemDescription"
-          readonly>
+          readonly
+        />
       } @else {
         <app-searchable-dropdown
           [options]="currentBreakdownOptions"
-          [placeholder]="breakdownType === 'external-research'
-            ? 'Search and select vote number description'
-            : 'Search and select item'"
-          formControlName="itemDescription">
+          [placeholder]="
+            breakdownType === 'external-research'
+              ? 'Search and select vote number description'
+              : 'Search and select item'
+          "
+          formControlName="itemDescription"
+        >
         </app-searchable-dropdown>
       }
-      @if (breakdownForm.get('itemDescription')?.invalid && breakdownForm.get('itemDescription')?.touched) {
+      @if (
+        breakdownForm.get('itemDescription')?.invalid &&
+        breakdownForm.get('itemDescription')?.touched
+      ) {
         <span class="error-message">
-          {{ breakdownType === 'external-research'
-            ? 'Vote number description is required'
-            : (breakdownType === 'non-research'
-              ? 'Account code description is required'
-              : 'Item description is required') }}
+          {{
+            breakdownType === 'external-research'
+              ? 'Vote number description is required'
+              : breakdownType === 'non-research'
+                ? 'Account code description is required'
+                : 'Item description is required'
+          }}
         </span>
       }
     </div>
 
     @if (breakdownType === 'external-research') {
       <div class="breakdown-field">
-        <label for="externalAccountCode" class="form-label">
-          Account Code
-        </label>
+        <label for="externalAccountCode" class="form-label"> Account Code </label>
         <input
           id="externalAccountCode"
           type="text"
           class="input--text input--readonly"
           formControlName="accountCode"
           readonly
-          placeholder="Auto-filled from Project Account Code">
+          placeholder="Auto-filled from Project Account Code"
+        />
       </div>
     }
 
@@ -513,7 +759,8 @@
           class="input--text input--readonly"
           formControlName="accountCode"
           readonly
-          placeholder="Auto-filled from Account Code Description">
+          placeholder="Auto-filled from Account Code Description"
+        />
       </div>
     } @else {
       <div class="breakdown-field">
@@ -526,7 +773,8 @@
           class="input--text input--readonly"
           formControlName="voteNumber"
           readonly
-          placeholder="Auto-Filled from vote number description">
+          placeholder="Auto-Filled from vote number description"
+        />
         @if (breakdownForm.get('voteNumber')?.invalid && breakdownForm.get('voteNumber')?.touched) {
           <span class="error-message">Vote number is required</span>
         }
@@ -536,7 +784,12 @@
     <!-- Cost in Foreign Currency / MYR -->
     <div class="breakdown-field">
       <label for="cost" class="form-label">
-        {{ (breakdownType === 'internal-research') ? 'Cost in Foreign Currency / MYR (RM)' : 'Cost in Foreign Currency / MYR' }} <span class="asterisk">*</span>
+        {{
+          breakdownType === 'internal-research'
+            ? 'Cost in Foreign Currency / MYR (RM)'
+            : 'Cost in Foreign Currency / MYR'
+        }}
+        <span class="asterisk">*</span>
       </label>
       <input
         id="cost"
@@ -546,7 +799,8 @@
         formControlName="cost"
         placeholder="Enter cost"
         step="0.01"
-        (input)="clampPositive($event); recalcCostInRM()">
+        (input)="clampPositive($event); recalcCostInRM()"
+      />
       @if (breakdownForm.get('cost')?.invalid && breakdownForm.get('cost')?.touched) {
         <span class="error-message">Cost is required</span>
       }
@@ -554,7 +808,9 @@
 
     <!-- Exchange Rate -->
     <div class="breakdown-field">
-      <label for="exchangeRate" class="form-label">Exchange Rate <span class="asterisk">*</span></label>
+      <label for="exchangeRate" class="form-label"
+        >Exchange Rate <span class="asterisk">*</span></label
+      >
       <input
         id="exchangeRate"
         type="text"
@@ -562,9 +818,12 @@
         class="input--text"
         formControlName="exchangeRate"
         placeholder="e.g. 1, 4, 5"
-        (input)="enforceInteger($event)">
+        (input)="enforceInteger($event)"
+      />
       <app-note text="For Malaysia Ringgit/MYR, please put 1 as the exchange rate."></app-note>
-      @if (breakdownForm.get('exchangeRate')?.invalid && breakdownForm.get('exchangeRate')?.touched) {
+      @if (
+        breakdownForm.get('exchangeRate')?.invalid && breakdownForm.get('exchangeRate')?.touched
+      ) {
         <span class="error-message">Exchange rate is required (whole numbers only)</span>
       }
     </div>
@@ -579,7 +838,8 @@
         formControlName="costInRM"
         readonly
         placeholder="Auto-calculated"
-        step="any">
+        step="any"
+      />
     </div>
 
     <!-- Description -->
@@ -591,23 +851,26 @@
         formControlName="description"
         placeholder="Enter description (optional)"
         rows="3"
-        (input)="autoExpandTextarea($event)"></textarea>
+        (input)="autoExpandTextarea($event)"
+      ></textarea>
     </div>
 
     <!-- Supporting Documents -->
     <div class="breakdown-field breakdown-field--full">
       <label class="form-label">Supporting Documents</label>
       <p class="form-hint">Max file size: 10MB. Allowed file types: PDF only.</p>
-      <app-file-upload
-        [accept]="'.pdf'"
-        [maxSizeMB]="10"
-        (fileSelected)="onFileSelected($event)">
+      <app-file-upload [accept]="'.pdf'" [maxSizeMB]="10" (fileSelected)="onFileSelected($event)">
       </app-file-upload>
       @if (selectedFileName) {
         <div class="breakdown-file-summary">
           <span class="material-icons">description</span>
           <span class="breakdown-file-name">{{ selectedFileName }}</span>
-          <button type="button" class="btn-icon btn-icon--delete" (click)="removeFile()" aria-label="Remove file">
+          <button
+            type="button"
+            class="btn-icon btn-icon--delete"
+            (click)="removeFile()"
+            aria-label="Remove file"
+          >
             <span class="material-icons">close</span>
           </button>
         </div>
@@ -615,7 +878,9 @@
     </div>
 
     <div class="breakdown-actions breakdown-field--full">
-      <button type="button" class="btn btn-secondary" (click)="closeBreakdownModal()">Cancel</button>
+      <button type="button" class="btn btn-secondary" (click)="closeBreakdownModal()">
+        Cancel
+      </button>
       <button type="submit" class="btn btn-primary" [disabled]="breakdownForm.invalid">Save</button>
     </div>
   </form>
@@ -626,8 +891,8 @@
   [title]="'Enter SDG Keywords'"
   [isOpen]="isSDGKeywordsModalOpen"
   [width]="'600px'"
-  (close)="closeSDGKeywordsModal()">
-
+  (close)="closeSDGKeywordsModal()"
+>
   <form [formGroup]="sdgKeywordsForm">
     <div class="form-field">
       <label class="form-label">Keyword 1 <span class="asterisk">*</span></label>
@@ -635,7 +900,8 @@
         type="text"
         class="input--text"
         formControlName="keyword1"
-        [placeholder]="sdgKeywordPlaceholder">
+        [placeholder]="sdgKeywordPlaceholder"
+      />
       <app-validation-message [control]="sdgKeywordsForm.get('keyword1')"></app-validation-message>
     </div>
 
@@ -645,7 +911,8 @@
         type="text"
         class="input--text"
         formControlName="keyword2"
-        [placeholder]="sdgKeywordPlaceholder">
+        [placeholder]="sdgKeywordPlaceholder"
+      />
       <app-validation-message [control]="sdgKeywordsForm.get('keyword2')"></app-validation-message>
     </div>
 
@@ -655,13 +922,23 @@
         type="text"
         class="input--text"
         formControlName="keyword3"
-        [placeholder]="sdgKeywordPlaceholder">
+        [placeholder]="sdgKeywordPlaceholder"
+      />
       <app-validation-message [control]="sdgKeywordsForm.get('keyword3')"></app-validation-message>
     </div>
   </form>
 
   <div dialog-footer class="modal-footer">
-    <button type="button" class="btn btn-secondary" (click)="closeSDGKeywordsModal()">Cancel</button>
-    <button type="button" class="btn btn-primary" (click)="confirmSDGKeywords()" [disabled]="sdgKeywordsForm.invalid">Confirm</button>
+    <button type="button" class="btn btn-secondary" (click)="closeSDGKeywordsModal()">
+      Cancel
+    </button>
+    <button
+      type="button"
+      class="btn btn-primary"
+      (click)="confirmSDGKeywords()"
+      [disabled]="sdgKeywordsForm.invalid"
+    >
+      Confirm
+    </button>
   </div>
 </app-dialog>

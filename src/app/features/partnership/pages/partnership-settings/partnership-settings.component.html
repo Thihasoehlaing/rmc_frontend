@@ -2,7 +2,10 @@
   <div class="card settings-card elevation-1">
     <div class="card__header settings-card__header">
       <h2 class="card__title">Partnership Settings</h2>
-      <p class="settings-card__subtitle">Manage the dropdown options for Asia Pacific University of Technology & Innovation Partnership Category.</p>
+      <p class="settings-card__subtitle">
+        Manage the dropdown options for Asia Pacific University of Technology & Innovation
+        Partnership Category.
+      </p>
     </div>
 
     <div class="card__content settings-card__content">
@@ -15,7 +18,12 @@
       <div class="filters-grid">
         <div class="form-field">
           <label class="form-label">Dropdown Category</label>
-          <select class="input--text" #breakdownSelect (change)="onBreakdownTypeChange($event)" [value]="selectedBreakdownType()">
+          <select
+            class="input--text"
+            #breakdownSelect
+            (change)="onBreakdownTypeChange($event)"
+            [value]="selectedBreakdownType()"
+          >
             @for (type of breakdownTypeOptions; track type.value) {
               <option [value]="type.value">{{ type.label }}</option>
             }
@@ -38,16 +46,13 @@
             class="input--text"
             [value]="searchQuery()"
             (input)="onSearchInput($event)"
-            placeholder="Search option name">
+            placeholder="Search option name"
+          />
         </div>
       </div>
 
       <div class="toolbar-actions">
-        <app-action-button
-          type="primary"
-          label="Add Option"
-          icon="add"
-          (clicked)="openAddModal()">
+        <app-action-button type="primary" label="Add Option" icon="add" (clicked)="openAddModal()">
         </app-action-button>
 
         <app-action-button
@@ -55,7 +60,8 @@
           label="Delete Selected"
           icon="delete"
           [disabled]="!hasSelectedOptions()"
-          (clicked)="deleteSelectedOptions()">
+          (clicked)="deleteSelectedOptions()"
+        >
         </app-action-button>
       </div>
 
@@ -68,7 +74,8 @@
           (sortChange)="onHeaderClick($event)"
           [dense]="true"
           [hoverable]="true"
-          [striped]="true">
+          [striped]="true"
+        >
           <ng-template #rowTemplate let-row="row">
             <tr [class.row--inactive]="row.status === 'Inactive'">
               <td>
@@ -77,13 +84,18 @@
                   class="row-checkbox"
                   [checked]="isOptionSelected(row.value)"
                   [attr.aria-label]="'Select ' + row.label"
-                  (change)="toggleCheckbox(row.value, $any($event.target).checked)">
+                  (change)="toggleCheckbox(row.value, $any($event.target).checked)"
+                />
               </td>
 
               <td>{{ row.label }}</td>
 
               <td>
-                <span class="status-chip" [class.status-chip--active]="row.status === 'Active' || !row.status" [class.status-chip--inactive]="row.status === 'Inactive'">
+                <span
+                  class="status-chip"
+                  [class.status-chip--active]="row.status === 'Active' || !row.status"
+                  [class.status-chip--inactive]="row.status === 'Inactive'"
+                >
                   {{ row.status || 'Active' }}
                 </span>
               </td>
@@ -91,8 +103,13 @@
               <td>{{ formatRowDate(row.createdDate) }}</td>
 
               <td class="actions-cell">
-                <button class="icon-btn icon-btn--edit" type="button" title="Edit" (click)="editOption(row, getFilteredAndSortedOptions().indexOf(row))">
-                  <span class="material-icons">edit</span>
+                <button
+                  class="icon-btn icon-btn--edit"
+                  type="button"
+                  title="Edit"
+                  (click)="editOption(row, getFilteredAndSortedOptions().indexOf(row))"
+                >
+                  <app-table-action-icon action="edit"></app-table-action-icon>
                 </button>
 
                 @if (row.status === 'Inactive') {
@@ -114,11 +131,21 @@
 </section>
 
 @if (isModalOpen()) {
-  <app-dialog [isOpen]="true" [title]="editingOptionIndex() === null ? 'Add Option' : 'Edit Option'" (close)="closeModal()">
+  <app-dialog
+    [isOpen]="true"
+    [title]="editingOptionIndex() === null ? 'Add Option' : 'Edit Option'"
+    (close)="closeModal()"
+  >
     <form [formGroup]="optionForm" (ngSubmit)="saveOption()" class="modal-form">
       <div class="form-field">
         <label class="form-label is-required">Option Name</label>
-        <input type="text" class="input--text" formControlName="label" maxlength="120" placeholder="Enter option name">
+        <input
+          type="text"
+          class="input--text"
+          formControlName="label"
+          maxlength="120"
+          placeholder="Enter option name"
+        />
         <app-validation-message [control]="optionForm.get('label')"></app-validation-message>
       </div>
 
@@ -131,7 +158,11 @@
       </div>
 
       <div class="modal-actions">
-        <app-action-button type="secondary" label="Cancel" (clicked)="closeModal()"></app-action-button>
+        <app-action-button
+          type="secondary"
+          label="Cancel"
+          (clicked)="closeModal()"
+        ></app-action-button>
         <button class="btn-primary-pill" type="submit" [disabled]="optionForm.invalid">Save</button>
       </div>
     </form>

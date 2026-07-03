@@ -1,8 +1,16 @@
 import { Component, signal, computed, inject, OnInit, OnDestroy, effect } from '@angular/core';
-import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, FormControl, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
+import {
+  ReactiveFormsModule,
+  FormBuilder,
+  FormGroup,
+  FormArray,
+  FormControl,
+  Validators,
+  AbstractControl,
+  ValidationErrors,
+} from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { BatchSittingService } from '../admin-settings/batch-sitting.service';
 import { BatchSitting } from '../../core/interfaces/batch-sitting.interface';
 import { NotificationService } from '../../core/services/notification.service';
 
@@ -11,7 +19,11 @@ import {
   FormMainTitleComponent,
   GuidelineContext,
 } from '../../shared/components/form-main-title/form-main-title.component';
-import { StepIndicatorComponent, WizardStep, StepStatus } from '../../shared/components/step-indicator/step-indicator.component';
+import {
+  StepIndicatorComponent,
+  WizardStep,
+  StepStatus,
+} from '../../shared/components/step-indicator/step-indicator.component';
 import { FormWizardNavComponent } from '../../shared/components/form-wizard-nav/form-wizard-nav.component';
 import {
   FormAlertComponent,
@@ -33,9 +45,15 @@ import { ScoreSummaryComponent } from './components/score-summary/score-summary.
 import { ReviewBlockComponent } from './components/review-block/review-block.component';
 import { RdigWorkflowService, RdigStatus, getNextRoles } from './services/rdig-workflow.service';
 import { AuthService } from '../../core/services/auth.service';
-import { WorkflowState, WorkflowHistoryEntry } from '../../core/interfaces/rdig-application.interface';
+import {
+  WorkflowState,
+  WorkflowHistoryEntry,
+} from '../../core/interfaces/rdig-application.interface';
 import { FormPageSkeletonComponent } from '../../shared/components/form-page-skeleton/form-page-skeleton.component';
-import { finalize } from 'rxjs';
+import { Observable, catchError, finalize, forkJoin, map, of, switchMap, tap } from 'rxjs';
+import { SvgIconComponent } from '../../shared/components/svg-icon/svg-icon.component';
+import { SVG_ICON_LOADING_SPINNER, SVG_ICON_SUCCESS_CHECK } from '../../shared/icons/svg-icons';
+import { RdigApiService, RdigRequestDto } from './services/rdig-api.service';
 
 @Component({
   selector: 'app-rdig-application',
@@ -56,22 +74,26 @@ import { finalize } from 'rxjs';
     FinalDeclarationComponent,
     ScoreSummaryComponent,
     ReviewBlockComponent,
-    FormPageSkeletonComponent
+    FormPageSkeletonComponent,
+    SvgIconComponent,
   ],
   templateUrl: './rdig_form.component.html',
   styleUrl: './rdig_form.component.scss',
 })
 export class RdigApplicationComponent implements OnInit, OnDestroy {
+  readonly loadingSpinnerIcon = SVG_ICON_LOADING_SPINNER;
+  readonly successCheckIcon = SVG_ICON_SUCCESS_CHECK;
 
   workflow = inject(RdigWorkflowService);
   readonly auth = inject(AuthService);
   private http = inject(HttpClient);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private batchSvc  = inject(BatchSittingService);
-  private notifSvc  = inject(NotificationService);
-  readonly guidelineContext: GuidelineContext =
-    this.route.snapshot.queryParamMap.has('id') ? 'existing-application' : 'new-application';
+  private notifSvc = inject(NotificationService);
+  private rdigApi = inject(RdigApiService);
+  readonly guidelineContext: GuidelineContext = this.route.snapshot.queryParamMap.has('id')
+    ? 'existing-application'
+    : 'new-application';
 
   /** The currently active batch loaded from the server on init. */
   activeBatch = signal<BatchSitting | null | undefined>(undefined); // undefined = loading
@@ -92,8 +114,9 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
   readonly deadlineDaysLeft = computed((): number => {
     const batch = this.activeBatch();
     if (!batch) return -999;
-    const today  = new Date(); today.setHours(0, 0, 0, 0);
-    const end    = new Date(batch.endDate + 'T00:00:00');
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const end = new Date(batch.endDate + 'T00:00:00');
     return Math.floor((end.getTime() - today.getTime()) / 86_400_000);
   });
 
@@ -124,7 +147,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
 
   /** Tracks the live workflow state — persisted alongside form data */
   workflowState = signal<WorkflowState>({
-    currentStatus: 'fill_application',
+    currentStatus: 'draft',
     nextRoles: ['Applicant'],
     nextUsers: [],
     history: [],
@@ -140,10 +163,15 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
   showCeoComments = signal(false);
 
   /** True when any comment panel is visible */
-  showAnyComments = computed(() =>
-    this.showHosComments() || this.showRmcComments() ||
-    this.showR1Comments() || this.showR2Comments() ||
-    this.showRdigChairComments() || this.showVcComments() || this.showCeoComments()
+  showAnyComments = computed(
+    () =>
+      this.showHosComments() ||
+      this.showRmcComments() ||
+      this.showR1Comments() ||
+      this.showR2Comments() ||
+      this.showRdigChairComments() ||
+      this.showVcComments() ||
+      this.showCeoComments(),
   );
 
   /** Tracks steps the user has left, making them eligible for warning/complete state */
@@ -154,7 +182,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
     { label: 'Team Members', icon: 'group' },
     { label: 'Project Details', icon: 'description' },
     { label: 'Research Output & Budget', icon: 'science' },
-    { label: 'Declaration', icon: 'verified' }
+    { label: 'Declaration', icon: 'verified' },
   ];
 
   /** Field paths & labels per step for validation tooltip */
@@ -163,17 +191,18 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
     [
       { path: 'teamDetails.leaderName', label: 'Project Leader Name' },
       { path: 'teamDetails.leaderEmail', label: "Project Leader's Email" },
-      { path: 'teamDetails.department', label: "School / Department" },
+      { path: 'teamDetails.department', label: 'School / Department' },
       { path: 'teamDetails.researchCluster', label: 'Select Research Cluster' },
       { path: 'teamDetails.leaderRoles', label: 'Select Roles of Project Leader' },
-      { path: 'teamDetails.internalResearchers', label: 'Asia Pacific University of Technology & Innovation Co-Researchers (min 1)' },
+      {
+        path: 'teamDetails.internalResearchers',
+        label: 'Asia Pacific University of Technology & Innovation Co-Researchers (min 1)',
+      },
       { path: 'teamDetails.externalResearchers', label: 'External Collaborators (min 2)' },
     ],
     // Step 2: Project Details
     [
       { path: 'projectDetails.applicationType', label: 'Application Type' },
-      { path: 'projectDetails.declarations.ethics', label: 'Ethics Declaration' },
-      { path: 'projectDetails.declarations.conflict', label: 'Conflict of Interest' },
       { path: 'projectDetails.duration', label: 'Project Duration' },
       { path: 'projectDetails.title', label: 'Project Title' },
       { path: 'projectDetails.researchArea', label: 'Research Area' },
@@ -181,7 +210,10 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
       { path: 'projectDetails.subDomain', label: 'Select Sub-Research Domain' },
       { path: 'projectDetails.esgs', label: 'Select the Appropriate ESG(s)' },
       { path: 'projectDetails.sdgs', label: 'Select the Appropriate SDG(s)' },
-      { path: 'projectDetails.executiveSummary', label: 'Executive Summary of the Research Proposal' },
+      {
+        path: 'projectDetails.executiveSummary',
+        label: 'Executive Summary of the Research Proposal',
+      },
       { path: 'projectDetails.keywords', label: 'Keywords' },
       { path: 'projectDetails.introduction', label: 'Introduction' },
       { path: 'projectDetails.problemStatement', label: 'Problem Statement' },
@@ -191,14 +223,20 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
       { path: 'projectDetails.literatureReview', label: 'Literature Review' },
       { path: 'projectDetails.methodology', label: 'Research Methodology' },
       { path: 'projectDetails.references', label: 'References' },
-      { path: 'projectDetails.benefits.apu', label: 'Asia Pacific University of Technology & Innovation Benefit' },
+      {
+        path: 'projectDetails.benefits.apu',
+        label: 'Asia Pacific University of Technology & Innovation Benefit',
+      },
       { path: 'projectDetails.benefits.students', label: 'Students Benefit' },
       { path: 'projectDetails.benefits.stakeholders', label: 'Stakeholders Benefit' },
       { path: 'projectDetails.visionMission', label: 'Vision & Mission Alignment' },
     ],
     // Step 3: Research Output & Budget
     [
-      { path: 'outputs.journal.checked', label: 'Indexed Journal Publication (SCOPUS-Indexed Q1 and Q2)' },
+      {
+        path: 'outputs.journal.checked',
+        label: 'Indexed Journal Publication (SCOPUS-Indexed Q1 and Q2)',
+      },
       { path: 'outputs.journal.quantity', label: 'Indexed Journal Publication Quantity' },
       { path: 'outputs.conceptualDesign', label: 'Conceptual Design or Theoretical Framework' },
       { path: 'outputs.knowledgeTransfer.checked', label: 'Knowledge Transfer Programme' },
@@ -208,15 +246,15 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
     [
       { path: 'finalDeclaration.noveltyJustification', label: 'Novelty Justification' },
       { path: 'finalDeclaration.agreed', label: 'Declaration Agreement' },
-    ]
+    ],
   ];
 
   /** Review form groups mapped by step index (0-based) */
   private readonly reviewGroupByStep = [
-    ['reviewTeam'],                  // Step 1
-    ['reviewProject'],               // Step 2
+    ['reviewTeam'], // Step 1
+    ['reviewProject'], // Step 2
     ['reviewOutput', 'reviewBudget'], // Step 3
-    ['reviewDeclaration'],           // Step 4
+    ['reviewDeclaration'], // Step 4
   ];
 
   /** Returns labels for required-but-empty controls in a FormGroup */
@@ -232,7 +270,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
   private fieldKeyToLabel(key: string): string {
     return key
       .replace(/([a-z])([A-Z])/g, '$1 $2')
-      .replace(/^./, s => s.toUpperCase())
+      .replace(/^./, (s) => s.toUpperCase())
       .replace(/\bHos\b/g, 'HOS')
       .replace(/\bRmc\b/g, 'RMC')
       .replace(/\bRdig\b/g, 'RDIG')
@@ -290,8 +328,8 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
       const visited = this.checkedSteps.has(stepNum);
       const checks = this.stepFieldChecks[i] ?? [];
       const missingFields = checks
-        .filter(c => this.rdigForm.get(c.path)?.invalid)
-        .map(c => c.label);
+        .filter((c) => this.rdigForm.get(c.path)?.invalid)
+        .map((c) => c.label);
 
       // Step 2 also includes Research Activities (applicant-only)
       if (stepNum === 2 && this.workflow.isApplicantEditable()) {
@@ -317,7 +355,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
       // Include required-but-empty review fields (set dynamically by ReviewBlockComponent
       // and ApprovalCardComponent when the current user's role is editable)
       const reviewGroups = this.reviewGroupByStep[i] ?? [];
-      reviewGroups.forEach(reviewGroup => {
+      reviewGroups.forEach((reviewGroup) => {
         missingFields.push(...this.getRequiredInvalidLabels(reviewGroup));
       });
       // Step 4 also includes approval decision controls
@@ -333,7 +371,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
     if (!this.showValidationSummary()) return [];
 
     return this.getStepStatuses().flatMap((status, index) =>
-      status.missingFields.map(label => ({ label, step: index + 1 }))
+      status.missingFields.map((label) => ({ label, step: index + 1 })),
     );
   }
 
@@ -341,7 +379,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
     this.goToStep(item.step);
     setTimeout(() => {
       const firstInvalid = document.querySelector<HTMLElement>(
-        '.rdig-app form .ng-invalid:not(form):not(fieldset)'
+        '.rdig-app form .ng-invalid:not(form):not(fieldset)',
       );
       firstInvalid?.focus();
     });
@@ -352,40 +390,49 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
 
   constructor(private fb: FormBuilder) {
     this.rdigForm = this.fb.group({
-
       // 1. Hidden metadata (system-managed)
       // Status is in workflow.currentStatus (single source of truth).
       // Record ID is tracked via loadedAppId signal (not stored in the form).
       metadata: this.fb.group({
-        batch: [null],            // auto-assigned from active batch on submit — never set manually
+        batch: [null], // auto-assigned from active batch on submit — never set manually
         applicationVersion: [1],
         reviewers_version: [1],
-        applicantUserId: [null],  // stamped on first submit — used to target rejection/revision notifications
+        applicantUserId: [null], // stamped on first submit — used to target rejection/revision notifications
+        rdigRequestId: [null], // the real backend's rdig_request_id — kept separate from the json-server id
       }),
 
       // 2. Subpage 1 — Team Members (pre-filled from the logged-in user)
       teamDetails: this.fb.group({
-        leaderName: [{ value: this.auth.currentUser()?.name ?? '', disabled: true }, Validators.required],
-        leaderEmail: [{ value: this.auth.currentUser()?.email ?? '', disabled: true }, [Validators.required, Validators.email]],
-        department: [{ value: this.auth.currentUser()?.department ?? '', disabled: true }, Validators.required],
+        leaderName: [
+          { value: this.auth.currentUser()?.name ?? '', disabled: true },
+          Validators.required,
+        ],
+        leaderEmail: [
+          { value: this.auth.currentUser()?.email ?? '', disabled: true },
+          [Validators.required, Validators.email],
+        ],
+        department: [
+          { value: this.auth.currentUser()?.department ?? '', disabled: true },
+          Validators.required,
+        ],
         researchCluster: [null, Validators.required],
         leaderRoles: ['', [Validators.required, Validators.maxLength(600)]],
         internalResearchers: this.fb.array(
           [],
-          [Validators.required, Validators.minLength(1), Validators.maxLength(2)]
+          [Validators.required, Validators.minLength(1), Validators.maxLength(2)],
         ),
         externalResearchers: this.fb.array(
           [],
-          [Validators.required, Validators.minLength(2), Validators.maxLength(10)]
-        )
+          [Validators.required, Validators.minLength(2), Validators.maxLength(10)],
+        ),
       }),
 
       // 3. Subpage 2 — Project Details
       projectDetails: this.fb.group({
         applicationType: ['', Validators.required],
         declarations: this.fb.group({
-          ethics: [false, Validators.requiredTrue],
-          conflict: [false, Validators.requiredTrue]
+          ethics: [false],
+          conflict: [false],
         }),
         category: ['S&T'],
         duration: ['', Validators.required],
@@ -408,9 +455,9 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
         benefits: this.fb.group({
           apu: ['', [Validators.required, Validators.maxLength(300)]],
           students: ['', [Validators.required, Validators.maxLength(300)]],
-          stakeholders: ['', [Validators.required, Validators.maxLength(300)]]
+          stakeholders: ['', [Validators.required, Validators.maxLength(300)]],
         }),
-        visionMission: ['', [Validators.required, Validators.maxLength(300)]]
+        visionMission: ['', [Validators.required, Validators.maxLength(300)]],
       }),
 
       // 4. Subpage 3 — Research Activities
@@ -420,37 +467,40 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
       outputs: this.fb.group({
         journal: this.fb.group({
           checked: [false, Validators.requiredTrue],
-          quantity: [null, Validators.required]
+          quantity: [null, Validators.required],
         }),
         conceptualDesign: [false, Validators.requiredTrue],
         knowledgeTransfer: this.fb.group({
           checked: [false, Validators.requiredTrue],
-          community: ['', Validators.required]
+          community: ['', Validators.required],
         }),
         externalGrant: this.fb.group({
           checked: [false],
-          scheme: ['']
+          scheme: [''],
         }),
         others: this.fb.group({
           checked: [false],
-          details: ['', Validators.maxLength(200)]
-        })
+          details: ['', Validators.maxLength(200)],
+        }),
       }),
 
       // 6. Subpage 5 — Budget
-      budget: this.fb.group({
-        studentAllowances: this.fb.array([]),
-        travelAccommodation: this.fb.array([]),
-        materialsSupplies: this.fb.array([]),
-        specialServices: this.fb.array([]),
-        otherRemarks: ['', Validators.maxLength(300)],
-        totalRequest: [{ value: 0, disabled: true }]
-      }, { validators: [this.budgetRangeValidator] }),
+      budget: this.fb.group(
+        {
+          studentAllowances: this.fb.array([]),
+          travelAccommodation: this.fb.array([]),
+          materialsSupplies: this.fb.array([]),
+          specialServices: this.fb.array([]),
+          otherRemarks: ['', Validators.maxLength(300)],
+          totalRequest: [{ value: 0, disabled: true }],
+        },
+        { validators: [this.budgetRangeValidator] },
+      ),
 
       // 7. Final Declaration
       finalDeclaration: this.fb.group({
         noveltyJustification: ['', [Validators.required, Validators.maxLength(1000)]],
-        agreed: [false, Validators.requiredTrue]
+        agreed: [false, Validators.requiredTrue],
       }),
 
       // ── 8. Review & Approval Data ──────────────────────────────
@@ -462,7 +512,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
         reviewer1Score: [''],
         reviewer2Comment: ['', Validators.maxLength(500)],
         reviewer2Score: [''],
-        rmcComment: ['', Validators.maxLength(500)]
+        rmcComment: ['', Validators.maxLength(500)],
       }),
 
       // Page 2 (Project Details) reviews — per-field comments & scores
@@ -527,7 +577,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
         reviewer1QuestionsScore: [''],
         reviewer2QuestionsComment: ['', Validators.maxLength(500)],
         reviewer2QuestionsScore: [''],
-        rmcAimComment: ['', Validators.maxLength(500)]
+        rmcAimComment: ['', Validators.maxLength(500)],
       }),
 
       // Page 3 (Output Details) reviews
@@ -535,7 +585,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
         hosComment: ['', Validators.maxLength(500)],
         reviewer1Comment: ['', Validators.maxLength(500)],
         reviewer2Comment: ['', Validators.maxLength(500)],
-        rmcComment: ['', Validators.maxLength(500)]
+        rmcComment: ['', Validators.maxLength(500)],
       }),
 
       // Page 4 (Budget) reviews — per detail breakdown
@@ -554,13 +604,13 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
         reviewer1Comment: ['', Validators.maxLength(500)],
         reviewer1Score: [''],
         reviewer2Comment: ['', Validators.maxLength(500)],
-        reviewer2Score: ['']
+        reviewer2Score: [''],
       }),
 
       // Page 5 (Declaration) reviews + approvals
       reviewDeclaration: this.fb.group({
         rdigChairComment: ['', Validators.maxLength(500)],
-        vcComment: ['', Validators.maxLength(500)]
+        vcComment: ['', Validators.maxLength(500)],
       }),
 
       // Approval decisions
@@ -573,8 +623,8 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
         vcStatus: [''],
         ceoStatus: [''],
         reviewer1Assignment: ['4'],
-        reviewer2Assignment: ['4']
-      })
+        reviewer2Assignment: ['4'],
+      }),
     });
 
     this.rdigForm.get('budget')?.updateValueAndValidity({ emitEvent: false });
@@ -586,44 +636,33 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
     effect(() => {
       const readOnly = this.workflow.isFormReadOnly();
       const applicantGroups = [
-        'teamDetails', 'projectDetails', 'activities', 'outputs', 'budget', 'finalDeclaration'
+        'teamDetails',
+        'projectDetails',
+        'activities',
+        'outputs',
+        'budget',
+        'finalDeclaration',
       ];
-      applicantGroups.forEach(name => {
+      applicantGroups.forEach((name) => {
         const ctrl = this.rdigForm.get(name);
         readOnly ? ctrl?.disable({ emitEvent: false }) : ctrl?.enable({ emitEvent: false });
       });
       // totalRequest is always computed — keep it disabled regardless
       this.rdigForm.get('budget.totalRequest')?.disable({ emitEvent: false });
-      ['leaderName', 'leaderEmail', 'department'].forEach(name => {
+      ['leaderName', 'leaderEmail', 'department'].forEach((name) => {
         this.rdigForm.get(`teamDetails.${name}`)?.disable({ emitEvent: false });
       });
     });
   }
 
-  /**
-   * DEV TEST: Live override for applicationStatus (ABAC testing)
-   * Syncs the workflow.status signal and workflowState whenever the test field changes.
-   * Remove this method and the corresponding HTML when test is no longer needed.
-   */
-  onTestStatusChange(val: string): void {
-    const s = val as RdigStatus;
-    this.workflow.status.set(s);
-    this.workflowState.update(ws => ({
-      ...ws,
-      currentStatus: s,
-      nextRoles: getNextRoles(s),
-    }));
-    this.workflow.currentUserCanAct.set(this.canCurrentUserActOnCurrentState());
-  }
-
   /** DEV ONLY — toggles validation bypass for testing navigation and submission. */
   toggleValidation(): void {
-    this.validationDisabled.update(v => !v);
+    this.validationDisabled.update((v) => !v);
   }
 
   /** DEV ONLY - toggles active-batch validation for testing access and submission. */
   toggleBatchValidation(): void {
-    this.batchValidationDisabled.update(v => !v);
+    this.batchValidationDisabled.update((v) => !v);
   }
 
   // ── Score computations ─────────────────────────────────────────
@@ -682,24 +721,48 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
   }
 
   // ── Comment toggles ────────────────────────────────────────────
-  toggleHosComments(): void { this.showHosComments.update(v => !v); }
-  toggleRmcComments(): void { this.showRmcComments.update(v => !v); }
-  toggleR1Comments(): void { this.showR1Comments.update(v => !v); }
-  toggleR2Comments(): void { this.showR2Comments.update(v => !v); }
-  toggleRdigChairComments(): void { this.showRdigChairComments.update(v => !v); }
-  toggleVcComments(): void { this.showVcComments.update(v => !v); }
-  toggleCeoComments(): void { this.showCeoComments.update(v => !v); }
+  toggleHosComments(): void {
+    this.showHosComments.update((v) => !v);
+  }
+  toggleRmcComments(): void {
+    this.showRmcComments.update((v) => !v);
+  }
+  toggleR1Comments(): void {
+    this.showR1Comments.update((v) => !v);
+  }
+  toggleR2Comments(): void {
+    this.showR2Comments.update((v) => !v);
+  }
+  toggleRdigChairComments(): void {
+    this.showRdigChairComments.update((v) => !v);
+  }
+  toggleVcComments(): void {
+    this.showVcComments.update((v) => !v);
+  }
+  toggleCeoComments(): void {
+    this.showCeoComments.update((v) => !v);
+  }
 
   // ── Loading indicator for when fetching an existing application ──
   isLoadingApplication = signal(false);
 
   // ── Sync ABAC attributes to workflow ───────────────────────────
   ngOnInit(): void {
-    // Load the active batch — gates form access and is auto-assigned on submit.
-    this.batchSvc.loadAll().subscribe({
-      next: batches => {
-        const active = batches.find(b => b.status === 'active') ?? null;
-        this.activeBatch.set(active);
+    // Load the active batch from the real backend — gates form access and submission.
+    this.rdigApi.getActiveBatch().subscribe({
+      next: (res) => {
+        const batch = res.data?.batch;
+        this.activeBatch.set(
+          batch
+            ? ({
+                id: batch.id,
+                batchName: batch.batch_name,
+                status: batch.status,
+                startDate: batch.start_date,
+                endDate: batch.end_date,
+              } as BatchSitting)
+            : null,
+        );
       },
       error: () => this.activeBatch.set(null),
     });
@@ -718,8 +781,8 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
     const r2Ctrl = this.rdigForm.get('approvals.reviewer2Assignment')!;
     this.workflow.reviewer1UserId.set(r1Ctrl.value ?? '');
     this.workflow.reviewer2UserId.set(r2Ctrl.value ?? '');
-    r1Ctrl.valueChanges.subscribe(v => this.workflow.reviewer1UserId.set(v ?? ''));
-    r2Ctrl.valueChanges.subscribe(v => this.workflow.reviewer2UserId.set(v ?? ''));
+    r1Ctrl.valueChanges.subscribe((v) => this.workflow.reviewer1UserId.set(v ?? ''));
+    r2Ctrl.valueChanges.subscribe((v) => this.workflow.reviewer2UserId.set(v ?? ''));
     this.rdigForm.get('projectDetails.category')?.valueChanges.subscribe(() => {
       this.rdigForm.get('budget')?.updateValueAndValidity({ emitEvent: false });
     });
@@ -735,12 +798,12 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
   /**
    * Push persisted workflow/version values into the workflow service signals.
    * Status is read from workflowState (set by patchFormFromSavedData or
-   * defaulting to 'fill_application' for new applications).
+   * defaulting to 'draft' for new applications).
    */
   private syncWorkflowFromForm(): void {
     const status = this.workflowState().currentStatus as RdigStatus;
     this.workflow.status.set(status);
-    this.workflowState.update(ws => ({ ...ws, nextRoles: getNextRoles(status) }));
+    this.workflowState.update((ws) => ({ ...ws, nextRoles: getNextRoles(status) }));
 
     const rv = parseInt(this.rdigForm.get('metadata.reviewers_version')?.value, 10);
     if (!isNaN(rv)) this.workflow.reviewersVersion.set(rv);
@@ -763,11 +826,12 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
     const wf = app.workflow ?? {};
     const nextRoles: string[] = Array.isArray(wf.nextRoles) ? wf.nextRoles : [];
     const nextUsers = Array.isArray(wf.nextUsers) ? wf.nextUsers.map(String) : [];
-    const ownerById = app.metadata?.applicantUserId && String(app.metadata.applicantUserId) === String(user.id);
+    const ownerById =
+      app.metadata?.applicantUserId && String(app.metadata.applicantUserId) === String(user.id);
     const ownerByName = app.teamDetails?.leaderName && app.teamDetails.leaderName === user.name;
     const isOwner = !!(ownerById || ownerByName);
 
-    if ((wf.currentStatus === 'fill_application' || app.isDraft === true) && isOwner) return true;
+    if ((wf.currentStatus === 'draft' || app.isDraft === true) && isOwner) return true;
 
     if (nextUsers.includes(String(user.id))) return true;
 
@@ -796,17 +860,20 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
    */
   loadApplication(id: string): void {
     this.isLoadingApplication.set(true);
-    this.http.get<any>(`http://localhost:3000/applications/${id}`).pipe(
-      finalize(() => this.isLoadingApplication.set(false)),
-    ).subscribe({
-      next: (data) => {
-        this.patchFormFromSavedData(data);
-      },
-      error: (err) => {
-        console.error('Failed to load application:', err);
-        alert(`Could not load application ${id}. Make sure the JSON server is running (npm run db).`);
-      },
-    });
+    this.http
+      .get<any>(`http://localhost:3000/applications/${id}`)
+      .pipe(finalize(() => this.isLoadingApplication.set(false)))
+      .subscribe({
+        next: (data) => {
+          this.patchFormFromSavedData(data);
+        },
+        error: (err) => {
+          console.error('Failed to load application:', err);
+          alert(
+            `Could not load application ${id}. Make sure the JSON server is running (npm run db).`,
+          );
+        },
+      });
   }
 
   /**
@@ -819,25 +886,25 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
 
     // ── Simple groups (patchValue handles nested objects) ────────
     this.rdigForm.patchValue({
-      metadata:           data.metadata           ?? {},
-      projectDetails:     data.projectDetails     ?? {},
-      outputs:            data.outputs            ?? {},
-      finalDeclaration:   data.finalDeclaration   ?? {},
-      reviewTeam:         data.reviewTeam         ?? {},
-      reviewProject:      data.reviewProject      ?? {},
-      reviewOutput:       data.reviewOutput       ?? {},
-      reviewBudget:       data.reviewBudget       ?? {},
-      reviewDeclaration:  data.reviewDeclaration  ?? {},
-      approvals:          data.approvals          ?? {},
+      metadata: data.metadata ?? {},
+      projectDetails: data.projectDetails ?? {},
+      outputs: data.outputs ?? {},
+      finalDeclaration: data.finalDeclaration ?? {},
+      reviewTeam: data.reviewTeam ?? {},
+      reviewProject: data.reviewProject ?? {},
+      reviewOutput: data.reviewOutput ?? {},
+      reviewBudget: data.reviewBudget ?? {},
+      reviewDeclaration: data.reviewDeclaration ?? {},
+      approvals: data.approvals ?? {},
     });
 
     // teamDetails scalar fields (exclude the arrays)
     this.rdigForm.get('teamDetails')?.patchValue({
-      leaderName:      data.teamDetails?.leaderName      ?? '',
-      leaderEmail:     data.teamDetails?.leaderEmail     ?? '',
-      department:      data.teamDetails?.department      ?? '',
+      leaderName: data.teamDetails?.leaderName ?? '',
+      leaderEmail: data.teamDetails?.leaderEmail ?? '',
+      department: data.teamDetails?.department ?? '',
       researchCluster: data.teamDetails?.researchCluster ?? null,
-      leaderRoles:     data.teamDetails?.leaderRoles     ?? '',
+      leaderRoles: data.teamDetails?.leaderRoles ?? '',
     });
 
     // budget scalar fields (exclude the arrays)
@@ -850,30 +917,52 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
       this.rdigForm.get('teamDetails.internalResearchers') as FormArray,
       data.teamDetails?.internalResearchers ?? [],
     );
+    this.captureLoadedBackendIds(
+      'internalResearchers',
+      this.rdigForm.get('teamDetails.internalResearchers') as FormArray,
+    );
     this.rebuildArray(
       this.rdigForm.get('teamDetails.externalResearchers') as FormArray,
       data.teamDetails?.externalResearchers ?? [],
     );
-    this.rebuildArray(
-      this.rdigForm.get('activities') as FormArray,
-      data.activities ?? [],
+    this.captureLoadedBackendIds(
+      'externalResearchers',
+      this.rdigForm.get('teamDetails.externalResearchers') as FormArray,
     );
+    this.rebuildArray(this.rdigForm.get('activities') as FormArray, data.activities ?? []);
     this.rdigForm.get('activities')?.updateValueAndValidity({ emitEvent: false });
+    this.captureLoadedBackendIds('activities', this.rdigForm.get('activities') as FormArray);
     this.rebuildArray(
       this.rdigForm.get('budget.studentAllowances') as FormArray,
       data.budget?.studentAllowances ?? [],
+    );
+    this.captureLoadedBackendIds(
+      'studentAllowances',
+      this.rdigForm.get('budget.studentAllowances') as FormArray,
     );
     this.rebuildArray(
       this.rdigForm.get('budget.travelAccommodation') as FormArray,
       data.budget?.travelAccommodation ?? [],
     );
+    this.captureLoadedBackendIds(
+      'travelAccommodation',
+      this.rdigForm.get('budget.travelAccommodation') as FormArray,
+    );
     this.rebuildArray(
       this.rdigForm.get('budget.materialsSupplies') as FormArray,
       data.budget?.materialsSupplies ?? [],
     );
+    this.captureLoadedBackendIds(
+      'materialsSupplies',
+      this.rdigForm.get('budget.materialsSupplies') as FormArray,
+    );
     this.rebuildArray(
       this.rdigForm.get('budget.specialServices') as FormArray,
       data.budget?.specialServices ?? [],
+    );
+    this.captureLoadedBackendIds(
+      'specialServices',
+      this.rdigForm.get('budget.specialServices') as FormArray,
     );
     this.rdigForm.get('budget')?.updateValueAndValidity({ emitEvent: false });
 
@@ -896,7 +985,297 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
   /** Clear a FormArray and rebuild it from a plain-object array. */
   private rebuildArray(arr: FormArray, items: any[]): void {
     arr.clear({ emitEvent: false });
-    items.forEach(item => arr.push(this.fb.group(item), { emitEvent: false }));
+    items.forEach((item) => arr.push(this.fb.group(item), { emitEvent: false }));
+  }
+
+  // ── Real RDIG backend integration ───────────────────────────────
+  // Applicant-facing lifecycle (create/save/load/submit) writes through to the
+  // real backend. The HOS/RMC/Reviewer/RDIG Chair/VC/CEO review workflow keeps
+  // running against the local json-server store for now — that part of the
+  // backend's generic workflow engine is a separate, later integration pass.
+
+  /** Backend child-resource ids present at load time, per FormArray, used to diff on save. */
+  private loadedChildBackendIds: Record<string, Set<number>> = {
+    internalResearchers: new Set<number>(),
+    externalResearchers: new Set<number>(),
+    activities: new Set<number>(),
+    studentAllowances: new Set<number>(),
+    travelAccommodation: new Set<number>(),
+    materialsSupplies: new Set<number>(),
+    specialServices: new Set<number>(),
+  };
+
+  /** Backend budget_section_id for each fixed section code (V11000/V21000/V27000/V29000), resolved lazily. */
+  private budgetSectionIdByCode: Record<string, number> | null = null;
+
+  /** Records which rows already have a backend id, so the next save knows what to delete. */
+  private captureLoadedBackendIds(key: string, array: FormArray): void {
+    const ids = new Set<number>();
+    for (let i = 0; i < array.length; i++) {
+      const backendId = array.at(i).get('backendId')?.value;
+      if (backendId) ids.add(Number(backendId));
+    }
+    this.loadedChildBackendIds[key] = ids;
+  }
+
+  /** Maps the Angular form's camelCase fields to the backend's snake_case RdigRequest schema. */
+  private buildRdigRequestDto(): Partial<RdigRequestDto> {
+    const raw = this.rdigForm.getRawValue();
+    const pd = raw.projectDetails ?? {};
+    const team = raw.teamDetails ?? {};
+    const outputs = raw.outputs ?? {};
+    const budget = raw.budget ?? {};
+    const finalDecl = raw.finalDeclaration ?? {};
+
+    return {
+      application_type: pd.applicationType || null,
+      project_category: pd.category || null,
+      project_duration_months: pd.duration ? Number(pd.duration) || null : null,
+      project_title: pd.title || null,
+      research_area: pd.researchArea || null,
+      research_cluster_id: team.researchCluster ? Number(team.researchCluster) : null,
+      research_domain_id: pd.domain ? Number(pd.domain) : null,
+      sub_research_domain_id: pd.subDomain ? Number(pd.subDomain) : null,
+      executive_summary: pd.executiveSummary || null,
+      keywords: pd.keywords || null,
+      introduction: pd.introduction || null,
+      problem_statement: pd.problemStatement || null,
+      research_aim_objectives: pd.researchAim || null,
+      research_questions: pd.researchQuestions || null,
+      hypothesis_propositions: pd.hypothesis || null,
+      literature_review: pd.literatureReview || null,
+      research_methodology: pd.methodology || null,
+      references_text: pd.references || null,
+      benefit_to_apu: pd.benefits?.apu || null,
+      benefit_to_students: pd.benefits?.students || null,
+      benefit_to_stakeholders: pd.benefits?.stakeholders || null,
+      vision_mission_alignment: pd.visionMission || null,
+      project_leader_name: team.leaderName || null,
+      project_leader_email: team.leaderEmail || null,
+      project_leader_department: team.department || null,
+      project_leader_role_in_project: team.leaderRoles || null,
+      declaration_agreement_accepted: !!finalDecl.agreed,
+      novelty_justification: finalDecl.noveltyJustification || null,
+      budget_remarks: budget.otherRemarks || null,
+      total_budget_request: budget.totalRequest != null ? String(budget.totalRequest) : null,
+      indexed_journal_selected: !!outputs.journal?.checked,
+      indexed_journal_quantity: outputs.journal?.quantity ?? null,
+      conceptual_design_selected: !!outputs.conceptualDesign,
+      knowledge_transfer_programme_selected: !!outputs.knowledgeTransfer?.checked,
+      application_external_grant_selected: !!outputs.externalGrant?.checked,
+      other_output_selected: !!outputs.others?.checked,
+      other_output_specification: outputs.others?.details || null,
+    };
+  }
+
+  /** Generic create/update/delete sync for one FormArray against its backend child-resource endpoints. */
+  private syncFormArray<T>(
+    key: string,
+    array: FormArray,
+    toPayload: (raw: any) => T,
+    create: (payload: T) => Observable<{ data: { id?: number } }>,
+    update: (backendId: number, payload: T) => Observable<unknown>,
+    remove: (backendId: number) => Observable<unknown>,
+  ): Observable<unknown> {
+    const currentIds = new Set<number>();
+    const ops: Observable<unknown>[] = [];
+
+    for (let i = 0; i < array.length; i++) {
+      const group = array.at(i) as FormGroup;
+      const raw = group.getRawValue();
+      const backendId = group.get('backendId')?.value as number | null | undefined;
+      const payload = toPayload(raw);
+
+      if (backendId) {
+        currentIds.add(Number(backendId));
+        ops.push(update(Number(backendId), payload));
+      } else {
+        ops.push(
+          create(payload).pipe(
+            tap((res) => {
+              const newId = res?.data?.id;
+              if (newId) {
+                group.setControl('backendId', new FormControl(newId), { emitEvent: false });
+                currentIds.add(newId);
+              }
+            }),
+          ),
+        );
+      }
+    }
+
+    const previously = this.loadedChildBackendIds[key] ?? new Set<number>();
+    for (const oldId of previously) {
+      if (!currentIds.has(oldId)) {
+        ops.push(remove(oldId));
+      }
+    }
+
+    const result$: Observable<unknown> = ops.length ? forkJoin(ops) : of(null);
+    return result$.pipe(
+      tap(() => {
+        this.loadedChildBackendIds[key] = currentIds;
+      }),
+    );
+  }
+
+  /** Uploads the support-letter file for any external researcher row that has a pending File object. */
+  private uploadPendingSupportLetters(id: number): Observable<unknown> {
+    const array = this.rdigForm.get('teamDetails.externalResearchers') as FormArray;
+    const uploads: Observable<unknown>[] = [];
+
+    for (let i = 0; i < array.length; i++) {
+      const group = array.at(i) as FormGroup;
+      const file = group.get('supportLetter')?.value;
+      if (file instanceof File) {
+        uploads.push(
+          this.rdigApi.uploadAttachment(id, file, 'rdig_collaborator_support_letter').pipe(
+            tap((res) => {
+              const attachmentId = res?.data?.id ?? null;
+              group.setControl(
+                'supportLetterAttachmentId',
+                new FormControl(attachmentId),
+                { emitEvent: false },
+              );
+              // Clear the raw File so it isn't re-uploaded on the next save in this session.
+              group.get('supportLetter')?.setValue(null, { emitEvent: false });
+            }),
+          ),
+        );
+      }
+    }
+
+    return uploads.length ? forkJoin(uploads) : of(null);
+  }
+
+  /** Resolves the four fixed budget sections (V11000/V21000/V27000/V29000) to their backend ids. */
+  private resolveBudgetSectionIds(id: number): Observable<Record<string, number>> {
+    if (this.budgetSectionIdByCode) return of(this.budgetSectionIdByCode);
+    return this.rdigApi.listBudgetSections(id).pipe(
+      map((res) => {
+        const sectionMap: Record<string, number> = {};
+        for (const section of res.data ?? []) {
+          const sectionId = (section as any).id ?? section.budget_section_id;
+          if (section.section_code && sectionId) sectionMap[section.section_code] = sectionId;
+        }
+        this.budgetSectionIdByCode = sectionMap;
+        return sectionMap;
+      }),
+    );
+  }
+
+  /** Bulk-replaces the ESG/SDG selections (the only child resources with a bulk-replace endpoint). */
+  private syncEsgSdgSelections(id: number): Observable<unknown> {
+    const esgs: string[] = this.rdigForm.get('projectDetails.esgs')?.value ?? [];
+    const sdgs: string[] = this.rdigForm.get('projectDetails.sdgs')?.value ?? [];
+    const esgIds = esgs.map((v) => Number(v)).filter((n) => Number.isFinite(n));
+    const sdgIds = sdgs.map((v) => Number(v)).filter((n) => Number.isFinite(n));
+
+    return forkJoin([
+      this.rdigApi.replaceEsgSelections(id, esgIds),
+      this.rdigApi.replaceSdgSelections(id, sdgIds),
+    ]);
+  }
+
+  /** Persists every applicant-owned child array against its backend child-resource endpoints. */
+  private syncChildArrays(id: number): Observable<unknown> {
+    const budgetSectionCodeByFormKey: Record<string, string> = {
+      studentAllowances: 'V11000',
+      travelAccommodation: 'V21000',
+      materialsSupplies: 'V27000',
+      specialServices: 'V29000',
+    };
+
+    return this.uploadPendingSupportLetters(id).pipe(
+      switchMap(() => this.resolveBudgetSectionIds(id)),
+      switchMap((sectionIds) =>
+        forkJoin([
+          this.syncFormArray(
+            'internalResearchers',
+            this.rdigForm.get('teamDetails.internalResearchers') as FormArray,
+            (raw) => ({
+              staff_id: raw.staffId || null,
+              staff_name: raw.staffName || null,
+              staff_department: raw.department || null,
+              area_of_expertise: raw.expertise || null,
+              role_in_project: raw.roles || null,
+            }),
+            (payload) => this.rdigApi.createCoResearcher(id, payload),
+            (backendId, payload) => this.rdigApi.updateCoResearcher(id, backendId, payload),
+            (backendId) => this.rdigApi.deleteCoResearcher(id, backendId),
+          ),
+          this.syncFormArray(
+            'externalResearchers',
+            this.rdigForm.get('teamDetails.externalResearchers') as FormArray,
+            (raw) => ({
+              title: raw.title || null,
+              full_name: raw.fullName || null,
+              email: raw.email || null,
+              institution_company_name: raw.institution || null,
+              organisation_type: raw.orgType || null,
+              position: raw.position || null,
+              department: raw.department || null,
+              country_code: raw.country || null,
+              matched_funding_amount: raw.funding != null ? String(raw.funding) : null,
+              role_in_project: raw.roles || null,
+              support_letter_attachment_id: raw.supportLetterAttachmentId ?? null,
+            }),
+            (payload) => this.rdigApi.createCollaborator(id, payload),
+            (backendId, payload) => this.rdigApi.updateCollaborator(id, backendId, payload),
+            (backendId) => this.rdigApi.deleteCollaborator(id, backendId),
+          ),
+          this.syncFormArray(
+            'activities',
+            this.rdigForm.get('activities') as FormArray,
+            (raw) => ({
+              activity_name: raw.name || null,
+              start_month: raw.startMonth ?? null,
+              end_month: raw.endMonth ?? null,
+              duration_months: raw.duration ?? null,
+            }),
+            (payload) => this.rdigApi.createResearchActivity(id, payload),
+            (backendId, payload) => this.rdigApi.updateResearchActivity(id, backendId, payload),
+            (backendId) => this.rdigApi.deleteResearchActivity(id, backendId),
+          ),
+          ...Object.entries(budgetSectionCodeByFormKey).map(([formKey, code]) =>
+            this.syncFormArray(
+              formKey,
+              this.rdigForm.get(`budget.${formKey}`) as FormArray,
+              (raw) => ({
+                rdig_budget_section_id: sectionIds[code],
+                description: raw.description || null,
+                amount_rm: raw.amount != null ? String(raw.amount) : null,
+                remarks: raw.remarks || null,
+              }),
+              (payload) => this.rdigApi.createBudgetItem(id, payload),
+              (backendId, payload) => this.rdigApi.updateBudgetItem(id, backendId, payload),
+              (backendId) => this.rdigApi.deleteBudgetItem(id, backendId),
+            ),
+          ),
+          this.syncEsgSdgSelections(id),
+        ]),
+      ),
+    );
+  }
+
+  /** Creates/updates the RDIG draft on the real backend, then syncs every child array. Resolves to the backend id. */
+  private syncToRealBackend(): Observable<number> {
+    const dto = this.buildRdigRequestDto();
+    const existingIdRaw = this.rdigForm.get('metadata.rdigRequestId')?.value;
+    const existingId = existingIdRaw ? Number(existingIdRaw) : null;
+
+    const ensureDraft$: Observable<number> = existingId
+      ? this.rdigApi.updateDraft(existingId, dto).pipe(map(() => existingId))
+      : this.rdigApi.createDraft(dto).pipe(
+          map((res) => {
+            const newId = (res.data as any)?.id ?? res.data?.request_id;
+            if (!newId) throw new Error('Backend did not return a new RDIG request id.');
+            this.rdigForm.get('metadata.rdigRequestId')?.setValue(newId, { emitEvent: false });
+            return newId;
+          }),
+        );
+
+    return ensureDraft$.pipe(switchMap((id) => this.syncChildArrays(id).pipe(map(() => id))));
   }
 
   // ── Wizard navigation ──────────────────────────────────────────
@@ -913,7 +1292,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
   onNext(): void {
     if (this.currentStep() < this.totalSteps) {
       this.checkedSteps.add(this.currentStep());
-      this.currentStep.update(s => s + 1);
+      this.currentStep.update((s) => s + 1);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }
@@ -921,7 +1300,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
   onPrev(): void {
     if (this.currentStep() > 1) {
       this.checkedSteps.add(this.currentStep());
-      this.currentStep.update(s => s - 1);
+      this.currentStep.update((s) => s - 1);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }
@@ -932,17 +1311,32 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
 
   onSaveDraft(): void {
     if (this.isViewOnly()) {
-      this.submissionErrorMessage.set('This application is open in history view only and cannot be edited.');
+      this.submissionErrorMessage.set(
+        'This application is open in history view only and cannot be edited.',
+      );
       this.submissionState.set('ERROR');
       return;
     }
 
     this.isSaving.set(true);
+
+    this.syncToRealBackend()
+      .pipe(
+        catchError((err) => {
+          console.error('RDIG backend sync failed — draft will still save locally:', err);
+          return of(null);
+        }),
+      )
+      .subscribe(() => this.saveDraftToLocalStore());
+  }
+
+  /** Existing json-server-backed draft save — drives the dashboard list views and the local workflow simulation. */
+  private saveDraftToLocalStore(): void {
     const currentStatus = this.workflowState().currentStatus;
 
     // Determine whether this is a brand-new application (not yet formally submitted
     // to any reviewer) or an in-progress application being partially saved.
-    const isNewApp = currentStatus === 'fill_application';
+    const isNewApp = currentStatus === 'draft';
 
     // For new (unsubmitted) apps: hide from everyone's inbox by clearing nextRoles.
     // For in-process apps (e.g. pending_applicant_resubmission_*): keep existing
@@ -957,22 +1351,20 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
 
     const formData: Record<string, unknown> = {
       ...this.rdigForm.getRawValue(),
-      formType:  'RDIG',
-      workflow:  workflowForSave,
-      isDraft:   isNewApp,          // only unsubmitted apps get the draft flag
-      savedAt:   new Date().toISOString(),
-      metadata:  { ...rawMeta, applicantUserId },
+      formType: 'RDIG',
+      workflow: workflowForSave,
+      isDraft: isNewApp, // only unsubmitted apps get the draft flag
+      savedAt: new Date().toISOString(),
+      metadata: { ...rawMeta, applicantUserId },
     };
 
-    const appId  = this.loadedAppId();
+    const appId = this.loadedAppId();
     const isEdit = !!appId;
-    const url    = isEdit
+    const url = isEdit
       ? `http://localhost:3000/applications/${appId}`
       : 'http://localhost:3000/applications';
 
-    const request$ = isEdit
-      ? this.http.put(url, formData)
-      : this.http.post(url, formData);
+    const request$ = isEdit ? this.http.put(url, formData) : this.http.post(url, formData);
 
     request$.subscribe({
       next: (response: any) => {
@@ -1004,7 +1396,9 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
     this.submitAttempted.set(true);
     this.showValidationSummary.set(false);
     if (this.isViewOnly()) {
-      this.submissionErrorMessage.set('This application is open in history view only and cannot be submitted.');
+      this.submissionErrorMessage.set(
+        'This application is open in history view only and cannot be submitted.',
+      );
       this.submissionState.set('ERROR');
       return;
     }
@@ -1025,7 +1419,9 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
 
     if (!this.validationDisabled() && this.rdigForm.invalid) {
       this.rdigForm.markAllAsTouched();
-      this.submissionErrorMessage.set('Your form has missing or invalid fields. Please review all steps.');
+      this.submissionErrorMessage.set(
+        'Your form has missing or invalid fields. Please review all steps.',
+      );
       this.showValidationSummary.set(true);
       setTimeout(() => {
         const summary = document.querySelector<HTMLElement>('.validation-summary');
@@ -1041,9 +1437,9 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
 
     // Stamp applicant's userId on first submit so downstream reviewers can target notifications back to them.
     if (!this.rdigForm.get('metadata.applicantUserId')?.value) {
-      this.rdigForm.get('metadata.applicantUserId')?.setValue(
-        this.auth.currentUser()?.id ?? null, { emitEvent: false },
-      );
+      this.rdigForm
+        .get('metadata.applicantUserId')
+        ?.setValue(this.auth.currentUser()?.id ?? null, { emitEvent: false });
     }
 
     // ── Workflow transition ──────────────────────────────────────
@@ -1079,12 +1475,13 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
       };
 
       // Determine next users (reviewer stage uses assigned reviewer IDs)
-      const nextUsers: string[] = nextStatus === 'pending_reviewers'
-        ? [
-            this.rdigForm.get('approvals.reviewer1Assignment')?.value,
-            this.rdigForm.get('approvals.reviewer2Assignment')?.value,
-          ].filter(Boolean)
-        : [];
+      const nextUsers: string[] =
+        nextStatus === 'pending_reviewers'
+          ? [
+              this.rdigForm.get('approvals.reviewer1Assignment')?.value,
+              this.rdigForm.get('approvals.reviewer2Assignment')?.value,
+            ].filter(Boolean)
+          : [];
 
       // Update workflow state signal
       this.workflowState.set({
@@ -1101,14 +1498,46 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
 
     this.submissionState.set('LOADING');
 
+    // ── Real backend sync (applicant lifecycle only) ──────────────
+    // Creates/updates the RDIG draft + child arrays on the real backend, then
+    // calls the matching lifecycle endpoint for applicant-driven transitions
+    // (draft → submit, returned-for-revision → resubmit). HOS/RMC/Reviewer/RDIG
+    // Chair/VC/CEO actions have no backend endpoint yet, so they only run the
+    // draft sync to keep the applicant's own fields up to date there.
+    this.syncToRealBackend()
+      .pipe(
+        switchMap((id) => {
+          if (currentStatus === 'draft') return this.rdigApi.submit(id);
+          if (
+            currentStatus === 'pending_applicant_resubmission_hos' ||
+            currentStatus === 'pending_applicant_resubmission_reviewers'
+          ) {
+            return this.rdigApi.resubmit(id);
+          }
+          return of(null);
+        }),
+        catchError((err) => {
+          console.error('RDIG backend submit sync failed — continuing with local workflow:', err);
+          return of(null);
+        }),
+      )
+      .subscribe(() => this.submitToLocalStore(currentStatus, batch, transition));
+  }
+
+  /** Existing json-server-backed submission — drives the dashboard list views and the local workflow simulation. */
+  private submitToLocalStore(
+    currentStatus: RdigStatus,
+    batch: BatchSitting | null | undefined,
+    transition: any,
+  ): void {
     // Clear the draft flag on formal submission so the application moves to
     // the appropriate inbox / pending view and not back to Drafts.
     const formData = {
       ...this.rdigForm.getRawValue(),
       formType: 'RDIG',
       workflow: this.workflowState(),
-      isDraft:  false,
-      savedAt:  new Date().toISOString(),
+      isDraft: false,
+      savedAt: new Date().toISOString(),
     };
 
     const appId = this.loadedAppId();
@@ -1117,9 +1546,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
       ? `http://localhost:3000/applications/${appId}`
       : 'http://localhost:3000/applications';
 
-    const request$ = isEdit
-      ? this.http.put(url, formData)
-      : this.http.post(url, formData);
+    const request$ = isEdit ? this.http.put(url, formData) : this.http.post(url, formData);
 
     request$.subscribe({
       next: (response: any) => {
@@ -1129,10 +1556,9 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
           this.loadedAppId.set(savedId);
         }
 
-        // First formal submission (applicant → HOS): register this app in the batch's applicationIds array.
-        if (currentStatus === 'fill_application' && batch && savedId != null) {
-          this.batchSvc.addApplicationId(batch.id, Number(savedId)).subscribe();
-        }
+        // Note: batch.id now comes from the real backend's /rdig/active-batch, which has no
+        // correspondence to the local admin-settings batch-sitting store, so application ids
+        // are no longer registered there.
 
         // First, clear any existing action notifications for the current user (e.g. they just approved it)
         if (savedId != null) {
@@ -1142,7 +1568,11 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
         // Fire workflow notifications for the next recipient(s).
         if (transition && savedId != null) {
           this.fireWorkflowNotifications(
-            transition.nextStatus, transition.actorRole, Number(savedId), formData, currentStatus,
+            transition.nextStatus,
+            transition.actorRole,
+            Number(savedId),
+            formData,
+            currentStatus,
           );
         }
 
@@ -1156,11 +1586,12 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
       error: (err) => {
         console.error('Save failed:', err);
         let errorMsg = 'Failed to process. Please try again.';
-        if (err.status === 0) errorMsg = 'Could not connect to the server (Ensure the local db is running).';
+        if (err.status === 0)
+          errorMsg = 'Could not connect to the server (Ensure the local db is running).';
 
         this.submissionErrorMessage.set(errorMsg);
         this.submissionState.set('ERROR');
-      }
+      },
     });
   }
 
@@ -1171,46 +1602,56 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
    * Determines recipient(s) from the next status and the saved formData.
    */
   private fireWorkflowNotifications(
-    nextStatus:    RdigStatus,
-    actorRole:     string,
-    savedId:       number,
-    formData:      any,
+    nextStatus: RdigStatus,
+    actorRole: string,
+    savedId: number,
+    formData: any,
     currentStatus: RdigStatus,
   ): void {
-    const actorName         = this.auth.currentUser()?.name ?? 'Unknown';
-    const entityType        = 'RDIG Application';
-    const entityModule      = 'rdig';
-    const route             = `/rdig?id=${savedId}`;
-    const applicantUserId   = formData.metadata?.applicantUserId as string | null;
-    const appDepartment     = formData.teamDetails?.department   as string ?? '';
-    const nextUsers: string[] = formData.workflow?.nextUsers     ?? [];
+    const actorName = this.auth.currentUser()?.name ?? 'Unknown';
+    const entityType = 'RDIG Application';
+    const entityModule = 'rdig';
+    const route = `/rdig?id=${savedId}`;
+    const applicantUserId = formData.metadata?.applicantUserId as string | null;
+    const appDepartment = (formData.teamDetails?.department as string) ?? '';
+    const nextUsers: string[] = formData.workflow?.nextUsers ?? [];
 
     const fire = (key: string, ctx: Record<string, unknown>) => {
-      this.notifSvc.create(
-        this.notifSvc.build(key, {
-          entityType, entityId: savedId, actorName, stage: nextStatus,
-          ...ctx,
-          data: {
-            entityId: savedId, entityType, entityModule,
-            stage: nextStatus, actorName, route,
-            ...(ctx['data'] as object ?? {}),
-          },
-        }),
-      ).subscribe();
+      this.notifSvc
+        .create(
+          this.notifSvc.build(key, {
+            entityType,
+            entityId: savedId,
+            actorName,
+            stage: nextStatus,
+            ...ctx,
+            data: {
+              entityId: savedId,
+              entityType,
+              entityModule,
+              stage: nextStatus,
+              actorName,
+              route,
+              ...((ctx['data'] as object) ?? {}),
+            },
+          }),
+        )
+        .subscribe();
     };
 
     switch (nextStatus) {
-
       case 'pending_hos':
         // Notify HOS (department-scoped)
         fire('REVIEW_ASSIGNED_TO_YOU', {
-          stage: 'HOS Review', recipientRole: 'HOS', recipientDepartment: appDepartment,
+          stage: 'HOS Review',
+          recipientRole: 'HOS',
+          recipientDepartment: appDepartment,
         });
         // Confirm submission to applicant on first submit only
-        if (currentStatus === 'fill_application') {
+        if (currentStatus === 'draft') {
           fire('APPLICATION_SUBMITTED_CONFIRMED', {
             recipientUserId: this.auth.currentUser()?.id,
-            data: { route: null } // This is strictly an FYI; strip the link
+            data: { route: null }, // This is strictly an FYI; strip the link
           });
         }
         break;
@@ -1218,7 +1659,9 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
       case 'pending_hos_review':
         // Applicant resubmitted → notify HOS again (department-scoped)
         fire('APPLICATION_RESUBMITTED_BY', {
-          stage: 'HOS Re-Review', recipientRole: 'HOS', recipientDepartment: appDepartment,
+          stage: 'HOS Re-Review',
+          recipientRole: 'HOS',
+          recipientDepartment: appDepartment,
         });
         break;
 
@@ -1233,7 +1676,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
 
       case 'pending_reviewers':
         // Notify both assigned reviewers by their userId
-        nextUsers.forEach(uid =>
+        nextUsers.forEach((uid) =>
           fire('REVIEWER_ASSIGNED_TO_APPLICATION', { recipientUserId: uid }),
         );
         break;

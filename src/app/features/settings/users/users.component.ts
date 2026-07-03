@@ -1,14 +1,9 @@
 import { CommonModule } from '@angular/common';
-import {
-  Component,
-  OnInit,
-  TrackByFunction,
-  inject,
-  signal,
-} from '@angular/core';
+import { Component, OnInit, TrackByFunction, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { finalize, forkJoin, switchMap, tap } from 'rxjs';
 
+import { DropdownOption } from '../../../core/interfaces/components.interface';
 import {
   DataTableColumn,
   DataTableComponent,
@@ -16,6 +11,7 @@ import {
 import { ToastService } from '../../../core/services/toast.service';
 import { DialogComponent } from '../../../shared/components/dialog/dialog.component';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
+import { SearchableDropdownComponent } from '../../../shared/components/searchable-dropdown/searchable-dropdown.component';
 import { TableSkeletonComponent } from '../../../shared/components/table-skeleton/table-skeleton.component';
 import {
   DepartmentRecord,
@@ -26,8 +22,8 @@ import {
 } from './users.service';
 
 const EMPTY_FILTERS: UserListFilters = {
-  nameEmail: '',
-  jobTitle: '',
+  name: '',
+  email: '',
   roleId: null,
   accountType: '',
   departmentId: null,
@@ -42,10 +38,11 @@ const EMPTY_FILTERS: UserListFilters = {
     DataTableComponent,
     DialogComponent,
     PaginationComponent,
+    SearchableDropdownComponent,
     TableSkeletonComponent,
   ],
   templateUrl: './users.component.html',
-  styleUrl: './users.component.scss',
+  styleUrls: ['../forms/forms.component.scss', './users.component.scss'],
 })
 export class UsersComponent implements OnInit {
   private readonly usersService = inject(UsersService);
@@ -55,8 +52,8 @@ export class UsersComponent implements OnInit {
   readonly roles = signal<RoleRecord[]>([]);
   readonly departments = signal<DepartmentRecord[]>([]);
 
-  readonly nameEmail = signal('');
-  readonly jobTitle = signal('');
+  readonly nameSearch = signal('');
+  readonly emailSearch = signal('');
   readonly selectedRoleId = signal<number | null>(null);
   readonly selectedAccountType = signal<'' | 'Staff' | 'Student'>('');
   readonly selectedDepartmentId = signal<number | null>(null);
@@ -73,6 +70,8 @@ export class UsersComponent implements OnInit {
   readonly isPairDialogOpen = signal(false);
   readonly pairUsername = signal('');
   readonly pairRoleId = signal<number | null>(null);
+  readonly userForRoleAssignment = signal<UserRecord | null>(null);
+  readonly assignRoleId = signal<number | null>(null);
   readonly isSaving = signal(false);
 
   readonly columns: readonly DataTableColumn[] = [
@@ -83,15 +82,36 @@ export class UsersComponent implements OnInit {
     { key: 'type', label: 'Account Type', width: '130px', align: 'center' },
     { key: 'department', label: 'Department', width: '250px' },
     { key: 'lastLogin', label: 'Last Login', width: '150px' },
+    {
+      key: 'actions',
+      label: 'Actions',
+      width: '120px',
+      align: 'center',
+      headerAlign: 'center',
+    },
   ];
 
-  readonly rowTrackFn: TrackByFunction<unknown> = (
-    _index: number,
-    row: unknown,
-  ) => (row as UserRecord).id;
+  readonly rowTrackFn: TrackByFunction<unknown> = (_index: number, row: unknown) =>
+    (row as UserRecord).id;
 
   ngOnInit(): void {
     this.loadInitialData();
+  }
+
+  roleOptions(): DropdownOption<number>[] {
+    return this.roles().map((role) => ({
+      value: role.id,
+      label: role.role_name,
+      description: role.role_code,
+      searchText: `${role.role_name} ${role.role_code}`,
+    }));
+  }
+
+  departmentOptions(): DropdownOption<number>[] {
+    return this.departments().map((department) => ({
+      value: department.id,
+      label: department.department_name,
+    }));
   }
 
   loadInitialData(): void {
@@ -99,25 +119,21 @@ export class UsersComponent implements OnInit {
     this.loadFailed.set(false);
 
     forkJoin({
-      roles: this.usersService.listRoleOptions(),
+      roles: this.usersService.listRoles(),
       departments: this.usersService.listDepartments(),
     })
       .pipe(
         tap(({ roles, departments }) => {
-          this.roles.set(roles.data);
+          this.roles.set(roles.data.items);
           this.departments.set(this.uniqueDepartments(departments.data));
         }),
         switchMap(() =>
-          this.usersService.list(
-            this.page(),
-            this.pageSize(),
-            this.appliedFilters(),
-          ),
+          this.usersService.list(this.page(), this.pageSize(), this.appliedFilters()),
         ),
         finalize(() => this.isLoading.set(false)),
       )
       .subscribe({
-        next: response => {
+        next: (response) => {
           this.applyUsersResponse(response.data.items, response.data.pagination);
           this.toastService.success(response.message);
         },
@@ -127,8 +143,8 @@ export class UsersComponent implements OnInit {
 
   search(): void {
     this.appliedFilters.set({
-      nameEmail: this.nameEmail().trim(),
-      jobTitle: this.jobTitle().trim(),
+      name: this.nameSearch().trim(),
+      email: this.emailSearch().trim(),
       roleId: this.selectedRoleId(),
       accountType: this.selectedAccountType(),
       departmentId: this.selectedDepartmentId(),
@@ -138,8 +154,8 @@ export class UsersComponent implements OnInit {
   }
 
   resetFilters(): void {
-    this.nameEmail.set('');
-    this.jobTitle.set('');
+    this.nameSearch.set('');
+    this.emailSearch.set('');
     this.selectedRoleId.set(null);
     this.selectedAccountType.set('');
     this.selectedDepartmentId.set(null);
@@ -156,7 +172,7 @@ export class UsersComponent implements OnInit {
       .list(this.page(), this.pageSize(), this.appliedFilters())
       .pipe(finalize(() => this.isLoading.set(false)))
       .subscribe({
-        next: response => {
+        next: (response) => {
           const pagination = response.data.pagination;
           if (pagination.total_pages > 0 && this.page() > pagination.total_pages) {
             this.page.set(pagination.total_pages);
@@ -215,21 +231,45 @@ export class UsersComponent implements OnInit {
       });
   }
 
+  openAssignRoleDialog(user: UserRecord): void {
+    this.userForRoleAssignment.set(user);
+    this.assignRoleId.set(user.role_id);
+  }
+
+  closeAssignRoleDialog(): void {
+    if (this.isSaving()) return;
+    this.userForRoleAssignment.set(null);
+    this.assignRoleId.set(null);
+  }
+
+  assignUserRole(): void {
+    const user = this.userForRoleAssignment();
+    const roleId = this.assignRoleId();
+    if (!user || roleId === null || this.isSaving()) return;
+
+    this.isSaving.set(true);
+    this.usersService
+      .assignUserRole(user.id, roleId)
+      .pipe(finalize(() => this.isSaving.set(false)))
+      .subscribe({
+        next: () => {
+          this.userForRoleAssignment.set(null);
+          this.assignRoleId.set(null);
+          this.loadUsers();
+        },
+      });
+  }
+
   rowNumber(index: number): number {
     return (this.page() - 1) * this.pageSize() + index + 1;
   }
 
   pageStart(): number {
-    return this.totalItems() === 0
-      ? 0
-      : (this.page() - 1) * this.pageSize() + 1;
+    return this.totalItems() === 0 ? 0 : (this.page() - 1) * this.pageSize() + 1;
   }
 
   pageEnd(): number {
-    return Math.min(
-      this.pageStart() + this.users().length - 1,
-      this.totalItems(),
-    );
+    return Math.min(this.pageStart() + this.users().length - 1, this.totalItems());
   }
 
   initials(user: UserRecord): string {
@@ -238,7 +278,7 @@ export class UsersComponent implements OnInit {
       .split(/\s+/)
       .filter(Boolean)
       .slice(0, 2)
-      .map(part => part.charAt(0).toUpperCase())
+      .map((part) => part.charAt(0).toUpperCase())
       .join('');
   }
 
@@ -273,9 +313,7 @@ export class UsersComponent implements OnInit {
     this.loadFailed.set(true);
   }
 
-  private uniqueDepartments(
-    departments: DepartmentRecord[],
-  ): DepartmentRecord[] {
+  private uniqueDepartments(departments: DepartmentRecord[]): DepartmentRecord[] {
     const unique = new Map<string, DepartmentRecord>();
     for (const department of departments) {
       const key = department.department_name.trim().toLowerCase();

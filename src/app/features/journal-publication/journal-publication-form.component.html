@@ -1,33 +1,9 @@
 <div class="journal-app application-form-page">
   <app-journal-guidelines-modal
     #journalGuidelinesModal
-    (closed)="journalFormTitle.onGuidelinesClosed()">
+    (closed)="journalFormTitle.onGuidelinesClosed()"
+  >
   </app-journal-guidelines-modal>
-
-  <!-- DEV TEST START: Application Status Override -->
-  <div class="dev-test-override">
-    <label class="dev-test-override__label">DEV TEST: Application Status</label>
-    <select
-      [formControl]="statusControl"
-      class="dev-test-override__select">
-      <option value="draft">draft</option>
-      <option value="submitted">submitted</option>
-      <option value="pending_hos">pending_hos</option>
-      <option value="pending_applicant_resubmission_hos">pending_applicant_resubmission_hos</option>
-      <option value="rejected_hos">rejected_hos</option>
-      <option value="pending_rmc">pending_rmc</option>
-      <option value="pending_applicant_resubmission_rmc">pending_applicant_resubmission_rmc</option>
-      <option value="rejected_rmc">rejected_rmc</option>
-      <option value="pending_vc">pending_vc</option>
-      <option value="rejected_vc">rejected_vc</option>
-      <option value="pending_hr">pending_hr</option>
-      <option value="rejected_hr">rejected_hr</option>
-      <option value="pending_ceo">pending_ceo</option>
-      <option value="rejected_ceo">rejected_ceo</option>
-      <option value="approved">approved</option>
-    </select>
-  </div>
-  <!-- DEV TEST END -->
 
   <app-form-main-title
     #journalFormTitle
@@ -36,7 +12,8 @@
     [customModal]="true"
     (helpClick)="journalGuidelinesModal.open()"
     modalTitle="Journal Guidelines"
-    endpoint="/api/guidelines/journal">
+    endpoint="/api/guidelines/journal"
+  >
   </app-form-main-title>
 
   <app-step-indicator
@@ -44,51 +21,90 @@
     [steps]="steps"
     [stepStatuses]="stepStatuses"
     [submitAttempted]="submitAttempted"
-    (stepClick)="onStepClick($event)">
+    (stepClick)="onStepClick($event)"
+  >
   </app-step-indicator>
 
-
+  @if (loadError || actionError || saveSuccess || submitSuccess) {
+    <div class="journal-app__messages" aria-live="polite">
+      @if (loadError) {
+        <p class="form-hint journal-app__message journal-app__message--warning">{{ loadError }}</p>
+      }
+      @if (actionError) {
+        <p class="form-error-msg journal-app__message">{{ actionError }}</p>
+      }
+      @if (saveSuccess) {
+        <p class="form-hint journal-app__message journal-app__message--success">Journal draft saved.</p>
+      }
+      @if (submitSuccess) {
+        <p class="form-hint journal-app__message journal-app__message--success">Journal application submitted.</p>
+      }
+    </div>
+  }
 
   <!-- ── External Review Comment Buttons ───────────────────────── -->
-  <ng-container *ngIf="workflow.status() !== 'draft' && (workflow.showHosToggle() || workflow.showRmcToggle() || workflow.showVcToggle() || workflow.showHrToggle() || workflow.showCeoToggle())">
-    
+  <ng-container
+    *ngIf="
+      workflow.status() !== 'draft' &&
+      (workflow.showHosToggle() ||
+        workflow.showRmcToggle() ||
+        workflow.showVcToggle() ||
+        workflow.showHrToggle() ||
+        workflow.showCeoToggle())
+    "
+  >
     <div class="comment-toggle-bar">
-      <button type="button" class="btn btn--comment-toggle"
-              *ngIf="workflow.showHosToggle()"
-              [class.btn--comment-toggle-active]="selectedCommentSection === 'hos'"
-              (click)="toggleCommentSection('hos')">
+      <button
+        type="button"
+        class="btn btn--comment-toggle"
+        *ngIf="workflow.showHosToggle()"
+        [class.btn--comment-toggle-active]="selectedCommentSection === 'hos'"
+        (click)="toggleCommentSection('hos')"
+      >
         <span class="material-icons">supervisor_account</span>
         {{ selectedCommentSection === 'hos' ? 'Hide HOS Comments' : 'HOS Comments' }}
       </button>
 
-      <button type="button" class="btn btn--comment-toggle"
-              *ngIf="workflow.showRmcToggle()"
-              [class.btn--comment-toggle-active]="selectedCommentSection === 'rmc'"
-              (click)="toggleCommentSection('rmc')">
+      <button
+        type="button"
+        class="btn btn--comment-toggle"
+        *ngIf="workflow.showRmcToggle()"
+        [class.btn--comment-toggle-active]="selectedCommentSection === 'rmc'"
+        (click)="toggleCommentSection('rmc')"
+      >
         <span class="material-icons">verified</span>
         {{ selectedCommentSection === 'rmc' ? 'Hide RMC Comments' : 'RMC Comments' }}
       </button>
 
-      <button type="button" class="btn btn--comment-toggle"
-              *ngIf="workflow.showVcToggle()"
-              [class.btn--comment-toggle-active]="selectedCommentSection === 'vc'"
-              (click)="toggleCommentSection('vc')">
+      <button
+        type="button"
+        class="btn btn--comment-toggle"
+        *ngIf="workflow.showVcToggle()"
+        [class.btn--comment-toggle-active]="selectedCommentSection === 'vc'"
+        (click)="toggleCommentSection('vc')"
+      >
         <span class="material-icons">account_balance</span>
         {{ selectedCommentSection === 'vc' ? 'Hide VC Comments' : 'VC Comments' }}
       </button>
 
-      <button type="button" class="btn btn--comment-toggle"
-              *ngIf="workflow.showHrToggle()"
-              [class.btn--comment-toggle-active]="selectedCommentSection === 'hr'"
-              (click)="toggleCommentSection('hr')">
+      <button
+        type="button"
+        class="btn btn--comment-toggle"
+        *ngIf="workflow.showHrToggle()"
+        [class.btn--comment-toggle-active]="selectedCommentSection === 'hr'"
+        (click)="toggleCommentSection('hr')"
+      >
         <span class="material-icons">people</span>
         {{ selectedCommentSection === 'hr' ? 'Hide HR Comments' : 'HR Comments' }}
       </button>
 
-      <button type="button" class="btn btn--comment-toggle"
-              *ngIf="workflow.showCeoToggle()"
-              [class.btn--comment-toggle-active]="selectedCommentSection === 'ceo'"
-              (click)="toggleCommentSection('ceo')">
+      <button
+        type="button"
+        class="btn btn--comment-toggle"
+        *ngIf="workflow.showCeoToggle()"
+        [class.btn--comment-toggle-active]="selectedCommentSection === 'ceo'"
+        (click)="toggleCommentSection('ceo')"
+      >
         <span class="material-icons">stars</span>
         {{ selectedCommentSection === 'ceo' ? 'Hide CEO Comments' : 'CEO Comments' }}
       </button>
@@ -96,63 +112,99 @@
   </ng-container>
 
   <!-- ── 3. Main Form ──────────────────────────────────────────── -->
-  <fieldset class="form-container application-form-surface" [disabled]="workflow.isFormReadOnly()">
+  <fieldset
+    class="form-container application-form-surface"
+    [disabled]="workflow.isFormReadOnly() || isOptionsLoading || isSaving || isSubmitting"
+  >
+    @if (isOptionsLoading) {
+      <div class="journal-app__loading" aria-live="polite">Loading journal options...</div>
+    } @else {
     <div class="journal-app__content">
-      <app-journal-details *ngIf="currentStep === 1" (formValidityChange)="updateFormValidity(1, $event)"></app-journal-details>       
-      <app-authors-details *ngIf="currentStep === 2" (formValidityChange)="updateFormValidity(2, $event)"></app-authors-details>       
-      <app-documents *ngIf="currentStep === 3" (formValidityChange)="updateFormValidity(3, $event)"></app-documents>
+      <app-journal-details
+        [hidden]="currentStep !== 1"
+        (formValidityChange)="updateFormValidity(1, $event)"
+      ></app-journal-details>
+      <app-authors-details
+        [hidden]="currentStep !== 2"
+        (formValidityChange)="updateFormValidity(2, $event)"
+      ></app-authors-details>
+      <app-documents
+        [hidden]="currentStep !== 3"
+        (formValidityChange)="updateFormValidity(3, $event)"
+      ></app-documents>
       <app-declaration
-        *ngIf="currentStep === 4"
-        (formValidityChange)="updateFormValidity(4, $event)">
+        [hidden]="currentStep !== 4"
+        (formValidityChange)="updateFormValidity(4, $event)"
+      >
       </app-declaration>
     </div>
+    }
   </fieldset>
 
   <!-- ── External Review Comment Panels (outside form disabling) ─────── -->
-  <ng-container *ngIf="workflow.status() !== 'draft' && (workflow.showHosToggle() || workflow.showRmcToggle() || workflow.showVcToggle() || workflow.showHrToggle() || workflow.showCeoToggle())">
+  <ng-container
+    *ngIf="
+      workflow.status() !== 'draft' &&
+      (workflow.showHosToggle() ||
+        workflow.showRmcToggle() ||
+        workflow.showVcToggle() ||
+        workflow.showHrToggle() ||
+        workflow.showCeoToggle())
+    "
+  >
     <!-- Active Comment Panels -->
     <div class="card review-comments-section" *ngIf="selectedCommentSection">
       <div class="card__content section-fields">
         <h3 class="section-title">Review Comments</h3>
 
-        <app-review-block *ngIf="selectedCommentSection === 'hos'"
+        <app-review-block
+          *ngIf="selectedCommentSection === 'hos'"
           label="HOS — Application Review"
           icon="supervisor_account"
           [visible]="true"
           [readonly]="!workflow.isHosEditable()"
-          [commentControl]="reviewComments.hosComment">
+          [commentControl]="reviewComments.hosComment"
+        >
         </app-review-block>
 
-        <app-review-block *ngIf="selectedCommentSection === 'rmc'"
+        <app-review-block
+          *ngIf="selectedCommentSection === 'rmc'"
           label="RMC — Application Review"
           icon="verified"
           [visible]="true"
           [readonly]="!workflow.isRmcEditable()"
-          [commentControl]="reviewComments.rmcComment">
+          [commentControl]="reviewComments.rmcComment"
+        >
         </app-review-block>
 
-        <app-review-block *ngIf="selectedCommentSection === 'vc'"
+        <app-review-block
+          *ngIf="selectedCommentSection === 'vc'"
           label="VC — Application Review"
           icon="account_balance"
           [visible]="true"
           [readonly]="!workflow.isVcEditable()"
-          [commentControl]="reviewComments.vcComment">
+          [commentControl]="reviewComments.vcComment"
+        >
         </app-review-block>
 
-        <app-review-block *ngIf="selectedCommentSection === 'hr'"
+        <app-review-block
+          *ngIf="selectedCommentSection === 'hr'"
           label="HR — Application Review"
           icon="people"
           [visible]="true"
           [readonly]="!workflow.isHrEditable()"
-          [commentControl]="reviewComments.hrComment">
+          [commentControl]="reviewComments.hrComment"
+        >
         </app-review-block>
 
-        <app-review-block *ngIf="selectedCommentSection === 'ceo'"
+        <app-review-block
+          *ngIf="selectedCommentSection === 'ceo'"
           label="CEO — Application Review"
           icon="stars"
           [visible]="true"
           [readonly]="!workflow.isCeoEditable()"
-          [commentControl]="reviewComments.ceoComment">
+          [commentControl]="reviewComments.ceoComment"
+        >
         </app-review-block>
       </div>
     </div>
@@ -161,15 +213,13 @@
   <app-form-wizard-nav
     [currentStep]="currentStep"
     [totalSteps]="totalSteps"
-    [isSaving]="isSaving"
+    [isSaving]="isSaving || isOptionsLoading"
     [isSubmitting]="isSubmitting"
+    [readOnly]="workflow.isFormReadOnly() || isOptionsLoading"
     (prev)="onPrev()"
     (next)="onNext()"
     (saveDraft)="onSaveDraft()"
-    (submitForm)="onSubmit()">
+    (submitForm)="onSubmit()"
+  >
   </app-form-wizard-nav>
 </div>
-
-
-
-

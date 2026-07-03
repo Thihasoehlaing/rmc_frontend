@@ -1,107 +1,13 @@
-@use '../../../../styles/index' as *;
+.forms-page--settings .users-toolbar {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 
-.users-page {
-  max-width: var(--page-max-width);
-  margin: 0 auto;
-}
-
-.users-page__header {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: var(--space-4);
-  margin-bottom: var(--space-6);
-
-  h1 {
-    margin: var(--space-1) 0 var(--space-2);
-    color: var(--color-heading);
-    font-size: var(--fs-2xl);
+  .forms-toolbar__title {
+    grid-column: 1 / -1;
   }
 
-  p {
-    color: var(--color-text-secondary);
-    line-height: var(--lh-normal);
+  .forms-toolbar__actions {
+    justify-content: flex-end;
   }
-}
-
-.users-page__pair-button {
-  flex: 0 0 auto;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-2);
-
-  .material-icons {
-    font-size: 19px;
-  }
-}
-
-.users-page__eyebrow {
-  color: var(--color-primary);
-  font-size: var(--fs-xs);
-  font-weight: var(--fw-black);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-
-.users-toolbar {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(150px, 1fr));
-  align-items: end;
-  gap: var(--space-4);
-  margin-bottom: var(--space-5);
-  padding: var(--space-4);
-  background: var(--color-surface);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-xs);
-}
-
-.users-filter {
-  min-width: 0;
-  display: grid;
-  gap: var(--space-2);
-
-  > span {
-    color: var(--color-label);
-    font-size: var(--fs-xs);
-    font-weight: var(--fw-semibold);
-  }
-
-  input,
-  select {
-    width: 100%;
-  }
-}
-
-.users-filter--wide {
-  grid-column: span 2;
-}
-
-.users-toolbar__actions {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--space-2);
-  }
-
-  .material-icons {
-    font-size: 18px;
-  }
-}
-
-.users-table-card {
-  margin-bottom: var(--space-4);
-  background: var(--color-surface);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-xs);
-  overflow: hidden;
 }
 
 .user-identity {
@@ -116,7 +22,6 @@
   }
 
   strong,
-  span,
   small {
     overflow: hidden;
     text-overflow: ellipsis;
@@ -127,7 +32,6 @@
     color: var(--color-heading);
   }
 
-  span,
   small {
     color: var(--color-text-muted);
   }
@@ -177,39 +81,6 @@
   font-size: var(--fs-sm);
 }
 
-.users-count {
-  margin-top: var(--space-3);
-  color: var(--color-text-muted);
-  font-size: var(--fs-sm);
-  text-align: right;
-}
-
-.users-state {
-  min-height: 320px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: var(--space-8);
-  color: var(--color-text-muted);
-  text-align: center;
-
-  > .material-icons {
-    margin-bottom: var(--space-3);
-    color: var(--color-error);
-    font-size: 42px;
-  }
-
-  h2 {
-    margin-bottom: var(--space-2);
-    color: var(--color-heading);
-  }
-
-  p {
-    margin-bottom: var(--space-5);
-  }
-}
-
 .role-pairing {
   display: grid;
   gap: var(--space-4);
@@ -226,37 +97,30 @@
   gap: var(--space-3);
 }
 
-@media (max-width: 900px) {
-  .users-toolbar {
+.table-action .material-icons {
+  font-size: 19px;
+}
+
+@media (max-width: 1280px) {
+  .forms-page--settings .users-toolbar {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    .forms-toolbar__actions {
+      grid-column: 1 / -1;
+    }
   }
 }
 
-@media (max-width: 600px) {
-  .users-page__header {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
-  .users-page__pair-button {
-    align-self: flex-start;
-  }
-
-  .users-toolbar {
+@media (max-width: 720px) {
+  .forms-page--settings .users-toolbar {
     grid-template-columns: 1fr;
   }
 
-  .users-filter--wide {
-    grid-column: auto;
-  }
+  .role-pairing__footer {
+    width: 100%;
 
-  .users-toolbar__actions {
     .btn {
       flex: 1;
     }
-  }
-
-  .users-count {
-    text-align: center;
   }
 }

@@ -27,6 +27,11 @@ export const SVG_ICON_ACTIVATE: SvgIconDefinition = {
   markup: `<path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 6 9 17l-5-5"></path>`,
 };
 
+export const SVG_ICON_MARK_READ: SvgIconDefinition = {
+  name: 'SVG_ICON_MARK_READ',
+  viewBox: '0 0 24 24',
+  markup: `<path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16v12H4z"></path><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m4 7 8 6 8-6"></path><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m14 17 2 2 4-4"></path>`,
+};
 export const SVG_ICON_DEACTIVATE: SvgIconDefinition = {
   name: 'SVG_ICON_DEACTIVATE',
   viewBox: '0 0 24 24',
@@ -72,6 +77,7 @@ export const SVG_ICONS = [
   SVG_ICON_TRASH,
   SVG_ICON_VIEW,
   SVG_ICON_ACTIVATE,
+  SVG_ICON_MARK_READ,
   SVG_ICON_DEACTIVATE,
   SVG_ICON_SHIELD_USER,
   SVG_ICON_BLOCK_USER,
@@ -80,5 +86,6 @@ export const SVG_ICONS = [
   SVG_ICON_BEAKER,
   SVG_ICON_CHEVRON_DOWN,
 ] as const;
+
 
 

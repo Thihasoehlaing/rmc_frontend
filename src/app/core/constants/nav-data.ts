@@ -31,6 +31,7 @@ export const NAVIGATION_DATA: NavGroup[] = [
 
             // ── Inbox ────────────────────────────────────────────────────────────────────
             { label: 'Inbox', icon: 'mail', route: '/submissions/inbox' },
+            { label: 'Notifications', icon: 'notifications', route: '/notifications' },
 
             // ── Submissions ──────────────────────────────────────────────────────────────
             // Collapsible folder visible to every authenticated user. Open by default.
@@ -179,4 +180,5 @@ export const NAVIGATION_DATA: NavGroup[] = [
         ],
     },
 ];
+
 

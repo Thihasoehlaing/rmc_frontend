@@ -1,0 +1,413 @@
+.notifications-container {
+  min-height: 100vh;
+  padding: var(--space-6) var(--space-8) var(--space-8);
+  background: var(--color-background);
+}
+
+.notifications-shell {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.notifications-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.notifications-heading {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.notifications-heading__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-lg);
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  font-size: 28px;
+}
+
+.notifications-title {
+  margin: 0;
+  color: var(--color-label);
+  font-size: var(--fs-2xl);
+  font-weight: var(--fw-semibold);
+  line-height: 1.1;
+}
+
+.notifications-subtitle {
+  margin: var(--space-2) 0 0;
+  max-width: 980px;
+  color: var(--color-text-muted);
+  font-size: var(--fs-base);
+  line-height: 1.5;
+}
+
+:host ::ng-deep app-submissions-search {
+  margin-bottom: calc(var(--space-2) * -1);
+  padding: var(--space-4);
+}
+
+:host ::ng-deep app-submissions-search .submissions-search-top-row {
+  display: none;
+}
+
+:host ::ng-deep app-submissions-search .submissions-search-controls {
+  display: grid;
+  grid-template-columns: minmax(12rem, 0.8fr) minmax(0, 1.4fr) auto;
+  align-items: center;
+  column-gap: var(--space-5);
+  row-gap: var(--space-3);
+}
+
+:host ::ng-deep app-submissions-search .submissions-search {
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+}
+
+:host ::ng-deep app-submissions-search .submissions-search--focused,
+:host ::ng-deep app-submissions-search .submissions-search:focus-within {
+  width: 100%;
+}
+
+:host ::ng-deep app-submissions-search .submissions-search-filters,
+:host ::ng-deep app-submissions-search .submissions-search-filters [search-filters] {
+  width: 100%;
+  min-width: 0;
+  justify-self: stretch;
+}
+
+:host ::ng-deep app-submissions-search .submissions-search-actions {
+  justify-content: flex-end;
+  margin-left: 0;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+:host ::ng-deep app-submissions-search .submissions-search-actions .btn {
+  flex-shrink: 0;
+}
+
+.notifications-filters {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-3);
+  width: 100%;
+}
+
+.notifications-filter {
+  display: block;
+  position: relative;
+  min-width: 0;
+
+  > span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .input--select {
+    width: 100%;
+    height: 38px;
+    min-height: 38px;
+    padding-block: 0;
+    padding-inline: var(--space-4) var(--space-9);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-full);
+    background-color: white;
+    font-size: var(--fs-sm);
+    line-height: 38px;
+
+    &:hover {
+      border-color: color-mix(in srgb, var(--color-primary) 24%, var(--border-default));
+      box-shadow: var(--shadow-sm);
+    }
+
+    &:focus {
+      border-color: var(--color-primary);
+      box-shadow: var(--input-shadow-focus);
+      outline: none;
+    }
+  }
+}
+
+.notifications-filter-skeleton {
+  display: grid;
+  grid-template-columns: minmax(14rem, 0.9fr) repeat(4, minmax(8rem, 1fr)) auto;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--skeleton-color-container);
+  border: var(--skeleton-border-width) solid var(--skeleton-border-color);
+  border-radius: var(--skeleton-border-radius);
+  box-shadow: var(--skeleton-shadow);
+}
+
+.notifications-skeleton-block {
+  display: block;
+  height: var(--skeleton-cell-height);
+  border-radius: var(--skeleton-block-radius);
+  background: linear-gradient(
+    90deg,
+    var(--skeleton-color-placeholder) 25%,
+    var(--skeleton-color-container) 50%,
+    var(--skeleton-color-placeholder) 75%
+  );
+  background-size: var(--skeleton-background-size);
+  animation: skeleton-shimmer var(--skeleton-animation-duration)
+    var(--skeleton-animation-easing) infinite;
+}
+
+.notifications-skeleton-block--search {
+  border-radius: var(--radius-full);
+}
+
+.notifications-skeleton-block--filter {
+  border-radius: var(--radius-full);
+}
+
+.notifications-skeleton-block--button {
+  width: 10rem;
+  border-radius: var(--radius-md);
+}
+
+.notifications-table-wrapper {
+  width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  padding: var(--space-4);
+  background: white;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xs);
+}
+
+:host ::ng-deep .notifications-table-wrapper app-data-table table,
+:host ::ng-deep .notifications-table-wrapper app-table-skeleton table {
+  width: 100%;
+}
+
+:host ::ng-deep .notifications-table-wrapper app-table-skeleton .table-skeleton {
+  border: none;
+  box-shadow: none;
+  padding: 0;
+}
+
+.message-cell {
+  max-width: 34rem;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.center {
+  text-align: center;
+}
+
+.notification-status,
+.read-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 104px;
+  min-height: 28px;
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  line-height: var(--lh-tight);
+  white-space: nowrap;
+}
+
+.notification-status.is-action {
+  color: var(--color-primary);
+  background: var(--color-primary-light);
+}
+
+.notification-status.is-rejected,
+.notification-status.is-alert {
+  color: var(--color-error-dark);
+  background: var(--color-error-light);
+}
+
+.notification-status.is-approved {
+  color: var(--color-success-dark);
+  background: var(--color-success-light);
+}
+
+.notification-status.is-reminder {
+  color: var(--color-warning-dark);
+  background: var(--color-warning-light);
+}
+
+.notification-status.is-info {
+  color: var(--color-info-dark);
+  background: var(--color-info-light);
+}
+
+.notification-status.is-expired {
+  color: var(--color-text-muted);
+  background: var(--color-background-secondary);
+}
+
+.read-status {
+  color: var(--color-text-muted);
+  background: var(--color-background-secondary);
+}
+
+.read-status.is-read {
+  color: var(--color-success-dark);
+  background: var(--color-success-light);
+}
+
+.read-status.is-unread {
+  color: var(--color-primary);
+  background: var(--color-primary-light);
+}
+
+.actions-cell {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  white-space: nowrap;
+}
+
+.icon-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  border: none;
+  box-shadow: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  transition:
+    background var(--transition-fast) var(--ease-default),
+    color var(--transition-fast) var(--ease-default);
+
+  .material-icons {
+    font-size: var(--icon-sm);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+  }
+}
+
+.icon-btn--view {
+  color: var(--color-primary);
+
+  &:hover:not(:disabled) {
+    background: var(--color-primary-light);
+  }
+}
+
+.icon-btn--read {
+  color: var(--color-success-dark);
+
+  &:hover:not(:disabled) {
+    background: var(--color-success-light);
+  }
+}
+
+.notifications-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-8);
+  text-align: center;
+  color: var(--color-text-muted);
+
+  .material-icons {
+    margin-bottom: var(--space-3);
+    color: var(--color-danger);
+    font-size: 2.5rem;
+  }
+
+  h2 {
+    margin: 0 0 var(--space-2);
+    color: var(--color-label);
+    font-size: var(--fs-lg);
+  }
+
+  p {
+    margin: 0 0 var(--space-5);
+  }
+}
+
+@media (max-width: 1200px) {
+  :host ::ng-deep app-submissions-search .submissions-search-controls,
+  .notifications-filter-skeleton {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  :host ::ng-deep app-submissions-search .submissions-search-actions {
+    justify-content: flex-start;
+  }
+
+  .notifications-filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  .notifications-container {
+    padding: var(--space-5) var(--space-4) var(--space-6);
+  }
+
+  .notifications-heading {
+    align-items: flex-start;
+  }
+
+  .notifications-heading__icon {
+    width: 42px;
+    height: 42px;
+    font-size: 24px;
+  }
+
+  :host ::ng-deep app-submissions-search {
+    padding: var(--space-3);
+  }
+
+  .notifications-filters {
+    grid-template-columns: 1fr;
+  }
+
+  :host ::ng-deep app-submissions-search .submissions-search-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  :host ::ng-deep app-submissions-search .submissions-search-actions .btn {
+    width: 100%;
+  }
+
+  .notifications-table-wrapper {
+    padding: var(--space-3);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .notifications-skeleton-block {
+    animation: none;
+  }
+}
+
+
+

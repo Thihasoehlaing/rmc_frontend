@@ -1,0 +1,171 @@
+<div class="notifications-container">
+  <div class="notifications-shell">
+    <div class="notifications-header">
+      <div class="notifications-heading">
+        <span class="material-icons notifications-heading__icon">notifications</span>
+        <div>
+          <h1 class="notifications-title">Notifications</h1>
+          <p class="notifications-subtitle">
+            Review system and application notifications assigned to you.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    @if (isLoading()) {
+      <div class="notifications-filter-skeleton" role="status" aria-busy="true" aria-label="Loading notification filters">
+        <span class="notifications-skeleton-block notifications-skeleton-block--search"></span>
+        <span class="notifications-skeleton-block notifications-skeleton-block--filter"></span>
+        <span class="notifications-skeleton-block notifications-skeleton-block--filter"></span>
+        <span class="notifications-skeleton-block notifications-skeleton-block--filter"></span>
+        <span class="notifications-skeleton-block notifications-skeleton-block--filter"></span>
+        <span class="notifications-skeleton-block notifications-skeleton-block--button"></span>
+      </div>
+    } @else {
+      <app-submissions-search
+        placeholder="Search by title or message..."
+        [value]="searchTerm()"
+        (search)="onSearch($event)"
+        (refresh)="resetFilters()"
+      >
+        <div search-filters class="notifications-filters">
+          <label class="notifications-filter">
+            <span>Application</span>
+            <select
+              class="input--select"
+              [ngModel]="selectedApplication()"
+              (ngModelChange)="onApplicationChange($event)"
+            >
+              @for (option of applicationOptions; track option.value) {
+                <option [value]="option.value">{{ option.label }}</option>
+              }
+            </select>
+          </label>
+
+          <label class="notifications-filter">
+            <span>Status</span>
+            <select
+              class="input--select"
+              [ngModel]="selectedStatus()"
+              (ngModelChange)="onStatusChange($event)"
+            >
+              @for (option of statusOptions; track option.value) {
+                <option [value]="option.value">{{ option.label }}</option>
+              }
+            </select>
+          </label>
+
+          <label class="notifications-filter">
+            <span>Read</span>
+            <select
+              class="input--select"
+              [ngModel]="selectedRead()"
+              (ngModelChange)="onReadChange($event)"
+            >
+              @for (option of readOptions; track option.value) {
+                <option [value]="option.value">{{ option.label }}</option>
+              }
+            </select>
+          </label>
+
+          <label class="notifications-filter">
+            <span>Date Sort</span>
+            <select
+              class="input--select"
+              [ngModel]="dateSort()"
+              (ngModelChange)="onDateSortChange($event)"
+            >
+              @for (option of dateSortOptions; track option.value) {
+                <option [value]="option.value">{{ option.label }}</option>
+              }
+            </select>
+          </label>
+        </div>
+      </app-submissions-search>
+    }
+
+    <div class="notifications-table-wrapper">
+      @if (isLoading()) {
+        <app-table-skeleton
+          [columns]="skeletonColumns"
+          [rows]="10"
+          [showSearch]="false"
+          [showTypeFilter]="false"
+          minWidth="1080px"
+          loadingLabel="Loading notifications"
+        ></app-table-skeleton>
+      } @else if (loadFailed()) {
+        <div class="notifications-state">
+          <span class="material-icons">cloud_off</span>
+          <h2>Unable to load notifications</h2>
+          <p>Check the API connection and try again.</p>
+          <button class="btn btn-primary" type="button" (click)="loadNotifications()">
+            Try Again
+          </button>
+        </div>
+      } @else {
+        <app-data-table
+          [columns]="columns"
+          [rows]="notifications()"
+          [rowTrackFn]="rowTrackFn"
+          [sortColumn]="sortBy()"
+          [sortDirection]="sortDirection()"
+          (sortChange)="onSortChange($event)"
+        >
+          <ng-template #rowTemplate let-row>
+            <tr>
+              <td>{{ row.title }}</td>
+              <td class="message-cell">{{ row.message }}</td>
+              <td>{{ row.application }}</td>
+              <td class="center">
+                <span class="notification-status" [ngClass]="row.statusClass">
+                  {{ row.status }}
+                </span>
+              </td>
+              <td class="center">
+                <span class="read-status" [ngClass]="row.read ? 'is-read' : 'is-unread'">
+                  {{ row.read ? 'Read' : 'Unread' }}
+                </span>
+              </td>
+              <td>{{ row.createdAt }}</td>
+              <td class="actions-cell">
+                <button
+                  class="icon-btn icon-btn--view"
+                  type="button"
+                  title="View notification"
+                  [disabled]="row.isExpired || !row.route"
+                  (click)="openNotification(row)"
+                >
+                  <app-table-action-icon action="view"></app-table-action-icon>
+                </button>
+                <button
+                  class="icon-btn icon-btn--read"
+                  type="button"
+                  title="Mark as read"
+                  [disabled]="row.read"
+                  (click)="markRowAsRead(row)"
+                >
+                  <app-table-action-icon action="markRead"></app-table-action-icon>
+                </button>
+              </td>
+            </tr>
+          </ng-template>
+        </app-data-table>
+      }
+    </div>
+
+    @if (!isLoading() && !loadFailed()) {
+      <app-pagination
+        [currentPage]="page()"
+        [totalPages]="totalPages()"
+        [pageSize]="pageSize()"
+        [pageSizeOptions]="pageSizeOptions"
+        (pageChange)="onPageChange($event)"
+        (pageSizeChange)="onPageSizeChange($event)"
+      ></app-pagination>
+    }
+  </div>
+</div>
+
+
+

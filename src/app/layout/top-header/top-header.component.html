@@ -131,6 +131,14 @@
                                 <div class="notification-dropdown__empty">No notifications found</div>
                             }
                         </div>
+
+                        @if (notifSvc.popupHasMore()) {
+                            <div class="notification-dropdown__footer">
+                                <button type="button" class="notification-dropdown__view-all" (click)="viewAllNotifications()">
+                                    View all notifications
+                                </button>
+                            </div>
+                        }
                     </div>
                 }
             </div>
@@ -147,3 +155,4 @@
         </div>
     </div>
 </header>
+

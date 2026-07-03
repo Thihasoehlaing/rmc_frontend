@@ -1,9 +1,9 @@
-import { SubmissionsSearchComponent } from '../../../shared/components/submissions-search/submissions-search.component';
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, TrackByFunction, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { finalize, forkJoin, switchMap, tap } from 'rxjs';
 
+import { DropdownOption } from '../../../core/interfaces/components.interface';
 import {
   DataTableColumn,
   DataTableComponent,
@@ -11,6 +11,7 @@ import {
 import { ToastService } from '../../../core/services/toast.service';
 import { DialogComponent } from '../../../shared/components/dialog/dialog.component';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
+import { SearchableDropdownComponent } from '../../../shared/components/searchable-dropdown/searchable-dropdown.component';
 import { TableSkeletonComponent } from '../../../shared/components/table-skeleton/table-skeleton.component';
 import {
   DepartmentRecord,
@@ -21,8 +22,8 @@ import {
 } from './users.service';
 
 const EMPTY_FILTERS: UserListFilters = {
-  nameEmail: '',
-  jobTitle: '',
+  name: '',
+  email: '',
   roleId: null,
   accountType: '',
   departmentId: null,
@@ -32,16 +33,16 @@ const EMPTY_FILTERS: UserListFilters = {
   selector: 'app-users',
   standalone: true,
   imports: [
-    SubmissionsSearchComponent,
     CommonModule,
     FormsModule,
     DataTableComponent,
     DialogComponent,
     PaginationComponent,
+    SearchableDropdownComponent,
     TableSkeletonComponent,
   ],
   templateUrl: './users.component.html',
-  styleUrl: './users.component.scss',
+  styleUrls: ['../forms/forms.component.scss', './users.component.scss'],
 })
 export class UsersComponent implements OnInit {
   private readonly usersService = inject(UsersService);
@@ -51,8 +52,8 @@ export class UsersComponent implements OnInit {
   readonly roles = signal<RoleRecord[]>([]);
   readonly departments = signal<DepartmentRecord[]>([]);
 
-  readonly nameEmail = signal('');
-  readonly jobTitle = signal('');
+  readonly nameSearch = signal('');
+  readonly emailSearch = signal('');
   readonly selectedRoleId = signal<number | null>(null);
   readonly selectedAccountType = signal<'' | 'Staff' | 'Student'>('');
   readonly selectedDepartmentId = signal<number | null>(null);
@@ -69,6 +70,8 @@ export class UsersComponent implements OnInit {
   readonly isPairDialogOpen = signal(false);
   readonly pairUsername = signal('');
   readonly pairRoleId = signal<number | null>(null);
+  readonly userForRoleAssignment = signal<UserRecord | null>(null);
+  readonly assignRoleId = signal<number | null>(null);
   readonly isSaving = signal(false);
 
   readonly columns: readonly DataTableColumn[] = [
@@ -79,6 +82,13 @@ export class UsersComponent implements OnInit {
     { key: 'type', label: 'Account Type', width: '130px', align: 'center' },
     { key: 'department', label: 'Department', width: '250px' },
     { key: 'lastLogin', label: 'Last Login', width: '150px' },
+    {
+      key: 'actions',
+      label: 'Actions',
+      width: '120px',
+      align: 'center',
+      headerAlign: 'center',
+    },
   ];
 
   readonly rowTrackFn: TrackByFunction<unknown> = (_index: number, row: unknown) =>
@@ -88,17 +98,33 @@ export class UsersComponent implements OnInit {
     this.loadInitialData();
   }
 
+  roleOptions(): DropdownOption<number>[] {
+    return this.roles().map((role) => ({
+      value: role.id,
+      label: role.role_name,
+      description: role.role_code,
+      searchText: `${role.role_name} ${role.role_code}`,
+    }));
+  }
+
+  departmentOptions(): DropdownOption<number>[] {
+    return this.departments().map((department) => ({
+      value: department.id,
+      label: department.department_name,
+    }));
+  }
+
   loadInitialData(): void {
     this.isLoading.set(true);
     this.loadFailed.set(false);
 
     forkJoin({
-      roles: this.usersService.listRoleOptions(),
+      roles: this.usersService.listRoles(),
       departments: this.usersService.listDepartments(),
     })
       .pipe(
         tap(({ roles, departments }) => {
-          this.roles.set(roles.data);
+          this.roles.set(roles.data.items);
           this.departments.set(this.uniqueDepartments(departments.data));
         }),
         switchMap(() =>
@@ -117,8 +143,8 @@ export class UsersComponent implements OnInit {
 
   search(): void {
     this.appliedFilters.set({
-      nameEmail: this.nameEmail().trim(),
-      jobTitle: this.jobTitle().trim(),
+      name: this.nameSearch().trim(),
+      email: this.emailSearch().trim(),
       roleId: this.selectedRoleId(),
       accountType: this.selectedAccountType(),
       departmentId: this.selectedDepartmentId(),
@@ -128,8 +154,8 @@ export class UsersComponent implements OnInit {
   }
 
   resetFilters(): void {
-    this.nameEmail.set('');
-    this.jobTitle.set('');
+    this.nameSearch.set('');
+    this.emailSearch.set('');
     this.selectedRoleId.set(null);
     this.selectedAccountType.set('');
     this.selectedDepartmentId.set(null);
@@ -200,6 +226,35 @@ export class UsersComponent implements OnInit {
           this.pairUsername.set('');
           this.pairRoleId.set(null);
           this.page.set(1);
+          this.loadUsers();
+        },
+      });
+  }
+
+  openAssignRoleDialog(user: UserRecord): void {
+    this.userForRoleAssignment.set(user);
+    this.assignRoleId.set(user.role_id);
+  }
+
+  closeAssignRoleDialog(): void {
+    if (this.isSaving()) return;
+    this.userForRoleAssignment.set(null);
+    this.assignRoleId.set(null);
+  }
+
+  assignUserRole(): void {
+    const user = this.userForRoleAssignment();
+    const roleId = this.assignRoleId();
+    if (!user || roleId === null || this.isSaving()) return;
+
+    this.isSaving.set(true);
+    this.usersService
+      .assignUserRole(user.id, roleId)
+      .pipe(finalize(() => this.isSaving.set(false)))
+      .subscribe({
+        next: () => {
+          this.userForRoleAssignment.set(null);
+          this.assignRoleId.set(null);
           this.loadUsers();
         },
       });

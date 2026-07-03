@@ -1,4 +1,3 @@
-import { SubmissionsSearchComponent } from '../../../shared/components/submissions-search/submissions-search.component';
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, TrackByFunction, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -24,7 +23,6 @@ type StatusFilter = '' | 'Active' | 'Inactive';
   selector: 'app-roles',
   standalone: true,
   imports: [
-    SubmissionsSearchComponent,
     TableActionIconComponent,
     CommonModule,
     FormsModule,
@@ -69,6 +67,7 @@ export class RolesComponent implements OnInit {
     { key: 'number', label: 'No.', width: '72px', align: 'center' },
     { key: 'code', label: 'Role Code', width: '190px' },
     { key: 'name', label: 'Role Name', width: '230px' },
+    { key: 'userCount', label: 'Users', width: '110px', align: 'center' },
     { key: 'description', label: 'Description', width: '360px' },
     { key: 'status', label: 'Status', width: '120px', align: 'center' },
     {

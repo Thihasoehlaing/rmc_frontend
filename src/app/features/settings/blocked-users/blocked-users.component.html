@@ -1,4 +1,4 @@
-<main class="forms-page">
+<main class="forms-page forms-page--settings">
   <header class="forms-page__header">
     <div>
       <span class="forms-page__eyebrow">System Settings</span>
@@ -16,28 +16,72 @@
     </button>
   </header>
 
-  @if (!isLoading()) {
-    <app-submissions-search
-      placeholder="Search blocked users"
-      [value]="searchTerm()"
-      (search)="searchTerm.set($event); search()"
-      (refresh)="resetFilters()"
-      ><label search-filters
-        ><span>Status</span
-        ><select
-          class="input--select"
-          [ngModel]="selectedStatus()"
-          (ngModelChange)="selectedStatus.set($event)"
-        >
-          <option value="">All</option>
-          <option value="Active">Blocked</option>
-          <option value="Inactive">Unblocked</option>
-        </select></label
-      >
-    </app-submissions-search>
-  }
+  <section class="forms-toolbar blocked-users-toolbar" aria-label="Blocked user filters">
+    <h2 class="forms-toolbar__title">Search &amp; Filters</h2>
 
-  <section class="forms-table">
+    <label class="forms-filter blocked-users-filter-search">
+      <span>Search</span>
+      <span class="forms-search-input">
+        <span class="material-icons" aria-hidden="true">search</span>
+        <input
+          class="input--text"
+          type="search"
+          aria-label="Search blocked users"
+          placeholder="Search username, name, or email..."
+          [ngModel]="searchTerm()"
+          (ngModelChange)="searchTerm.set($event)"
+          (keydown.enter)="search()"
+          [disabled]="isLoading()"
+        />
+      </span>
+    </label>
+
+    <label class="forms-filter">
+      <span>Status</span>
+      <select
+        class="input--select"
+        [ngModel]="selectedStatus()"
+        (ngModelChange)="selectedStatus.set($event)"
+        [disabled]="isLoading()"
+      >
+        <option value="">All</option>
+        <option value="Active">Blocked</option>
+        <option value="Inactive">Unblocked</option>
+      </select>
+    </label>
+
+    <div class="forms-toolbar__actions">
+      <button class="btn btn-primary" type="button" (click)="search()" [disabled]="isLoading()">
+        <span class="material-icons">search</span>
+        Search
+      </button>
+      <button class="btn btn-secondary" type="button" (click)="resetFilters()" [disabled]="isLoading()">
+        <span class="material-icons">restart_alt</span>
+        Reset
+      </button>
+    </div>
+  </section>
+
+  <section class="forms-table-card">
+    <header class="forms-table-card__header">
+      <div>
+        <div class="forms-table-card__title-row">
+          <h2>Blocked Users</h2>
+          <span class="forms-table-card__count">{{ totalItems() }}</span>
+        </div>
+        <p>Manage system-wide access restrictions and audit history.</p>
+      </div>
+      <button
+        class="btn btn-secondary forms-table-card__refresh"
+        type="button"
+        (click)="loadBlockedUsers()"
+        [disabled]="isLoading()"
+      >
+        <span class="material-icons">refresh</span>
+        Refresh
+      </button>
+    </header>
+
     @if (isLoading()) {
       <app-table-skeleton
         [columns]="columns"
@@ -136,27 +180,41 @@
         </ng-template>
       </app-data-table>
     }
+
+    @if (!isLoading() && !loadFailed()) {
+      <footer class="forms-table-card__footer">
+        <p class="forms-count">
+          @if (totalItems() > 0) {
+            Showing {{ pageStart() }} to {{ pageEnd() }} of {{ totalItems() }} blocked-user records
+          } @else {
+            Showing 0 blocked-user records
+          }
+        </p>
+
+        <app-pagination
+          [currentPage]="page()"
+          [totalPages]="totalPages()"
+          [pageSize]="pageSize()"
+          [pageSizeOptions]="pageSizeOptions"
+          (pageChange)="onPageChange($event)"
+          (pageSizeChange)="onPageSizeChange($event)"
+        >
+        </app-pagination>
+
+        <label class="forms-page-size" aria-label="Items per page">
+          <select
+            class="input--select"
+            [ngModel]="pageSize()"
+            (ngModelChange)="onPageSizeChange($event)"
+          >
+            @for (size of pageSizeOptions; track size) {
+              <option [ngValue]="size">{{ size }} per page</option>
+            }
+          </select>
+        </label>
+      </footer>
+    }
   </section>
-
-  @if (!isLoading() && !loadFailed()) {
-    <app-pagination
-      [currentPage]="page()"
-      [totalPages]="totalPages()"
-      [pageSize]="pageSize()"
-      [pageSizeOptions]="pageSizeOptions"
-      (pageChange)="onPageChange($event)"
-      (pageSizeChange)="onPageSizeChange($event)"
-    >
-    </app-pagination>
-
-    <p class="forms-count">
-      @if (totalItems() > 0) {
-        Showing {{ pageStart() }}-{{ pageEnd() }} of {{ totalItems() }} blocked-user records
-      } @else {
-        Showing 0 blocked-user records
-      }
-    </p>
-  }
 
   <app-dialog
     [isOpen]="dialogMode() !== null"

@@ -1,0 +1,82 @@
+.forms-page--settings .applicant-rules-toolbar {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+
+  .forms-toolbar__title {
+    grid-column: 1 / -1;
+  }
+
+  .forms-toolbar__actions {
+    grid-column: 3;
+    justify-self: end;
+    justify-content: flex-end;
+  }
+}
+
+.applicant-rule-form {
+  display: grid;
+  gap: 5px;
+
+  small {
+    overflow: hidden;
+    color: var(--color-text-muted);
+    font-size: var(--fs-xs);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.rule-type {
+  display: inline-flex;
+  padding: 5px 9px;
+  color: #5b21b6;
+  background: #f2ecff;
+  border-radius: var(--radius-md);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-bold);
+  letter-spacing: 0.04em;
+}
+
+.rule-value {
+  display: block;
+  overflow: hidden;
+  color: var(--color-heading);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rule-description {
+  display: block;
+  overflow: hidden;
+  color: var(--color-text-secondary);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  &--empty {
+    color: var(--color-text-muted);
+    font-style: italic;
+  }
+}
+
+.applicant-rule-description-input {
+  min-height: 96px;
+  resize: vertical;
+  font-family: inherit;
+}
+
+@media (max-width: 1280px) {
+  .forms-page--settings .applicant-rules-toolbar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    .forms-toolbar__actions {
+      grid-column: 1 / -1;
+      justify-self: start;
+      justify-content: flex-start;
+    }
+  }
+}
+
+@media (max-width: 720px) {
+  .forms-page--settings .applicant-rules-toolbar {
+    grid-template-columns: 1fr;
+  }
+}

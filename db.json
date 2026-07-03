@@ -385,7 +385,7 @@
       "title": "Action Required",
       "message": "RDIG Application #1 requires your review at the HOS Review stage.",
       "priority": "high",
-      "read": false,
+      "read": true,
       "createdAt": "2026-06-30T12:04:37.936Z",
       "recipientRole": "HOS",
       "recipientDepartment": "School of Marketing and Management",
@@ -406,7 +406,7 @@
       "title": "Submission Confirmed",
       "message": "RDIG Application #1 has been successfully submitted and is now awaiting review.",
       "priority": "low",
-      "read": false,
+      "read": true,
       "createdAt": "2026-06-30T12:04:37.936Z",
       "recipientUserId": "5",
       "data": {

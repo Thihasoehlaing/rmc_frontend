@@ -15,6 +15,7 @@ export interface Role {
   role_code: string;
   role_name: string;
   description: string | null;
+  user_count?: number;
   is_active: boolean;
   created_at: string | null;
   updated_at: string | null;

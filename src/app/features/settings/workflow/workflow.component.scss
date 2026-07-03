@@ -1,0 +1,79 @@
+.workflow-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-5);
+}
+
+.workflow-tab {
+  min-height: 42px;
+  padding: 0 var(--space-4);
+  color: var(--color-text-secondary);
+  background: var(--color-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  font-weight: var(--fw-semibold);
+
+  &:hover {
+    color: var(--color-primary);
+    border-color: var(--color-primary);
+  }
+
+  &--active {
+    color: var(--color-primary);
+    background: var(--color-primary-light);
+    border-color: var(--color-primary);
+  }
+}
+
+.forms-page--settings .workflow-toolbar {
+  grid-template-columns: minmax(280px, 1fr) minmax(180px, 0.35fr) auto;
+
+  .forms-toolbar__title {
+    grid-column: 1 / -1;
+  }
+
+  .forms-toolbar__actions {
+    justify-self: end;
+  }
+}
+
+.workflow-cell {
+  display: block;
+  max-width: 360px;
+  overflow: hidden;
+  color: var(--color-text-secondary);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.workflow-editor {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-4);
+}
+
+:host ::ng-deep .workflow-page .modal-dialog {
+  max-height: 94vh;
+}
+
+:host ::ng-deep .workflow-page .modal-dialog__body {
+  min-height: min(520px, calc(94vh - 170px));
+}
+
+.workflow-textarea {
+  min-height: 96px;
+  resize: vertical;
+  font-family: inherit;
+}
+
+@media (max-width: 900px) {
+  .forms-page--settings .workflow-toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .forms-page--settings .workflow-toolbar .forms-toolbar__actions {
+    justify-self: start;
+  }
+}

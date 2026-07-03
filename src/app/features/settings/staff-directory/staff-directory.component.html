@@ -1,0 +1,220 @@
+<main class="forms-page forms-page--settings">
+  <header class="forms-page__header">
+    <div>
+      <span class="forms-page__eyebrow">System Settings</span>
+      <h1>Staff Directory</h1>
+      <p>Browse APU staff synced from the central directory.</p>
+    </div>
+    <div class="staff-directory-header-actions">
+      <button
+        class="btn btn-primary forms-page__create-button"
+        type="button"
+        (click)="syncDirectory()"
+        [disabled]="isSyncing() || isLoading()"
+      >
+        <span class="material-icons">{{ isSyncing() ? 'hourglass_top' : 'sync' }}</span>
+        {{ isSyncing() ? 'Syncing...' : 'Sync Staff' }}
+      </button>
+      <button
+        class="btn btn-secondary"
+        type="button"
+        (click)="goToDepartments()"
+        [disabled]="isLoading()"
+      >
+        <span class="material-icons">apartment</span>
+        Departments
+      </button>
+    </div>
+  </header>
+
+  <section class="forms-toolbar staff-directory-toolbar" aria-label="Staff directory filters">
+    <h2 class="forms-toolbar__title">Search &amp; Filters</h2>
+
+    <label class="forms-filter">
+      <span>Name</span>
+      <input
+        class="input--text"
+        type="search"
+        aria-label="Search staff by name"
+        placeholder="Search by name"
+        [ngModel]="nameSearch()"
+        (ngModelChange)="nameSearch.set($event)"
+        (keydown.enter)="search()"
+        [disabled]="isLoading()"
+      />
+    </label>
+
+    <label class="forms-filter">
+      <span>Email</span>
+      <input
+        class="input--text"
+        type="search"
+        aria-label="Search staff by email"
+        placeholder="Search by email"
+        [ngModel]="emailSearch()"
+        (ngModelChange)="emailSearch.set($event)"
+        (keydown.enter)="search()"
+        [disabled]="isLoading()"
+      />
+    </label>
+
+    <label class="forms-filter">
+      <span>Status</span>
+      <select
+        class="input--select"
+        [ngModel]="selectedStatus()"
+        (ngModelChange)="selectedStatus.set($event)"
+        [disabled]="isLoading()"
+      >
+        <option value="">All</option>
+        <option value="Active">Active</option>
+        <option value="Inactive">Inactive</option>
+      </select>
+    </label>
+
+    <label class="forms-filter">
+      <span>Department</span>
+      <app-searchable-dropdown
+        [options]="departmentOptions()"
+        [searchable]="true"
+        placeholder="Search department..."
+        [ngModel]="selectedDepartmentId()"
+        (ngModelChange)="selectedDepartmentId.set($event)"
+        [loading]="isLoading()"
+      >
+      </app-searchable-dropdown>
+    </label>
+
+    <label class="forms-filter">
+      <span>Type</span>
+      <select
+        class="input--select"
+        [ngModel]="selectedType()"
+        (ngModelChange)="selectedType.set($event)"
+        [disabled]="isLoading()"
+      >
+        <option value="">All</option>
+        <option value="fulltime">fulltime</option>
+        <option value="parttime">parttime</option>
+      </select>
+    </label>
+
+    <div class="forms-toolbar__actions">
+      <button class="btn btn-primary" type="button" (click)="search()" [disabled]="isLoading()">
+        <span class="material-icons">search</span>
+        Search
+      </button>
+      <button class="btn btn-secondary" type="button" (click)="resetFilters()" [disabled]="isLoading()">
+        <span class="material-icons">restart_alt</span>
+        Reset
+      </button>
+    </div>
+  </section>
+
+  <section class="forms-table-card">
+    <header class="forms-table-card__header">
+      <div>
+        <div class="forms-table-card__title-row">
+          <h2>Staff Directory</h2>
+          <span class="forms-table-card__count">{{ totalItems() }}</span>
+        </div>
+        <p>Review synced staff records and their directory status.</p>
+      </div>
+      <button
+        class="btn btn-secondary forms-table-card__refresh"
+        type="button"
+        (click)="loadInitialData()"
+        [disabled]="isLoading()"
+      >
+        <span class="material-icons">refresh</span>
+        Refresh
+      </button>
+    </header>
+
+    @if (isLoading()) {
+      <app-table-skeleton
+        [columns]="columns"
+        [showSearch]="false"
+        loadingLabel="Loading staff directory"
+      >
+      </app-table-skeleton>
+    } @else if (loadFailed()) {
+      <div class="forms-state">
+        <span class="material-icons">cloud_off</span>
+        <h2>Unable to load staff directory</h2>
+        <p>Check the API connection and try again.</p>
+        <button class="btn btn-primary" type="button" (click)="loadInitialData()">Try Again</button>
+      </div>
+    } @else if (staff().length === 0) {
+      <div class="forms-state">
+        <span class="material-icons">groups</span>
+        <h2>No staff found</h2>
+        <p>Adjust the filters or run Sync to pull the latest directory from APU.</p>
+      </div>
+    } @else {
+      <app-data-table [columns]="columns" [rows]="staff()" [rowTrackFn]="rowTrackFn">
+        <ng-template #rowTemplate let-row let-index="index">
+          <tr>
+            <td class="is-align-center">{{ rowNumber(index) }}</td>
+            <td>
+              <div class="academic-staff-identity">
+                <span class="academic-staff-avatar">{{ initials(row) }}</span>
+                <div>
+                  <strong>{{ row.fullname || row.username }}</strong>
+                  <small>{{ row.email || 'No email' }}</small>
+                </div>
+              </div>
+            </td>
+            <td>{{ row.job_title || 'Not specified' }}</td>
+            <td>{{ row.department || 'Not available' }}</td>
+            <td class="is-align-center">
+              <span class="staff-type-badge">{{ staffTypeLabel(row) }}</span>
+            </td>
+            <td>
+              <span class="staff-synced-at">{{ formatSyncedAt(row.synced_at) }}</span>
+            </td>
+            <td class="is-align-center">
+              <span class="status-badge" [class.status-badge--inactive]="!row.is_active">
+                {{ row.is_active ? 'Active' : 'Inactive' }}
+              </span>
+            </td>
+          </tr>
+        </ng-template>
+      </app-data-table>
+    }
+
+    @if (!isLoading() && !loadFailed()) {
+      <footer class="forms-table-card__footer">
+        <p class="forms-count">
+          @if (totalItems() > 0) {
+            Showing {{ pageStart() }} to {{ pageEnd() }} of {{ totalItems() }} staff
+          } @else {
+            Showing 0 staff
+          }
+        </p>
+
+        <app-pagination
+          [currentPage]="page()"
+          [totalPages]="totalPages()"
+          [pageSize]="pageSize()"
+          [pageSizeOptions]="pageSizeOptions"
+          (pageChange)="onPageChange($event)"
+          (pageSizeChange)="onPageSizeChange($event)"
+        >
+        </app-pagination>
+
+        <label class="forms-page-size" aria-label="Items per page">
+          <select
+            class="input--select"
+            [ngModel]="pageSize()"
+            (ngModelChange)="onPageSizeChange($event)"
+          >
+            @for (size of pageSizeOptions; track size) {
+              <option [ngValue]="size">{{ size }} per page</option>
+            }
+          </select>
+        </label>
+      </footer>
+    }
+  </section>
+</main>

@@ -938,6 +938,9 @@
 }
 
 :host ::ng-deep app-submissions-search .submissions-search-top-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
   margin-bottom: var(--space-3);
 }
 
@@ -975,6 +978,7 @@
 }
 
 .dropdown-category-filter {
+  flex: 0 0 auto;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
@@ -989,6 +993,21 @@
   .category-list {
     gap: var(--space-2);
     padding: 0;
+  }
+}
+
+.sub-domain-parent-filter {
+  display: grid;
+  grid-template-columns: auto minmax(0, 26rem);
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border-subtle);
+
+  .form-label {
+    margin: 0;
+    white-space: nowrap;
   }
 }
 

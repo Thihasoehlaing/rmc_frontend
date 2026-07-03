@@ -203,6 +203,10 @@
 :host ::ng-deep .staff-access-table-shell app-data-table td:nth-child(5) {
   text-align: left;
 }
+
+:host ::ng-deep .staff-access-table-shell app-data-table td:nth-child(5) {
+  vertical-align: middle;
+}
 :host ::ng-deep .staff-access-table-shell app-data-table th:last-child {
   text-align: center;
 }
@@ -223,13 +227,10 @@
 
 
 .staff-access-muted-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 92px;
-  padding: var(--space-1) var(--space-3);
-  border-radius: var(--radius-full);
-  background: var(--color-background-secondary);
+  display: inline;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
   color: var(--color-text-muted);
   font-size: var(--fs-xs);
   font-weight: var(--fw-semibold);
@@ -390,3 +391,10 @@
 
 
 
+
+
+
+:host ::ng-deep .staff-access-table-shell app-data-table th:nth-child(4),
+:host ::ng-deep .staff-access-table-shell app-data-table td:nth-child(4) {
+  text-align: left;
+}

@@ -34,6 +34,13 @@ export const adminSettingsRoutes: Routes = [
       import('./staff-access/staff-access.component').then(m => m.StaffAccessComponent),
   },
   {
+    path: 'manage-rdig-reviewer',
+    loadComponent: () =>
+      import('./manage-rdig-reviewer/manage-rdig-reviewer.component').then(
+        m => m.ManageRdigReviewerComponent,
+      ),
+  },
+  {
     path: 'batch-sitting',
     canActivate: [permissionGuard],
     data: {
@@ -43,4 +50,3 @@ export const adminSettingsRoutes: Routes = [
       import('./batch-sitting/batch-sitting.component').then(m => m.BatchSittingComponent),
   },
 ];
-

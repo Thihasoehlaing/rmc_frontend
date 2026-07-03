@@ -155,6 +155,7 @@ export const NAVIGATION_DATA: NavGroup[] = [
                     { label: 'Dropdowns', icon: 'list', route: '/admin-settings/dropdowns', permission: { anyOf: ['Admin'] } },
                     { label: 'Batches', icon: 'batch_prediction', route: '/admin-settings/batches', permission: { anyOf: ['Admin'] } },
                     { label: 'Staff Access', icon: 'person_add', route: '/admin-settings/staff-access', permission: { anyOf: ['Admin'] } },
+                    { label: 'Manage RDIG Reviewer', icon: 'groups', route: '/admin-settings/manage-rdig-reviewer', permission: { anyOf: ['Admin'] } },
                 ],
             },
 
@@ -179,4 +180,3 @@ export const NAVIGATION_DATA: NavGroup[] = [
         ],
     },
 ];
-

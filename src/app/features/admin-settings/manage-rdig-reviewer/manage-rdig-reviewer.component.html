@@ -1,0 +1,140 @@
+<section class="reviewer-page">
+  <header class="reviewer-page__header">
+    <h1 class="reviewer-page__title">
+      <span class="material-icons" aria-hidden="true">groups</span>
+      RDIG Application
+    </h1>
+    <p class="reviewer-page__subtitle">
+      {{ totalItems() }} academic staff ·
+      Add staff to the RDIG reviewer pool. Reviewers are assigned to individual applications later,
+      from the application itself.
+    </p>
+  </header>
+
+  <section class="reviewer-filters card" aria-labelledby="reviewer-filters-title">
+    <h2 id="reviewer-filters-title">Search &amp; Filters</h2>
+
+    <div class="reviewer-filters__grid">
+      <label class="form-field">
+        <span class="form-label">Name</span>
+        <input
+          class="input--text"
+          type="search"
+          placeholder="Search by name"
+          [ngModel]="nameFilter()"
+          (ngModelChange)="nameFilter.set($event)"
+          (keydown.enter)="applyFilters()"
+        />
+      </label>
+
+      <label class="form-field">
+        <span class="form-label">Email</span>
+        <input
+          class="input--text"
+          type="search"
+          placeholder="Search by email"
+          [ngModel]="emailFilter()"
+          (ngModelChange)="emailFilter.set($event)"
+          (keydown.enter)="applyFilters()"
+        />
+      </label>
+
+      <div class="form-field reviewer-filters__department">
+        <span class="form-label">Department</span>
+        <app-searchable-dropdown
+          [options]="departmentOptions()"
+          [ngModel]="departmentFilter()"
+          (ngModelChange)="setDepartmentFilter($event)"
+          valueMode="single"
+          placeholder="Search department..."
+        />
+      </div>
+
+      <label class="form-field">
+        <span class="form-label">Reviewer Pool</span>
+        <select
+          class="input--select"
+          [ngModel]="poolStatusFilter()"
+          (ngModelChange)="setPoolStatusFilter($event)"
+        >
+          <option value="all">All</option>
+          <option value="in-pool">In Pool</option>
+          <option value="not-in-pool">Not in Pool</option>
+        </select>
+      </label>
+
+      <div class="reviewer-filters__actions">
+        <button class="btn btn-primary" type="button" (click)="applyFilters()">
+          <span class="material-icons">search</span>
+          Search
+        </button>
+        <button class="btn btn-secondary" type="button" (click)="resetFilters()">
+          <span class="material-icons">refresh</span>
+          Reset
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <section class="reviewer-table-shell" aria-label="RDIG reviewer pool management">
+    <app-data-table
+      [columns]="columns"
+      [rows]="staffRows()"
+      [rowTrackFn]="rowTrackFn"
+    >
+      <ng-template #emptyTemplate>
+        <app-no-entry-found message="No staff match your search." />
+      </ng-template>
+      <ng-template #rowTemplate let-row>
+        <tr>
+          <td>
+            <div class="data-table__stacked">
+              <span class="data-table__avatar">{{ row.initials }}</span>
+              <span class="data-table__title">{{ row.name }}</span>
+            </div>
+          </td>
+          <td><span class="reviewer-id-chip">{{ row.username }}</span></td>
+          <td>{{ row.department }}</td>
+          <td>{{ row.role }}</td>
+          <td><span class="reviewer-email" [title]="row.email">{{ row.email }}</span></td>
+          <td class="is-align-center">
+            <span
+              class="badge"
+              [class.badge-success]="row.reviewerId !== null"
+              [class.badge-info]="row.reviewerId === null"
+            >
+              {{ row.reviewerId !== null ? 'In Pool' : 'Not in Pool' }}
+            </span>
+          </td>
+          <td class="is-align-center">
+            <button
+              class="btn btn-sm reviewer-action"
+              [class.btn-secondary]="row.reviewerId !== null"
+              [class.btn-primary]="row.reviewerId === null"
+              type="button"
+              [attr.aria-label]="row.reviewerId !== null ? 'Remove reviewer' : 'Add reviewer'"
+              (click)="row.reviewerId !== null ? removeReviewer(row) : addReviewer(row)"
+            >
+              <span class="material-icons">{{ row.reviewerId !== null ? 'person_remove' : 'person_add' }}</span>
+              {{ row.reviewerId !== null ? 'Remove' : 'Add' }}
+            </button>
+          </td>
+        </tr>
+      </ng-template>
+    </app-data-table>
+
+    <app-pagination
+      [currentPage]="page()"
+      [totalPages]="totalPages()"
+      [pageSize]="pageSize()"
+      [pageSizeOptions]="pageSizeOptions"
+      (pageChange)="onPageChange($event)"
+      (pageSizeChange)="onPageSizeChange($event)"
+    ></app-pagination>
+  </section>
+
+  <p class="reviewer-page__footer">
+    Showing {{ staffRows().length }} staff on this page ·
+    {{ totalItems() }} matching this filter in total
+  </p>
+</section>

@@ -59,6 +59,8 @@ export class DataTableComponent {
 
   @ContentChild('rowTemplate') rowTemplate?: TemplateRef<DataTableRowContext<unknown>>;
   @ContentChild('headerTemplate') headerTemplate?: TemplateRef<DataTableHeaderContext>;
+  /** Optional override for the "no rows" state. Falls back to the default "No entries added yet." message when not provided. */
+  @ContentChild('emptyTemplate') emptyTemplate?: TemplateRef<void>;
 
   // Computed properties for pagination
   get displayRows(): readonly unknown[] {

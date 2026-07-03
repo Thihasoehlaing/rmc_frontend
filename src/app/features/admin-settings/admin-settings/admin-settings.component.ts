@@ -51,6 +51,13 @@ export class AdminSettingsComponent {
       route: '/admin-settings/staff-access',
       tone: 'teal',
     },
+    {
+      title: 'Manage RDIG Reviewer',
+      description: 'Assign or unassign eligible academic staff from the RDIG reviewer pool.',
+      icon: 'groups',
+      category: 'Review Management',
+      route: '/admin-settings/manage-rdig-reviewer',
+      tone: 'slate',
+    },
   ];
 }
-

@@ -76,10 +76,14 @@
           } @else {
             <tr class="data-table__empty-row">
               <td [attr.colspan]="columns.length || 1">
-                <div class="data-table__empty-state">
-                  <span class="material-icons" aria-hidden="true">receipt</span>
-                  <p>No entries added yet.</p>
-                </div>
+                @if (emptyTemplate) {
+                  <ng-container [ngTemplateOutlet]="emptyTemplate"></ng-container>
+                } @else {
+                  <div class="data-table__empty-state">
+                    <span class="material-icons" aria-hidden="true">receipt</span>
+                    <p>No entries added yet.</p>
+                  </div>
+                }
               </td>
             </tr>
           }

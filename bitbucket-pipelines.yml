@@ -11,9 +11,9 @@
 # Required Repository Variables:
 #   AWS_ACCESS_KEY_ID              — IAM deployer access key
 #   AWS_SECRET_ACCESS_KEY          — IAM deployer secret key
-#   CLOUDFRONT_DISTRIBUTION_DEV    — CloudFront distribution ID for dev
-#   CLOUDFRONT_DISTRIBUTION_STAGING — CloudFront distribution ID for staging
-#   CLOUDFRONT_DISTRIBUTION_PROD   — CloudFront distribution ID for prod
+#   CLOUDFRONT_DISTRIBUTION_ID_DEV    — CloudFront distribution ID for dev
+#   CLOUDFRONT_DISTRIBUTION_ID_PROD — CloudFront distribution ID for staging
+#   CLOUDFRONT_DISTRIBUTION_ID_PROD   — CloudFront distribution ID for prod
 # =============================================================================
 
 image: node:22
@@ -41,7 +41,7 @@ pipelines:
                 AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
                 AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
                 AWS_DEFAULT_REGION: 'ap-southeast-1'
-                DISTRIBUTION_ID: $CLOUDFRONT_DISTRIBUTION_STAGING
+                DISTRIBUTION_ID: $CLOUDFRONT_DISTRIBUTION_ID_PROD
           artifacts:
             - dist/**
       - step:
@@ -65,7 +65,7 @@ pipelines:
                 AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
                 AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
                 AWS_DEFAULT_REGION: 'ap-southeast-1'
-                DISTRIBUTION_ID: $CLOUDFRONT_DISTRIBUTION_PROD
+                DISTRIBUTION_ID: $CLOUDFRONT_DISTRIBUTION_ID_PROD
           artifacts:
             - dist/**
 
@@ -90,7 +90,7 @@ pipelines:
                 AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
                 AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
                 AWS_DEFAULT_REGION: 'ap-southeast-1'
-                DISTRIBUTION_ID: $CLOUDFRONT_DISTRIBUTION_DEV
+                DISTRIBUTION_ID: $CLOUDFRONT_DISTRIBUTION_ID_DEV
           artifacts:
             - dist/**
 
@@ -116,4 +116,4 @@ pipelines:
                 AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
                 AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
                 AWS_DEFAULT_REGION: 'ap-southeast-1'
-                DISTRIBUTION_ID: $CLOUDFRONT_DISTRIBUTION_DEV
+                DISTRIBUTION_ID: $CLOUDFRONT_DISTRIBUTION_ID_DEV

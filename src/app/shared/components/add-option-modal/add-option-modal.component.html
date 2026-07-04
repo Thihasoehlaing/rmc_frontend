@@ -11,6 +11,15 @@
         <div class="category-locked">{{ categoryLabel || 'Fixed' }} <span class="pill">Locked</span></div>
       </ng-container>
 
+      <div class="form-field" *ngIf="showCode">
+        <label class="form-label">{{ codeLabel }} *</label>
+        <input
+          type="text"
+          class="input--text"
+          [(ngModel)]="code"
+          [placeholder]="'Enter ' + codeLabel.toLowerCase()" />
+      </div>
+
       <label class="form-label">{{ optionNameLabel }} *</label>
       <input
         type="text"

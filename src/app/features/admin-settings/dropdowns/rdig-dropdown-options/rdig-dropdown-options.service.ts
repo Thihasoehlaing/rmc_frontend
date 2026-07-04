@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { environment } from '../../../../environments/environment';
+import { environment } from '../../../../../environments/environment';
 import { BehaviorSubject, Observable, of, forkJoin } from 'rxjs';
 import { map, tap, catchError, switchMap } from 'rxjs/operators';
 
@@ -33,7 +33,12 @@ export const CATEGORY_LABELS: Record<DropdownCategoryKey, string> = {
 // Raw API shapes from master-data endpoints
 interface RawCluster { id: number; cluster_name: string; is_active: boolean; }
 interface RawDomain  { id: number; domain_name: string;  is_active: boolean; }
-interface RawSubDomain { id: number; research_domain_id: number; sub_domain_name: string; is_active: boolean; }
+interface RawSubDomain {
+  id: number;
+  research_domain_id: number;
+  sub_domain_name: string;
+  is_active: boolean;
+}
 interface RawEsg { id: number; esg_code: string; esg_name: string; is_active: boolean; }
 interface RawSdg { id: number; sdg_code: string; sdg_name: string; is_active: boolean; }
 interface RawDropdownOption { id: number; option_name: string; status: string; dropdown_category_id?: number; }
@@ -41,7 +46,12 @@ interface RawDropdownOption { id: number; option_name: string; status: string; d
 // Raw API shapes from admin-settings endpoints (paginated)
 export interface AdminCluster    { id: number; cluster_name: string;    is_active: boolean; }
 export interface AdminDomain     { id: number; domain_name: string;     is_active: boolean; }
-export interface AdminSubDomain  { id: number; research_domain_id: number; sub_domain_name: string; is_active: boolean; }
+export interface AdminSubDomain  {
+  id: number;
+  research_domain_id: number;
+  sub_domain_name: string;
+  is_active: boolean;
+}
 export interface AdminEsg        { id: number; esg_code: string; esg_name: string; is_active: boolean; }
 export interface AdminSdg        { id: number; sdg_code: string; sdg_name: string; is_active: boolean; }
 export interface AdminSharedForm {

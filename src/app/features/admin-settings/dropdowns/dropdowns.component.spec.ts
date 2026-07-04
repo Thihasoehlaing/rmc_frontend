@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 
 import { DropdownsComponent } from './dropdowns.component';
 
@@ -9,6 +10,7 @@ describe('DropdownsComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [DropdownsComponent],
+      providers: [provideRouter([])],
     }).compileComponents();
 
     fixture = TestBed.createComponent(DropdownsComponent);
@@ -20,39 +22,8 @@ describe('DropdownsComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should deactivate an active dropdown option', () => {
-    component.dropdownOptions.set([
-      {
-        id: 1,
-        formName: 'Conference Application',
-        category: 'Select Region',
-        value: 'ASEAN',
-        lastUpdated: '20 Jun 2026',
-        createdBy: 'Admin',
-        status: 'Active',
-      },
-    ]);
-
-    component.toggleStatus(1);
-
-    expect(component.dropdownOptions()[0].status).toBe('Inactive');
-  });
-
-  it('should activate an inactive dropdown option', () => {
-    component.dropdownOptions.set([
-      {
-        id: 1,
-        formName: 'Conference Application',
-        category: 'Select Region',
-        value: 'ASEAN',
-        lastUpdated: '20 Jun 2026',
-        createdBy: 'Admin',
-        status: 'Inactive',
-      },
-    ]);
-
-    component.toggleStatus(1);
-
-    expect(component.dropdownOptions()[0].status).toBe('Active');
+  it('should show the dropdown form sections', () => {
+    expect(component.sections().length).toBe(6);
+    expect(component.sections()[0].title).toBe('RDIG Application');
   });
 });

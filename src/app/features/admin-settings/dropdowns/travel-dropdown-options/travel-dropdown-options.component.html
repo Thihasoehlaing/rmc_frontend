@@ -1,0 +1,15 @@
+<section class="dropdown-section-page">
+  <header class="dropdown-section-header">
+    <a class="back-button" routerLink="/admin-settings/dropdowns" aria-label="Back to dropdowns">
+      <span class="material-icons">arrow_back</span>
+    </a>
+    <div>
+      <h1>Travel Authorisation Dropdown Options</h1>
+      <p>This section is ready for the Travel Authorisation dropdown implementation.</p>
+    </div>
+  </header>
+
+  <div class="section-card">
+    <span class="chip" *ngFor="let category of categories">{{ category }}</span>
+  </div>
+</section>

@@ -24,7 +24,44 @@ export const adminSettingsRoutes: Routes = [
       {
         path: 'rdig-dropdown-options',
         loadComponent: () =>
-          import('./dropdowns/dropdowns.component').then(m => m.DropdownsComponent),
+          import('./dropdowns/rdig-dropdown-options/rdig-dropdown-options.component').then(
+            m => m.RdigDropdownOptionsComponent,
+          ),
+      },
+      {
+        path: 'ra-gra-dropdown-options',
+        loadComponent: () =>
+          import('./dropdowns/ra-gra-dropdown-options/ra-gra-dropdown-options.component').then(
+            m => m.RaGraDropdownOptionsComponent,
+          ),
+      },
+      {
+        path: 'conference-dropdown-options',
+        loadComponent: () =>
+          import('./dropdowns/conference-dropdown-options/conference-dropdown-options.component').then(
+            m => m.ConferenceDropdownOptionsComponent,
+          ),
+      },
+      {
+        path: 'journal-dropdown-options',
+        loadComponent: () =>
+          import('./dropdowns/journal-dropdown-options/journal-dropdown-options.component').then(
+            m => m.JournalDropdownOptionsComponent,
+          ),
+      },
+      {
+        path: 'travel-dropdown-options',
+        loadComponent: () =>
+          import('./dropdowns/travel-dropdown-options/travel-dropdown-options.component').then(
+            m => m.TravelDropdownOptionsComponent,
+          ),
+      },
+      {
+        path: 'partnership-dropdown-options',
+        loadComponent: () =>
+          import('./dropdowns/partnership-dropdown-options/partnership-dropdown-options.component').then(
+            m => m.PartnershipDropdownOptionsComponent,
+          ),
       },
     ],
   },

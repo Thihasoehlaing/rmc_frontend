@@ -5,6 +5,7 @@ import { SearchableDropdownComponent } from '../searchable-dropdown/searchable-d
 import { DropdownOption } from '../../../core/interfaces/components.interface';
 
 export interface AddOptionPayload {
+  code?: string;
   name: string;
   status: 'Active' | 'Inactive';
   appliesTo: string[]; // form names
@@ -27,6 +28,8 @@ export class AddOptionModalComponent implements OnChanges {
   @Input() title = 'Add Dropdown Option';
   @Input() showCategory = true;
   @Input() categoryLabel = '';
+  @Input() showCode = false;
+  @Input() codeLabel = 'Code';
   @Input() optionNameLabel = 'Option Name';
   @Input() availableForms: string[] = [];
   @Input() availableFormOptions: DropdownOption<string>[] = [];
@@ -48,6 +51,7 @@ export class AddOptionModalComponent implements OnChanges {
   @Output() save = new EventEmitter<AddOptionPayload>();
 
   name: string = '';
+  code: string = '';
   status: 'Active' | 'Inactive' = 'Active';
   appliesTo: string[] = [];
   accountNumber: string = '';
@@ -59,6 +63,7 @@ export class AddOptionModalComponent implements OnChanges {
   ngOnChanges(changes: SimpleChanges) {
     const init = this.initial;
     if (init) {
+      this.code = init.code || '';
       this.name = init.name || '';
       this.status = init.status || 'Active';
       this.appliesTo = init.appliesTo || [];
@@ -68,6 +73,7 @@ export class AddOptionModalComponent implements OnChanges {
       this.description = init.description || '';
       this.parentDomainId = init.parentDomainId != null ? String(init.parentDomainId) : '';
     } else {
+      this.code = '';
       this.name = '';
       this.status = 'Active';
       this.appliesTo = [...this.defaultSelectedForms];
@@ -81,6 +87,10 @@ export class AddOptionModalComponent implements OnChanges {
 
   get isValid(): boolean {
     if (!this.name.trim()) {
+      return false;
+    }
+
+    if (this.showCode && !this.code.trim()) {
       return false;
     }
 
@@ -127,6 +137,7 @@ export class AddOptionModalComponent implements OnChanges {
     if (!this.isValid) return;
     const appliesTo = this.allowFormSharing ? [...this.appliesTo] : [...this.defaultSelectedForms];
     this.save.emit({
+      code: this.showCode ? this.code.trim() : undefined,
       name: this.name.trim(),
       status: this.status,
       appliesTo,

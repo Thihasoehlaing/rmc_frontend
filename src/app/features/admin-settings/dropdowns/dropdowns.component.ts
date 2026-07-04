@@ -10,7 +10,7 @@ import {
   RdigDropdownOptionsService,
   AdminListParams,
   AdminPagination,
-} from '../rdig-dropdown-options.service';
+} from './rdig-dropdown-options.service';
 import { ActionButtonComponent } from '../../../shared/components/action-button/action-button.component';
 import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
 import { nextTableSortState, SortDirection } from '../../../shared/services/table-sort.service';
@@ -26,6 +26,8 @@ import { SVG_ICON_TRASH } from '../../../shared/icons/svg-icons';
 import { TableActionIconComponent } from '../../../shared/components/table-action-icon/table-action-icon.component';
 import { SubmissionsSearchComponent } from '../../../shared/components/submissions-search/submissions-search.component';
 import { SearchableDropdownComponent } from '../../../shared/components/searchable-dropdown/searchable-dropdown.component';
+import { TableSkeletonComponent } from '../../../shared/components/table-skeleton/table-skeleton.component';
+import { DropdownOption as SelectOption } from '../../../core/interfaces/components.interface';
 
 interface DropdownOption {
   id: number;
@@ -45,10 +47,15 @@ interface ApiRow {
   value: string;
   status: 'Active' | 'Inactive';
   parentDomainId?: number;
+  categoryId?: number;
+  sharedWith?: string[];
+  sharedFormIds?: string[];
+  updatedAt?: string;
 }
 
 interface DropdownOptionView extends DropdownOption {
   sharedWith: string[];
+  sharedFormIds?: string[];
   accountNumber?: string;
   percentage?: number;
   limit?: number;
@@ -104,6 +111,7 @@ interface CategorySharingConfig {
     DialogComponent,
     SvgIconComponent,
     SearchableDropdownComponent,
+    TableSkeletonComponent,
   ],
   templateUrl: './dropdowns.component.html',
   styleUrls: ['./dropdowns.component.scss'],
@@ -125,15 +133,26 @@ export class DropdownsComponent implements OnInit {
    */
   private readonly RDIG_API_CATEGORIES = [
     'Research Cluster',
+    'Type of Organisation',
     'Research Domain',
     'Sub-Research Domain',
     'ESG',
     'SDG',
   ];
 
+  readonly rdigTabs = [
+    { key: 'RESEARCH_CLUSTER', category: 'Research Cluster', label: 'Research Cluster', icon: 'hub' },
+    { key: 'TYPE_OF_ORGANISATION', category: 'Type of Organisation', label: 'Type of Organization', icon: 'corporate_fare' },
+    { key: 'RESEARCH_DOMAIN', category: 'Research Domain', label: 'Research Domain', icon: 'public' },
+    { key: 'SUB_RESEARCH_DOMAIN', category: 'Sub-Research Domain', label: 'Sub Research Domain', icon: 'account_tree' },
+    { key: 'ESGS', category: 'ESG', label: 'ESGs', icon: 'eco' },
+    { key: 'SDGS', category: 'SDG', label: 'SDGs', icon: 'flag' },
+  ] as const;
+
   /** Rows loaded from the API for the currently selected RDIG API category. */
   apiRows = signal<ApiRow[]>([]);
   apiLoading = signal(false);
+  rdigFormOptions = signal<SelectOption<string>[]>([]);
   /** Active research domains — populates the "Research Domain" picker for the Sub-Research Domain tab. */
   subDomainParents = signal<{ label: string; value: string }[]>([]);
   /**
@@ -158,6 +177,7 @@ export class DropdownsComponent implements OnInit {
    */
   private readonly SERVER_PAGINATED_CATEGORIES = [
     'Research Cluster',
+    'Type of Organisation',
     'Research Domain',
     'Sub-Research Domain',
     'ESG',
@@ -383,6 +403,15 @@ export class DropdownsComponent implements OnInit {
       align: 'center',
     };
 
+    if (this.isRdigSimpleNameStatusCategory()) {
+      return [
+        sequenceColumn,
+        { key: 'value', label: 'Name', sortable: true },
+        statusColumn,
+        actionsColumn,
+      ];
+    }
+
     if (this.isRegionMetadataCategory()) {
       return [
         sequenceColumn,
@@ -455,7 +484,7 @@ export class DropdownsComponent implements OnInit {
 
     return [
       sequenceColumn,
-      { key: 'value', label: 'Option Name', sortable: true },
+      { key: 'value', label: 'Name', sortable: true },
       ...(includeSharedColumn
         ? [
             {
@@ -474,11 +503,37 @@ export class DropdownsComponent implements OnInit {
   trackById: TrackByFunction<DropdownGroup> = (i, g) => g.id;
   trackByOptionId: TrackByFunction<DropdownOption> = (i, o) => o.id;
 
+  getGroupIcon(title: string): string {
+    const icons: Record<string, string> = {
+      'RDIG Application': 'science',
+      'RA/GRA Application': 'school',
+      'Conference Application': 'event',
+      'Journal Application': 'article',
+      'Partnership Application': 'handshake',
+    };
+    return icons[title] ?? 'view_module';
+  }
+
   selectedGroup = computed(
     () => this.groups().find((g) => g.id === this.selectedGroupId()) ?? null,
   );
-  selectedGroupCategories = computed(() => this.selectedGroup()?.categories ?? []);
+  selectedGroupCategories = computed(() => {
+    const group = this.selectedGroup();
+    if (!group) {
+      return [];
+    }
+
+    if (group.title === 'RDIG Application') {
+      return this.rdigTabs.map((tab) => tab.category);
+    }
+
+    return group.categories;
+  });
   canShareSelectedCategory(): boolean {
+    if (this.isRdigResearchClusterCategory()) {
+      return false;
+    }
+
     const category = this.selectedCategory();
     const allowedForms = category ? this.CATEGORY_SHARING_CONFIG[category] : null;
     return !!allowedForms && allowedForms.length > 1;
@@ -502,9 +557,36 @@ export class DropdownsComponent implements OnInit {
   });
 
   defaultSelectedForms = computed(() => {
+    if (this.usesTypeOfOrganisationFormSelect()) {
+      return [];
+    }
+
     const group = this.selectedGroup();
     return group ? [group.title] : [];
   });
+
+  usesTypeOfOrganisationFormSelect(): boolean {
+    return this.selectedGroup()?.title === 'RDIG Application' &&
+      this.selectedCategory() === 'Type of Organisation';
+  }
+
+  getModalFormOptions(): SelectOption<string>[] {
+    return this.usesTypeOfOrganisationFormSelect() ? this.rdigFormOptions() : [];
+  }
+
+  isRdigResearchClusterCategory(): boolean {
+    return this.selectedGroup()?.title === 'RDIG Application' &&
+      this.selectedCategory() === 'Research Cluster';
+  }
+
+  isRdigResearchDomainCategory(): boolean {
+    return this.selectedGroup()?.title === 'RDIG Application' &&
+      this.selectedCategory() === 'Research Domain';
+  }
+
+  isRdigSimpleNameStatusCategory(): boolean {
+    return this.isRdigResearchClusterCategory() || this.isRdigResearchDomainCategory();
+  }
 
   isRegionMetadataCategory(): boolean {
     return (
@@ -564,6 +646,42 @@ export class DropdownsComponent implements OnInit {
     }
 
     return category;
+  }
+
+  getTabDisplayLabel(category: string): string {
+    if (this.selectedGroup()?.title === 'RDIG Application') {
+      return this.rdigTabs.find((tab) => tab.category === category)?.label ?? category;
+    }
+
+    return this.getCategoryDisplayLabel(category);
+  }
+
+  getTabIcon(category: string): string {
+    return this.rdigTabs.find((tab) => tab.category === category)?.icon ?? 'view_list';
+  }
+
+  private isRdigRoute(): boolean {
+    return this.route.snapshot.routeConfig?.path === 'rdig-dropdown-options';
+  }
+
+  private getRdigCategoryFromTab(tabKey: string | null | undefined): string | null {
+    if (!tabKey) {
+      return null;
+    }
+
+    const normalized = tabKey.trim().toUpperCase().replace(/[\s-]+/g, '_');
+    const aliases: Record<string, string> = {
+      ESG: 'ESGS',
+      SDG: 'SDGS',
+      TYPE_OF_ORGANIZATION: 'TYPE_OF_ORGANISATION',
+      SUBRESEARCH_DOMAIN: 'SUB_RESEARCH_DOMAIN',
+    };
+    const key = aliases[normalized] ?? normalized;
+    return this.rdigTabs.find((tab) => tab.key === key)?.category ?? null;
+  }
+
+  private getRdigTabKey(category: string): string | null {
+    return this.rdigTabs.find((tab) => tab.category === category)?.key ?? null;
   }
 
   getOptionNameInputLabel(): string {
@@ -716,13 +834,30 @@ export class DropdownsComponent implements OnInit {
     this.route.queryParams.subscribe((params) => {
       const id = Number(params['group']);
       const explicitGroupId = !Number.isNaN(id) && id > 0 ? id : null;
-      const isRdigRoute = this.route.snapshot.routeConfig?.path === 'rdig-dropdown-options';
+      const isRdigRoute = this.isRdigRoute();
       const rdigGroupId =
         this.groups().find((group) => group.title === 'RDIG Application')?.id ?? null;
       this.selectedGroupId.set(explicitGroupId ?? (isRdigRoute ? rdigGroupId : null));
-      this.selectedCategory.set('');
-      this.searchQuery.set('');
-      this.statusFilter.set('all');
+
+      if (isRdigRoute && this.selectedGroupId()) {
+        const requestedCategory = this.getRdigCategoryFromTab(params['tab']);
+        const category = requestedCategory ?? this.rdigTabs[0].category;
+        const canonicalTab = this.getRdigTabKey(category);
+        if (canonicalTab && params['tab'] !== canonicalTab) {
+          this.router.navigate([], {
+            relativeTo: this.route,
+            queryParams: { tab: canonicalTab },
+            queryParamsHandling: 'merge',
+            replaceUrl: true,
+          });
+          return;
+        }
+
+        this.applyCategory(category);
+        return;
+      }
+
+      this.resetCategoryState();
     });
   }
 
@@ -731,12 +866,42 @@ export class DropdownsComponent implements OnInit {
       return;
     }
 
+    if (this.isRdigRoute()) {
+      const tab = this.getRdigTabKey(category);
+      if (tab) {
+        this.router.navigate([], {
+          relativeTo: this.route,
+          queryParams: { tab },
+          queryParamsHandling: 'merge',
+        });
+        return;
+      }
+    }
+
+    this.applyCategory(category);
+  }
+
+  private resetCategoryState(): void {
+    this.selectedCategory.set('');
+    this.searchQuery.set('');
+    this.statusFilter.set('all');
+    this.optionsPage.set(1);
+    this.apiRows.set([]);
+    this.apiPagination.set(null);
+    this.selectedSubDomainParentId.set(null);
+  }
+
+  private applyCategory(category: string): void {
     this.selectedCategory.set(category);
     this.searchQuery.set('');
     this.statusFilter.set('all');
     this.optionsPage.set(1);
     this.apiRows.set([]);
     this.apiPagination.set(null);
+
+    if (category === 'Type of Organisation') {
+      this.loadRdigFormOptions();
+    }
 
     if (category === 'Sub-Research Domain') {
       // Nothing loads until the admin picks a domain — avoids fetching every
@@ -751,15 +916,40 @@ export class DropdownsComponent implements OnInit {
     }
   }
 
+  private loadRdigFormOptions(): void {
+    if (this.rdigFormOptions().length > 0) {
+      return;
+    }
+
+    this.rdigService.listForms().subscribe({
+      next: (res) => {
+        this.rdigFormOptions.set(
+          (res.data ?? [])
+            .filter((form) => form.is_active)
+            .map((form) => ({
+              label: form.form_name,
+              value: String(form.id),
+              description: form.form_code,
+              searchText: `${form.form_name} ${form.form_code}`.toLowerCase(),
+            })),
+        );
+      },
+      error: () => {
+        this.rdigFormOptions.set([]);
+        this.toast.error('Failed to load form options.');
+      },
+    });
+  }
+
   /** Populates the "Research Domain" picker shown on the Sub-Research Domain tab. */
   private loadSubDomainParentOptions(): void {
-    this.rdigService.adminListDomains({ per_page: 100, status: 'active' }).subscribe({
-      next: (res) => {
-        if (res.success) {
-          this.subDomainParents.set(
-            (res.data?.items ?? []).map((d) => ({ label: d.domain_name, value: String(d.id) })),
-          );
-        }
+    this.rdigService.loadOptions('research_domain').subscribe({
+      next: (domains) => {
+        this.subDomainParents.set(
+          domains
+            .filter((domain) => domain.status === 'Active')
+            .map((domain) => ({ label: domain.optionName, value: String(domain.id) })),
+        );
       },
       error: () => this.subDomainParents.set([]),
     });
@@ -835,6 +1025,23 @@ export class DropdownsComponent implements OnInit {
               id: c.id,
               value: c.cluster_name,
               status: c.is_active ? ('Active' as const) : ('Inactive' as const),
+            })),
+            pagination: r.data?.pagination ?? null,
+          })),
+        );
+      case 'Type of Organisation':
+        return this.rdigService.adminListTypeOfOrg(params).pipe(
+          map((r) => ({
+            rows: (r.data?.items ?? []).map((o) => ({
+              id: o.id,
+              value: o.name ?? o.option_name ?? '',
+              status: (o.status ?? '').toLowerCase() === 'inactive'
+                ? ('Inactive' as const)
+                : ('Active' as const),
+              categoryId: o.dropdown_category_id,
+              sharedWith: (o.shared_with ?? []).map((form) => form.form_name),
+              sharedFormIds: (o.shared_with ?? []).map((form) => String(form.id)),
+              updatedAt: o.updated_at,
             })),
             pagination: r.data?.pagination ?? null,
           })),
@@ -945,11 +1152,12 @@ export class DropdownsComponent implements OnInit {
       formName,
       category,
       value: r.value,
-      lastUpdated: '',
+      lastUpdated: this.formatDisplayDateTime(r.updatedAt),
       createdBy: '',
       status: r.status,
-      sharedWith: [],
+      sharedWith: r.sharedWith ?? [],
       parentDomainId: r.parentDomainId,
+      ...(r.sharedFormIds ? { sharedFormIds: r.sharedFormIds } : {}),
     }));
   }
 
@@ -2049,8 +2257,8 @@ export class DropdownsComponent implements OnInit {
   openGroup(g: DropdownGroup) {
     // If RDIG group is clicked, open the dedicated RDIG dropdown management page
     if (g.title.toLowerCase().includes('rdig')) {
-      this.router.navigate(['/admin-settings/rdig-dropdown-options'], {
-        queryParams: { group: g.id },
+      this.router.navigate(['/admin-settings/dropdowns/rdig-dropdown-options'], {
+        queryParams: { tab: this.rdigTabs[0].key },
       });
       return;
     }
@@ -2109,6 +2317,13 @@ export class DropdownsComponent implements OnInit {
         case 'Research Cluster':
           req = this.rdigService.adminUpdateCluster(editId, { cluster_name: name, is_active: isActive });
           break;
+        case 'Type of Organisation':
+          req = this.rdigService.adminUpdateTypeOfOrg(editId, {
+            option_name: name,
+            is_active: isActive,
+            form_ids: this.getSelectedFormIds(payload),
+          });
+          break;
         case 'Research Domain':
           req = this.rdigService.adminUpdateDomain(editId, { domain_name: name, is_active: isActive });
           break;
@@ -2132,6 +2347,19 @@ export class DropdownsComponent implements OnInit {
         case 'Research Cluster':
           req = this.rdigService.adminCreateCluster({ cluster_name: name, is_active: isActive });
           break;
+        case 'Type of Organisation': {
+          const categoryId = this.getTypeOfOrganisationCategoryId();
+          if (!categoryId) {
+            this.toast.error('Type of Organization category is not ready yet. Please refresh and try again.');
+            return;
+          }
+          req = this.rdigService.adminCreateTypeOfOrg(categoryId, {
+            option_name: name,
+            is_active: isActive,
+            form_ids: this.getSelectedFormIds(payload),
+          });
+          break;
+        }
         case 'Research Domain':
           req = this.rdigService.adminCreateDomain({ domain_name: name, is_active: isActive });
           break;
@@ -2193,6 +2421,16 @@ export class DropdownsComponent implements OnInit {
       },
       error: (err) => this.showApiError(err),
     });
+  }
+
+  private getTypeOfOrganisationCategoryId(): number | null {
+    return this.apiRows().find((row) => row.categoryId)?.categoryId ?? null;
+  }
+
+  private getSelectedFormIds(payload: AddOptionPayload): number[] {
+    return payload.appliesTo
+      .map((value) => Number(value))
+      .filter((value) => Number.isInteger(value) && value > 0);
   }
 
   /**
@@ -2453,6 +2691,9 @@ export class DropdownsComponent implements OnInit {
       case 'Research Cluster':
         req = this.rdigService.adminUpdateCluster(id, { is_active: isActive });
         break;
+      case 'Type of Organisation':
+        req = this.rdigService.adminUpdateTypeOfOrg(id, { is_active: isActive });
+        break;
       case 'Research Domain':
         req = this.rdigService.adminUpdateDomain(id, { is_active: isActive });
         break;
@@ -2525,6 +2766,9 @@ export class DropdownsComponent implements OnInit {
         case 'Research Cluster':
           req = this.rdigService.adminDeleteCluster(id);
           break;
+        case 'Type of Organisation':
+          req = this.rdigService.adminDeleteTypeOfOrg(id);
+          break;
         case 'Research Domain':
           req = this.rdigService.adminDeleteDomain(id);
           break;
@@ -2581,7 +2825,7 @@ export class DropdownsComponent implements OnInit {
         this.editingInitialPayload.set({
           name: row.value,
           status: row.status,
-          appliesTo: [],
+          appliesTo: row.sharedFormIds ?? [],
           parentDomainId: row.parentDomainId ?? null,
         });
         this.showAddModal.set(true);
@@ -2926,6 +3170,28 @@ export class DropdownsComponent implements OnInit {
     const month = `${date.getMonth() + 1}`.padStart(2, '0');
     const year = date.getFullYear();
     return `${day}/${month}/${year}`;
+  }
+
+  private formatDisplayDateTime(dateValue?: string): string {
+    if (!dateValue) {
+      return '-';
+    }
+
+    const date = new Date(dateValue);
+    if (Number.isNaN(date.getTime())) {
+      return '-';
+    }
+
+    const year = date.getFullYear();
+    const month = `${date.getMonth() + 1}`.padStart(2, '0');
+    const day = `${date.getDate()}`.padStart(2, '0');
+    let hour = date.getHours();
+    const suffix = hour >= 12 ? 'PM' : 'AM';
+    hour = hour % 12 || 12;
+    const minute = `${date.getMinutes()}`.padStart(2, '0');
+    const second = `${date.getSeconds()}`.padStart(2, '0');
+
+    return `${year}-${month}-${day} ${`${hour}`.padStart(2, '0')}:${minute}:${second} ${suffix}`;
   }
 
   private parseDisplayDate(dateValue: string): number {

@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { environment } from '../../../environments/environment';
+import { environment } from '../../../../environments/environment';
 import { BehaviorSubject, Observable, of, forkJoin } from 'rxjs';
 import { map, tap, catchError, switchMap } from 'rxjs/operators';
 
@@ -44,7 +44,26 @@ export interface AdminDomain     { id: number; domain_name: string;     is_activ
 export interface AdminSubDomain  { id: number; research_domain_id: number; sub_domain_name: string; is_active: boolean; }
 export interface AdminEsg        { id: number; esg_code: string; esg_name: string; is_active: boolean; }
 export interface AdminSdg        { id: number; sdg_code: string; sdg_name: string; is_active: boolean; }
-export interface AdminTypeOfOrg  { id: number; option_name: string; status: string; dropdown_category_id: number; }
+export interface AdminSharedForm {
+  id: number;
+  form_code: string;
+  form_name: string;
+}
+export interface FormOption {
+  id: number;
+  form_code: string;
+  form_name: string;
+  is_active: boolean;
+}
+export interface AdminTypeOfOrg  {
+  id: number;
+  name?: string;
+  option_name?: string;
+  status: string;
+  dropdown_category_id: number;
+  shared_with?: AdminSharedForm[];
+  updated_at?: string;
+}
 
 export interface AdminPagination {
   current_page: number;
@@ -254,6 +273,10 @@ export class RdigDropdownOptionsService {
     );
   }
 
+  listForms(): Observable<ApiResponse<FormOption[]>> {
+    return this.http.get<ApiResponse<FormOption[]>>(`${environment.apiUrl}/api/forms`);
+  }
+
   // ─── Admin create ─────────────────────────────────────────────────────────
 
   adminCreateCluster(data: { cluster_name: string; is_active?: boolean }): Observable<ApiResponse<AdminCluster>> {
@@ -286,11 +309,12 @@ export class RdigDropdownOptionsService {
     );
   }
 
-  adminCreateTypeOfOrg(categoryId: number, data: { option_name: string; is_active?: boolean }): Observable<ApiResponse<AdminTypeOfOrg>> {
+  adminCreateTypeOfOrg(categoryId: number, data: { option_name: string; is_active?: boolean; form_ids?: number[] }): Observable<ApiResponse<AdminTypeOfOrg>> {
     const body = {
       dropdown_category_id: categoryId,
       option_name: data.option_name,
       status: data.is_active === false ? 'INACTIVE' : 'ACTIVE',
+      form_ids: data.form_ids ?? [],
     };
     return this.http.post<ApiResponse<AdminTypeOfOrg>>(`${environment.apiUrl}/api/admin-settings/dropdown-options`, body).pipe(
       tap(() => this.invalidateAndRefresh('type_of_organisation')),
@@ -332,10 +356,11 @@ export class RdigDropdownOptionsService {
     );
   }
 
-  adminUpdateTypeOfOrg(id: number, data: { option_name?: string; is_active?: boolean }): Observable<ApiResponse<AdminTypeOfOrg>> {
+  adminUpdateTypeOfOrg(id: number, data: { option_name?: string; is_active?: boolean; form_ids?: number[] }): Observable<ApiResponse<AdminTypeOfOrg>> {
     const body: Record<string, unknown> = {};
     if (data.option_name !== undefined) body['option_name'] = data.option_name;
     if (data.is_active !== undefined) body['status'] = data.is_active ? 'ACTIVE' : 'INACTIVE';
+    if (data.form_ids !== undefined) body['form_ids'] = data.form_ids;
     return this.http.put<ApiResponse<AdminTypeOfOrg>>(`${environment.apiUrl}/api/admin-settings/dropdown-options/${id}`, body).pipe(
       tap(() => this.invalidateAndRefresh('type_of_organisation')),
     );

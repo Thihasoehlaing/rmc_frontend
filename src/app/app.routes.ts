@@ -36,6 +36,11 @@ export const routes: Routes = [
           import('./features/profile/profile.routes').then(m => m.profileRoutes),
       },
       {
+        path: 'notifications',
+        loadChildren: () =>
+          import('./features/notifications/notifications.routes').then(m => m.notificationRoutes),
+      },
+      {
         path: 'showcase',
         loadChildren: () =>
           import('./shared/components/showcase/showcase.routes').then(m => m.showcaseRoutes),
@@ -140,5 +145,6 @@ export const routes: Routes = [
   },
   { path: '**', redirectTo: '/login' },
 ];
+
 
 

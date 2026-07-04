@@ -184,7 +184,7 @@
               class="radio-input"
               formControlName="travelType"
             />
-            <span>External</span>
+            <span>External Research Project</span>
           </label>
           <label class="radio-wrapper">
             <input
@@ -194,7 +194,37 @@
               class="radio-input"
               formControlName="travelType"
             />
-            <span>Internal</span>
+            <span>Internal Research Project</span>
+          </label>
+          <label class="radio-wrapper">
+            <input
+              type="radio"
+              name="travelType"
+              value="training"
+              class="radio-input"
+              formControlName="travelType"
+            />
+            <span>Training</span>
+          </label>
+          <label class="radio-wrapper">
+            <input
+              type="radio"
+              name="travelType"
+              value="by-invitation"
+              class="radio-input"
+              formControlName="travelType"
+            />
+            <span>By Invitation</span>
+          </label>
+          <label class="radio-wrapper">
+            <input
+              type="radio"
+              name="travelType"
+              value="education-fair-exhibition-fair"
+              class="radio-input"
+              formControlName="travelType"
+            />
+            <span>Education Fair / Exhibition / Fair</span>
           </label>
         </div>
         <app-validation-message
@@ -324,8 +354,8 @@
       ></app-validation-message>
     </div>
 
-    <!-- Budget & Expenses Section -->
-    <app-custom-header title="Budget & Expenses" icon="receipt"></app-custom-header>
+    <!-- Costing Section -->
+    <app-custom-header title="Costing" icon="receipt"></app-custom-header>
 
     <!-- Detailed Breakdown for External Research Project -->
     <div class="form-field">
@@ -395,6 +425,234 @@
           </div>
         }
       </div>
+    </div>
+
+    <!-- Travel Details Section -->
+    <app-custom-header title="Travel Details" icon="flight_takeoff"></app-custom-header>
+
+    <div class="section-fields">
+      <div class="form-field">
+        <label class="form-label">Booking Done By</label>
+        <div class="radio-group radio-group--inline">
+          <label class="radio-wrapper">
+            <input
+              type="radio"
+              name="bookingDoneBy"
+              value="themselves"
+              class="radio-input"
+              formControlName="bookingDoneBy"
+            />
+            <span>Me (The Applicant)</span>
+          </label>
+          <label class="radio-wrapper">
+            <input
+              type="radio"
+              name="bookingDoneBy"
+              value="other"
+              class="radio-input"
+              formControlName="bookingDoneBy"
+            />
+            <span>Other</span>
+          </label>
+        </div>
+
+        @if (travelAuthForm.get('bookingDoneBy')?.value === 'other') {
+          <div class="conditional-field">
+            <label for="bookingDoneByOther" class="form-label"
+              >Please specify who is responsible for the booking</label
+            >
+            <input
+              id="bookingDoneByOther"
+              type="text"
+              class="input--text"
+              maxlength="300"
+              formControlName="bookingDoneByOther"
+            />
+            <app-validation-message
+              [control]="travelAuthForm.get('bookingDoneByOther')"
+            ></app-validation-message>
+          </div>
+        }
+      </div>
+
+      <div class="form-field">
+        <div class="list-section-header">
+          <label class="form-label">Activity Table</label>
+          <button
+            type="button"
+            class="btn btn-primary btn-sm"
+            [disabled]="isFormReadOnly()"
+            (click)="addActivityRow()"
+          >
+            <span class="material-icons">add</span> Add Activity
+          </button>
+        </div>
+
+        @if (activityRows.length > 0) {
+          <div [formGroup]="travelAuthForm">
+            <ng-container formArrayName="activities">
+              <div class="table-scroll">
+                <app-data-table
+                  [columns]="activityColumns"
+                  [rows]="activityRows.controls"
+                  [hoverable]="true"
+                  [striped]="true"
+                >
+                  <ng-template #rowTemplate let-activity let-i="index">
+                    <tr [formGroupName]="i">
+                      <td class="col-no text-muted is-align-center">{{ i + 1 }}</td>
+                      <td>
+                        <input type="date" class="input--text" formControlName="date" />
+                        <app-validation-message [control]="activity.get('date')"></app-validation-message>
+                        @if (
+                          activity.get('date')?.touched &&
+                          activity.get('date')?.errors?.['activityDateRange']
+                        ) {
+                          <div class="error-message">
+                            Activity date must be within the travel start and end dates.
+                          </div>
+                        }
+                      </td>
+                      <td>
+                        <input type="time" class="input--text" formControlName="time" />
+                        <app-validation-message [control]="activity.get('time')"></app-validation-message>
+                      </td>
+                      <td>
+                        <input
+                          type="text"
+                          class="input--text"
+                          placeholder="Describe the activity"
+                          maxlength="300"
+                          formControlName="description"
+                        />
+                        <app-validation-message
+                          [control]="activity.get('description')"
+                        ></app-validation-message>
+                      </td>
+                      <td class="col-actions is-align-center">
+                        <button
+                          type="button"
+                          class="btn-icon btn-icon--delete"
+                          [disabled]="isFormReadOnly()"
+                          (click)="removeActivityRow(i)"
+                          aria-label="Remove activity"
+                        >
+                          <app-table-action-icon action="delete"></app-table-action-icon>
+                        </button>
+                      </td>
+                    </tr>
+                  </ng-template>
+                </app-data-table>
+              </div>
+            </ng-container>
+          </div>
+        } @else {
+          <div class="empty-state">
+            <span class="material-icons">event</span>
+            <p>
+              No activities added yet. Click <strong>Add Activity</strong> to record the travel
+              plan.
+            </p>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Advance Section -->
+    <app-custom-header title="Advance" icon="payments"></app-custom-header>
+
+    <div class="section-fields">
+      <div class="form-field">
+        <label class="form-label">Is there an advance?</label>
+        <div class="radio-group radio-group--inline">
+          <label class="radio-wrapper">
+            <input
+              type="radio"
+              name="isAdvanceRequired"
+              value="yes"
+              class="radio-input"
+              formControlName="isAdvanceRequired"
+            />
+            <span>Yes</span>
+          </label>
+          <label class="radio-wrapper">
+            <input
+              type="radio"
+              name="isAdvanceRequired"
+              value="no"
+              class="radio-input"
+              formControlName="isAdvanceRequired"
+            />
+            <span>No</span>
+          </label>
+        </div>
+      </div>
+
+      @if (travelAuthForm.get('isAdvanceRequired')?.value === 'yes') {
+        <div class="form-field">
+          <label for="advanceReason" class="form-label"
+            >Please explain why the advance is needed</label
+          >
+          <textarea
+            id="advanceReason"
+            class="input--textarea"
+            rows="3"
+            maxlength="300"
+            formControlName="advanceReason"
+          ></textarea>
+          <app-validation-message [control]="travelAuthForm.get('advanceReason')"></app-validation-message>
+        </div>
+      }
+    </div>
+
+    <!-- Colleague Information Section -->
+    <app-custom-header title="Colleague Information" icon="groups"></app-custom-header>
+
+    <div class="section-fields">
+      <div class="form-field">
+        <label class="form-label">Does the applicant have any colleagues involved?</label>
+        <div class="radio-group radio-group--inline">
+          <label class="radio-wrapper">
+            <input
+              type="radio"
+              name="hasColleagues"
+              value="yes"
+              class="radio-input"
+              formControlName="hasColleagues"
+            />
+            <span>Yes</span>
+          </label>
+          <label class="radio-wrapper">
+            <input
+              type="radio"
+              name="hasColleagues"
+              value="no"
+              class="radio-input"
+              formControlName="hasColleagues"
+            />
+            <span>No</span>
+          </label>
+        </div>
+      </div>
+
+      @if (travelAuthForm.get('hasColleagues')?.value === 'yes') {
+        <div class="form-field">
+          <label for="colleagues" class="form-label">Select colleagues from the HR database</label>
+          <app-searchable-dropdown
+            id="colleagues"
+            [options]="colleagueOptions()"
+            [loading]="isColleagueLoading()"
+            [isMulti]="true"
+            [maxSelections]="10"
+            formControlName="colleagues"
+          ></app-searchable-dropdown>
+          <app-note
+            text="You can select up to 10 colleagues from the synchronized HR database."
+            [isTooltip]="false"
+          ></app-note>
+          <app-validation-message [control]="travelAuthForm.get('colleagues')"></app-validation-message>
+        </div>
+      }
     </div>
 
     <!-- Expense Entry Dialog Modal -->

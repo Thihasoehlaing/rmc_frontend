@@ -25,6 +25,8 @@ import {
   inject,
   signal,
   computed,
+  ViewChild,
+  ElementRef,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
@@ -61,6 +63,20 @@ function endAfterStartValidator(group: AbstractControl): ValidationErrors | null
   const e = group.get('endDate')?.value as string | null;
   if (!s || !e) return null;
   return e >= s ? null : { endBeforeStart: true };
+}
+
+/**
+ * There is no backend route to demote an active batch back to "planned" —
+ * only the dedicated /activate and /complete transitions exist — so an
+ * active batch's start date can never legally move into the future. Blocked
+ * here instead of silently allowing an edit the backend can't represent.
+ */
+function activeStartNotFutureValidator(today: () => string) {
+  return (control: AbstractControl): ValidationErrors | null => {
+    const v = control.value as string | null;
+    if (!v) return null;
+    return v > today() ? { activeStartInFuture: true } : null;
+  };
 }
 
 function stageWithinBatchValidator(startFn: () => string, endFn: () => string) {
@@ -101,6 +117,8 @@ export class BatchSittingComponent implements OnInit, OnDestroy {
   private readonly auth = inject(AuthService);
   private readonly destroy$ = new Subject<void>();
 
+  @ViewChild('feedbackBanner') private feedbackBannerRef?: ElementRef<HTMLElement>;
+
   readonly stageColumns: DataTableColumn[] = [
     { key: 'stage', label: 'Stage' },
     { key: 'start', label: 'Opens', width: '24%' },
@@ -138,7 +156,14 @@ export class BatchSittingComponent implements OnInit, OnDestroy {
 
   // ── Computed helpers ──────────────────────────────────────────────────────
 
-  readonly canAddPlanned = computed(() => this.activeBatch() !== null);
+  readonly isCreatingActive = computed(() => this.isEditingActive() && this.activeBatch() === null);
+
+  readonly canStartPlanned = computed(() => this.activeBatch() === null);
+  readonly startPlannedTooltip = computed(() =>
+    this.canStartPlanned()
+      ? 'Start this batch now and make it the active batch.'
+      : 'Cannot start: an active batch already exists. End it first.',
+  );
 
   readonly endBatchTooltip = computed(() => {
     const a = this.activeBatch();
@@ -155,14 +180,19 @@ export class BatchSittingComponent implements OnInit, OnDestroy {
       : 'Cannot retrieve: an active batch already exists. End it first.',
   );
 
-  /** Min startDate for a brand-new planned batch (day after last planned or active endDate). */
+  /**
+   * Min startDate for a brand-new planned batch: day after the last planned
+   * or active endDate, or — if there is no other batch to chain from — at
+   * least tomorrow, approximating "must start at least 1 hour from now" at
+   * day-level granularity (the backend only stores dates, not times).
+   */
   get newPlannedMinStart(): string {
     const sorted = [...this.plannedBatches()].sort((a, b) =>
       a.startDate.localeCompare(b.startDate),
     );
     if (sorted.length) return this.addDay(sorted.at(-1)!.endDate);
     const a = this.activeBatch();
-    return a ? this.addDay(a.endDate) : '';
+    return a ? this.addDay(a.endDate) : this.addDay(this.today);
   }
 
   /** Min startDate when editing a specific planned batch. */
@@ -173,7 +203,7 @@ export class BatchSittingComponent implements OnInit, OnDestroy {
     const idx = sorted.findIndex((b) => b.id === batch.id);
     if (idx > 0) return this.addDay(sorted[idx - 1].endDate);
     const a = this.activeBatch();
-    return a ? this.addDay(a.endDate) : '';
+    return a ? this.addDay(a.endDate) : this.addDay(this.today);
   }
 
   stageTotalPages(): number {
@@ -305,6 +335,7 @@ export class BatchSittingComponent implements OnInit, OnDestroy {
       batch,
       () => this.activeForm?.get('startDate')?.value ?? '',
       () => this.activeForm?.get('endDate')?.value ?? '',
+      true,
     );
     this.wireGlobalDates(this.activeForm);
     this.syncStageEnabled(this.activeForm);
@@ -315,7 +346,7 @@ export class BatchSittingComponent implements OnInit, OnDestroy {
     startFn: () => string,
     endFn: () => string,
   ): void {
-    this.plannedForm = this.makeBatchForm(batch, startFn, endFn);
+    this.plannedForm = this.makeBatchForm(batch, startFn, endFn, false);
     this.wireGlobalDates(this.plannedForm);
     this.syncStageEnabled(this.plannedForm);
   }
@@ -324,6 +355,7 @@ export class BatchSittingComponent implements OnInit, OnDestroy {
     batch: BatchSitting | null,
     startFn: () => string,
     endFn: () => string,
+    isActive: boolean,
   ): FormGroup {
     const stages: Record<string, FormGroup> = {};
     for (const m of WORKFLOW_STAGE_META) {
@@ -333,10 +365,13 @@ export class BatchSittingComponent implements OnInit, OnDestroy {
         { validators: stageWithinBatchValidator(startFn, endFn) },
       );
     }
+    const startDateValidators = isActive
+      ? [Validators.required, activeStartNotFutureValidator(() => this.today)]
+      : [Validators.required];
     return this.fb.group(
       {
         batchName: [batch?.batchName ?? '', [Validators.required, Validators.maxLength(100)]],
-        startDate: [batch?.startDate ?? '', Validators.required],
+        startDate: [batch?.startDate ?? '', startDateValidators],
         endDate: [batch?.endDate ?? '', Validators.required],
         stages: this.fb.group(stages),
       },
@@ -378,6 +413,12 @@ export class BatchSittingComponent implements OnInit, OnDestroy {
 
   startEditActive(): void {
     this.buildActiveForm(this.activeBatch());
+    if (!this.activeBatch()) {
+      // Creating a brand-new active batch starts immediately — the start
+      // date isn't user-editable, it's stamped the moment they hit "Start Batch".
+      this.activeForm.get('startDate')!.setValue(this.today);
+      this.activeForm.get('startDate')!.disable({ emitEvent: false });
+    }
     this.isEditingActive.set(true);
     this.feedback.set(null);
   }
@@ -391,6 +432,7 @@ export class BatchSittingComponent implements OnInit, OnDestroy {
     this.activeForm.markAllAsTouched();
     if (this.activeForm.invalid) {
       this.feedback.set({ type: 'error', text: 'Please fix validation errors before saving.' });
+      this.scrollToFeedback();
       return;
     }
     const fv = this.activeForm.getRawValue();
@@ -497,36 +539,11 @@ export class BatchSittingComponent implements OnInit, OnDestroy {
           this.plannedBatches.update((list) => list.filter((b) => b.id !== completed.id));
 
           this.showEndConfirm.set(false);
-          // Promote next planned batch (earliest by date) to active
-          const sorted = [...this.plannedBatches()].sort((a, b) =>
-            a.startDate.localeCompare(b.startDate),
-          );
-          const nextPlanned = sorted[0];
-          if (nextPlanned) {
-            this.svc
-              .update({ ...nextPlanned, status: 'active', updatedAt: now })
-              .pipe(takeUntil(this.destroy$))
-              .subscribe({
-                next: (saved) => {
-                  this.activeBatch.set(saved);
-                  this.plannedBatches.update((list) => list.filter((b) => b.id !== saved.id));
-                  this.buildActiveForm(saved);
-                  this.feedback.set({
-                    type: 'success',
-                    text: 'Batch ended. Next planned batch is now active.',
-                  });
-                },
-                error: () => {
-                  this.feedback.set({
-                    type: 'error',
-                    text: 'Batch ended, but failed to activate next planned batch.',
-                  });
-                },
-              });
-          } else {
-            this.buildActiveForm(null);
-            this.feedback.set({ type: 'success', text: 'Batch ended and moved to history.' });
-          }
+          // Ending a batch never auto-promotes a planned batch — the next
+          // planned batch only goes active at its own scheduled start date
+          // (or when RMC explicitly clicks "Start" on it).
+          this.buildActiveForm(null);
+          this.feedback.set({ type: 'success', text: 'Batch ended and moved to history.' });
         },
         error: () => this.feedback.set({ type: 'error', text: 'Failed to end batch.' }),
       });
@@ -567,6 +584,7 @@ export class BatchSittingComponent implements OnInit, OnDestroy {
     this.plannedForm.markAllAsTouched();
     if (this.plannedForm.invalid) {
       this.feedback.set({ type: 'error', text: 'Please fix validation errors before saving.' });
+      this.scrollToFeedback();
       return;
     }
     const fv = this.plannedForm.getRawValue();
@@ -620,6 +638,31 @@ export class BatchSittingComponent implements OnInit, OnDestroy {
           error: () => this.feedback.set({ type: 'error', text: 'Failed to create.' }),
         });
     }
+  }
+
+  /** Manually starts a planned batch now (only allowed while no batch is active). */
+  startPlanned(batch: BatchSitting): void {
+    if (!this.canStartPlanned()) return;
+    const now = new Date().toISOString();
+    this.isSaving.set(true);
+    this.svc
+      .activateNow({ ...batch, startDate: this.today, updatedAt: now })
+      .pipe(
+        finalize(() => this.isSaving.set(false)),
+        takeUntil(this.destroy$),
+      )
+      .subscribe({
+        next: (saved) => {
+          this.activeBatch.set(saved);
+          this.plannedBatches.update((list) => list.filter((b) => b.id !== batch.id));
+          this.buildActiveForm(saved);
+          this.feedback.set({
+            type: 'success',
+            text: `${saved.batchName} started and is now the active batch.`,
+          });
+        },
+        error: () => this.feedback.set({ type: 'error', text: 'Failed to start batch.' }),
+      });
   }
 
   deletePlanned(batch: BatchSitting): void {
@@ -679,10 +722,17 @@ export class BatchSittingComponent implements OnInit, OnDestroy {
     if (!this.canRetrieve()) return;
     const now = new Date().toISOString();
     const { endedAt: _removed, ...rest } = batch as BatchSitting & { endedAt?: string };
-    const retrieved: BatchSitting = { ...rest, status: 'active', updatedAt: now };
+    // Retrieving restarts the batch now — its start date is stamped to today,
+    // not left at whatever it was before it was originally completed.
+    const retrieved: BatchSitting = {
+      ...rest,
+      status: 'active',
+      startDate: this.today,
+      updatedAt: now,
+    };
     this.isSaving.set(true);
     this.svc
-      .update(retrieved)
+      .activateNow(retrieved)
       .pipe(
         finalize(() => this.isSaving.set(false)),
         takeUntil(this.destroy$),
@@ -706,6 +756,11 @@ export class BatchSittingComponent implements OnInit, OnDestroy {
 
   hasGlobalError(form: FormGroup): boolean {
     return !!form.errors?.['endBeforeStart'] && !!form.get('endDate')?.touched;
+  }
+
+  hasActiveStartInFuture(form: FormGroup): boolean {
+    const c = form.get('startDate');
+    return !!c?.errors?.['activeStartInFuture'] && !!c?.touched;
   }
 
   hasStageErr(form: FormGroup, key: WorkflowStageKey, err: string): boolean {
@@ -746,6 +801,21 @@ export class BatchSittingComponent implements OnInit, OnDestroy {
 
   private currentDateIso(): string {
     return new Date().toISOString().substring(0, 10);
+  }
+
+  /**
+   * The feedback banner renders at the top of the card while Save sits below a
+   * long stage table — without this, a validation error banner can render
+   * entirely out of the user's current scroll position, making it look like
+   * clicking Save did nothing.
+   */
+  private scrollToFeedback(): void {
+    setTimeout(() => {
+      this.feedbackBannerRef?.nativeElement.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+      });
+    });
   }
 }
 

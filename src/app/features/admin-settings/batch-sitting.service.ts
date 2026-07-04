@@ -1,24 +1,82 @@
 /**
  * batch-sitting.service.ts
- * Mock backend: json-server /batches endpoint.
- * Future integration: replace BASE_URL with environment.apiUrl + '/batches'.
+ *
+ * Wraps the real backend (/api/admin-settings/batches) behind the same public
+ * API the component already expects (loadAll/create/update/delete returning
+ * BatchSitting[]/BatchSitting), so batch-sitting.component.ts needed no changes.
+ *
+ * Backend shape differs from the frontend model in three ways this file bridges:
+ *  1. GET /batches returns {active_batch, planned_batches, completed_batches}
+ *     (grouped) — loadAll() flattens this into a single array, since the
+ *     component does its own grouping via hydrate().
+ *  2. Stage windows are keyed by a human-readable stage_name string on the
+ *     backend (e.g. "HOS First Review"), not the machine key used in
+ *     WORKFLOW_STAGE_META (e.g. 'hos_first_review'). Every RDIG_DEFAULT_STAGES
+ *     label matches a WORKFLOW_STAGE_META label exactly, so the two are mapped
+ *     via that shared label.
+ *  3. There is no single "create/update batch with status" endpoint — creating
+ *     an active vs. planned batch are two different POST routes, and status
+ *     transitions (complete/activate) are their own POST routes separate from
+ *     the general field-editing PUT. update() detects which is being requested
+ *     by comparing the incoming status against the cached previous status.
  */
 
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, switchMap, of, tap, catchError, throwError } from 'rxjs';
-import { BatchSitting, WorkflowStageKey } from '../../core/interfaces/batch-sitting.interface';
+import { BehaviorSubject, Observable, map, of, tap, catchError, throwError, switchMap } from 'rxjs';
+import { environment } from '../../../environments/environment';
+import {
+  BatchSitting,
+  BatchStatus,
+  WORKFLOW_STAGE_META,
+  WorkflowStageKey,
+  WorkflowStageWindow,
+} from '../../core/interfaces/batch-sitting.interface';
 
-const BASE_URL = 'http://localhost:3000/batches';
-const LOCAL_KEY = 'rmc_batches';
-const USE_LOCAL_STORAGE = true;
+const BASE_URL = `${environment.apiUrl.replace(/\/$/, '')}/api/admin-settings/batches`;
 
-function emptyStages(): Record<WorkflowStageKey, { startDate: null; endDate: null }> {
-  const keys: WorkflowStageKey[] = [
-    'hos_first_review', 'applicant_resubmission', 'hos_review_again',
-    'rmc', 'reviewers', 'rmc_again', 'rdig_chair', 'vc', 'ceo',
-  ];
-  return Object.fromEntries(keys.map(k => [k, { startDate: null, endDate: null }])) as Record<WorkflowStageKey, { startDate: null; endDate: null }>;
+interface ApiResponse<T> {
+  success: boolean;
+  message: string;
+  data: T;
+}
+
+interface ApiStageWindow {
+  id: number;
+  stage_name: string;
+  stage_start_date: string | null;
+  stage_end_date: string | null;
+}
+
+interface ApiBatch {
+  id: number;
+  batch_name: string;
+  start_date: string;
+  end_date: string;
+  status: string;
+  created_by: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+  submission_count: number;
+  stage_windows: ApiStageWindow[];
+}
+
+interface ApiBatchListData {
+  active_batch: ApiBatch | null;
+  planned_batches: ApiBatch[];
+  completed_batches: ApiBatch[];
+}
+
+const STAGE_LABEL_TO_KEY: Record<string, WorkflowStageKey> = Object.fromEntries(
+  WORKFLOW_STAGE_META.map((m) => [m.label, m.key]),
+);
+
+function emptyStages(): Record<WorkflowStageKey, WorkflowStageWindow> {
+  const keys: WorkflowStageKey[] = WORKFLOW_STAGE_META.map((m) => m.key);
+  return Object.fromEntries(keys.map((k) => [k, { startDate: null, endDate: null }])) as Record<
+    WorkflowStageKey,
+    WorkflowStageWindow
+  >;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -27,123 +85,210 @@ export class BatchSittingService {
   private batchesSubject = new BehaviorSubject<BatchSitting[]>([]);
   readonly batches$ = this.batchesSubject.asObservable();
 
-  private getLocalList(): BatchSitting[] {
-    const raw = localStorage.getItem(LOCAL_KEY);
-    return raw ? JSON.parse(raw) as BatchSitting[] : [];
-  }
+  // ── Backend <-> frontend model translation ────────────────────────────────
 
-  private saveLocalList(list: BatchSitting[]): void {
-    localStorage.setItem(LOCAL_KEY, JSON.stringify(list));
-  }
-
-  loadAll(): Observable<BatchSitting[]> {
-    if (USE_LOCAL_STORAGE) {
-      const batches = this.getLocalList();
-      this.batchesSubject.next(batches);
-      return of(batches);
+  private toBatchSitting(api: ApiBatch): BatchSitting {
+    const stages = emptyStages();
+    for (const sw of api.stage_windows ?? []) {
+      const key = STAGE_LABEL_TO_KEY[sw.stage_name];
+      if (key) {
+        stages[key] = { startDate: sw.stage_start_date, endDate: sw.stage_end_date };
+      }
     }
 
-    return this.http.get<BatchSitting[]>(BASE_URL).pipe(
-      tap(batches => this.batchesSubject.next(batches)),
-      catchError(err => {
+    // The backend compares status case-insensitively everywhere
+    // (func.lower(Batch.status) == "active", etc.) and the DB has inconsistent
+    // casing as a result (some rows "ACTIVE", others "planned"). The component
+    // does a strict === 'active' check, so normalize here or active batches
+    // silently vanish from every bucket (not active, not planned, not history).
+    const status = (api.status ?? 'planned').toLowerCase() as BatchStatus;
+
+    return {
+      id: api.id,
+      batchName: api.batch_name,
+      status,
+      startDate: api.start_date,
+      endDate: api.end_date,
+      stages,
+      createdAt: api.created_at ?? '',
+      updatedAt: api.updated_at ?? '',
+      createdBy: api.created_by ?? '',
+      // No dedicated ended_at field on the backend — updated_at is stamped the
+      // same moment a batch is completed, so it's a faithful stand-in for the
+      // history-sort ordering the component uses this field for.
+      endedAt: status === 'completed' ? (api.updated_at ?? undefined) : undefined,
+      // submission_count is a number server-side (no per-application IDs are
+      // exposed here); the component only ever reads applicationIds.length,
+      // so a placeholder array of the right length keeps that working.
+      applicationIds: Array.from({ length: api.submission_count ?? 0 }, (_, i) => i),
+    };
+  }
+
+  private toStageWindowsPayload(stages: Record<WorkflowStageKey, WorkflowStageWindow>) {
+    return WORKFLOW_STAGE_META.map((m) => ({
+      stage_name: m.label,
+      stage_start_date: stages[m.key]?.startDate ?? null,
+      stage_end_date: stages[m.key]?.endDate ?? null,
+    }));
+  }
+
+  private toFieldsPayload(batch: Pick<BatchSitting, 'batchName' | 'startDate' | 'endDate' | 'stages'>) {
+    return {
+      batch_name: batch.batchName,
+      start_date: batch.startDate,
+      end_date: batch.endDate,
+      stage_windows: this.toStageWindowsPayload(batch.stages),
+    };
+  }
+
+  private updateCache(updated: BatchSitting): void {
+    const list = this.batchesSubject.getValue();
+    const exists = list.some((b) => b.id === updated.id);
+    const next = exists
+      ? list.map((b) => (b.id === updated.id ? updated : b))
+      : [...list, updated];
+    this.batchesSubject.next(next);
+  }
+
+  // ── Public API (unchanged surface for batch-sitting.component.ts) ────────
+
+  loadAll(): Observable<BatchSitting[]> {
+    return this.http.get<ApiResponse<ApiBatchListData>>(BASE_URL).pipe(
+      map((res) => {
+        const { active_batch, planned_batches, completed_batches } = res.data;
+        const all = [
+          ...(active_batch ? [active_batch] : []),
+          ...(planned_batches ?? []),
+          ...(completed_batches ?? []),
+        ];
+        return all.map((api) => this.toBatchSitting(api));
+      }),
+      tap((batches) => this.batchesSubject.next(batches)),
+      catchError((err) => {
         console.error('[BatchSittingService] Failed to load batches', err);
         return throwError(() => err);
       }),
     );
   }
 
-  getSnapshot(): BatchSitting[] { return this.batchesSubject.getValue(); }
+  getSnapshot(): BatchSitting[] {
+    return this.batchesSubject.getValue();
+  }
 
   /** Returns the currently active batch, or null if none exists. */
   getActiveBatch(): BatchSitting | null {
-    return this.batchesSubject.getValue().find(b => b.status === 'active') ?? null;
+    return this.batchesSubject.getValue().find((b) => b.status === 'active') ?? null;
   }
 
+  /** Creating an active vs. planned batch are two distinct backend routes. */
   create(batch: Omit<BatchSitting, 'id'>): Observable<BatchSitting> {
-    if (USE_LOCAL_STORAGE) {
-      const list = this.getLocalList();
-      const nextId = list.reduce((max, item) => Math.max(max, item.id), 0) + 1;
-      const created = { ...batch, id: nextId } as BatchSitting;
-      const updated = [...list, created];
-      this.saveLocalList(updated);
-      this.batchesSubject.next(updated);
-      return of(created);
-    }
-
-    return this.http.post<BatchSitting>(BASE_URL, batch).pipe(
-      catchError(err => throwError(() => err)),
+    const url = batch.status === 'active' ? `${BASE_URL}/active` : `${BASE_URL}/planned`;
+    return this.http.post<ApiResponse<ApiBatch>>(url, this.toFieldsPayload(batch)).pipe(
+      map((res) => this.toBatchSitting(res.data)),
+      tap((created) => this.updateCache(created)),
+      catchError((err) => throwError(() => err)),
     );
   }
 
-  /** Full replacement PUT. Future: switch to PATCH for partial updates. */
+  /**
+   * A single PUT handles plain field edits (name/dates/stages). Status
+   * transitions go through their own endpoints (/complete, /activate) —
+   * detected here by comparing the incoming status against the cached
+   * previous status, since every call site in the component only ever
+   * changes status OR fields, never both at once.
+   */
   update(batch: BatchSitting): Observable<BatchSitting> {
-    if (USE_LOCAL_STORAGE) {
-      const updated = this.getLocalList().map(item => item.id === batch.id ? batch : item);
-      this.saveLocalList(updated);
-      this.batchesSubject.next(updated);
-      return of(batch);
+    const previousStatus = this.batchesSubject.getValue().find((b) => b.id === batch.id)?.status;
+
+    if (previousStatus && previousStatus !== batch.status) {
+      if (batch.status === 'completed') {
+        return this.http.post<ApiResponse<ApiBatch>>(`${BASE_URL}/${batch.id}/complete`, {}).pipe(
+          map((res) => this.toBatchSitting(res.data)),
+          tap((updated) => this.updateCache(updated)),
+          catchError((err) => throwError(() => err)),
+        );
+      }
+      if (batch.status === 'active') {
+        return this.http.post<ApiResponse<ApiBatch>>(`${BASE_URL}/${batch.id}/activate`, {}).pipe(
+          map((res) => this.toBatchSitting(res.data)),
+          tap((updated) => this.updateCache(updated)),
+          catchError((err) => throwError(() => err)),
+        );
+      }
     }
 
-    return this.http.put<BatchSitting>(`${BASE_URL}/${batch.id}`, batch).pipe(
-      tap(updated => {
-        this.batchesSubject.next(this.getSnapshot().map(b => b.id === updated.id ? updated : b));
-      }),
-      catchError(err => throwError(() => err)),
-    );
+    return this.http
+      .put<ApiResponse<ApiBatch>>(`${BASE_URL}/${batch.id}`, this.toFieldsPayload(batch))
+      .pipe(
+        map((res) => this.toBatchSitting(res.data)),
+        tap((updated) => this.updateCache(updated)),
+        catchError((err) => throwError(() => err)),
+      );
+  }
+
+  /**
+   * Starting a planned batch, or retrieving a completed one, is a field update
+   * (start_date -> today) followed by the dedicated activate route, since
+   * /activate never touches dates and the general PUT never touches status.
+   */
+  activateNow(batch: BatchSitting): Observable<BatchSitting> {
+    return this.http
+      .put<ApiResponse<ApiBatch>>(`${BASE_URL}/${batch.id}`, this.toFieldsPayload(batch))
+      .pipe(
+        switchMap(() =>
+          this.http.post<ApiResponse<ApiBatch>>(`${BASE_URL}/${batch.id}/activate`, {}),
+        ),
+        map((res) => this.toBatchSitting(res.data)),
+        tap((updated) => this.updateCache(updated)),
+        catchError((err) => throwError(() => err)),
+      );
   }
 
   delete(id: number): Observable<void> {
-    if (USE_LOCAL_STORAGE) {
-      const updated = this.getLocalList().filter(item => item.id !== id);
-      this.saveLocalList(updated);
-      this.batchesSubject.next(updated);
-      return of(void 0);
-    }
-
-    return this.http.delete<void>(`${BASE_URL}/${id}`).pipe(
+    return this.http.delete<ApiResponse<ApiBatch>>(`${BASE_URL}/${id}`).pipe(
+      map(() => void 0),
       tap(() => {
-        this.batchesSubject.next(this.getSnapshot().filter(b => b.id !== id));
+        this.batchesSubject.next(this.batchesSubject.getValue().filter((b) => b.id !== id));
       }),
-      catchError(err => throwError(() => err)),
+      catchError((err) => throwError(() => err)),
     );
   }
 
   buildBlankBatch(createdBy: string, status: 'active' | 'planned' = 'active'): Omit<BatchSitting, 'id'> {
     const now = new Date().toISOString();
-    return { batchName: '', status, startDate: '', endDate: '', stages: emptyStages(), createdAt: now, updatedAt: now, createdBy, applicationIds: [] };
+    return {
+      batchName: '',
+      status,
+      startDate: '',
+      endDate: '',
+      stages: emptyStages(),
+      createdAt: now,
+      updatedAt: now,
+      createdBy,
+      applicationIds: [],
+    };
   }
 
   /**
-   * Appends an application ID to the batch's applicationIds array.
-   * Called client-side when an applicant formally submits for the first time.
+   * No backend endpoint exists for manually attaching an application ID to a
+   * batch (submission_count is derived server-side from each request's own
+   * batch_id foreign key) — nothing in the live component calls this, so it
+   * remains a local-cache-only mutation for API-surface compatibility.
    */
   addApplicationId(batchId: number, appId: number): Observable<BatchSitting> {
-    if (USE_LOCAL_STORAGE) {
-      const list = this.getLocalList();
-      const batch = list.find(item => item.id === batchId);
-      if (!batch) {
-        return throwError(() => new Error('Batch not found'));
-      }
-
-      const existing = Array.isArray(batch.applicationIds) ? batch.applicationIds : [];
-      if (existing.includes(appId)) {
-        return of(batch);
-      }
-
-      const updatedBatch: BatchSitting = { ...batch, applicationIds: [...existing, appId] };
-      const updatedList = list.map(item => item.id === batchId ? updatedBatch : item);
-      this.saveLocalList(updatedList);
-      this.batchesSubject.next(updatedList);
-      return of(updatedBatch);
+    const list = this.batchesSubject.getValue();
+    const batch = list.find((item) => item.id === batchId);
+    if (!batch) {
+      return throwError(() => new Error('Batch not found'));
     }
 
-    return this.http.get<BatchSitting>(`${BASE_URL}/${batchId}`).pipe(
-      switchMap(batch => {
-        const existing = Array.isArray(batch.applicationIds) ? batch.applicationIds : [];
-        if (existing.includes(appId)) return of(batch);
-        return this.http.put<BatchSitting>(`${BASE_URL}/${batchId}`, { ...batch, applicationIds: [...existing, appId] });
-      }),
-      catchError(err => throwError(() => err)),
-    );
+    const existing = Array.isArray(batch.applicationIds) ? batch.applicationIds : [];
+    if (existing.includes(appId)) {
+      return of(batch);
+    }
+
+    const updatedBatch: BatchSitting = { ...batch, applicationIds: [...existing, appId] };
+    this.updateCache(updatedBatch);
+    return of(updatedBatch);
   }
 }

@@ -41,7 +41,7 @@
   display: flex;
   flex-direction: column;
   max-height: 90vh;
-  overflow: hidden;
+  overflow: visible;
   animation: dialog-in 340ms var(--ease-bounce) both;
 }
 
@@ -112,8 +112,14 @@
 // ── Scrollable body ──────────────────────────────────────────────────
 .modal-dialog__body {
   padding: var(--space-6);
-  overflow-y: auto;
+  overflow-y: visible;
+  overflow-x: visible;
   flex: 1;
+
+  // Opt-in scrollable body for dialogs with long content
+  &--scrollable {
+    overflow-y: auto;
+  }
 
   // Subtle custom scrollbar
   scrollbar-width: thin;

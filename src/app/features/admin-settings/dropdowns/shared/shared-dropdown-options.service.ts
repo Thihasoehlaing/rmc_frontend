@@ -1,0 +1,276 @@
+import { Injectable, inject } from '@angular/core';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { environment } from '../../../../../environments/environment';
+import { FormCacheService } from '../../../../core/services/form-cache.service';
+
+export interface ApiResponse<T> {
+  success: boolean;
+  message: string;
+  data: T;
+}
+
+export interface Pagination {
+  current_page: number;
+  per_page: number;
+  total_items: number;
+  total_pages: number;
+  has_next: boolean;
+  has_prev: boolean;
+}
+
+export interface PagedResult<T> {
+  items: T[];
+  pagination: Pagination;
+}
+
+export interface DropdownCategory {
+  id: number;
+  category_code: string;
+  category_name: string;
+  is_active: boolean;
+}
+
+export interface SharedForm {
+  id: number;
+  form_code: string;
+  form_name: string;
+}
+
+export interface DropdownOptionRow {
+  id: number;
+  dropdown_category_id: number;
+  name?: string;
+  option_name?: string;
+  status: string;
+  shared_with?: SharedForm[];
+  updated_at?: string | null;
+}
+
+export interface RegionRow {
+  id: number;
+  region_name: string;
+  percentage?: string | number | null;
+  limit_amount?: string | number | null;
+  description?: string | null;
+  is_active: boolean;
+}
+
+export interface FinanceOptionRow {
+  id: number;
+  code: string;
+  description?: string | null;
+  is_active: boolean;
+  form_codes?: string[];
+  created_at?: string | null;
+  updated_at?: string | null;
+}
+
+export interface FormOption {
+  id: number;
+  form_code: string;
+  form_name: string;
+  is_active: boolean;
+}
+
+export interface ListParams {
+  category_code?: string;
+  search?: string;
+  status?: string;
+  form_code?: string;
+  page?: number;
+  per_page?: number;
+}
+
+export interface RegionPayload {
+  region_name: string;
+  percentage?: number | null;
+  limit_amount?: number | null;
+  description?: string;
+  is_active: boolean;
+}
+
+export interface FinanceOptionPayload {
+  code: string;
+  description?: string;
+  is_active: boolean;
+  form_codes: string[];
+}
+
+@Injectable({ providedIn: 'root' })
+export class SharedDropdownOptionsService {
+  private readonly http = inject(HttpClient);
+  private readonly formCache = inject(FormCacheService);
+
+  listCategories(): Observable<ApiResponse<PagedResult<DropdownCategory>>> {
+    return this.http.get<ApiResponse<PagedResult<DropdownCategory>>>(
+      `${environment.apiUrl}/api/admin-settings/dropdown-categories`,
+      { params: new HttpParams().set('page', '1').set('per_page', '500') },
+    );
+  }
+
+  listForms(): Observable<ApiResponse<FormOption[]>> {
+    return this.formCache.getForms();
+  }
+
+  listOptions(params: ListParams): Observable<ApiResponse<PagedResult<DropdownOptionRow>>> {
+    let httpParams = new HttpParams()
+      .set('category_code', params.category_code ?? '')
+      .set('page', String(params.page ?? 1))
+      .set('per_page', String(params.per_page ?? 15));
+
+    if (params.search) {
+      httpParams = httpParams.set('search', params.search);
+    }
+
+    if (params.status && params.status !== 'all') {
+      httpParams = httpParams.set('status', params.status);
+    }
+
+    return this.http.get<ApiResponse<PagedResult<DropdownOptionRow>>>(
+      `${environment.apiUrl}/api/admin-settings/dropdown-options`,
+      { params: httpParams },
+    );
+  }
+
+  listRegions(params: ListParams): Observable<ApiResponse<PagedResult<RegionRow>>> {
+    return this.http.get<ApiResponse<PagedResult<RegionRow>>>(
+      `${environment.apiUrl}/api/admin-settings/regions`,
+      { params: this.toAdminListParams(params) },
+    );
+  }
+
+  createRegion(data: RegionPayload): Observable<ApiResponse<RegionRow>> {
+    return this.http.post<ApiResponse<RegionRow>>(
+      `${environment.apiUrl}/api/admin-settings/regions`,
+      data,
+    );
+  }
+
+  updateRegion(id: number, data: Partial<RegionPayload>): Observable<ApiResponse<RegionRow>> {
+    return this.http.put<ApiResponse<RegionRow>>(
+      `${environment.apiUrl}/api/admin-settings/regions/${id}`,
+      data,
+    );
+  }
+
+  deleteRegion(id: number): Observable<ApiResponse<RegionRow>> {
+    return this.http.delete<ApiResponse<RegionRow>>(
+      `${environment.apiUrl}/api/admin-settings/regions/${id}`,
+    );
+  }
+
+  listProjectAccountCodes(
+    params: ListParams,
+  ): Observable<ApiResponse<PagedResult<FinanceOptionRow>>> {
+    return this.http.get<ApiResponse<PagedResult<FinanceOptionRow>>>(
+      `${environment.apiUrl}/api/admin-settings/project-account-codes`,
+      { params: this.toAdminListParams(params) },
+    );
+  }
+
+  createProjectAccountCode(data: FinanceOptionPayload): Observable<ApiResponse<FinanceOptionRow>> {
+    return this.http.post<ApiResponse<FinanceOptionRow>>(
+      `${environment.apiUrl}/api/admin-settings/project-account-codes`,
+      data,
+    );
+  }
+
+  updateProjectAccountCode(
+    id: number,
+    data: Partial<FinanceOptionPayload>,
+  ): Observable<ApiResponse<FinanceOptionRow>> {
+    return this.http.put<ApiResponse<FinanceOptionRow>>(
+      `${environment.apiUrl}/api/admin-settings/project-account-codes/${id}`,
+      data,
+    );
+  }
+
+  deleteProjectAccountCode(id: number): Observable<ApiResponse<FinanceOptionRow>> {
+    return this.http.delete<ApiResponse<FinanceOptionRow>>(
+      `${environment.apiUrl}/api/admin-settings/project-account-codes/${id}`,
+    );
+  }
+
+  listVoteNumbers(params: ListParams): Observable<ApiResponse<PagedResult<FinanceOptionRow>>> {
+    return this.http.get<ApiResponse<PagedResult<FinanceOptionRow>>>(
+      `${environment.apiUrl}/api/admin-settings/vote-numbers`,
+      { params: this.toAdminListParams(params) },
+    );
+  }
+
+  createVoteNumber(data: FinanceOptionPayload): Observable<ApiResponse<FinanceOptionRow>> {
+    return this.http.post<ApiResponse<FinanceOptionRow>>(
+      `${environment.apiUrl}/api/admin-settings/vote-numbers`,
+      data,
+    );
+  }
+
+  updateVoteNumber(
+    id: number,
+    data: Partial<FinanceOptionPayload>,
+  ): Observable<ApiResponse<FinanceOptionRow>> {
+    return this.http.put<ApiResponse<FinanceOptionRow>>(
+      `${environment.apiUrl}/api/admin-settings/vote-numbers/${id}`,
+      data,
+    );
+  }
+
+  deleteVoteNumber(id: number): Observable<ApiResponse<FinanceOptionRow>> {
+    return this.http.delete<ApiResponse<FinanceOptionRow>>(
+      `${environment.apiUrl}/api/admin-settings/vote-numbers/${id}`,
+    );
+  }
+
+  createOption(data: {
+    dropdown_category_id: number;
+    option_name: string;
+    status: string;
+    form_codes: string[];
+  }): Observable<ApiResponse<DropdownOptionRow>> {
+    return this.http.post<ApiResponse<DropdownOptionRow>>(
+      `${environment.apiUrl}/api/admin-settings/dropdown-options`,
+      data,
+    );
+  }
+
+  updateOption(
+    id: number,
+    data: {
+      option_name?: string;
+      status?: string;
+      form_codes?: string[];
+    },
+  ): Observable<ApiResponse<DropdownOptionRow>> {
+    return this.http.put<ApiResponse<DropdownOptionRow>>(
+      `${environment.apiUrl}/api/admin-settings/dropdown-options/${id}`,
+      data,
+    );
+  }
+
+  deleteOption(id: number): Observable<ApiResponse<DropdownOptionRow>> {
+    return this.http.delete<ApiResponse<DropdownOptionRow>>(
+      `${environment.apiUrl}/api/admin-settings/dropdown-options/${id}`,
+    );
+  }
+
+  private toAdminListParams(params: ListParams): HttpParams {
+    let httpParams = new HttpParams()
+      .set('page', String(params.page ?? 1))
+      .set('per_page', String(params.per_page ?? 15));
+
+    if (params.search) {
+      httpParams = httpParams.set('search', params.search);
+    }
+
+    if (params.status && params.status !== 'all') {
+      httpParams = httpParams.set('status', params.status);
+    }
+
+    if (params.form_code) {
+      httpParams = httpParams.set('form_code', params.form_code);
+    }
+
+    return httpParams;
+  }
+}

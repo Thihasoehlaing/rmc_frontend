@@ -1,8 +1,10 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
+import { tap } from 'rxjs/operators';
 
 import { environment } from '../../../../environments/environment';
+import { FormCacheService } from '../../../core/services/form-cache.service';
 
 export interface ApiResponse<T> {
   success: boolean;
@@ -49,6 +51,7 @@ interface PaginatedData<T> {
 @Injectable({ providedIn: 'root' })
 export class FormsService {
   private readonly http = inject(HttpClient);
+  private readonly formCache = inject(FormCacheService);
   private readonly baseUrl =
     `${environment.apiUrl.replace(/\/$/, '')}/api/settings/forms`;
 
@@ -79,20 +82,27 @@ export class FormsService {
   create(
     payload: ManagedFormPayload,
   ): Observable<ApiResponse<ManagedForm>> {
-    return this.http.post<ApiResponse<ManagedForm>>(this.baseUrl, payload);
+    return this.http
+      .post<ApiResponse<ManagedForm>>(this.baseUrl, payload)
+      .pipe(tap(() => this.refreshFormCache()));
   }
 
   update(
     id: number,
     payload: ManagedFormPayload,
   ): Observable<ApiResponse<ManagedForm>> {
-    return this.http.put<ApiResponse<ManagedForm>>(
-      `${this.baseUrl}/${id}`,
-      payload,
-    );
+    return this.http
+      .put<ApiResponse<ManagedForm>>(`${this.baseUrl}/${id}`, payload)
+      .pipe(tap(() => this.refreshFormCache()));
   }
 
   deactivate(id: number): Observable<ApiResponse<ManagedForm>> {
-    return this.http.delete<ApiResponse<ManagedForm>>(`${this.baseUrl}/${id}`);
+    return this.http
+      .delete<ApiResponse<ManagedForm>>(`${this.baseUrl}/${id}`)
+      .pipe(tap(() => this.refreshFormCache()));
+  }
+
+  private refreshFormCache(): void {
+    this.formCache.refresh().subscribe({ error: () => undefined });
   }
 }

@@ -1,0 +1,332 @@
+.dropdowns-container {
+  min-height: 100vh;
+  padding: var(--space-6) var(--space-8);
+  background: var(--color-background);
+}
+
+.dropdowns-shell,
+.dropdown-options-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.settings-card {
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-xl);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-xs);
+}
+
+.settings-card__header {
+  padding: var(--space-5);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.settings-card__header-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: var(--space-4);
+  align-items: center;
+}
+
+.back-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--space-8);
+  height: var(--space-8);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  color: var(--color-primary);
+  cursor: pointer;
+}
+
+.card__title {
+  margin: 0;
+  color: var(--color-primary);
+  font-size: var(--fs-xl);
+  font-weight: var(--fw-semibold);
+}
+
+.settings-card__subtitle {
+  margin: var(--space-1) 0 0;
+  color: var(--color-text-secondary);
+}
+
+.settings-card__content {
+  padding: var(--space-5);
+}
+
+.dropdown-category-filter {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  width: 100%;
+}
+
+.category-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.category-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 52px;
+  min-width: 0;
+  padding: 0 var(--space-3);
+  border: 0;
+  border-bottom: 3px solid transparent;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: var(--fs-base);
+  font-weight: var(--fw-semibold);
+  line-height: 1.2;
+  text-align: center;
+  cursor: pointer;
+  transition:
+    background var(--transition-fast) var(--ease-default),
+    color var(--transition-fast) var(--ease-default),
+    box-shadow var(--transition-fast) var(--ease-default);
+}
+
+.category-chip:hover:not(:disabled) {
+  background: var(--color-surface-hover);
+  color: var(--color-primary);
+}
+
+.category-chip.is-active {
+  border-bottom-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.category-icon {
+  flex-shrink: 0;
+  font-size: 1.1rem;
+}
+
+.category-label {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.dropdown-options-results {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.shared-options-table {
+  overflow-x: auto;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 900px;
+}
+
+th,
+td {
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--color-label);
+  text-align: left;
+  vertical-align: middle;
+}
+
+th {
+  background: var(--color-background-secondary);
+  font-weight: var(--fw-semibold);
+}
+
+tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.option-name-cell {
+  font-weight: var(--fw-medium);
+}
+
+.row--inactive .option-name-cell {
+  color: var(--color-text-muted);
+}
+
+.status-chip,
+.shared-with-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 var(--space-3);
+  border-radius: 999px;
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+}
+
+.status-chip--active {
+  background: rgba(46, 125, 50, 0.1);
+  color: #2e7d32;
+}
+
+.status-chip--inactive {
+  background: rgba(198, 40, 40, 0.1);
+  color: #c62828;
+}
+
+.shared-with-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.shared-with-chip {
+  gap: var(--space-1);
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+.shared-with-chip .material-icons {
+  font-size: 1rem;
+}
+
+.shared-with-empty {
+  color: var(--color-text-muted);
+}
+
+.actions-heading,
+.actions-cell {
+  text-align: center;
+}
+
+.table-actions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+}
+
+.table-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-primary);
+  cursor: pointer;
+  transition:
+    background var(--transition-fast) var(--ease-default),
+    color var(--transition-fast) var(--ease-default),
+    transform var(--transition-fast) var(--ease-default);
+}
+
+.table-action:hover,
+.table-action:focus-visible,
+.table-action:active {
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+.table-action:active {
+  transform: scale(0.96);
+}
+
+.table-action:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.table-action--success {
+  color: var(--color-success-dark);
+}
+
+.table-action--success:hover,
+.table-action--success:focus-visible,
+.table-action--success:active {
+  background: var(--color-success-light);
+  color: var(--color-success-dark);
+}
+
+.table-action--warning {
+  color: var(--color-warning-dark);
+}
+
+.table-action--warning:hover,
+.table-action--warning:focus-visible,
+.table-action--warning:active {
+  background: var(--color-warning-light);
+  color: var(--color-warning-dark);
+}
+
+.table-action--danger {
+  color: var(--color-error-dark);
+}
+
+.table-action--danger:hover,
+.table-action--danger:focus-visible,
+.table-action--danger:active {
+  background: var(--color-error-light);
+  color: var(--color-error-dark);
+}
+
+.empty-state,
+.delete-confirmation {
+  padding: var(--space-4);
+  color: var(--color-text-secondary);
+  text-align: center;
+}
+
+.delete-confirmation {
+  display: flex;
+  gap: var(--space-3);
+  text-align: left;
+}
+
+.delete-icon {
+  color: var(--color-danger);
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+}
+
+@media (max-width: 920px) {
+  .dropdowns-container {
+    padding: var(--space-4);
+  }
+
+  .settings-card__header-row {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .settings-header-action {
+    grid-column: 1 / -1;
+    justify-self: stretch;
+  }
+
+  .category-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .category-list {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { environment } from '../../../../../environments/environment';
+import { FormCacheService } from '../../../../core/services/form-cache.service';
 import { BehaviorSubject, Observable, of, forkJoin } from 'rxjs';
 import { map, tap, catchError, switchMap } from 'rxjs/operators';
 
@@ -103,6 +104,7 @@ type StoreState = Record<DropdownCategoryKey, DropdownOptionEntityEntity[]>;
 @Injectable({ providedIn: 'root' })
 export class RdigDropdownOptionsService {
   private readonly http = inject(HttpClient);
+  private readonly formCache = inject(FormCacheService);
 
   private store = new BehaviorSubject<StoreState>({
     research_cluster: [],
@@ -151,7 +153,10 @@ export class RdigDropdownOptionsService {
         break;
 
       case 'type_of_organisation':
-        fetch$ = this.http.get<ApiResponse<RawDropdownOption[]>>(`${environment.apiUrl}/api/dropdowns/TYPE_OF_ORGANISATION/options`).pipe(
+        fetch$ = this.http.get<ApiResponse<RawDropdownOption[]>>(
+          `${environment.apiUrl}/api/dropdowns/TYPE_OF_ORGANISATION/options`,
+          { params: new HttpParams().set('form_code', 'RDIG') },
+        ).pipe(
           map((r) => (r.data ?? []).map((o) => ({
             id: o.id,
             optionName: o.option_name,
@@ -276,7 +281,9 @@ export class RdigDropdownOptionsService {
   }
 
   adminListTypeOfOrg(params: AdminListParams): Observable<ApiResponse<AdminPagedResult<AdminTypeOfOrg>>> {
-    const p = this.buildParams(params).set('category_code', 'TYPE_OF_ORGANISATION');
+    const p = this.buildParams(params)
+      .set('category_code', 'TYPE_OF_ORGANISATION')
+      .set('form_code', 'RDIG');
     return this.http.get<ApiResponse<AdminPagedResult<AdminTypeOfOrg>>>(
       `${environment.apiUrl}/api/admin-settings/dropdown-options`,
       { params: p },
@@ -284,7 +291,7 @@ export class RdigDropdownOptionsService {
   }
 
   listForms(): Observable<ApiResponse<FormOption[]>> {
-    return this.http.get<ApiResponse<FormOption[]>>(`${environment.apiUrl}/api/forms`);
+    return this.formCache.getForms();
   }
 
   // ─── Admin create ─────────────────────────────────────────────────────────

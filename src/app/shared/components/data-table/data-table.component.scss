@@ -43,7 +43,7 @@ thead th {
   text-transform: none;
   color: var(--color-label);
   font-weight: var(--fw-semibold);
-  background: #f7f8fa;
+  background: var(--color-table-header);
   border-bottom: 1px solid #edf0f3;
 
   &:first-child {

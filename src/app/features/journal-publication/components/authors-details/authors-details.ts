@@ -11,7 +11,6 @@ import {
   DataTableComponent,
   DataTableColumn,
 } from '../../../../shared/components/data-table/data-table.component';
-import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
 import { NoteComponent } from '../../../../shared/components/note/note.component';
 import {
   JournalFormData,
@@ -36,7 +35,6 @@ import { TableActionIconComponent } from '../../../../shared/components/table-ac
     ValidationMessageComponent,
     ActionButtonComponent,
     DataTableComponent,
-    PaginationComponent,
     NoteComponent,
   ],
 })

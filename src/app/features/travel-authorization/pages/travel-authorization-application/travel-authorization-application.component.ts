@@ -1,13 +1,17 @@
-import { Component, inject, OnInit, signal, computed } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
+  AbstractControl,
   FormBuilder,
+  FormArray,
   FormGroup,
   ReactiveFormsModule,
   Validators,
   FormControl,
-  AbstractControl,
+  ValidatorFn,
 } from '@angular/forms';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { DropdownOption } from '../../../../core/interfaces/components.interface';
 import { SearchableDropdownComponent } from '../../../../shared/components/searchable-dropdown/searchable-dropdown.component';
 import { ValidationMessageComponent } from '../../../../shared/components/validation-message/validation-message.component';
 import { CustomHeaderComponent } from '../../../../shared/components/custom-header/custom-header.component';
@@ -25,6 +29,7 @@ import {
   GuidelineContext,
 } from '../../../../shared/components/form-main-title/form-main-title.component';
 import { ActivatedRoute } from '@angular/router';
+import { StaffDirectoryService, StaffRecord } from '../../../settings/staff-directory/staff-directory.service';
 
 import { TableActionIconComponent } from '../../../../shared/components/table-action-icon/table-action-icon.component';
 
@@ -57,6 +62,8 @@ interface FunctionalAreaOption {
 export class TravelAuthorizationApplicationComponent implements OnInit {
   private fb = inject(FormBuilder);
   private route = inject(ActivatedRoute);
+  private readonly staffDirectoryService = inject(StaffDirectoryService, { optional: true });
+  private readonly destroyRef = inject(DestroyRef);
   readonly guidelineContext: GuidelineContext = this.route.snapshot.queryParamMap.has('id')
     ? 'existing-application'
     : 'new-application';
@@ -69,6 +76,16 @@ export class TravelAuthorizationApplicationComponent implements OnInit {
   selectedFile: File | null = null;
   editExpenseIndex: number | null = null;
   isSubmitting = signal(false);
+  readonly colleagueOptions = signal<DropdownOption<number>[]>([]);
+  readonly isColleagueLoading = signal(false);
+
+  readonly activityColumns: readonly DataTableColumn[] = [
+    { key: 'index', label: '#', width: '60px', align: 'center' },
+    { key: 'date', label: 'Date', width: '160px' },
+    { key: 'time', label: 'Time', width: '140px' },
+    { key: 'description', label: 'Description' },
+    { key: 'actions', label: 'Actions', width: '100px', align: 'center' },
+  ];
 
   // Comment visibility toggles for all 7 roles
   showHosComments = signal(false);
@@ -170,6 +187,8 @@ export class TravelAuthorizationApplicationComponent implements OnInit {
   ngOnInit() {
     this.initializeForm();
     this.initializeExpenseForm();
+    this.loadColleagueOptions();
+    this.setupConditionalFieldHandlers();
     // Update form disabled state based on initial status
     this.updateFormDisabledState();
   }
@@ -223,6 +242,7 @@ export class TravelAuthorizationApplicationComponent implements OnInit {
       }
     } else {
       this.travelAuthForm.enable({ emitEvent: false });
+      this.syncConditionalFieldStates();
     }
   }
 
@@ -500,6 +520,10 @@ export class TravelAuthorizationApplicationComponent implements OnInit {
     return this.travelAuthForm.get(path) as FormControl;
   }
 
+  get activityRows(): FormArray {
+    return this.travelAuthForm.get('activities') as FormArray;
+  }
+
   private initializeExpenseForm() {
     this.expenseForm = this.fb.group({
       accountCode: ['', [Validators.required]],
@@ -526,6 +550,13 @@ export class TravelAuthorizationApplicationComponent implements OnInit {
       departureDate: ['', [Validators.required]],
       returnDate: ['', [Validators.required]],
       reasonForRequest: ['', [Validators.required]],
+      activities: this.fb.array([]),
+      bookingDoneBy: ['themselves', [Validators.required]],
+      bookingDoneByOther: [{ value: '', disabled: true }, [Validators.maxLength(300)]],
+      isAdvanceRequired: ['no', [Validators.required]],
+      advanceReason: [{ value: '', disabled: true }, [Validators.maxLength(300)]],
+      hasColleagues: ['no', [Validators.required]],
+      colleagues: [{ value: [], disabled: true }, [Validators.required, Validators.maxLength(10)]],
       staffParticipation: [[], [Validators.required]],
       programmeLocation: ['', [Validators.required]],
       declarationAgreed: [false, Validators.requiredTrue],
@@ -543,6 +574,165 @@ export class TravelAuthorizationApplicationComponent implements OnInit {
         cooComment: ['', [Validators.maxLength(500)]],
       }),
     });
+
+    this.activityRows.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.updateActivityDateValidators());
+
+    this.travelAuthForm
+      .get('departureDate')
+      ?.valueChanges.pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.updateActivityDateValidators());
+
+    this.travelAuthForm
+      .get('returnDate')
+      ?.valueChanges.pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.updateActivityDateValidators());
+  }
+
+  private setupConditionalFieldHandlers(): void {
+    this.travelAuthForm
+      .get('bookingDoneBy')
+      ?.valueChanges.pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.syncConditionalFieldStates());
+
+    this.travelAuthForm
+      .get('isAdvanceRequired')
+      ?.valueChanges.pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.syncConditionalFieldStates());
+
+    this.travelAuthForm
+      .get('hasColleagues')
+      ?.valueChanges.pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.syncConditionalFieldStates());
+
+    this.syncConditionalFieldStates();
+  }
+
+  private syncConditionalFieldStates(): void {
+    if (!this.travelAuthForm || this.isFormReadOnly()) {
+      return;
+    }
+
+    const bookingDoneBy = this.travelAuthForm.get('bookingDoneBy')?.value;
+    const bookingDoneByOther = this.travelAuthForm.get('bookingDoneByOther');
+    if (bookingDoneBy === 'other') {
+      bookingDoneByOther?.setValidators([Validators.required, Validators.maxLength(300)]);
+      bookingDoneByOther?.enable({ emitEvent: false });
+    } else {
+      bookingDoneByOther?.setValidators([Validators.maxLength(300)]);
+      bookingDoneByOther?.reset('', { emitEvent: false });
+      bookingDoneByOther?.disable({ emitEvent: false });
+    }
+    bookingDoneByOther?.updateValueAndValidity({ emitEvent: false });
+
+    const isAdvanceRequired = this.travelAuthForm.get('isAdvanceRequired')?.value;
+    const advanceReason = this.travelAuthForm.get('advanceReason');
+    if (isAdvanceRequired === 'yes') {
+      advanceReason?.setValidators([Validators.required, Validators.maxLength(300)]);
+      advanceReason?.enable({ emitEvent: false });
+    } else {
+      advanceReason?.setValidators([Validators.maxLength(300)]);
+      advanceReason?.reset('', { emitEvent: false });
+      advanceReason?.disable({ emitEvent: false });
+    }
+    advanceReason?.updateValueAndValidity({ emitEvent: false });
+
+    const hasColleagues = this.travelAuthForm.get('hasColleagues')?.value;
+    const colleagues = this.travelAuthForm.get('colleagues');
+    if (hasColleagues === 'yes') {
+      colleagues?.enable({ emitEvent: false });
+    } else {
+      colleagues?.reset([], { emitEvent: false });
+      colleagues?.disable({ emitEvent: false });
+    }
+  }
+
+  private loadColleagueOptions(): void {
+    if (!this.staffDirectoryService) {
+      this.isColleagueLoading.set(false);
+      return;
+    }
+
+    this.isColleagueLoading.set(true);
+
+    this.staffDirectoryService
+      .list({ page: 1, perPage: 1000 })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (response) => {
+          const options = (response.data.items ?? [])
+            .filter((staff) => staff.is_active)
+            .map((staff) => this.toColleagueOption(staff))
+            .sort((left, right) => left.label.localeCompare(right.label));
+
+          this.colleagueOptions.set(options);
+          this.isColleagueLoading.set(false);
+        },
+        error: () => {
+          this.colleagueOptions.set([]);
+          this.isColleagueLoading.set(false);
+        },
+      });
+  }
+
+  private toColleagueOption(staff: StaffRecord): DropdownOption<number> {
+    const label =
+      staff.fullname?.trim() || staff.label?.trim() || staff.email?.trim() || staff.username;
+
+    return {
+      value: staff.id,
+      label,
+      displayLabel: staff.staff_code || staff.email || staff.department || undefined,
+    };
+  }
+
+  private updateActivityDateValidators(): void {
+    if (!this.activityRows.length) {
+      return;
+    }
+
+    for (const row of this.activityRows.controls) {
+      row.get('date')?.updateValueAndValidity({ emitEvent: false });
+    }
+
+    this.activityRows.updateValueAndValidity({ emitEvent: false });
+  }
+
+  private activityDateWithinTravelRangeValidator(): ValidatorFn {
+    return (control: AbstractControl) => {
+      const activityDate = String(control.value ?? '').trim();
+      const departureDate = String(this.travelAuthForm?.get('departureDate')?.value ?? '').trim();
+      const returnDate = String(this.travelAuthForm?.get('returnDate')?.value ?? '').trim();
+
+      if (!activityDate || !departureDate || !returnDate) {
+        return null;
+      }
+
+      if (activityDate < departureDate || activityDate > returnDate) {
+        return { activityDateRange: true };
+      }
+
+      return null;
+    };
+  }
+
+  private createActivityRow(): FormGroup {
+    return this.fb.group({
+      date: ['', [Validators.required, this.activityDateWithinTravelRangeValidator()]],
+      time: ['', [Validators.required]],
+      description: ['', [Validators.required, Validators.maxLength(300)]],
+    });
+  }
+
+  addActivityRow(): void {
+    this.activityRows.push(this.createActivityRow());
+    this.activityRows.updateValueAndValidity({ emitEvent: false });
+  }
+
+  removeActivityRow(index: number): void {
+    this.activityRows.removeAt(index);
+    this.activityRows.updateValueAndValidity({ emitEvent: false });
   }
 
   get isExternalTravel(): boolean {

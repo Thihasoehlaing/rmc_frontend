@@ -15,13 +15,18 @@ export const adminSettingsRoutes: Routes = [
   },
   {
     path: 'dropdowns',
-    loadComponent: () =>
-      import('./dropdowns/dropdowns.component').then(m => m.DropdownsComponent),
-  },
-  {
-    path: 'rdig-dropdown-options',
-    loadComponent: () =>
-      import('./dropdowns/dropdowns.component').then(m => m.DropdownsComponent),
+    children: [
+      {
+        path: '',
+        loadComponent: () =>
+          import('./dropdowns/dropdowns.component').then(m => m.DropdownsComponent),
+      },
+      {
+        path: 'rdig-dropdown-options',
+        loadComponent: () =>
+          import('./dropdowns/dropdowns.component').then(m => m.DropdownsComponent),
+      },
+    ],
   },
   {
     path: 'batches',

@@ -33,20 +33,17 @@ interface StaffAccessRecord {
 })
 export class StaffAccessComponent {
   readonly columns: DataTableColumn[] = [
-    { key: 'name', label: 'Staff Name', width: '20rem' },
-    { key: 'staffId', label: 'Staff ID', width: '7rem' },
-    { key: 'department', label: 'Department', width: '10rem' },
-    { key: 'role', label: 'Role', width: '11rem' },
-    { key: 'email', label: 'Email', width: '15rem' },
-    { key: 'status', label: 'Status', width: '8rem', align: 'center', headerAlign: 'center' },
-    { key: 'blockedDate', label: 'Blocked Date', sortable: true, width: '10rem' },
-    { key: 'reason', label: 'Reason', width: '15rem' },
+    { key: 'name', label: 'Staff Name', width: '24rem' },
+    { key: 'department', label: 'Department', width: '14rem' },
+    { key: 'email', label: 'Email', width: '18rem' },
+    { key: 'status', label: 'Status', width: '9rem', align: 'center', headerAlign: 'center' },
+    { key: 'blockedDate', label: 'Blocked Date', sortable: true, width: '12rem' },
     {
       key: 'actions',
       label: 'Actions',
-      width: '8rem',
-      align: 'center',
-      headerAlign: 'center',
+      width: '132px',
+      align: 'right',
+      headerAlign: 'right',
     },
   ];
   readonly staffRecords = signal<StaffAccessRecord[]>([
@@ -289,6 +286,7 @@ export class StaffAccessComponent {
     return `${day} ${month} ${year}`;
   }
 }
+
 
 
 

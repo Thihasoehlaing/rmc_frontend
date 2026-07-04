@@ -16,7 +16,6 @@ import {
   DataTableComponent,
   DataTableColumn,
 } from '../../../../../shared/components/data-table/data-table.component';
-import { PaginationComponent } from '../../../../../shared/components/pagination/pagination.component';
 import { DialogComponent } from '../../../../../shared/components/dialog/dialog.component';
 import { CustomSubheaderComponent } from '../../../../../shared/components/custom-subheader/custom-subheader.component';
 import { CustomHeaderComponent } from '../../../../../shared/components/custom-header/custom-header.component';
@@ -46,7 +45,6 @@ import { TableActionIconComponent } from '../../../../../shared/components/table
     CharacterCounterComponent,
     DataTableComponent,
     DialogComponent,
-    PaginationComponent,
     CustomHeaderComponent,
     CustomSubheaderComponent,
   ],

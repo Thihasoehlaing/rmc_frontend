@@ -10,54 +10,30 @@ export interface ApiResponse<T> {
   data: T;
 }
 
-export interface GuidelineBlockApi {
-  id: number;
-  guideline_id: number;
-  block_type: string;
-  block_content: string;
-  display_order: number;
-  background_token: string | null;
-  text_token: string | null;
-  font_size_token: string | null;
-  font_weight_token: string | null;
-}
-
+/**
+ * One guideline per form: {form_id, title, content_html, is_active}.
+ * content_html is only present on the detail (get-by-id) response — the list
+ * endpoint omits it to keep list payloads small.
+ */
 export interface GuidelineApi {
   id: number;
   form_id: number;
-  form_code: string;
-  form_name: string;
-  guideline_title: string | null;
-  button_text: string | null;
+  form_code: string | null;
+  form_name: string | null;
+  title: string;
   is_active: boolean;
-  background_token: string | null;
-  text_token: string | null;
-  button_token: string | null;
   created_by: string | null;
   created_at: string | null;
   updated_by: string | null;
   updated_at: string | null;
-  block_count: number;
-  blocks?: GuidelineBlockApi[];
+  content_html?: string;
 }
 
 export interface GuidelinePayload {
-  form_code: string;
-  guideline_title: string;
-  button_text: string;
-  is_active: boolean;
-  background_token: string;
-  text_token: string;
-  button_token: string;
-  blocks: Array<{
-    block_type: string;
-    block_content: string;
-    display_order: number;
-    background_token: string | null;
-    text_token: string | null;
-    font_size_token: string | null;
-    font_weight_token: string | null;
-  }>;
+  form_id: number;
+  title: string;
+  content_html: string;
+  is_active?: boolean;
 }
 
 export interface GuidelinePagination {
@@ -113,23 +89,14 @@ export class GuidelinesService {
     return this.http.post<ApiResponse<GuidelineApi>>(this.baseUrl, payload);
   }
 
+  /** The backend's PUT accepts a partial body — only the given fields are changed. */
   update(
     id: number,
-    payload: GuidelinePayload,
+    payload: Partial<GuidelinePayload>,
   ): Observable<ApiResponse<GuidelineApi>> {
     return this.http.put<ApiResponse<GuidelineApi>>(
       `${this.baseUrl}/${id}`,
       payload,
-    );
-  }
-
-  updateStatus(
-    id: number,
-    isActive: boolean,
-  ): Observable<ApiResponse<GuidelineApi>> {
-    return this.http.patch<ApiResponse<GuidelineApi>>(
-      `${this.baseUrl}/${id}/status`,
-      { is_active: isActive },
     );
   }
 

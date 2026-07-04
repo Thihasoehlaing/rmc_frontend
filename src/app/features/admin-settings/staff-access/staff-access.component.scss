@@ -1,18 +1,17 @@
 .staff-access-page {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: var(--space-6);
   min-height: auto;
-  padding: var(--space-5) var(--space-6) var(--space-6);
-  background: transparent;
+  padding: var(--space-6) var(--space-8) var(--space-8);
+  background: var(--color-background);
 }
 
 .staff-access-page__header {
   display: flex;
-  align-items: flex-start;
+  align-items: flex-end;
   justify-content: space-between;
   gap: var(--space-4);
-  background: transparent;
 }
 
 .staff-access-page__title-wrap {
@@ -25,94 +24,101 @@
 .staff-access-page__title {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-3);
+  gap: var(--space-2);
   margin: 0;
   color: var(--color-label);
   font-size: var(--fs-2xl);
   font-weight: var(--fw-semibold);
-  line-height: 1.2;
+  line-height: 1.1;
 
   .material-icons {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: var(--space-8);
-    height: var(--space-8);
-    border-radius: var(--radius-full);
-    background: var(--color-primary-light);
     color: var(--color-primary);
-    font-size: 20px;
+    font-size: 32px;
+    line-height: 1;
   }
 }
 
 .staff-access-page__subtitle {
   margin: 0;
+  max-width: 980px;
   color: var(--color-text-muted);
-  font-size: var(--fs-sm);
+  font-size: var(--fs-base);
+  line-height: 1.5;
 }
 
-.staff-access-page__blocked-count {
-  color: var(--color-error);
-  font-weight: var(--fw-semibold);
-}
-
-.staff-access-page__source {
+.staff-access-summary {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
   gap: var(--space-2);
-  min-height: 38px;
+  min-height: 44px;
   padding: 0 var(--space-4);
   border: 1px solid var(--border-default);
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-lg);
   background: white;
+  box-shadow: var(--shadow-xs);
+  white-space: nowrap;
+}
+
+.staff-access-summary__value {
+  color: var(--color-error-dark);
+  font-size: var(--fs-xl);
+  font-weight: var(--fw-bold);
+  line-height: 1;
+}
+
+.staff-access-summary__label {
   color: var(--color-text-muted);
   font-size: var(--fs-sm);
-  text-decoration: none;
-  white-space: nowrap;
-
-  .material-icons {
-    font-size: 18px;
-  }
-
-  &:hover {
-    background: var(--color-surface-hover);
-    border-color: var(--border-hover);
-  }
+  font-weight: var(--fw-semibold);
 }
 
 :host ::ng-deep app-submissions-search {
   margin: 0;
   padding: var(--space-4);
   border: 1px solid var(--border-default);
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-lg);
   background: white;
   box-shadow: var(--shadow-xs);
 }
 
+:host ::ng-deep app-submissions-search .submissions-search-top-row {
+  display: none;
+}
+
 :host ::ng-deep app-submissions-search .submissions-search-controls {
-  display: grid;
-  grid-template-columns: minmax(18rem, 1fr) minmax(12rem, 15rem) minmax(11rem, 14rem) auto;
+  display: flex;
   align-items: center;
   gap: var(--space-3);
+  flex-wrap: wrap;
 }
 
 :host ::ng-deep app-submissions-search .submissions-search {
-  width: 100%;
-  max-width: none;
+  flex: 0 1 300px;
+  min-width: 240px;
 }
 
 :host ::ng-deep app-submissions-search .submissions-search--focused,
 :host ::ng-deep app-submissions-search .submissions-search:focus-within {
-  width: 100%;
+  flex-basis: 380px;
 }
 
 :host ::ng-deep app-submissions-search .submissions-search-filters {
-  display: contents;
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  flex: 1 1 auto;
+  min-width: 18rem;
+}
+
+:host ::ng-deep app-submissions-search .submissions-search-filters [search-filters] {
+  flex: 0 0 auto;
+  width: auto;
+  min-width: 8.75rem;
 }
 
 :host ::ng-deep app-submissions-search [search-filters] {
   display: block;
+  position: relative;
   min-width: 0;
 }
 
@@ -130,24 +136,24 @@
   height: 38px;
   min-height: 38px;
   padding-block: 0;
-  padding-inline: var(--space-4) var(--space-9);
+  padding-inline: var(--space-3) var(--space-8);
   border: 1px solid var(--border-default);
   border-radius: var(--radius-full);
   background-color: white;
   color: var(--color-label);
   font-size: var(--fs-sm);
   line-height: 38px;
-}
 
-:host ::ng-deep app-submissions-search [search-filters] .input--select:hover {
-  border-color: color-mix(in srgb, var(--color-primary) 24%, var(--border-default));
-  box-shadow: var(--shadow-sm);
-}
+  &:hover {
+    border-color: color-mix(in srgb, var(--color-primary) 24%, var(--border-default));
+    box-shadow: var(--shadow-sm);
+  }
 
-:host ::ng-deep app-submissions-search [search-filters] .input--select:focus {
-  border-color: var(--color-primary);
-  box-shadow: var(--input-shadow-focus);
-  outline: none;
+  &:focus {
+    border-color: var(--color-primary);
+    box-shadow: var(--input-shadow-focus);
+    outline: none;
+  }
 }
 
 :host ::ng-deep app-submissions-search .submissions-search-actions {
@@ -159,99 +165,236 @@
 .staff-access-table-shell {
   width: 100%;
   min-width: 0;
-  margin-top: var(--space-2);
-  background: transparent;
+  overflow-x: auto;
 }
 
-:host ::ng-deep .staff-access-table-shell app-data-table .data-table,
-:host ::ng-deep .staff-access-table-shell app-data-table .data-table__scroll {
-  background: transparent;
-  box-shadow: none;
+
+:host ::ng-deep .staff-access-table-shell app-data-table th:first-child,
+:host ::ng-deep .staff-access-table-shell app-data-table td:first-child {
+  text-align: left;
+  padding-left: var(--space-4);
 }
 
+:host ::ng-deep .staff-access-table-shell .data-table__stacked {
+  justify-content: flex-start;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  margin: 0;
+}
+
+:host ::ng-deep .staff-access-table-shell .data-table__title {
+  text-align: left;
+}
 :host ::ng-deep .staff-access-table-shell app-data-table table {
   width: 100%;
-  min-width: 980px;
+  min-width: 920px;
 }
 
-.staff-access-id-chip {
-  display: inline-flex;
-  padding: var(--space-1) var(--space-2);
-  border-radius: var(--radius-md);
-  background: var(--color-surface-hover);
+:host ::ng-deep .staff-access-table-shell app-data-table th:last-child,
+:host ::ng-deep .staff-access-table-shell app-data-table td:last-child {
+  width: 132px;
+  min-width: 132px;
+  padding-inline: var(--space-3);
+}
+
+
+:host ::ng-deep .staff-access-table-shell app-data-table th:nth-child(5),
+:host ::ng-deep .staff-access-table-shell app-data-table td:nth-child(5) {
+  text-align: left;
+}
+
+:host ::ng-deep .staff-access-table-shell app-data-table td:nth-child(5) {
+  vertical-align: middle;
+}
+:host ::ng-deep .staff-access-table-shell app-data-table th:last-child {
+  text-align: center;
+}
+
+.staff-access-text,
+.staff-access-email {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.staff-access-email {
+  color: var(--color-text-muted);
+}
+
+
+.staff-access-muted-badge {
+  display: inline;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
   color: var(--color-text-muted);
   font-size: var(--fs-xs);
-  letter-spacing: 0.04em;
+  font-weight: var(--fw-semibold);
 }
-
-.staff-access-action {
-  min-width: var(--space-12);
-  justify-content: center;
-}
-
-.staff-access-action .material-icons {
-  font-size: 16px;
-}
-
-.staff-access-action--block {
-  color: var(--color-error);
-  border-color: var(--color-error);
-}
-
-.staff-access-action--block:hover:not(:disabled) {
-  background: var(--color-error-light);
-}
-
-.staff-access-action--unblock {
-  color: var(--color-success-dark);
-  border-color: var(--color-success);
-}
-
-.staff-access-action--unblock:hover:not(:disabled) {
-  background: var(--color-success-light);
+.center {
+  text-align: center;
 }
 
 .staff-access-row--blocked {
   background: var(--color-surface-hover);
 }
 
-.staff-access-footer {
-  margin: 0;
-  color: var(--color-text-muted);
-  font-size: var(--fs-sm);
+.actions-cell {
+  text-align: center;
+  white-space: nowrap;
 }
 
-@media (max-width: 1024px) {
+.icon-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  border: none;
+  box-shadow: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  transition:
+    background var(--transition-fast) var(--ease-default),
+    color var(--transition-fast) var(--ease-default);
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+  }
+}
+
+.icon-btn--block {
+  color: var(--color-error-dark);
+
+  &:hover:not(:disabled) {
+    background: var(--color-error-light);
+  }
+}
+
+.icon-btn--unblock {
+  color: var(--color-success-dark);
+
+  &:hover:not(:disabled) {
+    background: var(--color-success-light);
+  }
+}
+
+@media (max-width: 900px) {
   .staff-access-page {
-    padding: var(--space-4);
+    padding: var(--space-5) var(--space-4) var(--space-6);
   }
 
   .staff-access-page__header {
-    flex-direction: column;
+    align-items: flex-start;
+    flex-wrap: wrap;
   }
 
-  :host ::ng-deep app-submissions-search .submissions-search-controls {
-    grid-template-columns: minmax(0, 1fr) minmax(12rem, 1fr);
+  .staff-access-summary {
+    margin-left: auto;
+  }
+
+  :host ::ng-deep app-submissions-search .submissions-search,
+  :host ::ng-deep app-submissions-search .submissions-search--focused,
+  :host ::ng-deep app-submissions-search .submissions-search:focus-within {
+    flex: 1 1 100%;
+    width: 100%;
+  }
+
+  :host ::ng-deep app-submissions-search .submissions-search-filters {
+    justify-content: flex-start;
+    flex: 1 1 auto;
+    min-width: 0;
   }
 
   :host ::ng-deep app-submissions-search .submissions-search-actions {
-    grid-column: 1 / -1;
+    margin-left: auto;
   }
 }
 
 @media (max-width: 640px) {
+  .staff-access-summary {
+    width: 100%;
+    justify-content: center;
+    margin-left: 0;
+  }
+
+  :host ::ng-deep app-submissions-search {
+    padding: var(--space-3);
+  }
+
   :host ::ng-deep app-submissions-search .submissions-search-controls {
-    display: flex;
-    flex-direction: column;
     align-items: stretch;
   }
 
-  :host ::ng-deep app-submissions-search .submissions-search-actions {
+  :host ::ng-deep app-submissions-search .submissions-search-filters {
+    order: 1;
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+    min-width: 0;
+  }
+
+  :host ::ng-deep app-submissions-search .submissions-search-filters [search-filters] {
+    width: 100%;
+    min-width: 0;
+  }
+
+  :host ::ng-deep app-submissions-search [search-filters] .input--select {
+    width: 100%;
+  }
+
+  :host ::ng-deep app-submissions-search .submissions-search {
+    order: 2;
+    flex: 1 1 100%;
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
+  }
+
+  :host ::ng-deep app-submissions-search .submissions-search-input,
+  :host ::ng-deep app-submissions-search .submissions-search__input,
+  :host ::ng-deep app-submissions-search input[type="search"],
+  :host ::ng-deep app-submissions-search input[type="text"] {
+    min-height: 44px;
+  }
+
+  :host ::ng-deep app-submissions-search .submissions-search-actions {
+    order: 3;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+    margin-left: 0;
   }
 
   :host ::ng-deep app-submissions-search .submissions-search-actions .btn {
     width: 100%;
   }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+:host ::ng-deep .staff-access-table-shell app-data-table th:nth-child(4),
+:host ::ng-deep .staff-access-table-shell app-data-table td:nth-child(4) {
+  text-align: left;
 }

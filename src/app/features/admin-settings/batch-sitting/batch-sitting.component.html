@@ -15,6 +15,7 @@
     <!-- ── Feedback ───────────────────────────────────────────────────────── -->
     @if (feedback(); as note) {
       <div
+        #feedbackBanner
         class="feedback-banner"
         [class.feedback-banner--success]="note.type === 'success'"
         [class.feedback-banner--error]="note.type === 'error'"
@@ -81,6 +82,7 @@
           <!-- Read-only view -->
           @if (activeBatch() && !isEditingActive()) {
             <div class="batch-summary">
+              <strong class="planned-item__name">{{ activeBatch()!.batchName }}</strong>
               <div class="batch-summary__dates">
                 <div class="batch-summary__chip">
                   <span class="material-icons">calendar_today</span>
@@ -123,6 +125,7 @@
                   form: activeForm,
                   minStart: '',
                   type: 'active',
+                  isNew: isCreatingActive(),
                 }
               "
             ></ng-container>
@@ -148,8 +151,6 @@
                   type="secondary"
                   label="Add Planned Batch"
                   icon="add_circle"
-                  [disabled]="!canAddPlanned()"
-                  [title]="!canAddPlanned() ? 'Create an active batch first.' : ''"
                   (clicked)="startAddPlanned()"
                 >
                 </app-action-button>
@@ -160,13 +161,7 @@
           @if (plannedBatches().length === 0 && !isAddingPlanned()) {
             <div class="empty-state">
               <span class="material-icons empty-state__icon">pending_actions</span>
-              <p>
-                @if (canAddPlanned()) {
-                  No upcoming batches. Click <strong>Add Planned Batch</strong> to schedule one.
-                } @else {
-                  Create an active batch first to plan upcoming ones.
-                }
-              </p>
+              <p>No upcoming batches. Click <strong>Add Planned Batch</strong> to schedule one.</p>
             </div>
           }
 
@@ -198,6 +193,15 @@
                   </div>
                   <div class="planned-item__actions">
                     @if (editingPlannedId() !== batch.id) {
+                      <app-action-button
+                        type="primary"
+                        label="Start"
+                        icon="play_arrow"
+                        [disabled]="!canStartPlanned()"
+                        [title]="startPlannedTooltip()"
+                        (clicked)="canStartPlanned() && startPlanned(batch)"
+                      >
+                      </app-action-button>
                       <button
                         class="icon-btn icon-btn--edit"
                         type="button"
@@ -426,18 +430,14 @@
       <ul class="confirm-dialog__list">
         <li>The batch status will be set to <strong>Completed</strong>.</li>
         <li>It will be moved to Batch History and locked for editing.</li>
-        @if (plannedBatches().length > 0) {
-          <li>
-            The next planned batch (<strong>{{ plannedBatches()[0].batchName }}</strong
-            >) will automatically become active.
-          </li>
-        }
       </ul>
       @if (activeBatch()!.endDate > today) {
         <div class="confirm-dialog__warning">
           <span class="material-icons">warning</span>
-          The scheduled end date (<strong>{{ fmt(activeBatch()!.endDate) }}</strong
-          >) has not been reached yet. You are ending this batch early.
+          <span
+            >The scheduled end date (<strong>{{ fmt(activeBatch()!.endDate) }}</strong
+            >) has not been reached yet. You are ending this batch early.</span
+          >
         </div>
       }
       <div class="confirm-dialog__actions">
@@ -514,7 +514,7 @@
 <!-- Shared template: reactive edit form                                         -->
 <!--   Context: { form: FormGroup, minStart: string, type: 'active'|'planned' } -->
 <!-- ══════════════════════════════════════════════════════════════════════════ -->
-<ng-template #editFormTpl let-form="form" let-minStart="minStart" let-type="type">
+<ng-template #editFormTpl let-form="form" let-minStart="minStart" let-type="type" let-isNew="isNew">
   <div class="batch-form" [formGroup]="form">
     <!-- ── Global Batch Window ───────────────────────────────────────────── -->
     <div class="form-section">
@@ -558,7 +558,16 @@
               >calendar_today</span
             >
           </div>
-          <app-validation-message [control]="form.get('startDate')"></app-validation-message>
+          @if (isNew) {
+            <span class="form-section__hint">Set automatically to today when you click Start Batch.</span>
+          } @else {
+            <app-validation-message [control]="form.get('startDate')"></app-validation-message>
+            @if (type === 'active' && hasActiveStartInFuture(form)) {
+              <span class="field-error"
+                >An active batch's start date can't be later than today.</span
+              >
+            }
+          }
         </div>
 
         <!-- End Date -->
@@ -678,8 +687,8 @@
       </app-action-button>
       <app-action-button
         type="primary"
-        [label]="isSaving() ? 'Saving…' : 'Save Batch'"
-        icon="save"
+        [label]="isSaving() ? 'Saving…' : (isNew ? 'Start Batch' : 'Save Batch')"
+        [icon]="isNew ? 'play_arrow' : 'save'"
         [disabled]="isSaving()"
         (clicked)="type === 'active' ? saveActive() : savePlanned()"
       >

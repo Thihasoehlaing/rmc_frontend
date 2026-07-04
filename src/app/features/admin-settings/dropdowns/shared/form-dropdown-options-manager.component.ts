@@ -18,7 +18,7 @@ import { DropdownOption as SelectOption } from '../../../../core/interfaces/comp
 import { ToastService } from '../../../../core/services/toast.service';
 import { SVG_ICON_TRASH } from '../../../../shared/icons/svg-icons';
 import {
-  DropdownCategory,
+  AccountCodeRow,
   DropdownOptionRow,
   FinanceOptionRow,
   ApiResponse,
@@ -27,7 +27,13 @@ import {
   SharedDropdownOptionsService,
 } from './shared-dropdown-options.service';
 
-export type FormDropdownTabSource = 'dropdown' | 'region' | 'project-account-code' | 'vote-number';
+export type FormDropdownTabSource =
+  | 'dropdown'
+  | 'region'
+  | 'project-account-code'
+  | 'vote-number'
+  | 'account-code'
+  | 'empty';
 
 export interface FormDropdownTab {
   key: string;
@@ -88,15 +94,15 @@ export class FormDropdownOptionsManagerComponent implements OnInit {
   private readonly router = inject(Router);
 
   rows = signal<ViewRow[]>([]);
-  categories = signal<DropdownCategory[]>([]);
   formOptions = signal<SelectOption<string>[]>([]);
   selectedTabKey = signal('');
   searchQuery = signal('');
   statusFilter = signal<'all' | 'active' | 'inactive'>('all');
   page = signal(1);
-  pageSize = signal(15);
-  pageSizeOptions = [5, 15, 30, 50];
+  pageSize = signal(10);
+  pageSizeOptions = [10, 15, 30, 50];
   pagination = signal<Pagination | null>(null);
+  private formOptionsLoaded = false;
   loading = signal(false);
   showModal = signal(false);
   editingRow = signal<ViewRow | null>(null);
@@ -115,11 +121,9 @@ export class FormDropdownOptionsManagerComponent implements OnInit {
   );
 
   totalPages = computed(() => Math.max(1, this.pagination()?.total_pages ?? 1));
+  totalItems = computed(() => this.pagination()?.total_items ?? this.rows().length);
 
   ngOnInit(): void {
-    this.loadCategories();
-    this.loadFormOptions();
-
     this.route.queryParams.subscribe((params) => {
       const requestedTab = String(params['tab'] ?? this.defaultTab ?? this.tabs[0]?.key ?? '');
       const nextTab = this.tabs.some((tab) => tab.key === requestedTab)
@@ -140,6 +144,7 @@ export class FormDropdownOptionsManagerComponent implements OnInit {
       this.searchQuery.set('');
       this.statusFilter.set('all');
       this.page.set(1);
+      this.ensureSupportingDataForTab(this.selectedTab());
       this.loadRows();
     });
   }
@@ -191,11 +196,17 @@ export class FormDropdownOptionsManagerComponent implements OnInit {
   }
 
   openAddModal(): void {
+    if (this.isEmptyTab()) {
+      return;
+    }
+
+    this.ensureSupportingDataForTab(this.selectedTab());
     this.editingRow.set(null);
     this.showModal.set(true);
   }
 
   editRow(row: ViewRow): void {
+    this.ensureSupportingDataForTab(this.selectedTab());
     this.editingRow.set(row);
     this.showModal.set(true);
   }
@@ -216,6 +227,7 @@ export class FormDropdownOptionsManagerComponent implements OnInit {
       name: row.name,
       status: row.status,
       appliesTo: row.sharedFormCodes,
+      parentDomainId: row.categoryId ?? null,
       percentage: row.percentage ?? null,
       limit: row.limitAmount ?? null,
       description: row.description ?? '',
@@ -226,8 +238,8 @@ export class FormDropdownOptionsManagerComponent implements OnInit {
     const row = this.editingRow();
     const tab = this.selectedTab();
 
-    if (this.getTabSource(tab) === 'dropdown' && !this.currentCategoryId()) {
-      this.toast.error('Dropdown category is not available.');
+    if (this.getTabSource(tab) === 'dropdown' && !tab.categoryCode) {
+      this.toast.error('Dropdown category code is not available.');
       return;
     }
 
@@ -306,7 +318,7 @@ export class FormDropdownOptionsManagerComponent implements OnInit {
   }
 
   showCodeColumn(): boolean {
-    return this.isFinanceTab();
+    return this.isFinanceTab() || this.getTabSource() === 'account-code';
   }
 
   showSharedColumn(): boolean {
@@ -318,11 +330,11 @@ export class FormDropdownOptionsManagerComponent implements OnInit {
   }
 
   showUpdatedColumn(): boolean {
-    return this.getTabSource() !== 'region';
+    return this.getTabSource() !== 'region' && !this.isEmptyTab();
   }
 
   showCodeInput(): boolean {
-    return this.isFinanceTab();
+    return this.isFinanceTab() || this.getTabSource() === 'account-code';
   }
 
   showRegionMetadata(): boolean {
@@ -330,7 +342,7 @@ export class FormDropdownOptionsManagerComponent implements OnInit {
   }
 
   allowsFormSharing(): boolean {
-    return this.getTabSource() === 'dropdown' || this.isFinanceTab();
+    return this.getTabSource() === 'dropdown' || this.isFinanceTab() || this.getTabSource() === 'account-code';
   }
 
   getCodeLabel(): string {
@@ -343,7 +355,7 @@ export class FormDropdownOptionsManagerComponent implements OnInit {
 
   getDefaultSelectedForms(): string[] {
     const tabFormCode = this.selectedTab()?.formCode;
-    if (this.isFinanceTab() && tabFormCode) {
+    if ((this.isFinanceTab() || this.getTabSource() === 'account-code') && tabFormCode) {
       return [tabFormCode];
     }
 
@@ -353,6 +365,19 @@ export class FormDropdownOptionsManagerComponent implements OnInit {
   private loadRows(): void {
     const tab = this.selectedTab();
     if (!tab) {
+      return;
+    }
+
+    if (this.isEmptyTab(tab)) {
+      this.rows.set([]);
+      this.pagination.set({
+        current_page: this.page(),
+        per_page: this.pageSize(),
+        total_items: 0,
+        total_pages: 1,
+        has_next: false,
+        has_prev: false,
+      });
       return;
     }
 
@@ -371,14 +396,12 @@ export class FormDropdownOptionsManagerComponent implements OnInit {
     });
   }
 
-  private loadCategories(): void {
-    this.service.listCategories().subscribe({
-      next: (res) => this.categories.set(res.data?.items ?? []),
-      error: () => this.categories.set([]),
-    });
-  }
-
   private loadFormOptions(): void {
+    if (this.formOptionsLoaded) {
+      return;
+    }
+
+    this.formOptionsLoaded = true;
     const allowedCodes = new Set(this.formCodes.map((code) => code.toUpperCase()));
     this.service.listForms().subscribe({
       next: (res) => {
@@ -393,22 +416,16 @@ export class FormDropdownOptionsManagerComponent implements OnInit {
             })),
         );
       },
-      error: () => this.formOptions.set([]),
+      error: () => {
+        this.formOptionsLoaded = false;
+        this.formOptions.set([]);
+      },
     });
-  }
-
-  currentCategoryId(): number | null {
-    const categoryCode = this.selectedTab()?.categoryCode;
-    return (
-      this.categories().find(
-        (category) => category.category_code.toUpperCase() === categoryCode?.toUpperCase(),
-      )?.id ?? this.rows()[0]?.categoryId ?? null
-    );
   }
 
   private createListRequest(
     tab: FormDropdownTab,
-  ): Observable<ApiResponse<{ items: Array<DropdownOptionRow | RegionRow | FinanceOptionRow>; pagination: Pagination }>> {
+  ): Observable<ApiResponse<{ items: Array<DropdownOptionRow | RegionRow | FinanceOptionRow | AccountCodeRow>; pagination: Pagination }>> {
     const params = {
       category_code: tab.categoryCode,
       search: this.searchQuery(),
@@ -425,8 +442,21 @@ export class FormDropdownOptionsManagerComponent implements OnInit {
         return this.service.listProjectAccountCodes(params);
       case 'vote-number':
         return this.service.listVoteNumbers(params);
+      case 'account-code':
+        return this.service.listAccountCodes(params);
       default:
         return this.service.listOptions(params);
+    }
+  }
+
+  private ensureSupportingDataForTab(tab: FormDropdownTab | undefined): void {
+    const source = this.getTabSource(tab);
+    if (source === 'dropdown') {
+      this.loadFormOptions();
+    } else if (source === 'project-account-code' || source === 'vote-number') {
+      this.loadFormOptions();
+    } else if (source === 'account-code') {
+      this.loadFormOptions();
     }
   }
 
@@ -438,6 +468,8 @@ export class FormDropdownOptionsManagerComponent implements OnInit {
     const isActive = payload.status === 'Active';
 
     switch (this.getTabSource(tab)) {
+      case 'empty':
+        throw new Error('Empty dropdown tab does not support save.');
       case 'region': {
         const body = {
           region_name: payload.name.trim(),
@@ -468,8 +500,20 @@ export class FormDropdownOptionsManagerComponent implements OnInit {
         };
         return row ? this.service.updateVoteNumber(row.id, body) : this.service.createVoteNumber(body);
       }
+      case 'account-code': {
+        const categoryId = payload.parentDomainId ?? row?.categoryId;
+        const body = {
+          code: payload.code?.trim() ?? '',
+          description: payload.name.trim(),
+          is_active: isActive,
+          form_codes: payload.appliesTo,
+          ...(categoryId ? { account_code_category_id: categoryId } : {}),
+        };
+        return row
+          ? this.service.updateAccountCode(row.id, body)
+          : this.service.createAccountCode({ location_type: 'BASE', ...body });
+      }
       default: {
-        const categoryId = this.currentCategoryId();
         const body = {
           option_name: payload.name.trim(),
           status: payload.status === 'Active' ? 'ACTIVE' : 'INACTIVE',
@@ -479,7 +523,7 @@ export class FormDropdownOptionsManagerComponent implements OnInit {
         return row
           ? this.service.updateOption(row.id, body)
           : this.service.createOption({
-              dropdown_category_id: categoryId ?? 0,
+              category_code: tab.categoryCode ?? '',
               ...body,
             });
       }
@@ -492,6 +536,8 @@ export class FormDropdownOptionsManagerComponent implements OnInit {
     isActive: boolean,
   ): Observable<ApiResponse<DropdownOptionRow | RegionRow | FinanceOptionRow>> {
     switch (this.getTabSource()) {
+      case 'empty':
+        throw new Error('Empty dropdown tab does not support status update.');
       case 'region':
         return this.service.updateRegion(row.id, { is_active: isActive });
       case 'project-account-code':
@@ -501,6 +547,11 @@ export class FormDropdownOptionsManagerComponent implements OnInit {
         });
       case 'vote-number':
         return this.service.updateVoteNumber(row.id, {
+          is_active: isActive,
+          form_codes: row.sharedFormCodes,
+        });
+      case 'account-code':
+        return this.service.updateAccountCode(row.id, {
           is_active: isActive,
           form_codes: row.sharedFormCodes,
         });
@@ -516,18 +567,22 @@ export class FormDropdownOptionsManagerComponent implements OnInit {
     id: number,
   ): Observable<ApiResponse<DropdownOptionRow | RegionRow | FinanceOptionRow>> {
     switch (this.getTabSource()) {
+      case 'empty':
+        throw new Error('Empty dropdown tab does not support delete.');
       case 'region':
         return this.service.deleteRegion(id);
       case 'project-account-code':
         return this.service.deleteProjectAccountCode(id);
       case 'vote-number':
         return this.service.deleteVoteNumber(id);
+      case 'account-code':
+        return this.service.deleteAccountCode(id);
       default:
         return this.service.deleteOption(id);
     }
   }
 
-  private toViewRow(row: DropdownOptionRow | RegionRow | FinanceOptionRow): ViewRow {
+  private toViewRow(row: DropdownOptionRow | RegionRow | FinanceOptionRow | AccountCodeRow): ViewRow {
     if (this.isRegionRow(row)) {
       return {
         id: row.id,
@@ -544,6 +599,7 @@ export class FormDropdownOptionsManagerComponent implements OnInit {
     if (this.isFinanceRow(row)) {
       return {
         id: row.id,
+        categoryId: this.isAccountCodeRow(row) ? row.account_code_category_id : undefined,
         code: row.code,
         name: row.description ?? '',
         status: row.is_active ? 'Active' : 'Inactive',
@@ -579,11 +635,19 @@ export class FormDropdownOptionsManagerComponent implements OnInit {
     return source === 'project-account-code' || source === 'vote-number';
   }
 
+  isEmptyTab(tab: FormDropdownTab | undefined = this.selectedTab()): boolean {
+    return this.getTabSource(tab) === 'empty';
+  }
+
   private isRegionRow(row: DropdownOptionRow | RegionRow | FinanceOptionRow): row is RegionRow {
     return 'region_name' in row;
   }
 
-  private isFinanceRow(row: DropdownOptionRow | RegionRow | FinanceOptionRow): row is FinanceOptionRow {
+  private isFinanceRow(row: DropdownOptionRow | RegionRow | FinanceOptionRow | AccountCodeRow): row is FinanceOptionRow | AccountCodeRow {
     return 'code' in row;
+  }
+
+  private isAccountCodeRow(row: DropdownOptionRow | RegionRow | FinanceOptionRow | AccountCodeRow): row is AccountCodeRow {
+    return 'account_code_category_id' in row;
   }
 }

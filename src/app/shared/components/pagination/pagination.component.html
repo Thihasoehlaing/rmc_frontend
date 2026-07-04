@@ -1,6 +1,11 @@
 <div class="pagination-wrapper">
   <div class="pagination-summary">
-    Page <strong>{{ currentPage }}</strong> of <strong>{{ totalPages }}</strong>
+    @if (showResultSummary) {
+      Showing <strong>{{ resultStart }}</strong> to <strong>{{ resultEnd }}</strong> of
+      <strong>{{ totalItems }}</strong> results
+    } @else {
+      Page <strong>{{ currentPage }}</strong> of <strong>{{ totalPages }}</strong>
+    }
   </div>
 
   <div class="pagination-controls">
@@ -37,4 +42,15 @@
       <span class="material-icons">chevron_right</span>
     </button>
   </div>
+
+  <label class="pagination-page-size" aria-label="Items per page">
+    <select
+      [ngModel]="pageSize"
+      (ngModelChange)="onPageSizeChange($event)"
+    >
+      @for (option of pageSizeOptions; track option) {
+        <option [ngValue]="option">{{ option }} per page</option>
+      }
+    </select>
+  </label>
 </div>

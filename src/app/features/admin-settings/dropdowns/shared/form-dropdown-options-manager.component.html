@@ -23,7 +23,7 @@
               type="primary"
               label="Add New"
               icon="add"
-              [disabled]="!selectedTab()"
+              [disabled]="!selectedTab() || isEmptyTab()"
               (clicked)="openAddModal()"
             ></app-action-button>
           </div>
@@ -154,12 +154,14 @@
                   [totalPages]="totalPages()"
                   [pageSize]="pageSize()"
                   [pageSizeOptions]="pageSizeOptions"
+                  [totalItems]="totalItems()"
+                  [itemCount]="rows().length"
                   (pageChange)="onPageChange($event)"
                   (pageSizeChange)="onPageSizeChange($event)"
                 ></app-pagination>
 
                 <div *ngIf="rows().length === 0" class="empty-state">
-                  <p>No options for this category. Click "Add New" to create one.</p>
+                  <p>{{ isEmptyTab() ? 'No data available.' : 'No options for this category. Click "Add New" to create one.' }}</p>
                 </div>
               }
             </div>

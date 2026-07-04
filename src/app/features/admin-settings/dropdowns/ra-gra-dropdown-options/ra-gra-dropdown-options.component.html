@@ -1,15 +1,7 @@
-<section class="dropdown-section-page">
-  <header class="dropdown-section-header">
-    <a class="back-button" routerLink="/admin-settings/dropdowns" aria-label="Back to dropdowns">
-      <span class="material-icons">arrow_back</span>
-    </a>
-    <div>
-      <h1>RA/GRA Application Dropdown Options</h1>
-      <p>This section is ready for the RA/GRA dropdown implementation.</p>
-    </div>
-  </header>
-
-  <div class="section-card">
-    <span class="chip" *ngFor="let category of categories">{{ category }}</span>
-  </div>
-</section>
+<app-form-dropdown-options-manager
+  title="RA/GRA Application Dropdown Options Management"
+  subtitle="Manage RA/GRA Application dropdown options from a single maintainable page."
+  [tabs]="tabs"
+  [formCodes]="formCodes"
+  defaultTab="RESEARCH_CLUSTER"
+></app-form-dropdown-options-manager>

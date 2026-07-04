@@ -24,13 +24,6 @@ export interface PagedResult<T> {
   pagination: Pagination;
 }
 
-export interface DropdownCategory {
-  id: number;
-  category_code: string;
-  category_name: string;
-  is_active: boolean;
-}
-
 export interface SharedForm {
   id: number;
   form_code: string;
@@ -66,6 +59,12 @@ export interface FinanceOptionRow {
   updated_at?: string | null;
 }
 
+export interface AccountCodeRow extends FinanceOptionRow {
+  account_code_category_id: number;
+  category_name?: string | null;
+  location_type?: 'BASE' | 'LOCAL' | 'FOREIGN';
+}
+
 export interface FormOption {
   id: number;
   form_code: string;
@@ -97,17 +96,15 @@ export interface FinanceOptionPayload {
   form_codes: string[];
 }
 
+export interface AccountCodePayload extends FinanceOptionPayload {
+  account_code_category_id?: number;
+  location_type?: 'BASE' | 'LOCAL' | 'FOREIGN';
+}
+
 @Injectable({ providedIn: 'root' })
 export class SharedDropdownOptionsService {
   private readonly http = inject(HttpClient);
   private readonly formCache = inject(FormCacheService);
-
-  listCategories(): Observable<ApiResponse<PagedResult<DropdownCategory>>> {
-    return this.http.get<ApiResponse<PagedResult<DropdownCategory>>>(
-      `${environment.apiUrl}/api/admin-settings/dropdown-categories`,
-      { params: new HttpParams().set('page', '1').set('per_page', '500') },
-    );
-  }
 
   listForms(): Observable<ApiResponse<FormOption[]>> {
     return this.formCache.getForms();
@@ -125,6 +122,10 @@ export class SharedDropdownOptionsService {
 
     if (params.status && params.status !== 'all') {
       httpParams = httpParams.set('status', params.status);
+    }
+
+    if (params.form_code) {
+      httpParams = httpParams.set('form_code', params.form_code);
     }
 
     return this.http.get<ApiResponse<PagedResult<DropdownOptionRow>>>(
@@ -222,8 +223,38 @@ export class SharedDropdownOptionsService {
     );
   }
 
+  listAccountCodes(params: ListParams): Observable<ApiResponse<PagedResult<AccountCodeRow>>> {
+    return this.http.get<ApiResponse<PagedResult<AccountCodeRow>>>(
+      `${environment.apiUrl}/api/admin-settings/account-codes`,
+      { params: this.toAdminListParams(params) },
+    );
+  }
+
+  createAccountCode(data: AccountCodePayload): Observable<ApiResponse<AccountCodeRow>> {
+    return this.http.post<ApiResponse<AccountCodeRow>>(
+      `${environment.apiUrl}/api/admin-settings/account-codes`,
+      data,
+    );
+  }
+
+  updateAccountCode(
+    id: number,
+    data: Partial<AccountCodePayload>,
+  ): Observable<ApiResponse<AccountCodeRow>> {
+    return this.http.put<ApiResponse<AccountCodeRow>>(
+      `${environment.apiUrl}/api/admin-settings/account-codes/${id}`,
+      data,
+    );
+  }
+
+  deleteAccountCode(id: number): Observable<ApiResponse<AccountCodeRow>> {
+    return this.http.delete<ApiResponse<AccountCodeRow>>(
+      `${environment.apiUrl}/api/admin-settings/account-codes/${id}`,
+    );
+  }
+
   createOption(data: {
-    dropdown_category_id: number;
+    category_code: string;
     option_name: string;
     status: string;
     form_codes: string[];

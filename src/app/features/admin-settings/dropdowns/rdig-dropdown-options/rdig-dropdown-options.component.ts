@@ -354,8 +354,8 @@ export class RdigDropdownOptionsComponent implements OnInit {
   editingInitialPayload = signal<AddOptionPayload | null>(null);
   newOptionValue = signal<string>('');
   optionsPage = signal(1);
-  optionsPageSize = signal(15);
-  optionsPageSizeOptions = [5, 15, 30, 50];
+  optionsPageSize = signal(10);
+  optionsPageSizeOptions = [10, 15, 30, 50];
   optionToDelete = signal<DropdownOption | null>(null);
   sharedFormsDialogData = signal<{ optionName: string; forms: string[] } | null>(null);
 
@@ -852,6 +852,14 @@ export class RdigDropdownOptionsComponent implements OnInit {
     const total = this.filteredOptions().length;
     if (total === 0) return 0;
     return Math.min(this.optionsPageStart() + this.optionsPageSize() - 1, total);
+  });
+
+  optionsTotalItems = computed(() => {
+    if (this.isApiMode() && this.isServerPaginated()) {
+      return this.apiPagination()?.total_items ?? this.filteredOptions().length;
+    }
+
+    return this.filteredOptions().length;
   });
 
   ngOnInit(): void {

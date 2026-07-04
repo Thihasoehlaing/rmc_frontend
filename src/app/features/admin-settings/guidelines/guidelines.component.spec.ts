@@ -24,20 +24,15 @@ describe('GuidelinesComponent', () => {
       items: [
         {
           id: 1,
-          form_id: 1,
+          form_id: 5,
           form_code: 'RDIG',
-          form_name: 'RDIG Application Process',
-          guideline_title: 'RDIG Guidelines',
-          button_text: 'Close',
+          form_name: 'RDIG Application',
+          title: 'RDIG Guidelines',
           is_active: true,
-          background_token: 'white',
-          text_token: 'var(--color-text-primary)',
-          button_token: 'var(--color-primary)',
           created_by: 'admin',
           created_at: '2026-06-01T10:00:00',
           updated_by: 'system.admin',
           updated_at: '2026-06-12T10:00:00',
-          block_count: 2,
         },
       ],
       pagination: {
@@ -75,7 +70,7 @@ describe('GuidelinesComponent', () => {
 
     expect(component.guidelines()).toHaveLength(1);
     expect(component.guidelines()[0].form).toBe('RDIG Application');
-    expect(component.guidelines()[0].blockCount).toBe(2);
+    expect(component.guidelines()[0].formId).toBe(5);
     expect(component.totalGuidelines()).toBe(1);
   });
 
@@ -84,18 +79,8 @@ describe('GuidelinesComponent', () => {
 
     const config: GuidelineConfig = {
       title: 'Conference Guidelines',
-      formName: 'Conference Application',
-      backgroundToken: 'white',
-      textToken: 'var(--color-text-primary)',
-      buttonToken: 'var(--color-primary)',
-      buttonText: 'Close',
-      blocks: [
-        {
-          id: 'block-1',
-          type: 'text',
-          content: 'Submit the completed form.',
-        },
-      ],
+      formId: 3,
+      contentHtml: '<p>Submit the completed form.</p>',
     };
 
     component.saveGuideline(config);
@@ -103,24 +88,9 @@ describe('GuidelinesComponent', () => {
     const createRequest = http.expectOne(baseUrl);
     expect(createRequest.request.method).toBe('POST');
     expect(createRequest.request.body).toEqual({
-      form_code: 'CONFERENCE',
-      guideline_title: 'Conference Guidelines',
-      button_text: 'Close',
-      is_active: true,
-      background_token: 'white',
-      text_token: 'var(--color-text-primary)',
-      button_token: 'var(--color-primary)',
-      blocks: [
-        {
-          block_type: 'text',
-          block_content: 'Submit the completed form.',
-          display_order: 1,
-          background_token: null,
-          text_token: null,
-          font_size_token: null,
-          font_weight_token: null,
-        },
-      ],
+      form_id: 3,
+      title: 'Conference Guidelines',
+      content_html: '<p>Submit the completed form.</p>',
     });
     createRequest.flush({
       success: true,
@@ -131,21 +101,27 @@ describe('GuidelinesComponent', () => {
     http.expectOne(`${baseUrl}?page=1&per_page=5`).flush(listResponse);
   });
 
-  it('updates guideline status through the status endpoint', () => {
+  it('deletes a guideline after confirming, with no activate/deactivate step', () => {
     http.expectOne(`${baseUrl}?page=1&per_page=5`).flush(listResponse);
     const guideline = component.guidelines()[0];
 
-    component.toggleGuidelineStatus(guideline);
+    component.openDeleteDialog(guideline);
+    expect(component.guidelineToDelete()).toBe(guideline);
 
-    const statusRequest = http.expectOne(`${baseUrl}/1/status`);
-    expect(statusRequest.request.method).toBe('PATCH');
-    expect(statusRequest.request.body).toEqual({ is_active: false });
-    statusRequest.flush({
+    component.confirmDelete();
+
+    const deleteRequest = http.expectOne(`${baseUrl}/1`);
+    expect(deleteRequest.request.method).toBe('DELETE');
+    deleteRequest.flush({
       success: true,
-      message: 'Guideline status updated successfully',
-      data: { ...listResponse.data.items[0], is_active: false },
+      message: 'Guideline deleted successfully',
+      data: listResponse.data.items[0],
     });
 
-    http.expectOne(`${baseUrl}?page=1&per_page=5`).flush(listResponse);
+    expect(component.guidelineToDelete()).toBeNull();
+    http.expectOne(`${baseUrl}?page=1&per_page=5`).flush({
+      ...listResponse,
+      data: { ...listResponse.data, items: [], pagination: { ...listResponse.data.pagination, total_items: 0 } },
+    });
   });
 });

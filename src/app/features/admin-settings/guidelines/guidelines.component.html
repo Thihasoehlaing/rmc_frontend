@@ -84,10 +84,19 @@
                   {{ row.isActive ? 'Active' : 'Inactive' }}
                 </span>
               </td>
-              <td class="center">{{ row.blockCount }} blocks</td>
               <td>{{ row.lastUpdated }}</td>
               <td>{{ row.createdBy }}</td>
               <td class="actions-cell">
+                <button
+                  class="icon-btn icon-btn--view"
+                  type="button"
+                  title="View guideline"
+                  [disabled]="loadingGuidelineId() !== null"
+                  (click)="viewGuideline(row)"
+                >
+                  <app-table-action-icon action="view"></app-table-action-icon>
+                </button>
+
                 <button
                   class="icon-btn icon-btn--edit"
                   type="button"
@@ -98,24 +107,12 @@
                   <app-table-action-icon action="edit"></app-table-action-icon>
                 </button>
 
-                @if (!row.isActive) {
-                  <button
-                    class="icon-btn icon-btn--activate"
-                    type="button"
-                    title="Activate guideline"
-                    [disabled]="loadingGuidelineId() !== null"
-                    (click)="toggleGuidelineStatus(row)"
-                  >
-                    <app-table-action-icon action="activate"></app-table-action-icon>
-                  </button>
-                }
-
                 <button
                   class="icon-btn icon-btn--delete"
                   type="button"
-                  [title]="row.isActive ? 'Deactivate guideline' : 'Delete guideline'"
+                  title="Delete guideline"
                   [disabled]="loadingGuidelineId() !== null"
-                  (click)="row.isActive ? openDeactivateDialog(row) : deleteGuideline(row)"
+                  (click)="openDeleteDialog(row)"
                 >
                   <app-table-action-icon action="delete"></app-table-action-icon>
                 </button>
@@ -139,6 +136,8 @@
     }
   </div>
 
+  <app-guidelines-modal #viewModal></app-guidelines-modal>
+
   <app-add-guideline-modal
     *ngIf="showAddModal()"
     [initialConfig]="editingConfig()"
@@ -149,18 +148,19 @@
   ></app-add-guideline-modal>
 
   <app-dialog
-    [isOpen]="guidelineToDeactivate() !== null"
-    title="Deactivate Guideline"
+    [isOpen]="guidelineToDelete() !== null"
+    title="Delete Guideline"
     size="small"
-    (close)="closeDeactivateDialog()"
+    (close)="closeDeleteDialog()"
   >
-    @if (guidelineToDeactivate(); as guideline) {
+    @if (guidelineToDelete(); as guideline) {
       <div class="delete-confirmation">
         <app-svg-icon class="delete-icon" [icon]="trashIcon" size="48px"></app-svg-icon>
         <div>
-          <h3>Are you sure you want to deactivate this guideline?</h3>
+          <h3>Are you sure you want to delete this guideline?</h3>
           <p>
-            <strong>{{ guideline.title }}</strong> will no longer be available for active use.
+            <strong>{{ guideline.title }}</strong> will be permanently removed. This action cannot
+            be undone.
           </p>
         </div>
       </div>
@@ -171,7 +171,7 @@
         class="btn btn-secondary"
         type="button"
         [disabled]="loadingGuidelineId() !== null"
-        (click)="closeDeactivateDialog()"
+        (click)="closeDeleteDialog()"
       >
         Cancel
       </button>
@@ -179,9 +179,9 @@
         class="btn btn-danger"
         type="button"
         [disabled]="loadingGuidelineId() !== null"
-        (click)="confirmDeactivate()"
+        (click)="confirmDelete()"
       >
-        {{ loadingGuidelineId() !== null ? 'Deactivating...' : 'Deactivate' }}
+        {{ loadingGuidelineId() !== null ? 'Deleting...' : 'Delete' }}
       </button>
     </div>
   </app-dialog>

@@ -233,19 +233,19 @@
   }
 }
 
+.icon-btn--view {
+  color: var(--color-text-muted);
+
+  &:hover:not(:disabled) {
+    background: var(--color-surface-hover, var(--color-primary-light));
+  }
+}
+
 .icon-btn--edit {
   color: var(--color-primary);
 
   &:hover:not(:disabled) {
     background: var(--color-primary-light);
-  }
-}
-
-.icon-btn--activate {
-  color: var(--color-success-dark);
-
-  &:hover:not(:disabled) {
-    background: var(--color-success-light);
   }
 }
 

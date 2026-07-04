@@ -3,9 +3,11 @@ import {
   EventEmitter,
   Input,
   OnChanges,
+  OnInit,
   Output,
   SimpleChanges,
   ViewChild,
+  inject,
   signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -16,29 +18,12 @@ import {
 } from '../../../../shared/components/text-editor/text-editor.component';
 import { GuidelinesModalComponent } from '../../../../shared/components/guidelines-modal/guidelines-modal.component';
 import { DialogComponent } from '../../../../shared/components/dialog/dialog.component';
-
-export type BlockType = 'text' | 'highlight' | 'heading' | 'warning' | 'info';
-
-export interface ModalBlock {
-  id: string;
-  type: BlockType;
-  content: string;
-  styling?: {
-    bgToken?: string;
-    textToken?: string;
-    fontSizeToken?: string;
-    fontWeightToken?: string;
-  };
-}
+import { FormOption, WorkflowService } from '../../../settings/workflow/workflow.service';
 
 export interface GuidelineConfig {
   title: string;
-  formName: string;
-  backgroundToken: string;
-  textToken: string;
-  buttonToken: string;
-  buttonText: string;
-  blocks: ModalBlock[];
+  formId: number | null;
+  contentHtml: string;
 }
 
 @Component({
@@ -54,7 +39,9 @@ export interface GuidelineConfig {
   templateUrl: './add-guideline-modal.component.html',
   styleUrls: ['./add-guideline-modal.component.scss'],
 })
-export class AddGuidelineModalComponent implements OnChanges {
+export class AddGuidelineModalComponent implements OnChanges, OnInit {
+  private readonly workflowService = inject(WorkflowService);
+
   @Output() close = new EventEmitter<void>();
   @Output() save = new EventEmitter<GuidelineConfig>();
   @Input() initialConfig: GuidelineConfig | null = null;
@@ -63,13 +50,7 @@ export class AddGuidelineModalComponent implements OnChanges {
 
   @ViewChild('previewModal') previewModal?: GuidelinesModalComponent;
 
-  readonly formOptions = [
-    'Conference Application',
-    'Journal Application',
-    'Partnership Application',
-    'RA/GRA Application',
-    'RDIG Application',
-  ];
+  readonly forms = signal<FormOption[]>([]);
 
   readonly editorToolbarOptions: QuillToolbarOptions = [
     [{ header: [1, 2, 3, false] }],
@@ -81,6 +62,17 @@ export class AddGuidelineModalComponent implements OnChanges {
 
   guidelineContent = signal('');
   guidelineConfig = signal<GuidelineConfig>(this.getDefaultConfig());
+
+  ngOnInit(): void {
+    this.workflowService.listForms().subscribe({
+      next: (res) => {
+        if (res.success) {
+          this.forms.set((res.data ?? []).filter((f) => f.is_active));
+        }
+      },
+      error: () => this.forms.set([]),
+    });
+  }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['initialConfig']) {
@@ -96,13 +88,14 @@ export class AddGuidelineModalComponent implements OnChanges {
     this.guidelineConfig.update((config) => ({ ...config, title }));
   }
 
-  onFormChange(formName: string): void {
-    this.guidelineConfig.update((config) => ({ ...config, formName }));
+  onFormChange(formIdStr: string): void {
+    const formId = formIdStr ? Number(formIdStr) : null;
+    this.guidelineConfig.update((config) => ({ ...config, formId }));
   }
 
   onContentChange(content: string): void {
     this.guidelineContent.set(content);
-    this.syncContentBlock(content);
+    this.guidelineConfig.update((config) => ({ ...config, contentHtml: content }));
   }
 
   openPreview(): void {
@@ -120,7 +113,11 @@ export class AddGuidelineModalComponent implements OnChanges {
   }
 
   isSaveDisabled(): boolean {
-    return this.isContentEmpty() || this.guidelineConfig().title.trim().length === 0;
+    return (
+      this.isContentEmpty() ||
+      this.guidelineConfig().title.trim().length === 0 ||
+      this.guidelineConfig().formId === null
+    );
   }
 
   isContentEmpty(): boolean {
@@ -128,12 +125,8 @@ export class AddGuidelineModalComponent implements OnChanges {
   }
 
   private loadInitialConfig(config: GuidelineConfig): void {
-    const content = this.blocksToHtml(config.blocks);
-    this.guidelineContent.set(content);
-    this.guidelineConfig.set({
-      ...config,
-      blocks: this.isHtmlEmpty(content) ? [] : [this.createContentBlock(content)],
-    });
+    this.guidelineContent.set(config.contentHtml);
+    this.guidelineConfig.set({ ...config });
   }
 
   private resetConfig(): void {
@@ -143,69 +136,10 @@ export class AddGuidelineModalComponent implements OnChanges {
 
   private getDefaultConfig(): GuidelineConfig {
     return {
-      title: 'Guidelines',
-      formName: 'Conference Application',
-      backgroundToken: 'white',
-      textToken: 'var(--color-text-primary)',
-      buttonToken: 'var(--color-primary)',
-      buttonText: 'Close',
-      blocks: [],
+      title: '',
+      formId: null,
+      contentHtml: '',
     };
-  }
-
-  private syncContentBlock(content: string): void {
-    const currentConfig = this.guidelineConfig();
-    this.guidelineConfig.set({
-      ...currentConfig,
-      blocks: this.isHtmlEmpty(content) ? [] : [this.createContentBlock(content)],
-    });
-  }
-
-  private createContentBlock(content: string): ModalBlock {
-    return {
-      id: 'guideline-content',
-      type: 'text',
-      content,
-      styling: {
-        textToken: 'var(--color-text-primary)',
-        fontSizeToken: 'var(--fs-base)',
-        fontWeightToken: 'var(--fw-regular)',
-      },
-    };
-  }
-
-  private blocksToHtml(blocks: ModalBlock[]): string {
-    if (blocks.length === 0) {
-      return '';
-    }
-
-    if (blocks.length === 1 && this.containsHtml(blocks[0].content)) {
-      return blocks[0].content;
-    }
-
-    return blocks.map((block) => this.blockToHtml(block)).join('');
-  }
-
-  private blockToHtml(block: ModalBlock): string {
-    if (this.containsHtml(block.content)) {
-      return block.content;
-    }
-
-    const content = this.escapeHtml(block.content).replace(/\r?\n/g, '<br>');
-
-    if (block.type === 'heading') {
-      return `<h2>${content}</h2>`;
-    }
-
-    return `<p>${content}</p>`;
-  }
-
-  private containsHtml(value: string): boolean {
-    return /<\/?[a-z][\s\S]*>/i.test(value);
-  }
-
-  private isHtmlEmpty(html: string): boolean {
-    return this.getPlainText(html).trim().length === 0;
   }
 
   private getPlainText(html: string): string {
@@ -215,14 +149,5 @@ export class AddGuidelineModalComponent implements OnChanges {
       .replace(/<[^>]+>/g, ' ')
       .replace(/&nbsp;/gi, ' ')
       .replace(/\s+/g, ' ');
-  }
-
-  private escapeHtml(value: string): string {
-    return value
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;');
   }
 }

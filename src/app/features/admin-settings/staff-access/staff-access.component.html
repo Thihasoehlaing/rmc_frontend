@@ -22,19 +22,15 @@
     (search)="setSearchFilter($event)"
     (refresh)="resetFilters()"
   >
-    <label search-filters>
+    <label search-filters class="staff-access-filter--department">
       <span class="staff-access-filter-label">Department</span>
-      <select
-        class="input--select"
-        [value]="departmentFilter()"
-        (change)="setDepartmentFilter(departmentSelect.value)"
-        #departmentSelect
-      >
-        <option value="all">All departments</option>
-        @for (department of departmentOptions(); track department) {
-          <option [value]="department">{{ department }}</option>
-        }
-      </select>
+      <app-searchable-dropdown
+        [options]="departmentOptions()"
+        [ngModel]="departmentFilter()"
+        (ngModelChange)="setDepartmentFilter($event)"
+        valueMode="single"
+        placeholder="All departments"
+      />
     </label>
     <label search-filters>
       <span class="staff-access-filter-label">Access Status</span>
@@ -59,6 +55,9 @@
       [sortDirection]="sortDirection()"
       (sortChange)="setSort($event)"
     >
+      <ng-template #emptyTemplate>
+        <app-no-entry-found message="No staff match your search." />
+      </ng-template>
       <ng-template #rowTemplate let-staff>
         <tr [class.staff-access-row--blocked]="staff.status === 'blocked'">
           <td>
@@ -83,14 +82,29 @@
               <span class="staff-access-muted-badge">Not blocked</span>
             }
           </td>
+          <td class="is-align-center">
+            @if (staff.reason) {
+              <button
+                class="btn btn-sm btn-secondary"
+                type="button"
+                title="View block reason"
+                (click)="openReasonView(staff)"
+              >
+                View
+              </button>
+            } @else {
+              <span class="staff-access-muted-badge">&mdash;</span>
+            }
+          </td>
           <td class="actions-cell">
             <button
               class="icon-btn"
               [class.icon-btn--block]="staff.status === 'active'"
               [class.icon-btn--unblock]="staff.status === 'blocked'"
               type="button"
+              [disabled]="loadingId() !== null"
               [title]="staff.status === 'active' ? 'Block staff access' : 'Unblock staff access'"
-              (click)="toggleAccess(staff.id)"
+              (click)="toggleAccess(staff)"
             >
               <app-table-action-icon
                 [action]="staff.status === 'active' ? 'blockUser' : 'unblockUser'"
@@ -100,7 +114,81 @@
         </tr>
       </ng-template>
     </app-data-table>
+
+    <app-pagination
+      [currentPage]="page()"
+      [totalPages]="totalPages()"
+      [pageSize]="pageSize()"
+      [pageSizeOptions]="pageSizeOptions"
+      (pageChange)="onPageChange($event)"
+      (pageSizeChange)="onPageSizeChange($event)"
+    ></app-pagination>
   </section>
+
+  <app-dialog
+    [isOpen]="blockTarget() !== null"
+    title="Block Staff Access"
+    size="small"
+    (close)="closeBlockDialog()"
+  >
+    @if (blockTarget(); as staff) {
+      <div class="block-reason-form">
+        <p>
+          Blocking <strong>{{ staff.name }}</strong> will prevent them from accessing this
+          application form.
+        </p>
+        <label class="form-field">
+          <span class="form-label">Reason (optional)</span>
+          <textarea
+            class="input--textarea"
+            rows="3"
+            placeholder="Why is this staff member being blocked?"
+            [ngModel]="blockReason()"
+            (ngModelChange)="blockReason.set($event)"
+          ></textarea>
+        </label>
+      </div>
+    }
+
+    <div dialog-footer class="dialog-actions">
+      <button
+        class="btn btn-secondary"
+        type="button"
+        [disabled]="loadingId() !== null"
+        (click)="closeBlockDialog()"
+      >
+        Cancel
+      </button>
+      <button
+        class="btn btn-danger"
+        type="button"
+        [disabled]="loadingId() !== null"
+        (click)="confirmBlock()"
+      >
+        {{ loadingId() !== null ? 'Blocking...' : 'Block Access' }}
+      </button>
+    </div>
+  </app-dialog>
+
+  <app-dialog
+    [isOpen]="reasonViewTarget() !== null"
+    title="Block Reason"
+    size="small"
+    (close)="closeReasonView()"
+  >
+    @if (reasonViewTarget(); as staff) {
+      <div class="reason-view">
+        <p class="reason-view__staff">
+          <strong>{{ staff.name }}</strong>
+        </p>
+        <p class="reason-view__text">{{ staff.reason }}</p>
+      </div>
+    }
+
+    <div dialog-footer class="dialog-actions">
+      <button class="btn btn-primary" type="button" (click)="closeReasonView()">Close</button>
+    </div>
+  </app-dialog>
 </section>
 
 

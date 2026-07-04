@@ -116,6 +116,13 @@
   min-width: 8.75rem;
 }
 
+/* Department matches the search field's own size (flex: 0 1 300px; min-width: 240px). */
+:host ::ng-deep app-submissions-search .submissions-search-filters [search-filters].staff-access-filter--department {
+  flex: 0 1 300px;
+  width: auto;
+  min-width: 240px;
+}
+
 :host ::ng-deep app-submissions-search [search-filters] {
   display: block;
   position: relative;
@@ -162,6 +169,27 @@
   white-space: nowrap;
 }
 
+/* Match the native <select> pill styling above so the searchable-dropdown
+   (used for Department) looks consistent with the Access Status <select>. */
+:host ::ng-deep app-submissions-search [search-filters] app-searchable-dropdown .dropdown-trigger {
+  height: 38px;
+  min-height: 38px;
+  padding-inline: var(--space-3);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-full);
+  background-color: white;
+  font-size: var(--fs-sm);
+
+  &:hover {
+    border-color: color-mix(in srgb, var(--color-primary) 24%, var(--border-default));
+    box-shadow: var(--shadow-sm);
+  }
+}
+
+:host ::ng-deep app-submissions-search [search-filters] app-searchable-dropdown .placeholder {
+  color: var(--color-label);
+}
+
 .staff-access-table-shell {
   width: 100%;
   min-width: 0;
@@ -188,7 +216,7 @@
 }
 :host ::ng-deep .staff-access-table-shell app-data-table table {
   width: 100%;
-  min-width: 920px;
+  min-width: 1050px;
 }
 
 :host ::ng-deep .staff-access-table-shell app-data-table th:last-child,
@@ -397,4 +425,46 @@
 :host ::ng-deep .staff-access-table-shell app-data-table th:nth-child(4),
 :host ::ng-deep .staff-access-table-shell app-data-table td:nth-child(4) {
   text-align: left;
+}
+
+.block-reason-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+
+  p {
+    margin: 0;
+    color: var(--color-label);
+    font-size: var(--fs-sm);
+    line-height: 1.5;
+  }
+}
+
+.reason-view {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+
+  &__staff {
+    margin: 0;
+    color: var(--color-label);
+    font-size: var(--fs-sm);
+  }
+
+  &__text {
+    margin: 0;
+    padding: var(--space-3);
+    border-radius: var(--radius-md);
+    background: var(--color-surface-hover);
+    color: var(--color-text-muted);
+    font-size: var(--fs-sm);
+    line-height: 1.5;
+    white-space: pre-wrap;
+  }
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
 }

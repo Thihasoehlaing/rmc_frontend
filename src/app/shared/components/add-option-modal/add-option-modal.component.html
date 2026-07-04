@@ -6,6 +6,11 @@
     </header>
 
     <section class="dialog__body">
+      <ng-container *ngIf="showCategory">
+        <label class="form-label">Category</label>
+        <div class="category-locked">{{ categoryLabel || 'Fixed' }} <span class="pill">Locked</span></div>
+      </ng-container>
+
       <label class="form-label">{{ optionNameLabel }} *</label>
       <input
         type="text"
@@ -24,9 +29,6 @@
           [(ngModel)]="parentDomainId"
         ></app-searchable-dropdown>
       </div>
-
-      <label class="form-label">Category</label>
-      <div class="category-locked">{{ categoryLabel || 'Fixed' }} <span class="pill">Locked</span></div>
 
       <div class="form-field metadata-field" *ngIf="showAccountNumberMetadata">
         <label class="form-label">{{ accountNumberLabel }} *</label>
@@ -58,21 +60,33 @@
             rows="3"></textarea>
         </div>
       </div>
+
       <ng-container *ngIf="allowFormSharing">
-        <label class="form-label">Category is fixed and matches the current dropdown group.</label>
+        <label class="form-label">Forms *</label>
         <p class="helper-text" *ngIf="categoryLabel">
           Only forms that already have the {{ categoryLabel }} category are shown.
         </p>
-        <div class="forms-list">
-          <ng-container *ngIf="availableForms.length > 0; else noAvailableForms">
-            <button *ngFor="let f of availableForms" type="button" class="form-chip" [class.selected]="appliesTo.includes(f)" (click)="onToggleForm(f)">
-              {{ f }}
-            </button>
-          </ng-container>
-          <ng-template #noAvailableForms>
-            <div class="empty-share-targets">No forms are available for this category.</div>
-          </ng-template>
-        </div>
+        <app-searchable-dropdown
+          *ngIf="usesSearchableFormSharing; else formChipSharing"
+          [options]="availableFormOptions"
+          [isMulti]="true"
+          valueMode="array"
+          placeholder="Select forms"
+          [(ngModel)]="appliesTo"
+        ></app-searchable-dropdown>
+
+        <ng-template #formChipSharing>
+          <div class="forms-list">
+            <ng-container *ngIf="availableForms.length > 0; else noAvailableForms">
+              <button *ngFor="let f of availableForms" type="button" class="form-chip" [class.selected]="appliesTo.includes(f)" (click)="onToggleForm(f)">
+                {{ f }}
+              </button>
+            </ng-container>
+            <ng-template #noAvailableForms>
+              <div class="empty-share-targets">No forms are available for this category.</div>
+            </ng-template>
+          </div>
+        </ng-template>
 
         <p class="selection-error" *ngIf="showAppliesToError">At least one Dropdown should be selected</p>
 
@@ -95,5 +109,3 @@
     </footer>
   </div>
 </div>
-
-

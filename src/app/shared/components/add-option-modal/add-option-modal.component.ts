@@ -2,6 +2,7 @@ import { Component, EventEmitter, Input, Output, OnChanges, SimpleChanges } from
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SearchableDropdownComponent } from '../searchable-dropdown/searchable-dropdown.component';
+import { DropdownOption } from '../../../core/interfaces/components.interface';
 
 export interface AddOptionPayload {
   name: string;
@@ -24,9 +25,11 @@ export interface AddOptionPayload {
 export class AddOptionModalComponent implements OnChanges {
   @Input() isOpen = false;
   @Input() title = 'Add Dropdown Option';
+  @Input() showCategory = true;
   @Input() categoryLabel = '';
   @Input() optionNameLabel = 'Option Name';
   @Input() availableForms: string[] = [];
+  @Input() availableFormOptions: DropdownOption<string>[] = [];
   @Input() defaultSelectedForms: string[] = [];
   @Input() initial: AddOptionPayload | null = null;
   @Input() primaryActionLabel = 'Add Option';
@@ -104,6 +107,10 @@ export class AddOptionModalComponent implements OnChanges {
 
   get showAppliesToError(): boolean {
     return this.allowFormSharing && this.appliesTo.length === 0;
+  }
+
+  get usesSearchableFormSharing(): boolean {
+    return this.availableFormOptions.length > 0;
   }
 
   onToggleForm(form: string) {

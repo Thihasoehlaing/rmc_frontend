@@ -16,11 +16,11 @@
   max-height: calc(100vh - 32px);
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow: visible;
   pointer-events: auto;
 }
 .dialog__header { display:flex; align-items:center; justify-content:space-between; padding:16px 20px; border-bottom:1px solid rgba(0,0,0,0.04); flex-shrink: 0;}
-.dialog__body { padding:20px; display:block; gap:12px; overflow: auto; }
+.dialog__body { padding:20px; display:block; gap:12px; overflow: visible; }
 .form-label { font-weight:600; display:block; margin-bottom:8px; }
 .category-locked { padding:10px; background:var(--neutral-100,#f8f8fb); border-radius:8px; display:inline-block; }
 .metadata-field { margin: var(--space-4) 0; }
@@ -40,3 +40,12 @@
 .btn-pill { padding:8px 14px; border-radius:999px; border:1px solid var(--border,#e6e9ef); background:#fff; }
 .btn-pill.active { background: #0086ff; color:#fff; border-color:#0073e6; }
 .dialog__footer { display:flex; justify-content:flex-end; gap:12px; padding:16px 20px; border-top:1px solid rgba(0,0,0,0.04); flex-shrink: 0;}
+
+:host ::ng-deep app-searchable-dropdown {
+  position: relative;
+  z-index: 2;
+}
+
+:host ::ng-deep app-searchable-dropdown .dropdown-panel {
+  z-index: 10002;
+}

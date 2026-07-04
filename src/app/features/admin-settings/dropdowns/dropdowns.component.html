@@ -15,7 +15,7 @@
           <a href="#" class="card card-link" (click)="openGroup(g); $event.preventDefault()">
             <div class="card__header">
               <div class="title-with-icon">
-                <span class="material-icons card__icon">view_module</span>
+                <span class="material-icons card__icon">{{ getGroupIcon(g.title) }}</span>
                 <div class="card__heading">
                   <h3 class="card__title">{{ g.title }}</h3>
                 </div>
@@ -23,9 +23,12 @@
             </div>
 
             <div class="card__stats">
-              <div class="card__description">
-                {{ g.categories.slice(0, 3).join(', ') }}{{ g.categories.length > 3 ? '...' : '' }}
-              </div>
+              <span class="chip" *ngFor="let category of g.categories.slice(0, 4)">
+                {{ category }}
+              </span>
+              <span class="chip chip--primary" *ngIf="g.categories.length > 4">
+                +{{ g.categories.length - 4 }}
+              </span>
             </div>
 
             <div class="card__footer">
@@ -59,7 +62,7 @@
               <app-action-button
                 class="settings-header-action"
                 type="primary"
-                label="Add Option"
+                label="Add New"
                 icon="add"
                 [disabled]="!selectedCategory() || (selectedCategory() === 'Sub-Research Domain' && !selectedSubDomainParentId())"
                 (clicked)="addOption()"
@@ -69,75 +72,87 @@
         </div>
 
         <div class="card__content settings-card__content">
-          <app-submissions-search
-            [placeholder]="getSearchPlaceholder()"
-            [value]="searchQuery()"
-            (search)="onSearchQueryChange($event)"
-            (refresh)="onResetFilters()"
-          >
-            <div search-top-row class="dropdown-category-filter">
-              <span class="form-label">Category</span>
-              <div class="category-list" role="tablist" aria-label="Dropdown categories">
-                <button
-                  *ngFor="let name of selectedGroupCategories()"
-                  type="button"
-                  class="category-chip"
-                  [class.is-active]="selectedCategory() === name"
-                  (click)="selectCategory(name)"
-                  [attr.aria-pressed]="selectedCategory() === name"
-                >
-                  <span class="category-label">{{ getCategoryDisplayLabel(name) }}</span>
-                </button>
+          <div class="dropdown-options-panel">
+            <app-submissions-search
+              [class.has-domain-filter]="selectedCategory() === 'Sub-Research Domain'"
+              [placeholder]="getSearchPlaceholder()"
+              [value]="searchQuery()"
+              (search)="onSearchQueryChange($event)"
+              (refresh)="onResetFilters()"
+            >
+              <div search-top-row class="dropdown-category-filter">
+                <div class="category-list" role="tablist" aria-label="Dropdown categories">
+                  <button
+                    *ngFor="let name of selectedGroupCategories()"
+                    type="button"
+                    class="category-chip"
+                    [class.is-active]="selectedCategory() === name"
+                    [disabled]="apiLoading()"
+                    (click)="selectCategory(name)"
+                    role="tab"
+                    [attr.aria-selected]="selectedCategory() === name"
+                  >
+                    <span class="material-icons category-icon">{{ getTabIcon(name) }}</span>
+                    <span class="category-label">{{ getTabDisplayLabel(name) }}</span>
+                  </button>
+                </div>
               </div>
-            </div>
-            <div
-              search-top-row
-              class="sub-domain-parent-filter"
-              *ngIf="selectedCategory() === 'Sub-Research Domain'"
-            >
-              <span class="form-label">Research Domain</span>
-              <app-searchable-dropdown
-                class="sub-domain-parent-select"
-                [options]="subDomainParents()"
-                [isMulti]="false"
-                valueMode="single"
-                placeholder="Select a research domain to manage its sub-domains"
-                [ngModel]="selectedSubDomainParentId() ? selectedSubDomainParentId()!.toString() : null"
-                (ngModelChange)="onSubDomainParentSelected($event)"
-              ></app-searchable-dropdown>
-            </div>
-            <label search-filters>
-              <span></span>
-              <select
-                class="input--select"
-                [ngModel]="statusFilter()"
-                (ngModelChange)="onStatusFilterChange($event)"
+              <label
+                search-filters
+                class="sub-domain-parent-filter"
+                *ngIf="selectedCategory() === 'Sub-Research Domain'"
               >
-                <option value="all">All</option>
-                <option value="active">Active</option>
-                <option value="inactive">Deactivated</option>
-              </select>
-            </label>
-          </app-submissions-search>
-          <div *ngIf="selectedCategory(); else selectCategoryHint">
-           <ng-container *ngIf="selectedCategory() !== 'Sub-Research Domain' || selectedSubDomainParentId(); else selectSubDomainParentHint">
-            <app-data-table
-              class="dropdown-options-table"
-              [columns]="tableColumns()"
-              [rows]="paginatedOptions()"
-              [sortColumn]="sortBy()"
-              [sortDirection]="sortDirection()"
-              (sortChange)="onSortChange($event)"
-              [dense]="true"
-            >
-              <ng-template #headerTemplate let-column="column">
-                <span class="header-label">{{ column.label }}</span>
-              </ng-template>
-              <ng-template #rowTemplate let-row="row" let-rowIndex="index">
-                <tr [class.row--inactive]="row.status === 'Inactive'">
-                  <td class="select-cell">
-                    {{ (optionsPage() - 1) * optionsPageSize() + rowIndex + 1 }}
-                  </td>
+                <app-searchable-dropdown
+                  class="sub-domain-parent-select"
+                  [options]="subDomainParents()"
+                  [isMulti]="false"
+                  valueMode="single"
+                  placeholder="Select research domain"
+                  [ngModel]="selectedSubDomainParentId() ? selectedSubDomainParentId()!.toString() : null"
+                  (ngModelChange)="onSubDomainParentSelected($event)"
+                ></app-searchable-dropdown>
+              </label>
+              <label search-filters>
+                <span></span>
+                <select
+                  class="input--select"
+                  [ngModel]="statusFilter()"
+                  (ngModelChange)="onStatusFilterChange($event)"
+                >
+                  <option value="all">All</option>
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                </select>
+              </label>
+            </app-submissions-search>
+            <div class="dropdown-options-results">
+              <div *ngIf="selectedCategory(); else selectCategoryHint">
+               <ng-container *ngIf="selectedCategory() !== 'Sub-Research Domain' || selectedSubDomainParentId(); else selectSubDomainParentHint">
+                @if (apiLoading()) {
+                  <app-table-skeleton
+                    [columns]="tableColumns()"
+                    [rows]="5"
+                    [showSearch]="false"
+                    loadingLabel="Loading dropdown options"
+                  ></app-table-skeleton>
+                } @else {
+                <app-data-table
+                  class="dropdown-options-table"
+                  [columns]="tableColumns()"
+                  [rows]="paginatedOptions()"
+                  [sortColumn]="sortBy()"
+                  [sortDirection]="sortDirection()"
+                  (sortChange)="onSortChange($event)"
+                  [dense]="true"
+                >
+                  <ng-template #headerTemplate let-column="column">
+                    <span class="header-label">{{ column.label }}</span>
+                  </ng-template>
+                  <ng-template #rowTemplate let-row="row" let-rowIndex="index">
+                    <tr [class.row--inactive]="row.status === 'Inactive'">
+                      <td class="select-cell">
+                        {{ (optionsPage() - 1) * optionsPageSize() + rowIndex + 1 }}
+                      </td>
 
                   <td class="option-name-cell">{{ row.value }}</td>
 
@@ -214,39 +229,49 @@
                     </span>
                   </td>
 
-                  <td>{{ row.lastUpdated }}</td>
+                  @if (!isRdigSimpleNameStatusCategory()) {
+                    <td>{{ row.lastUpdated }}</td>
+                  }
 
                   <td class="actions-cell">
-                    <button
-                      class="icon-btn icon-btn--edit"
-                      type="button"
-                      title="Edit inline"
-                      (click)="editOption(row.id)"
-                    >
-                      <app-table-action-icon action="edit"></app-table-action-icon>
-                    </button>
+                    <div class="table-actions">
+                      <button
+                        class="table-action"
+                        type="button"
+                        title="Edit option"
+                        data-tooltip="Edit option"
+                        aria-label="Edit option"
+                        (click)="editOption(row.id)"
+                      >
+                        <app-table-action-icon action="edit"></app-table-action-icon>
+                      </button>
 
-                    <button
-                      class="icon-btn"
-                      [class.icon-btn--activate]="row.status === 'Inactive'"
-                      [class.icon-btn--deactivate]="row.status === 'Active'"
-                      type="button"
-                      [title]="row.status === 'Inactive' ? 'Activate option' : 'Deactivate option'"
-                      (click)="toggleStatus(row.id)"
-                    >
-                      <app-table-action-icon
-                        [action]="row.status === 'Inactive' ? 'activate' : 'deactivate'"
-                      ></app-table-action-icon>
-                    </button>
+                      <button
+                        class="table-action"
+                        [class.table-action--success]="row.status === 'Inactive'"
+                        [class.table-action--warning]="row.status === 'Active'"
+                        type="button"
+                        [title]="row.status === 'Inactive' ? 'Activate option' : 'Deactivate option'"
+                        [attr.data-tooltip]="row.status === 'Inactive' ? 'Activate option' : 'Deactivate option'"
+                        [attr.aria-label]="row.status === 'Inactive' ? 'Activate option' : 'Deactivate option'"
+                        (click)="toggleStatus(row.id)"
+                      >
+                        <app-table-action-icon
+                          [action]="row.status === 'Inactive' ? 'activate' : 'deactivate'"
+                        ></app-table-action-icon>
+                      </button>
 
-                    <button
-                      class="icon-btn icon-btn--delete"
-                      type="button"
-                      title="Delete"
-                      (click)="openDeleteDialog(row.id)"
-                    >
-                      <app-table-action-icon action="delete"></app-table-action-icon>
-                    </button>
+                      <button
+                        class="table-action table-action--danger"
+                        type="button"
+                        title="Delete option"
+                        data-tooltip="Delete option"
+                        aria-label="Delete option"
+                        (click)="openDeleteDialog(row.id)"
+                      >
+                        <app-table-action-icon action="delete"></app-table-action-icon>
+                      </button>
+                    </div>
                   </td>
                 </tr>
               </ng-template>
@@ -262,9 +287,10 @@
             >
             </app-pagination>
 
-            <div *ngIf="filteredOptions().length === 0" class="empty-state">
+            <div *ngIf="filteredOptions().length === 0 && !apiLoading()" class="empty-state">
               <p>No options for this category. Click "Add Option" to create one.</p>
             </div>
+                }
            </ng-container>
 
            <ng-template #selectSubDomainParentHint>
@@ -279,22 +305,26 @@
               <p>Select a dropdown category to view or manage its options.</p>
             </div>
           </ng-template>
+            </div>
+          </div>
         </div>
       </div>
 
       <app-add-option-modal
         [isOpen]="showAddModal()"
         [title]="editingOptionId() ? 'Edit Option' : 'Add Dropdown Option'"
+        [showCategory]="!isRdigSimpleNameStatusCategory()"
         [categoryLabel]="getCategoryDisplayLabel(selectedCategory())"
         [optionNameLabel]="getOptionNameInputLabel()"
         [availableForms]="shareableForms()"
+        [availableFormOptions]="getModalFormOptions()"
         [defaultSelectedForms]="defaultSelectedForms()"
         [initial]="editingInitialPayload()"
         [primaryActionLabel]="editingOptionId() ? 'Save' : 'Add Option'"
         [showAccountNumberMetadata]="isAccountCodeMetadataCategory()"
         [accountNumberLabel]="getAccountNumberMetadataLabel()"
         [showRegionMetadata]="isRegionMetadataCategory()"
-        [allowFormSharing]="canShareSelectedCategory() && !isApiMode()"
+        [allowFormSharing]="canShareSelectedCategory() && (!isApiMode() || usesTypeOfOrganisationFormSelect())"
         [showParentDomain]="isApiMode() && selectedCategory() === 'Sub-Research Domain' && !!editingOptionId()"
         [parentDomainLabel]="'Research Domain'"
         [parentDomainOptions]="subDomainParents()"

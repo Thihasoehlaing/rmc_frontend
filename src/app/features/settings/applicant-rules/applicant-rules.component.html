@@ -266,7 +266,7 @@
             <small>Department name will be stored as the rule value.</small>
           } @else if (ruleType() === 'STAFF') {
             <app-searchable-dropdown
-              [options]="academicStaffOptions()"
+              [options]="staffDropdownOptions()"
               [searchable]="true"
               placeholder="Search academic staff..."
               [ngModel]="ruleValue()"

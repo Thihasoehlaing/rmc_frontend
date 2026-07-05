@@ -19,6 +19,18 @@ export const settingsRoutes: Routes = [
       ),
   },
   {
+    path: 'account-code-categories',
+    loadComponent: () =>
+      import('./account-codes/account-code-categories.component').then(
+        m => m.AccountCodeCategoriesComponent,
+      ),
+  },
+  {
+    path: 'account-codes',
+    loadComponent: () =>
+      import('./account-codes/account-codes.component').then(m => m.AccountCodesComponent),
+  },
+  {
     path: 'staff-directory',
     loadComponent: () =>
       import('./staff-directory/staff-directory.component').then(m => m.StaffDirectoryComponent),

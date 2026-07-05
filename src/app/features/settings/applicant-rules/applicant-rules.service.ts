@@ -55,11 +55,12 @@ export interface DepartmentOption {
   is_active: boolean;
 }
 
-export interface AcademicStaffOption {
+export interface StaffOption {
   id: number;
   username: string | null;
   fullname: string | null;
   email: string | null;
+  staff_type: string | null;
   department: string | null;
 }
 
@@ -84,7 +85,7 @@ export class ApplicantRulesService {
   private readonly baseUrl = `${this.apiUrl}/api/settings/applicant-rules`;
   private readonly formsUrl = `${this.apiUrl}/api/forms`;
   private readonly departmentsUrl = `${this.apiUrl}/api/master-data/departments`;
-  private readonly academicStaffUrl = `${this.apiUrl}/api/academic-staff`;
+  private readonly staffUrl = `${this.apiUrl}/api/master-data/staff`;
 
   list(params: ApplicantRuleListParams): Observable<ApiResponse<PaginatedData<ApplicantRule>>> {
     let httpParams = new HttpParams()
@@ -133,7 +134,7 @@ export class ApplicantRulesService {
     return this.http.get<ApiResponse<DepartmentOption[]>>(this.departmentsUrl);
   }
 
-  listAcademicStaff(): Observable<ApiResponse<AcademicStaffOption[]>> {
-    return this.http.get<ApiResponse<AcademicStaffOption[]>>(this.academicStaffUrl);
+  listStaffOptions(): Observable<ApiResponse<StaffOption[]>> {
+    return this.http.get<ApiResponse<StaffOption[]>>(this.staffUrl);
   }
 }

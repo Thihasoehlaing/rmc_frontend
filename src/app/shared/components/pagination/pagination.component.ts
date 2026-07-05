@@ -23,6 +23,7 @@ export class PaginationComponent {
   @Input() pageSizeOptions: number[] = [5, 15, 30, 50];
   @Input() totalItems: number | null = null;
   @Input() itemCount: number | null = null;
+  @Input() itemLabel: string = 'results';
 
   @Output() pageChange = new EventEmitter<number>();
   @Output() pageSizeChange = new EventEmitter<number>();

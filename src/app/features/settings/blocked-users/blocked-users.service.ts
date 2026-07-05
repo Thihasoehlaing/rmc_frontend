@@ -44,6 +44,15 @@ export interface UpdateBlockedUserPayload extends CreateBlockedUserPayload {
   is_active: boolean;
 }
 
+export interface StaffOption {
+  id: number;
+  username: string | null;
+  fullname: string | null;
+  email: string | null;
+  staff_type: string | null;
+  department: string | null;
+}
+
 interface PaginatedData<T> {
   items: T[];
   pagination: ApiPagination;
@@ -52,8 +61,10 @@ interface PaginatedData<T> {
 @Injectable({ providedIn: 'root' })
 export class BlockedUsersService {
   private readonly http = inject(HttpClient);
+  private readonly apiUrl = environment.apiUrl.replace(/\/$/, '');
   private readonly baseUrl =
-    `${environment.apiUrl.replace(/\/$/, '')}/api/settings/blocked-users`;
+    `${this.apiUrl}/api/settings/blocked-users`;
+  private readonly staffOptionsUrl = `${this.apiUrl}/api/master-data/staff`;
 
   list(params: {
     page: number;
@@ -112,5 +123,9 @@ export class BlockedUsersService {
     return this.http.delete<ApiResponse<BlockedUser>>(
       `${this.baseUrl}/${id}`,
     );
+  }
+
+  listStaffOptions(): Observable<ApiResponse<StaffOption[]>> {
+    return this.http.get<ApiResponse<StaffOption[]>>(this.staffOptionsUrl);
   }
 }

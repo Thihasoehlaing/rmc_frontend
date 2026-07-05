@@ -132,14 +132,13 @@
               [totalPages]="optionsTotalPages()"
               [pageSize]="optionsPageSize()"
               [pageSizeOptions]="optionsPageSizeOptions"
+              [totalItems]="getFilteredAndSortedOptions().length"
+              [itemCount]="paginatedOptions().length"
+              itemLabel="options"
               (pageChange)="onOptionsPageChange($event)"
               (pageSizeChange)="onOptionsPageSizeChange($event)"
             >
             </app-pagination>
-          </div>
-          <div class="table-summary">
-            {{ optionsPageStart() }}-{{ optionsPageEnd() }} of
-            {{ getFilteredAndSortedOptions().length }} options
           </div>
         } @else {
           <div class="empty-state">

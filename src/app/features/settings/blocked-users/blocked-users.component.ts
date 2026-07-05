@@ -3,6 +3,7 @@ import { Component, OnInit, TrackByFunction, inject, signal } from '@angular/cor
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
 
+import { DropdownOption } from '../../../core/interfaces/components.interface';
 import { ToastService } from '../../../core/services/toast.service';
 import {
   DataTableColumn,
@@ -10,12 +11,14 @@ import {
 } from '../../../shared/components/data-table/data-table.component';
 import { DialogComponent } from '../../../shared/components/dialog/dialog.component';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
+import { SearchableDropdownComponent } from '../../../shared/components/searchable-dropdown/searchable-dropdown.component';
 import { DetailPanelSkeletonComponent } from '../../../shared/components/detail-panel-skeleton/detail-panel-skeleton.component';
 import { TableSkeletonComponent } from '../../../shared/components/table-skeleton/table-skeleton.component';
 import {
   BlockedUser,
   BlockedUsersService,
   CreateBlockedUserPayload,
+  StaffOption,
   UpdateBlockedUserPayload,
 } from './blocked-users.service';
 
@@ -35,6 +38,7 @@ type StatusAction = 'unblock' | 'block';
     DataTableComponent,
     DialogComponent,
     PaginationComponent,
+    SearchableDropdownComponent,
     DetailPanelSkeletonComponent,
     TableSkeletonComponent,
   ],
@@ -46,6 +50,7 @@ export class BlockedUsersComponent implements OnInit {
   private readonly toastService = inject(ToastService);
 
   readonly blockedUsers = signal<BlockedUser[]>([]);
+  readonly staffOptions = signal<StaffOption[]>([]);
   readonly searchTerm = signal('');
   readonly selectedStatus = signal<StatusFilter>('');
   readonly appliedSearch = signal('');
@@ -58,6 +63,8 @@ export class BlockedUsersComponent implements OnInit {
   readonly totalPages = signal(1);
   readonly isLoading = signal(true);
   readonly loadFailed = signal(false);
+  readonly isStaffOptionsLoading = signal(false);
+  readonly staffOptionsFailed = signal(false);
 
   readonly dialogMode = signal<DialogMode | null>(null);
   readonly selectedBlockedUser = signal<BlockedUser | null>(null);
@@ -91,7 +98,36 @@ export class BlockedUsersComponent implements OnInit {
     (row as BlockedUser).id;
 
   ngOnInit(): void {
+    this.loadStaffOptions();
     this.loadBlockedUsers();
+  }
+
+  staffDropdownOptions(): DropdownOption<string>[] {
+    const options = this.staffOptions()
+      .filter((staff) => !!staff.username)
+      .map((staff) => ({
+        value: staff.username!,
+        label: staff.fullname || staff.username!,
+        description: [staff.username, staff.email, staff.staff_type, staff.department]
+          .filter(Boolean)
+          .join(' | '),
+        searchText: [staff.username, staff.fullname, staff.email, staff.staff_type, staff.department]
+          .filter(Boolean)
+          .join(' '),
+      }));
+
+    const username = this.username();
+    if (username && !options.some((option) => option.value === username)) {
+      const selectedUser = this.selectedBlockedUser();
+      options.unshift({
+        value: username,
+        label: selectedUser?.fullname || username,
+        description: [username, selectedUser?.email].filter(Boolean).join(' | '),
+        searchText: [username, selectedUser?.fullname, selectedUser?.email].filter(Boolean).join(' '),
+      });
+    }
+
+    return options;
   }
 
   loadBlockedUsers(): void {
@@ -129,6 +165,22 @@ export class BlockedUsersComponent implements OnInit {
       });
   }
 
+  loadStaffOptions(): void {
+    this.isStaffOptionsLoading.set(true);
+    this.staffOptionsFailed.set(false);
+
+    this.blockedUsersService
+      .listStaffOptions()
+      .pipe(finalize(() => this.isStaffOptionsLoading.set(false)))
+      .subscribe({
+        next: (response) => this.staffOptions.set(response.data),
+        error: () => {
+          this.staffOptions.set([]);
+          this.staffOptionsFailed.set(true);
+        },
+      });
+  }
+
   search(): void {
     this.appliedSearch.set(this.searchTerm().trim());
     this.appliedStatus.set(this.selectedStatus());
@@ -158,6 +210,7 @@ export class BlockedUsersComponent implements OnInit {
   }
 
   openCreateDialog(): void {
+    this.ensureStaffOptionsLoaded();
     this.selectedBlockedUser.set(null);
     this.username.set('');
     this.reason.set('');
@@ -167,6 +220,7 @@ export class BlockedUsersComponent implements OnInit {
   }
 
   openEditDialog(user: BlockedUser): void {
+    this.ensureStaffOptionsLoaded();
     this.selectedBlockedUser.set(user);
     this.dialogMode.set('edit');
     this.fetchBlockedUser(user.id);
@@ -182,6 +236,13 @@ export class BlockedUsersComponent implements OnInit {
     this.dialogMode.set(null);
     this.selectedBlockedUser.set(null);
     this.detailFailed.set(false);
+  }
+
+  private ensureStaffOptionsLoaded(): void {
+    if (this.isStaffOptionsLoading()) return;
+    if (this.staffOptions().length === 0 || this.staffOptionsFailed()) {
+      this.loadStaffOptions();
+    }
   }
 
   saveBlockedUser(): void {
@@ -285,7 +346,7 @@ export class BlockedUsersComponent implements OnInit {
   }
 
   normalizeUsername(value: string): string {
-    return value.trim().split('@')[0].toLowerCase();
+    return value.trim().split('@')[0];
   }
 
   formatDate(value: string | null): string {

@@ -128,13 +128,13 @@
       [totalPages]="totalPages()"
       [pageSize]="pageSize()"
       [pageSizeOptions]="pageSizeOptions"
+      [totalItems]="totalItems()"
+      [itemCount]="staffRows().length"
+      itemLabel="staff"
       (pageChange)="onPageChange($event)"
       (pageSizeChange)="onPageSizeChange($event)"
     ></app-pagination>
   </section>
 
-  <p class="reviewer-page__footer">
-    Showing {{ staffRows().length }} staff on this page ·
-    {{ totalItems() }} matching this filter in total
-  </p>
+
 </section>

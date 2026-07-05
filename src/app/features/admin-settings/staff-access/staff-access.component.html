@@ -120,6 +120,9 @@
       [totalPages]="totalPages()"
       [pageSize]="pageSize()"
       [pageSizeOptions]="pageSizeOptions"
+      [totalItems]="totalItems()"
+      [itemCount]="staffRecords().length"
+      itemLabel="staff access records"
       (pageChange)="onPageChange($event)"
       (pageSizeChange)="onPageSizeChange($event)"
     ></app-pagination>

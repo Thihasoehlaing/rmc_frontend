@@ -58,6 +58,52 @@
   font-family: inherit;
 }
 
+.forms-table-card__footer {
+  display: block !important;
+  grid-template-columns: none !important;
+  padding-top: var(--space-3);
+  width: 100%;
+}
+
+.forms-table-card__footer app-pagination {
+  display: block;
+  width: 100%;
+}
+
+:host ::ng-deep .forms-table-card__footer .pagination-wrapper {
+  display: grid !important;
+  grid-template-columns: minmax(240px, 1fr) auto minmax(180px, 1fr) !important;
+  align-items: center;
+  column-gap: var(--space-5);
+  padding: 0;
+  overflow: visible;
+  width: 100%;
+}
+
+:host ::ng-deep .forms-table-card__footer .pagination-summary {
+  display: block !important;
+  justify-self: start;
+  min-width: 0;
+  white-space: normal;
+  line-height: 1.45;
+  text-align: left;
+}
+
+:host ::ng-deep .forms-table-card__footer .pagination-controls {
+  justify-self: center;
+  justify-content: center;
+  min-width: 0;
+}
+
+:host ::ng-deep .forms-table-card__footer .pagination-page-size {
+  justify-self: end;
+  min-width: 156px;
+}
+
+:host ::ng-deep .forms-table-card__footer .pagination-page-size select {
+  min-width: 180px;
+}
+
 @media (max-width: 1280px) {
   .forms-page--settings .account-codes-toolbar {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -82,5 +128,31 @@
   .forms-page--settings .account-categories-toolbar .forms-toolbar__actions,
   .forms-page--settings .account-codes-toolbar .forms-toolbar__actions {
     justify-content: flex-start;
+  }
+
+  :host ::ng-deep .forms-table-card__footer .pagination-wrapper {
+    grid-template-columns: 1fr !important;
+    justify-items: stretch;
+    gap: var(--space-3);
+  }
+
+  :host ::ng-deep .forms-table-card__footer .pagination-summary,
+  :host ::ng-deep .forms-table-card__footer .pagination-controls,
+  :host ::ng-deep .forms-table-card__footer .pagination-page-size {
+    justify-self: stretch;
+  }
+
+  :host ::ng-deep .forms-table-card__footer .pagination-controls {
+    justify-content: flex-start;
+    overflow-x: auto;
+    padding-bottom: 2px;
+  }
+
+  :host ::ng-deep .forms-table-card__footer .pagination-page-size {
+    width: 100%;
+  }
+
+  :host ::ng-deep .forms-table-card__footer .pagination-page-size select {
+    width: 100%;
   }
 }

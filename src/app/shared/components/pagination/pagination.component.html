@@ -2,7 +2,7 @@
   <div class="pagination-summary">
     @if (showResultSummary) {
       Showing <strong>{{ resultStart }}</strong> to <strong>{{ resultEnd }}</strong> of
-      <strong>{{ totalItems }}</strong> results
+      <strong>{{ totalItems }}</strong> {{ itemLabel }}
     } @else {
       Page <strong>{{ currentPage }}</strong> of <strong>{{ totalPages }}</strong>
     }

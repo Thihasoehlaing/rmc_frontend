@@ -201,35 +201,22 @@
 
     @if (!isLoading() && !loadFailed()) {
       <footer class="forms-table-card__footer">
-        <p class="forms-count">
-          @if (totalItems() > 0) {
-            Showing {{ pageStart() }} to {{ pageEnd() }} of {{ totalItems() }} results
-          } @else {
-            Showing 0 results
-          }
-        </p>
+        
 
         <app-pagination
           [currentPage]="page()"
           [totalPages]="totalPages()"
           [pageSize]="pageSize()"
           [pageSizeOptions]="pageSizeOptions"
+          [totalItems]="totalItems()"
+          [itemCount]="academicStaff().length"
+          itemLabel="results"
           (pageChange)="onPageChange($event)"
           (pageSizeChange)="onPageSizeChange($event)"
         >
         </app-pagination>
 
-        <label class="forms-page-size" aria-label="Items per page">
-          <select
-            class="input--select"
-            [ngModel]="pageSize()"
-            (ngModelChange)="onPageSizeChange($event)"
-          >
-            @for (size of pageSizeOptions; track size) {
-              <option [ngValue]="size">{{ size }} per page</option>
-            }
-          </select>
-        </label>
+        
       </footer>
     }
   </section>

@@ -1273,6 +1273,9 @@
           [totalPages]="paginationTotalPages"
           [pageSize]="paginationPageSize()"
           [pageSizeOptions]="paginationPageSizeOptions"
+          [totalItems]="470"
+          [itemCount]="paginationPageSize()"
+          itemLabel="results"
           (pageChange)="onPaginationPageChange($event)"
           (pageSizeChange)="onPaginationPageSizeChange($event)"
         >

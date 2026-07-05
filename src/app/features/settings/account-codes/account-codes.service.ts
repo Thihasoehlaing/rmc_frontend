@@ -25,7 +25,8 @@ export interface PagedResult<T> {
 }
 
 export type StatusFilter = '' | 'Active' | 'Inactive';
-export type LocationType = 'BASE' | 'LOCAL' | 'FOREIGN';
+export type LocationType = 'LOCAL' | 'FOREIGN';
+export type AccountCodeLocationType = LocationType | 'BASE';
 
 export interface AccountCodeCategory {
   id: number;
@@ -40,15 +41,21 @@ export interface AccountCodeCategoryPayload {
   is_active: boolean;
 }
 
+export interface AccountCodeCategoryOption {
+  id: number;
+  category_name: string;
+}
+
 export interface AccountCode {
   id: number;
   account_code_category_id: number;
   category_name: string | null;
   code: string;
   description: string;
-  location_type: LocationType;
+  location_type: AccountCodeLocationType;
   is_active: boolean;
   form_codes: string[];
+  forms?: Array<{ id: number; form_name: string; form_code: string }>;
   created_at: string | null;
   updated_at: string | null;
 }
@@ -67,6 +74,7 @@ export class AccountCodesService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = environment.apiUrl.replace(/\/$/, '');
   private readonly categoryUrl = `${this.apiUrl}/api/settings/account-code-categories`;
+  private readonly categoryOptionsUrl = `${this.categoryUrl}/options`;
   private readonly codeUrl = `${this.apiUrl}/api/settings/account-codes`;
 
   listCategories(params: {
@@ -82,6 +90,10 @@ export class AccountCodesService {
 
   getCategory(id: number): Observable<ApiResponse<AccountCodeCategory>> {
     return this.http.get<ApiResponse<AccountCodeCategory>>(`${this.categoryUrl}/${id}`);
+  }
+
+  listCategoryOptions(): Observable<ApiResponse<AccountCodeCategoryOption[]>> {
+    return this.http.get<ApiResponse<AccountCodeCategoryOption[]>>(this.categoryOptionsUrl);
   }
 
   createCategory(

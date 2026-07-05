@@ -61,6 +61,10 @@
   font-family: inherit;
 }
 
+.form-error {
+  color: var(--color-error);
+}
+
 .blocked-status {
   min-width: 88px;
 }

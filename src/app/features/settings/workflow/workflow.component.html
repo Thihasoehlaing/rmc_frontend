@@ -224,19 +224,16 @@
 
     @if (!isLoading() && !loadFailed()) {
       <footer class="forms-table-card__footer">
-        <p class="forms-count">
-          @if (totalItems() > 0) {
-            Showing {{ pageStart() }} to {{ pageEnd() }} of {{ totalItems() }} records
-          } @else {
-            Showing 0 records
-          }
-        </p>
+        
 
         <app-pagination
           [currentPage]="page()"
           [totalPages]="totalPages()"
           [pageSize]="pageSize"
           [pageSizeOptions]="[10]"
+          [totalItems]="totalItems()"
+          [itemCount]="rows().length"
+          itemLabel="records"
           (pageChange)="onPageChange($event)"
         >
         </app-pagination>

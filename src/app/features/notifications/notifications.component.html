@@ -160,6 +160,9 @@
         [totalPages]="totalPages()"
         [pageSize]="pageSize()"
         [pageSizeOptions]="pageSizeOptions"
+        [totalItems]="totalItems()"
+        [itemCount]="notifications().length"
+        itemLabel="notifications"
         (pageChange)="onPageChange($event)"
         (pageSizeChange)="onPageSizeChange($event)"
       ></app-pagination>

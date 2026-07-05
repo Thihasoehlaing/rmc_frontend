@@ -397,6 +397,9 @@
                           [totalPages]="getBreakdownTotalPages('external-research')"
                           [pageSize]="externalResearchBreakdownPageSize"
                           [pageSizeOptions]="ITEMS_PER_PAGE_OPTIONS"
+                          [totalItems]="getBreakdownArray('external-research').length"
+                          [itemCount]="getPaginatedBreakdownArray('external-research').length"
+                          itemLabel="breakdown items"
                           (pageChange)="onExternalResearchBreakdownPageChange($event)"
                           (pageSizeChange)="onExternalResearchBreakdownPageSizeChange($event)"
                         >
@@ -460,6 +463,9 @@
                           [totalPages]="getBreakdownTotalPages(researchType || '')"
                           [pageSize]="internalResearchBreakdownPageSize"
                           [pageSizeOptions]="ITEMS_PER_PAGE_OPTIONS"
+                          [totalItems]="getBreakdownArray(researchType || '').length"
+                          [itemCount]="getPaginatedBreakdownArray(researchType || '').length"
+                          itemLabel="breakdown items"
                           (pageChange)="onInternalResearchBreakdownPageChange($event)"
                           (pageSizeChange)="onInternalResearchBreakdownPageSizeChange($event)"
                         >

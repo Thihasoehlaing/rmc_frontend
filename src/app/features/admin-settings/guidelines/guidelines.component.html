@@ -129,6 +129,9 @@
         [totalPages]="guidelineTotalPages()"
         [pageSize]="guidelinePageSize()"
         [pageSizeOptions]="guidelinePageSizeOptions"
+        [totalItems]="totalGuidelines()"
+        [itemCount]="guidelines().length"
+        itemLabel="guidelines"
         (pageChange)="onGuidelinePageChange($event)"
         (pageSizeChange)="onGuidelinePageSizeChange($event)"
       >

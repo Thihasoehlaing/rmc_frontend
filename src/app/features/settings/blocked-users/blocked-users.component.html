@@ -105,7 +105,7 @@
       <div class="forms-state">
         <span class="material-icons">verified_user</span>
         <h2>No blocked users found</h2>
-        <p>Adjust the filters or block a username from accessing the system.</p>
+        <p>Adjust the filters or block a staff member from accessing the system.</p>
       </div>
     } @else {
       <app-data-table [columns]="columns" [rows]="blockedUsers()" [rowTrackFn]="rowTrackFn">
@@ -183,35 +183,22 @@
 
     @if (!isLoading() && !loadFailed()) {
       <footer class="forms-table-card__footer">
-        <p class="forms-count">
-          @if (totalItems() > 0) {
-            Showing {{ pageStart() }} to {{ pageEnd() }} of {{ totalItems() }} blocked-user records
-          } @else {
-            Showing 0 blocked-user records
-          }
-        </p>
+        
 
         <app-pagination
           [currentPage]="page()"
           [totalPages]="totalPages()"
           [pageSize]="pageSize()"
           [pageSizeOptions]="pageSizeOptions"
+          [totalItems]="totalItems()"
+          [itemCount]="blockedUsers().length"
+          itemLabel="blocked-user records"
           (pageChange)="onPageChange($event)"
           (pageSizeChange)="onPageSizeChange($event)"
         >
         </app-pagination>
 
-        <label class="forms-page-size" aria-label="Items per page">
-          <select
-            class="input--select"
-            [ngModel]="pageSize()"
-            (ngModelChange)="onPageSizeChange($event)"
-          >
-            @for (size of pageSizeOptions; track size) {
-              <option [ngValue]="size">{{ size }} per page</option>
-            }
-          </select>
-        </label>
+        
       </footer>
     }
   </section>
@@ -234,19 +221,22 @@
       </div>
     } @else {
       <div class="form-editor">
-        <label class="forms-filter">
-          <span>Microsoft Username</span>
-          <input
-            class="input--text"
-            type="text"
-            maxlength="100"
-            placeholder="e.g. thiha.hlaing"
-            autocomplete="off"
+        <div class="forms-filter">
+          <span>Staff</span>
+          <app-searchable-dropdown
+            [options]="staffDropdownOptions()"
+            [loading]="isStaffOptionsLoading()"
+            placeholder="Search staff..."
             [ngModel]="username()"
-            (ngModelChange)="username.set($event)"
-          />
-          <small>Email addresses are accepted; only the username part will be stored.</small>
-        </label>
+            (ngModelChange)="username.set($event || '')"
+          >
+          </app-searchable-dropdown>
+          @if (staffOptionsFailed()) {
+            <small class="form-error">Unable to load staff options. Try reopening the dialog.</small>
+          } @else {
+            <small>Select a staff member. The staff username will be stored for blocking.</small>
+          }
+        </div>
 
         <label class="forms-filter">
           <span>Reason</span>
@@ -292,7 +282,7 @@
         <button
           class="btn btn-primary"
           type="button"
-          [disabled]="isSaving() || !normalizeUsername(username())"
+          [disabled]="isSaving() || !username()"
           (click)="saveBlockedUser()"
         >
           {{ isSaving() ? 'Saving...' : dialogMode() === 'create' ? 'Block User' : 'Save Changes' }}

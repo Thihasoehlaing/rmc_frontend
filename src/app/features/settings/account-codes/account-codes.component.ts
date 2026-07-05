@@ -19,7 +19,7 @@ import { TableActionIconComponent } from '../../../shared/components/table-actio
 import { TableSkeletonComponent } from '../../../shared/components/table-skeleton/table-skeleton.component';
 import {
   AccountCode,
-  AccountCodeCategory,
+  AccountCodeCategoryOption,
   AccountCodePayload,
   AccountCodesService,
   LocationType,
@@ -53,7 +53,7 @@ export class AccountCodesComponent implements OnInit {
   private readonly router = inject(Router);
 
   readonly accountCodes = signal<AccountCode[]>([]);
-  readonly categoryOptionsData = signal<AccountCodeCategory[]>([]);
+  readonly categoryOptionsData = signal<AccountCodeCategoryOption[]>([]);
   readonly formOptionsData = signal<{ id: number; form_code: string; form_name: string }[]>([]);
   readonly searchTerm = signal('');
   readonly selectedCategoryId = signal<number | null>(null);
@@ -79,7 +79,7 @@ export class AccountCodesComponent implements OnInit {
   readonly categoryId = signal<number | null>(null);
   readonly code = signal('');
   readonly description = signal('');
-  readonly locationType = signal<LocationType>('BASE');
+  readonly locationType = signal<LocationType>('LOCAL');
   readonly formCodes = signal<string[]>([]);
   readonly accountCodeActive = signal(true);
   readonly isDetailLoading = signal(false);
@@ -91,8 +91,6 @@ export class AccountCodesComponent implements OnInit {
     this.categoryOptionsData().map((category) => ({
       value: category.id,
       label: category.category_name,
-      description: category.is_active ? 'Active' : 'Inactive',
-      disabled: !category.is_active,
     })),
   );
 
@@ -133,17 +131,13 @@ export class AccountCodesComponent implements OnInit {
   loadOptions(): void {
     this.optionsLoading.set(true);
     forkJoin({
-      categories: this.accountCodesService.listCategories({
-        page: 1,
-        perPage: 100,
-        status: 'Active',
-      }),
+      categories: this.accountCodesService.listCategoryOptions(),
       forms: this.formCache.getForms(),
     })
       .pipe(finalize(() => this.optionsLoading.set(false)))
       .subscribe({
         next: ({ categories, forms }) => {
-          this.categoryOptionsData.set(categories.data.items);
+          this.categoryOptionsData.set(categories.data ?? []);
           this.formOptionsData.set((forms.data ?? []).filter((form) => form.is_active));
         },
         error: () => {
@@ -221,7 +215,7 @@ export class AccountCodesComponent implements OnInit {
     this.categoryId.set(null);
     this.code.set('');
     this.description.set('');
-    this.locationType.set('BASE');
+    this.locationType.set('LOCAL');
     this.formCodes.set([]);
     this.accountCodeActive.set(true);
     this.detailFailed.set(false);
@@ -334,9 +328,20 @@ export class AccountCodesComponent implements OnInit {
     return Math.min(this.pageStart() + this.accountCodes().length - 1, this.totalItems());
   }
 
-  formSummary(formCodes: string[]): string {
-    if (!formCodes?.length) return '-';
-    return formCodes.join(', ');
+  formSummary(accountCode: AccountCode): string {
+    if (accountCode.forms?.length) {
+      return accountCode.forms.map((form) => form.form_name).join(', ');
+    }
+    const formCodes = accountCode.form_codes ?? [];
+    if (!formCodes.length) return '-';
+    const formNameByCode = new Map(
+      this.formOptionsData().map((form) => [form.form_code, form.form_name]),
+    );
+    return formCodes.map((code) => formNameByCode.get(code) ?? code).join(', ');
+  }
+
+  private normalizeLocationType(value: string | null | undefined): LocationType {
+    return value === 'FOREIGN' ? 'FOREIGN' : 'LOCAL';
   }
 
   private fetchAccountCode(id: number): void {
@@ -353,7 +358,7 @@ export class AccountCodesComponent implements OnInit {
           this.categoryId.set(data.account_code_category_id);
           this.code.set(data.code);
           this.description.set(data.description);
-          this.locationType.set(data.location_type);
+          this.locationType.set(this.normalizeLocationType(data.location_type));
           this.formCodes.set(data.form_codes ?? []);
           this.accountCodeActive.set(data.is_active);
           this.toastService.success(response.message);

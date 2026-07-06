@@ -1,45 +1,205 @@
-.dialog-backdrop {
+@use '../../../../styles/index' as *;
+
+.modal-overlay {
   position: fixed;
   inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0,0,0,0.45);
-  z-index: 9999;
+  padding: var(--space-4);
+  background: var(--color-overlay);
+  backdrop-filter: blur(4px);
+  z-index: var(--z-modal);
   pointer-events: auto;
 }
-.dialog {
-  width: 680px;
-  background: var(--surface, #fff);
-  border-radius: 10px;
-  box-shadow: 0 10px 30px rgba(22,31,42,0.12);
-  max-height: calc(100vh - 32px);
+
+.modal-dialog {
+  width: 100%;
+  max-width: 680px;
+  max-height: 90vh;
   display: flex;
   flex-direction: column;
   overflow: visible;
+  border-radius: var(--radius-xl);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-xl);
   pointer-events: auto;
 }
-.dialog__header { display:flex; align-items:center; justify-content:space-between; padding:16px 20px; border-bottom:1px solid rgba(0,0,0,0.04); flex-shrink: 0;}
-.dialog__body { padding:20px; display:block; gap:12px; overflow: visible; }
-.form-label { font-weight:600; display:block; margin-bottom:8px; }
-.category-locked { padding:10px; background:var(--neutral-100,#f8f8fb); border-radius:8px; display:inline-block; }
-.metadata-field { margin: var(--space-4) 0; }
+
+.modal-dialog__header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-shrink: 0;
+  padding: var(--space-4) var(--space-4) var(--space-4) var(--space-6);
+  border-bottom: 1px solid var(--border-default);
+  background: var(--color-surface-nested);
+}
+
+.modal-dialog__header h4 {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  color: var(--color-heading);
+  font-size: var(--fs-md);
+  font-weight: var(--fw-bold);
+  line-height: var(--lh-tight);
+}
+
+.modal-dialog__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+.modal-dialog__close:hover {
+  background: var(--color-error-light);
+  color: var(--color-error);
+}
+
+.modal-dialog__close .material-icons {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.modal-dialog__body {
+  flex: 1;
+  padding: var(--space-6);
+  overflow-x: visible;
+  overflow-y: auto;
+}
+
+.modal-dialog__footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  flex-shrink: 0;
+  padding: var(--space-4) var(--space-6);
+  border-top: 1px solid var(--border-default);
+  background: var(--color-surface-nested);
+}
+
+.form-label {
+  display: block;
+  margin: var(--space-4) 0 var(--space-2);
+  color: var(--color-label);
+  font-weight: var(--fw-semibold);
+}
+
+.modal-dialog__body > .form-label:first-child,
+.modal-dialog__body > .form-field:first-child .form-label {
+  margin-top: 0;
+}
+
+.category-locked {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-hover);
+  color: var(--color-label);
+}
+
+.metadata-field {
+  margin: var(--space-4) 0;
+}
+
 .region-metadata-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--space-3);
   margin: var(--space-4) 0;
 }
-.form-field--full { grid-column: 1 / -1; }
-.forms-list { display:flex; flex-direction:column; gap:8px; margin:8px 0 12px; }
-.form-chip { text-align:left; padding:10px 12px; border-radius:8px; border:1px solid var(--border, #e6e9ef); background:transparent; }
-.form-chip.selected { background: #eef6ff; border-color: #cfe4ff; }
-.selection-error { margin: 0 0 12px; color: var(--color-error); font-size: var(--fs-sm); font-weight: 600; }
-.shared-note { margin-top:8px; padding:12px; background:#f5eefb; border-radius:6px; color:#5a2a7a; }
-.status-toggle { display:flex; gap:8px; margin-top:8px; }
-.btn-pill { padding:8px 14px; border-radius:999px; border:1px solid var(--border,#e6e9ef); background:#fff; }
-.btn-pill.active { background: #0086ff; color:#fff; border-color:#0073e6; }
-.dialog__footer { display:flex; justify-content:flex-end; gap:12px; padding:16px 20px; border-top:1px solid rgba(0,0,0,0.04); flex-shrink: 0;}
+
+.form-field--full {
+  grid-column: 1 / -1;
+}
+
+.forms-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: var(--space-2) 0 var(--space-3);
+}
+
+.form-chip {
+  padding: var(--space-3);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-label);
+  text-align: left;
+  cursor: pointer;
+}
+
+.form-chip.selected {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+.helper-text,
+.selection-error,
+.empty-share-targets,
+.shared-note {
+  font-size: var(--fs-sm);
+}
+
+.helper-text,
+.empty-share-targets {
+  margin: 0 0 var(--space-2);
+  color: var(--color-text-secondary);
+}
+
+.selection-error {
+  margin: 0 0 var(--space-3);
+  color: var(--color-error);
+  font-weight: var(--fw-semibold);
+}
+
+.shared-note {
+  margin-top: var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+.status-toggle {
+  display: inline-flex;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+  padding: var(--space-1);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-full);
+  background: var(--color-surface-hover);
+}
+
+.btn-pill {
+  min-height: 34px;
+  padding: 0 var(--space-4);
+  border: 0;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-weight: var(--fw-semibold);
+  cursor: pointer;
+}
+
+.btn-pill.active {
+  background: var(--color-primary);
+  color: var(--color-surface);
+  box-shadow: var(--shadow-xs);
+}
 
 :host ::ng-deep app-searchable-dropdown {
   position: relative;
@@ -47,5 +207,20 @@
 }
 
 :host ::ng-deep app-searchable-dropdown .dropdown-panel {
-  z-index: 10002;
+  z-index: calc(var(--z-modal) + 1);
+}
+
+@media (max-width: 640px) {
+  .modal-dialog {
+    max-height: calc(100vh - var(--space-6));
+  }
+
+  .modal-dialog__body,
+  .modal-dialog__footer {
+    padding: var(--space-4);
+  }
+
+  .region-metadata-grid {
+    grid-template-columns: 1fr;
+  }
 }

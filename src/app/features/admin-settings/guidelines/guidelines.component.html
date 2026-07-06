@@ -2,7 +2,7 @@
   <div class="guidelines-shell">
     <div class="guidelines-header">
       <div>
-        <h1 class="guidelines-title">Guidelines</h1>
+        <h1 class="guidelines-title"><span class="material-icons" aria-hidden="true">rule</span>Guidelines</h1>
         <p class="guidelines-subtitle">
           Build and manage instruction content shown to applicants in each form.
         </p>
@@ -18,40 +18,85 @@
       </button>
     </div>
 
-    @if (!isLoading()) {
-      <app-submissions-search
-        placeholder="Search by title or creator..."
-        [value]="searchTerm()"
-        (search)="onGuidelineSearchChange($event)"
-        (refresh)="resetGuidelineFilters()"
-      >
-        <label search-filters class="guidelines-status-filter">
-          <span>Status</span>
-          <select
-            id="status-filter"
-            class="input--select"
-            [ngModel]="selectedStatus()"
-            (ngModelChange)="onGuidelineStatusChange($event)"
-          >
-            <option value="">All Status</option>
-            <option value="Active">Active</option>
-            <option value="Inactive">Inactive</option>
-          </select>
-        </label>
-      </app-submissions-search>
-    }
+    <section class="guidelines-filter-wrapper" aria-label="Guideline filters">
+      @if (isLoading()) {
+        <div class="guidelines-filter-skeleton" role="status" aria-busy="true" aria-label="Loading guideline filters">
+          <span class="sr-only">Loading guideline filters</span>
+          <div class="guidelines-filter-skeleton__search">
+            <span class="skeleton-block guidelines-filter-skeleton__icon"></span>
+            <span class="skeleton-block guidelines-filter-skeleton__text"></span>
+          </div>
+          <div class="guidelines-filter-skeleton__filter">
+            <span class="skeleton-block guidelines-filter-skeleton__filter-text"></span>
+            <span class="skeleton-block guidelines-filter-skeleton__chevron"></span>
+          </div>
+          <div class="guidelines-filter-skeleton__actions">
+            <div class="guidelines-filter-skeleton__button">
+              <span class="skeleton-block guidelines-filter-skeleton__button-icon"></span>
+              <span class="skeleton-block guidelines-filter-skeleton__button-text"></span>
+            </div>
+            <div class="guidelines-filter-skeleton__button">
+              <span class="skeleton-block guidelines-filter-skeleton__button-icon"></span>
+              <span class="skeleton-block guidelines-filter-skeleton__button-text"></span>
+            </div>
+          </div>
+        </div>
+      } @else {
+        <app-submissions-search
+          placeholder="Search by title or creator..."
+          [value]="searchTerm()"
+          (search)="onGuidelineSearchChange($event)"
+          (refresh)="resetGuidelineFilters()"
+        >
+          <label search-filters class="guidelines-status-filter">
+            <span>Status</span>
+            <select
+              id="status-filter"
+              class="input--select"
+              [ngModel]="selectedStatus()"
+              (ngModelChange)="onGuidelineStatusChange($event)"
+            >
+              <option value="">All Status</option>
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+            </select>
+          </label>
+        </app-submissions-search>
+      }
+    </section>
 
     <div class="guidelines-table-wrapper">
       @if (isLoading()) {
-        <app-table-skeleton
-          [columns]="skeletonColumns"
-          [rows]="5"
-          [showSearch]="true"
-          [showTypeFilter]="true"
-          minWidth="980px"
-          loadingLabel="Loading guidelines"
-        >
-        </app-table-skeleton>
+        <div class="guidelines-loading-table" role="status" aria-busy="true" aria-label="Loading guidelines">
+          <span class="sr-only">Loading guidelines</span>
+          <div class="guidelines-loading-table__frame">
+            <div class="guidelines-loading-table__scroll">
+              <table aria-hidden="true">
+                <colgroup>
+                  @for (column of skeletonColumns; track $index) {
+                    <col [style.width]="column.width" />
+                  }
+                </colgroup>
+                <thead>
+                  <tr>
+                    @for (column of skeletonColumns; track $index) {
+                      <th><span class="skeleton-block guidelines-loading-table__header-line"></span></th>
+                    }
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (row of skeletonRows; track row) {
+                    <tr>
+                      @for (column of skeletonColumns; track $index) {
+                        <td><span class="skeleton-block guidelines-loading-table__cell-line"></span></td>
+                      }
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
       } @else if (loadFailed()) {
         <div class="guidelines-state">
           <span class="material-icons">cloud_off</span>
@@ -123,19 +168,37 @@
       }
     </div>
 
-    @if (!isLoading() && !loadFailed()) {
-      <app-pagination
-        [currentPage]="guidelinePage()"
-        [totalPages]="guidelineTotalPages()"
-        [pageSize]="guidelinePageSize()"
-        [pageSizeOptions]="guidelinePageSizeOptions"
-        [totalItems]="totalGuidelines()"
-        [itemCount]="guidelines().length"
-        itemLabel="guidelines"
-        (pageChange)="onGuidelinePageChange($event)"
-        (pageSizeChange)="onGuidelinePageSizeChange($event)"
-      >
-      </app-pagination>
+    @if (!loadFailed()) {
+      <div class="guidelines-pagination-wrapper">
+        @if (isLoading()) {
+          <div class="guidelines-pagination-skeleton" role="status" aria-busy="true" aria-label="Loading guideline pagination">
+            <span class="sr-only">Loading guideline pagination</span>
+            <div class="guidelines-pagination-skeleton__summary">
+              <span class="skeleton-block guidelines-pagination-skeleton__summary-line"></span>
+            </div>
+            <div class="guidelines-pagination-skeleton__pages">
+          <div class="skeleton-block guidelines-pagination-skeleton__page"></div>
+            </div>
+            <div class="guidelines-pagination-skeleton__size">
+              <span class="skeleton-block guidelines-pagination-skeleton__size-text"></span>
+              <span class="skeleton-block guidelines-pagination-skeleton__size-chevron"></span>
+            </div>
+          </div>
+        } @else {
+          <app-pagination
+            [currentPage]="guidelinePage()"
+            [totalPages]="guidelineTotalPages()"
+            [pageSize]="guidelinePageSize()"
+            [pageSizeOptions]="guidelinePageSizeOptions"
+            [totalItems]="totalGuidelines()"
+            [itemCount]="guidelines().length"
+            itemLabel="guidelines"
+            (pageChange)="onGuidelinePageChange($event)"
+            (pageSizeChange)="onGuidelinePageSizeChange($event)"
+          >
+          </app-pagination>
+        }
+      </div>
     }
   </div>
 
@@ -189,3 +252,12 @@
     </div>
   </app-dialog>
 </div>
+
+
+
+
+
+
+
+
+

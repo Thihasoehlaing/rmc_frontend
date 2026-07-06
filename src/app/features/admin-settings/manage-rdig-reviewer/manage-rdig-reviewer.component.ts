@@ -11,6 +11,7 @@ import {
 import { NoEntryFoundComponent } from '../../../shared/components/no-entry-found/no-entry-found.component';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
 import { SearchableDropdownComponent } from '../../../shared/components/searchable-dropdown/searchable-dropdown.component';
+import { SubmissionsSearchComponent } from '../../../shared/components/submissions-search/submissions-search.component';
 import {
   AcademicStaffRecord,
   AcademicStaffService,
@@ -39,6 +40,7 @@ interface StaffRow {
     DataTableComponent,
     FormsModule,
     SearchableDropdownComponent,
+    SubmissionsSearchComponent,
     PaginationComponent,
     NoEntryFoundComponent,
   ],

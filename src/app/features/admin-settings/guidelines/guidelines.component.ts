@@ -20,10 +20,7 @@ import { SvgIconComponent } from '../../../shared/components/svg-icon/svg-icon.c
 import { SVG_ICON_TRASH } from '../../../shared/icons/svg-icons';
 import { TableActionIconComponent } from '../../../shared/components/table-action-icon/table-action-icon.component';
 import { SubmissionsSearchComponent } from '../../../shared/components/submissions-search/submissions-search.component';
-import {
-  SkeletonColumn,
-  TableSkeletonComponent,
-} from '../../../shared/components/table-skeleton/table-skeleton.component';
+import { SkeletonColumn } from '../../../shared/components/table-skeleton/table-skeleton.component';
 
 interface Guideline {
   id: number;
@@ -44,7 +41,6 @@ type GuidelineSortKey = 'form' | 'title' | 'lastUpdated' | 'createdBy';
   imports: [
     TableActionIconComponent,
     SubmissionsSearchComponent,
-    TableSkeletonComponent,
     CommonModule,
     FormsModule,
     AddGuidelineModalComponent,
@@ -83,6 +79,7 @@ export class GuidelinesComponent implements OnInit {
 
   @ViewChild('viewModal') viewModal?: GuidelinesModalComponent;
 
+  readonly skeletonRows = [0, 1, 2, 3, 4];
   readonly skeletonColumns: readonly SkeletonColumn[] = [
     { width: '80px' },
     { width: '180px' },
@@ -398,3 +395,5 @@ export class GuidelinesComponent implements OnInit {
     return day && month && year ? new Date(year, month - 1, day).getTime() : 0;
   }
 }
+
+

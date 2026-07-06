@@ -61,6 +61,16 @@ export class AddOptionModalComponent implements OnChanges {
   parentDomainId: string = '';
 
   ngOnChanges(changes: SimpleChanges) {
+    // Only reset form state when the modal opens or when the edited row changes.
+    // Ignore changes to other inputs (availableFormOptions, defaultSelectedForms, etc.)
+    // that return new references on every CD cycle — those would continuously wipe
+    // whatever the user has typed.
+    const modalOpened = changes['isOpen']?.currentValue === true && changes['isOpen']?.previousValue !== true;
+    const editingRowChanged = 'initial' in changes;
+    if (!modalOpened && !editingRowChanged) {
+      return;
+    }
+
     const init = this.initial;
     if (init) {
       this.code = init.code || '';

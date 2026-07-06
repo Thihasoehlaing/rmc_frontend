@@ -326,12 +326,12 @@ export class RdigDropdownOptionsService {
     );
   }
 
-  adminCreateTypeOfOrg(categoryId: number, data: { option_name: string; is_active?: boolean; form_ids?: number[] }): Observable<ApiResponse<AdminTypeOfOrg>> {
+  adminCreateTypeOfOrg(data: { option_name: string; is_active?: boolean; form_codes?: string[] }): Observable<ApiResponse<AdminTypeOfOrg>> {
     const body = {
-      dropdown_category_id: categoryId,
+      category_code: 'TYPE_OF_ORGANISATION',
       option_name: data.option_name,
       status: data.is_active === false ? 'INACTIVE' : 'ACTIVE',
-      form_ids: data.form_ids ?? [],
+      form_codes: data.form_codes ?? [],
     };
     return this.http.post<ApiResponse<AdminTypeOfOrg>>(`${environment.apiUrl}/rmc/admin-settings/dropdown-options`, body).pipe(
       tap(() => this.invalidateAndRefresh('type_of_organisation')),
@@ -373,11 +373,11 @@ export class RdigDropdownOptionsService {
     );
   }
 
-  adminUpdateTypeOfOrg(id: number, data: { option_name?: string; is_active?: boolean; form_ids?: number[] }): Observable<ApiResponse<AdminTypeOfOrg>> {
+  adminUpdateTypeOfOrg(id: number, data: { option_name?: string; is_active?: boolean; form_codes?: string[] }): Observable<ApiResponse<AdminTypeOfOrg>> {
     const body: Record<string, unknown> = {};
     if (data.option_name !== undefined) body['option_name'] = data.option_name;
     if (data.is_active !== undefined) body['status'] = data.is_active ? 'ACTIVE' : 'INACTIVE';
-    if (data.form_ids !== undefined) body['form_ids'] = data.form_ids;
+    if (data.form_codes !== undefined) body['form_codes'] = data.form_codes;
     return this.http.put<ApiResponse<AdminTypeOfOrg>>(`${environment.apiUrl}/rmc/admin-settings/dropdown-options/${id}`, body).pipe(
       tap(() => this.invalidateAndRefresh('type_of_organisation')),
     );
@@ -445,3 +445,4 @@ export class RdigDropdownOptionsService {
     return params;
   }
 }
+

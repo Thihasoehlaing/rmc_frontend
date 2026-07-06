@@ -55,6 +55,9 @@ import {
   DataTableComponent,
 } from '../../../shared/components/data-table/data-table.component';
 import { TableActionIconComponent } from '../../../shared/components/table-action-icon/table-action-icon.component';
+import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
+
+type BatchSectionView = 'active' | 'upcoming' | 'history';
 
 // ── Date/time helpers ─────────────────────────────────────────────────────────
 // <input type="datetime-local"> works in local "YYYY-MM-DDTHH:mm" strings —
@@ -193,6 +196,7 @@ function stageWithinBatchValidator(startFn: () => string, endFn: () => string) {
     DialogComponent,
     BatchManagementSkeletonComponent,
     DataTableComponent,
+    PaginationComponent,
   ],
   templateUrl: './batch-sitting.component.html',
   styleUrl: './batch-sitting.component.scss',
@@ -223,6 +227,7 @@ export class BatchSittingComponent implements OnInit, OnDestroy {
 
   // ── UI signals ────────────────────────────────────────────────────────────
   isLoading = signal(true);
+  selectedSection = signal<BatchSectionView>('active');
   isSaving = signal(false);
   isEditingActive = signal(false);
   /** The completed batch being re-activated through the active editor (null = not retrieving). Its stale end date must be replaced before it can start. */
@@ -240,6 +245,9 @@ export class BatchSittingComponent implements OnInit, OnDestroy {
   stagePage = signal(1);
   stagePageSize = signal(15);
   stagePageSizeOptions = [5, 15, 30, 50];
+  historyPage = signal(1);
+  historyPageSize = signal(5);
+  historyPageSizeOptions = [5, 10, 15, 30];
 
   // ── Forms ─────────────────────────────────────────────────────────────────
   activeForm!: FormGroup;
@@ -347,6 +355,24 @@ export class BatchSittingComponent implements OnInit, OnDestroy {
     this.stagePageSize.set(pageSize);
     this.stagePage.set(1);
   }
+  readonly historyTotalPages = computed(() =>
+    Math.max(1, Math.ceil(this.historyBatches().length / this.historyPageSize())),
+  );
+
+  readonly paginatedHistoryBatches = computed(() => {
+    const currentPage = Math.min(this.historyPage(), this.historyTotalPages());
+    const startIndex = (currentPage - 1) * this.historyPageSize();
+    return this.historyBatches().slice(startIndex, startIndex + this.historyPageSize());
+  });
+
+  onHistoryPageChange(page: number): void {
+    this.historyPage.set(page);
+  }
+
+  onHistoryPageSizeChange(pageSize: number): void {
+    this.historyPageSize.set(pageSize);
+    this.historyPage.set(1);
+  }
 
   // ── Lifecycle ─────────────────────────────────────────────────────────────
 
@@ -401,6 +427,7 @@ export class BatchSittingComponent implements OnInit, OnDestroy {
     this.plannedBatches.set(upcoming);
     this.historyBatches.set(history);
     this.stagePage.set(1);
+    this.historyPage.set(1);
     this.expandedUpcomingIds.set(new Set<number>());
     this.expandedHistoryIds.set(new Set<number>());
     this.buildActiveForm(active);
@@ -409,9 +436,24 @@ export class BatchSittingComponent implements OnInit, OnDestroy {
       () => '',
       () => '',
     );
+    this.selectDefaultSection();
 
     this.checkAutoTransitions();
   }
+  private selectDefaultSection(): void {
+    if (this.activeBatch()) {
+      this.selectedSection.set('active');
+      return;
+    }
+
+    if (this.plannedBatches().length > 0) {
+      this.selectedSection.set('upcoming');
+      return;
+    }
+
+    this.selectedSection.set('history');
+  }
+
 
   /**
    * Runs on load and every ~30s while the page is open. Stopping the active
@@ -1062,4 +1104,7 @@ export class BatchSittingComponent implements OnInit, OnDestroy {
     });
   }
 }
+
+
+
 

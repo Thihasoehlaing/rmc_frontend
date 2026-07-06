@@ -118,8 +118,8 @@
           >
             <span>
               <strong>{{ ab.batchName }}</strong>
-              &nbsp;·&nbsp; Submission window: <strong>{{ ab.startDate }}</strong> to
-              <strong>{{ ab.endDate }}</strong>
+              &nbsp;·&nbsp; Submission window: <strong>{{ fmtWindow(submissionOpenIso()) }}</strong>
+              to <strong>{{ fmtWindow(submissionCloseIso()) }}</strong>
             </span>
             @if (deadlineDaysLeft() >= 0 && deadlineDaysLeft() <= 5) {
               <span formAlertAction class="batch-deadline-warn">

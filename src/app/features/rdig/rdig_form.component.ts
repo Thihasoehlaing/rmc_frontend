@@ -114,15 +114,46 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
   /** The form is always shown once batch loading completes — no hard-block gate. */
   readonly canShowForm = computed(() => this.activeBatch() !== undefined);
 
-  /** Days remaining until active batch endDate. Returns -999 when no batch loaded. */
+  /**
+   * When the submission window opens/closes for applicants: the "Applicant"
+   * stage window, falling back to the overall batch dates if the backend
+   * hasn't supplied it. Used for gating, the deadline countdown and the banner.
+   */
+  readonly submissionOpenIso = computed<string | null>(() => {
+    const b = this.activeBatch();
+    return b ? (b.stages?.applicant?.startDate ?? b.startDate ?? null) : null;
+  });
+
+  readonly submissionCloseIso = computed<string | null>(() => {
+    const b = this.activeBatch();
+    return b ? (b.stages?.applicant?.endDate ?? b.endDate ?? null) : null;
+  });
+
+  /** Days remaining until the applicant submission window closes. Returns -999 when no batch loaded. */
   readonly deadlineDaysLeft = computed((): number => {
-    const batch = this.activeBatch();
-    if (!batch) return -999;
+    const closeIso = this.submissionCloseIso();
+    if (!closeIso) return -999;
+    const end = new Date(closeIso);
+    if (Number.isNaN(end.getTime())) return -999;
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const end = new Date(batch.endDate + 'T00:00:00');
+    end.setHours(0, 0, 0, 0);
     return Math.floor((end.getTime() - today.getTime()) / 86_400_000);
   });
+
+  /** Formats an ISO date/datetime for display in the batch banner. */
+  fmtWindow(iso: string | null): string {
+    if (!iso) return '—';
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return iso;
+    return d.toLocaleString('en-GB', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  }
 
   // ── Wizard state ───────────────────────────────────────────────
   currentStep = signal<number>(1);
@@ -1425,10 +1456,10 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
     if (batch && !bypassBatchValidation) {
       const now = new Date();
       // Applicant users are gated on the "Applicant" stage window — its start is
-      // when submissions open for them — not the overall batch window. Falls back
-      // to the batch dates when the backend hasn't supplied the applicant window.
-      const openIso = batch.stages?.applicant?.startDate ?? batch.startDate;
-      const closeIso = batch.stages?.applicant?.endDate ?? batch.endDate;
+      // when submissions open for them — not the overall batch window (see
+      // submissionOpenIso/submissionCloseIso, which fall back to the batch dates).
+      const openIso = this.submissionOpenIso();
+      const closeIso = this.submissionCloseIso();
       const beforeOpen = !!openIso && now < new Date(openIso);
       const afterClose = !!closeIso && now > new Date(closeIso);
       if (beforeOpen || afterClose) {

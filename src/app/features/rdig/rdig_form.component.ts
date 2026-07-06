@@ -11,6 +11,7 @@ import {
 } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../environments/environment';
 import { BatchSitting } from '../../core/interfaces/batch-sitting.interface';
 import { NotificationService } from '../../core/services/notification.service';
 
@@ -94,6 +95,9 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
   readonly guidelineContext: GuidelineContext = this.route.snapshot.queryParamMap.has('id')
     ? 'existing-application'
     : 'new-application';
+
+  /** Active RDIG guideline for applicants — served by the guideline-by-form endpoint (auth-only, no admin gate). */
+  readonly guidelinesEndpoint = `${environment.apiUrl.replace(/\/$/, '')}/api/admin-settings/guidelines/forms/RDIG`;
 
   /** The currently active batch loaded from the server on init. */
   activeBatch = signal<BatchSitting | null | undefined>(undefined); // undefined = loading
@@ -760,7 +764,15 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
                 status: batch.status,
                 startDate: batch.start_date,
                 endDate: batch.end_date,
-              } as BatchSitting)
+                // Only the applicant window is needed here — it governs when
+                // applicant users may submit (see the submit gate below).
+                stages: {
+                  applicant: {
+                    startDate: batch.applicant_start_date ?? null,
+                    endDate: batch.applicant_end_date ?? null,
+                  },
+                },
+              } as unknown as BatchSitting)
             : null,
         );
       },
@@ -1410,10 +1422,19 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
       this.showClosedWindowModal.set(true);
       return;
     }
-    const today = new Date().toISOString().substring(0, 10);
-    if (batch && !bypassBatchValidation && (today < batch.startDate || today > batch.endDate)) {
-      this.showClosedWindowModal.set(true);
-      return;
+    if (batch && !bypassBatchValidation) {
+      const now = new Date();
+      // Applicant users are gated on the "Applicant" stage window — its start is
+      // when submissions open for them — not the overall batch window. Falls back
+      // to the batch dates when the backend hasn't supplied the applicant window.
+      const openIso = batch.stages?.applicant?.startDate ?? batch.startDate;
+      const closeIso = batch.stages?.applicant?.endDate ?? batch.endDate;
+      const beforeOpen = !!openIso && now < new Date(openIso);
+      const afterClose = !!closeIso && now > new Date(closeIso);
+      if (beforeOpen || afterClose) {
+        this.showClosedWindowModal.set(true);
+        return;
+      }
     }
     // ── End batch constraint check ───────────────────────────────────────────
 

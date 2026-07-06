@@ -27,6 +27,12 @@ export class ValidationMessageComponent {
     if (errors['pattern']) return errors['pattern'].message || 'Invalid format.';
     if (errors['requiredTrue']) return 'You must agree to continue.';
 
+    // These are rendered by a dedicated, more specific <span> next to this
+    // component elsewhere (e.g. batch-sitting's start-date scheduling rules) —
+    // showing the generic fallback here too would just duplicate that message.
+    const handledElsewhere = ['activeStartTooSoon', 'plannedStartTooSoon', 'batchNameTaken'];
+    if (handledElsewhere.some((key) => errors[key])) return null;
+
     return 'Invalid input.';
   }
 }

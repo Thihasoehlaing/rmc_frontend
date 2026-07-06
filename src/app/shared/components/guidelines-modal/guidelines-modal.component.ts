@@ -67,8 +67,13 @@ export class GuidelinesModalComponent implements OnChanges {
     this.isLoading.set(true);
     try {
       const res = await this.http.get<GuidelinesResponse>(this.endpoint).toPromise();
+      // Two response shapes are supported: the real admin-settings guideline
+      // endpoint returns a single object ({ data: { content_html } }); the
+      // older mock endpoints return an array ({ data: [{ rdig_guidelines_content }] }).
+      const data = res?.data;
       const html =
-        res?.data?.[0]?.rdig_guidelines_content || '<p>No guidelines available at this time.</p>';
+        (Array.isArray(data) ? data[0]?.rdig_guidelines_content : data?.content_html) ||
+        '<p>No guidelines available at this time.</p>';
       this.content.set(html);
       this.hasFetched = true;
     } catch (err) {

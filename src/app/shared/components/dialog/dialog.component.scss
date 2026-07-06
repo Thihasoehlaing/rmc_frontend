@@ -41,7 +41,10 @@
   display: flex;
   flex-direction: column;
   max-height: 90vh;
-  overflow: visible;
+  // Clip to the card so the body can scroll within the 90vh cap and the
+  // header/footer stay put — otherwise tall content overflows past the card
+  // and pushes the footer (Save/submit buttons) off-screen with no way to reach it.
+  overflow: hidden;
   animation: dialog-in 340ms var(--ease-bounce) both;
 }
 
@@ -112,11 +115,14 @@
 // ── Scrollable body ──────────────────────────────────────────────────
 .modal-dialog__body {
   padding: var(--space-6);
-  overflow-y: visible;
-  overflow-x: visible;
-  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  // flex child must be allowed to shrink below its content height, or it won't
+  // scroll — it would grow the card past 90vh and hide the footer instead.
+  flex: 1 1 auto;
+  min-height: 0;
 
-  // Opt-in scrollable body for dialogs with long content
+  // Kept for backward compatibility — the body now scrolls by default.
   &--scrollable {
     overflow-y: auto;
   }

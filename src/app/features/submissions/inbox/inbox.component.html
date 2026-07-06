@@ -8,19 +8,6 @@
     <p class="inbox-subtitle">Applications awaiting your action</p>
   </div>
 
-  <!-- Deadline warning banner (within 5 days of batch end) -->
-  @if (showDeadlineWarning()) {
-    <div class="deadline-banner">
-      <span class="material-icons deadline-banner__icon">warning</span>
-      <span>
-        <strong>Deadline approaching!</strong>
-        The active batch closes in
-        <strong>{{ batchDeadlineDays() }} day{{ batchDeadlineDays() === 1 ? '' : 's' }}</strong>
-        ({{ activeBatch()?.endDate }}). Complete all pending actions before the window closes.
-      </span>
-    </div>
-  }
-
   <!-- Loading -->
   @if (loading()) {
     <app-table-skeleton [columns]="skeletonColumns" loadingLabel="Loading inbox applications">
@@ -51,7 +38,7 @@
       @if (searchQuery()) {
         No inbox applications match your search.
       } @else {
-        No applications pending your action within the current batch window.
+        No applications are pending your action right now.
       }
     </div>
   }

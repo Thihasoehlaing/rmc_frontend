@@ -1,18 +1,27 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { ApplicationService, TERMINAL_STATUSES } from '../../../core/services/application.service';
+import { finalize } from 'rxjs';
+
+import {
+  WorkflowRequestsService,
+  RequestSummaryDto,
+} from '../../../core/services/workflow-requests.service';
 import { SubmissionsSearchComponent } from '../../../shared/components/submissions-search/submissions-search.component';
 import { TableSortService, SortDirection } from '../../../shared/services/table-sort.service';
 import {
   DataTableColumn,
   DataTableComponent,
 } from '../../../shared/components/data-table/data-table.component';
-import { finalize } from 'rxjs';
 import {
   SkeletonColumn,
   TableSkeletonComponent,
 } from '../../../shared/components/table-skeleton/table-skeleton.component';
 import { TableActionIconComponent } from '../../../shared/components/table-action-icon/table-action-icon.component';
+import {
+  STATUS_COLORS,
+  formTypeLabel,
+  formRoute,
+} from '../../../core/services/request-display.util';
 
 @Component({
   selector: 'app-pending',
@@ -29,15 +38,16 @@ import { TableActionIconComponent } from '../../../shared/components/table-actio
   providers: [TableSortService],
 })
 export class PendingComponent implements OnInit {
-  private appSvc = inject(ApplicationService);
-  private tableSort = inject(TableSortService);
-  private raw = signal<any[]>([]);
+  private readonly requests = inject(WorkflowRequestsService);
+  private readonly tableSort = inject(TableSortService);
+  private raw = signal<RequestSummaryDto[]>([]);
   loading = signal(true);
   error = signal<string | null>(null);
   searchQuery = signal('');
   selectedType = signal('all');
   sortColumn = signal<string | null>(null);
   sortDirection = signal<SortDirection>(null);
+
   readonly skeletonColumns: SkeletonColumn[] = [
     { width: '28%' },
     { width: '13%' },
@@ -60,56 +70,35 @@ export class PendingComponent implements OnInit {
       headerAlign: 'center',
     },
   ];
+
   readonly availableTypes = computed(() => [
     'all',
-    ...Array.from(
-      new Set(
-        this.raw()
-          .filter(
-            (app) =>
-              app.isDraft !== true &&
-              !TERMINAL_STATUSES.has(this.appSvc.getStatus(app)) &&
-              this.appSvc.getStatus(app) !== 'fill_application',
-          )
-          .map((app) => app.formType ?? '')
-          .filter(Boolean),
-      ),
-    ).sort(),
+    ...Array.from(new Set(this.raw().map((a) => (a.form_code ?? '').toUpperCase()).filter(Boolean))).sort(),
   ]);
+
   readonly pending = computed(() => {
-    const query = this.searchQuery().toLowerCase().trim(),
-      type = this.selectedType();
+    const query = this.searchQuery().toLowerCase().trim();
+    const type = this.selectedType();
     const items = this.raw()
-      .filter((app) => {
-        const status = this.appSvc.getStatus(app),
-          nextRoles: string[] = app.workflow?.nextRoles ?? [];
-        return (
-          app.isDraft !== true &&
-          !TERMINAL_STATUSES.has(status) &&
-          status !== 'fill_application' &&
-          !nextRoles.includes('Applicant') &&
-          (type === 'all' || (app.formType ?? '') === type)
-        );
-      })
-      .filter((app) => !query || this.appSvc.getTitle(app).toLowerCase().includes(query));
+      .filter((app) => type === 'all' || (app.form_code ?? '').toUpperCase() === type)
+      .filter((app) => !query || this.getTitle(app).toLowerCase().includes(query));
     if (!this.sortDirection()) return items;
     return [...items].sort((a, b) => {
-      const d =
-        new Date(this.appSvc.getSubmittedAt(a) ?? 0).getTime() -
-        new Date(this.appSvc.getSubmittedAt(b) ?? 0).getTime();
+      const d = this.submittedTs(a) - this.submittedTs(b);
       return this.sortDirection() === 'asc' ? d : -d;
     });
   });
+
   ngOnInit(): void {
-    this.appSvc
-      .getMyApplications()
+    this.requests
+      .getPendingRequests({ page: 1, perPage: 100 })
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe({
-        next: (apps) => this.raw.set(apps),
-        error: () =>
-          this.error.set('Could not reach the JSON server. Make sure `npm run db` is running.'),
+        next: (res) => this.raw.set(res.data?.items ?? []),
+        error: () => this.error.set('Could not load your pending applications. Please try again.'),
       });
   }
+
   onSortChange(column: string): void {
     const next = this.tableSort.getNextState(
       { column: this.sortColumn(), direction: this.sortDirection() },
@@ -118,15 +107,24 @@ export class PendingComponent implements OnInit {
     this.sortColumn.set(next.column);
     this.sortDirection.set(next.direction);
   }
-  getStatusLabel = (app: any) => this.appSvc.getStatusLabel(app);
-  getStatusColor = (app: any) => this.appSvc.getStatusColor(app);
-  getFormTypeLabel = (app: any) => this.appSvc.getFormTypeLabel(app);
-  getFormRoute = (app: any) => this.appSvc.getFormRoute(app);
-  getNextActors(app: any): string {
-    const roles: string[] = app.workflow?.nextRoles ?? [];
-    return roles.length ? roles.join(', ') : '—';
+
+  private submittedTs(app: RequestSummaryDto): number {
+    const iso = app.submitted_at ?? app.updated_at ?? app.created_at;
+    return iso ? new Date(iso).getTime() : 0;
   }
-  formatSubmitted = (app: any) => this.appSvc.formatDate(this.appSvc.getSubmittedAt(app));
-  isRevisionRequired = (app: any) =>
-    this.appSvc.getStatus(app).startsWith('pending_applicant_resubmission');
+
+  getTitle = (app: RequestSummaryDto) => app.title?.trim() || '(Untitled Application)';
+  getStatusLabel = (app: RequestSummaryDto) => app.status_name || app.status_code;
+  getStatusColor = (app: RequestSummaryDto) => STATUS_COLORS[app.status_code] ?? '#6b7280';
+  getFormTypeLabel = (app: RequestSummaryDto) => formTypeLabel(app.form_code, app.form_name);
+  getFormRoute = (app: RequestSummaryDto) => formRoute(app.form_code);
+  getNextActors = (app: RequestSummaryDto) => app.current_actor_role || '—';
+  formatSubmitted = (app: RequestSummaryDto) => {
+    const iso = app.submitted_at ?? app.updated_at ?? app.created_at;
+    return iso
+      ? new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+      : '—';
+  };
+  isRevisionRequired = (app: RequestSummaryDto) =>
+    app.status_code.startsWith('pending_applicant_resubmission');
 }

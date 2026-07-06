@@ -114,15 +114,46 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
   /** The form is always shown once batch loading completes — no hard-block gate. */
   readonly canShowForm = computed(() => this.activeBatch() !== undefined);
 
-  /** Days remaining until active batch endDate. Returns -999 when no batch loaded. */
+  /**
+   * When the submission window opens/closes for applicants: the "Applicant"
+   * stage window, falling back to the overall batch dates if the backend
+   * hasn't supplied it. Used for gating, the deadline countdown and the banner.
+   */
+  readonly submissionOpenIso = computed<string | null>(() => {
+    const b = this.activeBatch();
+    return b ? (b.stages?.applicant?.startDate ?? b.startDate ?? null) : null;
+  });
+
+  readonly submissionCloseIso = computed<string | null>(() => {
+    const b = this.activeBatch();
+    return b ? (b.stages?.applicant?.endDate ?? b.endDate ?? null) : null;
+  });
+
+  /** Days remaining until the applicant submission window closes. Returns -999 when no batch loaded. */
   readonly deadlineDaysLeft = computed((): number => {
-    const batch = this.activeBatch();
-    if (!batch) return -999;
+    const closeIso = this.submissionCloseIso();
+    if (!closeIso) return -999;
+    const end = new Date(closeIso);
+    if (Number.isNaN(end.getTime())) return -999;
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const end = new Date(batch.endDate + 'T00:00:00');
+    end.setHours(0, 0, 0, 0);
     return Math.floor((end.getTime() - today.getTime()) / 86_400_000);
   });
+
+  /** Formats an ISO date/datetime for display in the batch banner. */
+  fmtWindow(iso: string | null): string {
+    if (!iso) return '—';
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return iso;
+    return d.toLocaleString('en-GB', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  }
 
   // ── Wizard state ───────────────────────────────────────────────
   currentStep = signal<number>(1);
@@ -1425,10 +1456,10 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
     if (batch && !bypassBatchValidation) {
       const now = new Date();
       // Applicant users are gated on the "Applicant" stage window — its start is
-      // when submissions open for them — not the overall batch window. Falls back
-      // to the batch dates when the backend hasn't supplied the applicant window.
-      const openIso = batch.stages?.applicant?.startDate ?? batch.startDate;
-      const closeIso = batch.stages?.applicant?.endDate ?? batch.endDate;
+      // when submissions open for them — not the overall batch window (see
+      // submissionOpenIso/submissionCloseIso, which fall back to the batch dates).
+      const openIso = this.submissionOpenIso();
+      const closeIso = this.submissionCloseIso();
       const beforeOpen = !!openIso && now < new Date(openIso);
       const afterClose = !!closeIso && now > new Date(closeIso);
       if (beforeOpen || afterClose) {
@@ -1519,101 +1550,63 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
 
     this.submissionState.set('LOADING');
 
-    // ── Real backend sync (applicant lifecycle only) ──────────────
-    // Creates/updates the RDIG draft + child arrays on the real backend, then
-    // calls the matching lifecycle endpoint for applicant-driven transitions
-    // (draft → submit, returned-for-revision → resubmit). HOS/RMC/Reviewer/RDIG
-    // Chair/VC/CEO actions have no backend endpoint yet, so they only run the
-    // draft sync to keep the applicant's own fields up to date there.
+    // ── Real backend submit ───────────────────────────────────────
+    // Persist the draft + child arrays, then run the applicant lifecycle
+    // transition (draft → submit, returned-for-revision → resubmit). The result
+    // of THIS drives the success/error overlay — no dependency on json-server.
     this.syncToRealBackend()
       .pipe(
         switchMap((id) => {
-          if (currentStatus === 'draft') return this.rdigApi.submit(id);
+          if (currentStatus === 'draft') return this.rdigApi.submit(id).pipe(map(() => id));
           if (
             currentStatus === 'pending_applicant_resubmission_hos' ||
             currentStatus === 'pending_applicant_resubmission_reviewers'
           ) {
-            return this.rdigApi.resubmit(id);
+            return this.rdigApi.resubmit(id).pipe(map(() => id));
           }
-          return of(null);
-        }),
-        catchError((err) => {
-          console.error('RDIG backend submit sync failed — continuing with local workflow:', err);
-          return of(null);
+          return of(id);
         }),
       )
-      .subscribe(() => this.submitToLocalStore(currentStatus, batch, transition));
+      .subscribe({
+        next: (id) => this.onSubmitSuccess(Number(id), currentStatus, transition),
+        error: (err) => this.onSubmitError(err),
+      });
   }
 
-  /** Existing json-server-backed submission — drives the dashboard list views and the local workflow simulation. */
-  private submitToLocalStore(
-    currentStatus: RdigStatus,
-    batch: BatchSitting | null | undefined,
-    transition: any,
-  ): void {
-    // Clear the draft flag on formal submission so the application moves to
-    // the appropriate inbox / pending view and not back to Drafts.
-    const formData = {
-      ...this.rdigForm.getRawValue(),
-      formType: 'RDIG',
-      workflow: this.workflowState(),
-      isDraft: false,
-      savedAt: new Date().toISOString(),
-    };
+  /** Applicant submit/resubmit succeeded on the backend — confirm and redirect. */
+  private onSubmitSuccess(savedId: number, currentStatus: RdigStatus, transition: any): void {
+    if (savedId != null) {
+      this.loadedAppId.set(String(savedId));
+      // Clear any stale "action needed" notification for the current user.
+      this.notifSvc.resolveAction(savedId, 'RDIG Application');
+    }
 
-    const appId = this.loadedAppId();
-    const isEdit = !!appId;
-    const url = isEdit
-      ? `http://localhost:3000/applications/${appId}`
-      : 'http://localhost:3000/applications';
+    // Best-effort workflow notifications (fire-and-forget; never block the UI).
+    if (transition && savedId != null) {
+      this.fireWorkflowNotifications(
+        transition.nextStatus,
+        transition.actorRole,
+        savedId,
+        this.rdigForm.getRawValue(),
+        currentStatus,
+      );
+    }
 
-    const request$ = isEdit ? this.http.put(url, formData) : this.http.post(url, formData);
+    this.submissionState.set('SUCCESS');
+    setTimeout(() => this.router.navigate(['/dashboard']), 2200);
+  }
 
-    request$.subscribe({
-      next: (response: any) => {
-        let savedId = appId;
-        if (!isEdit && response.id) {
-          savedId = response.id;
-          this.loadedAppId.set(savedId);
-        }
-
-        // Note: batch.id now comes from the real backend's /rdig/active-batch, which has no
-        // correspondence to the local admin-settings batch-sitting store, so application ids
-        // are no longer registered there.
-
-        // First, clear any existing action notifications for the current user (e.g. they just approved it)
-        if (savedId != null) {
-          this.notifSvc.resolveAction(Number(savedId), 'RDIG Application');
-        }
-
-        // Fire workflow notifications for the next recipient(s).
-        if (transition && savedId != null) {
-          this.fireWorkflowNotifications(
-            transition.nextStatus,
-            transition.actorRole,
-            Number(savedId),
-            formData,
-            currentStatus,
-          );
-        }
-
-        this.submissionState.set('SUCCESS');
-
-        // Allow user to see the success checkmark, then redirect home
-        setTimeout(() => {
-          this.router.navigate(['/dashboard']);
-        }, 2200);
-      },
-      error: (err) => {
-        console.error('Save failed:', err);
-        let errorMsg = 'Failed to process. Please try again.';
-        if (err.status === 0)
-          errorMsg = 'Could not connect to the server (Ensure the local db is running).';
-
-        this.submissionErrorMessage.set(errorMsg);
-        this.submissionState.set('ERROR');
-      },
-    });
+  /** Applicant submit/resubmit failed — surface the backend's message. */
+  private onSubmitError(err: unknown): void {
+    console.error('RDIG submit failed:', err);
+    const e = err as { status?: number; error?: { message?: string } };
+    const msg =
+      e?.error?.message ||
+      (e?.status === 0
+        ? 'Could not connect to the server. Please try again.'
+        : 'Failed to submit your application. Please try again.');
+    this.submissionErrorMessage.set(msg);
+    this.submissionState.set('ERROR');
   }
 
   // ── Notification dispatch ──────────────────────────────────────────────────

@@ -27,7 +27,7 @@ export const SETTINGS_MODULES: SettingsModuleConfig[] = [
     category: 'Application Setup',
     route: '/settings/forms',
     tone: 'blue',
-    endpoints: ['/api/settings/forms'],
+    endpoints: ['/rmc/settings/forms'],
   },
   {
     key: 'dropdown-categories',
@@ -37,7 +37,7 @@ export const SETTINGS_MODULES: SettingsModuleConfig[] = [
     category: 'Configuration',
     route: '/settings/dropdown-categories',
     tone: 'violet',
-    endpoints: ['/api/settings/dropdown-categories'],
+    endpoints: ['/rmc/settings/dropdown-categories'],
   },
   {
     key: 'account-code-categories',
@@ -47,7 +47,7 @@ export const SETTINGS_MODULES: SettingsModuleConfig[] = [
     category: 'Finance Setup',
     route: '/settings/account-code-categories',
     tone: 'amber',
-    endpoints: ['/api/settings/account-code-categories'],
+    endpoints: ['/rmc/settings/account-code-categories'],
   },
   {
     key: 'account-codes',
@@ -57,7 +57,7 @@ export const SETTINGS_MODULES: SettingsModuleConfig[] = [
     category: 'Finance Setup',
     route: '/settings/account-codes',
     tone: 'teal',
-    endpoints: ['/api/settings/account-codes', '/api/settings/account-code-categories'],
+    endpoints: ['/rmc/settings/account-codes', '/rmc/settings/account-code-categories'],
   },
   {
     key: 'staff-directory',
@@ -68,9 +68,9 @@ export const SETTINGS_MODULES: SettingsModuleConfig[] = [
     route: '/settings/staff-directory',
     tone: 'teal',
     endpoints: [
-      '/api/settings/staff/sync',
-      '/api/settings/staff',
-      '/api/master-data/departments',
+      '/rmc/settings/staff/sync',
+      '/rmc/settings/staff',
+      '/rmc/master-data/departments',
     ],
   },
   {
@@ -81,7 +81,7 @@ export const SETTINGS_MODULES: SettingsModuleConfig[] = [
     category: 'Directory',
     route: '/settings/departments',
     tone: 'teal',
-    endpoints: ['/api/settings/departments'],
+    endpoints: ['/rmc/settings/departments'],
   },
   {
     key: 'academic-staff',
@@ -91,7 +91,7 @@ export const SETTINGS_MODULES: SettingsModuleConfig[] = [
     category: 'Directory',
     route: '/settings/academic-staff',
     tone: 'indigo',
-    endpoints: ['/api/settings/academic-staff'],
+    endpoints: ['/rmc/settings/academic-staff'],
   },
   {
     key: 'users',
@@ -101,7 +101,7 @@ export const SETTINGS_MODULES: SettingsModuleConfig[] = [
     category: 'Identity',
     route: '/settings/users',
     tone: 'indigo',
-    endpoints: ['/api/settings/users', '/api/settings/user-role'],
+    endpoints: ['/rmc/settings/users', '/rmc/settings/user-role'],
   },
   {
     key: 'roles',
@@ -111,7 +111,7 @@ export const SETTINGS_MODULES: SettingsModuleConfig[] = [
     category: 'Authorization',
     route: '/settings/roles',
     tone: 'blue',
-    endpoints: ['/api/settings/roles'],
+    endpoints: ['/rmc/settings/roles'],
   },
   {
     key: 'blocked-users',
@@ -121,7 +121,7 @@ export const SETTINGS_MODULES: SettingsModuleConfig[] = [
     category: 'Security',
     route: '/settings/blocked-users',
     tone: 'rose',
-    endpoints: ['/api/settings/blocked-users'],
+    endpoints: ['/rmc/settings/blocked-users'],
   },
   {
     key: 'applicant-rules',
@@ -131,7 +131,7 @@ export const SETTINGS_MODULES: SettingsModuleConfig[] = [
     category: 'Access Rules',
     route: '/settings/applicant-rules',
     tone: 'amber',
-    endpoints: ['/api/settings/applicant-rules'],
+    endpoints: ['/rmc/settings/applicant-rules'],
   },
   {
     key: 'workflow',
@@ -142,12 +142,12 @@ export const SETTINGS_MODULES: SettingsModuleConfig[] = [
     route: '/settings/workflow',
     tone: 'slate',
     endpoints: [
-      '/api/settings/workflow-actor-types',
-      '/api/settings/workflow-processes',
-      '/api/settings/workflow-steps',
-      '/api/settings/workflow-step-actions',
-      '/api/settings/workflow-actor-assignments',
-      '/api/settings/workflow-delegations',
+      '/rmc/settings/workflow-actor-types',
+      '/rmc/settings/workflow-processes',
+      '/rmc/settings/workflow-steps',
+      '/rmc/settings/workflow-step-actions',
+      '/rmc/settings/workflow-actor-assignments',
+      '/rmc/settings/workflow-delegations',
     ],
   },
 ];

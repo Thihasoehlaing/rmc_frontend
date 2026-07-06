@@ -154,7 +154,7 @@ export interface RdigActiveBatchResponse {
 export class RdigApiService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = environment.apiUrl.replace(/\/$/, '');
-  private readonly base = `${this.apiUrl}/api/rdig`;
+  private readonly base = `${this.apiUrl}/rmc/rdig`;
 
   // ── Lifecycle ────────────────────────────────────────────────────
   createDraft(payload: Partial<RdigRequestDto>): Observable<ApiResponse<RdigRequestDto>> {

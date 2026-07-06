@@ -308,7 +308,7 @@ export class AuthService {
     const apiUrl = environment.apiUrl.replace(/\/$/, '');
 
     return this.http
-      .get<AuthCheckResponse>(`${apiUrl}/api/auth/profile`, {
+      .get<AuthCheckResponse>(`${apiUrl}/rmc/auth/profile`, {
         context: new HttpContext().set(SHOW_API_SUCCESS, true),
       })
       .pipe(
@@ -420,7 +420,7 @@ export class AuthService {
       return throwError(() => new Error('Testing login is not available in production.'));
     }
 
-    return this.http.get<DevAuthUsersResponse>(`${apiUrl}/api/auth/dev-users`).pipe(
+    return this.http.get<DevAuthUsersResponse>(`${apiUrl}/rmc/auth/dev-users`).pipe(
       map(response =>
         response.data.users.map(user => ({
           username: user.username,
@@ -470,7 +470,7 @@ export class AuthService {
     const apiUrl = environment.apiUrl.replace(/\/$/, '');
 
     return this.http
-      .get<AuthCheckResponse>(`${apiUrl}/api/auth/check`)
+      .get<AuthCheckResponse>(`${apiUrl}/rmc/auth/check`)
       .pipe(
         tap(response => {
           if (!response.success || !response.data?.user) {

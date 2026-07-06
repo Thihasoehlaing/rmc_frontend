@@ -15,7 +15,7 @@ export interface DevTestBoard {
   providedIn: 'root',
 })
 export class DevTestBoardService {
-  private apiUrl = '/api/dev-test-boards';
+  private apiUrl = '/rmc/dev-test-boards';
 
   constructor(private http: HttpClient) {}
 

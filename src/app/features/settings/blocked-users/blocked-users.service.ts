@@ -63,8 +63,8 @@ export class BlockedUsersService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = environment.apiUrl.replace(/\/$/, '');
   private readonly baseUrl =
-    `${this.apiUrl}/api/settings/blocked-users`;
-  private readonly staffOptionsUrl = `${this.apiUrl}/api/master-data/staff`;
+    `${this.apiUrl}/rmc/settings/blocked-users`;
+  private readonly staffOptionsUrl = `${this.apiUrl}/rmc/master-data/staff`;
 
   list(params: {
     page: number;

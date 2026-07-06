@@ -61,7 +61,7 @@ export interface GuidelineListParams {
 export class GuidelinesService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl =
-    `${environment.apiUrl.replace(/\/$/, '')}/api/admin-settings/guidelines`;
+    `${environment.apiUrl.replace(/\/$/, '')}/rmc/admin-settings/guidelines`;
 
   list(params: GuidelineListParams): Observable<ApiResponse<GuidelineListData>> {
     let httpParams = new HttpParams()

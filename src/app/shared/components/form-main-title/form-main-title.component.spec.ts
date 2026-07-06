@@ -36,7 +36,7 @@ describe('FormMainTitleComponent guideline behavior', () => {
     const component = fixture.componentInstance;
     let openCount = 0;
 
-    fixture.componentRef.setInput('endpoint', '/api/guidelines/test');
+    fixture.componentRef.setInput('endpoint', '/rmc/guidelines/test');
     fixture.componentRef.setInput('guidelineContext', 'new-application');
     fixture.detectChanges();
     component.guidelinesModal.open = () => openCount++;

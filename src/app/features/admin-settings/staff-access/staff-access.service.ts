@@ -50,7 +50,7 @@ export interface StaffAccessListParams {
 export class StaffAccessService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl =
-    `${environment.apiUrl.replace(/\/$/, '')}/api/admin-settings/staff-access`;
+    `${environment.apiUrl.replace(/\/$/, '')}/rmc/admin-settings/staff-access`;
 
   list(params: StaffAccessListParams): Observable<ApiResponse<StaffAccessListData>> {
     let httpParams = new HttpParams()

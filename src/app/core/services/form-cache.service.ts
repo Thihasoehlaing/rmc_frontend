@@ -21,7 +21,7 @@ interface ApiResponse<T> {
 export class FormCacheService {
   private readonly http = inject(HttpClient);
   private readonly storageKey = 'rmc.forms.cache';
-  private readonly apiUrl = `${environment.apiUrl.replace(/\/$/, '')}/api/forms`;
+  private readonly apiUrl = `${environment.apiUrl.replace(/\/$/, '')}/rmc/forms`;
 
   getForms(forceRefresh = false): Observable<ApiResponse<CachedFormOption[]>> {
     if (!forceRefresh) {

@@ -106,7 +106,7 @@ export interface ConferenceAttachmentDto {
 export class ConferenceApiService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = environment.apiUrl.replace(/\/$/, '');
-  private readonly base = `${this.apiUrl}/api/conference`;
+  private readonly base = `${this.apiUrl}/rmc/conference`;
 
   // ── Lifecycle ────────────────────────────────────────────────────
   createDraft(payload: Partial<ConferenceRequestDto>): Observable<ApiResponse<ConferenceRequestDto>> {

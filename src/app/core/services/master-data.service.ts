@@ -84,7 +84,7 @@ export interface DropdownOptionRecord {
 export class MasterDataService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = environment.apiUrl.replace(/\/$/, '');
-  private readonly base = `${this.apiUrl}/api`;
+  private readonly base = `${this.apiUrl}/rmc`;
 
   getResearchClusters(): Observable<ApiResponse<ResearchClusterOption[]>> {
     return this.http.get<ApiResponse<ResearchClusterOption[]>>(

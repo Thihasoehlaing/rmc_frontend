@@ -14,8 +14,8 @@ describe('StaffAccessComponent', () => {
   let http: HttpTestingController;
 
   const apiUrl = environment.apiUrl.replace(/\/$/, '');
-  const staffAccessUrl = `${apiUrl}/api/admin-settings/staff-access`;
-  const departmentsUrl = `${apiUrl}/api/master-data/departments`;
+  const staffAccessUrl = `${apiUrl}/rmc/admin-settings/staff-access`;
+  const departmentsUrl = `${apiUrl}/rmc/master-data/departments`;
 
   const listResponse = {
     success: true,

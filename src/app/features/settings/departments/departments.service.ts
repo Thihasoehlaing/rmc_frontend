@@ -22,7 +22,7 @@ interface PaginatedData<T> {
 export class DepartmentsService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = environment.apiUrl.replace(/\/$/, '');
-  private readonly departmentsUrl = `${this.apiUrl}/api/settings/departments`;
+  private readonly departmentsUrl = `${this.apiUrl}/rmc/settings/departments`;
 
   list(params: {
     page: number;

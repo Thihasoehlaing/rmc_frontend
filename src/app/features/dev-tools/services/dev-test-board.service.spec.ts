@@ -35,7 +35,7 @@ describe('DevTestBoardService', () => {
       expect(result.boardName).toBe('Test Board');
     });
 
-    const req = httpMock.expectOne('/api/dev-test-boards');
+    const req = httpMock.expectOne('/rmc/dev-test-boards');
     expect(req.request.method).toBe('POST');
     req.flush(mockBoard);
   });

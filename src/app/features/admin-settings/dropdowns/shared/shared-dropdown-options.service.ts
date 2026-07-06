@@ -129,35 +129,35 @@ export class SharedDropdownOptionsService {
     }
 
     return this.http.get<ApiResponse<PagedResult<DropdownOptionRow>>>(
-      `${environment.apiUrl}/api/admin-settings/dropdown-options`,
+      `${environment.apiUrl}/rmc/admin-settings/dropdown-options`,
       { params: httpParams },
     );
   }
 
   listRegions(params: ListParams): Observable<ApiResponse<PagedResult<RegionRow>>> {
     return this.http.get<ApiResponse<PagedResult<RegionRow>>>(
-      `${environment.apiUrl}/api/admin-settings/regions`,
+      `${environment.apiUrl}/rmc/admin-settings/regions`,
       { params: this.toAdminListParams(params) },
     );
   }
 
   createRegion(data: RegionPayload): Observable<ApiResponse<RegionRow>> {
     return this.http.post<ApiResponse<RegionRow>>(
-      `${environment.apiUrl}/api/admin-settings/regions`,
+      `${environment.apiUrl}/rmc/admin-settings/regions`,
       data,
     );
   }
 
   updateRegion(id: number, data: Partial<RegionPayload>): Observable<ApiResponse<RegionRow>> {
     return this.http.put<ApiResponse<RegionRow>>(
-      `${environment.apiUrl}/api/admin-settings/regions/${id}`,
+      `${environment.apiUrl}/rmc/admin-settings/regions/${id}`,
       data,
     );
   }
 
   deleteRegion(id: number): Observable<ApiResponse<RegionRow>> {
     return this.http.delete<ApiResponse<RegionRow>>(
-      `${environment.apiUrl}/api/admin-settings/regions/${id}`,
+      `${environment.apiUrl}/rmc/admin-settings/regions/${id}`,
     );
   }
 
@@ -165,14 +165,14 @@ export class SharedDropdownOptionsService {
     params: ListParams,
   ): Observable<ApiResponse<PagedResult<FinanceOptionRow>>> {
     return this.http.get<ApiResponse<PagedResult<FinanceOptionRow>>>(
-      `${environment.apiUrl}/api/admin-settings/project-account-codes`,
+      `${environment.apiUrl}/rmc/admin-settings/project-account-codes`,
       { params: this.toAdminListParams(params) },
     );
   }
 
   createProjectAccountCode(data: FinanceOptionPayload): Observable<ApiResponse<FinanceOptionRow>> {
     return this.http.post<ApiResponse<FinanceOptionRow>>(
-      `${environment.apiUrl}/api/admin-settings/project-account-codes`,
+      `${environment.apiUrl}/rmc/admin-settings/project-account-codes`,
       data,
     );
   }
@@ -182,27 +182,27 @@ export class SharedDropdownOptionsService {
     data: Partial<FinanceOptionPayload>,
   ): Observable<ApiResponse<FinanceOptionRow>> {
     return this.http.put<ApiResponse<FinanceOptionRow>>(
-      `${environment.apiUrl}/api/admin-settings/project-account-codes/${id}`,
+      `${environment.apiUrl}/rmc/admin-settings/project-account-codes/${id}`,
       data,
     );
   }
 
   deleteProjectAccountCode(id: number): Observable<ApiResponse<FinanceOptionRow>> {
     return this.http.delete<ApiResponse<FinanceOptionRow>>(
-      `${environment.apiUrl}/api/admin-settings/project-account-codes/${id}`,
+      `${environment.apiUrl}/rmc/admin-settings/project-account-codes/${id}`,
     );
   }
 
   listVoteNumbers(params: ListParams): Observable<ApiResponse<PagedResult<FinanceOptionRow>>> {
     return this.http.get<ApiResponse<PagedResult<FinanceOptionRow>>>(
-      `${environment.apiUrl}/api/admin-settings/vote-numbers`,
+      `${environment.apiUrl}/rmc/admin-settings/vote-numbers`,
       { params: this.toAdminListParams(params) },
     );
   }
 
   createVoteNumber(data: FinanceOptionPayload): Observable<ApiResponse<FinanceOptionRow>> {
     return this.http.post<ApiResponse<FinanceOptionRow>>(
-      `${environment.apiUrl}/api/admin-settings/vote-numbers`,
+      `${environment.apiUrl}/rmc/admin-settings/vote-numbers`,
       data,
     );
   }
@@ -212,27 +212,27 @@ export class SharedDropdownOptionsService {
     data: Partial<FinanceOptionPayload>,
   ): Observable<ApiResponse<FinanceOptionRow>> {
     return this.http.put<ApiResponse<FinanceOptionRow>>(
-      `${environment.apiUrl}/api/admin-settings/vote-numbers/${id}`,
+      `${environment.apiUrl}/rmc/admin-settings/vote-numbers/${id}`,
       data,
     );
   }
 
   deleteVoteNumber(id: number): Observable<ApiResponse<FinanceOptionRow>> {
     return this.http.delete<ApiResponse<FinanceOptionRow>>(
-      `${environment.apiUrl}/api/admin-settings/vote-numbers/${id}`,
+      `${environment.apiUrl}/rmc/admin-settings/vote-numbers/${id}`,
     );
   }
 
   listAccountCodes(params: ListParams): Observable<ApiResponse<PagedResult<AccountCodeRow>>> {
     return this.http.get<ApiResponse<PagedResult<AccountCodeRow>>>(
-      `${environment.apiUrl}/api/admin-settings/account-codes`,
+      `${environment.apiUrl}/rmc/admin-settings/account-codes`,
       { params: this.toAdminListParams(params) },
     );
   }
 
   createAccountCode(data: AccountCodePayload): Observable<ApiResponse<AccountCodeRow>> {
     return this.http.post<ApiResponse<AccountCodeRow>>(
-      `${environment.apiUrl}/api/admin-settings/account-codes`,
+      `${environment.apiUrl}/rmc/admin-settings/account-codes`,
       data,
     );
   }
@@ -242,14 +242,14 @@ export class SharedDropdownOptionsService {
     data: Partial<AccountCodePayload>,
   ): Observable<ApiResponse<AccountCodeRow>> {
     return this.http.put<ApiResponse<AccountCodeRow>>(
-      `${environment.apiUrl}/api/admin-settings/account-codes/${id}`,
+      `${environment.apiUrl}/rmc/admin-settings/account-codes/${id}`,
       data,
     );
   }
 
   deleteAccountCode(id: number): Observable<ApiResponse<AccountCodeRow>> {
     return this.http.delete<ApiResponse<AccountCodeRow>>(
-      `${environment.apiUrl}/api/admin-settings/account-codes/${id}`,
+      `${environment.apiUrl}/rmc/admin-settings/account-codes/${id}`,
     );
   }
 
@@ -260,7 +260,7 @@ export class SharedDropdownOptionsService {
     form_codes: string[];
   }): Observable<ApiResponse<DropdownOptionRow>> {
     return this.http.post<ApiResponse<DropdownOptionRow>>(
-      `${environment.apiUrl}/api/admin-settings/dropdown-options`,
+      `${environment.apiUrl}/rmc/admin-settings/dropdown-options`,
       data,
     );
   }
@@ -274,14 +274,14 @@ export class SharedDropdownOptionsService {
     },
   ): Observable<ApiResponse<DropdownOptionRow>> {
     return this.http.put<ApiResponse<DropdownOptionRow>>(
-      `${environment.apiUrl}/api/admin-settings/dropdown-options/${id}`,
+      `${environment.apiUrl}/rmc/admin-settings/dropdown-options/${id}`,
       data,
     );
   }
 
   deleteOption(id: number): Observable<ApiResponse<DropdownOptionRow>> {
     return this.http.delete<ApiResponse<DropdownOptionRow>>(
-      `${environment.apiUrl}/api/admin-settings/dropdown-options/${id}`,
+      `${environment.apiUrl}/rmc/admin-settings/dropdown-options/${id}`,
     );
   }
 

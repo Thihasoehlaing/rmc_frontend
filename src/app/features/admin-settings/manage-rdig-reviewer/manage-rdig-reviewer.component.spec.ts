@@ -16,9 +16,9 @@ describe('ManageRdigReviewerComponent', () => {
   let http: HttpTestingController;
 
   const apiUrl = environment.apiUrl.replace(/\/$/, '');
-  const staffUrl = `${apiUrl}/api/settings/academic-staff`;
-  const departmentsUrl = `${apiUrl}/api/master-data/departments`;
-  const reviewersUrl = `${apiUrl}/api/admin-settings/rdig-reviewers`;
+  const staffUrl = `${apiUrl}/rmc/settings/academic-staff`;
+  const departmentsUrl = `${apiUrl}/rmc/master-data/departments`;
+  const reviewersUrl = `${apiUrl}/rmc/admin-settings/rdig-reviewers`;
 
   const staffResponse = {
     success: true,

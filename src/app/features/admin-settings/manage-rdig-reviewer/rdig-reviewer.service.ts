@@ -38,7 +38,7 @@ export interface RdigReviewerRecord {
 @Injectable({ providedIn: 'root' })
 export class RdigReviewerService {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = `${environment.apiUrl}/api/admin-settings/rdig-reviewers`;
+  private readonly baseUrl = `${environment.apiUrl}/rmc/admin-settings/rdig-reviewers`;
 
   /** Lists reviewers already added to the RDIG reviewer pool. */
   list(

@@ -15,7 +15,7 @@ describe('GuidelinesComponent', () => {
   let http: HttpTestingController;
 
   const baseUrl =
-    `${environment.apiUrl.replace(/\/$/, '')}/api/admin-settings/guidelines`;
+    `${environment.apiUrl.replace(/\/$/, '')}/rmc/admin-settings/guidelines`;
 
   const listResponse = {
     success: true,

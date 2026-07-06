@@ -94,10 +94,10 @@ export class AcademicStaffService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = environment.apiUrl.replace(/\/$/, '');
   private readonly academicStaffUrl =
-    `${this.apiUrl}/api/settings/academic-staff`;
-  private readonly staffUrl = `${this.apiUrl}/api/settings/staff`;
+    `${this.apiUrl}/rmc/settings/academic-staff`;
+  private readonly staffUrl = `${this.apiUrl}/rmc/settings/staff`;
   private readonly departmentsUrl =
-    `${this.apiUrl}/api/master-data/departments`;
+    `${this.apiUrl}/rmc/master-data/departments`;
 
   list(params: {
     page: number;

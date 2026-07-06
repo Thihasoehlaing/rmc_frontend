@@ -53,7 +53,7 @@ export class FormsService {
   private readonly http = inject(HttpClient);
   private readonly formCache = inject(FormCacheService);
   private readonly baseUrl =
-    `${environment.apiUrl.replace(/\/$/, '')}/api/settings/forms`;
+    `${environment.apiUrl.replace(/\/$/, '')}/rmc/settings/forms`;
 
   list(
     params: ManagedFormListParams,

@@ -167,7 +167,7 @@ export class WorkflowService {
   private readonly http = inject(HttpClient);
   private readonly formCache = inject(FormCacheService);
   private readonly apiUrl = environment.apiUrl.replace(/\/$/, '');
-  private readonly settingsUrl = `${this.apiUrl}/api/settings`;
+  private readonly settingsUrl = `${this.apiUrl}/rmc/settings`;
 
   list<T>(
     tab: WorkflowTabKey,
@@ -262,7 +262,7 @@ export class WorkflowService {
     if (search.trim()) {
       params = params.set('search', search.trim());
     }
-    return this.http.get<ApiResponse<StaffOption[]>>(`${this.apiUrl}/api/master-data/staff`, {
+    return this.http.get<ApiResponse<StaffOption[]>>(`${this.apiUrl}/rmc/master-data/staff`, {
       params,
     });
   }

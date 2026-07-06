@@ -44,7 +44,7 @@ interface RoleListData {
 export class RolesService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl =
-    `${environment.apiUrl.replace(/\/$/, '')}/api/settings/roles`;
+    `${environment.apiUrl.replace(/\/$/, '')}/rmc/settings/roles`;
 
   list(params: {
     page: number;

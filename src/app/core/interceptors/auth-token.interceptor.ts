@@ -25,7 +25,7 @@ export const authTokenInterceptor: HttpInterceptorFn = (request, next) => {
 };
 
 export function isRmcApiRequest(url: string): boolean {
-  if (/^\/?api\//.test(url)) {
+  if (/^\/?rmc\//.test(url)) {
     return true;
   }
 

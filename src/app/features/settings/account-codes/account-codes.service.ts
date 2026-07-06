@@ -73,9 +73,9 @@ export interface AccountCodePayload {
 export class AccountCodesService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = environment.apiUrl.replace(/\/$/, '');
-  private readonly categoryUrl = `${this.apiUrl}/api/settings/account-code-categories`;
+  private readonly categoryUrl = `${this.apiUrl}/rmc/settings/account-code-categories`;
   private readonly categoryOptionsUrl = `${this.categoryUrl}/options`;
-  private readonly codeUrl = `${this.apiUrl}/api/settings/account-codes`;
+  private readonly codeUrl = `${this.apiUrl}/rmc/settings/account-codes`;
 
   listCategories(params: {
     page: number;

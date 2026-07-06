@@ -1,14 +1,13 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { ApplicationService } from '../../../core/services/application.service';
-import { BatchSittingService } from '../../admin-settings/batch-sitting.service';
+import { finalize } from 'rxjs';
+
 import {
-  BatchSitting,
-  WORKFLOW_STAGE_META,
-} from '../../../core/interfaces/batch-sitting.interface';
+  WorkflowRequestsService,
+  RequestSummaryDto,
+} from '../../../core/services/workflow-requests.service';
 import { TableSortService, SortDirection } from '../../../shared/services/table-sort.service';
 import { SubmissionsSearchComponent } from '../../../shared/components/submissions-search/submissions-search.component';
-import { finalize } from 'rxjs';
 import {
   SkeletonColumn,
   TableSkeletonComponent,
@@ -34,17 +33,16 @@ import { TableActionIconComponent } from '../../../shared/components/table-actio
   providers: [TableSortService],
 })
 export class InboxComponent implements OnInit {
-  private applicationService = inject(ApplicationService);
-  private batchSvc = inject(BatchSittingService);
-  private tableSortService = inject(TableSortService);
+  private readonly requests = inject(WorkflowRequestsService);
+  private readonly tableSortService = inject(TableSortService);
 
-  private allApplications = signal<any[]>([]);
-  activeBatch = signal<BatchSitting | null>(null);
+  private allApplications = signal<RequestSummaryDto[]>([]);
   loading = signal(true);
   error = signal<string | null>(null);
   searchQuery = signal('');
   headerSortColumn = signal<string | null>(null);
   headerSortDirection = signal<SortDirection>(null);
+
   readonly skeletonColumns: SkeletonColumn[] = [
     { width: 'var(--size-table-column-index)' },
     { width: '42%' },
@@ -74,7 +72,7 @@ export class InboxComponent implements OnInit {
     },
   ];
 
-  /** Badge colour per workflow status */
+  /** Badge colour per workflow status code. */
   readonly statusColors: Record<string, string> = {
     fill_application: '#3b82f6',
     pending_applicant_resubmission_hos: '#f59e0b',
@@ -95,48 +93,12 @@ export class InboxComponent implements OnInit {
     approved: '#22c55e',
   };
 
-  /**
-   * Applications filtered by batch stage date windows.
-   * An application is visible only when today falls within the allowed time
-   * window for its current workflow status (as configured in the active batch).
-   * Applications with no matching stage window are always visible (no restriction).
-   */
+  /** Client-side title search on top of the backend-filtered inbox. */
   readonly applications = computed(() => {
-    const batch = this.activeBatch();
-    const today = new Date().toISOString().substring(0, 10);
     const query = this.searchQuery().toLowerCase().trim();
-
-    return this.allApplications().filter((app) => {
-      if (query && !this.getTitle(app).toLowerCase().includes(query)) return false;
-
-      if (!batch) return true; // No batch config → no date restriction
-
-      const status = this.getStatus(app);
-
-      // Find the batch stage that governs this workflow status
-      const stageMeta = WORKFLOW_STAGE_META.find((m) => m.rdigStatuses.includes(status));
-      if (!stageMeta) return true; // Status not mapped to a stage → always visible
-
-      const stageWindow = batch.stages[stageMeta.key];
-      if (!stageWindow?.startDate || !stageWindow?.endDate) return true; // No window set → always visible
-
-      return today >= stageWindow.startDate && today <= stageWindow.endDate;
-    });
-  });
-
-  /** Days until the active batch endDate. Used to show deadline warning. */
-  readonly batchDeadlineDays = computed((): number | null => {
-    const batch = this.activeBatch();
-    if (!batch) return null;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const end = new Date(batch.endDate + 'T00:00:00');
-    return Math.floor((end.getTime() - today.getTime()) / 86_400_000);
-  });
-
-  readonly showDeadlineWarning = computed(() => {
-    const days = this.batchDeadlineDays();
-    return days !== null && days >= 0 && days <= 5;
+    const rows = this.allApplications();
+    if (!query) return rows;
+    return rows.filter((app) => this.getTitle(app).toLowerCase().includes(query));
   });
 
   ngOnInit(): void {
@@ -156,47 +118,64 @@ export class InboxComponent implements OnInit {
     this.loading.set(true);
     this.error.set(null);
 
-    this.batchSvc.loadAll().subscribe({
-      next: (batches) =>
-        this.activeBatch.set(batches.find((batch) => batch.status === 'active') ?? null),
-      error: () => this.activeBatch.set(null),
-    });
-
-    this.applicationService
-      .getInboxApplications()
+    this.requests
+      .getInbox({ page: 1, perPage: 100 })
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe({
-        next: (apps) => this.allApplications.set(apps),
-        error: () => {
-          this.error.set('Could not reach the JSON server. Make sure `npm run db` is running.');
-        },
+        next: (res) => this.allApplications.set(res.data?.items ?? []),
+        error: () => this.error.set('Could not load your inbox. Please try again.'),
       });
   }
-  getTitle(app: any): string {
-    return app.projectDetails?.title?.trim() || '(Untitled Application)';
+
+  getTitle(app: RequestSummaryDto): string {
+    return app.title?.trim() || '(Untitled Application)';
   }
 
-  getStatus(app: any): string {
-    return app.workflow?.currentStatus ?? app.metadata?.applicationStatus ?? 'unknown';
+  /** Human-readable status name shown in the badge. */
+  getStatus(app: RequestSummaryDto): string {
+    return app.status_name || app.status_code || 'Unknown';
   }
 
-  getStatusColor(app: any): string {
-    return this.statusColors[this.getStatus(app)] ?? '#6b7280';
+  getStatusColor(app: RequestSummaryDto): string {
+    return this.statusColors[app.status_code] ?? '#6b7280';
   }
 
-  getSubmissionDate(app: any): string {
-    return this.applicationService.formatDate(this.applicationService.getSubmittedAt(app));
+  getSubmissionDate(app: RequestSummaryDto): string {
+    const iso = app.submitted_at ?? app.updated_at ?? app.created_at;
+    if (!iso) return '—';
+    return new Date(iso).toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    });
   }
 
-  getFormRoute(app: any): string {
-    return this.applicationService.getFormRoute(app);
+  getFormRoute(app: RequestSummaryDto): string {
+    switch ((app.form_code ?? '').toUpperCase()) {
+      case 'CONFERENCE':
+        return '/conference/application';
+      case 'JOURNAL':
+        return '/journal/application';
+      case 'EXTERNAL':
+        return '/external-project-data-entry';
+      case 'RDIG':
+      default:
+        return '/rdig';
+    }
   }
 
-  getFormTypeLabel(app: any): string {
-    return this.applicationService.getFormTypeLabel(app);
+  getFormTypeLabel(app: RequestSummaryDto): string {
+    const labels: Record<string, string> = {
+      RDIG: 'RDIG',
+      CONFERENCE: 'Conference',
+      JOURNAL: 'Journal',
+      EXTERNAL: 'External',
+    };
+    const code = (app.form_code ?? '').toUpperCase();
+    return labels[code] ?? app.form_name ?? code ?? '—';
   }
 
-  /** Sort only by the original application submission date. */
+  /** Sort only by the submission date. */
   onHeaderClick(columnName: string): void {
     if (columnName !== 'submissionDate') return;
     const next = this.tableSortService.getNextState(
@@ -207,22 +186,23 @@ export class InboxComponent implements OnInit {
     this.headerSortDirection.set(next.direction);
   }
 
-  getSortedApplications(): any[] {
+  private submittedTs(app: RequestSummaryDto): number | null {
+    const iso = app.submitted_at ?? app.updated_at ?? app.created_at;
+    return iso ? new Date(iso).getTime() : null;
+  }
+
+  getSortedApplications(): RequestSummaryDto[] {
     const direction = this.headerSortDirection();
     if (this.headerSortColumn() !== 'submissionDate' || !direction) {
       return this.applications();
     }
-
     return [...this.applications()].sort((first, second) => {
-      const firstTimestamp = this.applicationService.getSubmittedAt(first);
-      const secondTimestamp = this.applicationService.getSubmittedAt(second);
-
-      if (!firstTimestamp && !secondTimestamp) return 0;
-      if (!firstTimestamp) return 1;
-      if (!secondTimestamp) return -1;
-
-      const difference = new Date(firstTimestamp).getTime() - new Date(secondTimestamp).getTime();
-      return direction === 'asc' ? difference : -difference;
+      const a = this.submittedTs(first);
+      const b = this.submittedTs(second);
+      if (a == null && b == null) return 0;
+      if (a == null) return 1;
+      if (b == null) return -1;
+      return direction === 'asc' ? a - b : b - a;
     });
   }
 }

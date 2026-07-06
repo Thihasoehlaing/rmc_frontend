@@ -83,7 +83,7 @@
           <tr [class.row--action-needed]="isRevisionRequired(app)">
             <td>
               <div class="data-table__title">
-                {{ app.projectDetails?.title?.trim() || '(Untitled Application)' }}
+                {{ getTitle(app) }}
               </div>
               @if (isRevisionRequired(app)) {
                 <span class="revision-chip"

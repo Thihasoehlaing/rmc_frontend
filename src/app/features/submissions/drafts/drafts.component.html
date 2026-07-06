@@ -58,7 +58,7 @@
           <tr>
             <td>
               <div class="data-table__title">
-                {{ app.projectDetails?.title?.trim() || '(Untitled Draft)' }}
+                {{ getTitle(app) }}
               </div>
             </td>
             <td class="col-date">{{ formatDate(app) }}</td>

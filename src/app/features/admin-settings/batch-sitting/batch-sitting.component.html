@@ -538,44 +538,54 @@
             placeholder="e.g. RDIG 2026 Cycle 1"
           />
           <app-validation-message [control]="form.get('batchName')"></app-validation-message>
+          @if (hasBatchNameTaken(form)) {
+            <span class="field-error">A batch with this name already exists. Choose a different name.</span>
+          }
         </div>
 
         <!-- Start Date -->
         <div class="form-field">
-          <label class="form-label is-required">Start Date</label>
+          <label class="form-label is-required">Start Date &amp; Time</label>
           <div class="date-input-wrap">
             <input
-              type="date"
+              type="datetime-local"
               class="input--text input--date"
               formControlName="startDate"
               [attr.min]="minStart || null"
             />
-            <span
-              class="material-icons date-trigger"
-              role="button"
-              title="Open date picker"
-              (click)="openDatePicker($event)"
-              >calendar_today</span
-            >
-          </div>
-          @if (isNew) {
-            <span class="form-section__hint">Set automatically to today when you click Start Batch.</span>
-          } @else {
-            <app-validation-message [control]="form.get('startDate')"></app-validation-message>
-            @if (type === 'active' && hasActiveStartInFuture(form)) {
-              <span class="field-error"
-                >An active batch's start date can't be later than today.</span
+            @if (!isNew) {
+              <span
+                class="material-icons date-trigger"
+                role="button"
+                title="Open date picker"
+                (click)="openDatePicker($event)"
+                >calendar_today</span
               >
             }
+          </div>
+          @if (isNew) {
+            <span class="form-section__hint"
+              >Locked to the current date and time — it updates to the exact moment you click Start
+              Batch.</span
+            >
+          }
+          <app-validation-message [control]="form.get('startDate')"></app-validation-message>
+          @if (type === 'active' && hasActiveStartTooSoon(form)) {
+            <span class="field-error"
+              >If scheduling this batch for later, it must start at least 1 hour from now.</span
+            >
+          }
+          @if (type === 'planned' && hasPlannedStartTooSoon(form)) {
+            <span class="field-error">Must start at least 1 hour from now.</span>
           }
         </div>
 
         <!-- End Date -->
         <div class="form-field">
-          <label class="form-label is-required">End Date</label>
+          <label class="form-label is-required">End Date &amp; Time</label>
           <div class="date-input-wrap">
             <input
-              type="date"
+              type="datetime-local"
               class="input--text input--date"
               formControlName="endDate"
               [attr.min]="form.get('startDate')?.value || minStart || null"
@@ -591,6 +601,12 @@
           <app-validation-message [control]="form.get('endDate')"></app-validation-message>
           @if (hasGlobalError(form)) {
             <span class="field-error">End date cannot be before start date.</span>
+          }
+          @if (hasBatchOverlap(form)) {
+            <span class="field-error">This window overlaps another batch. Batches can't run at the same time.</span>
+          }
+          @if (hasBatchGapTooSmall(form)) {
+            <span class="field-error">Leave at least a 1-day gap between this batch and the next/previous one.</span>
           }
         </div>
       </div>
@@ -625,7 +641,7 @@
               <td>
                 <div class="date-input-wrap">
                   <input
-                    type="date"
+                    type="datetime-local"
                     class="input--text input--date"
                     formControlName="startDate"
                     [attr.min]="form.get('startDate')?.value || null"
@@ -645,7 +661,7 @@
               <td>
                 <div class="date-input-wrap">
                   <input
-                    type="date"
+                    type="datetime-local"
                     class="input--text input--date"
                     formControlName="endDate"
                     [attr.min]="

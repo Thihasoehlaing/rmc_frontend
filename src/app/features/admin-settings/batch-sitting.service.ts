@@ -87,12 +87,31 @@ export class BatchSittingService {
 
   // ── Backend <-> frontend model translation ────────────────────────────────
 
+  /**
+   * <input type="datetime-local"> works in "YYYY-MM-DDTHH:mm" (no seconds),
+   * while the backend returns/expects full ISO datetimes with seconds — these
+   * two convert between the two at the service boundary so nothing above
+   * this file needs to think about it.
+   */
+  private fromApiDateTime(value: string | null): string | null {
+    if (!value) return null;
+    return value.length > 16 ? value.substring(0, 16) : value;
+  }
+
+  private toApiDateTime(value: string | null | undefined): string | null {
+    if (!value) return null;
+    return value.length === 16 ? `${value}:00` : value;
+  }
+
   private toBatchSitting(api: ApiBatch): BatchSitting {
     const stages = emptyStages();
     for (const sw of api.stage_windows ?? []) {
       const key = STAGE_LABEL_TO_KEY[sw.stage_name];
       if (key) {
-        stages[key] = { startDate: sw.stage_start_date, endDate: sw.stage_end_date };
+        stages[key] = {
+          startDate: this.fromApiDateTime(sw.stage_start_date),
+          endDate: this.fromApiDateTime(sw.stage_end_date),
+        };
       }
     }
 
@@ -107,8 +126,8 @@ export class BatchSittingService {
       id: api.id,
       batchName: api.batch_name,
       status,
-      startDate: api.start_date,
-      endDate: api.end_date,
+      startDate: this.fromApiDateTime(api.start_date) ?? '',
+      endDate: this.fromApiDateTime(api.end_date) ?? '',
       stages,
       createdAt: api.created_at ?? '',
       updatedAt: api.updated_at ?? '',
@@ -127,16 +146,16 @@ export class BatchSittingService {
   private toStageWindowsPayload(stages: Record<WorkflowStageKey, WorkflowStageWindow>) {
     return WORKFLOW_STAGE_META.map((m) => ({
       stage_name: m.label,
-      stage_start_date: stages[m.key]?.startDate ?? null,
-      stage_end_date: stages[m.key]?.endDate ?? null,
+      stage_start_date: this.toApiDateTime(stages[m.key]?.startDate),
+      stage_end_date: this.toApiDateTime(stages[m.key]?.endDate),
     }));
   }
 
   private toFieldsPayload(batch: Pick<BatchSitting, 'batchName' | 'startDate' | 'endDate' | 'stages'>) {
     return {
       batch_name: batch.batchName,
-      start_date: batch.startDate,
-      end_date: batch.endDate,
+      start_date: this.toApiDateTime(batch.startDate),
+      end_date: this.toApiDateTime(batch.endDate),
       stage_windows: this.toStageWindowsPayload(batch.stages),
     };
   }
@@ -238,6 +257,23 @@ export class BatchSittingService {
         switchMap(() =>
           this.http.post<ApiResponse<ApiBatch>>(`${BASE_URL}/${batch.id}/activate`, {}),
         ),
+        map((res) => this.toBatchSitting(res.data)),
+        tap((updated) => this.updateCache(updated)),
+        catchError((err) => throwError(() => err)),
+      );
+  }
+
+  /**
+   * Moving an active batch back to "planned" (its start date was edited into
+   * the future) is a field update followed by the dedicated /plan route,
+   * mirroring activateNow() — the plain PUT can't change status, and /plan
+   * never touches dates.
+   */
+  planNow(batch: BatchSitting): Observable<BatchSitting> {
+    return this.http
+      .put<ApiResponse<ApiBatch>>(`${BASE_URL}/${batch.id}`, this.toFieldsPayload(batch))
+      .pipe(
+        switchMap(() => this.http.post<ApiResponse<ApiBatch>>(`${BASE_URL}/${batch.id}/plan`, {})),
         map((res) => this.toBatchSitting(res.data)),
         tap((updated) => this.updateCache(updated)),
         catchError((err) => throwError(() => err)),

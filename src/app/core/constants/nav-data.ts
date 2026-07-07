@@ -155,7 +155,7 @@ export const NAVIGATION_DATA: NavGroup[] = [
                     { label: 'Guidelines', icon: 'description', route: '/admin-settings/guidelines', permission: { anyOf: ['Admin'] } },
                     { label: 'Dropdowns', icon: 'list', route: '/admin-settings/dropdowns', permission: { anyOf: ['Admin'] } },
                     { label: 'Batches', icon: 'batch_prediction', route: '/admin-settings/batches', permission: { anyOf: ['Admin'] } },
-                    { label: 'Staff Access', icon: 'person_add', route: '/admin-settings/staff-access', permission: { anyOf: ['Admin'] } },
+                    { label: 'RDIG Staff Access', icon: 'person_add', route: '/admin-settings/staff-access', permission: { anyOf: ['Admin'] } },
                     { label: 'Manage RDIG Reviewer', icon: 'groups', route: '/admin-settings/manage-rdig-reviewer', permission: { anyOf: ['Admin'] } },
                 ],
             },

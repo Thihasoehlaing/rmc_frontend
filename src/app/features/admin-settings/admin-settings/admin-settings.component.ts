@@ -44,7 +44,7 @@ export class AdminSettingsComponent {
       tone: 'amber',
     },
     {
-      title: 'Staff Access',
+      title: 'RDIG Staff Access',
       description: 'Review staff eligibility and manage application access restrictions.',
       icon: 'manage_accounts',
       category: 'Access Control',

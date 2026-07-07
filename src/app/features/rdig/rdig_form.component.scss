@@ -1,5 +1,19 @@
 @use '../../../styles/index' as *;
 
+// RDIG page rhythm: exact values approved in the browser review.
+// Custom properties reach the components' internal layout without changing other forms.
+.rdig-app > app-form-main-title {
+  --form-main-title-margin-bottom: 28px;
+}
+
+.rdig-app > app-step-indicator {
+  --step-indicator-margin-bottom: 15px;
+}
+
+.rdig-app > app-form-alert {
+  margin-bottom: 25px;
+}
+
 .error-icon {
   font-size: 40px;
 }

@@ -28,18 +28,12 @@
   }
 
   @if (!loading() && !error()) {
-    <nav class="form-tabs" aria-label="History form filters">
-      @for (tab of formTabs(); track tab.value) {
-        <button
-          type="button"
-          class="form-tab"
-          [class.form-tab--active]="selectedType() === tab.value"
-          (click)="setTab(tab.value)"
-        >
-          {{ tab.label }}
-        </button>
-      }
-    </nav>
+    <app-submission-form-tabs
+      [tabs]="formTabs()"
+      [selectedValue]="selectedType()"
+      ariaLabel="History form filters"
+      (selectedValueChange)="setTab($event)"
+    />
 
     <section class="dropdown-search-panel" aria-label="History search">
       <app-submissions-search

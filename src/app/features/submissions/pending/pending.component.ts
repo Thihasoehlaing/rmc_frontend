@@ -11,6 +11,7 @@ import {
 } from '../../../core/services/workflow-requests.service';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
 import { SubmissionsSearchComponent } from '../../../shared/components/submissions-search/submissions-search.component';
+import { SubmissionFormTabsComponent } from '../../../shared/components/submission-form-tabs/submission-form-tabs.component';
 import { TableActionIconComponent } from '../../../shared/components/table-action-icon/table-action-icon.component';
 import {
   SkeletonColumn,
@@ -24,6 +25,7 @@ import {
     PaginationComponent,
     RouterLink,
     SubmissionsSearchComponent,
+    SubmissionFormTabsComponent,
     TableActionIconComponent,
     TableSkeletonComponent,
   ],

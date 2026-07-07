@@ -15,7 +15,6 @@ import { COUNTRY_LIST } from '../../../../core/constants/countries.constant';
 import { SearchableDropdownComponent } from '../../../../shared/components/searchable-dropdown/searchable-dropdown.component';
 import { CharacterCounterComponent } from '../../../../shared/components/character-counter/character-counter.component';
 import { ValidationMessageComponent } from '../../../../shared/components/validation-message/validation-message.component';
-import { CustomHeaderComponent } from '../../../../shared/components/custom-header/custom-header.component';
 import { CustomSubheaderComponent } from '../../../../shared/components/custom-subheader/custom-subheader.component';
 import { FileUploadComponent } from '../../../../shared/components/file-upload/file-upload.component';
 import { DialogComponent } from '../../../../shared/components/dialog/dialog.component';
@@ -39,7 +38,6 @@ import { TableActionIconComponent } from '../../../../shared/components/table-ac
     SearchableDropdownComponent,
     CharacterCounterComponent,
     ValidationMessageComponent,
-    CustomHeaderComponent,
     CustomSubheaderComponent,
     FileUploadComponent,
     DialogComponent,

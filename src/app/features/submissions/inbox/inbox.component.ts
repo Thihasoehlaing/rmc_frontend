@@ -6,9 +6,10 @@ import {
   WorkflowRequestsService,
   RequestSummaryDto,
 } from '../../../core/services/workflow-requests.service';
-import { actionRoute } from '../../../core/services/request-display.util';
+import { actionRoute, formTypeLabel } from '../../../core/services/request-display.util';
 import { TableSortService, SortDirection } from '../../../shared/services/table-sort.service';
 import { SubmissionsSearchComponent } from '../../../shared/components/submissions-search/submissions-search.component';
+import { SubmissionFormTabsComponent } from '../../../shared/components/submission-form-tabs/submission-form-tabs.component';
 import {
   SkeletonColumn,
   TableSkeletonComponent,
@@ -26,6 +27,7 @@ import { TableActionIconComponent } from '../../../shared/components/table-actio
     TableActionIconComponent,
     RouterLink,
     SubmissionsSearchComponent,
+    SubmissionFormTabsComponent,
     TableSkeletonComponent,
     DataTableComponent,
   ],
@@ -106,13 +108,13 @@ export class InboxComponent implements OnInit {
   });
 
   readonly formTabs = computed(() => [
-    { code: 'all', label: 'All' },
+    { value: 'all', label: 'All' },
     ...Array.from(
       new Set(this.allApplications().map((app) => (app.form_code ?? '').toUpperCase()).filter(Boolean)),
     )
       .filter((code) => code !== 'EXTERNAL')
       .sort()
-      .map((code) => ({ code, label: code })),
+      .map((code) => ({ value: code, label: formTypeLabel(code) })),
   ]);
 
   ngOnInit(): void {

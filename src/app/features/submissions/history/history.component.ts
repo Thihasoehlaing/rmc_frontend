@@ -190,9 +190,20 @@ export class HistoryComponent implements OnInit {
       case 'JOURNAL':
         return `/journal/detail/${code}`;
       case 'EXTERNAL':
-        return `/external-project/detail/${code}`;
+        return `/external-project-data-entry/detail/${code}`;
       default:
         return `/submissions/detail/${code}`;
+    }
+  }
+
+  canPrint(app: RequestSummaryDto): boolean {
+    return app.status_code.toLowerCase() !== 'draft';
+  }
+
+  openPrint(app: RequestSummaryDto): void {
+    const id = app.id ?? app.request_id;
+    if (id != null) {
+      this.downloadPrint(id, this.getCode(app));
     }
   }
 
@@ -226,5 +237,27 @@ export class HistoryComponent implements OnInit {
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
+  }
+
+  private downloadPrint(requestId: number, fallbackCode: string): void {
+    this.requests.downloadPrint(requestId).subscribe({
+      next: (response) => {
+        const blob = response.body;
+        if (!blob) return;
+        const fileName = this.printFileName(response.headers.get('content-disposition'), fallbackCode);
+        const url = URL.createObjectURL(blob);
+        const anchor = document.createElement('a');
+        anchor.href = url;
+        anchor.download = fileName;
+        anchor.click();
+        URL.revokeObjectURL(url);
+      },
+      error: () => this.error.set('Could not download the print PDF. Please try again.'),
+    });
+  }
+
+  private printFileName(contentDisposition: string | null, fallbackCode: string): string {
+    const match = contentDisposition?.match(/filename\*?=(?:UTF-8''|")?([^";]+)/i);
+    return match?.[1] ? decodeURIComponent(match[1].replace(/"/g, '')) : `${fallbackCode}.pdf`;
   }
 }

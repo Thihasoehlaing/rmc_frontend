@@ -92,7 +92,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private notifSvc = inject(NotificationService);
   private rdigApi = inject(RdigApiService);
-  readonly guidelineContext: GuidelineContext = this.route.snapshot.queryParamMap.has('id')
+  readonly guidelineContext: GuidelineContext = this.route.snapshot.queryParamMap.has('request_id') || this.route.snapshot.queryParamMap.has('id')
     ? 'existing-application'
     : 'new-application';
 
@@ -810,8 +810,8 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
       error: () => this.activeBatch.set(null),
     });
 
-    // If a record ID is in the URL (?id=xxx), load and restore that application.
-    const id = this.route.snapshot.queryParamMap.get('id');
+    // If a request ID is in the URL (?request_id=xxx), load and restore that application.
+    const id = this.route.snapshot.queryParamMap.get('request_id') ?? this.route.snapshot.queryParamMap.get('id');
     if (id) {
       this.loadApplication(id);
     } else {
@@ -1524,7 +1524,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
         this.loadedAppId.set(String(id));
         this.router.navigate([], {
           relativeTo: this.route,
-          queryParams: { id },
+          queryParams: { request_id: id },
           replaceUrl: true,
         });
         this.isSaving.set(false);
@@ -1594,7 +1594,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
           // Also update the URL so a refresh reopens the same draft
           this.router.navigate([], {
             relativeTo: this.route,
-            queryParams: { id: response.id },
+            queryParams: { request_id: response.id },
             replaceUrl: true,
           });
         }

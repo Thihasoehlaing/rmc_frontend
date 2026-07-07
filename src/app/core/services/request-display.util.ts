@@ -51,7 +51,7 @@ export function formRoute(formCode: string | null | undefined): string {
       return '/external-project-data-entry';
     case 'RDIG':
     default:
-      return '/rdig';
+      return '/rdig/application';
   }
 }
 

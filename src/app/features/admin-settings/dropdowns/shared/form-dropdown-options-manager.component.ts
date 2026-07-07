@@ -13,7 +13,6 @@ import { PaginationComponent } from '../../../../shared/components/pagination/pa
 import { SubmissionsSearchComponent } from '../../../../shared/components/submissions-search/submissions-search.component';
 import { SvgIconComponent } from '../../../../shared/components/svg-icon/svg-icon.component';
 import { TableActionIconComponent } from '../../../../shared/components/table-action-icon/table-action-icon.component';
-import { TableSkeletonComponent } from '../../../../shared/components/table-skeleton/table-skeleton.component';
 import { DropdownOption as SelectOption } from '../../../../core/interfaces/components.interface';
 import { ToastService } from '../../../../core/services/toast.service';
 import { SVG_ICON_TRASH } from '../../../../shared/icons/svg-icons';
@@ -74,7 +73,6 @@ interface ViewRow {
     SubmissionsSearchComponent,
     SvgIconComponent,
     TableActionIconComponent,
-    TableSkeletonComponent,
   ],
   templateUrl: './form-dropdown-options-manager.component.html',
   styleUrls: ['./form-dropdown-options-manager.component.scss'],
@@ -103,7 +101,8 @@ export class FormDropdownOptionsManagerComponent implements OnInit {
   pageSizeOptions = [10, 15, 30, 50];
   pagination = signal<Pagination | null>(null);
   private formOptionsLoaded = false;
-  loading = signal(false);
+  private initialLoadDone = false;
+  loading = signal(true);
   showModal = signal(false);
   editingRow = signal<ViewRow | null>(null);
   rowToDelete = signal<ViewRow | null>(null);
@@ -369,15 +368,25 @@ export class FormDropdownOptionsManagerComponent implements OnInit {
     }
 
     if (this.isEmptyTab(tab)) {
-      this.rows.set([]);
-      this.pagination.set({
-        current_page: this.page(),
-        per_page: this.pageSize(),
-        total_items: 0,
-        total_pages: 1,
-        has_next: false,
-        has_prev: false,
-      });
+      const finish = () => {
+        this.rows.set([]);
+        this.pagination.set({
+          current_page: this.page(),
+          per_page: this.pageSize(),
+          total_items: 0,
+          total_pages: 1,
+          has_next: false,
+          has_prev: false,
+        });
+        this.loading.set(false);
+        this.initialLoadDone = true;
+      };
+      if (!this.initialLoadDone) {
+        this.loading.set(true);
+        setTimeout(finish, 600);
+      } else {
+        finish();
+      }
       return;
     }
 
@@ -387,9 +396,11 @@ export class FormDropdownOptionsManagerComponent implements OnInit {
         this.rows.set((res.data?.items ?? []).map((row) => this.toViewRow(row)));
         this.pagination.set(res.data?.pagination ?? null);
         this.loading.set(false);
+        this.initialLoadDone = true;
       },
       error: (err) => {
         this.loading.set(false);
+        this.initialLoadDone = true;
         this.rows.set([]);
         this.toast.error(err?.error?.message || 'Failed to load dropdown options.');
       },

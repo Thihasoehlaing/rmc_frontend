@@ -26,7 +26,6 @@ import { SVG_ICON_TRASH } from '../../../../shared/icons/svg-icons';
 import { TableActionIconComponent } from '../../../../shared/components/table-action-icon/table-action-icon.component';
 import { SubmissionsSearchComponent } from '../../../../shared/components/submissions-search/submissions-search.component';
 import { SearchableDropdownComponent } from '../../../../shared/components/searchable-dropdown/searchable-dropdown.component';
-import { TableSkeletonComponent } from '../../../../shared/components/table-skeleton/table-skeleton.component';
 import { DropdownOption as SelectOption } from '../../../../core/interfaces/components.interface';
 
 interface DropdownOption {
@@ -113,7 +112,6 @@ interface CategorySharingConfig {
     DialogComponent,
     SvgIconComponent,
     SearchableDropdownComponent,
-    TableSkeletonComponent,
   ],
   templateUrl: './rdig-dropdown-options.component.html',
   styleUrls: ['./rdig-dropdown-options.component.scss'],
@@ -149,7 +147,7 @@ export class RdigDropdownOptionsComponent implements OnInit {
 
   /** Rows loaded from the API for the currently selected RDIG API category. */
   apiRows = signal<ApiRow[]>([]);
-  apiLoading = signal(false);
+  apiLoading = signal(true);
   rdigFormOptions = signal<SelectOption<string>[]>([]);
   /** Active research domains — populates the "Research Domain" picker for the Sub-Research Domain tab. */
   subDomainParents = signal<{ label: string; value: string }[]>([]);
@@ -980,7 +978,7 @@ export class RdigDropdownOptionsComponent implements OnInit {
             .filter((form) => form.is_active)
             .map((form) => ({
               label: form.form_name,
-              value: String(form.id),
+              value: form.form_code,
               description: form.form_code,
               searchText: `${form.form_name} ${form.form_code}`.toLowerCase(),
             })),
@@ -1096,7 +1094,7 @@ export class RdigDropdownOptionsComponent implements OnInit {
                 : ('Active' as const),
               categoryId: o.dropdown_category_id,
               sharedWith: (o.shared_with ?? []).map((form) => form.form_name),
-              sharedFormIds: (o.shared_with ?? []).map((form) => String(form.id)),
+              sharedFormIds: (o.shared_with ?? []).map((form) => form.form_code),
               updatedAt: o.updated_at,
             })),
             pagination: r.data?.pagination ?? null,
@@ -1384,7 +1382,7 @@ export class RdigDropdownOptionsComponent implements OnInit {
           req = this.rdigService.adminUpdateTypeOfOrg(editId, {
             option_name: name,
             is_active: isActive,
-            form_ids: this.getSelectedFormIds(payload),
+            form_codes: this.getSelectedFormCodes(payload),
           });
           break;
         case 'Research Domain':
@@ -1418,15 +1416,10 @@ export class RdigDropdownOptionsComponent implements OnInit {
           req = this.rdigService.adminCreateCluster({ cluster_name: name, is_active: isActive });
           break;
         case 'Type of Organisation': {
-          const categoryId = this.getTypeOfOrganisationCategoryId();
-          if (!categoryId) {
-            this.toast.error('Type of Organization category is not ready yet. Please refresh and try again.');
-            return;
-          }
-          req = this.rdigService.adminCreateTypeOfOrg(categoryId, {
+          req = this.rdigService.adminCreateTypeOfOrg({
             option_name: name,
             is_active: isActive,
-            form_ids: this.getSelectedFormIds(payload),
+            form_codes: this.getSelectedFormCodes(payload),
           });
           break;
         }
@@ -1493,14 +1486,10 @@ export class RdigDropdownOptionsComponent implements OnInit {
     });
   }
 
-  private getTypeOfOrganisationCategoryId(): number | null {
-    return this.apiRows().find((row) => row.categoryId)?.categoryId ?? null;
-  }
-
-  private getSelectedFormIds(payload: AddOptionPayload): number[] {
+  private getSelectedFormCodes(payload: AddOptionPayload): string[] {
     return payload.appliesTo
-      .map((value) => Number(value))
-      .filter((value) => Number.isInteger(value) && value > 0);
+      .map((value) => value.trim())
+      .filter((value) => value.length > 0);
   }
 
   /**
@@ -2316,3 +2305,4 @@ export class RdigDropdownOptionsComponent implements OnInit {
     return this.formatDisplayDate(new Date(timestamp));
   }
 }
+

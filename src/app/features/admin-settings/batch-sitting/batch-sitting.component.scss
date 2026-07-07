@@ -1,10 +1,23 @@
 // ── Page Layout ───────────────────────────────────────────────────────────────
 
 .batch-container {
-  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  min-height: auto;
+  padding: var(--space-6) var(--space-8) var(--space-8);
+  background: var(--color-background);
 }
+
 .batch-card {
-  max-width: 1200px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  max-width: none;
+  padding: 0;
+  border: none;
+  background: transparent;
+  box-shadow: none;
 }
 
 // ── Card Header ───────────────────────────────────────────────────────────────
@@ -12,16 +25,26 @@
 .batch-card__header {
   display: flex;
   align-items: flex-start;
-  gap: var(--space-4);
-  padding-bottom: var(--space-5);
-  border-bottom: 1px solid var(--border-default);
+  gap: var(--space-2);
+  padding: 0;
+  border-bottom: none;
+  background: transparent;
 }
 
 .batch-card__icon {
-  font-size: 30px;
+  font-size: 32px;
   color: var(--color-primary);
   flex-shrink: 0;
-  margin-top: 2px;
+  margin-top: 0;
+  line-height: 1.1;
+}
+
+.batch-page__title {
+  margin: 0;
+  color: var(--color-label);
+  font-size: var(--fs-2xl);
+  font-weight: var(--fw-semibold);
+  line-height: 1.1;
 }
 
 .batch-card__subtitle {
@@ -66,14 +89,93 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-6);
-  padding-top: var(--space-5);
 }
 
+.batch-section-switcher {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  padding: 0;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-xs);
+  overflow: hidden;
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar { display: none; }
+}
+
+.batch-section-switcher__item {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  flex: 1 1 auto;
+  min-width: max-content;
+  min-height: 44px;
+  margin-bottom: -1px;
+  padding: 0 var(--space-4);
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all var(--transition-fast) var(--ease-default);
+
+  .material-icons {
+    color: currentColor;
+    font-size: var(--icon-sm);
+    line-height: 1;
+  }
+
+  &:hover:not(:disabled) {
+    background: var(--color-background-secondary);
+    color: var(--color-primary);
+  }
+
+  &.is-active,
+  &.is-active:hover {
+    border-bottom-color: var(--color-primary);
+    background: var(--color-surface);
+    color: var(--color-primary);
+  }
+}
+
+.batch-section-switcher__meta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 var(--space-1);
+  border-radius: var(--radius-full);
+  background: var(--color-background-secondary);
+  color: var(--color-text-muted);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-bold);
+
+  .batch-section-switcher__item.is-active & {
+    background: var(--color-primary-light);
+    color: var(--color-primary);
+  }
+}
+
+.batch-section--hidden {
+  display: none;
+}
 .batch-section {
   border: 1px solid var(--border-default);
   border-radius: var(--radius-lg);
   overflow: hidden;
-  background: var(--color-surface);
+  background: white;
+  box-shadow: var(--shadow-xs);
 }
 
 // ── Section Header ────────────────────────────────────────────────────────────
@@ -84,7 +186,7 @@
   justify-content: space-between;
   gap: var(--space-3);
   padding: var(--space-4) var(--space-5);
-  background: var(--color-surface-nested);
+  background: white;
   border-bottom: 1px solid var(--border-default);
   flex-wrap: wrap;
 }
@@ -349,6 +451,11 @@
   }
 }
 
+
+.batch-history-pagination {
+  padding: var(--space-4) var(--space-5);
+  border-top: 1px solid var(--border-default);
+}
 .app-count-chip {
   display: inline-flex;
   align-items: center;
@@ -714,7 +821,7 @@
 
 @media (max-width: 900px) {
   .batch-container {
-    padding: var(--space-3);
+    padding: var(--space-5) var(--space-4) var(--space-6);
   }
   .global-grid {
     grid-template-columns: 1fr 1fr;
@@ -725,6 +832,15 @@
 }
 
 @media (max-width: 600px) {
+  .batch-section-switcher {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .batch-section-switcher__item {
+    width: 100%;
+  }
+
   .global-grid {
     grid-template-columns: 1fr;
   }
@@ -752,3 +868,7 @@
 :host ::ng-deep app-data-table .data-table__scroll {
   background: transparent;
 }
+
+
+
+

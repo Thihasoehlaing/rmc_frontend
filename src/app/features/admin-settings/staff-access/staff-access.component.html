@@ -16,39 +16,103 @@
     </div>
   </header>
 
-  <app-submissions-search
-    placeholder="Search staff name..."
-    [value]="searchFilter()"
-    (search)="setSearchFilter($event)"
-    (refresh)="resetFilters()"
-  >
-    <label search-filters class="staff-access-filter--department">
-      <span class="staff-access-filter-label">Department</span>
-      <app-searchable-dropdown
-        [options]="departmentOptions()"
-        [ngModel]="departmentFilter()"
-        (ngModelChange)="setDepartmentFilter($event)"
-        valueMode="single"
-        placeholder="All departments"
-      />
-    </label>
-    <label search-filters>
-      <span class="staff-access-filter-label">Access Status</span>
-      <select
-        class="input--select"
-        [value]="statusFilter()"
-        (change)="setStatusFilter(statusSelect.value)"
-        #statusSelect
+  <section class="staff-access-filter-shell" aria-label="Staff access filters">
+    @if (loading()) {
+      <div class="staff-access-filter-skeleton" role="status" aria-busy="true" aria-label="Loading staff access filters">
+        <span class="sr-only">Loading staff access filters</span>
+        <div class="staff-access-filter-skeleton__search">
+          <span class="skeleton-block staff-access-filter-skeleton__icon"></span>
+          <span class="skeleton-block staff-access-filter-skeleton__text"></span>
+        </div>
+        <div class="staff-access-filter-skeleton__filters">
+          <div class="staff-access-filter-skeleton__filter">
+            <span class="skeleton-block staff-access-filter-skeleton__filter-text"></span>
+            <span class="skeleton-block staff-access-filter-skeleton__chevron"></span>
+          </div>
+          <div class="staff-access-filter-skeleton__filter">
+            <span class="skeleton-block staff-access-filter-skeleton__filter-text"></span>
+            <span class="skeleton-block staff-access-filter-skeleton__chevron"></span>
+          </div>
+        </div>
+        <div class="staff-access-filter-skeleton__actions">
+          <div class="staff-access-filter-skeleton__button">
+            <span class="skeleton-block staff-access-filter-skeleton__button-icon"></span>
+            <span class="skeleton-block staff-access-filter-skeleton__button-text"></span>
+          </div>
+          <div class="staff-access-filter-skeleton__button">
+            <span class="skeleton-block staff-access-filter-skeleton__button-icon"></span>
+            <span class="skeleton-block staff-access-filter-skeleton__button-text"></span>
+          </div>
+        </div>
+      </div>
+    } @else {
+      <app-submissions-search
+        placeholder="Search staff name..."
+        [value]="searchFilter()"
+        (search)="setSearchFilter($event)"
+        (refresh)="resetFilters()"
       >
-        <option value="all">All status</option>
-        <option value="active">Active</option>
-        <option value="blocked">Blocked</option>
-      </select>
-    </label>
-  </app-submissions-search>
+        <label search-filters class="staff-access-filter--department">
+          <span class="staff-access-filter-label">Department</span>
+          <app-searchable-dropdown
+            [options]="departmentOptions()"
+            [ngModel]="departmentFilter()"
+            (ngModelChange)="setDepartmentFilter($event)"
+            valueMode="single"
+            placeholder="All departments"
+          />
+        </label>
+        <label search-filters>
+          <span class="staff-access-filter-label">Access Status</span>
+          <select
+            class="input--select"
+            [value]="statusFilter()"
+            (change)="setStatusFilter(statusSelect.value)"
+            #statusSelect
+          >
+            <option value="all">All status</option>
+            <option value="active">Active</option>
+            <option value="blocked">Blocked</option>
+          </select>
+        </label>
+      </app-submissions-search>
+    }
+  </section>
 
   <section class="staff-access-table-shell" aria-label="Staff access list">
-    <app-data-table
+    @if (loading()) {
+      <div class="staff-access-loading-table" role="status" aria-busy="true" aria-label="Loading staff access records">
+        <span class="sr-only">Loading staff access records</span>
+        <div class="staff-access-loading-table__frame">
+          <div class="staff-access-loading-table__scroll">
+            <table aria-hidden="true">
+              <colgroup>
+                @for (column of skeletonColumns; track $index) {
+                  <col [style.width]="column.width" />
+                }
+              </colgroup>
+              <thead>
+                <tr>
+                  @for (column of skeletonColumns; track $index) {
+                    <th><span class="skeleton-block staff-access-loading-table__header-line"></span></th>
+                  }
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of skeletonRows; track row) {
+                  <tr>
+                    @for (column of skeletonColumns; track $index) {
+                      <td><span class="skeleton-block staff-access-loading-table__cell-line"></span></td>
+                    }
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    } @else {
+      <app-data-table
       [columns]="columns"
       [rows]="sortedStaff()"
       [sortColumn]="sortColumn()"
@@ -113,19 +177,38 @@
           </td>
         </tr>
       </ng-template>
-    </app-data-table>
+      </app-data-table>
+    }
+  </section>
 
-    <app-pagination
-      [currentPage]="page()"
-      [totalPages]="totalPages()"
-      [pageSize]="pageSize()"
-      [pageSizeOptions]="pageSizeOptions"
-      [totalItems]="totalItems()"
-      [itemCount]="staffRecords().length"
-      itemLabel="staff access records"
-      (pageChange)="onPageChange($event)"
-      (pageSizeChange)="onPageSizeChange($event)"
-    ></app-pagination>
+  <section class="staff-access-pagination-shell" aria-label="Staff access pagination">
+    @if (loading()) {
+      <div class="staff-access-pagination-skeleton" role="status" aria-busy="true" aria-label="Loading staff access pagination">
+        <span class="sr-only">Loading staff access pagination</span>
+        <div class="staff-access-pagination-skeleton__summary">
+          <span class="skeleton-block staff-access-pagination-skeleton__summary-line"></span>
+        </div>
+        <div class="staff-access-pagination-skeleton__pages">
+          <div class="skeleton-block staff-access-pagination-skeleton__page"></div>
+        </div>
+        <div class="staff-access-pagination-skeleton__size">
+          <span class="skeleton-block staff-access-pagination-skeleton__size-text"></span>
+          <span class="skeleton-block staff-access-pagination-skeleton__size-chevron"></span>
+        </div>
+      </div>
+    } @else {
+      <app-pagination
+        [currentPage]="page()"
+        [totalPages]="totalPages()"
+        [pageSize]="pageSize()"
+        [pageSizeOptions]="pageSizeOptions"
+        [totalItems]="totalItems()"
+        [itemCount]="staffRecords().length"
+        itemLabel="staff access records"
+        (pageChange)="onPageChange($event)"
+        (pageSizeChange)="onPageSizeChange($event)"
+      ></app-pagination>
+    }
   </section>
 
   <app-dialog
@@ -193,5 +276,15 @@
     </div>
   </app-dialog>
 </section>
+
+
+
+
+
+
+
+
+
+
 
 

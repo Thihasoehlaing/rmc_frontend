@@ -4,7 +4,7 @@
     <div class="card__header batch-card__header">
       <span class="material-icons batch-card__icon">event_available</span>
       <div>
-        <h2 class="card__title">Batch Sitting Management</h2>
+        <h1 class="batch-page__title">Batch Sitting Management</h1>
         <p class="batch-card__subtitle">
           Manage RDIG application cycle windows. One active batch runs at a time. Completed batches
           are preserved in history and can be retrieved.
@@ -36,10 +36,44 @@
 
     @if (!isLoading()) {
       <div class="batch-sections">
+        <section class="batch-section-switcher" aria-label="Batch section selector">
+          <button
+            class="batch-section-switcher__item"
+            [class.is-active]="selectedSection() === 'active'"
+            type="button"
+            (click)="selectedSection.set('active')"
+          >
+            <span class="material-icons">play_circle</span>
+            <span>Current Active Batch</span>
+            @if (activeBatch()) {
+              <span class="batch-section-switcher__meta">Active</span>
+            }
+          </button>
+          <button
+            class="batch-section-switcher__item"
+            [class.is-active]="selectedSection() === 'upcoming'"
+            type="button"
+            (click)="selectedSection.set('upcoming')"
+          >
+            <span class="material-icons">schedule</span>
+            <span>Upcoming Batches</span>
+            <span class="batch-section-switcher__meta">{{ plannedBatches().length }}</span>
+          </button>
+          <button
+            class="batch-section-switcher__item"
+            [class.is-active]="selectedSection() === 'history'"
+            type="button"
+            (click)="selectedSection.set('history')"
+          >
+            <span class="material-icons">history</span>
+            <span>Batch History</span>
+            <span class="batch-section-switcher__meta">{{ historyBatches().length }}</span>
+          </button>
+        </section>
         <!-- ════════════════════════════════════════════════════════════════ -->
         <!--  SECTION 1 — Current Active Batch                               -->
         <!-- ════════════════════════════════════════════════════════════════ -->
-        <div class="batch-section">
+        <div class="batch-section" [class.batch-section--hidden]="selectedSection() !== 'active'">
           <div class="section-head">
             <div class="section-head__left">
               <span class="material-icons section-head__icon icon--active">play_circle</span>
@@ -136,7 +170,7 @@
         <!-- ════════════════════════════════════════════════════════════════ -->
         <!--  SECTION 2 — Upcoming (Planned) Batches                         -->
         <!-- ════════════════════════════════════════════════════════════════ -->
-        <div class="batch-section">
+        <div class="batch-section" [class.batch-section--hidden]="selectedSection() !== 'upcoming'">
           <div class="section-head">
             <div class="section-head__left">
               <span class="material-icons section-head__icon icon--planned">schedule</span>
@@ -306,9 +340,8 @@
         <!-- /section planned -->
 
         <!-- ════════════════════════════════════════════════════════════════ -->
-        <!--  SECTION 3 — Batch History                                      -->
-        <!-- ════════════════════════════════════════════════════════════════ -->
-        <div class="batch-section">
+        <!--  SECTION 3 � Batch History                                      -->
+        <div class="batch-section" [class.batch-section--hidden]="selectedSection() !== 'history'">
           <div class="section-head">
             <div class="section-head__left">
               <span class="material-icons section-head__icon icon--history">history</span>
@@ -328,16 +361,14 @@
 
           @if (historyBatches().length > 0) {
             <div class="planned-list">
-              @for (batch of historyBatches(); track batch.id) {
+              @for (batch of paginatedHistoryBatches(); track batch.id) {
                 <div class="planned-item">
                   <div class="planned-item__row">
                     <div class="planned-item__info">
                       <button
                         class="icon-btn icon-btn--muted"
                         type="button"
-                        [title]="
-                          isHistoryExpanded(batch.id) ? 'Collapse details' : 'Expand details'
-                        "
+                        [title]="isHistoryExpanded(batch.id) ? 'Collapse details' : 'Expand details'"
                         (click)="toggleHistory(batch.id)"
                       >
                         <span class="material-icons">
@@ -347,7 +378,7 @@
                       <span class="status-badge status-badge--history">Closed</span>
                       <strong class="planned-item__name">{{ batch.batchName }}</strong>
                       <span class="planned-item__dates">
-                        {{ fmt(batch.startDate) }} → {{ fmt(batch.endDate) }}
+                        {{ fmt(batch.startDate) }} ? {{ fmt(batch.endDate) }}
                       </span>
                     </div>
                     <div class="planned-item__actions">
@@ -391,9 +422,7 @@
                         <div class="batch-summary__chip">
                           <span class="material-icons">folder_open</span>
                           <span class="batch-summary__label">Applications</span>
-                          <span class="app-count-chip">{{
-                            batch.applicationIds?.length ?? 0
-                          }}</span>
+                          <span class="app-count-chip">{{ batch.applicationIds?.length ?? 0 }}</span>
                         </div>
                       </div>
                       <ng-container
@@ -403,6 +432,20 @@
                   }
                 </div>
               }
+            </div>
+
+            <div class="batch-history-pagination">
+              <app-pagination
+                [currentPage]="historyPage()"
+                [totalPages]="historyTotalPages()"
+                [pageSize]="historyPageSize()"
+                [pageSizeOptions]="historyPageSizeOptions"
+                [totalItems]="historyBatches().length"
+                [itemCount]="paginatedHistoryBatches().length"
+                itemLabel="completed batches"
+                (pageChange)="onHistoryPageChange($event)"
+                (pageSizeChange)="onHistoryPageSizeChange($event)"
+              ></app-pagination>
             </div>
           }
         </div>
@@ -712,5 +755,9 @@
     </div>
   </div>
 </ng-template>
+
+
+
+
 
 

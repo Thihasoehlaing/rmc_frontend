@@ -1,82 +1,60 @@
-<section class="reviewer-page">
-  <header class="reviewer-page__header">
-    <h1 class="reviewer-page__title">
-      <span class="material-icons" aria-hidden="true">groups</span>
-      RDIG Application
-    </h1>
-    <p class="reviewer-page__subtitle">
-      {{ totalItems() }} academic staff ·
-      Add staff to the RDIG reviewer pool. Reviewers are assigned to individual applications later,
-      from the application itself.
-    </p>
+<section class="rdig-reviewer-page">
+
+  <!-- ── Header ──────────────────────────────────────────────────────────── -->
+  <header class="rdig-reviewer-page__header">
+    <div class="rdig-reviewer-page__title-wrap">
+      <h1 class="rdig-reviewer-page__title">
+        <span class="material-icons" aria-hidden="true">groups</span>
+        RDIG Reviewers
+      </h1>
+      <p class="rdig-reviewer-page__subtitle">
+        Add staff to the RDIG reviewer pool. Reviewers are assigned to individual applications
+        later, from the application itself.
+      </p>
+    </div>
+
+    <div class="rdig-reviewer-summary" aria-label="Academic staff count">
+      <span class="rdig-reviewer-summary__value">{{ totalItems() }}</span>
+      <span class="rdig-reviewer-summary__label">academic staff</span>
+    </div>
   </header>
 
-  <section class="reviewer-filters card" aria-labelledby="reviewer-filters-title">
-    <h2 id="reviewer-filters-title">Search &amp; Filters</h2>
-
-    <div class="reviewer-filters__grid">
-      <label class="form-field">
-        <span class="form-label">Name</span>
-        <input
-          class="input--text"
-          type="search"
-          placeholder="Search by name"
-          [ngModel]="nameFilter()"
-          (ngModelChange)="nameFilter.set($event)"
-          (keydown.enter)="applyFilters()"
-        />
-      </label>
-
-      <label class="form-field">
-        <span class="form-label">Email</span>
-        <input
-          class="input--text"
-          type="search"
-          placeholder="Search by email"
-          [ngModel]="emailFilter()"
-          (ngModelChange)="emailFilter.set($event)"
-          (keydown.enter)="applyFilters()"
-        />
-      </label>
-
-      <div class="form-field reviewer-filters__department">
-        <span class="form-label">Department</span>
+  <!-- ── Search + filter panel ───────────────────────────────────────────── -->
+  <section class="rdig-reviewer-filter-shell" aria-label="RDIG reviewer filters">
+    <app-submissions-search
+      placeholder="Search by name..."
+      [value]="nameFilter()"
+      (search)="nameFilter.set($event); applyFilters()"
+      (refresh)="resetFilters()"
+    >
+      <label search-filters class="rdig-reviewer-filter--department">
+        <span class="rdig-reviewer-filter-label">Department</span>
         <app-searchable-dropdown
           [options]="departmentOptions()"
           [ngModel]="departmentFilter()"
           (ngModelChange)="setDepartmentFilter($event)"
           valueMode="single"
-          placeholder="Search department..."
+          placeholder="All departments"
         />
-      </div>
-
-      <label class="form-field">
-        <span class="form-label">Reviewer Pool</span>
+      </label>
+      <label search-filters>
+        <span class="rdig-reviewer-filter-label">Reviewer Pool</span>
         <select
           class="input--select"
-          [ngModel]="poolStatusFilter()"
-          (ngModelChange)="setPoolStatusFilter($event)"
+          [value]="poolStatusFilter()"
+          (change)="setPoolStatusFilter(poolSelect.value)"
+          #poolSelect
         >
           <option value="all">All</option>
           <option value="in-pool">In Pool</option>
           <option value="not-in-pool">Not in Pool</option>
         </select>
       </label>
-
-      <div class="reviewer-filters__actions">
-        <button class="btn btn-primary" type="button" (click)="applyFilters()">
-          <span class="material-icons">search</span>
-          Search
-        </button>
-        <button class="btn btn-secondary" type="button" (click)="resetFilters()">
-          <span class="material-icons">refresh</span>
-          Reset
-        </button>
-      </div>
-    </div>
+    </app-submissions-search>
   </section>
 
-  <section class="reviewer-table-shell" aria-label="RDIG reviewer pool management">
+  <!-- ── Table panel ─────────────────────────────────────────────────────── -->
+  <section class="rdig-reviewer-table-shell" aria-label="RDIG reviewer pool management">
     <app-data-table
       [columns]="columns"
       [rows]="staffRows()"
@@ -122,7 +100,10 @@
         </tr>
       </ng-template>
     </app-data-table>
+  </section>
 
+  <!-- ── Pagination panel ────────────────────────────────────────────────── -->
+  <section class="rdig-reviewer-pagination-shell" aria-label="RDIG reviewer pagination">
     <app-pagination
       [currentPage]="page()"
       [totalPages]="totalPages()"
@@ -135,6 +116,5 @@
       (pageSizeChange)="onPageSizeChange($event)"
     ></app-pagination>
   </section>
-
 
 </section>

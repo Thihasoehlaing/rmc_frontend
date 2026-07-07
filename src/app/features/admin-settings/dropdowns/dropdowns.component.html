@@ -1,46 +1,81 @@
-<section class="dropdowns-container">
-  <div class="dropdowns-shell">
-    <div class="dropdowns-header">
-      <p class="dropdowns-header__eyebrow">Admin Settings</p>
-      <h1 class="dropdowns-title">Dropdowns</h1>
+<section class="dropdowns-page">
+
+  <!-- ── Header ──────────────────────────────────────────────────────────── -->
+  <header class="dropdowns-page__header">
+    <div class="dropdowns-page__title-wrap">
+      <h1 class="dropdowns-title">
+        <span class="material-icons" aria-hidden="true">tune</span>
+        Dropdowns
+      </h1>
       <p class="dropdowns-subtitle">
         Select a form to manage its dropdown options. Each form has its own maintainable section.
       </p>
     </div>
+  </header>
 
-    <div class="grid">
-      <button
-        *ngFor="let section of sections(); trackBy: trackById"
-        type="button"
-        class="card card-link"
-        [class.card-link--disabled]="!section.route"
-        [disabled]="!section.route"
-        (click)="openSection(section)"
-      >
-        <div class="card__header">
-          <div class="title-with-icon">
-            <span class="material-icons card__icon">{{ section.icon }}</span>
-            <div class="card__heading">
-              <h3 class="card__title">{{ section.title }}</h3>
-              <p class="card__meta">{{ section.description }}</p>
+  <!-- ── Grid shell ──────────────────────────────────────────────────────── -->
+  <section class="dropdowns-grid-shell" aria-label="Dropdown sections">
+
+    <!-- Skeleton state -->
+    @if (loading()) {
+      <div class="dropdowns-skeleton-grid" aria-hidden="true">
+        @for (i of [1,2,3,4,5,6]; track i) {
+          <div class="dropdowns-skeleton-card">
+            <div class="dropdowns-skeleton-card__header">
+              <span class="skeleton-block dropdowns-skeleton-card__icon"></span>
+              <div class="dropdowns-skeleton-card__heading">
+                <span class="skeleton-block dropdowns-skeleton-card__title"></span>
+                <span class="skeleton-block dropdowns-skeleton-card__meta"></span>
+              </div>
+            </div>
+            <div class="dropdowns-skeleton-card__chips">
+              <span class="skeleton-block dropdowns-skeleton-card__chip"></span>
+              <span class="skeleton-block dropdowns-skeleton-card__chip dropdowns-skeleton-card__chip--sm"></span>
+              <span class="skeleton-block dropdowns-skeleton-card__chip"></span>
+            </div>
+            <div class="dropdowns-skeleton-card__footer">
+              <span class="skeleton-block dropdowns-skeleton-card__arrow"></span>
             </div>
           </div>
-        </div>
+        }
+      </div>
+    } @else {
+      <div class="grid">
+        <button
+          *ngFor="let section of sections(); trackBy: trackById"
+          type="button"
+          class="card card-link"
+          [class.card-link--disabled]="!section.route"
+          [disabled]="!section.route"
+          (click)="openSection(section)"
+        >
+          <div class="card__header">
+            <div class="title-with-icon">
+              <span class="material-icons card__icon">{{ section.icon }}</span>
+              <div class="card__heading">
+                <h3 class="card__title">{{ section.title }}</h3>
+                <p class="card__meta">{{ section.description }}</p>
+              </div>
+            </div>
+          </div>
 
-        <div class="card__stats">
-          <span class="chip" *ngFor="let category of section.categories.slice(0, 4)">
-            {{ category }}
-          </span>
-          <span class="chip chip--primary" *ngIf="section.categories.length > 4">
-            +{{ section.categories.length - 4 }}
-          </span>
-        </div>
+          <div class="card__stats">
+            <span class="chip" *ngFor="let category of section.categories.slice(0, 4)">
+              {{ category }}
+            </span>
+            <span class="chip chip--primary" *ngIf="section.categories.length > 4">
+              +{{ section.categories.length - 4 }}
+            </span>
+          </div>
 
-        <div class="card__footer">
-          <span class="card__status" *ngIf="!section.route">Coming soon</span>
-          <span class="material-icons card__arrow" *ngIf="section.route">chevron_right</span>
-        </div>
-      </button>
-    </div>
-  </div>
+          <div class="card__footer">
+            <span class="card__status" *ngIf="!section.route">Coming soon</span>
+            <span class="material-icons card__arrow" *ngIf="section.route">chevron_right</span>
+          </div>
+        </button>
+      </div>
+    }
+
+  </section>
+
 </section>

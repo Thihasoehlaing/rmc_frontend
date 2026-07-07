@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, TrackByFunction, signal } from '@angular/core';
+import { Component, OnInit, TrackByFunction, signal } from '@angular/core';
 import { Router } from '@angular/router';
 
 interface DropdownSection {
@@ -18,7 +18,9 @@ interface DropdownSection {
   templateUrl: './dropdowns.component.html',
   styleUrls: ['./dropdowns.component.scss'],
 })
-export class DropdownsComponent {
+export class DropdownsComponent implements OnInit {
+  readonly loading = signal(true);
+
   readonly sections = signal<DropdownSection[]>([
     {
       id: 1,
@@ -92,6 +94,10 @@ export class DropdownsComponent {
   trackById: TrackByFunction<DropdownSection> = (_index, section) => section.id;
 
   constructor(private router: Router) {}
+
+  ngOnInit(): void {
+    setTimeout(() => this.loading.set(false), 600);
+  }
 
   openSection(section: DropdownSection): void {
     if (!section.route) {

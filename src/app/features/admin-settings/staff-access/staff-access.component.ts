@@ -10,6 +10,7 @@ import { nextTableSortState, SortDirection } from '../../../shared/services/tabl
 import { SubmissionsSearchComponent } from '../../../shared/components/submissions-search/submissions-search.component';
 import { TableActionIconComponent } from '../../../shared/components/table-action-icon/table-action-icon.component';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
+import { SkeletonColumn } from '../../../shared/components/table-skeleton/table-skeleton.component';
 import { DialogComponent } from '../../../shared/components/dialog/dialog.component';
 import { NoEntryFoundComponent } from '../../../shared/components/no-entry-found/no-entry-found.component';
 import { SearchableDropdownComponent } from '../../../shared/components/searchable-dropdown/searchable-dropdown.component';
@@ -76,12 +77,11 @@ export class StaffAccessComponent implements OnInit {
   readonly loadingId = signal<number | null>(null);
 
   readonly departments = signal<DepartmentRecord[]>([]);
-  readonly departmentOptions = computed<DropdownOption<string>[]>(() => [
-    { value: 'all', label: 'All departments' },
-    ...this.departments().map((d) => ({ value: d.department_name, label: d.department_name })),
-  ]);
+  readonly departmentOptions = computed<DropdownOption<string>[]>(() =>
+    this.departments().map((d) => ({ value: d.department_name, label: d.department_name })),
+  );
 
-  readonly departmentFilter = signal('all');
+  readonly departmentFilter = signal('');
   readonly statusFilter = signal<StatusFilter>('all');
   readonly searchFilter = signal('');
   readonly sortColumn = signal<SortColumn | null>(null);
@@ -90,6 +90,16 @@ export class StaffAccessComponent implements OnInit {
   readonly page = signal(1);
   readonly pageSize = signal(10);
   readonly pageSizeOptions = [10, 25, 50];
+  readonly skeletonRows = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+  readonly skeletonColumns: readonly SkeletonColumn[] = [
+    { width: '22rem' },
+    { width: '13rem' },
+    { width: '17rem' },
+    { width: '9rem' },
+    { width: '11rem' },
+    { width: '8rem' },
+    { width: '132px' },
+  ];
   readonly totalItems = signal(0);
   readonly totalPages = signal(1);
 
@@ -134,7 +144,7 @@ export class StaffAccessComponent implements OnInit {
         page: this.page(),
         perPage: this.pageSize(),
         status: this.statusFilter(),
-        department: this.departmentFilter() === 'all' ? undefined : this.departmentFilter(),
+        department: this.departmentFilter() || undefined,
         search: this.searchFilter(),
       })
       .subscribe({
@@ -193,8 +203,10 @@ export class StaffAccessComponent implements OnInit {
     );
   };
 
-  setDepartmentFilter(value: string): void {
-    this.departmentFilter.set(value || 'all');
+  setDepartmentFilter(value: string | null): void {
+    const nextValue = value || '';
+    if (this.departmentFilter() === nextValue) return;
+    this.departmentFilter.set(nextValue);
     this.page.set(1);
     this.loadStaff();
   }
@@ -211,7 +223,7 @@ export class StaffAccessComponent implements OnInit {
 
   resetFilters(): void {
     this.searchFilter.set('');
-    this.departmentFilter.set('all');
+    this.departmentFilter.set('');
     this.statusFilter.set('all');
     this.page.set(1);
     this.loadStaff();
@@ -338,3 +350,9 @@ export class StaffAccessComponent implements OnInit {
     return `${day} ${month} ${year}`;
   }
 }
+
+
+
+
+
+

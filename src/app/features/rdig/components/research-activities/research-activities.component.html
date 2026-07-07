@@ -38,16 +38,26 @@
                     ></app-validation-message>
                   </td>
                   <td>
-                    <select class="input--select" formControlName="startMonth">
+                    <select
+                      class="input--select activity-month-select"
+                      formControlName="startMonth"
+                      [compareWith]="compareMonth"
+                      [attr.aria-label]="'Start month for activity ' + (i + 1)"
+                    >
                       @for (m of months(); track m) {
-                        <option [value]="m" [disabled]="isStartMonthDisabled(i, m)">{{ m }}</option>
+                        <option [ngValue]="m" [disabled]="isStartMonthDisabled(i, m)">{{ m }}</option>
                       }
                     </select>
                   </td>
                   <td>
-                    <select class="input--select" formControlName="endMonth">
+                    <select
+                      class="input--select activity-month-select"
+                      formControlName="endMonth"
+                      [compareWith]="compareMonth"
+                      [attr.aria-label]="'End month for activity ' + (i + 1)"
+                    >
                       @for (m of months(); track m) {
-                        <option [value]="m" [disabled]="isEndMonthDisabled(activity, m)">
+                        <option [ngValue]="m" [disabled]="isEndMonthDisabled(activity, m)">
                           {{ m }}
                         </option>
                       }

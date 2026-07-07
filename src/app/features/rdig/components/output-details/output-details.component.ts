@@ -1,7 +1,6 @@
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
-import { CustomHeaderComponent } from '../../../../shared/components/custom-header/custom-header.component';
 import { CustomSubheaderComponent } from '../../../../shared/components/custom-subheader/custom-subheader.component';
 import { ValidationMessageComponent } from '../../../../shared/components/validation-message/validation-message.component';
 import { NoteComponent } from '../../../../shared/components/note/note.component';
@@ -11,7 +10,7 @@ import { RdigWorkflowService } from '../../services/rdig-workflow.service';
 @Component({
     selector: 'app-output-details',
     standalone: true,
-    imports: [ReactiveFormsModule, CustomHeaderComponent, CustomSubheaderComponent, ValidationMessageComponent, NoteComponent, ReviewBlockComponent],
+    imports: [ReactiveFormsModule, CustomSubheaderComponent, ValidationMessageComponent, NoteComponent, ReviewBlockComponent],
     templateUrl: './output-details.component.html',
     styleUrls: ['./output-details.component.scss']
 })

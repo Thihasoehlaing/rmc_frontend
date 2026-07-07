@@ -1,7 +1,6 @@
 import { Component, Input, inject, OnInit, OnDestroy } from '@angular/core';
 import { ReactiveFormsModule, FormGroup, FormControl } from '@angular/forms';
 import { Subscription } from 'rxjs';
-import { CustomHeaderComponent } from '../../../../shared/components/custom-header/custom-header.component';
 import { ValidationMessageComponent } from '../../../../shared/components/validation-message/validation-message.component';
 import { CharacterCounterComponent } from '../../../../shared/components/character-counter/character-counter.component';
 import { ReviewBlockComponent } from '../review-block/review-block.component';
@@ -12,7 +11,7 @@ import { AuthService } from '../../../../core/services/auth.service';
 @Component({
     selector: 'app-final-declaration',
     standalone: true,
-    imports: [ReactiveFormsModule, CustomHeaderComponent, ValidationMessageComponent, CharacterCounterComponent, ReviewBlockComponent, ApprovalCardComponent],
+    imports: [ReactiveFormsModule, ValidationMessageComponent, CharacterCounterComponent, ReviewBlockComponent, ApprovalCardComponent],
     templateUrl: './final-declaration.component.html',
     styleUrl: './final-declaration.component.scss'
 })

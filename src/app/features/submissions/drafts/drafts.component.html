@@ -22,18 +22,12 @@
   }
 
   @if (!loading() && !error()) {
-    <nav class="form-tabs" aria-label="Draft form filters">
-      @for (tab of formTabs(); track tab.value) {
-        <button
-          type="button"
-          class="form-tab"
-          [class.form-tab--active]="selectedType() === tab.value"
-          (click)="setTab(tab.value)"
-        >
-          {{ tab.label }}
-        </button>
-      }
-    </nav>
+    <app-submission-form-tabs
+      [tabs]="formTabs()"
+      [selectedValue]="selectedType()"
+      ariaLabel="Draft form filters"
+      (selectedValueChange)="setTab($event)"
+    />
 
     <section class="dropdown-search-panel" aria-label="Draft search">
       <app-submissions-search

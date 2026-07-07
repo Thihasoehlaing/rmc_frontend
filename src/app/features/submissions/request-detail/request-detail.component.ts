@@ -71,8 +71,31 @@ export class RequestDetailComponent implements OnInit {
 
   openPrint(): void {
     const id = this.request()?.id ?? this.request()?.request_id;
-    if (id != null) window.open(this.requests.getPrintUrl(id), '_blank', 'noopener');
+    if (id != null) {
+      this.requests.downloadPrint(id).subscribe({
+        next: (response) => {
+          const blob = response.body;
+          if (!blob) return;
+          const fileName = this.printFileName(
+            response.headers.get('content-disposition'),
+            this.request()?.request_code ?? 'application',
+          );
+          const url = URL.createObjectURL(blob);
+          const anchor = document.createElement('a');
+          anchor.href = url;
+          anchor.download = fileName;
+          anchor.click();
+          URL.revokeObjectURL(url);
+        },
+        error: () => this.error.set('Could not download the print PDF. Please try again.'),
+      });
+    }
   }
 
   keepOrder = (_a: KeyValue<string, unknown>, _b: KeyValue<string, unknown>): number => 0;
+
+  private printFileName(contentDisposition: string | null, fallbackCode: string): string {
+    const match = contentDisposition?.match(/filename\*?=(?:UTF-8''|")?([^";]+)/i);
+    return match?.[1] ? decodeURIComponent(match[1].replace(/"/g, '')) : `${fallbackCode}.pdf`;
+  }
 }

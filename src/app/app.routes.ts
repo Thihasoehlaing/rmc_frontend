@@ -111,6 +111,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'external-project-data-entry/detail/:requestCode',
+        loadComponent: () =>
+          import('./features/external-project-data-entry/external-project-detail.component').then(
+            m => m.ExternalProjectDetailComponent,
+          ),
+      },
+      {
         path: 'external-project-data-entry',
         canActivate: [permissionGuard],
         data: {

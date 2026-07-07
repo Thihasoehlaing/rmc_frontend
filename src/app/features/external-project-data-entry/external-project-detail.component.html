@@ -1,0 +1,286 @@
+<section class="external-project-page">
+  @if (loading()) {
+    <section class="state-message">Loading external project detail...</section>
+  } @else if (error()) {
+    <section class="state-message state-error">{{ error() }}</section>
+  } @else {
+    <article class="form-container external-project-form">
+      <div class="external-project-form__title-block">
+        <h1 class="external-project-form__title">External Project Data Entry</h1>
+        <div class="external-project-form__divider" aria-hidden="true"></div>
+      </div>
+
+      <header class="detail-summary">
+        <div class="detail-summary__main">
+          <p class="detail-summary__eyebrow">Detail View</p>
+          <h2>{{ request()?.title || request()?.request_code || 'External Project Detail' }}</h2>
+          <div class="detail-meta">
+            <span class="detail-code">{{ request()?.request_code }}</span>
+            <span
+              class="status-chip"
+              [style.background]="statusColor() + '1a'"
+              [style.color]="statusColor()"
+              [style.border-color]="statusColor() + '55'"
+            >
+              {{ request()?.status_name || request()?.status_code }}
+            </span>
+          </div>
+        </div>
+
+        <div class="detail-actions">
+          @if (canPrint()) {
+            <button type="button" class="btn btn-secondary" (click)="print()">
+              <span class="material-icons" aria-hidden="true">print</span>
+              Print
+            </button>
+          }
+          @for (action of actions(); track action.action_code) {
+            <a
+              class="btn btn-primary"
+              [routerLink]="['/submissions/action', requestId()]"
+              [queryParams]="{ action: action.action_code }"
+            >
+              {{ action.action_name }}
+            </a>
+          }
+        </div>
+      </header>
+
+      <div class="external-project-form__body">
+        <section class="detail-grid detail-grid--two">
+          <article class="card detail-card">
+            <div class="detail-card__header">
+              <h2>Request Information</h2>
+            </div>
+            <div class="detail-card__content field-grid">
+              @for (field of requestFields(); track field.label) {
+                <div class="field-item">
+                  <span>{{ field.label }}</span>
+                  <strong>{{ displayValue(field) }}</strong>
+                </div>
+              }
+            </div>
+          </article>
+
+          <article class="card detail-card">
+            <div class="detail-card__header">
+              <h2>Project Information</h2>
+            </div>
+            <div class="detail-card__content field-grid">
+              @for (field of projectFields(); track field.label) {
+                <div class="field-item">
+                  <span>{{ field.label }}</span>
+                  <strong>{{ displayValue(field) }}</strong>
+                </div>
+              }
+            </div>
+          </article>
+        </section>
+
+        <section class="detail-grid detail-grid--two">
+          <article class="card detail-card">
+            <div class="detail-card__header">
+              <h2>Timeline & Budget</h2>
+            </div>
+            <div class="detail-card__content field-grid">
+              @for (field of timelineFields(); track field.label) {
+                <div class="field-item">
+                  <span>{{ field.label }}</span>
+                  <strong>{{ displayValue(field) }}</strong>
+                </div>
+              }
+            </div>
+          </article>
+
+          <article class="card detail-card">
+            <div class="detail-card__header">
+              <h2>Titles & Remarks</h2>
+            </div>
+            <div class="detail-card__content field-list">
+              @for (field of titleFields(); track field.label) {
+                <div class="field-item">
+                  <span>{{ field.label }}</span>
+                  <strong>{{ displayValue(field) }}</strong>
+                </div>
+              }
+            </div>
+          </article>
+        </section>
+
+        <section class="card detail-card">
+          <div class="detail-card__header">
+            <h2>Internal Co-Researchers</h2>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>No.</th>
+                  <th>Staff Name</th>
+                  <th>School / Department</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (item of form()?.internal_co_researchers ?? []; track item.id; let index = $index) {
+                  <tr>
+                    <td class="text-muted is-align-center">{{ index + 1 }}</td>
+                    <td>{{ item.staff_name || '-' }}</td>
+                    <td>{{ item.school_department || '-' }}</td>
+                  </tr>
+                } @empty {
+                  <tr><td colspan="3" class="empty-cell">No internal co-researchers.</td></tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="card detail-card">
+          <div class="detail-card__header">
+            <h2>External Collaborators</h2>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>No.</th>
+                  <th>Name</th>
+                  <th>Affiliation</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (item of form()?.external_collaborators ?? []; track item.id; let index = $index) {
+                  <tr>
+                    <td class="text-muted is-align-center">{{ index + 1 }}</td>
+                    <td>{{ item.full_name || '-' }}</td>
+                    <td>{{ item.affiliation || '-' }}</td>
+                  </tr>
+                } @empty {
+                  <tr><td colspan="3" class="empty-cell">No external collaborators.</td></tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="card detail-card">
+          <div class="detail-card__header">
+            <h2>Expected Outcomes</h2>
+          </div>
+          <div class="outcome-list">
+            @for (item of form()?.expected_outcomes ?? []; track item.id; let index = $index) {
+              <div class="outcome-item">
+                <span>{{ index + 1 }}</span>
+                <p>{{ item.description || '-' }}</p>
+              </div>
+            } @empty {
+              <p class="empty-text">No expected outcomes.</p>
+            }
+          </div>
+        </section>
+
+        <section class="card detail-card">
+          <div class="detail-card__header">
+            <h2>Budget</h2>
+          </div>
+          <div class="budget-stack">
+            @for (section of form()?.budget_sections ?? []; track section.id) {
+              <article class="budget-section">
+                <div class="budget-section__header">
+                  <div>
+                    <strong>{{ section.section_name || section.section_code }}</strong>
+                    <span>{{ section.section_code }}</span>
+                  </div>
+                  <strong>RM {{ section.total_amount_rm || '0.00' }}</strong>
+                </div>
+                <div class="table-wrap">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>No.</th>
+                        <th>Description</th>
+                        <th>Amount</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (item of budgetItemsFor(section.id); track item.id; let index = $index) {
+                        <tr>
+                          <td class="text-muted is-align-center">{{ index + 1 }}</td>
+                          <td>{{ item.description || '-' }}</td>
+                          <td class="amount-cell">RM {{ item.amount_rm || '0.00' }}</td>
+                        </tr>
+                      } @empty {
+                        <tr><td colspan="3" class="empty-cell">No budget items.</td></tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              </article>
+            } @empty {
+              <p class="empty-text">No budget sections.</p>
+            }
+          </div>
+        </section>
+
+        <section class="card detail-card">
+          <div class="detail-card__header">
+            <h2>Billing</h2>
+          </div>
+          @if (form()?.billing) {
+            <div class="detail-card__content field-grid">
+              <div class="field-item">
+                <span>Billing Amount</span>
+                <strong>RM {{ form()?.billing?.billing_amount || '0.00' }}</strong>
+              </div>
+              <div class="field-item">
+                <span>Billing Date</span>
+                <strong>{{ form()?.billing?.billing_date | date:'dd MMM yyyy' }}</strong>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>No.</th>
+                    <th>Description</th>
+                    <th>Amount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (item of form()?.billing_items ?? []; track item.id; let index = $index) {
+                    <tr>
+                      <td class="text-muted is-align-center">{{ index + 1 }}</td>
+                      <td>{{ item.description || '-' }}</td>
+                      <td class="amount-cell">RM {{ item.amount_rm || '0.00' }}</td>
+                    </tr>
+                  } @empty {
+                    <tr><td colspan="3" class="empty-cell">No billing items.</td></tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          } @else {
+            <p class="empty-text">No billing information.</p>
+          }
+        </section>
+
+        <section class="card detail-card">
+          <div class="detail-card__header">
+            <h2>Attachments</h2>
+          </div>
+          <div class="attachment-list">
+            @for (attachment of form()?.attachments ?? []; track attachment.id) {
+              <div class="attachment-item">
+                <span class="material-icons" aria-hidden="true">attach_file</span>
+                <strong>Attachment #{{ attachment.id }}</strong>
+                <span>{{ attachment.entity_type || 'General' }}</span>
+              </div>
+            } @empty {
+              <p class="empty-text">No attachments.</p>
+            }
+          </div>
+        </section>
+      </div>
+    </article>
+  }
+</section>

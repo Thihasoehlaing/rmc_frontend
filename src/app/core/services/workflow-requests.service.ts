@@ -1,4 +1,4 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
@@ -251,6 +251,12 @@ export class WorkflowRequestsService {
     return this.http.get<ApiResponse<RequestSummaryDto>>(`${this.base}/requests/${requestId}`);
   }
 
+  getRequestByCode(requestCode: string): Observable<ApiResponse<RequestSummaryDto>> {
+    return this.http.get<ApiResponse<RequestSummaryDto>>(
+      `${this.base}/requests/code/${encodeURIComponent(requestCode)}`,
+    );
+  }
+
   getAdminHistoryDetail(requestId: number): Observable<ApiResponse<RequestContextDto>> {
     return this.http.get<ApiResponse<RequestContextDto>>(`${this.base}/requests/admin-history/${requestId}`);
   }
@@ -302,5 +308,12 @@ export class WorkflowRequestsService {
 
   getPrintUrl(requestId: number): string {
     return `${this.base}/requests/${requestId}/print`;
+  }
+
+  downloadPrint(requestId: number): Observable<HttpResponse<Blob>> {
+    return this.http.get(this.getPrintUrl(requestId), {
+      observe: 'response',
+      responseType: 'blob',
+    });
   }
 }

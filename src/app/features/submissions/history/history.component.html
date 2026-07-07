@@ -94,15 +94,26 @@
                 </td>
                 <td>{{ formatCreatedDate(app) }}</td>
                 <td class="actions-cell">
-                  <div class="table-actions">
+                  <div class="data-table__actions">
                     <a
-                      class="table-action table-action--detail"
+                      class="btn-icon btn-icon--view"
                       [routerLink]="getDetailRoute(app)"
                       title="View detail"
                       aria-label="View detail"
                     >
                       <app-table-action-icon action="view"></app-table-action-icon>
                     </a>
+                    @if (canPrint(app)) {
+                      <button
+                        type="button"
+                        class="btn-icon btn-icon--view"
+                        title="Print PDF"
+                        aria-label="Print PDF"
+                        (click)="openPrint(app)"
+                      >
+                        <span class="material-icons" aria-hidden="true">print</span>
+                      </button>
+                    }
                   </div>
                 </td>
               </tr>

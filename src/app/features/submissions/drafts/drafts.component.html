@@ -32,6 +32,18 @@
       [value]="searchQuery()"
       (valueChange)="searchQuery.set($event)"
     />
+    <div class="form-tabs" aria-label="Draft form filters">
+      @for (t of availableTypes(); track t) {
+        <button
+          type="button"
+          class="form-tab"
+          [class.form-tab--active]="selectedType() === t"
+          (click)="selectedType.set(t)"
+        >
+          {{ t === 'all' ? 'All' : t }}
+        </button>
+      }
+    </div>
 
     <!-- ── Empty ─────────────────────────────────────────────────────────────── -->
     @if (drafts().length === 0) {

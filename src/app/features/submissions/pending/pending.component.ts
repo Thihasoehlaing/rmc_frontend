@@ -19,8 +19,8 @@ import {
 import { TableActionIconComponent } from '../../../shared/components/table-action-icon/table-action-icon.component';
 import {
   STATUS_COLORS,
+  detailRoute,
   formTypeLabel,
-  formRoute,
 } from '../../../core/services/request-display.util';
 
 @Component({
@@ -73,7 +73,9 @@ export class PendingComponent implements OnInit {
 
   readonly availableTypes = computed(() => [
     'all',
-    ...Array.from(new Set(this.raw().map((a) => (a.form_code ?? '').toUpperCase()).filter(Boolean))).sort(),
+    ...Array.from(new Set(this.raw().map((a) => (a.form_code ?? '').toUpperCase()).filter(Boolean)))
+      .filter((code) => code !== 'EXTERNAL')
+      .sort(),
   ]);
 
   readonly pending = computed(() => {
@@ -117,7 +119,7 @@ export class PendingComponent implements OnInit {
   getStatusLabel = (app: RequestSummaryDto) => app.status_name || app.status_code;
   getStatusColor = (app: RequestSummaryDto) => STATUS_COLORS[app.status_code] ?? '#6b7280';
   getFormTypeLabel = (app: RequestSummaryDto) => formTypeLabel(app.form_code, app.form_name);
-  getFormRoute = (app: RequestSummaryDto) => formRoute(app.form_code);
+  getFormRoute = (app: RequestSummaryDto) => detailRoute(app);
   getNextActors = (app: RequestSummaryDto) => app.current_actor_role || '—';
   formatSubmitted = (app: RequestSummaryDto) => {
     const iso = app.submitted_at ?? app.updated_at ?? app.created_at;

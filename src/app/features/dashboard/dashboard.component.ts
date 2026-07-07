@@ -1,12 +1,16 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { finalize, forkJoin } from 'rxjs';
+import { finalize } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
-import { ApplicationService, TERMINAL_STATUSES } from '../../core/services/application.service';
+import {
+  RequestSummaryDto,
+  WorkflowRequestsService,
+} from '../../core/services/workflow-requests.service';
+import { detailRoute, formTypeLabel, requestIdOf, STATUS_COLORS } from '../../core/services/request-display.util';
 import { DashboardSkeletonComponent } from '../../shared/components/dashboard-skeleton/dashboard-skeleton.component';
 
-type DashboardApp = any;
+type DashboardApp = RequestSummaryDto;
 
 @Component({
   selector: 'app-dashboard',
@@ -17,16 +21,16 @@ type DashboardApp = any;
 })
 export class DashboardComponent implements OnInit {
   private auth = inject(AuthService);
-  private appSvc = inject(ApplicationService);
+  private requests = inject(WorkflowRequestsService);
 
   username = computed(() => this.auth.currentUser()?.name ?? 'Guest');
 
   loading = signal(true);
   error = signal<string | null>(null);
-  private inboxApps = signal<DashboardApp[]>([]);
-  private myApps = signal<DashboardApp[]>([]);
-  private adminApps = signal<DashboardApp[]>([]);
-  private historyApps = signal<DashboardApp[]>([]);
+  private recentApps = signal<DashboardApp[]>([]);
+  private requiredActions = signal(0);
+  private pendingApplications = signal(0);
+  private historyApplications = signal(0);
 
   readonly isAdmin = computed(() =>
     this.auth.currentUser()?.groups.includes('Admin') ?? false
@@ -36,19 +40,7 @@ export class DashboardComponent implements OnInit {
   readonly pageSize = 5;
 
   readonly visibleRecentApps = computed(() => {
-    const byId = new Map<string, DashboardApp>();
-
-    const sourceApps = this.isAdmin()
-      ? [...this.adminApps(), ...this.inboxApps(), ...this.myApps()]
-      : [...this.inboxApps(), ...this.myApps()];
-
-    sourceApps.forEach(app => {
-      const key = this.getAppKey(app);
-      if (!byId.has(key)) byId.set(key, app);
-    });
-
-    return [...byId.values()]
-      .sort((a, b) => this.recentDate(b) - this.recentDate(a));
+    return this.recentApps().sort((a, b) => this.recentDate(b) - this.recentDate(a));
   });
 
   readonly paginatedApps = computed(() => {
@@ -66,27 +58,21 @@ export class DashboardComponent implements OnInit {
   );
 
   readonly requiredActionCount = computed(() =>
-    this.inboxApps().filter(app => this.needsAction(app)).length
+    this.requiredActions()
   );
 
   readonly pendingCount = computed(() =>
-    this.myApps().filter(app => {
-      if (app.isDraft === true) return false;
-      const status = this.appSvc.getStatus(app);
-      if (TERMINAL_STATUSES.has(status)) return false;
-      if (status === 'fill_application') return false;
-      return !(app.workflow?.nextRoles ?? []).includes('Applicant');
-    }).length
+    this.pendingApplications()
   );
 
-  readonly historyCount = computed(() => this.historyApps().length);
+  readonly historyCount = computed(() => this.historyApplications());
 
   readonly metrics = computed(() => [
     {
       label: 'Required Action',
       value: this.requiredActionCount(),
       icon: 'mark_email_unread',
-      route: '/inbox',
+      route: '/submissions/inbox',
       tone: 'primary',
     },
     {
@@ -106,10 +92,6 @@ export class DashboardComponent implements OnInit {
   ]);
 
   needsAction(app: DashboardApp): boolean {
-    const status = this.appSvc.getStatus(app);
-    if (TERMINAL_STATUSES.has(status) || app.isDraft) {
-      return false;
-    }
     return this.currentUserCanActOnApp(app);
   }
 
@@ -133,82 +115,59 @@ export class DashboardComponent implements OnInit {
 
   ngOnInit(): void {
     this.loading.set(true);
-    forkJoin({
-      inbox: this.appSvc.getInboxApplications(),
-      mine: this.appSvc.getMyApplications(),
-      admin: this.appSvc.getAdminApplications(),
-      history: this.appSvc.getApplicationHistory(),
-    }).pipe(
+    this.requests.getDashboard().pipe(
       finalize(() => this.loading.set(false)),
     ).subscribe({
-      next: ({ inbox, mine, admin, history }) => {
-        this.inboxApps.set(inbox);
-        this.myApps.set(mine);
-        this.adminApps.set(admin);
-        this.historyApps.set(history);
+      next: (res) => {
+        this.recentApps.set(res.data?.recent ?? []);
+        this.requiredActions.set(res.data?.metrics.required_action ?? 0);
+        this.pendingApplications.set(res.data?.metrics.pending ?? 0);
+        this.historyApplications.set(res.data?.metrics.history ?? 0);
       },
       error: () => {
-        this.error.set('Could not load dashboard data. Make sure the local database server is running.');
+        this.error.set('Could not load dashboard data. Please try again.');
       },
     });
   }
 
   getTitle(app: DashboardApp): string {
-    return this.appSvc.getTitle(app);
+    return app.title?.trim() || '(Untitled Application)';
   }
 
   getStatusLabel(app: DashboardApp): string {
-    return this.appSvc.getStatusLabel(app);
+    return app.status_name || app.status_code || 'Unknown';
   }
 
   getStatusColor(app: DashboardApp): string {
-    return this.appSvc.getStatusColor(app);
+    return STATUS_COLORS[app.status_code] ?? '#6b7280';
   }
 
   getFormTypeLabel(app: DashboardApp): string {
-    return this.appSvc.getFormTypeLabel(app);
+    return formTypeLabel(app.form_code, app.form_name);
   }
 
   getFormRoute(app: DashboardApp): string {
-    return this.appSvc.getFormRoute(app);
+    return detailRoute(app);
   }
 
   formatDate(app: DashboardApp): string {
-    return this.appSvc.formatDate(this.appSvc.getSavedAt(app) ?? this.appSvc.getSubmittedAt(app));
+    const iso = app.updated_at ?? app.submitted_at ?? app.created_at ?? null;
+    if (!iso) return '—';
+    return new Date(iso).toLocaleDateString('en-GB', {
+      day: '2-digit', month: 'short', year: 'numeric',
+    });
   }
 
   private recentDate(app: DashboardApp): number {
-    const date = this.appSvc.getSavedAt(app) ?? this.appSvc.getSubmittedAt(app);
+    const date = app.updated_at ?? app.submitted_at ?? app.created_at;
     return date ? new Date(date).getTime() : 0;
   }
 
   private getAppKey(app: DashboardApp): string {
-    return String(app.id ?? `${this.appSvc.getFormTypeLabel(app)}-${this.appSvc.getTitle(app)}-${this.appSvc.getSavedAt(app) ?? ''}`);
+    return String(requestIdOf(app) ?? `${this.getFormTypeLabel(app)}-${this.getTitle(app)}-${app.updated_at ?? ''}`);
   }
 
   private currentUserCanActOnApp(app: DashboardApp): boolean {
-    const user = this.auth.currentUser();
-    if (!user) return false;
-
-    const nextRoles: string[] = app.workflow?.nextRoles ?? [];
-    const nextUsers: string[] = app.workflow?.nextUsers ?? [];
-
-    if (nextUsers.includes(user.id)) return true;
-
-    const actionableRoles = user.groups.filter(group => group !== 'Admin');
-    if (actionableRoles.some(role => nextRoles.includes(role))) {
-      if (nextRoles.includes('HOS')) {
-        const appDepartment = app.teamDetails?.department ?? '';
-        return !appDepartment || !user.department || appDepartment === user.department;
-      }
-      return true;
-    }
-
-    if (nextRoles.includes('Applicant')) {
-      return String(app.metadata?.applicantUserId ?? '') === user.id ||
-        (app.teamDetails?.leaderName ?? '') === user.name;
-    }
-
-    return false;
+    return !!app.can_act;
   }
 }

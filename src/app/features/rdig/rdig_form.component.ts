@@ -902,21 +902,177 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
    * reactive form, and restore the workflow state signal.
    */
   loadApplication(id: string): void {
+    const requestId = Number(id);
+    if (!Number.isFinite(requestId)) {
+      alert(`Could not load application ${id}.`);
+      return;
+    }
     this.isLoadingApplication.set(true);
-    this.http
-      .get<any>(`http://localhost:3000/applications/${id}`)
+    this.rdigApi
+      .getForm(requestId)
       .pipe(finalize(() => this.isLoadingApplication.set(false)))
       .subscribe({
-        next: (data) => {
-          this.patchFormFromSavedData(data);
+        next: (res) => {
+          this.patchFormFromBackend(res.data as any);
         },
         error: (err) => {
           console.error('Failed to load application:', err);
-          alert(
-            `Could not load application ${id}. Make sure the JSON server is running (npm run db).`,
-          );
+          alert(`Could not load application ${id}.`);
         },
       });
+  }
+
+  private patchFormFromBackend(data: any): void {
+    const requestRow = data.request ?? {};
+    const rdig = data.rdig ?? {};
+    const requestId = requestRow.id ?? rdig.request_id;
+    this.loadedAppId.set(requestId != null ? String(requestId) : null);
+    this.rdigForm.get('metadata.rdigRequestId')?.setValue(requestId ?? null, { emitEvent: false });
+
+    this.rdigForm.patchValue({
+      projectDetails: {
+        applicationType: rdig.application_type ?? null,
+        category: rdig.project_category ?? null,
+        duration: rdig.project_duration_months ?? null,
+        title: rdig.project_title ?? '',
+        researchArea: rdig.research_area ?? '',
+        domain: rdig.research_domain_id ?? null,
+        subDomain: rdig.sub_research_domain_id ?? null,
+        executiveSummary: rdig.executive_summary ?? '',
+        keywords: rdig.keywords ?? '',
+        introduction: rdig.introduction ?? '',
+        problemStatement: rdig.problem_statement ?? '',
+        researchAim: rdig.research_aim_objectives ?? '',
+        researchQuestions: rdig.research_questions ?? '',
+        hypothesis: rdig.hypothesis_propositions ?? '',
+        literatureReview: rdig.literature_review ?? '',
+        methodology: rdig.research_methodology ?? '',
+        references: rdig.references_text ?? '',
+        benefits: {
+          apu: rdig.benefit_to_apu ?? '',
+          students: rdig.benefit_to_students ?? '',
+          stakeholders: rdig.benefit_to_stakeholders ?? '',
+        },
+        visionMission: rdig.vision_mission_alignment ?? '',
+        esgs: (data.esg_selections ?? []).map((item: any) => String(item.esg_id)),
+        sdgs: (data.sdg_selections ?? []).map((item: any) => String(item.sdg_id)),
+      },
+      outputs: {
+        journal: {
+          checked: !!rdig.indexed_journal_selected,
+          quantity: rdig.indexed_journal_quantity ?? 0,
+        },
+        conceptualDesign: !!rdig.conceptual_design_selected,
+        knowledgeTransfer: { checked: !!rdig.knowledge_transfer_programme_selected },
+        externalGrant: { checked: !!rdig.application_external_grant_selected },
+        others: {
+          checked: !!rdig.other_output_selected,
+          details: rdig.other_output_specification ?? '',
+        },
+      },
+      finalDeclaration: {
+        noveltyJustification: rdig.novelty_justification ?? '',
+        agreed: !!rdig.declaration_agreement_accepted,
+      },
+      budget: { totalRequest: Number(rdig.total_budget_request ?? 0) },
+    });
+
+    this.rdigForm.get('teamDetails')?.patchValue({
+      leaderName: rdig.project_leader_name ?? requestRow.applicant_name ?? '',
+      leaderEmail: rdig.project_leader_email ?? requestRow.applicant_email ?? '',
+      department: rdig.project_leader_department ?? requestRow.applicant_department ?? '',
+      researchCluster: rdig.research_cluster_id ?? null,
+      leaderRoles: rdig.project_leader_role_in_project ?? '',
+    });
+
+    this.rebuildArray(
+      this.rdigForm.get('teamDetails.internalResearchers') as FormArray,
+      (data.apu_co_researchers ?? []).map((item: any) => ({
+        backendId: item.id,
+        staffId: item.staff_id,
+        staffName: item.staff_name,
+        department: item.staff_department,
+        expertise: item.area_of_expertise,
+        roles: item.role_in_project,
+      })),
+    );
+    this.captureLoadedBackendIds(
+      'internalResearchers',
+      this.rdigForm.get('teamDetails.internalResearchers') as FormArray,
+    );
+
+    this.rebuildArray(
+      this.rdigForm.get('teamDetails.externalResearchers') as FormArray,
+      (data.collaborators ?? []).map((item: any) => ({
+        backendId: item.id,
+        title: item.title,
+        fullName: item.full_name,
+        email: item.email,
+        institution: item.institution_company_name,
+        orgType: item.organisation_type,
+        position: item.position,
+        department: item.department,
+        country: item.country_code,
+        funding: item.matched_funding_amount,
+        roles: item.role_in_project,
+        supportLetterAttachmentId: item.support_letter_attachment_id,
+      })),
+    );
+    this.captureLoadedBackendIds(
+      'externalResearchers',
+      this.rdigForm.get('teamDetails.externalResearchers') as FormArray,
+    );
+
+    this.rebuildArray(
+      this.rdigForm.get('activities') as FormArray,
+      (data.research_activities ?? []).map((item: any) => ({
+        backendId: item.id,
+        name: item.activity_name,
+        startMonth: item.start_month,
+        endMonth: item.end_month,
+        duration: item.duration_months,
+      })),
+    );
+    this.captureLoadedBackendIds('activities', this.rdigForm.get('activities') as FormArray);
+
+    const sectionById = new Map((data.budget_sections ?? []).map((item: any) => [item.id, item.section_code]));
+    const itemsByKey: Record<string, any[]> = {
+      studentAllowances: [],
+      travelAccommodation: [],
+      materialsSupplies: [],
+      specialServices: [],
+    };
+    const keyByCode: Record<string, string> = {
+      V11000: 'studentAllowances',
+      V21000: 'travelAccommodation',
+      V27000: 'materialsSupplies',
+      V29000: 'specialServices',
+    };
+    for (const item of data.budget_items ?? []) {
+      const key = keyByCode[String(sectionById.get(item.rdig_budget_section_id))];
+      if (key) {
+        itemsByKey[key].push({
+          backendId: item.id,
+          description: item.description,
+          amount: item.amount_rm,
+          remarks: item.remarks,
+        });
+      }
+    }
+    for (const [key, rows] of Object.entries(itemsByKey)) {
+      this.rebuildArray(this.rdigForm.get(`budget.${key}`) as FormArray, rows);
+      this.captureLoadedBackendIds(key, this.rdigForm.get(`budget.${key}`) as FormArray);
+    }
+
+    const status = (requestRow.status_code ?? 'draft') as RdigStatus;
+    this.workflowState.set({
+      currentStatus: status,
+      nextRoles: getNextRoles(status),
+      nextUsers: [],
+      history: [],
+    });
+    this.workflow.currentUserCanAct.set(!!requestRow.can_act || status === 'draft');
+    this.syncWorkflowFromForm();
   }
 
   /**
@@ -1311,7 +1467,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
       ? this.rdigApi.updateDraft(existingId, dto).pipe(map(() => existingId))
       : this.rdigApi.createDraft(dto).pipe(
           map((res) => {
-            const newId = (res.data as any)?.id ?? res.data?.request_id;
+            const newId = (res.data as any)?.request?.id ?? (res.data as any)?.id ?? res.data?.request_id;
             if (!newId) throw new Error('Backend did not return a new RDIG request id.');
             this.rdigForm.get('metadata.rdigRequestId')?.setValue(newId, { emitEvent: false });
             return newId;
@@ -1362,6 +1518,28 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
     }
 
     this.isSaving.set(true);
+
+    this.syncToRealBackend().subscribe({
+      next: (id) => {
+        this.loadedAppId.set(String(id));
+        this.router.navigate([], {
+          relativeTo: this.route,
+          queryParams: { id },
+          replaceUrl: true,
+        });
+        this.isSaving.set(false);
+        clearTimeout(this.draftSaveTimer);
+        this.draftSaveSuccess.set(true);
+        this.draftSaveTimer = setTimeout(() => this.draftSaveSuccess.set(false), 3000);
+      },
+      error: (err) => {
+        console.error('Save draft failed:', err);
+        this.isSaving.set(false);
+        this.submissionErrorMessage.set(err?.error?.message || 'Failed to save draft.');
+        this.submissionState.set('ERROR');
+      },
+    });
+    return;
 
     this.syncToRealBackend()
       .pipe(

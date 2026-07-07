@@ -41,21 +41,18 @@
       />
 
       <!-- Application type filter — only rendered when multiple types exist -->
-      @if (availableTypes().length > 2) {
-        <div class="type-filter">
-          <label class="type-filter__label" for="pend-type-filter">Type</label>
-          <select
-            id="pend-type-filter"
-            class="type-filter__select"
-            [value]="selectedType()"
-            (change)="selectedType.set($any($event.target).value)"
+      <div class="form-tabs" aria-label="Pending form filters">
+        @for (t of availableTypes(); track t) {
+          <button
+            type="button"
+            class="form-tab"
+            [class.form-tab--active]="selectedType() === t"
+            (click)="selectedType.set(t)"
           >
-            @for (t of availableTypes(); track t) {
-              <option [value]="t">{{ t === 'all' ? 'All Types' : t }}</option>
-            }
-          </select>
-        </div>
-      }
+            {{ t === 'all' ? 'All' : t }}
+          </button>
+        }
+      </div>
     </div>
 
     <!-- ── Empty ─────────────────────────────────────────────────────────────── -->
@@ -110,7 +107,6 @@
                 <a
                   class="btn-icon btn-icon--view"
                   [routerLink]="[getFormRoute(app)]"
-                  [queryParams]="{ id: app.id }"
                   title="View application"
                   aria-label="View application"
                   ><app-table-action-icon action="view"></app-table-action-icon

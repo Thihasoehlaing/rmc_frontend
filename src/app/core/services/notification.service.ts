@@ -3,11 +3,12 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, catchError, map, of, switchMap, tap, throwError } from 'rxjs';
 
 import { AuthService } from './auth.service';
-import { AppNotification } from '../interfaces/notification.interface';
+import { AppNotification, NotificationPriority } from '../interfaces/notification.interface';
 import { NOTIFICATION_TEMPLATES } from '../constants/notification-templates';
 import { BatchSitting } from '../interfaces/batch-sitting.interface';
+import { environment } from '../../../environments/environment';
 
-const BASE = 'http://localhost:3000/notifications';
+const BASE = `${environment.apiUrl.replace(/\/$/, '')}/rmc/notifications`;
 const POPUP_PAGE_SIZE = 10;
 
 export interface NotificationUnreadCount {
@@ -46,6 +47,34 @@ export interface NotificationListParams {
   entityType?: string;
 }
 
+interface ApiResponse<T> {
+  success: boolean;
+  message: string;
+  data: T;
+}
+
+interface BackendNotification {
+  id: number;
+  recipient_id?: number;
+  request_id?: number | null;
+  form_code?: string | null;
+  request_no?: string | null;
+  request_title?: string | null;
+  event_type?: string | null;
+  title?: string | null;
+  message?: string | null;
+  redirect_url?: string | null;
+  priority?: string | null;
+  is_read?: boolean;
+  created_at?: string | null;
+  recipient_type?: string | null;
+}
+
+interface BackendPaginated<T> {
+  items: T[];
+  pagination: NotificationPagination;
+}
+
 @Injectable({ providedIn: 'root' })
 export class NotificationService {
   private readonly http = inject(HttpClient);
@@ -61,10 +90,10 @@ export class NotificationService {
   private readonly popupCacheMeta = signal<NotificationUnreadCount | null>(null);
 
   loadUnreadCount(): Observable<NotificationUnreadCount> {
-    const params = this.currentUserParams();
-    if (!params) return of(this.emptyMeta());
+    if (!this.auth.currentUser()) return of(this.emptyMeta());
 
-    return this.http.get<NotificationUnreadCount>(`${BASE}/unread-count`, { params }).pipe(
+    return this.http.get<ApiResponse<{ unread_count: number }>>(`${BASE}/unread-count`).pipe(
+      map(res => ({ unreadCount: res.data?.unread_count ?? 0 })),
       tap(meta => this.setUnreadMeta(meta)),
       catchError(err => {
         console.error('[NotificationService] unread count load failed', err);
@@ -107,8 +136,7 @@ export class NotificationService {
   }
 
   listNotifications(params: NotificationListParams): Observable<NotificationListResponse> {
-    const userParams = this.currentUserParams();
-    if (!userParams) {
+    if (!this.auth.currentUser()) {
       return of({
         items: [],
         pagination: {
@@ -123,22 +151,31 @@ export class NotificationService {
       });
     }
 
-    let httpParams = userParams
+    let httpParams = new HttpParams()
       .set('page', params.page)
-      .set('pageSize', params.pageSize)
-      .set('sortBy', params.sortBy || 'createdAt')
-      .set('sortDirection', params.sortDirection || 'desc');
+      .set('per_page', params.pageSize);
 
     if (params.search?.trim()) httpParams = httpParams.set('search', params.search.trim());
-    if (params.applicationId) httpParams = httpParams.set('applicationId', params.applicationId);
-    if (params.status) httpParams = httpParams.set('status', params.status);
-    if (params.read) httpParams = httpParams.set('read', params.read);
-    if (params.notificationKey) httpParams = httpParams.set('notificationKey', params.notificationKey);
-    if (params.batchId != null) httpParams = httpParams.set('batchId', params.batchId);
-    if (params.entityId != null) httpParams = httpParams.set('entityId', params.entityId);
-    if (params.entityType) httpParams = httpParams.set('entityType', params.entityType);
+    if (params.read === 'true') httpParams = httpParams.set('is_read', true);
+    if (params.read === 'false') httpParams = httpParams.set('is_read', false);
+    if (params.notificationKey) httpParams = httpParams.set('event_type', params.notificationKey);
 
-    return this.http.get<NotificationListResponse>(BASE, { params: httpParams }).pipe(
+    return this.http.get<ApiResponse<BackendPaginated<BackendNotification>>>(BASE, { params: httpParams }).pipe(
+      map(res => {
+        const items = (res.data?.items ?? []).map(item => this.fromBackendNotification(item));
+        return {
+          items,
+          pagination: res.data?.pagination ?? {
+            current_page: 1,
+            per_page: params.pageSize,
+            total_items: items.length,
+            total_pages: 1,
+            has_next: false,
+            has_prev: false,
+          },
+          meta: { unreadCount: this.unreadCount() },
+        };
+      }),
       tap(response => this.setUnreadMeta(response.meta)),
       catchError(err => throwError(() => err)),
     );
@@ -162,7 +199,8 @@ export class NotificationService {
   delete(id: number): Observable<void> {
     const current = this.notifications().find(n => n.id === id);
 
-    return this.http.delete<void>(`${BASE}/${id}`).pipe(
+    return this.http.delete<ApiResponse<unknown>>(`${BASE}/${id}`).pipe(
+      map(() => void 0),
       tap(() => {
         this.notifications.update(list => list.filter(n => n.id !== id));
         if (current && !current.read) this.decrementSafe(1);
@@ -205,7 +243,7 @@ export class NotificationService {
       this.syncPopupMetaUnreadCount();
     }
 
-    this.http.patch(`${BASE}/${id}`, { read: true }).subscribe({
+    this.http.patch(`${BASE}/${id}/read`, {}).subscribe({
       error: err => {
         console.error('[NotificationService] mark read failed', err);
         this.loadUnreadCount().subscribe();
@@ -221,13 +259,11 @@ export class NotificationService {
     this.decrementSafe(unreadLoaded.length);
     this.syncPopupMetaUnreadCount();
 
-    unreadLoaded.forEach(n => {
-      this.http.patch(`${BASE}/${n.id!}`, { read: true }).subscribe({
-        error: err => {
-          console.error('[NotificationService] mark all read item failed', err);
-          this.loadUnreadCount().subscribe();
-        },
-      });
+    this.http.patch(`${BASE}/read-all`, {}).subscribe({
+      error: err => {
+        console.error('[NotificationService] mark all read failed', err);
+        this.loadUnreadCount().subscribe();
+      },
     });
   }
 
@@ -356,6 +392,34 @@ export class NotificationService {
     this.unreadCount.set(Math.max(0, Number(meta.unreadCount) || 0));
     this.latestNotificationId.set(meta.latestNotificationId ?? null);
     this.latestNotificationDate.set(meta.latestNotificationDate ?? null);
+  }
+
+  private fromBackendNotification(item: BackendNotification): AppNotification {
+    const eventType = (item.event_type ?? 'INFO').toUpperCase();
+    const isAction = eventType.includes('ACTION') || eventType.includes('REVIEW') || eventType.includes('RESUBMISSION');
+    return {
+      id: item.recipient_id ?? item.id,
+      key: item.event_type ?? 'BACKEND_NOTIFICATION',
+      scope: item.form_code === 'RDIG' ? 'RDIG' : 'GLOBAL',
+      type: isAction ? 'ACTION' : 'INFO',
+      title: item.title ?? 'Notification',
+      message: item.message ?? '',
+      priority: this.toPriority(item.priority),
+      read: !!item.is_read,
+      createdAt: item.created_at ?? new Date().toISOString(),
+      recipientRole: item.recipient_type ?? undefined,
+      data: {
+        entityId: item.request_id ?? undefined,
+        entityType: item.form_code ?? undefined,
+        route: item.redirect_url ?? (item.request_id ? `/submissions/detail/${item.request_id}` : undefined),
+      },
+    };
+  }
+
+  private toPriority(priority: string | null | undefined): NotificationPriority {
+    const value = (priority ?? '').toLowerCase();
+    if (value === 'high' || value === 'medium' || value === 'low') return value;
+    return 'medium';
   }
 
   private sameMeta(first: NotificationUnreadCount, second: NotificationUnreadCount | null): boolean {

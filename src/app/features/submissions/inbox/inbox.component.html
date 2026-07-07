@@ -23,6 +23,18 @@
   }
 
   @if (!loading() && !error()) {
+    <div class="form-tabs" aria-label="Inbox form filters">
+      @for (tab of formTabs(); track tab.code) {
+        <button
+          type="button"
+          class="form-tab"
+          [class.form-tab--active]="selectedForm() === tab.code"
+          (click)="selectedForm.set(tab.code)"
+        >
+          {{ tab.label }}
+        </button>
+      }
+    </div>
     <app-submissions-search
       placeholder="Search inbox applications by title..."
       [value]="searchQuery()"
@@ -79,7 +91,6 @@
               <a
                 class="inbox-action"
                 [routerLink]="[getFormRoute(app)]"
-                [queryParams]="{ id: app.id }"
                 aria-label="Open {{ getTitle(app) }}"
                 title="Open application"
               >

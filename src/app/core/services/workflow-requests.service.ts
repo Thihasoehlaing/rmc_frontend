@@ -70,7 +70,8 @@ export interface RdigRequestReviewerDto {
 
 /** A request row as returned by list/detail endpoints (services/requests.py::_serialize_request). */
 export interface RequestSummaryDto {
-  id: number;
+  id?: number;
+  request_id?: number;
   form_id: number;
   form_code: string | null;
   form_name: string | null;
@@ -89,11 +90,14 @@ export interface RequestSummaryDto {
   updated_at: string | null;
   submitted_at: string | null;
   title: string | null;
+  project_title?: string | null;
   rdig_request_id: number | null;
   conference_request_id: number | null;
   journal_request_id: number | null;
   external_form_request_id: number | null;
   rdig_reviewers?: RdigRequestReviewerDto[];
+  available_actions?: WorkflowActionDto[];
+  can_act?: boolean;
 }
 
 /** A workflow action available to the current user (services/workflows.py::_serialize_step_action). */
@@ -155,6 +159,31 @@ export interface ListQuery {
   formCode?: string;
   statusCode?: string;
   admin?: boolean;
+  search?: string;
+}
+
+export interface DashboardSummaryDto {
+  metrics: {
+    required_action: number;
+    pending: number;
+    history: number;
+  };
+  recent: RequestSummaryDto[];
+}
+
+export interface RequestContextDto {
+  request?: RequestSummaryDto;
+  rdig?: Record<string, unknown>;
+  conference?: Record<string, unknown>;
+  journal?: Record<string, unknown>;
+  external_project?: Record<string, unknown>;
+  form_detail?: Record<string, unknown> | null;
+  comments?: unknown[];
+  approvals?: unknown[];
+  attachments?: unknown[];
+  available_actions?: WorkflowActionDto[];
+  can_act?: boolean;
+  [key: string]: unknown;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -170,7 +199,12 @@ export class WorkflowRequestsService {
     if (query.formCode) params = params.set('form_code', query.formCode);
     if (query.statusCode) params = params.set('status_code', query.statusCode);
     if (query.admin != null) params = params.set('admin', query.admin);
+    if (query.search) params = params.set('search', query.search);
     return params;
+  }
+
+  getDashboard(): Observable<ApiResponse<DashboardSummaryDto>> {
+    return this.http.get<ApiResponse<DashboardSummaryDto>>(`${this.base}/dashboard`);
   }
 
   // ── Status catalogue ──────────────────────────────────────────────────────
@@ -206,9 +240,33 @@ export class WorkflowRequestsService {
     });
   }
 
+  getAdminHistory(query?: ListQuery): Observable<ApiResponse<PaginatedData<RequestSummaryDto>>> {
+    return this.http.get<ApiResponse<PaginatedData<RequestSummaryDto>>>(`${this.base}/requests/admin-history`, {
+      params: this.toParams(query),
+    });
+  }
+
   // ── Single request ────────────────────────────────────────────────────────
   getRequest(requestId: number): Observable<ApiResponse<RequestSummaryDto>> {
     return this.http.get<ApiResponse<RequestSummaryDto>>(`${this.base}/requests/${requestId}`);
+  }
+
+  getAdminHistoryDetail(requestId: number): Observable<ApiResponse<RequestContextDto>> {
+    return this.http.get<ApiResponse<RequestContextDto>>(`${this.base}/requests/admin-history/${requestId}`);
+  }
+
+  getFormContext(formCode: string | null | undefined, requestId: number): Observable<ApiResponse<RequestContextDto>> {
+    switch ((formCode ?? '').toUpperCase()) {
+      case 'CONFERENCE':
+        return this.http.get<ApiResponse<RequestContextDto>>(`${this.base}/conference/${requestId}`);
+      case 'JOURNAL':
+        return this.http.get<ApiResponse<RequestContextDto>>(`${this.base}/journal/${requestId}`);
+      case 'EXTERNAL':
+        return this.http.get<ApiResponse<RequestContextDto>>(`${this.base}/requests/external-project/${requestId}`);
+      case 'RDIG':
+      default:
+        return this.http.get<ApiResponse<RequestContextDto>>(`${this.base}/rdig/${requestId}`);
+    }
   }
 
   getRequestWorkflow(requestId: number): Observable<ApiResponse<RequestWorkflowDto>> {
@@ -236,5 +294,13 @@ export class WorkflowRequestsService {
       `${this.base}/requests/${requestId}/approvals`,
       { params: this.toParams(query) },
     );
+  }
+
+  getComments(requestId: number): Observable<ApiResponse<unknown[]>> {
+    return this.http.get<ApiResponse<unknown[]>>(`${this.base}/requests/${requestId}/comments`);
+  }
+
+  getPrintUrl(requestId: number): string {
+    return `${this.base}/requests/${requestId}/print`;
   }
 }

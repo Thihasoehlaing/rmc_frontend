@@ -1,13 +1,13 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { NgClass } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 
 import {
   WorkflowRequestsService,
   RequestSummaryDto,
 } from '../../../core/services/workflow-requests.service';
-import { formTypeLabel, formRoute } from '../../../core/services/request-display.util';
+import { detailRoute, formTypeLabel } from '../../../core/services/request-display.util';
 import { SubmissionsSearchComponent } from '../../../shared/components/submissions-search/submissions-search.component';
 import { TableSortService, SortDirection } from '../../../shared/services/table-sort.service';
 import {
@@ -38,6 +38,7 @@ import { TableActionIconComponent } from '../../../shared/components/table-actio
 export class HistoryComponent implements OnInit {
   private readonly requests = inject(WorkflowRequestsService);
   private readonly tableSort = inject(TableSortService);
+  private readonly route = inject(ActivatedRoute);
   private raw = signal<RequestSummaryDto[]>([]);
   loading = signal(true);
   error = signal<string | null>(null);
@@ -45,6 +46,7 @@ export class HistoryComponent implements OnInit {
   selectedType = signal('all');
   sortColumn = signal<string | null>(null);
   sortDirection = signal<SortDirection>(null);
+  readonly isAdminHistory = computed(() => this.route.snapshot.routeConfig?.path === 'admin-history');
 
   readonly skeletonColumns: SkeletonColumn[] = [
     { width: '22%' },
@@ -75,7 +77,9 @@ export class HistoryComponent implements OnInit {
 
   readonly availableTypes = computed(() => [
     'all',
-    ...Array.from(new Set(this.raw().map((a) => (a.form_code ?? '').toUpperCase()).filter(Boolean))).sort(),
+    ...Array.from(new Set(this.raw().map((a) => (a.form_code ?? '').toUpperCase()).filter(Boolean)))
+      .filter((code) => this.isAdminHistory() || code !== 'EXTERNAL')
+      .sort(),
   ]);
 
   readonly history = computed(() => {
@@ -96,8 +100,11 @@ export class HistoryComponent implements OnInit {
   });
 
   ngOnInit(): void {
-    this.requests
-      .getHistoryRequests({ page: 1, perPage: 100 })
+    const list$ = this.isAdminHistory()
+      ? this.requests.getAdminHistory({ page: 1, perPage: 100 })
+      : this.requests.getHistoryRequests({ page: 1, perPage: 100 });
+
+    list$
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe({
         next: (res) => this.raw.set(res.data?.items ?? []),
@@ -122,9 +129,10 @@ export class HistoryComponent implements OnInit {
     return app.updated_at ? new Date(app.updated_at).getTime() : 0;
   }
 
-  getTitle = (app: RequestSummaryDto) => app.title?.trim() || '(Untitled Application)';
+  getTitle = (app: RequestSummaryDto) =>
+    app.title?.trim() || app.project_title?.trim() || '(Untitled Application)';
   getFormTypeLabel = (app: RequestSummaryDto) => formTypeLabel(app.form_code, app.form_name);
-  getFormRoute = (app: RequestSummaryDto) => formRoute(app.form_code);
+  getFormRoute = (app: RequestSummaryDto) => detailRoute(app);
   getSubmittedBy = (app: RequestSummaryDto) => app.applicant_name || '—';
 
   formatSubmissionDate = (app: RequestSummaryDto) => this.fmt(app.submitted_at);

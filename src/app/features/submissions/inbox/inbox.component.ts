@@ -6,6 +6,7 @@ import {
   WorkflowRequestsService,
   RequestSummaryDto,
 } from '../../../core/services/workflow-requests.service';
+import { actionRoute } from '../../../core/services/request-display.util';
 import { TableSortService, SortDirection } from '../../../shared/services/table-sort.service';
 import { SubmissionsSearchComponent } from '../../../shared/components/submissions-search/submissions-search.component';
 import {
@@ -40,6 +41,7 @@ export class InboxComponent implements OnInit {
   loading = signal(true);
   error = signal<string | null>(null);
   searchQuery = signal('');
+  selectedForm = signal('all');
   headerSortColumn = signal<string | null>(null);
   headerSortDirection = signal<SortDirection>(null);
 
@@ -96,10 +98,22 @@ export class InboxComponent implements OnInit {
   /** Client-side title search on top of the backend-filtered inbox. */
   readonly applications = computed(() => {
     const query = this.searchQuery().toLowerCase().trim();
+    const form = this.selectedForm();
     const rows = this.allApplications();
-    if (!query) return rows;
-    return rows.filter((app) => this.getTitle(app).toLowerCase().includes(query));
+    return rows
+      .filter((app) => form === 'all' || (app.form_code ?? '').toUpperCase() === form)
+      .filter((app) => !query || this.getTitle(app).toLowerCase().includes(query));
   });
+
+  readonly formTabs = computed(() => [
+    { code: 'all', label: 'All' },
+    ...Array.from(
+      new Set(this.allApplications().map((app) => (app.form_code ?? '').toUpperCase()).filter(Boolean)),
+    )
+      .filter((code) => code !== 'EXTERNAL')
+      .sort()
+      .map((code) => ({ code, label: code })),
+  ]);
 
   ngOnInit(): void {
     this.loadInbox();
@@ -151,17 +165,7 @@ export class InboxComponent implements OnInit {
   }
 
   getFormRoute(app: RequestSummaryDto): string {
-    switch ((app.form_code ?? '').toUpperCase()) {
-      case 'CONFERENCE':
-        return '/conference/application';
-      case 'JOURNAL':
-        return '/journal/application';
-      case 'EXTERNAL':
-        return '/external-project-data-entry';
-      case 'RDIG':
-      default:
-        return '/rdig';
-    }
+    return actionRoute(app);
   }
 
   getFormTypeLabel(app: RequestSummaryDto): string {

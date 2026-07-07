@@ -1,0 +1,92 @@
+<main class="request-page">
+  @if (loading()) {
+    <section class="state-message">Loading available actions...</section>
+  } @else if (error()) {
+    <section class="state-message state-error">{{ error() }}</section>
+  }
+
+  @if (!loading() && request()) {
+    <header class="request-header">
+      <div>
+        <p class="request-kicker">{{ formLabel() }}</p>
+        <h1>{{ selectedTitle() }}</h1>
+        <div class="request-meta">
+          <span>{{ request()?.request_code }}</span>
+          <span
+            class="status-badge"
+            [style.background]="statusColor() + '1a'"
+            [style.color]="statusColor()"
+            [style.border-color]="statusColor() + '55'"
+          >
+            {{ request()?.status_name || request()?.status_code }}
+          </span>
+        </div>
+      </div>
+    </header>
+
+    @if (success()) {
+      <section class="state-message state-success">{{ success() }}</section>
+    }
+
+    <section class="action-grid">
+      <article class="card">
+        <div class="card__header"><h2 class="card__title">Action</h2></div>
+        <div class="card__content action-panel">
+          <label class="form-field">
+            <span class="form-label">Comment</span>
+            <textarea
+              class="input--textarea"
+              rows="5"
+              [ngModel]="commentText()"
+              (ngModelChange)="commentText.set($event)"
+            ></textarea>
+          </label>
+
+          @if (hasReviewerSelection()) {
+            <label class="form-field">
+              <span class="form-label">Reviewer usernames</span>
+              <input
+                class="input--text"
+                type="text"
+                placeholder="username.one, username.two"
+                [ngModel]="reviewerUsernames()"
+                (ngModelChange)="reviewerUsernames.set($event)"
+              />
+            </label>
+          }
+
+          <div class="action-buttons">
+            @for (action of actions(); track action.action_code) {
+              <button
+                type="button"
+                class="btn btn-primary"
+                [disabled]="saving()"
+                (click)="submitAction(action)"
+              >
+                {{ action.action_name }}
+              </button>
+            }
+          </div>
+
+          @if (actions().length === 0) {
+            <p class="muted">No action is currently available for your account.</p>
+          }
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="card__header"><h2 class="card__title">Comments</h2></div>
+        <div class="card__content timeline">
+          @for (comment of comments(); track comment.id) {
+            <div class="timeline-item">
+              <strong>{{ comment.staff_name || comment.staff_username || 'Reviewer' }}</strong>
+              <p>{{ comment.comment_text }}</p>
+            </div>
+          } @empty {
+            <p class="muted">No comments yet.</p>
+          }
+        </div>
+      </article>
+    </section>
+  }
+</main>

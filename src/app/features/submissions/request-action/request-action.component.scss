@@ -1,0 +1,49 @@
+@use '../request-detail/request-detail.component.scss';
+
+.action-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 0.7fr);
+  gap: var(--space-5);
+}
+
+.action-panel {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.action-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.timeline {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.timeline-item {
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--border-subtle);
+
+  p {
+    margin: var(--space-1) 0 0;
+    color: var(--color-text-secondary);
+  }
+}
+
+.muted {
+  margin: 0;
+  color: var(--color-text-secondary);
+}
+
+.state-success {
+  color: var(--color-success-dark);
+  background: var(--color-success-light);
+}
+
+@media (max-width: 900px) {
+  .action-grid {
+    grid-template-columns: 1fr;
+  }
+}

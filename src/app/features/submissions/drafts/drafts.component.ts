@@ -20,7 +20,7 @@ import {
 import { TableActionIconComponent } from '../../../shared/components/table-action-icon/table-action-icon.component';
 
 /** Statuses that represent an unsubmitted, still-editable application. */
-const DRAFT_STATUSES = new Set(['draft', 'fill_application']);
+const DRAFT_STATUSES = new Set(['draft', 'fill_application', 'normal_application']);
 
 @Component({
   selector: 'app-drafts',
@@ -44,6 +44,7 @@ export class DraftsComponent implements OnInit {
   loading = signal(true);
   error = signal<string | null>(null);
   searchQuery = signal('');
+  selectedType = signal('all');
   sortColumn = signal<string | null>(null);
   sortDirection = signal<SortDirection>(null);
 
@@ -66,8 +67,10 @@ export class DraftsComponent implements OnInit {
 
   readonly drafts = computed(() => {
     const query = this.searchQuery().toLowerCase().trim();
+    const type = this.selectedType();
     const items = this.raw()
       .filter((app) => DRAFT_STATUSES.has(app.status_code))
+      .filter((app) => type === 'all' || (app.form_code ?? '').toUpperCase() === type)
       .filter((app) => !query || this.getTitle(app).toLowerCase().includes(query));
     if (!this.sortDirection()) return items;
     return [...items].sort((a, b) => {
@@ -75,6 +78,13 @@ export class DraftsComponent implements OnInit {
       return this.sortDirection() === 'asc' ? d : -d;
     });
   });
+
+  readonly availableTypes = computed(() => [
+    'all',
+    ...Array.from(new Set(this.raw().map((a) => (a.form_code ?? '').toUpperCase()).filter(Boolean)))
+      .filter((code) => code !== 'EXTERNAL')
+      .sort(),
+  ]);
 
   ngOnInit(): void {
     this.requests

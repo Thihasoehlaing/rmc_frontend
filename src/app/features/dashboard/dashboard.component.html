@@ -58,8 +58,7 @@
           <a
             class="application-row"
             [class.application-row--action]="needsAction(app)"
-            [routerLink]="getFormRoute(app)"
-            [queryParams]="{ id: app.id }">
+            [routerLink]="getFormRoute(app)">
             <span class="application-row__icon" aria-hidden="true">
               <span class="material-icons">description</span>
             </span>

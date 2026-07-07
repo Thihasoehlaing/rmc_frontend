@@ -64,7 +64,7 @@ export const NAVIGATION_DATA: NavGroup[] = [
                     {
                         label: 'RDIG Application',
                         icon: 'description',
-                        route: '/rdig',
+                        route: '/rdig/application',
                         permission: {
                             anyOf: ['full_time', 'contract'],
                             allOf: ['academic'],

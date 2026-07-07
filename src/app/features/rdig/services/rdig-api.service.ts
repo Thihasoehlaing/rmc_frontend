@@ -157,24 +157,24 @@ export class RdigApiService {
   private readonly base = `${this.apiUrl}/rmc/rdig`;
 
   // ── Lifecycle ────────────────────────────────────────────────────
-  createDraft(payload: Partial<RdigRequestDto>): Observable<ApiResponse<RdigRequestDto>> {
-    return this.http.post<ApiResponse<RdigRequestDto>>(`${this.base}/drafts`, payload);
+  createDraft(payload: Partial<RdigRequestDto>): Observable<ApiResponse<any>> {
+    return this.http.post<ApiResponse<any>>(`${this.base}/drafts`, payload);
   }
 
-  getForm(id: number): Observable<ApiResponse<RdigRequestDto>> {
-    return this.http.get<ApiResponse<RdigRequestDto>>(`${this.base}/${id}`);
+  getForm(id: number): Observable<ApiResponse<any>> {
+    return this.http.get<ApiResponse<any>>(`${this.base}/${id}`);
   }
 
-  updateDraft(id: number, payload: Partial<RdigRequestDto>): Observable<ApiResponse<RdigRequestDto>> {
-    return this.http.put<ApiResponse<RdigRequestDto>>(`${this.base}/${id}/draft`, payload);
+  updateDraft(id: number, payload: Partial<RdigRequestDto>): Observable<ApiResponse<any>> {
+    return this.http.put<ApiResponse<any>>(`${this.base}/${id}/draft`, payload);
   }
 
-  submit(id: number): Observable<ApiResponse<RdigRequestDto>> {
-    return this.http.post<ApiResponse<RdigRequestDto>>(`${this.base}/${id}/submit`, {});
+  submit(id: number): Observable<ApiResponse<any>> {
+    return this.http.post<ApiResponse<any>>(`${this.base}/${id}/submit`, {});
   }
 
-  resubmit(id: number): Observable<ApiResponse<RdigRequestDto>> {
-    return this.http.post<ApiResponse<RdigRequestDto>>(`${this.base}/${id}/resubmit`, {});
+  resubmit(id: number): Observable<ApiResponse<any>> {
+    return this.http.post<ApiResponse<any>>(`${this.base}/${id}/resubmit`, {});
   }
 
   getActiveBatch(): Observable<ApiResponse<RdigActiveBatchResponse>> {

@@ -54,3 +54,17 @@ export function formRoute(formCode: string | null | undefined): string {
       return '/rdig';
   }
 }
+
+export function requestIdOf(app: { id?: number | null; request_id?: number | null }): number | null {
+  return app.id ?? app.request_id ?? null;
+}
+
+export function detailRoute(app: { id?: number | null; request_id?: number | null }): string {
+  const id = requestIdOf(app);
+  return id == null ? '/submissions/history' : `/submissions/detail/${id}`;
+}
+
+export function actionRoute(app: { id?: number | null; request_id?: number | null }): string {
+  const id = requestIdOf(app);
+  return id == null ? '/submissions/inbox' : `/submissions/action/${id}`;
+}

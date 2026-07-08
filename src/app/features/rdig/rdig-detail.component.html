@@ -1,0 +1,317 @@
+<section class="rdig-detail-page">
+  @if (loading()) {
+    <section class="state-message">Loading RDIG detail...</section>
+  } @else if (error()) {
+    <section class="state-message state-error">{{ error() }}</section>
+  } @else {
+    <article class="form-container rdig-detail-form">
+      <div class="rdig-detail-form__title-block">
+        <h1 class="rdig-detail-form__title">RDIG Application</h1>
+        <div class="rdig-detail-form__divider" aria-hidden="true"></div>
+      </div>
+
+      <header class="detail-summary">
+        <div class="detail-summary__main">
+          <p class="detail-summary__eyebrow">Detail View</p>
+          <h2>{{ rdig()?.project_title || request()?.request_code || 'RDIG Detail' }}</h2>
+          <div class="detail-meta">
+            <span class="detail-code">{{ request()?.request_code }}</span>
+            <span
+              class="status-chip"
+              [style.background]="statusColor() + '1a'"
+              [style.color]="statusColor()"
+              [style.border-color]="statusColor() + '55'"
+            >
+              {{ request()?.status_name || request()?.status_code }}
+            </span>
+          </div>
+        </div>
+
+        <div class="detail-actions">
+          @if (canPrint()) {
+            <button type="button" class="btn btn-secondary" (click)="print()">
+              <span class="material-icons" aria-hidden="true">print</span>
+              Print
+            </button>
+          }
+          @for (action of actions(); track action.action_code) {
+            <a
+              class="btn btn-primary"
+              [routerLink]="['/submissions/action', requestId()]"
+              [queryParams]="{ action: action.action_code }"
+            >
+              {{ action.action_name }}
+            </a>
+          }
+        </div>
+      </header>
+
+      <div class="rdig-detail-form__body">
+        <section class="detail-grid detail-grid--two">
+          <article class="card detail-card">
+            <div class="detail-card__header">
+              <h2>Request Information</h2>
+            </div>
+            <div class="detail-card__content field-grid">
+              @for (field of requestFields(); track field.label) {
+                <div class="field-item">
+                  <span>{{ field.label }}</span>
+                  <strong>{{ displayValue(field) }}</strong>
+                </div>
+              }
+            </div>
+          </article>
+
+          <article class="card detail-card">
+            <div class="detail-card__header">
+              <h2>Project Information</h2>
+            </div>
+            <div class="detail-card__content field-grid">
+              @for (field of projectFields(); track field.label) {
+                <div class="field-item">
+                  <span>{{ field.label }}</span>
+                  <strong>{{ displayValue(field) }}</strong>
+                </div>
+              }
+            </div>
+          </article>
+        </section>
+
+        <section class="card detail-card">
+          <div class="detail-card__header">
+            <h2>Project Leader</h2>
+          </div>
+          <div class="detail-card__content field-grid">
+            @for (field of leaderFields(); track field.label) {
+              <div class="field-item">
+                <span>{{ field.label }}</span>
+                <strong>{{ displayValue(field) }}</strong>
+              </div>
+            }
+          </div>
+        </section>
+
+        <section class="card detail-card">
+          <div class="detail-card__header">
+            <h2>Proposal Narrative</h2>
+          </div>
+          <div class="detail-card__content field-list narrative-list">
+            @for (field of narrativeFields(); track field.label) {
+              <div class="field-item">
+                <span>{{ field.label }}</span>
+                <strong>{{ displayValue(field) }}</strong>
+              </div>
+            }
+          </div>
+        </section>
+
+        <section class="card detail-card">
+          <div class="detail-card__header">
+            <h2>Benefits & Novelty</h2>
+          </div>
+          <div class="detail-card__content field-list narrative-list">
+            @for (field of benefitFields(); track field.label) {
+              <div class="field-item">
+                <span>{{ field.label }}</span>
+                <strong>{{ displayValue(field) }}</strong>
+              </div>
+            }
+          </div>
+        </section>
+
+        <section class="card detail-card">
+          <div class="detail-card__header">
+            <h2>APU Co-Researchers</h2>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>No.</th>
+                  <th>Staff Name</th>
+                  <th>Email</th>
+                  <th>Department</th>
+                  <th>Expertise</th>
+                  <th>Role</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (item of form()?.apu_co_researchers ?? []; track item.id; let index = $index) {
+                  <tr>
+                    <td class="text-muted is-align-center">{{ index + 1 }}</td>
+                    <td>{{ item.staff_name || '-' }}</td>
+                    <td>{{ item.staff_email || '-' }}</td>
+                    <td>{{ item.staff_department || '-' }}</td>
+                    <td>{{ item.area_of_expertise || '-' }}</td>
+                    <td>{{ item.role_in_project || '-' }}</td>
+                  </tr>
+                } @empty {
+                  <tr><td colspan="6" class="empty-cell">No APU co-researchers.</td></tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="card detail-card">
+          <div class="detail-card__header">
+            <h2>External Collaborators</h2>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>No.</th>
+                  <th>Name</th>
+                  <th>Organisation</th>
+                  <th>Email</th>
+                  <th>Position</th>
+                  <th>Role</th>
+                  <th>Matched Funding</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (item of form()?.collaborators ?? []; track item.id; let index = $index) {
+                  <tr>
+                    <td class="text-muted is-align-center">{{ index + 1 }}</td>
+                    <td>{{ item.full_name || '-' }}</td>
+                    <td>{{ item.institution_company_name || '-' }}</td>
+                    <td>{{ item.email || '-' }}</td>
+                    <td>{{ item.position || '-' }}</td>
+                    <td>{{ item.role_in_project || '-' }}</td>
+                    <td class="amount-cell">RM {{ item.matched_funding_amount || '0.00' }}</td>
+                  </tr>
+                } @empty {
+                  <tr><td colspan="7" class="empty-cell">No external collaborators.</td></tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="card detail-card">
+          <div class="detail-card__header">
+            <h2>Research Activities</h2>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>No.</th>
+                  <th>Activity</th>
+                  <th>Start Month</th>
+                  <th>End Month</th>
+                  <th>Duration</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (item of form()?.research_activities ?? []; track item.id; let index = $index) {
+                  <tr>
+                    <td class="text-muted is-align-center">{{ index + 1 }}</td>
+                    <td>{{ item.activity_name || '-' }}</td>
+                    <td>{{ item.start_month || '-' }}</td>
+                    <td>{{ item.end_month || '-' }}</td>
+                    <td>{{ item.duration_months || '-' }}</td>
+                  </tr>
+                } @empty {
+                  <tr><td colspan="5" class="empty-cell">No research activities.</td></tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="card detail-card">
+          <div class="detail-card__header">
+            <h2>Budget</h2>
+          </div>
+          <div class="budget-stack">
+            @for (section of form()?.budget_sections ?? []; track section.id) {
+              <article class="budget-section">
+                <div class="budget-section__header">
+                  <div>
+                    <strong>{{ section.section_name || section.section_code }}</strong>
+                    <span>{{ section.section_code }}</span>
+                  </div>
+                </div>
+                <div class="table-wrap">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>No.</th>
+                        <th>Description</th>
+                        <th>Remarks</th>
+                        <th>Amount</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (item of budgetItemsFor(section.id); track item.id; let index = $index) {
+                        <tr>
+                          <td class="text-muted is-align-center">{{ index + 1 }}</td>
+                          <td>{{ item.description || '-' }}</td>
+                          <td>{{ item.remarks || '-' }}</td>
+                          <td class="amount-cell">RM {{ item.amount_rm || '0.00' }}</td>
+                        </tr>
+                      } @empty {
+                        <tr><td colspan="4" class="empty-cell">No budget items.</td></tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              </article>
+            } @empty {
+              <p class="empty-text">No budget sections.</p>
+            }
+          </div>
+        </section>
+
+        <section class="detail-grid detail-grid--two">
+          <article class="card detail-card">
+            <div class="detail-card__header">
+              <h2>Expected Outputs</h2>
+            </div>
+            <div class="detail-card__content field-grid">
+              @for (field of outputFields(); track field.label) {
+                <div class="field-item">
+                  <span>{{ field.label }}</span>
+                  <strong>{{ displayValue(field) }}</strong>
+                </div>
+              }
+            </div>
+          </article>
+
+          <article class="card detail-card">
+            <div class="detail-card__header">
+              <h2>Declaration</h2>
+            </div>
+            <div class="detail-card__content field-grid">
+              @for (field of declarationFields(); track field.label) {
+                <div class="field-item">
+                  <span>{{ field.label }}</span>
+                  <strong>{{ displayValue(field) }}</strong>
+                </div>
+              }
+            </div>
+          </article>
+        </section>
+
+        <section class="card detail-card">
+          <div class="detail-card__header">
+            <h2>Attachments</h2>
+          </div>
+          <div class="attachment-list">
+            @for (attachment of form()?.attachments ?? []; track attachment.id) {
+              <div class="attachment-item">
+                <span class="material-icons" aria-hidden="true">attach_file</span>
+                <strong>{{ attachment.file_name || ('Attachment #' + attachment.id) }}</strong>
+                <span>{{ attachment.entity_type || 'General' }}</span>
+              </div>
+            } @empty {
+              <p class="empty-text">No attachments.</p>
+            }
+          </div>
+        </section>
+      </div>
+    </article>
+  }
+</section>

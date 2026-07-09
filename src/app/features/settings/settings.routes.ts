@@ -61,9 +61,14 @@ export const settingsRoutes: Routes = [
     pathMatch: 'full',
   },
   {
-    path: 'blocked-users',
+    path: 'system-access',
     loadComponent: () =>
-      import('./blocked-users/blocked-users.component').then(m => m.BlockedUsersComponent),
+      import('./system-access/system-access.component').then(m => m.SystemAccessComponent),
+  },
+  {
+    path: 'blocked-users',
+    redirectTo: 'system-access',
+    pathMatch: 'full',
   },
   {
     path: 'applicant-rules',

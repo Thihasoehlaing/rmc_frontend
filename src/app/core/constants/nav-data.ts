@@ -175,7 +175,7 @@ export const NAVIGATION_DATA: NavGroup[] = [
                     { label: 'Academic Staff', icon: 'school', route: '/settings/academic-staff', permission: { allOf: ['SystemAdmin'] } },
                     { label: 'Users', icon: 'manage_accounts', route: '/settings/users', permission: { allOf: ['SystemAdmin'] } },
                     { label: 'Roles', icon: 'verified_user', route: '/settings/roles', permission: { allOf: ['SystemAdmin'] } },
-                    { label: 'Blocked Users', icon: 'person_off', route: '/settings/blocked-users', permission: { allOf: ['SystemAdmin'] } },
+                    { label: 'System Access', icon: 'admin_panel_settings', route: '/settings/system-access', permission: { allOf: ['SystemAdmin'] } },
                     { label: 'Applicant Rules', icon: 'rule', route: '/settings/applicant-rules', permission: { allOf: ['SystemAdmin'] } },
                     { label: 'Workflow Configuration', icon: 'account_tree', route: '/settings/workflow', permission: { allOf: ['SystemAdmin'] } },
                 ],

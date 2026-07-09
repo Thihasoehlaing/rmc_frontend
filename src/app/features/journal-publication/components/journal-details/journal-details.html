@@ -857,8 +857,17 @@
         formControlName="description"
         placeholder="Enter description (optional)"
         rows="3"
+        [attr.maxlength]="breakdownDescriptionMaxLength"
+        [class.is-invalid]="
+          breakdownForm.get('description')?.invalid && breakdownForm.get('description')?.touched
+        "
         (input)="autoExpandTextarea($event)"
       ></textarea>
+      <app-character-counter
+        [current]="getBreakdownCharacterCount('description')"
+        [max]="breakdownDescriptionMaxLength"
+      ></app-character-counter>
+      <app-validation-message [control]="breakdownForm.get('description')"></app-validation-message>
     </div>
 
     <!-- Supporting Documents -->

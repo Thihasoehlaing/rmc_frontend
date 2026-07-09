@@ -63,6 +63,7 @@ import { TableActionIconComponent } from '../../../../shared/components/table-ac
 export class JournalDetails implements OnInit, OnDestroy {
   readonly nonResearchAccountCodeDescription = 'TRAINING PRESENTATION PUBLICATION';
   readonly nonResearchAccountCode = '6203/100';
+  readonly breakdownDescriptionMaxLength = 400;
   auth = inject(AuthService);
   workflow = inject(JournalWorkflowService);
   private journalOptionsService = inject(JournalOptionsService);
@@ -251,7 +252,7 @@ export class JournalDetails implements OnInit, OnDestroy {
       cost: ['', [Validators.required, Validators.pattern(decimalPattern)]],
       costForeign: [''],
       exchangeRate: ['', [Validators.required, Validators.pattern(integerPattern)]],
-      description: [''],
+      description: ['', [Validators.maxLength(this.breakdownDescriptionMaxLength)]],
       costInRM: { value: '', disabled: true },
     });
 
@@ -863,6 +864,10 @@ export class JournalDetails implements OnInit, OnDestroy {
 
   getCharacterCount(controlName: string): number {
     return this.form.get(controlName)?.value?.length || 0;
+  }
+
+  getBreakdownCharacterCount(controlName: string): number {
+    return this.breakdownForm.get(controlName)?.value?.length || 0;
   }
 
   submitBreakdownModal() {

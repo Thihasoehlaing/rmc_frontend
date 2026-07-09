@@ -11,6 +11,15 @@ export const journalPublicationFormRoutes: Routes = [
     // No permission data = any authenticated user may access
   },
   {
+    // Reviewer / read-only view — shown to reviewers & approvers (from inbox,
+    // pending, history) and for any submitted (non-draft) application. The
+    // applicant's editable wizard lives at 'application'.
+    path: 'review/:requestId',
+    loadComponent: () =>
+      import('./pages/journal-review/journal-review.component').then(m => m.JournalReviewComponent),
+    canActivate: [permissionGuard],
+  },
+  {
       path: 'settings',
       loadComponent: () =>
         import('./pages/journal-settings/journal-settings.component').then(m => m.JournalSettingsComponent),

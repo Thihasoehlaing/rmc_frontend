@@ -84,7 +84,7 @@ export class JournalPublicationFormComponent {
   stepStatuses: StepStatus[] = [
     { visited: false, valid: true, missingFields: [] },
     { visited: false, valid: false, missingFields: ['Complete Authors Details'] },
-    { visited: false, valid: false, missingFields: ['Complete Supporting Documents'] },
+    { visited: false, valid: true, missingFields: [] },
     { visited: false, valid: false, missingFields: ['Complete Declaration'] },
   ];
 
@@ -92,7 +92,7 @@ export class JournalPublicationFormComponent {
   formValid: { [key: number]: boolean } = {
     1: false,
     2: false,
-    3: false,
+    3: true,
     4: false,
   };
 
@@ -198,6 +198,16 @@ export class JournalPublicationFormComponent {
   private async loadExistingForm(requestId: number): Promise<void> {
     try {
       const response = await firstValueFrom(this.journalApi.getForm(requestId));
+      // The editable wizard is only for a still-draft application. Once
+      // submitted, the application is shown in the read-only reviewer view —
+      // so reviewers/approvers (and the applicant after submission) get that
+      // view instead of the filling form.
+      const status = String(response.data?.request?.status_code ?? '').toLowerCase();
+      const isEditableDraft = ['draft', 'fill_application', 'normal_application'].includes(status);
+      if (!isEditableDraft) {
+        void this.router.navigate(['/journal/review', requestId]);
+        return;
+      }
       this.hydrateFromApi(response.data);
     } catch {
       this.actionError = 'Unable to load this journal application.';

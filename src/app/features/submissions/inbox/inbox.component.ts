@@ -6,74 +6,51 @@ import {
   WorkflowRequestsService,
   RequestSummaryDto,
 } from '../../../core/services/workflow-requests.service';
-import { actionRoute, formTypeLabel } from '../../../core/services/request-display.util';
-import { TableSortService, SortDirection } from '../../../shared/services/table-sort.service';
+import { actionRoute, formTypeLabel, requestIdOf } from '../../../core/services/request-display.util';
+import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
 import { SubmissionsSearchComponent } from '../../../shared/components/submissions-search/submissions-search.component';
 import { SubmissionFormTabsComponent } from '../../../shared/components/submission-form-tabs/submission-form-tabs.component';
 import {
   SkeletonColumn,
   TableSkeletonComponent,
 } from '../../../shared/components/table-skeleton/table-skeleton.component';
-import {
-  DataTableColumn,
-  DataTableComponent,
-} from '../../../shared/components/data-table/data-table.component';
 import { TableActionIconComponent } from '../../../shared/components/table-action-icon/table-action-icon.component';
 
 @Component({
   selector: 'app-inbox',
   standalone: true,
   imports: [
+    PaginationComponent,
     TableActionIconComponent,
     RouterLink,
     SubmissionsSearchComponent,
     SubmissionFormTabsComponent,
     TableSkeletonComponent,
-    DataTableComponent,
   ],
   templateUrl: './inbox.component.html',
   styleUrl: './inbox.component.scss',
-  providers: [TableSortService],
 })
 export class InboxComponent implements OnInit {
   private readonly requests = inject(WorkflowRequestsService);
-  private readonly tableSortService = inject(TableSortService);
 
   private allApplications = signal<RequestSummaryDto[]>([]);
   loading = signal(true);
   error = signal<string | null>(null);
   searchQuery = signal('');
+  createdDate = signal('');
   selectedForm = signal('all');
-  headerSortColumn = signal<string | null>(null);
-  headerSortDirection = signal<SortDirection>(null);
+  sortDirection = signal<'asc' | 'desc'>('desc');
+  page = signal(1);
+  pageSize = signal(10);
+  readonly pageSizeOptions = [10, 15, 30, 50];
 
   readonly skeletonColumns: SkeletonColumn[] = [
-    { width: 'var(--size-table-column-index)' },
-    { width: '42%' },
+    { width: '72px' },
+    { width: '24%' },
     { width: '14%' },
     { width: '18%' },
     { width: '18%' },
-    { width: 'var(--size-table-column-actions)' },
-  ];
-  readonly inboxColumns: DataTableColumn[] = [
-    {
-      key: 'index',
-      label: '#',
-      width: 'var(--size-table-column-index)',
-      align: 'center',
-      headerAlign: 'center',
-    },
-    { key: 'title', label: 'Project Title', width: '42%' },
-    { key: 'type', label: 'Type', width: '14%' },
-    { key: 'status', label: 'Status', width: '18%' },
-    { key: 'submissionDate', label: 'Submission Date', width: '18%', sortable: true },
-    {
-      key: 'actions',
-      label: 'Actions',
-      width: 'var(--size-table-column-actions)',
-      align: 'center',
-      headerAlign: 'center',
-    },
+    { width: '96px' },
   ];
 
   /** Badge colour per workflow status code. */
@@ -97,15 +74,31 @@ export class InboxComponent implements OnInit {
     approved: '#22c55e',
   };
 
-  /** Client-side title search on top of the backend-filtered inbox. */
+  /** Client-side code/date search on top of the backend-filtered inbox. */
   readonly applications = computed(() => {
     const query = this.searchQuery().toLowerCase().trim();
+    const createdDate = this.createdDate();
     const form = this.selectedForm();
     const rows = this.allApplications();
-    return rows
+    const items = rows
       .filter((app) => form === 'all' || (app.form_code ?? '').toUpperCase() === form)
-      .filter((app) => !query || this.getTitle(app).toLowerCase().includes(query));
+      .filter((app) => !query || this.getCode(app).toLowerCase().includes(query))
+      .filter((app) => !createdDate || this.dateInputValue(app.created_at) === createdDate);
+
+    return [...items].sort((first, second) => {
+      const diff = this.submittedTs(first) - this.submittedTs(second);
+      return this.sortDirection() === 'asc' ? diff : -diff;
+    });
   });
+
+  readonly pagedApplications = computed(() => {
+    const start = (this.page() - 1) * this.pageSize();
+    return this.applications().slice(start, start + this.pageSize());
+  });
+
+  readonly totalPages = computed(() =>
+    Math.max(1, Math.ceil(this.applications().length / this.pageSize())),
+  );
 
   readonly formTabs = computed(() => [
     { value: 'all', label: 'All' },
@@ -123,11 +116,37 @@ export class InboxComponent implements OnInit {
 
   onSearch(query: string): void {
     this.searchQuery.set(query);
+    this.page.set(1);
+  }
+
+  onCreatedDateChange(event: Event): void {
+    this.createdDate.set((event.target as HTMLInputElement).value);
+    this.page.set(1);
+  }
+
+  setTab(tab: string): void {
+    this.selectedForm.set(tab);
+    this.page.set(1);
   }
 
   refreshInbox(): void {
     this.searchQuery.set('');
+    this.createdDate.set('');
+    this.setTab('all');
     this.loadInbox();
+  }
+
+  onPageChange(page: number): void {
+    this.page.set(page);
+  }
+
+  onPageSizeChange(pageSize: number): void {
+    this.pageSize.set(pageSize);
+    this.page.set(1);
+  }
+
+  toggleSubmissionDateSort(): void {
+    this.sortDirection.update((direction) => (direction === 'asc' ? 'desc' : 'asc'));
   }
 
   private loadInbox(): void {
@@ -143,8 +162,8 @@ export class InboxComponent implements OnInit {
       });
   }
 
-  getTitle(app: RequestSummaryDto): string {
-    return app.title?.trim() || '(Untitled Application)';
+  getCode(app: RequestSummaryDto): string {
+    return app.request_code?.trim() || `REQ-${requestIdOf(app) ?? ''}`;
   }
 
   /** Human-readable status name shown in the badge. */
@@ -158,57 +177,43 @@ export class InboxComponent implements OnInit {
 
   getSubmissionDate(app: RequestSummaryDto): string {
     const iso = app.submitted_at ?? app.updated_at ?? app.created_at;
-    if (!iso) return '—';
-    return new Date(iso).toLocaleDateString('en-GB', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-    });
+    return this.formatIsoDate(iso);
+  }
+
+  getCreatedDate(app: RequestSummaryDto): string {
+    return this.formatIsoDate(app.created_at);
   }
 
   getFormRoute(app: RequestSummaryDto): string {
     return actionRoute(app);
   }
 
-  getFormTypeLabel(app: RequestSummaryDto): string {
-    const labels: Record<string, string> = {
-      RDIG: 'RDIG',
-      CONFERENCE: 'Conference',
-      JOURNAL: 'Journal',
-      EXTERNAL: 'External',
-    };
-    const code = (app.form_code ?? '').toUpperCase();
-    return labels[code] ?? app.form_name ?? code ?? '—';
+  getRowNumber(index: number): number {
+    return (this.page() - 1) * this.pageSize() + index + 1;
   }
 
-  /** Sort only by the submission date. */
-  onHeaderClick(columnName: string): void {
-    if (columnName !== 'submissionDate') return;
-    const next = this.tableSortService.getNextState(
-      { column: this.headerSortColumn(), direction: this.headerSortDirection() },
-      columnName,
-    );
-    this.headerSortColumn.set(next.column);
-    this.headerSortDirection.set(next.direction);
-  }
-
-  private submittedTs(app: RequestSummaryDto): number | null {
+  private submittedTs(app: RequestSummaryDto): number {
     const iso = app.submitted_at ?? app.updated_at ?? app.created_at;
-    return iso ? new Date(iso).getTime() : null;
+    return iso ? new Date(iso).getTime() : 0;
   }
 
-  getSortedApplications(): RequestSummaryDto[] {
-    const direction = this.headerSortDirection();
-    if (this.headerSortColumn() !== 'submissionDate' || !direction) {
-      return this.applications();
-    }
-    return [...this.applications()].sort((first, second) => {
-      const a = this.submittedTs(first);
-      const b = this.submittedTs(second);
-      if (a == null && b == null) return 0;
-      if (a == null) return 1;
-      if (b == null) return -1;
-      return direction === 'asc' ? a - b : b - a;
-    });
+  private formatIsoDate(iso: string | null | undefined): string {
+    return iso
+      ? new Date(iso).toLocaleDateString('en-GB', {
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric',
+        })
+      : '-';
+  }
+
+  private dateInputValue(iso: string | null | undefined): string {
+    if (!iso) return '';
+    const date = new Date(iso);
+    if (Number.isNaN(date.getTime())) return '';
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
 }

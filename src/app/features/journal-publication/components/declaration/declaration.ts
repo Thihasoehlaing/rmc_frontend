@@ -38,23 +38,15 @@ export class DeclarationComponent implements OnInit {
 
   initializeDeclarationForm() {
     this.declarationForm = this.fb.group({
-      confirmPresenter: [false, [Validators.requiredTrue]],
-      confirmScopusIndexed: [false, [Validators.requiredTrue]],
-      confirmNotResignedStaff: [false, [Validators.requiredTrue]],
-      confirmJointAuthorship: [false],
-      confirmCompliance: [false, [Validators.requiredTrue]],
-      confirmPostReturn: [false, [Validators.requiredTrue]],
       agreeToTerms: [false, [Validators.requiredTrue]],
       acknowledgeGrantFunder: [false, [Validators.requiredTrue]]
     });
 
-    // Emit validity changes whenever the form value changes
     this.declarationForm.valueChanges.subscribe(() => {
-      this.formValidityChange.emit(this.declarationForm.valid);
+      this.emitFormValidity();
     });
 
-    // Emit initial validity
-    this.formValidityChange.emit(this.declarationForm.valid);
+    this.emitFormValidity();
   }
 
   getJournalPayload(): JournalRequestPayload {
@@ -78,5 +70,10 @@ export class DeclarationComponent implements OnInit {
       },
       { emitEvent: false },
     );
+    this.emitFormValidity();
+  }
+
+  private emitFormValidity(): void {
+    this.formValidityChange.emit(this.declarationForm.valid);
   }
 }

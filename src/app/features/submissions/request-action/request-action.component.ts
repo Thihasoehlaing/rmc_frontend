@@ -51,22 +51,22 @@ export class RequestActionComponent implements OnInit {
     }
 
     this.requests
-      .getRequest(requestId)
+      .getRequestWorkflow(requestId)
       .pipe(
-        switchMap((res) => {
-          this.request.set(res.data);
-          return forkJoin({
-            context: this.requests.getFormContext(res.data.form_code, requestId),
+        switchMap((workflow) =>
+          forkJoin({
+            context: this.requests.getFormContext(workflow.data.form_code, requestId),
             actions: this.requests.getAvailableActions(requestId),
             approvals: this.requests.getApprovals(requestId, { page: 1, perPage: 50 }),
             comments: this.requests.getComments(requestId),
-          });
-        }),
+          }),
+        ),
         finalize(() => this.loading.set(false)),
       )
       .subscribe({
         next: ({ context, actions, approvals, comments }) => {
           this.context.set(context.data);
+          this.request.set(context.data.request ?? null);
           this.actions.set(actions.data?.available_actions ?? []);
           this.approvals.set(approvals.data?.items ?? []);
           this.comments.set(comments.data ?? []);
@@ -76,7 +76,7 @@ export class RequestActionComponent implements OnInit {
   }
 
   submitAction(action: WorkflowActionDto): void {
-    const requestId = this.request()?.id ?? this.request()?.request_id;
+    const requestId = this.request()?.request_id ?? this.request()?.id;
     if (requestId == null) return;
     if (action.requires_remarks && !this.commentText().trim()) {
       this.error.set('Comment is required for this action.');

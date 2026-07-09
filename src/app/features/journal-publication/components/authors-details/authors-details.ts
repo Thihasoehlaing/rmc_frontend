@@ -203,22 +203,16 @@ export class AuthorsDetails implements OnInit {
 
   initializeForm() {
     this.form = this.fb.group({
-      fullName: ['', [Validators.required]],
-      employeeId: ['', [Validators.required]],
-      designation: ['', [Validators.required]],
-      department: ['', [Validators.required]],
-      email: ['', [Validators.required, Validators.email]],
-      phoneNumber: ['', [Validators.required]],
-      coAuthors: [''],
       isPresenter: [true],
       testSubsections: this.fb.array([]),
       studentCoAuthors: this.fb.array([]),
       nonApuCoAuthors: this.fb.array([]),
     });
 
-    this.form.statusChanges.subscribe((status) => {
-      this.formValidityChange.emit(status === 'VALID');
+    this.form.statusChanges.subscribe(() => {
+      this.emitFormValidity();
     });
+    this.emitFormValidity();
   }
 
   getStaffAuthorPayloads(): JournalStaffAuthorPayload[] {
@@ -315,6 +309,8 @@ export class AuthorsDetails implements OnInit {
       );
       this.nonApuCoAuthors.push(group);
     }
+
+    this.emitFormValidity();
   }
 
   createTestSubsection(): FormGroup {
@@ -462,26 +458,32 @@ export class AuthorsDetails implements OnInit {
 
   addTestSubsection() {
     this.testSubsections.push(this.createTestSubsection());
+    this.emitFormValidity();
   }
 
   deleteTestSubsection(index: number) {
     this.testSubsections.removeAt(index);
+    this.emitFormValidity();
   }
 
   addStudentCoAuthor() {
     this.studentCoAuthors.push(this.createStudentCoAuthor());
+    this.emitFormValidity();
   }
 
   deleteStudentCoAuthor(index: number) {
     this.studentCoAuthors.removeAt(index);
+    this.emitFormValidity();
   }
 
   addNonApuCoAuthor() {
     this.nonApuCoAuthors.push(this.createNonApuCoAuthor());
+    this.emitFormValidity();
   }
 
   deleteNonApuCoAuthor(index: number) {
     this.nonApuCoAuthors.removeAt(index);
+    this.emitFormValidity();
   }
 
   // Modal Methods
@@ -597,6 +599,11 @@ export class AuthorsDetails implements OnInit {
     }
 
     this.closeModal();
+    this.emitFormValidity();
+  }
+
+  private emitFormValidity(): void {
+    this.formValidityChange.emit(this.form.valid);
   }
 
   getModalTitle(): string {

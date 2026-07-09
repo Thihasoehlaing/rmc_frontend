@@ -1,0 +1,241 @@
+<section class="review-page">
+  @if (loading()) {
+    <div class="review-state">Loading application…</div>
+  } @else if (error()) {
+    <div class="review-state review-state--error">{{ error() }}</div>
+  } @else {
+    <!-- ── Header ─────────────────────────────────────────────────────────── -->
+    <header class="review-head">
+      <button type="button" class="review-back" (click)="goBack()">
+        <span class="material-icons">arrow_back</span> Inbox
+      </button>
+      <div class="review-head__main">
+        <span class="review-head__eyebrow">Journal Publication · Reviewer View</span>
+        <h1 class="review-head__title">{{ val(journal()?.paper_title || request()?.title) }}</h1>
+        <div class="review-head__meta">
+          <span class="review-chip">{{ val(request()?.request_code) }}</span>
+          <span class="review-chip review-chip--status">{{
+            val(request()?.status_name || request()?.status_code)
+          }}</span>
+          <span class="review-head__by">
+            Submitted by <strong>{{ val(request()?.applicant_name) }}</strong>
+            @if (request()?.applicant_department) {
+              · {{ request()?.applicant_department }}
+            }
+          </span>
+        </div>
+      </div>
+    </header>
+
+    <div class="review-grid">
+      <!-- ── Application content (read-only) ──────────────────────────────── -->
+      <div class="review-main">
+        <!-- Journal details -->
+        <div class="review-card">
+          <h2 class="review-card__title"><span class="material-icons">article</span> Journal Details</h2>
+          <dl class="review-dl">
+            <div><dt>Journal Name</dt><dd>{{ val(journal()?.journal_name) }}</dd></div>
+            <div><dt>Paper Title</dt><dd>{{ val(journal()?.paper_title) }}</dd></div>
+            <div><dt>Author Role</dt><dd>{{ val(journal()?.author_role) }}</dd></div>
+            <div><dt>Scopus Quartile</dt><dd>{{ val(journal()?.scopus_quartile) }}</dd></div>
+            <div><dt>Project Type</dt><dd>{{ val(journal()?.project_type) }}</dd></div>
+            <div><dt>Reviewer Name</dt><dd>{{ val(journal()?.reviewer_name) }}</dd></div>
+            <div><dt>Internally Reviewed</dt><dd>{{ val(journal()?.is_manuscript_internally_reviewed) }}</dd></div>
+            <div><dt>Published Elsewhere</dt><dd>{{ val(journal()?.is_published_elsewhere) }}</dd></div>
+            <div class="review-dl__wide">
+              <dt>SDG Keywords</dt>
+              <dd>
+                {{ val(journal()?.sdg_keyword_1) }}, {{ val(journal()?.sdg_keyword_2) }},
+                {{ val(journal()?.sdg_keyword_3) }}
+              </dd>
+            </div>
+            <div class="review-dl__wide"><dt>Remarks</dt><dd>{{ val(journal()?.remarks) }}</dd></div>
+          </dl>
+        </div>
+
+        <!-- Authors -->
+        <div class="review-card">
+          <h2 class="review-card__title"><span class="material-icons">group</span> Authors</h2>
+
+          <h3 class="review-subhead">APU Staff Co-Authors</h3>
+          @if (staffAuthors().length) {
+            <table class="review-table">
+              <thead><tr><th>Name</th><th>Department</th><th>Affiliation</th></tr></thead>
+              <tbody>
+                @for (a of staffAuthors(); track $index) {
+                  <tr>
+                    <td>{{ val(a.staff_name) }}</td>
+                    <td>{{ val(a.staff_department) }}</td>
+                    <td>{{ val(a.affiliation) }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          } @else {
+            <p class="review-empty">None.</p>
+          }
+
+          <h3 class="review-subhead">APU Student Co-Authors</h3>
+          @if (studentAuthors().length) {
+            <table class="review-table">
+              <thead><tr><th>TP Number</th><th>Name</th><th>School / Dept</th><th>Affiliation</th></tr></thead>
+              <tbody>
+                @for (a of studentAuthors(); track $index) {
+                  <tr>
+                    <td>{{ val(a.tp_number) }}</td>
+                    <td>{{ val(a.full_name) }}</td>
+                    <td>{{ val(a.school_department) }}</td>
+                    <td>{{ val(a.affiliation) }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          } @else {
+            <p class="review-empty">None.</p>
+          }
+
+          <h3 class="review-subhead">Non-APU Co-Authors</h3>
+          @if (nonApuAuthors().length) {
+            <table class="review-table">
+              <thead><tr><th>Name</th><th>Institution</th><th>Country</th><th>Email</th></tr></thead>
+              <tbody>
+                @for (a of nonApuAuthors(); track $index) {
+                  <tr>
+                    <td>{{ val(a.full_name) }}</td>
+                    <td>{{ val(a.institution_company_name) }}</td>
+                    <td>{{ val(a.country) }}</td>
+                    <td>{{ val(a.email) }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          } @else {
+            <p class="review-empty">None.</p>
+          }
+        </div>
+
+        <!-- Costing -->
+        <div class="review-card">
+          <h2 class="review-card__title"><span class="material-icons">payments</span> Costing</h2>
+          @if (costingItems().length) {
+            <table class="review-table">
+              <thead><tr><th>Description</th><th>Foreign</th><th>Rate</th><th>RM</th></tr></thead>
+              <tbody>
+                @for (c of costingItems(); track $index) {
+                  <tr>
+                    <td>{{ val(c.description) }}</td>
+                    <td>{{ val(c.cost_in_foreign_currency) }}</td>
+                    <td>{{ val(c.exchange_rate) }}</td>
+                    <td>{{ val(c.cost_in_rm) }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          } @else {
+            <p class="review-empty">No costing items.</p>
+          }
+        </div>
+
+        <!-- Attachments -->
+        <div class="review-card">
+          <h2 class="review-card__title"><span class="material-icons">attach_file</span> Supporting Documents</h2>
+          @if (attachments().length) {
+            <ul class="review-files">
+              @for (f of attachments(); track $index) {
+                <li>
+                  <span class="material-icons">description</span>
+                  @if (f.file_url) {
+                    <a [href]="f.file_url" target="_blank" rel="noopener">{{ val(f.file_name) }}</a>
+                  } @else {
+                    {{ val(f.file_name) }}
+                  }
+                </li>
+              }
+            </ul>
+          } @else {
+            <p class="review-empty">No documents uploaded.</p>
+          }
+        </div>
+
+        <!-- Declaration -->
+        <div class="review-card">
+          <h2 class="review-card__title"><span class="material-icons">verified</span> Declaration</h2>
+          <dl class="review-dl">
+            <div><dt>Terms Accepted</dt><dd>{{ val(journal()?.declaration_terms_accepted) }}</dd></div>
+            <div><dt>Funder Acknowledged</dt><dd>{{ val(journal()?.declaration_funder_acknowledged) }}</dd></div>
+          </dl>
+        </div>
+      </div>
+
+      <!-- ── Review panel (sticky) ────────────────────────────────────────── -->
+      <aside class="review-side">
+        <div class="review-card review-panel">
+          <h2 class="review-card__title"><span class="material-icons">rate_review</span> Your Review</h2>
+
+          @if (feedback(); as note) {
+            <div
+              class="review-feedback"
+              [class.review-feedback--error]="note.type === 'error'"
+              [class.review-feedback--success]="note.type === 'success'"
+            >
+              {{ note.text }}
+            </div>
+          }
+
+          @if (canAct() && actions().length) {
+            <label class="review-label" for="review-comment">Comment / Remarks</label>
+            <textarea
+              id="review-comment"
+              class="input--textarea"
+              rows="4"
+              [formControl]="comment"
+              placeholder="Add your remarks for this decision…"
+            ></textarea>
+
+            <div class="review-actions">
+              @for (a of actions(); track a.action_code) {
+                <app-action-button
+                  [type]="actionType(a)"
+                  [label]="a.action_name + (a.requires_remarks ? ' *' : '')"
+                  [disabled]="acting()"
+                  (clicked)="perform(a)"
+                >
+                </app-action-button>
+              }
+            </div>
+            <p class="review-hint">* remark required</p>
+          } @else {
+            <p class="review-empty">
+              You have no pending action on this application. It's shown here in read-only mode.
+            </p>
+          }
+        </div>
+
+        <!-- Approval history -->
+        <div class="review-card">
+          <h2 class="review-card__title"><span class="material-icons">history</span> History</h2>
+          @if (approvals().length) {
+            <ol class="review-timeline">
+              @for (h of approvals(); track h.id) {
+                <li>
+                  <div class="review-timeline__head">
+                    <strong>{{ prettyActor(h.actor_type_code) }}</strong>
+                    <span class="review-timeline__action">{{ prettyActor(h.action_code) }}</span>
+                  </div>
+                  <div class="review-timeline__by">
+                    {{ val(h.staff_name || h.staff_username) }} · {{ fmtDate(h.action_at) }}
+                  </div>
+                  <div class="review-timeline__flow">
+                    {{ val(h.from_status_code) }} → {{ val(h.to_status_code) }}
+                  </div>
+                </li>
+              }
+            </ol>
+          } @else {
+            <p class="review-empty">No actions recorded yet.</p>
+          }
+        </div>
+      </aside>
+    </div>
+  }
+</section>

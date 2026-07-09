@@ -1,8 +1,7 @@
 import { Component, OnInit, ViewChild, inject, effect, Output, EventEmitter } from '@angular/core';
 import { CustomHeaderComponent } from '../../../../shared/components/custom-header/custom-header.component';
 import { CommonModule } from '@angular/common';
-import { ValidationMessageComponent } from '../../../../shared/components/validation-message/validation-message.component';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
 import { FileUploadComponent } from '../../../../shared/components/file-upload/file-upload.component';
 import { NoteComponent } from '../../../../shared/components/note/note.component'; 
 import { JournalWorkflowService } from '../../services/journal-workflow.service';
@@ -11,7 +10,7 @@ import { JournalFormData, JournalRequestPayload } from '../../services/journal-a
 @Component({
   selector: 'app-documents',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FileUploadComponent, NoteComponent, CustomHeaderComponent, ValidationMessageComponent],
+  imports: [CommonModule, ReactiveFormsModule, FileUploadComponent, NoteComponent, CustomHeaderComponent],
   templateUrl: './documents.html',
   styleUrl: './documents.scss'
 })
@@ -50,28 +49,29 @@ export class DocumentsComponent implements OnInit {
 
   initializeDocumentsForm() {
     this.documentsForm = this.fb.group({
-      acceptanceNotification: ['', [Validators.required]],
-      reviewersFeedback: ['', [Validators.required]],
-      scopusEvidencePublication: ['', [Validators.required]],
-      turnitinReport: ['', [Validators.required]],
-      finalPaperDraft: ['', [Validators.required]],
-      journalInvoice: ['', [Validators.required]],
-      manuscriptInternallyReviewed: ['', [Validators.required]],
-      reviewerName: ['', [Validators.required]],
-      manuscriptPreviouslyPublished: ['', [Validators.required]]
+      acceptanceNotification: [''],
+      reviewersFeedback: [''],
+      scopusEvidencePublication: [''],
+      turnitinReport: [''],
+      finalPaperDraft: [''],
+      journalInvoice: [''],
+      manuscriptInternallyReviewed: [''],
+      reviewerName: [''],
+      manuscriptPreviouslyPublished: ['']
     });
 
     this.documentsForm.statusChanges.subscribe(status => {
       this.formValidityChange.emit(status === 'VALID');
     });
+    this.formValidityChange.emit(this.documentsForm.valid);
   }
 
   getJournalPayload(): JournalRequestPayload {
     const value = this.documentsForm.getRawValue();
     return {
       reviewer_name: value.reviewerName || null,
-      is_manuscript_internally_reviewed: value.manuscriptInternallyReviewed === 'yes',
-      is_published_elsewhere: value.manuscriptPreviouslyPublished === 'yes',
+      is_manuscript_internally_reviewed: this.toOptionalBoolean(value.manuscriptInternallyReviewed),
+      is_published_elsewhere: this.toOptionalBoolean(value.manuscriptPreviouslyPublished),
     };
   }
 
@@ -84,8 +84,8 @@ export class DocumentsComponent implements OnInit {
     this.documentsForm.patchValue(
       {
         reviewerName: journal.reviewer_name || '',
-        manuscriptInternallyReviewed: journal.is_manuscript_internally_reviewed ? 'yes' : 'no',
-        manuscriptPreviouslyPublished: journal.is_published_elsewhere ? 'yes' : 'no',
+        manuscriptInternallyReviewed: this.fromOptionalBoolean(journal.is_manuscript_internally_reviewed),
+        manuscriptPreviouslyPublished: this.fromOptionalBoolean(journal.is_published_elsewhere),
       },
       { emitEvent: false },
     );
@@ -118,5 +118,17 @@ export class DocumentsComponent implements OnInit {
         ctrl.setValue(cleaned, { emitEvent: true });
       }
     }
+  }
+
+  private toOptionalBoolean(value: unknown): boolean | undefined {
+    if (value === 'yes') return true;
+    if (value === 'no') return false;
+    return undefined;
+  }
+
+  private fromOptionalBoolean(value: unknown): 'yes' | 'no' | '' {
+    if (value === true) return 'yes';
+    if (value === false) return 'no';
+    return '';
   }
 }

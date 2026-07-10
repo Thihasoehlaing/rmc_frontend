@@ -112,7 +112,7 @@ export class DraftsComponent implements OnInit {
 
     forkJoin({
       requests: this.requests.getMyRequests({ page: 1, perPage: 100 }),
-      forms: this.formCache.getForms(),
+      forms: this.formCache.getForms(true),
     })
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe({

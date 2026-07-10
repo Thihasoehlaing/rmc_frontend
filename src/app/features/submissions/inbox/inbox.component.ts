@@ -1,12 +1,13 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { finalize } from 'rxjs';
+import { finalize, forkJoin } from 'rxjs';
 
+import { CachedFormOption, FormCacheService } from '../../../core/services/form-cache.service';
 import {
   WorkflowRequestsService,
   RequestSummaryDto,
 } from '../../../core/services/workflow-requests.service';
-import { actionRoute, formTypeLabel, requestIdOf } from '../../../core/services/request-display.util';
+import { actionRoute, requestIdOf } from '../../../core/services/request-display.util';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
 import { SubmissionsSearchComponent } from '../../../shared/components/submissions-search/submissions-search.component';
 import { SubmissionFormTabsComponent } from '../../../shared/components/submission-form-tabs/submission-form-tabs.component';
@@ -32,8 +33,10 @@ import { TableActionIconComponent } from '../../../shared/components/table-actio
 })
 export class InboxComponent implements OnInit {
   private readonly requests = inject(WorkflowRequestsService);
+  private readonly formCache = inject(FormCacheService);
 
   private allApplications = signal<RequestSummaryDto[]>([]);
+  private forms = signal<CachedFormOption[]>([]);
   loading = signal(true);
   error = signal<string | null>(null);
   searchQuery = signal('');
@@ -100,15 +103,18 @@ export class InboxComponent implements OnInit {
     Math.max(1, Math.ceil(this.applications().length / this.pageSize())),
   );
 
-  readonly formTabs = computed(() => [
-    { value: 'all', label: 'All' },
-    ...Array.from(
-      new Set(this.allApplications().map((app) => (app.form_code ?? '').toUpperCase()).filter(Boolean)),
-    )
-      .filter((code) => code !== 'EXTERNAL')
-      .sort()
-      .map((code) => ({ value: code, label: formTypeLabel(code) })),
-  ]);
+  readonly formTabs = computed(() => {
+    const tabs = this.forms()
+      .filter((form) => form.is_active !== false)
+      .filter((form) => form.form_code.toUpperCase() !== 'EXTERNAL')
+      .map((form) => ({
+        value: form.form_code.toUpperCase(),
+        label: form.form_name,
+      }))
+      .sort((a, b) => a.label.localeCompare(b.label));
+
+    return [{ value: 'all', label: 'All' }, ...tabs];
+  });
 
   ngOnInit(): void {
     this.loadInbox();
@@ -153,11 +159,17 @@ export class InboxComponent implements OnInit {
     this.loading.set(true);
     this.error.set(null);
 
-    this.requests
-      .getInbox({ page: 1, perPage: 100 })
+    forkJoin({
+      requests: this.requests.getInbox({ page: 1, perPage: 100 }),
+      forms: this.formCache.getForms(true),
+    })
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe({
-        next: (res) => this.allApplications.set(res.data?.items ?? []),
+        next: ({ requests, forms }) => {
+          this.allApplications.set(requests.data?.items ?? []);
+          this.forms.set(forms.data ?? []);
+          this.ensureValidTab();
+        },
         error: () => this.error.set('Could not load your inbox. Please try again.'),
       });
   }
@@ -215,5 +227,12 @@ export class InboxComponent implements OnInit {
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
+  }
+
+  private ensureValidTab(): void {
+    const tab = this.selectedForm();
+    if (!this.formTabs().some((item) => item.value === tab)) {
+      this.setTab('all');
+    }
   }
 }

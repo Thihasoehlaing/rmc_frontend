@@ -1,11 +1,20 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, TrackByFunction, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
 import { finalize } from 'rxjs';
 
+import { DropdownOption } from '../../../core/interfaces/components.interface';
 import { ToastService } from '../../../core/services/toast.service';
+import {
+  DataTableColumn,
+  DataTableComponent,
+} from '../../../shared/components/data-table/data-table.component';
 import { DialogComponent } from '../../../shared/components/dialog/dialog.component';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
+import { SearchableDropdownComponent } from '../../../shared/components/searchable-dropdown/searchable-dropdown.component';
+import { TableActionIconComponent } from '../../../shared/components/table-action-icon/table-action-icon.component';
+import { TableSkeletonComponent } from '../../../shared/components/table-skeleton/table-skeleton.component';
 import {
   AccessStatus,
   AccessType,
@@ -15,6 +24,7 @@ import {
   SystemAccessDepartmentRule,
   SystemAccessDepartmentRulePayload,
   SystemAccessService,
+  StaffOption,
   SystemAccessUser,
   SystemAccessUserPayload,
 } from './system-access.service';
@@ -23,17 +33,96 @@ type AccessTab = 'users' | 'departments' | 'audit';
 type UserDialogMode = 'create' | 'edit';
 type RuleDialogMode = 'create' | 'edit';
 
+interface AccessTabConfig {
+  key: AccessTab;
+  label: string;
+  title: string;
+  description: string;
+  createLabel?: string;
+  emptyIcon: string;
+  columns: readonly DataTableColumn[];
+}
+
+const USER_COLUMNS: readonly DataTableColumn[] = [
+  { key: 'number', label: 'No.', width: '72px', align: 'center', headerAlign: 'center' },
+  { key: 'username', label: 'Username', width: '220px' },
+  { key: 'access', label: 'Access', width: '120px', align: 'center', headerAlign: 'center' },
+  { key: 'reason', label: 'Reason', width: '320px' },
+  { key: 'status', label: 'Status', width: '120px', align: 'center', headerAlign: 'center' },
+  { key: 'actions', label: 'Actions', width: '120px', align: 'center', headerAlign: 'center' },
+];
+
+const RULE_COLUMNS: readonly DataTableColumn[] = [
+  { key: 'number', label: 'No.', width: '72px', align: 'center', headerAlign: 'center' },
+  { key: 'rule', label: 'Rule', width: '260px' },
+  { key: 'match', label: 'Match', width: '120px', align: 'center', headerAlign: 'center' },
+  { key: 'department', label: 'Department Value', width: '320px' },
+  { key: 'status', label: 'Status', width: '120px', align: 'center', headerAlign: 'center' },
+  { key: 'actions', label: 'Actions', width: '120px', align: 'center', headerAlign: 'center' },
+];
+
+const AUDIT_COLUMNS: readonly DataTableColumn[] = [
+  { key: 'number', label: 'No.', width: '72px', align: 'center', headerAlign: 'center' },
+  { key: 'username', label: 'Username', width: '220px' },
+  { key: 'decision', label: 'Decision', width: '120px', align: 'center', headerAlign: 'center' },
+  { key: 'reason', label: 'Reason', width: '320px' },
+  { key: 'department', label: 'Department', width: '220px' },
+  { key: 'matchedRule', label: 'Matched Rule', width: '170px' },
+  { key: 'attempted', label: 'Attempted', width: '180px' },
+];
+
+const TABS: readonly AccessTabConfig[] = [
+  {
+    key: 'users',
+    label: 'User Access',
+    title: 'User Access',
+    description: 'Exact username allow and deny rules. Deny rules have priority.',
+    createLabel: 'Add User Rule',
+    emptyIcon: 'verified_user',
+    columns: USER_COLUMNS,
+  },
+  {
+    key: 'departments',
+    label: 'Department Rules',
+    title: 'Department Rules',
+    description: 'Department-name access rules such as School of, DLH, I&E, and SRI.',
+    createLabel: 'Add Department Rule',
+    emptyIcon: 'apartment',
+    columns: RULE_COLUMNS,
+  },
+  {
+    key: 'audit',
+    label: 'Audit Logs',
+    title: 'Audit Logs',
+    description: 'Read-only access decisions written during authentication checks.',
+    emptyIcon: 'fact_check',
+    columns: AUDIT_COLUMNS,
+  },
+];
+
 @Component({
   selector: 'app-system-access',
   standalone: true,
-  imports: [CommonModule, FormsModule, DialogComponent, PaginationComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    DataTableComponent,
+    DialogComponent,
+    PaginationComponent,
+    SearchableDropdownComponent,
+    TableActionIconComponent,
+    TableSkeletonComponent,
+  ],
   templateUrl: './system-access.component.html',
   styleUrls: ['../forms/forms.component.scss', './system-access.component.scss'],
 })
 export class SystemAccessComponent implements OnInit {
   private readonly systemAccessService = inject(SystemAccessService);
   private readonly toastService = inject(ToastService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
 
+  readonly tabs = TABS;
   readonly activeTab = signal<AccessTab>('users');
   readonly pageSizeOptions = [5, 10, 15, 30, 50];
 
@@ -53,8 +142,9 @@ export class SystemAccessComponent implements OnInit {
   readonly userUsername = signal('');
   readonly userType = signal<AccessType>('ALLOW');
   readonly userReason = signal('');
-  readonly userExpiresAt = signal('');
   readonly userActive = signal(true);
+  readonly staffOptions = signal<StaffOption[]>([]);
+  readonly staffOptionsLoading = signal(false);
 
   readonly departmentRules = signal<SystemAccessDepartmentRule[]>([]);
   readonly ruleSearch = signal('');
@@ -93,14 +183,86 @@ export class SystemAccessComponent implements OnInit {
   readonly ruleTrackFn: TrackByFunction<SystemAccessDepartmentRule> = (_index, row) => row.id;
   readonly auditTrackFn: TrackByFunction<SystemAccessAuditLog> = (_index, row) => row.id;
 
+  get activeTabConfig(): AccessTabConfig {
+    return this.tabs.find(tab => tab.key === this.activeTab()) ?? this.tabs[0];
+  }
+
   ngOnInit(): void {
-    this.loadUsers();
-    this.loadDepartmentRules();
-    this.loadAuditLogs();
+    const initialTab = this.tabFromQueryParam(this.route.snapshot.queryParamMap.get('tab'));
+    if (this.route.snapshot.queryParamMap.get('tab') !== initialTab) {
+      this.updateUrlTab(initialTab, true);
+    }
+
+    this.route.queryParamMap.subscribe(params => {
+      const tab = this.tabFromQueryParam(params.get('tab'));
+      if (tab !== this.activeTab()) {
+        this.activeTab.set(tab);
+        this.resetTabState(tab);
+      }
+      this.loadActiveTab();
+    });
   }
 
   setTab(tab: AccessTab): void {
-    this.activeTab.set(tab);
+    if (tab === this.activeTab()) return;
+    this.updateUrlTab(tab);
+  }
+
+  private tabFromQueryParam(value: string | null): AccessTab {
+    return this.tabs.find(tab => tab.key === value)?.key ?? 'users';
+  }
+
+  private updateUrlTab(tab: AccessTab, replaceUrl = false): void {
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { tab },
+      queryParamsHandling: 'merge',
+      replaceUrl,
+    });
+  }
+
+  private resetTabState(tab: AccessTab): void {
+    if (tab === 'users') {
+      this.userPage.set(1);
+    } else if (tab === 'departments') {
+      this.rulePage.set(1);
+    } else {
+      this.auditPage.set(1);
+    }
+  }
+
+  openCreateDialog(): void {
+    if (this.activeTab() === 'users') {
+      this.openCreateUser();
+    } else if (this.activeTab() === 'departments') {
+      this.openCreateRule();
+    }
+  }
+
+  loadActiveTab(): void {
+    if (this.activeTab() === 'users') {
+      this.loadUsers();
+    } else if (this.activeTab() === 'departments') {
+      this.loadDepartmentRules();
+    } else {
+      this.loadAuditLogs();
+    }
+  }
+
+  activeColumns(): readonly DataTableColumn[] {
+    return this.activeTabConfig.columns;
+  }
+
+  rowNumber(index: number, page: number, pageSize: number): number {
+    return (page - 1) * pageSize + index + 1;
+  }
+
+  accessBadgeClass(value: AccessType): string {
+    return value === 'ALLOW' ? 'status-badge' : 'status-badge status-badge--inactive';
+  }
+
+  decisionBadgeClass(value: string): string {
+    return value === 'ALLOWED' ? 'status-badge' : 'status-badge status-badge--inactive';
   }
 
   loadUsers(): void {
@@ -207,9 +369,9 @@ export class SystemAccessComponent implements OnInit {
     this.userUsername.set('');
     this.userType.set('ALLOW');
     this.userReason.set('');
-    this.userExpiresAt.set('');
     this.userActive.set(true);
     this.userDialogMode.set('create');
+    this.loadStaffOptions();
   }
 
   openEditUser(user: SystemAccessUser): void {
@@ -217,21 +379,20 @@ export class SystemAccessComponent implements OnInit {
     this.userUsername.set(user.username);
     this.userType.set(user.access_type);
     this.userReason.set(user.reason || '');
-    this.userExpiresAt.set(this.inputDateTime(user.expires_at));
     this.userActive.set(user.is_active);
     this.userDialogMode.set('edit');
+    this.loadStaffOptions('', user.username);
   }
 
   saveUser(): void {
     const mode = this.userDialogMode();
-    const username = this.normalizeUsername(this.userUsername());
+    const username = this.userUsername().trim();
     if (!mode || !username || this.isSaving()) return;
 
     const payload: SystemAccessUserPayload = {
       username,
       access_type: this.userType(),
       reason: this.userReason().trim() || null,
-      expires_at: this.userExpiresAt() || null,
       is_active: this.userActive(),
     };
 
@@ -330,15 +491,54 @@ export class SystemAccessComponent implements OnInit {
     }).format(date);
   }
 
-  normalizeUsername(value: string): string {
-    return value.trim().split('@')[0].toLowerCase();
+  staffDropdownOptions(): DropdownOption<string>[] {
+    const selectedUsername = this.userUsername().trim();
+    const options = this.staffOptions().map((staff) => this.toStaffDropdownOption(staff));
+
+    if (selectedUsername && !options.some((option) => option.value === selectedUsername)) {
+      return [
+        {
+          value: selectedUsername,
+          label: selectedUsername,
+          description: 'Existing user rule',
+          searchText: selectedUsername,
+        },
+        ...options,
+      ];
+    }
+
+    return options;
   }
 
-  private inputDateTime(value: string | null): string {
-    if (!value) return '';
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return '';
-    const offset = date.getTimezoneOffset() * 60000;
-    return new Date(date.getTime() - offset).toISOString().slice(0, 16);
+  loadStaffOptions(search = '', selectedUsername = this.userUsername().trim()): void {
+    this.staffOptionsLoading.set(true);
+    this.systemAccessService
+      .listStaff(search)
+      .pipe(finalize(() => this.staffOptionsLoading.set(false)))
+      .subscribe({
+        next: response => {
+          this.staffOptions.set(response.data);
+          if (selectedUsername) {
+            this.userUsername.set(selectedUsername);
+          }
+        },
+        error: () => {
+          this.staffOptions.set([]);
+        },
+      });
   }
+
+  private toStaffDropdownOption(staff: StaffOption): DropdownOption<string> {
+    return {
+      value: staff.username,
+      label: staff.fullname || staff.username,
+      description: [staff.username, staff.email || staff.staff_email, staff.department]
+        .filter(Boolean)
+        .join(' | '),
+      searchText: [staff.username, staff.fullname, staff.email, staff.staff_email, staff.department, staff.job_title]
+        .filter(Boolean)
+        .join(' '),
+    };
+  }
+
 }

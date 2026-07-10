@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable, inject } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
 import { Observable, of, tap } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
@@ -17,20 +17,38 @@ interface ApiResponse<T> {
   data: T;
 }
 
+interface FormCacheEntry {
+  cachedAt: number;
+  forms: CachedFormOption[];
+}
+
 @Injectable({ providedIn: 'root' })
 export class FormCacheService {
   private readonly http = inject(HttpClient);
   private readonly storageKey = 'rmc.forms.cache';
+  private readonly cacheTtlMs = 5 * 60 * 1000;
   private readonly apiUrl = `${environment.apiUrl.replace(/\/$/, '')}/rmc/forms`;
+  private readonly formsSignal = signal<CachedFormOption[]>(this.readCache({ allowStale: true })?.forms ?? []);
+
+  readonly forms = this.formsSignal.asReadonly();
+  readonly activeFormCodes = computed(
+    () =>
+      new Set(
+        this.formsSignal()
+          .filter((form) => form.is_active !== false)
+          .map((form) => form.form_code.toUpperCase()),
+      ),
+  );
 
   getForms(forceRefresh = false): Observable<ApiResponse<CachedFormOption[]>> {
     if (!forceRefresh) {
       const cached = this.readCache();
       if (cached) {
+        this.formsSignal.set(cached.forms);
         return of({
           success: true,
           message: 'Forms loaded from cache',
-          data: cached,
+          data: cached.forms,
         });
       }
     }
@@ -46,17 +64,27 @@ export class FormCacheService {
 
   clear(): void {
     localStorage.removeItem(this.storageKey);
+    this.formsSignal.set([]);
   }
 
-  private readCache(): CachedFormOption[] | null {
+  private readCache(options: { allowStale?: boolean } = {}): FormCacheEntry | null {
     const raw = localStorage.getItem(this.storageKey);
     if (!raw) {
       return null;
     }
 
     try {
-      const parsed = JSON.parse(raw) as CachedFormOption[];
-      return Array.isArray(parsed) ? parsed : null;
+      const parsed = JSON.parse(raw) as CachedFormOption[] | FormCacheEntry;
+      if (Array.isArray(parsed)) {
+        return options.allowStale && parsed.length ? { cachedAt: 0, forms: parsed } : null;
+      }
+
+      if (!parsed || !Array.isArray(parsed.forms) || !Number.isFinite(parsed.cachedAt)) {
+        return null;
+      }
+
+      const isFresh = Date.now() - parsed.cachedAt < this.cacheTtlMs;
+      return options.allowStale || isFresh ? parsed : null;
     } catch {
       this.clear();
       return null;
@@ -64,6 +92,7 @@ export class FormCacheService {
   }
 
   private writeCache(forms: CachedFormOption[]): void {
-    localStorage.setItem(this.storageKey, JSON.stringify(forms));
+    localStorage.setItem(this.storageKey, JSON.stringify({ cachedAt: Date.now(), forms }));
+    this.formsSignal.set(forms);
   }
 }

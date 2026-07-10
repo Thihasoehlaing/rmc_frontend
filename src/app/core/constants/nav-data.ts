@@ -65,6 +65,7 @@ export const NAVIGATION_DATA: NavGroup[] = [
                         label: 'RDIG Application',
                         icon: 'description',
                         route: '/rdig/application',
+                        formCode: 'RDIG',
                         permission: {
                             anyOf: ['full_time', 'contract'],
                             allOf: ['academic'],
@@ -76,6 +77,7 @@ export const NAVIGATION_DATA: NavGroup[] = [
                         label: 'Conference Application',
                         icon: 'event',
                         route: '/conference/application',
+                        formCode: 'CONFERENCE',
                         permission: {
                             anyCondition: [
                                 { anyOf: ['full_time', 'contract'], allOf: ['academic'] },
@@ -89,6 +91,7 @@ export const NAVIGATION_DATA: NavGroup[] = [
                         label: 'Journal Publication',
                         icon: 'menu_book',
                         route: '/journal/application',
+                        formCode: 'JOURNAL',
                         permission: {
                             anyCondition: [
                                 { anyOf: ['full_time', 'contract'], allOf: ['academic'] },
@@ -102,6 +105,7 @@ export const NAVIGATION_DATA: NavGroup[] = [
                         label: 'RA/GRA Application',
                         icon: 'person_add',
                         route: '/ragra',
+                        formCode: 'RA_GRA',
                         permission: {
                             anyOf: ['full_time', 'contract'],
                             allOf: ['academic'],
@@ -112,6 +116,7 @@ export const NAVIGATION_DATA: NavGroup[] = [
                         label: 'Partnership Application',
                         icon: 'handshake',
                         route: '/partnership/application',
+                        formCode: 'PARTNERSHIP',
                         permission: {
                             anyOf: ['full_time', 'contract'],
                             allOf: ['academic'],
@@ -122,6 +127,7 @@ export const NAVIGATION_DATA: NavGroup[] = [
                         label: 'Proposal Application',
                         icon: 'assignment',
                         route: '/proposal',
+                        formCode: 'PROPOSAL',
                         permission: {
                             anyOf: ['full_time', 'contract'],
                             allOf: ['academic'],
@@ -131,12 +137,14 @@ export const NAVIGATION_DATA: NavGroup[] = [
                         label: 'External Project Data Entry',
                         icon: 'folder_open',
                         route: '/external-project-data-entry',
+                        formCode: 'EXTERNAL',
                         permission: { anyOf: ['RMC', 'Admin'] },
                     },                    // Travel Authorization: visible to all authenticated users except Admin
                     {
                         label: 'Travel Authorization',
                         icon: 'flight_takeoff',
                         route: '/travel-authorization/application',
+                        formCode: 'TRAVEL_AUTH',
                         permission: {
                             excludeGroups: ['Admin'],
                         },

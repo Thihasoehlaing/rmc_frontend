@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { Router } from '@angular/router';
 import { SidebarService } from '../../core/services/sidebar.service';
@@ -6,6 +6,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { PermissionService } from '../../core/services/permission.service';
 import { NAVIGATION_DATA } from '../../core/constants/nav-data';
 import { NavElement, NavFolder } from '../../core/interfaces/nav.interface';
+import { FormCacheService } from '../../core/services/form-cache.service';
 
 @Component({
   selector: 'app-sidebar',
@@ -14,11 +15,12 @@ import { NavElement, NavFolder } from '../../core/interfaces/nav.interface';
   templateUrl: './sidebar.component.html',
   styleUrls: ['./sidebar.component.scss']
 })
-export class SidebarComponent {
+export class SidebarComponent implements OnInit {
   sidebarService        = inject(SidebarService);
   private authService   = inject(AuthService);
   private permService   = inject(PermissionService);
   private router        = inject(Router);
+  private formCache     = inject(FormCacheService);
 
   isExpanded = this.sidebarService.isExpanded;
   pinned     = this.sidebarService.pinned;
@@ -32,11 +34,14 @@ export class SidebarComponent {
    * No role checks live here — all logic is in PermissionService.
    */
   filteredNavGroups = computed(() => {
+    const activeFormCodes = this.formCache.activeFormCodes();
+
     // Recursively filter elements and their children by ABAC permission.
     // Folders whose children are all filtered out are also removed.
     const filterElements = (elements: NavElement[]): NavElement[] =>
       elements
         .filter(el => this.permService.canAccess(el.permission))
+        .filter(el => this.isConfiguredFormActive(el, activeFormCodes))
         .map(el =>
           this.isFolder(el)
             ? { ...el, children: filterElements(el.children) }
@@ -66,6 +71,10 @@ export class SidebarComponent {
   // Track profile dropdown
   profileOpen = signal(false);
 
+  ngOnInit(): void {
+    this.formCache.getForms().subscribe({ error: () => undefined });
+  }
+
   toggleProfile() {
     if (this.isExpanded()) {
       this.profileOpen.update(v => !v);
@@ -92,6 +101,14 @@ export class SidebarComponent {
 
   isFolder(element: NavElement): element is NavFolder {
     return 'children' in element;
+  }
+
+  private isConfiguredFormActive(
+    element: NavElement,
+    activeFormCodes: Set<string>,
+  ): boolean {
+    const formCode = element.formCode?.toUpperCase();
+    return !formCode || activeFormCodes.has(formCode);
   }
 
   asItem(element: NavElement) {

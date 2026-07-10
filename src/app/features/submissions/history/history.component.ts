@@ -113,13 +113,14 @@ export class HistoryComponent implements OnInit {
 
     forkJoin({
       requests: list$,
-      forms: this.formCache.getForms(),
+      forms: this.formCache.getForms(true),
     })
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe({
         next: ({ requests, forms }) => {
           this.raw.set(requests.data?.items ?? []);
           this.forms.set(forms.data ?? []);
+          this.ensureValidTab();
         },
         error: () => this.error.set('Could not load your history. Please try again.'),
       });
@@ -261,5 +262,12 @@ export class HistoryComponent implements OnInit {
   private printFileName(contentDisposition: string | null, fallbackCode: string): string {
     const match = contentDisposition?.match(/filename\*?=(?:UTF-8''|")?([^";]+)/i);
     return match?.[1] ? decodeURIComponent(match[1].replace(/"/g, '')) : `${fallbackCode}.pdf`;
+  }
+
+  private ensureValidTab(): void {
+    const tab = this.selectedType();
+    if (!this.formTabs().some((item) => item.value === tab)) {
+      this.setTab('all');
+    }
   }
 }

@@ -506,6 +506,7 @@ export class AuthService {
       RMC_STAFF: ['RMC'],
       RMC: ['RMC'],
       REVIEWER: ['Reviewer'],
+      ACADEMIC: ['full_time', 'academic'],
       LECTURER: ['full_time', 'academic'],
       HEAD_OF_SCHOOL: ['full_time', 'academic', 'HOS'],
       HEAD_OF_DEPARTMENT: ['full_time', 'academic', 'HOS'],

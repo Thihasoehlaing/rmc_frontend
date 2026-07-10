@@ -1,112 +1,96 @@
-.system-access-header-actions {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: var(--space-3);
-}
-
-.system-access-tabs {
+.workflow-tabs {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2);
-  margin-block: var(--space-4) var(--space-5);
+  margin-bottom: var(--space-5);
+}
 
-  button {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-2);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    background: var(--color-surface);
-    color: var(--color-text-secondary);
-    padding: var(--space-2) var(--space-4);
-    font: inherit;
-    cursor: pointer;
+.workflow-tab {
+  min-height: 42px;
+  padding: 0 var(--space-4);
+  color: var(--color-text-secondary);
+  background: var(--color-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  font-weight: var(--fw-semibold);
 
-    &.is-active {
-      border-color: var(--color-primary);
-      color: var(--color-primary);
-      background: var(--color-primary-soft);
-      font-weight: var(--fw-semibold);
-    }
+  &:hover {
+    color: var(--color-primary);
+    border-color: var(--color-primary);
+  }
+
+  &--active {
+    color: var(--color-primary);
+    background: var(--color-primary-light);
+    border-color: var(--color-primary);
   }
 }
 
 .forms-page--settings .system-access-toolbar {
-  grid-template-columns: minmax(240px, 1fr) minmax(150px, 0.35fr) minmax(150px, 0.35fr) auto;
+  grid-template-columns: minmax(220px, 1fr) minmax(150px, 220px) minmax(150px, 220px) minmax(220px, auto);
+
+  .forms-toolbar__title {
+    grid-column: 1 / -1;
+  }
+
+  .forms-filter {
+    min-width: 0;
+  }
+
+  .forms-filter--search {
+    min-width: 0;
+  }
+
+  .forms-toolbar__actions {
+    justify-self: end;
+    min-width: 0;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
 }
 
-.system-access-table-wrap {
-  overflow-x: auto;
+.system-access-subtext {
+  display: block;
+  margin-top: var(--space-1);
+  color: var(--color-text-muted);
+  font-size: var(--fs-xs);
 }
 
-.system-access-table {
+:host ::ng-deep .system-access-page .modal-dialog {
+  max-height: 94vh;
+}
+
+:host ::ng-deep .system-access-page .modal-dialog__body {
+  min-height: min(420px, calc(94vh - 170px));
+}
+
+.system-access-page .workflow-editor app-searchable-dropdown {
   width: 100%;
-  border-collapse: collapse;
-
-  th,
-  td {
-    border-bottom: 1px solid var(--color-border);
-    padding: var(--space-3);
-    text-align: left;
-    vertical-align: top;
-  }
-
-  th {
-    color: var(--color-text-muted);
-    font-size: var(--fs-xs);
-    font-weight: var(--fw-bold);
-    text-transform: uppercase;
-  }
-
-  td {
-    color: var(--color-text-secondary);
-  }
-
-  strong,
-  small {
-    display: block;
-  }
-
-  small {
-    color: var(--color-text-muted);
-    font-size: var(--fs-xs);
-  }
-
-  .is-actions {
-    width: 128px;
-    text-align: center;
-    white-space: nowrap;
-  }
-
-  .btn-sm {
-    min-width: 36px;
-    padding-inline: var(--space-2);
-  }
 }
 
-.form-editor {
-  display: grid;
-  gap: var(--space-4);
+.system-access-user-reason {
+  margin-bottom: var(--space-4);
 }
 
-.input--textarea {
-  min-height: 108px;
-  resize: vertical;
-}
-
-@media (max-width: 900px) {
+@media (max-width: 1280px) {
   .forms-page--settings .system-access-toolbar {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
 
     .forms-toolbar__actions {
       grid-column: 1 / -1;
+      justify-self: start;
+      justify-content: flex-start;
     }
   }
 }
 
-@media (max-width: 720px) {
+@media (max-width: 900px) {
   .forms-page--settings .system-access-toolbar {
     grid-template-columns: 1fr;
+
+    .forms-toolbar__actions {
+      justify-self: start;
+    }
   }
 }

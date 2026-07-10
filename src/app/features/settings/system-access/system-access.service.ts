@@ -34,7 +34,6 @@ export interface SystemAccessUser {
   username: string;
   access_type: AccessType;
   reason: string | null;
-  expires_at: string | null;
   is_active: boolean;
   created_by: string | null;
   updated_by: string | null;
@@ -46,8 +45,20 @@ export interface SystemAccessUserPayload {
   username: string;
   access_type: AccessType;
   reason: string | null;
-  expires_at: string | null;
   is_active: boolean;
+}
+
+export interface StaffOption {
+  id: number;
+  staff_id?: number;
+  username: string;
+  fullname: string | null;
+  email: string | null;
+  staff_email?: string | null;
+  department: string | null;
+  staff_type?: string | null;
+  job_title?: string | null;
+  is_active?: boolean;
 }
 
 export interface SystemAccessDepartmentRule {
@@ -183,6 +194,17 @@ export class SystemAccessService {
       `${this.baseUrl}/audit-logs`,
       { params: httpParams },
     );
+  }
+
+  listStaff(search = ''): Observable<ApiResponse<StaffOption[]>> {
+    let params = new HttpParams();
+    const text = search.trim();
+    if (text) {
+      params = params.set('search', text);
+    }
+    return this.http.get<ApiResponse<StaffOption[]>>(`${this.apiUrl}/rmc/master-data/staff`, {
+      params,
+    });
   }
 
   private paginationParams(page: number, perPage: number): HttpParams {

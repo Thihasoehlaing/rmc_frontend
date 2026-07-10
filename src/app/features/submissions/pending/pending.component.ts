@@ -104,13 +104,14 @@ export class PendingComponent implements OnInit {
 
     forkJoin({
       requests: this.requests.getPendingRequests({ page: 1, perPage: 100 }),
-      forms: this.formCache.getForms(),
+      forms: this.formCache.getForms(true),
     })
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe({
         next: ({ requests, forms }) => {
           this.raw.set(requests.data?.items ?? []);
           this.forms.set(forms.data ?? []);
+          this.ensureValidTab();
         },
         error: () => this.error.set('Could not load your pending applications. Please try again.'),
       });
@@ -210,5 +211,12 @@ export class PendingComponent implements OnInit {
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
+  }
+
+  private ensureValidTab(): void {
+    const tab = this.selectedType();
+    if (!this.formTabs().some((item) => item.value === tab)) {
+      this.setTab('all');
+    }
   }
 }

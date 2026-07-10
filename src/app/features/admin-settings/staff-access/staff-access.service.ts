@@ -38,6 +38,24 @@ export interface StaffAccessListData {
   pagination: ApiPagination;
 }
 
+export interface StaffAccessBulkBlockData {
+  items: StaffAccessRecordApi[];
+  blocked_count: number;
+}
+
+export interface StaffOption {
+  id: number;
+  staff_id?: number;
+  username: string;
+  fullname: string | null;
+  email: string | null;
+  staff_email?: string | null;
+  department: string | null;
+  staff_type?: string | null;
+  job_title?: string | null;
+  is_active?: boolean;
+}
+
 export interface StaffAccessListParams {
   page: number;
   perPage: number;
@@ -49,8 +67,9 @@ export interface StaffAccessListParams {
 @Injectable({ providedIn: 'root' })
 export class StaffAccessService {
   private readonly http = inject(HttpClient);
+  private readonly apiUrl = environment.apiUrl.replace(/\/$/, '');
   private readonly baseUrl =
-    `${environment.apiUrl.replace(/\/$/, '')}/rmc/admin-settings/staff-access`;
+    `${this.apiUrl}/rmc/admin-settings/staff-access`;
 
   list(params: StaffAccessListParams): Observable<ApiResponse<StaffAccessListData>> {
     let httpParams = new HttpParams()
@@ -79,10 +98,28 @@ export class StaffAccessService {
     );
   }
 
+  bulkBlock(usernames: string[], reason?: string): Observable<ApiResponse<StaffAccessBulkBlockData>> {
+    return this.http.post<ApiResponse<StaffAccessBulkBlockData>>(
+      `${this.baseUrl}/block`,
+      reason ? { usernames, reason } : { usernames },
+    );
+  }
+
   unblock(id: number, reason?: string): Observable<ApiResponse<StaffAccessRecordApi>> {
     return this.http.post<ApiResponse<StaffAccessRecordApi>>(
       `${this.baseUrl}/${id}/unblock`,
       reason ? { reason } : {},
     );
+  }
+
+  listStaff(search = ''): Observable<ApiResponse<StaffOption[]>> {
+    let params = new HttpParams();
+    const text = search.trim();
+    if (text) {
+      params = params.set('search', text);
+    }
+    return this.http.get<ApiResponse<StaffOption[]>>(`${this.apiUrl}/rmc/master-data/staff`, {
+      params,
+    });
   }
 }

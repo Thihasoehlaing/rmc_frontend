@@ -70,7 +70,7 @@ describe('StaffAccessComponent', () => {
         data: { items: [], pagination: { ...listResponse.data.pagination, total_items: 1 } },
       });
     http
-      .expectOne((req) => req.url === staffAccessUrl && req.params.get('status') === 'all')
+      .expectOne((req) => req.url === staffAccessUrl && req.params.get('status') === 'blocked' && req.params.get('per_page') === '10')
       .flush(listResponse);
   }
 
@@ -114,7 +114,7 @@ describe('StaffAccessComponent', () => {
     });
 
     http
-      .expectOne((req) => req.url === staffAccessUrl && req.params.get('status') === 'all')
+      .expectOne((req) => req.url === staffAccessUrl && req.params.get('status') === 'blocked' && req.params.get('per_page') === '10')
       .flush(listResponse);
     http
       .expectOne((req) => req.url === staffAccessUrl && req.params.get('status') === 'blocked')
@@ -139,7 +139,7 @@ describe('StaffAccessComponent', () => {
     });
 
     http
-      .expectOne((req) => req.url === staffAccessUrl && req.params.get('status') === 'all')
+      .expectOne((req) => req.url === staffAccessUrl && req.params.get('status') === 'blocked' && req.params.get('per_page') === '10')
       .flush(listResponse);
     http
       .expectOne((req) => req.url === staffAccessUrl && req.params.get('status') === 'blocked')

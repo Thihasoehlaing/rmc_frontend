@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { finalize } from 'rxjs';
 
 import { DropdownOption } from '../../../core/interfaces/components.interface';
 import {
@@ -7,16 +8,15 @@ import {
   DataTableComponent,
 } from '../../../shared/components/data-table/data-table.component';
 import { nextTableSortState, SortDirection } from '../../../shared/services/table-sort.service';
-import { SubmissionsSearchComponent } from '../../../shared/components/submissions-search/submissions-search.component';
 import { TableActionIconComponent } from '../../../shared/components/table-action-icon/table-action-icon.component';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
 import { SkeletonColumn } from '../../../shared/components/table-skeleton/table-skeleton.component';
+import { TableSkeletonComponent } from '../../../shared/components/table-skeleton/table-skeleton.component';
 import { DialogComponent } from '../../../shared/components/dialog/dialog.component';
-import { NoEntryFoundComponent } from '../../../shared/components/no-entry-found/no-entry-found.component';
 import { SearchableDropdownComponent } from '../../../shared/components/searchable-dropdown/searchable-dropdown.component';
 import { ToastService } from '../../../core/services/toast.service';
 import { AcademicStaffService, DepartmentRecord } from '../../settings/academic-staff/academic-staff.service';
-import { StaffAccessRecordApi, StaffAccessService } from './staff-access.service';
+import { StaffAccessRecordApi, StaffAccessService, StaffOption } from './staff-access.service';
 
 type AccessStatus = 'active' | 'blocked';
 type StatusFilter = 'all' | AccessStatus;
@@ -40,12 +40,11 @@ interface StaffAccessRecord {
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     DataTableComponent,
-    SubmissionsSearchComponent,
     TableActionIconComponent,
     PaginationComponent,
+    TableSkeletonComponent,
     DialogComponent,
     SearchableDropdownComponent,
-    NoEntryFoundComponent,
     FormsModule,
   ],
   templateUrl: './staff-access.component.html',
@@ -57,6 +56,7 @@ export class StaffAccessComponent implements OnInit {
   private readonly toast = inject(ToastService);
 
   readonly columns: DataTableColumn[] = [
+    { key: 'no', label: 'No.', width: '5rem', align: 'center', headerAlign: 'center' },
     { key: 'name', label: 'Staff Name', width: '22rem' },
     { key: 'department', label: 'Department', width: '13rem' },
     { key: 'email', label: 'Email', width: '17rem' },
@@ -82,7 +82,7 @@ export class StaffAccessComponent implements OnInit {
   );
 
   readonly departmentFilter = signal('');
-  readonly statusFilter = signal<StatusFilter>('all');
+  readonly statusFilter = signal<StatusFilter>('blocked');
   readonly searchFilter = signal('');
   readonly sortColumn = signal<SortColumn | null>(null);
   readonly sortDirection = signal<SortDirection>(null);
@@ -90,8 +90,8 @@ export class StaffAccessComponent implements OnInit {
   readonly page = signal(1);
   readonly pageSize = signal(10);
   readonly pageSizeOptions = [10, 25, 50];
-  readonly skeletonRows = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
   readonly skeletonColumns: readonly SkeletonColumn[] = [
+    { width: '5rem' },
     { width: '22rem' },
     { width: '13rem' },
     { width: '17rem' },
@@ -105,6 +105,13 @@ export class StaffAccessComponent implements OnInit {
 
   /** Reason prompt shown before blocking a staff member. */
   readonly blockTarget = signal<StaffAccessRecord | null>(null);
+  readonly blockStaffDialogOpen = signal(false);
+  readonly blockStaffSaving = signal(false);
+  readonly staffOptions = signal<StaffOption[]>([]);
+  readonly staffOptionsLoading = signal(false);
+  readonly staffDropdownOpen = signal(false);
+  readonly staffSearchTerm = signal('');
+  readonly selectedBlockUsernames = signal<string[]>([]);
   readonly blockReason = signal('');
 
   /** Read-only view of a blocked entry's reason, kept out of the table itself. */
@@ -128,7 +135,7 @@ export class StaffAccessComponent implements OnInit {
     });
   }
 
-  private loadBlockedCount(): void {
+  protected loadBlockedCount(): void {
     this.staffAccessService.list({ page: 1, perPage: 1, status: 'blocked' }).subscribe({
       next: (res) => {
         if (res.success) this.blockedCount.set(res.data.pagination.total_items);
@@ -161,6 +168,11 @@ export class StaffAccessComponent implements OnInit {
           this.toast.error('Failed to load staff access records.');
         },
       });
+  }
+
+  refreshStaffAccess(): void {
+    this.loadStaff();
+    this.loadBlockedCount();
   }
 
   private toRow(item: StaffAccessRecordApi): StaffAccessRecord {
@@ -224,7 +236,7 @@ export class StaffAccessComponent implements OnInit {
   resetFilters(): void {
     this.searchFilter.set('');
     this.departmentFilter.set('');
-    this.statusFilter.set('all');
+    this.statusFilter.set('blocked');
     this.page.set(1);
     this.loadStaff();
   }
@@ -256,6 +268,10 @@ export class StaffAccessComponent implements OnInit {
     this.loadStaff();
   }
 
+  rowNumber(index: number): number {
+    return (this.page() - 1) * this.pageSize() + index + 1;
+  }
+
   /** Blocking always asks for a reason first; unblocking is a direct action. */
   toggleAccess(staff: StaffAccessRecord): void {
     if (staff.status === 'blocked') {
@@ -273,6 +289,48 @@ export class StaffAccessComponent implements OnInit {
   closeBlockDialog(): void {
     this.blockTarget.set(null);
     this.blockReason.set('');
+  }
+
+  openBlockStaffDialog(): void {
+    this.blockStaffDialogOpen.set(true);
+    this.selectedBlockUsernames.set([]);
+    this.staffSearchTerm.set('');
+    this.staffDropdownOpen.set(false);
+    this.blockReason.set('');
+    this.loadStaffOptions();
+  }
+
+  closeBlockStaffDialog(force = false): void {
+    if (this.blockStaffSaving() && !force) return;
+    this.blockStaffDialogOpen.set(false);
+    this.selectedBlockUsernames.set([]);
+    this.staffSearchTerm.set('');
+    this.staffDropdownOpen.set(false);
+    this.blockReason.set('');
+  }
+
+  confirmBulkBlock(): void {
+    const usernames = this.selectedBlockUsernames();
+    if (!usernames.length || this.blockStaffSaving()) return;
+
+    this.blockStaffSaving.set(true);
+    this.staffAccessService
+      .bulkBlock(usernames, this.blockReason().trim() || undefined)
+      .pipe(finalize(() => this.blockStaffSaving.set(false)))
+      .subscribe({
+        next: (res) => {
+          if (!res.success) {
+            this.toast.error(res.message ?? 'Could not block selected staff.');
+            return;
+          }
+          const count = res.data.blocked_count || usernames.length;
+          this.toast.success(`${count} staff ${count === 1 ? 'member has' : 'members have'} been blocked.`);
+          this.closeBlockStaffDialog(true);
+          this.loadStaff();
+          this.loadBlockedCount();
+        },
+        error: (err) => this.showError(err, 'Could not block selected staff.'),
+      });
   }
 
   confirmBlock(): void {
@@ -327,6 +385,83 @@ export class StaffAccessComponent implements OnInit {
 
   closeReasonView(): void {
     this.reasonViewTarget.set(null);
+  }
+
+  staffDropdownOptions(): DropdownOption<string>[] {
+    const selected = this.selectedBlockUsernames();
+    const options = this.staffOptions().map((staff) => this.toStaffDropdownOption(staff));
+    const missingSelected = selected
+      .filter((username) => !options.some((option) => option.value === username))
+      .map((username) => ({
+        value: username,
+        label: username,
+        description: 'Selected staff',
+        searchText: username,
+      }));
+
+    return [...missingSelected, ...options];
+  }
+
+  loadStaffOptions(search = ''): void {
+    this.staffSearchTerm.set(search);
+    this.staffOptionsLoading.set(true);
+    this.staffAccessService
+      .listStaff(search)
+      .pipe(finalize(() => this.staffOptionsLoading.set(false)))
+      .subscribe({
+        next: (res) => {
+          this.staffOptions.set(res.success ? res.data ?? [] : []);
+        },
+        error: () => {
+          this.staffOptions.set([]);
+        },
+      });
+  }
+
+  toggleStaffDropdown(): void {
+    this.staffDropdownOpen.update((isOpen) => !isOpen);
+  }
+
+  toggleBlockStaffUsername(username: string): void {
+    const selected = this.selectedBlockUsernames();
+    this.selectedBlockUsernames.set(
+      selected.includes(username)
+        ? selected.filter((item) => item !== username)
+        : [...selected, username],
+    );
+  }
+
+  removeBlockStaffUsername(username: string): void {
+    this.selectedBlockUsernames.set(this.selectedBlockUsernames().filter((item) => item !== username));
+  }
+
+  isBlockStaffSelected(username: string): boolean {
+    return this.selectedBlockUsernames().includes(username);
+  }
+
+  selectedBlockStaffLabels(): string[] {
+    const labelByUsername = new Map(this.staffDropdownOptions().map((option) => [option.value, option.label]));
+    return this.selectedBlockUsernames().map((username) => labelByUsername.get(username) ?? username);
+  }
+
+  private toStaffDropdownOption(staff: StaffOption): DropdownOption<string> {
+    return {
+      value: staff.username,
+      label: staff.fullname || staff.username,
+      description: [staff.username, staff.email || staff.staff_email, staff.department]
+        .filter(Boolean)
+        .join(' | '),
+      searchText: [
+        staff.username,
+        staff.fullname,
+        staff.email,
+        staff.staff_email,
+        staff.department,
+        staff.job_title,
+      ]
+        .filter(Boolean)
+        .join(' '),
+    };
   }
 
   private showError(err: unknown, fallback: string): void {

@@ -105,6 +105,7 @@ export class StaffAccessComponent implements OnInit {
 
   /** Reason prompt shown before blocking a staff member. */
   readonly blockTarget = signal<StaffAccessRecord | null>(null);
+  readonly unblockTarget = signal<StaffAccessRecord | null>(null);
   readonly blockStaffDialogOpen = signal(false);
   readonly blockStaffSaving = signal(false);
   readonly staffOptions = signal<StaffOption[]>([]);
@@ -272,10 +273,10 @@ export class StaffAccessComponent implements OnInit {
     return (this.page() - 1) * this.pageSize() + index + 1;
   }
 
-  /** Blocking always asks for a reason first; unblocking is a direct action. */
+  /** Blocking asks for a reason first; unblocking asks for confirmation. */
   toggleAccess(staff: StaffAccessRecord): void {
     if (staff.status === 'blocked') {
-      this.unblockStaff(staff);
+      this.openUnblockDialog(staff);
     } else {
       this.openBlockDialog(staff);
     }
@@ -289,6 +290,15 @@ export class StaffAccessComponent implements OnInit {
   closeBlockDialog(): void {
     this.blockTarget.set(null);
     this.blockReason.set('');
+  }
+
+  openUnblockDialog(staff: StaffAccessRecord): void {
+    this.unblockTarget.set(staff);
+  }
+
+  closeUnblockDialog(): void {
+    if (this.loadingId() !== null) return;
+    this.unblockTarget.set(null);
   }
 
   openBlockStaffDialog(): void {
@@ -369,6 +379,7 @@ export class StaffAccessComponent implements OnInit {
           return;
         }
         this.toast.success(`${staff.name}'s access has been restored.`);
+        this.closeUnblockDialog();
         this.loadStaff();
         this.loadBlockedCount();
       },
@@ -377,6 +388,12 @@ export class StaffAccessComponent implements OnInit {
         this.showError(err, 'Could not restore staff access.');
       },
     });
+  }
+
+  confirmUnblock(): void {
+    const staff = this.unblockTarget();
+    if (!staff) return;
+    this.unblockStaff(staff);
   }
 
   openReasonView(staff: StaffAccessRecord): void {

@@ -370,4 +370,41 @@
       <button class="btn btn-primary" type="button" (click)="closeReasonView()">Close</button>
     </div>
   </app-dialog>
+
+  <app-dialog
+    [isOpen]="unblockTarget() !== null"
+    title="Unblock Staff Access"
+    size="small"
+    (close)="closeUnblockDialog()"
+  >
+    @if (unblockTarget(); as staff) {
+      <div class="block-reason-form">
+        <p>
+          Restore RDIG access for <strong>{{ staff.name }}</strong>?
+        </p>
+        <p class="staff-access-muted-badge">
+          This staff member will be removed from the RDIG blocked list.
+        </p>
+      </div>
+    }
+
+    <div dialog-footer class="form-dialog__footer">
+      <button
+        class="btn btn-secondary"
+        type="button"
+        [disabled]="loadingId() !== null"
+        (click)="closeUnblockDialog()"
+      >
+        Cancel
+      </button>
+      <button
+        class="btn btn-primary"
+        type="button"
+        [disabled]="loadingId() !== null"
+        (click)="confirmUnblock()"
+      >
+        {{ loadingId() !== null ? 'Restoring...' : 'Unblock Staff' }}
+      </button>
+    </div>
+  </app-dialog>
 </main>

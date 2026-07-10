@@ -129,7 +129,10 @@ describe('StaffAccessComponent', () => {
     const blocked = component.staffRecords().find((r) => r.status === 'blocked')!;
 
     component.toggleAccess(blocked);
+    expect(component.unblockTarget()).toEqual(blocked);
+    http.expectNone(`${staffAccessUrl}/2/unblock`);
 
+    component.confirmUnblock();
     const unblockReq = http.expectOne(`${staffAccessUrl}/2/unblock`);
     expect(unblockReq.request.method).toBe('POST');
     unblockReq.flush({

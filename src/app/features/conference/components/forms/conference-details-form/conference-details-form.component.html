@@ -475,8 +475,8 @@
                 <ng-template #rowTemplate let-row let-i="index">
                   <tr>
                     <td>{{ row.value.date || '-' }}</td>
-                    <td>{{ row.value.time || '-' }}</td>
-                    <td>{{ row.value.description || '-' }}</td>
+                    <td>{{ formatActivityTime(row.value.time) }}</td>
+                    <td class="activity-description-cell">{{ row.value.description || '-' }}</td>
                     <td class="action-cell">
                       <div class="data-table__actions activity-row-actions">
                         <button
@@ -1394,6 +1394,8 @@
     }
   </div>
 </form>
+
+
 
 
 

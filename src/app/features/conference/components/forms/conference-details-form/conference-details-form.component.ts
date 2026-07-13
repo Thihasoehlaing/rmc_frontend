@@ -85,7 +85,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
   readonly activityTableColumns: DataTableColumn[] = [
     { key: 'date', label: 'Date', width: '180px' },
     { key: 'time', label: 'Time', width: '150px' },
-    { key: 'description', label: 'Description' },
+    { key: 'description', label: 'Description', width: '420px' },
     { key: 'actions', label: 'Actions', width: '96px', align: 'center', headerAlign: 'center' },
   ];
   selectedFileName: string | null = null;
@@ -221,7 +221,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     { key: 'index', label: '#', width: '50px', align: 'center' },
     { key: 'itemDescription', label: 'Vote Number Description' },
     { key: 'voteNumber', label: 'Vote Number' },
-    { key: 'description', label: 'Description' },
+    { key: 'description', label: 'Description', width: '420px' },
     { key: 'cost', label: 'Cost (Foreign/MYR)' },
     { key: 'exchangeRate', label: 'Exchange Rate' },
     { key: 'costInRM', label: 'Cost in RM' },
@@ -233,7 +233,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     { key: 'itemDescription', label: 'Vote Number Description' },
     { key: 'accountCode', label: 'Account Code' },
     { key: 'voteNumber', label: 'Vote Number' },
-    { key: 'description', label: 'Description' },
+    { key: 'description', label: 'Description', width: '420px' },
     { key: 'cost', label: 'Cost (Foreign/MYR)' },
     { key: 'exchangeRate', label: 'Exchange Rate' },
     { key: 'costInRM', label: 'Cost in RM' },
@@ -244,7 +244,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     { key: 'index', label: '#', width: '50px', align: 'center' },
     { key: 'itemDescription', label: 'Account Code Description' },
     { key: 'voteNumber', label: 'Account Code' },
-    { key: 'description', label: 'Description' },
+    { key: 'description', label: 'Description', width: '420px' },
     { key: 'supportingDocument', label: 'Document' },
     { key: 'cost', label: 'Cost (Foreign/MYR)' },
     { key: 'exchangeRate', label: 'Exchange Rate' },
@@ -915,6 +915,15 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     this.activities.removeAt(index);
   }
 
+  formatActivityTime(value: string | null | undefined): string {
+    if (!value) return '-';
+    const [hourText, minuteText = '00'] = value.split(':');
+    const hour = Number(hourText);
+    if (Number.isNaN(hour)) return value;
+    const period = hour >= 12 ? 'PM' : 'AM';
+    const displayHour = hour % 12 || 12;
+    return `${displayHour}:${minuteText.padStart(2, '0')} ${period}`;
+  }
   getActivityGroup(index: number): FormGroup {
     return this.activities.at(index) as FormGroup;
   }
@@ -1518,6 +1527,8 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     }
   }
 }
+
+
 
 
 

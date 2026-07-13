@@ -163,12 +163,48 @@ export interface ListQuery {
 }
 
 export interface DashboardSummaryDto {
+  audience: 'academic' | 'rmc_admin';
   metrics: {
     required_action: number;
     pending: number;
-    history: number;
+    completed_rejected: number;
+    all_applications: number;
+    approved_by_me: number;
+    rejected_by_me: number;
+    decided_by_me: number;
+    total_submitted: number;
+    new_today: number;
   };
+  form_breakdown: DashboardFormBreakdownDto[];
+  status_distribution: DashboardStatusDistributionDto;
+  monthly_submissions: DashboardTrendPointDto[];
   recent: RequestSummaryDto[];
+}
+
+export interface DashboardFormBreakdownDto {
+  form_code: string;
+  form_name: string;
+  required_action: number;
+  pending: number;
+  completed_rejected: number;
+  all_applications: number;
+  approved_by_me: number;
+  rejected_by_me: number;
+  total_submitted: number;
+  new_today: number;
+}
+
+export interface DashboardStatusDistributionDto {
+  approved: number;
+  rejected: number;
+  pending: number;
+  draft: number;
+}
+
+export interface DashboardTrendPointDto {
+  month: string;
+  label: string;
+  count: number;
 }
 
 export interface RequestContextDto {

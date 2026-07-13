@@ -1,4 +1,6 @@
 import { Component, OnInit, inject, effect, Output, EventEmitter } from '@angular/core';
+import { Subscription } from 'rxjs';
+import { finalize } from 'rxjs/operators';
 import { CustomHeaderComponent } from '../../../../shared/components/custom-header/custom-header.component';
 import { ValidationMessageComponent } from '../../../../shared/components/validation-message/validation-message.component';
 import { ActionButtonComponent } from '../../../../shared/components/action-button/action-button.component';
@@ -6,6 +8,10 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
 import { SearchableDropdownComponent } from '../../../../shared/components/searchable-dropdown/searchable-dropdown.component';
 import { DropdownOption } from '../../../../core/interfaces/components.interface';
+import {
+  AcademicStaffOption,
+  MasterDataService,
+} from '../../../../core/services/master-data.service';
 import { JournalWorkflowService } from '../../services/journal-workflow.service';
 import {
   DataTableComponent,
@@ -86,17 +92,11 @@ export class AuthorsDetails implements OnInit {
   studentCoAuthorsPageSize = 5;
   nonApuCoAuthorsPageSize = 5;
 
-  // Staff dropdown options
-  staffOptions: DropdownOption[] = [
-    { value: 'Vivian Banshee', label: 'Vivian Banshee' },
-    { value: 'John Smith', label: 'John Smith' },
-    { value: 'Sarah Johnson', label: 'Sarah Johnson' },
-    { value: 'Michael Brown', label: 'Michael Brown' },
-    { value: 'Emily Davis', label: 'Emily Davis' },
-    { value: 'Robert Wilson', label: 'Robert Wilson' },
-    { value: 'Jessica Taylor', label: 'Jessica Taylor' },
-    { value: 'James Anderson', label: 'James Anderson' },
-  ];
+  staffOptions: DropdownOption<string>[] = [];
+  staffOptionsLoading = false;
+  staffOptionsLoadFailed = false;
+  private academicStaffByName = new Map<string, AcademicStaffOption>();
+  private staffSelectionSubscription?: Subscription;
 
   // Country dropdown — searchable list used in the Non-APU co-author modal
   readonly countryOptions: DropdownOption<string>[] = [
@@ -181,6 +181,7 @@ export class AuthorsDetails implements OnInit {
   ].map((c) => ({ value: c, label: c }));
 
   workflow = inject(JournalWorkflowService);
+  private readonly masterData = inject(MasterDataService);
 
   constructor(private fb: FormBuilder) {
     effect(() => {
@@ -199,6 +200,7 @@ export class AuthorsDetails implements OnInit {
 
   ngOnInit() {
     this.initializeForm();
+    this.loadAcademicStaffOptions();
   }
 
   initializeForm() {
@@ -503,6 +505,7 @@ export class AuthorsDetails implements OnInit {
           schoolDepartment: [data.schoolDepartment],
           affiliation: [this.apuAffiliation],
         });
+        this.setupStaffSelection(data.staffName);
       } else if (type === 'student') {
         data = this.studentCoAuthors.at(index).value;
         this.editForm = this.fb.group({
@@ -534,6 +537,7 @@ export class AuthorsDetails implements OnInit {
           schoolDepartment: [''],
           affiliation: [this.apuAffiliation],
         });
+        this.setupStaffSelection();
       } else if (type === 'student') {
         this.editForm = this.fb.group({
           tpNumber: ['', [Validators.required, Validators.pattern('^(?!0+$)[0-9]{1,6}$')]],
@@ -555,6 +559,8 @@ export class AuthorsDetails implements OnInit {
   }
 
   closeModal() {
+    this.staffSelectionSubscription?.unsubscribe();
+    this.staffSelectionSubscription = undefined;
     this.isModalOpen = false;
     this.editingIndex = null;
     this.modalType = null;
@@ -600,6 +606,92 @@ export class AuthorsDetails implements OnInit {
 
     this.closeModal();
     this.emitFormValidity();
+  }
+
+  loadAcademicStaffOptions(search = '', selectedStaffName = this.editForm?.get('staffName')?.value): void {
+    this.staffOptionsLoading = true;
+    this.staffOptionsLoadFailed = false;
+
+    this.masterData
+      .searchAcademicStaff(search)
+      .pipe(finalize(() => (this.staffOptionsLoading = false)))
+      .subscribe({
+        next: (response) => {
+          const staff = response.success ? response.data ?? [] : [];
+          this.applyAcademicStaffOptions(staff, selectedStaffName);
+        },
+        error: () => {
+          this.staffOptions = this.createSelectedStaffFallbackOption(selectedStaffName);
+          this.academicStaffByName.clear();
+          this.staffOptionsLoadFailed = true;
+        },
+      });
+  }
+
+  private setupStaffSelection(selectedStaffName = ''): void {
+    this.staffSelectionSubscription?.unsubscribe();
+    const selectedFallback = this.createSelectedStaffFallbackOption(selectedStaffName);
+    if (
+      selectedFallback.length &&
+      !this.staffOptions.some((option) => option.value === selectedFallback[0].value)
+    ) {
+      this.staffOptions = [...selectedFallback, ...this.staffOptions];
+    }
+
+    const staffNameControl = this.editForm.get('staffName');
+    this.staffSelectionSubscription = staffNameControl?.valueChanges.subscribe((staffName) => {
+      const staff = this.academicStaffByName.get(String(staffName ?? ''));
+      if (!staff) {
+        return;
+      }
+
+      this.editForm.patchValue(
+        {
+          schoolDepartment: staff.department || '',
+          affiliation: this.apuAffiliation,
+        },
+        { emitEvent: false },
+      );
+    });
+  }
+
+  private applyAcademicStaffOptions(
+    staff: AcademicStaffOption[],
+    selectedStaffName?: string | null,
+  ): void {
+    this.academicStaffByName.clear();
+
+    const options = staff.map((item) => this.toAcademicStaffDropdownOption(item));
+    const selectedFallback = this.createSelectedStaffFallbackOption(selectedStaffName);
+    const selectedValue = selectedStaffName?.trim();
+
+    if (selectedValue && !options.some((option) => option.value === selectedValue)) {
+      options.unshift(...selectedFallback);
+    }
+
+    this.staffOptions = options;
+  }
+
+  private toAcademicStaffDropdownOption(staff: AcademicStaffOption): DropdownOption<string> {
+    const value = staff.fullname || staff.username || staff.email || `Staff ${staff.id}`;
+    this.academicStaffByName.set(value, staff);
+
+    return {
+      value,
+      label: value,
+      description: [staff.email, staff.department].filter(Boolean).join(' • '),
+      displayLabel: value,
+      searchText: [staff.username, staff.fullname, staff.email, staff.department]
+        .filter(Boolean)
+        .join(' '),
+    };
+  }
+
+  private createSelectedStaffFallbackOption(
+    staffName?: string | null,
+  ): DropdownOption<string>[] {
+    const value = staffName?.trim();
+    return value ? [{ value, label: value, displayLabel: value }] : [];
   }
 
   private emitFormValidity(): void {

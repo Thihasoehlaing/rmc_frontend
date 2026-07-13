@@ -20,7 +20,6 @@ import {
   TableSkeletonComponent,
 } from '../../shared/components/table-skeleton/table-skeleton.component';
 import { TableActionIconComponent } from '../../shared/components/table-action-icon/table-action-icon.component';
-import { nextTableSortState, SortDirection } from '../../shared/services/table-sort.service';
 
 interface NotificationRow {
   id: number;
@@ -35,9 +34,6 @@ interface NotificationRow {
   isExpired: boolean;
   source: AppNotification;
 }
-
-type NotificationSortKey = 'createdAt';
-type DateSortOption = 'default' | 'desc' | 'asc';
 
 @Component({
   selector: 'app-notifications-page',
@@ -62,9 +58,6 @@ export class NotificationsComponent implements OnInit {
   readonly selectedApplication = signal('');
   readonly selectedStatus = signal('');
   readonly selectedRead = signal('');
-  readonly sortBy = signal<NotificationSortKey | null>(null);
-  readonly sortDirection = signal<SortDirection>(null);
-  readonly dateSort = signal<DateSortOption>('default');
   readonly page = signal(1);
   readonly pageSize = signal(10);
   readonly pageSizeOptions = [10, 20, 30, 50];
@@ -76,34 +69,25 @@ export class NotificationsComponent implements OnInit {
 
   readonly applicationOptions = [
     { value: '', label: 'All Applications' },
-    { value: 'rdig', label: 'RDIG Application' },
-    { value: 'conference', label: 'Conference Application' },
-    { value: 'journal', label: 'Journal Publication' },
-    { value: 'ragra', label: 'RA/GRA Application' },
-    { value: 'partnership', label: 'Partnership Application' },
-    { value: 'travel-authorization', label: 'Travel Authorization' },
-    { value: 'proposal', label: 'Proposal Application' },
+    { value: 'RDIG', label: 'RDIG Application' },
+    { value: 'CONFERENCE', label: 'Conference Application' },
+    { value: 'JOURNAL', label: 'Journal Publication' },
+    { value: 'EXTERNAL', label: 'External Project Data Entry' },
   ];
 
   readonly statusOptions = [
     { value: '', label: 'All Status' },
-    { value: 'approved', label: 'Approved' },
-    { value: 'rejected', label: 'Rejected' },
-    { value: 'required_action', label: 'Required Action' },
-    { value: 'reminder', label: 'Reminder' },
-    { value: 'info', label: 'Info' },
+    { value: 'REQUEST_WAITING_REVIEW', label: 'Required Action' },
+    { value: 'REQUEST_APPROVED', label: 'Approved' },
+    { value: 'REQUEST_REJECTED', label: 'Rejected' },
+    { value: 'REQUEST_RESUBMISSION_REQUIRED', label: 'Resubmission Required' },
+    { value: 'REQUEST_FINAL_APPROVED', label: 'Final Approved' },
   ];
 
   readonly readOptions = [
     { value: '', label: 'All Read Status' },
     { value: 'false', label: 'Unread' },
     { value: 'true', label: 'Read' },
-  ];
-
-  readonly dateSortOptions: readonly { value: DateSortOption; label: string }[] = [
-    { value: 'default', label: 'Default' },
-    { value: 'desc', label: 'Newest to oldest' },
-    { value: 'asc', label: 'Oldest to newest' },
   ];
 
   readonly skeletonColumns: readonly SkeletonColumn[] = [
@@ -122,8 +106,8 @@ export class NotificationsComponent implements OnInit {
     { key: 'application', label: 'Application', width: '16%' },
     { key: 'status', label: 'Status', width: '130px', align: 'center', headerAlign: 'center' },
     { key: 'read', label: 'Read Status', width: '120px', align: 'center', headerAlign: 'center' },
-    { key: 'createdAt', label: 'Date', width: '150px', sortable: true },
-    { key: 'actions', label: 'Action', width: '132px', align: 'right', headerAlign: 'right' },
+    { key: 'createdAt', label: 'Date', width: '150px' },
+    { key: 'actions', label: 'Action', width: '72px', align: 'right', headerAlign: 'right' },
   ];
 
   readonly rowTrackFn: TrackByFunction<unknown> = (_index, row) =>
@@ -144,8 +128,6 @@ export class NotificationsComponent implements OnInit {
       applicationId: this.selectedApplication(),
       status: this.selectedStatus(),
       read: this.selectedRead(),
-      sortBy: 'createdAt',
-      sortDirection: this.resolvedSortDirection(),
     };
 
     this.notificationService
@@ -185,9 +167,6 @@ export class NotificationsComponent implements OnInit {
     this.selectedApplication.set('');
     this.selectedStatus.set('');
     this.selectedRead.set('');
-    this.dateSort.set('default');
-    this.sortBy.set(null);
-    this.sortDirection.set(null);
     this.page.set(1);
     this.loadNotifications();
   }
@@ -210,14 +189,6 @@ export class NotificationsComponent implements OnInit {
     this.loadNotifications();
   }
 
-  onDateSortChange(value: DateSortOption): void {
-    this.dateSort.set(value);
-    this.sortBy.set(value === 'default' ? null : 'createdAt');
-    this.sortDirection.set(value === 'default' ? null : value);
-    this.page.set(1);
-    this.loadNotifications();
-  }
-
   onPageChange(nextPage: number): void {
     if (nextPage === this.page()) return;
     this.page.set(nextPage);
@@ -226,19 +197,6 @@ export class NotificationsComponent implements OnInit {
 
   onPageSizeChange(nextPageSize: number): void {
     this.pageSize.set(nextPageSize);
-    this.page.set(1);
-    this.loadNotifications();
-  }
-
-  onSortChange(columnKey: string): void {
-    const next = nextTableSortState(
-      { column: this.sortBy(), direction: this.sortDirection() },
-      columnKey,
-    );
-
-    this.sortBy.set(next.column as NotificationSortKey | null);
-    this.sortDirection.set(next.direction);
-    this.dateSort.set(next.direction === 'asc' || next.direction === 'desc' ? next.direction : 'default');
     this.page.set(1);
     this.loadNotifications();
   }
@@ -260,10 +218,6 @@ export class NotificationsComponent implements OnInit {
     this.notifications.update(rows =>
       rows.map(item => item.id === row.id ? { ...item, read: true } : item),
     );
-  }
-
-  private resolvedSortDirection(): 'asc' | 'desc' {
-    return this.dateSort() === 'asc' ? 'asc' : 'desc';
   }
 
   private toRow(notification: AppNotification): NotificationRow {

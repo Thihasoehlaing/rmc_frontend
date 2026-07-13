@@ -65,8 +65,22 @@ export class JournalReviewComponent implements OnInit {
   readonly attachments = computed(() => this.data()?.attachments ?? []);
 
   ngOnInit(): void {
-    // Accept the id as a route param (/journal/review/:requestId — how the inbox
-    // links here) or a query param (?id=), whichever is present.
+    const requestCode = this.route.snapshot.paramMap.get('requestCode')?.trim();
+    if (requestCode) {
+      this.requests
+        .getRequestByCode(requestCode)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          next: response => this.openResolvedRequest(response.data),
+          error: () => {
+            this.error.set('Unable to find this journal application.');
+            this.loading.set(false);
+          },
+        });
+      return;
+    }
+
+    // Accept the legacy numeric route or query-param entry point as a fallback.
     const raw =
       this.route.snapshot.paramMap.get('requestId') ??
       this.route.snapshot.queryParamMap.get('id');
@@ -76,6 +90,18 @@ export class JournalReviewComponent implements OnInit {
       this.loading.set(false);
       return;
     }
+    this.requestId = id;
+    this.load();
+  }
+
+  private openResolvedRequest(request: { id?: number; request_id?: number }): void {
+    const id = request.request_id ?? request.id;
+    if (id == null || !Number.isFinite(id) || id <= 0) {
+      this.error.set('This journal application has no valid request id.');
+      this.loading.set(false);
+      return;
+    }
+
     this.requestId = id;
     this.load();
   }

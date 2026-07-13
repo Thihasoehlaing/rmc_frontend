@@ -59,7 +59,17 @@ export function requestIdOf(app: { id?: number | null; request_id?: number | nul
   return app.request_id ?? app.id ?? null;
 }
 
-export function detailRoute(app: { id?: number | null; request_id?: number | null }): string {
+export function detailRoute(app: {
+  id?: number | null;
+  request_id?: number | null;
+  form_code?: string | null;
+  request_code?: string | null;
+}): string {
+  const requestCode = app.request_code?.trim();
+  if ((app.form_code ?? '').toUpperCase() === 'JOURNAL' && requestCode) {
+    return `/journal/detail/${encodeURIComponent(requestCode)}`;
+  }
+
   const id = requestIdOf(app);
   return id == null ? '/submissions/history' : `/submissions/detail/${id}`;
 }
@@ -68,11 +78,15 @@ export function actionRoute(app: {
   id?: number | null;
   request_id?: number | null;
   form_code?: string | null;
+  request_code?: string | null;
 }): string {
   const id = requestIdOf(app);
   if (id == null) return '/submissions/inbox';
-  // Journal has a dedicated reviewer view (application data + review actions).
-  // Other forms use the generic action page until they get their own.
-  if ((app.form_code ?? '').toUpperCase() === 'JOURNAL') return `/journal/review/${id}`;
+  if ((app.form_code ?? '').toUpperCase() === 'JOURNAL') return detailRoute(app);
   return `/submissions/action/${id}`;
+}
+
+export function showInboxApplicantInfo(roleCode: string | null | undefined): boolean {
+  const code = roleCode?.trim().toUpperCase();
+  return code !== 'ACADEMIC' && code !== 'LECTURER';
 }

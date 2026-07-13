@@ -3,13 +3,17 @@ import { RouterLink } from '@angular/router';
 import { finalize, forkJoin } from 'rxjs';
 
 import { CachedFormOption, FormCacheService } from '../../../core/services/form-cache.service';
+import { AuthService } from '../../../core/services/auth.service';
 import {
   WorkflowRequestsService,
   RequestSummaryDto,
 } from '../../../core/services/workflow-requests.service';
-import { actionRoute, requestIdOf } from '../../../core/services/request-display.util';
+import {
+  actionRoute,
+  requestIdOf,
+  showInboxApplicantInfo,
+} from '../../../core/services/request-display.util';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
-import { SubmissionsSearchComponent } from '../../../shared/components/submissions-search/submissions-search.component';
 import { SubmissionFormTabsComponent } from '../../../shared/components/submission-form-tabs/submission-form-tabs.component';
 import {
   SkeletonColumn,
@@ -24,7 +28,6 @@ import { TableActionIconComponent } from '../../../shared/components/table-actio
     PaginationComponent,
     TableActionIconComponent,
     RouterLink,
-    SubmissionsSearchComponent,
     SubmissionFormTabsComponent,
     TableSkeletonComponent,
   ],
@@ -34,27 +37,36 @@ import { TableActionIconComponent } from '../../../shared/components/table-actio
 export class InboxComponent implements OnInit {
   private readonly requests = inject(WorkflowRequestsService);
   private readonly formCache = inject(FormCacheService);
+  private readonly auth = inject(AuthService);
 
   private allApplications = signal<RequestSummaryDto[]>([]);
   private forms = signal<CachedFormOption[]>([]);
   loading = signal(true);
   error = signal<string | null>(null);
-  searchQuery = signal('');
-  createdDate = signal('');
+  codeDraft = signal('');
+  applicantDraft = signal('');
+  submissionDateDraft = signal('');
+  codeQuery = signal('');
+  applicantQuery = signal('');
+  submissionDate = signal('');
   selectedForm = signal('all');
   sortDirection = signal<'asc' | 'desc'>('desc');
   page = signal(1);
   pageSize = signal(10);
   readonly pageSizeOptions = [10, 15, 30, 50];
 
-  readonly skeletonColumns: SkeletonColumn[] = [
+  readonly showApplicantInfo = computed(() =>
+    showInboxApplicantInfo(this.auth.currentUser()?.role?.code),
+  );
+
+  readonly skeletonColumns = computed<SkeletonColumn[]>(() => [
     { width: '72px' },
-    { width: '24%' },
+    { width: '18%' },
+    ...(this.showApplicantInfo() ? [{ width: '25%' }] : []),
     { width: '14%' },
     { width: '18%' },
-    { width: '18%' },
-    { width: '96px' },
-  ];
+    { width: '120px' },
+  ]);
 
   /** Badge colour per workflow status code. */
   readonly statusColors: Record<string, string> = {
@@ -77,16 +89,18 @@ export class InboxComponent implements OnInit {
     approved: '#22c55e',
   };
 
-  /** Client-side code/date search on top of the backend-filtered inbox. */
+  /** Client-side code/applicant/submission-date search on top of the backend-filtered inbox. */
   readonly applications = computed(() => {
-    const query = this.searchQuery().toLowerCase().trim();
-    const createdDate = this.createdDate();
+    const codeQuery = this.codeQuery().toLowerCase().trim();
+    const applicantQuery = this.applicantQuery().toLowerCase().trim();
+    const submissionDate = this.submissionDate();
     const form = this.selectedForm();
     const rows = this.allApplications();
     const items = rows
       .filter((app) => form === 'all' || (app.form_code ?? '').toUpperCase() === form)
-      .filter((app) => !query || this.getCode(app).toLowerCase().includes(query))
-      .filter((app) => !createdDate || this.dateInputValue(app.created_at) === createdDate);
+      .filter((app) => !codeQuery || this.getCode(app).toLowerCase().includes(codeQuery))
+      .filter((app) => !applicantQuery || this.applicantSearchText(app).includes(applicantQuery))
+      .filter((app) => !submissionDate || this.dateInputValue(this.submissionIso(app)) === submissionDate);
 
     return [...items].sort((first, second) => {
       const diff = this.submittedTs(first) - this.submittedTs(second);
@@ -120,14 +134,33 @@ export class InboxComponent implements OnInit {
     this.loadInbox();
   }
 
-  onSearch(query: string): void {
-    this.searchQuery.set(query);
+  onCodeDraftChange(event: Event): void {
+    this.codeDraft.set((event.target as HTMLInputElement).value);
+  }
+
+  onApplicantDraftChange(event: Event): void {
+    this.applicantDraft.set((event.target as HTMLInputElement).value);
+  }
+
+  onSubmissionDateDraftChange(event: Event): void {
+    this.submissionDateDraft.set((event.target as HTMLInputElement).value);
+  }
+
+  applyFilters(): void {
+    this.codeQuery.set(this.codeDraft().trim());
+    this.applicantQuery.set(this.applicantDraft().trim());
+    this.submissionDate.set(this.submissionDateDraft());
     this.page.set(1);
   }
 
-  onCreatedDateChange(event: Event): void {
-    this.createdDate.set((event.target as HTMLInputElement).value);
-    this.page.set(1);
+  resetFilters(): void {
+    this.codeDraft.set('');
+    this.applicantDraft.set('');
+    this.submissionDateDraft.set('');
+    this.codeQuery.set('');
+    this.applicantQuery.set('');
+    this.submissionDate.set('');
+    this.setTab('all');
   }
 
   setTab(tab: string): void {
@@ -136,9 +169,7 @@ export class InboxComponent implements OnInit {
   }
 
   refreshInbox(): void {
-    this.searchQuery.set('');
-    this.createdDate.set('');
-    this.setTab('all');
+    this.resetFilters();
     this.loadInbox();
   }
 
@@ -188,16 +219,26 @@ export class InboxComponent implements OnInit {
   }
 
   getSubmissionDate(app: RequestSummaryDto): string {
-    const iso = app.submitted_at ?? app.updated_at ?? app.created_at;
-    return this.formatIsoDate(iso);
-  }
-
-  getCreatedDate(app: RequestSummaryDto): string {
-    return this.formatIsoDate(app.created_at);
+    return this.formatIsoDate(this.submissionIso(app));
   }
 
   getFormRoute(app: RequestSummaryDto): string {
     return actionRoute(app);
+  }
+
+  hasActiveFilters(): boolean {
+    return Boolean(this.codeQuery() || this.applicantQuery() || this.submissionDate());
+  }
+
+  canPrint(app: RequestSummaryDto): boolean {
+    return app.status_code.toLowerCase() !== 'draft';
+  }
+
+  openPrint(app: RequestSummaryDto): void {
+    const id = requestIdOf(app);
+    if (id != null) {
+      this.downloadPrint(id, this.getCode(app));
+    }
   }
 
   getRowNumber(index: number): number {
@@ -205,8 +246,23 @@ export class InboxComponent implements OnInit {
   }
 
   private submittedTs(app: RequestSummaryDto): number {
-    const iso = app.submitted_at ?? app.updated_at ?? app.created_at;
+    const iso = this.submissionIso(app);
     return iso ? new Date(iso).getTime() : 0;
+  }
+
+  private submissionIso(app: RequestSummaryDto): string | null | undefined {
+    return app.submitted_at ?? app.updated_at ?? app.created_at;
+  }
+
+  private applicantSearchText(app: RequestSummaryDto): string {
+    return [
+      app.applicant_name,
+      app.applicant_staff_username,
+      app.applicant_email,
+    ]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase();
   }
 
   private formatIsoDate(iso: string | null | undefined): string {
@@ -234,5 +290,27 @@ export class InboxComponent implements OnInit {
     if (!this.formTabs().some((item) => item.value === tab)) {
       this.setTab('all');
     }
+  }
+
+  private downloadPrint(requestId: number, fallbackCode: string): void {
+    this.requests.downloadPrint(requestId).subscribe({
+      next: (response) => {
+        const blob = response.body;
+        if (!blob) return;
+        const fileName = this.printFileName(response.headers.get('content-disposition'), fallbackCode);
+        const url = URL.createObjectURL(blob);
+        const anchor = document.createElement('a');
+        anchor.href = url;
+        anchor.download = fileName;
+        anchor.click();
+        URL.revokeObjectURL(url);
+      },
+      error: () => this.error.set('Could not download the print PDF. Please try again.'),
+    });
+  }
+
+  private printFileName(contentDisposition: string | null, fallbackCode: string): string {
+    const match = contentDisposition?.match(/filename\*?=(?:UTF-8''|")?([^";]+)/i);
+    return match?.[1] ? decodeURIComponent(match[1].replace(/"/g, '')) : `${fallbackCode}.pdf`;
   }
 }

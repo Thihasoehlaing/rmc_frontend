@@ -325,7 +325,7 @@
                               </td>
                               <td>{{ row.accountCode || '—' }}</td>
                               <td>{{ row.cost | number: '1.2-2' }}</td>
-                              <td>{{ row.exchangeRate | number: '1.2-2' }}</td>
+                              <td>{{ row.exchangeRate || '—' }}</td>
                               <td>{{ row.costInRM | number: '1.2-2' }}</td>
                               <td>{{ row.description || '—' }}</td>
                               <td class="col-actions is-align-center">
@@ -367,7 +367,7 @@
                               <td>{{ row.voteNumber }}</td>
                               <td>{{ row.costInRM | number: '1.2-2' }}</td>
                               <td>{{ row.cost | number: '1.2-2' }}</td>
-                              <td>{{ row.exchangeRate | number: '1.2-2' }}</td>
+                              <td>{{ row.exchangeRate || '—' }}</td>
                               <td>{{ row.description || '—' }}</td>
                               <td class="col-actions is-align-center">
                                 <button
@@ -422,7 +422,7 @@
                               <td>{{ row.itemDescription }}</td>
                               <td>{{ row.voteNumber }}</td>
                               <td>{{ row.cost | number: '1.2-2' }}</td>
-                              <td>{{ row.exchangeRate | number: '1.2-2' }}</td>
+                              <td>{{ row.exchangeRate || '—' }}</td>
                               <td>{{ row.costInRM | number: '1.2-2' }}</td>
                               <td>{{ row.description || '—' }}</td>
                               <td>
@@ -508,6 +508,11 @@
                             step="any"
                             (input)="clampPositiveMain('sponsoredAmountExternal', $event)"
                           />
+                          @if (form.get('sponsoredAmountExternal')?.errors?.['maxExceeded']) {
+                            <span class="form-error-msg">
+                              External sponsorship amount cannot exceed total cost.
+                            </span>
+                          }
                         </div>
                         <div class="form-field">
                           <label class="form-label">Sponsored By</label>
@@ -602,6 +607,11 @@
                             step="any"
                             (input)="clampPositiveMain('sponsoredAmountExternal', $event)"
                           />
+                          @if (form.get('sponsoredAmountExternal')?.errors?.['maxExceeded']) {
+                            <span class="form-error-msg">
+                              External sponsorship amount cannot exceed total cost.
+                            </span>
+                          }
                         </div>
                         <div class="form-field">
                           <label class="form-label">Sponsored By</label>
@@ -896,7 +906,7 @@
       <button type="button" class="btn btn-secondary" (click)="closeBreakdownModal()">
         Cancel
       </button>
-      <button type="submit" class="btn btn-primary" [disabled]="breakdownForm.invalid">Save</button>
+      <button type="submit" class="btn btn-primary">Save</button>
     </div>
   </form>
 </app-dialog>

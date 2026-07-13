@@ -23,9 +23,11 @@ import { ActivatedRoute, Router } from '@angular/router';
 import {
   JournalApplicationApiService,
   JournalFormData,
+  JournalCostingPayload,
   JournalRequestPayload,
 } from './services/journal-application-api.service';
 import { JournalOptionsService } from './services/journal-options.service';
+import { ToastService } from '../../core/services/toast.service';
 
 @Component({
   selector: 'app-journal-publication-form',
@@ -52,11 +54,12 @@ export class JournalPublicationFormComponent {
   private router = inject(Router);
   private journalApi = inject(JournalApplicationApiService);
   private journalOptions = inject(JournalOptionsService);
+  private toastService = inject(ToastService);
   requestId: number | null = this.readRequestId();
   isOptionsLoading = false;
   loadError: string | null = null;
   actionError: string | null = null;
-  readonly guidelineContext: GuidelineContext = this.route.snapshot.queryParamMap.has('id')
+  readonly guidelineContext: GuidelineContext = this.hasRequestIdParam()
     ? 'existing-application'
     : 'new-application';
   reviewComments = {
@@ -205,7 +208,7 @@ export class JournalPublicationFormComponent {
       const status = String(response.data?.request?.status_code ?? '').toLowerCase();
       const isEditableDraft = ['draft', 'fill_application', 'normal_application'].includes(status);
       if (!isEditableDraft) {
-        void this.router.navigate(['/journal/review', requestId]);
+        void this.router.navigateByUrl(this.journalDetailPath(response.data, requestId));
         return;
       }
       this.hydrateFromApi(response.data);
@@ -245,6 +248,7 @@ export class JournalPublicationFormComponent {
     try {
       await this.saveDraftToBackend();
       this.saveSuccess = true;
+      this.toastService.success('Journal draft saved.');
       setTimeout(() => {
         this.saveSuccess = false;
       }, 3000);
@@ -279,6 +283,7 @@ export class JournalPublicationFormComponent {
       const requestId = await this.saveDraftToBackend();
       await firstValueFrom(this.journalApi.submit(requestId));
       this.submitSuccess = true;
+      await this.router.navigateByUrl('/submissions/pending?tab=all');
     } catch (error) {
       this.actionError = this.extractErrorMessage(error, 'Unable to submit journal application.');
     } finally {
@@ -295,11 +300,18 @@ export class JournalPublicationFormComponent {
   }
 
   private async saveDraftToBackend(): Promise<number> {
+    const sponsorshipError = this.journalDetailsComponent?.getExternalSponsorshipLimitError();
+    if (sponsorshipError) {
+      throw new Error(sponsorshipError);
+    }
+
     const payload = this.buildJournalPayload();
     const requestId = await this.ensureDraftRequest(payload);
 
     await firstValueFrom(this.journalApi.updateDraft(requestId, payload));
     await this.replaceCostingItems(requestId);
+    await firstValueFrom(this.journalApi.updateDraft(requestId, payload));
+    await this.uploadPendingAttachments(requestId);
     await this.replaceAuthors(requestId);
 
     const refreshed = await firstValueFrom(this.journalApi.getForm(requestId));
@@ -317,7 +329,7 @@ export class JournalPublicationFormComponent {
     this.requestId = requestId;
     await this.router.navigate([], {
       relativeTo: this.route,
-      queryParams: { id: requestId },
+      queryParams: { request_id: requestId, id: null },
       queryParamsHandling: 'merge',
       replaceUrl: true,
     });
@@ -338,8 +350,48 @@ export class JournalPublicationFormComponent {
       await firstValueFrom(this.journalApi.deleteCostingItem(requestId, item.id));
     }
 
-    for (const payload of this.journalDetailsComponent?.getCostingPayloads() ?? []) {
+    for (const item of this.journalDetailsComponent?.getCostingSaveItems() ?? []) {
+      const payload = await this.attachCostingSupportingDocument(requestId, item.payload, item.file);
       await firstValueFrom(this.journalApi.createCostingItem(requestId, payload));
+    }
+  }
+
+  private async attachCostingSupportingDocument(
+    requestId: number,
+    payload: JournalCostingPayload,
+    file?: File | null,
+  ): Promise<JournalCostingPayload> {
+    if (!file) {
+      return payload;
+    }
+
+    const entityType =
+      this.journalDetailsComponent?.researchType === 'non-research'
+        ? 'non_research_project_supporting_document'
+        : 'external_research_project_supporting_document';
+    const response = await firstValueFrom(
+      this.journalApi.uploadAttachment(requestId, {
+        file,
+        entity_type: entityType,
+      }),
+    );
+    const attachmentId = Number(response.data?.id);
+    return {
+      ...payload,
+      supporting_document_attachment_id:
+        Number.isFinite(attachmentId) && attachmentId > 0
+          ? attachmentId
+          : payload.supporting_document_attachment_id,
+    };
+  }
+
+  private async uploadPendingAttachments(requestId: number): Promise<void> {
+    const uploads = this.documentsComponent?.getPendingAttachmentUploads() ?? [];
+    for (const upload of uploads) {
+      await firstValueFrom(this.journalApi.uploadAttachment(requestId, upload));
+    }
+    if (uploads.length) {
+      this.documentsComponent?.markPendingAttachmentUploadsSaved();
     }
   }
 
@@ -379,10 +431,22 @@ export class JournalPublicationFormComponent {
     }
   }
 
+  private journalDetailPath(data: JournalFormData, requestId: number): string {
+    const request = data.request ?? {};
+    const code = request.request_code ?? request.request_no ?? request.code;
+    return code ? `/journal/detail/${encodeURIComponent(String(code))}` : `/submissions/detail/${requestId}`;
+  }
+
   private readRequestId(): number | null {
-    const rawId = this.route.snapshot.queryParamMap.get('id');
+    const params = this.route.snapshot.queryParamMap;
+    const rawId = params.get('request_id') ?? params.get('id');
     const requestId = Number(rawId);
     return Number.isFinite(requestId) && requestId > 0 ? requestId : null;
+  }
+
+  private hasRequestIdParam(): boolean {
+    const params = this.route.snapshot.queryParamMap;
+    return params.has('request_id') || params.has('id');
   }
 
   private extractErrorMessage(error: unknown, fallback: string): string {

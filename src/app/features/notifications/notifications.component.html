@@ -68,18 +68,6 @@
             </select>
           </label>
 
-          <label class="notifications-filter">
-            <span>Date Sort</span>
-            <select
-              class="input--select"
-              [ngModel]="dateSort()"
-              (ngModelChange)="onDateSortChange($event)"
-            >
-              @for (option of dateSortOptions; track option.value) {
-                <option [value]="option.value">{{ option.label }}</option>
-              }
-            </select>
-          </label>
         </div>
       </app-submissions-search>
     }
@@ -108,9 +96,6 @@
           [columns]="columns"
           [rows]="notifications()"
           [rowTrackFn]="rowTrackFn"
-          [sortColumn]="sortBy()"
-          [sortDirection]="sortDirection()"
-          (sortChange)="onSortChange($event)"
         >
           <ng-template #rowTemplate let-row>
             <tr>
@@ -132,20 +117,11 @@
                 <button
                   class="icon-btn icon-btn--view"
                   type="button"
-                  title="View notification"
+                  title="Open application detail"
                   [disabled]="row.isExpired || !row.route"
                   (click)="openNotification(row)"
                 >
                   <app-table-action-icon action="view"></app-table-action-icon>
-                </button>
-                <button
-                  class="icon-btn icon-btn--read"
-                  type="button"
-                  title="Mark as read"
-                  [disabled]="row.read"
-                  (click)="markRowAsRead(row)"
-                >
-                  <app-table-action-icon action="markRead"></app-table-action-icon>
                 </button>
               </td>
             </tr>

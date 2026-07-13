@@ -1,8 +1,9 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpContext, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { environment } from '../../../../environments/environment';
+import { SKIP_API_SUCCESS_TOAST } from '../../../core/interceptors/api-message.interceptor';
 
 export interface ApiResponse<T> {
   success: boolean;
@@ -45,6 +46,12 @@ export interface JournalCostingPayload {
   exchange_rate?: string | null;
   cost_in_rm?: string | null;
   description?: string | null;
+}
+
+export interface JournalAttachmentUpload {
+  file: File;
+  entity_type?: string | null;
+  entity_id?: number | null;
 }
 
 export interface JournalStaffAuthorPayload {
@@ -104,7 +111,11 @@ export class JournalApplicationApiService {
   private readonly masterDataUrl = `${this.apiUrl}/rmc/master-data`;
 
   createDraft(payload: JournalRequestPayload): Observable<ApiResponse<JournalFormData>> {
-    return this.http.post<ApiResponse<JournalFormData>>(`${this.journalUrl}/drafts`, payload);
+    return this.http.post<ApiResponse<JournalFormData>>(
+      `${this.journalUrl}/drafts`,
+      payload,
+      this.skipSuccessToastOptions(),
+    );
   }
 
   getForm(requestId: number): Observable<ApiResponse<JournalFormData>> {
@@ -115,7 +126,11 @@ export class JournalApplicationApiService {
     requestId: number,
     payload: JournalRequestPayload,
   ): Observable<ApiResponse<any>> {
-    return this.http.put<ApiResponse<any>>(`${this.journalUrl}/${requestId}/draft`, payload);
+    return this.http.put<ApiResponse<any>>(
+      `${this.journalUrl}/${requestId}/draft`,
+      payload,
+      this.skipSuccessToastOptions(),
+    );
   }
 
   submit(requestId: number): Observable<ApiResponse<any>> {
@@ -129,12 +144,34 @@ export class JournalApplicationApiService {
     return this.http.post<ApiResponse<any>>(
       `${this.journalUrl}/${requestId}/costing-items`,
       payload,
+      this.skipSuccessToastOptions(),
     );
   }
 
   deleteCostingItem(requestId: number, itemId: number): Observable<ApiResponse<any>> {
     return this.http.delete<ApiResponse<any>>(
       `${this.journalUrl}/${requestId}/costing-items/${itemId}`,
+      this.skipSuccessToastOptions(),
+    );
+  }
+
+  uploadAttachment(
+    requestId: number,
+    upload: JournalAttachmentUpload,
+  ): Observable<ApiResponse<any>> {
+    const formData = new FormData();
+    formData.append('file', upload.file);
+    if (upload.entity_type) {
+      formData.append('entity_type', upload.entity_type);
+    }
+    if (upload.entity_id !== null && upload.entity_id !== undefined) {
+      formData.append('entity_id', String(upload.entity_id));
+    }
+
+    return this.http.post<ApiResponse<any>>(
+      `${this.journalUrl}/${requestId}/attachments`,
+      formData,
+      this.skipSuccessToastOptions(),
     );
   }
 
@@ -145,12 +182,14 @@ export class JournalApplicationApiService {
     return this.http.post<ApiResponse<any>>(
       `${this.journalUrl}/${requestId}/apu-staff-co-authors`,
       payload,
+      this.skipSuccessToastOptions(),
     );
   }
 
   deleteStaffAuthor(requestId: number, itemId: number): Observable<ApiResponse<any>> {
     return this.http.delete<ApiResponse<any>>(
       `${this.journalUrl}/${requestId}/apu-staff-co-authors/${itemId}`,
+      this.skipSuccessToastOptions(),
     );
   }
 
@@ -161,12 +200,14 @@ export class JournalApplicationApiService {
     return this.http.post<ApiResponse<any>>(
       `${this.journalUrl}/${requestId}/apu-student-co-authors`,
       payload,
+      this.skipSuccessToastOptions(),
     );
   }
 
   deleteStudentAuthor(requestId: number, itemId: number): Observable<ApiResponse<any>> {
     return this.http.delete<ApiResponse<any>>(
       `${this.journalUrl}/${requestId}/apu-student-co-authors/${itemId}`,
+      this.skipSuccessToastOptions(),
     );
   }
 
@@ -177,12 +218,14 @@ export class JournalApplicationApiService {
     return this.http.post<ApiResponse<any>>(
       `${this.journalUrl}/${requestId}/non-apu-co-authors`,
       payload,
+      this.skipSuccessToastOptions(),
     );
   }
 
   deleteNonApuAuthor(requestId: number, itemId: number): Observable<ApiResponse<any>> {
     return this.http.delete<ApiResponse<any>>(
       `${this.journalUrl}/${requestId}/non-apu-co-authors/${itemId}`,
+      this.skipSuccessToastOptions(),
     );
   }
 
@@ -205,5 +248,11 @@ export class JournalApplicationApiService {
       `${this.masterDataUrl}/account-codes`,
       { params: new HttpParams().set('form_code', 'JOURNAL') },
     );
+  }
+
+  private skipSuccessToastOptions(): { context: HttpContext } {
+    return {
+      context: new HttpContext().set(SKIP_API_SUCCESS_TOAST, true),
+    };
   }
 }

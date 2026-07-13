@@ -53,6 +53,10 @@ export class PaginationComponent {
 
   get resultEnd(): number {
     const total = this.totalItems ?? 0;
+    if (total === 0) {
+      return 0;
+    }
+
     const count = this.itemCount ?? this.pageSize;
     return Math.min(this.resultStart + count - 1, total);
   }

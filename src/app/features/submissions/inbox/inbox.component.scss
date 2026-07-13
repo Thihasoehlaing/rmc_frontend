@@ -49,68 +49,26 @@
   box-shadow: var(--shadow-sm);
 }
 
-:host ::ng-deep .dropdown-search-panel app-submissions-search {
-  margin: 0;
-  padding: 0;
-  border: none;
-  border-radius: 0;
-  background: transparent;
-  box-shadow: none;
-}
-
-:host ::ng-deep .dropdown-search-panel app-submissions-search .submissions-search-top-row {
-  display: none;
-}
-
-:host ::ng-deep .dropdown-search-panel app-submissions-search .submissions-search-controls {
-  display: flex;
-  align-items: center;
+.inbox-filters {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: var(--space-3);
-  flex-wrap: wrap;
+  align-items: end;
 }
 
-:host ::ng-deep .dropdown-search-panel app-submissions-search .submissions-search {
-  width: 300px;
-  max-width: 100%;
+.col-3 {
   min-width: 0;
-  flex: 1 1 300px;
 }
 
-:host ::ng-deep .dropdown-search-panel app-submissions-search .submissions-search--focused,
-:host ::ng-deep .dropdown-search-panel app-submissions-search .submissions-search:focus-within {
-  width: min(360px, 100%);
-}
-
-:host ::ng-deep .dropdown-search-panel app-submissions-search .submissions-search-filters {
+.inbox-filter {
   display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  flex: 0 1 14rem;
-  margin-left: auto;
-}
+  flex-direction: column;
+  gap: var(--space-2);
 
-:host ::ng-deep .dropdown-search-panel app-submissions-search .submissions-search-filters [search-filters] {
-  width: 13rem;
-  min-width: 13rem;
-}
-
-:host ::ng-deep .dropdown-search-panel app-submissions-search .submissions-search-actions {
-  justify-content: flex-end;
-  margin-left: 0;
-  white-space: nowrap;
-}
-
-.mgr-date-filter {
-  display: block;
-  position: relative;
-
-  .sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip: rect(0 0 0 0);
-    white-space: nowrap;
+  span {
+    color: var(--color-text-secondary);
+    font-size: var(--fs-xs);
+    font-weight: var(--fw-semibold);
   }
 
   .input--text {
@@ -124,7 +82,6 @@
     background-color: var(--color-surface);
     font-size: var(--fs-sm);
     line-height: 38px;
-    cursor: pointer;
 
     &:hover {
       border-color: color-mix(in srgb, var(--color-primary) 24%, var(--border-default));
@@ -136,6 +93,18 @@
       box-shadow: var(--input-shadow-focus);
       outline: none;
     }
+  }
+}
+
+.inbox-filter-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-2);
+
+  .btn {
+    min-height: 38px;
+    white-space: nowrap;
   }
 }
 
@@ -156,7 +125,7 @@
 
 table {
   width: 100%;
-  min-width: 700px;
+  min-width: 820px;
   border-collapse: collapse;
 }
 
@@ -170,7 +139,7 @@ td {
 }
 
 th {
-  background: var(--color-background-secondary);
+  background: color-mix(in srgb, var(--color-background-secondary) 92%, var(--color-label) 8%);
   font-size: var(--fs-sm);
   font-weight: var(--fw-semibold);
   white-space: nowrap;
@@ -192,13 +161,30 @@ td:first-child {
 
 .actions-heading,
 .actions-cell {
-  width: 96px;
+  width: 120px;
   text-align: center;
 }
 
 .inbox-code-cell {
   font-weight: var(--fw-medium);
   white-space: nowrap;
+}
+
+.inbox-applicant {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 220px;
+
+  strong {
+    color: var(--color-text);
+    font-size: var(--fs-sm);
+  }
+
+  span {
+    color: var(--color-text-secondary);
+    font-size: var(--fs-xs);
+  }
 }
 
 .sort-heading {
@@ -237,34 +223,35 @@ td:first-child {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: var(--space-2);
+  gap: var(--space-1);
 }
 
 .table-action {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: var(--size-control-sm);
-  height: var(--size-control-sm);
+  display: inline-grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
   border: 0;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-md);
   background: transparent;
   color: var(--color-primary);
   cursor: pointer;
   text-decoration: none;
   transition:
-    background-color var(--transition-fast) var(--ease-default),
-    color var(--transition-fast) var(--ease-default),
+    background var(--transition-fast) var(--ease-default),
     transform var(--transition-fast) var(--ease-default);
 
   &:hover {
     background: var(--color-primary-light);
-    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: scale(0.95);
   }
 
   &:focus-visible {
-    outline: none;
-    box-shadow: var(--input-shadow-focus);
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
   }
 }
 
@@ -306,17 +293,8 @@ td:first-child {
 }
 
 @media (max-width: 1180px) {
-  :host ::ng-deep .dropdown-search-panel app-submissions-search .submissions-search {
-    flex-basis: 22rem;
-  }
-
-  :host ::ng-deep .dropdown-search-panel app-submissions-search .submissions-search-filters {
-    margin-left: 0;
-  }
-
-  :host ::ng-deep .dropdown-search-panel app-submissions-search .submissions-search-actions {
-    flex: 1 1 100%;
-    justify-content: flex-end;
+  .inbox-filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -354,26 +332,15 @@ td:first-child {
     padding: var(--space-3);
   }
 
-  :host ::ng-deep .dropdown-search-panel app-submissions-search .submissions-search-controls {
-    align-items: stretch;
-    flex-direction: column;
+  .inbox-filters {
+    grid-template-columns: 1fr;
   }
 
-  :host ::ng-deep .dropdown-search-panel app-submissions-search .submissions-search,
-  :host ::ng-deep .dropdown-search-panel app-submissions-search .submissions-search--focused,
-  :host ::ng-deep .dropdown-search-panel app-submissions-search .submissions-search-filters,
-  :host ::ng-deep .dropdown-search-panel app-submissions-search .submissions-search-filters [search-filters] {
-    width: 100%;
-    min-width: 0;
-    margin-left: 0;
-  }
-
-  :host ::ng-deep .dropdown-search-panel app-submissions-search .submissions-search-actions {
-    margin-left: 0;
+  .inbox-filter-actions {
     justify-content: stretch;
   }
 
-  :host ::ng-deep .dropdown-search-panel app-submissions-search .submissions-search-actions .btn {
+  .inbox-filter-actions .btn {
     flex: 1 1 0;
     justify-content: center;
   }

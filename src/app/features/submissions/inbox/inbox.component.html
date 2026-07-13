@@ -12,7 +12,7 @@
 
   <!-- Loading -->
   @if (loading()) {
-    <app-table-skeleton [columns]="skeletonColumns" loadingLabel="Loading inbox applications">
+    <app-table-skeleton [columns]="skeletonColumns()" loadingLabel="Loading inbox applications">
     </app-table-skeleton>
   }
 
@@ -33,23 +33,53 @@
     />
 
     <section class="dropdown-search-panel" aria-label="Inbox search">
-      <app-submissions-search
-        placeholder="Search by code"
-        [value]="searchQuery()"
-        (search)="onSearch($event)"
-        (refresh)="refreshInbox()"
-      >
-        <label search-filters class="mgr-date-filter">
-          <span class="sr-only">Created date</span>
+      <div class="inbox-filters">
+        <label class="inbox-filter col-3">
+          <span>Search by code</span>
+          <input
+            class="input--text"
+            type="search"
+            placeholder="e.g. JOUR-260001"
+            [value]="codeDraft()"
+            (input)="onCodeDraftChange($event)"
+            (keydown.enter)="applyFilters()"
+          />
+        </label>
+
+        <label class="inbox-filter col-3">
+          <span>Search by applicant</span>
+          <input
+            class="input--text"
+            type="search"
+            placeholder="Name, username, or email"
+            [value]="applicantDraft()"
+            (input)="onApplicantDraftChange($event)"
+            (keydown.enter)="applyFilters()"
+          />
+        </label>
+
+        <label class="inbox-filter col-3">
+          <span>Search by submission date</span>
           <input
             class="input--text"
             type="date"
-            [value]="createdDate()"
-            (input)="onCreatedDateChange($event)"
-            aria-label="Filter by created date"
+            [value]="submissionDateDraft()"
+            (input)="onSubmissionDateDraftChange($event)"
+            (keydown.enter)="applyFilters()"
           />
         </label>
-      </app-submissions-search>
+
+        <div class="inbox-filter-actions col-3">
+          <button type="button" class="btn btn-primary" (click)="applyFilters()">
+            <span class="material-icons" aria-hidden="true">search</span>
+            Search
+          </button>
+          <button type="button" class="btn btn-secondary" (click)="resetFilters()">
+            <span class="material-icons" aria-hidden="true">refresh</span>
+            Reset
+          </button>
+        </div>
+      </div>
     </section>
 
     <section class="dropdown-table-panel" aria-label="Inbox applications">
@@ -59,8 +89,10 @@
             <tr>
               <th>No.</th>
               <th>Code</th>
+              @if (showApplicantInfo()) {
+                <th>Applicant</th>
+              }
               <th>Status</th>
-              <th>Created Date</th>
               <th>
                 <button type="button" class="sort-heading" (click)="toggleSubmissionDateSort()">
                   Submission Date
@@ -77,6 +109,15 @@
               <tr>
                 <td>{{ getRowNumber(index) }}</td>
                 <td class="inbox-code-cell">{{ getCode(app) }}</td>
+                @if (showApplicantInfo()) {
+                  <td>
+                    <div class="inbox-applicant">
+                      <strong>{{ app.applicant_name || '—' }}</strong>
+                      <span>{{ app.applicant_email || '—' }}</span>
+                      <span>{{ app.applicant_department || '—' }}</span>
+                    </div>
+                  </td>
+                }
                 <td>
                   <span
                     class="status-chip"
@@ -87,18 +128,28 @@
                     {{ getStatus(app) }}
                   </span>
                 </td>
-                <td>{{ getCreatedDate(app) }}</td>
                 <td>{{ getSubmissionDate(app) }}</td>
                 <td class="actions-cell">
                   <div class="table-actions">
                     <a
                       class="table-action table-action--open"
                       [routerLink]="[getFormRoute(app)]"
-                      aria-label="Open {{ getCode(app) }}"
-                      title="Open application"
+                      aria-label="View detail for {{ getCode(app) }}"
+                      title="View detail"
                     >
-                      <app-table-action-icon action="edit"></app-table-action-icon>
+                      <app-table-action-icon action="view"></app-table-action-icon>
                     </a>
+                    @if (canPrint(app)) {
+                      <button
+                        type="button"
+                        class="table-action table-action--open"
+                        aria-label="Print PDF for {{ getCode(app) }}"
+                        title="Print PDF"
+                        (click)="openPrint(app)"
+                      >
+                        <app-table-action-icon action="print"></app-table-action-icon>
+                      </button>
+                    }
                   </div>
                 </td>
               </tr>
@@ -108,7 +159,7 @@
 
         @if (applications().length === 0) {
           <div class="empty-state">
-            @if (searchQuery() || createdDate()) {
+            @if (hasActiveFilters()) {
               <p>No inbox applications match the current filters.</p>
             } @else {
               <p>No applications are pending your action right now.</p>

@@ -7,6 +7,7 @@ import { AppNotification, NotificationPriority } from '../interfaces/notificatio
 import { NOTIFICATION_TEMPLATES } from '../constants/notification-templates';
 import { BatchSitting } from '../interfaces/batch-sitting.interface';
 import { environment } from '../../../environments/environment';
+import { detailRoute } from './request-display.util';
 
 const BASE = `${environment.apiUrl.replace(/\/$/, '')}/rmc/notifications`;
 const POPUP_PAGE_SIZE = 10;
@@ -53,7 +54,7 @@ interface ApiResponse<T> {
   data: T;
 }
 
-interface BackendNotification {
+export interface BackendNotification {
   id: number;
   recipient_id?: number;
   request_id?: number | null;
@@ -156,13 +157,15 @@ export class NotificationService {
       .set('per_page', params.pageSize);
 
     if (params.search?.trim()) httpParams = httpParams.set('search', params.search.trim());
+    if (params.applicationId) httpParams = httpParams.set('form_code', params.applicationId);
+    if (params.status) httpParams = httpParams.set('event_type', params.status);
     if (params.read === 'true') httpParams = httpParams.set('is_read', true);
     if (params.read === 'false') httpParams = httpParams.set('is_read', false);
     if (params.notificationKey) httpParams = httpParams.set('event_type', params.notificationKey);
 
     return this.http.get<ApiResponse<BackendPaginated<BackendNotification>>>(BASE, { params: httpParams }).pipe(
       map(res => {
-        const items = (res.data?.items ?? []).map(item => this.fromBackendNotification(item));
+        const items = (res.data?.items ?? []).map(mapBackendNotification);
         return {
           items,
           pagination: res.data?.pagination ?? {
@@ -394,34 +397,6 @@ export class NotificationService {
     this.latestNotificationDate.set(meta.latestNotificationDate ?? null);
   }
 
-  private fromBackendNotification(item: BackendNotification): AppNotification {
-    const eventType = (item.event_type ?? 'INFO').toUpperCase();
-    const isAction = eventType.includes('ACTION') || eventType.includes('REVIEW') || eventType.includes('RESUBMISSION');
-    return {
-      id: item.recipient_id ?? item.id,
-      key: item.event_type ?? 'BACKEND_NOTIFICATION',
-      scope: item.form_code === 'RDIG' ? 'RDIG' : 'GLOBAL',
-      type: isAction ? 'ACTION' : 'INFO',
-      title: item.title ?? 'Notification',
-      message: item.message ?? '',
-      priority: this.toPriority(item.priority),
-      read: !!item.is_read,
-      createdAt: item.created_at ?? new Date().toISOString(),
-      recipientRole: item.recipient_type ?? undefined,
-      data: {
-        entityId: item.request_id ?? undefined,
-        entityType: item.form_code ?? undefined,
-        route: item.redirect_url ?? (item.request_id ? `/submissions/detail/${item.request_id}` : undefined),
-      },
-    };
-  }
-
-  private toPriority(priority: string | null | undefined): NotificationPriority {
-    const value = (priority ?? '').toLowerCase();
-    if (value === 'high' || value === 'medium' || value === 'low') return value;
-    return 'medium';
-  }
-
   private sameMeta(first: NotificationUnreadCount, second: NotificationUnreadCount | null): boolean {
     if (!second) return false;
     return first.unreadCount === second.unreadCount &&
@@ -442,6 +417,48 @@ export class NotificationService {
   private decrementSafe(amount: number): void {
     this.unreadCount.update(count => Math.max(0, count - amount));
   }
+}
+
+export function mapBackendNotification(item: BackendNotification): AppNotification {
+  const eventType = (item.event_type ?? 'INFO').toUpperCase();
+  const isAction =
+    eventType.includes('ACTION') ||
+    eventType.includes('REVIEW') ||
+    eventType.includes('RESUBMISSION');
+  const formCode = item.form_code?.trim().toUpperCase();
+
+  return {
+    // Mark-read/delete endpoints use the notification id, not recipient_id.
+    id: item.id,
+    key: item.event_type ?? 'BACKEND_NOTIFICATION',
+    scope: formCode === 'RDIG' ? 'RDIG' : 'GLOBAL',
+    type: isAction ? 'ACTION' : 'INFO',
+    title: item.title ?? 'Notification',
+    message: item.message ?? '',
+    priority: toPriority(item.priority),
+    read: !!item.is_read,
+    createdAt: item.created_at ?? new Date().toISOString(),
+    recipientRole: item.recipient_type ?? undefined,
+    data: {
+      entityId: item.request_id ?? undefined,
+      entityType: formCode ?? undefined,
+      entityModule: formCode?.toLowerCase(),
+      recipientId: item.recipient_id,
+      route: item.request_id != null
+        ? detailRoute({
+            request_id: item.request_id,
+            form_code: item.form_code,
+            request_code: item.request_no,
+          })
+        : item.redirect_url ?? undefined,
+    },
+  };
+}
+
+function toPriority(priority: string | null | undefined): NotificationPriority {
+  const value = (priority ?? '').toLowerCase();
+  if (value === 'high' || value === 'medium' || value === 'low') return value;
+  return 'medium';
 }
 
 

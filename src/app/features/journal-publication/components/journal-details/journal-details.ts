@@ -40,6 +40,11 @@ import {
 
 import { TableActionIconComponent } from '../../../../shared/components/table-action-icon/table-action-icon.component';
 
+export interface JournalCostingSaveItem {
+  payload: JournalCostingPayload;
+  file?: File | null;
+}
+
 @Component({
   selector: 'app-journal-details',
   standalone: true,
@@ -321,10 +326,17 @@ export class JournalDetails implements OnInit, OnDestroy {
   }
 
   getCostingPayloads(): JournalCostingPayload[] {
+    return this.getCostingSaveItems().map((item) => item.payload);
+  }
+
+  getCostingSaveItems(): JournalCostingSaveItem[] {
     const projectType = this.researchType || '';
     return this.getBreakdownArray(projectType)
-      .map((entry) => this.toCostingPayload(projectType, entry))
-      .filter((entry) => entry.cost_in_rm);
+      .map((entry) => ({
+        payload: this.toCostingPayload(projectType, entry),
+        file: entry.supportingDocumentFile ?? null,
+      }))
+      .filter((entry) => entry.payload.cost_in_rm);
   }
 
   hydrateFromApi(data: JournalFormData): void {
@@ -362,16 +374,23 @@ export class JournalDetails implements OnInit, OnDestroy {
     this.NonResearchBreakdowns = [];
     const targetType = journal.project_type || '';
     const target = this.getBreakdownArray(targetType);
+    const attachmentsById = new Map(
+      (data.attachments || []).map((attachment) => [Number(attachment.id), attachment]),
+    );
     for (const item of data.costing_items || []) {
+      const attachment = attachmentsById.get(Number(item.supporting_document_attachment_id));
       target.push({
         itemDescription: item.vote_number_description_snapshot || '',
         voteNumber: item.vote_number_snapshot || '',
         accountCodeDescription: item.account_code_description_snapshot || '',
         accountCode: item.account_code_snapshot || '',
         cost: item.cost_in_foreign_currency || item.cost_in_rm || '',
-        exchangeRate: item.exchange_rate || '',
+        exchangeRate: this.toIntegerString(item.exchange_rate),
         costInRM: item.cost_in_rm || '',
         description: item.description || '',
+        fileName: attachment?.file_name || '',
+        supportingDocumentAttachmentId: item.supporting_document_attachment_id ?? null,
+        supportingDocumentFile: null,
       });
     }
 
@@ -489,6 +508,7 @@ export class JournalDetails implements OnInit, OnDestroy {
               itemDescription: this.nonResearchAccountCodeDescription,
               accountCode: this.nonResearchAccountCode,
               accountCodeDescription: this.nonResearchAccountCodeDescription,
+              exchangeRate: this.toIntegerString(entry.exchangeRate),
             },
             { emitEvent: false },
           );
@@ -496,6 +516,7 @@ export class JournalDetails implements OnInit, OnDestroy {
           this.breakdownForm.patchValue(
             {
               ...entry,
+              exchangeRate: this.toIntegerString(entry.exchangeRate),
               voteNumber:
                 entry.voteNumber ||
                 this.journalOptionsService.getConfiguredVoteNumber(entry.itemDescription),
@@ -607,6 +628,8 @@ export class JournalDetails implements OnInit, OnDestroy {
       accountCodeDescription: resolvedAccountCodeDescription,
       costInRM,
       fileName: this.selectedFileName || entry.fileName || '',
+      supportingDocumentAttachmentId: entry.supportingDocumentAttachmentId ?? null,
+      supportingDocumentFile: this.selectedFile ?? entry.supportingDocumentFile ?? null,
     };
 
     const type = this.breakdownType as string;
@@ -714,6 +737,7 @@ export class JournalDetails implements OnInit, OnDestroy {
       exchange_rate: this.toMoneyString(entry.exchangeRate),
       cost_in_rm: this.toMoneyString(entry.costInRM),
       description: entry.description || null,
+      supporting_document_attachment_id: entry.supportingDocumentAttachmentId ?? null,
     };
   }
 
@@ -728,10 +752,44 @@ export class JournalDetails implements OnInit, OnDestroy {
     control.setErrors(Object.keys(errors).length ? errors : null);
   }
 
+  private setControlError(controlName: string, errorKey: string): void {
+    const control = this.form.get(controlName);
+    if (!control) {
+      return;
+    }
+
+    control.setErrors({
+      ...(control.errors || {}),
+      [errorKey]: true,
+    });
+  }
+
   private normalizeAmount(value: unknown): number | null {
     const amount =
       typeof value === 'number' ? value : parseFloat(String(value ?? '').replace(/,/g, ''));
     return Number.isFinite(amount) ? Math.round(amount * 100) / 100 : null;
+  }
+
+  private toIntegerString(value: unknown): string {
+    if (value === null || value === undefined || value === '') {
+      return '';
+    }
+
+    const amount = Number(String(value).replace(/,/g, ''));
+    if (!Number.isFinite(amount)) {
+      return String(value);
+    }
+
+    return String(Math.trunc(amount));
+  }
+
+  getExternalSponsorshipLimitError(): string | null {
+    const totalRM = this.calculateBreakdownTotal(this.researchType || '');
+    const external = this.normalizeAmount(this.form.get('sponsoredAmountExternal')?.value) ?? 0;
+    if (totalRM > 0 && external > totalRM) {
+      return `External sponsorship amount cannot exceed total cost. Total cost is RM ${totalRM.toFixed(2)}.`;
+    }
+    return null;
   }
 
   calculateTotals() {
@@ -753,6 +811,12 @@ export class JournalDetails implements OnInit, OnDestroy {
       this.form.patchValue({ sponsoredAmountExternal: 0 }, { emitEvent: false });
     }
 
+    if (totalRM > 0 && manualExternal > totalRM) {
+      this.setControlError('sponsoredAmountExternal', 'maxExceeded');
+    } else {
+      this.clearControlError('sponsoredAmountExternal', 'maxExceeded');
+    }
+
     let spPercent = 0;
     let spAPU = 0;
     let applicantCost = 0;
@@ -767,7 +831,6 @@ export class JournalDetails implements OnInit, OnDestroy {
         this.form.get('sponsoredBy')?.clearValidators();
       }
       this.form.get('sponsoredBy')?.updateValueAndValidity({ emitEvent: false });
-      this.clearControlError('sponsoredAmountExternal', 'maxExceeded');
 
       spAPU = this.hasExternalSponsorshipInput()
         ? this.getRemainingAfterExternal(totalRM, manualExternal)

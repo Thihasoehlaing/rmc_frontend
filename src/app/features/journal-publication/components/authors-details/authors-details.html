@@ -272,14 +272,19 @@
         <!-- ── APU Staff Form ──────────────────────────────────── -->
         @if (modalType === 'apu-staff') {
           <div class="form-group">
-            <label>Staff Name</label>
+            <label>Staff</label>
             <app-searchable-dropdown
               [options]="staffOptions"
               [searchable]="true"
+              [loading]="staffOptionsLoading"
               placeholder="Search staff..."
               formControlName="staffName"
+              (searchChange)="loadAcademicStaffOptions($event)"
             >
             </app-searchable-dropdown>
+            @if (staffOptionsLoadFailed) {
+              <small class="text-danger">Unable to load staff options. Try searching again.</small>
+            }
             <app-validation-message [control]="editForm.get('staffName')"></app-validation-message>
           </div>
 

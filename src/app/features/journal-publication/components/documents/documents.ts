@@ -5,7 +5,17 @@ import { ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
 import { FileUploadComponent } from '../../../../shared/components/file-upload/file-upload.component';
 import { NoteComponent } from '../../../../shared/components/note/note.component'; 
 import { JournalWorkflowService } from '../../services/journal-workflow.service';
-import { JournalFormData, JournalRequestPayload } from '../../services/journal-application-api.service';
+import {
+  JournalAttachmentUpload,
+  JournalFormData,
+  JournalRequestPayload,
+} from '../../services/journal-application-api.service';
+
+interface PendingDocumentUpload {
+  controlName: string;
+  entityType: string;
+  file: File;
+}
 
 @Component({
   selector: 'app-documents',
@@ -28,6 +38,15 @@ export class DocumentsComponent implements OnInit {
   // File constants
   readonly PDF_ACCEPT = '.pdf';
   readonly MAX_FILE_SIZE_MB = 10;
+  private readonly documentEntityTypes: Record<string, string> = {
+    acceptanceNotification: 'acceptance_notification',
+    reviewersFeedback: 'reviewers_feedback',
+    scopusEvidencePublication: 'scopus_citescore_screenshot',
+    turnitinReport: 'turnitin_report',
+    finalPaperDraft: 'final_paper_draft',
+    journalInvoice: 'journal_invoice',
+  };
+  private pendingUploads = new Map<string, PendingDocumentUpload>();
 
   workflow = inject(JournalWorkflowService);
 
@@ -81,8 +100,10 @@ export class DocumentsComponent implements OnInit {
       return;
     }
 
+    const attachmentNames = this.attachmentNamesByControl(data.attachments || []);
     this.documentsForm.patchValue(
       {
+        ...attachmentNames,
         reviewerName: journal.reviewer_name || '',
         manuscriptInternallyReviewed: this.fromOptionalBoolean(journal.is_manuscript_internally_reviewed),
         manuscriptPreviouslyPublished: this.fromOptionalBoolean(journal.is_published_elsewhere),
@@ -93,15 +114,32 @@ export class DocumentsComponent implements OnInit {
 
   onDocumentSelected(controlName: string, file: File | null) {
     if (file) {
+      this.pendingUploads.set(controlName, {
+        controlName,
+        entityType: this.documentEntityTypes[controlName] || controlName,
+        file,
+      });
       this.documentsForm.patchValue({
         [controlName]: file.name
       });
     } else {
+      this.pendingUploads.delete(controlName);
       this.documentsForm.patchValue({
         [controlName]: null
       });
     }
     this.documentsForm.get(controlName)?.markAsTouched();
+  }
+
+  getPendingAttachmentUploads(): JournalAttachmentUpload[] {
+    return [...this.pendingUploads.values()].map((upload) => ({
+      file: upload.file,
+      entity_type: upload.entityType,
+    }));
+  }
+
+  markPendingAttachmentUploadsSaved(): void {
+    this.pendingUploads.clear();
   }
 
   /**
@@ -130,5 +168,22 @@ export class DocumentsComponent implements OnInit {
     if (value === true) return 'yes';
     if (value === false) return 'no';
     return '';
+  }
+
+  private attachmentNamesByControl(attachments: any[]): Record<string, string> {
+    const entityToControl = new Map(
+      Object.entries(this.documentEntityTypes).map(([control, entity]) => [entity, control]),
+    );
+    entityToControl.set('scopus_evidence_publication', 'scopusEvidencePublication');
+    const names: Record<string, string> = {};
+
+    for (const attachment of attachments) {
+      const controlName = entityToControl.get(attachment.entity_type);
+      if (controlName && !names[controlName]) {
+        names[controlName] = attachment.file_name || '';
+      }
+    }
+
+    return names;
   }
 }

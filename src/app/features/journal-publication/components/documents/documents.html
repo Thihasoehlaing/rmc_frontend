@@ -20,6 +20,7 @@
             label="Acceptance Notification"
             [accept]="PDF_ACCEPT"
             [maxSizeMB]="MAX_FILE_SIZE_MB"
+            [uploadedFileName]="documentsForm.get('acceptanceNotification')?.value"
             placeholder="Upload acceptance notification PDF"
             (fileSelected)="onDocumentSelected('acceptanceNotification', $any($event))">
           </app-file-upload>
@@ -35,6 +36,7 @@
             label="Reviewers' Feedback"
             [accept]="PDF_ACCEPT"
             [maxSizeMB]="MAX_FILE_SIZE_MB"
+            [uploadedFileName]="documentsForm.get('reviewersFeedback')?.value"
             placeholder="Upload reviewers' feedback PDF"
             (fileSelected)="onDocumentSelected('reviewersFeedback', $any($event))">
           </app-file-upload>
@@ -50,6 +52,7 @@
             label="Screenshot of SCOPUS CiteScore"
             [accept]="PDF_ACCEPT"
             [maxSizeMB]="MAX_FILE_SIZE_MB"
+            [uploadedFileName]="documentsForm.get('scopusEvidencePublication')?.value"
             placeholder="Upload SCOPUS CiteScore screenshot PDF"
             (fileSelected)="onDocumentSelected('scopusEvidencePublication', $any($event))">
           </app-file-upload>
@@ -65,6 +68,7 @@
             label="Turnitin Report"
             [accept]="PDF_ACCEPT"
             [maxSizeMB]="MAX_FILE_SIZE_MB"
+            [uploadedFileName]="documentsForm.get('turnitinReport')?.value"
             placeholder="Upload Turnitin report PDF"
             (fileSelected)="onDocumentSelected('turnitinReport', $any($event))">
           </app-file-upload>
@@ -80,6 +84,7 @@
             label="Final Paper Draft"
             [accept]="PDF_ACCEPT"
             [maxSizeMB]="MAX_FILE_SIZE_MB"
+            [uploadedFileName]="documentsForm.get('finalPaperDraft')?.value"
             placeholder="Upload final paper draft PDF"
             (fileSelected)="onDocumentSelected('finalPaperDraft', $any($event))">
           </app-file-upload>
@@ -95,6 +100,7 @@
             label="Journal Invoice"
             [accept]="PDF_ACCEPT"
             [maxSizeMB]="MAX_FILE_SIZE_MB"
+            [uploadedFileName]="documentsForm.get('journalInvoice')?.value"
             placeholder="Upload journal invoice PDF"
             (fileSelected)="onDocumentSelected('journalInvoice', $any($event))">
           </app-file-upload>

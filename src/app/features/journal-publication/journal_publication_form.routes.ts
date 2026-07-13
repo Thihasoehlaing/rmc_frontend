@@ -7,41 +7,38 @@ export const journalPublicationFormRoutes: Routes = [
     path: 'application',
     loadComponent: () =>
       import('./journal-publication-form.component').then(m => m.JournalPublicationFormComponent),
-    canActivate: [permissionGuard]
+    canActivate: [permissionGuard],
     // No permission data = any authenticated user may access
   },
   {
-    // Reviewer / read-only view — shown to reviewers & approvers (from inbox,
-    // pending, history) and for any submitted (non-draft) application. The
-    // applicant's editable wizard lives at 'application'.
-    path: 'review/:requestId',
+    path: 'detail/:requestCode',
     loadComponent: () =>
       import('./pages/journal-review/journal-review.component').then(m => m.JournalReviewComponent),
     canActivate: [permissionGuard],
   },
   {
-      path: 'settings',
-      loadComponent: () =>
-        import('./pages/journal-settings/journal-settings.component').then(m => m.JournalSettingsComponent),
-      canActivate: [permissionGuard],
-      data: {
-          permission: {
-              anyOf: ['Admin']
-          } satisfies NavPermission
-      }
+    path: 'settings',
+    loadComponent: () =>
+      import('./pages/journal-settings/journal-settings.component').then(m => m.JournalSettingsComponent),
+    canActivate: [permissionGuard],
+    data: {
+      permission: {
+        anyOf: ['Admin'],
+      } satisfies NavPermission,
+    },
   },
   {
-      path: 'guidelines-settings',
-      loadComponent: () =>
-        import('./pages/journal-guidelines-settings/journal-guidelines-settings.component').then(
-          m => m.JournalGuidelinesSettingsComponent
-        ),
-      canActivate: [permissionGuard],
-      data: {
-          permission: {
-              anyOf: ['Admin']
-          } satisfies NavPermission
-      }
+    path: 'guidelines-settings',
+    loadComponent: () =>
+      import('./pages/journal-guidelines-settings/journal-guidelines-settings.component').then(
+        m => m.JournalGuidelinesSettingsComponent,
+      ),
+    canActivate: [permissionGuard],
+    data: {
+      permission: {
+        anyOf: ['Admin'],
+      } satisfies NavPermission,
+    },
   },
-  { path: '', redirectTo: 'application', pathMatch: 'full' }
+  { path: '', redirectTo: 'application', pathMatch: 'full' },
 ];

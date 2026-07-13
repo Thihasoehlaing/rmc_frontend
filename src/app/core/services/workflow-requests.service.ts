@@ -143,6 +143,30 @@ export interface AvailableActionsDto {
   can_act: boolean;
 }
 
+export interface RequestCommentDto {
+  id: number;
+  request_id: number;
+  approval_id: number | null;
+  workflow_step_id: number | null;
+  actor_type_code: string | null;
+  action_code: string | null;
+  comment_type: 'workflow_action' | 'section_review' | string;
+  section_code: string | null;
+  section_name: string | null;
+  staff_username: string | null;
+  staff_name: string | null;
+  staff_email: string | null;
+  comment_text: string;
+  created_at: string | null;
+}
+
+export interface CreateSectionCommentPayload {
+  comment_type?: 'section_review';
+  section_code: string;
+  section_name?: string | null;
+  comment_text: string;
+}
+
 /** Body for POST /requests/{id}/actions (schemas/requests.py::RequestActionSchema). */
 export interface ActOnRequestPayload {
   action_code: string;
@@ -338,8 +362,18 @@ export class WorkflowRequestsService {
     );
   }
 
-  getComments(requestId: number): Observable<ApiResponse<unknown[]>> {
-    return this.http.get<ApiResponse<unknown[]>>(`${this.base}/requests/${requestId}/comments`);
+  getComments(requestId: number): Observable<ApiResponse<RequestCommentDto[]>> {
+    return this.http.get<ApiResponse<RequestCommentDto[]>>(`${this.base}/requests/${requestId}/comments`);
+  }
+
+  createSectionComment(
+    requestId: number,
+    payload: CreateSectionCommentPayload,
+  ): Observable<ApiResponse<RequestCommentDto>> {
+    return this.http.post<ApiResponse<RequestCommentDto>>(`${this.base}/requests/${requestId}/comments`, {
+      ...payload,
+      comment_type: 'section_review',
+    });
   }
 
   getPrintUrl(requestId: number): string {

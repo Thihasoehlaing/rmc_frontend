@@ -199,6 +199,15 @@ export class HistoryComponent implements OnInit {
     }
   }
 
+  getDetailQueryParams(): { returnTo: string; returnLabel: string } {
+    const tab = encodeURIComponent(this.selectedType());
+    const basePath = this.isAdminHistory() ? '/submissions/admin-history' : '/submissions/history';
+    return {
+      returnTo: `${basePath}?tab=${tab}`,
+      returnLabel: this.isAdminHistory() ? 'Admin History' : 'History',
+    };
+  }
+
   canPrint(app: RequestSummaryDto): boolean {
     return app.status_code.toLowerCase() !== 'draft';
   }

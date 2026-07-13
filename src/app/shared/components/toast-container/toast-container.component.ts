@@ -20,4 +20,14 @@ export class ToastContainerComponent {
 
     return icons[type];
   }
+
+  titleFor(type: ToastType): string {
+    const titles: Record<ToastType, string> = {
+      success: 'Success',
+      error: 'Action needed',
+      info: 'Notice',
+    };
+
+    return titles[type];
+  }
 }

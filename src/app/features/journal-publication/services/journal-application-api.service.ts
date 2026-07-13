@@ -54,6 +54,21 @@ export interface JournalAttachmentUpload {
   entity_id?: number | null;
 }
 
+export interface JournalAttachmentDownload {
+  id: number;
+  request_id: number;
+  entity_type?: string | null;
+  entity_id?: number | null;
+  file_name: string;
+  file_type?: string | null;
+  file_size?: number | null;
+  uploaded_by_username?: string | null;
+  uploaded_at?: string | null;
+  url?: string | null;
+  file_url?: string | null;
+  download_url?: string | null;
+}
+
 export interface JournalStaffAuthorPayload {
   staff_name?: string | null;
   staff_department?: string | null;
@@ -172,6 +187,15 @@ export class JournalApplicationApiService {
       `${this.journalUrl}/${requestId}/attachments`,
       formData,
       this.skipSuccessToastOptions(),
+    );
+  }
+
+  getAttachmentDownloadUrl(
+    requestId: number,
+    attachmentId: number,
+  ): Observable<ApiResponse<JournalAttachmentDownload>> {
+    return this.http.get<ApiResponse<JournalAttachmentDownload>>(
+      `${this.journalUrl}/${requestId}/attachments/${attachmentId}/download-url`,
     );
   }
 

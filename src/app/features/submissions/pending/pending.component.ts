@@ -188,6 +188,14 @@ export class PendingComponent implements OnInit {
     }
   }
 
+  getDetailQueryParams(): { returnTo: string; returnLabel: string } {
+    const tab = encodeURIComponent(this.selectedType());
+    return {
+      returnTo: `/submissions/pending?tab=${tab}`,
+      returnLabel: 'Pending',
+    };
+  }
+
   formatCreatedDate(app: RequestSummaryDto): string {
     return this.formatIsoDate(app.created_at);
   }

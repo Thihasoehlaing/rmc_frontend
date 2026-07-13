@@ -510,6 +510,75 @@
 }
 
 
+
+.schedule-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding: var(--space-5);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-nested);
+}
+
+.activity-table-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.activity-actions-row {
+  align-items: flex-start;
+  justify-content: flex-start;
+  margin-top: 0;
+  margin-bottom: var(--space-3);
+}
+
+.activity-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-10, var(--space-8));
+  background: var(--color-surface-nested);
+  border: var(--control-border-width-strong) dashed var(--color-border-default);
+  border-radius: var(--radius-lg);
+  color: var(--color-text-secondary);
+  text-align: center;
+
+  .material-icons {
+    font-size: var(--size-icon-empty);
+    opacity: 0.4;
+  }
+
+  p {
+    font-size: var(--fs-sm);
+    margin: 0;
+  }
+}
+
+.activity-row-actions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  white-space: nowrap;
+}
+.activity-input {
+  width: 100%;
+  min-width: 0;
+}
+
+@media (max-width: 768px) {
+  .schedule-panel {
+    padding: var(--space-4);
+  }
+
+  
+  .activity-table-header .btn {
+    width: 100%;
+  }
+}
 // List and table styles
 .list-section-header {
   display: flex;
@@ -959,3 +1028,16 @@
   margin: 0;
   padding: var(--space-2);
 }
+
+.input--disabled-readonly {
+  background: var(--color-surface-nested);
+  border-color: var(--border-default);
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+  opacity: 1;
+}
+
+
+
+
+

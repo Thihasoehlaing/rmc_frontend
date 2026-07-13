@@ -1,6 +1,48 @@
 <form [formGroup]="form" class="form-section">
   <app-custom-header icon="description" title="Conference Details"></app-custom-header>
   <div class="section-fields">
+    @if (applicantDetailsForm) {
+      <section class="card" [formGroup]="applicantDetailsForm">
+        <app-custom-subheader title="Applicant Details"></app-custom-subheader>
+        <div class="card__content section-fields">
+          <div class="row row--2 conference-field-grid">
+            <div class="form-field">
+              <label class="form-label is-required">Applicant Name</label>
+              <input
+                type="text"
+                class="input--text input--disabled-readonly"
+                formControlName="applicantName"
+                placeholder="Ex: Jessica Teh Sze Hui"
+                readonly
+              />
+            </div>
+            <div class="form-field">
+              <label class="form-label is-required">Applicant Email</label>
+              <input
+                type="email"
+                class="input--text input--disabled-readonly"
+                formControlName="email"
+                placeholder="TPXXXXXX@mail.apu.edu.my"
+                readonly
+              />
+            </div>
+          </div>
+          <div class="row row--2 conference-field-grid">
+            <div class="form-field">
+              <label class="form-label is-required">Applicant School / Department</label>
+              <input
+                type="text"
+                class="input--text input--disabled-readonly"
+                formControlName="schoolName"
+                placeholder="Ex: School of Culinary Arts and Hospitality"
+                readonly
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+    }
+
     <section class="card">
       <app-custom-subheader title="Conference Request and Travel"></app-custom-subheader>
       <div class="card__content section-fields">
@@ -256,7 +298,125 @@
     </section>
 
     <section class="card">
-      <app-custom-subheader title="Conference Schedule and Paper Details"></app-custom-subheader>
+      <app-custom-subheader title="Travel Details"></app-custom-subheader>
+      <div class="card__content section-fields">
+        <div class="form-field">
+          <label class="form-label is-required">Booking Done By</label>
+          <div class="radio-field">
+            <label class="radio-field__option">
+              <input type="radio" value="themselves" formControlName="bookingDoneBy" />
+              <span>Themselves</span>
+            </label>
+            <label class="radio-field__option">
+              <input type="radio" value="other" formControlName="bookingDoneBy" />
+              <span>Other</span>
+            </label>
+          </div>
+          <app-validation-message [control]="form.get('bookingDoneBy')"></app-validation-message>
+        </div>
+
+        @if (form.get('bookingDoneBy')?.value === 'other') {
+          <div class="form-field conditional-field">
+            <label class="form-label is-required">Who is responsible for the booking?</label>
+            <textarea
+              class="input--textarea"
+              formControlName="bookingDoneByOther"
+              placeholder="Enter the person or office responsible for booking"
+              rows="3"
+              maxlength="300"
+            ></textarea>
+            <app-character-counter
+              [current]="form.get('bookingDoneByOther')?.value?.length || 0"
+              [max]="300"
+            ></app-character-counter>
+            <app-validation-message [control]="form.get('bookingDoneByOther')"></app-validation-message>
+          </div>
+        }
+      </div>
+    </section>
+
+    <section class="card">
+      <app-custom-subheader title="Advance"></app-custom-subheader>
+      <div class="card__content section-fields">
+        <div class="form-field">
+          <label class="form-label is-required">Is there an advance?</label>
+          <div class="radio-field">
+            <label class="radio-field__option">
+              <input type="radio" value="yes" formControlName="hasAdvance" />
+              <span>Yes</span>
+            </label>
+            <label class="radio-field__option">
+              <input type="radio" value="no" formControlName="hasAdvance" />
+              <span>No</span>
+            </label>
+          </div>
+          <app-validation-message [control]="form.get('hasAdvance')"></app-validation-message>
+        </div>
+
+        @if (form.get('hasAdvance')?.value === 'yes') {
+          <div class="form-field conditional-field">
+            <label class="form-label is-required">Why is the advance needed?</label>
+            <textarea
+              class="input--textarea"
+              formControlName="advanceReason"
+              placeholder="Explain why the advance is needed"
+              rows="3"
+              maxlength="500"
+            ></textarea>
+            <app-character-counter
+              [current]="form.get('advanceReason')?.value?.length || 0"
+              [max]="500"
+            ></app-character-counter>
+            <app-validation-message [control]="form.get('advanceReason')"></app-validation-message>
+          </div>
+        }
+      </div>
+    </section>
+
+    <section class="card">
+      <app-custom-subheader title="Colleague Information"></app-custom-subheader>
+      <div class="card__content section-fields">
+        <div class="form-field">
+          <label class="form-label is-required">Does the applicant have any colleagues involved?</label>
+          <div class="radio-field">
+            <label class="radio-field__option">
+              <input type="radio" value="yes" formControlName="hasColleagues" />
+              <span>Yes</span>
+            </label>
+            <label class="radio-field__option">
+              <input type="radio" value="no" formControlName="hasColleagues" />
+              <span>No</span>
+            </label>
+          </div>
+          <app-validation-message [control]="form.get('hasColleagues')"></app-validation-message>
+        </div>
+
+        @if (form.get('hasColleagues')?.value === 'yes') {
+          <div class="form-field conditional-field">
+            <app-searchable-dropdown
+              label="Select Colleagues"
+              [required]="true"
+              [isMulti]="true"
+              [maxSelections]="10"
+              [options]="colleagueOptions()"
+              [loading]="colleaguesLoading()"
+              placeholder="Search and select colleagues"
+              formControlName="selectedColleagues"
+              (searchChange)="onColleagueSearch($event)"
+            >
+            </app-searchable-dropdown>
+            <app-note text="Select up to 10 colleagues."></app-note>
+            <app-validation-message [control]="form.get('selectedColleagues')"></app-validation-message>
+            @if (form.get('selectedColleagues')?.hasError('maxColleagues')) {
+              <p class="form-error-msg">Maximum 10 colleagues can be selected.</p>
+            }
+          </div>
+        }
+      </div>
+    </section>
+
+    <section class="card">
+      <app-custom-subheader title="Conference Schedule"></app-custom-subheader>
       <div class="card__content section-fields">
         <div class="row row--2 conference-field-grid">
           <div class="form-field">
@@ -285,6 +445,70 @@
           </div>
         </div>
 
+        <div class="activity-table-section" formArrayName="activities">
+          <label class="form-label">Activity Table</label>
+          <div class="category-header activity-actions-row">
+            <button
+              type="button"
+              class="btn btn-primary btn-sm"
+              [disabled]="!canAddActivity()"
+              (click)="openActivityModal()"
+            >
+              <span class="material-icons">add</span> Add Activity
+            </button>
+          </div>
+
+          @if (activities.length === 0) {
+            <div class="empty-state activity-empty-state">
+              <span class="material-icons">event_note</span>
+              <p>No entries added yet.</p>
+            </div>
+          } @else {
+            <div class="table-scroll">
+              <app-data-table
+                [columns]="activityTableColumns"
+                [rows]="activities.controls"
+                [hoverable]="true"
+                [striped]="true"
+                [dense]="true"
+              >
+                <ng-template #rowTemplate let-row let-i="index">
+                  <tr>
+                    <td>{{ row.value.date || '-' }}</td>
+                    <td>{{ row.value.time || '-' }}</td>
+                    <td>{{ row.value.description || '-' }}</td>
+                    <td class="action-cell">
+                      <div class="data-table__actions activity-row-actions">
+                        <button
+                          type="button"
+                          class="btn-icon btn-icon--edit"
+                          (click)="openActivityModal(i)"
+                          aria-label="Edit activity"
+                        >
+                          <app-table-action-icon action="edit"></app-table-action-icon>
+                        </button>
+                        <button
+                          type="button"
+                          class="btn-icon btn-icon--delete"
+                          (click)="removeActivityRow(i)"
+                          aria-label="Remove activity"
+                        >
+                          <app-table-action-icon action="delete"></app-table-action-icon>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </ng-template>
+              </app-data-table>
+            </div>
+          }
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <app-custom-subheader title="Conference and Paper Details"></app-custom-subheader>
+      <div class="card__content section-fields">
         <div class="row row--2 conference-field-grid conference-text-fields">
           <div class="form-field">
             <label class="form-label is-required">Conference Name</label>
@@ -341,7 +565,7 @@
             label="Select Region"
             [required]="true"
             [options]="regionOptions()"
-            placeholder="[--SELECT REGION--]"
+            placeholder="Search and select region"
             formControlName="selectedRegion"
           >
           </app-searchable-dropdown>
@@ -1028,7 +1252,79 @@
       </app-dialog>
     }
 
-    <!-- SDG Keywords Modal -->
+    
+@if (isActivityModalOpen) {
+  <app-dialog
+    [title]="activityEditingIndex === null ? 'Add Activity' : 'Edit Activity'"
+    [isOpen]="true"
+    size="small"
+    (closed)="closeActivityModal()"
+  >
+    <form
+      id="activity-entry-form"
+      [formGroup]="activityForm"
+      (ngSubmit)="submitActivityModal()"
+      class="dialog-form"
+    >
+      <div class="form-group">
+        <label for="activityDate">Date <span class="asterisk">*</span></label>
+        <input
+          id="activityDate"
+          type="date"
+          class="form-control"
+          formControlName="date"
+          [attr.min]="form.get('conferenceStartDate')?.value"
+          [attr.max]="form.get('conferenceEndDate')?.value"
+        />
+        @if (activityForm.get('date')?.invalid && activityForm.get('date')?.touched) {
+          <span class="error-message">Activity date is required.</span>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="activityTime">Time <span class="asterisk">*</span></label>
+        <input
+          id="activityTime"
+          type="time"
+          class="form-control"
+          formControlName="time"
+        />
+        @if (activityForm.get('time')?.invalid && activityForm.get('time')?.touched) {
+          <span class="error-message">Activity time is required.</span>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="activityDescription">Description <span class="asterisk">*</span></label>
+        <textarea
+          id="activityDescription"
+          class="form-control"
+          formControlName="description"
+          placeholder="Enter activity description"
+          rows="3"
+          maxlength="255"
+        ></textarea>
+        @if (activityForm.get('description')?.invalid && activityForm.get('description')?.touched) {
+          <span class="error-message">Activity description is required.</span>
+        }
+      </div>
+    </form>
+
+    <button dialog-footer type="button" class="btn btn-secondary" (click)="closeActivityModal()">
+      Cancel
+    </button>
+    <button
+      dialog-footer
+      type="submit"
+      form="activity-entry-form"
+      class="btn btn-primary"
+      [disabled]="activityForm.invalid"
+    >
+      Save Activity
+    </button>
+  </app-dialog>
+}
+<!-- SDG Keywords Modal -->
     @if (isSDGKeywordsModalOpen) {
       <app-dialog
         [title]="'Enter SDG Keywords'"
@@ -1098,3 +1394,13 @@
     }
   </div>
 </form>
+
+
+
+
+
+
+
+
+
+

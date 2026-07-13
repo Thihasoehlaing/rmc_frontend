@@ -81,43 +81,6 @@ import { FormPageSkeletonComponent } from '../../../../shared/components/form-pa
         >
         </app-step-indicator>
 
-        <!-- Applicant Details Section -->
-        <div class="applicant-details application-form-surface">
-          <h3 class="applicant-details__title">Applicant Details</h3>
-          <form [formGroup]="applicantDetailsForm" class="applicant-details__content">
-            <div class="detail-field">
-              <label class="detail-label is-required">Applicant Name</label>
-              <input
-                type="text"
-                class="input--text input--disabled-readonly"
-                formControlName="applicantName"
-                placeholder="Ex: Jessica Teh Sze Hui"
-                readonly
-              />
-            </div>
-            <div class="detail-field">
-              <label class="detail-label is-required">Applicant Email</label>
-              <input
-                type="email"
-                class="input--text input--disabled-readonly"
-                formControlName="email"
-                placeholder="TPXXXXXX@mail.apu.edu.my"
-                readonly
-              />
-            </div>
-            <div class="detail-field">
-              <label class="detail-label is-required">Applicant School / Department</label>
-              <input
-                type="text"
-                class="input--text input--disabled-readonly"
-                formControlName="schoolName"
-                placeholder="Ex: School of Culinary Arts and Hospitality"
-                readonly
-              />
-            </div>
-          </form>
-        </div>
-
         <!-- Main Form Section with Shadow -->
         <div class="main-section application-form-content">
           <!-- Comment Toggle Buttons (shown per ABAC status) -->
@@ -185,6 +148,7 @@ import { FormPageSkeletonComponent } from '../../../../shared/components/form-pa
                 <app-conference-details-form
                   #conferenceDetailsStep
                   [workflow]="workflow"
+                  [applicantDetailsForm]="applicantDetailsForm"
                   [isFormReadOnly]="workflow.isFormReadOnly()"
                 >
                 </app-conference-details-form>
@@ -304,61 +268,6 @@ import { FormPageSkeletonComponent } from '../../../../shared/components/form-pa
       }
     }
 
-    .applicant-details {
-      background: var(--color-surface);
-      border: 1px solid var(--border-default);
-      border-radius: var(--radius-xl);
-      padding: var(--space-5);
-      box-shadow: var(--shadow-sm);
-
-      @media (max-width: 768px) {
-        padding: var(--space-4);
-      }
-    }
-
-    .applicant-details__title {
-      margin: 0 0 var(--space-4) 0;
-      font-size: var(--fs-base);
-      font-weight: var(--fw-bold);
-      color: var(--color-heading);
-    }
-
-    .applicant-details__content {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: var(--space-4);
-
-      @media (max-width: 640px) {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .detail-field {
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-2);
-      min-width: 0;
-    }
-
-    .detail-label {
-      font-weight: var(--font-weight-medium);
-      color: var(--color-text-primary);
-      font-size: var(--font-size-body);
-      line-height: var(--line-height-control);
-    }
-
-    .detail-label.is-required::after {
-      content: ' *';
-      color: var(--color-error-dark);
-    }
-
-    .input--disabled-readonly {
-      background: var(--color-surface-nested);
-      border-color: var(--border-default);
-      color: var(--color-text-muted);
-      cursor: not-allowed;
-      opacity: 1;
-    }
 
     .main-section {
       display: flex;
@@ -1154,3 +1063,11 @@ export class ConferenceApplication implements OnInit {
     });
   }
 }
+
+
+
+
+
+
+
+

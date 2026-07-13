@@ -134,6 +134,7 @@
                     <a
                       class="table-action table-action--open"
                       [routerLink]="[getFormRoute(app)]"
+                      [queryParams]="getDetailQueryParams()"
                       aria-label="View detail for {{ getCode(app) }}"
                       title="View detail"
                     >

@@ -226,6 +226,13 @@ export class InboxComponent implements OnInit {
     return actionRoute(app);
   }
 
+  getDetailQueryParams(): { returnTo: string; returnLabel: string } {
+    return {
+      returnTo: '/submissions/inbox',
+      returnLabel: 'Inbox',
+    };
+  }
+
   hasActiveFilters(): boolean {
     return Boolean(this.codeQuery() || this.applicantQuery() || this.submissionDate());
   }

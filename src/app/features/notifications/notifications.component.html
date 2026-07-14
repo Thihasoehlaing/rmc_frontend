@@ -1,136 +1,138 @@
-<div class="notifications-container">
-  <div class="notifications-shell">
-    <div class="notifications-header">
-      <div class="notifications-heading">
-        <span class="material-icons notifications-heading__icon">notifications</span>
-        <div>
-          <h1 class="notifications-title">Notifications</h1>
-          <p class="notifications-subtitle">
-            Review system and application notifications assigned to you.
-          </p>
-        </div>
-      </div>
+<div class="submissions-page notifications-page">
+  <div class="submissions-header">
+    <div class="submissions-header__text">
+      <h1 class="submissions-title">
+        <span class="material-icons" aria-hidden="true">notifications</span>
+        Notifications
+      </h1>
+      <p class="submissions-subtitle">Review system and application notifications assigned to you.</p>
     </div>
+  </div>
 
-    @if (isLoading()) {
-      <div class="notifications-filter-skeleton" role="status" aria-busy="true" aria-label="Loading notification filters">
-        <span class="notifications-skeleton-block notifications-skeleton-block--search"></span>
-        <span class="notifications-skeleton-block notifications-skeleton-block--filter"></span>
-        <span class="notifications-skeleton-block notifications-skeleton-block--filter"></span>
-        <span class="notifications-skeleton-block notifications-skeleton-block--filter"></span>
-        <span class="notifications-skeleton-block notifications-skeleton-block--filter"></span>
-        <span class="notifications-skeleton-block notifications-skeleton-block--button"></span>
-      </div>
-    } @else {
-      <app-submissions-search
-        placeholder="Search by title or message..."
-        [value]="searchTerm()"
-        (search)="onSearch($event)"
-        (refresh)="resetFilters()"
-      >
-        <div search-filters class="notifications-filters">
-          <label class="notifications-filter">
-            <span>Application</span>
-            <select
-              class="input--select"
-              [ngModel]="selectedApplication()"
-              (ngModelChange)="onApplicationChange($event)"
-            >
-              @for (option of applicationOptions; track option.value) {
-                <option [value]="option.value">{{ option.label }}</option>
-              }
-            </select>
-          </label>
+  @if (isLoading()) {
+    <app-table-skeleton [columns]="skeletonColumns" loadingLabel="Loading notifications"></app-table-skeleton>
+  }
 
-          <label class="notifications-filter">
-            <span>Status</span>
-            <select
-              class="input--select"
-              [ngModel]="selectedStatus()"
-              (ngModelChange)="onStatusChange($event)"
-            >
-              @for (option of statusOptions; track option.value) {
-                <option [value]="option.value">{{ option.label }}</option>
-              }
-            </select>
-          </label>
+  @if (!isLoading() && loadFailed()) {
+    <div class="state-message state-error">
+      <span class="material-icons">error_outline</span>
+      Unable to load notifications. Check the API connection and try again.
+    </div>
+  }
 
-          <label class="notifications-filter">
-            <span>Read</span>
-            <select
-              class="input--select"
-              [ngModel]="selectedRead()"
-              (ngModelChange)="onReadChange($event)"
-            >
-              @for (option of readOptions; track option.value) {
-                <option [value]="option.value">{{ option.label }}</option>
-              }
-            </select>
-          </label>
+  @if (!isLoading() && !loadFailed()) {
+    <section class="dropdown-search-panel" aria-label="Notification search">
+      <div class="notifications-filters">
+        <label class="notifications-filter col-3">
+          <span>Form</span>
+          <app-searchable-dropdown
+            placeholder="All forms"
+            [options]="formOptions()"
+            [loading]="formOptionsLoading()"
+            [ngModel]="formDraft()"
+            (ngModelChange)="onFormDraftChange($event)"
+          ></app-searchable-dropdown>
+        </label>
 
-        </div>
-      </app-submissions-search>
-    }
+        <label class="notifications-filter col-3">
+          <span>Search by code</span>
+          <input
+            class="input--text"
+            type="search"
+            placeholder="e.g. JOUR-260002"
+            [value]="codeDraft()"
+            (input)="onCodeDraftChange($event)"
+            (keydown.enter)="applyFilters()"
+          />
+        </label>
 
-    <div class="notifications-table-wrapper">
-      @if (isLoading()) {
-        <app-table-skeleton
-          [columns]="skeletonColumns"
-          [rows]="10"
-          [showSearch]="false"
-          [showTypeFilter]="false"
-          minWidth="1080px"
-          loadingLabel="Loading notifications"
-        ></app-table-skeleton>
-      } @else if (loadFailed()) {
-        <div class="notifications-state">
-          <span class="material-icons">cloud_off</span>
-          <h2>Unable to load notifications</h2>
-          <p>Check the API connection and try again.</p>
-          <button class="btn btn-primary" type="button" (click)="loadNotifications()">
-            Try Again
+        <label class="notifications-filter col-3">
+          <span>Received date</span>
+          <input
+            class="input--text"
+            type="date"
+            [value]="receivedDateDraft()"
+            (input)="onReceivedDateDraftChange($event)"
+            (keydown.enter)="applyFilters()"
+          />
+        </label>
+
+        <div class="notifications-filter-actions col-3">
+          <button type="button" class="btn btn-primary" (click)="applyFilters()">
+            <span class="material-icons" aria-hidden="true">search</span>
+            Search
+          </button>
+          <button type="button" class="btn btn-secondary" (click)="resetFilters()">
+            <span class="material-icons" aria-hidden="true">refresh</span>
+            Reset
           </button>
         </div>
-      } @else {
-        <app-data-table
-          [columns]="columns"
-          [rows]="notifications()"
-          [rowTrackFn]="rowTrackFn"
-        >
-          <ng-template #rowTemplate let-row>
-            <tr>
-              <td>{{ row.title }}</td>
-              <td class="message-cell">{{ row.message }}</td>
-              <td>{{ row.application }}</td>
-              <td class="center">
-                <span class="notification-status" [ngClass]="row.statusClass">
-                  {{ row.status }}
-                </span>
-              </td>
-              <td class="center">
-                <span class="read-status" [ngClass]="row.read ? 'is-read' : 'is-unread'">
-                  {{ row.read ? 'Read' : 'Unread' }}
-                </span>
-              </td>
-              <td>{{ row.createdAt }}</td>
-              <td class="actions-cell">
-                <button
-                  class="icon-btn icon-btn--view"
-                  type="button"
-                  title="Open application detail"
-                  [disabled]="row.isExpired || !row.route"
-                  (click)="openNotification(row)"
-                >
-                  <app-table-action-icon action="view"></app-table-action-icon>
-                </button>
-              </td>
-            </tr>
-          </ng-template>
-        </app-data-table>
-      }
-    </div>
+      </div>
+    </section>
 
-    @if (!isLoading() && !loadFailed()) {
+    <section class="dropdown-table-panel" aria-label="Notifications table">
+      <div class="shared-options-table">
+        <table>
+          <thead>
+            <tr>
+              <th>No.</th>
+              <th>Code</th>
+              <th>Form</th>
+              <th>Notification</th>
+              <th>Status</th>
+              <th>Received Date</th>
+              <th class="actions-heading">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of notifications(); track rowTrackFn($index, row); let index = $index) {
+              <tr>
+                <td>{{ getRowNumber(index) }}</td>
+                <td class="notification-code-cell">{{ row.requestCode }}</td>
+                <td>{{ row.application }}</td>
+                <td>
+                  <div class="notification-copy">
+                    <strong>{{ row.title }}</strong>
+                    <span>{{ row.message }}</span>
+                  </div>
+                </td>
+                <td>
+                  <span class="notification-status" [ngClass]="row.statusClass">
+                    {{ row.status }}
+                  </span>
+                </td>
+                <td>{{ row.createdAt }}</td>
+                <td class="actions-cell">
+                  <div class="table-actions">
+                    <button
+                      class="table-action table-action--open"
+                      type="button"
+                      title="Open application detail"
+                      [disabled]="row.isExpired || !row.route"
+                      (click)="openNotification(row)"
+                    >
+                      <app-table-action-icon action="view"></app-table-action-icon>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+
+        @if (notifications().length === 0) {
+          <div class="empty-state">
+            @if (hasActiveFilters()) {
+              <p>No notifications match the current filters.</p>
+            } @else {
+              <p>No notifications found.</p>
+            }
+          </div>
+        }
+      </div>
+    </section>
+
+    <section class="dropdown-pagination-panel" aria-label="Notifications pagination">
       <app-pagination
         [currentPage]="page()"
         [totalPages]="totalPages()"
@@ -142,9 +144,6 @@
         (pageChange)="onPageChange($event)"
         (pageSizeChange)="onPageSizeChange($event)"
       ></app-pagination>
-    }
-  </div>
+    </section>
+  }
 </div>
-
-
-

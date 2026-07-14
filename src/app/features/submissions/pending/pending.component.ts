@@ -4,7 +4,13 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { finalize, forkJoin } from 'rxjs';
 
 import { CachedFormOption, FormCacheService } from '../../../core/services/form-cache.service';
-import { STATUS_COLORS, formTypeLabel } from '../../../core/services/request-display.util';
+import {
+  STATUS_COLORS,
+  formRoute,
+  formTypeLabel,
+  isApplicantResubmissionStatus,
+  requestIdOf,
+} from '../../../core/services/request-display.util';
 import {
   RequestSummaryDto,
   WorkflowRequestsService,
@@ -188,6 +194,14 @@ export class PendingComponent implements OnInit {
     }
   }
 
+  getEditRoute(app: RequestSummaryDto): string {
+    return formRoute(app.form_code);
+  }
+
+  getEditQueryParams(app: RequestSummaryDto): { request_id: number | null } {
+    return { request_id: requestIdOf(app) };
+  }
+
   getDetailQueryParams(): { returnTo: string; returnLabel: string } {
     const tab = encodeURIComponent(this.selectedType());
     return {
@@ -198,6 +212,10 @@ export class PendingComponent implements OnInit {
 
   formatCreatedDate(app: RequestSummaryDto): string {
     return this.formatIsoDate(app.created_at);
+  }
+
+  canEditResubmission(app: RequestSummaryDto): boolean {
+    return isApplicantResubmissionStatus(app.status_code) && requestIdOf(app) != null;
   }
 
   private createdTs(app: RequestSummaryDto): number {

@@ -11,7 +11,10 @@ export const STATUS_COLORS: Record<string, string> = {
   draft: '#6b7280',
   fill_application: '#3b82f6',
   pending_applicant_resubmission_hos: '#f59e0b',
+  pending_applicant_resubmission_rmc: '#f59e0b',
   pending_applicant_resubmission_reviewers: '#f59e0b',
+  hos_request_resubmission: '#f59e0b',
+  rmc_request_resubmission: '#f59e0b',
   pending_hos: '#a855f7',
   pending_hos_review: '#a855f7',
   rejected_hos: '#ef4444',
@@ -57,6 +60,18 @@ export function formRoute(formCode: string | null | undefined): string {
 
 export function requestIdOf(app: { id?: number | null; request_id?: number | null }): number | null {
   return app.request_id ?? app.id ?? null;
+}
+
+const APPLICANT_RESUBMISSION_STATUSES = new Set([
+  'pending_applicant_resubmission_hos',
+  'pending_applicant_resubmission_rmc',
+  'pending_applicant_resubmission_reviewers',
+  'hos_request_resubmission',
+  'rmc_request_resubmission',
+]);
+
+export function isApplicantResubmissionStatus(statusCode: string | null | undefined): boolean {
+  return APPLICANT_RESUBMISSION_STATUSES.has((statusCode ?? '').toLowerCase());
 }
 
 export function detailRoute(app: {

@@ -24,7 +24,7 @@ import { NavPermission } from '../interfaces/permission.interface';
  * Unauthenticated users are sent to /login.
  * Authenticated users who fail the permission check are sent to /dashboard.
  */
-export const permissionGuard: CanActivateFn = (route, _state) => {
+export const permissionGuard: CanActivateFn = (route, state) => {
   const authService  = inject(AuthService);
   const permService  = inject(PermissionService);
   const router       = inject(Router);
@@ -35,7 +35,13 @@ export const permissionGuard: CanActivateFn = (route, _state) => {
 
   // Opening an existing record by ID — any authenticated user may access it.
   // The form's internal ABAC controls what they can see or edit.
-  if (route.queryParams['id'] || route.queryParams['request_id']) return true;
+  if (
+    route.queryParams['id'] ||
+    route.queryParams['request_id'] ||
+    isExistingRecordDetailUrl(state.url)
+  ) {
+    return true;
+  }
 
   const permission = route.data?.['permission'] as NavPermission | undefined;
 
@@ -47,3 +53,8 @@ export const permissionGuard: CanActivateFn = (route, _state) => {
   // Authenticated but missing required groups — redirect to dashboard.
   return router.createUrlTree(['/dashboard']);
 };
+
+function isExistingRecordDetailUrl(url: string): boolean {
+  const path = url.split(/[?#]/, 1)[0];
+  return /^\/(?:journal|rdig|external-project-data-entry)\/detail\/[^/]+$/.test(path);
+}

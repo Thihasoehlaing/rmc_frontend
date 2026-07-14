@@ -192,7 +192,7 @@ td:first-child {
 
 .actions-heading,
 .actions-cell {
-  width: 96px;
+  width: 120px;
   text-align: center;
 }
 
@@ -222,10 +222,7 @@ td:first-child {
   border-radius: var(--radius-full);
   font-size: var(--fs-xs);
   font-weight: var(--fw-semibold);
-  max-width: 14rem;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .table-actions {
@@ -335,7 +332,7 @@ td:first-child {
 
   .actions-heading,
   .actions-cell {
-    width: 72px;
+    width: 112px;
   }
 }
 

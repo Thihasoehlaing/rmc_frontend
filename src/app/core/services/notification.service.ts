@@ -38,6 +38,9 @@ export interface NotificationListParams {
   pageSize: number;
   search?: string;
   applicationId?: string;
+  formCode?: string;
+  dateFrom?: string;
+  dateTo?: string;
   status?: string;
   read?: string;
   sortBy?: string;
@@ -157,7 +160,9 @@ export class NotificationService {
       .set('per_page', params.pageSize);
 
     if (params.search?.trim()) httpParams = httpParams.set('search', params.search.trim());
-    if (params.applicationId) httpParams = httpParams.set('form_code', params.applicationId);
+    if (params.formCode || params.applicationId) httpParams = httpParams.set('form_code', params.formCode || params.applicationId || '');
+    if (params.dateFrom) httpParams = httpParams.set('date_from', params.dateFrom);
+    if (params.dateTo) httpParams = httpParams.set('date_to', params.dateTo);
     if (params.status) httpParams = httpParams.set('event_type', params.status);
     if (params.read === 'true') httpParams = httpParams.set('is_read', true);
     if (params.read === 'false') httpParams = httpParams.set('is_read', false);
@@ -443,6 +448,7 @@ export function mapBackendNotification(item: BackendNotification): AppNotificati
       entityId: item.request_id ?? undefined,
       entityType: formCode ?? undefined,
       entityModule: formCode?.toLowerCase(),
+      requestCode: item.request_no ?? undefined,
       recipientId: item.recipient_id,
       route: item.request_id != null
         ? detailRoute({

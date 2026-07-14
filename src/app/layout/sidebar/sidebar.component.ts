@@ -7,6 +7,7 @@ import { PermissionService } from '../../core/services/permission.service';
 import { NAVIGATION_DATA } from '../../core/constants/nav-data';
 import { NavElement, NavFolder } from '../../core/interfaces/nav.interface';
 import { FormCacheService } from '../../core/services/form-cache.service';
+import { UserGroup } from '../../core/interfaces/user.interface';
 
 @Component({
   selector: 'app-sidebar',
@@ -28,6 +29,13 @@ export class SidebarComponent implements OnInit {
   /** Live user — updates automatically when login/logout fires. */
   currentUser = this.authService.currentUser;
 
+  private readonly restrictedWorkflowGroups: UserGroup[] = ['VC', 'HR', 'CEO', 'Finance'];
+  private readonly restrictedSidebarRoutes = new Set([
+    '/dashboard',
+    '/submissions/inbox',
+    '/notifications',
+  ]);
+
   /**
    * Computed: navigation groups and their elements are filtered through
    * PermissionService on every change to the current user signal.
@@ -35,6 +43,7 @@ export class SidebarComponent implements OnInit {
    */
   filteredNavGroups = computed(() => {
     const activeFormCodes = this.formCache.activeFormCodes();
+    const restrictToWorkflowSidebar = this.shouldUseRestrictedWorkflowSidebar();
 
     // Recursively filter elements and their children by ABAC permission.
     // Folders whose children are all filtered out are also removed.
@@ -42,6 +51,7 @@ export class SidebarComponent implements OnInit {
       elements
         .filter(el => this.permService.canAccess(el.permission))
         .filter(el => this.isConfiguredFormActive(el, activeFormCodes))
+        .filter(el => !restrictToWorkflowSidebar || this.isAllowedRestrictedSidebarElement(el))
         .map(el =>
           this.isFolder(el)
             ? { ...el, children: filterElements(el.children) }
@@ -109,6 +119,19 @@ export class SidebarComponent implements OnInit {
   ): boolean {
     const formCode = element.formCode?.toUpperCase();
     return !formCode || activeFormCodes.has(formCode);
+  }
+
+  private shouldUseRestrictedWorkflowSidebar(): boolean {
+    const groups = this.currentUser()?.groups ?? [];
+    return this.restrictedWorkflowGroups.some(group => groups.includes(group));
+  }
+
+  private isAllowedRestrictedSidebarElement(element: NavElement): boolean {
+    if (this.isFolder(element)) {
+      return element.children.some(child => this.isAllowedRestrictedSidebarElement(child));
+    }
+
+    return !!element.route && this.restrictedSidebarRoutes.has(element.route);
   }
 
   asItem(element: NavElement) {

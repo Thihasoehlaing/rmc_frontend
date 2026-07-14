@@ -10,6 +10,8 @@ import {
 } from '../../../core/services/workflow-requests.service';
 import {
   actionRoute,
+  formRoute,
+  isApplicantResubmissionStatus,
   requestIdOf,
   showInboxApplicantInfo,
 } from '../../../core/services/request-display.util';
@@ -72,7 +74,10 @@ export class InboxComponent implements OnInit {
   readonly statusColors: Record<string, string> = {
     fill_application: '#3b82f6',
     pending_applicant_resubmission_hos: '#f59e0b',
+    pending_applicant_resubmission_rmc: '#f59e0b',
     pending_applicant_resubmission_reviewers: '#f59e0b',
+    hos_request_resubmission: '#f59e0b',
+    rmc_request_resubmission: '#f59e0b',
     pending_hos: '#a855f7',
     pending_hos_review: '#a855f7',
     rejected_hos: '#ef4444',
@@ -226,6 +231,14 @@ export class InboxComponent implements OnInit {
     return actionRoute(app);
   }
 
+  getEditRoute(app: RequestSummaryDto): string {
+    return formRoute(app.form_code);
+  }
+
+  getEditQueryParams(app: RequestSummaryDto): { request_id: number | null } {
+    return { request_id: requestIdOf(app) };
+  }
+
   getDetailQueryParams(): { returnTo: string; returnLabel: string } {
     return {
       returnTo: '/submissions/inbox',
@@ -239,6 +252,10 @@ export class InboxComponent implements OnInit {
 
   canPrint(app: RequestSummaryDto): boolean {
     return app.status_code.toLowerCase() !== 'draft';
+  }
+
+  canEditResubmission(app: RequestSummaryDto): boolean {
+    return isApplicantResubmissionStatus(app.status_code) && requestIdOf(app) != null;
   }
 
   openPrint(app: RequestSummaryDto): void {

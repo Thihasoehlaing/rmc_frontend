@@ -4,17 +4,15 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { finalize } from 'rxjs';
 
+import { DropdownOption } from '../../core/interfaces/components.interface';
 import { AppNotification } from '../../core/interfaces/notification.interface';
+import { FormCacheService } from '../../core/services/form-cache.service';
 import {
   NotificationListParams,
   NotificationService,
 } from '../../core/services/notification.service';
-import {
-  DataTableColumn,
-  DataTableComponent,
-} from '../../shared/components/data-table/data-table.component';
 import { PaginationComponent } from '../../shared/components/pagination/pagination.component';
-import { SubmissionsSearchComponent } from '../../shared/components/submissions-search/submissions-search.component';
+import { SearchableDropdownComponent } from '../../shared/components/searchable-dropdown/searchable-dropdown.component';
 import {
   SkeletonColumn,
   TableSkeletonComponent,
@@ -23,6 +21,7 @@ import { TableActionIconComponent } from '../../shared/components/table-action-i
 
 interface NotificationRow {
   id: number;
+  requestCode: string;
   title: string;
   message: string;
   application: string;
@@ -41,9 +40,8 @@ interface NotificationRow {
   imports: [
     CommonModule,
     FormsModule,
-    SubmissionsSearchComponent,
+    SearchableDropdownComponent,
     TableSkeletonComponent,
-    DataTableComponent,
     PaginationComponent,
     TableActionIconComponent,
   ],
@@ -52,12 +50,15 @@ interface NotificationRow {
 })
 export class NotificationsComponent implements OnInit {
   private readonly notificationService = inject(NotificationService);
+  private readonly formCache = inject(FormCacheService);
   private readonly router = inject(Router);
 
-  readonly searchTerm = signal('');
-  readonly selectedApplication = signal('');
-  readonly selectedStatus = signal('');
-  readonly selectedRead = signal('');
+  readonly codeDraft = signal('');
+  readonly formDraft = signal('');
+  readonly receivedDateDraft = signal('');
+  readonly codeFilter = signal('');
+  readonly formFilter = signal('');
+  readonly receivedDateFilter = signal('');
   readonly page = signal(1);
   readonly pageSize = signal(10);
   readonly pageSizeOptions = [10, 20, 30, 50];
@@ -66,55 +67,47 @@ export class NotificationsComponent implements OnInit {
   readonly notifications = signal<NotificationRow[]>([]);
   readonly isLoading = signal(true);
   readonly loadFailed = signal(false);
-
-  readonly applicationOptions = [
-    { value: '', label: 'All Applications' },
-    { value: 'RDIG', label: 'RDIG Application' },
-    { value: 'CONFERENCE', label: 'Conference Application' },
-    { value: 'JOURNAL', label: 'Journal Publication' },
-    { value: 'EXTERNAL', label: 'External Project Data Entry' },
-  ];
-
-  readonly statusOptions = [
-    { value: '', label: 'All Status' },
-    { value: 'REQUEST_WAITING_REVIEW', label: 'Required Action' },
-    { value: 'REQUEST_APPROVED', label: 'Approved' },
-    { value: 'REQUEST_REJECTED', label: 'Rejected' },
-    { value: 'REQUEST_RESUBMISSION_REQUIRED', label: 'Resubmission Required' },
-    { value: 'REQUEST_FINAL_APPROVED', label: 'Final Approved' },
-  ];
-
-  readonly readOptions = [
-    { value: '', label: 'All Read Status' },
-    { value: 'false', label: 'Unread' },
-    { value: 'true', label: 'Read' },
-  ];
+  readonly formOptions = signal<DropdownOption<string>[]>([]);
+  readonly formOptionsLoading = signal(false);
 
   readonly skeletonColumns: readonly SkeletonColumn[] = [
-    { width: '20%' },
-    { width: '28%' },
-    { width: '16%' },
-    { width: '130px' },
+    { width: '72px' },
+    { width: '120px' },
+    { width: '170px' },
+    { width: '36%' },
     { width: '120px' },
     { width: '150px' },
-    { width: '132px' },
-  ];
-
-  readonly columns: readonly DataTableColumn[] = [
-    { key: 'title', label: 'Title', width: '20%' },
-    { key: 'message', label: 'Message', width: '28%' },
-    { key: 'application', label: 'Application', width: '16%' },
-    { key: 'status', label: 'Status', width: '130px', align: 'center', headerAlign: 'center' },
-    { key: 'read', label: 'Read Status', width: '120px', align: 'center', headerAlign: 'center' },
-    { key: 'createdAt', label: 'Date', width: '150px' },
-    { key: 'actions', label: 'Action', width: '72px', align: 'right', headerAlign: 'right' },
+    { width: '110px' },
   ];
 
   readonly rowTrackFn: TrackByFunction<unknown> = (_index, row) =>
     (row as NotificationRow).id;
 
   ngOnInit(): void {
+    this.loadFormOptions();
     this.loadNotifications();
+  }
+
+  loadFormOptions(): void {
+    this.formOptionsLoading.set(true);
+    this.formCache
+      .getForms()
+      .pipe(finalize(() => this.formOptionsLoading.set(false)))
+      .subscribe({
+        next: response => {
+          this.formOptions.set(
+            (response.data ?? [])
+              .filter(form => form.is_active !== false)
+              .map(form => ({
+                value: form.form_code,
+                label: form.form_name || form.form_code,
+                description: form.form_code,
+                searchText: `${form.form_code} ${form.form_name}`.toLowerCase(),
+              })),
+          );
+        },
+        error: () => this.formOptions.set([]),
+      });
   }
 
   loadNotifications(): void {
@@ -124,10 +117,10 @@ export class NotificationsComponent implements OnInit {
     const params: NotificationListParams = {
       page: this.page(),
       pageSize: this.pageSize(),
-      search: this.searchTerm(),
-      applicationId: this.selectedApplication(),
-      status: this.selectedStatus(),
-      read: this.selectedRead(),
+      search: this.codeFilter(),
+      formCode: this.formFilter(),
+      dateFrom: this.receivedDateFilter(),
+      dateTo: this.receivedDateFilter(),
     };
 
     this.notificationService
@@ -156,37 +149,39 @@ export class NotificationsComponent implements OnInit {
       });
   }
 
-  onSearch(value: string): void {
-    this.searchTerm.set(value.trim());
+  onCodeDraftChange(event: Event): void {
+    this.codeDraft.set((event.target as HTMLInputElement).value);
+  }
+
+  onFormDraftChange(value: string | string[] | null): void {
+    this.formDraft.set(typeof value === 'string' ? value : '');
+  }
+
+  onReceivedDateDraftChange(event: Event): void {
+    this.receivedDateDraft.set((event.target as HTMLInputElement).value);
+  }
+
+  applyFilters(): void {
+    this.codeFilter.set(this.codeDraft().trim());
+    this.formFilter.set(this.formDraft());
+    this.receivedDateFilter.set(this.receivedDateDraft());
     this.page.set(1);
     this.loadNotifications();
   }
 
   resetFilters(): void {
-    this.searchTerm.set('');
-    this.selectedApplication.set('');
-    this.selectedStatus.set('');
-    this.selectedRead.set('');
+    this.codeDraft.set('');
+    this.formDraft.set('');
+    this.receivedDateDraft.set('');
+    this.codeFilter.set('');
+    this.formFilter.set('');
+    this.receivedDateFilter.set('');
     this.page.set(1);
     this.loadNotifications();
   }
 
-  onApplicationChange(value: string): void {
-    this.selectedApplication.set(value);
-    this.page.set(1);
-    this.loadNotifications();
-  }
-
-  onStatusChange(value: string): void {
-    this.selectedStatus.set(value);
-    this.page.set(1);
-    this.loadNotifications();
-  }
-
-  onReadChange(value: string): void {
-    this.selectedRead.set(value);
-    this.page.set(1);
-    this.loadNotifications();
+  hasActiveFilters(): boolean {
+    return Boolean(this.codeFilter() || this.formFilter() || this.receivedDateFilter());
   }
 
   onPageChange(nextPage: number): void {
@@ -223,6 +218,7 @@ export class NotificationsComponent implements OnInit {
   private toRow(notification: AppNotification): NotificationRow {
     return {
       id: notification.id ?? 0,
+      requestCode: this.requestCode(notification),
       title: notification.title,
       message: notification.message,
       application: this.applicationLabel(notification),
@@ -236,6 +232,15 @@ export class NotificationsComponent implements OnInit {
       isExpired: notification.status === 'expired',
       source: notification,
     };
+  }
+
+  getRowNumber(index: number): number {
+    return (this.page() - 1) * this.pageSize() + index + 1;
+  }
+
+  private requestCode(notification: AppNotification): string {
+    const code = notification.data?.['requestCode'];
+    return typeof code === 'string' && code.trim() ? code : '-';
   }
 
   private applicationLabel(notification: AppNotification): string {

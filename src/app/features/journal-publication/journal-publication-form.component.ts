@@ -28,6 +28,10 @@ import {
 } from './services/journal-application-api.service';
 import { JournalOptionsService } from './services/journal-options.service';
 import { ToastService } from '../../core/services/toast.service';
+import {
+  RequestCommentDto,
+  WorkflowRequestsService,
+} from '../../core/services/workflow-requests.service';
 
 @Component({
   selector: 'app-journal-publication-form',
@@ -55,10 +59,13 @@ export class JournalPublicationFormComponent {
   private journalApi = inject(JournalApplicationApiService);
   private journalOptions = inject(JournalOptionsService);
   private toastService = inject(ToastService);
+  private workflowRequests = inject(WorkflowRequestsService);
   requestId: number | null = this.readRequestId();
   isOptionsLoading = false;
   loadError: string | null = null;
   actionError: string | null = null;
+  sectionComments: RequestCommentDto[] = [];
+  isLoadingSectionComments = false;
   readonly guidelineContext: GuidelineContext = this.hasRequestIdParam()
     ? 'existing-application'
     : 'new-application';
@@ -101,6 +108,23 @@ export class JournalPublicationFormComponent {
 
   submitAttempted = false;
   selectedCommentSection: 'hos' | 'rmc' | 'vc' | 'hr' | 'ceo' | null = null;
+  selectedFeedbackActorCode: string | null = null;
+
+  readonly commentSections = [
+    { code: 'journal_details', label: 'Journal Details', icon: 'article' },
+    { code: 'authors', label: 'Authors', icon: 'group' },
+    { code: 'manuscript_details', label: 'Manuscript Details', icon: 'description' },
+    { code: 'supporting_documents', label: 'Supporting Documents', icon: 'upload_file' },
+    { code: 'costing_sponsorship', label: 'Costing & Sponsorship', icon: 'payments' },
+  ];
+
+  readonly commentActors = [
+    { code: 'HOS_HOD', label: 'HOS Comments', icon: 'groups' },
+    { code: 'RMC', label: 'RMC Comments', icon: 'verified' },
+    { code: 'VC', label: 'VC Comments', icon: 'account_balance' },
+    { code: 'HR', label: 'HR Comments', icon: 'people' },
+    { code: 'CEO', label: 'CEO Comments', icon: 'stars' },
+  ];
 
   validateCurrentStep(markAsTouched: boolean = true): boolean {
     let isValid = true;
@@ -206,12 +230,19 @@ export class JournalPublicationFormComponent {
       // so reviewers/approvers (and the applicant after submission) get that
       // view instead of the filling form.
       const status = String(response.data?.request?.status_code ?? '').toLowerCase();
-      const isEditableDraft = ['draft', 'fill_application', 'normal_application'].includes(status);
-      if (!isEditableDraft) {
+      const isApplicantEditable = [
+        'draft',
+        'fill_application',
+        'normal_application',
+        'pending_applicant_resubmission_hos',
+        'pending_applicant_resubmission_rmc',
+      ].includes(status);
+      if (!isApplicantEditable) {
         void this.router.navigateByUrl(this.journalDetailPath(response.data, requestId));
         return;
       }
       this.hydrateFromApi(response.data);
+      await this.loadSectionComments(requestId);
     } catch {
       this.actionError = 'Unable to load this journal application.';
     }
@@ -299,6 +330,69 @@ export class JournalPublicationFormComponent {
     }
   }
 
+  commentsForSection(sectionCode: string): RequestCommentDto[] {
+    return this.sectionComments.filter((comment) => comment.section_code === sectionCode);
+  }
+
+  commentsForActor(actorCode: string): RequestCommentDto[] {
+    return this.sectionComments.filter((comment) => this.normalizeActorCode(comment.actor_type_code) === actorCode);
+  }
+
+  commentsForActorSection(actorCode: string, sectionCode: string): RequestCommentDto[] {
+    return this.commentsForActor(actorCode).filter((comment) => comment.section_code === sectionCode);
+  }
+
+  actorTabsWithComments(): typeof this.commentActors {
+    return this.commentActors.filter((actor) => this.commentsForActor(actor.code).length > 0);
+  }
+
+  actorCommentCount(actorCode: string): number {
+    return this.commentsForActor(actorCode).length;
+  }
+
+  sectionsWithComments(): typeof this.commentSections {
+    return this.commentSections.filter((section) => this.commentsForSection(section.code).length > 0);
+  }
+
+  sectionsWithCommentsForActor(actorCode: string | null): typeof this.commentSections {
+    if (!actorCode) return [];
+    return this.commentSections.filter((section) =>
+      this.commentsForActorSection(actorCode, section.code).length > 0,
+    );
+  }
+
+  hasSectionComments(): boolean {
+    return this.sectionComments.length > 0;
+  }
+
+  toggleFeedbackActor(actorCode: string): void {
+    this.selectedFeedbackActorCode = this.selectedFeedbackActorCode === actorCode ? null : actorCode;
+  }
+
+  prettyActor(actorCode: string | null | undefined): string {
+    const actor = this.normalizeActorCode(actorCode);
+    const labels: Record<string, string> = {
+      HOS_HOD: 'HOS/HOD',
+      RMC: 'RMC',
+      VC: 'VC',
+      HR: 'HR',
+      CEO: 'CEO',
+    };
+    return labels[actor] ?? actorCode ?? 'Reviewer';
+  }
+
+  formatCommentDate(iso: string | null | undefined): string {
+    return iso
+      ? new Date(iso).toLocaleString('en-GB', {
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        })
+      : '-';
+  }
+
   private async saveDraftToBackend(): Promise<number> {
     const sponsorshipError = this.journalDetailsComponent?.getExternalSponsorshipLimitError();
     if (sponsorshipError) {
@@ -334,6 +428,28 @@ export class JournalPublicationFormComponent {
       replaceUrl: true,
     });
     return requestId;
+  }
+
+  private async loadSectionComments(requestId: number): Promise<void> {
+    this.isLoadingSectionComments = true;
+    try {
+      const response = await firstValueFrom(this.workflowRequests.getComments(requestId));
+      this.sectionComments = (response.data ?? [])
+        .filter((comment) => comment.comment_type === 'section_review')
+        .sort((a, b) => new Date(b.created_at ?? 0).getTime() - new Date(a.created_at ?? 0).getTime());
+      this.selectedFeedbackActorCode = this.actorTabsWithComments()[0]?.code ?? null;
+    } catch {
+      this.sectionComments = [];
+      this.selectedFeedbackActorCode = null;
+    } finally {
+      this.isLoadingSectionComments = false;
+    }
+  }
+
+  private normalizeActorCode(actorCode: string | null | undefined): string {
+    const actor = (actorCode ?? '').toUpperCase();
+    if (actor === 'HOS' || actor === 'HOD') return 'HOS_HOD';
+    return actor;
   }
 
   private buildJournalPayload(): JournalRequestPayload {

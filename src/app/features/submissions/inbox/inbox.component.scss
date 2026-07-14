@@ -161,7 +161,7 @@ td:first-child {
 
 .actions-heading,
 .actions-cell {
-  width: 120px;
+  width: 150px;
   text-align: center;
 }
 
@@ -208,14 +208,11 @@ td:first-child {
   display: inline-flex;
   align-items: center;
   min-height: 26px;
-  max-width: 220px;
   padding: 0 var(--space-3);
   border: 1px solid;
   border-radius: var(--radius-full);
-  overflow: hidden;
   font-size: var(--fs-xs);
   font-weight: var(--fw-semibold);
-  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
@@ -319,7 +316,7 @@ td:first-child {
 
   .actions-heading,
   .actions-cell {
-    width: 72px;
+    width: 120px;
   }
 }
 

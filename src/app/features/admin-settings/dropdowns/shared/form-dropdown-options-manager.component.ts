@@ -106,6 +106,7 @@ export class FormDropdownOptionsManagerComponent implements OnInit {
   showModal = signal(false);
   editingRow = signal<ViewRow | null>(null);
   rowToDelete = signal<ViewRow | null>(null);
+  sharedFormsDialog = signal<{ itemName: string; forms: string[] } | null>(null);
   readonly skeletonColumns = [
     { width: '64px' },
     { width: '28%' },
@@ -271,6 +272,10 @@ export class FormDropdownOptionsManagerComponent implements OnInit {
 
   openDeleteDialog(row: ViewRow): void {
     this.rowToDelete.set(row);
+  }
+
+  openSharedForms(row: ViewRow): void {
+    this.sharedFormsDialog.set({ itemName: row.name, forms: [...row.sharedWith] });
   }
 
   closeDeleteDialog(): void {

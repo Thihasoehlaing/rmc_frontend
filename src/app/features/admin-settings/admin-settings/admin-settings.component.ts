@@ -36,6 +36,22 @@ export class AdminSettingsComponent {
       tone: 'violet',
     },
     {
+      title: 'Manage Project Account Code',
+      description: 'Maintain externally sourced project account codes used by Conference and Journal forms.',
+      icon: 'account_balance_wallet',
+      category: 'Finance Configuration',
+      route: '/admin-settings/manage-project-account-code',
+      tone: 'blue',
+    },
+    {
+      title: 'Manage External Form Category',
+      description: 'Configure External Grant Category options for the External Project Data Entry form.',
+      icon: 'category',
+      category: 'Form Configuration',
+      route: '/admin-settings/manage-external-form-category',
+      tone: 'violet',
+    },
+    {
       title: 'Batches',
       description: 'Control submission periods, active batches, and application grouping.',
       icon: 'calendar_month',

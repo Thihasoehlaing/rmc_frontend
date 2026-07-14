@@ -22,15 +22,6 @@ export class ConferenceDropdownOptionsComponent {
       nameLabel: 'Region Name',
     },
     {
-      key: 'PROJECT_ACCOUNT_CODE',
-      label: 'Project Account Code',
-      source: 'project-account-code',
-      formCode: 'CONFERENCE',
-      icon: 'account_balance_wallet',
-      codeLabel: 'Project Account Code',
-      nameLabel: 'Description',
-    },
-    {
       key: 'VOTE_NUMBER',
       label: 'Vote Number',
       source: 'vote-number',

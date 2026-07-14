@@ -210,6 +210,7 @@ export class JournalDetails implements OnInit, OnDestroy {
 
     this.form.get('researchType')?.valueChanges.subscribe((type) => {
       const projectAccountCodeCtrl = this.form.get('projectAccountCode');
+      this.syncScopusQuartileForResearchType(type);
       if (type === 'non-research') {
         projectAccountCodeCtrl?.clearValidators();
         projectAccountCodeCtrl?.setValue('', { emitEvent: false });
@@ -368,6 +369,7 @@ export class JournalDetails implements OnInit, OnDestroy {
       },
       { emitEvent: false },
     );
+    this.syncScopusQuartileForResearchType(journal.project_type || '');
 
     this.researchBreakdowns = [];
     this.externalBreakdowns = [];
@@ -685,6 +687,14 @@ export class JournalDetails implements OnInit, OnDestroy {
 
   private getRemainingAfterExternal(totalRM: number, externalSponsorship: number): number {
     return Math.max(totalRM - externalSponsorship, 0);
+  }
+
+  private syncScopusQuartileForResearchType(projectType: string | null): void {
+    const scopusQuartileControl = this.form.get('scopusQuartile');
+    if (projectType === 'non-research' && scopusQuartileControl?.value === 'Q3') {
+      scopusQuartileControl.setValue('', { emitEvent: false });
+      scopusQuartileControl.updateValueAndValidity({ emitEvent: false });
+    }
   }
 
   private calculateEffectiveApuPercentage(totalRM: number, apuSponsorshipAmount: number): number {

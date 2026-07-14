@@ -48,12 +48,11 @@ export class DropdownsComponent implements OnInit {
     {
       id: 3,
       title: 'Conference Application',
-      description: 'Manage region, account, vote number, item, and organisation dropdown options.',
+      description: 'Manage region, vote number, item, and organisation dropdown options.',
       route: '/admin-settings/dropdowns/conference-dropdown-options',
       icon: 'event',
       categories: [
         'Select Region',
-        'Project Account Code',
         'Vote Number',
         'Item Description',
         'Type of Organisation',
@@ -62,11 +61,10 @@ export class DropdownsComponent implements OnInit {
     {
       id: 4,
       title: 'Journal Application',
-      description: 'Manage journal account, vote number, item, and organisation dropdown options.',
+      description: 'Manage journal vote number, account, item, and organisation dropdown options.',
       route: '/admin-settings/dropdowns/journal-dropdown-options',
       icon: 'article',
       categories: [
-        'Project Account Code',
         'Vote Number',
         'Account Code',
         'Item Description',

@@ -1,0 +1,258 @@
+<section class="dropdowns-container">
+  <div class="dropdowns-shell">
+    <div class="details-view settings-container fade-in">
+      <div class="settings-card__header">
+        <div
+          class="settings-card__header-row"
+          [class.settings-card__header-row--without-action]="!allowAdd"
+        >
+          <button
+            type="button"
+            class="back-button"
+            (click)="goBack()"
+            aria-label="Back to admin settings"
+          >
+            <span class="material-icons">arrow_back</span>
+          </button>
+          <div>
+            <h1 class="card__title">{{ title }}</h1>
+            <p class="settings-card__subtitle">{{ subtitle }}</p>
+          </div>
+          @if (allowAdd) {
+            <app-action-button
+              class="settings-header-action"
+              type="primary"
+              label="Add New"
+              icon="add"
+              (clicked)="openAddModal()"
+            ></app-action-button>
+          }
+        </div>
+      </div>
+
+      <div class="dropdown-options-panel">
+        <div class="dropdown-search-panel">
+          <app-submissions-search
+            [placeholder]="showCode ? 'Search code or description' : 'Search category name'"
+            [value]="searchQuery()"
+            (search)="onSearch($event)"
+            (refresh)="onReset()"
+          >
+            <label search-filters class="mgr-status-filter">
+              <span class="sr-only">Status</span>
+              <select
+                class="input--select"
+                [ngModel]="statusFilter()"
+                (ngModelChange)="onStatusChange($event)"
+                aria-label="Filter by status"
+              >
+                <option value="all">All</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            </label>
+          </app-submissions-search>
+        </div>
+
+        <div class="dropdown-table-panel">
+          <div class="shared-options-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>No.</th>
+                  @if (showCode) {
+                    <th>{{ codeLabel }}</th>
+                  }
+                  <th>{{ nameLabel }}</th>
+                  @if (showSharedWith) {
+                    <th>Shared With</th>
+                  }
+                  <th>Status</th>
+                  <th>Last Updated</th>
+                  <th class="actions-heading">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of pagedRows(); track row.id; let rowIndex = $index) {
+                  <tr [class.row--inactive]="row.status === 'Inactive'">
+                    <td>{{ (page() - 1) * pageSize() + rowIndex + 1 }}</td>
+                    @if (showCode) {
+                      <td class="catalog-code-cell">{{ row.code }}</td>
+                    }
+                    <td class="option-name-cell">{{ row.name }}</td>
+                    @if (showSharedWith) {
+                      <td>
+                        <div
+                          class="shared-with-list"
+                          [class.shared-with-list--empty]="row.appliesTo.length === 0"
+                        >
+                          @if (row.appliesTo.length > 1) {
+                            <button
+                              type="button"
+                              class="shared-count-badge"
+                              [title]="row.appliesTo.join(', ')"
+                              [attr.aria-label]="
+                                'Shared with ' +
+                                row.appliesTo.length +
+                                ' forms: ' +
+                                row.appliesTo.join(', ')
+                              "
+                              (click)="openSharedForms(row)"
+                            >
+                              <span class="material-icons" aria-hidden="true">share</span>
+                              <span class="count">{{ row.appliesTo.length }}</span>
+                            </button>
+                          } @else if (row.appliesTo.length === 1) {
+                            <span class="shared-with-chip">
+                              <span class="material-icons" aria-hidden="true">share</span>
+                              <span class="shared-with-chip__label">{{ row.appliesTo[0] }}</span>
+                            </span>
+                          } @else {
+                            <span class="shared-with-empty">-</span>
+                          }
+                        </div>
+                      </td>
+                    }
+                    <td>
+                      <span
+                        class="status-chip"
+                        [class.status-chip--active]="row.status === 'Active'"
+                        [class.status-chip--inactive]="row.status === 'Inactive'"
+                        >{{ row.status }}</span
+                      >
+                    </td>
+                    <td class="catalog-date-cell">{{ formatDateTime(row.updatedAt) }}</td>
+                    <td class="actions-cell">
+                      <div class="table-actions">
+                        <button
+                          class="table-action"
+                          type="button"
+                          title="Edit option"
+                          (click)="editRow(row)"
+                        >
+                          <app-table-action-icon action="edit"></app-table-action-icon>
+                        </button>
+                        <button
+                          class="table-action"
+                          [class.table-action--success]="row.status === 'Inactive'"
+                          [class.table-action--warning]="row.status === 'Active'"
+                          type="button"
+                          [title]="
+                            row.status === 'Inactive' ? 'Activate option' : 'Deactivate option'
+                          "
+                          (click)="toggleStatus(row)"
+                        >
+                          <app-table-action-icon
+                            [action]="row.status === 'Inactive' ? 'activate' : 'deactivate'"
+                          ></app-table-action-icon>
+                        </button>
+                        <button
+                          class="table-action table-action--danger"
+                          type="button"
+                          title="Delete option"
+                          (click)="rowToDelete.set(row)"
+                        >
+                          <app-table-action-icon action="delete"></app-table-action-icon>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td
+                      class="catalog-empty-state"
+                      [attr.colspan]="4 + (showCode ? 1 : 0) + (showSharedWith ? 1 : 0)"
+                    >
+                      <span class="material-icons">inbox</span>
+                      <strong>No options found</strong>
+                      <span>Try changing the search or status filter.</span>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="dropdown-pagination-panel">
+          <app-pagination
+            [currentPage]="page()"
+            [totalPages]="totalPages()"
+            [pageSize]="pageSize()"
+            [pageSizeOptions]="pageSizeOptions"
+            [totalItems]="filteredRows().length"
+            [itemCount]="pagedRows().length"
+            itemLabel="options"
+            (pageChange)="page.set($event)"
+            (pageSizeChange)="onPageSizeChange($event)"
+          ></app-pagination>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<app-add-option-modal
+  [isOpen]="showModal()"
+  [title]="editingRow() ? 'Edit Option' : 'Add New Option'"
+  [showCategory]="false"
+  [showCode]="showCode"
+  [codeLabel]="codeLabel"
+  [optionNameLabel]="nameLabel"
+  [availableForms]="availableForms"
+  [allowFormSharing]="showSharedWith"
+  [defaultSelectedForms]="showSharedWith ? availableForms : []"
+  [initial]="modalInitial()"
+  [primaryActionLabel]="editingRow() ? 'Save' : 'Add Option'"
+  (close)="closeModal()"
+  (save)="saveModal($event)"
+></app-add-option-modal>
+
+<app-dialog
+  [isOpen]="rowToDelete() !== null"
+  title="Delete Option"
+  size="small"
+  (close)="rowToDelete.set(null)"
+>
+  @if (rowToDelete(); as row) {
+    <p>
+      Delete <strong>{{ row.code ? row.code + ' - ' : '' }}{{ row.name }}</strong
+      >?
+    </p>
+    <p class="delete-dialog-note">
+      This removes the option from every form where it is currently available.
+    </p>
+  }
+  <div dialog-footer>
+    <button type="button" class="btn btn-secondary" (click)="rowToDelete.set(null)">Cancel</button>
+    <button type="button" class="btn btn-danger" (click)="confirmDelete()">Delete</button>
+  </div>
+</app-dialog>
+
+<app-dialog
+  [isOpen]="sharedFormsDialog() !== null"
+  title="Shared With"
+  size="small"
+  (close)="sharedFormsDialog.set(null)"
+>
+  @if (sharedFormsDialog(); as data) {
+    <div class="shared-forms-dialog">
+      <p class="shared-forms-dialog__intro">
+        <strong>{{ data.itemName }}</strong> is available in:
+      </p>
+      <ul class="shared-forms-dialog__list">
+        @for (form of data.forms; track form) {
+          <li>
+            <span class="material-icons" aria-hidden="true">description</span>
+            <span>{{ form }}</span>
+          </li>
+        }
+      </ul>
+    </div>
+  }
+  <div dialog-footer>
+    <button type="button" class="btn btn-primary" (click)="sharedFormsDialog.set(null)">
+      Close
+    </button>
+  </div>
+</app-dialog>

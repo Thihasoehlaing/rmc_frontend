@@ -1,4 +1,4 @@
-import { Component, signal, computed, inject, OnInit, ViewChild } from '@angular/core';
+import { Component, signal, computed, effect, inject, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import {
@@ -13,6 +13,7 @@ import {
   StepIndicatorComponent,
   WizardStep,
   StepStatus,
+  MissingField,
 } from '../../../../shared/components/step-indicator/step-indicator.component';
 import { FormWizardNavComponent } from '../../../../shared/components/form-wizard-nav/form-wizard-nav.component';
 import { ConferenceGuidelinesModalComponent } from '../../components/conference-guidelines-modal/conference-guidelines-modal.component';
@@ -75,9 +76,10 @@ import { FormPageSkeletonComponent } from '../../../../shared/components/form-pa
         <app-step-indicator
           [currentStep]="currentStep()"
           [steps]="wizardSteps"
-          [stepStatuses]="stepStatuses()"
+          [stepStatuses]="getStepStatuses()"
           [submitAttempted]="submitAttempted()"
           (stepClick)="goToStep($event)"
+          (missingFieldClick)="goToMissingField($event)"
         >
         </app-step-indicator>
 
@@ -440,12 +442,65 @@ export class ConferenceApplication implements OnInit {
     { label: 'Declaration', icon: 'check_circle' },
   ];
 
-  stepStatuses = signal<StepStatus[]>([
-    { visited: false, valid: false, missingFields: ['Complete Conference Details'] },
-    { visited: false, valid: false, missingFields: ['Complete Author Details'] },
-    { visited: false, valid: false, missingFields: ['Upload required documents'] },
-    { visited: false, valid: false, missingFields: ['Complete Declaration'] },
-  ]);
+  private readonly applicantDetailsFieldChecks: Array<{ path: string; label: string; target?: string }> = [
+    { path: 'applicantName', label: 'Applicant Name' },
+    { path: 'email', label: 'Applicant Email' },
+    { path: 'schoolName', label: 'Applicant School / Department' },
+  ];
+
+  private readonly conferenceDetailsFieldChecks: Array<{ path: string; label: string; target?: string }> = [
+    { path: 'fundingRequestType', label: 'Conference Funding Request Type' },
+    { path: 'conferenceType', label: 'Conference Type' },
+    { path: 'travelRequired', label: 'Is Travelling Required?' },
+    { path: 'bookingDoneBy', label: 'Booking Done By' },
+    { path: 'bookingDoneByOther', label: 'Booking Responsible Person' },
+    { path: 'hasAdvance', label: 'Is There an Advance?' },
+    { path: 'advanceReason', label: 'Advance Reason' },
+    { path: 'hasColleagues', label: 'Colleagues Involved' },
+    { path: 'selectedColleagues', label: 'Select Colleagues' },
+    { path: 'authorshipType', label: 'Author Role' },
+    { path: 'scopusPublicationGuaranteed', label: 'SCOPUS Indexed Publication' },
+    { path: 'restrictedPublisher', label: 'Restricted Publisher' },
+    { path: 'sdgKeyword1', label: 'Please key in 3 SDG keywords', target: 'sdgKeywords' },
+    { path: 'sdgKeyword2', label: 'Please key in 3 SDG keywords', target: 'sdgKeywords' },
+    { path: 'sdgKeyword3', label: 'Please key in 3 SDG keywords', target: 'sdgKeywords' },
+    { path: 'conferenceName', label: 'Conference Name' },
+    { path: 'conferenceStartDate', label: 'Conference Start Date' },
+    { path: 'conferenceEndDate', label: 'Conference End Date' },
+    { path: 'localOrOverseas', label: 'Select Conference Venue' },
+    { path: 'researchType', label: 'Research Type' },
+    { path: 'citedJournalPaper', label: 'Cited APU/JATI/EJBM Paper' },
+    { path: 'citedJournalPaperExplanation', label: 'Cited Paper Explanation' },
+    { path: 'conferenceLocation', label: 'Conference Location' },
+    { path: 'paperTitle', label: 'Paper Title' },
+    { path: 'selectedRegion', label: 'Select Region' },
+  ];
+
+  private readonly authorDetailsFieldChecks: Array<{ path: string; label: string; target?: string }> = [
+    { path: 'fullName', label: 'Full Name' },
+    { path: 'employeeId', label: 'Employee ID' },
+    { path: 'designation', label: 'Designation' },
+    { path: 'department', label: 'Department' },
+    { path: 'email', label: 'Email' },
+    { path: 'phoneNumber', label: 'Phone Number' },
+  ];
+
+  private readonly supportingDocumentsFieldChecks: Array<{ path: string; label: string; target?: string }> = [
+    { path: 'acceptanceNotification', label: 'Acceptance Notification' },
+    { path: 'reviewersFeedback', label: 'Reviewers Feedback' },
+    { path: 'scopusEvidencePublication', label: 'SCOPUS Evidence Publication' },
+    { path: 'turnitinReport', label: 'Turnitin Report' },
+    { path: 'finalPaperDraft', label: 'Final Paper Draft' },
+    { path: 'conferenceInvoice', label: 'Conference Invoice' },
+    { path: 'manuscriptInternallyReviewed', label: 'Manuscript Internally Reviewed' },
+    { path: 'reviewerName', label: 'Reviewer Name' },
+    { path: 'manuscriptPreviouslyPublished', label: 'Manuscript Previously Published' },
+  ];
+
+  private readonly declarationFieldChecks: Array<{ path: string; label: string; target?: string }> = [
+    { path: 'agreeToTerms', label: 'Terms Agreement' },
+    { path: 'acknowledgeGrantFunder', label: 'Grant Funder Acknowledgement' },
+  ];
 
   constructor(private fb: FormBuilder) {
     this.applicantDetailsForm = this.fb.group({
@@ -464,6 +519,13 @@ export class ConferenceApplication implements OnInit {
         vcComment: ['', Validators.maxLength(500)],
         hrComment: ['', Validators.maxLength(500)],
       }),
+    });
+
+    effect(() => {
+      this.syncReviewCommentRequired('hosComment', this.workflow.isHosEditable());
+      this.syncReviewCommentRequired('rmcComment', this.workflow.isRmcEditable());
+      this.syncReviewCommentRequired('vcComment', this.workflow.isVcEditable());
+      this.syncReviewCommentRequired('hrComment', this.workflow.isHrEditable());
     });
   }
 
@@ -598,17 +660,256 @@ export class ConferenceApplication implements OnInit {
     }
   }
 
-  private markStepChecked(step: number) {
-    this.checkedSteps.add(step);
-    this.stepStatuses.update((statuses) => {
-      const updated = [...statuses];
-      if (updated[step - 1]) {
-        updated[step - 1].visited = true;
+  goToMissingField(event: { step: number; field: MissingField }): void {
+    this.goToStep(event.step);
+    const field = event.field;
+    const target = typeof field === 'string' ? field : field.target ?? field.label;
+
+    setTimeout(() => {
+      const escapedTarget = target.replace(/"/g, '\\"');
+      const selector = '[data-missing-field-target="' + escapedTarget + '"], [formControlName="' + escapedTarget + '"]';
+      const element = document.querySelector<HTMLElement>(selector);
+      const focusTarget = this.getSafeMissingFieldFocusTarget(element);
+      const scrollTarget = this.getMissingFieldScrollTarget(element, focusTarget);
+
+      scrollTarget?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      this.highlightMissingFieldTarget(scrollTarget ?? element ?? undefined);
+      focusTarget?.focus({ preventScroll: true });
+
+      if (focusTarget && this.canProgrammaticallyClickMissingField(focusTarget)) {
+        focusTarget.click();
       }
-      return updated;
     });
   }
 
+  private getSafeMissingFieldFocusTarget(element?: HTMLElement | null): HTMLElement | undefined {
+    if (!element) return undefined;
+    const target = element.matches('input, textarea, select, button, [tabindex]')
+      ? element
+      : element.querySelector<HTMLElement>('input, textarea, select, button, [tabindex]');
+
+    if (!target) return undefined;
+    if (this.isValueChangingChoiceControl(target)) {
+      return this.getMissingFieldScrollTarget(element, target);
+    }
+    return target;
+  }
+
+  private getMissingFieldScrollTarget(
+    element?: HTMLElement | null,
+    focusTarget?: HTMLElement,
+  ): HTMLElement | undefined {
+    const source = focusTarget ?? element ?? undefined;
+    if (!source) return undefined;
+    return (
+      source.closest<HTMLElement>('[data-missing-field-target], .form-field, .form-group, .radio-group, .checkbox-group, .toggle-group') ??
+      source
+    );
+  }
+
+  private canProgrammaticallyClickMissingField(element: HTMLElement): boolean {
+    if (this.isValueChangingChoiceControl(element)) return false;
+    if (element.matches('input[type="file"]')) return false;
+    return element.matches('button, select, input[type="date"], input[type="datetime-local"], [role="combobox"]');
+  }
+
+  private isValueChangingChoiceControl(element: HTMLElement): boolean {
+    const input = element instanceof HTMLInputElement ? element : null;
+    if (input && ['radio', 'checkbox'].includes(input.type)) return true;
+    const role = element.getAttribute('role');
+    return role === 'switch' || role === 'checkbox' || role === 'radio';
+  }
+
+  private highlightMissingFieldTarget(element?: HTMLElement): void {
+    if (!element) return;
+    const previousOutline = element.style.outline;
+    const previousBoxShadow = element.style.boxShadow;
+    const previousBorderRadius = element.style.borderRadius;
+    element.style.outline = '2px solid var(--color-primary)';
+    element.style.boxShadow = '0 0 0 4px var(--color-primary-light)';
+    element.style.borderRadius = 'var(--radius-md)';
+
+    window.setTimeout(() => {
+      element.style.outline = previousOutline;
+      element.style.boxShadow = previousBoxShadow;
+      element.style.borderRadius = previousBorderRadius;
+    }, 1800);
+  }
+
+  private markStepChecked(step: number) {
+    this.checkedSteps.add(step);
+  }
+
+  getStepStatuses(): StepStatus[] {
+    const missingByStep = [
+      this.getConferenceDetailsMissingFields(),
+      this.getAuthorDetailsMissingFields(),
+      this.getSupportingDocumentsMissingFields(),
+      this.getDeclarationMissingFields(),
+    ];
+
+    return this.wizardSteps.map((_, index) => ({
+      visited: this.checkedSteps.has(index + 1),
+      valid: missingByStep[index].length === 0,
+      missingFields: missingByStep[index],
+    }));
+  }
+
+  private getConferenceDetailsMissingFields(): MissingField[] {
+    if (!this.workflow.isApplicantEditable()) return [];
+    if (this.conferenceDetailsStep?.form) {
+      const missing = [
+        ...this.getMissingFromValue(
+          this.applicantDetailsForm.getRawValue(),
+          this.applicantDetailsFieldChecks,
+        ),
+        ...this.getInvalidLabelsFromForm(
+          this.conferenceDetailsStep.form,
+          this.conferenceDetailsFieldChecks,
+        ),
+      ];
+      this.conferenceDetailsStep.activities.controls.forEach((control) => {
+        if (control.invalid) missing.push({ label: 'Activity Table', target: 'activityTable' });
+      });
+      return this.uniqueLabels(missing);
+    }
+
+    const state = this.formStateService.getFormSection('conferenceDetails') ?? {};
+    return this.uniqueLabels([
+      ...this.getMissingFromValue(
+        this.applicantDetailsForm.getRawValue(),
+        this.applicantDetailsFieldChecks,
+      ),
+      ...this.getMissingFromValue(state, this.conferenceDetailsFieldChecks, {
+        bookingDoneByOther: state['bookingDoneBy'] === 'other',
+        advanceReason: state['hasAdvance'] === 'yes',
+        selectedColleagues: state['hasColleagues'] === 'yes',
+        citedJournalPaperExplanation: state['citedJournalPaper'] === 'no',
+      }),
+      ...this.getInvalidActivityLabels(state['activities']),
+    ]);
+  }
+
+  private getAuthorDetailsMissingFields(): MissingField[] {
+    return [];
+  }
+
+  private getSupportingDocumentsMissingFields(): MissingField[] {
+    if (!this.workflow.isApplicantEditable()) return [];
+    if (this.supportingDocumentsStep?.form) {
+      return this.getInvalidLabelsFromForm(
+        this.supportingDocumentsStep.form,
+        this.supportingDocumentsFieldChecks,
+      );
+    }
+
+    const state = this.formStateService.getFormSection('supportingDocuments') ?? {};
+    return this.getMissingFromValue(state, this.supportingDocumentsFieldChecks);
+  }
+
+  private getDeclarationMissingFields(): MissingField[] {
+    const missing: MissingField[] = [];
+
+    if (this.workflow.isApplicantEditable()) {
+      if (this.declarationStep?.form) {
+        missing.push(...this.getInvalidLabelsFromForm(this.declarationStep.form, this.declarationFieldChecks));
+      } else {
+        const state = this.formStateService.getFormSection('declaration') ?? {};
+        missing.push(...this.getMissingFromValue(state, this.declarationFieldChecks, {}, true));
+      }
+    }
+
+    missing.push(...this.getReviewCommentMissingFields());
+    return this.uniqueLabels(missing);
+  }
+
+  private getInvalidLabelsFromForm(
+    form: FormGroup,
+    checks: Array<{ path: string; label: string; target?: string }>,
+  ): MissingField[] {
+    return checks
+      .filter(({ path }) => {
+        const control = form.get(path);
+        return !!control && control.enabled && control.invalid;
+      })
+      .map(({ path, label, target }) => ({ label, target: target ?? path }));
+  }
+
+  private getMissingFromValue(
+    value: Record<string, unknown>,
+    checks: Array<{ path: string; label: string; target?: string }>,
+    conditionalRequired: Record<string, boolean> = {},
+    requireTrue = false,
+  ): MissingField[] {
+    return checks
+      .filter(({ path }) => {
+        if (conditionalRequired[path] === false) return false;
+        const fieldValue = value[path];
+        return requireTrue ? fieldValue !== true : this.isEmptyRequiredValue(fieldValue);
+      })
+      .map(({ path, label, target }) => ({ label, target: target ?? path }));
+  }
+
+  private getInvalidActivityLabels(activities: unknown): MissingField[] {
+    const rows = Array.isArray(activities) ? activities : [];
+    return rows.some((activity) => {
+      const rowValue = (activity ?? {}) as Record<string, unknown>;
+      return ['date', 'time', 'description'].some((field) => this.isEmptyRequiredValue(rowValue[field]));
+    })
+      ? [{ label: 'Activity Table', target: 'activityTable' }]
+      : [];
+  }
+
+  private getInvalidArrayLabels(
+    rows: unknown,
+    label: string,
+    target: string,
+  ): MissingField[] {
+    if (!Array.isArray(rows)) return [];
+    const hasIncompleteRow = rows.some((row) => {
+      const rowValue = (row ?? {}) as Record<string, unknown>;
+      return Object.entries(rowValue).some(
+        ([field, value]) => field !== 'affiliation' && this.isEmptyRequiredValue(value),
+      );
+    });
+    return hasIncompleteRow ? [{ label, target }] : [];
+  }
+
+  private getReviewCommentMissingFields(): MissingField[] {
+    const checks: Array<{ path: string; label: string; required: boolean }> = [
+      { path: 'hosComment', label: 'HOS Comment', required: this.workflow.isHosEditable() },
+      { path: 'rmcComment', label: 'RMC Comment', required: this.workflow.isRmcEditable() },
+      { path: 'vcComment', label: 'VC Comment', required: this.workflow.isVcEditable() },
+      { path: 'hrComment', label: 'HR Comment', required: this.workflow.isHrEditable() },
+    ];
+
+    const group = this.applicantDetailsForm.get('reviewComments') as FormGroup;
+    return checks
+      .filter(({ path, required }) => required && group.get(path)?.invalid)
+      .map(({ path, label }) => ({ label, target: `reviewComments.${path}` }));
+  }
+
+  private syncReviewCommentRequired(path: string, required: boolean): void {
+    const control = this.applicantDetailsForm.get(`reviewComments.${path}`);
+    if (!control) return;
+    required ? control.addValidators(Validators.required) : control.removeValidators(Validators.required);
+    control.updateValueAndValidity({ emitEvent: false });
+  }
+
+  private isEmptyRequiredValue(value: unknown): boolean {
+    if (Array.isArray(value)) return value.length === 0;
+    return value === null || value === undefined || String(value).trim() === '';
+  }
+
+  private uniqueLabels(labels: MissingField[]): MissingField[] {
+    const seen = new Set<string>();
+    return labels.filter((field) => {
+      const key = typeof field === 'string' ? field : `${field.label}:${field.target ?? ''}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }
   /** Flushes whichever sub-form is currently mounted into the shared state service. */
   private flushActiveStepFormState(): void {
     this.conferenceDetailsStep?.flushFormState();
@@ -1063,6 +1364,7 @@ export class ConferenceApplication implements OnInit {
     });
   }
 }
+
 
 
 

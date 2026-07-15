@@ -5,10 +5,17 @@ export interface WizardStep {
   icon: string; // material icon name
 }
 
+export interface MissingFieldItem {
+  label: string;
+  target?: string;
+}
+
+export type MissingField = string | MissingFieldItem;
+
 export interface StepStatus {
   visited: boolean;
   valid: boolean;
-  missingFields: string[];
+  missingFields: MissingField[];
 }
 
 @Component({
@@ -25,6 +32,7 @@ export class StepIndicatorComponent {
   /** When true, warning steps escalate to red error state */
   @Input() submitAttempted = false;
   @Output() stepClick = new EventEmitter<number>();
+  @Output() missingFieldClick = new EventEmitter<{ step: number; field: MissingField }>();
 
   isActive(index: number) { return index + 1 === this.currentStep; }
 
@@ -70,9 +78,17 @@ export class StepIndicatorComponent {
     return this.isError(index) ? 'Required Before Submit' : 'Missing Information';
   }
 
-  getMissingFields(index: number): string[] {
+  getMissingFields(index: number): MissingField[] {
     const status = this.stepStatuses[index];
     return status?.missingFields ?? [];
+  }
+
+  getMissingFieldLabel(field: MissingField): string {
+    return typeof field === 'string' ? field : field.label;
+  }
+
+  getMissingFieldTrackValue(field: MissingField): string {
+    return typeof field === 'string' ? field : field.label + ':' + (field.target ?? '');
   }
 
   getMissingCountLabel(index: number): string {
@@ -84,10 +100,24 @@ export class StepIndicatorComponent {
     const step = this.steps[index];
     const label = step?.label ?? `Step ${index + 1}`;
     if (!this.showMissingTooltip(index)) return label;
-    return `${label}. ${this.getTooltipTitle(index)}: ${this.getMissingFields(index).join(', ')}`;
+    return `${label}. ${this.getTooltipTitle(index)}: ${this.getMissingFields(index).map((field) => this.getMissingFieldLabel(field)).join(', ')}`;
   }
 
   goToStep(index: number) {
     this.stepClick.emit(index + 1);
   }
+
+  onMissingFieldSelected(event: Event, stepIndex: number, field: MissingField): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.missingFieldClick.emit({ step: stepIndex + 1, field });
+  }
+
+  onMissingFieldKeydown(event: KeyboardEvent, stepIndex: number, field: MissingField): void {
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    this.onMissingFieldSelected(event, stepIndex, field);
+  }
 }
+
+
+

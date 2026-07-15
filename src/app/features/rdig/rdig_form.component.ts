@@ -406,7 +406,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
     if (!this.showValidationSummary()) return [];
 
     return this.getStepStatuses().flatMap((status, index) =>
-      status.missingFields.map((label) => ({ label, step: index + 1 })),
+      status.missingFields.map((field) => ({ label: typeof field === 'string' ? field : field.label, step: index + 1 })),
     );
   }
 
@@ -1904,3 +1904,4 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
     }
   }
 }
+

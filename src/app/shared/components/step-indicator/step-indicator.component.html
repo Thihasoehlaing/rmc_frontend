@@ -36,8 +36,16 @@
             <span class="step-tooltip__count">{{ getMissingCountLabel(i) }}</span>
           </div>
           <ul class="step-tooltip__list">
-            @for (field of getMissingFields(i); track field) {
-              <li>{{ field }}</li>
+            @for (field of getMissingFields(i); track getMissingFieldTrackValue(field)) {
+              <li>
+                <span
+                  class="step-tooltip__field"
+                  role="button"
+                  tabindex="0"
+                  (click)="onMissingFieldSelected($event, i, field)"
+                  (keydown)="onMissingFieldKeydown($event, i, field)"
+                >{{ getMissingFieldLabel(field) }}</span>
+              </li>
             }
           </ul>
         </div>
@@ -54,3 +62,4 @@
 
   }
 </nav>
+

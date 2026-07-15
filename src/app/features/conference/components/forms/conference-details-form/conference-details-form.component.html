@@ -268,7 +268,7 @@
         <div class="form-field">
           <label class="form-label is-required">Please key in 3 SDG keywords in abstract</label>
           <div
-            class="sdg-keywords-container"
+            class="sdg-keywords-container" data-missing-field-target="sdgKeywords"
             (click)="openSDGKeywordsModal()"
             role="button"
             tabindex="0"
@@ -294,86 +294,6 @@
           <app-validation-message [control]="form.get('sdgKeyword2')"></app-validation-message>
           <app-validation-message [control]="form.get('sdgKeyword3')"></app-validation-message>
         </div>
-      </div>
-    </section>
-
-    <section class="card">
-      <app-custom-subheader title="Advance"></app-custom-subheader>
-      <div class="card__content section-fields">
-        <div class="form-field">
-          <label class="form-label is-required">Is there an advance?</label>
-          <div class="radio-field">
-            <label class="radio-field__option">
-              <input type="radio" value="yes" formControlName="hasAdvance" />
-              <span>Yes</span>
-            </label>
-            <label class="radio-field__option">
-              <input type="radio" value="no" formControlName="hasAdvance" />
-              <span>No</span>
-            </label>
-          </div>
-          <app-validation-message [control]="form.get('hasAdvance')"></app-validation-message>
-        </div>
-
-        @if (form.get('hasAdvance')?.value === 'yes') {
-          <div class="form-field conditional-field">
-            <label class="form-label is-required">Please explain why the advance is needed</label>
-            <textarea
-              class="input--textarea"
-              formControlName="advanceReason"
-              placeholder="Explain why the advance is needed"
-              rows="3"
-              maxlength="500"
-            ></textarea>
-            <app-character-counter
-              [current]="form.get('advanceReason')?.value?.length || 0"
-              [max]="500"
-            ></app-character-counter>
-            <app-validation-message [control]="form.get('advanceReason')"></app-validation-message>
-          </div>
-        }
-      </div>
-    </section>
-
-    <section class="card">
-      <app-custom-subheader title="Colleague Information"></app-custom-subheader>
-      <div class="card__content section-fields">
-        <div class="form-field">
-          <label class="form-label is-required">Does the applicant have any colleagues involved?</label>
-          <div class="radio-field">
-            <label class="radio-field__option">
-              <input type="radio" value="yes" formControlName="hasColleagues" />
-              <span>Yes</span>
-            </label>
-            <label class="radio-field__option">
-              <input type="radio" value="no" formControlName="hasColleagues" />
-              <span>No</span>
-            </label>
-          </div>
-          <app-validation-message [control]="form.get('hasColleagues')"></app-validation-message>
-        </div>
-
-        @if (form.get('hasColleagues')?.value === 'yes') {
-          <div class="form-field conditional-field">
-            <app-searchable-dropdown
-              label="Select Colleagues"
-              [required]="true"
-              [isMulti]="true"
-              [maxSelections]="10"
-              [options]="colleagueOptions()"
-              [loading]="colleaguesLoading()"
-              placeholder="Search and select colleagues"
-              formControlName="selectedColleagues"
-              (searchChange)="onColleagueSearch($event)"
-            >
-            </app-searchable-dropdown>
-            <app-note text="Select up to 10 colleagues."></app-note>
-            <app-validation-message [control]="form.get('selectedColleagues')"></app-validation-message>
-            @if (form.get('selectedColleagues')?.hasError('maxColleagues')) {
-              <p class="form-error-msg">Maximum 10 colleagues can be selected.</p>
-            }
-          </div>
-        }
       </div>
     </section>
 
@@ -407,7 +327,7 @@
           </div>
         </div>
 
-        <div class="activity-table-section" formArrayName="activities">
+        <div class="activity-table-section" formArrayName="activities" data-missing-field-target="activityTable">
           <label class="form-label">Activity Table</label>
           <div class="category-header activity-actions-row">
             <button
@@ -522,6 +442,78 @@
           <app-validation-message [control]="form.get('paperTitle')"></app-validation-message>
         </div>
 
+
+        <div class="row row--2 conference-field-grid">
+          <div class="form-field">
+            <label class="form-label is-required">Is there an advance?</label>
+            <div class="radio-field">
+              <label class="radio-field__option">
+                <input type="radio" value="yes" formControlName="hasAdvance" />
+                <span>Yes</span>
+              </label>
+              <label class="radio-field__option">
+                <input type="radio" value="no" formControlName="hasAdvance" />
+                <span>No</span>
+              </label>
+            </div>
+            <app-validation-message [control]="form.get('hasAdvance')"></app-validation-message>
+          </div>
+
+          <div class="form-field">
+            <label class="form-label is-required">Does the applicant have any colleagues involved?</label>
+            <div class="radio-field">
+              <label class="radio-field__option">
+                <input type="radio" value="yes" formControlName="hasColleagues" />
+                <span>Yes</span>
+              </label>
+              <label class="radio-field__option">
+                <input type="radio" value="no" formControlName="hasColleagues" />
+                <span>No</span>
+              </label>
+            </div>
+            <app-validation-message [control]="form.get('hasColleagues')"></app-validation-message>
+          </div>
+        </div>
+
+        @if (form.get('hasAdvance')?.value === 'yes') {
+          <div class="form-field conditional-field">
+            <label class="form-label is-required">Please explain why the advance is needed</label>
+            <textarea
+              class="input--textarea"
+              formControlName="advanceReason"
+              placeholder="Explain why the advance is needed"
+              rows="3"
+              maxlength="500"
+            ></textarea>
+            <app-character-counter
+              [current]="form.get('advanceReason')?.value?.length || 0"
+              [max]="500"
+            ></app-character-counter>
+            <app-validation-message [control]="form.get('advanceReason')"></app-validation-message>
+          </div>
+        }
+
+        @if (form.get('hasColleagues')?.value === 'yes') {
+          <div class="form-field conditional-field">
+            <app-searchable-dropdown
+              label="Select Colleagues"
+              [required]="true"
+              [isMulti]="true"
+              [maxSelections]="10"
+              [options]="colleagueOptions()"
+              [loading]="colleaguesLoading()"
+              placeholder="Search and select colleagues"
+              formControlName="selectedColleagues"
+              (searchChange)="onColleagueSearch($event)"
+            >
+            </app-searchable-dropdown>
+            <app-note text="Select up to 10 colleagues."></app-note>
+            <app-validation-message [control]="form.get('selectedColleagues')"></app-validation-message>
+            @if (form.get('selectedColleagues')?.hasError('maxColleagues')) {
+              <p class="form-error-msg">Maximum 10 colleagues can be selected.</p>
+            }
+          </div>
+        }
         <div class="form-field">
           <app-searchable-dropdown
             label="Select Region"
@@ -1394,6 +1386,8 @@
     }
   </div>
 </form>
+
+
 
 
 

@@ -669,10 +669,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
   private loadFormState() {
     const savedState = this.formStateService.getFormSection('conferenceDetails');
     if (savedState) {
-      // Create a copy of saved state without selectedRegion and percentage to keep them empty
       const stateWithoutRegion = { ...savedState };
-      delete stateWithoutRegion['selectedRegion'];
-      delete stateWithoutRegion['percentage'];
 
       const supportingDocuments = this.formStateService.getFormSection('supportingDocuments');
       if (supportingDocuments) {
@@ -1545,6 +1542,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     }
   }
 }
+
 
 
 

@@ -51,6 +51,18 @@
                 <option value="inactive">Inactive</option>
               </select>
             </label>
+            @if (usesProjectAccountCodeApi()) {
+              <label search-filters class="mgr-form-filter">
+                <span class="sr-only">Form</span>
+                <app-searchable-dropdown
+                  [options]="formFilterOptions"
+                  [ngModel]="formFilter()"
+                  (ngModelChange)="onFormFilterChange($event)"
+                  valueMode="single"
+                  placeholder="All forms"
+                ></app-searchable-dropdown>
+              </label>
+            }
           </app-submissions-search>
         </div>
 

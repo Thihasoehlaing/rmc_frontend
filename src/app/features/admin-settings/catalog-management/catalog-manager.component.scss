@@ -6,6 +6,30 @@
   grid-template-columns: auto minmax(0, 1fr);
 }
 
+.mgr-form-filter {
+  display: block;
+  position: relative;
+}
+
+:host ::ng-deep .mgr-form-filter app-searchable-dropdown {
+  display: block;
+  width: 100%;
+}
+
+:host ::ng-deep .mgr-form-filter app-searchable-dropdown .dropdown-trigger {
+  height: 38px;
+  min-height: 38px;
+  padding-block: 0;
+  padding-inline: var(--space-4);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-full);
+  background-color: var(--color-surface);
+}
+
+:host ::ng-deep .mgr-form-filter app-searchable-dropdown .placeholder {
+  color: var(--color-label);
+}
+
 .catalog-code-cell {
   font-weight: var(--fw-semibold);
   white-space: nowrap;

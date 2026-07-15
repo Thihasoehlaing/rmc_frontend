@@ -77,6 +77,14 @@ export interface AcademicStaffByDepartmentPayload {
   is_active: boolean;
 }
 
+export interface AcademicStaffOptionRecord {
+  id: number;
+  username: string | null;
+  fullname: string | null;
+  email: string | null;
+  department: string | null;
+}
+
 export interface AcademicStaffByDepartmentResult {
   department_id: number | null;
   department_name: string | null;
@@ -184,6 +192,30 @@ export class AcademicStaffService {
   listDepartments(): Observable<ApiResponse<DepartmentRecord[]>> {
     return this.http.get<ApiResponse<DepartmentRecord[]>>(
       this.departmentsUrl,
+    );
+  }
+
+  listAcademicStaffOptions(
+    filters: {
+      search?: string;
+      departmentId?: number | null;
+    } = {},
+  ): Observable<ApiResponse<AcademicStaffOptionRecord[]>> {
+    let params = new HttpParams();
+
+    if (filters.search?.trim()) {
+      params = params.set('search', filters.search.trim());
+    }
+    if (
+      filters.departmentId !== null &&
+      filters.departmentId !== undefined
+    ) {
+      params = params.set('department_id', filters.departmentId);
+    }
+
+    return this.http.get<ApiResponse<AcademicStaffOptionRecord[]>>(
+      `${this.apiUrl}/rmc/academic-staff`,
+      { params },
     );
   }
 

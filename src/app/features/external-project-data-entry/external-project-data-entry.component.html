@@ -35,28 +35,47 @@
     }
 
     <div class="external-project-form__body">
-      <div class="form-field">
-        <label for="external-grant-category" class="form-label is-required"
-          >External Grant Category</label
+      <div class="form-field grant-category-field">
+        <div class="grant-category-field__header">
+          <label id="external-grant-category-label" class="form-label is-required"
+            >External Grant Category</label
+          >
+          <span class="grant-category-field__hint">
+            Choose one category configured by RMC.
+          </span>
+        </div>
+        <div
+          id="external-grant-category"
+          class="grant-category-options"
+          role="radiogroup"
+          aria-labelledby="external-grant-category-label"
         >
-        <div id="external-grant-category" class="radio-group radio-group--grid">
           @for (category of grantCategories; track category) {
-            <label class="radio-option">
+            <label
+              class="grant-category-option"
+              [class.grant-category-option--selected]="
+                externalProjectForm.controls.externalGrantCategory.value === category
+              "
+              [class.grant-category-option--disabled]="isSaving || isSubmitting"
+            >
               <input
                 type="radio"
-                class="radio-input"
+                class="grant-category-option__input"
                 formControlName="externalGrantCategory"
                 [value]="category"
                 [disabled]="isSaving || isSubmitting"
               />
-              <span>{{ category }}</span>
+              <span class="grant-category-option__marker" aria-hidden="true">
+                <span class="grant-category-option__dot"></span>
+              </span>
+              <span class="grant-category-option__title">{{ category }}</span>
             </label>
           }
         </div>
       </div>
 
       @if (showProjectFlow()) {
-        <section class="card">
+        <section class="card external-details-card">
           <app-custom-subheader
             icon="assignment"
             title="National, International or Industry Project Details"
@@ -465,7 +484,7 @@
       }
 
       @if (isConsultancySelected()) {
-        <section class="card">
+        <section class="card external-details-card">
           <app-custom-subheader icon="work" title="Consultancy Project Details">
           </app-custom-subheader>
 

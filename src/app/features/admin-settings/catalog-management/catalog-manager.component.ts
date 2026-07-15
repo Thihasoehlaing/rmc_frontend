@@ -9,9 +9,11 @@ import {
 import { ActionButtonComponent } from '../../../shared/components/action-button/action-button.component';
 import { DialogComponent } from '../../../shared/components/dialog/dialog.component';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
+import { SearchableDropdownComponent } from '../../../shared/components/searchable-dropdown/searchable-dropdown.component';
 import { SubmissionsSearchComponent } from '../../../shared/components/submissions-search/submissions-search.component';
 import { TableActionIconComponent } from '../../../shared/components/table-action-icon/table-action-icon.component';
 import { ToastService } from '../../../core/services/toast.service';
+import { DropdownOption } from '../../../core/interfaces/components.interface';
 import {
   AdminCatalogItem,
   AdminCatalogKind,
@@ -33,6 +35,7 @@ import { ProjectAccountCodeApi, ProjectAccountCodeService } from './project-acco
     AddOptionModalComponent,
     DialogComponent,
     PaginationComponent,
+    SearchableDropdownComponent,
     SubmissionsSearchComponent,
     TableActionIconComponent,
   ],
@@ -61,8 +64,14 @@ export class CatalogManagerComponent implements OnInit {
   private readonly datePipe = inject(DatePipe);
 
   readonly availableForms = ['Conference Application', 'Journal Publication'];
+  readonly formFilterOptions: DropdownOption<string>[] = [
+    { value: 'all', label: 'All' },
+    { value: 'CONFERENCE', label: 'Conference Application' },
+    { value: 'JOURNAL', label: 'Journal Publication' },
+  ];
   readonly searchQuery = signal('');
   readonly statusFilter = signal<'all' | 'active' | 'inactive'>('all');
+  readonly formFilter = signal<string>('all');
   readonly page = signal(1);
   readonly pageSize = signal(10);
   readonly pageSizeOptions = [10, 15, 30, 50];
@@ -273,6 +282,7 @@ export class CatalogManagerComponent implements OnInit {
   onReset(): void {
     this.searchQuery.set('');
     this.statusFilter.set('all');
+    this.formFilter.set('all');
     this.page.set(1);
     if (this.usesCatalogApi()) {
       this.loadCatalogItems();
@@ -284,6 +294,14 @@ export class CatalogManagerComponent implements OnInit {
     this.page.set(1);
     if (this.usesCatalogApi()) {
       this.loadCatalogItems();
+    }
+  }
+
+  onFormFilterChange(formCode: string | null): void {
+    this.formFilter.set(formCode || 'all');
+    this.page.set(1);
+    if (this.usesProjectAccountCodeApi()) {
+      this.loadProjectAccountCodes();
     }
   }
 
@@ -414,6 +432,7 @@ export class CatalogManagerComponent implements OnInit {
         perPage: this.pageSize(),
         status: this.statusFilter(),
         search: this.searchQuery(),
+        formCode: this.formFilter() === 'all' ? undefined : this.formFilter(),
       })
       .subscribe({
         next: (response) => {

@@ -1,6 +1,6 @@
 import { CommonModule, DatePipe, DecimalPipe } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { finalize, forkJoin, switchMap } from 'rxjs';
 
 import {
@@ -10,7 +10,6 @@ import {
 } from './external-project-api.service';
 import {
   RequestSummaryDto,
-  WorkflowActionDto,
   WorkflowRequestsService,
 } from '../../core/services/workflow-requests.service';
 import { STATUS_COLORS } from '../../core/services/request-display.util';
@@ -24,13 +23,14 @@ interface DetailField {
 @Component({
   selector: 'app-external-project-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule],
   providers: [DatePipe, DecimalPipe],
   templateUrl: './external-project-detail.component.html',
   styleUrl: './external-project-detail.component.scss',
 })
 export class ExternalProjectDetailComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly externalProjectApi = inject(ExternalProjectApiService);
   private readonly requests = inject(WorkflowRequestsService);
   private readonly datePipe = inject(DatePipe);
@@ -41,11 +41,11 @@ export class ExternalProjectDetailComponent implements OnInit {
   request = signal<RequestSummaryDto | null>(null);
   form = signal<ExternalProjectFormData | null>(null);
   categories = signal<ExternalGrantCategory[]>([]);
-  actions = signal<WorkflowActionDto[]>([]);
 
   readonly externalProject = computed(() => this.form()?.external_project ?? null);
   readonly requestId = computed(() => this.request()?.id ?? this.request()?.request_id ?? null);
   readonly canPrint = computed(() => (this.request()?.status_code ?? '').toLowerCase() !== 'draft');
+  readonly backLabel = signal(this.route.snapshot.queryParamMap.get('returnLabel') || 'Admin History');
   readonly categoryName = computed(() => {
     const categoryId = this.externalProject()?.external_grant_category_id;
     return this.categories().find((category) => category.id === categoryId)?.name ?? categoryId ?? '-';
@@ -123,17 +123,15 @@ export class ExternalProjectDetailComponent implements OnInit {
           this.request.set(res.data);
           return forkJoin({
             form: this.externalProjectApi.getForm(requestId),
-            actions: this.requests.getAvailableActions(requestId),
             categories: this.externalProjectApi.listGrantCategories(),
           });
         }),
         finalize(() => this.loading.set(false)),
       )
       .subscribe({
-        next: ({ form, actions, categories }) => {
+        next: ({ form, categories }) => {
           this.form.set(form.data);
           this.request.set(form.data.request ?? this.request());
-          this.actions.set(actions.data?.available_actions ?? form.data.request?.available_actions ?? []);
           this.categories.set(categories.data ?? []);
         },
         error: () => this.error.set('Could not load the external project detail.'),
@@ -184,6 +182,11 @@ export class ExternalProjectDetailComponent implements OnInit {
         error: () => this.error.set('Could not download the print PDF. Please try again.'),
       });
     }
+  }
+
+  goBack(): void {
+    const returnTo = this.route.snapshot.queryParamMap.get('returnTo') || '/submissions/admin-history';
+    void this.router.navigateByUrl(returnTo);
   }
 
   private printFileName(contentDisposition: string | null, fallbackCode: string): string {

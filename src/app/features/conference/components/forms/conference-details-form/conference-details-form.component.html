@@ -298,44 +298,6 @@
     </section>
 
     <section class="card">
-      <app-custom-subheader title="Travel Details"></app-custom-subheader>
-      <div class="card__content section-fields">
-        <div class="form-field">
-          <label class="form-label is-required">Booking Done By</label>
-          <div class="radio-field">
-            <label class="radio-field__option">
-              <input type="radio" value="themselves" formControlName="bookingDoneBy" />
-              <span>Themselves</span>
-            </label>
-            <label class="radio-field__option">
-              <input type="radio" value="other" formControlName="bookingDoneBy" />
-              <span>Other</span>
-            </label>
-          </div>
-          <app-validation-message [control]="form.get('bookingDoneBy')"></app-validation-message>
-        </div>
-
-        @if (form.get('bookingDoneBy')?.value === 'other') {
-          <div class="form-field conditional-field">
-            <label class="form-label is-required">Who is responsible for the booking?</label>
-            <textarea
-              class="input--textarea"
-              formControlName="bookingDoneByOther"
-              placeholder="Enter the person or office responsible for booking"
-              rows="3"
-              maxlength="300"
-            ></textarea>
-            <app-character-counter
-              [current]="form.get('bookingDoneByOther')?.value?.length || 0"
-              [max]="300"
-            ></app-character-counter>
-            <app-validation-message [control]="form.get('bookingDoneByOther')"></app-validation-message>
-          </div>
-        }
-      </div>
-    </section>
-
-    <section class="card">
       <app-custom-subheader title="Advance"></app-custom-subheader>
       <div class="card__content section-fields">
         <div class="form-field">
@@ -355,7 +317,7 @@
 
         @if (form.get('hasAdvance')?.value === 'yes') {
           <div class="form-field conditional-field">
-            <label class="form-label is-required">Why is the advance needed?</label>
+            <label class="form-label is-required">Please explain why the advance is needed</label>
             <textarea
               class="input--textarea"
               formControlName="advanceReason"
@@ -635,6 +597,44 @@
         </div>
       </section>
     }
+
+    <section class="card">
+      <app-custom-subheader title="Travel Details"></app-custom-subheader>
+      <div class="card__content section-fields">
+        <div class="form-field">
+          <label class="form-label is-required">Booking Done By</label>
+          <div class="radio-field">
+            <label class="radio-field__option">
+              <input type="radio" value="themselves" formControlName="bookingDoneBy" />
+              <span>Me (The Applicant)</span>
+            </label>
+            <label class="radio-field__option">
+              <input type="radio" value="other" formControlName="bookingDoneBy" />
+              <span>Other</span>
+            </label>
+          </div>
+          <app-validation-message [control]="form.get('bookingDoneBy')"></app-validation-message>
+        </div>
+
+        @if (form.get('bookingDoneBy')?.value === 'other') {
+          <div class="form-field conditional-field">
+            <label class="form-label is-required">Please specify who is responsible for the booking</label>
+            <textarea
+              class="input--textarea"
+              formControlName="bookingDoneByOther"
+              placeholder="Enter the person or office responsible for booking"
+              rows="3"
+              maxlength="300"
+            ></textarea>
+            <app-character-counter
+              [current]="form.get('bookingDoneByOther')?.value?.length || 0"
+              [max]="300"
+            ></app-character-counter>
+            <app-validation-message [control]="form.get('bookingDoneByOther')"></app-validation-message>
+          </div>
+        }
+      </div>
+    </section>
 
     @if (selectedLocalOrOverseas && researchType) {
       <app-custom-header icon="payments" title="Costing"></app-custom-header>
@@ -1394,10 +1394,6 @@
     }
   </div>
 </form>
-
-
-
-
 
 
 

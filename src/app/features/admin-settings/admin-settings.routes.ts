@@ -14,6 +14,11 @@ export const adminSettingsRoutes: Routes = [
       import('./guidelines/guidelines.component').then(m => m.GuidelinesComponent),
   },
   {
+    path: 'form-setting',
+    loadComponent: () =>
+      import('./form-setting/form-setting.component').then(m => m.FormSettingComponent),
+  },
+  {
     path: 'dropdowns',
     children: [
       {

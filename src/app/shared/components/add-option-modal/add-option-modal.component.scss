@@ -124,6 +124,18 @@
   grid-column: 1 / -1;
 }
 
+.character-counter {
+  margin-top: var(--space-1);
+  color: var(--color-text-muted);
+  font-size: var(--fs-xs);
+  text-align: right;
+}
+
+.character-counter--limit {
+  color: var(--color-warning-dark);
+  font-weight: var(--fw-semibold);
+}
+
 .forms-list {
   display: flex;
   flex-direction: column;

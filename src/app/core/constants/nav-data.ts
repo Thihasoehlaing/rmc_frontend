@@ -161,6 +161,7 @@ export const NAVIGATION_DATA: NavGroup[] = [
                 permission: { anyOf: ['Admin'] },
                 children: [
                     { label: 'Guidelines', icon: 'description', route: '/admin-settings/guidelines', permission: { anyOf: ['Admin'] } },
+                    { label: 'Form Setting', icon: 'dynamic_form', route: '/admin-settings/form-setting', permission: { anyOf: ['Admin'] } },
                     { label: 'Dropdowns', icon: 'list', route: '/admin-settings/dropdowns', permission: { anyOf: ['Admin'] } },
                     { label: 'Manage Project Account Code', icon: 'account_balance_wallet', route: '/admin-settings/manage-project-account-code', permission: { anyOf: ['Admin'] } },
                     { label: 'Manage External Form Category', icon: 'category', route: '/admin-settings/manage-external-form-category', permission: { anyOf: ['Admin'] } },

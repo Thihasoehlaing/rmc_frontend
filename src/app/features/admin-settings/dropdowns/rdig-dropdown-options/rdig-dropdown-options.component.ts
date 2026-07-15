@@ -380,7 +380,6 @@ export class RdigDropdownOptionsComponent implements OnInit {
       key: 'sequence',
       label: 'No.',
       width: '64px',
-      align: 'center',
     };
 
     if (this.isRdigSimpleNameStatusCategory()) {

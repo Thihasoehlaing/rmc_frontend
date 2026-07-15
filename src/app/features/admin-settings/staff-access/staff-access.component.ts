@@ -56,11 +56,11 @@ export class StaffAccessComponent implements OnInit {
   private readonly toast = inject(ToastService);
 
   readonly columns: DataTableColumn[] = [
-    { key: 'no', label: 'No.', width: '5rem', align: 'center', headerAlign: 'center' },
+    { key: 'no', label: 'No.', width: '5rem' },
     { key: 'name', label: 'Staff Name', width: '22rem' },
     { key: 'department', label: 'Department', width: '13rem' },
     { key: 'email', label: 'Email', width: '17rem' },
-    { key: 'status', label: 'Status', width: '9rem', align: 'center', headerAlign: 'center' },
+    { key: 'status', label: 'Status', width: '9rem' },
     { key: 'blockedDate', label: 'Blocked Date', sortable: true, width: '11rem' },
     { key: 'reason', label: 'Reason', width: '8rem', align: 'center', headerAlign: 'center' },
     {
@@ -502,7 +502,6 @@ export class StaffAccessComponent implements OnInit {
     return `${day} ${month} ${year}`;
   }
 }
-
 
 
 

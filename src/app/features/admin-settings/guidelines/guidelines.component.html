@@ -108,6 +108,7 @@
         </div>
       } @else {
         <app-data-table
+          class="guidelines-options-table"
           [columns]="columns"
           [rows]="displayedGuidelines()"
           [rowTrackFn]="rowTrackFn"
@@ -117,10 +118,10 @@
         >
           <ng-template #rowTemplate let-row let-index="index" let-columns="columns">
             <tr>
-              <td class="center">{{ rowNumber(index) }}</td>
+              <td>{{ rowNumber(index) }}</td>
               <td>{{ row.form }}</td>
               <td>{{ row.title }}</td>
-              <td class="center">
+              <td>
                 <span
                   class="guideline-status"
                   [class.is-active]="row.isActive"
@@ -252,7 +253,6 @@
     </div>
   </app-dialog>
 </div>
-
 
 
 

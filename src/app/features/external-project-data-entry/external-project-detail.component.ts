@@ -68,8 +68,9 @@ export class ExternalProjectDetailComponent implements OnInit {
     const project = this.externalProject();
     return [
       { label: 'External Grant Category', value: this.categoryName() },
-      { label: 'Project Code', value: project?.project_code },
-      { label: 'Account Code', value: project?.account_code },
+      { label: 'Project Account Code', value: project?.project_account_code ?? project?.project_code },
+      { label: 'Reference Code', value: project?.reference_code ?? project?.account_code },
+      { label: 'Description', value: project?.description },
       { label: 'Staff Name', value: project?.staff_name },
       { label: 'School / Department', value: project?.school_department },
       { label: 'Sponsor Name', value: project?.sponsor_name },

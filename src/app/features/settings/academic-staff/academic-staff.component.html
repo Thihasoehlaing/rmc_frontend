@@ -341,21 +341,21 @@
     size="small"
     (close)="closeDepartmentDialog()"
   >
-    <div class="form-editor">
+    <div class="form-editor academic-staff-bulk-dialog">
       <div class="academic-staff-picker">
-        <label class="forms-filter">
-          <span>Department</span>
+        <div class="forms-filter">
           <app-searchable-dropdown
+            label="Departments"
             [options]="departmentOptions()"
+            [isMulti]="true"
             [searchable]="true"
-            placeholder="Select department"
-            [ngModel]="selectedBulkDepartmentId()"
-            (ngModelChange)="selectedBulkDepartmentId.set($event)"
+            placeholder="Select departments"
+            [formControl]="bulkDepartmentControl"
             [loading]="isLoading()"
           >
           </app-searchable-dropdown>
-          <small>All active eligible staff from this department will be added.</small>
-        </label>
+          <small>All active eligible staff from the selected departments will be added.</small>
+        </div>
       </div>
 
       <label class="active-switch">
@@ -371,25 +371,25 @@
           <small>Newly added staff will be available in academic workflows.</small>
         </span>
       </label>
-    </div>
 
-    <div dialog-footer class="form-dialog__footer">
-      <button
-        class="btn btn-secondary"
-        type="button"
-        [disabled]="isBulkSaving()"
-        (click)="closeDepartmentDialog()"
-      >
-        Cancel
-      </button>
-      <button
-        class="btn btn-primary"
-        type="button"
-        [disabled]="isBulkSaving() || selectedBulkDepartmentId() === null"
-        (click)="saveAcademicStaffByDepartment()"
-      >
-        {{ isBulkSaving() ? 'Adding...' : 'Add by Department' }}
-      </button>
+      <div class="form-dialog__footer academic-staff-bulk-dialog__footer">
+        <button
+          class="btn btn-secondary"
+          type="button"
+          [disabled]="isBulkSaving()"
+          (click)="closeDepartmentDialog()"
+        >
+          Cancel
+        </button>
+        <button
+          class="btn btn-primary"
+          type="button"
+          [disabled]="isBulkSaving() || bulkDepartmentControl.value.length === 0"
+          (click)="saveAcademicStaffByDepartment()"
+        >
+          {{ isBulkSaving() ? 'Adding...' : 'Add by Department' }}
+        </button>
+      </div>
     </div>
   </app-dialog>
 

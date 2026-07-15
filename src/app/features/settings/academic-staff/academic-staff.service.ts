@@ -71,14 +71,17 @@ export interface AcademicStaffPayload {
 }
 
 export interface AcademicStaffByDepartmentPayload {
-  department_id: number;
+  department_id?: number;
+  department_ids?: number[];
   type?: 'fulltime' | 'parttime' | 'contract';
   is_active: boolean;
 }
 
 export interface AcademicStaffByDepartmentResult {
-  department_id: number;
-  department_name: string;
+  department_id: number | null;
+  department_name: string | null;
+  department_ids?: number[];
+  department_names?: string[];
   added_count: number;
   skipped_count: number;
   added: AcademicStaffRecord[];

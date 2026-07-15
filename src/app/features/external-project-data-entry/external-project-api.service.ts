@@ -19,8 +19,9 @@ export interface ExternalGrantCategory {
 
 export interface ExternalProjectPayload {
   external_grant_category_id?: number | null;
-  project_code?: string | null;
-  account_code?: string | null;
+  project_account_code?: string | null;
+  reference_code?: string | null;
+  description?: string | null;
   staff_name?: string | null;
   school_department?: string | null;
   sponsor_name?: string | null;

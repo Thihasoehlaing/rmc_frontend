@@ -102,8 +102,9 @@ export class ExternalProjectDataEntryComponent {
 
   readonly externalProjectForm = this.fb.group({
     externalGrantCategory: [''],
-    projectCode: [''],
-    accountCode: [''],
+    projectAccountCode: [''],
+    referenceCode: [''],
+    description: [''],
     staffName: [''],
     schoolDepartment: [''],
     sponsorName: [''],
@@ -719,8 +720,9 @@ export class ExternalProjectDataEntryComponent {
     const value = this.externalProjectForm.getRawValue();
     const categoryId = this.selectedGrantCategoryId();
     const payload: ExternalProjectPayload = {
-      project_code: this.clean(value.projectCode),
-      account_code: this.clean(value.accountCode),
+      project_account_code: this.clean(value.projectAccountCode),
+      reference_code: this.clean(value.referenceCode),
+      description: this.clean(value.description),
       staff_name: this.clean(value.staffName),
       school_department: this.clean(value.schoolDepartment),
       sponsor_name: this.clean(value.sponsorName),
@@ -870,8 +872,9 @@ export class ExternalProjectDataEntryComponent {
     this.externalProjectForm.patchValue(
       {
         externalGrantCategory: category?.name ?? this.externalProjectForm.controls.externalGrantCategory.value,
-        projectCode: project.project_code ?? '',
-        accountCode: project.account_code ?? '',
+        projectAccountCode: project.project_account_code ?? project.project_code ?? '',
+        referenceCode: project.reference_code ?? project.account_code ?? '',
+        description: project.description ?? '',
         staffName: project.staff_name ?? '',
         schoolDepartment: project.school_department ?? '',
         sponsorName: project.sponsor_name ?? '',

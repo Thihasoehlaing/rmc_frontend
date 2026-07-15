@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, TrackByFunction, inject, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { finalize, switchMap, tap } from 'rxjs';
 
 import { ToastService } from '../../../core/services/toast.service';
@@ -35,6 +35,7 @@ type StatusFilter = '' | 'Active' | 'Inactive';
     TableActionIconComponent,
     CommonModule,
     FormsModule,
+    ReactiveFormsModule,
     DataTableComponent,
     DialogComponent,
     PaginationComponent,
@@ -86,7 +87,8 @@ export class AcademicStaffComponent implements OnInit {
   readonly isSaving = signal(false);
   readonly academicStaffToDelete = signal<AcademicStaffRecord | null>(null);
   readonly departmentDialogOpen = signal(false);
-  readonly selectedBulkDepartmentId = signal<number | null>(null);
+  readonly selectedBulkDepartmentIds = signal<number[]>([]);
+  readonly bulkDepartmentControl = new FormControl<number[]>([], { nonNullable: true });
   readonly bulkAcademicStaffActive = signal(true);
   readonly isBulkSaving = signal(false);
 
@@ -347,22 +349,25 @@ export class AcademicStaffComponent implements OnInit {
 
   openDepartmentDialog(): void {
     this.departmentDialogOpen.set(true);
-    this.selectedBulkDepartmentId.set(null);
+    this.selectedBulkDepartmentIds.set([]);
+    this.bulkDepartmentControl.setValue([], { emitEvent: false });
     this.bulkAcademicStaffActive.set(true);
   }
 
   closeDepartmentDialog(): void {
     if (this.isBulkSaving()) return;
     this.departmentDialogOpen.set(false);
-    this.selectedBulkDepartmentId.set(null);
+    this.selectedBulkDepartmentIds.set([]);
+    this.bulkDepartmentControl.setValue([], { emitEvent: false });
   }
 
   saveAcademicStaffByDepartment(): void {
-    const departmentId = this.selectedBulkDepartmentId();
-    if (departmentId === null || this.isBulkSaving()) return;
+    const departmentIds = [...new Set(this.bulkDepartmentControl.value)];
+    this.selectedBulkDepartmentIds.set(departmentIds);
+    if (departmentIds.length === 0 || this.isBulkSaving()) return;
 
     const payload: AcademicStaffByDepartmentPayload = {
-      department_id: departmentId,
+      department_ids: departmentIds,
       type: 'fulltime',
       is_active: this.bulkAcademicStaffActive(),
     };
@@ -375,11 +380,15 @@ export class AcademicStaffComponent implements OnInit {
         next: (response) => {
           const added = response.data.added_count;
           const skipped = response.data.skipped_count;
+          const departments = response.data.department_names?.length
+            ? response.data.department_names.join(', ')
+            : response.data.department_name || 'selected department(s)';
           this.toastService.success(
-            `${added} staff added from ${response.data.department_name}. ${skipped} already existed.`,
+            `${added} staff added from ${departments}. ${skipped} already existed.`,
           );
           this.departmentDialogOpen.set(false);
-          this.selectedBulkDepartmentId.set(null);
+          this.selectedBulkDepartmentIds.set([]);
+          this.bulkDepartmentControl.setValue([], { emitEvent: false });
           this.page.set(1);
           this.loadAcademicStaff();
         },

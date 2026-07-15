@@ -66,13 +66,20 @@
           <div class="card__content section-fields">
             <div class="row row--3">
               <div class="form-field">
-                <label class="form-label is-required">Project Code</label>
-                <input type="text" class="input--text" formControlName="projectCode" />
+                <label class="form-label is-required">Project Account Code</label>
+                <input type="text" class="input--text" formControlName="projectAccountCode" />
               </div>
               <div class="form-field">
-                <label class="form-label">Account Code</label>
-                <input type="text" class="input--text" formControlName="accountCode" />
+                <label class="form-label">Reference Code</label>
+                <input type="text" class="input--text" formControlName="referenceCode" />
               </div>
+              <div class="form-field">
+                <label class="form-label">Description</label>
+                <input type="text" class="input--text" formControlName="description" />
+              </div>
+            </div>
+
+            <div class="row row--3">
               <div class="form-field">
                 <label class="form-label is-required">Project Leader/Principle Investigator</label>
                 <app-searchable-dropdown
@@ -83,9 +90,6 @@
                 >
                 </app-searchable-dropdown>
               </div>
-            </div>
-
-            <div class="row row--3">
               <div class="form-field">
                 <label class="form-label is-required">Grant Name</label>
                 <input type="text" class="input--text" formControlName="grantName" />
@@ -466,14 +470,18 @@
           </app-custom-subheader>
 
           <div class="card__content section-fields">
-            <div class="row row--2">
+            <div class="row row--3">
               <div class="form-field">
-                <label class="form-label is-required">Project Code</label>
-                <input type="text" class="input--text" formControlName="projectCode" />
+                <label class="form-label is-required">Project Account Code</label>
+                <input type="text" class="input--text" formControlName="projectAccountCode" />
               </div>
               <div class="form-field">
-                <label class="form-label">Account Code</label>
-                <input type="text" class="input--text" formControlName="accountCode" />
+                <label class="form-label">Reference Code</label>
+                <input type="text" class="input--text" formControlName="referenceCode" />
+              </div>
+              <div class="form-field">
+                <label class="form-label">Description</label>
+                <input type="text" class="input--text" formControlName="description" />
               </div>
             </div>
 

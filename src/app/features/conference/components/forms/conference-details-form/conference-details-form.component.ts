@@ -36,6 +36,7 @@ import {
 } from '../../../../../shared/validators/sdg-keyword.validator';
 
 import { TableActionIconComponent } from '../../../../../shared/components/table-action-icon/table-action-icon.component';
+import { AdminCatalogStoreService } from '../../../../admin-settings/catalog-management/admin-catalog-store.service';
 
 @Component({
   selector: 'app-conference-details-form',
@@ -65,6 +66,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
 
   private breakdownOptionsService = inject(BreakdownOptionsService);
   private readonly masterData = inject(MasterDataService);
+  private readonly adminCatalogs = inject(AdminCatalogStoreService);
   form!: FormGroup;
   breakdownForm!: FormGroup;
   sdgKeywordsForm!: FormGroup;
@@ -102,6 +104,10 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
       } else {
         this.form?.enable({ emitEvent: false });
       }
+    });
+
+    effect(() => {
+      this.projectAccountCodeOptions.set(this.getManagedProjectAccountCodeOptions());
     });
   }
 
@@ -413,8 +419,14 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     });
 
     this.masterData.getProjectAccountCodes().subscribe((res) => {
+      const managedOptions = this.getManagedProjectAccountCodeOptions();
       this.projectAccountCodeOptions.set(
-        (res.data ?? []).map((c) => ({ value: c.code, label: `${c.code} - ${c.description}` })),
+        managedOptions.length
+          ? managedOptions
+          : (res.data ?? []).map((c) => ({
+              value: c.code,
+              label: c.description ? `${c.code} - ${c.description}` : c.code,
+            })),
       );
     });
 
@@ -435,6 +447,13 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     });
 
     this.loadColleagueOptions();
+  }
+
+  private getManagedProjectAccountCodeOptions(): DropdownOption[] {
+    return this.adminCatalogs.activeProjectAccountCodes('Conference Application').map((item) => ({
+      value: item.code ?? item.name,
+      label: item.code ? `${item.code} - ${item.name}` : item.name,
+    }));
   }
 
   ngOnDestroy() {
@@ -814,7 +833,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     return {
       value: member.username || member.id.toString(),
       label: member.fullname || member.username,
-      description: [member.email, member.department].filter(Boolean).join(' � '),
+      description: [member.email, member.department].filter(Boolean).join(' • '),
     };
   }
 
@@ -1148,7 +1167,6 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
 
     // Formula: A = min((T × P / 100), T - E), with minimum value of 0
     const percentageAmount = (totalAmount * percentage) / 100;
-
     return Math.max(0, Math.min(percentageAmount, remainingAmount));
   }
 
@@ -1527,8 +1545,6 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     }
   }
 }
-
-
 
 
 

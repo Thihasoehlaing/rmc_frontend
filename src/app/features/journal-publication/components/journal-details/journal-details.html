@@ -92,9 +92,29 @@
                   <input type="radio" formControlName="scopusQuartile" value="Q2" />
                   <span><strong>Q2:</strong> 50th - 74th percentile</span>
                 </label>
-                <label class="radio-option">
-                  <input type="radio" formControlName="scopusQuartile" value="Q3" />
+                <label
+                  class="radio-option"
+                  [class.radio-option--disabled]="researchType === 'non-research'"
+                  [attr.tabindex]="researchType === 'non-research' ? 0 : null"
+                  [attr.aria-describedby]="
+                    researchType === 'non-research' ? 'q3-unavailable-reason' : null
+                  "
+                >
+                  @if (researchType === 'non-research') {
+                    <input type="radio" value="Q3" disabled />
+                  } @else {
+                    <input type="radio" formControlName="scopusQuartile" value="Q3" />
+                  }
                   <span><strong>Q3:</strong> 25th - 49th percentile</span>
+                  @if (researchType === 'non-research') {
+                    <span
+                      id="q3-unavailable-reason"
+                      class="quartile-unavailable-tooltip"
+                      role="tooltip"
+                    >
+                      Q3 is only available for External Research Projects.
+                    </span>
+                  }
                 </label>
               </div>
               <app-validation-message

@@ -83,6 +83,20 @@ export const adminSettingsRoutes: Routes = [
       ),
   },
   {
+    path: 'manage-project-account-code',
+    loadComponent: () =>
+      import('./catalog-management/manage-project-account-code.component').then(
+        m => m.ManageProjectAccountCodeComponent,
+      ),
+  },
+  {
+    path: 'manage-external-form-category',
+    loadComponent: () =>
+      import('./catalog-management/manage-external-form-category.component').then(
+        m => m.ManageExternalFormCategoryComponent,
+      ),
+  },
+  {
     path: 'batch-sitting',
     canActivate: [permissionGuard],
     data: {

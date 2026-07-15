@@ -1,0 +1,44 @@
+:host {
+  display: block;
+}
+
+.settings-card__header-row--without-action {
+  grid-template-columns: auto minmax(0, 1fr);
+}
+
+.catalog-code-cell {
+  font-weight: var(--fw-semibold);
+  white-space: nowrap;
+}
+
+.catalog-date-cell {
+  white-space: pre-line;
+}
+
+.catalog-empty-state {
+  padding: var(--space-8);
+  color: var(--color-text-muted);
+  text-align: center;
+
+  .material-icons,
+  strong,
+  span {
+    display: block;
+  }
+
+  .material-icons {
+    margin-bottom: var(--space-2);
+    font-size: var(--fs-3xl);
+  }
+
+  strong {
+    margin-bottom: var(--space-1);
+    color: var(--color-heading);
+  }
+}
+
+.delete-dialog-note {
+  margin-top: var(--space-3);
+  color: var(--color-text-muted);
+  font-size: var(--fs-sm);
+}

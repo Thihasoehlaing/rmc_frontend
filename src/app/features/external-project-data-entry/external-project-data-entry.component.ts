@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, DestroyRef, inject } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, DestroyRef, effect, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -16,6 +16,7 @@ import { DialogComponent } from '../../shared/components/dialog/dialog.component
 import { DropdownOption } from '../../core/interfaces/components.interface';
 
 import { TableActionIconComponent } from '../../shared/components/table-action-icon/table-action-icon.component';
+import { AdminCatalogStoreService } from '../admin-settings/catalog-management/admin-catalog-store.service';
 import {
   BudgetItemPayload,
   BudgetSectionPayload,
@@ -94,6 +95,7 @@ export class ExternalProjectDataEntryComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly externalProjectApi = inject(ExternalProjectApiService);
+  private readonly adminCatalogs = inject(AdminCatalogStoreService);
   private requestId = Number(this.route.snapshot.queryParamMap.get('id')) || null;
   private readonly grantCategoryByName = new Map<string, ExternalGrantCategory>();
   private readonly grantCategoryById = new Map<number, ExternalGrantCategory>();
@@ -267,6 +269,14 @@ export class ExternalProjectDataEntryComponent {
   ];
 
   constructor() {
+    effect(() => {
+      const managedCategories = this.getManagedGrantCategoryNames();
+      if (managedCategories.length) {
+        this.grantCategories = managedCategories;
+        this.cdr.markForCheck();
+      }
+    });
+
     this.loadOptionsAndInitialForm();
 
     merge(
@@ -347,7 +357,14 @@ export class ExternalProjectDataEntryComponent {
       this.grantCategoryByName.set(category.name, category);
       this.grantCategoryById.set(category.id, category);
     });
-    this.grantCategories = categories.map((category) => category.name);
+    const managedCategories = this.getManagedGrantCategoryNames();
+    this.grantCategories = managedCategories.length
+      ? managedCategories
+      : categories.map((category) => category.name);
+  }
+
+  private getManagedGrantCategoryNames(): string[] {
+    return this.adminCatalogs.activeExternalGrantCategories().map((category) => category.name);
   }
 
   isNationalSelected(): boolean {
@@ -1074,4 +1091,3 @@ export class ExternalProjectDataEntryComponent {
     };
   }
 }
-

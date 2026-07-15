@@ -201,7 +201,6 @@ export class RdigDropdownOptionsComponent implements OnInit {
     'Research Cluster': ['RDIG Application', 'RA/GRA Application'],
     'Type of Organisation': ['RDIG Application', 'Conference Application', 'Journal Application'],
     'Item Description': ['Conference Application', 'Journal Application', 'Travel Authorisation'],
-    'Project Account Code': ['Conference Application', 'Journal Application'],
     'Vote Number Description': ['Conference Application', 'Journal Application'],
   };
 
@@ -312,7 +311,6 @@ export class RdigDropdownOptionsComponent implements OnInit {
       title: 'Conference Application',
       categories: [
         'Select Region',
-        'Project Account Code',
         'Vote Number Description',
         'Type of Organisation',
       ],
@@ -323,7 +321,6 @@ export class RdigDropdownOptionsComponent implements OnInit {
       id: 4,
       title: 'Journal Application',
       categories: [
-        'Project Account Code',
         'Vote Number Description',
         'Account Code Description',
         'Type of Organisation',
@@ -2305,4 +2302,3 @@ export class RdigDropdownOptionsComponent implements OnInit {
     return this.formatDisplayDate(new Date(timestamp));
   }
 }
-

@@ -1,35 +1,18 @@
 <div class="profile-page">
   <header class="profile-header">
     <h1>My Profile</h1>
-    <span class="profile-status">
-      <span class="material-icons">verified</span>
-      Verified APU Account
-    </span>
   </header>
 
   @if (isLoading()) {
     <div class="profile-skeleton" aria-label="Loading profile" aria-busy="true">
-      <div class="skeleton-avatar"></div>
-      <div class="skeleton-identity">
-        <div class="skeleton-line skeleton-line--label"></div>
-        <div class="skeleton-line skeleton-line--name"></div>
-        <div class="skeleton-line skeleton-line--email"></div>
-      </div>
+      <div class="skeleton-photo"></div>
       <div class="skeleton-details">
-        <div class="skeleton-detail">
-          <div class="skeleton-icon"></div>
-          <div class="skeleton-detail__text">
-            <div class="skeleton-line skeleton-line--small"></div>
+        @for (field of [1, 2, 3, 4, 5]; track field) {
+          <div class="skeleton-field">
+            <div class="skeleton-line skeleton-line--label"></div>
             <div class="skeleton-line skeleton-line--value"></div>
           </div>
-        </div>
-        <div class="skeleton-detail">
-          <div class="skeleton-icon"></div>
-          <div class="skeleton-detail__text">
-            <div class="skeleton-line skeleton-line--small"></div>
-            <div class="skeleton-line skeleton-line--wide"></div>
-          </div>
-        </div>
+        }
       </div>
     </div>
   } @else if (loadError()) {
@@ -38,31 +21,64 @@
       {{ loadError() }}
     </div>
   } @else if (profile(); as user) {
-    <section class="identity-card">
-      <div class="identity-primary">
-        <div class="identity-avatar">{{ initials() }}</div>
-        <div class="identity-summary">
-          <span class="identity-label">APU Account</span>
-          <h2>{{ user.name }}</h2>
-          <p>{{ user.email }}</p>
-        </div>
+    <section class="profile-card">
+      <div class="profile-photo-section">
+        <span class="profile-photo-label">Profile photo</span>
+
+        @if (photoUrl() && !photoFailed()) {
+          <div class="profile-photo-frame">
+            <img
+              [src]="photoUrl()!"
+              [alt]="user.name + ' profile photo'"
+              loading="lazy"
+              (error)="onPhotoError()"
+            />
+          </div>
+        } @else {
+          <div
+            class="profile-photo-frame profile-photo-frame--fallback"
+            role="img"
+            [attr.aria-label]="'No profile photo available for ' + user.name"
+          >
+            @if (initials()) {
+              <span class="profile-initials" aria-hidden="true">{{ initials() }}</span>
+            } @else {
+              <span class="material-icons" aria-hidden="true">person</span>
+            }
+          </div>
+          <p class="profile-photo-empty">No photo available</p>
+        }
       </div>
 
-      <div class="identity-details">
-        <div class="identity-detail">
-          <span class="identity-detail__icon material-icons">admin_panel_settings</span>
-          <div>
-            <span class="identity-detail__label">Role</span>
-            <strong>{{ user.role?.name || 'No role assigned' }}</strong>
+      <div class="profile-details">
+        <h2>Profile information</h2>
+
+        <dl class="profile-fields">
+          <div class="profile-field profile-field--wide">
+            <dt>Full name</dt>
+            <dd>{{ user.name || 'Not available' }}</dd>
           </div>
-        </div>
-        <div class="identity-detail">
-          <span class="identity-detail__icon material-icons">business</span>
-          <div>
-            <span class="identity-detail__label">Department</span>
-            <strong>{{ user.department }}</strong>
+
+          <div class="profile-field">
+            <dt>Username</dt>
+            <dd>{{ user.username || 'Not available' }}</dd>
           </div>
-        </div>
+
+          <div class="profile-field">
+            <dt>Email</dt>
+            <dd>{{ user.email || 'Not available' }}</dd>
+          </div>
+
+          <div class="profile-field">
+            <dt>Role</dt>
+            <dd>{{ user.role?.name || 'No role assigned' }}</dd>
+          </div>
+
+          <div class="profile-field">
+            <dt>Department</dt>
+            <dd>{{ user.department || 'Not available' }}</dd>
+          </div>
+        </dl>
       </div>
     </section>
   }

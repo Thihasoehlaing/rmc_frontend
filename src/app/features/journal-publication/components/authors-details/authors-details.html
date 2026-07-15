@@ -175,6 +175,18 @@
       </div>
       <div class="card__content">
         <div class="card-body">
+          @if (isNonApuRequired) {
+            <app-note
+              text="At least one Non-APU co-author is required for Non-Research project type."
+              [isTooltip]="false"
+            >
+            </app-note>
+          }
+          @if (showNonApuRequiredMessage) {
+            <p class="form-error-msg">
+              Please add at least one Non-APU co-author before continuing.
+            </p>
+          }
           <div class="list-section-header">
             <span class="list-count"
               >{{ nonApuCoAuthors.length }}

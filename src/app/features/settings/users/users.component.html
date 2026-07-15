@@ -142,7 +142,17 @@
             <td class="is-align-center">{{ rowNumber(index) }}</td>
             <td>
               <div class="user-identity">
-                <span class="user-avatar">{{ initials(row) }}</span>
+                <span class="user-avatar">
+                  <span>{{ initials(row) }}</span>
+                  @if (row.photo_url) {
+                    <img
+                      [src]="row.photo_url"
+                      [alt]="(row.fullname || row.username || 'User') + ' profile photo'"
+                      loading="lazy"
+                      (error)="onAvatarError($event)"
+                    />
+                  }
+                </span>
                 <div>
                   <strong>{{ row.fullname || 'Name unavailable' }}</strong>
                   <small>{{ row.email || 'No email' }}</small>

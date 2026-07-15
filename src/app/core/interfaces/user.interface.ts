@@ -34,6 +34,7 @@ export type UserGroup =
   | 'Reviewer2'
   | 'RDIG_Chair'
   | 'CEO'
+  | 'Chancellory'
   | 'HR'
   | 'Finance';
 
@@ -49,6 +50,7 @@ export interface User {
   id: string;
   name: string;
   email: string;
+  photoUrl?: string;
   /** Login identifier (used alongside email for authentication) */
   username: string;
   /**

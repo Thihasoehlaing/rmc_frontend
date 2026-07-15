@@ -1,4 +1,3 @@
-
 <form [formGroup]="documentsForm" class="form-section">
   <app-custom-header icon="description" title="Documents"></app-custom-header>
 
@@ -9,7 +8,6 @@
     </div>
     <div class="card__content">
       <div class="section-fields upload-grid">
-
         <div class="form-field">
           <div class="upload-field-header">
             <h3 class="upload-field-title">Acceptance Notification</h3>
@@ -22,7 +20,8 @@
             [maxSizeMB]="MAX_FILE_SIZE_MB"
             [uploadedFileName]="documentsForm.get('acceptanceNotification')?.value"
             placeholder="Upload acceptance notification PDF"
-            (fileSelected)="onDocumentSelected('acceptanceNotification', $any($event))">
+            (fileSelected)="onDocumentSelected('acceptanceNotification', $any($event))"
+          >
           </app-file-upload>
         </div>
 
@@ -38,7 +37,8 @@
             [maxSizeMB]="MAX_FILE_SIZE_MB"
             [uploadedFileName]="documentsForm.get('reviewersFeedback')?.value"
             placeholder="Upload reviewers' feedback PDF"
-            (fileSelected)="onDocumentSelected('reviewersFeedback', $any($event))">
+            (fileSelected)="onDocumentSelected('reviewersFeedback', $any($event))"
+          >
           </app-file-upload>
         </div>
 
@@ -54,8 +54,31 @@
             [maxSizeMB]="MAX_FILE_SIZE_MB"
             [uploadedFileName]="documentsForm.get('scopusEvidencePublication')?.value"
             placeholder="Upload SCOPUS CiteScore screenshot PDF"
-            (fileSelected)="onDocumentSelected('scopusEvidencePublication', $any($event))">
+            (fileSelected)="onDocumentSelected('scopusEvidencePublication', $any($event))"
+          >
           </app-file-upload>
+        </div>
+
+        <div class="form-field">
+          <div class="upload-field-header">
+            <h3 class="upload-field-title">Approval by Strategic Research Institute (SRI)</h3>
+            <p class="upload-field-subtitle">Max file size: 10 MB. PDF ONLY</p>
+          </div>
+          <app-file-upload
+            #sriApprovalUpload
+            label="Approval by Strategic Research Institute (SRI)"
+            [accept]="PDF_ACCEPT"
+            [maxSizeMB]="MAX_FILE_SIZE_MB"
+            [uploadedFileName]="documentsForm.get('sriApproval')?.value"
+            placeholder="Upload SRI approval PDF"
+            (fileSelected)="onDocumentSelected('sriApproval', $any($event))"
+          >
+          </app-file-upload>
+          <app-note
+            text="Please upload SRI approval on IRN country and SDG Keywords."
+            [isTooltip]="false"
+          >
+          </app-note>
         </div>
 
         <div class="form-field">
@@ -70,7 +93,8 @@
             [maxSizeMB]="MAX_FILE_SIZE_MB"
             [uploadedFileName]="documentsForm.get('turnitinReport')?.value"
             placeholder="Upload Turnitin report PDF"
-            (fileSelected)="onDocumentSelected('turnitinReport', $any($event))">
+            (fileSelected)="onDocumentSelected('turnitinReport', $any($event))"
+          >
           </app-file-upload>
         </div>
 
@@ -86,7 +110,8 @@
             [maxSizeMB]="MAX_FILE_SIZE_MB"
             [uploadedFileName]="documentsForm.get('finalPaperDraft')?.value"
             placeholder="Upload final paper draft PDF"
-            (fileSelected)="onDocumentSelected('finalPaperDraft', $any($event))">
+            (fileSelected)="onDocumentSelected('finalPaperDraft', $any($event))"
+          >
           </app-file-upload>
         </div>
 
@@ -102,14 +127,15 @@
             [maxSizeMB]="MAX_FILE_SIZE_MB"
             [uploadedFileName]="documentsForm.get('journalInvoice')?.value"
             placeholder="Upload journal invoice PDF"
-            (fileSelected)="onDocumentSelected('journalInvoice', $any($event))">
+            (fileSelected)="onDocumentSelected('journalInvoice', $any($event))"
+          >
           </app-file-upload>
           <app-note
             text="Please ensure billing name is: Asia Pacific University Sdn. Bhd."
-            [isTooltip]="false">
+            [isTooltip]="false"
+          >
           </app-note>
         </div>
-
       </div>
     </div>
   </section>
@@ -121,7 +147,6 @@
     </div>
     <div class="card__content">
       <div class="section-fields">
-
         <div class="form-field">
           <label class="form-label">Name of Reviewer</label>
           <input
@@ -129,38 +154,47 @@
             class="input--text"
             formControlName="reviewerName"
             placeholder="Enter reviewer name"
-            (input)="stripDigits($event)">
+            (input)="stripDigits($event)"
+          />
         </div>
 
         <div class="form-field">
-          <label class="form-label">The manuscript has been internally reviewed for the quality of content and English?</label>
+          <label class="form-label"
+            >The manuscript has been internally reviewed for the quality of content and
+            English?</label
+          >
           <div class="radio-group">
             <label class="radio-label">
-              <input type="radio" value="yes" formControlName="manuscriptInternallyReviewed">
+              <input type="radio" value="yes" formControlName="manuscriptInternallyReviewed" />
               <span>Yes</span>
             </label>
             <label class="radio-label">
-              <input type="radio" value="no" formControlName="manuscriptInternallyReviewed">
+              <input type="radio" value="no" formControlName="manuscriptInternallyReviewed" />
               <span>No</span>
             </label>
           </div>
         </div>
 
         <div class="form-field">
-          <label class="form-label">Has the manuscript and content been published in another journal or conference etc.?</label>
+          <label class="form-label"
+            >Has the manuscript and content been published in another journal or conference
+            etc.?</label
+          >
           <div class="radio-group">
             <label class="radio-label">
-              <input type="radio" value="yes" formControlName="manuscriptPreviouslyPublished">
+              <input type="radio" value="yes" formControlName="manuscriptPreviouslyPublished" />
               <span>Yes</span>
             </label>
             <label class="radio-label">
-              <input type="radio" value="no" formControlName="manuscriptPreviouslyPublished">
+              <input type="radio" value="no" formControlName="manuscriptPreviouslyPublished" />
               <span>No</span>
             </label>
           </div>
-          <app-note text="Manuscript must not be published previously" [isTooltip]="false"></app-note>
+          <app-note
+            text="Manuscript must not be published previously"
+            [isTooltip]="false"
+          ></app-note>
         </div>
-
       </div>
     </div>
   </section>

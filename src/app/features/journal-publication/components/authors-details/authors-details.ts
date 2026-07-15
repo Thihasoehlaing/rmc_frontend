@@ -48,6 +48,8 @@ export class AuthorsDetails implements OnInit {
   readonly apuAffiliation = 'Asia Pacific University';
   @Output() formValidityChange = new EventEmitter<boolean>();
   form!: FormGroup;
+  projectType: string | null = null;
+  showNonApuRequiredMessage = false;
 
   readonly apuStaffColumns: DataTableColumn[] = [
     { key: 'no', label: '#', width: '5%', align: 'center', headerAlign: 'center' },
@@ -458,6 +460,27 @@ export class AuthorsDetails implements OnInit {
     return this.form.get('nonApuCoAuthors') as FormArray;
   }
 
+  setProjectType(projectType: string | null | undefined): void {
+    this.projectType = projectType ?? null;
+    if (!this.isNonApuRequired || this.hasRequiredNonApuCoAuthor) {
+      this.showNonApuRequiredMessage = false;
+    }
+    this.emitFormValidity();
+  }
+
+  get isNonApuRequired(): boolean {
+    return (this.projectType ?? '').trim().toLowerCase() === 'non-research';
+  }
+
+  get hasRequiredNonApuCoAuthor(): boolean {
+    return !this.isNonApuRequired || this.nonApuCoAuthors.length > 0;
+  }
+
+  markRequirementTouched(): void {
+    this.showNonApuRequiredMessage = this.isNonApuRequired && !this.hasRequiredNonApuCoAuthor;
+    this.emitFormValidity();
+  }
+
   addTestSubsection() {
     this.testSubsections.push(this.createTestSubsection());
     this.emitFormValidity();
@@ -608,7 +631,10 @@ export class AuthorsDetails implements OnInit {
     this.emitFormValidity();
   }
 
-  loadAcademicStaffOptions(search = '', selectedStaffName = this.editForm?.get('staffName')?.value): void {
+  loadAcademicStaffOptions(
+    search = '',
+    selectedStaffName = this.editForm?.get('staffName')?.value,
+  ): void {
     this.staffOptionsLoading = true;
     this.staffOptionsLoadFailed = false;
 
@@ -617,7 +643,7 @@ export class AuthorsDetails implements OnInit {
       .pipe(finalize(() => (this.staffOptionsLoading = false)))
       .subscribe({
         next: (response) => {
-          const staff = response.success ? response.data ?? [] : [];
+          const staff = response.success ? (response.data ?? []) : [];
           this.applyAcademicStaffOptions(staff, selectedStaffName);
         },
         error: () => {
@@ -687,15 +713,16 @@ export class AuthorsDetails implements OnInit {
     };
   }
 
-  private createSelectedStaffFallbackOption(
-    staffName?: string | null,
-  ): DropdownOption<string>[] {
+  private createSelectedStaffFallbackOption(staffName?: string | null): DropdownOption<string>[] {
     const value = staffName?.trim();
     return value ? [{ value, label: value, displayLabel: value }] : [];
   }
 
   private emitFormValidity(): void {
-    this.formValidityChange.emit(this.form.valid);
+    if (this.hasRequiredNonApuCoAuthor) {
+      this.showNonApuRequiredMessage = false;
+    }
+    this.formValidityChange.emit(this.form.valid && this.hasRequiredNonApuCoAuthor);
   }
 
   getModalTitle(): string {

@@ -30,6 +30,7 @@ export interface UserRecord {
   role_code: string | null;
   role_name: string | null;
   job_title: string | null;
+  photo_url: string | null;
   is_student: boolean;
   is_active: boolean;
   last_login_at: string | null;

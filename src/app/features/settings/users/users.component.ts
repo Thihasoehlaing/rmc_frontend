@@ -282,6 +282,10 @@ export class UsersComponent implements OnInit {
       .join('');
   }
 
+  onAvatarError(event: Event): void {
+    (event.target as HTMLImageElement).style.display = 'none';
+  }
+
   formatDate(value: string | null): string {
     if (!value) return 'Never';
     const date = new Date(value);

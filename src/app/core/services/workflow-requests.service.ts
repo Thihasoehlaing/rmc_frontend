@@ -51,6 +51,7 @@ export interface ApprovalDto {
   staff_name: string | null;
   staff_email: string | null;
   action_code: string | null;
+  action_name: string | null;
   from_status_code: string | null;
   to_status_code: string | null;
   action_at: string | null;
@@ -77,7 +78,12 @@ export interface RequestSummaryDto {
   form_name: string | null;
   request_code: string | null;
   batch_id: number | null;
-  batch: { id: number; batch_name: string; start_date: string | null; end_date: string | null } | null;
+  batch: {
+    id: number;
+    batch_name: string;
+    start_date: string | null;
+    end_date: string | null;
+  } | null;
   applicant_staff_username: string | null;
   applicant_name: string | null;
   applicant_email: string | null;
@@ -270,7 +276,9 @@ export class WorkflowRequestsService {
   // ── Status catalogue ──────────────────────────────────────────────────────
   getRequestStatuses(formCode?: string): Observable<ApiResponse<RequestStatusDto[]>> {
     const params = formCode ? new HttpParams().set('form_code', formCode) : undefined;
-    return this.http.get<ApiResponse<RequestStatusDto[]>>(`${this.base}/request-statuses`, { params });
+    return this.http.get<ApiResponse<RequestStatusDto[]>>(`${this.base}/request-statuses`, {
+      params,
+    });
   }
 
   // ── List views ────────────────────────────────────────────────────────────
@@ -289,21 +297,30 @@ export class WorkflowRequestsService {
   }
 
   getPendingRequests(query?: ListQuery): Observable<ApiResponse<PaginatedData<RequestSummaryDto>>> {
-    return this.http.get<ApiResponse<PaginatedData<RequestSummaryDto>>>(`${this.base}/requests/pending`, {
-      params: this.toParams(query),
-    });
+    return this.http.get<ApiResponse<PaginatedData<RequestSummaryDto>>>(
+      `${this.base}/requests/pending`,
+      {
+        params: this.toParams(query),
+      },
+    );
   }
 
   getHistoryRequests(query?: ListQuery): Observable<ApiResponse<PaginatedData<RequestSummaryDto>>> {
-    return this.http.get<ApiResponse<PaginatedData<RequestSummaryDto>>>(`${this.base}/requests/history`, {
-      params: this.toParams(query),
-    });
+    return this.http.get<ApiResponse<PaginatedData<RequestSummaryDto>>>(
+      `${this.base}/requests/history`,
+      {
+        params: this.toParams(query),
+      },
+    );
   }
 
   getAdminHistory(query?: ListQuery): Observable<ApiResponse<PaginatedData<RequestSummaryDto>>> {
-    return this.http.get<ApiResponse<PaginatedData<RequestSummaryDto>>>(`${this.base}/requests/admin-history`, {
-      params: this.toParams(query),
-    });
+    return this.http.get<ApiResponse<PaginatedData<RequestSummaryDto>>>(
+      `${this.base}/requests/admin-history`,
+      {
+        params: this.toParams(query),
+      },
+    );
   }
 
   // ── Single request ────────────────────────────────────────────────────────
@@ -318,17 +335,26 @@ export class WorkflowRequestsService {
   }
 
   getAdminHistoryDetail(requestId: number): Observable<ApiResponse<RequestContextDto>> {
-    return this.http.get<ApiResponse<RequestContextDto>>(`${this.base}/requests/admin-history/${requestId}`);
+    return this.http.get<ApiResponse<RequestContextDto>>(
+      `${this.base}/requests/admin-history/${requestId}`,
+    );
   }
 
-  getFormContext(formCode: string | null | undefined, requestId: number): Observable<ApiResponse<RequestContextDto>> {
+  getFormContext(
+    formCode: string | null | undefined,
+    requestId: number,
+  ): Observable<ApiResponse<RequestContextDto>> {
     switch ((formCode ?? '').toUpperCase()) {
       case 'CONFERENCE':
-        return this.http.get<ApiResponse<RequestContextDto>>(`${this.base}/conference/${requestId}`);
+        return this.http.get<ApiResponse<RequestContextDto>>(
+          `${this.base}/conference/${requestId}`,
+        );
       case 'JOURNAL':
         return this.http.get<ApiResponse<RequestContextDto>>(`${this.base}/journal/${requestId}`);
       case 'EXTERNAL':
-        return this.http.get<ApiResponse<RequestContextDto>>(`${this.base}/requests/external-project/${requestId}`);
+        return this.http.get<ApiResponse<RequestContextDto>>(
+          `${this.base}/requests/external-project/${requestId}`,
+        );
       case 'RDIG':
       default:
         return this.http.get<ApiResponse<RequestContextDto>>(`${this.base}/rdig/${requestId}`);
@@ -336,20 +362,24 @@ export class WorkflowRequestsService {
   }
 
   getRequestWorkflow(requestId: number): Observable<ApiResponse<RequestWorkflowDto>> {
-    return this.http.get<ApiResponse<RequestWorkflowDto>>(`${this.base}/requests/${requestId}/workflow`);
+    return this.http.get<ApiResponse<RequestWorkflowDto>>(
+      `${this.base}/requests/${requestId}/workflow`,
+    );
   }
 
   /** Actions the current user may take on this request right now. */
   getAvailableActions(requestId: number): Observable<ApiResponse<AvailableActionsDto>> {
-    return this.http.get<ApiResponse<AvailableActionsDto>>(`${this.base}/requests/${requestId}/actions`);
+    return this.http.get<ApiResponse<AvailableActionsDto>>(
+      `${this.base}/requests/${requestId}/actions`,
+    );
   }
 
   /** Perform a workflow action (approve/reject/return/resubmit/…) on a request. */
-  actOnRequest(
-    requestId: number,
-    payload: ActOnRequestPayload,
-  ): Observable<ApiResponse<unknown>> {
-    return this.http.post<ApiResponse<unknown>>(`${this.base}/requests/${requestId}/actions`, payload);
+  actOnRequest(requestId: number, payload: ActOnRequestPayload): Observable<ApiResponse<unknown>> {
+    return this.http.post<ApiResponse<unknown>>(
+      `${this.base}/requests/${requestId}/actions`,
+      payload,
+    );
   }
 
   getApprovals(
@@ -363,17 +393,22 @@ export class WorkflowRequestsService {
   }
 
   getComments(requestId: number): Observable<ApiResponse<RequestCommentDto[]>> {
-    return this.http.get<ApiResponse<RequestCommentDto[]>>(`${this.base}/requests/${requestId}/comments`);
+    return this.http.get<ApiResponse<RequestCommentDto[]>>(
+      `${this.base}/requests/${requestId}/comments`,
+    );
   }
 
   createSectionComment(
     requestId: number,
     payload: CreateSectionCommentPayload,
   ): Observable<ApiResponse<RequestCommentDto>> {
-    return this.http.post<ApiResponse<RequestCommentDto>>(`${this.base}/requests/${requestId}/comments`, {
-      ...payload,
-      comment_type: 'section_review',
-    });
+    return this.http.post<ApiResponse<RequestCommentDto>>(
+      `${this.base}/requests/${requestId}/comments`,
+      {
+        ...payload,
+        comment_type: 'section_review',
+      },
+    );
   }
 
   getPrintUrl(requestId: number): string {

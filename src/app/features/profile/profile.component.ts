@@ -20,13 +20,17 @@ export class ProfileComponent implements OnInit {
       .split(/\s+/)
       .filter(Boolean)
       .slice(0, 2)
-      .map(part => part.charAt(0).toUpperCase())
+      .map((part) => part.charAt(0).toUpperCase())
       .join(''),
   );
 
+  readonly photoUrl = computed(() => this.profile()?.photoUrl?.trim() || null);
+  readonly photoFailed = signal(false);
+
   ngOnInit(): void {
     this.authService.loadProfile().subscribe({
-      next: user => {
+      next: (user) => {
+        this.photoFailed.set(false);
         this.profile.set(user);
         this.isLoading.set(false);
       },
@@ -35,5 +39,9 @@ export class ProfileComponent implements OnInit {
         this.isLoading.set(false);
       },
     });
+  }
+
+  onPhotoError(): void {
+    this.photoFailed.set(true);
   }
 }

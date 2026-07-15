@@ -86,6 +86,12 @@ export class JournalReviewComponent implements OnInit {
   readonly nonApuAuthors = computed(() => this.data()?.non_apu_co_authors ?? []);
   readonly costingItems = computed(() => this.data()?.costing_items ?? []);
   readonly attachments = computed(() => this.data()?.attachments ?? []);
+  readonly supportingAttachments = computed(() =>
+    this.attachments().filter((file) => !this.isCostingAttachment(file?.entity_type)),
+  );
+  readonly costingAttachments = computed(() =>
+    this.attachments().filter((file) => this.isCostingAttachment(file?.entity_type)),
+  );
   readonly totalAuthors = computed(
     () => this.staffAuthors().length + this.studentAuthors().length + this.nonApuAuthors().length,
   );
@@ -102,7 +108,7 @@ export class JournalReviewComponent implements OnInit {
         .getRequestByCode(requestCode)
         .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe({
-          next: response => this.openResolvedRequest(response.data),
+          next: (response) => this.openResolvedRequest(response.data),
           error: () => {
             this.error.set('Unable to find this journal application.');
             this.loading.set(false);
@@ -113,8 +119,7 @@ export class JournalReviewComponent implements OnInit {
 
     // Accept the legacy numeric route or query-param entry point as a fallback.
     const raw =
-      this.route.snapshot.paramMap.get('requestId') ??
-      this.route.snapshot.queryParamMap.get('id');
+      this.route.snapshot.paramMap.get('requestId') ?? this.route.snapshot.queryParamMap.get('id');
     const id = Number(raw);
     if (!Number.isFinite(id) || id <= 0) {
       this.error.set('No application id provided.');
@@ -154,7 +159,7 @@ export class JournalReviewComponent implements OnInit {
           this.canAct.set(Boolean(form.data.request?.can_act));
           this.approvals.set(approvals.data?.items ?? []);
           this.sectionComments.set(
-            (comments.data ?? []).filter(comment => comment.comment_type === 'section_review'),
+            (comments.data ?? []).filter((comment) => comment.comment_type === 'section_review'),
           );
         },
         error: () => this.error.set('Unable to load this journal application.'),
@@ -189,7 +194,12 @@ export class JournalReviewComponent implements OnInit {
 
   actionTone(action: WorkflowActionDto): 'positive' | 'resubmit' | 'verified' | 'negative' {
     const label = `${action.action_code} ${action.action_name}`.toLowerCase();
-    if (label.includes('reject') || label.includes('not supported') || label.includes('unverified') || label.includes('not recommended')) {
+    if (
+      label.includes('reject') ||
+      label.includes('not supported') ||
+      label.includes('unverified') ||
+      label.includes('not recommended')
+    ) {
       return 'negative';
     }
     if (label.includes('resubmit')) return 'resubmit';
@@ -200,12 +210,21 @@ export class JournalReviewComponent implements OnInit {
   actionIcon(action: WorkflowActionDto): string {
     const label = `${action.action_code} ${action.action_name}`.toLowerCase();
     if (label.includes('resubmit')) return 'replay';
-    if (label.includes('reject') || label.includes('not supported') || label.includes('unverified') || label.includes('not recommended')) {
+    if (
+      label.includes('reject') ||
+      label.includes('not supported') ||
+      label.includes('unverified') ||
+      label.includes('not recommended')
+    ) {
       return 'close';
     }
     if (label.includes('verified')) return 'verified';
     if (label.includes('recommend')) return 'thumb_up';
     return 'check';
+  }
+
+  approvalActionLabel(history: ApprovalDto): string {
+    return history.action_name?.trim() || this.prettyActor(history.action_code);
   }
 
   prettyActor(code: string | null): string {
@@ -234,6 +253,7 @@ export class JournalReviewComponent implements OnInit {
     const labels: Record<string, string> = {
       reviewers_feedback: "Reviewers' Feedback",
       scopus_citescore_screenshot: 'Scopus CiteScore Screenshot',
+      sri_approval: 'Approval by Strategic Research Institute (SRI)',
       scopus_evidence_publication: 'Scopus Evidence of Publication',
       manuscript: 'Manuscript',
       acceptance_letter: 'Acceptance Letter',
@@ -241,6 +261,9 @@ export class JournalReviewComponent implements OnInit {
       proof_of_payment: 'Proof of Payment',
       supporting_document: 'Supporting Document',
       costing_supporting_document: 'Costing Supporting Document',
+      non_research_project_supporting_document: 'Non-Research Project Supporting Document',
+      external_research_project_supporting_document:
+        'External Research Project Supporting Document',
     };
 
     if (!value) return 'Supporting Document';
@@ -254,8 +277,17 @@ export class JournalReviewComponent implements OnInit {
     return action.requires_remarks ? 'Requires remarks before submission.' : 'No remarks required.';
   }
 
+  private isCostingAttachment(entityType: string | null | undefined): boolean {
+    const value = (entityType ?? '').trim().toLowerCase();
+    return [
+      'costing_supporting_document',
+      'non_research_project_supporting_document',
+      'external_research_project_supporting_document',
+    ].includes(value);
+  }
+
   commentsForSection(sectionCode: string): RequestCommentDto[] {
-    return this.sectionComments().filter(comment => comment.section_code === sectionCode);
+    return this.sectionComments().filter((comment) => comment.section_code === sectionCode);
   }
 
   canWriteSectionComments(): boolean {
@@ -286,12 +318,12 @@ export class JournalReviewComponent implements OnInit {
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe({
-        next: response => {
-          this.sectionComments.update(comments => [response.data, ...comments]);
+        next: (response) => {
+          this.sectionComments.update((comments) => [response.data, ...comments]);
           control?.reset('');
           this.feedback.set({ type: 'success', text: 'Section comment saved.' });
         },
-        error: err => {
+        error: (err) => {
           const msg = err?.error?.message || 'Could not save this section comment.';
           this.feedback.set({ type: 'error', text: msg });
         },
@@ -315,8 +347,8 @@ export class JournalReviewComponent implements OnInit {
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe({
-        next: response => this.openDownload(response.data),
-        error: err => {
+        next: (response) => this.openDownload(response.data),
+        error: (err) => {
           const msg = err?.error?.message || 'Could not prepare this attachment download.';
           this.feedback.set({ type: 'error', text: msg });
         },
@@ -366,7 +398,10 @@ export class JournalReviewComponent implements OnInit {
 
   printRequest(): void {
     if (this.requestId == null) {
-      this.feedback.set({ type: 'error', text: 'Unable to print before the application is loaded.' });
+      this.feedback.set({
+        type: 'error',
+        text: 'Unable to print before the application is loaded.',
+      });
       return;
     }
 
@@ -377,9 +412,7 @@ export class JournalReviewComponent implements OnInit {
     const query = this.route.snapshot.queryParamMap;
     this.returnTo = this.safeInternalPath(query.get('returnTo'));
     this.backLabel.set(
-      query.get('returnLabel')?.trim() ||
-        this.labelFromReturnPath(this.returnTo) ||
-        'Back',
+      query.get('returnLabel')?.trim() || this.labelFromReturnPath(this.returnTo) || 'Back',
     );
   }
 

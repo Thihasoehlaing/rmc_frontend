@@ -38,6 +38,7 @@
 }
 
 .user-avatar {
+  position: relative;
   width: 38px;
   height: 38px;
   flex: 0 0 auto;
@@ -48,6 +49,15 @@
   border-radius: var(--radius-full);
   font-size: var(--fs-xs);
   font-weight: var(--fw-black);
+  overflow: hidden;
+
+  img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
 }
 
 .role-badge,

@@ -158,7 +158,17 @@
             <td class="is-align-center">{{ rowNumber(index) }}</td>
             <td>
               <div class="academic-staff-identity">
-                <span class="academic-staff-avatar">{{ initials(row) }}</span>
+                <span class="academic-staff-avatar">
+                  <span>{{ initials(row) }}</span>
+                  @if (staffPhotoUrl(row)) {
+                    <img
+                      [src]="staffPhotoUrl(row)!"
+                      [alt]="staffName(row) + ' profile photo'"
+                      loading="lazy"
+                      (error)="onAvatarError($event)"
+                    />
+                  }
+                </span>
                 <div>
                   <strong>{{ staffName(row) }}</strong>
                   <small>{{ staffEmail(row) || 'No email' }}</small>

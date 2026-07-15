@@ -27,15 +27,23 @@
   padding: clamp(var(--space-5), 5vw, var(--space-8));
   border: 1px solid color-mix(in srgb, var(--color-primary) 18%, var(--border-default));
   border-radius: 28px;
-  background:
-    linear-gradient(145deg, rgba(255, 255, 255, 0.96), color-mix(in srgb, var(--color-primary) 7%, var(--color-surface)));
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.96),
+    color-mix(in srgb, var(--color-primary) 7%, var(--color-surface))
+  );
   box-shadow: 0 24px 60px rgba(15, 23, 42, 0.08);
 
   &::before {
     content: '';
     position: absolute;
     inset: 0 40% 0 -30%;
-    background: linear-gradient(100deg, transparent, color-mix(in srgb, var(--color-primary) 14%, transparent), transparent);
+    background: linear-gradient(
+      100deg,
+      transparent,
+      color-mix(in srgb, var(--color-primary) 14%, transparent),
+      transparent
+    );
     transform: translateX(-100%);
     animation: review-loading-shine 2.4s ease-in-out infinite;
   }
@@ -53,7 +61,11 @@
   width: 92px;
   height: 92px;
   border-radius: 28px;
-  background: linear-gradient(145deg, color-mix(in srgb, var(--color-primary) 94%, #7c3aed), var(--color-primary));
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--color-primary) 94%, #7c3aed),
+    var(--color-primary)
+  );
   color: white;
   box-shadow: 0 18px 35px color-mix(in srgb, var(--color-primary) 30%, transparent);
   animation: review-loading-float 2.6s ease-in-out infinite;
@@ -110,7 +122,12 @@
   span {
     height: 78px;
     border-radius: 20px;
-    background: linear-gradient(90deg, color-mix(in srgb, var(--color-primary) 7%, white), white, color-mix(in srgb, var(--color-primary) 7%, white));
+    background: linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--color-primary) 7%, white),
+      white,
+      color-mix(in srgb, var(--color-primary) 7%, white)
+    );
     background-size: 220% 100%;
     animation: review-loading-skeleton 1.45s ease-in-out infinite;
   }
@@ -134,8 +151,16 @@
   border: 1px solid color-mix(in srgb, var(--color-primary) 16%, var(--border-default));
   border-radius: 24px;
   background:
-    radial-gradient(circle at top right, color-mix(in srgb, var(--color-primary) 16%, transparent), transparent 34%),
-    linear-gradient(135deg, var(--color-surface) 0%, color-mix(in srgb, var(--color-primary) 7%, var(--color-surface)) 100%);
+    radial-gradient(
+      circle at top right,
+      color-mix(in srgb, var(--color-primary) 16%, transparent),
+      transparent 34%
+    ),
+    linear-gradient(
+      135deg,
+      var(--color-surface) 0%,
+      color-mix(in srgb, var(--color-primary) 7%, var(--color-surface)) 100%
+    );
   box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
 
   @media (max-width: 720px) {
@@ -560,6 +585,17 @@
   letter-spacing: 0.04em;
 }
 
+.costing-documents {
+  margin-top: var(--space-4);
+
+  h3 {
+    margin: 0 0 var(--space-2);
+    color: var(--color-label);
+    font-size: var(--fs-sm);
+    font-weight: var(--fw-bold);
+  }
+}
+
 .download-button {
   grid-column: 1 / -1;
   display: inline-flex;
@@ -657,8 +693,16 @@
 .workflow-action-button {
   --workflow-action-accent: var(--color-primary);
   --workflow-action-bg: color-mix(in srgb, var(--workflow-action-accent) 10%, var(--color-surface));
-  --workflow-action-bg-hover: color-mix(in srgb, var(--workflow-action-accent) 16%, var(--color-surface));
-  --workflow-action-border: color-mix(in srgb, var(--workflow-action-accent) 34%, var(--border-default));
+  --workflow-action-bg-hover: color-mix(
+    in srgb,
+    var(--workflow-action-accent) 16%,
+    var(--color-surface)
+  );
+  --workflow-action-border: color-mix(
+    in srgb,
+    var(--workflow-action-accent) 34%,
+    var(--border-default)
+  );
   --workflow-action-color: var(--workflow-action-accent);
   --workflow-action-shadow: color-mix(in srgb, var(--workflow-action-accent) 14%, transparent);
 

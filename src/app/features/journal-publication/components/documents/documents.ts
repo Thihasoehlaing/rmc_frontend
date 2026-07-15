@@ -3,7 +3,7 @@ import { CustomHeaderComponent } from '../../../../shared/components/custom-head
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
 import { FileUploadComponent } from '../../../../shared/components/file-upload/file-upload.component';
-import { NoteComponent } from '../../../../shared/components/note/note.component'; 
+import { NoteComponent } from '../../../../shared/components/note/note.component';
 import { JournalWorkflowService } from '../../services/journal-workflow.service';
 import {
   JournalAttachmentUpload,
@@ -20,18 +20,27 @@ interface PendingDocumentUpload {
 @Component({
   selector: 'app-documents',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FileUploadComponent, NoteComponent, CustomHeaderComponent],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    FileUploadComponent,
+    NoteComponent,
+    CustomHeaderComponent,
+  ],
   templateUrl: './documents.html',
-  styleUrl: './documents.scss'
+  styleUrl: './documents.scss',
 })
 export class DocumentsComponent implements OnInit {
   @Output() formValidityChange = new EventEmitter<boolean>();
   documentsForm!: FormGroup;
 
   // References to file upload components for manual reset if needed
-  @ViewChild('acceptanceNotificationUpload', { static: false }) acceptanceNotificationUpload?: FileUploadComponent;
-  @ViewChild('reviewersFeedbackUpload', { static: false }) reviewersFeedbackUpload?: FileUploadComponent;
+  @ViewChild('acceptanceNotificationUpload', { static: false })
+  acceptanceNotificationUpload?: FileUploadComponent;
+  @ViewChild('reviewersFeedbackUpload', { static: false })
+  reviewersFeedbackUpload?: FileUploadComponent;
   @ViewChild('scopusEvidenceUpload', { static: false }) scopusEvidenceUpload?: FileUploadComponent;
+  @ViewChild('sriApprovalUpload', { static: false }) sriApprovalUpload?: FileUploadComponent;
   @ViewChild('turnitinReportUpload', { static: false }) turnitinReportUpload?: FileUploadComponent;
   @ViewChild('finalPaperUpload', { static: false }) finalPaperUpload?: FileUploadComponent;
   @ViewChild('journalInvoiceUpload', { static: false }) journalInvoiceUpload?: FileUploadComponent;
@@ -42,6 +51,7 @@ export class DocumentsComponent implements OnInit {
     acceptanceNotification: 'acceptance_notification',
     reviewersFeedback: 'reviewers_feedback',
     scopusEvidencePublication: 'scopus_citescore_screenshot',
+    sriApproval: 'sri_approval',
     turnitinReport: 'turnitin_report',
     finalPaperDraft: 'final_paper_draft',
     journalInvoice: 'journal_invoice',
@@ -71,15 +81,16 @@ export class DocumentsComponent implements OnInit {
       acceptanceNotification: [''],
       reviewersFeedback: [''],
       scopusEvidencePublication: [''],
+      sriApproval: [''],
       turnitinReport: [''],
       finalPaperDraft: [''],
       journalInvoice: [''],
       manuscriptInternallyReviewed: [''],
       reviewerName: [''],
-      manuscriptPreviouslyPublished: ['']
+      manuscriptPreviouslyPublished: [''],
     });
 
-    this.documentsForm.statusChanges.subscribe(status => {
+    this.documentsForm.statusChanges.subscribe((status) => {
       this.formValidityChange.emit(status === 'VALID');
     });
     this.formValidityChange.emit(this.documentsForm.valid);
@@ -105,7 +116,9 @@ export class DocumentsComponent implements OnInit {
       {
         ...attachmentNames,
         reviewerName: journal.reviewer_name || '',
-        manuscriptInternallyReviewed: this.fromOptionalBoolean(journal.is_manuscript_internally_reviewed),
+        manuscriptInternallyReviewed: this.fromOptionalBoolean(
+          journal.is_manuscript_internally_reviewed,
+        ),
         manuscriptPreviouslyPublished: this.fromOptionalBoolean(journal.is_published_elsewhere),
       },
       { emitEvent: false },
@@ -120,12 +133,12 @@ export class DocumentsComponent implements OnInit {
         file,
       });
       this.documentsForm.patchValue({
-        [controlName]: file.name
+        [controlName]: file.name,
       });
     } else {
       this.pendingUploads.delete(controlName);
       this.documentsForm.patchValue({
-        [controlName]: null
+        [controlName]: null,
       });
     }
     this.documentsForm.get(controlName)?.markAsTouched();

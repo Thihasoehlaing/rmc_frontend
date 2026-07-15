@@ -171,6 +171,7 @@ interface AuthCheckResponse {
       email: string;
       id: number;
       name: string;
+      photo_url: string | null;
       role: {
         code: string;
         id: number;
@@ -191,6 +192,7 @@ interface DevAuthUsersResponse {
       email: string;
       department: string;
       job_title: string | null;
+      photo_url?: string | null;
       role: {
         code: string;
         id: number;
@@ -492,6 +494,7 @@ export class AuthService {
       email: checkedUser.email || '',
       department: checkedUser.department || '',
       distinguishedName: checkedUser.distinguished_name,
+      photoUrl: checkedUser.photo_url ?? undefined,
       role,
       groups: this.mapRoleToGroups(role?.code),
     };
@@ -517,6 +520,7 @@ export class AuthService {
       HUMAN_RESOURCE: ['HR'],
       CEO: ['CEO'],
       FINANCE: ['Finance'],
+      CHANCELLORY: ['Chancellory'],
       RDIG_CHAIR: ['RDIG_Chair'],
     };
 

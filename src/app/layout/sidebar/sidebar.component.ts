@@ -91,6 +91,10 @@ export class SidebarComponent implements OnInit {
     }
   }
 
+  onAvatarError(event: Event): void {
+    (event.target as HTMLImageElement).style.display = 'none';
+  }
+
   toggleFolder(folder: NavFolder) {
     const label = folder.label;
     this.expandedFolders.update((set: Set<string>) => {

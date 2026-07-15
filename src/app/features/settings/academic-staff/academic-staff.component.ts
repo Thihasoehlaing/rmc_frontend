@@ -420,6 +420,14 @@ export class AcademicStaffComponent implements OnInit {
     return item.username || item.staff?.username || '';
   }
 
+  staffPhotoUrl(item: AcademicStaffRecord): string | null {
+    return item.photo_url || item.staff?.photo_url || null;
+  }
+
+  onAvatarError(event: Event): void {
+    (event.target as HTMLImageElement).style.display = 'none';
+  }
+
   rowNumber(index: number): number {
     return (this.page() - 1) * this.pageSize() + index + 1;
   }

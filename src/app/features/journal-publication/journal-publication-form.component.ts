@@ -127,6 +127,7 @@ export class JournalPublicationFormComponent {
   ];
 
   validateCurrentStep(markAsTouched: boolean = true): boolean {
+    this.syncAuthorsProjectType();
     let isValid = true;
     switch (this.currentStep) {
       case 1:
@@ -138,6 +139,13 @@ export class JournalPublicationFormComponent {
       case 2:
         if (this.authorsDetailsComponent && this.authorsDetailsComponent.form?.invalid) {
           if (markAsTouched) this.authorsDetailsComponent.form.markAllAsTouched();
+          isValid = false;
+        }
+        if (
+          this.authorsDetailsComponent &&
+          !this.authorsDetailsComponent.hasRequiredNonApuCoAuthor
+        ) {
+          if (markAsTouched) this.authorsDetailsComponent.markRequirementTouched();
           isValid = false;
         }
         break;
@@ -189,6 +197,12 @@ export class JournalPublicationFormComponent {
 
   private getStepMissingLabel(stepNumber: number): string {
     return `Complete ${this.steps[stepNumber - 1]?.label ?? `Step ${stepNumber}`}`;
+  }
+
+  private syncAuthorsProjectType(): void {
+    this.authorsDetailsComponent?.setProjectType(
+      this.journalDetailsComponent?.researchType ?? null,
+    );
   }
 
   get totalSteps(): number {
@@ -294,6 +308,16 @@ export class JournalPublicationFormComponent {
     if (this.isSaving || this.isSubmitting || this.isOptionsLoading) return;
     this.submitAttempted = true;
     this.validateCurrentStep(true);
+    this.syncAuthorsProjectType();
+    if (this.authorsDetailsComponent) {
+      const authorsValid =
+        this.authorsDetailsComponent.form.valid &&
+        this.authorsDetailsComponent.hasRequiredNonApuCoAuthor;
+      if (!authorsValid) {
+        this.authorsDetailsComponent.markRequirementTouched();
+      }
+      this.formValid[2] = authorsValid;
+    }
 
     this.stepStatuses = this.stepStatuses.map((status, index) => ({
       ...status,
@@ -335,11 +359,15 @@ export class JournalPublicationFormComponent {
   }
 
   commentsForActor(actorCode: string): RequestCommentDto[] {
-    return this.sectionComments.filter((comment) => this.normalizeActorCode(comment.actor_type_code) === actorCode);
+    return this.sectionComments.filter(
+      (comment) => this.normalizeActorCode(comment.actor_type_code) === actorCode,
+    );
   }
 
   commentsForActorSection(actorCode: string, sectionCode: string): RequestCommentDto[] {
-    return this.commentsForActor(actorCode).filter((comment) => comment.section_code === sectionCode);
+    return this.commentsForActor(actorCode).filter(
+      (comment) => comment.section_code === sectionCode,
+    );
   }
 
   actorTabsWithComments(): typeof this.commentActors {
@@ -351,13 +379,15 @@ export class JournalPublicationFormComponent {
   }
 
   sectionsWithComments(): typeof this.commentSections {
-    return this.commentSections.filter((section) => this.commentsForSection(section.code).length > 0);
+    return this.commentSections.filter(
+      (section) => this.commentsForSection(section.code).length > 0,
+    );
   }
 
   sectionsWithCommentsForActor(actorCode: string | null): typeof this.commentSections {
     if (!actorCode) return [];
-    return this.commentSections.filter((section) =>
-      this.commentsForActorSection(actorCode, section.code).length > 0,
+    return this.commentSections.filter(
+      (section) => this.commentsForActorSection(actorCode, section.code).length > 0,
     );
   }
 
@@ -366,7 +396,8 @@ export class JournalPublicationFormComponent {
   }
 
   toggleFeedbackActor(actorCode: string): void {
-    this.selectedFeedbackActorCode = this.selectedFeedbackActorCode === actorCode ? null : actorCode;
+    this.selectedFeedbackActorCode =
+      this.selectedFeedbackActorCode === actorCode ? null : actorCode;
   }
 
   prettyActor(actorCode: string | null | undefined): string {
@@ -436,7 +467,9 @@ export class JournalPublicationFormComponent {
       const response = await firstValueFrom(this.workflowRequests.getComments(requestId));
       this.sectionComments = (response.data ?? [])
         .filter((comment) => comment.comment_type === 'section_review')
-        .sort((a, b) => new Date(b.created_at ?? 0).getTime() - new Date(a.created_at ?? 0).getTime());
+        .sort(
+          (a, b) => new Date(b.created_at ?? 0).getTime() - new Date(a.created_at ?? 0).getTime(),
+        );
       this.selectedFeedbackActorCode = this.actorTabsWithComments()[0]?.code ?? null;
     } catch {
       this.sectionComments = [];
@@ -467,7 +500,11 @@ export class JournalPublicationFormComponent {
     }
 
     for (const item of this.journalDetailsComponent?.getCostingSaveItems() ?? []) {
-      const payload = await this.attachCostingSupportingDocument(requestId, item.payload, item.file);
+      const payload = await this.attachCostingSupportingDocument(
+        requestId,
+        item.payload,
+        item.file,
+      );
       await firstValueFrom(this.journalApi.createCostingItem(requestId, payload));
     }
   }
@@ -550,7 +587,9 @@ export class JournalPublicationFormComponent {
   private journalDetailPath(data: JournalFormData, requestId: number): string {
     const request = data.request ?? {};
     const code = request.request_code ?? request.request_no ?? request.code;
-    return code ? `/journal/detail/${encodeURIComponent(String(code))}` : `/submissions/detail/${requestId}`;
+    return code
+      ? `/journal/detail/${encodeURIComponent(String(code))}`
+      : `/submissions/detail/${requestId}`;
   }
 
   private readRequestId(): number | null {
@@ -569,5 +608,4 @@ export class JournalPublicationFormComponent {
     const maybeError = error as { error?: { message?: string }; message?: string };
     return maybeError?.error?.message || maybeError?.message || fallback;
   }
-
 }

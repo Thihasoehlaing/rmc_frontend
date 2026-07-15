@@ -82,7 +82,7 @@ export class SidebarComponent implements OnInit {
   profileOpen = signal(false);
 
   ngOnInit(): void {
-    this.formCache.getForms().subscribe({ error: () => undefined });
+    this.formCache.getActiveForms().subscribe({ error: () => undefined });
   }
 
   toggleProfile() {

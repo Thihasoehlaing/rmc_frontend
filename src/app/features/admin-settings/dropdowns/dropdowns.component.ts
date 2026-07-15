@@ -1,9 +1,13 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, TrackByFunction, signal } from '@angular/core';
+import { Component, OnInit, TrackByFunction, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
+import { finalize } from 'rxjs';
+
+import { FormCacheService } from '../../../core/services/form-cache.service';
 
 interface DropdownSection {
   id: number;
+  formCode: string;
   title: string;
   description: string;
   route?: string;
@@ -19,13 +23,16 @@ interface DropdownSection {
   styleUrls: ['./dropdowns.component.scss'],
 })
 export class DropdownsComponent implements OnInit {
+  private readonly formCache = inject(FormCacheService);
+
   readonly loading = signal(true);
 
-  readonly sections = signal<DropdownSection[]>([
+  private readonly allSections: DropdownSection[] = [
     {
       id: 1,
-      title: 'RDIG Application',
-      description: 'Manage research cluster, organisation type, domains, ESGs, and SDGs.',
+      formCode: 'RDIG',
+      title: 'RDIG Dropdown Options',
+      description: 'Maintain RDIG research clusters, organisation types, domains, ESGs, and SDGs.',
       route: '/admin-settings/dropdowns/rdig-dropdown-options',
       icon: 'science',
       categories: [
@@ -39,62 +46,67 @@ export class DropdownsComponent implements OnInit {
     },
     {
       id: 2,
-      title: 'RA/GRA Application',
-      description: 'Manage programme, supervisor, funding, and research dropdown options.',
+      formCode: 'RA_GRA',
+      title: 'RA/GRA Dropdown Options',
+      description: 'Maintain RA/GRA programme, supervisor, funding, and research dropdown values.',
       route: '/admin-settings/dropdowns/ra-gra-dropdown-options',
       icon: 'school',
       categories: ['Research Cluster', 'Programme Type', 'Supervisor Type', 'Funding Type'],
     },
     {
       id: 3,
-      title: 'Conference Application',
-      description: 'Manage region, vote number, item, and organisation dropdown options.',
+      formCode: 'CONFERENCE',
+      title: 'Conference Dropdown Options',
+      description:
+        'Maintain Conference region, vote number, item, and organisation dropdown values.',
       route: '/admin-settings/dropdowns/conference-dropdown-options',
       icon: 'event',
-      categories: [
-        'Select Region',
-        'Vote Number',
-        'Item Description',
-        'Type of Organisation',
-      ],
+      categories: ['Select Region', 'Vote Number', 'Type of Organisation'],
     },
     {
       id: 4,
-      title: 'Journal Application',
-      description: 'Manage journal vote number, account, item, and organisation dropdown options.',
+      formCode: 'JOURNAL',
+      title: 'Journal Dropdown Options',
+      description:
+        'Maintain Journal vote number, account code, item, and organisation dropdown values.',
       route: '/admin-settings/dropdowns/journal-dropdown-options',
       icon: 'article',
-      categories: [
-        'Vote Number',
-        'Account Code',
-        'Item Description',
-        'Type of Organisation',
-      ],
+      categories: ['Vote Number', 'Account Code', 'Type of Organisation'],
     },
     {
       id: 5,
-      title: 'Travel Authorisation',
-      description: 'Manage travel item description dropdown options.',
+      formCode: 'TRAVEL_AUTH',
+      title: 'Travel Dropdown Options',
+      description: 'Maintain Travel Authorisation item description dropdown values.',
       route: '/admin-settings/dropdowns/travel-dropdown-options',
       icon: 'flight_takeoff',
       categories: ['Item Description'],
     },
     {
       id: 6,
-      title: 'Partnership Application',
-      description: 'Manage partnership type and category dropdown options.',
+      formCode: 'PARTNERSHIP',
+      title: 'Partnership Dropdown Options',
+      description: 'Maintain Partnership type and category dropdown values.',
       route: '/admin-settings/dropdowns/partnership-dropdown-options',
       icon: 'handshake',
       categories: ['Partnership Type', 'Partnership Category'],
     },
-  ]);
+  ];
+
+  readonly sections = computed(() => {
+    const activeFormCodes = this.formCache.activeFormCodes();
+    return this.allSections.filter((section) => activeFormCodes.has(section.formCode));
+  });
 
   trackById: TrackByFunction<DropdownSection> = (_index, section) => section.id;
 
   constructor(private router: Router) {}
 
   ngOnInit(): void {
-    setTimeout(() => this.loading.set(false), 600);
+    this.formCache
+      .getActiveForms()
+      .pipe(finalize(() => this.loading.set(false)))
+      .subscribe({ error: () => undefined });
   }
 
   openSection(section: DropdownSection): void {
@@ -102,9 +114,7 @@ export class DropdownsComponent implements OnInit {
       return;
     }
 
-    const queryParams = section.title === 'RDIG Application'
-      ? { tab: 'RESEARCH_CLUSTER' }
-      : undefined;
+    const queryParams = section.id === 1 ? { tab: 'RESEARCH_CLUSTER' } : undefined;
 
     this.router.navigate([section.route], { queryParams });
   }

@@ -1,25 +1,23 @@
 <section class="dropdowns-page">
-
   <!-- ── Header ──────────────────────────────────────────────────────────── -->
   <header class="dropdowns-page__header">
     <div class="dropdowns-page__title-wrap">
       <h1 class="dropdowns-title">
         <span class="material-icons" aria-hidden="true">tune</span>
-        Dropdowns
+        Dropdown Management
       </h1>
       <p class="dropdowns-subtitle">
-        Select a form to manage its dropdown options. Each form has its own maintainable section.
+        Select a form area to manage the dropdown options used in applications and review forms.
       </p>
     </div>
   </header>
 
   <!-- ── Grid shell ──────────────────────────────────────────────────────── -->
   <section class="dropdowns-grid-shell" aria-label="Dropdown sections">
-
     <!-- Skeleton state -->
     @if (loading()) {
       <div class="dropdowns-skeleton-grid" aria-hidden="true">
-        @for (i of [1,2,3,4,5,6]; track i) {
+        @for (i of [1, 2, 3, 4, 5, 6]; track i) {
           <div class="dropdowns-skeleton-card">
             <div class="dropdowns-skeleton-card__header">
               <span class="skeleton-block dropdowns-skeleton-card__icon"></span>
@@ -30,7 +28,9 @@
             </div>
             <div class="dropdowns-skeleton-card__chips">
               <span class="skeleton-block dropdowns-skeleton-card__chip"></span>
-              <span class="skeleton-block dropdowns-skeleton-card__chip dropdowns-skeleton-card__chip--sm"></span>
+              <span
+                class="skeleton-block dropdowns-skeleton-card__chip dropdowns-skeleton-card__chip--sm"
+              ></span>
               <span class="skeleton-block dropdowns-skeleton-card__chip"></span>
             </div>
             <div class="dropdowns-skeleton-card__footer">
@@ -40,42 +40,48 @@
         }
       </div>
     } @else {
-      <div class="grid">
-        <button
-          *ngFor="let section of sections(); trackBy: trackById"
-          type="button"
-          class="card card-link"
-          [class.card-link--disabled]="!section.route"
-          [disabled]="!section.route"
-          (click)="openSection(section)"
-        >
-          <div class="card__header">
-            <div class="title-with-icon">
-              <span class="material-icons card__icon">{{ section.icon }}</span>
-              <div class="card__heading">
-                <h3 class="card__title">{{ section.title }}</h3>
-                <p class="card__meta">{{ section.description }}</p>
+      @if (sections().length === 0) {
+        <div class="dropdowns-empty">
+          <span class="material-icons" aria-hidden="true">visibility_off</span>
+          <h2>No active dropdown sections</h2>
+          <p>Activate a form in Form Settings to show its dropdown management card here.</p>
+        </div>
+      } @else {
+        <div class="grid">
+          <button
+            *ngFor="let section of sections(); trackBy: trackById"
+            type="button"
+            class="card card-link"
+            [class.card-link--disabled]="!section.route"
+            [disabled]="!section.route"
+            (click)="openSection(section)"
+          >
+            <div class="card__header">
+              <div class="title-with-icon">
+                <span class="material-icons card__icon">{{ section.icon }}</span>
+                <div class="card__heading">
+                  <h3 class="card__title">{{ section.title }}</h3>
+                  <p class="card__meta">{{ section.description }}</p>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div class="card__stats">
-            <span class="chip" *ngFor="let category of section.categories.slice(0, 4)">
-              {{ category }}
-            </span>
-            <span class="chip chip--primary" *ngIf="section.categories.length > 4">
-              +{{ section.categories.length - 4 }}
-            </span>
-          </div>
+            <div class="card__stats">
+              <span class="chip" *ngFor="let category of section.categories.slice(0, 4)">
+                {{ category }}
+              </span>
+              <span class="chip chip--primary" *ngIf="section.categories.length > 4">
+                +{{ section.categories.length - 4 }}
+              </span>
+            </div>
 
-          <div class="card__footer">
-            <span class="card__status" *ngIf="!section.route">Coming soon</span>
-            <span class="material-icons card__arrow" *ngIf="section.route">chevron_right</span>
-          </div>
-        </button>
-      </div>
+            <div class="card__footer">
+              <span class="card__status" *ngIf="!section.route">Coming soon</span>
+              <span class="material-icons card__arrow" *ngIf="section.route">chevron_right</span>
+            </div>
+          </button>
+        </div>
+      }
     }
-
   </section>
-
 </section>

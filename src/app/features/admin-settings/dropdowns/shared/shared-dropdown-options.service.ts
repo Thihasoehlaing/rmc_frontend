@@ -107,7 +107,7 @@ export class SharedDropdownOptionsService {
   private readonly formCache = inject(FormCacheService);
 
   listForms(): Observable<ApiResponse<FormOption[]>> {
-    return this.formCache.getForms();
+    return this.formCache.getActiveForms();
   }
 
   listOptions(params: ListParams): Observable<ApiResponse<PagedResult<DropdownOptionRow>>> {

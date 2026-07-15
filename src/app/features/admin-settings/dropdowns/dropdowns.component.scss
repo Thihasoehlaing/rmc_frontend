@@ -51,14 +51,48 @@
 .dropdowns-grid-shell {
   width: 100%;
   min-width: 0;
-  padding: var(--space-4);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-lg);
-  background: var(--color-surface);
-  box-shadow: var(--shadow-xs);
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 // ── Live grid ─────────────────────────────────────────────────────────────────
+.dropdowns-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 280px;
+  padding: var(--space-8);
+  border: 1px dashed var(--border-default);
+  border-radius: var(--radius-xl);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  text-align: center;
+
+  .material-icons {
+    margin-bottom: var(--space-3);
+    color: var(--color-primary);
+    font-size: 42px;
+  }
+
+  h2 {
+    margin: 0 0 var(--space-2);
+    color: var(--color-label);
+    font-size: var(--fs-lg);
+    font-weight: var(--fw-semibold);
+  }
+
+  p {
+    max-width: 460px;
+    margin: 0;
+    font-size: var(--fs-sm);
+    line-height: 1.5;
+  }
+}
+
 .grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -86,12 +120,24 @@
     border-color 220ms ease;
 }
 
-.card:nth-child(1) { animation-delay: 40ms; }
-.card:nth-child(2) { animation-delay: 90ms; }
-.card:nth-child(3) { animation-delay: 140ms; }
-.card:nth-child(4) { animation-delay: 190ms; }
-.card:nth-child(5) { animation-delay: 240ms; }
-.card:nth-child(6) { animation-delay: 290ms; }
+.card:nth-child(1) {
+  animation-delay: 40ms;
+}
+.card:nth-child(2) {
+  animation-delay: 90ms;
+}
+.card:nth-child(3) {
+  animation-delay: 140ms;
+}
+.card:nth-child(4) {
+  animation-delay: 190ms;
+}
+.card:nth-child(5) {
+  animation-delay: 240ms;
+}
+.card:nth-child(6) {
+  animation-delay: 290ms;
+}
 
 .card-link {
   color: inherit;
@@ -235,8 +281,8 @@
     var(--skeleton-color-placeholder) 75%
   );
   background-size: var(--skeleton-background-size);
-  animation: skeleton-shimmer var(--skeleton-animation-duration)
-    var(--skeleton-animation-easing) infinite;
+  animation: skeleton-shimmer var(--skeleton-animation-duration) var(--skeleton-animation-easing)
+    infinite;
 }
 
 // ── Skeleton: card grid ───────────────────────────────────────────────────────

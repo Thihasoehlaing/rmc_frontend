@@ -971,7 +971,6 @@ export class RdigDropdownOptionsComponent implements OnInit {
       next: (res) => {
         this.rdigFormOptions.set(
           (res.data ?? [])
-            .filter((form) => form.is_active)
             .map((form) => ({
               label: form.form_name,
               value: form.form_code,

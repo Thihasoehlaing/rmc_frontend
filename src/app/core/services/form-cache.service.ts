@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { Observable, of, tap } from 'rxjs';
+import { Observable, map, of, tap } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
 
@@ -25,9 +25,10 @@ interface FormCacheEntry {
 @Injectable({ providedIn: 'root' })
 export class FormCacheService {
   private readonly http = inject(HttpClient);
-  private readonly storageKey = 'rmc.forms.cache';
+  private readonly legacyStorageKey = 'rmc.forms.cache';
+  private readonly storageKey = 'rmc.forms.cache.v2';
   private readonly cacheTtlMs = 5 * 60 * 1000;
-  private readonly apiUrl = `${environment.apiUrl.replace(/\/$/, '')}/rmc/forms`;
+  private readonly apiUrl = `${environment.apiUrl.replace(/\/$/, '')}/rmc/forms?include_inactive=true`;
   private readonly formsSignal = signal<CachedFormOption[]>(this.readCache({ allowStale: true })?.forms ?? []);
 
   readonly forms = this.formsSignal.asReadonly();
@@ -56,6 +57,15 @@ export class FormCacheService {
     return this.refresh();
   }
 
+  getActiveForms(forceRefresh = false): Observable<ApiResponse<CachedFormOption[]>> {
+    return this.getForms(forceRefresh).pipe(
+      map((response) => ({
+        ...response,
+        data: (response.data ?? []).filter((form) => form.is_active !== false),
+      })),
+    );
+  }
+
   refresh(): Observable<ApiResponse<CachedFormOption[]>> {
     return this.http
       .get<ApiResponse<CachedFormOption[]>>(this.apiUrl)
@@ -64,6 +74,7 @@ export class FormCacheService {
 
   clear(): void {
     localStorage.removeItem(this.storageKey);
+    localStorage.removeItem(this.legacyStorageKey);
     this.formsSignal.set([]);
   }
 

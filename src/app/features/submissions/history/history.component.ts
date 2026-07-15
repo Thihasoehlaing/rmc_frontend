@@ -64,7 +64,6 @@ export class HistoryComponent implements OnInit {
   readonly formTabs = computed(() => {
     const includeExternal = this.isAdminHistory();
     const tabs = this.forms()
-      .filter((form) => form.is_active !== false)
       .filter((form) => includeExternal || form.form_code.toUpperCase() !== 'EXTERNAL')
       .map((form) => ({
         value: form.form_code.toLowerCase(),
@@ -113,7 +112,7 @@ export class HistoryComponent implements OnInit {
 
     forkJoin({
       requests: list$,
-      forms: this.formCache.getForms(true),
+      forms: this.formCache.getActiveForms(true),
     })
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe({

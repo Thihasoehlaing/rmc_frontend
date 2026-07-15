@@ -91,13 +91,12 @@ export class NotificationsComponent implements OnInit {
   loadFormOptions(): void {
     this.formOptionsLoading.set(true);
     this.formCache
-      .getForms()
+      .getActiveForms()
       .pipe(finalize(() => this.formOptionsLoading.set(false)))
       .subscribe({
         next: response => {
           this.formOptions.set(
             (response.data ?? [])
-              .filter(form => form.is_active !== false)
               .map(form => ({
                 value: form.form_code,
                 label: form.form_name || form.form_code,

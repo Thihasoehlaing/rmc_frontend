@@ -73,101 +73,136 @@
                 </tr>
               </thead>
               <tbody>
-                @for (row of pagedRows(); track row.id; let rowIndex = $index) {
-                  <tr [class.row--inactive]="row.status === 'Inactive'">
-                    <td>{{ (page() - 1) * pageSize() + rowIndex + 1 }}</td>
-                    @if (showCode) {
-                      <td class="catalog-code-cell">{{ row.code }}</td>
-                    }
-                    <td class="option-name-cell">{{ row.name }}</td>
-                    @if (showSharedWith) {
-                      <td>
-                        <div
-                          class="shared-with-list"
-                          [class.shared-with-list--empty]="row.appliesTo.length === 0"
-                        >
-                          @if (row.appliesTo.length > 1) {
-                            <button
-                              type="button"
-                              class="shared-count-badge"
-                              [title]="row.appliesTo.join(', ')"
-                              [attr.aria-label]="
-                                'Shared with ' +
-                                row.appliesTo.length +
-                                ' forms: ' +
-                                row.appliesTo.join(', ')
-                              "
-                              (click)="openSharedForms(row)"
-                            >
-                              <span class="material-icons" aria-hidden="true">share</span>
-                              <span class="count">{{ row.appliesTo.length }}</span>
-                            </button>
-                          } @else if (row.appliesTo.length === 1) {
-                            <span class="shared-with-chip">
-                              <span class="material-icons" aria-hidden="true">share</span>
-                              <span class="shared-with-chip__label">{{ row.appliesTo[0] }}</span>
-                            </span>
-                          } @else {
-                            <span class="shared-with-empty">-</span>
-                          }
-                        </div>
-                      </td>
-                    }
-                    <td>
-                      <span
-                        class="status-chip"
-                        [class.status-chip--active]="row.status === 'Active'"
-                        [class.status-chip--inactive]="row.status === 'Inactive'"
-                        >{{ row.status }}</span
-                      >
-                    </td>
-                    <td class="catalog-date-cell">{{ formatDateTime(row.updatedAt) }}</td>
-                    <td class="actions-cell">
-                      <div class="table-actions">
-                        <button
-                          class="table-action"
-                          type="button"
-                          title="Edit option"
-                          (click)="editRow(row)"
-                        >
-                          <app-table-action-icon action="edit"></app-table-action-icon>
-                        </button>
-                        <button
-                          class="table-action"
-                          [class.table-action--success]="row.status === 'Inactive'"
-                          [class.table-action--warning]="row.status === 'Active'"
-                          type="button"
-                          [title]="
-                            row.status === 'Inactive' ? 'Activate option' : 'Deactivate option'
-                          "
-                          (click)="toggleStatus(row)"
-                        >
-                          <app-table-action-icon
-                            [action]="row.status === 'Inactive' ? 'activate' : 'deactivate'"
-                          ></app-table-action-icon>
-                        </button>
-                        <button
-                          class="table-action table-action--danger"
-                          type="button"
-                          title="Delete option"
-                          (click)="rowToDelete.set(row)"
-                        >
-                          <app-table-action-icon action="delete"></app-table-action-icon>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                } @empty {
+                @if (isLoading()) {
                   <tr>
                     <td
                       class="catalog-empty-state"
                       [attr.colspan]="4 + (showCode ? 1 : 0) + (showSharedWith ? 1 : 0)"
                     >
-                      <span class="material-icons">inbox</span>
-                      <strong>No options found</strong>
-                      <span>Try changing the search or status filter.</span>
+                      <span class="material-icons catalog-loading-icon">progress_activity</span>
+                      <strong>Loading options</strong>
+                      <span>Please wait while the categories are retrieved.</span>
                     </td>
                   </tr>
+                } @else if (loadFailed()) {
+                  <tr>
+                    <td
+                      class="catalog-empty-state"
+                      [attr.colspan]="4 + (showCode ? 1 : 0) + (showSharedWith ? 1 : 0)"
+                    >
+                      <span class="material-icons">cloud_off</span>
+                      <strong>Unable to load options</strong>
+                      <button
+                        class="btn btn-primary catalog-retry-button"
+                        type="button"
+                        (click)="loadCatalogItems()"
+                      >
+                        Try Again
+                      </button>
+                    </td>
+                  </tr>
+                } @else {
+                  @for (row of pagedRows(); track row.id; let rowIndex = $index) {
+                    <tr [class.row--inactive]="row.status === 'Inactive'">
+                      <td>{{ (page() - 1) * pageSize() + rowIndex + 1 }}</td>
+                      @if (showCode) {
+                        <td class="catalog-code-cell">{{ row.code }}</td>
+                      }
+                      <td class="option-name-cell" [title]="row.name">
+                        {{ displayName(row) }}
+                      </td>
+                      @if (showSharedWith) {
+                        <td>
+                          <div
+                            class="shared-with-list"
+                            [class.shared-with-list--empty]="row.appliesTo.length === 0"
+                          >
+                            @if (row.appliesTo.length > 1) {
+                              <button
+                                type="button"
+                                class="shared-count-badge"
+                                [title]="row.appliesTo.join(', ')"
+                                [attr.aria-label]="
+                                  'Shared with ' +
+                                  row.appliesTo.length +
+                                  ' forms: ' +
+                                  row.appliesTo.join(', ')
+                                "
+                                (click)="openSharedForms(row)"
+                              >
+                                <span class="material-icons" aria-hidden="true">share</span>
+                                <span class="count">{{ row.appliesTo.length }}</span>
+                              </button>
+                            } @else if (row.appliesTo.length === 1) {
+                              <span class="shared-with-chip">
+                                <span class="material-icons" aria-hidden="true">share</span>
+                                <span class="shared-with-chip__label">{{ row.appliesTo[0] }}</span>
+                              </span>
+                            } @else {
+                              <span class="shared-with-empty">-</span>
+                            }
+                          </div>
+                        </td>
+                      }
+                      <td>
+                        <span
+                          class="status-chip"
+                          [class.status-chip--active]="row.status === 'Active'"
+                          [class.status-chip--inactive]="row.status === 'Inactive'"
+                          >{{ row.status }}</span
+                        >
+                      </td>
+                      <td class="catalog-date-cell">{{ formatDateTime(row.updatedAt) }}</td>
+                      <td class="actions-cell">
+                        <div class="table-actions">
+                          <button
+                            class="table-action"
+                            type="button"
+                            title="Edit option"
+                            [disabled]="busyRowId() !== null || isSaving()"
+                            (click)="editRow(row)"
+                          >
+                            <app-table-action-icon action="edit"></app-table-action-icon>
+                          </button>
+                          <button
+                            class="table-action"
+                            [class.table-action--success]="row.status === 'Inactive'"
+                            [class.table-action--warning]="row.status === 'Active'"
+                            type="button"
+                            [disabled]="busyRowId() !== null || isSaving()"
+                            [title]="
+                              row.status === 'Inactive' ? 'Activate option' : 'Deactivate option'
+                            "
+                            (click)="toggleStatus(row)"
+                          >
+                            <app-table-action-icon
+                              [action]="row.status === 'Inactive' ? 'activate' : 'deactivate'"
+                            ></app-table-action-icon>
+                          </button>
+                          <button
+                            class="table-action table-action--danger"
+                            type="button"
+                            [disabled]="busyRowId() !== null || isSaving()"
+                            title="Delete option"
+                            (click)="rowToDelete.set(row)"
+                          >
+                            <app-table-action-icon action="delete"></app-table-action-icon>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  } @empty {
+                    <tr>
+                      <td
+                        class="catalog-empty-state"
+                        [attr.colspan]="4 + (showCode ? 1 : 0) + (showSharedWith ? 1 : 0)"
+                      >
+                        <span class="material-icons">inbox</span>
+                        <strong>No options found</strong>
+                        <span>Try changing the search or status filter.</span>
+                      </td>
+                    </tr>
+                  }
                 }
               </tbody>
             </table>
@@ -180,10 +215,10 @@
             [totalPages]="totalPages()"
             [pageSize]="pageSize()"
             [pageSizeOptions]="pageSizeOptions"
-            [totalItems]="filteredRows().length"
+            [totalItems]="totalItems()"
             [itemCount]="pagedRows().length"
             itemLabel="options"
-            (pageChange)="page.set($event)"
+            (pageChange)="onPageChange($event)"
             (pageSizeChange)="onPageSizeChange($event)"
           ></app-pagination>
         </div>
@@ -199,6 +234,8 @@
   [showCode]="showCode"
   [codeLabel]="codeLabel"
   [optionNameLabel]="nameLabel"
+  [optionNameMaxLength]="usesProjectAccountCodeApi() ? 100 : null"
+  [showOptionNameCounter]="usesProjectAccountCodeApi()"
   [availableForms]="availableForms"
   [allowFormSharing]="showSharedWith"
   [defaultSelectedForms]="showSharedWith ? availableForms : []"
@@ -225,7 +262,14 @@
   }
   <div dialog-footer>
     <button type="button" class="btn btn-secondary" (click)="rowToDelete.set(null)">Cancel</button>
-    <button type="button" class="btn btn-danger" (click)="confirmDelete()">Delete</button>
+    <button
+      type="button"
+      class="btn btn-danger"
+      [disabled]="busyRowId() !== null"
+      (click)="confirmDelete()"
+    >
+      {{ busyRowId() !== null ? 'Deleting...' : 'Delete' }}
+    </button>
   </div>
 </app-dialog>
 

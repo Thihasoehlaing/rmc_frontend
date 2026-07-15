@@ -1,0 +1,218 @@
+.form-setting-page {
+  max-width: var(--page-max-width);
+  margin: 0 auto;
+}
+
+.form-setting-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-5);
+  margin-bottom: var(--space-6);
+
+  h1 {
+    margin: var(--space-1) 0 var(--space-2);
+    color: var(--color-heading);
+    font-size: var(--fs-2xl);
+  }
+
+  p {
+    margin: 0;
+    color: var(--color-text-secondary);
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+}
+
+.form-setting-header__eyebrow {
+  color: var(--color-primary);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-black);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.form-setting-toolbar {
+  display: grid;
+  grid-template-columns: minmax(280px, 1fr) minmax(180px, 0.35fr) auto;
+  align-items: end;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+  padding: var(--space-4);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-xs);
+}
+
+.form-setting-filter {
+  display: grid;
+  gap: var(--space-2);
+  min-width: 0;
+
+  > span:first-child {
+    color: var(--color-label);
+    font-size: var(--fs-xs);
+    font-weight: var(--fw-semibold);
+  }
+
+  input,
+  select {
+    width: 100%;
+  }
+}
+
+.form-setting-search {
+  position: relative;
+  display: block;
+
+  > .material-icons {
+    position: absolute;
+    top: 50%;
+    left: var(--space-3);
+    color: var(--color-text-muted);
+    font-size: var(--size-icon-control);
+    pointer-events: none;
+    transform: translateY(-50%);
+  }
+
+  .input--text {
+    padding-left: var(--space-9);
+  }
+}
+
+.form-setting-toolbar__actions {
+  display: flex;
+  gap: var(--space-2);
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+}
+
+.form-setting-table-panel,
+.form-setting-pagination-panel {
+  overflow: hidden;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-xs);
+}
+
+.form-setting-table-panel {
+  padding: 0;
+}
+
+:host ::ng-deep .form-setting-table-panel app-table-skeleton .table-skeleton {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.form-setting-pagination-panel {
+  margin-top: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+}
+
+:host ::ng-deep .form-setting-table-panel .form-setting-options-table .data-table {
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+:host ::ng-deep .form-setting-table-panel .form-setting-options-table .data-table__frame {
+  border-radius: 0;
+}
+
+:host ::ng-deep .form-setting-table-panel .form-setting-options-table thead th {
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--border-subtle);
+  background: white;
+  color: var(--color-label);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+
+  &:first-child {
+    padding-left: var(--space-4);
+  }
+}
+
+:host ::ng-deep .form-setting-table-panel .form-setting-options-table tbody td {
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--color-label);
+  font-size: var(--fs-sm);
+
+  &:first-child {
+    padding-left: var(--space-4);
+  }
+}
+
+.form-name {
+  color: var(--color-label);
+}
+
+.status-badge {
+  display: inline-flex;
+  justify-content: center;
+  min-width: 74px;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-full);
+  background: var(--color-success-light);
+  color: var(--color-success-dark);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+
+  &--inactive {
+    background: var(--color-background-disabled);
+    color: var(--color-text-muted);
+  }
+}
+
+.form-setting-state {
+  display: flex;
+  min-height: 280px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-8);
+  color: var(--color-text-muted);
+  text-align: center;
+
+  > .material-icons {
+    margin-bottom: var(--space-3);
+    color: var(--color-primary);
+    font-size: var(--fs-3xl);
+  }
+
+  h2 {
+    margin: 0 0 var(--space-2);
+    color: var(--color-heading);
+  }
+
+  p {
+    margin: 0 0 var(--space-5);
+  }
+}
+
+@media (max-width: 760px) {
+  .form-setting-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .form-setting-toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .form-setting-toolbar__actions .btn {
+    flex: 1;
+  }
+}

@@ -234,7 +234,6 @@
                       [sortColumn]="sortBy()"
                       [sortDirection]="sortDirection()"
                       (sortChange)="onSortChange($event)"
-                      [dense]="true"
                     >
                         <ng-template #headerTemplate let-column="column">
                           <span class="header-label">{{ column.label }}</span>

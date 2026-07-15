@@ -37,6 +37,21 @@
   }
 }
 
+.catalog-loading-icon {
+  animation: catalog-spin 0.9s linear infinite;
+}
+
+.catalog-retry-button {
+  display: inline-flex !important;
+  margin: var(--space-4) auto 0;
+}
+
+@keyframes catalog-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .delete-dialog-note {
   margin-top: var(--space-3);
   color: var(--color-text-muted);

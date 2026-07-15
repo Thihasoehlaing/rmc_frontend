@@ -90,10 +90,10 @@ export class GuidelinesComponent implements OnInit {
     { width: '132px' },
   ];
   readonly columns: readonly DataTableColumn[] = [
-    { key: 'number', label: 'No.', width: '80px', align: 'center' },
+    { key: 'number', label: 'No.', width: '80px' },
     { key: 'form', label: 'Form', width: '180px', sortable: true },
     { key: 'title', label: 'Guideline Title', width: '32%', sortable: true },
-    { key: 'status', label: 'Status', width: '132px', align: 'center', headerAlign: 'center' },
+    { key: 'status', label: 'Status', width: '132px' },
     {
       key: 'lastUpdated',
       label: 'Last Updated',
@@ -395,5 +395,4 @@ export class GuidelinesComponent implements OnInit {
     return day && month && year ? new Date(year, month - 1, day).getTime() : 0;
   }
 }
-
 

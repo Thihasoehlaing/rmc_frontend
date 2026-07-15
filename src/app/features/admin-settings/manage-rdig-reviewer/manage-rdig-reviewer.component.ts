@@ -58,7 +58,7 @@ export class ManageRdigReviewerComponent implements OnInit {
     { key: 'department', label: 'Department', width: '12rem' },
     { key: 'role', label: 'Role', width: '13rem' },
     { key: 'email', label: 'Email', width: '17rem' },
-    { key: 'status', label: 'Reviewer Pool', width: '9rem', align: 'center', headerAlign: 'center' },
+    { key: 'status', label: 'Reviewer Pool', width: '9rem' },
     { key: 'actions', label: 'Actions', width: '9rem', align: 'center', headerAlign: 'center' },
   ];
 

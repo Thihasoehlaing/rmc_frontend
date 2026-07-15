@@ -90,6 +90,7 @@
 }
 
 .rdig-reviewer-table-shell {
+  padding: 0;
   overflow-x: auto;
 }
 
@@ -210,9 +211,44 @@
 }
 
 // ── Table overrides ───────────────────────────────────────────────────────────
-:host ::ng-deep .rdig-reviewer-table-shell app-data-table table {
+:host ::ng-deep .rdig-reviewer-table-shell .rdig-reviewer-options-table .data-table {
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+:host ::ng-deep .rdig-reviewer-table-shell .rdig-reviewer-options-table .data-table__frame {
+  border-radius: 0;
+}
+
+:host ::ng-deep .rdig-reviewer-table-shell .rdig-reviewer-options-table table {
   width: 100%;
   min-width: 980px;
+}
+
+:host ::ng-deep .rdig-reviewer-table-shell .rdig-reviewer-options-table thead th {
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--border-subtle);
+  background: white;
+  color: var(--color-label);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+}
+
+:host ::ng-deep .rdig-reviewer-table-shell .rdig-reviewer-options-table tbody td {
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--color-label);
+  font-size: var(--fs-sm);
+}
+
+:host ::ng-deep .rdig-reviewer-table-shell .rdig-reviewer-options-table th:nth-child(6),
+:host ::ng-deep .rdig-reviewer-table-shell .rdig-reviewer-options-table td:nth-child(6) {
+  text-align: left;
+}
+
+:host ::ng-deep .rdig-reviewer-table-shell .rdig-reviewer-options-table th:nth-child(6) .header-content {
+  justify-content: flex-start;
 }
 
 :host ::ng-deep .rdig-reviewer-table-shell .data-table__stacked {

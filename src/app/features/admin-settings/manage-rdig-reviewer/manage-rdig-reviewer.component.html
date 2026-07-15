@@ -56,6 +56,7 @@
   <!-- ── Table panel ─────────────────────────────────────────────────────── -->
   <section class="rdig-reviewer-table-shell" aria-label="RDIG reviewer pool management">
     <app-data-table
+      class="rdig-reviewer-options-table"
       [columns]="columns"
       [rows]="staffRows()"
       [rowTrackFn]="rowTrackFn"
@@ -75,7 +76,7 @@
           <td>{{ row.department }}</td>
           <td>{{ row.role }}</td>
           <td><span class="reviewer-email" [title]="row.email">{{ row.email }}</span></td>
-          <td class="is-align-center">
+          <td>
             <span
               class="badge"
               [class.badge-success]="row.reviewerId !== null"

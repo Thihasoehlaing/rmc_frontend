@@ -248,9 +248,9 @@
   display: inline-grid;
   place-items: center;
   color: var(--color-primary);
-  background: var(--color-surface);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-lg);
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-md);
   box-shadow: none;
   cursor: pointer;
   transition: background-color var(--transition-fast) var(--ease-default),
@@ -274,14 +274,11 @@
   }
 
   &--danger {
-    border-color: var(--border-subtle);
-
     &:hover,
     &:focus-visible,
     &:active {
       color: var(--color-error);
       background: var(--color-error-light);
-      border-color: var(--color-error);
     }
   }
 }
@@ -483,23 +480,35 @@
   white-space: pre-wrap;
 }
 
-:host ::ng-deep .data-table {
+:host ::ng-deep .forms-table-card .staff-access-table .data-table {
+  border: 0;
+  border-radius: 0;
   box-shadow: none;
 }
 
-:host ::ng-deep .data-table__frame {
-  border-radius: var(--radius-lg);
+:host ::ng-deep .forms-table-card .staff-access-table .data-table__frame {
+  border-radius: 0;
 }
 
-:host ::ng-deep .data-table__table {
+:host ::ng-deep .forms-table-card .staff-access-table .data-table__table {
   width: 100%;
   min-width: 1120px;
 }
 
-:host ::ng-deep .data-table__table th,
-:host ::ng-deep .data-table__table td {
-  padding-top: 14px;
-  padding-bottom: 14px;
+:host ::ng-deep .forms-table-card .staff-access-table thead th {
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--border-subtle);
+  background: white;
+  color: var(--color-label);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+}
+
+:host ::ng-deep .forms-table-card .staff-access-table tbody td {
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--color-label);
+  font-size: var(--fs-sm);
 }
 
 :host ::ng-deep .data-table__stacked {
@@ -511,7 +520,7 @@
 }
 
 :host ::ng-deep .data-table__title {
-  color: var(--color-primary);
+  color: var(--color-label);
   font-weight: var(--fw-semibold);
   text-align: left;
 }

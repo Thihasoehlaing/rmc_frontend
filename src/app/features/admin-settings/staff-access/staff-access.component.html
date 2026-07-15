@@ -108,6 +108,7 @@
       </div>
     } @else {
       <app-data-table
+        class="staff-access-table"
         [columns]="columns"
         [rows]="sortedStaff()"
         [sortColumn]="sortColumn()"
@@ -116,7 +117,7 @@
       >
         <ng-template #rowTemplate let-staff let-index="index">
           <tr [class.staff-access-row--blocked]="staff.status === 'blocked'">
-            <td class="is-align-center">{{ rowNumber(index) }}</td>
+            <td>{{ rowNumber(index) }}</td>
             <td>
               <div class="data-table__stacked">
                 <span class="data-table__avatar">{{ staff.initials }}</span>
@@ -125,7 +126,7 @@
             </td>
             <td><span class="staff-access-text" [title]="staff.department">{{ staff.department }}</span></td>
             <td><span class="staff-access-email" [title]="staff.email">{{ staff.email }}</span></td>
-            <td class="is-align-center">
+            <td>
               <span
                 class="status-badge"
                 [class.status-badge--blocked]="staff.status === 'blocked'"

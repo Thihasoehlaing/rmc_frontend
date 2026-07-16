@@ -365,13 +365,14 @@ export class JournalPublicationFormComponent {
     return this.sectionComments.filter((comment) => comment.section_code === sectionCode);
   }
 
-  commentsForActor(actorCode: string): RequestCommentDto[] {
+  commentsForActor(actorCode: string | null): RequestCommentDto[] {
+    if (!actorCode) return [];
     return this.sectionComments.filter(
       (comment) => this.normalizeActorCode(comment.actor_type_code) === actorCode,
     );
   }
 
-  commentsForActorSection(actorCode: string, sectionCode: string): RequestCommentDto[] {
+  commentsForActorSection(actorCode: string | null, sectionCode: string): RequestCommentDto[] {
     return this.commentsForActor(actorCode).filter(
       (comment) => comment.section_code === sectionCode,
     );

@@ -43,8 +43,6 @@ export class ExternalProjectDetailComponent implements OnInit {
   categories = signal<ExternalGrantCategory[]>([]);
 
   readonly externalProject = computed(() => this.form()?.external_project ?? null);
-  readonly requestId = computed(() => this.request()?.id ?? this.request()?.request_id ?? null);
-  readonly canPrint = computed(() => (this.request()?.status_code ?? '').toLowerCase() !== 'draft');
   readonly backLabel = signal(this.route.snapshot.queryParamMap.get('returnLabel') || 'Admin History');
   readonly categoryName = computed(() => {
     const categoryId = this.externalProject()?.external_grant_category_id;
@@ -161,36 +159,8 @@ export class ExternalProjectDetailComponent implements OnInit {
     );
   }
 
-  print(): void {
-    const id = this.requestId();
-    if (id != null) {
-      this.requests.downloadPrint(id).subscribe({
-        next: (response) => {
-          const blob = response.body;
-          if (!blob) return;
-          const fileName = this.printFileName(
-            response.headers.get('content-disposition'),
-            this.request()?.request_code ?? 'external-project',
-          );
-          const url = URL.createObjectURL(blob);
-          const anchor = document.createElement('a');
-          anchor.href = url;
-          anchor.download = fileName;
-          anchor.click();
-          URL.revokeObjectURL(url);
-        },
-        error: () => this.error.set('Could not download the print PDF. Please try again.'),
-      });
-    }
-  }
-
   goBack(): void {
     const returnTo = this.route.snapshot.queryParamMap.get('returnTo') || '/submissions/admin-history';
     void this.router.navigateByUrl(returnTo);
-  }
-
-  private printFileName(contentDisposition: string | null, fallbackCode: string): string {
-    const match = contentDisposition?.match(/filename\*?=(?:UTF-8''|")?([^";]+)/i);
-    return match?.[1] ? decodeURIComponent(match[1].replace(/"/g, '')) : `${fallbackCode}.pdf`;
   }
 }

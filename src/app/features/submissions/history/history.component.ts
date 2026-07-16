@@ -241,6 +241,10 @@ export class HistoryComponent implements OnInit {
   }
 
   canPrint(app: RequestSummaryDto): boolean {
+    if ((app.form_code ?? '').toUpperCase() === 'EXTERNAL') {
+      return false;
+    }
+
     return app.status_code.toLowerCase() !== 'draft';
   }
 

@@ -43,7 +43,7 @@
   }
 
   <!-- ── External Review Comment Buttons ───────────────────────── -->
-  @if (isLoadingSectionComments || hasSectionComments()) {
+  @if (hasExistingRequestParam) {
     <section class="applicant-section-comments application-form-surface" aria-label="Reviewer section comments">
       <div class="applicant-section-comments__header">
         <div class="applicant-section-comments__icon">
@@ -55,11 +55,7 @@
           <p>Use these comments as your checklist before resubmitting the application.</p>
         </div>
       </div>
-
-      @if (isLoadingSectionComments) {
-        <div class="applicant-section-comments__loading">Loading section comments...</div>
-      } @else {
-        <div class="applicant-section-comments__actors" aria-label="Reviewer feedback actors">
+      <div class="applicant-section-comments__actors" aria-label="Reviewer feedback actors">
           @for (actor of actorTabsWithComments(); track actor.code) {
             <button
               type="button"
@@ -74,8 +70,7 @@
           }
         </div>
 
-        @if (selectedFeedbackActorCode) {
-          <div class="applicant-section-comments__grid">
+        <div class="applicant-section-comments__grid">
             @for (section of sectionsWithCommentsForActor(selectedFeedbackActorCode); track section.code) {
               <article class="applicant-comment-section">
                 <header>
@@ -100,8 +95,6 @@
               </article>
             }
           </div>
-        }
-      }
     </section>
   }
 

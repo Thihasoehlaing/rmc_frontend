@@ -35,15 +35,6 @@
             }
           </div>
         </div>
-
-        <div class="detail-actions">
-          @if (canPrint()) {
-            <button type="button" class="detail-print" (click)="print()">
-              <span class="material-icons" aria-hidden="true">print</span>
-              Print
-            </button>
-          }
-        </div>
       </header>
 
       <div class="detail-summary-grid">
@@ -286,23 +277,6 @@
           } @else {
             <p class="empty-text">No billing information.</p>
           }
-        </section>
-
-        <section class="card detail-card">
-          <div class="detail-card__header">
-            <h2>Attachments</h2>
-          </div>
-          <div class="attachment-list">
-            @for (attachment of form()?.attachments ?? []; track attachment.id) {
-              <div class="attachment-item">
-                <span class="material-icons" aria-hidden="true">attach_file</span>
-                <strong>Attachment #{{ attachment.id }}</strong>
-                <span>{{ attachment.entity_type || 'General' }}</span>
-              </div>
-            } @empty {
-              <p class="empty-text">No attachments.</p>
-            }
-          </div>
         </section>
       </div>
     </article>

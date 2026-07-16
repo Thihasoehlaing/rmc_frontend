@@ -66,7 +66,8 @@ export class JournalPublicationFormComponent {
   actionError: string | null = null;
   sectionComments: RequestCommentDto[] = [];
   isLoadingSectionComments = false;
-  readonly guidelineContext: GuidelineContext = this.hasRequestIdParam()
+  readonly hasExistingRequestParam = this.hasRequestIdParam();
+  readonly guidelineContext: GuidelineContext = this.hasExistingRequestParam
     ? 'existing-application'
     : 'new-application';
   reviewComments = {
@@ -224,10 +225,14 @@ export class JournalPublicationFormComponent {
 
     this.journalOptions.loadBackendOptions().subscribe({
       next: () => {
-        this.loadError = null;
+        setTimeout(() => {
+          this.loadError = null;
+        });
       },
       error: () => {
-        this.loadError = 'Using local options because backend options could not be loaded.';
+        setTimeout(() => {
+          this.loadError = 'Using local options because backend options could not be loaded.';
+        });
       },
     });
 
@@ -258,7 +263,9 @@ export class JournalPublicationFormComponent {
       this.hydrateFromApi(response.data);
       await this.loadSectionComments(requestId);
     } catch {
-      this.actionError = 'Unable to load this journal application.';
+      setTimeout(() => {
+        this.actionError = 'Unable to load this journal application.';
+      });
     }
   }
 
@@ -465,17 +472,22 @@ export class JournalPublicationFormComponent {
     this.isLoadingSectionComments = true;
     try {
       const response = await firstValueFrom(this.workflowRequests.getComments(requestId));
-      this.sectionComments = (response.data ?? [])
+      const sectionComments = (response.data ?? [])
         .filter((comment) => comment.comment_type === 'section_review')
         .sort(
           (a, b) => new Date(b.created_at ?? 0).getTime() - new Date(a.created_at ?? 0).getTime(),
         );
-      this.selectedFeedbackActorCode = this.actorTabsWithComments()[0]?.code ?? null;
+      setTimeout(() => {
+        this.sectionComments = sectionComments;
+        this.selectedFeedbackActorCode = this.actorTabsWithComments()[0]?.code ?? null;
+        this.isLoadingSectionComments = false;
+      });
     } catch {
-      this.sectionComments = [];
-      this.selectedFeedbackActorCode = null;
-    } finally {
-      this.isLoadingSectionComments = false;
+      setTimeout(() => {
+        this.sectionComments = [];
+        this.selectedFeedbackActorCode = null;
+        this.isLoadingSectionComments = false;
+      });
     }
   }
 

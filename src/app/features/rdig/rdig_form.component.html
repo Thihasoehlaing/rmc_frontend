@@ -1,6 +1,6 @@
 <app-form-page-container>
   <div class="rdig-app">
-    <!-- ── CLOSED-WINDOW MODAL (Req 6) ───────────────────────────── -->
+    <!-- �"?�"? CLOSED-WINDOW MODAL (Req 6) �"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"? -->
     @if (showClosedWindowModal()) {
       <div class="modal-backdrop" (click)="showClosedWindowModal.set(false)">
         <div class="modal-card" (click)="$event.stopPropagation()">
@@ -28,7 +28,7 @@
       </div>
     }
 
-    <!-- ── FULLSCREEN SUBMISSION OVERLAY ──────────────────────────── -->
+    <!-- �"?�"? FULLSCREEN SUBMISSION OVERLAY �"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"? -->
     @if (submissionState() !== 'IDLE') {
       <div
         class="submission-overlay"
@@ -71,7 +71,7 @@
       </div>
     }
 
-    <!-- ── 1. Page Title ─────────────────────────────────────────── -->
+    <!-- �"?�"? 1. Page Title �"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"? -->
     <app-form-main-title
       title="RDIG Application"
       helpText="Click to view guidelines"
@@ -81,8 +81,8 @@
     >
     </app-form-main-title>
 
-    @if (isLoadingApplication()) {
-      <app-form-page-skeleton></app-form-page-skeleton>
+    @if (isLoadingApplication() || isBatchLoading()) {
+      <app-form-page-skeleton [showBatchCard]="true"></app-form-page-skeleton>
     } @else {
       <app-step-indicator
         [currentStep]="currentStep()"
@@ -90,45 +90,88 @@
         [stepStatuses]="getStepStatuses()"
         [submitAttempted]="submitAttempted()"
         (stepClick)="goToStep($event)"
+        (missingFieldClick)="goToMissingField($event)"
       >
       </app-step-indicator>
 
-      <!-- ── Batch loading / blocked state ──────────────────────────── -->
-      @if (isBatchLoading()) {
-        <app-form-alert intent="info" icon="sync" title="Checking active batch">
-          Please wait while the current submission window is loaded.
-        </app-form-alert>
-      }
+      <div class="main-section application-form-content">
+      @if (currentStep() === 1) {
+        @if (hasActiveApplicantWindow()) {
+          @if (activeBatch(); as ab) {
+            <section class="active-batch-card" aria-label="Active Applicant submission window">
+              <div class="active-batch-card__section active-batch-card__identity">
+                <span class="badge badge-success active-batch-card__badge">
+                  <span class="active-batch-card__status-dot" aria-hidden="true"></span>
+                  Active
+                </span>
+                <strong class="active-batch-card__name">{{ ab.batchName }}</strong>
+              </div>
 
-      @if (!isBatchLoading() && canShowForm()) {
-        <!-- ── No-batch warning banner ─────────────────────────────── -->
-        @if (noBatchError() && !batchValidationDisabled()) {
-          <app-form-alert intent="warning" icon="event_busy" title="No active batch">
-            You can fill in and <strong>Save as Draft</strong> at any time, but submission is not
-            available until a batch is opened.
-          </app-form-alert>
-        }
-
-        <!-- ── Active batch info banner ──────────────────────────── -->
-        @if (activeBatch(); as ab) {
-          <app-form-alert
-            [intent]="deadlineDaysLeft() <= 5 && deadlineDaysLeft() >= 0 ? 'warning' : 'success'"
-            icon="event_available"
-            title="Active batch"
+              <div class="active-batch-card__section active-batch-card__period">
+                <div class="active-batch-card__period-label">
+                  <span class="material-icons" aria-hidden="true">event_available</span>
+                  <span>Submission period</span>
+                </div>
+                <strong class="active-batch-card__period-value">
+                  {{ fmtWindow(submissionOpenIso()) }} &ndash; {{ fmtWindow(submissionCloseIso()) }}
+                </strong>
+              </div>
+            </section>
+          }
+        } @else {
+          <section
+            class="active-batch-card active-batch-card--empty"
+            aria-label="No active Applicant submission window"
           >
-            <span>
-              <strong>{{ ab.batchName }}</strong>
-              &nbsp;·&nbsp; Submission window: <strong>{{ fmtWindow(submissionOpenIso()) }}</strong>
-              to <strong>{{ fmtWindow(submissionCloseIso()) }}</strong>
-            </span>
-            @if (deadlineDaysLeft() >= 0 && deadlineDaysLeft() <= 5) {
-              <span formAlertAction class="batch-deadline-warn">
-                <span class="material-icons">warning</span>
-                {{ deadlineDaysLeft() }} day{{ deadlineDaysLeft() === 1 ? '' : 's' }} left!
-              </span>
-            }
-          </app-form-alert>
+            <div class="active-batch-card__section active-batch-card__empty-summary">
+              <div class="active-batch-card__empty-heading">
+                <span class="material-icons" aria-hidden="true">event_busy</span>
+                <strong>No active submission window</strong>
+              </div>
+              <p>
+                You can continue completing the application and save it as a draft. Submission will
+                become available when the next applicant window opens.
+              </p>
+            </div>
+
+            <div class="active-batch-card__section active-batch-card__period">
+              <div class="active-batch-card__period-label">
+                <span class="material-icons" aria-hidden="true">calendar_month</span>
+                <span>Next submission window</span>
+              </div>
+              @if (nextApplicantWindow(); as nextWindow) {
+                <strong class="active-batch-card__period-value">
+                  {{ fmtWindow(nextWindow.startDate) }} &ndash; {{ fmtWindow(nextWindow.endDate) }}
+                </strong>
+              } @else {
+                <span class="active-batch-card__period-value active-batch-card__period-value--muted">
+                  No upcoming submission window has been scheduled.
+                </span>
+              }
+            </div>
+          </section>
         }
+      }
+      @if (!isBatchLoading() && canShowForm()) {
+        <div class="rdig-step-panel application-form-surface">
+          @switch (currentStep()) {
+            @case (1) {
+              <app-custom-header title="Team Members" icon="groups"></app-custom-header>
+            }
+            @case (2) {
+              <app-custom-header title="Project Details" icon="assignment"></app-custom-header>
+            }
+            @case (3) {
+              <app-custom-header
+                title="Research Output & Budget"
+                icon="analytics"
+              ></app-custom-header>
+            }
+            @case (4) {
+              <app-custom-header title="Declaration" icon="verified"></app-custom-header>
+            }
+          }
+
 
         @if (isViewOnly()) {
           <app-form-alert intent="info" icon="visibility" title="History view only">
@@ -136,20 +179,20 @@
           </app-form-alert>
         }
 
-        <!-- ── 1b. Score Summary (visible based on ABAC status + reviewers_version) ── -->
+        <!-- �"?�"? 1b. Score Summary (visible based on ABAC status + reviewers_version) �"?�"? -->
         @if (workflow.isScoreSummaryVisible()) {
           <app-score-summary [reviewer1Total]="reviewer1Total" [reviewer2Total]="reviewer2Total">
           </app-score-summary>
         }
 
-        <!-- ── 2. Step Indicator (clickable) ─────────────────────────── -->
+        <!-- �"?�"? 2. Step Indicator (clickable) �"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"? -->
         <app-validation-summary
           [items]="validationSummaryItems"
           (itemSelected)="onValidationItemSelected($event)"
         >
         </app-validation-summary>
 
-        <!-- ── 3. Comment Toggle Buttons (shown per ABAC status) ──────── -->
+        <!-- �"?�"? 3. Comment Toggle Buttons (shown per ABAC status) �"?�"?�"?�"?�"?�"?�"?�"? -->
         @if (
           workflow.showHosToggle() ||
           workflow.showRmcToggle() ||
@@ -246,18 +289,18 @@
           </div>
         }
 
-        <!-- ── 4. Main Form ──────────────────────────────────────────── -->
+        <!-- �"?�"? 4. Main Form �"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"? -->
         <form [formGroup]="rdigForm" novalidate>
-          <!-- Hidden metadata — always present, never visible -->
+          <!-- Hidden metadata �?" always present, never visible -->
           <div formGroupName="metadata" hidden aria-hidden="true">
             <input formControlName="batch" readonly />
             <input formControlName="applicationVersion" readonly />
             <input formControlName="reviewers_version" readonly />
           </div>
 
-          <!-- ── Form Container ─────────────────────────────────────── -->
-          <div class="form-container">
-            <!-- ── Wizard step content ──────────────────────────────── -->
+          <!-- �"?�"? Form Container �"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"? -->
+          <div class="rdig-step-content">
+            <!-- �"?�"? Wizard step content �"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"? -->
             <div class="rdig-app__content form-content">
               @if (currentStep() === 1) {
                 <app-team-details
@@ -299,23 +342,25 @@
                 >
                 </app-research-activities>
 
-                <!-- ── HOS and RMC page-level comments (after Research Activities) ── -->
+                <!-- �"?�"? HOS and RMC page-level comments (after Research Activities) �"?�"? -->
                 @if (showHosComments() || showRmcComments()) {
                   <div class="card review-comments-section">
                     <div class="card__content section-fields">
                       <app-review-block
-                        label="HOS — Project Details Review"
+                        label="HOS &mdash; Project Details Review"
                         icon="supervisor_account"
                         [visible]="showHosComments()"
                         [readonly]="!workflow.isHosEditable()"
+                        data-missing-field-target="reviewProject.hosPageComment"
                         [commentControl]="rfcProject('hosPageComment')"
                       >
                       </app-review-block>
                       <app-review-block
-                        label="RMC — Research Aim & Questions"
+                        label="RMC &mdash; Research Aim &amp; Questions"
                         icon="verified"
                         [visible]="showRmcComments()"
                         [readonly]="!workflow.isRmcEditable()"
+                        data-missing-field-target="reviewProject.rmcAimComment"
                         [commentControl]="rfcProject('rmcAimComment')"
                       >
                       </app-review-block>
@@ -369,7 +414,10 @@
             </div>
           </div>
 
-          <!-- ── Shared wizard navigation footer ───────────────────── -->
+        </form>
+        </div>
+
+          <!-- �"?�"? Shared wizard navigation footer �"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"? -->
           <app-form-wizard-nav
             [currentStep]="currentStep()"
             [totalSteps]="totalSteps"
@@ -389,9 +437,10 @@
               Draft saved successfully
             </div>
           }
-        </form>
+
       }
-      <!-- /if !isBatchLoading && !noBatchError -->
+      <!-- /if batch loading complete -->
+      </div>
     }
   </div>
 </app-form-page-container>

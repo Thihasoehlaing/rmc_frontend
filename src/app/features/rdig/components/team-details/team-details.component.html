@@ -67,7 +67,7 @@
   </section>
 
   <!-- ── Section 3: Asia Pacific University of Technology & Innovation Co-Researchers (Internal) ──────────── -->
-  <section class="card">
+  <section class="card" data-missing-field-target="teamDetails.internalResearchers">
     <app-custom-subheader
       title="Asia Pacific University of Technology & Innovation Co-Researchers (Internal)"
       tooltip="Minimum 1, Maximum 2 internal co-researchers"
@@ -151,7 +151,7 @@
   </section>
 
   <!-- ── Section 4: External Co-Researchers ────────────────── -->
-  <section class="card">
+  <section class="card" data-missing-field-target="teamDetails.externalResearchers">
     <app-custom-subheader
       title="External Co-Researchers / Collaborators"
       tooltip="Minimum 2, Maximum 10 external collaborators"
@@ -275,7 +275,7 @@
           icon="supervisor_account"
           [visible]="showHosComments"
           [readonly]="!workflow.isHosEditable()"
-          [commentControl]="fc('hosComment')"
+          data-missing-field-target="reviewTeam.hosComment" [commentControl]="fc('hosComment')"
         >
         </app-review-block>
 
@@ -288,8 +288,8 @@
             [showScore]="true"
             [maxScore]="10"
             [scoreDisabled]="!workflow.isScoreEditable()"
-            [commentControl]="fc('reviewer1Comment')"
-            [scoreControl]="fc('reviewer1Score')"
+            data-missing-field-target="reviewTeam.reviewer1Comment" [commentControl]="fc('reviewer1Comment')"
+            data-missing-field-score-target="reviewTeam.reviewer1Score" [scoreControl]="fc('reviewer1Score')"
           >
           </app-review-block>
 
@@ -301,8 +301,8 @@
             [showScore]="true"
             [maxScore]="10"
             [scoreDisabled]="!workflow.isScoreEditable()"
-            [commentControl]="fc('reviewer2Comment')"
-            [scoreControl]="fc('reviewer2Score')"
+            data-missing-field-target="reviewTeam.reviewer2Comment" [commentControl]="fc('reviewer2Comment')"
+            data-missing-field-score-target="reviewTeam.reviewer2Score" [scoreControl]="fc('reviewer2Score')"
           >
           </app-review-block>
         </div>
@@ -312,7 +312,7 @@
           icon="admin_panel_settings"
           [visible]="showRmcComments"
           [readonly]="!workflow.isRmcEditable()"
-          [commentControl]="fc('rmcComment')"
+          data-missing-field-target="reviewTeam.rmcComment" [commentControl]="fc('rmcComment')"
         >
         </app-review-block>
       </div>

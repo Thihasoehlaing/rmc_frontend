@@ -141,11 +141,20 @@ export interface RdigActiveBatchResponse {
     /**
      * The "Applicant" stage window within the batch. Applicant users are gated
      * on this window's start (when it opens for submissions), not the overall
-     * batch start. Optional so the frontend degrades gracefully to the batch
-     * dates until the backend includes it.
+     * batch start. When absent, the frontend shows the no-window state and does
+     * not substitute the batch start or end dates.
      */
     applicant_start_date?: string | null;
     applicant_end_date?: string | null;
+    applicant_stage_start_date?: string | null;
+    applicant_stage_end_date?: string | null;
+    submission_start_date?: string | null;
+    submission_end_date?: string | null;
+    stage_windows?: Array<{
+      stage_name: string;
+      stage_start_date: string | null;
+      stage_end_date: string | null;
+    }>;
   } | null;
 }
 

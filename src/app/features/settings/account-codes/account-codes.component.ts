@@ -132,13 +132,13 @@ export class AccountCodesComponent implements OnInit {
     this.optionsLoading.set(true);
     forkJoin({
       categories: this.accountCodesService.listCategoryOptions(),
-      forms: this.formCache.getForms(),
+      forms: this.formCache.getActiveForms(),
     })
       .pipe(finalize(() => this.optionsLoading.set(false)))
       .subscribe({
         next: ({ categories, forms }) => {
           this.categoryOptionsData.set(categories.data ?? []);
-          this.formOptionsData.set((forms.data ?? []).filter((form) => form.is_active));
+          this.formOptionsData.set(forms.data ?? []);
         },
         error: () => {
           this.categoryOptionsData.set([]);

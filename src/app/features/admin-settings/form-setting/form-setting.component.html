@@ -1,0 +1,120 @@
+<main class="form-setting-page">
+  <header class="form-setting-header">
+    <div>
+      <span class="form-setting-header__eyebrow">RMC Admin</span>
+      <h1>Form Setting</h1>
+      <p>View all application forms currently registered in the system.</p>
+    </div>
+    <button class="btn btn-secondary" type="button" (click)="loadForms()" [disabled]="loading()">
+      <span class="material-icons" aria-hidden="true">refresh</span>
+      Refresh
+    </button>
+  </header>
+
+  <section class="form-setting-toolbar" aria-label="Form filters">
+    <label class="form-setting-filter form-setting-filter--search">
+      <span>Search</span>
+      <span class="form-setting-search">
+        <span class="material-icons" aria-hidden="true">search</span>
+        <input
+          class="input--text"
+          type="search"
+          placeholder="Search form code or name"
+          aria-label="Search form code or name"
+          [ngModel]="searchDraft()"
+          (ngModelChange)="searchDraft.set($event)"
+          (keydown.enter)="applyFilters()"
+          [disabled]="loading()"
+        />
+      </span>
+    </label>
+
+    <label class="form-setting-filter">
+      <span>Status</span>
+      <select
+        class="input--select"
+        [ngModel]="statusDraft()"
+        (ngModelChange)="statusDraft.set($event)"
+        [disabled]="loading()"
+      >
+        <option value="all">All</option>
+        <option value="active">Active</option>
+        <option value="inactive">Inactive</option>
+      </select>
+    </label>
+
+    <div class="form-setting-toolbar__actions">
+      <button class="btn btn-primary" type="button" (click)="applyFilters()" [disabled]="loading()">
+        <span class="material-icons" aria-hidden="true">search</span>
+        Search
+      </button>
+      <button
+        class="btn btn-secondary"
+        type="button"
+        (click)="resetFilters()"
+        [disabled]="loading()"
+      >
+        <span class="material-icons" aria-hidden="true">restart_alt</span>
+        Reset
+      </button>
+    </div>
+  </section>
+
+  <section class="form-setting-table-panel" aria-label="Forms">
+    @if (loading()) {
+      <app-table-skeleton [columns]="columns" [showSearch]="false" loadingLabel="Loading forms">
+      </app-table-skeleton>
+    } @else if (loadFailed()) {
+      <div class="form-setting-state">
+        <span class="material-icons" aria-hidden="true">cloud_off</span>
+        <h2>Unable to load forms</h2>
+        <p>Check the API connection and try again.</p>
+        <button class="btn btn-primary" type="button" (click)="loadForms()">Try Again</button>
+      </div>
+    } @else if (pagedForms().length === 0) {
+      <div class="form-setting-state">
+        <span class="material-icons" aria-hidden="true">description</span>
+        <h2>No forms found</h2>
+        <p>There are no forms matching the selected filters.</p>
+      </div>
+    } @else {
+      <app-data-table
+        class="form-setting-options-table"
+        [columns]="columns"
+        [rows]="pagedForms()"
+        [rowTrackFn]="rowTrackFn"
+      >
+        <ng-template #rowTemplate let-row let-index="index">
+          <tr>
+            <td>{{ rowNumber(index) }}</td>
+            <td>
+              <strong class="form-name">{{ row.form_name }}</strong>
+            </td>
+            <td>
+              <span class="status-badge" [class.status-badge--inactive]="!row.is_active">
+                {{ row.is_active ? 'Active' : 'Inactive' }}
+              </span>
+            </td>
+          </tr>
+        </ng-template>
+      </app-data-table>
+    }
+
+  </section>
+
+  @if (!loading() && !loadFailed()) {
+    <footer class="form-setting-pagination-panel">
+      <app-pagination
+        [currentPage]="page()"
+        [totalPages]="totalPages()"
+        [pageSize]="pageSize()"
+        [pageSizeOptions]="pageSizeOptions"
+        [totalItems]="filteredForms().length"
+        [itemCount]="pagedForms().length"
+        itemLabel="forms"
+        (pageChange)="page.set($event)"
+        (pageSizeChange)="onPageSizeChange($event)"
+      ></app-pagination>
+    </footer>
+  }
+</main>

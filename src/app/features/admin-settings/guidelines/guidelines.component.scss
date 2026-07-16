@@ -265,7 +265,7 @@
 .guidelines-table-wrapper {
   width: 100%;
   min-width: 0;
-  padding: var(--space-4);
+  padding: 0;
   border: 1px solid var(--border-default);
   border-radius: var(--radius-lg);
   background: white;
@@ -342,8 +342,34 @@
   height: var(--skeleton-cell-height);
   border-radius: var(--radius-full);
 }
-:host ::ng-deep .guidelines-table-wrapper app-data-table table {
+:host ::ng-deep .guidelines-table-wrapper .guidelines-options-table .data-table {
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+:host ::ng-deep .guidelines-table-wrapper .guidelines-options-table .data-table__frame {
+  border-radius: 0;
+}
+
+:host ::ng-deep .guidelines-table-wrapper .guidelines-options-table table {
   width: 100%;
+}
+
+:host ::ng-deep .guidelines-table-wrapper .guidelines-options-table thead th {
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--border-subtle);
+  background: white;
+  color: var(--color-label);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+}
+
+:host ::ng-deep .guidelines-table-wrapper .guidelines-options-table tbody td {
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--color-label);
+  font-size: var(--fs-sm);
 }
 
 :host ::ng-deep .guidelines-table-wrapper app-data-table th:last-child,
@@ -355,14 +381,14 @@
 
 :host ::ng-deep .guidelines-table-wrapper app-data-table th:nth-child(4),
 :host ::ng-deep .guidelines-table-wrapper app-data-table td:nth-child(4) {
-  text-align: center;
+  text-align: left;
   padding-left: var(--space-4);
   padding-right: var(--space-4);
 }
 
 :host ::ng-deep .guidelines-table-wrapper app-data-table th:nth-child(4) .header-content {
   width: 100%;
-  justify-content: center;
+  justify-content: flex-start;
 }
 
 :host ::ng-deep .guidelines-table-wrapper app-data-table td:nth-child(4) {
@@ -411,7 +437,7 @@
 
 .guideline-status.is-active {
   color: var(--color-success-dark);
-  background-color: var(--color-bg-light-green);
+  background-color: var(--color-success-light);
 }
 
 .guideline-status.is-inactive {
@@ -652,7 +678,6 @@
     justify-content: flex-start;
   }
 }
-
 
 
 

@@ -64,7 +64,6 @@ export class DraftsComponent implements OnInit {
 
   readonly formTabs = computed(() => {
     const tabs = this.forms()
-      .filter((form) => form.is_active !== false)
       .filter((form) => form.form_code.toUpperCase() !== 'EXTERNAL')
       .map((form) => ({
         value: form.form_code.toLowerCase(),
@@ -112,7 +111,7 @@ export class DraftsComponent implements OnInit {
 
     forkJoin({
       requests: this.requests.getMyRequests({ page: 1, perPage: 100 }),
-      forms: this.formCache.getForms(true),
+      forms: this.formCache.getActiveForms(true),
     })
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe({

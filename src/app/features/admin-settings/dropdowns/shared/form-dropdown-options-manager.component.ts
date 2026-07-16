@@ -423,7 +423,7 @@ export class FormDropdownOptionsManagerComponent implements OnInit {
       next: (res) => {
         this.formOptions.set(
           (res.data ?? [])
-            .filter((form) => form.is_active && allowedCodes.has(form.form_code.toUpperCase()))
+            .filter((form) => allowedCodes.has(form.form_code.toUpperCase()))
             .map((form) => ({
               label: form.form_name,
               value: form.form_code,

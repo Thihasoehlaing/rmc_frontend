@@ -5,7 +5,7 @@ import {
   provideHttpClientTesting,
 } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { describe, expect, it, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { environment } from '../../../../environments/environment';
 import { ManageRdigReviewerComponent } from './manage-rdig-reviewer.component';
@@ -16,51 +16,35 @@ describe('ManageRdigReviewerComponent', () => {
   let http: HttpTestingController;
 
   const apiUrl = environment.apiUrl.replace(/\/$/, '');
-  const staffUrl = `${apiUrl}/rmc/settings/academic-staff`;
+  const academicOptionsUrl = `${apiUrl}/rmc/academic-staff`;
   const departmentsUrl = `${apiUrl}/rmc/master-data/departments`;
   const reviewersUrl = `${apiUrl}/rmc/admin-settings/rdig-reviewers`;
 
-  const staffResponse = {
+  const academicOptionsResponse = {
     success: true,
     message: 'ok',
-    data: {
-      items: [
-        {
-          id: 101,
-          staff: {
-            id: 1,
-            username: 'jdoe',
-            fullname: 'Jane Doe',
-            email: 'jdoe@uni.edu',
-            department: 'Computer Science',
-            job_title: 'Lecturer',
-            is_active: true,
-          },
-          is_active: true,
-        },
-        {
-          id: 102,
-          staff: {
-            id: 2,
-            username: 'asmith',
-            fullname: 'Alan Smith',
-            email: 'asmith@uni.edu',
-            department: 'Engineering',
-            job_title: 'Professor',
-            is_active: true,
-          },
-          is_active: true,
-        },
-      ],
-      pagination: {
-        current_page: 1,
-        per_page: 10,
-        total_items: 2,
-        total_pages: 1,
-        has_next: false,
-        has_prev: false,
+    data: [
+      {
+        id: 101,
+        username: 'jdoe',
+        fullname: 'Jane Doe',
+        email: 'jdoe@uni.edu',
+        department: 'Computer Science',
       },
-    },
+      {
+        id: 102,
+        username: 'asmith',
+        fullname: 'Alan Smith',
+        email: 'asmith@uni.edu',
+        department: 'Engineering',
+      },
+    ],
+  };
+
+  const departmentsResponse = {
+    success: true,
+    message: 'ok',
+    data: [{ id: 7, department_name: 'Engineering', department_type: 'School', is_active: true }],
   };
 
   const reviewersResponse = {
@@ -70,6 +54,7 @@ describe('ManageRdigReviewerComponent', () => {
       items: [
         {
           id: 55,
+          academic_staff_id: 102,
           is_active: true,
           staff_username: 'asmith',
           staff_fullname: 'Alan Smith',
@@ -80,7 +65,7 @@ describe('ManageRdigReviewerComponent', () => {
       ],
       pagination: {
         current_page: 1,
-        per_page: 100,
+        per_page: 10,
         total_items: 1,
         total_pages: 1,
         has_next: false,
@@ -90,9 +75,9 @@ describe('ManageRdigReviewerComponent', () => {
   };
 
   function flushInitialRequests(): void {
-    http.expectOne((req) => req.url === departmentsUrl).flush({ success: true, message: 'ok', data: [] });
+    http.expectOne((req) => req.url === academicOptionsUrl).flush(academicOptionsResponse);
+    http.expectOne((req) => req.url === departmentsUrl).flush(departmentsResponse);
     http.expectOne((req) => req.url === reviewersUrl).flush(reviewersResponse);
-    http.expectOne((req) => req.url === staffUrl).flush(staffResponse);
   }
 
   beforeEach(() => {
@@ -113,87 +98,77 @@ describe('ManageRdigReviewerComponent', () => {
     http.verify();
   });
 
-  it('loads staff and cross-references the reviewer pool by username', () => {
-    const rows = component.staffRows();
-    expect(rows.length).toBe(2);
-
-    const janeRow = rows.find((r) => r.username === 'jdoe')!;
-    const alanRow = rows.find((r) => r.username === 'asmith')!;
-
-    expect(janeRow.reviewerId).toBeNull();
-    expect(alanRow.reviewerId).toBe(55);
+  it('loads academic options and department options before loading reviewers', () => {
+    expect(component.staffOptions().map((option) => option.value)).toEqual([101, 102]);
+    expect(component.departmentOptions()).toEqual([{ value: 7, label: 'Engineering' }]);
+    expect(component.reviewers().length).toBe(1);
+    expect(component.reviewers()[0].staff_username).toBe('asmith');
   });
 
-  it('has no maximum-reviewer cap', () => {
-    expect((component as unknown as { maximumAssignedReviewers?: number }).maximumAssignedReviewers).toBeUndefined();
+  it('filters reviewers by search, department, and status', () => {
+    component.searchQuery.set('alan');
+    component.departmentFilter.set(7);
+    component.onStatusChange('inactive');
+
+    const req = http.expectOne((r) => r.url === reviewersUrl);
+    expect(req.request.params.get('search')).toBe('alan');
+    expect(req.request.params.get('department_id')).toBe('7');
+    expect(req.request.params.get('status')).toBe('inactive');
+    req.flush(reviewersResponse);
   });
 
-  it('adds a staff member to the reviewer pool', () => {
-    const janeRow = component.staffRows().find((r) => r.username === 'jdoe')!;
+  it('adds selected academic staff as reviewers with the chosen status', () => {
+    component.openAddModal();
+    component.selectedStaffControl.setValue([101, 102]);
+    component.modalActiveControl.setValue(false);
+    component.saveReviewers();
 
-    component.addReviewer(janeRow);
+    const requests = http.match(reviewersUrl);
+    expect(requests.length).toBe(2);
 
-    const req = http.expectOne(reviewersUrl);
-    expect(req.request.method).toBe('POST');
-    expect(req.request.body).toEqual({ academic_staff_id: 101, is_active: true });
-    req.flush({
+    const [first, second] = requests;
+    expect(first.request.method).toBe('POST');
+    expect(first.request.body).toEqual({ academic_staff_id: 101, is_active: false });
+    first.flush({
       success: true,
       message: 'created',
-      data: { id: 99, is_active: true, staff_username: 'jdoe', staff_fullname: 'Jane Doe', staff_email: 'jdoe@uni.edu', job_title: 'Lecturer', department: 'Computer Science' },
+      data: { id: 99, academic_staff_id: 101, is_active: false },
     });
 
-    const updated = component.staffRows().find((r) => r.username === 'jdoe')!;
-    expect(updated.reviewerId).toBe(99);
+    expect(second.request.method).toBe('POST');
+    expect(second.request.body).toEqual({ academic_staff_id: 102, is_active: false });
+    second.flush({
+      success: true,
+      message: 'created',
+      data: { id: 100, academic_staff_id: 102, is_active: false },
+    });
+
+    http.expectOne((r) => r.url === reviewersUrl).flush(reviewersResponse);
   });
 
-  it('removes a staff member from the reviewer pool', () => {
-    const alanRow = component.staffRows().find((r) => r.username === 'asmith')!;
+  it('updates reviewer active status', () => {
+    component.toggleStatus(component.reviewers()[0]);
 
-    component.removeReviewer(alanRow);
+    const req = http.expectOne(`${reviewersUrl}/55`);
+    expect(req.request.method).toBe('PUT');
+    expect(req.request.body).toEqual({ is_active: false });
+    req.flush({
+      success: true,
+      message: 'updated',
+      data: { ...reviewersResponse.data.items[0], is_active: false },
+    });
+
+    http.expectOne((r) => r.url === reviewersUrl).flush(reviewersResponse);
+  });
+
+  it('removes a reviewer after confirmation', () => {
+    component.rowToRemove.set(component.reviewers()[0]);
+    component.confirmRemove();
 
     const req = http.expectOne(`${reviewersUrl}/55`);
     expect(req.request.method).toBe('DELETE');
     req.flush({ success: true, message: 'deleted', data: {} });
 
-    const updated = component.staffRows().find((r) => r.username === 'asmith')!;
-    expect(updated.reviewerId).toBeNull();
-  });
-
-  it('paginates using the academic-staff endpoint with the requested page size', () => {
-    component.onPageChange(2);
-
-    const req = http.expectOne((r) => r.url === staffUrl);
-    expect(req.request.params.get('page')).toBe('2');
-    expect(req.request.params.get('per_page')).toBe('10');
-    req.flush(staffResponse);
-  });
-
-  it('"In Pool" queries the reviewer endpoint directly, filtered across all entries', () => {
-    component.setPoolStatusFilter('in-pool');
-
-    const req = http.expectOne((r) => r.url === reviewersUrl);
-    expect(req.request.params.get('page')).toBe('1');
-    expect(req.request.params.get('per_page')).toBe('10');
-    req.flush(reviewersResponse);
-
-    const rows = component.staffRows();
-    expect(rows.length).toBe(1);
-    expect(rows[0].username).toBe('asmith');
-    expect(rows[0].reviewerId).toBe(55);
-    expect(component.totalItems()).toBe(1);
-  });
-
-  it('"Not in Pool" fetches every staff page and excludes reviewers, across all entries', () => {
-    component.setPoolStatusFilter('not-in-pool');
-
-    const req = http.expectOne((r) => r.url === staffUrl);
-    expect(req.request.params.get('page')).toBe('1');
-    expect(req.request.params.get('per_page')).toBe('100');
-    req.flush(staffResponse);
-
-    const rows = component.staffRows();
-    expect(rows.length).toBe(1);
-    expect(rows[0].username).toBe('jdoe');
-    expect(component.totalItems()).toBe(1);
+    http.expectOne((r) => r.url === reviewersUrl).flush(reviewersResponse);
   });
 });

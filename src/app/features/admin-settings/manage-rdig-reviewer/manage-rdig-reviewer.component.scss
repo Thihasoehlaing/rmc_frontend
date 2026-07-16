@@ -1,342 +1,295 @@
-@use '../../../../styles/index' as *;
-
-// ── Page shell ────────────────────────────────────────────────────────────────
-.rdig-reviewer-page {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-6);
-  padding: var(--space-6) var(--space-8) var(--space-8);
-  background: var(--color-background);
+:host {
+  display: block;
 }
 
-// ── Header ────────────────────────────────────────────────────────────────────
-.rdig-reviewer-page__header {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: var(--space-4);
-}
-
-.rdig-reviewer-page__title-wrap {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
+.mgr-department-filter {
   min-width: 0;
 }
 
-.rdig-reviewer-page__title {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  margin: 0;
-  color: var(--color-label);
-  font-size: var(--fs-2xl);
-  font-weight: var(--fw-semibold);
-  line-height: 1.1;
-
-  .material-icons {
-    color: var(--color-primary);
-    font-size: 32px;
-    line-height: 1;
-  }
+.mgr-status-filter {
+  min-width: 0;
 }
 
-.rdig-reviewer-page__subtitle {
-  margin: 0;
-  max-width: 980px;
-  color: var(--color-text-muted);
-  font-size: var(--fs-base);
-  line-height: 1.5;
-}
-
-// ── Summary pill (top-right counter) ─────────────────────────────────────────
-.rdig-reviewer-summary {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  min-height: 44px;
-  padding: 0 var(--space-4);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-lg);
-  background: var(--color-surface);
-  box-shadow: var(--shadow-xs);
-  white-space: nowrap;
-}
-
-.rdig-reviewer-summary__value {
-  color: var(--color-primary);
-  font-size: var(--fs-xl);
-  font-weight: var(--fw-bold);
-  line-height: 1;
-}
-
-.rdig-reviewer-summary__label {
-  color: var(--color-text-muted);
-  font-size: var(--fs-sm);
-  font-weight: var(--fw-semibold);
-}
-
-// ── Shared panel card style ───────────────────────────────────────────────────
-.rdig-reviewer-filter-shell,
-.rdig-reviewer-table-shell,
-.rdig-reviewer-pagination-shell {
+.mgr-department-filter app-searchable-dropdown {
+  display: block;
   width: 100%;
-  min-width: 0;
-  padding: var(--space-4);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-lg);
-  background: var(--color-surface);
-  box-shadow: var(--shadow-xs);
 }
 
-.rdig-reviewer-table-shell {
-  overflow-x: auto;
-}
-
-// ── submissions-search overrides (same pattern as staff-access) ───────────────
-:host ::ng-deep app-submissions-search {
-  margin: 0;
-  padding: 0;
-  border: none;
-  border-radius: 0;
-  background: transparent;
-  box-shadow: none;
-}
-
-:host ::ng-deep app-submissions-search .submissions-search-top-row {
-  display: none;
-}
-
-:host ::ng-deep app-submissions-search .submissions-search-controls {
-  display: flex;
+:host ::ng-deep .dropdown-search-panel app-submissions-search .submissions-search-controls {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   align-items: center;
   gap: var(--space-3);
-  flex-wrap: wrap;
 }
 
-:host ::ng-deep app-submissions-search .submissions-search {
-  flex: 0 1 300px;
-  min-width: 240px;
-}
-
-:host ::ng-deep app-submissions-search .submissions-search--focused,
-:host ::ng-deep app-submissions-search .submissions-search:focus-within {
-  flex-basis: 380px;
-}
-
-:host ::ng-deep app-submissions-search .submissions-search-filters {
-  display: flex;
-  justify-content: flex-end;
-  gap: var(--space-2);
-  flex: 1 1 auto;
-  min-width: 18rem;
-}
-
-:host ::ng-deep app-submissions-search .submissions-search-filters [search-filters] {
-  flex: 0 0 auto;
-  width: auto;
-  min-width: 8.75rem;
-}
-
-:host ::ng-deep app-submissions-search .submissions-search-filters [search-filters].rdig-reviewer-filter--department {
-  flex: 0 1 300px;
-  width: auto;
-  min-width: 240px;
-}
-
-:host ::ng-deep app-submissions-search [search-filters] {
-  display: block;
-  position: relative;
+:host ::ng-deep .dropdown-search-panel app-submissions-search .submissions-search {
+  width: 100%;
   min-width: 0;
 }
 
-:host ::ng-deep app-submissions-search [search-filters] .rdig-reviewer-filter-label {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  white-space: nowrap;
+:host ::ng-deep .dropdown-search-panel app-submissions-search .submissions-search--focused,
+:host ::ng-deep .dropdown-search-panel app-submissions-search .submissions-search:focus-within {
+  width: 100%;
 }
 
-:host ::ng-deep app-submissions-search [search-filters] .input--select {
+:host ::ng-deep .dropdown-search-panel app-submissions-search .submissions-search-filters {
+  display: contents;
+  margin-left: 0;
+  min-width: 0;
+}
+
+:host
+  ::ng-deep
+  .dropdown-search-panel
+  app-submissions-search
+  .submissions-search-filters
+  [search-filters].mgr-department-filter {
   width: 100%;
+  min-width: 0;
+}
+
+:host
+  ::ng-deep
+  .dropdown-search-panel
+  app-submissions-search
+  .submissions-search-filters
+  [search-filters].mgr-status-filter {
+  width: 100%;
+  min-width: 0;
+}
+
+:host ::ng-deep .dropdown-search-panel app-submissions-search .submissions-search-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+  margin-left: 0;
+  min-width: 0;
+}
+
+:host ::ng-deep .dropdown-search-panel app-submissions-search .submissions-search-actions .btn,
+:host ::ng-deep .dropdown-search-panel app-submissions-search .submissions-search-actions button {
+  width: 100%;
+}
+
+:host ::ng-deep .mgr-department-filter app-searchable-dropdown .dropdown-trigger {
   height: 38px;
   min-height: 38px;
   padding-block: 0;
-  padding-inline: var(--space-3) var(--space-8);
-  border: 1px solid var(--border-default);
+  padding-inline: var(--space-4);
   border-radius: var(--radius-full);
   background-color: var(--color-surface);
-  color: var(--color-label);
-  font-size: var(--fs-sm);
-  line-height: 38px;
-
-  &:hover {
-    border-color: color-mix(in srgb, var(--color-primary) 24%, var(--border-default));
-    box-shadow: var(--shadow-sm);
-  }
-
-  &:focus {
-    border-color: var(--color-primary);
-    box-shadow: var(--input-shadow-focus);
-    outline: none;
-  }
 }
 
-:host ::ng-deep app-submissions-search .submissions-search-actions {
-  justify-content: flex-end;
-  margin-left: 0;
-  white-space: nowrap;
-}
-
-:host ::ng-deep app-submissions-search [search-filters] app-searchable-dropdown .dropdown-trigger {
-  height: 38px;
-  min-height: 38px;
-  padding-inline: var(--space-3);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-full);
-  background-color: var(--color-surface);
-  font-size: var(--fs-sm);
-
-  &:hover {
-    border-color: color-mix(in srgb, var(--color-primary) 24%, var(--border-default));
-    box-shadow: var(--shadow-sm);
-  }
-}
-
-:host ::ng-deep app-submissions-search [search-filters] app-searchable-dropdown .placeholder {
-  color: var(--color-label);
-}
-
-// ── Table overrides ───────────────────────────────────────────────────────────
-:host ::ng-deep .rdig-reviewer-table-shell app-data-table table {
-  width: 100%;
-  min-width: 980px;
-}
-
-:host ::ng-deep .rdig-reviewer-table-shell .data-table__stacked {
+.reviewer-staff {
   display: grid;
-  grid-template-columns: 32px minmax(0, 1fr);
-  justify-content: initial;
-  width: 100%;
+  grid-template-columns: 3rem minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
 }
 
-:host ::ng-deep .rdig-reviewer-table-shell app-data-table th:first-child,
-:host ::ng-deep .rdig-reviewer-table-shell app-data-table td:first-child {
-  text-align: left;
-  padding-left: var(--space-4);
+.reviewer-staff__photo,
+.reviewer-staff__avatar {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  object-fit: cover;
 }
 
-:host ::ng-deep .rdig-reviewer-table-shell .data-table__title {
-  text-align: left;
-}
-
-// ── Inline elements ───────────────────────────────────────────────────────────
-.reviewer-id-chip {
+.reviewer-staff__avatar {
   display: inline-flex;
-  padding: var(--space-1) var(--space-2);
-  border-radius: var(--radius-md);
-  background: var(--color-surface-hover);
-  color: var(--color-text-muted);
-  font-size: var(--fs-xs);
-  letter-spacing: 0.04em;
-}
-
-.reviewer-email {
-  display: block;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.reviewer-action {
-  min-width: 7rem;
+  align-items: center;
   justify-content: center;
+  background: color-mix(in srgb, var(--color-primary) 12%, white);
+  color: var(--color-primary);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-bold);
+}
+
+.reviewer-staff__identity {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+
+  strong,
+  span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  strong {
+    color: var(--color-primary);
+    font-weight: var(--fw-semibold);
+  }
+
+  span {
+    color: var(--color-text-muted);
+    font-size: var(--fs-sm);
+  }
+}
+
+.reviewer-empty-state {
+  padding: var(--space-8);
+  color: var(--color-text-muted);
+  text-align: center;
+
+  .material-icons,
+  strong,
+  span {
+    display: block;
+  }
 
   .material-icons {
-    font-size: var(--icon-sm);
+    margin-bottom: var(--space-2);
+    font-size: var(--fs-3xl);
+  }
+
+  strong {
+    margin-bottom: var(--space-1);
+    color: var(--color-heading);
   }
 }
 
-// ── Responsive ────────────────────────────────────────────────────────────────
+.reviewer-loading-icon {
+  animation: reviewer-spin 0.9s linear infinite;
+}
+
+.reviewer-retry-button {
+  display: inline-flex !important;
+  margin: var(--space-4) auto 0;
+}
+
+.reviewer-modal {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.form-label {
+  color: var(--color-label);
+  font-weight: var(--fw-semibold);
+}
+
+.required {
+  color: var(--color-danger);
+}
+
+.field-help,
+.remove-dialog-note {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--fs-sm);
+}
+
+:host ::ng-deep .reviewer-modal app-searchable-dropdown .dropdown-container {
+  z-index: 40;
+}
+
+:host ::ng-deep .reviewer-modal app-searchable-dropdown .dropdown-options {
+  z-index: 45;
+  max-height: 18rem;
+}
+
+.status-switch-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-hover);
+  cursor: pointer;
+
+  strong,
+  small {
+    display: block;
+  }
+
+  strong {
+    color: var(--color-primary);
+    font-weight: var(--fw-semibold);
+  }
+
+  small {
+    margin-top: var(--space-1);
+    color: var(--color-text-muted);
+  }
+}
+
+.switch-control {
+  position: relative;
+  display: inline-flex;
+  flex: 0 0 4.5rem;
+  width: 4.5rem;
+  height: 2.4rem;
+
+  input {
+    width: 0;
+    height: 0;
+    opacity: 0;
+  }
+}
+
+.switch-slider {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-full);
+  background: var(--color-border);
+  transition:
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+
+  &::before {
+    position: absolute;
+    top: 0.28rem;
+    left: 0.3rem;
+    width: 1.85rem;
+    height: 1.85rem;
+    border-radius: 50%;
+    background: white;
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.2s ease;
+    content: '';
+  }
+}
+
+.switch-control input:checked + .switch-slider {
+  background: var(--color-primary);
+}
+
+.switch-control input:checked + .switch-slider::before {
+  transform: translateX(2rem);
+}
+
+@keyframes reviewer-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 @media (max-width: 900px) {
-  .rdig-reviewer-page {
-    padding: var(--space-5) var(--space-4) var(--space-6);
+  :host ::ng-deep .dropdown-search-panel app-submissions-search .submissions-search-controls {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: stretch;
   }
 
-  .rdig-reviewer-page__header {
-    align-items: flex-start;
-    flex-wrap: wrap;
-  }
-
-  .rdig-reviewer-summary {
-    margin-left: auto;
-  }
-
-  :host ::ng-deep app-submissions-search .submissions-search,
-  :host ::ng-deep app-submissions-search .submissions-search--focused,
-  :host ::ng-deep app-submissions-search .submissions-search:focus-within {
-    flex: 1 1 100%;
-    width: 100%;
-  }
-
-  :host ::ng-deep app-submissions-search .submissions-search-filters {
-    justify-content: flex-start;
-    flex: 1 1 auto;
+  .mgr-department-filter,
+  .mgr-status-filter {
     min-width: 0;
-  }
-
-  :host ::ng-deep app-submissions-search .submissions-search-actions {
-    margin-left: auto;
+    width: 100%;
   }
 }
 
 @media (max-width: 640px) {
-  .rdig-reviewer-summary {
-    width: 100%;
-    justify-content: center;
-    margin-left: 0;
-  }
-
-  :host ::ng-deep app-submissions-search .submissions-search-controls {
-    align-items: stretch;
-  }
-
-  :host ::ng-deep app-submissions-search .submissions-search-filters {
-    order: 1;
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    width: 100%;
-    min-width: 0;
-  }
-
-  :host ::ng-deep app-submissions-search .submissions-search-filters [search-filters] {
-    width: 100%;
-    min-width: 0;
-  }
-
-  :host ::ng-deep app-submissions-search [search-filters] .input--select {
-    width: 100%;
-  }
-
-  :host ::ng-deep app-submissions-search .submissions-search {
-    order: 2;
-    flex: 1 1 100%;
-    width: 100%;
-    min-width: 0;
-    min-height: 44px;
-  }
-
-  :host ::ng-deep app-submissions-search .submissions-search-actions {
-    order: 3;
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    width: 100%;
-    margin-left: 0;
-  }
-
-  :host ::ng-deep app-submissions-search .submissions-search-actions .btn {
-    width: 100%;
+  :host ::ng-deep .dropdown-search-panel app-submissions-search .submissions-search-controls {
+    grid-template-columns: 1fr;
   }
 }

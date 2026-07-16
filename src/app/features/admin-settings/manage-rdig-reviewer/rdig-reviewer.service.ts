@@ -24,15 +24,21 @@ interface PaginatedData<T> {
   pagination: ApiPagination;
 }
 
-/** Compact shape returned by the list endpoint — no academic_staff_id, only the reviewer row's own id. */
+/** Compact shape returned by the list endpoint. */
 export interface RdigReviewerRecord {
   id: number;
+  academic_staff_id: number | null;
   is_active: boolean;
   staff_username: string | null;
   staff_fullname: string | null;
   staff_email: string | null;
+  photo_url: string | null;
   job_title: string | null;
   department: string | null;
+}
+
+export interface UpdateRdigReviewerPayload {
+  is_active?: boolean;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -70,11 +76,19 @@ export class RdigReviewerService {
   }
 
   /** Adds an academic staff member to the RDIG reviewer pool. */
-  add(academicStaffId: number): Observable<ApiResponse<RdigReviewerRecord>> {
+  add(academicStaffId: number, isActive = true): Observable<ApiResponse<RdigReviewerRecord>> {
     return this.http.post<ApiResponse<RdigReviewerRecord>>(this.baseUrl, {
       academic_staff_id: academicStaffId,
-      is_active: true,
+      is_active: isActive,
     });
+  }
+
+  /** Updates reviewer metadata, currently used to activate/deactivate a reviewer. */
+  update(
+    reviewerId: number,
+    payload: UpdateRdigReviewerPayload,
+  ): Observable<ApiResponse<RdigReviewerRecord>> {
+    return this.http.put<ApiResponse<RdigReviewerRecord>>(`${this.baseUrl}/${reviewerId}`, payload);
   }
 
   /** Removes a reviewer from the pool entirely (hard delete, matches the backend's DELETE route). */

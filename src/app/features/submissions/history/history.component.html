@@ -8,7 +8,7 @@
       <p class="submissions-subtitle">
         {{
           isAdminHistory()
-            ? 'All submitted applications across every form.'
+            ? 'Submitted applications across every form, plus External Project drafts.'
             : 'Applications with final approval or rejection outcomes.'
         }}
       </p>
@@ -91,12 +91,12 @@
                   <div class="data-table__actions">
                     <a
                       class="btn-icon btn-icon--view"
-                      [routerLink]="getDetailRoute(app)"
-                      [queryParams]="getDetailQueryParams()"
-                      title="View detail"
-                      aria-label="View detail"
+                      [routerLink]="getPrimaryActionRoute(app)"
+                      [queryParams]="getPrimaryActionQueryParams(app)"
+                      [title]="getPrimaryActionTitle(app)"
+                      [attr.aria-label]="getPrimaryActionTitle(app)"
                     >
-                      <app-table-action-icon action="view"></app-table-action-icon>
+                      <app-table-action-icon [action]="getPrimaryActionIcon(app)"></app-table-action-icon>
                     </a>
                     @if (canPrint(app)) {
                       <button

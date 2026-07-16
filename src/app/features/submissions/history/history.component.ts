@@ -5,7 +5,12 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { finalize, forkJoin } from 'rxjs';
 
 import { CachedFormOption, FormCacheService } from '../../../core/services/form-cache.service';
-import { STATUS_COLORS, formTypeLabel } from '../../../core/services/request-display.util';
+import {
+  STATUS_COLORS,
+  formRoute,
+  formTypeLabel,
+  requestIdOf,
+} from '../../../core/services/request-display.util';
 import {
   RequestSummaryDto,
   WorkflowRequestsService,
@@ -64,7 +69,6 @@ export class HistoryComponent implements OnInit {
   readonly formTabs = computed(() => {
     const includeExternal = this.isAdminHistory();
     const tabs = this.forms()
-      .filter((form) => form.is_active !== false)
       .filter((form) => includeExternal || form.form_code.toUpperCase() !== 'EXTERNAL')
       .map((form) => ({
         value: form.form_code.toLowerCase(),
@@ -113,7 +117,7 @@ export class HistoryComponent implements OnInit {
 
     forkJoin({
       requests: list$,
-      forms: this.formCache.getForms(true),
+      forms: this.formCache.getActiveForms(true),
     })
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe({
@@ -197,6 +201,34 @@ export class HistoryComponent implements OnInit {
       default:
         return `/submissions/detail/${code}`;
     }
+  }
+
+  isExternalDraft(app: RequestSummaryDto): boolean {
+    return (
+      (app.form_code ?? '').toUpperCase() === 'EXTERNAL' &&
+      ['draft', 'fill_application', 'normal_application'].includes(app.status_code.toLowerCase())
+    );
+  }
+
+  getPrimaryActionRoute(app: RequestSummaryDto): string {
+    return this.isExternalDraft(app) ? formRoute(app.form_code) : this.getDetailRoute(app);
+  }
+
+  getPrimaryActionQueryParams(app: RequestSummaryDto): Record<string, string | number> {
+    if (this.isExternalDraft(app)) {
+      const requestId = requestIdOf(app);
+      return requestId == null ? {} : { request_id: requestId };
+    }
+
+    return this.getDetailQueryParams();
+  }
+
+  getPrimaryActionTitle(app: RequestSummaryDto): string {
+    return this.isExternalDraft(app) ? 'Continue application' : 'View detail';
+  }
+
+  getPrimaryActionIcon(app: RequestSummaryDto): 'edit' | 'view' {
+    return this.isExternalDraft(app) ? 'edit' : 'view';
   }
 
   getDetailQueryParams(): { returnTo: string; returnLabel: string } {

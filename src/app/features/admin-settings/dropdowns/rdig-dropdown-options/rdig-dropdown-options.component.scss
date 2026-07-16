@@ -527,9 +527,43 @@
 // ─── Table styles ─────────────────────────────────────────────────────────────
 .header-label { display: inline-block; }
 
-:host ::ng-deep .dropdown-options-table table {
+:host ::ng-deep .dropdown-table-panel .dropdown-options-table .data-table {
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+:host ::ng-deep .dropdown-table-panel .dropdown-options-table .data-table__frame {
+  border-radius: 0;
+}
+
+:host ::ng-deep .dropdown-table-panel .dropdown-options-table table {
   width: 100%;
   min-width: calc(var(--space-12) * 9);
+}
+
+:host ::ng-deep .dropdown-table-panel .dropdown-options-table thead th {
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--border-subtle);
+  background: white;
+  color: var(--color-label);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+
+  &:first-child {
+    padding-left: var(--space-4);
+  }
+}
+
+:host ::ng-deep .dropdown-table-panel .dropdown-options-table tbody td {
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--color-label);
+  font-size: var(--fs-sm);
+
+  &:first-child {
+    padding-left: var(--space-4);
+  }
 }
 
 :host ::ng-deep .dropdown-options-table thead th:last-child {
@@ -541,7 +575,7 @@
   white-space: normal;
 }
 
-.select-cell { text-align: center; }
+.select-cell { text-align: left; }
 
 .row--inactive .option-name-cell { color: var(--color-text-muted); }
 
@@ -556,7 +590,7 @@
 }
 
 .status-chip--active {
-  background: var(--color-bg-light-green);
+  background: var(--color-success-light);
   color: var(--color-success-dark);
 }
 

@@ -1,392 +1,328 @@
-import { ChangeDetectionStrategy, Component, OnInit, TrackByFunction, inject, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Observable, catchError, forkJoin, map, of, switchMap } from 'rxjs';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
+import { forkJoin } from 'rxjs';
 
 import { DropdownOption } from '../../../core/interfaces/components.interface';
 import { ToastService } from '../../../core/services/toast.service';
-import {
-  DataTableColumn,
-  DataTableComponent,
-} from '../../../shared/components/data-table/data-table.component';
-import { NoEntryFoundComponent } from '../../../shared/components/no-entry-found/no-entry-found.component';
+import { ActionButtonComponent } from '../../../shared/components/action-button/action-button.component';
+import { DialogComponent } from '../../../shared/components/dialog/dialog.component';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
 import { SearchableDropdownComponent } from '../../../shared/components/searchable-dropdown/searchable-dropdown.component';
 import { SubmissionsSearchComponent } from '../../../shared/components/submissions-search/submissions-search.component';
+import { TableActionIconComponent } from '../../../shared/components/table-action-icon/table-action-icon.component';
 import {
-  AcademicStaffRecord,
+  AcademicStaffOptionRecord,
   AcademicStaffService,
   DepartmentRecord,
 } from '../../settings/academic-staff/academic-staff.service';
-import { RdigReviewerService } from './rdig-reviewer.service';
+import { RdigReviewerRecord, RdigReviewerService } from './rdig-reviewer.service';
 
-type PoolStatusFilter = 'all' | 'in-pool' | 'not-in-pool';
-
-interface StaffRow {
-  academicStaffId: number;
-  name: string;
-  username: string;
-  department: string;
-  role: string;
-  email: string;
-  initials: string;
-  /** Set once cross-referenced against the reviewer pool; null while loading. */
-  reviewerId: number | null;
-}
+type StatusFilter = 'all' | 'active' | 'inactive';
 
 @Component({
   selector: 'app-manage-rdig-reviewer',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    DataTableComponent,
+    CommonModule,
     FormsModule,
+    ReactiveFormsModule,
+    ActionButtonComponent,
+    DialogComponent,
+    PaginationComponent,
     SearchableDropdownComponent,
     SubmissionsSearchComponent,
-    PaginationComponent,
-    NoEntryFoundComponent,
+    TableActionIconComponent,
   ],
   templateUrl: './manage-rdig-reviewer.component.html',
-  styleUrl: './manage-rdig-reviewer.component.scss',
+  styleUrls: [
+    '../dropdowns/shared/form-dropdown-options-manager.component.scss',
+    './manage-rdig-reviewer.component.scss',
+  ],
 })
 export class ManageRdigReviewerComponent implements OnInit {
   private readonly academicStaffService = inject(AcademicStaffService);
   private readonly rdigReviewerService = inject(RdigReviewerService);
   private readonly toast = inject(ToastService);
+  private readonly router = inject(Router);
 
-  readonly columns: readonly DataTableColumn[] = [
-    { key: 'name', label: 'Staff Name', width: '20rem' },
-    { key: 'username', label: 'Staff ID', width: '8rem' },
-    { key: 'department', label: 'Department', width: '12rem' },
-    { key: 'role', label: 'Role', width: '13rem' },
-    { key: 'email', label: 'Email', width: '17rem' },
-    { key: 'status', label: 'Reviewer Pool', width: '9rem', align: 'center', headerAlign: 'center' },
-    { key: 'actions', label: 'Actions', width: '9rem', align: 'center', headerAlign: 'center' },
-  ];
-
-  readonly staffRows = signal<StaffRow[]>([]);
-  readonly loading = signal(false);
-  /** rdig_reviewer_id keyed by staff username — built from the reviewer pool list. */
-  private readonly reviewerIdByUsername = signal<Map<string, number>>(new Map());
-
+  readonly reviewers = signal<RdigReviewerRecord[]>([]);
+  readonly academicOptions = signal<AcademicStaffOptionRecord[]>([]);
+  readonly staffOptions = signal<DropdownOption<number>[]>([]);
   readonly departments = signal<DepartmentRecord[]>([]);
   readonly departmentOptions = signal<DropdownOption<number>[]>([]);
 
-  readonly nameFilter = signal('');
-  readonly emailFilter = signal('');
+  readonly searchQuery = signal('');
   readonly departmentFilter = signal<number | null>(null);
-  /** Filters across ALL staff, not just the current page — see loadStaff() for how each mode is fetched. */
-  readonly poolStatusFilter = signal<PoolStatusFilter>('all');
-
+  readonly statusFilter = signal<StatusFilter>('all');
   readonly page = signal(1);
   readonly pageSize = signal(10);
-  readonly pageSizeOptions = [10, 25, 50];
+  readonly pageSizeOptions = [10, 15, 30, 50];
   readonly totalItems = signal(0);
   readonly totalPages = signal(1);
 
-  readonly rowTrackFn: TrackByFunction<StaffRow> = (_index, row) => row.academicStaffId;
+  readonly isLoading = signal(false);
+  readonly loadFailed = signal(false);
+  readonly isSaving = signal(false);
+  readonly busyRowId = signal<number | null>(null);
+  readonly showAddModal = signal(false);
+  readonly rowToRemove = signal<RdigReviewerRecord | null>(null);
+
+  readonly selectedStaffControl = new FormControl<number[]>([], { nonNullable: true });
+  readonly modalActiveControl = new FormControl<boolean>(true, { nonNullable: true });
+
+  readonly existingAcademicStaffIds = computed(
+    () =>
+      new Set(
+        this.reviewers()
+          .map((reviewer) => reviewer.academic_staff_id)
+          .filter((id): id is number => id !== null && id !== undefined),
+      ),
+  );
+
+  readonly modalStaffOptions = computed(() => {
+    const existing = this.existingAcademicStaffIds();
+    const selected = new Set(this.selectedStaffControl.value);
+    return this.staffOptions().map((option) => ({
+      ...option,
+      disabled: existing.has(option.value) && !selected.has(option.value),
+    }));
+  });
 
   ngOnInit(): void {
-    this.loadDepartments();
-    this.loadReviewerPool();
-    this.loadStaff();
+    this.loadInitialOptions();
   }
 
-  private loadDepartments(): void {
-    this.academicStaffService.listDepartments().subscribe({
-      next: (res) => {
-        if (res.success) {
-          this.departments.set(res.data ?? []);
+  selectedStaffCount(): number {
+    return this.selectedStaffControl.value.length;
+  }
+
+  goBack(): void {
+    this.router.navigate(['/admin-settings']);
+  }
+
+  loadInitialOptions(): void {
+    this.isLoading.set(true);
+    this.loadFailed.set(false);
+
+    forkJoin({
+      academic: this.academicStaffService.listAcademicStaffOptions(),
+      departments: this.academicStaffService.listDepartments(),
+    }).subscribe({
+      next: ({ academic, departments }) => {
+        if (academic.success) {
+          this.academicOptions.set(academic.data ?? []);
+          this.staffOptions.set((academic.data ?? []).map((staff) => this.toStaffOption(staff)));
+        }
+        if (departments.success) {
+          this.departments.set(departments.data ?? []);
           this.departmentOptions.set(
-            (res.data ?? []).map((d) => ({ value: d.id, label: d.department_name })),
+            (departments.data ?? []).map((department) => ({
+              value: department.id,
+              label: department.department_name,
+            })),
           );
         }
+        this.loadReviewers();
       },
-      error: () => this.departments.set([]),
+      error: () => {
+        this.isLoading.set(false);
+        this.loadFailed.set(true);
+        this.toast.error('Unable to load academic staff and department options.');
+      },
     });
   }
 
-  /** Loads the full reviewer pool once so membership can be cross-referenced against staff rows. */
-  private loadReviewerPool(): void {
-    this.rdigReviewerService.list({ perPage: 100, status: 'all' }).subscribe({
-      next: (res) => {
-        if (!res.success) return;
-        const map = new Map<string, number>();
-        for (const reviewer of res.data.items ?? []) {
-          if (reviewer.staff_username) {
-            map.set(reviewer.staff_username, reviewer.id);
-          }
-        }
-        this.reviewerIdByUsername.set(map);
-        this.applyReviewerMapToRows();
-      },
-      error: () => this.reviewerIdByUsername.set(new Map()),
-    });
-  }
-
-  private applyReviewerMapToRows(): void {
-    const map = this.reviewerIdByUsername();
-    this.staffRows.update((rows) =>
-      rows.map((row) => ({ ...row, reviewerId: map.get(row.username) ?? null })),
-    );
-  }
-
-  /**
-   * Routes to the right data source for the active reviewer-pool filter.
-   * The academic-staff endpoint has no "is a reviewer" query param, so a true
-   * global filter (not just the current page) needs a different strategy per case:
-   * - "all": normal server-paginated academic-staff list.
-   * - "in-pool": query the reviewer endpoint directly — it already supports
-   *   real pagination/search/department filtering, and every row is by
-   *   definition in the pool.
-   * - "not-in-pool": no endpoint for this exists, so every matching page of
-   *   academic staff is fetched, reviewers are subtracted, and the result is
-   *   paginated client-side.
-   */
-  loadStaff(): void {
-    switch (this.poolStatusFilter()) {
-      case 'in-pool':
-        this.loadInPoolReviewers();
-        break;
-      case 'not-in-pool':
-        this.loadNotInPoolStaff();
-        break;
-      default:
-        this.loadAllStaffPaged();
-    }
-  }
-
-  private loadAllStaffPaged(): void {
-    this.loading.set(true);
-    this.academicStaffService
-      .list({
-        page: this.page(),
-        perPage: this.pageSize(),
-        name: this.nameFilter(),
-        email: this.emailFilter(),
-        departmentId: this.departmentFilter(),
-      })
-      .subscribe({
-        next: (res) => {
-          this.loading.set(false);
-          if (!res.success) return;
-          const map = this.reviewerIdByUsername();
-          this.staffRows.set((res.data.items ?? []).map((item) => this.toRow(item, map)));
-          this.totalItems.set(res.data.pagination.total_items);
-          this.totalPages.set(Math.max(1, res.data.pagination.total_pages));
-        },
-        error: () => {
-          this.loading.set(false);
-          this.staffRows.set([]);
-          this.toast.error('Failed to load academic staff.');
-        },
-      });
-  }
-
-  /** Reviewer endpoint already supports real pagination/search/department — use it directly. */
-  private loadInPoolReviewers(): void {
-    this.loading.set(true);
-    const search = this.nameFilter().trim() || this.emailFilter().trim() || undefined;
+  loadReviewers(): void {
+    this.isLoading.set(true);
+    this.loadFailed.set(false);
     this.rdigReviewerService
       .list({
         page: this.page(),
         perPage: this.pageSize(),
-        search,
+        search: this.searchQuery(),
         departmentId: this.departmentFilter(),
-        status: 'all',
+        status: this.statusFilter(),
       })
       .subscribe({
-        next: (res) => {
-          this.loading.set(false);
-          if (!res.success) return;
-          this.staffRows.set(
-            (res.data.items ?? []).map((r) => ({
-              // Not needed here — every row in this view already has a reviewerId,
-              // so only "Remove" is ever shown, which doesn't need academic_staff_id.
-              academicStaffId: -1,
-              name: r.staff_fullname || r.staff_username || '',
-              username: r.staff_username || '',
-              department: r.department || '',
-              role: r.job_title || '',
-              email: r.staff_email || '',
-              initials: this.getInitials(r.staff_fullname || r.staff_username || ''),
-              reviewerId: r.id,
-            })),
-          );
-          this.totalItems.set(res.data.pagination.total_items);
-          this.totalPages.set(Math.max(1, res.data.pagination.total_pages));
+        next: (response) => {
+          if (!response.success || !response.data) {
+            this.handleLoadFailure(response.message);
+            return;
+          }
+          const data = response.data;
+          this.reviewers.set(data.items ?? []);
+          this.totalItems.set(data.pagination?.total_items ?? data.items?.length ?? 0);
+          this.totalPages.set(Math.max(1, data.pagination?.total_pages ?? 1));
+          this.page.set(data.pagination?.current_page ?? this.page());
+          this.isLoading.set(false);
+          this.busyRowId.set(null);
         },
-        error: () => {
-          this.loading.set(false);
-          this.staffRows.set([]);
-          this.toast.error('Failed to load the reviewer pool.');
-        },
+        error: () => this.handleLoadFailure(),
       });
   }
 
-  /** No "not a reviewer" endpoint exists — fetch every matching staff page, subtract reviewers, paginate client-side. */
-  private loadNotInPoolStaff(): void {
-    this.loading.set(true);
-    this.fetchAllStaffPages().subscribe({
-      next: (items) => {
-        this.loading.set(false);
-        const map = this.reviewerIdByUsername();
-        const rows = items.map((item) => this.toRow(item, map)).filter((row) => row.reviewerId === null);
-        this.totalItems.set(rows.length);
-        this.totalPages.set(Math.max(1, Math.ceil(rows.length / this.pageSize())));
-        const start = (this.page() - 1) * this.pageSize();
-        this.staffRows.set(rows.slice(start, start + this.pageSize()));
-      },
-      error: () => {
-        this.loading.set(false);
-        this.staffRows.set([]);
-        this.toast.error('Failed to load academic staff.');
-      },
-    });
+  onSearch(value: string): void {
+    this.searchQuery.set(value);
+    this.page.set(1);
+    this.loadReviewers();
   }
 
-  /** Fetches every backend page matching the current name/email/department filters. */
-  private fetchAllStaffPages(): Observable<AcademicStaffRecord[]> {
-    const MAX_PAGE_SIZE = 100;
-    const baseParams = {
-      name: this.nameFilter(),
-      email: this.emailFilter(),
-      departmentId: this.departmentFilter(),
-    };
-    return this.academicStaffService.list({ page: 1, perPage: MAX_PAGE_SIZE, ...baseParams }).pipe(
-      switchMap((first) => {
-        if (!first.success) return of([] as AcademicStaffRecord[]);
-        const items = first.data.items ?? [];
-        const totalPages = first.data.pagination.total_pages;
-        if (totalPages <= 1) return of(items);
-
-        const remainingPages = Array.from({ length: totalPages - 1 }, (_, i) => i + 2);
-        return forkJoin(
-          remainingPages.map((page) =>
-            this.academicStaffService.list({ page, perPage: MAX_PAGE_SIZE, ...baseParams }).pipe(
-              map((res) => (res.success ? res.data.items ?? [] : [])),
-              catchError(() => of([] as AcademicStaffRecord[])),
-            ),
-          ),
-        ).pipe(map((arrays) => [...items, ...arrays.flat()]));
-      }),
-      catchError(() => of([] as AcademicStaffRecord[])),
-    );
-  }
-
-  private toRow(item: AcademicStaffRecord, reviewerMap: Map<string, number>): StaffRow {
-    const staff = item.staff ?? {};
-    const fullname = staff.fullname ?? item.fullname ?? '';
-    const username = staff.username ?? item.username ?? '';
-    return {
-      academicStaffId: item.id,
-      name: fullname || username,
-      username,
-      department: staff.department ?? item.department ?? '',
-      role: staff.job_title ?? item.job_title ?? '',
-      email: staff.email ?? item.email ?? '',
-      initials: this.getInitials(fullname || username),
-      reviewerId: reviewerMap.get(username) ?? null,
-    };
-  }
-
-  private getInitials(value: string): string {
-    if (!value) return '--';
-    return value
-      .split(/\s+/)
-      .filter(Boolean)
-      .slice(0, 2)
-      .map((part) => part[0]?.toUpperCase() ?? '')
-      .join('');
-  }
-
-  /** Department changes take effect immediately — no need to click Search. */
-  setDepartmentFilter(value: number | null): void {
+  onDepartmentChange(value: number | null): void {
     this.departmentFilter.set(value);
     this.page.set(1);
-    this.loadStaff();
+    this.loadReviewers();
   }
 
-  /** Reviewer-pool changes take effect immediately, same as department. */
-  setPoolStatusFilter(value: string): void {
-    if (value === 'in-pool' || value === 'not-in-pool' || value === 'all') {
-      this.poolStatusFilter.set(value);
-      this.page.set(1);
-      this.loadStaff();
-    }
+  onStatusChange(value: StatusFilter): void {
+    this.statusFilter.set(value);
+    this.page.set(1);
+    this.loadReviewers();
   }
 
-  resetFilters(): void {
-    this.nameFilter.set('');
-    this.emailFilter.set('');
+  onReset(): void {
+    this.searchQuery.set('');
     this.departmentFilter.set(null);
-    this.poolStatusFilter.set('all');
+    this.statusFilter.set('all');
     this.page.set(1);
-    this.loadStaff();
-  }
-
-  applyFilters(): void {
-    this.page.set(1);
-    this.loadStaff();
+    this.loadReviewers();
   }
 
   onPageChange(page: number): void {
     this.page.set(page);
-    this.loadStaff();
+    this.loadReviewers();
   }
 
   onPageSizeChange(pageSize: number): void {
     this.pageSize.set(pageSize);
     this.page.set(1);
-    this.loadStaff();
+    this.loadReviewers();
   }
 
-  /**
-   * When a pool filter is active, a mutation can move the row out of view
-   * entirely (e.g. removing a reviewer while viewing "In Pool"), so the whole
-   * view is re-fetched. With no filter, a cheap in-place patch is enough.
-   */
-  private refreshAfterMutation(): void {
-    if (this.poolStatusFilter() === 'all') {
-      this.applyReviewerMapToRows();
-    } else {
-      this.loadStaff();
-    }
+  openAddModal(): void {
+    this.selectedStaffControl.setValue([]);
+    this.modalActiveControl.setValue(true);
+    this.showAddModal.set(true);
   }
 
-  /** Adds a staff member to the RDIG reviewer pool. */
-  addReviewer(row: StaffRow): void {
-    this.rdigReviewerService.add(row.academicStaffId).subscribe({
-      next: (res) => {
-        if (!res.success) {
-          this.toast.error(res.message ?? 'Could not add reviewer.');
+  closeAddModal(): void {
+    if (this.isSaving()) return;
+    this.showAddModal.set(false);
+    this.selectedStaffControl.setValue([]);
+    this.modalActiveControl.setValue(true);
+  }
+
+  saveReviewers(): void {
+    const selectedIds = this.selectedStaffControl.value;
+    if (selectedIds.length === 0 || this.isSaving()) return;
+
+    this.isSaving.set(true);
+    forkJoin(
+      selectedIds.map((academicStaffId) =>
+        this.rdigReviewerService.add(academicStaffId, this.modalActiveControl.value),
+      ),
+    ).subscribe({
+      next: (responses) => {
+        this.isSaving.set(false);
+        const failed = responses.find((response) => !response.success);
+        if (failed) {
+          this.toast.error(failed.message || 'Unable to add one or more reviewers.');
           return;
         }
-        this.reviewerIdByUsername.update((map) => {
-          const next = new Map(map);
-          next.set(row.username, res.data.id);
-          return next;
-        });
-        this.refreshAfterMutation();
-        this.toast.success(`${row.name} added to the reviewer pool.`);
+        this.toast.success(
+          selectedIds.length === 1
+            ? 'Reviewer added successfully.'
+            : `${selectedIds.length} reviewers added successfully.`,
+        );
+        this.closeAddModal();
+        this.loadReviewers();
       },
-      error: (err) => this.showError(err, 'Could not add reviewer.'),
+      error: (err) => {
+        this.isSaving.set(false);
+        this.showError(err, 'Unable to add reviewers. Please try again.');
+      },
     });
   }
 
-  /** Removes a staff member from the RDIG reviewer pool. */
-  removeReviewer(row: StaffRow): void {
-    if (row.reviewerId === null) return;
-    this.rdigReviewerService.remove(row.reviewerId).subscribe({
-      next: () => {
-        this.reviewerIdByUsername.update((map) => {
-          const next = new Map(map);
-          next.delete(row.username);
-          return next;
-        });
-        this.refreshAfterMutation();
-        this.toast.success(`${row.name} removed from the reviewer pool.`);
+  toggleStatus(row: RdigReviewerRecord): void {
+    if (this.busyRowId() !== null || this.isSaving()) return;
+    this.busyRowId.set(row.id);
+    this.rdigReviewerService.update(row.id, { is_active: !row.is_active }).subscribe({
+      next: (response) => {
+        if (!response.success) {
+          this.busyRowId.set(null);
+          this.toast.error(response.message || 'Unable to update reviewer status.');
+          return;
+        }
+        this.toast.success(`${this.displayStaffName(row)} ${row.is_active ? 'deactivated' : 'activated'}.`);
+        this.loadReviewers();
       },
-      error: (err) => this.showError(err, 'Could not remove reviewer.'),
+      error: (err) => {
+        this.busyRowId.set(null);
+        this.showError(err, 'Unable to update reviewer status.');
+      },
     });
+  }
+
+  confirmRemove(): void {
+    const row = this.rowToRemove();
+    if (!row || this.busyRowId() !== null || this.isSaving()) return;
+    this.busyRowId.set(row.id);
+    this.rdigReviewerService.remove(row.id).subscribe({
+      next: (response) => {
+        if (!response.success) {
+          this.busyRowId.set(null);
+          this.toast.error(response.message || 'Unable to remove reviewer.');
+          return;
+        }
+        this.rowToRemove.set(null);
+        this.toast.success(`${this.displayStaffName(row)} removed from the reviewer list.`);
+        if (this.reviewers().length === 1 && this.page() > 1) {
+          this.page.update((current) => current - 1);
+        }
+        this.loadReviewers();
+      },
+      error: (err) => {
+        this.busyRowId.set(null);
+        this.showError(err, 'Unable to remove reviewer.');
+      },
+    });
+  }
+
+  displayStaffName(row: RdigReviewerRecord): string {
+    return row.staff_fullname || row.staff_username || 'Reviewer';
+  }
+
+  getInitials(row: RdigReviewerRecord): string {
+    const value = this.displayStaffName(row);
+    return value
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase() ?? '')
+      .join('') || '--';
+  }
+
+  private toStaffOption(staff: AcademicStaffOptionRecord): DropdownOption<number> {
+    const name = staff.fullname || staff.username || `Academic Staff #${staff.id}`;
+    const details = [staff.username, staff.email, staff.department].filter(Boolean).join(' · ');
+    return {
+      value: staff.id,
+      label: name,
+      description: details,
+      searchText: `${name} ${details}`,
+    };
+  }
+
+  private handleLoadFailure(message?: string): void {
+    this.reviewers.set([]);
+    this.totalItems.set(0);
+    this.totalPages.set(1);
+    this.isLoading.set(false);
+    this.busyRowId.set(null);
+    this.loadFailed.set(true);
+    this.toast.error(message || 'Unable to load RDIG reviewers. Please try again.');
   }
 
   private showError(err: unknown, fallback: string): void {

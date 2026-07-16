@@ -17,10 +17,20 @@ export interface ExternalGrantCategory {
   is_active: boolean;
 }
 
+export interface StaffOption {
+  id: number;
+  username: string | null;
+  fullname: string | null;
+  email: string | null;
+  staff_type: string | null;
+  department: string | null;
+}
+
 export interface ExternalProjectPayload {
   external_grant_category_id?: number | null;
-  project_code?: string | null;
-  account_code?: string | null;
+  project_account_code?: string | null;
+  reference_code?: string | null;
+  description?: string | null;
   staff_name?: string | null;
   school_department?: string | null;
   sponsor_name?: string | null;
@@ -105,6 +115,17 @@ export class ExternalProjectApiService {
       `${this.masterDataUrl}/external-grant-categories`,
       { params: new HttpParams().set('include_inactive', false) },
     );
+  }
+
+  listStaffOptions(search?: string): Observable<ApiResponse<StaffOption[]>> {
+    let params = new HttpParams().set('include_inactive', false);
+    const normalizedSearch = search?.trim();
+
+    if (normalizedSearch) {
+      params = params.set('search', normalizedSearch);
+    }
+
+    return this.http.get<ApiResponse<StaffOption[]>>(`${this.masterDataUrl}/staff`, { params });
   }
 
   createDraft(payload: ExternalProjectPayload): Observable<ApiResponse<ExternalProjectFormData>> {

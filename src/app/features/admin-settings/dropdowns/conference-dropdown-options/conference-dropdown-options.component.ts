@@ -31,14 +31,6 @@ export class ConferenceDropdownOptionsComponent {
       nameLabel: 'Description',
     },
     {
-      key: 'ITEM_DESCRIPTION',
-      label: 'Item Description',
-      source: 'dropdown',
-      categoryCode: 'ITEM_DESCRIPTION',
-      formCode: 'CONFERENCE',
-      icon: 'receipt_long',
-    },
-    {
       key: 'TYPE_OF_ORGANISATION',
       label: 'Type of Organisation',
       source: 'dropdown',

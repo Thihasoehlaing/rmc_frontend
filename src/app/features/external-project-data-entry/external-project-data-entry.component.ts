@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
-import { firstValueFrom, merge } from 'rxjs';
+import { catchError, firstValueFrom, forkJoin, merge, of } from 'rxjs';
 import { CustomSubheaderComponent } from '../../shared/components/custom-subheader/custom-subheader.component';
 import { CharacterCounterComponent } from '../../shared/components/character-counter/character-counter.component';
 import {
@@ -24,6 +24,7 @@ import {
   ExternalProjectApiService,
   ExternalProjectFormData,
   ExternalProjectPayload,
+  StaffOption,
 } from './external-project-api.service';
 
 type TableEntryType = 'internal' | 'external' | 'outcome' | 'budget' | 'billing';
@@ -36,6 +37,8 @@ interface InternalCoResearcherRow {
 interface StaffMember {
   name: string;
   schoolDepartment: string;
+  username: string;
+  email: string;
 }
 
 interface BudgetBreakdownRow {
@@ -96,14 +99,19 @@ export class ExternalProjectDataEntryComponent {
   private readonly router = inject(Router);
   private readonly externalProjectApi = inject(ExternalProjectApiService);
   private readonly adminCatalogs = inject(AdminCatalogStoreService);
-  private requestId = Number(this.route.snapshot.queryParamMap.get('id')) || null;
+  private requestId =
+    Number(
+      this.route.snapshot.queryParamMap.get('id') ??
+        this.route.snapshot.queryParamMap.get('request_id'),
+    ) || null;
   private readonly grantCategoryByName = new Map<string, ExternalGrantCategory>();
   private readonly grantCategoryById = new Map<number, ExternalGrantCategory>();
 
   readonly externalProjectForm = this.fb.group({
     externalGrantCategory: [''],
-    projectCode: [''],
-    accountCode: [''],
+    projectAccountCode: [''],
+    referenceCode: [''],
+    description: [''],
     staffName: [''],
     schoolDepartment: [''],
     sponsorName: [''],
@@ -126,26 +134,16 @@ export class ExternalProjectDataEntryComponent {
     amount: [''],
   });
 
-  protected grantCategories: string[] = [
+  private readonly fallbackGrantCategories: string[] = [
     'National',
     'International',
     'Private (Industry)',
     'Consultancy',
   ];
 
-  private readonly staffDirectory: readonly StaffMember[] = [
-    { name: 'Dr. Ahmad Al-Hassan', schoolDepartment: 'Research Management Centre' },
-    { name: 'Dr. John Smith', schoolDepartment: 'School of Business' },
-    { name: 'Prof. Sarah Lim', schoolDepartment: 'School of Business' },
-    { name: 'Assoc. Prof. Michael Tan', schoolDepartment: 'School of Computing & Technology' },
-    { name: 'Dr. Nur Aisyah Rahman', schoolDepartment: 'School of Engineering' },
-    { name: 'Dr. Daniel Wong', schoolDepartment: 'School of Media & Design' },
-  ];
-
-  readonly projectLeaderOptions: DropdownOption<string>[] = this.staffDirectory.map((staff) => ({
-    value: staff.name,
-    label: staff.name,
-  }));
+  protected grantCategories: string[] = [...this.fallbackGrantCategories];
+  private staffDirectory: StaffMember[] = [];
+  projectLeaderOptions: DropdownOption<string>[] = [];
 
   readonly internalCoResearcherColumns: readonly DataTableColumn[] = [
     {
@@ -272,7 +270,7 @@ export class ExternalProjectDataEntryComponent {
     effect(() => {
       const managedCategories = this.getManagedGrantCategoryNames();
       if (managedCategories.length) {
-        this.grantCategories = managedCategories;
+        this.setGrantCategories(managedCategories);
         this.cdr.markForCheck();
       }
     });
@@ -308,20 +306,38 @@ export class ExternalProjectDataEntryComponent {
     this.isOptionsLoading = true;
     this.loadError = null;
 
-    this.externalProjectApi
-      .listGrantCategories()
+    const emptyGrantCategoriesResponse = {
+      success: false,
+      message: '',
+      data: [] as ExternalGrantCategory[],
+    };
+    const emptyStaffResponse = {
+      success: false,
+      message: '',
+      data: [] as StaffOption[],
+    };
+
+    forkJoin({
+      categories: this.externalProjectApi
+        .listGrantCategories()
+        .pipe(catchError(() => of(emptyGrantCategoriesResponse))),
+      staff: this.externalProjectApi
+        .listStaffOptions()
+        .pipe(catchError(() => of(emptyStaffResponse))),
+    })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (response) => {
-          this.applyGrantCategories(response.data || []);
+        next: ({ categories, staff }) => {
+          this.applyGrantCategories(categories.data || []);
+          this.applyStaffOptions(staff.data || []);
           this.isOptionsLoading = false;
-          this.loadError = null;
+          this.loadError = this.buildOptionsLoadMessage(categories.success, staff.success);
           this.loadExistingFormIfNeeded();
           this.cdr.markForCheck();
         },
         error: () => {
           this.isOptionsLoading = false;
-          this.loadError = 'Using local grant categories because backend options could not be loaded.';
+          this.loadError = 'Some form options could not be loaded. Please refresh and try again.';
           this.loadExistingFormIfNeeded();
           this.cdr.markForCheck();
         },
@@ -358,13 +374,63 @@ export class ExternalProjectDataEntryComponent {
       this.grantCategoryById.set(category.id, category);
     });
     const managedCategories = this.getManagedGrantCategoryNames();
-    this.grantCategories = managedCategories.length
-      ? managedCategories
-      : categories.map((category) => category.name);
+    this.setGrantCategories(
+      managedCategories.length ? managedCategories : categories.map((category) => category.name),
+    );
   }
 
   private getManagedGrantCategoryNames(): string[] {
     return this.adminCatalogs.activeExternalGrantCategories().map((category) => category.name);
+  }
+
+  private setGrantCategories(categories: string[]): void {
+    this.grantCategories = categories.length ? categories : [...this.fallbackGrantCategories];
+  }
+
+  private applyStaffOptions(staffOptions: StaffOption[]): void {
+    this.staffDirectory = staffOptions
+      .map((staff) => {
+        const name = staff.fullname?.trim() || staff.username?.trim() || '';
+
+        return {
+          name,
+          username: staff.username?.trim() || '',
+          email: staff.email?.trim() || '',
+          schoolDepartment: staff.department?.trim() || '',
+        };
+      })
+      .filter((staff) => staff.name);
+
+    this.projectLeaderOptions = this.staffDirectory.map((staff) => {
+      const description = [staff.username, staff.email, staff.schoolDepartment]
+        .filter(Boolean)
+        .join(' • ');
+
+      return {
+        value: staff.name,
+        label: staff.name,
+        description,
+        searchText: [staff.name, staff.username, staff.email, staff.schoolDepartment]
+          .filter(Boolean)
+          .join(' '),
+      };
+    });
+  }
+
+  private buildOptionsLoadMessage(categoriesLoaded: boolean, staffLoaded: boolean): string | null {
+    if (categoriesLoaded && staffLoaded) {
+      return null;
+    }
+
+    if (!categoriesLoaded && !staffLoaded) {
+      return 'Using local grant categories and empty staff options because backend options could not be loaded.';
+    }
+
+    if (!categoriesLoaded) {
+      return 'Using local grant categories because backend category options could not be loaded.';
+    }
+
+    return 'Staff options could not be loaded. Please refresh and try again.';
   }
 
   isNationalSelected(): boolean {
@@ -678,6 +744,13 @@ export class ExternalProjectDataEntryComponent {
       const response = await firstValueFrom(this.externalProjectApi.submit(requestId));
       this.hydrateFromApi(response.data);
       this.submitSuccess = true;
+      const requestCode = response.data.request?.request_code;
+      if (requestCode) {
+        await this.router.navigate([
+          '/external-project-data-entry/detail',
+          String(requestCode),
+        ]);
+      }
     } catch (error) {
       this.actionError = this.extractErrorMessage(error, 'Unable to submit external project.');
     } finally {
@@ -719,8 +792,9 @@ export class ExternalProjectDataEntryComponent {
     const value = this.externalProjectForm.getRawValue();
     const categoryId = this.selectedGrantCategoryId();
     const payload: ExternalProjectPayload = {
-      project_code: this.clean(value.projectCode),
-      account_code: this.clean(value.accountCode),
+      project_account_code: this.clean(value.projectAccountCode),
+      reference_code: this.clean(value.referenceCode),
+      description: this.clean(value.description),
       staff_name: this.clean(value.staffName),
       school_department: this.clean(value.schoolDepartment),
       sponsor_name: this.clean(value.sponsorName),
@@ -870,8 +944,9 @@ export class ExternalProjectDataEntryComponent {
     this.externalProjectForm.patchValue(
       {
         externalGrantCategory: category?.name ?? this.externalProjectForm.controls.externalGrantCategory.value,
-        projectCode: project.project_code ?? '',
-        accountCode: project.account_code ?? '',
+        projectAccountCode: project.project_account_code ?? project.project_code ?? '',
+        referenceCode: project.reference_code ?? project.account_code ?? '',
+        description: project.description ?? '',
         staffName: project.staff_name ?? '',
         schoolDepartment: project.school_department ?? '',
         sponsorName: project.sponsor_name ?? '',

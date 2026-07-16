@@ -28,6 +28,14 @@ export class AdminSettingsComponent {
       tone: 'blue',
     },
     {
+      title: 'Form Setting',
+      description: 'View active and inactive application forms registered in the system.',
+      icon: 'dynamic_form',
+      category: 'Form Configuration',
+      route: '/admin-settings/form-setting',
+      tone: 'teal',
+    },
+    {
       title: 'Dropdowns',
       description: 'Configure reusable selectable options by form and category.',
       icon: 'tune',

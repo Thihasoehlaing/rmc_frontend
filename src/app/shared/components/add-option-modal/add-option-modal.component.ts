@@ -31,6 +31,8 @@ export class AddOptionModalComponent implements OnChanges {
   @Input() showCode = false;
   @Input() codeLabel = 'Code';
   @Input() optionNameLabel = 'Option Name';
+  @Input() optionNameMaxLength: number | null = null;
+  @Input() showOptionNameCounter = false;
   @Input() availableForms: string[] = [];
   @Input() availableFormOptions: DropdownOption<string>[] = [];
   @Input() defaultSelectedForms: string[] = [];
@@ -65,7 +67,8 @@ export class AddOptionModalComponent implements OnChanges {
     // Ignore changes to other inputs (availableFormOptions, defaultSelectedForms, etc.)
     // that return new references on every CD cycle — those would continuously wipe
     // whatever the user has typed.
-    const modalOpened = changes['isOpen']?.currentValue === true && changes['isOpen']?.previousValue !== true;
+    const modalOpened =
+      changes['isOpen']?.currentValue === true && changes['isOpen']?.previousValue !== true;
     const editingRowChanged = 'initial' in changes;
     if (!modalOpened && !editingRowChanged) {
       return;
@@ -74,7 +77,7 @@ export class AddOptionModalComponent implements OnChanges {
     const init = this.initial;
     if (init) {
       this.code = init.code || '';
-      this.name = init.name || '';
+      this.name = this.limitOptionName(init.name || '');
       this.status = init.status || 'Active';
       this.appliesTo = init.appliesTo || [];
       this.accountNumber = init.accountNumber || '';
@@ -120,9 +123,9 @@ export class AddOptionModalComponent implements OnChanges {
       return true;
     }
 
-    return this.percentage !== null &&
-      this.limit !== null &&
-      `${this.description}`.trim().length > 0;
+    return (
+      this.percentage !== null && this.limit !== null && `${this.description}`.trim().length > 0
+    );
   }
 
   get showAppliesToError(): boolean {
@@ -148,7 +151,7 @@ export class AddOptionModalComponent implements OnChanges {
     const appliesTo = this.allowFormSharing ? [...this.appliesTo] : [...this.defaultSelectedForms];
     this.save.emit({
       code: this.showCode ? this.code.trim() : undefined,
-      name: this.name.trim(),
+      name: this.limitOptionName(this.name.trim()),
       status: this.status,
       appliesTo,
       accountNumber: this.showAccountNumberMetadata ? this.accountNumber.trim() : undefined,
@@ -158,5 +161,8 @@ export class AddOptionModalComponent implements OnChanges {
       parentDomainId: this.showParentDomain ? Number(this.parentDomainId) : undefined,
     });
   }
-}
 
+  private limitOptionName(value: string): string {
+    return this.optionNameMaxLength === null ? value : value.slice(0, this.optionNameMaxLength);
+  }
+}

@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -16,7 +16,7 @@ export interface PaginationConfig {
   templateUrl: './pagination.component.html',
   styleUrl: './pagination.component.scss'
 })
-export class PaginationComponent {
+export class PaginationComponent implements OnChanges {
   @Input() currentPage: number = 1;
   @Input() totalPages: number = 1;
   @Input() pageSize: number = 15;
@@ -28,37 +28,36 @@ export class PaginationComponent {
   @Output() pageChange = new EventEmitter<number>();
   @Output() pageSizeChange = new EventEmitter<number>();
 
-  goToPage(page: number) {
-    if (page >= 1 && page <= this.totalPages && page !== this.currentPage) {
-      this.pageChange.emit(page);
+  pageInput: number = 1;
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['currentPage']) {
+      this.pageInput = this.currentPage;
     }
+  }
+
+  goToPage(page: number) {
+    const nextPage = this.clampPage(page);
+    this.pageInput = nextPage;
+    if (nextPage !== this.currentPage) this.pageChange.emit(nextPage);
   }
 
   onPageSizeChange(newSize: number) {
     this.pageSizeChange.emit(newSize);
   }
 
-  get showResultSummary(): boolean {
-    return this.totalItems !== null;
+  onPageInputChange(value: number | null): void {
+    this.pageInput = this.clampPage(value ?? 1);
   }
 
-  get resultStart(): number {
-    const total = this.totalItems ?? 0;
-    if (total === 0) {
-      return 0;
-    }
-
-    return (this.currentPage - 1) * this.pageSize + 1;
+  submitPageInput(): void {
+    this.goToPage(this.pageInput);
   }
 
-  get resultEnd(): number {
-    const total = this.totalItems ?? 0;
-    if (total === 0) {
-      return 0;
-    }
-
-    const count = this.itemCount ?? this.pageSize;
-    return Math.min(this.resultStart + count - 1, total);
+  private clampPage(page: number): number {
+    const maxPage = Math.max(1, this.totalPages || 1);
+    const normalized = Number.isFinite(page) ? Math.trunc(page) : 1;
+    return Math.min(Math.max(normalized, 1), maxPage);
   }
 
   get visiblePages(): number[] {

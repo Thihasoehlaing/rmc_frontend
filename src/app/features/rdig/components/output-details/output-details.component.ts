@@ -1,5 +1,5 @@
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
-import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormGroup, FormControl, Validators, ValidatorFn } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
 import { CustomSubheaderComponent } from '../../../../shared/components/custom-subheader/custom-subheader.component';
 import { ValidationMessageComponent } from '../../../../shared/components/validation-message/validation-message.component';
@@ -66,6 +66,25 @@ export class OutputDetailsComponent implements OnInit, OnDestroy {
             .pipe(takeUntil(this.destroy$))
             .subscribe(() => this.updateJournalQuantity());
 
+        this.outputForm.get('journal.checked')?.valueChanges
+            .pipe(takeUntil(this.destroy$))
+            .subscribe(() => this.updateJournalQuantity());
+
+        this.setupConditionalValidator(
+            'knowledgeTransfer.checked',
+            'knowledgeTransfer.community',
+            [Validators.required],
+        );
+        this.setupConditionalValidator(
+            'externalGrant.checked',
+            'externalGrant.scheme',
+            [Validators.required],
+        );
+        this.setupConditionalValidator(
+            'others.checked',
+            'others.details',
+            [Validators.required, Validators.maxLength(200)],
+        );
         this.updateJournalQuantity();
     }
 
@@ -74,13 +93,38 @@ export class OutputDetailsComponent implements OnInit, OnDestroy {
         this.destroy$.complete();
     }
 
+    private setupConditionalValidator(
+        togglePath: string,
+        detailPath: string,
+        validators: ValidatorFn[],
+    ): void {
+        const toggleControl = this.outputForm.get(togglePath);
+        const detailControl = this.outputForm.get(detailPath);
+        if (!toggleControl || !detailControl) return;
+
+        const updateValidators = (selected: boolean): void => {
+            if (selected) {
+                detailControl.setValidators(validators);
+            } else {
+                detailControl.clearValidators();
+            }
+            detailControl.updateValueAndValidity({ emitEvent: false });
+        };
+
+        toggleControl.valueChanges
+            .pipe(takeUntil(this.destroy$))
+            .subscribe(value => updateValidators(!!value));
+
+        updateValidators(!!toggleControl.value);
+    }
     private updateJournalQuantity(): void {
         const quantityControl = this.outputForm.get('journal.quantity');
         const minimum = this.minimumJournalQuantity;
+        const journalSelected = !!this.outputForm.get('journal.checked')?.value;
 
         if (!quantityControl) return;
 
-        if (minimum === null) {
+        if (!journalSelected || minimum === null) {
             quantityControl.reset(null, { emitEvent: false });
             quantityControl.disable({ emitEvent: false });
             return;

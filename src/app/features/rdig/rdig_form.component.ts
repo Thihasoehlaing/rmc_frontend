@@ -24,8 +24,10 @@ import {
   StepIndicatorComponent,
   WizardStep,
   StepStatus,
+  MissingField,
 } from '../../shared/components/step-indicator/step-indicator.component';
 import { FormWizardNavComponent } from '../../shared/components/form-wizard-nav/form-wizard-nav.component';
+import { CustomHeaderComponent } from '../../shared/components/custom-header/custom-header.component';
 import {
   FormAlertComponent,
   FormPageContainerComponent,
@@ -56,6 +58,25 @@ import { SvgIconComponent } from '../../shared/components/svg-icon/svg-icon.comp
 import { SVG_ICON_LOADING_SPINNER, SVG_ICON_SUCCESS_CHECK } from '../../shared/icons/svg-icons';
 import { RdigApiService, RdigRequestDto } from './services/rdig-api.service';
 
+export function isApplicantSubmissionWindowOpen(
+  hasActiveBatch: boolean,
+  batchStatus: string | null | undefined,
+  applicantStart: string | null,
+  applicantEnd: string | null,
+  now = Date.now(),
+): boolean {
+  if (!hasActiveBatch || batchStatus?.trim().toLowerCase() !== 'active') return false;
+
+  const startTime = applicantStart ? new Date(applicantStart).getTime() : NaN;
+  const endTime = applicantEnd ? new Date(applicantEnd).getTime() : NaN;
+  return (
+    Number.isFinite(startTime) &&
+    Number.isFinite(endTime) &&
+    now >= startTime &&
+    now <= endTime
+  );
+}
+
 @Component({
   selector: 'app-rdig-application',
   standalone: true,
@@ -64,6 +85,7 @@ import { RdigApiService, RdigRequestDto } from './services/rdig-api.service';
     FormMainTitleComponent,
     StepIndicatorComponent,
     FormWizardNavComponent,
+    CustomHeaderComponent,
     FormAlertComponent,
     FormPageContainerComponent,
     ValidationSummaryComponent,
@@ -102,48 +124,38 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
   /** The currently active batch loaded from the server on init. */
   activeBatch = signal<BatchSitting | null | undefined>(undefined); // undefined = loading
 
-  /** True when no active batch exists — blocks form access and submission. */
-  readonly noBatchError = computed(() => this.activeBatch() === null);
+  /** Whether the active batch's Applicant workflow window is currently open. */
+  readonly applicantWindowOpen = signal(false);
 
-  /** True while the batch status is still being fetched. */
+  /** Next planned Applicant workflow window, when supplied by the applicant-safe endpoint. */
+  readonly nextApplicantWindow = signal<{ startDate: string; endDate: string } | null>(null);
+
+  /** True while the batch status and Applicant workflow window are being fetched. */
   readonly isBatchLoading = computed(() => this.activeBatch() === undefined);
 
   /** DEV ONLY - bypasses active-batch checks so the form can be opened for testing. */
   batchValidationDisabled = signal(false);
 
-  /** The form is always shown once batch loading completes — no hard-block gate. */
+  /** The form is always shown once batch loading completes - no hard-block gate. */
   readonly canShowForm = computed(() => this.activeBatch() !== undefined);
 
-  /**
-   * When the submission window opens/closes for applicants: the "Applicant"
-   * stage window, falling back to the overall batch dates if the backend
-   * hasn't supplied it. Used for gating, the deadline countdown and the banner.
-   */
-  readonly submissionOpenIso = computed<string | null>(() => {
-    const b = this.activeBatch();
-    return b ? (b.stages?.applicant?.startDate ?? b.startDate ?? null) : null;
-  });
+  /** Applicant-stage dates only. General batch dates must never be used here. */
+  readonly submissionOpenIso = computed<string | null>(() =>
+    this.activeBatch()?.stages?.applicant?.startDate ?? null,
+  );
 
-  readonly submissionCloseIso = computed<string | null>(() => {
-    const b = this.activeBatch();
-    return b ? (b.stages?.applicant?.endDate ?? b.endDate ?? null) : null;
-  });
+  readonly submissionCloseIso = computed<string | null>(() =>
+    this.activeBatch()?.stages?.applicant?.endDate ?? null,
+  );
 
-  /** Days remaining until the applicant submission window closes. Returns -999 when no batch loaded. */
-  readonly deadlineDaysLeft = computed((): number => {
-    const closeIso = this.submissionCloseIso();
-    if (!closeIso) return -999;
-    const end = new Date(closeIso);
-    if (Number.isNaN(end.getTime())) return -999;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    end.setHours(0, 0, 0, 0);
-    return Math.floor((end.getTime() - today.getTime()) / 86_400_000);
-  });
+  readonly hasActiveApplicantWindow = computed(
+    () => this.applicantWindowOpen() && !!this.activeBatch(),
+  );
+
 
   /** Formats an ISO date/datetime for display in the batch banner. */
   fmtWindow(iso: string | null): string {
-    if (!iso) return '—';
+    if (!iso) return '\u2014';
     const d = new Date(iso);
     if (Number.isNaN(d.getTime())) return iso;
     return d.toLocaleString('en-GB', {
@@ -221,7 +233,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
   ];
 
   /** Field paths & labels per step for validation tooltip */
-  readonly stepFieldChecks: Array<Array<{ path: string; label: string }>> = [
+  readonly stepFieldChecks: Array<Array<{ path: string; label: string; target?: string }>> = [
     // Step 1: Team Members
     [
       { path: 'teamDetails.leaderName', label: 'Project Leader Name' },
@@ -238,6 +250,8 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
     // Step 2: Project Details
     [
       { path: 'projectDetails.applicationType', label: 'Application Type' },
+      { path: 'projectDetails.declarations.ethics', label: 'RDIG Project Declaration' },
+      { path: 'projectDetails.declarations.conflict', label: 'Co-Researcher Declaration' },
       { path: 'projectDetails.duration', label: 'Project Duration' },
       { path: 'projectDetails.title', label: 'Project Title' },
       { path: 'projectDetails.researchArea', label: 'Research Area' },
@@ -276,6 +290,16 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
       { path: 'outputs.conceptualDesign', label: 'Conceptual Design or Theoretical Framework' },
       { path: 'outputs.knowledgeTransfer.checked', label: 'Knowledge Transfer Programme' },
       { path: 'outputs.knowledgeTransfer.community', label: 'Knowledge Transfer Community' },
+      {
+        path: 'outputs.externalGrant.scheme',
+        label: 'Application to external grant scheme',
+        target: 'outputs.externalGrant.checked',
+      },
+      {
+        path: 'outputs.others.details',
+        label: 'Describe other outputs',
+        target: 'outputs.others.checked',
+      },
     ],
     // Step 4: Declaration
     [
@@ -293,12 +317,12 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
   ];
 
   /** Returns labels for required-but-empty controls in a FormGroup */
-  private getRequiredInvalidLabels(groupPath: string): string[] {
+  private getRequiredInvalidLabels(groupPath: string): MissingField[] {
     const group = this.rdigForm.get(groupPath) as FormGroup | null;
     if (!group) return [];
     return Object.entries(group.controls)
       .filter(([, ctrl]) => ctrl.hasError('required'))
-      .map(([key]) => this.fieldKeyToLabel(key));
+      .map(([key]) => ({ label: this.fieldKeyToLabel(key), target: groupPath + '.' + key }));
   }
 
   /** Convert camelCase field key to a readable label */
@@ -362,29 +386,32 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
       const stepNum = i + 1;
       const visited = this.checkedSteps.has(stepNum);
       const checks = this.stepFieldChecks[i] ?? [];
-      const missingFields = checks
+      const missingFields: MissingField[] = checks
         .filter((c) => this.rdigForm.get(c.path)?.invalid)
-        .map((c) => c.label);
+        .map((c) => ({
+          label: c.label,
+          target: c.target ?? c.path,
+        }));
 
       // Step 2 also includes Research Activities (applicant-only)
       if (stepNum === 2 && this.workflow.isApplicantEditable()) {
         const acts = this.rdigForm.get('activities') as FormArray;
         if (!acts || acts.length === 0) {
-          missingFields.push('At least 1 Research Activity');
+          missingFields.push({ label: 'At least 1 Research Activity', target: 'activities' });
         } else {
           acts.controls.forEach((ctrl, idx) => {
             if (ctrl.get('name')?.invalid || !String(ctrl.get('name')?.value ?? '').trim()) {
-              missingFields.push(`Activity ${idx + 1} Description`);
+              missingFields.push({ label: 'Activity ' + (idx + 1) + ' Description', target: 'activities' });
             }
           });
           if (acts.hasError('activitiesTimeline')) {
-            missingFields.push('Research Activities Timeline');
+            missingFields.push({ label: 'Research Activities Timeline', target: 'activities' });
           }
         }
       }
 
       if (stepNum === 3 && this.rdigForm.get('budget')?.hasError('budgetRange')) {
-        missingFields.push('Total Amount Requested');
+        missingFields.push({ label: 'Total Amount Requested', target: 'totalRequest' });
       }
 
       // Include required-but-empty review fields (set dynamically by ReviewBlockComponent
@@ -410,6 +437,63 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
     );
   }
 
+  goToMissingField(event: { step: number; field: MissingField }): void {
+    this.goToStep(event.step);
+    const target =
+      typeof event.field === 'string'
+        ? event.field
+        : event.field.target ?? event.field.label;
+
+    setTimeout(() => {
+      const escapedTarget = CSS.escape(target);
+      const controlName = target.split('.').at(-1) ?? target;
+      const escapedControlName = CSS.escape(controlName);
+      const root = document.querySelector<HTMLElement>('.rdig-app');
+      const element = root?.querySelector<HTMLElement>(
+        '[data-missing-field-target="' +
+          escapedTarget +
+          '"], [data-missing-field-score-target="' +
+          escapedTarget +
+          '"], [formControlName="' +
+          escapedTarget +
+          '"], [formControlName="' +
+          escapedControlName +
+          '"]',
+      );
+      const fallback = root?.querySelector<HTMLElement>(
+        '.rdig-step-panel form .ng-invalid:not(form):not(fieldset)',
+      );
+      const targetElement = element ?? fallback;
+      if (!targetElement) return;
+
+      const focusTarget = targetElement.matches('input, textarea, select, button, [tabindex]')
+        ? targetElement
+        : targetElement.querySelector<HTMLElement>('input, textarea, select, button, [tabindex]');
+      const scrollTarget =
+        targetElement.closest<HTMLElement>(
+          '[data-missing-field-target], .form-field, .form-group, .radio-group, .checkbox-group',
+        ) ?? targetElement;
+
+      scrollTarget.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      this.highlightMissingField(scrollTarget);
+      focusTarget?.focus({ preventScroll: true });
+    });
+  }
+
+  private highlightMissingField(element: HTMLElement): void {
+    const previousOutline = element.style.outline;
+    const previousBoxShadow = element.style.boxShadow;
+    const previousBorderRadius = element.style.borderRadius;
+    element.style.outline = '2px solid var(--color-primary)';
+    element.style.boxShadow = '0 0 0 4px var(--color-primary-light)';
+    element.style.borderRadius = 'var(--radius-md)';
+
+    window.setTimeout(() => {
+      element.style.outline = previousOutline;
+      element.style.boxShadow = previousBoxShadow;
+      element.style.borderRadius = previousBorderRadius;
+    }, 1800);
+  }
   onValidationItemSelected(item: ValidationSummaryItem): void {
     this.goToStep(item.step);
     setTimeout(() => {
@@ -466,8 +550,8 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
       projectDetails: this.fb.group({
         applicationType: ['', Validators.required],
         declarations: this.fb.group({
-          ethics: [false],
-          conflict: [false],
+          ethics: [false, Validators.requiredTrue],
+          conflict: [false, Validators.requiredTrue],
         }),
         category: ['S&T'],
         duration: ['', Validators.required],
@@ -783,10 +867,37 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
 
   // ── Sync ABAC attributes to workflow ───────────────────────────
   ngOnInit(): void {
-    // Load the active batch from the real backend — gates form access and submission.
+    // Applicant-safe facade over the same batch data used by the original green card.
     this.rdigApi.getActiveBatch().subscribe({
       next: (res) => {
-        const batch = res.data?.batch;
+        const data = res.data;
+        const batch = data?.batch;
+        const applicantStage = batch?.stage_windows?.find(
+          (stage) => stage.stage_name.trim().toLowerCase() === 'applicant',
+        );
+        const applicantStart =
+          applicantStage?.stage_start_date ??
+          batch?.applicant_stage_start_date ??
+          batch?.submission_start_date ??
+          batch?.applicant_start_date ??
+          null;
+        const applicantEnd =
+          applicantStage?.stage_end_date ??
+          batch?.applicant_stage_end_date ??
+          batch?.submission_end_date ??
+          batch?.applicant_end_date ??
+          null;
+        const isApplicantWindowOpen =
+          !!batch &&
+          isApplicantSubmissionWindowOpen(
+            !!data?.has_active_batch,
+            batch?.status,
+            applicantStart,
+            applicantEnd,
+          );
+
+        this.applicantWindowOpen.set(isApplicantWindowOpen);
+        this.nextApplicantWindow.set(null);
         this.activeBatch.set(
           batch
             ? ({
@@ -795,19 +906,21 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
                 status: batch.status,
                 startDate: batch.start_date,
                 endDate: batch.end_date,
-                // Only the applicant window is needed here — it governs when
-                // applicant users may submit (see the submit gate below).
                 stages: {
                   applicant: {
-                    startDate: batch.applicant_start_date ?? null,
-                    endDate: batch.applicant_end_date ?? null,
+                    startDate: applicantStart,
+                    endDate: applicantEnd,
                   },
                 },
               } as unknown as BatchSitting)
             : null,
         );
       },
-      error: () => this.activeBatch.set(null),
+      error: () => {
+        this.applicantWindowOpen.set(false);
+        this.nextApplicantWindow.set(null);
+        this.activeBatch.set(null);
+      },
     });
 
     // If a request ID is in the URL (?request_id=xxx), load and restore that application.
@@ -1627,15 +1740,15 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
     // ── Batch constraint check ───────────────────────────────────────────────
     const batch = this.activeBatch();
     const bypassBatchValidation = this.batchValidationDisabled();
-    if (!batch && !bypassBatchValidation) {
+    if (!this.hasActiveApplicantWindow() && !bypassBatchValidation) {
       this.showClosedWindowModal.set(true);
       return;
     }
-    if (batch && !bypassBatchValidation) {
+    if (this.hasActiveApplicantWindow() && batch && !bypassBatchValidation) {
       const now = new Date();
       // Applicant users are gated on the "Applicant" stage window — its start is
       // when submissions open for them — not the overall batch window (see
-      // submissionOpenIso/submissionCloseIso, which fall back to the batch dates).
+      // submissionOpenIso/submissionCloseIso, sourced only from the Applicant stage).
       const openIso = this.submissionOpenIso();
       const closeIso = this.submissionCloseIso();
       const beforeOpen = !!openIso && now < new Date(openIso);

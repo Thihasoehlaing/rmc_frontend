@@ -15,6 +15,8 @@ import { DropdownOption } from '../../../../core/interfaces/components.interface
 import { SearchableDropdownComponent } from '../../../../shared/components/searchable-dropdown/searchable-dropdown.component';
 import { ValidationMessageComponent } from '../../../../shared/components/validation-message/validation-message.component';
 import { CustomHeaderComponent } from '../../../../shared/components/custom-header/custom-header.component';
+import { CustomSubheaderComponent } from '../../../../shared/components/custom-subheader/custom-subheader.component';
+import { CharacterCounterComponent } from '../../../../shared/components/character-counter/character-counter.component';
 import { NoteComponent } from '../../../../shared/components/note/note.component';
 import { DialogComponent } from '../../../../shared/components/dialog/dialog.component';
 import { FileUploadComponent } from '../../../../shared/components/file-upload/file-upload.component';
@@ -48,6 +50,8 @@ interface FunctionalAreaOption {
     ReactiveFormsModule,
     ValidationMessageComponent,
     CustomHeaderComponent,
+    CustomSubheaderComponent,
+    CharacterCounterComponent,
     NoteComponent,
     DialogComponent,
     FileUploadComponent,
@@ -551,18 +555,18 @@ export class TravelAuthorizationApplicationComponent implements OnInit {
       returnDate: ['', [Validators.required]],
       reasonForRequest: ['', [Validators.required]],
       activities: this.fb.array([]),
-      bookingDoneBy: ['themselves', [Validators.required]],
-      bookingDoneByOther: [{ value: '', disabled: true }, [Validators.maxLength(300)]],
+      bookingDoneBy: ['', [Validators.required]],
+      bookingDoneByOther: ['', [Validators.maxLength(300)]],
       isAdvanceRequired: ['no', [Validators.required]],
       advanceReason: [{ value: '', disabled: true }, [Validators.maxLength(300)]],
       hasColleagues: ['no', [Validators.required]],
       colleagues: [{ value: [], disabled: true }, [Validators.required, Validators.maxLength(10)]],
       staffParticipation: [[], [Validators.required]],
       programmeLocation: ['', [Validators.required]],
-      declarationAgreed: [false, Validators.requiredTrue],
-      declarationFalseMisleading: [false, Validators.requiredTrue],
-      declarationTermsPolicies: [false, Validators.requiredTrue],
-      declarationAccuracy: [false, Validators.requiredTrue],
+      declarationInformationTrue: [false, Validators.requiredTrue],
+      declarationDisciplinaryAction: [false, Validators.requiredTrue],
+      declarationTermsUnderstood: [false, Validators.requiredTrue],
+      declarationInformationCorrect: [false, Validators.requiredTrue],
       // Review comments group for all 7 roles
       reviewComments: this.fb.group({
         hosComment: ['', [Validators.maxLength(500)]],
@@ -618,11 +622,9 @@ export class TravelAuthorizationApplicationComponent implements OnInit {
     const bookingDoneByOther = this.travelAuthForm.get('bookingDoneByOther');
     if (bookingDoneBy === 'other') {
       bookingDoneByOther?.setValidators([Validators.required, Validators.maxLength(300)]);
-      bookingDoneByOther?.enable({ emitEvent: false });
     } else {
       bookingDoneByOther?.setValidators([Validators.maxLength(300)]);
       bookingDoneByOther?.reset('', { emitEvent: false });
-      bookingDoneByOther?.disable({ emitEvent: false });
     }
     bookingDoneByOther?.updateValueAndValidity({ emitEvent: false });
 

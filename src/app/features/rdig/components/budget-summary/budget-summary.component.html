@@ -5,6 +5,7 @@
   <!-- ?? Budget Totals Banner ?????????????????????????????????? -->
   <div
     class="budget-banner"
+    data-missing-field-target="totalRequest"
     [class.budget-banner--warning]="budgetAlertColor === 'yellow'"
     [class.budget-banner--invalid]="budgetAlertColor === 'red'"
   >
@@ -95,14 +96,14 @@
             icon="rate_review"
             [visible]="showR1Comments"
             [readonly]="!workflow.isReviewer1Editable()"
-            [commentControl]="fc('reviewer1StudentComment')"
+            data-missing-field-target="reviewBudget.reviewer1StudentComment" [commentControl]="fc('reviewer1StudentComment')"
           ></app-review-block>
           <app-review-block
             label="Reviewer 2 - Student Allowances"
             icon="rate_review"
             [visible]="showR2Comments"
             [readonly]="!workflow.isReviewer2Editable()"
-            [commentControl]="fc('reviewer2StudentComment')"
+            data-missing-field-target="reviewBudget.reviewer2StudentComment" [commentControl]="fc('reviewer2StudentComment')"
           ></app-review-block>
         </div>
       }
@@ -178,14 +179,14 @@
             icon="rate_review"
             [visible]="showR1Comments"
             [readonly]="!workflow.isReviewer1Editable()"
-            [commentControl]="fc('reviewer1TravelComment')"
+            data-missing-field-target="reviewBudget.reviewer1TravelComment" [commentControl]="fc('reviewer1TravelComment')"
           ></app-review-block>
           <app-review-block
             label="Reviewer 2 - Travel & Accommodation"
             icon="rate_review"
             [visible]="showR2Comments"
             [readonly]="!workflow.isReviewer2Editable()"
-            [commentControl]="fc('reviewer2TravelComment')"
+            data-missing-field-target="reviewBudget.reviewer2TravelComment" [commentControl]="fc('reviewer2TravelComment')"
           ></app-review-block>
         </div>
       }
@@ -261,14 +262,14 @@
             icon="rate_review"
             [visible]="showR1Comments"
             [readonly]="!workflow.isReviewer1Editable()"
-            [commentControl]="fc('reviewer1MaterialsComment')"
+            data-missing-field-target="reviewBudget.reviewer1MaterialsComment" [commentControl]="fc('reviewer1MaterialsComment')"
           ></app-review-block>
           <app-review-block
             label="Reviewer 2 - Materials & Supplies"
             icon="rate_review"
             [visible]="showR2Comments"
             [readonly]="!workflow.isReviewer2Editable()"
-            [commentControl]="fc('reviewer2MaterialsComment')"
+            data-missing-field-target="reviewBudget.reviewer2MaterialsComment" [commentControl]="fc('reviewer2MaterialsComment')"
           ></app-review-block>
         </div>
       }
@@ -344,14 +345,14 @@
             icon="rate_review"
             [visible]="showR1Comments"
             [readonly]="!workflow.isReviewer1Editable()"
-            [commentControl]="fc('reviewer1ServicesComment')"
+            data-missing-field-target="reviewBudget.reviewer1ServicesComment" [commentControl]="fc('reviewer1ServicesComment')"
           ></app-review-block>
           <app-review-block
             label="Reviewer 2 - Special Services"
             icon="rate_review"
             [visible]="showR2Comments"
             [readonly]="!workflow.isReviewer2Editable()"
-            [commentControl]="fc('reviewer2ServicesComment')"
+            data-missing-field-target="reviewBudget.reviewer2ServicesComment" [commentControl]="fc('reviewer2ServicesComment')"
           ></app-review-block>
         </div>
       }
@@ -369,7 +370,7 @@
           icon="supervisor_account"
           [visible]="showHosComments"
           [readonly]="!workflow.isHosEditable()"
-          [commentControl]="fc('hosComment')"
+          data-missing-field-target="reviewBudget.hosComment" [commentControl]="fc('hosComment')"
         ></app-review-block>
 
         <app-review-block
@@ -377,7 +378,7 @@
           icon="verified"
           [visible]="showRmcComments"
           [readonly]="!workflow.isRmcEditable()"
-          [commentControl]="fc('rmcComment')"
+          data-missing-field-target="reviewBudget.rmcComment" [commentControl]="fc('rmcComment')"
         ></app-review-block>
 
         <div class="row row--2">
@@ -389,8 +390,8 @@
             [showScore]="true"
             [maxScore]="10"
             [scoreDisabled]="!workflow.isScoreEditable()"
-            [commentControl]="fc('reviewer1Comment')"
-            [scoreControl]="fc('reviewer1Score')"
+            data-missing-field-target="reviewBudget.reviewer1Comment" [commentControl]="fc('reviewer1Comment')"
+            data-missing-field-score-target="reviewBudget.reviewer1Score" [scoreControl]="fc('reviewer1Score')"
           ></app-review-block>
           <app-review-block
             label="Reviewer 2 - Budget Overall"
@@ -400,8 +401,8 @@
             [showScore]="true"
             [maxScore]="10"
             [scoreDisabled]="!workflow.isScoreEditable()"
-            [commentControl]="fc('reviewer2Comment')"
-            [scoreControl]="fc('reviewer2Score')"
+            data-missing-field-target="reviewBudget.reviewer2Comment" [commentControl]="fc('reviewer2Comment')"
+            data-missing-field-score-target="reviewBudget.reviewer2Score" [scoreControl]="fc('reviewer2Score')"
           ></app-review-block>
         </div>
       </div>

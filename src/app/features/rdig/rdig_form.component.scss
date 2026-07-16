@@ -1,5 +1,22 @@
 @use '../../../styles/index' as *;
 
+.main-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.rdig-step-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--form-section-gap);
+}
+
+.rdig-step-content {
+  min-width: 0;
+}
+
 // RDIG page rhythm: exact values approved in the browser review.
 // Custom properties reach the components' internal layout without changing other forms.
 .rdig-app > app-form-main-title {
@@ -10,15 +27,166 @@
   --step-indicator-margin-bottom: 15px;
 }
 
-.rdig-app > app-form-alert {
+.rdig-step-panel > app-form-alert {
   margin-bottom: 25px;
 }
+
+.active-batch-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+  background: var(--color-surface);
+  border: var(--control-border-width) solid var(--color-border-default);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xs);
+  overflow: hidden;
+
+  &__section {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: var(--space-2);
+    min-width: 0;
+    padding: var(--space-4) var(--space-5);
+  }
+
+  &__identity {
+    align-items: flex-start;
+  }
+
+  &__badge {
+    display: inline-flex;
+    align-items: center;
+    align-self: flex-start;
+    gap: var(--space-2);
+    font-size: var(--fs-xs);
+    text-transform: uppercase;
+  }
+
+  &__status-dot {
+    width: var(--space-2);
+    height: var(--space-2);
+    background: var(--color-success);
+    border-radius: var(--radius-full);
+  }
+
+  &__name {
+    color: var(--color-heading);
+    font-size: var(--fs-lg);
+    font-weight: var(--fw-bold);
+    line-height: var(--lh-tight);
+  }
+
+  &__period {
+    display: grid;
+    grid-template-columns: var(--size-icon-control) minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    align-content: center;
+    column-gap: var(--space-2);
+    row-gap: var(--space-1);
+    border-left: var(--control-border-width) solid var(--color-border-default);
+  }
+
+  &__period-label {
+    display: contents;
+
+    .material-icons {
+      grid-column: 1;
+      grid-row: 1;
+      align-self: center;
+      color: var(--color-primary);
+      font-size: var(--size-icon-control);
+    }
+
+    > span:last-child {
+      grid-column: 2;
+      grid-row: 1;
+      align-self: center;
+      color: var(--color-text-secondary);
+      font-size: var(--fs-sm);
+      font-weight: var(--fw-medium);
+    }
+  }
+
+  &__period-value {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    color: var(--color-heading);
+    font-size: var(--fs-sm);
+    font-weight: var(--fw-semibold);
+    line-height: var(--lh-normal);
+
+    &--muted {
+      color: var(--color-text-secondary);
+      font-weight: var(--fw-normal);
+    }
+  }
+
+  &__empty-summary {
+    align-items: flex-start;
+  }
+
+  &__empty-heading {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    color: var(--color-heading);
+    font-size: var(--fs-base);
+
+    .material-icons {
+      color: var(--color-text-secondary);
+      font-size: var(--size-icon-control);
+    }
+  }
+
+  &__empty-summary p {
+    margin: 0;
+    color: var(--color-text-secondary);
+    font-size: var(--fs-sm);
+    line-height: var(--lh-normal);
+  }
+
+  &--empty {
+    background: var(--color-surface);
+
+    .active-batch-card__section {
+      background-color: var(--color-surface);
+      justify-content: flex-start;
+    }
+    .active-batch-card__period {
+      align-content: start;
+    }
+
+    .active-batch-card__period-label > span:last-child {
+      color: var(--color-heading);
+    }
+
+
+
+    .active-batch-card__period-label .material-icons {
+      color: var(--color-text-secondary);
+    }
+  }
+
+  @media (max-width: 768px) {
+    grid-template-columns: minmax(0, 1fr);
+
+    &__section {
+      padding: var(--space-4) var(--space-5);
+    }
+
+    &__period {
+      border-top: var(--control-border-width) solid var(--color-border-default);
+      border-left: 0;
+    }
+  }
+}
+
 
 .error-icon {
   font-size: 40px;
 }
 
-// ── Overlay Animations ──
+// �"?�"? Overlay Animations �"?�"?
 @keyframes fadeInOverlay {
   from {
     opacity: 0;
@@ -74,8 +242,8 @@
   }
 }
 
-// ── Closed-window warning banner (Req 5) ─────────────────────────────────────
-// ── Closed-window modal (Req 6) ───────────────────────────────────────────────
+// �"?�"? Closed-window warning banner (Req 5) �"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?
+// �"?�"? Closed-window modal (Req 6) �"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?
 .modal-backdrop {
   position: fixed;
   inset: 0;
@@ -136,7 +304,7 @@
     justify-content: flex-end;
     gap: var(--space-3);
     padding: var(--space-4) var(--space-6);
-    background: var(--color-surface-nested);
+    background: var(--color-surface);
     border-top: 1px solid var(--border-default);
   }
 }

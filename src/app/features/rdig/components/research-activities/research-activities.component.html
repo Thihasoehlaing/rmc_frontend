@@ -3,7 +3,7 @@
   <app-custom-header icon="event_note" title="Research Activities"></app-custom-header>
 
   <!-- Activities Table -->
-  <div class="card">
+  <div class="card" data-missing-field-target="activities">
     <div class="card__content">
       <div class="list-section-header">
         <span class="list-count"
@@ -176,14 +176,14 @@
             icon="rate_review"
             [visible]="showR1Comments"
             [readonly]="!workflow.isReviewer1Editable()"
-            [commentControl]="fc('reviewer1ActivitiesComment')"
+            data-missing-field-target="reviewProject.reviewer1ActivitiesComment" [commentControl]="fc('reviewer1ActivitiesComment')"
           ></app-review-block>
           <app-review-block
             label="Reviewer 2 — Research Activities"
             icon="rate_review"
             [visible]="showR2Comments"
             [readonly]="!workflow.isReviewer2Editable()"
-            [commentControl]="fc('reviewer2ActivitiesComment')"
+            data-missing-field-target="reviewProject.reviewer2ActivitiesComment" [commentControl]="fc('reviewer2ActivitiesComment')"
           ></app-review-block>
         </div>
       </div>

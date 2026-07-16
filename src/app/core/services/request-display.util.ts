@@ -38,7 +38,10 @@ const FORM_LABELS: Record<string, string> = {
   EXTERNAL: 'External',
 };
 
-export function formTypeLabel(formCode: string | null | undefined, formName?: string | null): string {
+export function formTypeLabel(
+  formCode: string | null | undefined,
+  formName?: string | null,
+): string {
   const code = (formCode ?? '').toUpperCase();
   return FORM_LABELS[code] ?? formName ?? code ?? '—';
 }
@@ -58,7 +61,10 @@ export function formRoute(formCode: string | null | undefined): string {
   }
 }
 
-export function requestIdOf(app: { id?: number | null; request_id?: number | null }): number | null {
+export function requestIdOf(app: {
+  id?: number | null;
+  request_id?: number | null;
+}): number | null {
   return app.request_id ?? app.id ?? null;
 }
 
@@ -81,8 +87,10 @@ export function detailRoute(app: {
   request_code?: string | null;
 }): string {
   const requestCode = app.request_code?.trim();
-  if ((app.form_code ?? '').toUpperCase() === 'JOURNAL' && requestCode) {
-    return `/journal/detail/${encodeURIComponent(requestCode)}`;
+  const formCode = (app.form_code ?? '').toUpperCase();
+  if (requestCode && (formCode === 'JOURNAL' || formCode === 'CONFERENCE')) {
+    const feature = formCode === 'JOURNAL' ? 'journal' : 'conference';
+    return `/${feature}/detail/${encodeURIComponent(requestCode)}`;
   }
 
   const id = requestIdOf(app);
@@ -97,7 +105,9 @@ export function actionRoute(app: {
 }): string {
   const id = requestIdOf(app);
   if (id == null) return '/submissions/inbox';
-  if ((app.form_code ?? '').toUpperCase() === 'JOURNAL') return detailRoute(app);
+  if (['JOURNAL', 'CONFERENCE'].includes((app.form_code ?? '').toUpperCase())) {
+    return detailRoute(app);
+  }
   return `/submissions/action/${id}`;
 }
 

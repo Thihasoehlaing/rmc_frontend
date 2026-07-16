@@ -1,0 +1,724 @@
+<section class="review-page">
+  @if (loading()) {
+    <div
+      class="review-loading"
+      role="status"
+      aria-live="polite"
+      aria-label="Loading conference application detail"
+    >
+      <div class="review-loading__orb"><span class="material-icons">event</span></div>
+      <div class="review-loading__content">
+        <p class="review-loading__eyebrow">Fetching conference detail</p>
+        <h2>Preparing application view</h2>
+        <p>Loading workflow, applicant, attachment, and review information…</p>
+      </div>
+      <div class="review-loading__skeleton" aria-hidden="true">
+        <span></span><span></span><span></span><span></span>
+      </div>
+    </div>
+  } @else if (error()) {
+    <div class="review-state review-state--error">{{ error() }}</div>
+  } @else {
+    <header class="review-hero">
+      <button type="button" class="review-back" (click)="goBack()">
+        <span class="material-icons">arrow_back</span>
+        {{ backLabel() }}
+      </button>
+
+      <div class="review-hero__content">
+        <div class="review-hero__eyebrow">
+          <span class="material-icons">event</span>
+          Conference Application Detail
+        </div>
+        <h1>
+          {{ val(conference()?.paper_title || conference()?.conference_name || request()?.title) }}
+        </h1>
+        <div class="review-hero__meta">
+          <span class="review-chip review-chip--strong">{{ val(request()?.request_code) }}</span>
+          <span class="review-chip review-chip--status">{{
+            val(request()?.status_name || request()?.status_code)
+          }}</span>
+          <span
+            >Submitted by <strong>{{ val(request()?.applicant_name) }}</strong></span
+          >
+          @if (request()?.applicant_department) {
+            <span>· {{ request()?.applicant_department }}</span>
+          }
+        </div>
+      </div>
+
+      <button type="button" class="review-print" (click)="printRequest()">
+        <span class="material-icons">print</span>
+        Print
+      </button>
+    </header>
+
+    <div class="review-summary">
+      <article class="summary-card">
+        <span class="material-icons">payments</span>
+        <div>
+          <p>Total Cost (RM)</p>
+          <strong>{{ fmtMoney(totalCostInRm()) }}</strong>
+        </div>
+      </article>
+      <article class="summary-card">
+        <span class="material-icons">task_alt</span>
+        <div>
+          <p>Available Actions</p>
+          <strong>{{ actions().length }}</strong>
+        </div>
+      </article>
+      <article class="summary-card">
+        <span class="material-icons">attach_file</span>
+        <div>
+          <p>Supporting Documents</p>
+          <strong>{{ attachments().length }}</strong>
+        </div>
+      </article>
+    </div>
+
+    <div class="review-layout">
+      <main class="review-main">
+        <section class="detail-section">
+          <div class="section-heading">
+            <span class="material-icons">person</span>
+            <div>
+              <h2>Applicant Details</h2>
+              <p>Applicant information recorded when the conference application was submitted.</p>
+            </div>
+          </div>
+          <dl class="detail-grid">
+            <div>
+              <dt>Applicant Name</dt>
+              <dd>{{ val(request()?.applicant_name) }}</dd>
+            </div>
+            <div>
+              <dt>Applicant Email</dt>
+              <dd>{{ val(request()?.applicant_email) }}</dd>
+            </div>
+            <div class="detail-grid__wide">
+              <dt>Applicant School / Department</dt>
+              <dd>{{ val(request()?.applicant_department) }}</dd>
+            </div>
+          </dl>
+        </section>
+
+        <section class="detail-section">
+          <div class="section-heading">
+            <span class="material-icons">event_note</span>
+            <div>
+              <h2>Conference Details</h2>
+              <p>Conference, publication, travel, and research information.</p>
+            </div>
+          </div>
+          <dl class="detail-grid">
+            <div>
+              <dt>Conference Name</dt>
+              <dd>{{ val(conference()?.conference_name) }}</dd>
+            </div>
+            <div>
+              <dt>Conference Type</dt>
+              <dd>{{ val(conference()?.conference_type) }}</dd>
+            </div>
+            <div>
+              <dt>Funding Request Type</dt>
+              <dd>{{ val(conference()?.conference_funding_request_type) }}</dd>
+            </div>
+            <div>
+              <dt>Applicant Authorship Type</dt>
+              <dd>{{ authorshipLabel(conference()?.author_role) }}</dd>
+            </div>
+            <div>
+              <dt>Start Date</dt>
+              <dd>{{ fmtDateOnly(conference()?.conference_start_date) }}</dd>
+            </div>
+            <div>
+              <dt>End Date</dt>
+              <dd>{{ fmtDateOnly(conference()?.conference_end_date) }}</dd>
+            </div>
+            <div>
+              <dt>Location Type</dt>
+              <dd>{{ val(conference()?.location_type) }}</dd>
+            </div>
+            <div>
+              <dt>Conference Location</dt>
+              <dd>{{ val(conference()?.conference_location) }}</dd>
+            </div>
+            <div class="detail-grid__wide">
+              <dt>Paper Title</dt>
+              <dd>{{ val(conference()?.paper_title) }}</dd>
+            </div>
+            <div>
+              <dt>Project Type</dt>
+              <dd>{{ val(conference()?.project_type) }}</dd>
+            </div>
+            <div>
+              <dt>Project Account Code</dt>
+              <dd>{{ val(conference()?.project_account_code) }}</dd>
+            </div>
+            <div>
+              <dt>Scopus Indexed</dt>
+              <dd>{{ val(conference()?.is_scopus_indexed) }}</dd>
+            </div>
+            <div>
+              <dt>Restricted Publisher</dt>
+              <dd>{{ val(conference()?.is_restricted_publisher) }}</dd>
+            </div>
+            <div>
+              <dt>APU JATI / EJBM Cited</dt>
+              <dd>{{ val(conference()?.cited_apu_jati_ejbm) }}</dd>
+            </div>
+            <div>
+              <dt>Internal Manuscript Review</dt>
+              <dd>{{ val(conference()?.is_manuscript_internally_reviewed) }}</dd>
+            </div>
+            <div>
+              <dt>Reviewer Name</dt>
+              <dd>{{ val(conference()?.reviewer_name) }}</dd>
+            </div>
+            <div>
+              <dt>Published Elsewhere</dt>
+              <dd>{{ val(conference()?.is_published_elsewhere) }}</dd>
+            </div>
+            <div class="detail-grid__wide">
+              <dt>SDG Keywords</dt>
+              <dd>
+                {{ val(conference()?.sdg_keyword_1) }} · {{ val(conference()?.sdg_keyword_2) }} ·
+                {{ val(conference()?.sdg_keyword_3) }}
+              </dd>
+            </div>
+          </dl>
+          <div class="section-comments">
+            <h3>Section Comments</h3>
+            @if (commentsForSection('conference_details').length) {
+              <div class="section-comments__list">
+                @for (comment of commentsForSection('conference_details'); track comment.id) {
+                  <article class="section-comment">
+                    <strong>{{ val(comment.staff_name || comment.staff_username) }}</strong>
+                    <span
+                      >{{ prettyActor(comment.actor_type_code) }} ·
+                      {{ fmtDate(comment.created_at) }}</span
+                    >
+                    <p>{{ comment.comment_text }}</p>
+                  </article>
+                }
+              </div>
+            } @else {
+              <p class="review-empty">No section comments yet.</p>
+            }
+            @if (canWriteSectionComments()) {
+              <textarea
+                class="section-comment-input"
+                rows="3"
+                placeholder="Write a comment for Conference Details..."
+                [formControl]="sectionCommentControls['conference_details']"
+              ></textarea>
+              <div class="section-comment-actions">
+                <app-action-button
+                  type="primary"
+                  label="Save Comment"
+                  icon="send"
+                  loadingLabel="Saving..."
+                  [loading]="savingSectionComment() === 'conference_details'"
+                  [disabled]="savingSectionComment() === 'conference_details'"
+                  (clicked)="saveSectionComment('conference_details')"
+                ></app-action-button>
+              </div>
+            }
+          </div>
+        </section>
+
+        @if (conference()?.is_travelling_required) {
+          <section class="detail-section">
+            <div class="section-heading">
+              <span class="material-icons">flight_takeoff</span>
+              <div>
+                <h2>Travel Details</h2>
+                <p>Business travel arrangements, itinerary, and colleagues.</p>
+              </div>
+            </div>
+            <dl class="detail-grid">
+              <div>
+                <dt>Travel Required</dt>
+                <dd>{{ val(conference()?.is_travelling_required) }}</dd>
+              </div>
+              <div>
+                <dt>Bookings Done By</dt>
+                <dd>
+                  {{
+                    val(
+                      conference()?.['bookings_done_by_other_name'] ||
+                        conference()?.['bookings_done_by_username'] ||
+                        conference()?.['bookings_done_by_type']
+                    )
+                  }}
+                </dd>
+              </div>
+              <div>
+                <dt>Cash Advance Required</dt>
+                <dd>{{ val(conference()?.['is_cash_advance_required']) }}</dd>
+              </div>
+              <div>
+                <dt>Travelling Colleagues</dt>
+                <dd>{{ travellingColleagues().length }}</dd>
+              </div>
+              <div class="detail-grid__wide">
+                <dt>Purpose of Business Travel</dt>
+                <dd>{{ val(conference()?.['purpose_of_business_travel']) }}</dd>
+              </div>
+              <div class="detail-grid__wide">
+                <dt>Cash Advance Reason</dt>
+                <dd>{{ val(conference()?.['cash_advance_reason']) }}</dd>
+              </div>
+            </dl>
+            @if (travelEvents().length) {
+              <div class="modern-table detail-grid--compact">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Time</th>
+                      <th>Event</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (event of travelEvents(); track event.id ?? $index) {
+                      <tr>
+                        <td>{{ fmtDateOnly(event.event_date) }}</td>
+                        <td>{{ val(event.event_time) }}</td>
+                        <td>{{ val(event.description) }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+            @if (travellingColleagues().length) {
+              <div class="modern-table detail-grid--compact">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Staff</th>
+                      <th>Username</th>
+                      <th>Department</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (colleague of travellingColleagues(); track colleague.id ?? $index) {
+                      <tr>
+                        <td>{{ val(colleague.staff_name_snapshot) }}</td>
+                        <td>{{ val(colleague.staff_username) }}</td>
+                        <td>{{ val(colleague.department_name_snapshot) }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+          </section>
+        }
+
+        <section class="detail-section">
+          <div class="section-heading">
+            <span class="material-icons">groups</span>
+            <div>
+              <h2>Authors</h2>
+              <p>APU staff, student, and external co-authors.</p>
+            </div>
+          </div>
+          <div class="author-block">
+            <h3>APU Staff Co-Authors</h3>
+            @if (staffAuthors().length) {
+              <div class="modern-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Department</th>
+                      <th>Affiliation</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (author of staffAuthors(); track author.id ?? $index) {
+                      <tr>
+                        <td>{{ val(author.staff_name) }}</td>
+                        <td>{{ val(author.staff_department) }}</td>
+                        <td>{{ val(author.affiliation) }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            } @else {
+              <p class="review-empty">No APU staff co-authors.</p>
+            }
+          </div>
+          <div class="author-block">
+            <h3>APU Student Co-Authors</h3>
+            @if (studentAuthors().length) {
+              <div class="modern-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>TP Number</th>
+                      <th>Name</th>
+                      <th>School / Department</th>
+                      <th>Affiliation</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (author of studentAuthors(); track author.id ?? $index) {
+                      <tr>
+                        <td>{{ val(author.tp_number) }}</td>
+                        <td>{{ val(author.full_name) }}</td>
+                        <td>{{ val(author.school_department) }}</td>
+                        <td>{{ val(author.affiliation) }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            } @else {
+              <p class="review-empty">No APU student co-authors.</p>
+            }
+          </div>
+          <div class="author-block">
+            <h3>Co-Authors Outside Asia Pacific University of Technology & Innovation</h3>
+            @if (nonApuAuthors().length) {
+              <div class="modern-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Full Name (as per IC/Passport)</th>
+                      <th>Country</th>
+                      <th>Email</th>
+                      <th>Type of Organisation</th>
+                      <th>School / Department</th>
+                      <th>Institution / Company Name</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (author of nonApuAuthors(); track author.id ?? $index) {
+                      <tr>
+                        <td>{{ val(author.full_name) }}</td>
+                        <td>{{ val(author.country) }}</td>
+                        <td>{{ val(author.email) }}</td>
+                        <td>{{ val(author.organisation_type) }}</td>
+                        <td>{{ val(author.school_department) }}</td>
+                        <td>{{ val(author.institution_company_name) }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            } @else {
+              <p class="review-empty">No non-APU co-authors.</p>
+            }
+          </div>
+          <div class="section-comments">
+            <h3>Section Comments</h3>
+            @if (commentsForSection('authors').length) {
+              <div class="section-comments__list">
+                @for (comment of commentsForSection('authors'); track comment.id) {
+                  <article class="section-comment">
+                    <strong>{{ val(comment.staff_name || comment.staff_username) }}</strong
+                    ><span
+                      >{{ prettyActor(comment.actor_type_code) }} ·
+                      {{ fmtDate(comment.created_at) }}</span
+                    >
+                    <p>{{ comment.comment_text }}</p>
+                  </article>
+                }
+              </div>
+            } @else {
+              <p class="review-empty">No section comments yet.</p>
+            }
+            @if (canWriteSectionComments()) {
+              <textarea
+                class="section-comment-input"
+                rows="3"
+                placeholder="Write a comment for Authors..."
+                [formControl]="sectionCommentControls['authors']"
+              ></textarea>
+              <div class="section-comment-actions">
+                <app-action-button
+                  type="primary"
+                  label="Save Comment"
+                  icon="send"
+                  loadingLabel="Saving..."
+                  [loading]="savingSectionComment() === 'authors'"
+                  [disabled]="savingSectionComment() === 'authors'"
+                  (clicked)="saveSectionComment('authors')"
+                ></app-action-button>
+              </div>
+            }
+          </div>
+        </section>
+
+        <section class="detail-section">
+          <div class="section-heading">
+            <span class="material-icons">attach_file</span>
+            <div>
+              <h2>Supporting Documents</h2>
+              <p>Files uploaded with the conference application.</p>
+            </div>
+          </div>
+          @if (attachments().length) {
+            <div class="file-grid">
+              @for (file of attachments(); track file.id) {
+                <article class="file-card">
+                  <div class="file-card__icon"><span class="material-icons">description</span></div>
+                  <div class="file-card__body">
+                    <span class="file-card__type">{{ entityLabel(file.entity_type) }}</span
+                    ><strong>{{ val(file.file_name) }}</strong>
+                    <p>
+                      {{ val(file.file_type) }}
+                      @if (file.uploaded_at) {
+                        · {{ fmtDate(file.uploaded_at) }}
+                      }
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    class="download-button"
+                    [disabled]="downloadingAttachmentId() === file.id"
+                    (click)="downloadAttachment(file)"
+                  >
+                    <span class="material-icons">download</span
+                    >{{ downloadingAttachmentId() === file.id ? 'Preparing…' : 'Download' }}
+                  </button>
+                </article>
+              }
+            </div>
+          } @else {
+            <p class="review-empty">No supporting documents uploaded.</p>
+          }
+          <div class="section-comments">
+            <h3>Section Comments</h3>
+            @if (commentsForSection('supporting_documents').length) {
+              <div class="section-comments__list">
+                @for (comment of commentsForSection('supporting_documents'); track comment.id) {
+                  <article class="section-comment">
+                    <strong>{{ val(comment.staff_name || comment.staff_username) }}</strong
+                    ><span
+                      >{{ prettyActor(comment.actor_type_code) }} ·
+                      {{ fmtDate(comment.created_at) }}</span
+                    >
+                    <p>{{ comment.comment_text }}</p>
+                  </article>
+                }
+              </div>
+            } @else {
+              <p class="review-empty">No section comments yet.</p>
+            }
+            @if (canWriteSectionComments()) {
+              <textarea
+                class="section-comment-input"
+                rows="3"
+                placeholder="Write a comment for Supporting Documents..."
+                [formControl]="sectionCommentControls['supporting_documents']"
+              ></textarea>
+              <div class="section-comment-actions">
+                <app-action-button
+                  type="primary"
+                  label="Save Comment"
+                  icon="send"
+                  loadingLabel="Saving..."
+                  [loading]="savingSectionComment() === 'supporting_documents'"
+                  [disabled]="savingSectionComment() === 'supporting_documents'"
+                  (clicked)="saveSectionComment('supporting_documents')"
+                ></app-action-button>
+              </div>
+            }
+          </div>
+        </section>
+
+        <section class="detail-section">
+          <div class="section-heading">
+            <span class="material-icons">payments</span>
+            <div>
+              <h2>Costing & Sponsorship</h2>
+              <p>Cost breakdown and sponsorship declaration.</p>
+            </div>
+          </div>
+          @if (costingItems().length) {
+            <div class="modern-table">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Vote Number</th>
+                    <th>Account Code</th>
+                    <th>Foreign Cost</th>
+                    <th>Exchange Rate</th>
+                    <th>Cost in RM</th>
+                    <th>Description</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (item of costingItems(); track item.id ?? $index) {
+                    <tr>
+                      <td>
+                        {{
+                          val(item.vote_number_snapshot || item.vote_number_description_snapshot)
+                        }}
+                      </td>
+                      <td>
+                        {{
+                          val(item.account_code_snapshot || item.account_code_description_snapshot)
+                        }}
+                      </td>
+                      <td>{{ fmtMoney(item.cost_in_foreign_currency) }}</td>
+                      <td>{{ val(item.exchange_rate) }}</td>
+                      <td>{{ fmtMoney(item.cost_in_rm) }}</td>
+                      <td>{{ val(item.description) }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          } @else {
+            <p class="review-empty">No costing items.</p>
+          }
+          <dl class="detail-grid detail-grid--compact">
+            <div>
+              <dt>External Sponsorship Amount</dt>
+              <dd>RM {{ fmtMoney(conference()?.external_sponsorship_amount) }}</dd>
+            </div>
+            <div>
+              <dt>Sponsored By</dt>
+              <dd>{{ val(conference()?.external_sponsored_by) }}</dd>
+            </div>
+            <div>
+              <dt>APU Sponsorship</dt>
+              <dd>RM {{ fmtMoney(conference()?.apu_sponsorship_amount) }}</dd>
+            </div>
+            <div>
+              <dt>APU Sponsorship Percentage</dt>
+              <dd>{{ val(conference()?.apu_sponsorship_percentage) }}%</dd>
+            </div>
+            <div>
+              <dt>Cost Borne by Applicant</dt>
+              <dd>RM {{ fmtMoney(conference()?.cost_to_be_borne_by_applicant) }}</dd>
+            </div>
+            <div class="detail-grid__wide">
+              <dt>Remarks</dt>
+              <dd>{{ val(conference()?.remarks) }}</dd>
+            </div>
+          </dl>
+          <div class="section-comments">
+            <h3>Section Comments</h3>
+            @if (commentsForSection('costing_sponsorship').length) {
+              <div class="section-comments__list">
+                @for (comment of commentsForSection('costing_sponsorship'); track comment.id) {
+                  <article class="section-comment">
+                    <strong>{{ val(comment.staff_name || comment.staff_username) }}</strong
+                    ><span
+                      >{{ prettyActor(comment.actor_type_code) }} ·
+                      {{ fmtDate(comment.created_at) }}</span
+                    >
+                    <p>{{ comment.comment_text }}</p>
+                  </article>
+                }
+              </div>
+            } @else {
+              <p class="review-empty">No section comments yet.</p>
+            }
+            @if (canWriteSectionComments()) {
+              <textarea
+                class="section-comment-input"
+                rows="3"
+                placeholder="Write a comment for Costing & Sponsorship..."
+                [formControl]="sectionCommentControls['costing_sponsorship']"
+              ></textarea>
+              <div class="section-comment-actions">
+                <app-action-button
+                  type="primary"
+                  label="Save Comment"
+                  icon="send"
+                  loadingLabel="Saving..."
+                  [loading]="savingSectionComment() === 'costing_sponsorship'"
+                  [disabled]="savingSectionComment() === 'costing_sponsorship'"
+                  (clicked)="saveSectionComment('costing_sponsorship')"
+                ></app-action-button>
+              </div>
+            }
+          </div>
+        </section>
+      </main>
+
+      <aside class="review-side">
+        <section class="action-panel">
+          <div class="section-heading section-heading--compact">
+            <span class="material-icons">rate_review</span>
+            <div>
+              <h2>Workflow Actions</h2>
+              <p>Available decisions for the current workflow step.</p>
+            </div>
+          </div>
+          @if (feedback(); as note) {
+            <div
+              class="review-feedback"
+              [class.review-feedback--error]="note.type === 'error'"
+              [class.review-feedback--success]="note.type === 'success'"
+            >
+              {{ note.text }}
+            </div>
+          }
+          @if (canAct() && actions().length) {
+            <div class="workflow-actions">
+              @for (action of actions(); track action.action_code) {
+                <div
+                  class="workflow-action-button"
+                  [class.workflow-action-button--positive]="actionTone(action) === 'positive'"
+                  [class.workflow-action-button--resubmit]="actionTone(action) === 'resubmit'"
+                  [class.workflow-action-button--verified]="actionTone(action) === 'verified'"
+                  [class.workflow-action-button--negative]="actionTone(action) === 'negative'"
+                >
+                  <app-action-button
+                    [type]="actionType(action)"
+                    [label]="action.action_name"
+                    [icon]="actionIcon(action)"
+                    [disabled]="acting()"
+                    (clicked)="perform(action)"
+                  ></app-action-button>
+                </div>
+              }
+            </div>
+          } @else {
+            <p class="review-empty">No pending action is available for your account.</p>
+          }
+        </section>
+
+        <section class="detail-section detail-section--side">
+          <div class="section-heading section-heading--compact">
+            <span class="material-icons">history</span>
+            <div>
+              <h2>Approval History</h2>
+              <p>Latest workflow activity.</p>
+            </div>
+          </div>
+          @if (approvals().length) {
+            <ol class="review-timeline">
+              @for (history of approvals(); track history.id) {
+                <li>
+                  <div class="review-timeline__dot"></div>
+                  <div>
+                    <strong>{{ approvalActionLabel(history) }}</strong>
+                    <p>{{ val(history.staff_name || history.staff_username) }}</p>
+                    <span>{{ fmtDate(history.action_at) }}</span
+                    ><small
+                      >{{ prettyActor(history.from_status_code) }} →
+                      {{ prettyActor(history.to_status_code) }}</small
+                    >
+                  </div>
+                </li>
+              }
+            </ol>
+          } @else {
+            <p class="review-empty">No actions recorded yet.</p>
+          }
+        </section>
+      </aside>
+    </div>
+  }
+</section>

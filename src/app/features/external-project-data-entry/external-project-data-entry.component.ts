@@ -446,15 +446,12 @@ export class ExternalProjectDataEntryComponent {
   }
 
   isConsultancySelected(): boolean {
-    return this.externalProjectForm.get('externalGrantCategory')?.value === 'Consultancy';
+    return this.selectedGrantCategoryName() === 'consultancy';
   }
 
   showProjectFlow(): boolean {
-    return (
-      this.isNationalSelected() ||
-      this.isInternationalSelected() ||
-      this.isPrivateIndustrySelected()
-    );
+    const selectedCategory = this.selectedGrantCategoryName();
+    return !!selectedCategory && selectedCategory !== 'consultancy';
   }
 
   researchTitleLength(): number {
@@ -1016,6 +1013,12 @@ export class ExternalProjectDataEntryComponent {
       return null;
     }
     return this.grantCategoryByName.get(selected)?.id ?? null;
+  }
+
+  private selectedGrantCategoryName(): string {
+    return String(this.externalProjectForm.controls.externalGrantCategory.value ?? '')
+      .trim()
+      .toLowerCase();
   }
 
   private clean(value: string | null | undefined): string | null {

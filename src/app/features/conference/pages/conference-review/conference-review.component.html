@@ -463,16 +463,16 @@
               <p>Files uploaded with the conference application.</p>
             </div>
           </div>
-          @if (attachments().length) {
+          @if (supportingAttachments().length) {
             <div class="file-grid">
-              @for (file of attachments(); track file.id) {
+              @for (file of supportingAttachments(); track file.id ?? $index) {
                 <article class="file-card">
                   <div class="file-card__icon"><span class="material-icons">description</span></div>
                   <div class="file-card__body">
                     <span class="file-card__type">{{ entityLabel(file.entity_type) }}</span
                     ><strong>{{ val(file.file_name) }}</strong>
                     <p>
-                      {{ val(file.file_type) }}
+                      {{ val(file.file_type) }} · {{ fmtFileSize(file.file_size) }}
                       @if (file.uploaded_at) {
                         · {{ fmtDate(file.uploaded_at) }}
                       }
@@ -579,6 +579,43 @@
           } @else {
             <p class="review-empty">No costing items.</p>
           }
+
+          <div class="costing-documents">
+            <h3>Costing Supporting Documents</h3>
+            @if (costingAttachments().length) {
+              <div class="file-grid">
+                @for (file of costingAttachments(); track file.id ?? $index) {
+                  <article class="file-card">
+                    <div class="file-card__icon">
+                      <span class="material-icons">request_quote</span>
+                    </div>
+                    <div class="file-card__body">
+                      <span class="file-card__type">{{ entityLabel(file.entity_type) }}</span>
+                      <strong>{{ val(file.file_name) }}</strong>
+                      <p>
+                        {{ val(file.file_type) }} · {{ fmtFileSize(file.file_size) }}
+                        @if (file.uploaded_at) {
+                          · {{ fmtDate(file.uploaded_at) }}
+                        }
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      class="download-button"
+                      [disabled]="downloadingAttachmentId() === file.id"
+                      (click)="downloadAttachment(file)"
+                    >
+                      <span class="material-icons">download</span>
+                      {{ downloadingAttachmentId() === file.id ? 'Preparing…' : 'Download' }}
+                    </button>
+                  </article>
+                }
+              </div>
+            } @else {
+              <p class="review-empty">No costing supporting documents uploaded.</p>
+            }
+          </div>
+
           <dl class="detail-grid detail-grid--compact">
             <div>
               <dt>External Sponsorship Amount</dt>

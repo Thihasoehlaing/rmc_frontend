@@ -74,6 +74,12 @@ export class ConferenceReviewComponent implements OnInit {
   readonly travelEvents = computed(() => this.data()?.travel_events ?? []);
   readonly travellingColleagues = computed(() => this.data()?.travelling_colleagues ?? []);
   readonly attachments = computed(() => this.data()?.attachments ?? []);
+  readonly supportingAttachments = computed(() =>
+    this.attachments().filter((file) => !this.isCostingAttachment(file.entity_type)),
+  );
+  readonly costingAttachments = computed(() =>
+    this.attachments().filter((file) => this.isCostingAttachment(file.entity_type)),
+  );
   readonly totalCostInRm = computed(() =>
     this.costingItems().reduce((total, item) => total + this.toNumber(item.cost_in_rm), 0),
   );
@@ -192,6 +198,14 @@ export class ConferenceReviewComponent implements OnInit {
     });
   }
 
+  fmtFileSize(value: unknown): string {
+    const bytes = this.toNumber(value);
+    if (!bytes) return 'File size unavailable';
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  }
+
   prettyActor(code: string | null): string {
     if (!code) return '—';
     return code.charAt(0).toUpperCase() + code.slice(1).replace(/_/g, ' ');
@@ -244,9 +258,29 @@ export class ConferenceReviewComponent implements OnInit {
       });
   }
 
-  entityLabel(value: string | null | undefined): string {
-    const code = (value ?? '').replace(/^conference_/, '');
-    return code ? this.prettyActor(code) : 'Supporting Document';
+  entityLabel(entityType: string | null | undefined): string {
+    const raw = (entityType ?? '').trim().replace(/^conference_/i, '');
+    const key = raw.toLowerCase();
+    const labels: Record<string, string> = {
+      acceptancenotification: 'Acceptance Notification',
+      reviewersfeedback: "Reviewers' Feedback",
+      scopusevidencepublication: 'Scopus Evidence of Publication',
+      turnitinreport: 'Turnitin Report',
+      finalpaperdraft: 'Final Paper Draft',
+      conferenceinvoice: 'Conference Invoice',
+      costing_supporting_document: 'Costing Supporting Document',
+    };
+
+    if (!raw) return 'Supporting Document';
+    return labels[key] ?? this.prettyActor(raw.replace(/([a-z0-9])([A-Z])/g, '$1_$2'));
+  }
+
+  private isCostingAttachment(entityType: string | null | undefined): boolean {
+    const value = (entityType ?? '')
+      .trim()
+      .toLowerCase()
+      .replace(/^conference_/, '');
+    return value === 'costing_supporting_document';
   }
 
   downloadAttachment(file: ConferenceAttachmentDto): void {

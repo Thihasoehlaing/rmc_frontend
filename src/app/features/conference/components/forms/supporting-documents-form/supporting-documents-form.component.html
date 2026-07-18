@@ -15,6 +15,7 @@
           [accept]="PDF_ACCEPT"
           [maxSizeMB]="MAX_FILE_SIZE_MB"
           [disabled]="!canUploadDocuments()"
+          [uploadedFileName]="form.get('acceptanceNotification')?.value || null"
           placeholder="Upload acceptance notification PDF"
           (fileSelected)="onFileSelected('acceptanceNotification', $any($event))">
         </app-file-upload>
@@ -37,6 +38,7 @@
           [accept]="PDF_ACCEPT"
           [maxSizeMB]="MAX_FILE_SIZE_MB"
           [disabled]="!canUploadDocuments()"
+          [uploadedFileName]="form.get('conferenceInvoice')?.value || null"
           placeholder="Upload conference invoice PDF"
           (fileSelected)="onFileSelected('conferenceInvoice', $any($event))">
         </app-file-upload>
@@ -64,6 +66,7 @@
           [accept]="PDF_ACCEPT"
           [maxSizeMB]="MAX_FILE_SIZE_MB"
           [disabled]="!canUploadDocuments()"
+          [uploadedFileName]="form.get('reviewersFeedback')?.value || null"
           placeholder="Upload reviewers' feedback PDF"
           (fileSelected)="onFileSelected('reviewersFeedback', $any($event))">
         </app-file-upload>
@@ -83,6 +86,7 @@
           [accept]="PDF_ACCEPT"
           [maxSizeMB]="MAX_FILE_SIZE_MB"
           [disabled]="!canUploadDocuments()"
+          [uploadedFileName]="form.get('scopusEvidencePublication')?.value || null"
           placeholder="Upload SCOPUS publication evidence PDF"
           (fileSelected)="onFileSelected('scopusEvidencePublication', $any($event))">
         </app-file-upload>
@@ -103,6 +107,7 @@
           [accept]="PDF_ACCEPT"
           [maxSizeMB]="MAX_FILE_SIZE_MB"
           [disabled]="!canUploadDocuments()"
+          [uploadedFileName]="form.get('turnitinReport')?.value || null"
           placeholder="Upload Turnitin report PDF"
           (fileSelected)="onFileSelected('turnitinReport', $any($event))">
         </app-file-upload>
@@ -123,6 +128,7 @@
           [accept]="PDF_ACCEPT"
           [maxSizeMB]="MAX_FILE_SIZE_MB"
           [disabled]="!canUploadDocuments()"
+          [uploadedFileName]="form.get('finalPaperDraft')?.value || null"
           placeholder="Upload final paper draft PDF"
           (fileSelected)="onFileSelected('finalPaperDraft', $any($event))">
         </app-file-upload>

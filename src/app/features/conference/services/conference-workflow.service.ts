@@ -12,14 +12,27 @@ export type ConferenceStatus =
   | 'hos_application'
   | 'hos_request_resubmission'
   | 'rmc_request_resubmission'
+  | 'pending_applicant_resubmission_hos'
+  | 'pending_applicant_resubmission_rmc'
+  | 'pending_hos'
+  | 'pending_rmc'
+  | 'pending_vc'
+  | 'pending_hr'
+  | 'pending_ceo'
   | 'hos_pending'
   | 'hos_reject'
+  | 'rejected_hos'
   | 'rmc_pending'
   | 'rmc_reject'
+  | 'rejected_rmc'
   | 'vc_pending'
   | 'vc_reject'
+  | 'rejected_vc'
   | 'hr_pending'
   | 'hr_reject'
+  | 'rejected_hr'
+  | 'rejected_ceo'
+  | 'approved'
   | 'Approved';
 
 /** Statuses where the applicant can edit form fields */
@@ -29,6 +42,8 @@ const APPLICANT_EDITABLE: ConferenceStatus[] = [
   'hos_application',
   'hos_request_resubmission',
   'rmc_request_resubmission',
+  'pending_applicant_resubmission_hos',
+  'pending_applicant_resubmission_rmc',
 ];
 
 @Injectable({ providedIn: 'root' })

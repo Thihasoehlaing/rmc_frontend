@@ -1457,6 +1457,8 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
       'hos_application',
       'hos_request_resubmission',
       'rmc_request_resubmission',
+      'pending_applicant_resubmission_hos',
+      'pending_applicant_resubmission_rmc',
     ];
     return allowedStatuses.includes(status);
   }

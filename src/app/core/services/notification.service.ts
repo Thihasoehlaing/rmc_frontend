@@ -7,7 +7,7 @@ import { AppNotification, NotificationPriority } from '../interfaces/notificatio
 import { NOTIFICATION_TEMPLATES } from '../constants/notification-templates';
 import { BatchSitting } from '../interfaces/batch-sitting.interface';
 import { environment } from '../../../environments/environment';
-import { detailRoute } from './request-display.util';
+import { detailRoute, formRoute } from './request-display.util';
 
 const BASE = `${environment.apiUrl.replace(/\/$/, '')}/rmc/notifications`;
 const POPUP_PAGE_SIZE = 10;
@@ -431,6 +431,17 @@ export function mapBackendNotification(item: BackendNotification): AppNotificati
     eventType.includes('REVIEW') ||
     eventType.includes('RESUBMISSION');
   const formCode = item.form_code?.trim().toUpperCase();
+  const isApplicantResubmission = eventType.includes('RESUBMISSION');
+  const requestRoute =
+    item.request_id != null && isApplicantResubmission && ['CONFERENCE', 'JOURNAL'].includes(formCode ?? '')
+      ? `${formRoute(formCode)}?request_id=${item.request_id}`
+      : item.request_id != null
+        ? detailRoute({
+            request_id: item.request_id,
+            form_code: item.form_code,
+            request_code: item.request_no,
+          })
+        : item.redirect_url ?? undefined;
 
   return {
     // Mark-read/delete endpoints use the notification id, not recipient_id.
@@ -450,13 +461,7 @@ export function mapBackendNotification(item: BackendNotification): AppNotificati
       entityModule: formCode?.toLowerCase(),
       requestCode: item.request_no ?? undefined,
       recipientId: item.recipient_id,
-      route: item.request_id != null
-        ? detailRoute({
-            request_id: item.request_id,
-            form_code: item.form_code,
-            request_code: item.request_no,
-          })
-        : item.redirect_url ?? undefined,
+      route: requestRoute,
     },
   };
 }

@@ -33,4 +33,18 @@ describe('mapBackendNotification', () => {
 
     expect(notification.data['route']).toBe('/dashboard');
   });
+
+  it('routes applicant resubmission notifications back to the editable form', () => {
+    const notification = mapBackendNotification({
+      id: 19,
+      request_id: 12,
+      form_code: 'CONFERENCE',
+      request_no: 'CONF-260012',
+      event_type: 'REQUEST_RESUBMISSION_REQUIRED',
+      redirect_url: '/conference/application?request_id=12',
+    });
+
+    expect(notification.type).toBe('ACTION');
+    expect(notification.data['route']).toBe('/conference/application?request_id=12');
+  });
 });

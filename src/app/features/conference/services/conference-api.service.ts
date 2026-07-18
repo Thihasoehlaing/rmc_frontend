@@ -44,6 +44,15 @@ export interface ConferenceRequestDto {
   apu_sponsorship_amount?: string | null;
   cost_to_be_borne_by_applicant?: string | null;
   remarks?: string | null;
+  purpose_of_business_travel?: string | null;
+  bookings_done_by_type?: 'SELF' | 'OTHER' | null;
+  bookings_done_by_username?: string | null;
+  bookings_done_by_other_name?: string | null;
+  is_cash_advance_required?: boolean;
+  cash_advance_reason?: string | null;
+  has_travelling_colleagues?: boolean;
+  travel_events?: ConferenceTravelEventDto[];
+  travelling_colleagues?: ConferenceTravellingColleagueDto[];
   [key: string]: unknown;
 }
 
@@ -148,8 +157,8 @@ export class ConferenceApiService {
   // ── Lifecycle ────────────────────────────────────────────────────
   createDraft(
     payload: Partial<ConferenceRequestDto>,
-  ): Observable<ApiResponse<ConferenceRequestDto>> {
-    return this.http.post<ApiResponse<ConferenceRequestDto>>(`${this.base}/drafts`, payload);
+  ): Observable<ApiResponse<ConferenceFormData>> {
+    return this.http.post<ApiResponse<ConferenceFormData>>(`${this.base}/drafts`, payload);
   }
 
   getForm(id: number): Observable<ApiResponse<ConferenceFormData>> {
@@ -159,16 +168,16 @@ export class ConferenceApiService {
   updateDraft(
     id: number,
     payload: Partial<ConferenceRequestDto>,
-  ): Observable<ApiResponse<ConferenceRequestDto>> {
-    return this.http.put<ApiResponse<ConferenceRequestDto>>(`${this.base}/${id}/draft`, payload);
+  ): Observable<ApiResponse<ConferenceFormData>> {
+    return this.http.put<ApiResponse<ConferenceFormData>>(`${this.base}/${id}/draft`, payload);
   }
 
-  submit(id: number): Observable<ApiResponse<ConferenceRequestDto>> {
-    return this.http.post<ApiResponse<ConferenceRequestDto>>(`${this.base}/${id}/submit`, {});
+  submit(id: number): Observable<ApiResponse<RequestSummaryDto>> {
+    return this.http.post<ApiResponse<RequestSummaryDto>>(`${this.base}/${id}/submit`, {});
   }
 
-  resubmit(id: number): Observable<ApiResponse<ConferenceRequestDto>> {
-    return this.http.post<ApiResponse<ConferenceRequestDto>>(`${this.base}/${id}/resubmit`, {});
+  resubmit(id: number): Observable<ApiResponse<RequestSummaryDto>> {
+    return this.http.post<ApiResponse<RequestSummaryDto>>(`${this.base}/${id}/resubmit`, {});
   }
 
   // ── APU Staff Co-Authors ─────────────────────────────────────────

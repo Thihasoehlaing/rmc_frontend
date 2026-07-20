@@ -224,38 +224,53 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
 
   // DataTable column definitions for breakdown tables
   researchBreakdownColumns: readonly DataTableColumn[] = [
-    { key: 'index', label: '#', width: '50px', align: 'center' },
-    { key: 'itemDescription', label: 'Vote Number Description' },
-    { key: 'voteNumber', label: 'Vote Number' },
-    { key: 'description', label: 'Description', width: '420px' },
-    { key: 'cost', label: 'Cost (Foreign/MYR)' },
-    { key: 'exchangeRate', label: 'Exchange Rate' },
-    { key: 'costInRM', label: 'Cost in RM' },
-    { key: 'actions', label: 'Actions', width: '100px', align: 'center' },
+    { key: 'index', label: '#', width: 'var(--size-table-column-index)', align: 'center' },
+    { key: 'itemDescription', label: 'Vote Number Description', width: '220px' },
+    { key: 'voteNumber', label: 'Vote Number', width: '120px' },
+    { key: 'description', label: 'Description', width: '260px' },
+    { key: 'cost', label: 'Cost (Foreign/MYR)', width: '180px' },
+    { key: 'exchangeRate', label: 'Exchange Rate', width: '140px' },
+    { key: 'costInRM', label: 'Cost in RM', width: '140px' },
+    {
+      key: 'actions',
+      label: 'Actions',
+      width: 'var(--size-table-column-actions)',
+      align: 'center',
+    },
   ];
 
   externalBreakdownColumns: readonly DataTableColumn[] = [
-    { key: 'index', label: '#', width: '50px', align: 'center' },
-    { key: 'itemDescription', label: 'Vote Number Description' },
-    { key: 'accountCode', label: 'Account Code' },
-    { key: 'voteNumber', label: 'Vote Number' },
-    { key: 'description', label: 'Description', width: '420px' },
-    { key: 'cost', label: 'Cost (Foreign/MYR)' },
-    { key: 'exchangeRate', label: 'Exchange Rate' },
-    { key: 'costInRM', label: 'Cost in RM' },
-    { key: 'actions', label: 'Actions', width: '100px', align: 'center' },
+    { key: 'index', label: '#', width: 'var(--size-table-column-index)', align: 'center' },
+    { key: 'itemDescription', label: 'Vote Number Description', width: '220px' },
+    { key: 'accountCode', label: 'Account Code', width: '140px' },
+    { key: 'voteNumber', label: 'Vote Number', width: '120px' },
+    { key: 'description', label: 'Description', width: '260px' },
+    { key: 'cost', label: 'Cost (Foreign/MYR)', width: '180px' },
+    { key: 'exchangeRate', label: 'Exchange Rate', width: '140px' },
+    { key: 'costInRM', label: 'Cost in RM', width: '140px' },
+    {
+      key: 'actions',
+      label: 'Actions',
+      width: 'var(--size-table-column-actions)',
+      align: 'center',
+    },
   ];
 
   localBreakdownColumns: readonly DataTableColumn[] = [
-    { key: 'index', label: '#', width: '50px', align: 'center' },
-    { key: 'itemDescription', label: 'Account Code Description' },
-    { key: 'voteNumber', label: 'Account Code' },
-    { key: 'description', label: 'Description', width: '420px' },
-    { key: 'supportingDocument', label: 'Document' },
-    { key: 'cost', label: 'Cost (Foreign/MYR)' },
-    { key: 'exchangeRate', label: 'Exchange Rate' },
-    { key: 'costInRM', label: 'Cost in RM' },
-    { key: 'actions', label: 'Actions', width: '100px', align: 'center' },
+    { key: 'index', label: '#', width: 'var(--size-table-column-index)', align: 'center' },
+    { key: 'itemDescription', label: 'Account Code Description', width: '220px' },
+    { key: 'voteNumber', label: 'Account Code', width: '140px' },
+    { key: 'description', label: 'Description', width: '260px' },
+    { key: 'supportingDocument', label: 'Document', width: '180px' },
+    { key: 'cost', label: 'Cost (Foreign/MYR)', width: '180px' },
+    { key: 'exchangeRate', label: 'Exchange Rate', width: '140px' },
+    { key: 'costInRM', label: 'Cost in RM', width: '140px' },
+    {
+      key: 'actions',
+      label: 'Actions',
+      width: 'var(--size-table-column-actions)',
+      align: 'center',
+    },
   ];
 
   getFullRegionName(regionShort: string): string {
@@ -415,7 +430,9 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     this.masterData.getRegions().subscribe((res) => {
       const regions = res.data ?? [];
       this.regionsById = new Map(regions.map((r) => [r.id.toString(), r]));
-      this.regionOptions.set(regions.map((r) => ({ value: r.id.toString(), label: r.region_name })));
+      this.regionOptions.set(
+        regions.map((r) => ({ value: r.id.toString(), label: r.region_name })),
+      );
     });
 
     this.masterData.getProjectAccountCodes().subscribe((res) => {
@@ -537,10 +554,16 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     this.form.get('selectedRegion')?.valueChanges.subscribe((region) => {
       if (region) {
         const backendRegion = this.regionsById.get(region);
-        const percentage = backendRegion ? Number(backendRegion.percentage) : this.getRegionPercentage(region);
+        const percentage = backendRegion
+          ? Number(backendRegion.percentage)
+          : this.getRegionPercentage(region);
         const limit = backendRegion ? Number(backendRegion.limit_amount) : 5000;
-        const description = backendRegion ? backendRegion.description : this.getRegionDescription(region);
-        this.form.get('regionName')?.patchValue(backendRegion?.region_name ?? region, { emitEvent: false });
+        const description = backendRegion
+          ? backendRegion.description
+          : this.getRegionDescription(region);
+        this.form
+          .get('regionName')
+          ?.patchValue(backendRegion?.region_name ?? region, { emitEvent: false });
         this.form.get('percentage')?.patchValue(percentage, { emitEvent: false });
         this.form.get('limit')?.patchValue(limit, { emitEvent: false });
         this.form.get('regionDescription')?.patchValue(description, { emitEvent: false });
@@ -806,7 +829,6 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     });
   }
 
-
   onColleagueSearch(search: string): void {
     this.loadColleagueOptions(search);
   }
@@ -881,7 +903,11 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     return this.form.get('activities') as FormArray;
   }
 
-  createActivityGroup(activity?: { date?: string; time?: string; description?: string }): FormGroup {
+  createActivityGroup(activity?: {
+    date?: string;
+    time?: string;
+    description?: string;
+  }): FormGroup {
     return this.fb.group({
       date: [activity?.date || '', [Validators.required, this.activityDateValidator.bind(this)]],
       time: [activity?.time || '', [Validators.required]],
@@ -894,7 +920,9 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
   }
 
   canAddActivity(): boolean {
-    return !!this.form.get('conferenceStartDate')?.value && !!this.form.get('conferenceEndDate')?.value;
+    return (
+      !!this.form.get('conferenceStartDate')?.value && !!this.form.get('conferenceEndDate')?.value
+    );
   }
 
   openActivityModal(index: number | null = null): void {
@@ -1544,12 +1572,3 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     }
   }
 }
-
-
-
-
-
-
-
-
-

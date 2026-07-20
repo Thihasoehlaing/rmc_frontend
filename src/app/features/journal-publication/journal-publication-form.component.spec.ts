@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { environment } from '../../../environments/environment';
 
 import { JournalPublicationFormComponent } from './journal-publication-form.component';
 
@@ -18,5 +19,11 @@ describe('JournalPublicationFormComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('uses the active Journal guideline-by-form API', () => {
+    expect(component.guidelinesEndpoint).toBe(
+      `${environment.apiUrl.replace(/\/$/, '')}/rmc/admin-settings/guidelines/forms/JOURNAL`,
+    );
   });
 });

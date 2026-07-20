@@ -268,7 +268,8 @@
         <div class="form-field">
           <label class="form-label is-required">Please key in 3 SDG keywords in abstract</label>
           <div
-            class="sdg-keywords-container" data-missing-field-target="sdgKeywords"
+            class="sdg-keywords-container"
+            data-missing-field-target="sdgKeywords"
             (click)="openSDGKeywordsModal()"
             role="button"
             tabindex="0"
@@ -327,7 +328,11 @@
           </div>
         </div>
 
-        <div class="activity-table-section" formArrayName="activities" data-missing-field-target="activityTable">
+        <div
+          class="activity-table-section"
+          formArrayName="activities"
+          data-missing-field-target="activityTable"
+        >
           <label class="form-label">Activity Table</label>
           <div class="category-header activity-actions-row">
             <button
@@ -442,7 +447,6 @@
           <app-validation-message [control]="form.get('paperTitle')"></app-validation-message>
         </div>
 
-
         <div class="row row--2 conference-field-grid">
           <div class="form-field">
             <label class="form-label is-required">Is there an advance?</label>
@@ -460,7 +464,9 @@
           </div>
 
           <div class="form-field">
-            <label class="form-label is-required">Does the applicant have any colleagues involved?</label>
+            <label class="form-label is-required"
+              >Does the applicant have any colleagues involved?</label
+            >
             <div class="radio-field">
               <label class="radio-field__option">
                 <input type="radio" value="yes" formControlName="hasColleagues" />
@@ -508,7 +514,9 @@
             >
             </app-searchable-dropdown>
             <app-note text="Select up to 10 colleagues."></app-note>
-            <app-validation-message [control]="form.get('selectedColleagues')"></app-validation-message>
+            <app-validation-message
+              [control]="form.get('selectedColleagues')"
+            ></app-validation-message>
             @if (form.get('selectedColleagues')?.hasError('maxColleagues')) {
               <p class="form-error-msg">Maximum 10 colleagues can be selected.</p>
             }
@@ -610,7 +618,9 @@
 
         @if (form.get('bookingDoneBy')?.value === 'other') {
           <div class="form-field conditional-field">
-            <label class="form-label is-required">Please specify who is responsible for the booking</label>
+            <label class="form-label is-required"
+              >Please specify who is responsible for the booking</label
+            >
             <textarea
               class="input--textarea"
               formControlName="bookingDoneByOther"
@@ -622,7 +632,9 @@
               [current]="form.get('bookingDoneByOther')?.value?.length || 0"
               [max]="300"
             ></app-character-counter>
-            <app-validation-message [control]="form.get('bookingDoneByOther')"></app-validation-message>
+            <app-validation-message
+              [control]="form.get('bookingDoneByOther')"
+            ></app-validation-message>
           </div>
         }
       </div>
@@ -663,6 +675,12 @@
                 </div>
 
                 @if (externalBreakdowns.length > 0) {
+                  <p class="table-scroll-hint">
+                    <span>Scroll to see all columns</span>
+                    <span class="material-icons scroll-arrow" aria-hidden="true"
+                      >arrow_forward</span
+                    >
+                  </p>
                   <div class="table-scroll">
                     <app-data-table
                       [columns]="externalBreakdownColumns"
@@ -674,30 +692,35 @@
                         <tr>
                           <td class="col-no text-muted is-align-center">{{ row.index }}</td>
                           <td>{{ row.itemDescription }}</td>
+                          <td>{{ row.accountCode || '-' }}</td>
                           <td>{{ row.voteNumber }}</td>
-                          <td>{{ row.description || '-' }}</td>
+                          <td>
+                            <div class="data-table__multiline">{{ row.description || '-' }}</div>
+                          </td>
                           <td>{{ row.cost | number: '1.2-2' }}</td>
                           <td>{{ row.exchangeRate | number: '1.2-2' }}</td>
                           <td>{{ row.costInRM | number: '1.2-2' }}</td>
                           <td class="col-actions is-align-center">
-                            <button
-                              type="button"
-                              class="btn-icon btn-icon--edit"
-                              [disabled]="!canAddBreakdownEntries()"
-                              (click)="openBreakdownModal('external-research', i)"
-                              aria-label="Edit entry"
-                            >
-                              <app-table-action-icon action="edit"></app-table-action-icon>
-                            </button>
-                            <button
-                              type="button"
-                              class="btn-icon btn-icon--delete"
-                              [disabled]="!canAddBreakdownEntries()"
-                              (click)="deleteBreakdown('external-research', i)"
-                              aria-label="Remove entry"
-                            >
-                              <app-table-action-icon action="delete"></app-table-action-icon>
-                            </button>
+                            <div class="data-table__actions">
+                              <button
+                                type="button"
+                                class="btn-icon btn-icon--edit"
+                                [disabled]="!canAddBreakdownEntries()"
+                                (click)="openBreakdownModal('external-research', i)"
+                                aria-label="Edit entry"
+                              >
+                                <app-table-action-icon action="edit"></app-table-action-icon>
+                              </button>
+                              <button
+                                type="button"
+                                class="btn-icon btn-icon--delete"
+                                [disabled]="!canAddBreakdownEntries()"
+                                (click)="deleteBreakdown('external-research', i)"
+                                aria-label="Remove entry"
+                              >
+                                <app-table-action-icon action="delete"></app-table-action-icon>
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       </ng-template>
@@ -851,6 +874,12 @@
                 </div>
 
                 @if (localBreakdowns.length > 0) {
+                  <p class="table-scroll-hint">
+                    <span>Scroll to see all columns</span>
+                    <span class="material-icons scroll-arrow" aria-hidden="true"
+                      >arrow_forward</span
+                    >
+                  </p>
                   <div class="table-scroll">
                     <app-data-table
                       [columns]="localBreakdownColumns"
@@ -863,30 +892,34 @@
                           <td class="col-no text-muted is-align-center">{{ row.index }}</td>
                           <td>{{ row.itemDescription }}</td>
                           <td>{{ row.voteNumber }}</td>
-                          <td>{{ row.description || '-' }}</td>
+                          <td>
+                            <div class="data-table__multiline">{{ row.description || '-' }}</div>
+                          </td>
                           <td>{{ row.supportingDocument || '-' }}</td>
                           <td>{{ row.cost | number: '1.2-2' }}</td>
                           <td>{{ row.exchangeRate | number: '1.2-2' }}</td>
                           <td>{{ row.costInRM | number: '1.2-2' }}</td>
                           <td class="col-actions is-align-center">
-                            <button
-                              type="button"
-                              class="btn-icon btn-icon--edit"
-                              [disabled]="!canAddBreakdownEntries()"
-                              (click)="openBreakdownModal('local', i)"
-                              aria-label="Edit entry"
-                            >
-                              <app-table-action-icon action="edit"></app-table-action-icon>
-                            </button>
-                            <button
-                              type="button"
-                              class="btn-icon btn-icon--delete"
-                              [disabled]="!canAddBreakdownEntries()"
-                              (click)="deleteBreakdown('local', i)"
-                              aria-label="Remove entry"
-                            >
-                              <app-table-action-icon action="delete"></app-table-action-icon>
-                            </button>
+                            <div class="data-table__actions">
+                              <button
+                                type="button"
+                                class="btn-icon btn-icon--edit"
+                                [disabled]="!canAddBreakdownEntries()"
+                                (click)="openBreakdownModal('local', i)"
+                                aria-label="Edit entry"
+                              >
+                                <app-table-action-icon action="edit"></app-table-action-icon>
+                              </button>
+                              <button
+                                type="button"
+                                class="btn-icon btn-icon--delete"
+                                [disabled]="!canAddBreakdownEntries()"
+                                (click)="deleteBreakdown('local', i)"
+                                aria-label="Remove entry"
+                              >
+                                <app-table-action-icon action="delete"></app-table-action-icon>
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       </ng-template>
@@ -1244,79 +1277,80 @@
       </app-dialog>
     }
 
-    
-@if (isActivityModalOpen) {
-  <app-dialog
-    [title]="activityEditingIndex === null ? 'Add Activity' : 'Edit Activity'"
-    [isOpen]="true"
-    size="small"
-    (closed)="closeActivityModal()"
-  >
-    <form
-      id="activity-entry-form"
-      [formGroup]="activityForm"
-      (ngSubmit)="submitActivityModal()"
-      class="dialog-form"
-    >
-      <div class="form-group">
-        <label for="activityDate">Date <span class="asterisk">*</span></label>
-        <input
-          id="activityDate"
-          type="date"
-          class="form-control"
-          formControlName="date"
-          [attr.min]="form.get('conferenceStartDate')?.value"
-          [attr.max]="form.get('conferenceEndDate')?.value"
-        />
-        @if (activityForm.get('date')?.invalid && activityForm.get('date')?.touched) {
-          <span class="error-message">Activity date is required.</span>
-        }
-      </div>
+    @if (isActivityModalOpen) {
+      <app-dialog
+        [title]="activityEditingIndex === null ? 'Add Activity' : 'Edit Activity'"
+        [isOpen]="true"
+        size="small"
+        (closed)="closeActivityModal()"
+      >
+        <form
+          id="activity-entry-form"
+          [formGroup]="activityForm"
+          (ngSubmit)="submitActivityModal()"
+          class="dialog-form"
+        >
+          <div class="form-group">
+            <label for="activityDate">Date <span class="asterisk">*</span></label>
+            <input
+              id="activityDate"
+              type="date"
+              class="form-control"
+              formControlName="date"
+              [attr.min]="form.get('conferenceStartDate')?.value"
+              [attr.max]="form.get('conferenceEndDate')?.value"
+            />
+            @if (activityForm.get('date')?.invalid && activityForm.get('date')?.touched) {
+              <span class="error-message">Activity date is required.</span>
+            }
+          </div>
 
-      <div class="form-group">
-        <label for="activityTime">Time <span class="asterisk">*</span></label>
-        <input
-          id="activityTime"
-          type="time"
-          class="form-control"
-          formControlName="time"
-        />
-        @if (activityForm.get('time')?.invalid && activityForm.get('time')?.touched) {
-          <span class="error-message">Activity time is required.</span>
-        }
-      </div>
+          <div class="form-group">
+            <label for="activityTime">Time <span class="asterisk">*</span></label>
+            <input id="activityTime" type="time" class="form-control" formControlName="time" />
+            @if (activityForm.get('time')?.invalid && activityForm.get('time')?.touched) {
+              <span class="error-message">Activity time is required.</span>
+            }
+          </div>
 
-      <div class="form-group">
-        <label for="activityDescription">Description <span class="asterisk">*</span></label>
-        <textarea
-          id="activityDescription"
-          class="form-control"
-          formControlName="description"
-          placeholder="Enter activity description"
-          rows="3"
-          maxlength="255"
-        ></textarea>
-        @if (activityForm.get('description')?.invalid && activityForm.get('description')?.touched) {
-          <span class="error-message">Activity description is required.</span>
-        }
-      </div>
-    </form>
+          <div class="form-group">
+            <label for="activityDescription">Description <span class="asterisk">*</span></label>
+            <textarea
+              id="activityDescription"
+              class="form-control"
+              formControlName="description"
+              placeholder="Enter activity description"
+              rows="3"
+              maxlength="255"
+            ></textarea>
+            @if (
+              activityForm.get('description')?.invalid && activityForm.get('description')?.touched
+            ) {
+              <span class="error-message">Activity description is required.</span>
+            }
+          </div>
+        </form>
 
-    <button dialog-footer type="button" class="btn btn-secondary" (click)="closeActivityModal()">
-      Cancel
-    </button>
-    <button
-      dialog-footer
-      type="submit"
-      form="activity-entry-form"
-      class="btn btn-primary"
-      [disabled]="activityForm.invalid"
-    >
-      Save Activity
-    </button>
-  </app-dialog>
-}
-<!-- SDG Keywords Modal -->
+        <button
+          dialog-footer
+          type="button"
+          class="btn btn-secondary"
+          (click)="closeActivityModal()"
+        >
+          Cancel
+        </button>
+        <button
+          dialog-footer
+          type="submit"
+          form="activity-entry-form"
+          class="btn btn-primary"
+          [disabled]="activityForm.invalid"
+        >
+          Save Activity
+        </button>
+      </app-dialog>
+    }
+    <!-- SDG Keywords Modal -->
     @if (isSDGKeywordsModalOpen) {
       <app-dialog
         [title]="'Enter SDG Keywords'"
@@ -1386,13 +1420,3 @@
     }
   </div>
 </form>
-
-
-
-
-
-
-
-
-
-

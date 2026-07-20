@@ -1,18 +1,9 @@
 <div class="journal-app application-form-page">
-  <app-journal-guidelines-modal
-    #journalGuidelinesModal
-    (closed)="journalFormTitle.onGuidelinesClosed()"
-  >
-  </app-journal-guidelines-modal>
-
   <app-form-main-title
-    #journalFormTitle
     title="Journal Publication"
     [guidelineContext]="guidelineContext"
-    [customModal]="true"
-    (helpClick)="journalGuidelinesModal.open()"
-    modalTitle="Journal Guidelines"
-    endpoint="/rmc/guidelines/journal"
+    modalTitle="Journal Publication Guidelines"
+    [endpoint]="guidelinesEndpoint"
   >
   </app-form-main-title>
 

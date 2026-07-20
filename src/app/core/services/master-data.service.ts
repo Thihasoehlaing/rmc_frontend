@@ -142,9 +142,18 @@ export class MasterDataService {
     });
   }
 
-  getDropdownOptions(categoryCode: string): Observable<ApiResponse<DropdownOptionRecord[]>> {
+  getDropdownOptions(
+    categoryCode: string,
+    formCode?: string,
+  ): Observable<ApiResponse<DropdownOptionRecord[]>> {
+    let params = new HttpParams();
+    if (formCode?.trim()) {
+      params = params.set('form_code', formCode.trim());
+    }
+
     return this.http.get<ApiResponse<DropdownOptionRecord[]>>(
       `${this.base}/dropdowns/${categoryCode}/options`,
+      { params },
     );
   }
 }

@@ -113,37 +113,69 @@ export class JournalDetails implements OnInit, OnDestroy {
   accountCodeOptions: { value: string; label: string }[] = [];
 
   readonly breakdownColumns: DataTableColumn[] = [
-    { key: 'index', label: '#', width: '50px', align: 'center', headerAlign: 'center' },
-    { key: 'itemDescription', label: 'Vote Number Description' },
-    { key: 'voteNumber', label: 'Vote Number' },
-    { key: 'cost', label: 'Cost (Foreign/MYR)' },
-    { key: 'exchangeRate', label: 'Exchange Rate' },
-    { key: 'costInRM', label: 'Cost in RM' },
-    { key: 'description', label: 'Description' },
-    { key: 'fileName', label: 'Supporting Doc' },
-    { key: 'actions', label: 'Actions', width: '100px', align: 'center', headerAlign: 'center' },
+    {
+      key: 'index',
+      label: '#',
+      width: 'var(--size-table-column-index)',
+      align: 'center',
+      headerAlign: 'center',
+    },
+    { key: 'itemDescription', label: 'Vote Number Description', width: '220px' },
+    { key: 'voteNumber', label: 'Vote Number', width: '120px' },
+    { key: 'cost', label: 'Cost (Foreign/MYR)', width: '180px' },
+    { key: 'exchangeRate', label: 'Exchange Rate', width: '140px' },
+    { key: 'costInRM', label: 'Cost in RM', width: '140px' },
+    { key: 'description', label: 'Description', width: '260px' },
+    { key: 'fileName', label: 'Supporting Doc', width: '200px' },
+    {
+      key: 'actions',
+      label: 'Actions',
+      width: 'var(--size-table-column-actions)',
+      align: 'center',
+      headerAlign: 'center',
+    },
   ];
 
   readonly externalResearchBreakdownColumns: DataTableColumn[] = [
-    { key: 'itemDescription', label: 'Vote Number Description' },
-    { key: 'accountCode', label: 'Account Code' },
-    { key: 'voteNumber', label: 'Vote Number' },
-    { key: 'costInRM', label: 'Cost in RM (Approximate)' },
-    { key: 'cost', label: 'Cost in Foreign Currency' },
-    { key: 'exchangeRate', label: 'Exchange Rate' },
-    { key: 'description', label: 'Description' },
-    { key: 'actions', label: 'Actions', width: '100px', align: 'center', headerAlign: 'center' },
+    { key: 'itemDescription', label: 'Vote Number Description', width: '220px' },
+    { key: 'accountCode', label: 'Account Code', width: '140px' },
+    { key: 'voteNumber', label: 'Vote Number', width: '120px' },
+    { key: 'costInRM', label: 'Cost in RM (Approximate)', width: '180px' },
+    { key: 'cost', label: 'Cost in Foreign Currency', width: '180px' },
+    { key: 'exchangeRate', label: 'Exchange Rate', width: '140px' },
+    { key: 'description', label: 'Description', width: '260px' },
+    {
+      key: 'actions',
+      label: 'Actions',
+      width: 'var(--size-table-column-actions)',
+      align: 'center',
+      headerAlign: 'center',
+    },
   ];
 
   readonly nonResearchBreakdownColumns: DataTableColumn[] = [
-    { key: 'accountCodeDescription', label: 'Account Code Description' },
-    { key: 'accountCode', label: 'Account Code' },
-    { key: 'cost', label: 'Cost in Foreign Currency' },
-    { key: 'exchangeRate', label: 'Exchange Rate' },
-    { key: 'costInRM', label: 'Cost in RM (Approximate)' },
-    { key: 'description', label: 'Description' },
-    { key: 'actions', label: 'Actions', width: '100px', align: 'center', headerAlign: 'center' },
+    { key: 'accountCodeDescription', label: 'Account Code Description', width: '220px' },
+    { key: 'accountCode', label: 'Account Code', width: '140px' },
+    { key: 'cost', label: 'Cost in Foreign Currency', width: '180px' },
+    { key: 'exchangeRate', label: 'Exchange Rate', width: '140px' },
+    { key: 'costInRM', label: 'Cost in RM (Approximate)', width: '180px' },
+    { key: 'description', label: 'Description', width: '260px' },
+    {
+      key: 'actions',
+      label: 'Actions',
+      width: 'var(--size-table-column-actions)',
+      align: 'center',
+      headerAlign: 'center',
+    },
   ];
+
+  formatDescription(description: string | null | undefined): string {
+    if (!description) {
+      return '—';
+    }
+
+    return description.replace(/(.{50})(?=\S)/g, '$1 ');
+  }
 
   @Output() formValidityChange = new EventEmitter<boolean>();
 

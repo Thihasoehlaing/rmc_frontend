@@ -14,9 +14,45 @@
   }
 }
 
+// Shared cue for horizontally scrollable data tables.
+.table-scroll-hint {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin: 0 0 var(--space-2);
+  font-size: var(--fs-xs);
+  color: var(--color-text-muted);
+
+  .scroll-arrow {
+    font-size: 16px; // no token: Material icon optical size
+    color: var(--color-primary);
+    animation: scroll-arrow-glow 1.6s ease-in-out infinite;
+  }
+}
+
+@keyframes scroll-arrow-glow {
+  0%,
+  100% {
+    opacity: 0.35;
+    text-shadow: none;
+  }
+
+  50% {
+    opacity: 1;
+    text-shadow:
+      0 0 4px var(--color-primary),
+      0 0 9px var(--color-primary);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   [class*='skeleton'],
   [class*='skeleton'] * {
     animation: none !important;
+  }
+
+  .table-scroll-hint .scroll-arrow {
+    animation: none;
+    opacity: 1;
   }
 }

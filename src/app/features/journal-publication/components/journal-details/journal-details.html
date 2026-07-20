@@ -330,6 +330,12 @@
                   </div>
 
                   @if (getBreakdownArray(researchType || '').length > 0) {
+                    <p class="table-scroll-hint">
+                      <span>Scroll to see all columns</span>
+                      <span class="material-icons scroll-arrow" aria-hidden="true"
+                        >arrow_forward</span
+                      >
+                    </p>
                     @if (researchType === 'non-research') {
                       <div class="table-scroll non-research-table">
                         <app-data-table
@@ -347,24 +353,30 @@
                               <td>{{ row.cost | number: '1.2-2' }}</td>
                               <td>{{ row.exchangeRate || '—' }}</td>
                               <td>{{ row.costInRM | number: '1.2-2' }}</td>
-                              <td>{{ row.description || '—' }}</td>
+                              <td>
+                                <div class="data-table__multiline">
+                                  {{ formatDescription(row.description) }}
+                                </div>
+                              </td>
                               <td class="col-actions is-align-center">
-                                <button
-                                  type="button"
-                                  class="btn-icon btn-icon--edit"
-                                  (click)="openBreakdownModal('non-research', index)"
-                                  aria-label="Edit entry"
-                                >
-                                  <app-table-action-icon action="edit"></app-table-action-icon>
-                                </button>
-                                <button
-                                  type="button"
-                                  class="btn-icon btn-icon--delete"
-                                  (click)="deleteBreakdown('non-research', index)"
-                                  aria-label="Remove entry"
-                                >
-                                  <app-table-action-icon action="delete"></app-table-action-icon>
-                                </button>
+                                <div class="data-table__actions">
+                                  <button
+                                    type="button"
+                                    class="btn-icon btn-icon--edit"
+                                    (click)="openBreakdownModal('non-research', index)"
+                                    aria-label="Edit entry"
+                                  >
+                                    <app-table-action-icon action="edit"></app-table-action-icon>
+                                  </button>
+                                  <button
+                                    type="button"
+                                    class="btn-icon btn-icon--delete"
+                                    (click)="deleteBreakdown('non-research', index)"
+                                    aria-label="Remove entry"
+                                  >
+                                    <app-table-action-icon action="delete"></app-table-action-icon>
+                                  </button>
+                                </div>
                               </td>
                             </tr>
                           </ng-template>
@@ -384,28 +396,35 @@
                           <ng-template #rowTemplate let-row let-index="index">
                             <tr>
                               <td>{{ row.itemDescription }}</td>
+                              <td>{{ row.accountCode || '—' }}</td>
                               <td>{{ row.voteNumber }}</td>
                               <td>{{ row.costInRM | number: '1.2-2' }}</td>
                               <td>{{ row.cost | number: '1.2-2' }}</td>
                               <td>{{ row.exchangeRate || '—' }}</td>
-                              <td>{{ row.description || '—' }}</td>
+                              <td>
+                                <div class="data-table__multiline">
+                                  {{ formatDescription(row.description) }}
+                                </div>
+                              </td>
                               <td class="col-actions is-align-center">
-                                <button
-                                  type="button"
-                                  class="btn-icon btn-icon--edit"
-                                  (click)="openBreakdownModal('external-research', index)"
-                                  aria-label="Edit entry"
-                                >
-                                  <app-table-action-icon action="edit"></app-table-action-icon>
-                                </button>
-                                <button
-                                  type="button"
-                                  class="btn-icon btn-icon--delete"
-                                  (click)="deleteBreakdown('external-research', index)"
-                                  aria-label="Remove entry"
-                                >
-                                  <app-table-action-icon action="delete"></app-table-action-icon>
-                                </button>
+                                <div class="data-table__actions">
+                                  <button
+                                    type="button"
+                                    class="btn-icon btn-icon--edit"
+                                    (click)="openBreakdownModal('external-research', index)"
+                                    aria-label="Edit entry"
+                                  >
+                                    <app-table-action-icon action="edit"></app-table-action-icon>
+                                  </button>
+                                  <button
+                                    type="button"
+                                    class="btn-icon btn-icon--delete"
+                                    (click)="deleteBreakdown('external-research', index)"
+                                    aria-label="Remove entry"
+                                  >
+                                    <app-table-action-icon action="delete"></app-table-action-icon>
+                                  </button>
+                                </div>
                               </td>
                             </tr>
                           </ng-template>
@@ -444,7 +463,11 @@
                               <td>{{ row.cost | number: '1.2-2' }}</td>
                               <td>{{ row.exchangeRate || '—' }}</td>
                               <td>{{ row.costInRM | number: '1.2-2' }}</td>
-                              <td>{{ row.description || '—' }}</td>
+                              <td>
+                                <div class="data-table__multiline">
+                                  {{ formatDescription(row.description) }}
+                                </div>
+                              </td>
                               <td>
                                 @if (row.fileName) {
                                   <span class="file-badge">
@@ -456,22 +479,24 @@
                                 }
                               </td>
                               <td class="col-actions is-align-center">
-                                <button
-                                  type="button"
-                                  class="btn-icon btn-icon--edit"
-                                  (click)="openBreakdownModal(researchType || '', index)"
-                                  aria-label="Edit entry"
-                                >
-                                  <app-table-action-icon action="edit"></app-table-action-icon>
-                                </button>
-                                <button
-                                  type="button"
-                                  class="btn-icon btn-icon--delete"
-                                  (click)="deleteBreakdown(researchType || '', index)"
-                                  aria-label="Remove entry"
-                                >
-                                  <app-table-action-icon action="delete"></app-table-action-icon>
-                                </button>
+                                <div class="data-table__actions">
+                                  <button
+                                    type="button"
+                                    class="btn-icon btn-icon--edit"
+                                    (click)="openBreakdownModal(researchType || '', index)"
+                                    aria-label="Edit entry"
+                                  >
+                                    <app-table-action-icon action="edit"></app-table-action-icon>
+                                  </button>
+                                  <button
+                                    type="button"
+                                    class="btn-icon btn-icon--delete"
+                                    (click)="deleteBreakdown(researchType || '', index)"
+                                    aria-label="Remove entry"
+                                  >
+                                    <app-table-action-icon action="delete"></app-table-action-icon>
+                                  </button>
+                                </div>
                               </td>
                             </tr>
                           </ng-template>

@@ -97,6 +97,9 @@ export class AuthorsDetails implements OnInit {
   staffOptions: DropdownOption<string>[] = [];
   staffOptionsLoading = false;
   staffOptionsLoadFailed = false;
+  organisationTypeOptions: DropdownOption<string>[] = [];
+  organisationTypeOptionsLoading = false;
+  organisationTypeOptionsLoadFailed = false;
   private academicStaffByName = new Map<string, AcademicStaffOption>();
   private staffSelectionSubscription?: Subscription;
 
@@ -203,6 +206,7 @@ export class AuthorsDetails implements OnInit {
   ngOnInit() {
     this.initializeForm();
     this.loadAcademicStaffOptions();
+    this.loadOrganisationTypeOptions();
   }
 
   initializeForm() {
@@ -650,6 +654,27 @@ export class AuthorsDetails implements OnInit {
           this.staffOptions = this.createSelectedStaffFallbackOption(selectedStaffName);
           this.academicStaffByName.clear();
           this.staffOptionsLoadFailed = true;
+        },
+      });
+  }
+
+  private loadOrganisationTypeOptions(): void {
+    this.organisationTypeOptionsLoading = true;
+    this.organisationTypeOptionsLoadFailed = false;
+
+    this.masterData
+      .getDropdownOptions('TYPE_OF_ORGANISATION', 'JOURNAL')
+      .pipe(finalize(() => (this.organisationTypeOptionsLoading = false)))
+      .subscribe({
+        next: (response) => {
+          this.organisationTypeOptions = (response.success ? (response.data ?? []) : [])
+            .filter((option) => option.status === 'ACTIVE')
+            .map((option) => ({ value: option.option_name, label: option.option_name }));
+          this.organisationTypeOptionsLoadFailed = !response.success;
+        },
+        error: () => {
+          this.organisationTypeOptions = [];
+          this.organisationTypeOptionsLoadFailed = true;
         },
       });
   }

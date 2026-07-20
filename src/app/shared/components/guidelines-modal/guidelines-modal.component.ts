@@ -8,8 +8,9 @@ import {
   signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
+import { firstValueFrom } from 'rxjs';
 import { GuidelinesResponse } from '../../../core/interfaces/components.interface';
 
 @Component({
@@ -66,7 +67,7 @@ export class GuidelinesModalComponent implements OnChanges {
 
     this.isLoading.set(true);
     try {
-      const res = await this.http.get<GuidelinesResponse>(this.endpoint).toPromise();
+      const res = await firstValueFrom(this.http.get<GuidelinesResponse>(this.endpoint));
       // Two response shapes are supported: the real admin-settings guideline
       // endpoint returns a single object ({ data: { content_html } }); the
       // older mock endpoints return an array ({ data: [{ rdig_guidelines_content }] }).
@@ -77,6 +78,11 @@ export class GuidelinesModalComponent implements OnChanges {
       this.content.set(html);
       this.hasFetched = true;
     } catch (err) {
+      if (err instanceof HttpErrorResponse && err.status === 404) {
+        this.content.set('<p>No guidelines available at this time.</p>');
+        return;
+      }
+
       console.error('Failed to fetch guidelines:', err);
       this.content.set('<p>Error loading guidelines. Please try again later.</p>');
     } finally {

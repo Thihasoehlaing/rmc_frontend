@@ -18,7 +18,6 @@ import {
 import { FormWizardNavComponent } from '../../shared/components/form-wizard-nav/form-wizard-nav.component';
 import { JournalWorkflowService } from './services/journal-workflow.service';
 import { ReviewBlockComponent } from '../rdig/components/review-block/review-block.component';
-import { JournalGuidelinesModalComponent } from './components/journal-guidelines-modal/journal-guidelines-modal.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
   JournalApplicationApiService,
@@ -32,6 +31,7 @@ import {
   RequestCommentDto,
   WorkflowRequestsService,
 } from '../../core/services/workflow-requests.service';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-journal-publication-form',
@@ -47,7 +47,6 @@ import {
     FormMainTitleComponent,
     FormWizardNavComponent,
     ReviewBlockComponent,
-    JournalGuidelinesModalComponent,
   ],
   templateUrl: './journal-publication-form.component.html',
   styleUrl: './journal-publication-form.component.scss',
@@ -70,6 +69,8 @@ export class JournalPublicationFormComponent {
   readonly guidelineContext: GuidelineContext = this.hasExistingRequestParam
     ? 'existing-application'
     : 'new-application';
+  /** Active Journal guideline served by the applicant-safe guideline-by-form endpoint. */
+  readonly guidelinesEndpoint = `${environment.apiUrl.replace(/\/$/, '')}/rmc/admin-settings/guidelines/forms/JOURNAL`;
   reviewComments = {
     hosComment: new FormControl(''),
     rmcComment: new FormControl(''),

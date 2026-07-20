@@ -308,7 +308,7 @@
               class="form-control"
               formControlName="schoolDepartment"
               placeholder="Ex. School of Computing and Technology"
-              (input)="stripDigits($event)"
+              readonly
             />
             <app-validation-message
               [control]="editForm.get('schoolDepartment')"
@@ -456,13 +456,18 @@
               class="form-control"
               formControlName="typeOfOrganisation"
             >
-              <option value="" disabled selected>--Select the Type of Organisation--</option>
-              <option value="University">University</option>
-              <option value="Research Institute">Research Institute</option>
-              <option value="Government Agency">Government Agency</option>
-              <option value="Private Company">Private Company</option>
-              <option value="Non-Profit Organization">Non-Profit Organization</option>
-              <option value="Other">Other</option>
+              <option value="" disabled>
+                @if (organisationTypeOptionsLoading) {
+                  Loading organisation types...
+                } @else if (organisationTypeOptionsLoadFailed) {
+                  Unable to load organisation types
+                } @else {
+                  --Select the Type of Organisation--
+                }
+              </option>
+              @for (option of organisationTypeOptions; track option.value) {
+                <option [value]="option.value">{{ option.label }}</option>
+              }
             </select>
             <app-validation-message
               [control]="editForm.get('typeOfOrganisation')"

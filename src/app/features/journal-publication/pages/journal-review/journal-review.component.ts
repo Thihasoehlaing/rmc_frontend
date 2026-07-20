@@ -18,6 +18,12 @@ import {
 } from '../../../../core/services/workflow-requests.service';
 import { ActionButtonComponent } from '../../../../shared/components/action-button/action-button.component';
 
+const SCOPUS_QUARTILE_LABELS: Readonly<Record<string, string>> = {
+  Q1: 'Q1: 75th - 100th percentile',
+  Q2: 'Q2: 50th - 74th percentile',
+  Q3: 'Q3: 25th - 49th percentile',
+};
+
 /**
  * journal-review.component.ts
  *
@@ -81,6 +87,10 @@ export class JournalReviewComponent implements OnInit {
 
   readonly request = computed(() => this.data()?.request ?? null);
   readonly journal = computed(() => this.data()?.journal ?? null);
+  readonly scopusQuartileLabel = computed(() => {
+    const quartile = this.journal()?.scopus_quartile?.trim().toUpperCase();
+    return quartile ? (SCOPUS_QUARTILE_LABELS[quartile] ?? quartile) : '—';
+  });
   readonly staffAuthors = computed(() => this.data()?.apu_staff_co_authors ?? []);
   readonly studentAuthors = computed(() => this.data()?.apu_student_co_authors ?? []);
   readonly nonApuAuthors = computed(() => this.data()?.non_apu_co_authors ?? []);

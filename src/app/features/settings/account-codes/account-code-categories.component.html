@@ -1,0 +1,214 @@
+<main class="forms-page forms-page--settings">
+  <header class="forms-page__header">
+    <div>
+      <span class="forms-page__eyebrow">System Settings</span>
+      <h1>Account Code Categories</h1>
+      <p>Manage category names used to group account codes across application forms.</p>
+    </div>
+    <div class="account-header-actions">
+      <button class="btn btn-secondary" type="button" (click)="goToAccountCodes()" [disabled]="isLoading()">
+        <span class="material-icons">account_balance_wallet</span>
+        Account Codes
+      </button>
+      <button class="btn btn-primary forms-page__create-button" type="button" (click)="openCreateDialog()" [disabled]="isLoading()">
+        <span class="material-icons">add</span>
+        Create Category
+      </button>
+    </div>
+  </header>
+
+  <section class="forms-toolbar account-categories-toolbar" aria-label="Account code category filters">
+    <h2 class="forms-toolbar__title">Search &amp; Filters</h2>
+
+    <label class="forms-filter forms-filter--search">
+      <span class="forms-search-input">
+        <span class="material-icons" aria-hidden="true">search</span>
+        <input
+          class="input--text"
+          type="search"
+          aria-label="Search account code categories"
+          placeholder="Search categories..."
+          [ngModel]="searchTerm()"
+          (ngModelChange)="searchTerm.set($event)"
+          (keydown.enter)="search()"
+          [disabled]="isLoading()"
+        />
+      </span>
+    </label>
+
+    <label class="forms-filter">
+      <span>Status</span>
+      <select
+        class="input--select"
+        [ngModel]="selectedStatus()"
+        (ngModelChange)="selectedStatus.set($event)"
+        [disabled]="isLoading()"
+      >
+        <option value="">All</option>
+        <option value="Active">Active</option>
+        <option value="Inactive">Inactive</option>
+      </select>
+    </label>
+
+    <div class="forms-toolbar__actions">
+      <button class="btn btn-primary" type="button" (click)="search()" [disabled]="isLoading()">
+        <span class="material-icons">search</span>
+        Search
+      </button>
+      <button class="btn btn-secondary" type="button" (click)="resetFilters()" [disabled]="isLoading()">
+        <span class="material-icons">restart_alt</span>
+        Reset
+      </button>
+    </div>
+  </section>
+
+  <section class="forms-table-card">
+    <header class="forms-table-card__header">
+      <div>
+        <div class="forms-table-card__title-row">
+          <h2>Account Code Categories</h2>
+          <span class="forms-table-card__count">{{ totalItems() }}</span>
+        </div>
+        <p>Use categories to organize account codes for finance dropdowns.</p>
+      </div>
+      <button class="btn btn-secondary forms-table-card__refresh" type="button" (click)="loadCategories()" [disabled]="isLoading()">
+        <span class="material-icons">refresh</span>
+        Refresh
+      </button>
+    </header>
+
+    @if (isLoading()) {
+      <app-table-skeleton [columns]="columns" [showSearch]="false" loadingLabel="Loading account code categories">
+      </app-table-skeleton>
+    } @else if (loadFailed()) {
+      <div class="forms-state">
+        <span class="material-icons">cloud_off</span>
+        <h2>Unable to load account code categories</h2>
+        <p>Check the API connection and try again.</p>
+        <button class="btn btn-primary" type="button" (click)="loadCategories()">Try Again</button>
+      </div>
+    } @else if (categories().length === 0) {
+      <div class="forms-state">
+        <span class="material-icons">category</span>
+        <h2>No account code categories found</h2>
+        <p>Adjust the filters or create a new category.</p>
+      </div>
+    } @else {
+      <app-data-table [columns]="columns" [rows]="categories()" [rowTrackFn]="rowTrackFn">
+        <ng-template #rowTemplate let-row let-index="index">
+          <tr>
+            <td class="is-align-center">{{ rowNumber(index) }}</td>
+            <td>
+              <strong>{{ row.category_name }}</strong>
+            </td>
+            <td class="is-align-center">
+              <span class="status-badge" [class.status-badge--inactive]="!row.is_active">
+                {{ row.is_active ? 'Active' : 'Inactive' }}
+              </span>
+            </td>
+            <td>{{ row.updated_at ? (row.updated_at | date: 'yyyy-MM-dd hh:mm:ss a') : '-' }}</td>
+            <td class="is-align-center">
+              <div class="table-actions">
+                <button class="table-action" type="button" title="Edit category" aria-label="Edit category" (click)="openEditDialog(row)">
+                  <app-table-action-icon action="edit"></app-table-action-icon>
+                </button>
+                <button class="table-action table-action--danger" type="button" title="Delete category" aria-label="Delete category" (click)="openDeleteDialog(row)">
+                  <app-table-action-icon action="delete"></app-table-action-icon>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+      </app-data-table>
+    }
+
+    @if (!isLoading() && !loadFailed()) {
+      <footer class="forms-table-card__footer">
+        
+
+        <app-pagination
+          [currentPage]="page()"
+          [totalPages]="totalPages()"
+          [pageSize]="pageSize()"
+          [pageSizeOptions]="pageSizeOptions"
+          [totalItems]="totalItems()"
+          [itemCount]="categories().length"
+          itemLabel="categories"
+          (pageChange)="onPageChange($event)"
+          (pageSizeChange)="onPageSizeChange($event)"
+        >
+        </app-pagination>
+
+        
+      </footer>
+    }
+  </section>
+
+  <app-dialog [isOpen]="dialogMode() !== null" [title]="dialogTitle()" size="small" (close)="closeEditor()">
+    @if (isDetailLoading()) {
+      <app-detail-panel-skeleton loadingLabel="Loading category details"></app-detail-panel-skeleton>
+    } @else if (detailFailed()) {
+      <div class="dialog-state">
+        <span class="material-icons">error_outline</span>
+        <p>Unable to retrieve this category.</p>
+        <button class="btn btn-secondary" type="button" (click)="retryDetail()">Try Again</button>
+      </div>
+    } @else {
+      <div class="form-editor">
+        <label class="forms-filter">
+          <span>Category Name</span>
+          <input
+            class="input--text"
+            type="text"
+            maxlength="255"
+            placeholder="Enter category name"
+            autocomplete="off"
+            [ngModel]="categoryName()"
+            (ngModelChange)="categoryName.set($event)"
+          />
+        </label>
+
+        <label class="active-switch">
+          <input type="checkbox" [ngModel]="categoryActive()" (ngModelChange)="categoryActive.set($event)" />
+          <span class="active-switch__control"></span>
+          <span>
+            <strong>Active category</strong>
+            <small>Available when creating and filtering account codes.</small>
+          </span>
+        </label>
+      </div>
+    }
+
+    <div dialog-footer class="form-dialog__footer">
+      <button class="btn btn-secondary" type="button" [disabled]="isSaving()" (click)="closeEditor()">Cancel</button>
+      @if (!isDetailLoading() && !detailFailed()) {
+        <button
+          class="btn btn-primary"
+          type="button"
+          [disabled]="isSaving() || !categoryName().trim()"
+          (click)="saveCategory()"
+        >
+          {{ isSaving() ? 'Saving...' : dialogMode() === 'create' ? 'Create Category' : 'Save Changes' }}
+        </button>
+      }
+    </div>
+  </app-dialog>
+
+  <app-dialog [isOpen]="categoryToDelete() !== null" title="Delete Account Code Category" size="small" (close)="closeDeleteDialog()">
+    @if (categoryToDelete(); as category) {
+      <div class="deactivate-confirmation">
+        <app-table-action-icon action="delete"></app-table-action-icon>
+        <div>
+          <h3>Delete {{ category.category_name }}?</h3>
+          <p>This category will be permanently deleted. Categories with existing account codes cannot be deleted.</p>
+        </div>
+      </div>
+    }
+    <div dialog-footer class="form-dialog__footer">
+      <button class="btn btn-secondary" type="button" [disabled]="isSaving()" (click)="closeDeleteDialog()">Cancel</button>
+      <button class="btn btn-danger" type="button" [disabled]="isSaving()" (click)="confirmDelete()">
+        {{ isSaving() ? 'Deleting...' : 'Delete Category' }}
+      </button>
+    </div>
+  </app-dialog>
+</main>

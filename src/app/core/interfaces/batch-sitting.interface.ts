@@ -4,6 +4,7 @@
  */
 
 export type WorkflowStageKey =
+  | 'applicant'
   | 'hos_first_review'
   | 'applicant_resubmission'
   | 'hos_review_again'
@@ -45,6 +46,7 @@ export interface WorkflowStageMeta {
 }
 
 export const WORKFLOW_STAGE_META: WorkflowStageMeta[] = [
+  { key: 'applicant',              label: 'Applicant',               description: 'Applicants submit their RDIG applications within this window.',   rdigStatuses: ['draft'] },
   { key: 'hos_first_review',       label: 'HOS First Review',       description: 'Head of School reviews the application for the first time.',     rdigStatuses: ['pending_hos'] },
   { key: 'applicant_resubmission', label: 'Applicant Resubmission',  description: 'Applicant receives the application back for revision.',           rdigStatuses: ['pending_applicant_resubmission_hos', 'pending_applicant_resubmission_reviewers'] },
   { key: 'hos_review_again',       label: 'HOS Review (Again)',      description: 'Head of School re-reviews the revised application.',              rdigStatuses: ['pending_hos_review'] },

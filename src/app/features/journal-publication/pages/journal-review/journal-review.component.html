@@ -1,0 +1,721 @@
+<section class="review-page">
+  @if (loading()) {
+    <div
+      class="review-loading"
+      role="status"
+      aria-live="polite"
+      aria-label="Loading journal application detail"
+    >
+      <div class="review-loading__orb">
+        <span class="material-icons">article</span>
+      </div>
+      <div class="review-loading__content">
+        <p class="review-loading__eyebrow">Fetching journal detail</p>
+        <h2>Preparing application view</h2>
+        <p>Loading workflow, applicant, attachment, and review information…</p>
+      </div>
+      <div class="review-loading__skeleton" aria-hidden="true">
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    </div>
+  } @else if (error()) {
+    <div class="review-state review-state--error">{{ error() }}</div>
+  } @else {
+    <header class="review-hero">
+      <button type="button" class="review-back" (click)="goBack()">
+        <span class="material-icons">arrow_back</span>
+        {{ backLabel() }}
+      </button>
+
+      <div class="review-hero__content">
+        <div class="review-hero__eyebrow">
+          <span class="material-icons">article</span>
+          Journal Publication Detail
+        </div>
+        <h1>{{ val(journal()?.paper_title || request()?.title) }}</h1>
+        <div class="review-hero__meta">
+          <span class="review-chip review-chip--strong">{{ val(request()?.request_code) }}</span>
+          <span class="review-chip review-chip--status">{{
+            val(request()?.status_name || request()?.status_code)
+          }}</span>
+          <span
+            >Submitted by <strong>{{ val(request()?.applicant_name) }}</strong></span
+          >
+          @if (request()?.applicant_department) {
+            <span>· {{ request()?.applicant_department }}</span>
+          }
+        </div>
+      </div>
+
+      <button type="button" class="review-print" (click)="printRequest()">
+        <span class="material-icons">print</span>
+        Print
+      </button>
+    </header>
+
+    <div class="review-summary">
+      <article class="summary-card">
+        <span class="material-icons">payments</span>
+        <div>
+          <p>Total Cost (RM)</p>
+          <strong>{{ fmtMoney(totalCostInRm()) }}</strong>
+        </div>
+      </article>
+      <article class="summary-card">
+        <span class="material-icons">attach_file</span>
+        <div>
+          <p>Supporting Documents</p>
+          <strong>{{ attachments().length }}</strong>
+        </div>
+      </article>
+      <article class="summary-card">
+        <span class="material-icons">task_alt</span>
+        <div>
+          <p>Available Actions</p>
+          <strong>{{ actions().length }}</strong>
+        </div>
+      </article>
+    </div>
+
+    <div class="review-layout">
+      <main class="review-main">
+        <section class="detail-section">
+          <div class="section-heading">
+            <span class="material-icons">description</span>
+            <div>
+              <h2>Journal Details</h2>
+              <p>Publication, indexing, project type, and SDG information.</p>
+            </div>
+          </div>
+          <dl class="detail-grid">
+            <div>
+              <dt>Journal Name</dt>
+              <dd>{{ val(journal()?.journal_name) }}</dd>
+            </div>
+            <div>
+              <dt>Paper Title</dt>
+              <dd>{{ val(journal()?.paper_title) }}</dd>
+            </div>
+            <div>
+              <dt>Author Role</dt>
+              <dd>{{ val(journal()?.author_role) }}</dd>
+            </div>
+            <div>
+              <dt>Scopus Quartile</dt>
+              <dd>{{ val(journal()?.scopus_quartile) }}</dd>
+            </div>
+            <div>
+              <dt>Project Type</dt>
+              <dd>{{ val(journal()?.project_type) }}</dd>
+            </div>
+            <div class="detail-grid__wide">
+              <dt>Restricted Publisher(e.g., MDPI, Common Ground, Hindawi, or Frontier)</dt>
+              <dd>{{ val(journal()?.is_restricted_publisher) }}</dd>
+            </div>
+            <div>
+              <dt>APU JATI / EJBM Cited</dt>
+              <dd>{{ val(journal()?.cited_apu_jati_ejbm) }}</dd>
+            </div>
+            <div class="detail-grid__wide">
+              <dt>SDG Keywords</dt>
+              <dd>
+                {{ val(journal()?.sdg_keyword_1) }} · {{ val(journal()?.sdg_keyword_2) }} ·
+                {{ val(journal()?.sdg_keyword_3) }}
+              </dd>
+            </div>
+          </dl>
+          <div class="section-comments">
+            <h3>Section Comments</h3>
+            @if (commentsForSection('journal_details').length) {
+              <div class="section-comments__list">
+                @for (comment of commentsForSection('journal_details'); track comment.id) {
+                  <article class="section-comment">
+                    <strong>{{ val(comment.staff_name || comment.staff_username) }}</strong>
+                    <span
+                      >{{ prettyActor(comment.actor_type_code) }} ·
+                      {{ fmtDate(comment.created_at) }}</span
+                    >
+                    <p>{{ comment.comment_text }}</p>
+                  </article>
+                }
+              </div>
+            } @else {
+              <p class="review-empty">No section comments yet.</p>
+            }
+            @if (canWriteSectionComments()) {
+              <textarea
+                class="section-comment-input"
+                rows="3"
+                placeholder="Write a comment for Journal Details..."
+                [formControl]="sectionCommentControls['journal_details']"
+              >
+              </textarea>
+              <div class="section-comment-actions">
+                <app-action-button
+                  type="primary"
+                  label="Save Comment"
+                  icon="send"
+                  loadingLabel="Saving..."
+                  [loading]="savingSectionComment() === 'journal_details'"
+                  [disabled]="savingSectionComment() === 'journal_details'"
+                  (clicked)="saveSectionComment('journal_details')"
+                >
+                </app-action-button>
+              </div>
+            }
+          </div>
+        </section>
+
+        <section class="detail-section">
+          <div class="section-heading">
+            <span class="material-icons">fact_check</span>
+            <div>
+              <h2>Manuscript Details</h2>
+              <p>Reviewer, internal review, and publication history.</p>
+            </div>
+          </div>
+          <dl class="detail-grid">
+            <div>
+              <dt>Reviewer Name</dt>
+              <dd>{{ val(journal()?.reviewer_name) }}</dd>
+            </div>
+            <div class="detail-grid__wide">
+              <dt>
+                The manuscript has been internally reviewed for the quality of content and English?
+              </dt>
+              <dd>{{ val(journal()?.is_manuscript_internally_reviewed) }}</dd>
+            </div>
+            <div class="detail-grid__wide">
+              <dt>
+                Has the manuscript and content been published in another journal or conference etc.?
+              </dt>
+              <dd>{{ val(journal()?.is_published_elsewhere) }}</dd>
+            </div>
+          </dl>
+          <div class="section-comments">
+            <h3>Section Comments</h3>
+            @if (commentsForSection('manuscript_details').length) {
+              <div class="section-comments__list">
+                @for (comment of commentsForSection('manuscript_details'); track comment.id) {
+                  <article class="section-comment">
+                    <strong>{{ val(comment.staff_name || comment.staff_username) }}</strong>
+                    <span
+                      >{{ prettyActor(comment.actor_type_code) }} ·
+                      {{ fmtDate(comment.created_at) }}</span
+                    >
+                    <p>{{ comment.comment_text }}</p>
+                  </article>
+                }
+              </div>
+            } @else {
+              <p class="review-empty">No section comments yet.</p>
+            }
+            @if (canWriteSectionComments()) {
+              <textarea
+                class="section-comment-input"
+                rows="3"
+                placeholder="Write a comment for Manuscript Details..."
+                [formControl]="sectionCommentControls['manuscript_details']"
+              >
+              </textarea>
+              <div class="section-comment-actions">
+                <app-action-button
+                  type="primary"
+                  label="Save Comment"
+                  icon="send"
+                  loadingLabel="Saving..."
+                  [loading]="savingSectionComment() === 'manuscript_details'"
+                  [disabled]="savingSectionComment() === 'manuscript_details'"
+                  (clicked)="saveSectionComment('manuscript_details')"
+                >
+                </app-action-button>
+              </div>
+            }
+          </div>
+        </section>
+
+        <section class="detail-section">
+          <div class="section-heading">
+            <span class="material-icons">attach_file</span>
+            <div>
+              <h2>Supporting Documents</h2>
+              <p>Uploaded supporting documents are available for download.</p>
+            </div>
+          </div>
+
+          @if (supportingAttachments().length) {
+            <div class="file-grid">
+              @for (file of supportingAttachments(); track file.id ?? $index) {
+                <article class="file-card">
+                  <div class="file-card__icon">
+                    <span class="material-icons">picture_as_pdf</span>
+                  </div>
+                  <div class="file-card__body">
+                    <span class="file-card__type">{{ entityLabel(file.entity_type) }}</span>
+                    <strong>{{ val(file.file_name) }}</strong>
+                    <p>
+                      {{ val(file.file_type) }} · {{ fmtFileSize(file.file_size) }}
+                      @if (file.uploaded_at) {
+                        · {{ fmtDate(file.uploaded_at) }}
+                      }
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    class="download-button"
+                    [disabled]="downloadingAttachmentId() === file.id"
+                    (click)="downloadAttachment(file)"
+                  >
+                    <span class="material-icons">download</span>
+                    {{ downloadingAttachmentId() === file.id ? 'Preparing…' : 'Download' }}
+                  </button>
+                </article>
+              }
+            </div>
+          } @else {
+            <p class="review-empty">No documents uploaded.</p>
+          }
+          <div class="section-comments">
+            <h3>Section Comments</h3>
+            @if (commentsForSection('supporting_documents').length) {
+              <div class="section-comments__list">
+                @for (comment of commentsForSection('supporting_documents'); track comment.id) {
+                  <article class="section-comment">
+                    <strong>{{ val(comment.staff_name || comment.staff_username) }}</strong>
+                    <span
+                      >{{ prettyActor(comment.actor_type_code) }} ·
+                      {{ fmtDate(comment.created_at) }}</span
+                    >
+                    <p>{{ comment.comment_text }}</p>
+                  </article>
+                }
+              </div>
+            } @else {
+              <p class="review-empty">No section comments yet.</p>
+            }
+            @if (canWriteSectionComments()) {
+              <textarea
+                class="section-comment-input"
+                rows="3"
+                placeholder="Write a comment for Supporting Documents..."
+                [formControl]="sectionCommentControls['supporting_documents']"
+              >
+              </textarea>
+              <div class="section-comment-actions">
+                <app-action-button
+                  type="primary"
+                  label="Save Comment"
+                  icon="send"
+                  loadingLabel="Saving..."
+                  [loading]="savingSectionComment() === 'supporting_documents'"
+                  [disabled]="savingSectionComment() === 'supporting_documents'"
+                  (clicked)="saveSectionComment('supporting_documents')"
+                >
+                </app-action-button>
+              </div>
+            }
+          </div>
+        </section>
+
+        <section class="detail-section">
+          <div class="section-heading">
+            <span class="material-icons">groups</span>
+            <div>
+              <h2>Authors</h2>
+              <p>APU staff, APU student, and non-APU co-authors.</p>
+            </div>
+          </div>
+
+          <div class="author-block">
+            <h3>APU Staff Co-Authors</h3>
+            @if (staffAuthors().length) {
+              <div class="modern-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Department</th>
+                      <th>Affiliation</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (author of staffAuthors(); track $index) {
+                      <tr>
+                        <td>{{ val(author.staff_name) }}</td>
+                        <td>{{ val(author.staff_department) }}</td>
+                        <td>{{ val(author.affiliation) }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            } @else {
+              <p class="review-empty">None.</p>
+            }
+          </div>
+
+          <div class="author-block">
+            <h3>APU Student Co-Authors</h3>
+            @if (studentAuthors().length) {
+              <div class="modern-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>TP Number</th>
+                      <th>Name</th>
+                      <th>School / Department</th>
+                      <th>Affiliation</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (author of studentAuthors(); track $index) {
+                      <tr>
+                        <td>{{ val(author.tp_number) }}</td>
+                        <td>{{ val(author.full_name) }}</td>
+                        <td>{{ val(author.school_department) }}</td>
+                        <td>{{ val(author.affiliation) }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            } @else {
+              <p class="review-empty">None.</p>
+            }
+          </div>
+
+          <div class="author-block">
+            <h3>Non-APU Co-Authors</h3>
+            @if (nonApuAuthors().length) {
+              <div class="modern-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Institution</th>
+                      <th>Country</th>
+                      <th>Email</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (author of nonApuAuthors(); track $index) {
+                      <tr>
+                        <td>{{ val(author.full_name) }}</td>
+                        <td>{{ val(author.institution_company_name) }}</td>
+                        <td>{{ val(author.country) }}</td>
+                        <td>{{ val(author.email) }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            } @else {
+              <p class="review-empty">None.</p>
+            }
+          </div>
+          <div class="section-comments">
+            <h3>Section Comments</h3>
+            @if (commentsForSection('authors').length) {
+              <div class="section-comments__list">
+                @for (comment of commentsForSection('authors'); track comment.id) {
+                  <article class="section-comment">
+                    <strong>{{ val(comment.staff_name || comment.staff_username) }}</strong>
+                    <span
+                      >{{ prettyActor(comment.actor_type_code) }} ·
+                      {{ fmtDate(comment.created_at) }}</span
+                    >
+                    <p>{{ comment.comment_text }}</p>
+                  </article>
+                }
+              </div>
+            } @else {
+              <p class="review-empty">No section comments yet.</p>
+            }
+            @if (canWriteSectionComments()) {
+              <textarea
+                class="section-comment-input"
+                rows="3"
+                placeholder="Write a comment for Authors..."
+                [formControl]="sectionCommentControls['authors']"
+              >
+              </textarea>
+              <div class="section-comment-actions">
+                <app-action-button
+                  type="primary"
+                  label="Save Comment"
+                  icon="send"
+                  loadingLabel="Saving..."
+                  [loading]="savingSectionComment() === 'authors'"
+                  [disabled]="savingSectionComment() === 'authors'"
+                  (clicked)="saveSectionComment('authors')"
+                >
+                </app-action-button>
+              </div>
+            }
+          </div>
+        </section>
+
+        <section class="detail-section">
+          <div class="section-heading">
+            <span class="material-icons">payments</span>
+            <div>
+              <h2>Costing & Sponsorship</h2>
+              <p>Research costing breakdown and sponsorship declaration.</p>
+            </div>
+          </div>
+
+          @if (costingItems().length) {
+            <div class="modern-table">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Vote Number</th>
+                    <th>Account Code</th>
+                    <th>Foreign Cost</th>
+                    <th>Exchange Rate</th>
+                    <th>Cost in RM</th>
+                    <th>Description</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (item of costingItems(); track item.id ?? $index) {
+                    <tr>
+                      <td>
+                        {{
+                          val(item.vote_number_snapshot || item.vote_number_description_snapshot)
+                        }}
+                      </td>
+                      <td>
+                        {{
+                          val(item.account_code_snapshot || item.account_code_description_snapshot)
+                        }}
+                      </td>
+                      <td>{{ fmtMoney(item.cost_in_foreign_currency) }}</td>
+                      <td>{{ val(item.exchange_rate) }}</td>
+                      <td>{{ fmtMoney(item.cost_in_rm) }}</td>
+                      <td>{{ val(item.description) }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          } @else {
+            <p class="review-empty">No costing items.</p>
+          }
+
+          <div class="costing-documents">
+            <h3>Costing Supporting Documents</h3>
+            @if (costingAttachments().length) {
+              <div class="file-grid">
+                @for (file of costingAttachments(); track file.id ?? $index) {
+                  <article class="file-card">
+                    <div class="file-card__icon">
+                      <span class="material-icons">request_quote</span>
+                    </div>
+                    <div class="file-card__body">
+                      <span class="file-card__type">{{ entityLabel(file.entity_type) }}</span>
+                      <strong>{{ val(file.file_name) }}</strong>
+                      <p>
+                        {{ val(file.file_type) }} · {{ fmtFileSize(file.file_size) }}
+                        @if (file.uploaded_at) {
+                          · {{ fmtDate(file.uploaded_at) }}
+                        }
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      class="download-button"
+                      [disabled]="downloadingAttachmentId() === file.id"
+                      (click)="downloadAttachment(file)"
+                    >
+                      <span class="material-icons">download</span>
+                      {{ downloadingAttachmentId() === file.id ? 'Preparing…' : 'Download' }}
+                    </button>
+                  </article>
+                }
+              </div>
+            } @else {
+              <p class="review-empty">No costing supporting documents uploaded.</p>
+            }
+          </div>
+
+          <dl class="detail-grid detail-grid--compact">
+            <div>
+              <dt>External Sponsorship Amount</dt>
+              <dd>RM {{ fmtMoney(journal()?.external_sponsorship_amount) }}</dd>
+            </div>
+            <div>
+              <dt>Sponsored By</dt>
+              <dd>{{ val(journal()?.external_sponsored_by) }}</dd>
+            </div>
+            <div>
+              <dt>APU Sponsorship</dt>
+              <dd>RM {{ fmtMoney(journal()?.apu_sponsorship_amount) }}</dd>
+            </div>
+            <div>
+              <dt>Cost Borne by Applicant</dt>
+              <dd>RM {{ fmtMoney(journal()?.cost_to_be_borne_by_applicant) }}</dd>
+            </div>
+          </dl>
+          <div class="section-comments">
+            <h3>Section Comments</h3>
+            @if (commentsForSection('costing_sponsorship').length) {
+              <div class="section-comments__list">
+                @for (comment of commentsForSection('costing_sponsorship'); track comment.id) {
+                  <article class="section-comment">
+                    <strong>{{ val(comment.staff_name || comment.staff_username) }}</strong>
+                    <span
+                      >{{ prettyActor(comment.actor_type_code) }} ·
+                      {{ fmtDate(comment.created_at) }}</span
+                    >
+                    <p>{{ comment.comment_text }}</p>
+                  </article>
+                }
+              </div>
+            } @else {
+              <p class="review-empty">No section comments yet.</p>
+            }
+            @if (canWriteSectionComments()) {
+              <textarea
+                class="section-comment-input"
+                rows="3"
+                placeholder="Write a comment for Costing & Sponsorship..."
+                [formControl]="sectionCommentControls['costing_sponsorship']"
+              >
+              </textarea>
+              <div class="section-comment-actions">
+                <app-action-button
+                  type="primary"
+                  label="Save Comment"
+                  icon="send"
+                  loadingLabel="Saving..."
+                  [loading]="savingSectionComment() === 'costing_sponsorship'"
+                  [disabled]="savingSectionComment() === 'costing_sponsorship'"
+                  (clicked)="saveSectionComment('costing_sponsorship')"
+                >
+                </app-action-button>
+              </div>
+            }
+          </div>
+        </section>
+
+        <section class="detail-section">
+          <div class="section-heading">
+            <span class="material-icons">notes</span>
+            <div>
+              <h2>Application Remarks</h2>
+              <p>Optional remarks provided by the applicant.</p>
+            </div>
+          </div>
+          <dl class="detail-grid detail-grid--compact">
+            <div class="detail-grid__wide">
+              <dt>Remarks</dt>
+              <dd>{{ val(journal()?.remarks) }}</dd>
+            </div>
+          </dl>
+        </section>
+
+        <section class="detail-section">
+          <div class="section-heading">
+            <span class="material-icons">verified</span>
+            <div>
+              <h2>Declaration</h2>
+              <p>Applicant declarations captured during submission.</p>
+            </div>
+          </div>
+          <dl class="detail-grid detail-grid--compact">
+            <div>
+              <dt>Terms Accepted</dt>
+              <dd>{{ val(journal()?.declaration_terms_accepted) }}</dd>
+            </div>
+            <div>
+              <dt>Funder Acknowledged</dt>
+              <dd>{{ val(journal()?.declaration_funder_acknowledged) }}</dd>
+            </div>
+          </dl>
+        </section>
+      </main>
+
+      <aside class="review-side">
+        <section class="action-panel">
+          <div class="section-heading section-heading--compact">
+            <span class="material-icons">rate_review</span>
+            <div>
+              <h2>Workflow Actions</h2>
+              <p>Available decisions for the current workflow step.</p>
+            </div>
+          </div>
+
+          @if (feedback(); as note) {
+            <div
+              class="review-feedback"
+              [class.review-feedback--error]="note.type === 'error'"
+              [class.review-feedback--success]="note.type === 'success'"
+            >
+              {{ note.text }}
+            </div>
+          }
+
+          @if (canAct() && actions().length) {
+            <div class="workflow-actions">
+              @for (action of actions(); track action.action_code) {
+                <div
+                  class="workflow-action-button"
+                  [class.workflow-action-button--positive]="actionTone(action) === 'positive'"
+                  [class.workflow-action-button--resubmit]="actionTone(action) === 'resubmit'"
+                  [class.workflow-action-button--verified]="actionTone(action) === 'verified'"
+                  [class.workflow-action-button--negative]="actionTone(action) === 'negative'"
+                >
+                  <app-action-button
+                    [type]="actionType(action)"
+                    [label]="action.action_name"
+                    [icon]="actionIcon(action)"
+                    [disabled]="acting()"
+                    (clicked)="perform(action)"
+                  >
+                  </app-action-button>
+                </div>
+              }
+            </div>
+          } @else {
+            <p class="review-empty">No pending action is available for your account.</p>
+          }
+        </section>
+
+        <section class="detail-section detail-section--side">
+          <div class="section-heading section-heading--compact">
+            <span class="material-icons">history</span>
+            <div>
+              <h2>Approval History</h2>
+              <p>Latest workflow activity.</p>
+            </div>
+          </div>
+
+          @if (approvals().length) {
+            <ol class="review-timeline">
+              @for (history of approvals(); track history.id) {
+                <li>
+                  <div class="review-timeline__dot"></div>
+                  <div>
+                    <strong>{{ approvalActionLabel(history) }}</strong>
+                    <p>{{ val(history.staff_name || history.staff_username) }}</p>
+                    <span>{{ fmtDate(history.action_at) }}</span>
+                    <small
+                      >{{ prettyActor(history.from_status_code) }} →
+                      {{ prettyActor(history.to_status_code) }}</small
+                    >
+                  </div>
+                </li>
+              }
+            </ol>
+          } @else {
+            <p class="review-empty">No actions recorded yet.</p>
+          }
+        </section>
+      </aside>
+    </div>
+  }
+</section>

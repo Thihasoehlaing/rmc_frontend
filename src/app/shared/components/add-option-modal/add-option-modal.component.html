@@ -1,99 +1,182 @@
-<div class="dialog-backdrop" *ngIf="isOpen">
-  <div class="dialog">
-    <header class="dialog__header">
-      <h3>{{ title }}</h3>
-      <button class="btn-icon" (click)="onCancel()">✕</button>
-    </header>
+@if (isOpen) {
+  <div class="modal-overlay">
+    <div class="modal-dialog" (click)="$event.stopPropagation()">
+      <header class="modal-dialog__header">
+        <h4>{{ title }}</h4>
+        <button
+          type="button"
+          class="modal-dialog__close"
+          (click)="onCancel()"
+          aria-label="Close dialog"
+        >
+          <span class="material-icons">close</span>
+        </button>
+      </header>
 
-    <section class="dialog__body">
-      <label class="form-label">{{ optionNameLabel }} *</label>
-      <input
-        type="text"
-        class="input--text"
-        [(ngModel)]="name"
-        [readonly]="nameReadonly"
-        placeholder="e.g. Applied Research" />
+      <section class="modal-dialog__body modal-dialog__body--scrollable">
+        <ng-container *ngIf="showCategory">
+          <label class="form-label">Category</label>
+          <div class="category-locked">
+            {{ categoryLabel || 'Fixed' }} <span class="pill">Locked</span>
+          </div>
+        </ng-container>
 
-      <div class="form-field" *ngIf="showParentDomain">
-        <label class="form-label">{{ parentDomainLabel }} *</label>
-        <app-searchable-dropdown
-          [options]="parentDomainOptions"
-          [isMulti]="false"
-          valueMode="single"
-          placeholder="Select a research domain"
-          [(ngModel)]="parentDomainId"
-        ></app-searchable-dropdown>
-      </div>
-
-      <label class="form-label">Category</label>
-      <div class="category-locked">{{ categoryLabel || 'Fixed' }} <span class="pill">Locked</span></div>
-
-      <div class="form-field metadata-field" *ngIf="showAccountNumberMetadata">
-        <label class="form-label">{{ accountNumberLabel }} *</label>
-        <input
-          type="text"
-          class="input--text"
-          [(ngModel)]="accountNumber"
-          [placeholder]="'Enter ' + accountNumberLabel.toLowerCase()" />
-      </div>
-
-      <div class="region-metadata-grid" *ngIf="showRegionMetadata">
-        <div class="form-field">
-          <label class="form-label">Percentage *</label>
-          <input type="number" class="input--text" [(ngModel)]="percentage" placeholder="Enter percentage" />
+        <div class="form-field" *ngIf="showCode">
+          <label class="form-label">{{ codeLabel }} *</label>
+          <input
+            type="text"
+            class="input--text"
+            [(ngModel)]="code"
+            [placeholder]="'Enter ' + codeLabel.toLowerCase()"
+          />
         </div>
 
         <div class="form-field">
-          <label class="form-label">Limit (RM) *</label>
-          <input type="number" class="input--text" [(ngModel)]="limit" placeholder="Enter limit amount" />
+          <label class="form-label">{{ optionNameLabel }} *</label>
+          <input
+            type="text"
+            class="input--text"
+            [(ngModel)]="name"
+            [readonly]="nameReadonly"
+            [attr.maxlength]="optionNameMaxLength"
+            placeholder="e.g. Applied Research"
+          />
+          <div
+            *ngIf="showOptionNameCounter && optionNameMaxLength !== null"
+            class="character-counter"
+            [class.character-counter--limit]="name.length >= optionNameMaxLength"
+            aria-live="polite"
+          >
+            {{ name.length }}/{{ optionNameMaxLength }}
+          </div>
         </div>
 
-        <div class="form-field form-field--full">
-          <label class="form-label">Description *</label>
-          <textarea
-            class="input--textarea"
-            [(ngModel)]="description"
-            [readonly]="descriptionReadonly"
-            placeholder="Enter description"
-            rows="3"></textarea>
+        <div class="form-field" *ngIf="showParentDomain">
+          <label class="form-label">{{ parentDomainLabel }} *</label>
+          <app-searchable-dropdown
+            [options]="parentDomainOptions"
+            [isMulti]="false"
+            valueMode="single"
+            placeholder="Select a research domain"
+            [(ngModel)]="parentDomainId"
+          ></app-searchable-dropdown>
         </div>
-      </div>
-      <ng-container *ngIf="allowFormSharing">
-        <label class="form-label">Category is fixed and matches the current dropdown group.</label>
-        <p class="helper-text" *ngIf="categoryLabel">
-          Only forms that already have the {{ categoryLabel }} category are shown.
-        </p>
-        <div class="forms-list">
-          <ng-container *ngIf="availableForms.length > 0; else noAvailableForms">
-            <button *ngFor="let f of availableForms" type="button" class="form-chip" [class.selected]="appliesTo.includes(f)" (click)="onToggleForm(f)">
-              {{ f }}
-            </button>
-          </ng-container>
-          <ng-template #noAvailableForms>
-            <div class="empty-share-targets">No forms are available for this category.</div>
+
+        <div class="form-field metadata-field" *ngIf="showAccountNumberMetadata">
+          <label class="form-label">{{ accountNumberLabel }} *</label>
+          <input
+            type="text"
+            class="input--text"
+            [(ngModel)]="accountNumber"
+            [placeholder]="'Enter ' + accountNumberLabel.toLowerCase()"
+          />
+        </div>
+
+        <div class="region-metadata-grid" *ngIf="showRegionMetadata">
+          <div class="form-field">
+            <label class="form-label">Percentage *</label>
+            <input
+              type="number"
+              class="input--text"
+              [(ngModel)]="percentage"
+              placeholder="Enter percentage"
+            />
+          </div>
+
+          <div class="form-field">
+            <label class="form-label">Limit (RM) *</label>
+            <input
+              type="number"
+              class="input--text"
+              [(ngModel)]="limit"
+              placeholder="Enter limit amount"
+            />
+          </div>
+
+          <div class="form-field form-field--full">
+            <label class="form-label">Description *</label>
+            <textarea
+              class="input--textarea"
+              [(ngModel)]="description"
+              [readonly]="descriptionReadonly"
+              placeholder="Enter description"
+              rows="3"
+            ></textarea>
+          </div>
+        </div>
+
+        <ng-container *ngIf="allowFormSharing">
+          <label class="form-label">Forms *</label>
+          <p class="helper-text" *ngIf="categoryLabel">
+            Only forms that already have the {{ categoryLabel }} category are shown.
+          </p>
+          <app-searchable-dropdown
+            *ngIf="usesSearchableFormSharing; else formChipSharing"
+            [options]="availableFormOptions"
+            [isMulti]="true"
+            valueMode="array"
+            placeholder="Select forms"
+            [(ngModel)]="appliesTo"
+          ></app-searchable-dropdown>
+
+          <ng-template #formChipSharing>
+            <div class="forms-list">
+              <ng-container *ngIf="availableForms.length > 0; else noAvailableForms">
+                <button
+                  *ngFor="let f of availableForms"
+                  type="button"
+                  class="form-chip"
+                  [class.selected]="appliesTo.includes(f)"
+                  (click)="onToggleForm(f)"
+                >
+                  {{ f }}
+                </button>
+              </ng-container>
+              <ng-template #noAvailableForms>
+                <div class="empty-share-targets">No forms are available for this category.</div>
+              </ng-template>
+            </div>
           </ng-template>
+
+          <p class="selection-error" *ngIf="showAppliesToError">
+            At least one Dropdown should be selected
+          </p>
+
+          <div *ngIf="appliesTo.length" class="shared-note">
+            <span class="icon">🔗</span>
+            This option will be shared across {{ appliesTo.length }} form{{
+              appliesTo.length > 1 ? 's' : ''
+            }}.
+          </div>
+        </ng-container>
+
+        <label class="form-label">Status</label>
+        <div class="status-toggle">
+          <button
+            type="button"
+            class="btn-pill"
+            [class.active]="status === 'Active'"
+            (click)="status = 'Active'"
+          >
+            Active
+          </button>
+          <button
+            type="button"
+            class="btn-pill"
+            [class.active]="status === 'Inactive'"
+            (click)="status = 'Inactive'"
+          >
+            Inactive
+          </button>
         </div>
+      </section>
 
-        <p class="selection-error" *ngIf="showAppliesToError">At least one Dropdown should be selected</p>
-
-        <div *ngIf="appliesTo.length" class="shared-note">
-          <span class="icon">🔗</span>
-          This option will be shared across {{ appliesTo.length }} form{{ appliesTo.length > 1 ? 's' : '' }}.
-        </div>
-      </ng-container>
-
-      <label class="form-label">Status</label>
-      <div class="status-toggle">
-        <button type="button" class="btn-pill" [class.active]="status === 'Active'" (click)="status = 'Active'">Active</button>
-        <button type="button" class="btn-pill" [class.active]="status === 'Inactive'" (click)="status = 'Inactive'">Inactive</button>
-      </div>
-    </section>
-
-    <footer class="dialog__footer">
-      <button class="btn btn--ghost" (click)="onCancel()">Cancel</button>
-      <button class="btn btn-primary" [disabled]="!isValid" (click)="onSave()">{{ primaryActionLabel }}</button>
-    </footer>
+      <footer class="modal-dialog__footer">
+        <button class="btn btn-secondary" type="button" (click)="onCancel()">Cancel</button>
+        <button class="btn btn-primary" type="button" [disabled]="!isValid" (click)="onSave()">
+          {{ primaryActionLabel }}
+        </button>
+      </footer>
+    </div>
   </div>
-</div>
-
-
+}

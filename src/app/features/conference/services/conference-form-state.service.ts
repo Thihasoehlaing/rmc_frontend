@@ -1,6 +1,19 @@
 import { Injectable, signal } from '@angular/core';
 import { FormArray, FormGroup } from '@angular/forms';
 
+export interface ConferenceCostBreakdownState {
+  backendId?: number;
+  itemDescription?: string;
+  voteNumber?: string;
+  accountCode?: string;
+  cost?: string | number;
+  exchangeRate?: string | number;
+  costInRM?: string | number;
+  description?: string;
+  supportingDocumentAttachmentId?: number | null;
+  pendingFileKey?: string;
+}
+
 /**
  * State structure for each form in the conference application.
  * Persists form data across step navigation.
@@ -19,19 +32,9 @@ export interface ConferenceFormState {
     presentationLink?: string;
     citedJournalPaper?: string;
     citedJournalPaperExplanation?: string;
-    localBreakdown?: Array<{
-      researchDirection?: string;
-      fundingAmount?: number;
-      researchArea?: string;
-    }>;
-    researchBreakdown?: Array<{
-      researchDirection?: string;
-      fundingAmount?: number;
-    }>;
-    externalResearchBreakdown?: Array<{
-      researchDirection?: string;
-      fundingAmount?: number;
-    }>;
+    localBreakdown?: ConferenceCostBreakdownState[];
+    researchBreakdown?: ConferenceCostBreakdownState[];
+    externalResearchBreakdown?: ConferenceCostBreakdownState[];
     [key: string]: any;
   };
   authorDetails?: {

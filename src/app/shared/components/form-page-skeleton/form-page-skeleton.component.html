@@ -5,6 +5,21 @@
       <span class="skeleton-block form-page-skeleton__step"></span>
     }
   </div>
+  @if (showBatchCard) {
+    <section class="form-page-skeleton__batch" aria-hidden="true">
+      <div class="form-page-skeleton__batch-section">
+        <span class="skeleton-block form-page-skeleton__batch-badge"></span>
+        <span class="skeleton-block form-page-skeleton__batch-id"></span>
+      </div>
+      <div class="form-page-skeleton__batch-section form-page-skeleton__batch-period">
+        <div class="form-page-skeleton__batch-period-label">
+          <span class="skeleton-block form-page-skeleton__batch-icon"></span>
+          <span class="skeleton-block form-page-skeleton__batch-label"></span>
+        </div>
+        <span class="skeleton-block form-page-skeleton__batch-dates"></span>
+      </div>
+    </section>
+  }
   @for (section of sectionItems; track section) {
     <section class="form-page-skeleton__section">
       <span class="skeleton-block form-page-skeleton__heading"></span>

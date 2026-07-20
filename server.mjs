@@ -105,33 +105,30 @@ const TERMINAL_STATUSES = [
   'rejected_ceo',
 ]
 
-// ─── Role-based GET /notifications ─────────────────────────────────────────
+// ??? Role-based GET /notifications ?????????????????????????????????????????
 //
 // Mirrors the same visibility rules used for GET /applications:
-//   Admin          → all notifications
-//   HOS            → recipientRole === 'HOS' AND recipientDepartment matches
-//   Other roles    → recipientRole matches any of the user's roles
-//   Specific users → recipientUserId matches (applicant, assigned reviewer)
+//   Admin          -> all notifications
+//   HOS            -> recipientRole === 'HOS' AND recipientDepartment matches
+//   Other roles    -> recipientRole matches any of the user's roles
+//   Specific users -> recipientUserId matches (applicant, assigned reviewer)
 //
-server.get('/notifications', (req, res) => {
-  const db            = readDb()
+function visibleNotificationsFor(req) {
+  const db = readDb()
   const notifications = (db.notifications ?? []).slice().reverse() // newest first
 
-  const userId     = String(req.query.userId     ?? '')
-  const roles      = req.query.roles ? String(req.query.roles).split(',') : []
+  const userId = String(req.query.userId ?? '')
+  const roles = req.query.roles ? String(req.query.roles).split(',') : []
   const department = String(req.query.department ?? '')
 
   if (roles.includes('Admin')) {
-    return res.json(notifications)
+    return notifications
   }
 
-  const visible = notifications.filter(n => {
-    // Targeted at a specific user (applicant, reviewer)
+  return notifications.filter(n => {
     if (n.recipientUserId) return n.recipientUserId === userId
 
-    // Role-based
     if (n.recipientRole && roles.includes(n.recipientRole)) {
-      // HOS: must also match department
       if (n.recipientRole === 'HOS') {
         return !n.recipientDepartment || !department || n.recipientDepartment === department
       }
@@ -140,10 +137,111 @@ server.get('/notifications', (req, res) => {
 
     return false
   })
+}
 
-  res.json(visible)
+function notificationStatusBucket(notification) {
+  const haystack = `${notification.key ?? ''} ${notification.title ?? ''}`.toLowerCase()
+  if (notification.type === 'ACTION') return 'required_action'
+  if (haystack.includes('reject')) return 'rejected'
+  if (haystack.includes('approv')) return 'approved'
+  return String(notification.type ?? '').toLowerCase()
+}
+
+function notificationMeta(notifications) {
+  const latest = notifications[0]
+  return {
+    unreadCount: notifications.filter(n => n.read !== true).length,
+    latestNotificationId: latest?.id,
+    latestNotificationDate: latest?.createdAt,
+  }
+}
+
+function filterNotifications(notifications, req) {
+  const search = String(req.query.search ?? '').trim().toLowerCase()
+  const applicationId = String(req.query.applicationId ?? '').trim().toLowerCase()
+  const status = String(req.query.status ?? '').trim().toLowerCase()
+  const read = String(req.query.read ?? '').trim().toLowerCase()
+  const notificationKey = String(req.query.notificationKey ?? '').trim()
+  const batchId = String(req.query.batchId ?? '').trim()
+  const entityId = String(req.query.entityId ?? '').trim()
+  const entityType = String(req.query.entityType ?? '').trim().toLowerCase()
+
+  return notifications.filter(notification => {
+    const data = notification.data ?? {}
+
+    if (search) {
+      const haystack = `${notification.title ?? ''} ${notification.message ?? ''}`.toLowerCase()
+      if (!haystack.includes(search)) return false
+    }
+
+    if (applicationId) {
+      const moduleValue = String(data.entityModule ?? '').toLowerCase()
+      const typeValue = String(data.entityType ?? '').toLowerCase()
+      const idValue = String(data.entityId ?? '').toLowerCase()
+      if (![moduleValue, typeValue, idValue].some(value => value.includes(applicationId))) {
+        return false
+      }
+    }
+
+    if (status && notificationStatusBucket(notification) !== status) return false
+    if (read === 'true' && notification.read !== true) return false
+    if (read === 'false' && notification.read === true) return false
+    if (notificationKey && notification.key !== notificationKey) return false
+    if (batchId && String(data.batchId ?? '') !== batchId) return false
+    if (entityId && String(data.entityId ?? '') !== entityId) return false
+    if (entityType && String(data.entityType ?? '').toLowerCase() !== entityType) return false
+
+    return true
+  })
+}
+
+function sortNotifications(notifications, req) {
+  const sortBy = String(req.query.sortBy ?? 'createdAt')
+  const direction = String(req.query.sortDirection ?? 'desc').toLowerCase() === 'asc' ? 1 : -1
+
+  return notifications.slice().sort((first, second) => {
+    const firstValue = first[sortBy] ?? first.data?.[sortBy] ?? ''
+    const secondValue = second[sortBy] ?? second.data?.[sortBy] ?? ''
+
+    if (sortBy === 'createdAt') {
+      return (new Date(firstValue).getTime() - new Date(secondValue).getTime()) * direction
+    }
+
+    return String(firstValue).localeCompare(String(secondValue)) * direction
+  })
+}
+
+server.get('/notifications/unread-count', (req, res) => {
+  const visible = visibleNotificationsFor(req)
+  res.json(notificationMeta(visible))
 })
 
+server.get('/notifications', (req, res) => {
+  const visible = visibleNotificationsFor(req)
+  const filtered = filterNotifications(visible, req)
+  const sorted = sortNotifications(filtered, req)
+
+  const page = Math.max(1, Number.parseInt(String(req.query.page ?? '1'), 10) || 1)
+  const pageSize = Math.max(1, Number.parseInt(String(req.query.pageSize ?? req.query.per_page ?? '10'), 10) || 10)
+  const totalItems = sorted.length
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize))
+  const boundedPage = Math.min(page, totalPages)
+  const start = (boundedPage - 1) * pageSize
+  const items = sorted.slice(start, start + pageSize)
+
+  res.json({
+    items,
+    pagination: {
+      current_page: boundedPage,
+      per_page: pageSize,
+      total_items: totalItems,
+      total_pages: totalPages,
+      has_next: boundedPage < totalPages,
+      has_prev: boundedPage > 1,
+    },
+    meta: notificationMeta(visible),
+  })
+})
 // ─── Role-based GET /applications ──────────────────────────────────────────
 //
 // Supports an optional ?view= query parameter:
@@ -322,4 +420,5 @@ server.use(router)
 server.listen(3000, () => {
   console.log('JSON Server running at http://localhost:3000  (batch-based filtering + date enforcement active)')
 })
+
 

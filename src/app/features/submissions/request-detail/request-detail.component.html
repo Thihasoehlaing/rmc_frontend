@@ -1,0 +1,53 @@
+<main class="request-page">
+  @if (loading()) {
+    <section class="state-message">Loading application detail...</section>
+  } @else if (error()) {
+    <section class="state-message state-error">{{ error() }}</section>
+  } @else {
+    <header class="request-header">
+      <div>
+        <p class="request-kicker">{{ formLabel }}</p>
+        <h1>{{ title }}</h1>
+        <div class="request-meta">
+          <span>{{ request()?.request_code }}</span>
+          <span
+            class="status-badge"
+            [style.background]="statusColor() + '1a'"
+            [style.color]="statusColor()"
+            [style.border-color]="statusColor() + '55'"
+          >
+            {{ request()?.status_name || request()?.status_code }}
+          </span>
+        </div>
+      </div>
+      <button type="button" class="btn btn-primary" (click)="openPrint()">
+        <span class="material-icons">print</span>
+        Print
+      </button>
+    </header>
+
+    <section class="detail-grid">
+      <article class="card">
+        <div class="card__header"><h2 class="card__title">Applicant</h2></div>
+        <div class="card__content field-list">
+          <div><span>Name</span><strong>{{ request()?.applicant_name || '—' }}</strong></div>
+          <div><span>Email</span><strong>{{ request()?.applicant_email || '—' }}</strong></div>
+          <div><span>Department</span><strong>{{ request()?.applicant_department || '—' }}</strong></div>
+          <div><span>Submitted</span><strong>{{ request()?.submitted_at | date:'dd MMM yyyy' }}</strong></div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="card__header"><h2 class="card__title">Form Detail</h2></div>
+        <div class="card__content field-list">
+          @for (item of detail() | keyvalue: keepOrder; track item.key) {
+            <div>
+              <span>{{ item.key.replaceAll('_', ' ') }}</span>
+              <strong>{{ item.value || '—' }}</strong>
+            </div>
+          }
+        </div>
+      </article>
+    </section>
+  }
+</main>

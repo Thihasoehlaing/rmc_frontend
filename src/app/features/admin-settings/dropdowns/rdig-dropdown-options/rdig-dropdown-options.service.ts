@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { environment } from '../../../environments/environment';
+import { environment } from '../../../../../environments/environment';
+import { FormCacheService } from '../../../../core/services/form-cache.service';
 import { BehaviorSubject, Observable, of, forkJoin } from 'rxjs';
 import { map, tap, catchError, switchMap } from 'rxjs/operators';
 
@@ -33,7 +34,12 @@ export const CATEGORY_LABELS: Record<DropdownCategoryKey, string> = {
 // Raw API shapes from master-data endpoints
 interface RawCluster { id: number; cluster_name: string; is_active: boolean; }
 interface RawDomain  { id: number; domain_name: string;  is_active: boolean; }
-interface RawSubDomain { id: number; research_domain_id: number; sub_domain_name: string; is_active: boolean; }
+interface RawSubDomain {
+  id: number;
+  research_domain_id: number;
+  sub_domain_name: string;
+  is_active: boolean;
+}
 interface RawEsg { id: number; esg_code: string; esg_name: string; is_active: boolean; }
 interface RawSdg { id: number; sdg_code: string; sdg_name: string; is_active: boolean; }
 interface RawDropdownOption { id: number; option_name: string; status: string; dropdown_category_id?: number; }
@@ -41,10 +47,34 @@ interface RawDropdownOption { id: number; option_name: string; status: string; d
 // Raw API shapes from admin-settings endpoints (paginated)
 export interface AdminCluster    { id: number; cluster_name: string;    is_active: boolean; }
 export interface AdminDomain     { id: number; domain_name: string;     is_active: boolean; }
-export interface AdminSubDomain  { id: number; research_domain_id: number; sub_domain_name: string; is_active: boolean; }
+export interface AdminSubDomain  {
+  id: number;
+  research_domain_id: number;
+  sub_domain_name: string;
+  is_active: boolean;
+}
 export interface AdminEsg        { id: number; esg_code: string; esg_name: string; is_active: boolean; }
 export interface AdminSdg        { id: number; sdg_code: string; sdg_name: string; is_active: boolean; }
-export interface AdminTypeOfOrg  { id: number; option_name: string; status: string; dropdown_category_id: number; }
+export interface AdminSharedForm {
+  id: number;
+  form_code: string;
+  form_name: string;
+}
+export interface FormOption {
+  id: number;
+  form_code: string;
+  form_name: string;
+  is_active: boolean;
+}
+export interface AdminTypeOfOrg  {
+  id: number;
+  name?: string;
+  option_name?: string;
+  status: string;
+  dropdown_category_id: number;
+  shared_with?: AdminSharedForm[];
+  updated_at?: string;
+}
 
 export interface AdminPagination {
   current_page: number;
@@ -74,6 +104,7 @@ type StoreState = Record<DropdownCategoryKey, DropdownOptionEntityEntity[]>;
 @Injectable({ providedIn: 'root' })
 export class RdigDropdownOptionsService {
   private readonly http = inject(HttpClient);
+  private readonly formCache = inject(FormCacheService);
 
   private store = new BehaviorSubject<StoreState>({
     research_cluster: [],
@@ -110,7 +141,7 @@ export class RdigDropdownOptionsService {
 
     switch (category) {
       case 'research_cluster':
-        fetch$ = this.http.get<ApiResponse<RawCluster[]>>(`${environment.apiUrl}/api/master-data/research-clusters`).pipe(
+        fetch$ = this.http.get<ApiResponse<RawCluster[]>>(`${environment.apiUrl}/rmc/master-data/research-clusters`).pipe(
           map((r) => (r.data ?? []).map((c) => ({
             id: c.id,
             optionName: c.cluster_name,
@@ -122,7 +153,10 @@ export class RdigDropdownOptionsService {
         break;
 
       case 'type_of_organisation':
-        fetch$ = this.http.get<ApiResponse<RawDropdownOption[]>>(`${environment.apiUrl}/api/dropdowns/TYPE_OF_ORGANISATION/options`).pipe(
+        fetch$ = this.http.get<ApiResponse<RawDropdownOption[]>>(
+          `${environment.apiUrl}/rmc/dropdowns/TYPE_OF_ORGANISATION/options`,
+          { params: new HttpParams().set('form_code', 'RDIG') },
+        ).pipe(
           map((r) => (r.data ?? []).map((o) => ({
             id: o.id,
             optionName: o.option_name,
@@ -134,7 +168,7 @@ export class RdigDropdownOptionsService {
         break;
 
       case 'research_domain':
-        fetch$ = this.http.get<ApiResponse<RawDomain[]>>(`${environment.apiUrl}/api/master-data/research-domains`).pipe(
+        fetch$ = this.http.get<ApiResponse<RawDomain[]>>(`${environment.apiUrl}/rmc/master-data/research-domains`).pipe(
           map((r) => (r.data ?? []).map((d) => ({
             id: d.id,
             optionName: d.domain_name,
@@ -154,7 +188,7 @@ export class RdigDropdownOptionsService {
             return forkJoin(
               activeDomains.map((domain) =>
                 this.http.get<ApiResponse<RawSubDomain[]>>(
-                  `${environment.apiUrl}/api/master-data/research-domains/${domain.id}/sub-domains`,
+                  `${environment.apiUrl}/rmc/master-data/research-domains/${domain.id}/sub-domains`,
                 ).pipe(
                   map((r) => (r.data ?? []).map((sd) => ({
                     id: sd.id,
@@ -172,7 +206,7 @@ export class RdigDropdownOptionsService {
         break;
 
       case 'esg_factors':
-        fetch$ = this.http.get<ApiResponse<RawEsg[]>>(`${environment.apiUrl}/api/master-data/esgs`).pipe(
+        fetch$ = this.http.get<ApiResponse<RawEsg[]>>(`${environment.apiUrl}/rmc/master-data/esgs`).pipe(
           map((r) => (r.data ?? []).map((e) => ({
             id: e.id,
             optionName: e.esg_name,
@@ -185,7 +219,7 @@ export class RdigDropdownOptionsService {
         break;
 
       case 'sdg_alignment':
-        fetch$ = this.http.get<ApiResponse<RawSdg[]>>(`${environment.apiUrl}/api/master-data/sdgs`).pipe(
+        fetch$ = this.http.get<ApiResponse<RawSdg[]>>(`${environment.apiUrl}/rmc/master-data/sdgs`).pipe(
           map((r) => (r.data ?? []).map((s) => ({
             id: s.id,
             optionName: s.sdg_name,
@@ -213,86 +247,93 @@ export class RdigDropdownOptionsService {
 
   adminListClusters(params: AdminListParams): Observable<ApiResponse<AdminPagedResult<AdminCluster>>> {
     return this.http.get<ApiResponse<AdminPagedResult<AdminCluster>>>(
-      `${environment.apiUrl}/api/admin-settings/research-clusters`,
+      `${environment.apiUrl}/rmc/admin-settings/research-clusters`,
       { params: this.buildParams(params) },
     );
   }
 
   adminListDomains(params: AdminListParams): Observable<ApiResponse<AdminPagedResult<AdminDomain>>> {
     return this.http.get<ApiResponse<AdminPagedResult<AdminDomain>>>(
-      `${environment.apiUrl}/api/admin-settings/research-domains`,
+      `${environment.apiUrl}/rmc/admin-settings/research-domains`,
       { params: this.buildParams(params) },
     );
   }
 
   adminListSubDomains(domainId: number, params: AdminListParams): Observable<ApiResponse<AdminPagedResult<AdminSubDomain>>> {
     return this.http.get<ApiResponse<AdminPagedResult<AdminSubDomain>>>(
-      `${environment.apiUrl}/api/admin-settings/research-domains/${domainId}/sub-domains`,
+      `${environment.apiUrl}/rmc/admin-settings/research-domains/${domainId}/sub-domains`,
       { params: this.buildParams(params) },
     );
   }
 
   adminListEsgs(params: AdminListParams): Observable<ApiResponse<AdminPagedResult<AdminEsg>>> {
     return this.http.get<ApiResponse<AdminPagedResult<AdminEsg>>>(
-      `${environment.apiUrl}/api/admin-settings/esgs`,
+      `${environment.apiUrl}/rmc/admin-settings/esgs`,
       { params: this.buildParams(params) },
     );
   }
 
   adminListSdgs(params: AdminListParams): Observable<ApiResponse<AdminPagedResult<AdminSdg>>> {
     return this.http.get<ApiResponse<AdminPagedResult<AdminSdg>>>(
-      `${environment.apiUrl}/api/admin-settings/sdgs`,
+      `${environment.apiUrl}/rmc/admin-settings/sdgs`,
       { params: this.buildParams(params) },
     );
   }
 
   adminListTypeOfOrg(params: AdminListParams): Observable<ApiResponse<AdminPagedResult<AdminTypeOfOrg>>> {
-    const p = this.buildParams(params).set('category_code', 'TYPE_OF_ORGANISATION');
+    const p = this.buildParams(params)
+      .set('category_code', 'TYPE_OF_ORGANISATION')
+      .set('form_code', 'RDIG');
     return this.http.get<ApiResponse<AdminPagedResult<AdminTypeOfOrg>>>(
-      `${environment.apiUrl}/api/admin-settings/dropdown-options`,
+      `${environment.apiUrl}/rmc/admin-settings/dropdown-options`,
       { params: p },
     );
+  }
+
+  listForms(): Observable<ApiResponse<FormOption[]>> {
+    return this.formCache.getActiveForms();
   }
 
   // ─── Admin create ─────────────────────────────────────────────────────────
 
   adminCreateCluster(data: { cluster_name: string; is_active?: boolean }): Observable<ApiResponse<AdminCluster>> {
-    return this.http.post<ApiResponse<AdminCluster>>(`${environment.apiUrl}/api/admin-settings/research-clusters`, data).pipe(
+    return this.http.post<ApiResponse<AdminCluster>>(`${environment.apiUrl}/rmc/admin-settings/research-clusters`, data).pipe(
       tap(() => this.invalidateAndRefresh('research_cluster')),
     );
   }
 
   adminCreateDomain(data: { domain_name: string; is_active?: boolean }): Observable<ApiResponse<AdminDomain>> {
-    return this.http.post<ApiResponse<AdminDomain>>(`${environment.apiUrl}/api/admin-settings/research-domains`, data).pipe(
+    return this.http.post<ApiResponse<AdminDomain>>(`${environment.apiUrl}/rmc/admin-settings/research-domains`, data).pipe(
       tap(() => this.invalidateAndRefresh('research_domain')),
     );
   }
 
   adminCreateSubDomain(domainId: number, data: { sub_domain_name: string; is_active?: boolean }): Observable<ApiResponse<AdminSubDomain>> {
     return this.http.post<ApiResponse<AdminSubDomain>>(
-      `${environment.apiUrl}/api/admin-settings/research-domains/${domainId}/sub-domains`, data,
+      `${environment.apiUrl}/rmc/admin-settings/research-domains/${domainId}/sub-domains`, data,
     ).pipe(tap(() => this.invalidateAndRefresh('sub_research_domain')));
   }
 
   adminCreateEsg(data: { esg_code: string; esg_name: string; is_active?: boolean }): Observable<ApiResponse<AdminEsg>> {
-    return this.http.post<ApiResponse<AdminEsg>>(`${environment.apiUrl}/api/admin-settings/esgs`, data).pipe(
+    return this.http.post<ApiResponse<AdminEsg>>(`${environment.apiUrl}/rmc/admin-settings/esgs`, data).pipe(
       tap(() => this.invalidateAndRefresh('esg_factors')),
     );
   }
 
   adminCreateSdg(data: { sdg_code: string; sdg_name: string; is_active?: boolean }): Observable<ApiResponse<AdminSdg>> {
-    return this.http.post<ApiResponse<AdminSdg>>(`${environment.apiUrl}/api/admin-settings/sdgs`, data).pipe(
+    return this.http.post<ApiResponse<AdminSdg>>(`${environment.apiUrl}/rmc/admin-settings/sdgs`, data).pipe(
       tap(() => this.invalidateAndRefresh('sdg_alignment')),
     );
   }
 
-  adminCreateTypeOfOrg(categoryId: number, data: { option_name: string; is_active?: boolean }): Observable<ApiResponse<AdminTypeOfOrg>> {
+  adminCreateTypeOfOrg(data: { option_name: string; is_active?: boolean; form_codes?: string[] }): Observable<ApiResponse<AdminTypeOfOrg>> {
     const body = {
-      dropdown_category_id: categoryId,
+      category_code: 'TYPE_OF_ORGANISATION',
       option_name: data.option_name,
       status: data.is_active === false ? 'INACTIVE' : 'ACTIVE',
+      form_codes: data.form_codes ?? [],
     };
-    return this.http.post<ApiResponse<AdminTypeOfOrg>>(`${environment.apiUrl}/api/admin-settings/dropdown-options`, body).pipe(
+    return this.http.post<ApiResponse<AdminTypeOfOrg>>(`${environment.apiUrl}/rmc/admin-settings/dropdown-options`, body).pipe(
       tap(() => this.invalidateAndRefresh('type_of_organisation')),
     );
   }
@@ -300,13 +341,13 @@ export class RdigDropdownOptionsService {
   // ─── Admin update ─────────────────────────────────────────────────────────
 
   adminUpdateCluster(id: number, data: { cluster_name?: string; is_active?: boolean }): Observable<ApiResponse<AdminCluster>> {
-    return this.http.put<ApiResponse<AdminCluster>>(`${environment.apiUrl}/api/admin-settings/research-clusters/${id}`, data).pipe(
+    return this.http.put<ApiResponse<AdminCluster>>(`${environment.apiUrl}/rmc/admin-settings/research-clusters/${id}`, data).pipe(
       tap(() => this.invalidateAndRefresh('research_cluster')),
     );
   }
 
   adminUpdateDomain(id: number, data: { domain_name?: string; is_active?: boolean }): Observable<ApiResponse<AdminDomain>> {
-    return this.http.put<ApiResponse<AdminDomain>>(`${environment.apiUrl}/api/admin-settings/research-domains/${id}`, data).pipe(
+    return this.http.put<ApiResponse<AdminDomain>>(`${environment.apiUrl}/rmc/admin-settings/research-domains/${id}`, data).pipe(
       tap(() => this.invalidateAndRefresh('research_domain')),
     );
   }
@@ -316,27 +357,28 @@ export class RdigDropdownOptionsService {
   // by its own id here, so no domain_id is needed.
   adminUpdateSubDomain(id: number, data: { sub_domain_name?: string; is_active?: boolean }): Observable<ApiResponse<AdminSubDomain>> {
     return this.http.put<ApiResponse<AdminSubDomain>>(
-      `${environment.apiUrl}/api/admin-settings/sub-domains/${id}`, data,
+      `${environment.apiUrl}/rmc/admin-settings/sub-domains/${id}`, data,
     ).pipe(tap(() => this.invalidateAndRefresh('sub_research_domain')));
   }
 
   adminUpdateEsg(id: number, data: { esg_code?: string; esg_name?: string; is_active?: boolean }): Observable<ApiResponse<AdminEsg>> {
-    return this.http.put<ApiResponse<AdminEsg>>(`${environment.apiUrl}/api/admin-settings/esgs/${id}`, data).pipe(
+    return this.http.put<ApiResponse<AdminEsg>>(`${environment.apiUrl}/rmc/admin-settings/esgs/${id}`, data).pipe(
       tap(() => this.invalidateAndRefresh('esg_factors')),
     );
   }
 
   adminUpdateSdg(id: number, data: { sdg_code?: string; sdg_name?: string; is_active?: boolean }): Observable<ApiResponse<AdminSdg>> {
-    return this.http.put<ApiResponse<AdminSdg>>(`${environment.apiUrl}/api/admin-settings/sdgs/${id}`, data).pipe(
+    return this.http.put<ApiResponse<AdminSdg>>(`${environment.apiUrl}/rmc/admin-settings/sdgs/${id}`, data).pipe(
       tap(() => this.invalidateAndRefresh('sdg_alignment')),
     );
   }
 
-  adminUpdateTypeOfOrg(id: number, data: { option_name?: string; is_active?: boolean }): Observable<ApiResponse<AdminTypeOfOrg>> {
+  adminUpdateTypeOfOrg(id: number, data: { option_name?: string; is_active?: boolean; form_codes?: string[] }): Observable<ApiResponse<AdminTypeOfOrg>> {
     const body: Record<string, unknown> = {};
     if (data.option_name !== undefined) body['option_name'] = data.option_name;
     if (data.is_active !== undefined) body['status'] = data.is_active ? 'ACTIVE' : 'INACTIVE';
-    return this.http.put<ApiResponse<AdminTypeOfOrg>>(`${environment.apiUrl}/api/admin-settings/dropdown-options/${id}`, body).pipe(
+    if (data.form_codes !== undefined) body['form_codes'] = data.form_codes;
+    return this.http.put<ApiResponse<AdminTypeOfOrg>>(`${environment.apiUrl}/rmc/admin-settings/dropdown-options/${id}`, body).pipe(
       tap(() => this.invalidateAndRefresh('type_of_organisation')),
     );
   }
@@ -344,13 +386,13 @@ export class RdigDropdownOptionsService {
   // ─── Admin delete ─────────────────────────────────────────────────────────
 
   adminDeleteCluster(id: number): Observable<ApiResponse<AdminCluster>> {
-    return this.http.delete<ApiResponse<AdminCluster>>(`${environment.apiUrl}/api/admin-settings/research-clusters/${id}`).pipe(
+    return this.http.delete<ApiResponse<AdminCluster>>(`${environment.apiUrl}/rmc/admin-settings/research-clusters/${id}`).pipe(
       tap(() => this.invalidateAndRefresh('research_cluster')),
     );
   }
 
   adminDeleteDomain(id: number): Observable<ApiResponse<AdminDomain>> {
-    return this.http.delete<ApiResponse<AdminDomain>>(`${environment.apiUrl}/api/admin-settings/research-domains/${id}`).pipe(
+    return this.http.delete<ApiResponse<AdminDomain>>(`${environment.apiUrl}/rmc/admin-settings/research-domains/${id}`).pipe(
       tap(() => { this.invalidateAndRefresh('research_domain'); this.invalidateAndRefresh('sub_research_domain'); }),
     );
   }
@@ -358,24 +400,24 @@ export class RdigDropdownOptionsService {
   // Flat item route — see adminUpdateSubDomain note.
   adminDeleteSubDomain(id: number): Observable<ApiResponse<AdminSubDomain>> {
     return this.http.delete<ApiResponse<AdminSubDomain>>(
-      `${environment.apiUrl}/api/admin-settings/sub-domains/${id}`,
+      `${environment.apiUrl}/rmc/admin-settings/sub-domains/${id}`,
     ).pipe(tap(() => this.invalidateAndRefresh('sub_research_domain')));
   }
 
   adminDeleteEsg(id: number): Observable<ApiResponse<AdminEsg>> {
-    return this.http.delete<ApiResponse<AdminEsg>>(`${environment.apiUrl}/api/admin-settings/esgs/${id}`).pipe(
+    return this.http.delete<ApiResponse<AdminEsg>>(`${environment.apiUrl}/rmc/admin-settings/esgs/${id}`).pipe(
       tap(() => this.invalidateAndRefresh('esg_factors')),
     );
   }
 
   adminDeleteSdg(id: number): Observable<ApiResponse<AdminSdg>> {
-    return this.http.delete<ApiResponse<AdminSdg>>(`${environment.apiUrl}/api/admin-settings/sdgs/${id}`).pipe(
+    return this.http.delete<ApiResponse<AdminSdg>>(`${environment.apiUrl}/rmc/admin-settings/sdgs/${id}`).pipe(
       tap(() => this.invalidateAndRefresh('sdg_alignment')),
     );
   }
 
   adminDeleteTypeOfOrg(id: number): Observable<ApiResponse<AdminTypeOfOrg>> {
-    return this.http.delete<ApiResponse<AdminTypeOfOrg>>(`${environment.apiUrl}/api/admin-settings/dropdown-options/${id}`).pipe(
+    return this.http.delete<ApiResponse<AdminTypeOfOrg>>(`${environment.apiUrl}/rmc/admin-settings/dropdown-options/${id}`).pipe(
       tap(() => this.invalidateAndRefresh('type_of_organisation')),
     );
   }
@@ -403,3 +445,4 @@ export class RdigDropdownOptionsService {
     return params;
   }
 }
+

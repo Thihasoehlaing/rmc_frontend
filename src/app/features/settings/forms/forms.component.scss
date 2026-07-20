@@ -505,25 +505,8 @@
   }
 
   .forms-table-card__footer {
-    display: grid;
-    grid-template-columns: minmax(180px, 1fr) auto minmax(150px, 1fr);
-    align-items: center;
-    gap: var(--space-4);
+    display: block;
     padding-top: var(--space-3);
-  }
-
-  .forms-count {
-    margin: 0;
-    text-align: left;
-  }
-
-  .forms-page-size {
-    justify-self: end;
-
-    select {
-      min-width: 130px;
-      height: 40px;
-    }
   }
 
   ::ng-deep .data-table {
@@ -550,11 +533,6 @@
 
   ::ng-deep app-pagination .pagination-wrapper {
     padding: 0;
-    overflow: visible;
-  }
-
-  ::ng-deep app-pagination .pagination-summary {
-    display: none;
   }
 }
 

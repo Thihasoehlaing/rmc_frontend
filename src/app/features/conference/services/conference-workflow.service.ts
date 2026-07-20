@@ -1,5 +1,6 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { AuthService } from '../../../core/services/auth.service';
+import { UserGroup } from '../../../core/interfaces/user.interface';
 
 /**
  * All valid Conference application status values.
@@ -11,14 +12,27 @@ export type ConferenceStatus =
   | 'hos_application'
   | 'hos_request_resubmission'
   | 'rmc_request_resubmission'
+  | 'pending_applicant_resubmission_hos'
+  | 'pending_applicant_resubmission_rmc'
+  | 'pending_hos'
+  | 'pending_rmc'
+  | 'pending_vc'
+  | 'pending_hr'
+  | 'pending_ceo'
   | 'hos_pending'
   | 'hos_reject'
+  | 'rejected_hos'
   | 'rmc_pending'
   | 'rmc_reject'
+  | 'rejected_rmc'
   | 'vc_pending'
   | 'vc_reject'
+  | 'rejected_vc'
   | 'hr_pending'
   | 'hr_reject'
+  | 'rejected_hr'
+  | 'rejected_ceo'
+  | 'approved'
   | 'Approved';
 
 /** Statuses where the applicant can edit form fields */
@@ -28,16 +42,18 @@ const APPLICANT_EDITABLE: ConferenceStatus[] = [
   'hos_application',
   'hos_request_resubmission',
   'rmc_request_resubmission',
+  'pending_applicant_resubmission_hos',
+  'pending_applicant_resubmission_rmc',
 ];
 
 @Injectable({ providedIn: 'root' })
 export class ConferenceWorkflowService {
   private auth = inject(AuthService);
 
-  /** Current application status — driven purely by form metadata (ABAC) */
+  /** Current application status - driven purely by form metadata (ABAC) */
   status = signal<ConferenceStatus>('draft');
 
-  // ── Applicant editing ─────────────────────────────────────────
+  // Applicant editing
 
   /** True when the applicant can edit all form fields */
   isApplicantEditable = computed(() => APPLICANT_EDITABLE.includes(this.status()));
@@ -45,19 +61,22 @@ export class ConferenceWorkflowService {
   /** True when form fields should be read-only */
   isFormReadOnly = computed(() => !this.isApplicantEditable());
 
-  // ── Per-stage comment/approval editability (ABAC — status only) ─
+  // Per-stage comment/approval editability (ABAC + logged-in user group)
+  /** HOS comment editable only for HOS/Admin users during hos_pending */
+  isHosEditable = computed(() => this.status() === 'hos_pending' && this.hasAnyGroup(['HOS', 'Admin']));
 
-  /** HOS comment editable during hos_pending */
-  isHosEditable = computed(() => this.status() === 'hos_pending');
+  /** RMC comment editable only for RMC/Admin users during rmc_pending */
+  isRmcEditable = computed(() => this.status() === 'rmc_pending' && this.hasAnyGroup(['RMC', 'Admin']));
 
-  /** RMC comment editable during rmc_pending */
-  isRmcEditable = computed(() => this.status() === 'rmc_pending');
+  /** VC comment editable only for VC/Admin users during vc_pending */
+  isVcEditable = computed(() => this.status() === 'vc_pending' && this.hasAnyGroup(['VC', 'Admin']));
 
-  /** VC comment editable during vc_pending */
-  isVcEditable = computed(() => this.status() === 'vc_pending');
+  /** HR comment editable only for HR/Admin users during hr_pending */
+  isHrEditable = computed(() => this.status() === 'hr_pending' && this.hasAnyGroup(['HR', 'Admin']));
 
-  /** HR comment editable during hr_pending */
-  isHrEditable = computed(() => this.status() === 'hr_pending');
+  private hasAnyGroup(groups: UserGroup[]): boolean {
+    return groups.some((group) => this.auth.inGroup(group));
+  }
 
   // ── Comment toggle button visibility (which buttons appear per status) ─
 
@@ -141,3 +160,4 @@ export class ConferenceWorkflowService {
     { label: 'Reject', value: 'reject' },
   ];
 }
+

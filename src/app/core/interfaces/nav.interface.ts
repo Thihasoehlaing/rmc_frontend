@@ -5,6 +5,7 @@ export interface NavItem {
     icon?: string;
     route?: string;
     externalUrl?: string;
+    formCode?: string;
     /** ABAC permission rules. Omit to allow all authenticated users. */
     permission?: NavPermission;
 }
@@ -15,6 +16,7 @@ export interface NavFolder {
     route?: string;
     children: (NavItem | NavFolder)[];
     isExpanded?: boolean;
+    formCode?: string;
     /** ABAC permission rules. Omit to allow all authenticated users. */
     permission?: NavPermission;
 }

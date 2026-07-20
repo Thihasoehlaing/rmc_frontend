@@ -1,107 +1,411 @@
-<section class="staff-access-page">
-  <header class="staff-access-page__header">
-    <div class="staff-access-page__title-wrap">
-      <h1 class="staff-access-page__title"><span class="material-icons" aria-hidden="true">admin_panel_settings</span>RDIG Application</h1>
-      <p class="staff-access-page__subtitle">
-        {{ staffRecords().length }} staff loaded from database Â·
-        <span class="staff-access-page__blocked-count">{{ blockedCount() }} blocked</span>
-      </p>
+<main class="forms-page forms-page--settings staff-access-page">
+  <header class="forms-page__header">
+    <div>
+      <span class="forms-page__eyebrow">Admin Settings</span>
+      <h1>RDIG Blocked List</h1>
+      <p>Manage staff who are blocked from RDIG application workflows.</p>
     </div>
+    <button
+      class="btn btn-primary forms-page__create-button"
+      type="button"
+      (click)="openBlockStaffDialog()"
+      [disabled]="loading()"
+    >
+      <span class="material-icons">person_off</span>
+      Block Staff
+    </button>
   </header>
 
-  <app-submissions-search
-    placeholder="Search staff name..."
-    [value]="searchFilter()"
-    (search)="setSearchFilter($event)"
-    (refresh)="resetFilters()"
-  >
-    <label search-filters>
-      <span class="staff-access-filter-label">Department</span>
-      <select
-        class="input--select"
-        [value]="departmentFilter()"
-        (change)="setDepartmentFilter(departmentSelect.value)"
-        #departmentSelect
-      >
-        <option value="all">All departments</option>
-        @for (department of departmentOptions(); track department) {
-          <option [value]="department">{{ department }}</option>
-        }
-      </select>
+  <section class="forms-toolbar staff-access-toolbar" aria-label="Staff access filters">
+    <h2 class="forms-toolbar__title">Search &amp; Filters</h2>
+
+    <label class="forms-filter forms-filter--search">
+      <span class="forms-search-input">
+        <span class="material-icons" aria-hidden="true">search</span>
+        <input
+          class="input--text"
+          type="search"
+          aria-label="Search staff by name or username"
+          placeholder="Search staff by name or username..."
+          [ngModel]="searchFilter()"
+          (ngModelChange)="searchFilter.set($event)"
+          (keydown.enter)="setSearchFilter(searchFilter())"
+          [disabled]="loading()"
+        />
+      </span>
     </label>
-    <label search-filters>
-      <span class="staff-access-filter-label">Access Status</span>
+
+    <label class="forms-filter">
+      <span>Department</span>
+      <app-searchable-dropdown
+        [options]="departmentOptions()"
+        [ngModel]="departmentFilter()"
+        (ngModelChange)="setDepartmentFilter($event)"
+        valueMode="single"
+        placeholder="All departments"
+      ></app-searchable-dropdown>
+    </label>
+
+    <label class="forms-filter">
+      <span>Access Status</span>
       <select
         class="input--select"
         [value]="statusFilter()"
         (change)="setStatusFilter(statusSelect.value)"
+        [disabled]="loading()"
         #statusSelect
       >
-        <option value="all">All status</option>
+        <option value="all">All</option>
         <option value="active">Active</option>
         <option value="blocked">Blocked</option>
       </select>
     </label>
-  </app-submissions-search>
-  <section class="staff-access-table-shell" aria-label="Staff access list">
-    <app-data-table
-      [columns]="columns"
-      [rows]="sortedStaff()"
-      [sortColumn]="sortColumn()"
-      [sortDirection]="sortDirection()"
-      (sortChange)="setSort($event)"
-    >
-      <ng-template #rowTemplate let-staff
-        ><tr [class.staff-access-row--blocked]="staff.status === 'blocked'">
-          <td>
-            <div class="data-table__stacked">
-              <span class="data-table__avatar">{{ staff.initials }}</span
-              ><span class="data-table__title">{{ staff.name }}</span>
-            </div>
-          </td>
-          <td>
-            <span class="staff-access-id-chip">{{ staff.staffId }}</span>
-          </td>
-          <td><span class="staff-access-text" [title]="staff.department">{{ staff.department }}</span></td>
-          <td><span class="staff-access-text" [title]="staff.role">{{ staff.role }}</span></td>
-          <td><span class="staff-access-email" [title]="staff.email">{{ staff.email }}</span></td>
-          <td>
-            <span
-              class="badge"
-              [class.badge-success]="staff.status === 'active'"
-              [class.badge-danger]="staff.status === 'blocked'"
-              >{{ staff.status === 'active' ? 'Active' : 'Blocked' }}</span
-            >
-          </td>
-          <td>{{ staff.blockedDate || 'â€”' }}</td>
-          <td><span class="staff-access-text" [title]="staff.reason || '—'">{{ staff.reason || '—' }}</span></td>
-          <td>
-            <div class="data-table__actions">
-              <button
-                class="icon-btn staff-access-action"
-                [class.staff-access-action--block]="staff.status === 'active'"
-                [class.staff-access-action--unblock]="staff.status === 'blocked'"
-                type="button"
-                [title]="staff.status === 'active' ? 'Block staff access' : 'Unblock staff access'"
-                (click)="toggleAccess(staff.id)"
-              >
-                <app-table-action-icon
-                  [action]="staff.status === 'active' ? 'blockUser' : 'unblockUser'"
-                ></app-table-action-icon>
-              </button>
-            </div>
-          </td>
-        </tr></ng-template
-      >
-    </app-data-table>
+
+    <div class="forms-toolbar__actions">
+      <button class="btn btn-primary" type="button" (click)="setSearchFilter(searchFilter())" [disabled]="loading()">
+        <span class="material-icons">search</span>
+        Search
+      </button>
+      <button class="btn btn-secondary" type="button" (click)="resetFilters()" [disabled]="loading()">
+        <span class="material-icons">restart_alt</span>
+        Reset
+      </button>
+    </div>
   </section>
 
-  <p class="staff-access-footer">
-    Showing {{ sortedStaff().length }} of {{ staffRecords().length }} staff Â·
-    {{ blockedCount() }} blocked from this form
-  </p>
-</section>
+  <section class="forms-table-card">
+    <header class="forms-table-card__header">
+      <div>
+        <div class="forms-table-card__title-row">
+          <h2>User Access</h2>
+          <span class="forms-table-card__count">{{ blockedCount() }}</span>
+        </div>
+        <p>Staff listed here are blocked from RDIG access. Use unblock to restore access.</p>
+      </div>
+      <button
+        class="btn btn-secondary forms-table-card__refresh"
+        type="button"
+        (click)="refreshStaffAccess()"
+        [disabled]="loading()"
+      >
+        <span class="material-icons">refresh</span>
+        Refresh
+      </button>
+    </header>
 
+    @if (loading()) {
+      <app-table-skeleton
+        [columns]="skeletonColumns"
+        [rows]="10"
+        [showSearch]="false"
+        loadingLabel="Loading staff access records"
+      ></app-table-skeleton>
+    } @else if (staffRecords().length === 0) {
+      <div class="forms-state">
+        <span class="material-icons">person_off</span>
+        <h2>No staff found</h2>
+        <p>Adjust the filters or block staff from RDIG access.</p>
+      </div>
+    } @else {
+      <app-data-table
+        class="staff-access-table"
+        [columns]="columns"
+        [rows]="sortedStaff()"
+        [sortColumn]="sortColumn()"
+        [sortDirection]="sortDirection()"
+        (sortChange)="setSort($event)"
+      >
+        <ng-template #rowTemplate let-staff let-index="index">
+          <tr [class.staff-access-row--blocked]="staff.status === 'blocked'">
+            <td>{{ rowNumber(index) }}</td>
+            <td>
+              <div class="data-table__stacked">
+                <span class="data-table__avatar">{{ staff.initials }}</span>
+                <span class="data-table__title">{{ staff.name }}</span>
+              </div>
+            </td>
+            <td><span class="staff-access-text" [title]="staff.department">{{ staff.department }}</span></td>
+            <td><span class="staff-access-email" [title]="staff.email">{{ staff.email }}</span></td>
+            <td>
+              <span
+                class="status-badge"
+                [class.status-badge--blocked]="staff.status === 'blocked'"
+              >
+                {{ staff.status === 'active' ? 'Active' : 'Blocked' }}
+              </span>
+            </td>
+            <td>
+              @if (staff.blockedDate) {
+                {{ staff.blockedDate }}
+              } @else {
+                <span class="staff-access-muted-badge">Not blocked</span>
+              }
+            </td>
+            <td class="is-align-center">
+              @if (staff.reason) {
+                <button
+                  class="btn btn-sm btn-secondary"
+                  type="button"
+                  title="View block reason"
+                  (click)="openReasonView(staff)"
+                >
+                  View
+                </button>
+              } @else {
+                <span class="staff-access-muted-badge">-</span>
+              }
+            </td>
+            <td class="is-align-center">
+              <div class="table-actions">
+                <button
+                  class="table-action"
+                  [class.table-action--danger]="staff.status === 'active'"
+                  type="button"
+                  [disabled]="loadingId() !== null"
+                  [title]="staff.status === 'active' ? 'Block staff access' : 'Unblock staff access'"
+                  [attr.aria-label]="staff.status === 'active' ? 'Block staff access' : 'Unblock staff access'"
+                  (click)="toggleAccess(staff)"
+                >
+                  <app-table-action-icon
+                    [action]="staff.status === 'active' ? 'blockUser' : 'unblockUser'"
+                  ></app-table-action-icon>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+      </app-data-table>
+    }
 
+    @if (!loading()) {
+      <footer class="forms-table-card__footer">
+        <app-pagination
+          [currentPage]="page()"
+          [totalPages]="totalPages()"
+          [pageSize]="pageSize()"
+          [pageSizeOptions]="pageSizeOptions"
+          [totalItems]="totalItems()"
+          [itemCount]="staffRecords().length"
+          itemLabel="staff access records"
+          (pageChange)="onPageChange($event)"
+          (pageSizeChange)="onPageSizeChange($event)"
+        ></app-pagination>
+      </footer>
+    }
+  </section>
 
+  <app-dialog
+    [isOpen]="blockStaffDialogOpen()"
+    title="Block Staff"
+    size="small"
+    (close)="closeBlockStaffDialog()"
+  >
+    <div class="block-staff-form">
+      <label class="forms-filter">
+        <span>Staff</span>
+        <div class="staff-multi-select" [class.is-open]="staffDropdownOpen()">
+          <button
+            class="staff-multi-select__trigger input--text"
+            type="button"
+            (click)="toggleStaffDropdown()"
+          >
+            @if (selectedBlockUsernames().length) {
+              <span>{{ selectedBlockUsernames().length }} staff selected</span>
+            } @else {
+              <span class="staff-multi-select__placeholder">
+                {{ staffOptionsLoading() ? 'Loading staff...' : 'Search and select staff...' }}
+              </span>
+            }
+            <span class="material-icons" aria-hidden="true">expand_more</span>
+          </button>
 
+          @if (selectedBlockUsernames().length) {
+            <div class="staff-multi-select__chips" aria-label="Selected staff">
+              @for (label of selectedBlockStaffLabels(); track selectedBlockUsernames()[$index]) {
+                <span class="staff-multi-select__chip">
+                  {{ label }}
+                  <button
+                    type="button"
+                    aria-label="Remove selected staff"
+                    (click)="removeBlockStaffUsername(selectedBlockUsernames()[$index])"
+                  >
+                    &times;
+                  </button>
+                </span>
+              }
+            </div>
+          }
+
+          @if (staffDropdownOpen()) {
+            <div class="staff-multi-select__panel">
+              <input
+                class="input--text staff-multi-select__search"
+                type="search"
+                placeholder="Search staff..."
+                [ngModel]="staffSearchTerm()"
+                (ngModelChange)="loadStaffOptions($event)"
+              />
+
+              <div class="staff-multi-select__options">
+                @if (staffOptionsLoading()) {
+                  <div class="staff-multi-select__empty">Loading staff...</div>
+                } @else {
+                  @for (option of staffDropdownOptions(); track option.value) {
+                    <label class="staff-multi-select__option">
+                      <input
+                        type="checkbox"
+                        [checked]="isBlockStaffSelected(option.value)"
+                        (change)="toggleBlockStaffUsername(option.value)"
+                      />
+                      <span class="staff-multi-select__option-text">
+                        <strong>{{ option.label }}</strong>
+                        @if (option.description) {
+                          <small>{{ option.description }}</small>
+                        }
+                      </span>
+                    </label>
+                  } @empty {
+                    <div class="staff-multi-select__empty">No staff found</div>
+                  }
+                }
+              </div>
+            </div>
+          }
+        </div>
+      </label>
+
+      <label class="forms-filter">
+        <span>Reason (optional)</span>
+        <textarea
+          class="input--textarea"
+          rows="3"
+          maxlength="500"
+          placeholder="Why are these staff being blocked?"
+          [ngModel]="blockReason()"
+          (ngModelChange)="blockReason.set($event)"
+        ></textarea>
+      </label>
+    </div>
+
+    <div dialog-footer class="form-dialog__footer">
+      <button
+        class="btn btn-secondary"
+        type="button"
+        [disabled]="blockStaffSaving()"
+        (click)="closeBlockStaffDialog()"
+      >
+        Cancel
+      </button>
+      <button
+        class="btn btn-danger"
+        type="button"
+        [disabled]="blockStaffSaving() || selectedBlockUsernames().length === 0"
+        (click)="confirmBulkBlock()"
+      >
+        {{ blockStaffSaving() ? 'Blocking...' : 'Block Staff' }}
+      </button>
+    </div>
+  </app-dialog>
+
+  <app-dialog
+    [isOpen]="blockTarget() !== null"
+    title="Block Staff Access"
+    size="small"
+    (close)="closeBlockDialog()"
+  >
+    @if (blockTarget(); as staff) {
+      <div class="block-reason-form">
+        <p>
+          Blocking <strong>{{ staff.name }}</strong> will prevent them from accessing this
+          application form.
+        </p>
+        <label class="forms-filter">
+          <span>Reason (optional)</span>
+          <textarea
+            class="input--textarea"
+            rows="3"
+            placeholder="Why is this staff member being blocked?"
+            [ngModel]="blockReason()"
+            (ngModelChange)="blockReason.set($event)"
+          ></textarea>
+        </label>
+      </div>
+    }
+
+    <div dialog-footer class="form-dialog__footer">
+      <button
+        class="btn btn-secondary"
+        type="button"
+        [disabled]="loadingId() !== null"
+        (click)="closeBlockDialog()"
+      >
+        Cancel
+      </button>
+      <button
+        class="btn btn-danger"
+        type="button"
+        [disabled]="loadingId() !== null"
+        (click)="confirmBlock()"
+      >
+        {{ loadingId() !== null ? 'Blocking...' : 'Block Access' }}
+      </button>
+    </div>
+  </app-dialog>
+
+  <app-dialog
+    [isOpen]="reasonViewTarget() !== null"
+    title="Block Reason"
+    size="small"
+    (close)="closeReasonView()"
+  >
+    @if (reasonViewTarget(); as staff) {
+      <div class="reason-view">
+        <p class="reason-view__staff">
+          <strong>{{ staff.name }}</strong>
+        </p>
+        <p class="reason-view__text">{{ staff.reason }}</p>
+      </div>
+    }
+
+    <div dialog-footer class="form-dialog__footer">
+      <button class="btn btn-primary" type="button" (click)="closeReasonView()">Close</button>
+    </div>
+  </app-dialog>
+
+  <app-dialog
+    [isOpen]="unblockTarget() !== null"
+    title="Unblock Staff Access"
+    size="small"
+    (close)="closeUnblockDialog()"
+  >
+    @if (unblockTarget(); as staff) {
+      <div class="block-reason-form">
+        <p>
+          Restore RDIG access for <strong>{{ staff.name }}</strong>?
+        </p>
+        <p class="staff-access-muted-badge">
+          This staff member will be removed from the RDIG blocked list.
+        </p>
+      </div>
+    }
+
+    <div dialog-footer class="form-dialog__footer">
+      <button
+        class="btn btn-secondary"
+        type="button"
+        [disabled]="loadingId() !== null"
+        (click)="closeUnblockDialog()"
+      >
+        Cancel
+      </button>
+      <button
+        class="btn btn-primary"
+        type="button"
+        [disabled]="loadingId() !== null"
+        (click)="confirmUnblock()"
+      >
+        {{ loadingId() !== null ? 'Restoring...' : 'Unblock Staff' }}
+      </button>
+    </div>
+  </app-dialog>
+</main>

@@ -4,11 +4,11 @@
     <label class="form-label">{{ label }}</label>
   }
 
-  @if (disabled && selectedFileName()) {
+  @if (disabled && displayFileName()) {
     <!-- Read-only display when disabled and file is selected -->
     <div class="file-upload-zone file-upload-zone--disabled">
       <span class="material-icons">description</span>
-      <p class="upload-primary">{{ selectedFileName() }}</p>
+      <p class="upload-primary">{{ displayFileName() }}</p>
       <p class="upload-hint">RA</p>
     </div>
   } @else {
@@ -29,11 +29,11 @@
     </div>
   }
 
-  @if (selectedFileName()) {
+  @if (displayFileName()) {
     <div class="file-selected">
       <span class="material-icons">{{ disabled ? 'visibility' : 'check_circle' }}</span>
       <div class="file-selected-content">
-        <span>{{ selectedFileName() }}</span>
+        <span>{{ displayFileName() }}</span>
         @if (disabled) {
           <a href="javascript:void(0)" class="view-document-link" title="Document is uploaded">View</a>
         }

@@ -1,84 +1,83 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { ApplicationService } from '../../../core/services/application.service';
-import { BatchSittingService } from '../../admin-settings/batch-sitting.service';
+import { finalize, forkJoin } from 'rxjs';
+
+import { CachedFormOption, FormCacheService } from '../../../core/services/form-cache.service';
+import { AuthService } from '../../../core/services/auth.service';
 import {
-  BatchSitting,
-  WORKFLOW_STAGE_META,
-} from '../../../core/interfaces/batch-sitting.interface';
-import { TableSortService, SortDirection } from '../../../shared/services/table-sort.service';
-import { SubmissionsSearchComponent } from '../../../shared/components/submissions-search/submissions-search.component';
-import { finalize } from 'rxjs';
+  WorkflowRequestsService,
+  RequestSummaryDto,
+} from '../../../core/services/workflow-requests.service';
+import {
+  actionRoute,
+  formRoute,
+  isApplicantResubmissionStatus,
+  requestIdOf,
+  showInboxApplicantInfo,
+} from '../../../core/services/request-display.util';
+import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
+import { SubmissionFormTabsComponent } from '../../../shared/components/submission-form-tabs/submission-form-tabs.component';
 import {
   SkeletonColumn,
   TableSkeletonComponent,
 } from '../../../shared/components/table-skeleton/table-skeleton.component';
-import {
-  DataTableColumn,
-  DataTableComponent,
-} from '../../../shared/components/data-table/data-table.component';
 import { TableActionIconComponent } from '../../../shared/components/table-action-icon/table-action-icon.component';
 
 @Component({
   selector: 'app-inbox',
   standalone: true,
   imports: [
+    PaginationComponent,
     TableActionIconComponent,
     RouterLink,
-    SubmissionsSearchComponent,
+    SubmissionFormTabsComponent,
     TableSkeletonComponent,
-    DataTableComponent,
   ],
   templateUrl: './inbox.component.html',
   styleUrl: './inbox.component.scss',
-  providers: [TableSortService],
 })
 export class InboxComponent implements OnInit {
-  private applicationService = inject(ApplicationService);
-  private batchSvc = inject(BatchSittingService);
-  private tableSortService = inject(TableSortService);
+  private readonly requests = inject(WorkflowRequestsService);
+  private readonly formCache = inject(FormCacheService);
+  private readonly auth = inject(AuthService);
 
-  private allApplications = signal<any[]>([]);
-  activeBatch = signal<BatchSitting | null>(null);
+  private allApplications = signal<RequestSummaryDto[]>([]);
+  private forms = signal<CachedFormOption[]>([]);
   loading = signal(true);
   error = signal<string | null>(null);
-  searchQuery = signal('');
-  headerSortColumn = signal<string | null>(null);
-  headerSortDirection = signal<SortDirection>(null);
-  readonly skeletonColumns: SkeletonColumn[] = [
-    { width: 'var(--size-table-column-index)' },
-    { width: '42%' },
+  codeDraft = signal('');
+  applicantDraft = signal('');
+  submissionDateDraft = signal('');
+  codeQuery = signal('');
+  applicantQuery = signal('');
+  submissionDate = signal('');
+  selectedForm = signal('all');
+  sortDirection = signal<'asc' | 'desc'>('desc');
+  page = signal(1);
+  pageSize = signal(10);
+  readonly pageSizeOptions = [10, 15, 30, 50];
+
+  readonly showApplicantInfo = computed(() =>
+    showInboxApplicantInfo(this.auth.currentUser()?.role?.code),
+  );
+
+  readonly skeletonColumns = computed<SkeletonColumn[]>(() => [
+    { width: '72px' },
+    { width: '18%' },
+    ...(this.showApplicantInfo() ? [{ width: '25%' }] : []),
     { width: '14%' },
     { width: '18%' },
-    { width: '18%' },
-    { width: 'var(--size-table-column-actions)' },
-  ];
-  readonly inboxColumns: DataTableColumn[] = [
-    {
-      key: 'index',
-      label: '#',
-      width: 'var(--size-table-column-index)',
-      align: 'center',
-      headerAlign: 'center',
-    },
-    { key: 'title', label: 'Project Title', width: '42%' },
-    { key: 'type', label: 'Type', width: '14%' },
-    { key: 'status', label: 'Status', width: '18%' },
-    { key: 'submissionDate', label: 'Submission Date', width: '18%', sortable: true },
-    {
-      key: 'actions',
-      label: 'Actions',
-      width: 'var(--size-table-column-actions)',
-      align: 'center',
-      headerAlign: 'center',
-    },
-  ];
+    { width: '120px' },
+  ]);
 
-  /** Badge colour per workflow status */
+  /** Badge colour per workflow status code. */
   readonly statusColors: Record<string, string> = {
     fill_application: '#3b82f6',
     pending_applicant_resubmission_hos: '#f59e0b',
+    pending_applicant_resubmission_rmc: '#f59e0b',
     pending_applicant_resubmission_reviewers: '#f59e0b',
+    hos_request_resubmission: '#f59e0b',
+    rmc_request_resubmission: '#f59e0b',
     pending_hos: '#a855f7',
     pending_hos_review: '#a855f7',
     rejected_hos: '#ef4444',
@@ -95,134 +94,246 @@ export class InboxComponent implements OnInit {
     approved: '#22c55e',
   };
 
-  /**
-   * Applications filtered by batch stage date windows.
-   * An application is visible only when today falls within the allowed time
-   * window for its current workflow status (as configured in the active batch).
-   * Applications with no matching stage window are always visible (no restriction).
-   */
+  /** Client-side code/applicant/submission-date search on top of the backend-filtered inbox. */
   readonly applications = computed(() => {
-    const batch = this.activeBatch();
-    const today = new Date().toISOString().substring(0, 10);
-    const query = this.searchQuery().toLowerCase().trim();
+    const codeQuery = this.codeQuery().toLowerCase().trim();
+    const applicantQuery = this.applicantQuery().toLowerCase().trim();
+    const submissionDate = this.submissionDate();
+    const form = this.selectedForm();
+    const rows = this.allApplications();
+    const items = rows
+      .filter((app) => form === 'all' || (app.form_code ?? '').toUpperCase() === form)
+      .filter((app) => !codeQuery || this.getCode(app).toLowerCase().includes(codeQuery))
+      .filter((app) => !applicantQuery || this.applicantSearchText(app).includes(applicantQuery))
+      .filter((app) => !submissionDate || this.dateInputValue(this.submissionIso(app)) === submissionDate);
 
-    return this.allApplications().filter((app) => {
-      if (query && !this.getTitle(app).toLowerCase().includes(query)) return false;
-
-      if (!batch) return true; // No batch config → no date restriction
-
-      const status = this.getStatus(app);
-
-      // Find the batch stage that governs this workflow status
-      const stageMeta = WORKFLOW_STAGE_META.find((m) => m.rdigStatuses.includes(status));
-      if (!stageMeta) return true; // Status not mapped to a stage → always visible
-
-      const stageWindow = batch.stages[stageMeta.key];
-      if (!stageWindow?.startDate || !stageWindow?.endDate) return true; // No window set → always visible
-
-      return today >= stageWindow.startDate && today <= stageWindow.endDate;
+    return [...items].sort((first, second) => {
+      const diff = this.submittedTs(first) - this.submittedTs(second);
+      return this.sortDirection() === 'asc' ? diff : -diff;
     });
   });
 
-  /** Days until the active batch endDate. Used to show deadline warning. */
-  readonly batchDeadlineDays = computed((): number | null => {
-    const batch = this.activeBatch();
-    if (!batch) return null;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const end = new Date(batch.endDate + 'T00:00:00');
-    return Math.floor((end.getTime() - today.getTime()) / 86_400_000);
+  readonly pagedApplications = computed(() => {
+    const start = (this.page() - 1) * this.pageSize();
+    return this.applications().slice(start, start + this.pageSize());
   });
 
-  readonly showDeadlineWarning = computed(() => {
-    const days = this.batchDeadlineDays();
-    return days !== null && days >= 0 && days <= 5;
+  readonly totalPages = computed(() =>
+    Math.max(1, Math.ceil(this.applications().length / this.pageSize())),
+  );
+
+  readonly formTabs = computed(() => {
+    const tabs = this.forms()
+      .filter((form) => form.form_code.toUpperCase() !== 'EXTERNAL')
+      .map((form) => ({
+        value: form.form_code.toUpperCase(),
+        label: form.form_name,
+      }))
+      .sort((a, b) => a.label.localeCompare(b.label));
+
+    return [{ value: 'all', label: 'All' }, ...tabs];
   });
 
   ngOnInit(): void {
     this.loadInbox();
   }
 
-  onSearch(query: string): void {
-    this.searchQuery.set(query);
+  onCodeDraftChange(event: Event): void {
+    this.codeDraft.set((event.target as HTMLInputElement).value);
+  }
+
+  onApplicantDraftChange(event: Event): void {
+    this.applicantDraft.set((event.target as HTMLInputElement).value);
+  }
+
+  onSubmissionDateDraftChange(event: Event): void {
+    this.submissionDateDraft.set((event.target as HTMLInputElement).value);
+  }
+
+  applyFilters(): void {
+    this.codeQuery.set(this.codeDraft().trim());
+    this.applicantQuery.set(this.applicantDraft().trim());
+    this.submissionDate.set(this.submissionDateDraft());
+    this.page.set(1);
+  }
+
+  resetFilters(): void {
+    this.codeDraft.set('');
+    this.applicantDraft.set('');
+    this.submissionDateDraft.set('');
+    this.codeQuery.set('');
+    this.applicantQuery.set('');
+    this.submissionDate.set('');
+    this.setTab('all');
+  }
+
+  setTab(tab: string): void {
+    this.selectedForm.set(tab);
+    this.page.set(1);
   }
 
   refreshInbox(): void {
-    this.searchQuery.set('');
+    this.resetFilters();
     this.loadInbox();
+  }
+
+  onPageChange(page: number): void {
+    this.page.set(page);
+  }
+
+  onPageSizeChange(pageSize: number): void {
+    this.pageSize.set(pageSize);
+    this.page.set(1);
+  }
+
+  toggleSubmissionDateSort(): void {
+    this.sortDirection.update((direction) => (direction === 'asc' ? 'desc' : 'asc'));
   }
 
   private loadInbox(): void {
     this.loading.set(true);
     this.error.set(null);
 
-    this.batchSvc.loadAll().subscribe({
-      next: (batches) =>
-        this.activeBatch.set(batches.find((batch) => batch.status === 'active') ?? null),
-      error: () => this.activeBatch.set(null),
-    });
-
-    this.applicationService
-      .getInboxApplications()
+    forkJoin({
+      requests: this.requests.getInbox({ page: 1, perPage: 100 }),
+      forms: this.formCache.getActiveForms(true),
+    })
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe({
-        next: (apps) => this.allApplications.set(apps),
-        error: () => {
-          this.error.set('Could not reach the JSON server. Make sure `npm run db` is running.');
+        next: ({ requests, forms }) => {
+          this.allApplications.set(requests.data?.items ?? []);
+          this.forms.set(forms.data ?? []);
+          this.ensureValidTab();
         },
+        error: () => this.error.set('Could not load your inbox. Please try again.'),
       });
   }
-  getTitle(app: any): string {
-    return app.projectDetails?.title?.trim() || '(Untitled Application)';
+
+  getCode(app: RequestSummaryDto): string {
+    return app.request_code?.trim() || `REQ-${requestIdOf(app) ?? ''}`;
   }
 
-  getStatus(app: any): string {
-    return app.workflow?.currentStatus ?? app.metadata?.applicationStatus ?? 'unknown';
+  /** Human-readable status name shown in the badge. */
+  getStatus(app: RequestSummaryDto): string {
+    return app.status_name || app.status_code || 'Unknown';
   }
 
-  getStatusColor(app: any): string {
-    return this.statusColors[this.getStatus(app)] ?? '#6b7280';
+  getStatusColor(app: RequestSummaryDto): string {
+    return this.statusColors[app.status_code] ?? '#6b7280';
   }
 
-  getSubmissionDate(app: any): string {
-    return this.applicationService.formatDate(this.applicationService.getSubmittedAt(app));
+  getSubmissionDate(app: RequestSummaryDto): string {
+    return this.formatIsoDate(this.submissionIso(app));
   }
 
-  getFormRoute(app: any): string {
-    return this.applicationService.getFormRoute(app);
+  getFormRoute(app: RequestSummaryDto): string {
+    return actionRoute(app);
   }
 
-  getFormTypeLabel(app: any): string {
-    return this.applicationService.getFormTypeLabel(app);
+  getEditRoute(app: RequestSummaryDto): string {
+    return formRoute(app.form_code);
   }
 
-  /** Sort only by the original application submission date. */
-  onHeaderClick(columnName: string): void {
-    if (columnName !== 'submissionDate') return;
-    const next = this.tableSortService.getNextState(
-      { column: this.headerSortColumn(), direction: this.headerSortDirection() },
-      columnName,
-    );
-    this.headerSortColumn.set(next.column);
-    this.headerSortDirection.set(next.direction);
+  getEditQueryParams(app: RequestSummaryDto): { request_id: number | null } {
+    return { request_id: requestIdOf(app) };
   }
 
-  getSortedApplications(): any[] {
-    const direction = this.headerSortDirection();
-    if (this.headerSortColumn() !== 'submissionDate' || !direction) {
-      return this.applications();
+  getDetailQueryParams(): { returnTo: string; returnLabel: string } {
+    return {
+      returnTo: '/submissions/inbox',
+      returnLabel: 'Inbox',
+    };
+  }
+
+  hasActiveFilters(): boolean {
+    return Boolean(this.codeQuery() || this.applicantQuery() || this.submissionDate());
+  }
+
+  canPrint(app: RequestSummaryDto): boolean {
+    return app.status_code.toLowerCase() !== 'draft';
+  }
+
+  canEditResubmission(app: RequestSummaryDto): boolean {
+    return isApplicantResubmissionStatus(app.status_code) && requestIdOf(app) != null;
+  }
+
+  openPrint(app: RequestSummaryDto): void {
+    const id = requestIdOf(app);
+    if (id != null) {
+      this.downloadPrint(id, this.getCode(app));
     }
+  }
 
-    return [...this.applications()].sort((first, second) => {
-      const firstTimestamp = this.applicationService.getSubmittedAt(first);
-      const secondTimestamp = this.applicationService.getSubmittedAt(second);
+  getRowNumber(index: number): number {
+    return (this.page() - 1) * this.pageSize() + index + 1;
+  }
 
-      if (!firstTimestamp && !secondTimestamp) return 0;
-      if (!firstTimestamp) return 1;
-      if (!secondTimestamp) return -1;
+  private submittedTs(app: RequestSummaryDto): number {
+    const iso = this.submissionIso(app);
+    return iso ? new Date(iso).getTime() : 0;
+  }
 
-      const difference = new Date(firstTimestamp).getTime() - new Date(secondTimestamp).getTime();
-      return direction === 'asc' ? difference : -difference;
+  private submissionIso(app: RequestSummaryDto): string | null | undefined {
+    return app.submitted_at ?? app.updated_at ?? app.created_at;
+  }
+
+  private applicantSearchText(app: RequestSummaryDto): string {
+    return [
+      app.applicant_name,
+      app.applicant_staff_username,
+      app.applicant_email,
+    ]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase();
+  }
+
+  private formatIsoDate(iso: string | null | undefined): string {
+    return iso
+      ? new Date(iso).toLocaleDateString('en-GB', {
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric',
+        })
+      : '-';
+  }
+
+  private dateInputValue(iso: string | null | undefined): string {
+    if (!iso) return '';
+    const date = new Date(iso);
+    if (Number.isNaN(date.getTime())) return '';
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  private ensureValidTab(): void {
+    const tab = this.selectedForm();
+    if (!this.formTabs().some((item) => item.value === tab)) {
+      this.setTab('all');
+    }
+  }
+
+  private downloadPrint(requestId: number, fallbackCode: string): void {
+    this.requests.downloadPrint(requestId).subscribe({
+      next: (response) => {
+        const blob = response.body;
+        if (!blob) return;
+        const fileName = this.printFileName(response.headers.get('content-disposition'), fallbackCode);
+        const url = URL.createObjectURL(blob);
+        const anchor = document.createElement('a');
+        anchor.href = url;
+        anchor.download = fileName;
+        anchor.click();
+        URL.revokeObjectURL(url);
+      },
+      error: () => this.error.set('Could not download the print PDF. Please try again.'),
     });
+  }
+
+  private printFileName(contentDisposition: string | null, fallbackCode: string): string {
+    const match = contentDisposition?.match(/filename\*?=(?:UTF-8''|")?([^";]+)/i);
+    return match?.[1] ? decodeURIComponent(match[1].replace(/"/g, '')) : `${fallbackCode}.pdf`;
   }
 }

@@ -4,17 +4,17 @@
  * Lifecycle rules:
  *  - Batches are never auto-ended by dates alone — only by:
  *      a) RMC clicking "End Batch" (confirmed via dialog), OR
- *      b) The earliest upcoming planned batch's startDate reaching today (auto-complete on load).
- *  - When ended, status → 'completed', endedAt is stamped, and the next planned batch (by date)
- *    automatically becomes 'active'.
+ *      b) The earliest upcoming planned batch's startDate reaching now (auto-complete on load).
+ *  - Ending a batch never auto-promotes the next planned batch — it only goes active at its
+ *    own scheduled start, or when RMC clicks "Start" on it manually.
  *  - Multiple planned batches are supported (sorted by startDate).
  *  - Planned batches can be deleted only before they start.
  *  - Completed batches appear in history with View (read-only) and Retrieve actions.
  *  - Retrieve is blocked while any active batch exists.
+ *  - Editing an active batch's start date into the future demotes it to "planned" (via the
+ *    /plan route) instead of saving it as active — see saveActive().
  *
  * Stage fields are DISABLED until global batch start + end dates are both set.
- *
- * Future backend integration: update BASE_URL in BatchSittingService.
  */
 
 import {
@@ -25,6 +25,8 @@ import {
   inject,
   signal,
   computed,
+  ViewChild,
+  ElementRef,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
@@ -53,6 +55,47 @@ import {
   DataTableComponent,
 } from '../../../shared/components/data-table/data-table.component';
 import { TableActionIconComponent } from '../../../shared/components/table-action-icon/table-action-icon.component';
+import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
+
+type BatchSectionView = 'active' | 'upcoming' | 'history';
+
+// ── Date/time helpers ─────────────────────────────────────────────────────────
+// <input type="datetime-local"> works in local "YYYY-MM-DDTHH:mm" strings —
+// these stay in that same format throughout so lexicographic string
+// comparisons (used everywhere below) stay valid, and never touch Date
+// parsing of a *stored* value (only of "now"), to avoid timezone surprises.
+
+function pad2(n: number): string {
+  return n.toString().padStart(2, '0');
+}
+
+function toLocalInputValue(d: Date): string {
+  return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}T${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+}
+
+function nowInputValue(): string {
+  return toLocalInputValue(new Date());
+}
+
+function addMinutesToValue(value: string, minutes: number): string {
+  if (!value) return '';
+  const [datePart, timePart] = value.split('T');
+  const [y, mo, da] = datePart.split('-').map(Number);
+  const [h, mi] = (timePart ?? '00:00').split(':').map(Number);
+  const dt = new Date(y, mo - 1, da, h, mi);
+  dt.setMinutes(dt.getMinutes() + minutes);
+  return toLocalInputValue(dt);
+}
+
+/** Midnight at the start of the calendar day after `value` — used to enforce a full 1-day gap between consecutive batches. */
+function startOfNextDay(value: string): string {
+  if (!value) return '';
+  const [datePart] = value.split('T');
+  const [y, mo, da] = datePart.split('-').map(Number);
+  const dt = new Date(y, mo - 1, da);
+  dt.setDate(dt.getDate() + 1);
+  return toLocalInputValue(dt);
+}
 
 // ── Validators ────────────────────────────────────────────────────────────────
 
@@ -61,6 +104,68 @@ function endAfterStartValidator(group: AbstractControl): ValidationErrors | null
   const e = group.get('endDate')?.value as string | null;
   if (!s || !e) return null;
   return e >= s ? null : { endBeforeStart: true };
+}
+
+/**
+ * An active batch's start date is allowed to move into the future — saveActive()
+ * auto-demotes it to "planned" via the /plan route when that happens — but
+ * only if the new date clears the same >=1hr-from-now buffer required of any
+ * planned batch. A future date less than 1hr away is neither a valid "starts
+ * now" edit nor a valid "planned" schedule, so it's rejected outright.
+ */
+function activeStartBufferValidator(control: AbstractControl): ValidationErrors | null {
+  const v = control.value as string | null;
+  if (!v) return null;
+  const now = nowInputValue();
+  if (v <= now) return null;
+  return v < addMinutesToValue(now, 60) ? { activeStartTooSoon: true } : null;
+}
+
+/**
+ * Batch names are unique per form in the DB (uq_batches on form_id+batch_name),
+ * across every status — including completed batches still sitting in history.
+ * Caught here so the admin gets an inline message instead of a 500 from the
+ * duplicate-key insert. Compared case-insensitively/trimmed to match MySQL's
+ * default case-insensitive collation.
+ */
+function batchNameUniqueValidator(takenNamesFn: () => Set<string>) {
+  return (control: AbstractControl): ValidationErrors | null => {
+    const v = (control.value as string | null)?.trim().toLowerCase();
+    if (!v) return null;
+    return takenNamesFn().has(v) ? { batchNameTaken: true } : null;
+  };
+}
+
+/** A planned batch can't be scheduled in the past — it must start at least 1hr from now. */
+function plannedStartNotPastValidator(control: AbstractControl): ValidationErrors | null {
+  const v = control.value as string | null;
+  if (!v) return null;
+  return v < addMinutesToValue(nowInputValue(), 60) ? { plannedStartTooSoon: true } : null;
+}
+
+/**
+ * The single source of truth for "batches never overlap and always keep a full
+ * 1-day gap". Runs at the group level against every OTHER active/planned batch
+ * (completed batches live in the past and are exempt), so it covers every edit
+ * path uniformly — active or planned, start-side or end-side — instead of the
+ * old per-field check that only ever compared a planned start to its immediate
+ * predecessor.
+ */
+function batchTimelineValidator(othersFn: () => Array<{ start: string; end: string }>) {
+  return (group: AbstractControl): ValidationErrors | null => {
+    const s = group.get('startDate')?.value as string | null;
+    const e = group.get('endDate')?.value as string | null;
+    if (!s || !e) return null;
+    for (const o of othersFn()) {
+      if (!o.start || !o.end) continue;
+      // Inclusive intersection — touching endpoints already counts as overlap.
+      if (s <= o.end && o.start <= e) return { batchOverlap: true };
+      // Non-overlapping: exactly one side applies. Require a full calendar-day gap.
+      if (o.end < s && s < startOfNextDay(o.end)) return { batchGapTooSmall: true };
+      if (e < o.start && o.start < startOfNextDay(e)) return { batchGapTooSmall: true };
+    }
+    return null;
+  };
 }
 
 function stageWithinBatchValidator(startFn: () => string, endFn: () => string) {
@@ -91,6 +196,7 @@ function stageWithinBatchValidator(startFn: () => string, endFn: () => string) {
     DialogComponent,
     BatchManagementSkeletonComponent,
     DataTableComponent,
+    PaginationComponent,
   ],
   templateUrl: './batch-sitting.component.html',
   styleUrl: './batch-sitting.component.scss',
@@ -101,13 +207,18 @@ export class BatchSittingComponent implements OnInit, OnDestroy {
   private readonly auth = inject(AuthService);
   private readonly destroy$ = new Subject<void>();
 
+  @ViewChild('feedbackBanner') private feedbackBannerRef?: ElementRef<HTMLElement>;
+
   readonly stageColumns: DataTableColumn[] = [
     { key: 'stage', label: 'Stage' },
     { key: 'start', label: 'Opens', width: '24%' },
     { key: 'end', label: 'Closes', width: '24%' },
   ];
   readonly stageMeta = WORKFLOW_STAGE_META;
-  readonly today = new Date().toISOString().substring(0, 10);
+  /** Live "now", read fresh on every access — used for display/gating checks in the template and a couple of helpers. */
+  get today(): string {
+    return nowInputValue();
+  }
 
   // ── Data signals ──────────────────────────────────────────────────────────
   activeBatch = signal<BatchSitting | null>(null);
@@ -116,8 +227,11 @@ export class BatchSittingComponent implements OnInit, OnDestroy {
 
   // ── UI signals ────────────────────────────────────────────────────────────
   isLoading = signal(true);
+  selectedSection = signal<BatchSectionView>('active');
   isSaving = signal(false);
   isEditingActive = signal(false);
+  /** The completed batch being re-activated through the active editor (null = not retrieving). Its stale end date must be replaced before it can start. */
+  retrievingBatch = signal<BatchSitting | null>(null);
   /** Batch currently being edited in the planned list (null = none). */
   editingPlannedId = signal<number | null>(null);
   /** True when the "new planned batch" creation form is open. */
@@ -131,6 +245,9 @@ export class BatchSittingComponent implements OnInit, OnDestroy {
   stagePage = signal(1);
   stagePageSize = signal(15);
   stagePageSizeOptions = [5, 15, 30, 50];
+  historyPage = signal(1);
+  historyPageSize = signal(5);
+  historyPageSizeOptions = [5, 10, 15, 30];
 
   // ── Forms ─────────────────────────────────────────────────────────────────
   activeForm!: FormGroup;
@@ -138,7 +255,14 @@ export class BatchSittingComponent implements OnInit, OnDestroy {
 
   // ── Computed helpers ──────────────────────────────────────────────────────
 
-  readonly canAddPlanned = computed(() => this.activeBatch() !== null);
+  readonly isCreatingActive = computed(() => this.isEditingActive() && this.activeBatch() === null);
+
+  readonly canStartPlanned = computed(() => this.activeBatch() === null);
+  readonly startPlannedTooltip = computed(() =>
+    this.canStartPlanned()
+      ? 'Start this batch now and make it the active batch.'
+      : 'Cannot start: an active batch already exists. End it first.',
+  );
 
   readonly endBatchTooltip = computed(() => {
     const a = this.activeBatch();
@@ -155,25 +279,62 @@ export class BatchSittingComponent implements OnInit, OnDestroy {
       : 'Cannot retrieve: an active batch already exists. End it first.',
   );
 
-  /** Min startDate for a brand-new planned batch (day after last planned or active endDate). */
-  get newPlannedMinStart(): string {
+  /**
+   * Every OTHER live (active/planned) batch's window, for the timeline
+   * overlap/gap validator. `selfId` is excluded so a batch never conflicts with
+   * its own stored copy while being edited. Completed batches are omitted —
+   * they're historical and may sit in the past freely.
+   */
+  private otherTimelineBatches(selfId: number | null): Array<{ start: string; end: string }> {
+    const active = this.activeBatch();
+    const live: BatchSitting[] = [
+      ...(active && active.id !== selfId ? [active] : []),
+      ...this.plannedBatches().filter((b) => b.id !== selfId),
+    ];
+    return live.map((b) => ({ start: b.startDate, end: b.endDate }));
+  }
+
+  /** Lowercased/trimmed names of every batch (active + planned + history) except `selfId`, for the unique-name check. */
+  private takenBatchNames(selfId: number | null): Set<string> {
+    const active = this.activeBatch();
+    const all: BatchSitting[] = [
+      ...(active ? [active] : []),
+      ...this.plannedBatches(),
+      ...this.historyBatches(),
+    ];
+    return new Set(
+      all.filter((b) => b.id !== selfId).map((b) => b.batchName.trim().toLowerCase()),
+    );
+  }
+
+  /** The previous planned/active batch's endDate to chain a new/edited planned batch after, or '' if there isn't one. */
+  private prevBatchEndFor(batch: BatchSitting | null): string {
     const sorted = [...this.plannedBatches()].sort((a, b) =>
       a.startDate.localeCompare(b.startDate),
     );
-    if (sorted.length) return this.addDay(sorted.at(-1)!.endDate);
-    const a = this.activeBatch();
-    return a ? this.addDay(a.endDate) : '';
+    const idx = batch ? sorted.findIndex((b) => b.id === batch.id) : sorted.length;
+    if (idx > 0) return sorted[idx - 1].endDate;
+    return this.activeBatch()?.endDate ?? '';
+  }
+
+  /**
+   * Min startDate for a brand-new planned batch: whichever is later of (a) the
+   * start of the day *after* the last planned/active batch ends — batches
+   * can't share a calendar day — and (b) at least 1 hour from now.
+   */
+  get newPlannedMinStart(): string {
+    const prevEnd = this.prevBatchEndFor(null);
+    const chained = prevEnd ? startOfNextDay(prevEnd) : '';
+    const floor = addMinutesToValue(nowInputValue(), 60);
+    return chained && chained > floor ? chained : floor;
   }
 
   /** Min startDate when editing a specific planned batch. */
   minStartFor(batch: BatchSitting): string {
-    const sorted = [...this.plannedBatches()].sort((a, b) =>
-      a.startDate.localeCompare(b.startDate),
-    );
-    const idx = sorted.findIndex((b) => b.id === batch.id);
-    if (idx > 0) return this.addDay(sorted[idx - 1].endDate);
-    const a = this.activeBatch();
-    return a ? this.addDay(a.endDate) : '';
+    const prevEnd = this.prevBatchEndFor(batch);
+    const chained = prevEnd ? startOfNextDay(prevEnd) : '';
+    const floor = addMinutesToValue(nowInputValue(), 60);
+    return chained && chained > floor ? chained : floor;
   }
 
   stageTotalPages(): number {
@@ -194,8 +355,28 @@ export class BatchSittingComponent implements OnInit, OnDestroy {
     this.stagePageSize.set(pageSize);
     this.stagePage.set(1);
   }
+  readonly historyTotalPages = computed(() =>
+    Math.max(1, Math.ceil(this.historyBatches().length / this.historyPageSize())),
+  );
+
+  readonly paginatedHistoryBatches = computed(() => {
+    const currentPage = Math.min(this.historyPage(), this.historyTotalPages());
+    const startIndex = (currentPage - 1) * this.historyPageSize();
+    return this.historyBatches().slice(startIndex, startIndex + this.historyPageSize());
+  });
+
+  onHistoryPageChange(page: number): void {
+    this.historyPage.set(page);
+  }
+
+  onHistoryPageSizeChange(pageSize: number): void {
+    this.historyPageSize.set(pageSize);
+    this.historyPage.set(1);
+  }
 
   // ── Lifecycle ─────────────────────────────────────────────────────────────
+
+  private autoTransitionTimer?: ReturnType<typeof setInterval>;
 
   ngOnInit(): void {
     this.svc
@@ -219,43 +400,34 @@ export class BatchSittingComponent implements OnInit, OnDestroy {
           });
         },
       });
+    // Planned batches start, and the active batch stops, purely on schedule —
+    // this can't wait for a page reload, so poll for it while the page is open.
+    this.autoTransitionTimer = setInterval(() => this.checkAutoTransitions(), 30_000);
   }
 
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+    if (this.autoTransitionTimer) clearInterval(this.autoTransitionTimer);
   }
 
-  // ── Hydration + auto-complete ─────────────────────────────────────────────
+  // ── Hydration + auto-start/stop ───────────────────────────────────────────
 
   private hydrate(batches: BatchSitting[]): void {
     const active = batches.find((b) => b.status === 'active') ?? null;
-    const planned = batches
-      .filter((b) => b.status === 'planned')
-      .sort((a, b) => a.startDate.localeCompare(b.startDate));
     const nonActive = batches.filter((b) => b.id !== active?.id);
     const upcoming = nonActive
-      .filter(
-        (b) => b.startDate > this.today || (b.status === 'planned' && b.endDate >= this.today),
-      )
+      .filter((b) => b.status === 'planned')
       .sort((a, b) => a.startDate.localeCompare(b.startDate));
     const history = nonActive
-      .filter((b) => b.endDate < this.today || b.status === 'completed')
+      .filter((b) => b.status === 'completed')
       .sort((a, b) => (b.endedAt ?? b.endDate).localeCompare(a.endedAt ?? a.endDate));
-
-    // Auto-complete: if a planned batch's start date has arrived, complete the active batch and activate the next.
-    if (active) {
-      const nextToStart = planned.find((b) => b.startDate <= this.today);
-      if (nextToStart) {
-        this.autoTransition(active, planned);
-        return;
-      }
-    }
 
     this.activeBatch.set(active);
     this.plannedBatches.set(upcoming);
     this.historyBatches.set(history);
     this.stagePage.set(1);
+    this.historyPage.set(1);
     this.expandedUpcomingIds.set(new Set<number>());
     this.expandedHistoryIds.set(new Set<number>());
     this.buildActiveForm(active);
@@ -264,38 +436,83 @@ export class BatchSittingComponent implements OnInit, OnDestroy {
       () => '',
       () => '',
     );
+    this.selectDefaultSection();
+
+    this.checkAutoTransitions();
+  }
+  private selectDefaultSection(): void {
+    if (this.activeBatch()) {
+      this.selectedSection.set('active');
+      return;
+    }
+
+    if (this.plannedBatches().length > 0) {
+      this.selectedSection.set('upcoming');
+      return;
+    }
+
+    this.selectedSection.set('history');
   }
 
-  private autoTransition(active: BatchSitting, planned: BatchSitting[]): void {
-    const now = new Date().toISOString();
-    const completed: BatchSitting = {
-      ...active,
-      status: 'completed',
-      endedAt: now,
-      updatedAt: now,
-    };
+
+  /**
+   * Runs on load and every ~30s while the page is open. Stopping the active
+   * batch never depends on a next planned batch existing (each batch stops
+   * purely on its own schedule); starting the next one is a separate,
+   * independent check, run right after in case both are due at once.
+   */
+  private checkAutoTransitions(): void {
+    if (
+      this.isSaving() ||
+      this.isEditingActive() ||
+      this.editingPlannedId() !== null ||
+      this.isAddingPlanned()
+    ) {
+      return;
+    }
+    const now = nowInputValue();
+    const active = this.activeBatch();
+    if (active && active.endDate <= now) {
+      this.autoStopActive(active, now);
+      return;
+    }
+    if (!active) {
+      this.autoStartNextPlanned(now);
+    }
+  }
+
+  private autoStopActive(active: BatchSitting, now: string): void {
+    const stamp = new Date().toISOString();
+    const completed: BatchSitting = { ...active, status: 'completed', endedAt: stamp, updatedAt: stamp };
     this.svc
       .update(completed)
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => {
-        const sorted = [...planned].sort((a, b) => a.startDate.localeCompare(b.startDate));
-        const newActive = sorted.find((b) => b.startDate <= this.today);
-        if (newActive) {
-          this.svc
-            .update({ ...newActive, status: 'active', updatedAt: now })
-            .pipe(takeUntil(this.destroy$))
-            .subscribe(() => this.reload());
-        } else {
-          this.reload();
-        }
+        this.activeBatch.set(null);
+        this.historyBatches.update((list) =>
+          [completed, ...list.filter((b) => b.id !== completed.id)].sort((a, b) =>
+            (b.endedAt ?? b.endDate).localeCompare(a.endedAt ?? a.endDate),
+          ),
+        );
+        this.buildActiveForm(null);
+        this.autoStartNextPlanned(now);
       });
   }
 
-  private reload(): void {
+  private autoStartNextPlanned(now: string): void {
+    const due = [...this.plannedBatches()]
+      .filter((b) => b.startDate <= now)
+      .sort((a, b) => a.startDate.localeCompare(b.startDate))[0];
+    if (!due) return;
+    const stamp = new Date().toISOString();
     this.svc
-      .loadAll()
+      .update({ ...due, status: 'active', updatedAt: stamp })
       .pipe(takeUntil(this.destroy$))
-      .subscribe((batches) => this.hydrate(batches));
+      .subscribe((saved) => {
+        this.activeBatch.set(saved);
+        this.plannedBatches.update((list) => list.filter((b) => b.id !== saved.id));
+        this.buildActiveForm(saved);
+      });
   }
 
   // ── Form builders ─────────────────────────────────────────────────────────
@@ -305,6 +522,8 @@ export class BatchSittingComponent implements OnInit, OnDestroy {
       batch,
       () => this.activeForm?.get('startDate')?.value ?? '',
       () => this.activeForm?.get('endDate')?.value ?? '',
+      true,
+      () => this.otherTimelineBatches(batch?.id ?? null),
     );
     this.wireGlobalDates(this.activeForm);
     this.syncStageEnabled(this.activeForm);
@@ -315,7 +534,13 @@ export class BatchSittingComponent implements OnInit, OnDestroy {
     startFn: () => string,
     endFn: () => string,
   ): void {
-    this.plannedForm = this.makeBatchForm(batch, startFn, endFn);
+    this.plannedForm = this.makeBatchForm(
+      batch,
+      startFn,
+      endFn,
+      false,
+      () => this.otherTimelineBatches(batch?.id ?? null),
+    );
     this.wireGlobalDates(this.plannedForm);
     this.syncStageEnabled(this.plannedForm);
   }
@@ -324,6 +549,8 @@ export class BatchSittingComponent implements OnInit, OnDestroy {
     batch: BatchSitting | null,
     startFn: () => string,
     endFn: () => string,
+    isActive: boolean,
+    othersFn: () => Array<{ start: string; end: string }>,
   ): FormGroup {
     const stages: Record<string, FormGroup> = {};
     for (const m of WORKFLOW_STAGE_META) {
@@ -333,14 +560,24 @@ export class BatchSittingComponent implements OnInit, OnDestroy {
         { validators: stageWithinBatchValidator(startFn, endFn) },
       );
     }
+    const startDateValidators = isActive
+      ? [Validators.required, activeStartBufferValidator]
+      : [Validators.required, plannedStartNotPastValidator];
     return this.fb.group(
       {
-        batchName: [batch?.batchName ?? '', [Validators.required, Validators.maxLength(100)]],
-        startDate: [batch?.startDate ?? '', Validators.required],
+        batchName: [
+          batch?.batchName ?? '',
+          [
+            Validators.required,
+            Validators.maxLength(100),
+            batchNameUniqueValidator(() => this.takenBatchNames(batch?.id ?? null)),
+          ],
+        ],
+        startDate: [batch?.startDate ?? '', startDateValidators],
         endDate: [batch?.endDate ?? '', Validators.required],
         stages: this.fb.group(stages),
       },
-      { validators: endAfterStartValidator },
+      { validators: [endAfterStartValidator, batchTimelineValidator(othersFn)] },
     );
   }
 
@@ -378,11 +615,20 @@ export class BatchSittingComponent implements OnInit, OnDestroy {
 
   startEditActive(): void {
     this.buildActiveForm(this.activeBatch());
+    if (!this.activeBatch()) {
+      // Brand-new active batch: stamp the start to the creation moment and lock
+      // the field — the admin never picks it. It's re-stamped to the exact
+      // click-of-"Start Batch" moment on save (see saveActive()), so the
+      // recorded start reflects when the batch actually went live.
+      this.activeForm.get('startDate')!.setValue(nowInputValue());
+      this.activeForm.get('startDate')!.disable({ emitEvent: false });
+    }
     this.isEditingActive.set(true);
     this.feedback.set(null);
   }
 
   cancelEditActive(): void {
+    this.retrievingBatch.set(null);
     this.buildActiveForm(this.activeBatch());
     this.isEditingActive.set(false);
   }
@@ -391,6 +637,7 @@ export class BatchSittingComponent implements OnInit, OnDestroy {
     this.activeForm.markAllAsTouched();
     if (this.activeForm.invalid) {
       this.feedback.set({ type: 'error', text: 'Please fix validation errors before saving.' });
+      this.scrollToFeedback();
       return;
     }
     const fv = this.activeForm.getRawValue();
@@ -398,30 +645,88 @@ export class BatchSittingComponent implements OnInit, OnDestroy {
     this.isSaving.set(true);
     this.feedback.set(null);
 
-    const existing = this.activeBatch();
-    if (existing) {
+    const retrieving = this.retrievingBatch();
+    if (retrieving) {
+      // Re-activating a completed batch with the fresh dates the admin just
+      // set. Start is re-stamped to now (it was locked), and activateNow
+      // persists the new window then flips status to active.
+      const payload: BatchSitting = {
+        ...retrieving,
+        ...fv,
+        startDate: nowInputValue(),
+        status: 'active',
+        updatedAt: now,
+      };
       this.svc
-        .update({ ...existing, ...fv, updatedAt: now })
+        .activateNow(payload)
         .pipe(
           finalize(() => this.isSaving.set(false)),
           takeUntil(this.destroy$),
         )
         .subscribe({
           next: (saved) => {
+            this.retrievingBatch.set(null);
             this.activeBatch.set(saved);
+            this.historyBatches.update((list) => list.filter((b) => b.id !== retrieving.id));
             this.isEditingActive.set(false);
-            this.feedback.set({ type: 'success', text: 'Active batch saved.' });
+            this.buildActiveForm(saved);
+            this.feedback.set({ type: 'success', text: 'Batch retrieved and set as active.' });
+          },
+          error: () => this.feedback.set({ type: 'error', text: 'Failed to retrieve.' }),
+        });
+      return;
+    }
+
+    const existing = this.activeBatch();
+    if (existing) {
+      // Editing an active batch's start date into the future auto-demotes it
+      // to "planned" via the /plan route — the validator above already
+      // guarantees this is either <= now, or safely >= 1hr from now.
+      const movesToPlanned = typeof fv.startDate === 'string' && fv.startDate > nowInputValue();
+      const payload: BatchSitting = {
+        ...existing,
+        ...fv,
+        updatedAt: now,
+        status: movesToPlanned ? 'planned' : 'active',
+      };
+      const save$ = movesToPlanned ? this.svc.planNow(payload) : this.svc.update(payload);
+      save$
+        .pipe(
+          finalize(() => this.isSaving.set(false)),
+          takeUntil(this.destroy$),
+        )
+        .subscribe({
+          next: (saved) => {
+            this.isEditingActive.set(false);
+            if (movesToPlanned) {
+              this.activeBatch.set(null);
+              this.plannedBatches.update((list) =>
+                [...list, saved].sort((a, b) => a.startDate.localeCompare(b.startDate)),
+              );
+              this.buildActiveForm(null);
+              this.feedback.set({
+                type: 'success',
+                text: `Start date moved to the future — ${saved.batchName} moved to Upcoming Batches.`,
+              });
+            } else {
+              this.activeBatch.set(saved);
+              this.feedback.set({ type: 'success', text: 'Active batch saved.' });
+            }
           },
           error: () => this.feedback.set({ type: 'error', text: 'Failed to save.' }),
         });
     } else {
-      const currentDate = this.currentDateIso();
-      const isFutureStart = typeof fv.startDate === 'string' && fv.startDate > currentDate;
+      // The start field is locked to the creation moment (see startEditActive());
+      // re-stamp it to the actual click-of-"Start Batch" moment so the recorded
+      // start reflects when the batch truly went live, not when the form opened.
+      // A brand-new active batch therefore always starts now — future scheduling
+      // is done through "Add Planned Batch" instead.
       const user = this.auth.currentUser();
       this.svc
         .create({
           ...fv,
-          status: isFutureStart ? 'planned' : 'active',
+          startDate: nowInputValue(),
+          status: 'active',
           createdAt: now,
           updatedAt: now,
           createdBy: user?.username ?? 'rmc',
@@ -432,26 +737,9 @@ export class BatchSittingComponent implements OnInit, OnDestroy {
         )
         .subscribe({
           next: (created) => {
-            if (isFutureStart) {
-              this.plannedBatches.update((list) =>
-                [...list, created].sort((a, b) => a.startDate.localeCompare(b.startDate)),
-              );
-              // Keep upcoming cards minimized by default.
-              this.expandedUpcomingIds.update((current) => {
-                const next = new Set<number>(current);
-                next.delete(created.id);
-                return next;
-              });
-              this.buildActiveForm(null);
-              this.feedback.set({
-                type: 'success',
-                text: 'Start date is in the future. Batch was added to Upcoming Batches.',
-              });
-            } else {
-              this.activeBatch.set(created);
-              this.buildActiveForm(created);
-              this.feedback.set({ type: 'success', text: 'Active batch created.' });
-            }
+            this.activeBatch.set(created);
+            this.buildActiveForm(created);
+            this.feedback.set({ type: 'success', text: 'Active batch created.' });
             this.isEditingActive.set(false);
           },
           error: () => this.feedback.set({ type: 'error', text: 'Failed to create.' }),
@@ -497,36 +785,11 @@ export class BatchSittingComponent implements OnInit, OnDestroy {
           this.plannedBatches.update((list) => list.filter((b) => b.id !== completed.id));
 
           this.showEndConfirm.set(false);
-          // Promote next planned batch (earliest by date) to active
-          const sorted = [...this.plannedBatches()].sort((a, b) =>
-            a.startDate.localeCompare(b.startDate),
-          );
-          const nextPlanned = sorted[0];
-          if (nextPlanned) {
-            this.svc
-              .update({ ...nextPlanned, status: 'active', updatedAt: now })
-              .pipe(takeUntil(this.destroy$))
-              .subscribe({
-                next: (saved) => {
-                  this.activeBatch.set(saved);
-                  this.plannedBatches.update((list) => list.filter((b) => b.id !== saved.id));
-                  this.buildActiveForm(saved);
-                  this.feedback.set({
-                    type: 'success',
-                    text: 'Batch ended. Next planned batch is now active.',
-                  });
-                },
-                error: () => {
-                  this.feedback.set({
-                    type: 'error',
-                    text: 'Batch ended, but failed to activate next planned batch.',
-                  });
-                },
-              });
-          } else {
-            this.buildActiveForm(null);
-            this.feedback.set({ type: 'success', text: 'Batch ended and moved to history.' });
-          }
+          // Ending a batch never auto-promotes a planned batch — the next
+          // planned batch only goes active at its own scheduled start date
+          // (or when RMC explicitly clicks "Start" on it).
+          this.buildActiveForm(null);
+          this.feedback.set({ type: 'success', text: 'Batch ended and moved to history.' });
         },
         error: () => this.feedback.set({ type: 'error', text: 'Failed to end batch.' }),
       });
@@ -567,6 +830,7 @@ export class BatchSittingComponent implements OnInit, OnDestroy {
     this.plannedForm.markAllAsTouched();
     if (this.plannedForm.invalid) {
       this.feedback.set({ type: 'error', text: 'Please fix validation errors before saving.' });
+      this.scrollToFeedback();
       return;
     }
     const fv = this.plannedForm.getRawValue();
@@ -620,6 +884,38 @@ export class BatchSittingComponent implements OnInit, OnDestroy {
           error: () => this.feedback.set({ type: 'error', text: 'Failed to create.' }),
         });
     }
+  }
+
+  /** Manually starts a planned batch now (only allowed while no batch is active). */
+  startPlanned(batch: BatchSitting): void {
+    if (!this.canStartPlanned()) return;
+    const now = new Date().toISOString();
+    const startVal = nowInputValue();
+    // Starting a batch early moves its start to now — the applicant submission
+    // window opens with the batch, so its start follows the batch start too.
+    const stages = {
+      ...batch.stages,
+      applicant: { ...batch.stages.applicant, startDate: startVal },
+    };
+    this.isSaving.set(true);
+    this.svc
+      .activateNow({ ...batch, startDate: startVal, stages, updatedAt: now })
+      .pipe(
+        finalize(() => this.isSaving.set(false)),
+        takeUntil(this.destroy$),
+      )
+      .subscribe({
+        next: (saved) => {
+          this.activeBatch.set(saved);
+          this.plannedBatches.update((list) => list.filter((b) => b.id !== batch.id));
+          this.buildActiveForm(saved);
+          this.feedback.set({
+            type: 'success',
+            text: `${saved.batchName} started and is now the active batch.`,
+          });
+        },
+        error: () => this.feedback.set({ type: 'error', text: 'Failed to start batch.' }),
+      });
   }
 
   deletePlanned(batch: BatchSitting): void {
@@ -677,12 +973,36 @@ export class BatchSittingComponent implements OnInit, OnDestroy {
 
   retrieveBatch(batch: BatchSitting): void {
     if (!this.canRetrieve()) return;
+
+    // A batch whose end date is still ahead can be brought back live as-is — its
+    // window is still valid. But one that already ended can't just be
+    // re-activated: it would auto-complete again on the very next tick. So open
+    // it in the editor with the start locked to now, forcing the admin to pick a
+    // fresh end date (the stale one trips the end-before-start rule) first.
+    if (batch.endDate <= nowInputValue()) {
+      this.retrievingBatch.set(batch);
+      this.buildActiveForm(batch);
+      this.activeForm.get('startDate')!.setValue(nowInputValue());
+      this.activeForm.get('startDate')!.disable({ emitEvent: false });
+      this.isEditingActive.set(true);
+      this.feedback.set({
+        type: 'error',
+        text: 'This batch already ended — set a new end date (and stage windows) before starting it.',
+      });
+      return;
+    }
+
     const now = new Date().toISOString();
     const { endedAt: _removed, ...rest } = batch as BatchSitting & { endedAt?: string };
-    const retrieved: BatchSitting = { ...rest, status: 'active', updatedAt: now };
+    const retrieved: BatchSitting = {
+      ...rest,
+      status: 'active',
+      startDate: nowInputValue(),
+      updatedAt: now,
+    };
     this.isSaving.set(true);
     this.svc
-      .update(retrieved)
+      .activateNow(retrieved)
       .pipe(
         finalize(() => this.isSaving.set(false)),
         takeUntil(this.destroy$),
@@ -708,6 +1028,34 @@ export class BatchSittingComponent implements OnInit, OnDestroy {
     return !!form.errors?.['endBeforeStart'] && !!form.get('endDate')?.touched;
   }
 
+  hasBatchNameTaken(form: FormGroup): boolean {
+    const c = form.get('batchName');
+    return !!c?.errors?.['batchNameTaken'] && !!c?.touched;
+  }
+
+  hasActiveStartTooSoon(form: FormGroup): boolean {
+    const c = form.get('startDate');
+    return !!c?.errors?.['activeStartTooSoon'] && !!c?.touched;
+  }
+
+  hasPlannedStartTooSoon(form: FormGroup): boolean {
+    const c = form.get('startDate');
+    return !!c?.errors?.['plannedStartTooSoon'] && !!c?.touched;
+  }
+
+  /** True once either date has been touched — the timeline errors are group-level, so we gate on the date fields the user actually edits. */
+  private timelineTouched(form: FormGroup): boolean {
+    return !!(form.get('startDate')?.touched || form.get('endDate')?.touched);
+  }
+
+  hasBatchOverlap(form: FormGroup): boolean {
+    return !!form.errors?.['batchOverlap'] && this.timelineTouched(form);
+  }
+
+  hasBatchGapTooSmall(form: FormGroup): boolean {
+    return !!form.errors?.['batchGapTooSmall'] && this.timelineTouched(form);
+  }
+
   hasStageErr(form: FormGroup, key: WorkflowStageKey, err: string): boolean {
     const g = form.get('stages')!.get(key) as FormGroup;
     return !!g.errors?.[err] && !!(g.get('startDate')?.touched || g.get('endDate')?.touched);
@@ -717,10 +1065,10 @@ export class BatchSittingComponent implements OnInit, OnDestroy {
     return form.get('stages')!.get(key) as FormGroup;
   }
 
-  /** Open native date picker via icon click. */
+  /** Open native date/time picker via icon click. */
   openDatePicker(event: MouseEvent): void {
     const wrap = (event.currentTarget as HTMLElement).closest('.date-input-wrap');
-    const input = wrap?.querySelector('input[type="date"]') as HTMLInputElement | null;
+    const input = wrap?.querySelector('input[type="datetime-local"]') as HTMLInputElement | null;
     try {
       input?.showPicker();
     } catch {
@@ -730,22 +1078,33 @@ export class BatchSittingComponent implements OnInit, OnDestroy {
 
   fmt(d: string | null | undefined): string {
     if (!d) return '—';
-    return new Date(d + (d.length === 10 ? 'T00:00:00' : '')).toLocaleDateString('en-GB', {
+    const dt = new Date(d);
+    if (Number.isNaN(dt.getTime())) return '—';
+    return dt.toLocaleString('en-GB', {
       day: '2-digit',
       month: 'short',
       year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
     });
   }
 
-  private addDay(dateStr: string): string {
-    if (!dateStr) return '';
-    return new Date(new Date(dateStr + 'T00:00:00').getTime() + 86_400_000)
-      .toISOString()
-      .substring(0, 10);
-  }
-
-  private currentDateIso(): string {
-    return new Date().toISOString().substring(0, 10);
+  /**
+   * The feedback banner renders at the top of the card while Save sits below a
+   * long stage table — without this, a validation error banner can render
+   * entirely out of the user's current scroll position, making it look like
+   * clicking Save did nothing.
+   */
+  private scrollToFeedback(): void {
+    setTimeout(() => {
+      this.feedbackBannerRef?.nativeElement.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+      });
+    });
   }
 }
+
+
+
 

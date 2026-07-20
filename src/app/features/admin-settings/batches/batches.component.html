@@ -283,6 +283,9 @@
             [totalPages]="historyTotalPages()"
             [pageSize]="historyPageSize()"
             [pageSizeOptions]="historyPageSizeOptions"
+            [totalItems]="historyBatches().length"
+            [itemCount]="paginatedHistoryBatches().length"
+            itemLabel="batches"
             (pageChange)="onHistoryPageChange($event)"
             (pageSizeChange)="onHistoryPageSizeChange($event)"
           >
@@ -338,6 +341,9 @@
         [totalPages]="stageTotalPages()"
         [pageSize]="stagePageSize()"
         [pageSizeOptions]="stagePageSizeOptions"
+        [totalItems]="stagesForBatch(batch).length"
+        [itemCount]="paginatedStagesForBatch(batch).length"
+        itemLabel="stages"
         (pageChange)="onStagePageChange($event)"
         (pageSizeChange)="onStagePageSizeChange($event)"
       >

@@ -1,83 +1,126 @@
-<!-- Draft submissions -->
 <div class="submissions-page">
-  <!-- ── Page Header ────────────────────────────────────────────────────────── -->
   <div class="submissions-header">
     <div class="submissions-header__text">
       <h1 class="submissions-title">
-        <span class="material-icons">edit_note</span>
+        <span class="material-icons" aria-hidden="true">edit_note</span>
         Drafts
       </h1>
-      <p class="submissions-subtitle">Saved applications not yet submitted to HOS</p>
+      <p class="submissions-subtitle">Saved applications that are not submitted yet.</p>
     </div>
   </div>
 
-  <!-- ── Loading ────────────────────────────────────────────────────────────── -->
   @if (loading()) {
     <app-table-skeleton [columns]="skeletonColumns" loadingLabel="Loading drafts">
     </app-table-skeleton>
   }
 
-  <!-- ── Error ──────────────────────────────────────────────────────────────── -->
   @if (!loading() && error()) {
     <div class="state-message state-error">
-      <span class="material-icons">error_outline</span>
+      <span class="material-icons" aria-hidden="true">error_outline</span>
       {{ error() }}
     </div>
   }
 
   @if (!loading() && !error()) {
-    <!-- ── Search ────────────────────────────────────────────────────────────── -->
-    <app-submissions-search
-      placeholder="Search drafts by title..."
-      [value]="searchQuery()"
-      (valueChange)="searchQuery.set($event)"
+    <app-submission-form-tabs
+      [tabs]="formTabs()"
+      [selectedValue]="selectedType()"
+      ariaLabel="Draft form filters"
+      (selectedValueChange)="setTab($event)"
     />
 
-    <!-- ── Empty ─────────────────────────────────────────────────────────────── -->
-    @if (drafts().length === 0) {
-      <div class="state-message state-empty">
-        <span class="material-icons">edit_note</span>
-        @if (searchQuery()) {
-          No drafts match "{{ searchQuery() }}".
-        } @else {
-          No saved drafts. Click <strong>New Application</strong> to start one.
+    <section class="dropdown-search-panel" aria-label="Draft search">
+      <app-submissions-search
+        placeholder="Search by code"
+        [value]="searchQuery()"
+        (search)="onSearch($event)"
+        (refresh)="resetFilters()"
+      >
+        <label search-filters class="mgr-date-filter">
+          <span class="sr-only">Created date</span>
+          <input
+            class="input--text"
+            type="date"
+            [value]="createdDate()"
+            (input)="onCreatedDateChange($event)"
+            aria-label="Filter by created date"
+          />
+        </label>
+      </app-submissions-search>
+    </section>
+
+    <section class="dropdown-table-panel" aria-label="Draft applications">
+      <div class="shared-options-table">
+        <table>
+          <thead>
+            <tr>
+              <th>No.</th>
+              <th>Code</th>
+              <th>Status</th>
+              <th>Created Date</th>
+              <th>
+                <button type="button" class="sort-heading" (click)="toggleLastSavedSort()">
+                  Last Saved
+                  <span class="material-icons" aria-hidden="true">
+                    {{ sortDirection() === 'asc' ? 'arrow_upward' : 'arrow_downward' }}
+                  </span>
+                </button>
+              </th>
+              <th class="actions-heading">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (app of pagedDrafts(); track getCode(app); let index = $index) {
+              <tr>
+                <td>{{ getRowNumber(index) }}</td>
+                <td class="draft-code-cell">{{ getCode(app) }}</td>
+                <td>
+                  <span class="status-chip status-chip--draft">{{ getStatus(app) }}</span>
+                </td>
+                <td>{{ formatCreatedDate(app) }}</td>
+                <td>{{ formatDate(app) }}</td>
+                <td class="actions-cell">
+                  <div class="table-actions">
+                    <button
+                      type="button"
+                      class="table-action table-action--continue"
+                      title="Continue draft"
+                      aria-label="Continue draft"
+                      (click)="openDraft(app)"
+                    >
+                      <app-table-action-icon action="edit"></app-table-action-icon>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+
+        @if (drafts().length === 0) {
+          <div class="empty-state">
+            @if (searchQuery() || createdDate()) {
+              <p>No drafts match the current filters.</p>
+            } @else {
+              <p>No saved drafts found.</p>
+            }
+          </div>
         }
       </div>
-    }
+    </section>
 
-    <!-- ── Table ─────────────────────────────────────────────────────────────── -->
-    @if (drafts().length > 0) {
-      <app-data-table
-        [columns]="columns"
-        [rows]="drafts()"
-        [sortColumn]="sortColumn()"
-        [sortDirection]="sortDirection()"
-        (sortChange)="onSortChange($event)"
-      >
-        <ng-template #rowTemplate let-app>
-          <tr>
-            <td>
-              <div class="data-table__title">
-                {{ app.projectDetails?.title?.trim() || '(Untitled Draft)' }}
-              </div>
-            </td>
-            <td class="col-date">{{ formatDate(app) }}</td>
-            <td>
-              <div class="data-table__actions">
-                <button
-                  type="button"
-                  class="btn-icon btn-icon--edit"
-                  (click)="openDraft(app)"
-                  title="Continue draft"
-                  aria-label="Continue draft"
-                >
-                  <app-table-action-icon action="edit"></app-table-action-icon>
-                </button>
-              </div>
-            </td>
-          </tr>
-        </ng-template>
-      </app-data-table>
-    }
+    <section class="dropdown-pagination-panel" aria-label="Draft pagination">
+      <app-pagination
+        [currentPage]="page()"
+        [totalPages]="totalPages()"
+        [pageSize]="pageSize()"
+        [pageSizeOptions]="pageSizeOptions"
+        [totalItems]="drafts().length"
+        [itemCount]="pagedDrafts().length || null"
+        itemLabel="drafts"
+        (pageChange)="onPageChange($event)"
+        (pageSizeChange)="onPageSizeChange($event)"
+      ></app-pagination>
+    </section>
   }
 </div>

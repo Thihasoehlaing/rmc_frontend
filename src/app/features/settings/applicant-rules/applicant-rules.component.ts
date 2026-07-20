@@ -16,13 +16,13 @@ import { SearchableDropdownComponent } from '../../../shared/components/searchab
 import { TableActionIconComponent } from '../../../shared/components/table-action-icon/table-action-icon.component';
 import { TableSkeletonComponent } from '../../../shared/components/table-skeleton/table-skeleton.component';
 import {
-  AcademicStaffOption,
   ApplicantRule,
   ApplicantRuleListParams,
   ApplicantRulePayload,
   ApplicantRulesService,
   DepartmentOption,
   FormOption,
+  StaffOption,
 } from './applicant-rules.service';
 
 type DialogMode = 'create' | 'edit';
@@ -63,7 +63,7 @@ export class ApplicantRulesComponent implements OnInit {
   readonly applicantRules = signal<ApplicantRule[]>([]);
   readonly forms = signal<FormOption[]>([]);
   readonly departments = signal<DepartmentOption[]>([]);
-  readonly academicStaff = signal<AcademicStaffOption[]>([]);
+  readonly staffOptions = signal<StaffOption[]>([]);
 
   readonly ruleValueSearch = signal('');
   readonly selectedFormCode = signal<string | null>(null);
@@ -132,14 +132,14 @@ export class ApplicantRulesComponent implements OnInit {
     }));
   }
 
-  academicStaffOptions(): DropdownOption<string>[] {
-    return this.academicStaff()
+  staffDropdownOptions(): DropdownOption<string>[] {
+    return this.staffOptions()
       .filter((staff) => !!staff.username)
       .map((staff) => ({
         value: staff.username!,
         label: staff.fullname || staff.username!,
-        description: [staff.username, staff.email, staff.department].filter(Boolean).join(' | '),
-        searchText: [staff.username, staff.fullname, staff.email, staff.department]
+        description: [staff.username, staff.email, staff.staff_type, staff.department].filter(Boolean).join(' | '),
+        searchText: [staff.username, staff.fullname, staff.email, staff.staff_type, staff.department]
           .filter(Boolean)
           .join(' '),
       }));
@@ -152,13 +152,13 @@ export class ApplicantRulesComponent implements OnInit {
     forkJoin({
       forms: this.applicantRulesService.listForms(),
       departments: this.applicantRulesService.listDepartments(),
-      academicStaff: this.applicantRulesService.listAcademicStaff(),
+      staffOptions: this.applicantRulesService.listStaffOptions(),
     })
       .pipe(
-        tap(({ forms, departments, academicStaff }) => {
+        tap(({ forms, departments, staffOptions }) => {
           this.forms.set(forms.data);
           this.departments.set(departments.data);
-          this.academicStaff.set(academicStaff.data);
+          this.staffOptions.set(staffOptions.data);
         }),
         switchMap(() => this.applicantRulesService.list(this.currentListParams())),
         finalize(() => this.isLoading.set(false)),

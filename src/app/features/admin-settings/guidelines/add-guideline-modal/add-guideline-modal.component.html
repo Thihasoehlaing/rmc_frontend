@@ -32,12 +32,13 @@
           <select
             id="guideline-form"
             class="input--select"
-            [ngModel]="guidelineConfig().formName"
+            [ngModel]="guidelineConfig().formId?.toString() ?? ''"
             (ngModelChange)="onFormChange($event)"
             [disabled]="isSaving"
           >
-            @for (form of formOptions; track form) {
-              <option [value]="form">{{ form }}</option>
+            <option value="">Select a form</option>
+            @for (form of forms(); track form.id) {
+              <option [value]="form.id.toString()">{{ form.form_name }}</option>
             }
           </select>
         </div>
@@ -111,5 +112,4 @@
   #previewModal
   [title]="guidelineConfig().title"
   [contentOverride]="guidelineContent()"
-  [buttonText]="guidelineConfig().buttonText"
 ></app-guidelines-modal>

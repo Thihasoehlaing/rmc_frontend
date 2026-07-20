@@ -1,34 +1,62 @@
 import { Component, OnInit, ViewChild, inject, effect, Output, EventEmitter } from '@angular/core';
 import { CustomHeaderComponent } from '../../../../shared/components/custom-header/custom-header.component';
 import { CommonModule } from '@angular/common';
-import { ValidationMessageComponent } from '../../../../shared/components/validation-message/validation-message.component';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
 import { FileUploadComponent } from '../../../../shared/components/file-upload/file-upload.component';
-import { NoteComponent } from '../../../../shared/components/note/note.component'; 
+import { NoteComponent } from '../../../../shared/components/note/note.component';
 import { JournalWorkflowService } from '../../services/journal-workflow.service';
-import { JournalFormData, JournalRequestPayload } from '../../services/journal-application-api.service';
+import {
+  JournalAttachmentUpload,
+  JournalFormData,
+  JournalRequestPayload,
+} from '../../services/journal-application-api.service';
+
+interface PendingDocumentUpload {
+  controlName: string;
+  entityType: string;
+  file: File;
+}
 
 @Component({
   selector: 'app-documents',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FileUploadComponent, NoteComponent, CustomHeaderComponent, ValidationMessageComponent],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    FileUploadComponent,
+    NoteComponent,
+    CustomHeaderComponent,
+  ],
   templateUrl: './documents.html',
-  styleUrl: './documents.scss'
+  styleUrl: './documents.scss',
 })
 export class DocumentsComponent implements OnInit {
   @Output() formValidityChange = new EventEmitter<boolean>();
   documentsForm!: FormGroup;
 
   // References to file upload components for manual reset if needed
-  @ViewChild('acceptanceNotificationUpload', { static: false }) acceptanceNotificationUpload?: FileUploadComponent;
-  @ViewChild('reviewersFeedbackUpload', { static: false }) reviewersFeedbackUpload?: FileUploadComponent;
+  @ViewChild('acceptanceNotificationUpload', { static: false })
+  acceptanceNotificationUpload?: FileUploadComponent;
+  @ViewChild('reviewersFeedbackUpload', { static: false })
+  reviewersFeedbackUpload?: FileUploadComponent;
   @ViewChild('scopusEvidenceUpload', { static: false }) scopusEvidenceUpload?: FileUploadComponent;
+  @ViewChild('sriApprovalUpload', { static: false }) sriApprovalUpload?: FileUploadComponent;
   @ViewChild('turnitinReportUpload', { static: false }) turnitinReportUpload?: FileUploadComponent;
   @ViewChild('finalPaperUpload', { static: false }) finalPaperUpload?: FileUploadComponent;
   @ViewChild('journalInvoiceUpload', { static: false }) journalInvoiceUpload?: FileUploadComponent;
   // File constants
   readonly PDF_ACCEPT = '.pdf';
   readonly MAX_FILE_SIZE_MB = 10;
+  private readonly documentEntityTypes: Record<string, string> = {
+    acceptanceNotification: 'acceptance_notification',
+    reviewersFeedback: 'reviewers_feedback',
+    scopusEvidencePublication: 'scopus_citescore_screenshot',
+    sriApproval: 'sri_approval',
+    turnitinReport: 'turnitin_report',
+    finalPaperDraft: 'final_paper_draft',
+    journalInvoice: 'journal_invoice',
+  };
+  private pendingUploads = new Map<string, PendingDocumentUpload>();
 
   workflow = inject(JournalWorkflowService);
 
@@ -50,28 +78,30 @@ export class DocumentsComponent implements OnInit {
 
   initializeDocumentsForm() {
     this.documentsForm = this.fb.group({
-      acceptanceNotification: ['', [Validators.required]],
-      reviewersFeedback: ['', [Validators.required]],
-      scopusEvidencePublication: ['', [Validators.required]],
-      turnitinReport: ['', [Validators.required]],
-      finalPaperDraft: ['', [Validators.required]],
-      journalInvoice: ['', [Validators.required]],
-      manuscriptInternallyReviewed: ['', [Validators.required]],
-      reviewerName: ['', [Validators.required]],
-      manuscriptPreviouslyPublished: ['', [Validators.required]]
+      acceptanceNotification: [''],
+      reviewersFeedback: [''],
+      scopusEvidencePublication: [''],
+      sriApproval: [''],
+      turnitinReport: [''],
+      finalPaperDraft: [''],
+      journalInvoice: [''],
+      manuscriptInternallyReviewed: [''],
+      reviewerName: [''],
+      manuscriptPreviouslyPublished: [''],
     });
 
-    this.documentsForm.statusChanges.subscribe(status => {
+    this.documentsForm.statusChanges.subscribe((status) => {
       this.formValidityChange.emit(status === 'VALID');
     });
+    this.formValidityChange.emit(this.documentsForm.valid);
   }
 
   getJournalPayload(): JournalRequestPayload {
     const value = this.documentsForm.getRawValue();
     return {
       reviewer_name: value.reviewerName || null,
-      is_manuscript_internally_reviewed: value.manuscriptInternallyReviewed === 'yes',
-      is_published_elsewhere: value.manuscriptPreviouslyPublished === 'yes',
+      is_manuscript_internally_reviewed: this.toOptionalBoolean(value.manuscriptInternallyReviewed),
+      is_published_elsewhere: this.toOptionalBoolean(value.manuscriptPreviouslyPublished),
     };
   }
 
@@ -81,11 +111,15 @@ export class DocumentsComponent implements OnInit {
       return;
     }
 
+    const attachmentNames = this.attachmentNamesByControl(data.attachments || []);
     this.documentsForm.patchValue(
       {
+        ...attachmentNames,
         reviewerName: journal.reviewer_name || '',
-        manuscriptInternallyReviewed: journal.is_manuscript_internally_reviewed ? 'yes' : 'no',
-        manuscriptPreviouslyPublished: journal.is_published_elsewhere ? 'yes' : 'no',
+        manuscriptInternallyReviewed: this.fromOptionalBoolean(
+          journal.is_manuscript_internally_reviewed,
+        ),
+        manuscriptPreviouslyPublished: this.fromOptionalBoolean(journal.is_published_elsewhere),
       },
       { emitEvent: false },
     );
@@ -93,15 +127,32 @@ export class DocumentsComponent implements OnInit {
 
   onDocumentSelected(controlName: string, file: File | null) {
     if (file) {
+      this.pendingUploads.set(controlName, {
+        controlName,
+        entityType: this.documentEntityTypes[controlName] || controlName,
+        file,
+      });
       this.documentsForm.patchValue({
-        [controlName]: file.name
+        [controlName]: file.name,
       });
     } else {
+      this.pendingUploads.delete(controlName);
       this.documentsForm.patchValue({
-        [controlName]: null
+        [controlName]: null,
       });
     }
     this.documentsForm.get(controlName)?.markAsTouched();
+  }
+
+  getPendingAttachmentUploads(): JournalAttachmentUpload[] {
+    return [...this.pendingUploads.values()].map((upload) => ({
+      file: upload.file,
+      entity_type: upload.entityType,
+    }));
+  }
+
+  markPendingAttachmentUploadsSaved(): void {
+    this.pendingUploads.clear();
   }
 
   /**
@@ -118,5 +169,34 @@ export class DocumentsComponent implements OnInit {
         ctrl.setValue(cleaned, { emitEvent: true });
       }
     }
+  }
+
+  private toOptionalBoolean(value: unknown): boolean | undefined {
+    if (value === 'yes') return true;
+    if (value === 'no') return false;
+    return undefined;
+  }
+
+  private fromOptionalBoolean(value: unknown): 'yes' | 'no' | '' {
+    if (value === true) return 'yes';
+    if (value === false) return 'no';
+    return '';
+  }
+
+  private attachmentNamesByControl(attachments: any[]): Record<string, string> {
+    const entityToControl = new Map(
+      Object.entries(this.documentEntityTypes).map(([control, entity]) => [entity, control]),
+    );
+    entityToControl.set('scopus_evidence_publication', 'scopusEvidencePublication');
+    const names: Record<string, string> = {};
+
+    for (const attachment of attachments) {
+      const controlName = entityToControl.get(attachment.entity_type);
+      if (controlName && !names[controlName]) {
+        names[controlName] = attachment.file_name || '';
+      }
+    }
+
+    return names;
   }
 }

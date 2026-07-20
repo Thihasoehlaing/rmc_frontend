@@ -12,7 +12,7 @@
     [customModal]="true"
     (helpClick)="journalGuidelinesModal.open()"
     modalTitle="Journal Guidelines"
-    endpoint="/api/guidelines/journal"
+    endpoint="/rmc/guidelines/journal"
   >
   </app-form-main-title>
 
@@ -43,73 +43,60 @@
   }
 
   <!-- ── External Review Comment Buttons ───────────────────────── -->
-  <ng-container
-    *ngIf="
-      workflow.status() !== 'draft' &&
-      (workflow.showHosToggle() ||
-        workflow.showRmcToggle() ||
-        workflow.showVcToggle() ||
-        workflow.showHrToggle() ||
-        workflow.showCeoToggle())
-    "
-  >
-    <div class="comment-toggle-bar">
-      <button
-        type="button"
-        class="btn btn--comment-toggle"
-        *ngIf="workflow.showHosToggle()"
-        [class.btn--comment-toggle-active]="selectedCommentSection === 'hos'"
-        (click)="toggleCommentSection('hos')"
-      >
-        <span class="material-icons">supervisor_account</span>
-        {{ selectedCommentSection === 'hos' ? 'Hide HOS Comments' : 'HOS Comments' }}
-      </button>
+  @if (hasExistingRequestParam) {
+    <section class="applicant-section-comments application-form-surface" aria-label="Reviewer section comments">
+      <div class="applicant-section-comments__header">
+        <div class="applicant-section-comments__icon">
+          <span class="material-icons" aria-hidden="true">reviews</span>
+        </div>
+        <div>
+          <p class="applicant-section-comments__eyebrow">Reviewer feedback</p>
+          <h2>Section Comments</h2>
+          <p>Use these comments as your checklist before resubmitting the application.</p>
+        </div>
+      </div>
+      <div class="applicant-section-comments__actors" aria-label="Reviewer feedback actors">
+          @for (actor of actorTabsWithComments(); track actor.code) {
+            <button
+              type="button"
+              class="applicant-comment-actor"
+              [class.applicant-comment-actor--active]="selectedFeedbackActorCode === actor.code"
+              (click)="toggleFeedbackActor(actor.code)"
+            >
+              <span class="material-icons" aria-hidden="true">{{ actor.icon }}</span>
+              <span>{{ actor.label }}</span>
+              <small>{{ actorCommentCount(actor.code) }}</small>
+            </button>
+          }
+        </div>
 
-      <button
-        type="button"
-        class="btn btn--comment-toggle"
-        *ngIf="workflow.showRmcToggle()"
-        [class.btn--comment-toggle-active]="selectedCommentSection === 'rmc'"
-        (click)="toggleCommentSection('rmc')"
-      >
-        <span class="material-icons">verified</span>
-        {{ selectedCommentSection === 'rmc' ? 'Hide RMC Comments' : 'RMC Comments' }}
-      </button>
+        <div class="applicant-section-comments__grid">
+            @for (section of sectionsWithCommentsForActor(selectedFeedbackActorCode); track section.code) {
+              <article class="applicant-comment-section">
+                <header>
+                  <span class="material-icons" aria-hidden="true">{{ section.icon }}</span>
+                  <div>
+                    <h3>{{ section.label }}</h3>
+                    <small>{{ commentsForActorSection(selectedFeedbackActorCode, section.code).length }} comment(s)</small>
+                  </div>
+                </header>
 
-      <button
-        type="button"
-        class="btn btn--comment-toggle"
-        *ngIf="workflow.showVcToggle()"
-        [class.btn--comment-toggle-active]="selectedCommentSection === 'vc'"
-        (click)="toggleCommentSection('vc')"
-      >
-        <span class="material-icons">account_balance</span>
-        {{ selectedCommentSection === 'vc' ? 'Hide VC Comments' : 'VC Comments' }}
-      </button>
-
-      <button
-        type="button"
-        class="btn btn--comment-toggle"
-        *ngIf="workflow.showHrToggle()"
-        [class.btn--comment-toggle-active]="selectedCommentSection === 'hr'"
-        (click)="toggleCommentSection('hr')"
-      >
-        <span class="material-icons">people</span>
-        {{ selectedCommentSection === 'hr' ? 'Hide HR Comments' : 'HR Comments' }}
-      </button>
-
-      <button
-        type="button"
-        class="btn btn--comment-toggle"
-        *ngIf="workflow.showCeoToggle()"
-        [class.btn--comment-toggle-active]="selectedCommentSection === 'ceo'"
-        (click)="toggleCommentSection('ceo')"
-      >
-        <span class="material-icons">stars</span>
-        {{ selectedCommentSection === 'ceo' ? 'Hide CEO Comments' : 'CEO Comments' }}
-      </button>
-    </div>
-  </ng-container>
+                <div class="applicant-comment-section__list">
+                  @for (comment of commentsForActorSection(selectedFeedbackActorCode, section.code); track comment.id) {
+                    <div class="applicant-comment">
+                      <div class="applicant-comment__meta">
+                        <strong>{{ comment.staff_name || comment.staff_username || 'Reviewer' }}</strong>
+                        <span>{{ prettyActor(comment.actor_type_code) }} · {{ formatCommentDate(comment.created_at) }}</span>
+                      </div>
+                      <p>{{ comment.comment_text }}</p>
+                    </div>
+                  }
+                </div>
+              </article>
+            }
+          </div>
+    </section>
+  }
 
   <!-- ── 3. Main Form ──────────────────────────────────────────── -->
   <fieldset
@@ -143,14 +130,7 @@
 
   <!-- ── External Review Comment Panels (outside form disabling) ─────── -->
   <ng-container
-    *ngIf="
-      workflow.status() !== 'draft' &&
-      (workflow.showHosToggle() ||
-        workflow.showRmcToggle() ||
-        workflow.showVcToggle() ||
-        workflow.showHrToggle() ||
-        workflow.showCeoToggle())
-    "
+    *ngIf="false"
   >
     <!-- Active Comment Panels -->
     <div class="card review-comments-section" *ngIf="selectedCommentSection">

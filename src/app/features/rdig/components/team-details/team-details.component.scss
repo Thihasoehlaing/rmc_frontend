@@ -85,3 +85,117 @@
 .manage-icon {
   display: block;
 }
+
+// ── Team tables: top-align cells so multi-line, wrapping content lines up ──
+// row-to-row instead of floating vertically centered against tall neighbours.
+:host ::ng-deep app-data-table {
+  tbody td {
+    vertical-align: top;
+  }
+
+  // The avatar should sit at the top of the stacked name block, not centered
+  // against it, once that block wraps onto several lines.
+  .data-table__stacked {
+    align-items: flex-start;
+    justify-content: flex-start;
+  }
+}
+
+// Few-column table (internal): pin to the container so its fixed % column
+// widths hold and a long unbreakable value wraps character-by-character
+// instead of stretching the whole table and spreading columns apart.
+:host ::ng-deep app-data-table.team-table--fit table {
+  width: 100%;
+  min-width: 0;
+}
+
+// Many-column table (external): keep its per-column px widths and let the
+// table exceed the container so the shared horizontal scroll kicks in, rather
+// than crushing 11 columns into the page width.
+:host ::ng-deep app-data-table.team-table--scroll {
+  table {
+    width: max-content;
+    min-width: 100%;
+  }
+
+  // A right-edge fade cues that there's more content to the right. It sits on
+  // the frame (which doesn't scroll) so it stays pinned as the table scrolls.
+  .data-table__frame {
+    position: relative;
+  }
+  .data-table__frame::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    width: 40px;
+    background: linear-gradient(to right, transparent, rgba(0, 0, 0, 0.055));
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  // macOS hides overlay scrollbars, so the table looks unscrollable. Styling
+  // the scrollbar forces a classic, always-visible one in WebKit; Firefox gets
+  // the standard (non-thin) track. This is the clearest "you can scroll" cue.
+  .data-table__scroll {
+    scrollbar-width: auto;
+    scrollbar-color: var(--border-hover) var(--color-surface-nested);
+
+    &::-webkit-scrollbar {
+      height: 12px;
+      -webkit-appearance: none;
+    }
+    &::-webkit-scrollbar-track {
+      background: var(--color-surface-nested);
+      border-radius: var(--radius-full);
+    }
+    &::-webkit-scrollbar-thumb {
+      background: var(--border-hover);
+      border-radius: var(--radius-full);
+      border: 3px solid var(--color-surface-nested);
+
+      &:hover {
+        background: var(--color-text-muted);
+      }
+    }
+  }
+}
+
+.table-scroll-hint {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin: 0 0 var(--space-2);
+  font-size: var(--fs-xs);
+  color: var(--color-text-muted);
+
+  .scroll-arrow {
+    font-size: 16px;
+    color: var(--color-primary);
+    // Glow, fade off, glow again — a continuous loop cueing horizontal scroll.
+    animation: scroll-arrow-glow 1.6s ease-in-out infinite;
+  }
+}
+
+@keyframes scroll-arrow-glow {
+  0%,
+  100% {
+    opacity: 0.35;
+    text-shadow: none;
+  }
+  50% {
+    opacity: 1;
+    text-shadow:
+      0 0 4px var(--color-primary),
+      0 0 9px var(--color-primary);
+  }
+}
+
+// Respect users who prefer no motion — keep the arrow visible but static.
+@media (prefers-reduced-motion: reduce) {
+  .table-scroll-hint .scroll-arrow {
+    animation: none;
+    opacity: 1;
+  }
+}

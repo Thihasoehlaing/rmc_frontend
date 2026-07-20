@@ -13,6 +13,7 @@ import { isRmcApiRequest } from './auth-token.interceptor';
 
 export const SHOW_API_SUCCESS = new HttpContextToken<boolean>(() => false);
 export const SKIP_API_TOAST = new HttpContextToken<boolean>(() => false);
+export const SKIP_API_SUCCESS_TOAST = new HttpContextToken<boolean>(() => false);
 
 interface ApiMessageResponse {
   message?: unknown;
@@ -31,8 +32,9 @@ export const apiMessageInterceptor: HttpInterceptorFn = (
 
   const toastService = inject(ToastService);
   const showSuccess =
-    request.context.get(SHOW_API_SUCCESS) ||
-    !['GET', 'HEAD', 'OPTIONS'].includes(request.method);
+    !request.context.get(SKIP_API_SUCCESS_TOAST) &&
+    (request.context.get(SHOW_API_SUCCESS) ||
+      !['GET', 'HEAD', 'OPTIONS'].includes(request.method));
 
   return next(request).pipe(
     tap(event => {

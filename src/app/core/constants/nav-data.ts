@@ -31,6 +31,7 @@ export const NAVIGATION_DATA: NavGroup[] = [
 
             // ── Inbox ────────────────────────────────────────────────────────────────────
             { label: 'Inbox', icon: 'mail', route: '/submissions/inbox' },
+            { label: 'Notifications', icon: 'notifications', route: '/notifications' },
 
             // ── Submissions ──────────────────────────────────────────────────────────────
             // Collapsible folder visible to every authenticated user. Open by default.
@@ -63,7 +64,8 @@ export const NAVIGATION_DATA: NavGroup[] = [
                     {
                         label: 'RDIG Application',
                         icon: 'description',
-                        route: '/rdig',
+                        route: '/rdig/application',
+                        formCode: 'RDIG',
                         permission: {
                             anyOf: ['full_time', 'contract'],
                             allOf: ['academic'],
@@ -75,6 +77,7 @@ export const NAVIGATION_DATA: NavGroup[] = [
                         label: 'Conference Application',
                         icon: 'event',
                         route: '/conference/application',
+                        formCode: 'CONFERENCE',
                         permission: {
                             anyCondition: [
                                 { anyOf: ['full_time', 'contract'], allOf: ['academic'] },
@@ -88,6 +91,7 @@ export const NAVIGATION_DATA: NavGroup[] = [
                         label: 'Journal Publication',
                         icon: 'menu_book',
                         route: '/journal/application',
+                        formCode: 'JOURNAL',
                         permission: {
                             anyCondition: [
                                 { anyOf: ['full_time', 'contract'], allOf: ['academic'] },
@@ -101,6 +105,7 @@ export const NAVIGATION_DATA: NavGroup[] = [
                         label: 'RA/GRA Application',
                         icon: 'person_add',
                         route: '/ragra',
+                        formCode: 'RA_GRA',
                         permission: {
                             anyOf: ['full_time', 'contract'],
                             allOf: ['academic'],
@@ -111,6 +116,7 @@ export const NAVIGATION_DATA: NavGroup[] = [
                         label: 'Partnership Application',
                         icon: 'handshake',
                         route: '/partnership/application',
+                        formCode: 'PARTNERSHIP',
                         permission: {
                             anyOf: ['full_time', 'contract'],
                             allOf: ['academic'],
@@ -121,6 +127,7 @@ export const NAVIGATION_DATA: NavGroup[] = [
                         label: 'Proposal Application',
                         icon: 'assignment',
                         route: '/proposal',
+                        formCode: 'PROPOSAL',
                         permission: {
                             anyOf: ['full_time', 'contract'],
                             allOf: ['academic'],
@@ -130,12 +137,14 @@ export const NAVIGATION_DATA: NavGroup[] = [
                         label: 'External Project Data Entry',
                         icon: 'folder_open',
                         route: '/external-project-data-entry',
+                        formCode: 'EXTERNAL',
                         permission: { anyOf: ['RMC', 'Admin'] },
                     },                    // Travel Authorization: visible to all authenticated users except Admin
                     {
                         label: 'Travel Authorization',
                         icon: 'flight_takeoff',
                         route: '/travel-authorization/application',
+                        formCode: 'TRAVEL_AUTH',
                         permission: {
                             excludeGroups: ['Admin'],
                         },
@@ -152,9 +161,13 @@ export const NAVIGATION_DATA: NavGroup[] = [
                 permission: { anyOf: ['Admin'] },
                 children: [
                     { label: 'Guidelines', icon: 'description', route: '/admin-settings/guidelines', permission: { anyOf: ['Admin'] } },
+                    { label: 'Form Setting', icon: 'dynamic_form', route: '/admin-settings/form-setting', permission: { anyOf: ['Admin'] } },
                     { label: 'Dropdowns', icon: 'list', route: '/admin-settings/dropdowns', permission: { anyOf: ['Admin'] } },
+                    { label: 'Manage Project Account Code', icon: 'account_balance_wallet', route: '/admin-settings/manage-project-account-code', permission: { anyOf: ['Admin'] } },
+                    { label: 'Manage External Form Category', icon: 'category', route: '/admin-settings/manage-external-form-category', permission: { anyOf: ['Admin'] } },
                     { label: 'Batches', icon: 'batch_prediction', route: '/admin-settings/batches', permission: { anyOf: ['Admin'] } },
-                    { label: 'Staff Access', icon: 'person_add', route: '/admin-settings/staff-access', permission: { anyOf: ['Admin'] } },
+                    { label: 'RDIG Blocked List', icon: 'person_add', route: '/admin-settings/staff-access', permission: { anyOf: ['Admin'] } },
+                    { label: 'Manage RDIG Reviewer', icon: 'groups', route: '/admin-settings/manage-rdig-reviewer', permission: { anyOf: ['Admin'] } },
                 ],
             },
 
@@ -167,11 +180,13 @@ export const NAVIGATION_DATA: NavGroup[] = [
                 children: [
                     { label: 'Forms', icon: 'description', route: '/settings/forms', permission: { allOf: ['SystemAdmin'] } },
                     { label: 'Dropdown Categories', icon: 'list_alt', route: '/settings/dropdown-categories', permission: { allOf: ['SystemAdmin'] } },
+                    { label: 'Account Code Categories', icon: 'category', route: '/settings/account-code-categories', permission: { allOf: ['SystemAdmin'] } },
+                    { label: 'Account Codes', icon: 'account_balance_wallet', route: '/settings/account-codes', permission: { allOf: ['SystemAdmin'] } },
                     { label: 'Staff Directory', icon: 'badge', route: '/settings/staff-directory', permission: { allOf: ['SystemAdmin'] } },
                     { label: 'Academic Staff', icon: 'school', route: '/settings/academic-staff', permission: { allOf: ['SystemAdmin'] } },
                     { label: 'Users', icon: 'manage_accounts', route: '/settings/users', permission: { allOf: ['SystemAdmin'] } },
                     { label: 'Roles', icon: 'verified_user', route: '/settings/roles', permission: { allOf: ['SystemAdmin'] } },
-                    { label: 'Blocked Users', icon: 'person_off', route: '/settings/blocked-users', permission: { allOf: ['SystemAdmin'] } },
+                    { label: 'System Access', icon: 'admin_panel_settings', route: '/settings/system-access', permission: { allOf: ['SystemAdmin'] } },
                     { label: 'Applicant Rules', icon: 'rule', route: '/settings/applicant-rules', permission: { allOf: ['SystemAdmin'] } },
                     { label: 'Workflow Configuration', icon: 'account_tree', route: '/settings/workflow', permission: { allOf: ['SystemAdmin'] } },
                 ],
@@ -179,4 +194,3 @@ export const NAVIGATION_DATA: NavGroup[] = [
         ],
     },
 ];
-

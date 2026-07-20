@@ -4,7 +4,7 @@
     <app-custom-subheader title="Acceptance Evidence and Financial Document"></app-custom-subheader>
     <div class="card__content">
     <div class="section-fields">
-      <div class="form-field">
+      <div class="form-field" data-missing-field-target="acceptanceNotification">
         <div class="upload-field-header">
           <h3 class="upload-field-title is-required">Acceptance Notification</h3>
           <p class="upload-field-subtitle">Max file size: 10 MB. PDF ONLY</p>
@@ -15,6 +15,7 @@
           [accept]="PDF_ACCEPT"
           [maxSizeMB]="MAX_FILE_SIZE_MB"
           [disabled]="!canUploadDocuments()"
+          [uploadedFileName]="form.get('acceptanceNotification')?.value || null"
           placeholder="Upload acceptance notification PDF"
           (fileSelected)="onFileSelected('acceptanceNotification', $any($event))">
         </app-file-upload>
@@ -24,7 +25,7 @@
       </div>
 
       <!-- Conference Invoice -->
-      <div class="form-field">
+      <div class="form-field" data-missing-field-target="conferenceInvoice">
         <div class="upload-field-header">
           <div class="title-with-tooltip">
             <h3 class="upload-field-title is-required">Conference Invoice</h3>
@@ -37,6 +38,7 @@
           [accept]="PDF_ACCEPT"
           [maxSizeMB]="MAX_FILE_SIZE_MB"
           [disabled]="!canUploadDocuments()"
+          [uploadedFileName]="form.get('conferenceInvoice')?.value || null"
           placeholder="Upload conference invoice PDF"
           (fileSelected)="onFileSelected('conferenceInvoice', $any($event))">
         </app-file-upload>
@@ -53,7 +55,7 @@
     <app-custom-subheader title="Publication and Manuscript Files"></app-custom-subheader>
     <div class="card__content">
     <div class="section-fields">
-      <div class="form-field">
+      <div class="form-field" data-missing-field-target="reviewersFeedback">
         <div class="upload-field-header">
           <h3 class="upload-field-title is-required">Reviewers' Feedback</h3>
           <p class="upload-field-subtitle">Max file size: 10 MB. PDF ONLY</p>
@@ -64,6 +66,7 @@
           [accept]="PDF_ACCEPT"
           [maxSizeMB]="MAX_FILE_SIZE_MB"
           [disabled]="!canUploadDocuments()"
+          [uploadedFileName]="form.get('reviewersFeedback')?.value || null"
           placeholder="Upload reviewers' feedback PDF"
           (fileSelected)="onFileSelected('reviewersFeedback', $any($event))">
         </app-file-upload>
@@ -72,7 +75,7 @@
         }
       </div>
 
-      <div class="form-field">
+      <div class="form-field" data-missing-field-target="scopusEvidencePublication">
         <div class="upload-field-header">
           <h3 class="upload-field-title is-required">Evidence of Guaranteed SCOPUS Indexed Publication</h3>
           <p class="upload-field-subtitle">Max file size: 10 MB. PDF ONLY</p>
@@ -83,6 +86,7 @@
           [accept]="PDF_ACCEPT"
           [maxSizeMB]="MAX_FILE_SIZE_MB"
           [disabled]="!canUploadDocuments()"
+          [uploadedFileName]="form.get('scopusEvidencePublication')?.value || null"
           placeholder="Upload SCOPUS publication evidence PDF"
           (fileSelected)="onFileSelected('scopusEvidencePublication', $any($event))">
         </app-file-upload>
@@ -92,7 +96,7 @@
       </div>
 
       <!-- Turnitin Report -->
-      <div class="form-field">
+      <div class="form-field" data-missing-field-target="turnitinReport">
         <div class="upload-field-header">
           <h3 class="upload-field-title is-required">Turnitin Report</h3>
           <p class="upload-field-subtitle">Max file size: 10 MB. PDF ONLY</p>
@@ -103,6 +107,7 @@
           [accept]="PDF_ACCEPT"
           [maxSizeMB]="MAX_FILE_SIZE_MB"
           [disabled]="!canUploadDocuments()"
+          [uploadedFileName]="form.get('turnitinReport')?.value || null"
           placeholder="Upload Turnitin report PDF"
           (fileSelected)="onFileSelected('turnitinReport', $any($event))">
         </app-file-upload>
@@ -112,7 +117,7 @@
       </div>
 
       <!-- Final Paper Draft -->
-      <div class="form-field">
+      <div class="form-field" data-missing-field-target="finalPaperDraft">
         <div class="upload-field-header">
           <h3 class="upload-field-title is-required">Final Paper Draft</h3>
           <p class="upload-field-subtitle">Max file size: 10 MB. PDF ONLY</p>
@@ -123,6 +128,7 @@
           [accept]="PDF_ACCEPT"
           [maxSizeMB]="MAX_FILE_SIZE_MB"
           [disabled]="!canUploadDocuments()"
+          [uploadedFileName]="form.get('finalPaperDraft')?.value || null"
           placeholder="Upload final paper draft PDF"
           (fileSelected)="onFileSelected('finalPaperDraft', $any($event))">
         </app-file-upload>
@@ -139,7 +145,7 @@
     <div class="card__content">
     <div class="section-fields">
       <!-- Name of Reviewer -->
-      <div class="form-field manuscript-reviewer">
+      <div class="form-field manuscript-reviewer" data-missing-field-target="reviewerName">
         <label class="form-label is-required">Name of Reviewer</label>
         <input
           type="text"
@@ -149,7 +155,7 @@
       </div>
 
       <!-- Internal Review -->
-      <div class="form-field">
+      <div class="form-field" data-missing-field-target="manuscriptInternallyReviewed">
         <label class="form-label is-required">The manuscript has been internally reviewed for the quality of content and English?</label>
         <div class="radio-group">
           <label class="radio-label">
@@ -163,7 +169,7 @@
         </div>
       </div>
 
-      <div class="form-field">
+      <div class="form-field" data-missing-field-target="manuscriptPreviouslyPublished">
         <label class="form-label is-required">Has the manuscript and content been published in another journal or conference etc.?</label>
         <div class="radio-group">
           <label class="radio-label">
@@ -181,3 +187,5 @@
     </div>
   </section>
 </form>
+
+

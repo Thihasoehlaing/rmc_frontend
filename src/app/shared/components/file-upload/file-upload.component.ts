@@ -24,6 +24,9 @@ export class FileUploadComponent {
   /** Whether file upload is disabled. */
   @Input() disabled = false;
 
+  /** Existing uploaded filename supplied by a parent form/API hydration. */
+  @Input() uploadedFileName: string | null = null;
+
   /** Emits the valid File object after type + size checks pass, or null if invalid/cleared. */
   @Output() fileSelected = new EventEmitter<any>();
 
@@ -31,6 +34,10 @@ export class FileUploadComponent {
   selectedFileName = signal<string | null>(null);
   errorMsg        = signal<string | null>(null);
   isDragOver      = signal(false);
+
+  displayFileName(): string | null {
+    return this.selectedFileName() || this.uploadedFileName;
+  }
 
   // ── Drag events ───────────────────────────────────────────────
   onDragOver(event: DragEvent): void {

@@ -55,7 +55,7 @@
     <div class="trigger-actions">
       @if (loading) {
         <span class="spinner" aria-hidden="true"></span>
-      } @else if (hasSelection() && !isDisabled()) {
+      } @else if (hasSelection() && !isDisabled() && !isMulti) {
         <button
           type="button"
           class="clear-btn"

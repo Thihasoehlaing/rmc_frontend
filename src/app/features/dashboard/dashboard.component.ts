@@ -1,214 +1,178 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { finalize, forkJoin } from 'rxjs';
-import { AuthService } from '../../core/services/auth.service';
-import { ApplicationService, TERMINAL_STATUSES } from '../../core/services/application.service';
-import { DashboardSkeletonComponent } from '../../shared/components/dashboard-skeleton/dashboard-skeleton.component';
+import { finalize } from 'rxjs';
 
-type DashboardApp = any;
+import { AuthService } from '../../core/services/auth.service';
+import { detailRoute, formTypeLabel, STATUS_COLORS } from '../../core/services/request-display.util';
+import {
+  DashboardFormBreakdownDto,
+  DashboardStatusDistributionDto,
+  DashboardSummaryDto,
+  DashboardTrendPointDto,
+  RequestSummaryDto,
+  WorkflowRequestsService,
+} from '../../core/services/workflow-requests.service';
+import { DashboardSkeletonComponent } from '../../shared/components/dashboard-skeleton/dashboard-skeleton.component';
+import { dashboardConfigFor, DashboardMetricConfig } from './dashboard.config';
+
+const EMPTY_METRICS: DashboardSummaryDto['metrics'] = {
+  required_action: 0,
+  pending: 0,
+  completed_rejected: 0,
+  all_applications: 0,
+  approved_by_me: 0,
+  rejected_by_me: 0,
+  decided_by_me: 0,
+  total_submitted: 0,
+  new_today: 0,
+};
+
+const EMPTY_DISTRIBUTION: DashboardStatusDistributionDto = {
+  approved: 0,
+  rejected: 0,
+  pending: 0,
+  draft: 0,
+};
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
   imports: [CommonModule, RouterLink, DashboardSkeletonComponent],
   templateUrl: './dashboard.component.html',
-  styleUrls: ['./dashboard.component.scss']
+  styleUrls: ['./dashboard.component.scss'],
 })
 export class DashboardComponent implements OnInit {
-  private auth = inject(AuthService);
-  private appSvc = inject(ApplicationService);
+  private readonly auth = inject(AuthService);
+  private readonly requests = inject(WorkflowRequestsService);
 
-  username = computed(() => this.auth.currentUser()?.name ?? 'Guest');
+  readonly user = computed(() => this.auth.currentUser());
+  readonly username = computed(() => this.user()?.name ?? 'Guest');
+  readonly view = computed(() => dashboardConfigFor(this.user()));
+  readonly loading = signal(true);
+  readonly error = signal<string | null>(null);
+  readonly metricsData = signal(EMPTY_METRICS);
+  readonly formBreakdown = signal<DashboardFormBreakdownDto[]>([]);
+  readonly statusDistribution = signal(EMPTY_DISTRIBUTION);
+  readonly monthlySubmissions = signal<DashboardTrendPointDto[]>([]);
+  private readonly recentApps = signal<RequestSummaryDto[]>([]);
 
-  loading = signal(true);
-  error = signal<string | null>(null);
-  private inboxApps = signal<DashboardApp[]>([]);
-  private myApps = signal<DashboardApp[]>([]);
-  private adminApps = signal<DashboardApp[]>([]);
-  private historyApps = signal<DashboardApp[]>([]);
+  readonly metrics = computed(() => this.view().metrics.map(metric => ({
+    ...metric,
+    value: this.metricsData()[metric.key],
+    helper: this.metricHelper(metric),
+  })));
 
-  readonly isAdmin = computed(() =>
-    this.auth.currentUser()?.groups.includes('Admin') ?? false
-  );
+  readonly visibleRecentApps = computed(() => [...this.recentApps()].sort(
+    (a, b) => this.recentDate(b) - this.recentDate(a),
+  ).slice(0, 6));
 
-  currentPage = signal(0);
-  readonly pageSize = 5;
+  readonly maxFormValue = computed(() => Math.max(
+    1,
+    ...this.formBreakdown().map(item => this.formTotal(item)),
+  ));
 
-  readonly visibleRecentApps = computed(() => {
-    const byId = new Map<string, DashboardApp>();
+  readonly distributionTotal = computed(() => Object.values(this.statusDistribution())
+    .reduce((total, value) => total + value, 0));
 
-    const sourceApps = this.isAdmin()
-      ? [...this.adminApps(), ...this.inboxApps(), ...this.myApps()]
-      : [...this.inboxApps(), ...this.myApps()];
-
-    sourceApps.forEach(app => {
-      const key = this.getAppKey(app);
-      if (!byId.has(key)) byId.set(key, app);
-    });
-
-    return [...byId.values()]
-      .sort((a, b) => this.recentDate(b) - this.recentDate(a));
+  readonly donutBackground = computed(() => {
+    const data = this.statusDistribution();
+    const total = this.distributionTotal() || 1;
+    const approved = data.approved / total * 100;
+    const rejected = approved + data.rejected / total * 100;
+    const pending = rejected + data.pending / total * 100;
+    return `conic-gradient(var(--color-success) 0 ${approved}%, var(--color-error) ${approved}% ${rejected}%, var(--color-primary) ${rejected}% ${pending}%, var(--color-warning) ${pending}% 100%)`;
   });
 
-  readonly paginatedApps = computed(() => {
-    const apps = this.visibleRecentApps();
-    const startIndex = this.currentPage() * this.pageSize;
-    return apps.slice(startIndex, startIndex + this.pageSize);
-  });
-
-  readonly totalPages = computed(() => {
-    return Math.ceil(this.visibleRecentApps().length / this.pageSize);
-  });
-
-  readonly pageIndexes = computed(() =>
-    Array.from({ length: this.totalPages() }, (_, index) => index)
-  );
-
-  readonly requiredActionCount = computed(() =>
-    this.inboxApps().filter(app => this.needsAction(app)).length
-  );
-
-  readonly pendingCount = computed(() =>
-    this.myApps().filter(app => {
-      if (app.isDraft === true) return false;
-      const status = this.appSvc.getStatus(app);
-      if (TERMINAL_STATUSES.has(status)) return false;
-      if (status === 'fill_application') return false;
-      return !(app.workflow?.nextRoles ?? []).includes('Applicant');
-    }).length
-  );
-
-  readonly historyCount = computed(() => this.historyApps().length);
-
-  readonly metrics = computed(() => [
-    {
-      label: 'Required Action',
-      value: this.requiredActionCount(),
-      icon: 'mark_email_unread',
-      route: '/inbox',
-      tone: 'primary',
-    },
-    {
-      label: 'Pending Forms',
-      value: this.pendingCount(),
-      icon: 'pending_actions',
-      route: '/submissions/pending',
-      tone: 'warning',
-    },
-    {
-      label: 'History',
-      value: this.historyCount(),
-      icon: 'history',
-      route: '/submissions/history',
-      tone: 'secondary',
-    },
-  ]);
-
-  needsAction(app: DashboardApp): boolean {
-    const status = this.appSvc.getStatus(app);
-    if (TERMINAL_STATUSES.has(status) || app.isDraft) {
-      return false;
-    }
-    return this.currentUserCanActOnApp(app);
-  }
-
-  nextPage() {
-    if ((this.currentPage() + 1) < this.totalPages()) {
-      this.currentPage.set(this.currentPage() + 1);
-    }
-  }
-
-  previousPage() {
-    if (this.currentPage() > 0) {
-      this.currentPage.set(this.currentPage() - 1);
-    }
-  }
-
-  goToPage(page: number) {
-    if (page >= 0 && page < this.totalPages()) {
-      this.currentPage.set(page);
-    }
-  }
+  readonly maxMonthlyValue = computed(() => Math.max(
+    1,
+    ...this.monthlySubmissions().map(item => item.count),
+  ));
 
   ngOnInit(): void {
+    this.loadDashboard();
+  }
+
+  loadDashboard(): void {
     this.loading.set(true);
-    forkJoin({
-      inbox: this.appSvc.getInboxApplications(),
-      mine: this.appSvc.getMyApplications(),
-      admin: this.appSvc.getAdminApplications(),
-      history: this.appSvc.getApplicationHistory(),
-    }).pipe(
-      finalize(() => this.loading.set(false)),
-    ).subscribe({
-      next: ({ inbox, mine, admin, history }) => {
-        this.inboxApps.set(inbox);
-        this.myApps.set(mine);
-        this.adminApps.set(admin);
-        this.historyApps.set(history);
+    this.error.set(null);
+    this.requests.getDashboard().pipe(finalize(() => this.loading.set(false))).subscribe({
+      next: response => {
+        const data = response.data;
+        this.metricsData.set({ ...EMPTY_METRICS, ...(data?.metrics ?? {}) });
+        this.formBreakdown.set(data?.form_breakdown ?? []);
+        this.statusDistribution.set(data?.status_distribution ?? EMPTY_DISTRIBUTION);
+        this.monthlySubmissions.set(data?.monthly_submissions ?? []);
+        this.recentApps.set(data?.recent ?? []);
       },
-      error: () => {
-        this.error.set('Could not load dashboard data. Make sure the local database server is running.');
-      },
+      error: () => this.error.set('Could not load dashboard data. Please try again.'),
     });
   }
 
-  getTitle(app: DashboardApp): string {
-    return this.appSvc.getTitle(app);
-  }
-
-  getStatusLabel(app: DashboardApp): string {
-    return this.appSvc.getStatusLabel(app);
-  }
-
-  getStatusColor(app: DashboardApp): string {
-    return this.appSvc.getStatusColor(app);
-  }
-
-  getFormTypeLabel(app: DashboardApp): string {
-    return this.appSvc.getFormTypeLabel(app);
-  }
-
-  getFormRoute(app: DashboardApp): string {
-    return this.appSvc.getFormRoute(app);
-  }
-
-  formatDate(app: DashboardApp): string {
-    return this.appSvc.formatDate(this.appSvc.getSavedAt(app) ?? this.appSvc.getSubmittedAt(app));
-  }
-
-  private recentDate(app: DashboardApp): number {
-    const date = this.appSvc.getSavedAt(app) ?? this.appSvc.getSubmittedAt(app);
-    return date ? new Date(date).getTime() : 0;
-  }
-
-  private getAppKey(app: DashboardApp): string {
-    return String(app.id ?? `${this.appSvc.getFormTypeLabel(app)}-${this.appSvc.getTitle(app)}-${this.appSvc.getSavedAt(app) ?? ''}`);
-  }
-
-  private currentUserCanActOnApp(app: DashboardApp): boolean {
-    const user = this.auth.currentUser();
-    if (!user) return false;
-
-    const nextRoles: string[] = app.workflow?.nextRoles ?? [];
-    const nextUsers: string[] = app.workflow?.nextUsers ?? [];
-
-    if (nextUsers.includes(user.id)) return true;
-
-    const actionableRoles = user.groups.filter(group => group !== 'Admin');
-    if (actionableRoles.some(role => nextRoles.includes(role))) {
-      if (nextRoles.includes('HOS')) {
-        const appDepartment = app.teamDetails?.department ?? '';
-        return !appDepartment || !user.department || appDepartment === user.department;
-      }
-      return true;
+  metricHelper(metric: DashboardMetricConfig): string {
+    if (metric.key === 'decided_by_me') {
+      return `${this.metricsData().approved_by_me} approved · ${this.metricsData().rejected_by_me} rejected`;
     }
-
-    if (nextRoles.includes('Applicant')) {
-      return String(app.metadata?.applicantUserId ?? '') === user.id ||
-        (app.teamDetails?.leaderName ?? '') === user.name;
+    if (metric.key === 'completed_rejected') {
+      const data = this.statusDistribution();
+      return `${data.approved} complete · ${data.rejected} rejected`;
     }
+    if (metric.key === 'all_applications') {
+      return `${this.metricsData().total_submitted} submitted · ${this.statusDistribution().draft} drafts`;
+    }
+    return metric.helper;
+  }
 
-    return false;
+  formTotal(item: DashboardFormBreakdownDto): number {
+    return this.view().audience === 'rmc_admin' ? item.total_submitted : item.all_applications;
+  }
+
+  formPrimaryValue(item: DashboardFormBreakdownDto): number {
+    return this.view().audience === 'rmc_admin'
+      ? item.approved_by_me + item.rejected_by_me
+      : item.pending;
+  }
+
+  barWidth(value: number): number {
+    return value ? Math.max(4, value / this.maxFormValue() * 100) : 0;
+  }
+
+  monthHeight(value: number): number {
+    return value ? Math.max(8, value / this.maxMonthlyValue() * 100) : 3;
+  }
+
+  getTitle(app: RequestSummaryDto): string {
+    return app.title?.trim() || '(Untitled application)';
+  }
+
+  getStatusLabel(app: RequestSummaryDto): string {
+    return app.status_name || app.status_code || 'Unknown';
+  }
+
+  getStatusColor(app: RequestSummaryDto): string {
+    return STATUS_COLORS[app.status_code] ?? 'var(--color-text-muted)';
+  }
+
+  getFormTypeLabel(app: RequestSummaryDto): string {
+    return formTypeLabel(app.form_code, app.form_name);
+  }
+
+  getFormRoute(app: RequestSummaryDto): string {
+    return detailRoute(app);
+  }
+
+  needsAction(app: RequestSummaryDto): boolean {
+    return !!app.can_act;
+  }
+
+  formatDate(app: RequestSummaryDto): string {
+    const iso = app.updated_at ?? app.submitted_at ?? app.created_at;
+    if (!iso) return '—';
+    return new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+  }
+
+  private recentDate(app: RequestSummaryDto): number {
+    const dateValue = app.updated_at ?? app.submitted_at ?? app.created_at;
+    return dateValue ? new Date(dateValue).getTime() : 0;
   }
 }

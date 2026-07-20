@@ -1,0 +1,13 @@
+<nav class="form-tabs" [attr.aria-label]="ariaLabel">
+  @for (tab of tabs; track tab.value) {
+    <button
+      type="button"
+      class="form-tab"
+      [class.form-tab--active]="selectedValue === tab.value"
+      [attr.aria-pressed]="selectedValue === tab.value"
+      (click)="selectedValueChange.emit(tab.value)"
+    >
+      {{ tab.label }}
+    </button>
+  }
+</nav>

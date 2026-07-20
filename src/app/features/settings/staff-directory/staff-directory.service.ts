@@ -45,9 +45,9 @@ interface PaginatedData<T> {
 export class StaffDirectoryService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = environment.apiUrl.replace(/\/$/, '');
-  private readonly staffUrl = `${this.apiUrl}/api/settings/staff`;
+  private readonly staffUrl = `${this.apiUrl}/rmc/settings/staff`;
   private readonly syncUrl = `${this.staffUrl}/sync`;
-  private readonly departmentsUrl = `${this.apiUrl}/api/master-data/departments`;
+  private readonly departmentsUrl = `${this.apiUrl}/rmc/master-data/departments`;
 
   list(
     params: StaffListParams,

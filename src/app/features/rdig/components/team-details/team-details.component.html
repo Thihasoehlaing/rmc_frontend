@@ -1,7 +1,4 @@
 <div class="team-section" [formGroup]="teamDetails">
-  <!-- ── Page header ─────────────────────────────────────────── -->
-  <app-custom-header title="Project Team Members Details" icon="group"> </app-custom-header>
-
   <!-- ── Section 1: Project Leader ───────────────────────────── -->
   <section class="card">
     <app-custom-subheader title="Project Leader Information"></app-custom-subheader>
@@ -70,7 +67,7 @@
   </section>
 
   <!-- ── Section 3: Asia Pacific University of Technology & Innovation Co-Researchers (Internal) ──────────── -->
-  <section class="card">
+  <section class="card" data-missing-field-target="teamDetails.internalResearchers">
     <app-custom-subheader
       title="Asia Pacific University of Technology & Innovation Co-Researchers (Internal)"
       tooltip="Minimum 1, Maximum 2 internal co-researchers"
@@ -99,6 +96,7 @@
         </div>
       } @else {
         <app-data-table
+          class="team-table--fit"
           [columns]="internalColumns"
           [rows]="internalResearchers.controls"
           [rowTrackFn]="trackByIndex"
@@ -109,11 +107,11 @@
               <td>
                 <div class="data-table__stacked">
                   <span class="data-table__avatar">{{ getInitials(row.value.staffName) }}</span>
-                  <div>
-                    <div class="data-table__title">{{ row.value.staffName }}</div>
-                    <div class="data-table__subtitle">{{ row.value.department }}</div>
-                  </div>
+                  <div class="data-table__title">{{ row.value.staffName }}</div>
                 </div>
+              </td>
+              <td>
+                <div class="data-table__multiline">{{ row.value.department }}</div>
               </td>
               <td>
                 <div class="data-table__title data-table__title--small">
@@ -153,7 +151,7 @@
   </section>
 
   <!-- ── Section 4: External Co-Researchers ────────────────── -->
-  <section class="card">
+  <section class="card" data-missing-field-target="teamDetails.externalResearchers">
     <app-custom-subheader
       title="External Co-Researchers / Collaborators"
       tooltip="Minimum 2, Maximum 10 external collaborators"
@@ -179,7 +177,12 @@
           <p>No external collaborators added yet. Add at least 2.</p>
         </div>
       } @else {
+        <p class="table-scroll-hint">
+          <span>Scroll to see all columns</span>
+          <span class="material-icons scroll-arrow" aria-hidden="true">arrow_forward</span>
+        </p>
         <app-data-table
+          class="team-table--scroll"
           [columns]="externalColumns"
           [rows]="externalResearchers.controls"
           [rowTrackFn]="trackByIndex"
@@ -192,23 +195,47 @@
                   <span class="data-table__avatar">{{
                     getInitials(row.value.fullName || row.value.title)
                   }}</span>
-                  <div>
-                    <div class="data-table__title">
-                      {{ row.value.title }} {{ row.value.fullName }}
-                    </div>
-                    <div class="data-table__subtitle">{{ row.value.email }}</div>
-                    <span class="data-table__pill">{{ row.value.position }}</span>
+                  <div class="data-table__title">
+                    {{ row.value.title }} {{ row.value.fullName }}
                   </div>
                 </div>
+              </td>
+              <td>
+                <div class="data-table__multiline">{{ row.value.email }}</div>
+              </td>
+              <td>
+                <div class="data-table__multiline">{{ row.value.position }}</div>
               </td>
               <td>
                 <div class="data-table__title data-table__title--small">
                   {{ row.value.institution }}
                 </div>
-                <div class="data-table__subtitle">{{ row.value.orgType }}</div>
+              </td>
+              <td>
+                <div class="data-table__multiline">{{ row.value.orgType }}</div>
+              </td>
+              <td>
+                <div class="data-table__multiline">{{ row.value.department }}</div>
               </td>
               <td>{{ row.value.country }}</td>
               <td>RM {{ row.value.funding | number: '1.0-0' }}</td>
+              <td>
+                <div class="data-table__multiline">{{ row.value.roles }}</div>
+              </td>
+              <td>
+                @if (hasSupportLetter(row.value.supportLetter)) {
+                  <button
+                    type="button"
+                    class="btn-icon btn-icon--view"
+                    title="View / download support letter"
+                    (click)="openSupportLetter(row.value.supportLetter)"
+                  >
+                    <app-table-action-icon action="view"></app-table-action-icon>
+                  </button>
+                } @else {
+                  <span class="text-muted">—</span>
+                }
+              </td>
               <td>
                 <div class="data-table__actions">
                   <button
@@ -248,7 +275,7 @@
           icon="supervisor_account"
           [visible]="showHosComments"
           [readonly]="!workflow.isHosEditable()"
-          [commentControl]="fc('hosComment')"
+          data-missing-field-target="reviewTeam.hosComment" [commentControl]="fc('hosComment')"
         >
         </app-review-block>
 
@@ -261,8 +288,8 @@
             [showScore]="true"
             [maxScore]="10"
             [scoreDisabled]="!workflow.isScoreEditable()"
-            [commentControl]="fc('reviewer1Comment')"
-            [scoreControl]="fc('reviewer1Score')"
+            data-missing-field-target="reviewTeam.reviewer1Comment" [commentControl]="fc('reviewer1Comment')"
+            data-missing-field-score-target="reviewTeam.reviewer1Score" [scoreControl]="fc('reviewer1Score')"
           >
           </app-review-block>
 
@@ -274,8 +301,8 @@
             [showScore]="true"
             [maxScore]="10"
             [scoreDisabled]="!workflow.isScoreEditable()"
-            [commentControl]="fc('reviewer2Comment')"
-            [scoreControl]="fc('reviewer2Score')"
+            data-missing-field-target="reviewTeam.reviewer2Comment" [commentControl]="fc('reviewer2Comment')"
+            data-missing-field-score-target="reviewTeam.reviewer2Score" [scoreControl]="fc('reviewer2Score')"
           >
           </app-review-block>
         </div>
@@ -285,7 +312,7 @@
           icon="admin_panel_settings"
           [visible]="showRmcComments"
           [readonly]="!workflow.isRmcEditable()"
-          [commentControl]="fc('rmcComment')"
+          data-missing-field-target="reviewTeam.rmcComment" [commentControl]="fc('rmcComment')"
         >
         </app-review-block>
       </div>
@@ -303,7 +330,7 @@
     (close)="showInternalModal.set(false)"
   >
     <div class="section-fields" [formGroup]="internalForm">
-      <div class="row row--2">
+      <div class="section-fields">
         <div class="form-field">
           <label class="form-label is-required">Staff Name</label>
           <app-searchable-dropdown
@@ -373,7 +400,7 @@
   >
     <div class="section-fields" [formGroup]="externalForm">
       <!-- Row 1: Title + Full Name -->
-      <div class="row row--2">
+      <div class="section-fields">
         <div class="form-field">
           <label class="form-label is-required">Title</label>
           <select class="input--select" formControlName="title">
@@ -390,8 +417,14 @@
             type="text"
             class="input--text"
             formControlName="fullName"
+            [maxlength]="100"
             placeholder="e.g. Dr. Aisha Rahman"
           />
+          <app-character-counter
+            [current]="externalForm.get('fullName')?.value?.length || 0"
+            [max]="100"
+          >
+          </app-character-counter>
           <app-field-note>
             External collaborators must be staff, researchers, or industry partners. Students are
             not eligible for this role.
@@ -401,7 +434,7 @@
       </div>
 
       <!-- Row 2: Email + Institution -->
-      <div class="row row--2">
+      <div class="section-fields">
         <div class="form-field">
           <label class="form-label is-required">Email Address</label>
           <input type="email" class="input--text" formControlName="email" />
@@ -409,7 +442,12 @@
         </div>
         <div class="form-field">
           <label class="form-label is-required">Institution / Company</label>
-          <input type="text" class="input--text" formControlName="institution" />
+          <input type="text" class="input--text" formControlName="institution" [maxlength]="100" />
+          <app-character-counter
+            [current]="externalForm.get('institution')?.value?.length || 0"
+            [max]="100"
+          >
+          </app-character-counter>
           <app-validation-message
             [control]="externalForm.get('institution')"
           ></app-validation-message>
@@ -417,7 +455,7 @@
       </div>
 
       <!-- Row 3: Org Type + Position -->
-      <div class="row row--2">
+      <div class="section-fields">
         <div class="form-field">
           <label class="form-label is-required">Type of Organisation</label>
           <select class="input--select" formControlName="orgType">
@@ -430,16 +468,26 @@
         </div>
         <div class="form-field">
           <label class="form-label is-required">Position / Designation</label>
-          <input type="text" class="input--text" formControlName="position" />
+          <input type="text" class="input--text" formControlName="position" [maxlength]="100" />
+          <app-character-counter
+            [current]="externalForm.get('position')?.value?.length || 0"
+            [max]="100"
+          >
+          </app-character-counter>
           <app-validation-message [control]="externalForm.get('position')"></app-validation-message>
         </div>
       </div>
 
       <!-- Row 4: Department + Country -->
-      <div class="row row--2">
+      <div class="section-fields">
         <div class="form-field">
           <label class="form-label is-required">School / Department / Faculty</label>
-          <input type="text" class="input--text" formControlName="department" />
+          <input type="text" class="input--text" formControlName="department" [maxlength]="100" />
+          <app-character-counter
+            [current]="externalForm.get('department')?.value?.length || 0"
+            [max]="100"
+          >
+          </app-character-counter>
           <app-validation-message
             [control]="externalForm.get('department')"
           ></app-validation-message>

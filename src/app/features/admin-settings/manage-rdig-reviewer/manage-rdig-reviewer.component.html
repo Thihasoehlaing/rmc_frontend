@@ -1,0 +1,263 @@
+<section class="dropdowns-container">
+  <div class="dropdowns-shell">
+    <div class="details-view settings-container fade-in">
+      <div class="settings-card__header">
+        <div class="settings-card__header-row">
+          <button
+            type="button"
+            class="back-button"
+            (click)="goBack()"
+            aria-label="Back to admin settings"
+          >
+            <span class="material-icons">arrow_back</span>
+          </button>
+          <div>
+            <h1 class="card__title">RDIG Reviewers</h1>
+            <p class="settings-card__subtitle">
+              Manage academic staff who can be assigned as RDIG reviewers.
+            </p>
+          </div>
+          <app-action-button
+            class="settings-header-action"
+            type="primary"
+            label="Add Reviewer"
+            icon="add"
+            (clicked)="openAddModal()"
+          ></app-action-button>
+        </div>
+      </div>
+
+      <div class="dropdown-options-panel">
+        <div class="dropdown-search-panel">
+          <app-submissions-search
+            placeholder="Search by name or username"
+            [value]="searchQuery()"
+            (search)="onSearch($event)"
+            (refresh)="onReset()"
+          >
+            <label search-filters class="mgr-department-filter">
+              <span class="sr-only">Department</span>
+              <app-searchable-dropdown
+                [options]="departmentOptions()"
+                [ngModel]="departmentFilter()"
+                (ngModelChange)="onDepartmentChange($event)"
+                valueMode="single"
+                placeholder="All departments"
+              ></app-searchable-dropdown>
+            </label>
+
+            <label search-filters class="mgr-status-filter">
+              <span class="sr-only">Status</span>
+              <select
+                class="input--select"
+                [ngModel]="statusFilter()"
+                (ngModelChange)="onStatusChange($event)"
+                aria-label="Filter by status"
+              >
+                <option value="all">All</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            </label>
+          </app-submissions-search>
+        </div>
+
+        <div class="dropdown-table-panel">
+          <div class="shared-options-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>No.</th>
+                  <th>Staff</th>
+                  <th>Department</th>
+                  <th>Job Title</th>
+                  <th>Status</th>
+                  <th class="actions-heading">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @if (isLoading()) {
+                  <tr>
+                    <td class="reviewer-empty-state" colspan="6">
+                      <span class="material-icons reviewer-loading-icon">progress_activity</span>
+                      <strong>Loading reviewers</strong>
+                      <span>Please wait while the reviewer list is retrieved.</span>
+                    </td>
+                  </tr>
+                } @else if (loadFailed()) {
+                  <tr>
+                    <td class="reviewer-empty-state" colspan="6">
+                      <span class="material-icons">cloud_off</span>
+                      <strong>Unable to load reviewers</strong>
+                      <button
+                        class="btn btn-primary reviewer-retry-button"
+                        type="button"
+                        (click)="loadInitialOptions()"
+                      >
+                        Try Again
+                      </button>
+                    </td>
+                  </tr>
+                } @else {
+                  @for (row of reviewers(); track row.id; let rowIndex = $index) {
+                    <tr [class.row--inactive]="!row.is_active">
+                      <td>{{ (page() - 1) * pageSize() + rowIndex + 1 }}</td>
+                      <td>
+                        <div class="reviewer-staff">
+                          @if (row.photo_url) {
+                            <img
+                              class="reviewer-staff__photo"
+                              [src]="row.photo_url"
+                              [alt]="displayStaffName(row)"
+                            />
+                          } @else {
+                            <span class="reviewer-staff__avatar">{{ getInitials(row) }}</span>
+                          }
+                          <span class="reviewer-staff__identity">
+                            <strong>{{ displayStaffName(row) }}</strong>
+                            <span>{{ row.staff_username || '-' }}</span>
+                          </span>
+                        </div>
+                      </td>
+                      <td>{{ row.department || '-' }}</td>
+                      <td>{{ row.job_title || '-' }}</td>
+                      <td>
+                        <span
+                          class="status-chip"
+                          [class.status-chip--active]="row.is_active"
+                          [class.status-chip--inactive]="!row.is_active"
+                        >
+                          {{ row.is_active ? 'Active' : 'Inactive' }}
+                        </span>
+                      </td>
+                      <td class="actions-cell">
+                        <div class="table-actions">
+                          <button
+                            class="table-action"
+                            [class.table-action--success]="!row.is_active"
+                            [class.table-action--warning]="row.is_active"
+                            type="button"
+                            [disabled]="busyRowId() !== null || isSaving()"
+                            [title]="row.is_active ? 'Set inactive' : 'Set active'"
+                            (click)="toggleStatus(row)"
+                          >
+                            <app-table-action-icon
+                              [action]="row.is_active ? 'deactivate' : 'activate'"
+                            ></app-table-action-icon>
+                          </button>
+                          <button
+                            class="table-action table-action--danger"
+                            type="button"
+                            [disabled]="busyRowId() !== null || isSaving()"
+                            title="Remove reviewer"
+                            (click)="rowToRemove.set(row)"
+                          >
+                            <app-table-action-icon action="delete"></app-table-action-icon>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  } @empty {
+                    <tr>
+                      <td class="reviewer-empty-state" colspan="6">
+                        <span class="material-icons">inbox</span>
+                        <strong>No reviewers found</strong>
+                        <span>Try changing the search, department, or status filter.</span>
+                      </td>
+                    </tr>
+                  }
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="dropdown-pagination-panel">
+          <app-pagination
+            [currentPage]="page()"
+            [totalPages]="totalPages()"
+            [pageSize]="pageSize()"
+            [pageSizeOptions]="pageSizeOptions"
+            [totalItems]="totalItems()"
+            [itemCount]="reviewers().length"
+            itemLabel="reviewers"
+            (pageChange)="onPageChange($event)"
+            (pageSizeChange)="onPageSizeChange($event)"
+          ></app-pagination>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<app-dialog
+  [isOpen]="showAddModal()"
+  title="Add RDIG Reviewer"
+  size="medium"
+  (close)="closeAddModal()"
+>
+  <div class="reviewer-modal">
+    <div class="form-field">
+      <label class="form-label">Academic Staff <span class="required">*</span></label>
+      <app-searchable-dropdown
+        [options]="modalStaffOptions()"
+        [formControl]="selectedStaffControl"
+        [isMulti]="true"
+        placeholder="Search and select academic staff"
+      ></app-searchable-dropdown>
+      <p class="field-help">
+        Select one or more academic staff from the academic option list.
+      </p>
+    </div>
+
+    <label class="status-switch-row">
+      <span class="switch-control">
+        <input type="checkbox" [formControl]="modalActiveControl" />
+        <span class="switch-slider"></span>
+      </span>
+      <span>
+        <strong>Active reviewer</strong>
+        <small>New reviewers will be available for RDIG reviewer assignment.</small>
+      </span>
+    </label>
+  </div>
+
+  <div dialog-footer>
+    <button type="button" class="btn btn-secondary" (click)="closeAddModal()">Cancel</button>
+    <button
+      type="button"
+      class="btn btn-primary"
+      [disabled]="selectedStaffCount() === 0 || isSaving()"
+      (click)="saveReviewers()"
+    >
+      {{ isSaving() ? 'Adding...' : 'Add Reviewer' }}
+    </button>
+  </div>
+</app-dialog>
+
+<app-dialog
+  [isOpen]="rowToRemove() !== null"
+  title="Remove Reviewer"
+  size="small"
+  (close)="rowToRemove.set(null)"
+>
+  @if (rowToRemove(); as row) {
+    <p>
+      Remove <strong>{{ displayStaffName(row) }}</strong> from the RDIG reviewer list?
+    </p>
+    <p class="remove-dialog-note">
+      This removes the reviewer from future assignment selection.
+    </p>
+  }
+  <div dialog-footer>
+    <button type="button" class="btn btn-secondary" (click)="rowToRemove.set(null)">Cancel</button>
+    <button
+      type="button"
+      class="btn btn-danger"
+      [disabled]="busyRowId() !== null"
+      (click)="confirmRemove()"
+    >
+      {{ busyRowId() !== null ? 'Removing...' : 'Remove' }}
+    </button>
+  </div>
+</app-dialog>

@@ -1,0 +1,158 @@
+.account-header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  justify-content: flex-end;
+}
+
+.forms-page--settings .account-categories-toolbar {
+  grid-template-columns: minmax(280px, 1fr) minmax(180px, 0.35fr) auto;
+}
+
+.forms-page--settings .account-codes-toolbar {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+
+  .forms-toolbar__title {
+    grid-column: 1 / -1;
+  }
+
+  .forms-toolbar__actions {
+    justify-content: flex-end;
+  }
+}
+
+.account-chip {
+  display: inline-flex;
+  min-width: 76px;
+  justify-content: center;
+  padding: 5px 10px;
+  color: #294c7d;
+  background: #eaf2fb;
+  border-radius: var(--radius-full);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-bold);
+}
+
+.account-description,
+.account-forms {
+  display: block;
+  max-width: 360px;
+  overflow: hidden;
+  color: var(--color-text-secondary);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.account-code-editor {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.account-code-description-field,
+.account-code-editor .active-switch {
+  grid-column: 1 / -1;
+}
+
+.account-description-input {
+  min-height: 96px;
+  resize: vertical;
+  font-family: inherit;
+}
+
+.forms-table-card__footer {
+  display: block !important;
+  grid-template-columns: none !important;
+  padding-top: var(--space-3);
+  width: 100%;
+}
+
+.forms-table-card__footer app-pagination {
+  display: block;
+  width: 100%;
+}
+
+:host ::ng-deep .forms-table-card__footer .pagination-wrapper {
+  display: grid !important;
+  grid-template-columns: minmax(240px, 1fr) auto minmax(180px, 1fr) !important;
+  align-items: center;
+  column-gap: var(--space-5);
+  padding: 0;
+  overflow: visible;
+  width: 100%;
+}
+
+:host ::ng-deep .forms-table-card__footer .pagination-summary {
+  display: block !important;
+  justify-self: start;
+  min-width: 0;
+  white-space: normal;
+  line-height: 1.45;
+  text-align: left;
+}
+
+:host ::ng-deep .forms-table-card__footer .pagination-controls {
+  justify-self: center;
+  justify-content: center;
+  min-width: 0;
+}
+
+:host ::ng-deep .forms-table-card__footer .pagination-page-size {
+  justify-self: end;
+  min-width: 156px;
+}
+
+:host ::ng-deep .forms-table-card__footer .pagination-page-size select {
+  min-width: 180px;
+}
+
+@media (max-width: 1280px) {
+  .forms-page--settings .account-codes-toolbar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    .forms-toolbar__actions {
+      grid-column: 1 / -1;
+    }
+  }
+}
+
+@media (max-width: 900px) {
+  .account-header-actions {
+    justify-content: flex-start;
+  }
+
+  .forms-page--settings .account-categories-toolbar,
+  .forms-page--settings .account-codes-toolbar,
+  .account-code-editor {
+    grid-template-columns: 1fr;
+  }
+
+  .forms-page--settings .account-categories-toolbar .forms-toolbar__actions,
+  .forms-page--settings .account-codes-toolbar .forms-toolbar__actions {
+    justify-content: flex-start;
+  }
+
+  :host ::ng-deep .forms-table-card__footer .pagination-wrapper {
+    grid-template-columns: 1fr !important;
+    justify-items: stretch;
+    gap: var(--space-3);
+  }
+
+  :host ::ng-deep .forms-table-card__footer .pagination-summary,
+  :host ::ng-deep .forms-table-card__footer .pagination-controls,
+  :host ::ng-deep .forms-table-card__footer .pagination-page-size {
+    justify-self: stretch;
+  }
+
+  :host ::ng-deep .forms-table-card__footer .pagination-controls {
+    justify-content: flex-start;
+    overflow-x: auto;
+    padding-bottom: 2px;
+  }
+
+  :host ::ng-deep .forms-table-card__footer .pagination-page-size {
+    width: 100%;
+  }
+
+  :host ::ng-deep .forms-table-card__footer .pagination-page-size select {
+    width: 100%;
+  }
+}

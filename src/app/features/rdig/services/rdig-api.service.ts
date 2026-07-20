@@ -138,6 +138,23 @@ export interface RdigActiveBatchResponse {
     start_date: string;
     end_date: string;
     status: 'active' | 'planned' | 'completed';
+    /**
+     * The "Applicant" stage window within the batch. Applicant users are gated
+     * on this window's start (when it opens for submissions), not the overall
+     * batch start. When absent, the frontend shows the no-window state and does
+     * not substitute the batch start or end dates.
+     */
+    applicant_start_date?: string | null;
+    applicant_end_date?: string | null;
+    applicant_stage_start_date?: string | null;
+    applicant_stage_end_date?: string | null;
+    submission_start_date?: string | null;
+    submission_end_date?: string | null;
+    stage_windows?: Array<{
+      stage_name: string;
+      stage_start_date: string | null;
+      stage_end_date: string | null;
+    }>;
   } | null;
 }
 
@@ -146,27 +163,27 @@ export interface RdigActiveBatchResponse {
 export class RdigApiService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = environment.apiUrl.replace(/\/$/, '');
-  private readonly base = `${this.apiUrl}/api/rdig`;
+  private readonly base = `${this.apiUrl}/rmc/rdig`;
 
   // ── Lifecycle ────────────────────────────────────────────────────
-  createDraft(payload: Partial<RdigRequestDto>): Observable<ApiResponse<RdigRequestDto>> {
-    return this.http.post<ApiResponse<RdigRequestDto>>(`${this.base}/drafts`, payload);
+  createDraft(payload: Partial<RdigRequestDto>): Observable<ApiResponse<any>> {
+    return this.http.post<ApiResponse<any>>(`${this.base}/drafts`, payload);
   }
 
-  getForm(id: number): Observable<ApiResponse<RdigRequestDto>> {
-    return this.http.get<ApiResponse<RdigRequestDto>>(`${this.base}/${id}`);
+  getForm(id: number): Observable<ApiResponse<any>> {
+    return this.http.get<ApiResponse<any>>(`${this.base}/${id}`);
   }
 
-  updateDraft(id: number, payload: Partial<RdigRequestDto>): Observable<ApiResponse<RdigRequestDto>> {
-    return this.http.put<ApiResponse<RdigRequestDto>>(`${this.base}/${id}/draft`, payload);
+  updateDraft(id: number, payload: Partial<RdigRequestDto>): Observable<ApiResponse<any>> {
+    return this.http.put<ApiResponse<any>>(`${this.base}/${id}/draft`, payload);
   }
 
-  submit(id: number): Observable<ApiResponse<RdigRequestDto>> {
-    return this.http.post<ApiResponse<RdigRequestDto>>(`${this.base}/${id}/submit`, {});
+  submit(id: number): Observable<ApiResponse<any>> {
+    return this.http.post<ApiResponse<any>>(`${this.base}/${id}/submit`, {});
   }
 
-  resubmit(id: number): Observable<ApiResponse<RdigRequestDto>> {
-    return this.http.post<ApiResponse<RdigRequestDto>>(`${this.base}/${id}/resubmit`, {});
+  resubmit(id: number): Observable<ApiResponse<any>> {
+    return this.http.post<ApiResponse<any>>(`${this.base}/${id}/resubmit`, {});
   }
 
   getActiveBatch(): Observable<ApiResponse<RdigActiveBatchResponse>> {

@@ -1,125 +1,138 @@
-<!-- Pending submissions -->
 <div class="submissions-page">
-  <!-- ── Page Header ────────────────────────────────────────────────────────── -->
   <div class="submissions-header">
     <div class="submissions-header__text">
       <h1 class="submissions-title">
-        <span class="material-icons">schedule</span>
+        <span class="material-icons" aria-hidden="true">schedule</span>
         Pending Applications
       </h1>
-      <p class="submissions-subtitle">
-        Your submitted applications currently in the review process
-      </p>
+      <p class="submissions-subtitle">Submitted applications waiting for review outcome.</p>
     </div>
   </div>
 
-  <!-- ── Loading ────────────────────────────────────────────────────────────── -->
   @if (loading()) {
-    <app-table-skeleton
-      [columns]="skeletonColumns"
-      [showTypeFilter]="true"
-      loadingLabel="Loading pending applications"
-    >
+    <app-table-skeleton [columns]="skeletonColumns" loadingLabel="Loading pending applications">
     </app-table-skeleton>
   }
 
-  <!-- ── Error ──────────────────────────────────────────────────────────────── -->
   @if (!loading() && error()) {
     <div class="state-message state-error">
-      <span class="material-icons">error_outline</span>
+      <span class="material-icons" aria-hidden="true">error_outline</span>
       {{ error() }}
     </div>
   }
 
   @if (!loading() && !error()) {
-    <!-- ── Toolbar: search + type filter ───────────────────────────────────── -->
-    <div class="toolbar">
+    <app-submission-form-tabs
+      [tabs]="formTabs()"
+      [selectedValue]="selectedType()"
+      ariaLabel="Pending form filters"
+      (selectedValueChange)="setTab($event)"
+    />
+
+    <section class="dropdown-search-panel" aria-label="Pending search">
       <app-submissions-search
-        placeholder="Search pending applications by title..."
+        placeholder="Search by code"
         [value]="searchQuery()"
-        (valueChange)="searchQuery.set($event)"
-      />
+        (search)="onSearch($event)"
+        (refresh)="resetFilters()"
+      >
+        <label search-filters class="mgr-date-filter">
+          <span class="sr-only">Created date</span>
+          <input
+            class="input--text"
+            type="date"
+            [value]="createdDate()"
+            (input)="onCreatedDateChange($event)"
+            aria-label="Filter by created date"
+          />
+        </label>
+      </app-submissions-search>
+    </section>
 
-      <!-- Application type filter — only rendered when multiple types exist -->
-      @if (availableTypes().length > 2) {
-        <div class="type-filter">
-          <label class="type-filter__label" for="pend-type-filter">Type</label>
-          <select
-            id="pend-type-filter"
-            class="type-filter__select"
-            [value]="selectedType()"
-            (change)="selectedType.set($any($event.target).value)"
-          >
-            @for (t of availableTypes(); track t) {
-              <option [value]="t">{{ t === 'all' ? 'All Types' : t }}</option>
+    <section class="dropdown-table-panel" aria-label="Pending applications">
+      <div class="shared-options-table">
+        <table>
+          <thead>
+            <tr>
+              <th>No.</th>
+              <th>Code</th>
+              <th>Status</th>
+              <th>Created Date</th>
+              <th class="actions-heading">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (app of pagedPending(); track getCode(app); let index = $index) {
+              <tr>
+                <td>{{ getRowNumber(index) }}</td>
+                <td class="request-code-cell">
+                  <span class="request-code">{{ getCode(app) }}</span>
+                  <span class="form-type-label">{{ getFormTypeLabel(app) }}</span>
+                </td>
+                <td>
+                  <span
+                    class="status-chip"
+                    [style.background]="getStatusColor(app) + '1a'"
+                    [style.color]="getStatusColor(app)"
+                    [style.border-color]="getStatusColor(app) + '55'"
+                  >
+                    {{ getStatusLabel(app) }}
+                  </span>
+                </td>
+                <td>{{ formatCreatedDate(app) }}</td>
+                <td class="actions-cell">
+                  <div class="table-actions">
+                    @if (canEditResubmission(app)) {
+                      <a
+                        class="table-action table-action--detail"
+                        [routerLink]="getEditRoute(app)"
+                        [queryParams]="getEditQueryParams(app)"
+                        title="Edit resubmission"
+                        aria-label="Edit resubmission"
+                      >
+                        <app-table-action-icon action="edit"></app-table-action-icon>
+                      </a>
+                    }
+                    <a
+                      class="table-action table-action--detail"
+                      [routerLink]="getDetailRoute(app)"
+                      [queryParams]="getDetailQueryParams()"
+                      title="View detail"
+                      aria-label="View detail"
+                    >
+                      <app-table-action-icon action="view"></app-table-action-icon>
+                    </a>
+                  </div>
+                </td>
+              </tr>
             }
-          </select>
-        </div>
-      }
-    </div>
+          </tbody>
+        </table>
 
-    <!-- ── Empty ─────────────────────────────────────────────────────────────── -->
-    @if (pending().length === 0) {
-      <div class="state-message state-empty">
-        <span class="material-icons">check_circle_outline</span>
-        @if (searchQuery() || selectedType() !== 'all') {
-          No pending applications match your current filters.
-        } @else {
-          No applications currently in review. Submit a new application to get started.
+        @if (pending().length === 0) {
+          <div class="empty-state">
+            @if (searchQuery() || createdDate() || selectedType() !== 'all') {
+              <p>No pending applications match the current filters.</p>
+            } @else {
+              <p>No applications are currently pending.</p>
+            }
+          </div>
         }
       </div>
-    }
+    </section>
 
-    <!-- ── Table ─────────────────────────────────────────────────────────────── -->
-    @if (pending().length > 0) {
-      <app-data-table
-        [columns]="columns"
-        [rows]="pending()"
-        [sortColumn]="sortColumn()"
-        [sortDirection]="sortDirection()"
-        (sortChange)="onSortChange($event)"
-      >
-        <ng-template #rowTemplate let-app>
-          <tr [class.row--action-needed]="isRevisionRequired(app)">
-            <td>
-              <div class="data-table__title">
-                {{ app.projectDetails?.title?.trim() || '(Untitled Application)' }}
-              </div>
-              @if (isRevisionRequired(app)) {
-                <span class="revision-chip"
-                  ><span class="material-icons">reply</span>Action needed</span
-                >
-              }
-            </td>
-            <td>
-              <span class="type-badge">{{ getFormTypeLabel(app) }}</span>
-            </td>
-            <td class="col-date">{{ formatSubmitted(app) }}</td>
-            <td>
-              <span
-                class="status-badge"
-                [style.background]="getStatusColor(app) + '1a'"
-                [style.color]="getStatusColor(app)"
-                [style.border-color]="getStatusColor(app) + '55'"
-                >{{ getStatusLabel(app) }}</span
-              >
-            </td>
-            <td class="col-muted">{{ getNextActors(app) }}</td>
-            <td>
-              <div class="data-table__actions">
-                <a
-                  class="btn-icon btn-icon--view"
-                  [routerLink]="[getFormRoute(app)]"
-                  [queryParams]="{ id: app.id }"
-                  title="View application"
-                  aria-label="View application"
-                  ><app-table-action-icon action="view"></app-table-action-icon
-                ></a>
-              </div>
-            </td>
-          </tr>
-        </ng-template>
-      </app-data-table>
-    }
+    <section class="dropdown-pagination-panel" aria-label="Pending pagination">
+      <app-pagination
+        [currentPage]="page()"
+        [totalPages]="totalPages()"
+        [pageSize]="pageSize()"
+        [pageSizeOptions]="pageSizeOptions"
+        [totalItems]="pending().length"
+        [itemCount]="pagedPending().length || null"
+        itemLabel="pending applications"
+        (pageChange)="onPageChange($event)"
+        (pageSizeChange)="onPageSizeChange($event)"
+      ></app-pagination>
+    </section>
   }
 </div>

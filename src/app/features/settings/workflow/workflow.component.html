@@ -27,6 +27,60 @@
   <section class="forms-toolbar workflow-toolbar" aria-label="Workflow filters">
     <h2 class="forms-toolbar__title">Search &amp; Filters</h2>
 
+    @if (activeTabKey() === 'steps') {
+      <label class="forms-filter workflow-process-filter">
+        <span>Process</span>
+        <app-searchable-dropdown
+          [options]="processFilterOptions()"
+          [searchable]="true"
+          placeholder="Search process..."
+          [ngModel]="selectedProcessId()"
+          (ngModelChange)="selectedProcessId.set($event)"
+        >
+        </app-searchable-dropdown>
+      </label>
+    }
+
+    @if (activeTabKey() === 'delegations') {
+      <label class="forms-filter workflow-process-filter">
+        <span>Process</span>
+        <app-searchable-dropdown
+          [options]="processFilterOptions()"
+          [searchable]="true"
+          placeholder="Search process..."
+          [ngModel]="selectedProcessId()"
+          (ngModelChange)="selectedProcessId.set($event)"
+        >
+        </app-searchable-dropdown>
+      </label>
+
+      <label class="forms-filter workflow-actor-filter">
+        <span>Actor Type</span>
+        <app-searchable-dropdown
+          [options]="actorTypeFilterOptions()"
+          [searchable]="true"
+          placeholder="Search actor type..."
+          [ngModel]="selectedActorTypeId()"
+          (ngModelChange)="selectedActorTypeId.set($event)"
+        >
+        </app-searchable-dropdown>
+      </label>
+    }
+
+    @if (activeTabKey() === 'step-actions') {
+      <label class="forms-filter workflow-step-filter">
+        <span>Step</span>
+        <app-searchable-dropdown
+          [options]="stepFilterOptions()"
+          [searchable]="true"
+          placeholder="Search step..."
+          [ngModel]="selectedStepId()"
+          (ngModelChange)="selectedStepId.set($event)"
+        >
+        </app-searchable-dropdown>
+      </label>
+    }
+
     <label class="forms-filter forms-filter--search">
       <span class="forms-search-input">
         <span class="material-icons" aria-hidden="true">search</span>
@@ -43,7 +97,7 @@
     </label>
 
     @if (activeTab().hasStatus) {
-      <label class="forms-filter">
+      <label class="forms-filter workflow-status-filter">
         <span>Status</span>
         <select
           class="input--select"
@@ -141,6 +195,18 @@
                     </button>
                   </div>
                 </td>
+              } @else if (column.key === 'notes' || column.key === 'reason') {
+                <td class="is-align-center">
+                  <button
+                    class="workflow-note-button"
+                    type="button"
+                    title="View {{ column.key }}"
+                    aria-label="View {{ column.key }}"
+                    (click)="openNoteDialog(row)"
+                  >
+                    <span class="material-icons">sticky_note_2</span>
+                  </button>
+                </td>
               } @else if (column.key === 'code' || column.key === 'form' || column.key === 'actor') {
                 <td>
                   <span class="form-code">{{ displayCell(row, column.key) }}</span>
@@ -158,19 +224,16 @@
 
     @if (!isLoading() && !loadFailed()) {
       <footer class="forms-table-card__footer">
-        <p class="forms-count">
-          @if (totalItems() > 0) {
-            Showing {{ pageStart() }} to {{ pageEnd() }} of {{ totalItems() }} records
-          } @else {
-            Showing 0 records
-          }
-        </p>
+        
 
         <app-pagination
           [currentPage]="page()"
           [totalPages]="totalPages()"
           [pageSize]="pageSize"
           [pageSizeOptions]="[10]"
+          [totalItems]="totalItems()"
+          [itemCount]="rows().length"
+          itemLabel="records"
           (pageChange)="onPageChange($event)"
         >
         </app-pagination>
@@ -195,49 +258,51 @@
     } @else {
       <div class="workflow-editor">
         @for (field of activeTab().fields; track field.key) {
-          @if (field.type === 'checkbox') {
-            <label class="active-switch">
-              <input
-                type="checkbox"
-                [ngModel]="formModel()[field.key]"
-                (ngModelChange)="setField(field.key, $event)"
-              />
-              <span class="active-switch__control"></span>
-              <span>
-                <strong>{{ field.label }}</strong>
-              </span>
-            </label>
-          } @else {
-            <label class="forms-filter">
-              <span>{{ field.label }}</span>
-
-              @if (field.type === 'textarea') {
-                <textarea
-                  class="input--text workflow-textarea"
-                  rows="4"
-                  [placeholder]="field.placeholder || ''"
-                  [ngModel]="formModel()[field.key]"
-                  (ngModelChange)="setField(field.key, $event)"
-                ></textarea>
-              } @else if (field.type === 'select') {
-                <app-searchable-dropdown
-                  [options]="optionList(field)"
-                  [searchable]="true"
-                  [placeholder]="'Search ' + field.label.toLowerCase() + '...'"
-                  [ngModel]="formModel()[field.key]"
-                  (ngModelChange)="setField(field.key, $event)"
-                >
-                </app-searchable-dropdown>
-              } @else {
+          @if (shouldShowField(field)) {
+            @if (field.type === 'checkbox') {
+              <label class="active-switch">
                 <input
-                  class="input--text"
-                  [type]="field.type"
-                  [placeholder]="field.placeholder || ''"
+                  type="checkbox"
                   [ngModel]="formModel()[field.key]"
                   (ngModelChange)="setField(field.key, $event)"
                 />
-              }
-            </label>
+                <span class="active-switch__control"></span>
+                <span>
+                  <strong>{{ field.label }}</strong>
+                </span>
+              </label>
+            } @else {
+              <label class="forms-filter">
+                <span>{{ field.label }}</span>
+
+                @if (field.type === 'textarea') {
+                  <textarea
+                    class="input--text workflow-textarea"
+                    rows="4"
+                    [placeholder]="field.placeholder || ''"
+                    [ngModel]="formModel()[field.key]"
+                    (ngModelChange)="setField(field.key, $event)"
+                  ></textarea>
+                } @else if (field.type === 'select') {
+                  <app-searchable-dropdown
+                    [options]="optionList(field)"
+                    [searchable]="true"
+                    [placeholder]="'Search ' + field.label.toLowerCase() + '...'"
+                    [ngModel]="formModel()[field.key]"
+                    (ngModelChange)="setField(field.key, $event)"
+                  >
+                  </app-searchable-dropdown>
+                } @else {
+                  <input
+                    class="input--text"
+                    [type]="field.type"
+                    [placeholder]="field.placeholder || ''"
+                    [ngModel]="formModel()[field.key]"
+                    (ngModelChange)="setField(field.key, $event)"
+                  />
+                }
+              </label>
+            }
           }
         }
       </div>
@@ -252,6 +317,17 @@
           {{ isSaving() ? 'Saving...' : dialogMode() === 'create' ? 'Create' : 'Save Changes' }}
         </button>
       }
+    </div>
+  </app-dialog>
+
+  <app-dialog [isOpen]="noteRow() !== null" [title]="noteDialogTitle()" size="small" (close)="closeNoteDialog()">
+    <div class="workflow-note-dialog">
+      <span class="material-icons">sticky_note_2</span>
+      <p>{{ noteText(noteRow()) }}</p>
+    </div>
+
+    <div dialog-footer class="form-dialog__footer">
+      <button class="btn btn-primary" type="button" (click)="closeNoteDialog()">Close</button>
     </div>
   </app-dialog>
 

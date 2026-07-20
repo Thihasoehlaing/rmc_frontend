@@ -15,7 +15,6 @@ import { COUNTRY_LIST } from '../../../../core/constants/countries.constant';
 import { SearchableDropdownComponent } from '../../../../shared/components/searchable-dropdown/searchable-dropdown.component';
 import { CharacterCounterComponent } from '../../../../shared/components/character-counter/character-counter.component';
 import { ValidationMessageComponent } from '../../../../shared/components/validation-message/validation-message.component';
-import { CustomHeaderComponent } from '../../../../shared/components/custom-header/custom-header.component';
 import { CustomSubheaderComponent } from '../../../../shared/components/custom-subheader/custom-subheader.component';
 import { FileUploadComponent } from '../../../../shared/components/file-upload/file-upload.component';
 import { DialogComponent } from '../../../../shared/components/dialog/dialog.component';
@@ -39,7 +38,6 @@ import { TableActionIconComponent } from '../../../../shared/components/table-ac
     SearchableDropdownComponent,
     CharacterCounterComponent,
     ValidationMessageComponent,
-    CustomHeaderComponent,
     CustomSubheaderComponent,
     FileUploadComponent,
     DialogComponent,
@@ -107,9 +105,10 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
       align: 'center',
       headerAlign: 'center',
     },
-    { key: 'staff', label: 'Staff Name / Department', width: '32%' },
-    { key: 'expertise', label: 'Area of Expertise', width: '26%' },
-    { key: 'roles', label: 'Role in Project', width: '26%' },
+    { key: 'staff', label: 'Staff Name', width: '22%' },
+    { key: 'department', label: 'Department', width: '18%' },
+    { key: 'expertise', label: 'Area of Expertise', width: '28%' },
+    { key: 'roles', label: 'Role in Project', width: '32%' },
     {
       key: 'actions',
       label: 'Actions',
@@ -127,15 +126,27 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
       align: 'center',
       headerAlign: 'center',
     },
-    { key: 'collaborator', label: 'Collaborator', width: '32%' },
-    { key: 'institution', label: 'Institution', width: '24%' },
-    { key: 'country', label: 'Country', width: '14%', align: 'center', headerAlign: 'center' },
+    { key: 'collaborator', label: 'Collaborator', width: '200px' },
+    { key: 'email', label: 'Email', width: '200px' },
+    { key: 'position', label: 'Position / Designation', width: '190px' },
+    { key: 'institution', label: 'Institution / Company', width: '200px' },
+    { key: 'orgType', label: 'Type of Organisation', width: '180px' },
+    { key: 'department', label: 'School / Dept / Faculty', width: '200px' },
+    { key: 'country', label: 'Country', width: '120px', align: 'center', headerAlign: 'center' },
     {
       key: 'funding',
       label: 'Matched Funding',
-      width: '16%',
+      width: '150px',
       align: 'right',
       headerAlign: 'right',
+    },
+    { key: 'roles', label: 'Roles', width: '240px' },
+    {
+      key: 'supportLetter',
+      label: 'Support Letter',
+      width: '120px',
+      align: 'center',
+      headerAlign: 'center',
     },
     {
       key: 'actions',
@@ -183,12 +194,12 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
 
     this.externalForm = this.fb.group({
       title: ['', Validators.required],
-      fullName: ['', Validators.required],
+      fullName: ['', [Validators.required, Validators.maxLength(100)]],
       email: ['', [Validators.required, Validators.email]],
-      institution: ['', Validators.required],
+      institution: ['', [Validators.required, Validators.maxLength(100)]],
       orgType: ['', Validators.required],
-      position: ['', Validators.required],
-      department: ['', Validators.required],
+      position: ['', [Validators.required, Validators.maxLength(100)]],
+      department: ['', [Validators.required, Validators.maxLength(100)]],
       country: ['', Validators.required],
       funding: ['', [Validators.required, Validators.pattern('^[0-9]+(\\.[0-9]{1,2})?$')]],
       roles: ['', [Validators.required, Validators.maxLength(600)]],
@@ -354,6 +365,36 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
 
   onFileSelected(file: File): void {
     this.externalForm.get('supportLetter')?.setValue(file);
+  }
+
+  /** True when a support letter is attached (a freshly-picked File or a persisted URL/attachment). */
+  hasSupportLetter(value: unknown): boolean {
+    return !!this.supportLetterUrl(value) || value instanceof File;
+  }
+
+  /** Resolve a persisted support letter to an openable URL, if any. */
+  private supportLetterUrl(value: unknown): string | null {
+    if (typeof value === 'string' && value.trim()) return value;
+    if (value && typeof value === 'object') {
+      const v = value as { file_url?: string; url?: string };
+      return v.file_url || v.url || null;
+    }
+    return null;
+  }
+
+  /** Opens the support letter in a new tab — a persisted URL directly, or a freshly-picked File via a blob URL. */
+  openSupportLetter(value: unknown): void {
+    const url = this.supportLetterUrl(value);
+    if (url) {
+      window.open(url, '_blank', 'noopener');
+      return;
+    }
+    if (value instanceof File) {
+      const blobUrl = URL.createObjectURL(value);
+      window.open(blobUrl, '_blank', 'noopener');
+      // Revoke shortly after so the new tab has time to load it.
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000);
+    }
   }
 
   manageOrgTypes(): void {

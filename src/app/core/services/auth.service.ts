@@ -6,6 +6,7 @@ import { Observable, catchError, map, switchMap, tap, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { SHOW_API_SUCCESS } from '../interceptors/api-message.interceptor';
 import { User, UserGroup } from '../interfaces/user.interface';
+import { FormCacheService } from './form-cache.service';
 import { ToastService } from './toast.service';
 
 /**
@@ -170,6 +171,7 @@ interface AuthCheckResponse {
       email: string;
       id: number;
       name: string;
+      photo_url: string | null;
       role: {
         code: string;
         id: number;
@@ -190,6 +192,7 @@ interface DevAuthUsersResponse {
       email: string;
       department: string;
       job_title: string | null;
+      photo_url?: string | null;
       role: {
         code: string;
         id: number;
@@ -208,6 +211,7 @@ export class AuthService {
   private readonly http = inject(HttpClient);
   private readonly router = inject(Router);
   private readonly toastService = inject(ToastService);
+  private readonly formCache = inject(FormCacheService);
   private readonly TOKEN_KEY = 'token';
   private readonly USER_KEY = 'user';
   private readonly LEGACY_SESSION_KEY = 'rmc_session_user';
@@ -240,6 +244,7 @@ export class AuthService {
     this._currentUser.set(null);
     localStorage.removeItem(this.TOKEN_KEY);
     localStorage.removeItem(this.USER_KEY);
+    this.formCache.clear();
 
     const query = new URLSearchParams({
       endpoint: this.getSafeLoginEndpoint(returnTo),
@@ -257,6 +262,7 @@ export class AuthService {
   completeApuLogin(code: string): Observable<User> {
     localStorage.removeItem(this.TOKEN_KEY);
     localStorage.removeItem(this.USER_KEY);
+    this.formCache.clear();
 
     return this.http
       .post<ApuTokenResponse>(`${environment.authUrl}/token`, { code })
@@ -281,6 +287,7 @@ export class AuthService {
             this.USER_KEY,
             JSON.stringify(response.data.user),
           );
+          this.formCache.refresh().subscribe({ error: () => undefined });
           if (!response.data.user.role) {
             this.toastService.info(
               'Your APU account is authenticated, but no RMC role has been assigned yet.',
@@ -303,7 +310,7 @@ export class AuthService {
     const apiUrl = environment.apiUrl.replace(/\/$/, '');
 
     return this.http
-      .get<AuthCheckResponse>(`${apiUrl}/api/auth/profile`, {
+      .get<AuthCheckResponse>(`${apiUrl}/rmc/auth/profile`, {
         context: new HttpContext().set(SHOW_API_SUCCESS, true),
       })
       .pipe(
@@ -319,6 +326,7 @@ export class AuthService {
             this.USER_KEY,
             JSON.stringify(response.data.user),
           );
+          this.formCache.refresh().subscribe({ error: () => undefined });
         }),
         map(response => this.mapCheckedUser(response.data.user)),
         tap(user => this._currentUser.set(user)),
@@ -367,6 +375,7 @@ export class AuthService {
 
     localStorage.setItem(this.TOKEN_KEY, `dev:${username}`);
     localStorage.removeItem(this.USER_KEY);
+    this.formCache.clear();
     sessionStorage.removeItem(this.LEGACY_SESSION_KEY);
 
     return this.checkAuthentication().pipe(
@@ -375,6 +384,7 @@ export class AuthService {
           this.USER_KEY,
           JSON.stringify(response.data.user),
         );
+        this.formCache.refresh().subscribe({ error: () => undefined });
       }),
       map(response => this.mapCheckedUser(response.data.user)),
       tap(user => this._currentUser.set(user)),
@@ -393,6 +403,7 @@ export class AuthService {
     localStorage.removeItem(this.USER_KEY);
     this.removeLegacyAuthCache();
     sessionStorage.removeItem(this.LEGACY_SESSION_KEY);
+    this.formCache.clear();
 
     const query = new URLSearchParams({ redirect_url: this.getRedirectUrl() });
     window.location.replace(`${environment.authUrl}/logout?${query.toString()}`);
@@ -411,7 +422,7 @@ export class AuthService {
       return throwError(() => new Error('Testing login is not available in production.'));
     }
 
-    return this.http.get<DevAuthUsersResponse>(`${apiUrl}/api/auth/dev-users`).pipe(
+    return this.http.get<DevAuthUsersResponse>(`${apiUrl}/rmc/auth/dev-users`).pipe(
       map(response =>
         response.data.users.map(user => ({
           username: user.username,
@@ -461,7 +472,7 @@ export class AuthService {
     const apiUrl = environment.apiUrl.replace(/\/$/, '');
 
     return this.http
-      .get<AuthCheckResponse>(`${apiUrl}/api/auth/check`)
+      .get<AuthCheckResponse>(`${apiUrl}/rmc/auth/check`)
       .pipe(
         tap(response => {
           if (!response.success || !response.data?.user) {
@@ -483,6 +494,7 @@ export class AuthService {
       email: checkedUser.email || '',
       department: checkedUser.department || '',
       distinguishedName: checkedUser.distinguished_name,
+      photoUrl: checkedUser.photo_url ?? undefined,
       role,
       groups: this.mapRoleToGroups(role?.code),
     };
@@ -497,6 +509,7 @@ export class AuthService {
       RMC_STAFF: ['RMC'],
       RMC: ['RMC'],
       REVIEWER: ['Reviewer'],
+      ACADEMIC: ['full_time', 'academic'],
       LECTURER: ['full_time', 'academic'],
       HEAD_OF_SCHOOL: ['full_time', 'academic', 'HOS'],
       HEAD_OF_DEPARTMENT: ['full_time', 'academic', 'HOS'],
@@ -507,6 +520,7 @@ export class AuthService {
       HUMAN_RESOURCE: ['HR'],
       CEO: ['CEO'],
       FINANCE: ['Finance'],
+      CHANCELLORY: ['Chancellory'],
       RDIG_CHAIR: ['RDIG_Chair'],
     };
 

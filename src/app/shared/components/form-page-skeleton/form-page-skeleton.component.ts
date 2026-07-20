@@ -10,6 +10,7 @@ export class FormPageSkeletonComponent {
   @Input() sections = 3;
   @Input() fieldsPerSection = 4;
   @Input() loadingLabel = 'Loading application';
+  @Input() showBatchCard = false;
 
   get sectionItems(): number[] {
     return Array.from({ length: Math.max(0, this.sections) }, (_, index) => index);

@@ -1,0 +1,458 @@
+<main class="forms-page forms-page--settings workflow-page system-access-page">
+  <header class="forms-page__header">
+    <div>
+      <span class="forms-page__eyebrow">System Settings</span>
+      <h1>System Access</h1>
+      <p>Manage who can enter RMC through user overrides, department rules, and audit logs.</p>
+    </div>
+    @if (activeTabConfig.createLabel) {
+      <button class="btn btn-primary forms-page__create-button" type="button" (click)="openCreateDialog()">
+        <span class="material-icons">add</span>
+        {{ activeTabConfig.createLabel }}
+      </button>
+    }
+  </header>
+
+  <nav class="workflow-tabs" aria-label="System access tabs">
+    @for (tab of tabs; track tab.key) {
+      <button
+        type="button"
+        class="workflow-tab"
+        [class.workflow-tab--active]="tab.key === activeTab()"
+        (click)="setTab(tab.key)"
+      >
+        {{ tab.label }}
+      </button>
+    }
+  </nav>
+
+  @if (activeTab() === 'users') {
+    <section class="forms-toolbar workflow-toolbar system-access-toolbar" aria-label="User access filters">
+      <h2 class="forms-toolbar__title">Search &amp; Filters</h2>
+      <label class="forms-filter forms-filter--search">
+        <span class="forms-search-input">
+          <span class="material-icons" aria-hidden="true">search</span>
+          <input
+            class="input--text"
+            type="search"
+            placeholder="Search user access"
+            [ngModel]="userSearch()"
+            (ngModelChange)="userSearch.set($event)"
+            (keydown.enter)="userPage.set(1); loadUsers()"
+            [disabled]="usersLoading()"
+          />
+        </span>
+      </label>
+      <label class="forms-filter">
+        <span>Access</span>
+        <select class="input--select" [ngModel]="userAccessType()" (ngModelChange)="userAccessType.set($event)" [disabled]="usersLoading()">
+          <option value="">All</option>
+          <option value="ALLOW">Allow</option>
+          <option value="DENY">Deny</option>
+        </select>
+      </label>
+      <label class="forms-filter workflow-status-filter">
+        <span>Status</span>
+        <select class="input--select" [ngModel]="userStatus()" (ngModelChange)="userStatus.set($event)" [disabled]="usersLoading()">
+          <option value="">All</option>
+          <option value="Active">Active</option>
+          <option value="Inactive">Inactive</option>
+        </select>
+      </label>
+      <div class="forms-toolbar__actions">
+        <button class="btn btn-primary" type="button" (click)="userPage.set(1); loadUsers()" [disabled]="usersLoading()">
+          <span class="material-icons">search</span>
+          Search
+        </button>
+        <button class="btn btn-secondary" type="button" (click)="resetUserFilters()" [disabled]="usersLoading()">
+          <span class="material-icons">restart_alt</span>
+          Reset
+        </button>
+      </div>
+    </section>
+
+    <section class="forms-table-card">
+      <header class="forms-table-card__header">
+        <div>
+          <div class="forms-table-card__title-row">
+            <h2>{{ activeTabConfig.title }}</h2>
+            <span class="forms-table-card__count">{{ userTotalItems() }}</span>
+          </div>
+          <p>{{ activeTabConfig.description }}</p>
+        </div>
+        <button class="btn btn-secondary forms-table-card__refresh" type="button" (click)="loadUsers()" [disabled]="usersLoading()">
+          <span class="material-icons">refresh</span>
+          Refresh
+        </button>
+      </header>
+
+      @if (usersLoading()) {
+        <app-table-skeleton [columns]="activeColumns()" [showSearch]="false" loadingLabel="Loading user access"></app-table-skeleton>
+      } @else if (usersFailed()) {
+        <div class="forms-state">
+          <span class="material-icons">cloud_off</span>
+          <h2>Unable to load user access</h2>
+          <p>Check the API connection and try again.</p>
+          <button class="btn btn-primary" type="button" (click)="loadUsers()">Try Again</button>
+        </div>
+      } @else if (users().length === 0) {
+        <div class="forms-state">
+          <span class="material-icons">{{ activeTabConfig.emptyIcon }}</span>
+          <h2>No user access found</h2>
+          <p>Adjust the filters or create a new rule.</p>
+        </div>
+      } @else {
+        <app-data-table [columns]="activeColumns()" [rows]="users()" [rowTrackFn]="userTrackFn">
+          <ng-template #rowTemplate let-row let-index="index">
+            <tr>
+              <td class="is-align-center">{{ rowNumber(index, userPage(), userPageSize()) }}</td>
+              <td><span class="workflow-cell">{{ row.username }}</span></td>
+              <td class="is-align-center">
+                <span [class]="accessBadgeClass(row.access_type)">{{ row.access_type }}</span>
+              </td>
+              <td><span class="workflow-cell">{{ row.reason || 'No reason' }}</span></td>
+              <td class="is-align-center">
+                <span class="status-badge" [class.status-badge--inactive]="!row.is_active">
+                  {{ row.is_active ? 'Active' : 'Inactive' }}
+                </span>
+              </td>
+              <td class="is-align-center">
+                <div class="table-actions">
+                  <button class="table-action" type="button" title="Edit" aria-label="Edit" (click)="openEditUser(row)">
+                    <app-table-action-icon action="edit"></app-table-action-icon>
+                  </button>
+                  <button class="table-action table-action--danger" type="button" title="Delete" aria-label="Delete" (click)="userToDelete.set(row)">
+                    <app-table-action-icon action="delete"></app-table-action-icon>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+        </app-data-table>
+      }
+
+      @if (!usersLoading() && !usersFailed()) {
+        <footer class="forms-table-card__footer">
+          <app-pagination
+            [currentPage]="userPage()"
+            [totalPages]="userTotalPages()"
+            [pageSize]="userPageSize()"
+            [pageSizeOptions]="pageSizeOptions"
+            [totalItems]="userTotalItems()"
+            [itemCount]="users().length"
+            itemLabel="user rules"
+            (pageChange)="userPage.set($event); loadUsers()"
+            (pageSizeChange)="userPageSize.set($event); userPage.set(1); loadUsers()"
+          ></app-pagination>
+        </footer>
+      }
+    </section>
+  }
+
+  @if (activeTab() === 'departments') {
+    <section class="forms-toolbar workflow-toolbar system-access-toolbar" aria-label="Department rule filters">
+      <h2 class="forms-toolbar__title">Search &amp; Filters</h2>
+      <label class="forms-filter forms-filter--search">
+        <span class="forms-search-input">
+          <span class="material-icons" aria-hidden="true">search</span>
+          <input
+            class="input--text"
+            type="search"
+            placeholder="Search department rules"
+            [ngModel]="ruleSearch()"
+            (ngModelChange)="ruleSearch.set($event)"
+            (keydown.enter)="rulePage.set(1); loadDepartmentRules()"
+            [disabled]="rulesLoading()"
+          />
+        </span>
+      </label>
+      <label class="forms-filter">
+        <span>Match</span>
+        <select class="input--select" [ngModel]="ruleMatchType()" (ngModelChange)="ruleMatchType.set($event)" [disabled]="rulesLoading()">
+          <option value="">All</option>
+          <option value="EXACT">Exact</option>
+          <option value="PREFIX">Prefix</option>
+        </select>
+      </label>
+      <label class="forms-filter workflow-status-filter">
+        <span>Status</span>
+        <select class="input--select" [ngModel]="ruleStatus()" (ngModelChange)="ruleStatus.set($event)" [disabled]="rulesLoading()">
+          <option value="">All</option>
+          <option value="Active">Active</option>
+          <option value="Inactive">Inactive</option>
+        </select>
+      </label>
+      <div class="forms-toolbar__actions">
+        <button class="btn btn-primary" type="button" (click)="rulePage.set(1); loadDepartmentRules()" [disabled]="rulesLoading()">
+          <span class="material-icons">search</span>
+          Search
+        </button>
+        <button class="btn btn-secondary" type="button" (click)="resetRuleFilters()" [disabled]="rulesLoading()">
+          <span class="material-icons">restart_alt</span>
+          Reset
+        </button>
+      </div>
+    </section>
+
+    <section class="forms-table-card">
+      <header class="forms-table-card__header">
+        <div>
+          <div class="forms-table-card__title-row">
+            <h2>{{ activeTabConfig.title }}</h2>
+            <span class="forms-table-card__count">{{ ruleTotalItems() }}</span>
+          </div>
+          <p>{{ activeTabConfig.description }}</p>
+        </div>
+        <button class="btn btn-secondary forms-table-card__refresh" type="button" (click)="loadDepartmentRules()" [disabled]="rulesLoading()">
+          <span class="material-icons">refresh</span>
+          Refresh
+        </button>
+      </header>
+
+      @if (rulesLoading()) {
+        <app-table-skeleton [columns]="activeColumns()" [showSearch]="false" loadingLabel="Loading department rules"></app-table-skeleton>
+      } @else if (rulesFailed()) {
+        <div class="forms-state">
+          <span class="material-icons">cloud_off</span>
+          <h2>Unable to load department rules</h2>
+          <p>Check the API connection and try again.</p>
+          <button class="btn btn-primary" type="button" (click)="loadDepartmentRules()">Try Again</button>
+        </div>
+      } @else if (departmentRules().length === 0) {
+        <div class="forms-state">
+          <span class="material-icons">{{ activeTabConfig.emptyIcon }}</span>
+          <h2>No department rules found</h2>
+          <p>Adjust the filters or create a new rule.</p>
+        </div>
+      } @else {
+        <app-data-table [columns]="activeColumns()" [rows]="departmentRules()" [rowTrackFn]="ruleTrackFn">
+          <ng-template #rowTemplate let-row let-index="index">
+            <tr>
+              <td class="is-align-center">{{ rowNumber(index, rulePage(), rulePageSize()) }}</td>
+              <td><span class="workflow-cell">{{ row.rule_name }}</span></td>
+              <td class="is-align-center"><span class="form-code">{{ row.match_type }}</span></td>
+              <td><span class="workflow-cell">{{ row.department_value }}</span></td>
+              <td class="is-align-center">
+                <span class="status-badge" [class.status-badge--inactive]="!row.is_active">
+                  {{ row.is_active ? 'Active' : 'Inactive' }}
+                </span>
+              </td>
+              <td class="is-align-center">
+                <div class="table-actions">
+                  <button class="table-action" type="button" title="Edit" aria-label="Edit" (click)="openEditRule(row)">
+                    <app-table-action-icon action="edit"></app-table-action-icon>
+                  </button>
+                  <button class="table-action table-action--danger" type="button" title="Delete" aria-label="Delete" (click)="ruleToDelete.set(row)">
+                    <app-table-action-icon action="delete"></app-table-action-icon>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+        </app-data-table>
+      }
+
+      @if (!rulesLoading() && !rulesFailed()) {
+        <footer class="forms-table-card__footer">
+          <app-pagination
+            [currentPage]="rulePage()"
+            [totalPages]="ruleTotalPages()"
+            [pageSize]="rulePageSize()"
+            [pageSizeOptions]="pageSizeOptions"
+            [totalItems]="ruleTotalItems()"
+            [itemCount]="departmentRules().length"
+            itemLabel="department rules"
+            (pageChange)="rulePage.set($event); loadDepartmentRules()"
+            (pageSizeChange)="rulePageSize.set($event); rulePage.set(1); loadDepartmentRules()"
+          ></app-pagination>
+        </footer>
+      }
+    </section>
+  }
+
+  @if (activeTab() === 'audit') {
+    <section class="forms-toolbar workflow-toolbar system-access-toolbar" aria-label="Audit filters">
+      <h2 class="forms-toolbar__title">Search &amp; Filters</h2>
+      <label class="forms-filter forms-filter--search">
+        <span class="forms-search-input">
+          <span class="material-icons" aria-hidden="true">search</span>
+          <input
+            class="input--text"
+            type="search"
+            placeholder="Search audit logs"
+            [ngModel]="auditSearch()"
+            (ngModelChange)="auditSearch.set($event)"
+            (keydown.enter)="auditPage.set(1); loadAuditLogs()"
+            [disabled]="auditLoading()"
+          />
+        </span>
+      </label>
+      <label class="forms-filter">
+        <span>Decision</span>
+        <select class="input--select" [ngModel]="auditDecision()" (ngModelChange)="auditDecision.set($event)" [disabled]="auditLoading()">
+          <option value="">All</option>
+          <option value="ALLOWED">Allowed</option>
+          <option value="DENIED">Denied</option>
+        </select>
+      </label>
+      <label class="forms-filter">
+        <span>Matched Rule</span>
+        <select class="input--select" [ngModel]="auditRuleType()" (ngModelChange)="auditRuleType.set($event)" [disabled]="auditLoading()">
+          <option value="">All</option>
+          <option value="USER_ALLOW">User Allow</option>
+          <option value="USER_DENY">User Deny</option>
+          <option value="DEPARTMENT_RULE">Department Rule</option>
+          <option value="USER_INACTIVE">User Inactive</option>
+          <option value="NO_MATCH">No Match</option>
+        </select>
+      </label>
+      <div class="forms-toolbar__actions">
+        <button class="btn btn-primary" type="button" (click)="auditPage.set(1); loadAuditLogs()" [disabled]="auditLoading()">
+          <span class="material-icons">search</span>
+          Search
+        </button>
+        <button class="btn btn-secondary" type="button" (click)="resetAuditFilters()" [disabled]="auditLoading()">
+          <span class="material-icons">restart_alt</span>
+          Reset
+        </button>
+      </div>
+    </section>
+
+    <section class="forms-table-card">
+      <header class="forms-table-card__header">
+        <div>
+          <div class="forms-table-card__title-row">
+            <h2>{{ activeTabConfig.title }}</h2>
+            <span class="forms-table-card__count">{{ auditTotalItems() }}</span>
+          </div>
+          <p>{{ activeTabConfig.description }}</p>
+        </div>
+        <button class="btn btn-secondary forms-table-card__refresh" type="button" (click)="loadAuditLogs()" [disabled]="auditLoading()">
+          <span class="material-icons">refresh</span>
+          Refresh
+        </button>
+      </header>
+
+      @if (auditLoading()) {
+        <app-table-skeleton [columns]="activeColumns()" [showSearch]="false" loadingLabel="Loading audit logs"></app-table-skeleton>
+      } @else if (auditFailed()) {
+        <div class="forms-state">
+          <span class="material-icons">cloud_off</span>
+          <h2>Unable to load audit logs</h2>
+          <p>Check the API connection and try again.</p>
+          <button class="btn btn-primary" type="button" (click)="loadAuditLogs()">Try Again</button>
+        </div>
+      } @else if (auditLogs().length === 0) {
+        <div class="forms-state">
+          <span class="material-icons">{{ activeTabConfig.emptyIcon }}</span>
+          <h2>No audit logs found</h2>
+          <p>Adjust the filters and try again.</p>
+        </div>
+      } @else {
+        <app-data-table [columns]="activeColumns()" [rows]="auditLogs()" [rowTrackFn]="auditTrackFn">
+          <ng-template #rowTemplate let-row let-index="index">
+            <tr>
+              <td class="is-align-center">{{ rowNumber(index, auditPage(), auditPageSize()) }}</td>
+              <td>
+                <span class="workflow-cell">{{ row.username }}</span>
+                <small class="system-access-subtext">{{ row.email || '' }}</small>
+              </td>
+              <td class="is-align-center">
+                <span [class]="decisionBadgeClass(row.decision)">{{ row.decision }}</span>
+              </td>
+              <td><span class="workflow-cell">{{ row.reason }}</span></td>
+              <td><span class="workflow-cell">{{ row.department || 'Not resolved' }}</span></td>
+              <td><span class="workflow-cell">{{ row.matched_rule_type || 'None' }}</span></td>
+              <td><span class="workflow-cell">{{ formatDate(row.attempted_at) }}</span></td>
+            </tr>
+          </ng-template>
+        </app-data-table>
+      }
+
+      @if (!auditLoading() && !auditFailed()) {
+        <footer class="forms-table-card__footer">
+          <app-pagination
+            [currentPage]="auditPage()"
+            [totalPages]="auditTotalPages()"
+            [pageSize]="auditPageSize()"
+            [pageSizeOptions]="pageSizeOptions"
+            [totalItems]="auditTotalItems()"
+            [itemCount]="auditLogs().length"
+            itemLabel="audit logs"
+            (pageChange)="auditPage.set($event); loadAuditLogs()"
+            (pageSizeChange)="auditPageSize.set($event); auditPage.set(1); loadAuditLogs()"
+          ></app-pagination>
+        </footer>
+      }
+    </section>
+  }
+
+  <app-dialog [isOpen]="userDialogMode() !== null" [title]="userDialogMode() === 'create' ? 'Add User Access Rule' : 'Edit User Access Rule'" size="small" (close)="userDialogMode.set(null)">
+    <div class="workflow-editor">
+      <label class="forms-filter">
+        <span>Username</span>
+        <app-searchable-dropdown
+          [options]="staffDropdownOptions()"
+          [searchable]="true"
+          [loading]="staffOptionsLoading()"
+          placeholder="Search staff..."
+          [ngModel]="userUsername()"
+          (ngModelChange)="userUsername.set($event || '')"
+          (searchChange)="loadStaffOptions($event)"
+        ></app-searchable-dropdown>
+      </label>
+      <label class="forms-filter"><span>Access Type</span><select class="input--select" [ngModel]="userType()" (ngModelChange)="userType.set($event)"><option value="ALLOW">Allow</option><option value="DENY">Deny</option></select></label>
+      <label class="forms-filter system-access-user-reason"><span>Reason</span><textarea class="input--text workflow-textarea" rows="4" maxlength="500" [ngModel]="userReason()" (ngModelChange)="userReason.set($event)"></textarea></label>
+      <label class="active-switch"><input type="checkbox" [ngModel]="userActive()" (ngModelChange)="userActive.set($event)" /><span class="active-switch__control"></span><span><strong>Active</strong></span></label>
+    </div>
+    <div dialog-footer class="form-dialog__footer">
+      <button class="btn btn-secondary" type="button" [disabled]="isSaving()" (click)="userDialogMode.set(null)">Cancel</button>
+      <button class="btn btn-primary" type="button" [disabled]="isSaving() || !userUsername().trim()" (click)="saveUser()">{{ isSaving() ? 'Saving...' : 'Save Rule' }}</button>
+    </div>
+  </app-dialog>
+
+  <app-dialog [isOpen]="ruleDialogMode() !== null" [title]="ruleDialogMode() === 'create' ? 'Add Department Rule' : 'Edit Department Rule'" size="small" (close)="ruleDialogMode.set(null)">
+    <div class="workflow-editor">
+      <label class="forms-filter"><span>Rule Name</span><input class="input--text" [ngModel]="ruleName()" (ngModelChange)="ruleName.set($event)" placeholder="School prefix" /></label>
+      <label class="forms-filter"><span>Match Type</span><select class="input--select" [ngModel]="ruleType()" (ngModelChange)="ruleType.set($event)"><option value="EXACT">Exact</option><option value="PREFIX">Prefix</option></select></label>
+      <label class="forms-filter"><span>Department Value</span><input class="input--text" [ngModel]="departmentValue()" (ngModelChange)="departmentValue.set($event)" placeholder="School of" /></label>
+      <label class="active-switch"><input type="checkbox" [ngModel]="ruleActive()" (ngModelChange)="ruleActive.set($event)" /><span class="active-switch__control"></span><span><strong>Active</strong></span></label>
+    </div>
+    <div dialog-footer class="form-dialog__footer">
+      <button class="btn btn-secondary" type="button" [disabled]="isSaving()" (click)="ruleDialogMode.set(null)">Cancel</button>
+      <button class="btn btn-primary" type="button" [disabled]="isSaving() || !ruleName().trim() || !departmentValue().trim()" (click)="saveRule()">{{ isSaving() ? 'Saving...' : 'Save Rule' }}</button>
+    </div>
+  </app-dialog>
+
+  <app-dialog [isOpen]="userToDelete() !== null" title="Delete User Rule" size="small" (close)="userToDelete.set(null)">
+    @if (userToDelete(); as user) {
+      <div class="deactivate-confirmation">
+        <app-table-action-icon action="delete"></app-table-action-icon>
+        <div>
+          <h3>Delete {{ user.username }}?</h3>
+          <p>This permanently removes the user access override.</p>
+        </div>
+      </div>
+    }
+    <div dialog-footer class="form-dialog__footer">
+      <button class="btn btn-secondary" type="button" [disabled]="isSaving()" (click)="userToDelete.set(null)">Cancel</button>
+      <button class="btn btn-danger" type="button" [disabled]="isSaving()" (click)="deleteUser()">{{ isSaving() ? 'Deleting...' : 'Delete' }}</button>
+    </div>
+  </app-dialog>
+
+  <app-dialog [isOpen]="ruleToDelete() !== null" title="Delete Department Rule" size="small" (close)="ruleToDelete.set(null)">
+    @if (ruleToDelete(); as rule) {
+      <div class="deactivate-confirmation">
+        <app-table-action-icon action="delete"></app-table-action-icon>
+        <div>
+          <h3>Delete {{ rule.rule_name }}?</h3>
+          <p>This permanently removes the department access rule.</p>
+        </div>
+      </div>
+    }
+    <div dialog-footer class="form-dialog__footer">
+      <button class="btn btn-secondary" type="button" [disabled]="isSaving()" (click)="ruleToDelete.set(null)">Cancel</button>
+      <button class="btn btn-danger" type="button" [disabled]="isSaving()" (click)="deleteRule()">{{ isSaving() ? 'Deleting...' : 'Delete' }}</button>
+    </div>
+  </app-dialog>
+</main>

@@ -1,104 +1,115 @@
-<main class="dashboard">
+<main class="dashboard" [ngClass]="'dashboard--' + view().audience">
   <header class="dashboard-header">
     <div>
-      <p class="dashboard-kicker">RMC Portal</p>
-      <h1>Dashboard</h1>
-      <p class="dashboard-subtitle">Welcome back, {{ username() }}. Your work queue at a glance.</p>
+      <span class="role-label"><span class="material-icons">verified_user</span>{{ view().roleLabel }}</span>
+      <h1>{{ view().title }}</h1>
+      <p>Welcome back, {{ username() }}. {{ view().subtitle }}</p>
     </div>
-
-    <a routerLink="/showcase" class="showcase-link" aria-label="Open UI showcase for testing">
-      <span class="material-icons">palette</span>
-      <span>Showcase</span>
+    <a class="btn btn-primary header-action" [routerLink]="view().primaryAction.route">
+      <span class="material-icons">{{ view().primaryAction.icon }}</span>{{ view().primaryAction.label }}
     </a>
   </header>
 
   @if (error()) {
-    <section class="state-panel state-panel--error">
+    <section class="error-panel" role="alert">
       <span class="material-icons">error_outline</span>
       <span>{{ error() }}</span>
+      <button type="button" class="btn btn-secondary btn-sm" (click)="loadDashboard()">Try again</button>
     </section>
   }
 
   @if (loading()) {
-    <app-dashboard-skeleton></app-dashboard-skeleton>
+    <app-dashboard-skeleton [metricCount]="4" [rows]="6"></app-dashboard-skeleton>
   } @else {
-  <section class="metrics-grid" aria-label="Application summary">
-    @for (metric of metrics(); track metric.label) {
-      <a
-        class="metric-card"
-        [ngClass]="'metric-card--' + metric.tone"
-        [routerLink]="metric.route">
-        <div class="metric-card__icon">
-          <span class="material-icons">{{ metric.icon }}</span>
-        </div>
-        <div>
-          <span class="metric-card__label">{{ metric.label }}</span>
-          <strong class="metric-card__value">{{ metric.value }}</strong>
-        </div>
-      </a>
-    }
-  </section>
-
-  <section class="applications-panel">
-    <div class="panel-header">
-      <div>
-        <p class="panel-eyebrow">Applications</p>
-        <h2>Recent Applications</h2>
-      </div>
-    </div>
-
-    @if (visibleRecentApps().length === 0) {
-      <div class="empty-state">
-        <span class="material-icons">description</span>
-        <p>No applications found yet.</p>
-      </div>
-    } @else {
-      <div class="application-list">
-        @for (app of paginatedApps(); track app.id ?? getTitle(app)) {
-          <a
-            class="application-row"
-            [class.application-row--action]="needsAction(app)"
-            [routerLink]="getFormRoute(app)"
-            [queryParams]="{ id: app.id }">
-            <span class="application-row__icon" aria-hidden="true">
-              <span class="material-icons">description</span>
-            </span>
-            <div class="application-row__main">
-              <strong>{{ getTitle(app) }}</strong>
-              <div class="application-row__meta">
-                <span>{{ getFormTypeLabel(app) }}</span>
-                <span>{{ formatDate(app) }}</span>
-              </div>
-            </div>
-            <div class="application-row__signal">
-              @if (needsAction(app)) {
-                <span class="action-indicator" title="Action required" aria-label="Action required"></span>
-              }
-              <span class="material-icons application-row__arrow" aria-hidden="true">chevron_right</span>
-            </div>
-          </a>
-        }
-      </div>
-      @if (totalPages() > 1) {
-        <nav class="pagination-controls" aria-label="Recent applications pages">
-          <button type="button" (click)="previousPage()" [disabled]="currentPage() === 0" aria-label="Previous page">
-            <span class="material-icons">chevron_left</span>
-          </button>
-          @for (page of pageIndexes(); track page) {
-            <button
-              type="button"
-              (click)="goToPage(page)"
-              [class.active]="currentPage() === page"
-              [attr.aria-current]="currentPage() === page ? 'page' : null">
-              {{ page }}
-            </button>
-          }
-          <button type="button" (click)="nextPage()" [disabled]="currentPage() === totalPages() - 1" aria-label="Next page">
-            <span class="material-icons">chevron_right</span>
-          </button>
-        </nav>
+    <section class="metrics-grid" aria-label="Dashboard totals">
+      @for (metric of metrics(); track metric.key) {
+        <a class="metric-card" [ngClass]="'metric-card--' + metric.tone" [routerLink]="metric.route">
+          <span class="metric-icon material-icons">{{ metric.icon }}</span>
+          <span class="metric-label">{{ metric.label }}</span>
+          <strong>{{ metric.value }}</strong>
+          <small>{{ metric.helper }}</small>
+          <span class="metric-arrow material-icons">north_east</span>
+        </a>
       }
-    }
-  </section>
+    </section>
+
+    <section class="analytics-grid" aria-label="Application analytics">
+      <article class="analytics-card form-chart">
+        <header class="card-heading">
+          <div><span>Form analytics</span><h2>{{ view().formChartTitle }}</h2><p>{{ view().formChartDescription }}</p></div>
+          <div class="chart-key"><i></i>{{ view().formChartPrimaryLabel }} <i></i>Required action</div>
+        </header>
+        @if (formBreakdown().length) {
+          <div class="form-bars">
+            @for (form of formBreakdown(); track form.form_code) {
+              <div class="form-bar-row">
+                <div class="form-bar-label"><strong>{{ form.form_name }}</strong><small>{{ formTotal(form) }} total</small></div>
+                <div class="bar-stack">
+                  <div class="bar-track"><span class="bar-primary" [style.width.%]="barWidth(formPrimaryValue(form))"></span></div>
+                  <div class="bar-track"><span class="bar-action" [style.width.%]="barWidth(form.required_action)"></span></div>
+                </div>
+                <div class="bar-values"><strong>{{ formPrimaryValue(form) }}</strong><strong>{{ form.required_action }}</strong></div>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="chart-empty">Form activity will appear here.</div>
+        }
+      </article>
+
+      <article class="analytics-card status-card">
+        <header class="card-heading"><div><span>Portfolio</span><h2>Application status</h2><p>Current status distribution</p></div></header>
+        <div class="donut-wrap">
+          <div class="donut" [style.background]="donutBackground()">
+            <div><strong>{{ distributionTotal() }}</strong><small>Total</small></div>
+          </div>
+          <ul class="legend">
+            <li><i class="approved"></i><span>Complete</span><strong>{{ statusDistribution().approved }}</strong></li>
+            <li><i class="rejected"></i><span>Rejected</span><strong>{{ statusDistribution().rejected }}</strong></li>
+            <li><i class="pending"></i><span>Pending</span><strong>{{ statusDistribution().pending }}</strong></li>
+            <li><i class="draft"></i><span>Draft</span><strong>{{ statusDistribution().draft }}</strong></li>
+          </ul>
+        </div>
+      </article>
+
+      <article class="analytics-card trend-card">
+        <header class="card-heading"><div><span>Six-month trend</span><h2>Submitted applications</h2><p>Monthly submission volume</p></div></header>
+        <div class="month-chart">
+          @for (month of monthlySubmissions(); track month.month) {
+            <div class="month-column" [attr.aria-label]="month.label + ': ' + month.count">
+              <strong>{{ month.count }}</strong>
+              <div class="month-track"><span [style.height.%]="monthHeight(month.count)"></span></div>
+              <small>{{ month.label }}</small>
+            </div>
+          }
+        </div>
+      </article>
+    </section>
+
+    <section class="recent-card">
+      <header class="card-heading recent-heading">
+        <div><span>Latest updates</span><h2>{{ view().recentTitle }}</h2><p>Open an application to see its complete workflow.</p></div>
+        <a routerLink="/submissions/history">View all <span class="material-icons">arrow_forward</span></a>
+      </header>
+      @if (visibleRecentApps().length) {
+        <div class="recent-table" role="table" aria-label="Recent applications">
+          <div class="recent-table-head" role="row"><span>Application</span><span>Form</span><span>Updated</span><span>Status</span><span></span></div>
+          @for (app of visibleRecentApps(); track app.id ?? app.request_code) {
+            <a class="recent-row" [routerLink]="getFormRoute(app)" role="row">
+              <span class="application-title"><i class="material-icons">description</i><span><strong>{{ getTitle(app) }}</strong><small>{{ app.request_code || 'Draft' }}</small></span></span>
+              <span>{{ getFormTypeLabel(app) }}</span>
+              <span>{{ formatDate(app) }}</span>
+              <span>
+                @if (needsAction(app)) { <em class="status-pill action">Action needed</em> }
+                @else { <em class="status-pill" [style.--status-color]="getStatusColor(app)">{{ getStatusLabel(app) }}</em> }
+              </span>
+              <span class="material-icons row-arrow">chevron_right</span>
+            </a>
+          }
+        </div>
+      } @else {
+        <div class="empty-state"><span class="material-icons">inbox</span><strong>{{ view().emptyTitle }}</strong><p>{{ view().emptyDescription }}</p></div>
+      }
+    </section>
   }
 </main>

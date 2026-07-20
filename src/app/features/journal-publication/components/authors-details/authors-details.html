@@ -175,6 +175,18 @@
       </div>
       <div class="card__content">
         <div class="card-body">
+          @if (isNonApuRequired) {
+            <app-note
+              text="At least one Non-APU co-author is required for Non-Research project type."
+              [isTooltip]="false"
+            >
+            </app-note>
+          }
+          @if (showNonApuRequiredMessage) {
+            <p class="form-error-msg">
+              Please add at least one Non-APU co-author before continuing.
+            </p>
+          }
           <div class="list-section-header">
             <span class="list-count"
               >{{ nonApuCoAuthors.length }}
@@ -272,14 +284,19 @@
         <!-- ── APU Staff Form ──────────────────────────────────── -->
         @if (modalType === 'apu-staff') {
           <div class="form-group">
-            <label>Staff Name</label>
+            <label>Staff</label>
             <app-searchable-dropdown
               [options]="staffOptions"
               [searchable]="true"
+              [loading]="staffOptionsLoading"
               placeholder="Search staff..."
               formControlName="staffName"
+              (searchChange)="loadAcademicStaffOptions($event)"
             >
             </app-searchable-dropdown>
+            @if (staffOptionsLoadFailed) {
+              <small class="text-danger">Unable to load staff options. Try searching again.</small>
+            }
             <app-validation-message [control]="editForm.get('staffName')"></app-validation-message>
           </div>
 

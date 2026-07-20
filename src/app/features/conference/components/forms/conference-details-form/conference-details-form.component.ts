@@ -4,6 +4,7 @@ import {
   ReactiveFormsModule,
   FormBuilder,
   FormGroup,
+  FormArray,
   Validators,
   AbstractControl,
   ValidationErrors,
@@ -16,7 +17,6 @@ import {
   DataTableComponent,
   DataTableColumn,
 } from '../../../../../shared/components/data-table/data-table.component';
-import { PaginationComponent } from '../../../../../shared/components/pagination/pagination.component';
 import { DialogComponent } from '../../../../../shared/components/dialog/dialog.component';
 import { CustomSubheaderComponent } from '../../../../../shared/components/custom-subheader/custom-subheader.component';
 import { CustomHeaderComponent } from '../../../../../shared/components/custom-header/custom-header.component';
@@ -24,7 +24,11 @@ import { DropdownOption } from '../../../../../core/interfaces/components.interf
 import { ConferenceWorkflowService } from '../../../services/conference-workflow.service';
 import { ConferenceFormStateService } from '../../../services/conference-form-state.service';
 import { BreakdownOptionsService } from '../../../services/breakdown-options.service';
-import { MasterDataService, RegionOption } from '../../../../../core/services/master-data.service';
+import {
+  AcademicStaffOption,
+  MasterDataService,
+  RegionOption,
+} from '../../../../../core/services/master-data.service';
 import {
   SDG_KEYWORD_EXAMPLE,
   SDG_KEYWORD_NOTE,
@@ -32,6 +36,7 @@ import {
 } from '../../../../../shared/validators/sdg-keyword.validator';
 
 import { TableActionIconComponent } from '../../../../../shared/components/table-action-icon/table-action-icon.component';
+import { AdminCatalogStoreService } from '../../../../admin-settings/catalog-management/admin-catalog-store.service';
 
 @Component({
   selector: 'app-conference-details-form',
@@ -46,7 +51,6 @@ import { TableActionIconComponent } from '../../../../../shared/components/table
     CharacterCounterComponent,
     DataTableComponent,
     DialogComponent,
-    PaginationComponent,
     CustomHeaderComponent,
     CustomSubheaderComponent,
   ],
@@ -57,17 +61,22 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
   readonly klangValleyAccountCodeDescription = 'TRAINING PRESENTATION PUBLICATION';
   readonly klangValleyAccountCode = '6203/100';
   @Input() workflow?: ConferenceWorkflowService;
+  @Input() applicantDetailsForm?: FormGroup;
   @Input() isFormReadOnly: boolean = false;
 
   private breakdownOptionsService = inject(BreakdownOptionsService);
   private readonly masterData = inject(MasterDataService);
+  private readonly adminCatalogs = inject(AdminCatalogStoreService);
   form!: FormGroup;
   breakdownForm!: FormGroup;
   sdgKeywordsForm!: FormGroup;
+  activityForm!: FormGroup;
   readonly sdgKeywordPlaceholder = SDG_KEYWORD_EXAMPLE;
   readonly sdgKeywordNote = SDG_KEYWORD_NOTE;
   isBreakdownModalOpen = false;
   isSDGKeywordsModalOpen = false;
+  isActivityModalOpen = false;
+  activityEditingIndex: number | null = null;
   breakdownType: 'research' | 'external-research' | 'local' | null = null;
   breakdownEditingIndex: number | null = null;
 
@@ -75,6 +84,12 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
   researchBreakdowns: any[] = [];
   externalBreakdowns: any[] = [];
   localBreakdowns: any[] = [];
+  readonly activityTableColumns: DataTableColumn[] = [
+    { key: 'date', label: 'Date', width: '180px' },
+    { key: 'time', label: 'Time', width: '150px' },
+    { key: 'description', label: 'Description', width: '420px' },
+    { key: 'actions', label: 'Actions', width: '96px', align: 'center', headerAlign: 'center' },
+  ];
   selectedFileName: string | null = null;
   selectedFile: File | null = null;
 
@@ -89,6 +104,10 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
       } else {
         this.form?.enable({ emitEvent: false });
       }
+    });
+
+    effect(() => {
+      this.projectAccountCodeOptions.set(this.getManagedProjectAccountCodeOptions());
     });
   }
 
@@ -112,6 +131,8 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
   regionOptions = signal<DropdownOption[]>([]);
 
   projectAccountCodeOptions = signal<DropdownOption[]>([]);
+  colleagueOptions = signal<DropdownOption<string>[]>([]);
+  colleaguesLoading = signal(false);
 
   // Build region descriptions dynamically from service metadata
   getRegionDescription(regionValue: string): string {
@@ -206,7 +227,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     { key: 'index', label: '#', width: '50px', align: 'center' },
     { key: 'itemDescription', label: 'Vote Number Description' },
     { key: 'voteNumber', label: 'Vote Number' },
-    { key: 'description', label: 'Description' },
+    { key: 'description', label: 'Description', width: '420px' },
     { key: 'cost', label: 'Cost (Foreign/MYR)' },
     { key: 'exchangeRate', label: 'Exchange Rate' },
     { key: 'costInRM', label: 'Cost in RM' },
@@ -218,7 +239,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     { key: 'itemDescription', label: 'Vote Number Description' },
     { key: 'accountCode', label: 'Account Code' },
     { key: 'voteNumber', label: 'Vote Number' },
-    { key: 'description', label: 'Description' },
+    { key: 'description', label: 'Description', width: '420px' },
     { key: 'cost', label: 'Cost (Foreign/MYR)' },
     { key: 'exchangeRate', label: 'Exchange Rate' },
     { key: 'costInRM', label: 'Cost in RM' },
@@ -229,7 +250,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     { key: 'index', label: '#', width: '50px', align: 'center' },
     { key: 'itemDescription', label: 'Account Code Description' },
     { key: 'voteNumber', label: 'Account Code' },
-    { key: 'description', label: 'Description' },
+    { key: 'description', label: 'Description', width: '420px' },
     { key: 'supportingDocument', label: 'Document' },
     { key: 'cost', label: 'Cost (Foreign/MYR)' },
     { key: 'exchangeRate', label: 'Exchange Rate' },
@@ -377,10 +398,14 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     this.initializeForm();
     this.initializeBreakdownForm();
     this.initializeSDGKeywordsForm();
+    this.initializeActivityForm();
     this.setupBreakdownFormWatchers();
     this.setupFormWatchers();
     this.loadFormState();
     this.syncCitedJournalPaperExplanationValidator();
+    this.syncBookingDoneByOtherValidator();
+    this.syncAdvanceReasonValidator();
+    this.syncSelectedColleaguesValidator();
     this.normalizePages();
     this.loadMasterData();
   }
@@ -394,8 +419,14 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     });
 
     this.masterData.getProjectAccountCodes().subscribe((res) => {
+      const managedOptions = this.getManagedProjectAccountCodeOptions();
       this.projectAccountCodeOptions.set(
-        (res.data ?? []).map((c) => ({ value: c.code, label: `${c.code} - ${c.description}` })),
+        managedOptions.length
+          ? managedOptions
+          : (res.data ?? []).map((c) => ({
+              value: c.code,
+              label: c.description ? `${c.code} - ${c.description}` : c.code,
+            })),
       );
     });
 
@@ -414,6 +445,15 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
         label: c.description,
       }));
     });
+
+    this.loadColleagueOptions();
+  }
+
+  private getManagedProjectAccountCodeOptions(): DropdownOption[] {
+    return this.adminCatalogs.activeProjectAccountCodes('Conference Application').map((item) => ({
+      value: item.code ?? item.name,
+      label: item.code ? `${item.code} - ${item.name}` : item.name,
+    }));
   }
 
   ngOnDestroy() {
@@ -510,10 +550,27 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     // Watch for conference start date changes and re-validate end date
     this.form.get('conferenceStartDate')?.valueChanges.subscribe(() => {
       this.form.get('conferenceEndDate')?.updateValueAndValidity({ emitEvent: false });
+      this.validateActivityDates();
+    });
+
+    this.form.get('conferenceEndDate')?.valueChanges.subscribe(() => {
+      this.validateActivityDates();
     });
 
     this.form.get('citedJournalPaper')?.valueChanges.subscribe((answer) => {
       this.syncCitedJournalPaperExplanationValidator(answer);
+    });
+
+    this.form.get('bookingDoneBy')?.valueChanges.subscribe((answer) => {
+      this.syncBookingDoneByOtherValidator(answer);
+    });
+
+    this.form.get('hasAdvance')?.valueChanges.subscribe((answer) => {
+      this.syncAdvanceReasonValidator(answer);
+    });
+
+    this.form.get('hasColleagues')?.valueChanges.subscribe((answer) => {
+      this.syncSelectedColleaguesValidator(answer);
     });
 
     // Keep the external breakdown Account Code in sync with the selected project.
@@ -612,10 +669,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
   private loadFormState() {
     const savedState = this.formStateService.getFormSection('conferenceDetails');
     if (savedState) {
-      // Create a copy of saved state without selectedRegion and percentage to keep them empty
       const stateWithoutRegion = { ...savedState };
-      delete stateWithoutRegion['selectedRegion'];
-      delete stateWithoutRegion['percentage'];
 
       const supportingDocuments = this.formStateService.getFormSection('supportingDocuments');
       if (supportingDocuments) {
@@ -634,7 +688,10 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
         }
       }
 
+      const savedActivities = stateWithoutRegion['activities'];
+      delete stateWithoutRegion['activities'];
       this.form.patchValue(stateWithoutRegion, { emitEvent: false });
+      this.setActivities(savedActivities);
 
       // Restore breakdown arrays
       if (savedState.researchBreakdown) {
@@ -708,6 +765,12 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
       fundingRequestType: ['', [Validators.required]],
       conferenceType: ['', [Validators.required]],
       travelRequired: ['', [Validators.required]],
+      bookingDoneBy: ['', [Validators.required]],
+      bookingDoneByOther: [''],
+      hasAdvance: ['', [Validators.required]],
+      advanceReason: [''],
+      hasColleagues: ['', [Validators.required]],
+      selectedColleagues: [[]],
       authorshipType: ['', [Validators.required]],
       scopusPublicationGuaranteed: ['', [Validators.required]],
       restrictedPublisher: ['', [Validators.required]],
@@ -717,6 +780,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
       conferenceName: ['', [Validators.required, Validators.maxLength(200)]],
       conferenceStartDate: ['', [Validators.required, this.minDateValidator.bind(this)]],
       conferenceEndDate: ['', [Validators.required, this.endDateValidator]],
+      activities: this.fb.array([]),
       localOrOverseas: ['', [Validators.required]],
       researchType: ['', [Validators.required]],
       citedJournalPaper: ['', [Validators.required]],
@@ -739,6 +803,176 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
       localSponsoredAmountExternal: [''],
       localSponsoredBy: [''],
       localCostingRemarks: [''],
+    });
+  }
+
+
+  onColleagueSearch(search: string): void {
+    this.loadColleagueOptions(search);
+  }
+
+  private loadColleagueOptions(search = ''): void {
+    this.colleaguesLoading.set(true);
+    this.masterData.searchAcademicStaff(search).subscribe({
+      next: (res) => {
+        const staff = res.data ?? [];
+        this.colleagueOptions.set(staff.map((member) => this.toColleagueOption(member)));
+        this.colleaguesLoading.set(false);
+      },
+      error: () => {
+        this.colleagueOptions.set([]);
+        this.colleaguesLoading.set(false);
+      },
+    });
+  }
+
+  private toColleagueOption(member: AcademicStaffOption): DropdownOption<string> {
+    return {
+      value: member.username || member.id.toString(),
+      label: member.fullname || member.username,
+      description: [member.email, member.department].filter(Boolean).join(' • '),
+    };
+  }
+
+  private syncBookingDoneByOtherValidator(answer = this.form.get('bookingDoneBy')?.value): void {
+    const control = this.form.get('bookingDoneByOther');
+    if (!control) return;
+
+    if (answer === 'other') {
+      control.setValidators([Validators.required, Validators.maxLength(300)]);
+    } else {
+      control.clearValidators();
+      control.patchValue('', { emitEvent: false });
+    }
+    control.updateValueAndValidity({ emitEvent: false });
+  }
+  private syncAdvanceReasonValidator(answer = this.form.get('hasAdvance')?.value): void {
+    const control = this.form.get('advanceReason');
+    if (!control) return;
+
+    if (answer === 'yes') {
+      control.setValidators([Validators.required, Validators.maxLength(500)]);
+    } else {
+      control.clearValidators();
+      control.patchValue('', { emitEvent: false });
+    }
+    control.updateValueAndValidity({ emitEvent: false });
+  }
+
+  private syncSelectedColleaguesValidator(answer = this.form.get('hasColleagues')?.value): void {
+    const control = this.form.get('selectedColleagues');
+    if (!control) return;
+
+    if (answer === 'yes') {
+      control.setValidators([Validators.required, this.maxSelectedColleaguesValidator]);
+    } else {
+      control.clearValidators();
+      control.patchValue([], { emitEvent: false });
+    }
+    control.updateValueAndValidity({ emitEvent: false });
+  }
+
+  private maxSelectedColleaguesValidator(control: AbstractControl): ValidationErrors | null {
+    const selected = Array.isArray(control.value) ? control.value : [];
+    return selected.length > 10 ? { maxColleagues: true } : null;
+  }
+
+  get activities(): FormArray {
+    return this.form.get('activities') as FormArray;
+  }
+
+  createActivityGroup(activity?: { date?: string; time?: string; description?: string }): FormGroup {
+    return this.fb.group({
+      date: [activity?.date || '', [Validators.required, this.activityDateValidator.bind(this)]],
+      time: [activity?.time || '', [Validators.required]],
+      description: [activity?.description || '', [Validators.required, Validators.maxLength(255)]],
+    });
+  }
+
+  initializeActivityForm(): void {
+    this.activityForm = this.createActivityGroup();
+  }
+
+  canAddActivity(): boolean {
+    return !!this.form.get('conferenceStartDate')?.value && !!this.form.get('conferenceEndDate')?.value;
+  }
+
+  openActivityModal(index: number | null = null): void {
+    if (!this.canAddActivity()) return;
+
+    this.activityEditingIndex = index;
+    const current = index !== null ? this.activities.at(index)?.value : null;
+    this.activityForm = this.createActivityGroup(current || undefined);
+    this.isActivityModalOpen = true;
+  }
+
+  closeActivityModal(): void {
+    this.isActivityModalOpen = false;
+    this.activityEditingIndex = null;
+    this.activityForm.reset();
+  }
+
+  submitActivityModal(): void {
+    if (this.activityForm.invalid) {
+      this.activityForm.markAllAsTouched();
+      return;
+    }
+
+    const value = this.activityForm.getRawValue();
+    if (this.activityEditingIndex !== null) {
+      this.activities.setControl(this.activityEditingIndex, this.createActivityGroup(value));
+    } else {
+      this.activities.push(this.createActivityGroup(value));
+    }
+    this.closeActivityModal();
+  }
+
+  removeActivityRow(index: number): void {
+    this.activities.removeAt(index);
+  }
+
+  formatActivityTime(value: string | null | undefined): string {
+    if (!value) return '-';
+    const [hourText, minuteText = '00'] = value.split(':');
+    const hour = Number(hourText);
+    if (Number.isNaN(hour)) return value;
+    const period = hour >= 12 ? 'PM' : 'AM';
+    const displayHour = hour % 12 || 12;
+    return `${displayHour}:${minuteText.padStart(2, '0')} ${period}`;
+  }
+  getActivityGroup(index: number): FormGroup {
+    return this.activities.at(index) as FormGroup;
+  }
+
+  private setActivities(activities: any[]): void {
+    this.activities.clear();
+    const rows = Array.isArray(activities) ? activities : [];
+    rows.forEach((activity) => this.activities.push(this.createActivityGroup(activity)));
+  }
+  private activityDateValidator(control: AbstractControl): ValidationErrors | null {
+    if (!control.value || !this.form) {
+      return null;
+    }
+
+    const start = this.form.get('conferenceStartDate')?.value;
+    const end = this.form.get('conferenceEndDate')?.value;
+    if (!start || !end) {
+      return null;
+    }
+
+    const activityDate = new Date(control.value);
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+    if (activityDate < startDate || activityDate > endDate) {
+      return { activityDateOutOfRange: true };
+    }
+
+    return null;
+  }
+
+  private validateActivityDates(): void {
+    this.activities.controls.forEach((activity) => {
+      activity.get('date')?.updateValueAndValidity({ emitEvent: false });
     });
   }
 
@@ -930,7 +1164,6 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
 
     // Formula: A = min((T × P / 100), T - E), with minimum value of 0
     const percentageAmount = (totalAmount * percentage) / 100;
-
     return Math.max(0, Math.min(percentageAmount, remainingAmount));
   }
 
@@ -1224,6 +1457,8 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
       'hos_application',
       'hos_request_resubmission',
       'rmc_request_resubmission',
+      'pending_applicant_resubmission_hos',
+      'pending_applicant_resubmission_rmc',
     ];
     return allowedStatuses.includes(status);
   }
@@ -1309,3 +1544,12 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     }
   }
 }
+
+
+
+
+
+
+
+
+

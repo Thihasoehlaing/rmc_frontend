@@ -1,6 +1,19 @@
 <div class="pagination-wrapper">
   <div class="pagination-summary">
-    Page <strong>{{ currentPage }}</strong> of <strong>{{ totalPages }}</strong>
+    <label class="pagination-jump">
+      <span>Go to page</span>
+      <input
+        type="number"
+        min="1"
+        [max]="totalPages"
+        [ngModel]="pageInput"
+        (ngModelChange)="onPageInputChange($event)"
+        (keydown.enter)="submitPageInput()"
+        (blur)="submitPageInput()"
+        aria-label="Go to page"
+      />
+      <span>of {{ totalPages }}</span>
+    </label>
   </div>
 
   <div class="pagination-controls">
@@ -37,4 +50,15 @@
       <span class="material-icons">chevron_right</span>
     </button>
   </div>
+
+  <label class="pagination-page-size" aria-label="Items per page">
+    <select
+      [ngModel]="pageSize"
+      (ngModelChange)="onPageSizeChange($event)"
+    >
+      @for (option of pageSizeOptions; track option) {
+        <option [ngValue]="option">{{ option }} per page</option>
+      }
+    </select>
+  </label>
 </div>

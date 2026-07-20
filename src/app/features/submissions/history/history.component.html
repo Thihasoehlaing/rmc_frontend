@@ -1,116 +1,145 @@
-<!-- Submission history -->
 <div class="submissions-page">
-  <!-- ── Page Header ────────────────────────────────────────────────────────── -->
   <div class="submissions-header">
-    <h1 class="submissions-title">
-      <span class="material-icons">history</span>
-      History
-    </h1>
-    <p class="submissions-subtitle">
-      Applications you have acted on that are no longer awaiting your action
-    </p>
+    <div class="submissions-header__text">
+      <h1 class="submissions-title">
+        <span class="material-icons" aria-hidden="true">history</span>
+        {{ isAdminHistory() ? 'Admin History' : 'History' }}
+      </h1>
+      <p class="submissions-subtitle">
+        {{
+          isAdminHistory()
+            ? 'Submitted applications across every form, plus External Project drafts.'
+            : 'Applications with final approval or rejection outcomes.'
+        }}
+      </p>
+    </div>
   </div>
 
-  <!-- ── Loading ────────────────────────────────────────────────────────────── -->
   @if (loading()) {
-    <app-table-skeleton
-      [columns]="skeletonColumns"
-      [showTypeFilter]="true"
-      loadingLabel="Loading application history"
-    >
+    <app-table-skeleton [columns]="skeletonColumns" loadingLabel="Loading application history">
     </app-table-skeleton>
   }
 
-  <!-- ── Error ──────────────────────────────────────────────────────────────── -->
   @if (!loading() && error()) {
     <div class="state-message state-error">
-      <span class="material-icons">error_outline</span>
+      <span class="material-icons" aria-hidden="true">error_outline</span>
       {{ error() }}
     </div>
   }
 
   @if (!loading() && !error()) {
-    <!-- ── Toolbar: search + type filter ───────────────────────────────────── -->
-    <div class="toolbar">
+    <app-submission-form-tabs
+      [tabs]="formTabs()"
+      [selectedValue]="selectedType()"
+      ariaLabel="History form filters"
+      (selectedValueChange)="setTab($event)"
+    />
+
+    <section class="dropdown-search-panel" aria-label="History search">
       <app-submissions-search
-        placeholder="Search history by title..."
+        placeholder="Search by code"
         [value]="searchQuery()"
-        (valueChange)="searchQuery.set($event)"
-      />
+        (search)="onSearch($event)"
+        (refresh)="resetFilters()"
+      >
+        <label search-filters class="mgr-date-filter">
+          <span class="sr-only">Created date</span>
+          <input
+            class="input--text"
+            type="date"
+            [value]="createdDate()"
+            (input)="onCreatedDateChange($event)"
+            aria-label="Filter by created date"
+          />
+        </label>
+      </app-submissions-search>
+    </section>
 
-      <!-- Application type filter — only rendered when multiple types exist -->
-      @if (availableTypes().length > 2) {
-        <div class="type-filter">
-          <label class="type-filter__label" for="hist-type-filter">Type</label>
-          <select
-            id="hist-type-filter"
-            class="type-filter__select"
-            [value]="selectedType()"
-            (change)="selectedType.set($any($event.target).value)"
-          >
-            @for (t of availableTypes(); track t) {
-              <option [value]="t">{{ t === 'all' ? 'All Types' : t }}</option>
+    <section class="dropdown-table-panel" aria-label="Application history">
+      <div class="shared-options-table">
+        <table>
+          <thead>
+            <tr>
+              <th>No.</th>
+              <th>Code</th>
+              <th>Status</th>
+              <th>Created Date</th>
+              <th class="actions-heading">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (app of pagedHistory(); track getCode(app); let index = $index) {
+              <tr>
+                <td>{{ getRowNumber(index) }}</td>
+                <td class="request-code-cell">
+                  <span class="request-code">{{ getCode(app) }}</span>
+                  <span class="form-type-label">{{ getFormTypeLabel(app) }}</span>
+                </td>
+                <td>
+                  <span
+                    class="status-chip"
+                    [ngClass]="getActionClass(app)"
+                    [style.background]="getStatusColor(app) + '1a'"
+                    [style.color]="getStatusColor(app)"
+                    [style.border-color]="getStatusColor(app) + '55'"
+                  >
+                    {{ getStatusLabel(app) }}
+                  </span>
+                </td>
+                <td>{{ formatCreatedDate(app) }}</td>
+                <td class="actions-cell">
+                  <div class="data-table__actions">
+                    <a
+                      class="btn-icon btn-icon--view"
+                      [routerLink]="getPrimaryActionRoute(app)"
+                      [queryParams]="getPrimaryActionQueryParams(app)"
+                      [title]="getPrimaryActionTitle(app)"
+                      [attr.aria-label]="getPrimaryActionTitle(app)"
+                    >
+                      <app-table-action-icon [action]="getPrimaryActionIcon(app)"></app-table-action-icon>
+                    </a>
+                    @if (canPrint(app)) {
+                      <button
+                        type="button"
+                        class="btn-icon btn-icon--view"
+                        title="Print PDF"
+                        aria-label="Print PDF"
+                        (click)="openPrint(app)"
+                      >
+                        <span class="material-icons" aria-hidden="true">print</span>
+                      </button>
+                    }
+                  </div>
+                </td>
+              </tr>
             }
-          </select>
-        </div>
-      }
-    </div>
+          </tbody>
+        </table>
 
-    <!-- ── Empty ─────────────────────────────────────────────────────────────── -->
-    @if (history().length === 0) {
-      <div class="state-message state-empty">
-        <span class="material-icons">history</span>
-        @if (searchQuery() || selectedType() !== 'all') {
-          No history entries match your current filters.
-        } @else {
-          No history yet. Applications you've acted on will appear here once complete.
+        @if (history().length === 0) {
+          <div class="empty-state">
+            @if (searchQuery() || createdDate() || selectedType() !== 'all') {
+              <p>No history entries match the current filters.</p>
+            } @else {
+              <p>No history entries found.</p>
+            }
+          </div>
         }
       </div>
-    }
+    </section>
 
-    <!-- ── Table ─────────────────────────────────────────────────────────────── -->
-    @if (history().length > 0) {
-      <app-data-table
-        [columns]="columns"
-        [rows]="history()"
-        [sortColumn]="sortColumn()"
-        [sortDirection]="sortDirection()"
-        (sortChange)="onSortChange($event)"
-      >
-        <ng-template #rowTemplate let-app>
-          <tr>
-            <td>
-              <div class="data-table__title">
-                {{ app.projectDetails?.title?.trim() || '(Untitled Application)' }}
-              </div>
-            </td>
-            <td>
-              <span class="type-badge">{{ getFormTypeLabel(app) }}</span>
-            </td>
-            <td class="col-muted">{{ getSubmittedBy(app) }}</td>
-            <td>
-              <span class="action-chip" [ngClass]="getActionClass(app)">{{
-                getActionLabel(app)
-              }}</span>
-            </td>
-            <td class="col-muted">{{ getRoleLabel(app) }}</td>
-            <td class="col-date">{{ formatSubmissionDate(app) }}</td>
-            <td class="col-date">{{ formatCompletedDate(app) }}</td>
-            <td>
-              <div class="data-table__actions">
-                <a
-                  class="btn-icon btn-icon--view"
-                  [routerLink]="[getFormRoute(app)]"
-                  [queryParams]="{ id: app.id }"
-                  title="View application"
-                  aria-label="View application"
-                  ><app-table-action-icon action="view"></app-table-action-icon
-                ></a>
-              </div>
-            </td>
-          </tr>
-        </ng-template>
-      </app-data-table>
-    }
+    <section class="dropdown-pagination-panel" aria-label="History pagination">
+      <app-pagination
+        [currentPage]="page()"
+        [totalPages]="totalPages()"
+        [pageSize]="pageSize()"
+        [pageSizeOptions]="pageSizeOptions"
+        [totalItems]="history().length"
+        [itemCount]="pagedHistory().length || null"
+        itemLabel="history entries"
+        (pageChange)="onPageChange($event)"
+        (pageSizeChange)="onPageSizeChange($event)"
+      ></app-pagination>
+    </section>
   }
 </div>

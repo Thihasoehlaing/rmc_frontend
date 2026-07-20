@@ -20,6 +20,7 @@ import {
 } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { DOCUMENT } from '@angular/common';
 import { DropdownOption } from '../../../core/interfaces/components.interface';
 import { SvgIconComponent } from '../svg-icon/svg-icon.component';
 import { SVG_ICON_CHEVRON_DOWN } from '../../icons/svg-icons';
@@ -60,6 +61,12 @@ export class SearchableDropdownComponent<T = number> implements ControlValueAcce
   readonly chevronDownIcon = SVG_ICON_CHEVRON_DOWN;
   private readonly elementRef = inject(ElementRef);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly document = inject(DOCUMENT);
+  private readonly onDocumentPointerDown = (event: Event) => {
+    if (!this.elementRef.nativeElement.contains(event.target)) {
+      if (this.isOpen()) this.close();
+    }
+  };
 
   // ── Inputs ───────────────────────────────────────────────────────
 
@@ -151,6 +158,11 @@ export class SearchableDropdownComponent<T = number> implements ControlValueAcce
   private _onTouched: () => void = () => {};
 
   constructor() {
+    this.document.addEventListener('pointerdown', this.onDocumentPointerDown, true);
+    this.destroyRef.onDestroy(() => {
+      this.document.removeEventListener('pointerdown', this.onDocumentPointerDown, true);
+    });
+
     // Wire the search text-box to the debounced signal
     this.searchCtrl.valueChanges
       .pipe(debounceTime(150), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
@@ -377,10 +389,5 @@ export class SearchableDropdownComponent<T = number> implements ControlValueAcce
 
   // ── Close on outside click ────────────────────────────────────────
 
-  @HostListener('document:click', ['$event'])
-  onClickOutside(event: Event): void {
-    if (!this.elementRef.nativeElement.contains(event.target)) {
-      if (this.isOpen()) this.close();
-    }
-  }
+  // Outside close is handled by the capture-phase pointerdown listener above.
 }

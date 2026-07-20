@@ -48,6 +48,7 @@
 }
 
 .academic-staff-avatar {
+  position: relative;
   width: 38px;
   height: 38px;
   flex: 0 0 auto;
@@ -58,6 +59,15 @@
   border-radius: var(--radius-full);
   font-size: var(--fs-xs);
   font-weight: var(--fw-black);
+  overflow: hidden;
+
+  img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
 }
 
 .academic-staff-muted {
@@ -72,6 +82,34 @@
   background: var(--color-background);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
+}
+
+.academic-staff-bulk-dialog {
+  position: relative;
+  display: grid;
+  gap: var(--space-4);
+
+  .academic-staff-picker {
+    overflow: visible;
+  }
+}
+
+.academic-staff-bulk-dialog__footer {
+  position: relative;
+  z-index: 0;
+  padding: 0;
+  background: transparent;
+  border-top: 0;
+}
+
+:host ::ng-deep .academic-staff-bulk-dialog app-searchable-dropdown {
+  position: relative;
+  z-index: 10;
+}
+
+:host ::ng-deep .academic-staff-bulk-dialog app-searchable-dropdown .dropdown-panel {
+  z-index: 20;
+  max-height: 300px;
 }
 
 .academic-staff-error {

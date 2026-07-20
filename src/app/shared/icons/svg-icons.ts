@@ -21,12 +21,23 @@ export const SVG_ICON_VIEW: SvgIconDefinition = {
   viewBox: '0 0 24 24',
   markup: `<path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"></path><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="2"></circle>`,
 };
+
+export const SVG_ICON_PRINT: SvgIconDefinition = {
+  name: 'SVG_ICON_PRINT',
+  viewBox: '0 0 24 24',
+  markup: `<path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 9V2h12v7"></path><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 14h12v8H6z"></path>`,
+};
 export const SVG_ICON_ACTIVATE: SvgIconDefinition = {
   name: 'SVG_ICON_ACTIVATE',
   viewBox: '0 0 24 24',
   markup: `<path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 6 9 17l-5-5"></path>`,
 };
 
+export const SVG_ICON_MARK_READ: SvgIconDefinition = {
+  name: 'SVG_ICON_MARK_READ',
+  viewBox: '0 0 24 24',
+  markup: `<path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16v12H4z"></path><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m4 7 8 6 8-6"></path><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m14 17 2 2 4-4"></path>`,
+};
 export const SVG_ICON_DEACTIVATE: SvgIconDefinition = {
   name: 'SVG_ICON_DEACTIVATE',
   viewBox: '0 0 24 24',
@@ -71,7 +82,9 @@ export const SVG_ICONS = [
   SVG_ICON_EDIT,
   SVG_ICON_TRASH,
   SVG_ICON_VIEW,
+  SVG_ICON_PRINT,
   SVG_ICON_ACTIVATE,
+  SVG_ICON_MARK_READ,
   SVG_ICON_DEACTIVATE,
   SVG_ICON_SHIELD_USER,
   SVG_ICON_BLOCK_USER,
@@ -80,5 +93,6 @@ export const SVG_ICONS = [
   SVG_ICON_BEAKER,
   SVG_ICON_CHEVRON_DOWN,
 ] as const;
+
 
 

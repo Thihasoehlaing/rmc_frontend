@@ -1,0 +1,83 @@
+:host {
+  display: block;
+}
+
+.settings-card__header-row--without-action {
+  grid-template-columns: auto minmax(0, 1fr);
+}
+
+.mgr-form-filter {
+  display: block;
+  position: relative;
+}
+
+:host ::ng-deep .mgr-form-filter app-searchable-dropdown {
+  display: block;
+  width: 100%;
+}
+
+:host ::ng-deep .mgr-form-filter app-searchable-dropdown .dropdown-trigger {
+  height: 38px;
+  min-height: 38px;
+  padding-block: 0;
+  padding-inline: var(--space-4);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-full);
+  background-color: var(--color-surface);
+}
+
+:host ::ng-deep .mgr-form-filter app-searchable-dropdown .placeholder {
+  color: var(--color-label);
+}
+
+.catalog-code-cell {
+  font-weight: var(--fw-semibold);
+  white-space: nowrap;
+}
+
+.catalog-date-cell {
+  white-space: pre-line;
+}
+
+.catalog-empty-state {
+  padding: var(--space-8);
+  color: var(--color-text-muted);
+  text-align: center;
+
+  .material-icons,
+  strong,
+  span {
+    display: block;
+  }
+
+  .material-icons {
+    margin-bottom: var(--space-2);
+    font-size: var(--fs-3xl);
+  }
+
+  strong {
+    margin-bottom: var(--space-1);
+    color: var(--color-heading);
+  }
+}
+
+.catalog-loading-icon {
+  animation: catalog-spin 0.9s linear infinite;
+}
+
+.catalog-retry-button {
+  display: inline-flex !important;
+  margin: var(--space-4) auto 0;
+}
+
+@keyframes catalog-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.delete-dialog-note {
+  margin-top: var(--space-3);
+  color: var(--color-text-muted);
+  font-size: var(--fs-sm);
+}

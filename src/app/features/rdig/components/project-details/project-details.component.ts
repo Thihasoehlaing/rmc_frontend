@@ -3,7 +3,6 @@ import { ReactiveFormsModule, FormGroup, FormControl } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { CustomHeaderComponent } from '../../../../shared/components/custom-header/custom-header.component';
 import { CustomSubheaderComponent } from '../../../../shared/components/custom-subheader/custom-subheader.component';
 import { SearchableDropdownComponent } from '../../../../shared/components/searchable-dropdown/searchable-dropdown.component';
 import { CharacterCounterComponent } from '../../../../shared/components/character-counter/character-counter.component';
@@ -19,7 +18,6 @@ import { TextareaAutosizeDirective } from '../../../../shared/directives/textare
     standalone: true,
     imports: [
         ReactiveFormsModule,
-        CustomHeaderComponent,
         CustomSubheaderComponent,
         SearchableDropdownComponent,
         CharacterCounterComponent,

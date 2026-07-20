@@ -1,11 +1,4 @@
 <section class="declaration-section" [formGroup]="declarationForm">
-
-  <!-- Page Header -->
-  <app-custom-header
-    icon="verified"
-    title="Final Declaration"
-  ></app-custom-header>
-
   <!-- ── Novelty Justification ───────────────────────────────── -->
   <div class="card">
     <div class="card__header">
@@ -61,7 +54,7 @@
           <div class="form-field">
             <label class="form-label">Reviewer 1</label>
             <select class="input--select"
-              [formControl]="ac('reviewer1Assignment')"
+              data-missing-field-target="approvals.reviewer1Assignment" [formControl]="ac('reviewer1Assignment')"
               [attr.disabled]="!workflow.isRmcEditable() ? '' : null">
               <option value="">-- Select Reviewer --</option>
               @for (r of reviewers; track r.id) {
@@ -72,7 +65,7 @@
           <div class="form-field">
             <label class="form-label">Reviewer 2</label>
             <select class="input--select"
-              [formControl]="ac('reviewer2Assignment')"
+              data-missing-field-target="approvals.reviewer2Assignment" [formControl]="ac('reviewer2Assignment')"
               [attr.disabled]="!workflow.isRmcEditable() ? '' : null">
               <option value="">-- Select Reviewer --</option>
               @for (r of reviewers; track r.id) {
@@ -91,11 +84,11 @@
       <div class="card__content section-fields">
         <app-review-block label="RDIG Chair — Comment" icon="admin_panel_settings"
           [visible]="showRdigChairComments" [readonly]="!workflow.isRdigChairEditable()"
-          [commentControl]="fc('rdigChairComment')"></app-review-block>
+          data-missing-field-target="reviewDeclaration.rdigChairComment" [commentControl]="fc('rdigChairComment')"></app-review-block>
 
         <app-review-block label="Vice Chancellor — Comment" icon="account_balance"
           [visible]="showVcComments" [readonly]="!workflow.isVcEditable()"
-          [commentControl]="fc('vcComment')"></app-review-block>
+          data-missing-field-target="reviewDeclaration.vcComment" [commentControl]="fc('vcComment')"></app-review-block>
       </div>
     </div>
   }
@@ -119,7 +112,7 @@
           [visible]="workflow.isHosApprovalVisible()"
           [readonly]="!workflow.isHosEditable()"
           [options]="workflow.hosApprovalOptions()"
-          [control]="ac('hosStatus')">
+          data-missing-field-target="approvals.hosStatus" [control]="ac('hosStatus')">
         </app-approval-card>
 
         <app-approval-card
@@ -129,7 +122,7 @@
           [visible]="workflow.isRmcApprovalVisible()"
           [readonly]="!workflow.isRmcEditable()"
           [options]="workflow.rmcApprovalOptions"
-          [control]="ac('rmcStatus')">
+          data-missing-field-target="approvals.rmcStatus" [control]="ac('rmcStatus')">
         </app-approval-card>
 
         <app-approval-card
@@ -139,7 +132,7 @@
           [visible]="workflow.isReviewer1ApprovalVisible()"
           [readonly]="!workflow.isReviewer1Editable()"
           [options]="workflow.reviewer1DecisionOptions(reviewer1Total)"
-          [control]="ac('reviewer1Decision')">
+          data-missing-field-target="approvals.reviewer1Decision" [control]="ac('reviewer1Decision')">
         </app-approval-card>
 
         <app-approval-card
@@ -149,7 +142,7 @@
           [visible]="workflow.isReviewer2ApprovalVisible()"
           [readonly]="!workflow.isReviewer2Editable()"
           [options]="workflow.reviewer2DecisionOptions(reviewer2Total)"
-          [control]="ac('reviewer2Decision')">
+          data-missing-field-target="approvals.reviewer2Decision" [control]="ac('reviewer2Decision')">
         </app-approval-card>
 
         <app-approval-card
@@ -159,7 +152,7 @@
           [visible]="workflow.isRdigChairApprovalVisible()"
           [readonly]="!workflow.isRdigChairEditable()"
           [options]="workflow.rmcApprovalOptions"
-          [control]="ac('rdigChairStatus')">
+          data-missing-field-target="approvals.rdigChairStatus" [control]="ac('rdigChairStatus')">
         </app-approval-card>
 
         <app-approval-card
@@ -169,7 +162,7 @@
           [visible]="workflow.isVcApprovalVisible()"
           [readonly]="!workflow.isVcEditable()"
           [options]="workflow.rmcApprovalOptions"
-          [control]="ac('vcStatus')">
+          data-missing-field-target="approvals.vcStatus" [control]="ac('vcStatus')">
         </app-approval-card>
 
         <app-approval-card
@@ -179,7 +172,7 @@
           [visible]="workflow.isCeoApprovalVisible()"
           [readonly]="!workflow.isCeoEditable()"
           [options]="workflow.rmcApprovalOptions"
-          [control]="ac('ceoStatus')">
+          data-missing-field-target="approvals.ceoStatus" [control]="ac('ceoStatus')">
         </app-approval-card>
       </div>
     </div>

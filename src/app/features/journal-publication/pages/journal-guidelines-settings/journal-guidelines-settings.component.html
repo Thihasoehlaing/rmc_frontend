@@ -109,14 +109,13 @@
             [totalPages]="guidelineTotalPages()"
             [pageSize]="guidelinePageSize()"
             [pageSizeOptions]="guidelinePageSizeOptions"
+            [totalItems]="filteredGuidelines().length"
+            [itemCount]="paginatedGuidelines().length"
+            itemLabel="guidelines"
             (pageChange)="onGuidelinePageChange($event)"
             (pageSizeChange)="onGuidelinePageSizeChange($event)"
           >
           </app-pagination>
-        </div>
-        <div class="table-summary">
-          {{ guidelinePageStart() }}-{{ guidelinePageEnd() }} of
-          {{ filteredGuidelines().length }} guidelines
         </div>
       } @else {
         <div class="empty-state">

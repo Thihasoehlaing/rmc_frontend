@@ -6,7 +6,6 @@ import { NavElement, NavFolder, NavItem } from '../../core/interfaces/nav.interf
 import { PermissionService } from '../../core/services/permission.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { AppNotification } from '../../core/interfaces/notification.interface';
-import { BatchSittingService } from '../../features/admin-settings/batch-sitting.service';
 import { SidebarService } from '../../core/services/sidebar.service';
 import { filter, Subscription } from 'rxjs';
 
@@ -30,7 +29,6 @@ export class TopHeaderComponent implements OnInit, OnDestroy {
     private ngZone      = inject(NgZone);
     private permService = inject(PermissionService);
     readonly notifSvc   = inject(NotificationService);
-    private batchSvc    = inject(BatchSittingService);
     readonly sidebarService = inject(SidebarService);
     private routerSub!: Subscription;
 
@@ -96,12 +94,7 @@ export class TopHeaderComponent implements OnInit, OnDestroy {
             filter((e): e is NavigationEnd => e instanceof NavigationEnd)
         ).subscribe(e => this.updateBreadcrumbs(e.urlAfterRedirects));
 
-        // Load notifications then check for date-based batch alerts (RMC / Admin only)
-        this.notifSvc.loadForCurrentUser().subscribe(() => {
-            this.batchSvc.loadAll().subscribe(batches => {
-                this.notifSvc.checkBatchNotifications(batches);
-            });
-        });
+        this.notifSvc.loadUnreadCount().subscribe();
 
         // Badge pulse every 30 s — fires while panel is closed and there are unreads
         this.animTimer = setInterval(() => {
@@ -222,8 +215,13 @@ export class TopHeaderComponent implements OnInit, OnDestroy {
         // Stop animation on open; refresh list
         if (opening) {
             this.badgeAnimating.set(false);
-            this.notifSvc.loadForCurrentUser().subscribe();
+            this.notifSvc.loadPopupNotifications().subscribe();
         }
+    }
+
+    viewAllNotifications() {
+        this.notificationsOpen.set(false);
+        this.router.navigateByUrl('/notifications');
     }
 
     onNotificationClick(notification: AppNotification) {
@@ -389,3 +387,4 @@ export class TopHeaderComponent implements OnInit, OnDestroy {
         return this.notifSvc.getIcon(type);
     }
 }
+

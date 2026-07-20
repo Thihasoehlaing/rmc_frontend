@@ -139,12 +139,14 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
       const arrayFields = {
         testSubsections: (data: any) =>
           this.fb.group({
+            backendId: [data?.backendId ?? null],
             staffName: [data?.staffName || '', [Validators.required]],
             schoolDepartment: [data?.schoolDepartment || '', [Validators.required]],
             affiliation: [data?.affiliation || ''],
           }),
         studentCoAuthors: (data: any) =>
           this.fb.group({
+            backendId: [data?.backendId ?? null],
             tpNumber: [
               data?.tpNumber || '',
               [Validators.required, Validators.pattern('^[0-9]{6}$')],
@@ -155,6 +157,7 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
           }),
         nonApuCoAuthors: (data: any) =>
           this.fb.group({
+            backendId: [data?.backendId ?? null],
             fullName: [data?.fullName || '', [Validators.required]],
             country: [data?.country || '', [Validators.required]],
             email: [data?.email || '', [Validators.required, Validators.email]],
@@ -386,6 +389,8 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
       'hos_application',
       'hos_request_resubmission',
       'rmc_request_resubmission',
+      'pending_applicant_resubmission_hos',
+      'pending_applicant_resubmission_rmc',
     ];
     return allowedStatuses.includes(status);
   }

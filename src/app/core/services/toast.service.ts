@@ -6,6 +6,7 @@ export interface Toast {
   id: number;
   message: string;
   type: ToastType;
+  duration: number;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -43,6 +44,7 @@ export class ToastService {
       id: ++this.nextId,
       message: normalizedMessage,
       type,
+      duration,
     };
 
     this.toasts.update(items => [...items.slice(-3), toast]);

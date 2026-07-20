@@ -22,7 +22,17 @@
   <!-- User Profile Section -->
   <div class="sidebar__profile" [class.sidebar__profile--open]="profileOpen() && isExpanded()" (click)="toggleProfile()"
     [class.sidebar__profile--expanded]="isExpanded()">
-    <div class="profile-avatar">{{ currentUser()?.name?.charAt(0) ?? '?' }}</div>
+    <div class="profile-avatar">
+      <span>{{ currentUser()?.name?.charAt(0) ?? '?' }}</span>
+      @if (currentUser()?.photoUrl) {
+        <img
+          [src]="currentUser()?.photoUrl"
+          [alt]="(currentUser()?.name || 'User') + ' profile photo'"
+          loading="lazy"
+          (error)="onAvatarError($event)"
+        />
+      }
+    </div>
     @if (isExpanded()) {
     <div class="profile-info">
       <div class="profile-name">{{ currentUser()?.name }}</div>

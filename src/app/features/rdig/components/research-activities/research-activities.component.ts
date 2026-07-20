@@ -193,6 +193,15 @@ export class ResearchActivitiesComponent implements OnInit, OnDestroy {
     return '';
   }
 
+  /**
+   * Match a select option to the control value by numeric value — the control
+   * may hold a number (freshly added) or a string (loaded from the backend),
+   * and without this the option wouldn't match a string value, leaving the
+   * dropdown blank even though the timeline/duration render correctly.
+   */
+  compareMonth = (a: unknown, b: unknown): boolean =>
+    a != null && b != null && Number(a) === Number(b);
+
   isStartMonthDisabled(index: number, month: number): boolean {
     return false;
   }

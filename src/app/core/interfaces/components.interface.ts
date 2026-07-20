@@ -9,7 +9,9 @@ export interface DropdownOption<T = any> {
 }
 
 export interface GuidelinesResponse {
-    data?: Array<{
-        rdig_guidelines_content?: string;
-    }>;
+    /**
+     * Old mock endpoints return an array of { rdig_guidelines_content }; the real
+     * admin-settings guideline endpoint returns a single { content_html } object.
+     */
+    data?: Array<{ rdig_guidelines_content?: string }> | { content_html?: string };
 }

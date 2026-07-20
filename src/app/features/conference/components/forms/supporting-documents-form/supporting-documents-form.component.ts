@@ -103,7 +103,9 @@ export class SupportingDocumentsFormComponent implements OnInit, OnDestroy {
     this.saveFormState();
   }
 
-  onFileSelected(controlName: string, file: File) {
+  onFileSelected(controlName: string, file: File | null) {
+    if (!file) return;
+
     this.form.patchValue({
       [controlName]: file.name,
     });
@@ -120,6 +122,8 @@ export class SupportingDocumentsFormComponent implements OnInit, OnDestroy {
       'hos_application',
       'hos_request_resubmission',
       'rmc_request_resubmission',
+      'pending_applicant_resubmission_hos',
+      'pending_applicant_resubmission_rmc',
     ];
     return allowedStatuses.includes(status);
   }

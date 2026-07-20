@@ -112,6 +112,60 @@
   min-width: 0;
 }
 
+.radio-option--disabled {
+  position: relative;
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+  opacity: 0.5;
+
+  input[type='radio'] {
+    cursor: not-allowed;
+  }
+
+  &:hover,
+  &:focus-visible,
+  &:focus-within {
+    opacity: 1;
+
+    .quartile-unavailable-tooltip {
+      visibility: visible;
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+}
+
+.quartile-unavailable-tooltip {
+  position: absolute;
+  z-index: var(--z-dropdown);
+  bottom: calc(100% + var(--space-2));
+  left: 0;
+  width: max-content;
+  max-width: 260px;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--color-heading);
+  color: var(--color-surface);
+  box-shadow: var(--shadow-md);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-medium);
+  line-height: var(--lh-normal);
+  text-align: center;
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(var(--space-1));
+  transition:
+    opacity var(--transition-fast) var(--ease-default),
+    transform var(--transition-fast) var(--ease-default),
+    visibility var(--transition-fast) var(--ease-default);
+}
+
 .breakdown-form--two-column {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

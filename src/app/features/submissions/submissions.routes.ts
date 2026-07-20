@@ -2,6 +2,16 @@ import { Routes } from '@angular/router';
 
 export const submissionsRoutes: Routes = [
   {
+    path: 'detail/:requestId',
+    loadComponent: () =>
+      import('./request-detail/request-detail.component').then(m => m.RequestDetailComponent),
+  },
+  {
+    path: 'action/:requestId',
+    loadComponent: () =>
+      import('./request-action/request-action.component').then(m => m.RequestActionComponent),
+  },
+  {
     path: 'inbox',
     loadComponent: () =>
       import('./inbox/inbox.component').then(m => m.InboxComponent),

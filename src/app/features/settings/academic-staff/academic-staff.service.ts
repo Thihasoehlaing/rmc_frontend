@@ -71,14 +71,25 @@ export interface AcademicStaffPayload {
 }
 
 export interface AcademicStaffByDepartmentPayload {
-  department_id: number;
+  department_id?: number;
+  department_ids?: number[];
   type?: 'fulltime' | 'parttime' | 'contract';
   is_active: boolean;
 }
 
+export interface AcademicStaffOptionRecord {
+  id: number;
+  username: string | null;
+  fullname: string | null;
+  email: string | null;
+  department: string | null;
+}
+
 export interface AcademicStaffByDepartmentResult {
-  department_id: number;
-  department_name: string;
+  department_id: number | null;
+  department_name: string | null;
+  department_ids?: number[];
+  department_names?: string[];
   added_count: number;
   skipped_count: number;
   added: AcademicStaffRecord[];
@@ -94,10 +105,10 @@ export class AcademicStaffService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = environment.apiUrl.replace(/\/$/, '');
   private readonly academicStaffUrl =
-    `${this.apiUrl}/api/settings/academic-staff`;
-  private readonly staffUrl = `${this.apiUrl}/api/settings/staff`;
+    `${this.apiUrl}/rmc/settings/academic-staff`;
+  private readonly staffUrl = `${this.apiUrl}/rmc/settings/staff`;
   private readonly departmentsUrl =
-    `${this.apiUrl}/api/master-data/departments`;
+    `${this.apiUrl}/rmc/master-data/departments`;
 
   list(params: {
     page: number;
@@ -181,6 +192,30 @@ export class AcademicStaffService {
   listDepartments(): Observable<ApiResponse<DepartmentRecord[]>> {
     return this.http.get<ApiResponse<DepartmentRecord[]>>(
       this.departmentsUrl,
+    );
+  }
+
+  listAcademicStaffOptions(
+    filters: {
+      search?: string;
+      departmentId?: number | null;
+    } = {},
+  ): Observable<ApiResponse<AcademicStaffOptionRecord[]>> {
+    let params = new HttpParams();
+
+    if (filters.search?.trim()) {
+      params = params.set('search', filters.search.trim());
+    }
+    if (
+      filters.departmentId !== null &&
+      filters.departmentId !== undefined
+    ) {
+      params = params.set('department_id', filters.departmentId);
+    }
+
+    return this.http.get<ApiResponse<AcademicStaffOptionRecord[]>>(
+      `${this.apiUrl}/rmc/academic-staff`,
+      { params },
     );
   }
 

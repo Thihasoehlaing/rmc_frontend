@@ -1,0 +1,295 @@
+:host {
+  display: block;
+}
+
+.mgr-department-filter {
+  min-width: 0;
+}
+
+.mgr-status-filter {
+  min-width: 0;
+}
+
+.mgr-department-filter app-searchable-dropdown {
+  display: block;
+  width: 100%;
+}
+
+:host ::ng-deep .dropdown-search-panel app-submissions-search .submissions-search-controls {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-items: center;
+  gap: var(--space-3);
+}
+
+:host ::ng-deep .dropdown-search-panel app-submissions-search .submissions-search {
+  width: 100%;
+  min-width: 0;
+}
+
+:host ::ng-deep .dropdown-search-panel app-submissions-search .submissions-search--focused,
+:host ::ng-deep .dropdown-search-panel app-submissions-search .submissions-search:focus-within {
+  width: 100%;
+}
+
+:host ::ng-deep .dropdown-search-panel app-submissions-search .submissions-search-filters {
+  display: contents;
+  margin-left: 0;
+  min-width: 0;
+}
+
+:host
+  ::ng-deep
+  .dropdown-search-panel
+  app-submissions-search
+  .submissions-search-filters
+  [search-filters].mgr-department-filter {
+  width: 100%;
+  min-width: 0;
+}
+
+:host
+  ::ng-deep
+  .dropdown-search-panel
+  app-submissions-search
+  .submissions-search-filters
+  [search-filters].mgr-status-filter {
+  width: 100%;
+  min-width: 0;
+}
+
+:host ::ng-deep .dropdown-search-panel app-submissions-search .submissions-search-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+  margin-left: 0;
+  min-width: 0;
+}
+
+:host ::ng-deep .dropdown-search-panel app-submissions-search .submissions-search-actions .btn,
+:host ::ng-deep .dropdown-search-panel app-submissions-search .submissions-search-actions button {
+  width: 100%;
+}
+
+:host ::ng-deep .mgr-department-filter app-searchable-dropdown .dropdown-trigger {
+  height: 38px;
+  min-height: 38px;
+  padding-block: 0;
+  padding-inline: var(--space-4);
+  border-radius: var(--radius-full);
+  background-color: var(--color-surface);
+}
+
+.reviewer-staff {
+  display: grid;
+  grid-template-columns: 3rem minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.reviewer-staff__photo,
+.reviewer-staff__avatar {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.reviewer-staff__avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--color-primary) 12%, white);
+  color: var(--color-primary);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-bold);
+}
+
+.reviewer-staff__identity {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+
+  strong,
+  span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  strong {
+    color: var(--color-primary);
+    font-weight: var(--fw-semibold);
+  }
+
+  span {
+    color: var(--color-text-muted);
+    font-size: var(--fs-sm);
+  }
+}
+
+.reviewer-empty-state {
+  padding: var(--space-8);
+  color: var(--color-text-muted);
+  text-align: center;
+
+  .material-icons,
+  strong,
+  span {
+    display: block;
+  }
+
+  .material-icons {
+    margin-bottom: var(--space-2);
+    font-size: var(--fs-3xl);
+  }
+
+  strong {
+    margin-bottom: var(--space-1);
+    color: var(--color-heading);
+  }
+}
+
+.reviewer-loading-icon {
+  animation: reviewer-spin 0.9s linear infinite;
+}
+
+.reviewer-retry-button {
+  display: inline-flex !important;
+  margin: var(--space-4) auto 0;
+}
+
+.reviewer-modal {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.form-label {
+  color: var(--color-label);
+  font-weight: var(--fw-semibold);
+}
+
+.required {
+  color: var(--color-danger);
+}
+
+.field-help,
+.remove-dialog-note {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--fs-sm);
+}
+
+:host ::ng-deep .reviewer-modal app-searchable-dropdown .dropdown-container {
+  z-index: 40;
+}
+
+:host ::ng-deep .reviewer-modal app-searchable-dropdown .dropdown-options {
+  z-index: 45;
+  max-height: 18rem;
+}
+
+.status-switch-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-hover);
+  cursor: pointer;
+
+  strong,
+  small {
+    display: block;
+  }
+
+  strong {
+    color: var(--color-primary);
+    font-weight: var(--fw-semibold);
+  }
+
+  small {
+    margin-top: var(--space-1);
+    color: var(--color-text-muted);
+  }
+}
+
+.switch-control {
+  position: relative;
+  display: inline-flex;
+  flex: 0 0 4.5rem;
+  width: 4.5rem;
+  height: 2.4rem;
+
+  input {
+    width: 0;
+    height: 0;
+    opacity: 0;
+  }
+}
+
+.switch-slider {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-full);
+  background: var(--color-border);
+  transition:
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+
+  &::before {
+    position: absolute;
+    top: 0.28rem;
+    left: 0.3rem;
+    width: 1.85rem;
+    height: 1.85rem;
+    border-radius: 50%;
+    background: white;
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.2s ease;
+    content: '';
+  }
+}
+
+.switch-control input:checked + .switch-slider {
+  background: var(--color-primary);
+}
+
+.switch-control input:checked + .switch-slider::before {
+  transform: translateX(2rem);
+}
+
+@keyframes reviewer-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 900px) {
+  :host ::ng-deep .dropdown-search-panel app-submissions-search .submissions-search-controls {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: stretch;
+  }
+
+  .mgr-department-filter,
+  .mgr-status-filter {
+    min-width: 0;
+    width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  :host ::ng-deep .dropdown-search-panel app-submissions-search .submissions-search-controls {
+    grid-template-columns: 1fr;
+  }
+}

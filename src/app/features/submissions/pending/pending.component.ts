@@ -1,132 +1,247 @@
-import { Component, inject, signal, computed, OnInit } from '@angular/core';
-import { RouterLink } from '@angular/router';
-import { ApplicationService, TERMINAL_STATUSES } from '../../../core/services/application.service';
-import { SubmissionsSearchComponent } from '../../../shared/components/submissions-search/submissions-search.component';
-import { TableSortService, SortDirection } from '../../../shared/services/table-sort.service';
+import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { finalize, forkJoin } from 'rxjs';
+
+import { CachedFormOption, FormCacheService } from '../../../core/services/form-cache.service';
 import {
-  DataTableColumn,
-  DataTableComponent,
-} from '../../../shared/components/data-table/data-table.component';
-import { finalize } from 'rxjs';
+  STATUS_COLORS,
+  formRoute,
+  formTypeLabel,
+  isApplicantResubmissionStatus,
+  requestIdOf,
+} from '../../../core/services/request-display.util';
+import {
+  RequestSummaryDto,
+  WorkflowRequestsService,
+} from '../../../core/services/workflow-requests.service';
+import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
+import { SubmissionsSearchComponent } from '../../../shared/components/submissions-search/submissions-search.component';
+import { SubmissionFormTabsComponent } from '../../../shared/components/submission-form-tabs/submission-form-tabs.component';
+import { TableActionIconComponent } from '../../../shared/components/table-action-icon/table-action-icon.component';
 import {
   SkeletonColumn,
   TableSkeletonComponent,
 } from '../../../shared/components/table-skeleton/table-skeleton.component';
-import { TableActionIconComponent } from '../../../shared/components/table-action-icon/table-action-icon.component';
 
 @Component({
   selector: 'app-pending',
   standalone: true,
   imports: [
-    TableActionIconComponent,
+    PaginationComponent,
     RouterLink,
     SubmissionsSearchComponent,
+    SubmissionFormTabsComponent,
+    TableActionIconComponent,
     TableSkeletonComponent,
-    DataTableComponent,
   ],
   templateUrl: './pending.component.html',
   styleUrl: './pending.component.scss',
-  providers: [TableSortService],
 })
 export class PendingComponent implements OnInit {
-  private appSvc = inject(ApplicationService);
-  private tableSort = inject(TableSortService);
-  private raw = signal<any[]>([]);
+  private readonly requests = inject(WorkflowRequestsService);
+  private readonly formCache = inject(FormCacheService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly destroyRef = inject(DestroyRef);
+
+  private raw = signal<RequestSummaryDto[]>([]);
+  private forms = signal<CachedFormOption[]>([]);
   loading = signal(true);
   error = signal<string | null>(null);
   searchQuery = signal('');
+  createdDate = signal('');
   selectedType = signal('all');
-  sortColumn = signal<string | null>(null);
-  sortDirection = signal<SortDirection>(null);
+  page = signal(1);
+  pageSize = signal(10);
+  readonly pageSizeOptions = [10, 15, 30, 50];
+
   readonly skeletonColumns: SkeletonColumn[] = [
-    { width: '28%' },
-    { width: '13%' },
-    { width: '15%' },
-    { width: '16%' },
+    { width: '72px' },
+    { width: '24%' },
     { width: '18%' },
-    { width: 'var(--size-table-column-actions)' },
+    { width: '18%' },
+    { width: '96px' },
   ];
-  readonly columns: DataTableColumn[] = [
-    { key: 'title', label: 'Project Title', width: '28%' },
-    { key: 'type', label: 'Type', width: '13%' },
-    { key: 'submissionDate', label: 'Submission Date', width: '15%', sortable: true },
-    { key: 'status', label: 'Status', width: '16%' },
-    { key: 'awaiting', label: 'Awaiting', width: '18%' },
-    {
-      key: 'actions',
-      label: 'Actions',
-      width: 'var(--size-table-column-actions)',
-      align: 'center',
-      headerAlign: 'center',
-    },
-  ];
-  readonly availableTypes = computed(() => [
-    'all',
-    ...Array.from(
-      new Set(
-        this.raw()
-          .filter(
-            (app) =>
-              app.isDraft !== true &&
-              !TERMINAL_STATUSES.has(this.appSvc.getStatus(app)) &&
-              this.appSvc.getStatus(app) !== 'fill_application',
-          )
-          .map((app) => app.formType ?? '')
-          .filter(Boolean),
-      ),
-    ).sort(),
-  ]);
-  readonly pending = computed(() => {
-    const query = this.searchQuery().toLowerCase().trim(),
-      type = this.selectedType();
-    const items = this.raw()
-      .filter((app) => {
-        const status = this.appSvc.getStatus(app),
-          nextRoles: string[] = app.workflow?.nextRoles ?? [];
-        return (
-          app.isDraft !== true &&
-          !TERMINAL_STATUSES.has(status) &&
-          status !== 'fill_application' &&
-          !nextRoles.includes('Applicant') &&
-          (type === 'all' || (app.formType ?? '') === type)
-        );
-      })
-      .filter((app) => !query || this.appSvc.getTitle(app).toLowerCase().includes(query));
-    if (!this.sortDirection()) return items;
-    return [...items].sort((a, b) => {
-      const d =
-        new Date(this.appSvc.getSubmittedAt(a) ?? 0).getTime() -
-        new Date(this.appSvc.getSubmittedAt(b) ?? 0).getTime();
-      return this.sortDirection() === 'asc' ? d : -d;
-    });
+
+  readonly formTabs = computed(() => {
+    const tabs = this.forms()
+      .filter((form) => form.form_code.toUpperCase() !== 'EXTERNAL')
+      .map((form) => ({
+        value: form.form_code.toLowerCase(),
+        label: form.form_name,
+      }))
+      .sort((a, b) => a.label.localeCompare(b.label));
+
+    return [{ value: 'all', label: 'All' }, ...tabs];
   });
+
+  readonly pending = computed(() => {
+    const query = this.searchQuery().toLowerCase().trim();
+    const createdDate = this.createdDate();
+    const type = this.selectedType();
+    const items = this.raw()
+      .filter((app) => (app.form_code ?? '').toUpperCase() !== 'EXTERNAL')
+      .filter((app) => type === 'all' || (app.form_code ?? '').toLowerCase() === type)
+      .filter((app) => !query || this.getCode(app).toLowerCase().includes(query))
+      .filter((app) => !createdDate || this.dateInputValue(app.created_at) === createdDate);
+
+    return [...items].sort((a, b) => this.createdTs(b) - this.createdTs(a));
+  });
+
+  readonly pagedPending = computed(() => {
+    const start = (this.page() - 1) * this.pageSize();
+    return this.pending().slice(start, start + this.pageSize());
+  });
+
+  readonly totalPages = computed(() => Math.max(1, Math.ceil(this.pending().length / this.pageSize())));
+
   ngOnInit(): void {
-    this.appSvc
-      .getMyApplications()
+    this.route.queryParamMap
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((params) => {
+        const tab = (params.get('tab') ?? 'all').toLowerCase();
+        this.selectedType.set(tab);
+        if (!params.has('tab')) {
+          this.setTab(tab);
+        }
+      });
+
+    forkJoin({
+      requests: this.requests.getPendingRequests({ page: 1, perPage: 100 }),
+      forms: this.formCache.getActiveForms(true),
+    })
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe({
-        next: (apps) => this.raw.set(apps),
-        error: () =>
-          this.error.set('Could not reach the JSON server. Make sure `npm run db` is running.'),
+        next: ({ requests, forms }) => {
+          this.raw.set(requests.data?.items ?? []);
+          this.forms.set(forms.data ?? []);
+          this.ensureValidTab();
+        },
+        error: () => this.error.set('Could not load your pending applications. Please try again.'),
       });
   }
-  onSortChange(column: string): void {
-    const next = this.tableSort.getNextState(
-      { column: this.sortColumn(), direction: this.sortDirection() },
-      column,
-    );
-    this.sortColumn.set(next.column);
-    this.sortDirection.set(next.direction);
+
+  setTab(tab: string): void {
+    this.selectedType.set(tab);
+    this.page.set(1);
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { tab },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
   }
-  getStatusLabel = (app: any) => this.appSvc.getStatusLabel(app);
-  getStatusColor = (app: any) => this.appSvc.getStatusColor(app);
-  getFormTypeLabel = (app: any) => this.appSvc.getFormTypeLabel(app);
-  getFormRoute = (app: any) => this.appSvc.getFormRoute(app);
-  getNextActors(app: any): string {
-    const roles: string[] = app.workflow?.nextRoles ?? [];
-    return roles.length ? roles.join(', ') : '—';
+
+  onSearch(query: string): void {
+    this.searchQuery.set(query);
+    this.page.set(1);
   }
-  formatSubmitted = (app: any) => this.appSvc.formatDate(this.appSvc.getSubmittedAt(app));
-  isRevisionRequired = (app: any) =>
-    this.appSvc.getStatus(app).startsWith('pending_applicant_resubmission');
+
+  onCreatedDateChange(event: Event): void {
+    this.createdDate.set((event.target as HTMLInputElement).value);
+    this.page.set(1);
+  }
+
+  resetFilters(): void {
+    this.searchQuery.set('');
+    this.createdDate.set('');
+    this.page.set(1);
+    this.setTab('all');
+  }
+
+  onPageChange(page: number): void {
+    this.page.set(page);
+  }
+
+  onPageSizeChange(pageSize: number): void {
+    this.pageSize.set(pageSize);
+    this.page.set(1);
+  }
+
+  getRowNumber(index: number): number {
+    return (this.page() - 1) * this.pageSize() + index + 1;
+  }
+
+  getCode(app: RequestSummaryDto): string {
+    return app.request_code?.trim() || 'Pending request';
+  }
+
+  getStatusLabel(app: RequestSummaryDto): string {
+    return app.status_name || app.status_code;
+  }
+
+  getStatusColor(app: RequestSummaryDto): string {
+    return STATUS_COLORS[app.status_code] ?? '#6b7280';
+  }
+
+  getFormTypeLabel(app: RequestSummaryDto): string {
+    return formTypeLabel(app.form_code, app.form_name);
+  }
+
+  getDetailRoute(app: RequestSummaryDto): string {
+    const code = encodeURIComponent(this.getCode(app));
+    switch ((app.form_code ?? '').toUpperCase()) {
+      case 'RDIG':
+        return `/rdig/detail/${code}`;
+      case 'CONFERENCE':
+        return `/conference/detail/${code}`;
+      case 'JOURNAL':
+        return `/journal/detail/${code}`;
+      default:
+        return `/submissions/detail/${code}`;
+    }
+  }
+
+  getEditRoute(app: RequestSummaryDto): string {
+    return formRoute(app.form_code);
+  }
+
+  getEditQueryParams(app: RequestSummaryDto): { request_id: number | null } {
+    return { request_id: requestIdOf(app) };
+  }
+
+  getDetailQueryParams(): { returnTo: string; returnLabel: string } {
+    const tab = encodeURIComponent(this.selectedType());
+    return {
+      returnTo: `/submissions/pending?tab=${tab}`,
+      returnLabel: 'Pending',
+    };
+  }
+
+  formatCreatedDate(app: RequestSummaryDto): string {
+    return this.formatIsoDate(app.created_at);
+  }
+
+  canEditResubmission(app: RequestSummaryDto): boolean {
+    return isApplicantResubmissionStatus(app.status_code) && requestIdOf(app) != null;
+  }
+
+  private createdTs(app: RequestSummaryDto): number {
+    const iso = app.created_at;
+    return iso ? new Date(iso).getTime() : 0;
+  }
+
+  private formatIsoDate(iso: string | null | undefined): string {
+    return iso
+      ? new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+      : '-';
+  }
+
+  private dateInputValue(iso: string | null | undefined): string {
+    if (!iso) return '';
+    const date = new Date(iso);
+    if (Number.isNaN(date.getTime())) return '';
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  private ensureValidTab(): void {
+    const tab = this.selectedType();
+    if (!this.formTabs().some((item) => item.value === tab)) {
+      this.setTab('all');
+    }
+  }
 }

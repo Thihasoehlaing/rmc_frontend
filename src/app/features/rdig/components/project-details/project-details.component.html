@@ -1,8 +1,4 @@
 <section class="project-section" [formGroup]="projectDetails">
-
-  <!-- Page Header -->
-  <app-custom-header icon="description" title="Project Details"></app-custom-header>
-
   <!-- ── Block 1: Application Type & Declarations ─────────────── -->
   <div class="card">
     <app-custom-subheader title="Application Type & Declarations"></app-custom-subheader>
@@ -23,7 +19,7 @@
         <app-validation-message [control]="projectDetails.get('applicationType')"></app-validation-message>
       </div>
 
-      <div class="form-field" formGroupName="declarations">
+      <div class="form-field" formGroupName="declarations" data-missing-field-target="projectDetails.declarations.ethics">
         <label class="form-label is-required">Declarations</label>
         <div class="checkbox-group">
           <label class="checkbox-option">
@@ -78,10 +74,10 @@
         <div class="row row--2">
           <app-review-block label="Reviewer 1 — Classification" icon="rate_review"
             [visible]="showR1Comments" [readonly]="!workflow.isReviewer1Editable()"
-            [commentControl]="fc('reviewer1ClassificationComment')"></app-review-block>
+            data-missing-field-target="reviewProject.reviewer1ClassificationComment" [commentControl]="fc('reviewer1ClassificationComment')"></app-review-block>
           <app-review-block label="Reviewer 2 — Classification" icon="rate_review"
             [visible]="showR2Comments" [readonly]="!workflow.isReviewer2Editable()"
-            [commentControl]="fc('reviewer2ClassificationComment')"></app-review-block>
+            data-missing-field-target="reviewProject.reviewer2ClassificationComment" [commentControl]="fc('reviewer2ClassificationComment')"></app-review-block>
         </div>
       }
 
@@ -98,10 +94,10 @@
         <div class="row row--2">
           <app-review-block label="Reviewer 1 — Project Title" icon="rate_review"
             [visible]="showR1Comments" [readonly]="!workflow.isReviewer1Editable()"
-            [commentControl]="fc('reviewer1TitleComment')"></app-review-block>
+            data-missing-field-target="reviewProject.reviewer1TitleComment" [commentControl]="fc('reviewer1TitleComment')"></app-review-block>
           <app-review-block label="Reviewer 2 — Project Title" icon="rate_review"
             [visible]="showR2Comments" [readonly]="!workflow.isReviewer2Editable()"
-            [commentControl]="fc('reviewer2TitleComment')"></app-review-block>
+            data-missing-field-target="reviewProject.reviewer2TitleComment" [commentControl]="fc('reviewer2TitleComment')"></app-review-block>
         </div>
       }
 
@@ -118,10 +114,10 @@
         <div class="row row--2">
           <app-review-block label="Reviewer 1 — Research Area" icon="rate_review"
             [visible]="showR1Comments" [readonly]="!workflow.isReviewer1Editable()"
-            [commentControl]="fc('reviewer1ResearchAreaComment')"></app-review-block>
+            data-missing-field-target="reviewProject.reviewer1ResearchAreaComment" [commentControl]="fc('reviewer1ResearchAreaComment')"></app-review-block>
           <app-review-block label="Reviewer 2 — Research Area" icon="rate_review"
             [visible]="showR2Comments" [readonly]="!workflow.isReviewer2Editable()"
-            [commentControl]="fc('reviewer2ResearchAreaComment')"></app-review-block>
+            data-missing-field-target="reviewProject.reviewer2ResearchAreaComment" [commentControl]="fc('reviewer2ResearchAreaComment')"></app-review-block>
         </div>
       }
     </div>
@@ -174,10 +170,10 @@
         <div class="row row--2">
           <app-review-block label="Reviewer 1 — ESG" icon="rate_review"
             [visible]="showR1Comments" [readonly]="!workflow.isReviewer1Editable()"
-            [commentControl]="fc('reviewer1EsgComment')"></app-review-block>
+            data-missing-field-target="reviewProject.reviewer1EsgComment" [commentControl]="fc('reviewer1EsgComment')"></app-review-block>
           <app-review-block label="Reviewer 2 — ESG" icon="rate_review"
             [visible]="showR2Comments" [readonly]="!workflow.isReviewer2Editable()"
-            [commentControl]="fc('reviewer2EsgComment')"></app-review-block>
+            data-missing-field-target="reviewProject.reviewer2EsgComment" [commentControl]="fc('reviewer2EsgComment')"></app-review-block>
         </div>
       }
 
@@ -186,10 +182,10 @@
         <div class="row row--2">
           <app-review-block label="Reviewer 1 — SDG" icon="rate_review"
             [visible]="showR1Comments" [readonly]="!workflow.isReviewer1Editable()"
-            [commentControl]="fc('reviewer1SdgComment')"></app-review-block>
+            data-missing-field-target="reviewProject.reviewer1SdgComment" [commentControl]="fc('reviewer1SdgComment')"></app-review-block>
           <app-review-block label="Reviewer 2 — SDG" icon="rate_review"
             [visible]="showR2Comments" [readonly]="!workflow.isReviewer2Editable()"
-            [commentControl]="fc('reviewer2SdgComment')"></app-review-block>
+            data-missing-field-target="reviewProject.reviewer2SdgComment" [commentControl]="fc('reviewer2SdgComment')"></app-review-block>
         </div>
       }
     </div>
@@ -224,11 +220,11 @@
           <app-review-block label="Reviewer 1 — Executive Summary of the Research Proposal" icon="rate_review"
             [visible]="showR1Comments" [readonly]="!workflow.isReviewer1Editable()"
             [showScore]="true" [maxScore]="10" [scoreDisabled]="!workflow.isScoreEditable()"
-            [commentControl]="fc('reviewer1SummaryComment')" [scoreControl]="fc('reviewer1SummaryScore')"></app-review-block>
+            data-missing-field-target="reviewProject.reviewer1SummaryComment" [commentControl]="fc('reviewer1SummaryComment')" data-missing-field-score-target="reviewProject.reviewer1SummaryScore" [scoreControl]="fc('reviewer1SummaryScore')"></app-review-block>
           <app-review-block label="Reviewer 2 — Executive Summary of the Research Proposal" icon="rate_review"
             [visible]="showR2Comments" [readonly]="!workflow.isReviewer2Editable()"
             [showScore]="true" [maxScore]="10" [scoreDisabled]="!workflow.isScoreEditable()"
-            [commentControl]="fc('reviewer2SummaryComment')" [scoreControl]="fc('reviewer2SummaryScore')"></app-review-block>
+            data-missing-field-target="reviewProject.reviewer2SummaryComment" [commentControl]="fc('reviewer2SummaryComment')" data-missing-field-score-target="reviewProject.reviewer2SummaryScore" [scoreControl]="fc('reviewer2SummaryScore')"></app-review-block>
         </div>
       }
 
@@ -237,10 +233,10 @@
         <div class="row row--2">
           <app-review-block label="Reviewer 1 — Keywords" icon="rate_review"
             [visible]="showR1Comments" [readonly]="!workflow.isReviewer1Editable()"
-            [commentControl]="fc('reviewer1KeywordsComment')"></app-review-block>
+            data-missing-field-target="reviewProject.reviewer1KeywordsComment" [commentControl]="fc('reviewer1KeywordsComment')"></app-review-block>
           <app-review-block label="Reviewer 2 — Keywords" icon="rate_review"
             [visible]="showR2Comments" [readonly]="!workflow.isReviewer2Editable()"
-            [commentControl]="fc('reviewer2KeywordsComment')"></app-review-block>
+            data-missing-field-target="reviewProject.reviewer2KeywordsComment" [commentControl]="fc('reviewer2KeywordsComment')"></app-review-block>
         </div>
       }
 
@@ -267,11 +263,11 @@
           <app-review-block label="Reviewer 1 — Introduction" icon="rate_review"
             [visible]="showR1Comments" [readonly]="!workflow.isReviewer1Editable()"
             [showScore]="true" [maxScore]="10" [scoreDisabled]="!workflow.isScoreEditable()"
-            [commentControl]="fc('reviewer1IntroComment')" [scoreControl]="fc('reviewer1IntroScore')"></app-review-block>
+            data-missing-field-target="reviewProject.reviewer1IntroComment" [commentControl]="fc('reviewer1IntroComment')" data-missing-field-score-target="reviewProject.reviewer1IntroScore" [scoreControl]="fc('reviewer1IntroScore')"></app-review-block>
           <app-review-block label="Reviewer 2 — Introduction" icon="rate_review"
             [visible]="showR2Comments" [readonly]="!workflow.isReviewer2Editable()"
             [showScore]="true" [maxScore]="10" [scoreDisabled]="!workflow.isScoreEditable()"
-            [commentControl]="fc('reviewer2IntroComment')" [scoreControl]="fc('reviewer2IntroScore')"></app-review-block>
+            data-missing-field-target="reviewProject.reviewer2IntroComment" [commentControl]="fc('reviewer2IntroComment')" data-missing-field-score-target="reviewProject.reviewer2IntroScore" [scoreControl]="fc('reviewer2IntroScore')"></app-review-block>
         </div>
       }
 
@@ -281,11 +277,11 @@
           <app-review-block label="Reviewer 1 — Problem Statement" icon="rate_review"
             [visible]="showR1Comments" [readonly]="!workflow.isReviewer1Editable()"
             [showScore]="true" [maxScore]="10" [scoreDisabled]="!workflow.isScoreEditable()"
-            [commentControl]="fc('reviewer1ProblemComment')" [scoreControl]="fc('reviewer1ProblemScore')"></app-review-block>
+            data-missing-field-target="reviewProject.reviewer1ProblemComment" [commentControl]="fc('reviewer1ProblemComment')" data-missing-field-score-target="reviewProject.reviewer1ProblemScore" [scoreControl]="fc('reviewer1ProblemScore')"></app-review-block>
           <app-review-block label="Reviewer 2 — Problem Statement" icon="rate_review"
             [visible]="showR2Comments" [readonly]="!workflow.isReviewer2Editable()"
             [showScore]="true" [maxScore]="10" [scoreDisabled]="!workflow.isScoreEditable()"
-            [commentControl]="fc('reviewer2ProblemComment')" [scoreControl]="fc('reviewer2ProblemScore')"></app-review-block>
+            data-missing-field-target="reviewProject.reviewer2ProblemComment" [commentControl]="fc('reviewer2ProblemComment')" data-missing-field-score-target="reviewProject.reviewer2ProblemScore" [scoreControl]="fc('reviewer2ProblemScore')"></app-review-block>
         </div>
       }
 
@@ -312,11 +308,11 @@
           <app-review-block label="Reviewer 1 — Research Aim and Objectives" icon="rate_review"
             [visible]="showR1Comments" [readonly]="!workflow.isReviewer1Editable()"
             [showScore]="true" [maxScore]="5" [scoreDisabled]="!workflow.isScoreEditable()"
-            [commentControl]="fc('reviewer1AimComment')" [scoreControl]="fc('reviewer1AimScore')"></app-review-block>
+            data-missing-field-target="reviewProject.reviewer1AimComment" [commentControl]="fc('reviewer1AimComment')" data-missing-field-score-target="reviewProject.reviewer1AimScore" [scoreControl]="fc('reviewer1AimScore')"></app-review-block>
           <app-review-block label="Reviewer 2 — Research Aim and Objectives" icon="rate_review"
             [visible]="showR2Comments" [readonly]="!workflow.isReviewer2Editable()"
             [showScore]="true" [maxScore]="5" [scoreDisabled]="!workflow.isScoreEditable()"
-            [commentControl]="fc('reviewer2AimComment')" [scoreControl]="fc('reviewer2AimScore')"></app-review-block>
+            data-missing-field-target="reviewProject.reviewer2AimComment" [commentControl]="fc('reviewer2AimComment')" data-missing-field-score-target="reviewProject.reviewer2AimScore" [scoreControl]="fc('reviewer2AimScore')"></app-review-block>
         </div>
       }
 
@@ -326,11 +322,11 @@
           <app-review-block label="Reviewer 1 — Research Questions" icon="rate_review"
             [visible]="showR1Comments" [readonly]="!workflow.isReviewer1Editable()"
             [showScore]="true" [maxScore]="5" [scoreDisabled]="!workflow.isScoreEditable()"
-            [commentControl]="fc('reviewer1QuestionsComment')" [scoreControl]="fc('reviewer1QuestionsScore')"></app-review-block>
+            data-missing-field-target="reviewProject.reviewer1QuestionsComment" [commentControl]="fc('reviewer1QuestionsComment')" data-missing-field-score-target="reviewProject.reviewer1QuestionsScore" [scoreControl]="fc('reviewer1QuestionsScore')"></app-review-block>
           <app-review-block label="Reviewer 2 — Research Questions" icon="rate_review"
             [visible]="showR2Comments" [readonly]="!workflow.isReviewer2Editable()"
             [showScore]="true" [maxScore]="5" [scoreDisabled]="!workflow.isScoreEditable()"
-            [commentControl]="fc('reviewer2QuestionsComment')" [scoreControl]="fc('reviewer2QuestionsScore')"></app-review-block>
+            data-missing-field-target="reviewProject.reviewer2QuestionsComment" [commentControl]="fc('reviewer2QuestionsComment')" data-missing-field-score-target="reviewProject.reviewer2QuestionsScore" [scoreControl]="fc('reviewer2QuestionsScore')"></app-review-block>
         </div>
       }
 
@@ -350,11 +346,11 @@
           <app-review-block label="Reviewer 1 — Hypothesis" icon="rate_review"
             [visible]="showR1Comments" [readonly]="!workflow.isReviewer1Editable()"
             [showScore]="true" [maxScore]="10" [scoreDisabled]="!workflow.isScoreEditable()"
-            [commentControl]="fc('reviewer1HypothesisComment')" [scoreControl]="fc('reviewer1HypothesisScore')"></app-review-block>
+            data-missing-field-target="reviewProject.reviewer1HypothesisComment" [commentControl]="fc('reviewer1HypothesisComment')" data-missing-field-score-target="reviewProject.reviewer1HypothesisScore" [scoreControl]="fc('reviewer1HypothesisScore')"></app-review-block>
           <app-review-block label="Reviewer 2 — Hypothesis" icon="rate_review"
             [visible]="showR2Comments" [readonly]="!workflow.isReviewer2Editable()"
             [showScore]="true" [maxScore]="10" [scoreDisabled]="!workflow.isScoreEditable()"
-            [commentControl]="fc('reviewer2HypothesisComment')" [scoreControl]="fc('reviewer2HypothesisScore')"></app-review-block>
+            data-missing-field-target="reviewProject.reviewer2HypothesisComment" [commentControl]="fc('reviewer2HypothesisComment')" data-missing-field-score-target="reviewProject.reviewer2HypothesisScore" [scoreControl]="fc('reviewer2HypothesisScore')"></app-review-block>
         </div>
       }
 
@@ -381,11 +377,11 @@
           <app-review-block label="Reviewer 1 — Literature Review" icon="rate_review"
             [visible]="showR1Comments" [readonly]="!workflow.isReviewer1Editable()"
             [showScore]="true" [maxScore]="10" [scoreDisabled]="!workflow.isScoreEditable()"
-            [commentControl]="fc('reviewer1LitReviewComment')" [scoreControl]="fc('reviewer1LitReviewScore')"></app-review-block>
+            data-missing-field-target="reviewProject.reviewer1LitReviewComment" [commentControl]="fc('reviewer1LitReviewComment')" data-missing-field-score-target="reviewProject.reviewer1LitReviewScore" [scoreControl]="fc('reviewer1LitReviewScore')"></app-review-block>
           <app-review-block label="Reviewer 2 — Literature Review" icon="rate_review"
             [visible]="showR2Comments" [readonly]="!workflow.isReviewer2Editable()"
             [showScore]="true" [maxScore]="10" [scoreDisabled]="!workflow.isScoreEditable()"
-            [commentControl]="fc('reviewer2LitReviewComment')" [scoreControl]="fc('reviewer2LitReviewScore')"></app-review-block>
+            data-missing-field-target="reviewProject.reviewer2LitReviewComment" [commentControl]="fc('reviewer2LitReviewComment')" data-missing-field-score-target="reviewProject.reviewer2LitReviewScore" [scoreControl]="fc('reviewer2LitReviewScore')"></app-review-block>
         </div>
       }
 
@@ -395,11 +391,11 @@
           <app-review-block label="Reviewer 1 — Methodology" icon="rate_review"
             [visible]="showR1Comments" [readonly]="!workflow.isReviewer1Editable()"
             [showScore]="true" [maxScore]="10" [scoreDisabled]="!workflow.isScoreEditable()"
-            [commentControl]="fc('reviewer1MethodComment')" [scoreControl]="fc('reviewer1MethodScore')"></app-review-block>
+            data-missing-field-target="reviewProject.reviewer1MethodComment" [commentControl]="fc('reviewer1MethodComment')" data-missing-field-score-target="reviewProject.reviewer1MethodScore" [scoreControl]="fc('reviewer1MethodScore')"></app-review-block>
           <app-review-block label="Reviewer 2 — Methodology" icon="rate_review"
             [visible]="showR2Comments" [readonly]="!workflow.isReviewer2Editable()"
             [showScore]="true" [maxScore]="10" [scoreDisabled]="!workflow.isScoreEditable()"
-            [commentControl]="fc('reviewer2MethodComment')" [scoreControl]="fc('reviewer2MethodScore')"></app-review-block>
+            data-missing-field-target="reviewProject.reviewer2MethodComment" [commentControl]="fc('reviewer2MethodComment')" data-missing-field-score-target="reviewProject.reviewer2MethodScore" [scoreControl]="fc('reviewer2MethodScore')"></app-review-block>
         </div>
       }
 
@@ -416,10 +412,10 @@
         <div class="row row--2">
           <app-review-block label="Reviewer 1 — References" icon="rate_review"
             [visible]="showR1Comments" [readonly]="!workflow.isReviewer1Editable()"
-            [commentControl]="fc('reviewer1ReferencesComment')"></app-review-block>
+            data-missing-field-target="reviewProject.reviewer1ReferencesComment" [commentControl]="fc('reviewer1ReferencesComment')"></app-review-block>
           <app-review-block label="Reviewer 2 — References" icon="rate_review"
             [visible]="showR2Comments" [readonly]="!workflow.isReviewer2Editable()"
-            [commentControl]="fc('reviewer2ReferencesComment')"></app-review-block>
+            data-missing-field-target="reviewProject.reviewer2ReferencesComment" [commentControl]="fc('reviewer2ReferencesComment')"></app-review-block>
         </div>
       }
 
@@ -461,11 +457,11 @@
           <app-review-block label="Reviewer 1 — Grant Utilisation & Benefits" icon="rate_review"
             [visible]="showR1Comments" [readonly]="!workflow.isReviewer1Editable()"
             [showScore]="true" [maxScore]="10" [scoreDisabled]="!workflow.isScoreEditable()"
-            [commentControl]="fc('reviewer1StakeholdersComment')" [scoreControl]="fc('reviewer1StakeholdersScore')"></app-review-block>
+            data-missing-field-target="reviewProject.reviewer1StakeholdersComment" [commentControl]="fc('reviewer1StakeholdersComment')" data-missing-field-score-target="reviewProject.reviewer1StakeholdersScore" [scoreControl]="fc('reviewer1StakeholdersScore')"></app-review-block>
           <app-review-block label="Reviewer 2 — Grant Utilisation & Benefits" icon="rate_review"
             [visible]="showR2Comments" [readonly]="!workflow.isReviewer2Editable()"
             [showScore]="true" [maxScore]="10" [scoreDisabled]="!workflow.isScoreEditable()"
-            [commentControl]="fc('reviewer2StakeholdersComment')" [scoreControl]="fc('reviewer2StakeholdersScore')"></app-review-block>
+            data-missing-field-target="reviewProject.reviewer2StakeholdersComment" [commentControl]="fc('reviewer2StakeholdersComment')" data-missing-field-score-target="reviewProject.reviewer2StakeholdersScore" [scoreControl]="fc('reviewer2StakeholdersScore')"></app-review-block>
         </div>
       }
     </div>
@@ -489,10 +485,10 @@
         <div class="row row--2">
           <app-review-block label="Reviewer 1 — Vision & Mission" icon="rate_review"
             [visible]="showR1Comments" [readonly]="!workflow.isReviewer1Editable()"
-            [commentControl]="fc('reviewer1VisionComment')"></app-review-block>
+            data-missing-field-target="reviewProject.reviewer1VisionComment" [commentControl]="fc('reviewer1VisionComment')"></app-review-block>
           <app-review-block label="Reviewer 2 — Vision & Mission" icon="rate_review"
             [visible]="showR2Comments" [readonly]="!workflow.isReviewer2Editable()"
-            [commentControl]="fc('reviewer2VisionComment')"></app-review-block>
+            data-missing-field-target="reviewProject.reviewer2VisionComment" [commentControl]="fc('reviewer2VisionComment')"></app-review-block>
         </div>
       }
     </div>

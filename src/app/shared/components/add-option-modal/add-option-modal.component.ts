@@ -2,8 +2,10 @@ import { Component, EventEmitter, Input, Output, OnChanges, SimpleChanges } from
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SearchableDropdownComponent } from '../searchable-dropdown/searchable-dropdown.component';
+import { DropdownOption } from '../../../core/interfaces/components.interface';
 
 export interface AddOptionPayload {
+  code?: string;
   name: string;
   status: 'Active' | 'Inactive';
   appliesTo: string[]; // form names
@@ -24,9 +26,15 @@ export interface AddOptionPayload {
 export class AddOptionModalComponent implements OnChanges {
   @Input() isOpen = false;
   @Input() title = 'Add Dropdown Option';
+  @Input() showCategory = true;
   @Input() categoryLabel = '';
+  @Input() showCode = false;
+  @Input() codeLabel = 'Code';
   @Input() optionNameLabel = 'Option Name';
+  @Input() optionNameMaxLength: number | null = null;
+  @Input() showOptionNameCounter = false;
   @Input() availableForms: string[] = [];
+  @Input() availableFormOptions: DropdownOption<string>[] = [];
   @Input() defaultSelectedForms: string[] = [];
   @Input() initial: AddOptionPayload | null = null;
   @Input() primaryActionLabel = 'Add Option';
@@ -45,6 +53,7 @@ export class AddOptionModalComponent implements OnChanges {
   @Output() save = new EventEmitter<AddOptionPayload>();
 
   name: string = '';
+  code: string = '';
   status: 'Active' | 'Inactive' = 'Active';
   appliesTo: string[] = [];
   accountNumber: string = '';
@@ -54,9 +63,21 @@ export class AddOptionModalComponent implements OnChanges {
   parentDomainId: string = '';
 
   ngOnChanges(changes: SimpleChanges) {
+    // Only reset form state when the modal opens or when the edited row changes.
+    // Ignore changes to other inputs (availableFormOptions, defaultSelectedForms, etc.)
+    // that return new references on every CD cycle — those would continuously wipe
+    // whatever the user has typed.
+    const modalOpened =
+      changes['isOpen']?.currentValue === true && changes['isOpen']?.previousValue !== true;
+    const editingRowChanged = 'initial' in changes;
+    if (!modalOpened && !editingRowChanged) {
+      return;
+    }
+
     const init = this.initial;
     if (init) {
-      this.name = init.name || '';
+      this.code = init.code || '';
+      this.name = this.limitOptionName(init.name || '');
       this.status = init.status || 'Active';
       this.appliesTo = init.appliesTo || [];
       this.accountNumber = init.accountNumber || '';
@@ -65,6 +86,7 @@ export class AddOptionModalComponent implements OnChanges {
       this.description = init.description || '';
       this.parentDomainId = init.parentDomainId != null ? String(init.parentDomainId) : '';
     } else {
+      this.code = '';
       this.name = '';
       this.status = 'Active';
       this.appliesTo = [...this.defaultSelectedForms];
@@ -78,6 +100,10 @@ export class AddOptionModalComponent implements OnChanges {
 
   get isValid(): boolean {
     if (!this.name.trim()) {
+      return false;
+    }
+
+    if (this.showCode && !this.code.trim()) {
       return false;
     }
 
@@ -97,13 +123,17 @@ export class AddOptionModalComponent implements OnChanges {
       return true;
     }
 
-    return this.percentage !== null &&
-      this.limit !== null &&
-      `${this.description}`.trim().length > 0;
+    return (
+      this.percentage !== null && this.limit !== null && `${this.description}`.trim().length > 0
+    );
   }
 
   get showAppliesToError(): boolean {
     return this.allowFormSharing && this.appliesTo.length === 0;
+  }
+
+  get usesSearchableFormSharing(): boolean {
+    return this.availableFormOptions.length > 0;
   }
 
   onToggleForm(form: string) {
@@ -120,7 +150,8 @@ export class AddOptionModalComponent implements OnChanges {
     if (!this.isValid) return;
     const appliesTo = this.allowFormSharing ? [...this.appliesTo] : [...this.defaultSelectedForms];
     this.save.emit({
-      name: this.name.trim(),
+      code: this.showCode ? this.code.trim() : undefined,
+      name: this.limitOptionName(this.name.trim()),
       status: this.status,
       appliesTo,
       accountNumber: this.showAccountNumberMetadata ? this.accountNumber.trim() : undefined,
@@ -130,5 +161,8 @@ export class AddOptionModalComponent implements OnChanges {
       parentDomainId: this.showParentDomain ? Number(this.parentDomainId) : undefined,
     });
   }
-}
 
+  private limitOptionName(value: string): string {
+    return this.optionNameMaxLength === null ? value : value.slice(0, this.optionNameMaxLength);
+  }
+}

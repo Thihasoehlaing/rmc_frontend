@@ -297,11 +297,14 @@
           [totalPages]="getUploadTotalPages()"
           [pageSize]="uploadDocumentsPageSize"
           [pageSizeOptions]="uploadPageSizeOptions"
+          [totalItems]="uploadDocuments.length"
+          [itemCount]="paginatedUploadDocuments.length"
+          itemLabel="documents"
           (pageChange)="onUploadDocumentsPageChange($event)"
           (pageSizeChange)="onUploadDocumentsPageSizeChange($event)">
         </app-pagination>
       </div>
-      <div class="table-summary">{{ getUploadPageStart() }}–{{ getUploadPageEnd() }} of {{ uploadDocuments.length }}</div>
+
     </div>
   </div>
   <!-- /Upload Supporting Documents Card -->

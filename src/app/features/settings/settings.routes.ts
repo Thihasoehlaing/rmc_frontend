@@ -19,6 +19,18 @@ export const settingsRoutes: Routes = [
       ),
   },
   {
+    path: 'account-code-categories',
+    loadComponent: () =>
+      import('./account-codes/account-code-categories.component').then(
+        m => m.AccountCodeCategoriesComponent,
+      ),
+  },
+  {
+    path: 'account-codes',
+    loadComponent: () =>
+      import('./account-codes/account-codes.component').then(m => m.AccountCodesComponent),
+  },
+  {
     path: 'staff-directory',
     loadComponent: () =>
       import('./staff-directory/staff-directory.component').then(m => m.StaffDirectoryComponent),
@@ -49,9 +61,14 @@ export const settingsRoutes: Routes = [
     pathMatch: 'full',
   },
   {
-    path: 'blocked-users',
+    path: 'system-access',
     loadComponent: () =>
-      import('./blocked-users/blocked-users.component').then(m => m.BlockedUsersComponent),
+      import('./system-access/system-access.component').then(m => m.SystemAccessComponent),
+  },
+  {
+    path: 'blocked-users',
+    redirectTo: 'system-access',
+    pathMatch: 'full',
   },
   {
     path: 'applicant-rules',

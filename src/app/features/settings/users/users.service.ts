@@ -30,6 +30,7 @@ export interface UserRecord {
   role_code: string | null;
   role_name: string | null;
   job_title: string | null;
+  photo_url: string | null;
   is_student: boolean;
   is_active: boolean;
   last_login_at: string | null;
@@ -69,9 +70,9 @@ interface PaginatedData<T> {
 export class UsersService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = environment.apiUrl.replace(/\/$/, '');
-  private readonly usersUrl = `${this.apiUrl}/api/settings/users`;
-  private readonly rolesUrl = `${this.apiUrl}/api/settings/roles`;
-  private readonly departmentsUrl = `${this.apiUrl}/api/master-data/departments`;
+  private readonly usersUrl = `${this.apiUrl}/rmc/settings/users`;
+  private readonly rolesUrl = `${this.apiUrl}/rmc/settings/roles`;
+  private readonly departmentsUrl = `${this.apiUrl}/rmc/master-data/departments`;
 
   list(
     page: number,
@@ -124,7 +125,7 @@ export class UsersService {
     roleId: number,
   ): Observable<ApiResponse<UserRecord>> {
     return this.http.post<ApiResponse<UserRecord>>(
-      `${this.apiUrl}/api/settings/user-role`,
+      `${this.apiUrl}/rmc/settings/user-role`,
       { username, role_id: roleId },
     );
   }

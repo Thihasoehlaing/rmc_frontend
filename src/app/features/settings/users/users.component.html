@@ -142,7 +142,17 @@
             <td class="is-align-center">{{ rowNumber(index) }}</td>
             <td>
               <div class="user-identity">
-                <span class="user-avatar">{{ initials(row) }}</span>
+                <span class="user-avatar">
+                  <span>{{ initials(row) }}</span>
+                  @if (row.photo_url) {
+                    <img
+                      [src]="row.photo_url"
+                      [alt]="(row.fullname || row.username || 'User') + ' profile photo'"
+                      loading="lazy"
+                      (error)="onAvatarError($event)"
+                    />
+                  }
+                </span>
                 <div>
                   <strong>{{ row.fullname || 'Name unavailable' }}</strong>
                   <small>{{ row.email || 'No email' }}</small>
@@ -185,35 +195,22 @@
 
     @if (!isLoading() && !loadFailed()) {
       <footer class="forms-table-card__footer">
-        <p class="forms-count">
-          @if (totalItems() > 0) {
-            Showing {{ pageStart() }} to {{ pageEnd() }} of {{ totalItems() }} users
-          } @else {
-            Showing 0 users
-          }
-        </p>
+        
 
         <app-pagination
           [currentPage]="page()"
           [totalPages]="totalPages()"
           [pageSize]="pageSize()"
           [pageSizeOptions]="pageSizeOptions"
+          [totalItems]="totalItems()"
+          [itemCount]="users().length"
+          itemLabel="users"
           (pageChange)="onPageChange($event)"
           (pageSizeChange)="onPageSizeChange($event)"
         >
         </app-pagination>
 
-        <label class="forms-page-size" aria-label="Items per page">
-          <select
-            class="input--select"
-            [ngModel]="pageSize()"
-            (ngModelChange)="onPageSizeChange($event)"
-          >
-            @for (size of pageSizeOptions; track size) {
-              <option [ngValue]="size">{{ size }} per page</option>
-            }
-          </select>
-        </label>
+        
       </footer>
     }
   </section>

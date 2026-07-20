@@ -1,11 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, TrackByFunction, inject, signal } from '@angular/core';
+import { Component, OnInit, TrackByFunction, ViewChild, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
 
 import {
   AddGuidelineModalComponent,
-  BlockType,
   GuidelineConfig,
 } from './add-guideline-modal/add-guideline-modal.component';
 import { GuidelineApi, GuidelinePayload, GuidelinesService } from './guidelines.service';
@@ -15,40 +14,26 @@ import {
 } from '../../../shared/components/data-table/data-table.component';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
 import { DialogComponent } from '../../../shared/components/dialog/dialog.component';
+import { GuidelinesModalComponent } from '../../../shared/components/guidelines-modal/guidelines-modal.component';
 import { nextTableSortState, SortDirection } from '../../../shared/services/table-sort.service';
 import { SvgIconComponent } from '../../../shared/components/svg-icon/svg-icon.component';
 import { SVG_ICON_TRASH } from '../../../shared/icons/svg-icons';
 import { TableActionIconComponent } from '../../../shared/components/table-action-icon/table-action-icon.component';
 import { SubmissionsSearchComponent } from '../../../shared/components/submissions-search/submissions-search.component';
-import {
-  SkeletonColumn,
-  TableSkeletonComponent,
-} from '../../../shared/components/table-skeleton/table-skeleton.component';
+import { SkeletonColumn } from '../../../shared/components/table-skeleton/table-skeleton.component';
 
 interface Guideline {
   id: number;
+  formId: number;
   form: string;
   formCode: string;
   title: string;
   isActive: boolean;
-  blockCount: number;
   lastUpdated: string;
   createdBy: string;
 }
 
-type GuidelineSortKey = 'form' | 'title' | 'blocks' | 'lastUpdated' | 'createdBy';
-
-const FORM_LABELS: Record<string, string> = {
-  CONFERENCE: 'Conference Application',
-  JOURNAL: 'Journal Application',
-  PARTNERSHIP: 'Partnership Application',
-  RA_GRA: 'RA/GRA Application',
-  RDIG: 'RDIG Application',
-};
-
-const FORM_CODES: Record<string, string> = Object.fromEntries(
-  Object.entries(FORM_LABELS).map(([code, label]) => [label, code]),
-);
+type GuidelineSortKey = 'form' | 'title' | 'lastUpdated' | 'createdBy';
 
 @Component({
   selector: 'app-guidelines',
@@ -56,7 +41,6 @@ const FORM_CODES: Record<string, string> = Object.fromEntries(
   imports: [
     TableActionIconComponent,
     SubmissionsSearchComponent,
-    TableSkeletonComponent,
     CommonModule,
     FormsModule,
     AddGuidelineModalComponent,
@@ -64,6 +48,7 @@ const FORM_CODES: Record<string, string> = Object.fromEntries(
     PaginationComponent,
     DialogComponent,
     SvgIconComponent,
+    GuidelinesModalComponent,
   ],
   templateUrl: './guidelines.component.html',
   styleUrls: ['./guidelines.component.scss'],
@@ -90,30 +75,25 @@ export class GuidelinesComponent implements OnInit {
   readonly isSaving = signal(false);
   readonly loadingGuidelineId = signal<number | null>(null);
   readonly loadFailed = signal(false);
-  readonly guidelineToDeactivate = signal<Guideline | null>(null);
+  readonly guidelineToDelete = signal<Guideline | null>(null);
 
+  @ViewChild('viewModal') viewModal?: GuidelinesModalComponent;
+
+  readonly skeletonRows = [0, 1, 2, 3, 4];
   readonly skeletonColumns: readonly SkeletonColumn[] = [
     { width: '80px' },
     { width: '180px' },
     { width: '32%' },
-    { width: '120px' },
     { width: '120px' },
     { width: '140px' },
     { width: '160px' },
     { width: '132px' },
   ];
   readonly columns: readonly DataTableColumn[] = [
-    { key: 'number', label: 'No.', width: '80px', align: 'center' },
+    { key: 'number', label: 'No.', width: '80px' },
     { key: 'form', label: 'Form', width: '180px', sortable: true },
     { key: 'title', label: 'Guideline Title', width: '32%', sortable: true },
-    { key: 'status', label: 'Status', width: '132px', align: 'center', headerAlign: 'center' },
-    {
-      key: 'blocks',
-      label: 'Blocks',
-      width: '120px',
-      align: 'center',
-      sortable: true,
-    },
+    { key: 'status', label: 'Status', width: '132px' },
     {
       key: 'lastUpdated',
       label: 'Last Updated',
@@ -279,52 +259,27 @@ export class GuidelinesComponent implements OnInit {
     });
   }
 
-  toggleGuidelineStatus(guideline: Guideline): void {
-    if (this.loadingGuidelineId() !== null) return;
-
-    this.loadingGuidelineId.set(guideline.id);
-    this.guidelinesService
-      .updateStatus(guideline.id, !guideline.isActive)
-      .pipe(finalize(() => this.loadingGuidelineId.set(null)))
-      .subscribe({
-        next: () => this.loadGuidelines(),
-      });
+  openDeleteDialog(guideline: Guideline): void {
+    this.guidelineToDelete.set(guideline);
   }
 
-  openDeactivateDialog(guideline: Guideline): void {
-    this.guidelineToDeactivate.set(guideline);
+  closeDeleteDialog(): void {
+    this.guidelineToDelete.set(null);
   }
 
-  closeDeactivateDialog(): void {
-    this.guidelineToDeactivate.set(null);
-  }
-
-  confirmDeactivate(): void {
-    const guideline = this.guidelineToDeactivate();
+  confirmDelete(): void {
+    const guideline = this.guidelineToDelete();
     if (!guideline || this.loadingGuidelineId() !== null) return;
 
     this.loadingGuidelineId.set(guideline.id);
     this.guidelinesService
-      .updateStatus(guideline.id, false)
+      .delete(guideline.id)
       .pipe(
         finalize(() => {
           this.loadingGuidelineId.set(null);
-          this.guidelineToDeactivate.set(null);
+          this.guidelineToDelete.set(null);
         }),
       )
-      .subscribe({
-        next: () => this.loadGuidelines(),
-      });
-  }
-
-  deleteGuideline(guideline: Guideline): void {
-    const confirmed = window.confirm(`Delete "${guideline.title}"? This action cannot be undone.`);
-    if (!confirmed || this.loadingGuidelineId() !== null) return;
-
-    this.loadingGuidelineId.set(guideline.id);
-    this.guidelinesService
-      .delete(guideline.id)
-      .pipe(finalize(() => this.loadingGuidelineId.set(null)))
       .subscribe({
         next: () => {
           if (this.guidelines().length === 1 && this.guidelinePage() > 1) {
@@ -351,14 +306,38 @@ export class GuidelinesComponent implements OnInit {
       });
   }
 
+  /**
+   * List rows omit content_html to keep the payload small, so viewing fetches
+   * the full record. The modal's title/content are set directly on its
+   * public signals/property rather than through @Input bindings, since
+   * setting a signal and calling open() in the same tick would otherwise
+   * read the modal's stale @Input value (Angular hasn't re-rendered yet).
+   */
+  viewGuideline(guideline: Guideline): void {
+    if (this.loadingGuidelineId() !== null) return;
+
+    this.loadingGuidelineId.set(guideline.id);
+    this.guidelinesService
+      .get(guideline.id)
+      .pipe(finalize(() => this.loadingGuidelineId.set(null)))
+      .subscribe({
+        next: (response) => {
+          if (!this.viewModal) return;
+          this.viewModal.title = response.data.title || guideline.title;
+          this.viewModal.content.set(response.data.content_html || '<p>No content provided.</p>');
+          this.viewModal.isOpen.set(true);
+        },
+      });
+  }
+
   private toRow(item: GuidelineApi): Guideline {
     return {
       id: item.id,
-      form: FORM_LABELS[item.form_code] ?? item.form_name ?? item.form_code,
-      formCode: item.form_code,
-      title: item.guideline_title || 'Untitled Guideline',
+      formId: item.form_id,
+      form: item.form_name || item.form_code || 'Unknown form',
+      formCode: item.form_code || '',
+      title: item.title || 'Untitled Guideline',
       isActive: item.is_active,
-      blockCount: item.block_count,
       lastUpdated: this.formatDisplayDate(item.updated_at || item.created_at),
       createdBy: item.created_by || 'Unknown',
     };
@@ -366,44 +345,23 @@ export class GuidelinesComponent implements OnInit {
 
   private toConfig(item: GuidelineApi): GuidelineConfig {
     return {
-      title: item.guideline_title || 'Guidelines',
-      formName: FORM_LABELS[item.form_code] ?? item.form_name ?? item.form_code,
-      backgroundToken: item.background_token || 'white',
-      textToken: item.text_token || 'var(--color-text-primary)',
-      buttonToken: item.button_token || 'var(--color-primary)',
-      buttonText: item.button_text || 'Close',
-      blocks: (item.blocks ?? []).map((block) => ({
-        id: String(block.id),
-        type: block.block_type as BlockType,
-        content: block.block_content,
-        styling: {
-          bgToken: block.background_token ?? undefined,
-          textToken: block.text_token ?? undefined,
-          fontSizeToken: block.font_size_token ?? undefined,
-          fontWeightToken: block.font_weight_token ?? undefined,
-        },
-      })),
+      title: item.title || '',
+      formId: item.form_id,
+      contentHtml: item.content_html ?? '',
     };
   }
 
+  /**
+   * is_active is deliberately omitted here: the backend's PUT is a partial
+   * update, and this payload is shared by both create and edit. Sending
+   * is_active: true on every edit would silently reactivate a guideline the
+   * admin had deliberately deactivated just by editing its title/content.
+   */
   private toPayload(config: GuidelineConfig): GuidelinePayload {
     return {
-      form_code: FORM_CODES[config.formName] ?? config.formName,
-      guideline_title: config.title.trim(),
-      button_text: config.buttonText.trim(),
-      is_active: true,
-      background_token: config.backgroundToken,
-      text_token: config.textToken,
-      button_token: config.buttonToken,
-      blocks: config.blocks.map((block, index) => ({
-        block_type: block.type,
-        block_content: block.content.trim(),
-        display_order: index + 1,
-        background_token: block.styling?.bgToken || null,
-        text_token: block.styling?.textToken || null,
-        font_size_token: block.styling?.fontSizeToken || null,
-        font_weight_token: block.styling?.fontWeightToken || null,
-      })),
+      form_id: config.formId!,
+      title: config.title.trim(),
+      content_html: config.contentHtml,
     };
   }
 
@@ -412,10 +370,6 @@ export class GuidelinesComponent implements OnInit {
     second: Guideline,
     sortKey: GuidelineSortKey,
   ): number {
-    if (sortKey === 'blocks') {
-      return first.blockCount - second.blockCount;
-    }
-
     if (sortKey === 'lastUpdated') {
       return this.parseDisplayDate(first.lastUpdated) - this.parseDisplayDate(second.lastUpdated);
     }
@@ -441,3 +395,4 @@ export class GuidelinesComponent implements OnInit {
     return day && month && year ? new Date(year, month - 1, day).getTime() : 0;
   }
 }
+

@@ -20,6 +20,30 @@ image: node:22
 
 pipelines:
   branches:
+    dev:
+      - step:
+          name: Build & Deploy → dev
+          caches:
+            - node
+          script:
+            - npm ci
+            - npm run build -- --configuration=dev
+            - pipe: atlassian/aws-s3-deploy:1.1.0
+              variables:
+                AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+                AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+                AWS_DEFAULT_REGION: 'ap-southeast-1'
+                S3_BUCKET: 'frontend-rmc-dev'
+                LOCAL_PATH: 'dist/RMC_project/browser'
+                DELETE_FLAG: 'true'
+            - pipe: atlassian/aws-cloudfront-invalidate:0.6.0
+              variables:
+                AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+                AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+                AWS_DEFAULT_REGION: 'ap-southeast-1'
+                DISTRIBUTION_ID: $CLOUDFRONT_DISTRIBUTION_ID_DEV
+          artifacts:
+            - dist/**
     master:
       - step:
           name: Build & Deploy → staging
@@ -33,7 +57,7 @@ pipelines:
                 AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
                 AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
                 AWS_DEFAULT_REGION: 'ap-southeast-1'
-                S3_BUCKET: 'rmc-frontend-prod'
+                S3_BUCKET: 'rmc-frontend-dev'
                 LOCAL_PATH: 'dist/RMC_project/browser'
                 DELETE_FLAG: 'true'
             - pipe: atlassian/aws-cloudfront-invalidate:0.6.0
@@ -41,7 +65,7 @@ pipelines:
                 AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
                 AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
                 AWS_DEFAULT_REGION: 'ap-southeast-1'
-                DISTRIBUTION_ID: $CLOUDFRONT_DISTRIBUTION_ID_PROD
+                DISTRIBUTION_ID: $CLOUDFRONT_DISTRIBUTION_ID_DEV
           artifacts:
             - dist/**
       - step:
@@ -69,51 +93,4 @@ pipelines:
           artifacts:
             - dist/**
 
-    dev:
-      - step:
-          name: Build & Deploy → dev
-          caches:
-            - node
-          script:
-            - npm ci
-            - npm run build -- --configuration=dev
-            - pipe: atlassian/aws-s3-deploy:1.1.0
-              variables:
-                AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
-                AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
-                AWS_DEFAULT_REGION: 'ap-southeast-1'
-                S3_BUCKET: 'frontend-rmc-dev'
-                LOCAL_PATH: 'dist/RMC_project/browser'
-                DELETE_FLAG: 'true'
-            - pipe: atlassian/aws-cloudfront-invalidate:0.6.0
-              variables:
-                AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
-                AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
-                AWS_DEFAULT_REGION: 'ap-southeast-1'
-                DISTRIBUTION_ID: $CLOUDFRONT_DISTRIBUTION_ID_DEV
-          artifacts:
-            - dist/**
-
-  custom:
-    deploy-dev-frontend:
-      - step:
-          name: Build & Deploy → dev only
-          caches:
-            - node
-          script:
-            - npm ci
-            - npm run build -- --configuration=dev
-            - pipe: atlassian/aws-s3-deploy:1.1.0
-              variables:
-                AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
-                AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
-                AWS_DEFAULT_REGION: 'ap-southeast-1'
-                S3_BUCKET: 'frontend-rmc-dev'
-                LOCAL_PATH: 'dist/RMC_project/browser'
-                DELETE_FLAG: 'true'
-            - pipe: atlassian/aws-cloudfront-invalidate:0.6.0
-              variables:
-                AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
-                AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
-                AWS_DEFAULT_REGION: 'ap-southeast-1'
-                DISTRIBUTION_ID: $CLOUDFRONT_DISTRIBUTION_ID_DEV
+    

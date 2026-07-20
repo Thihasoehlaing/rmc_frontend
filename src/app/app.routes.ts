@@ -36,6 +36,11 @@ export const routes: Routes = [
           import('./features/profile/profile.routes').then(m => m.profileRoutes),
       },
       {
+        path: 'notifications',
+        loadChildren: () =>
+          import('./features/notifications/notifications.routes').then(m => m.notificationRoutes),
+      },
+      {
         path: 'showcase',
         loadChildren: () =>
           import('./shared/components/showcase/showcase.routes').then(m => m.showcaseRoutes),
@@ -106,6 +111,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'external-project-data-entry/detail/:requestCode',
+        loadComponent: () =>
+          import('./features/external-project-data-entry/external-project-detail.component').then(
+            m => m.ExternalProjectDetailComponent,
+          ),
+      },
+      {
         path: 'external-project-data-entry',
         canActivate: [permissionGuard],
         data: {
@@ -140,5 +152,6 @@ export const routes: Routes = [
   },
   { path: '**', redirectTo: '/login' },
 ];
+
 
 

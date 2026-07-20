@@ -134,6 +134,7 @@
 }
 
 .profile-avatar {
+  position: relative;
   width: 36px; // no token: specific avatar circle size
   height: 36px; // no token: specific avatar circle size
   min-width: 36px; // no token: prevent flex shrink below avatar size
@@ -146,6 +147,15 @@
   font-weight: var(--fw-bold);
   font-size: var(--fs-sm);
   flex-shrink: 0;
+  overflow: hidden;
+
+  img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
 }
 
 .profile-info {

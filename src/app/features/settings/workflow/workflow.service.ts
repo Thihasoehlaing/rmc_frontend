@@ -2,6 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
+import { FormCacheService } from '../../../core/services/form-cache.service';
 import { environment } from '../../../../environments/environment';
 
 export interface ApiResponse<T> {
@@ -33,21 +34,22 @@ export interface FormOption {
 
 export interface RoleOption {
   id: number;
-  role_code: string;
+  role_code?: string;
   role_name: string;
-  is_active: boolean;
+  is_active?: boolean;
 }
 
 export interface StaffOption {
   id: number;
-  staff_id: number;
+  staff_id?: number;
   username: string;
   fullname: string | null;
   email: string | null;
-  staff_email: string | null;
+  staff_email?: string | null;
   department: string | null;
-  job_title: string | null;
-  is_active: boolean;
+  staff_type?: string | null;
+  job_title?: string | null;
+  is_active?: boolean;
 }
 
 export interface WorkflowActorType {
@@ -91,6 +93,20 @@ export interface WorkflowStepAction {
   action_name: string;
   next_status_code: string | null;
   requires_remarks: boolean;
+  is_active: boolean;
+}
+
+export interface WorkflowStatusOption {
+  id: number;
+  form_id: number;
+  status_code: string;
+  status_name: string;
+  actor_type_id: number | null;
+  actor_code: string | null;
+  actor_name: string | null;
+  is_initial: boolean;
+  is_final: boolean;
+  display_order: number;
   is_active: boolean;
 }
 
@@ -149,8 +165,9 @@ const ENDPOINTS: Record<WorkflowTabKey, string> = {
 @Injectable({ providedIn: 'root' })
 export class WorkflowService {
   private readonly http = inject(HttpClient);
+  private readonly formCache = inject(FormCacheService);
   private readonly apiUrl = environment.apiUrl.replace(/\/$/, '');
-  private readonly settingsUrl = `${this.apiUrl}/api/settings`;
+  private readonly settingsUrl = `${this.apiUrl}/rmc/settings`;
 
   list<T>(
     tab: WorkflowTabKey,
@@ -159,6 +176,9 @@ export class WorkflowService {
       perPage: number;
       search?: string;
       status?: '' | 'Active' | 'Inactive';
+      workflowProcessId?: number | null;
+      workflowStepId?: number | null;
+      actorTypeId?: number | null;
     },
   ): Observable<ApiResponse<PaginatedData<T>>> {
     let httpParams = new HttpParams()
@@ -170,6 +190,15 @@ export class WorkflowService {
     }
     if (params.status) {
       httpParams = httpParams.set('status', params.status);
+    }
+    if (params.workflowProcessId) {
+      httpParams = httpParams.set('workflow_process_id', params.workflowProcessId);
+    }
+    if (params.workflowStepId) {
+      httpParams = httpParams.set('workflow_step_id', params.workflowStepId);
+    }
+    if (params.actorTypeId) {
+      httpParams = httpParams.set('actor_type_id', params.actorTypeId);
     }
 
     return this.http.get<ApiResponse<PaginatedData<T>>>(this.url(tab), { params: httpParams });
@@ -196,28 +225,44 @@ export class WorkflowService {
   }
 
   listForms(): Observable<ApiResponse<FormOption[]>> {
-    return this.http.get<ApiResponse<FormOption[]>>(`${this.apiUrl}/api/forms`);
+    return this.formCache.getForms();
   }
 
-  listRoles(): Observable<ApiResponse<PaginatedData<RoleOption>>> {
-    const params = new HttpParams()
-      .set('page', 1)
-      .set('per_page', 100)
-      .set('status', 'Active');
-    return this.http.get<ApiResponse<PaginatedData<RoleOption>>>(`${this.settingsUrl}/roles`, {
+  listProcessOptions(): Observable<ApiResponse<WorkflowProcess[]>> {
+    const params = new HttpParams().set('status', 'Active');
+    return this.http.get<ApiResponse<WorkflowProcess[]>>(`${this.settingsUrl}/workflow-processes/options`, {
       params,
     });
   }
 
-  listStaff(search = ''): Observable<ApiResponse<PaginatedData<StaffOption>>> {
-    let params = new HttpParams()
-      .set('page', 1)
-      .set('per_page', 100)
-      .set('status', 'Active');
+  listProcessStatusOptions(processId: number): Observable<ApiResponse<WorkflowStatusOption[]>> {
+    return this.http.get<ApiResponse<WorkflowStatusOption[]>>(
+      `${this.settingsUrl}/workflow-processes/${processId}/statuses`,
+    );
+  }
+
+  listActorTypeOptions(): Observable<ApiResponse<WorkflowActorType[]>> {
+    const params = new HttpParams().set('status', 'Active');
+    return this.http.get<ApiResponse<WorkflowActorType[]>>(
+      `${this.settingsUrl}/workflow-actor-types/options`,
+      { params },
+    );
+  }
+
+  listStepOptions(): Observable<ApiResponse<WorkflowStep[]>> {
+    return this.http.get<ApiResponse<WorkflowStep[]>>(`${this.settingsUrl}/workflow-steps/options`);
+  }
+
+  listRoles(): Observable<ApiResponse<RoleOption[]>> {
+    return this.http.get<ApiResponse<RoleOption[]>>(`${this.settingsUrl}/roles/options`);
+  }
+
+  listStaff(search = ''): Observable<ApiResponse<StaffOption[]>> {
+    let params = new HttpParams();
     if (search.trim()) {
       params = params.set('search', search.trim());
     }
-    return this.http.get<ApiResponse<PaginatedData<StaffOption>>>(`${this.settingsUrl}/staff`, {
+    return this.http.get<ApiResponse<StaffOption[]>>(`${this.apiUrl}/rmc/master-data/staff`, {
       params,
     });
   }

@@ -69,10 +69,10 @@ interface PaginatedData<T> {
 @Injectable({ providedIn: 'root' })
 export class UsersService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = environment.apiUrl.replace(/\/$/, '');
-  private readonly usersUrl = `${this.apiUrl}/rmc/settings/users`;
-  private readonly rolesUrl = `${this.apiUrl}/rmc/settings/roles`;
-  private readonly departmentsUrl = `${this.apiUrl}/rmc/master-data/departments`;
+  private readonly apiUrl = environment.apiBaseUrl;
+  private readonly usersUrl = `${this.apiUrl}/settings/users`;
+  private readonly rolesUrl = `${this.apiUrl}/settings/roles`;
+  private readonly departmentsUrl = `${this.apiUrl}/master-data/departments`;
 
   list(
     page: number,
@@ -125,7 +125,7 @@ export class UsersService {
     roleId: number,
   ): Observable<ApiResponse<UserRecord>> {
     return this.http.post<ApiResponse<UserRecord>>(
-      `${this.apiUrl}/rmc/settings/user-role`,
+      `${this.apiUrl}/settings/user-role`,
       { username, role_id: roleId },
     );
   }

@@ -8,7 +8,7 @@ import { environment } from '../../../environments/environment';
  * workflow-requests.service.ts
  *
  * Thin wrapper over the backend's generic request/workflow engine (routes in
- * blueprint.py under /rmc). This drives every form's post-submit lifecycle:
+ * blueprint.py under the configured API prefix). This drives every form's post-submit lifecycle:
  *  - the inbox / pending / history / my-requests list views
  *  - a request's current workflow state + the actions available to *this* user
  *  - performing an action (approve / reject / return / resubmit / …)
@@ -255,7 +255,7 @@ export interface RequestContextDto {
 @Injectable({ providedIn: 'root' })
 export class WorkflowRequestsService {
   private readonly http = inject(HttpClient);
-  private readonly base = `${environment.apiUrl.replace(/\/$/, '')}/rmc`;
+  private readonly base = environment.apiBaseUrl;
 
   private toParams(query: ListQuery | undefined): HttpParams {
     let params = new HttpParams();

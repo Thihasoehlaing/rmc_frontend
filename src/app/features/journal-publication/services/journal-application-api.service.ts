@@ -121,9 +121,9 @@ export interface JournalOptionsData {
 @Injectable({ providedIn: 'root' })
 export class JournalApplicationApiService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = environment.apiUrl.replace(/\/$/, '');
-  private readonly journalUrl = `${this.apiUrl}/rmc/journal`;
-  private readonly masterDataUrl = `${this.apiUrl}/rmc/master-data`;
+  private readonly apiUrl = environment.apiBaseUrl;
+  private readonly journalUrl = `${this.apiUrl}/journal`;
+  private readonly masterDataUrl = `${this.apiUrl}/master-data`;
 
   createDraft(payload: JournalRequestPayload): Observable<ApiResponse<JournalFormData>> {
     return this.http.post<ApiResponse<JournalFormData>>(

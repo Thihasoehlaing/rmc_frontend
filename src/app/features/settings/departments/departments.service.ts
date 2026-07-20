@@ -21,8 +21,8 @@ interface PaginatedData<T> {
 @Injectable({ providedIn: 'root' })
 export class DepartmentsService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = environment.apiUrl.replace(/\/$/, '');
-  private readonly departmentsUrl = `${this.apiUrl}/rmc/settings/departments`;
+  private readonly apiUrl = environment.apiBaseUrl;
+  private readonly departmentsUrl = `${this.apiUrl}/settings/departments`;
 
   list(params: {
     page: number;

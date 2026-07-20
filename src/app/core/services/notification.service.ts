@@ -9,7 +9,7 @@ import { BatchSitting } from '../interfaces/batch-sitting.interface';
 import { environment } from '../../../environments/environment';
 import { detailRoute, formRoute } from './request-display.util';
 
-const BASE = `${environment.apiUrl.replace(/\/$/, '')}/rmc/notifications`;
+const BASE = `${environment.apiBaseUrl}/notifications`;
 const POPUP_PAGE_SIZE = 10;
 
 export interface NotificationUnreadCount {

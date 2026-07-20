@@ -106,9 +106,9 @@ export interface BillingItemPayload {
 @Injectable({ providedIn: 'root' })
 export class ExternalProjectApiService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = environment.apiUrl.replace(/\/$/, '');
-  private readonly externalProjectUrl = `${this.apiUrl}/rmc/requests/external-project`;
-  private readonly masterDataUrl = `${this.apiUrl}/rmc/master-data`;
+  private readonly apiUrl = environment.apiBaseUrl;
+  private readonly externalProjectUrl = `${this.apiUrl}/requests/external-project`;
+  private readonly masterDataUrl = `${this.apiUrl}/master-data`;
 
   listGrantCategories(): Observable<ApiResponse<ExternalGrantCategory[]>> {
     return this.http.get<ApiResponse<ExternalGrantCategory[]>>(

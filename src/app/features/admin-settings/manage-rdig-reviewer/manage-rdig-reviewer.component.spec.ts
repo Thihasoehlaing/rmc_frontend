@@ -15,10 +15,10 @@ describe('ManageRdigReviewerComponent', () => {
   let fixture: ComponentFixture<ManageRdigReviewerComponent>;
   let http: HttpTestingController;
 
-  const apiUrl = environment.apiUrl.replace(/\/$/, '');
-  const academicOptionsUrl = `${apiUrl}/rmc/academic-staff`;
-  const departmentsUrl = `${apiUrl}/rmc/master-data/departments`;
-  const reviewersUrl = `${apiUrl}/rmc/admin-settings/rdig-reviewers`;
+  const apiUrl = environment.apiBaseUrl;
+  const academicOptionsUrl = `${apiUrl}/academic-staff`;
+  const departmentsUrl = `${apiUrl}/master-data/departments`;
+  const reviewersUrl = `${apiUrl}/admin-settings/rdig-reviewers`;
 
   const academicOptionsResponse = {
     success: true,

@@ -151,8 +151,8 @@ export interface ConferenceFormData {
 @Injectable({ providedIn: 'root' })
 export class ConferenceApiService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = environment.apiUrl.replace(/\/$/, '');
-  private readonly base = `${this.apiUrl}/rmc/conference`;
+  private readonly apiUrl = environment.apiBaseUrl;
+  private readonly base = `${this.apiUrl}/conference`;
 
   // ── Lifecycle ────────────────────────────────────────────────────
   createDraft(

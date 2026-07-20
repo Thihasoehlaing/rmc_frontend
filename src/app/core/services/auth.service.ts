@@ -307,10 +307,10 @@ export class AuthService {
   }
 
   loadProfile(): Observable<User> {
-    const apiUrl = environment.apiUrl.replace(/\/$/, '');
+    const apiUrl = environment.apiBaseUrl;
 
     return this.http
-      .get<AuthCheckResponse>(`${apiUrl}/rmc/auth/profile`, {
+      .get<AuthCheckResponse>(`${apiUrl}/auth/profile`, {
         context: new HttpContext().set(SHOW_API_SUCCESS, true),
       })
       .pipe(
@@ -416,13 +416,13 @@ export class AuthService {
 
   /** Expose backend dev-auth accounts for display on the login page. */
   getDemoAccounts(): Observable<{ username: string; label: string; groups: string }[]> {
-    const apiUrl = environment.apiUrl.replace(/\/$/, '');
+    const apiUrl = environment.apiBaseUrl;
 
     if (environment.production) {
       return throwError(() => new Error('Testing login is not available in production.'));
     }
 
-    return this.http.get<DevAuthUsersResponse>(`${apiUrl}/rmc/auth/dev-users`).pipe(
+    return this.http.get<DevAuthUsersResponse>(`${apiUrl}/auth/dev-users`).pipe(
       map(response =>
         response.data.users.map(user => ({
           username: user.username,
@@ -469,10 +469,10 @@ export class AuthService {
   }
 
   private checkAuthentication(): Observable<AuthCheckResponse> {
-    const apiUrl = environment.apiUrl.replace(/\/$/, '');
+    const apiUrl = environment.apiBaseUrl;
 
     return this.http
-      .get<AuthCheckResponse>(`${apiUrl}/rmc/auth/check`)
+      .get<AuthCheckResponse>(`${apiUrl}/auth/check`)
       .pipe(
         tap(response => {
           if (!response.success || !response.data?.user) {

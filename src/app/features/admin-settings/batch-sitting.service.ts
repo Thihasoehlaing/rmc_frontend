@@ -1,7 +1,7 @@
 /**
  * batch-sitting.service.ts
  *
- * Wraps the real backend (/rmc/admin-settings/batches) behind the same public
+ * Wraps the real backend (/<prefix>/admin-settings/batches) behind the same public
  * API the component already expects (loadAll/create/update/delete returning
  * BatchSitting[]/BatchSitting), so batch-sitting.component.ts needed no changes.
  *
@@ -33,7 +33,7 @@ import {
   WorkflowStageWindow,
 } from '../../core/interfaces/batch-sitting.interface';
 
-const BASE_URL = `${environment.apiUrl.replace(/\/$/, '')}/rmc/admin-settings/batches`;
+const BASE_URL = `${environment.apiBaseUrl}/admin-settings/batches`;
 
 interface ApiResponse<T> {
   success: boolean;

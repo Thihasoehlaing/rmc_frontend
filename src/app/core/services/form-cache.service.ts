@@ -28,7 +28,7 @@ export class FormCacheService {
   private readonly legacyStorageKey = 'rmc.forms.cache';
   private readonly storageKey = 'rmc.forms.cache.v2';
   private readonly cacheTtlMs = 5 * 60 * 1000;
-  private readonly apiUrl = `${environment.apiUrl.replace(/\/$/, '')}/rmc/forms?include_inactive=true`;
+  private readonly apiUrl = `${environment.apiBaseUrl}/forms?include_inactive=true`;
   private readonly formsSignal = signal<CachedFormOption[]>(this.readCache({ allowStale: true })?.forms ?? []);
 
   readonly forms = this.formsSignal.asReadonly();

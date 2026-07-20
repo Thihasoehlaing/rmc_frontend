@@ -13,9 +13,9 @@ describe('StaffAccessComponent', () => {
   let fixture: ComponentFixture<StaffAccessComponent>;
   let http: HttpTestingController;
 
-  const apiUrl = environment.apiUrl.replace(/\/$/, '');
-  const staffAccessUrl = `${apiUrl}/rmc/admin-settings/staff-access`;
-  const departmentsUrl = `${apiUrl}/rmc/master-data/departments`;
+  const apiUrl = environment.apiBaseUrl;
+  const staffAccessUrl = `${apiUrl}/admin-settings/staff-access`;
+  const departmentsUrl = `${apiUrl}/master-data/departments`;
 
   const listResponse = {
     success: true,

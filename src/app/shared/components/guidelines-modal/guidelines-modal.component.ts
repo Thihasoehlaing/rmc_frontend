@@ -11,6 +11,7 @@ import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { GuidelinesResponse } from '../../../core/interfaces/components.interface';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-guidelines-modal',
@@ -66,7 +67,10 @@ export class GuidelinesModalComponent implements OnChanges {
 
     this.isLoading.set(true);
     try {
-      const res = await this.http.get<GuidelinesResponse>(this.endpoint).toPromise();
+      const endpoint = /^https?:\/\//i.test(this.endpoint)
+        ? this.endpoint
+        : `${environment.apiBaseUrl}/${this.endpoint.replace(/^\/+/, '')}`;
+      const res = await this.http.get<GuidelinesResponse>(endpoint).toPromise();
       // Two response shapes are supported: the real admin-settings guideline
       // endpoint returns a single object ({ data: { content_html } }); the
       // older mock endpoints return an array ({ data: [{ rdig_guidelines_content }] }).

@@ -1,3 +1,8 @@
+import { environment } from '../../../environments/environment';
+
+const apiEndpoint = (path: string): string =>
+  `/${environment.apiPrefix.replace(/^\/+|\/+$/g, '')}/${path}`;
+
 export type SettingsTone =
   | 'blue'
   | 'violet'
@@ -27,7 +32,7 @@ export const SETTINGS_MODULES: SettingsModuleConfig[] = [
     category: 'Application Setup',
     route: '/settings/forms',
     tone: 'blue',
-    endpoints: ['/rmc/settings/forms'],
+    endpoints: [apiEndpoint('settings/forms')],
   },
   {
     key: 'dropdown-categories',
@@ -37,7 +42,7 @@ export const SETTINGS_MODULES: SettingsModuleConfig[] = [
     category: 'Configuration',
     route: '/settings/dropdown-categories',
     tone: 'violet',
-    endpoints: ['/rmc/settings/dropdown-categories'],
+    endpoints: [apiEndpoint('settings/dropdown-categories')],
   },
   {
     key: 'account-code-categories',
@@ -47,7 +52,7 @@ export const SETTINGS_MODULES: SettingsModuleConfig[] = [
     category: 'Finance Setup',
     route: '/settings/account-code-categories',
     tone: 'amber',
-    endpoints: ['/rmc/settings/account-code-categories'],
+    endpoints: [apiEndpoint('settings/account-code-categories')],
   },
   {
     key: 'account-codes',
@@ -57,7 +62,7 @@ export const SETTINGS_MODULES: SettingsModuleConfig[] = [
     category: 'Finance Setup',
     route: '/settings/account-codes',
     tone: 'teal',
-    endpoints: ['/rmc/settings/account-codes', '/rmc/settings/account-code-categories'],
+    endpoints: [apiEndpoint('settings/account-codes'), apiEndpoint('settings/account-code-categories')],
   },
   {
     key: 'staff-directory',
@@ -68,9 +73,9 @@ export const SETTINGS_MODULES: SettingsModuleConfig[] = [
     route: '/settings/staff-directory',
     tone: 'teal',
     endpoints: [
-      '/rmc/settings/staff/sync',
-      '/rmc/settings/staff',
-      '/rmc/master-data/departments',
+      apiEndpoint('settings/staff/sync'),
+      apiEndpoint('settings/staff'),
+      apiEndpoint('master-data/departments'),
     ],
   },
   {
@@ -81,7 +86,7 @@ export const SETTINGS_MODULES: SettingsModuleConfig[] = [
     category: 'Directory',
     route: '/settings/departments',
     tone: 'teal',
-    endpoints: ['/rmc/settings/departments'],
+    endpoints: [apiEndpoint('settings/departments')],
   },
   {
     key: 'academic-staff',
@@ -91,7 +96,7 @@ export const SETTINGS_MODULES: SettingsModuleConfig[] = [
     category: 'Directory',
     route: '/settings/academic-staff',
     tone: 'indigo',
-    endpoints: ['/rmc/settings/academic-staff'],
+    endpoints: [apiEndpoint('settings/academic-staff')],
   },
   {
     key: 'users',
@@ -101,7 +106,7 @@ export const SETTINGS_MODULES: SettingsModuleConfig[] = [
     category: 'Identity',
     route: '/settings/users',
     tone: 'indigo',
-    endpoints: ['/rmc/settings/users', '/rmc/settings/user-role'],
+    endpoints: [apiEndpoint('settings/users'), apiEndpoint('settings/user-role')],
   },
   {
     key: 'roles',
@@ -111,7 +116,7 @@ export const SETTINGS_MODULES: SettingsModuleConfig[] = [
     category: 'Authorization',
     route: '/settings/roles',
     tone: 'blue',
-    endpoints: ['/rmc/settings/roles'],
+    endpoints: [apiEndpoint('settings/roles')],
   },
   {
     key: 'system-access',
@@ -122,9 +127,9 @@ export const SETTINGS_MODULES: SettingsModuleConfig[] = [
     route: '/settings/system-access',
     tone: 'rose',
     endpoints: [
-      '/rmc/settings/system-access/users',
-      '/rmc/settings/system-access/department-rules',
-      '/rmc/settings/system-access/audit-logs',
+      apiEndpoint('settings/system-access/users'),
+      apiEndpoint('settings/system-access/department-rules'),
+      apiEndpoint('settings/system-access/audit-logs'),
     ],
   },
   {
@@ -135,7 +140,7 @@ export const SETTINGS_MODULES: SettingsModuleConfig[] = [
     category: 'Access Rules',
     route: '/settings/applicant-rules',
     tone: 'amber',
-    endpoints: ['/rmc/settings/applicant-rules'],
+    endpoints: [apiEndpoint('settings/applicant-rules')],
   },
   {
     key: 'workflow',
@@ -146,12 +151,12 @@ export const SETTINGS_MODULES: SettingsModuleConfig[] = [
     route: '/settings/workflow',
     tone: 'slate',
     endpoints: [
-      '/rmc/settings/workflow-actor-types',
-      '/rmc/settings/workflow-processes',
-      '/rmc/settings/workflow-steps',
-      '/rmc/settings/workflow-step-actions',
-      '/rmc/settings/workflow-actor-assignments',
-      '/rmc/settings/workflow-delegations',
+      apiEndpoint('settings/workflow-actor-types'),
+      apiEndpoint('settings/workflow-processes'),
+      apiEndpoint('settings/workflow-steps'),
+      apiEndpoint('settings/workflow-step-actions'),
+      apiEndpoint('settings/workflow-actor-assignments'),
+      apiEndpoint('settings/workflow-delegations'),
     ],
   },
 ];

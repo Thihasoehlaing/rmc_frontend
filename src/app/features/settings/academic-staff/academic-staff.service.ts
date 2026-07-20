@@ -103,12 +103,12 @@ interface PaginatedData<T> {
 @Injectable({ providedIn: 'root' })
 export class AcademicStaffService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = environment.apiUrl.replace(/\/$/, '');
+  private readonly apiUrl = environment.apiBaseUrl;
   private readonly academicStaffUrl =
-    `${this.apiUrl}/rmc/settings/academic-staff`;
-  private readonly staffUrl = `${this.apiUrl}/rmc/settings/staff`;
+    `${this.apiUrl}/settings/academic-staff`;
+  private readonly staffUrl = `${this.apiUrl}/settings/staff`;
   private readonly departmentsUrl =
-    `${this.apiUrl}/rmc/master-data/departments`;
+    `${this.apiUrl}/master-data/departments`;
 
   list(params: {
     page: number;
@@ -214,7 +214,7 @@ export class AcademicStaffService {
     }
 
     return this.http.get<ApiResponse<AcademicStaffOptionRecord[]>>(
-      `${this.apiUrl}/rmc/academic-staff`,
+      `${this.apiUrl}/academic-staff`,
       { params },
     );
   }

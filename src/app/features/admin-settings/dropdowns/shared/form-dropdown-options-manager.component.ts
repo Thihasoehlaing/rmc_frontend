@@ -81,7 +81,6 @@ export class FormDropdownOptionsManagerComponent implements OnInit {
   @Input({ required: true }) title = '';
   @Input({ required: true }) subtitle = '';
   @Input({ required: true }) tabs: FormDropdownTab[] = [];
-  @Input({ required: true }) formCodes: string[] = [];
   @Input() defaultTab = '';
 
   readonly trashIcon = SVG_ICON_TRASH;
@@ -359,11 +358,7 @@ export class FormDropdownOptionsManagerComponent implements OnInit {
 
   getDefaultSelectedForms(): string[] {
     const tabFormCode = this.selectedTab()?.formCode;
-    if ((this.isFinanceTab() || this.getTabSource() === 'account-code') && tabFormCode) {
-      return [tabFormCode];
-    }
-
-    return this.formCodes;
+    return tabFormCode ? [tabFormCode] : [];
   }
 
   private loadRows(): void {
@@ -418,12 +413,11 @@ export class FormDropdownOptionsManagerComponent implements OnInit {
     }
 
     this.formOptionsLoaded = true;
-    const allowedCodes = new Set(this.formCodes.map((code) => code.toUpperCase()));
     this.service.listForms().subscribe({
       next: (res) => {
         this.formOptions.set(
           (res.data ?? [])
-            .filter((form) => allowedCodes.has(form.form_code.toUpperCase()))
+            .filter((form) => form.is_active !== false)
             .map((form) => ({
               label: form.form_name,
               value: form.form_code,

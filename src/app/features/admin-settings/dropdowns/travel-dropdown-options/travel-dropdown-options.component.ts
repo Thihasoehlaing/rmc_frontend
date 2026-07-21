@@ -23,6 +23,4 @@ export class TravelDropdownOptionsComponent {
       icon: 'receipt_long',
     },
   ];
-
-  readonly formCodes = ['CONFERENCE', 'JOURNAL', 'TRAVEL_AUTH'];
 }

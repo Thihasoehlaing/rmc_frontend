@@ -41,6 +41,4 @@ export class JournalDropdownOptionsComponent {
       icon: 'corporate_fare',
     },
   ];
-
-  readonly formCodes = ['CONFERENCE', 'JOURNAL', 'TRAVEL_AUTH'];
 }

@@ -39,6 +39,4 @@ export class RaGraDropdownOptionsComponent {
       icon: 'payments',
     },
   ];
-
-  readonly formCodes = ['RA_GRA'];
 }

@@ -27,6 +27,4 @@ export class PartnershipDropdownOptionsComponent {
       icon: 'category',
     },
   ];
-
-  readonly formCodes = ['PARTNERSHIP'];
 }

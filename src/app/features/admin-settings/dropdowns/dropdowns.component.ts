@@ -104,7 +104,7 @@ export class DropdownsComponent implements OnInit {
 
   ngOnInit(): void {
     this.formCache
-      .getActiveForms()
+      .getActiveForms(true)
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe({ error: () => undefined });
   }

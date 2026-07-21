@@ -54,7 +54,7 @@ export const permissionGuard: CanActivateFn = (route, state) => {
   return router.createUrlTree(['/dashboard']);
 };
 
-function isExistingRecordDetailUrl(url: string): boolean {
+export function isExistingRecordDetailUrl(url: string): boolean {
   const path = url.split(/[?#]/, 1)[0];
-  return /^\/(?:journal|rdig|external-project-data-entry)\/detail\/[^/]+$/.test(path);
+  return /^\/(?:conference|journal|rdig|external-project-data-entry)\/detail\/[^/]+$/.test(path);
 }

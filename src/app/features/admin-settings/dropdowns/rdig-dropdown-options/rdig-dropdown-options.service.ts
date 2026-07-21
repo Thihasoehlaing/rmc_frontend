@@ -291,7 +291,7 @@ export class RdigDropdownOptionsService {
   }
 
   listForms(): Observable<ApiResponse<FormOption[]>> {
-    return this.formCache.getActiveForms();
+    return this.formCache.getActiveForms(true);
   }
 
   // ─── Admin create ─────────────────────────────────────────────────────────

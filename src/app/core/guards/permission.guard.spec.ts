@@ -1,17 +1,19 @@
-import { TestBed } from '@angular/core/testing';
-import { CanActivateFn } from '@angular/router';
+import '@angular/compiler';
 
-import { permissionGuard } from './permission.guard';
+import { describe, expect, it } from 'vitest';
+
+import { isExistingRecordDetailUrl, permissionGuard } from './permission.guard';
 
 describe('permissionGuard', () => {
-  const executeGuard: CanActivateFn = (...guardParameters) =>
-    TestBed.runInInjectionContext(() => permissionGuard(...guardParameters));
-
-  beforeEach(() => {
-    TestBed.configureTestingModule({});
+  it('should be created', () => {
+    expect(permissionGuard).toBeTruthy();
   });
 
-  it('should be created', () => {
-    expect(executeGuard).toBeTruthy();
+  it('allows Conference detail routes through the existing-record guard path', () => {
+    expect(
+      isExistingRecordDetailUrl(
+        '/conference/detail/CONF-260008?returnTo=%2Fsubmissions%2Fadmin-history',
+      ),
+    ).toBe(true);
   });
 });

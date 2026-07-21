@@ -119,7 +119,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
     : 'new-application';
 
   /** Active RDIG guideline for applicants — served by the guideline-by-form endpoint (auth-only, no admin gate). */
-  readonly guidelinesEndpoint = `${environment.apiUrl.replace(/\/$/, '')}/rmc/admin-settings/guidelines/forms/RDIG`;
+  readonly guidelinesEndpoint = `${environment.apiBaseUrl}/admin-settings/guidelines/forms/RDIG`;
 
   /** The currently active batch loaded from the server on init. */
   activeBatch = signal<BatchSitting | null | undefined>(undefined); // undefined = loading

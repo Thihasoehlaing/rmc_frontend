@@ -67,9 +67,9 @@ export interface StaffAccessListParams {
 @Injectable({ providedIn: 'root' })
 export class StaffAccessService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = environment.apiUrl.replace(/\/$/, '');
+  private readonly apiUrl = environment.apiBaseUrl;
   private readonly baseUrl =
-    `${this.apiUrl}/rmc/admin-settings/staff-access`;
+    `${this.apiUrl}/admin-settings/staff-access`;
 
   list(params: StaffAccessListParams): Observable<ApiResponse<StaffAccessListData>> {
     let httpParams = new HttpParams()
@@ -118,7 +118,7 @@ export class StaffAccessService {
     if (text) {
       params = params.set('search', text);
     }
-    return this.http.get<ApiResponse<StaffOption[]>>(`${this.apiUrl}/rmc/master-data/staff`, {
+    return this.http.get<ApiResponse<StaffOption[]>>(`${this.apiUrl}/master-data/staff`, {
       params,
     });
   }

@@ -166,8 +166,8 @@ const ENDPOINTS: Record<WorkflowTabKey, string> = {
 export class WorkflowService {
   private readonly http = inject(HttpClient);
   private readonly formCache = inject(FormCacheService);
-  private readonly apiUrl = environment.apiUrl.replace(/\/$/, '');
-  private readonly settingsUrl = `${this.apiUrl}/rmc/settings`;
+  private readonly apiUrl = environment.apiBaseUrl;
+  private readonly settingsUrl = `${this.apiUrl}/settings`;
 
   list<T>(
     tab: WorkflowTabKey,
@@ -262,7 +262,7 @@ export class WorkflowService {
     if (search.trim()) {
       params = params.set('search', search.trim());
     }
-    return this.http.get<ApiResponse<StaffOption[]>>(`${this.apiUrl}/rmc/master-data/staff`, {
+    return this.http.get<ApiResponse<StaffOption[]>>(`${this.apiUrl}/master-data/staff`, {
       params,
     });
   }

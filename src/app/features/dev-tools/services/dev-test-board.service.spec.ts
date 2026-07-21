@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { DevTestBoardService, DevTestBoard } from './dev-test-board.service';
+import { environment } from '../../../../environments/environment';
 
 describe('DevTestBoardService', () => {
   let service: DevTestBoardService;
@@ -35,7 +36,7 @@ describe('DevTestBoardService', () => {
       expect(result.boardName).toBe('Test Board');
     });
 
-    const req = httpMock.expectOne('/rmc/dev-test-boards');
+    const req = httpMock.expectOne(`${environment.apiBaseUrl}/dev-test-boards`);
     expect(req.request.method).toBe('POST');
     req.flush(mockBoard);
   });

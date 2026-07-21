@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../../environments/environment';
 
 export interface DevTestBoard {
   id?: string;
@@ -15,7 +16,7 @@ export interface DevTestBoard {
   providedIn: 'root',
 })
 export class DevTestBoardService {
-  private apiUrl = '/rmc/dev-test-boards';
+  private readonly apiUrl = `${environment.apiBaseUrl}/dev-test-boards`;
 
   constructor(private http: HttpClient) {}
 

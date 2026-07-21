@@ -97,8 +97,8 @@ export interface SystemAccessAuditLog {
 @Injectable({ providedIn: 'root' })
 export class SystemAccessService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = environment.apiUrl.replace(/\/$/, '');
-  private readonly baseUrl = `${this.apiUrl}/rmc/settings/system-access`;
+  private readonly apiUrl = environment.apiBaseUrl;
+  private readonly baseUrl = `${this.apiUrl}/settings/system-access`;
 
   listUsers(params: {
     page: number;
@@ -202,7 +202,7 @@ export class SystemAccessService {
     if (text) {
       params = params.set('search', text);
     }
-    return this.http.get<ApiResponse<StaffOption[]>>(`${this.apiUrl}/rmc/master-data/staff`, {
+    return this.http.get<ApiResponse<StaffOption[]>>(`${this.apiUrl}/master-data/staff`, {
       params,
     });
   }

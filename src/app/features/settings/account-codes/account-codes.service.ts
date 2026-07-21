@@ -72,10 +72,10 @@ export interface AccountCodePayload {
 @Injectable({ providedIn: 'root' })
 export class AccountCodesService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = environment.apiUrl.replace(/\/$/, '');
-  private readonly categoryUrl = `${this.apiUrl}/rmc/settings/account-code-categories`;
+  private readonly apiUrl = environment.apiBaseUrl;
+  private readonly categoryUrl = `${this.apiUrl}/settings/account-code-categories`;
   private readonly categoryOptionsUrl = `${this.categoryUrl}/options`;
-  private readonly codeUrl = `${this.apiUrl}/rmc/settings/account-codes`;
+  private readonly codeUrl = `${this.apiUrl}/settings/account-codes`;
 
   listCategories(params: {
     page: number;

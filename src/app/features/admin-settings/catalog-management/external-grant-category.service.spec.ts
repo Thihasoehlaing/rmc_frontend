@@ -8,7 +8,7 @@ import { ExternalGrantCategoryService } from './external-grant-category.service'
 describe('ExternalGrantCategoryService', () => {
   let service: ExternalGrantCategoryService;
   let http: HttpTestingController;
-  const baseUrl = `${environment.apiUrl.replace(/\/$/, '')}/rmc/admin-settings/external-grant-categories`;
+  const baseUrl = `${environment.apiBaseUrl}/admin-settings/external-grant-categories`;
 
   beforeEach(() => {
     TestBed.configureTestingModule({

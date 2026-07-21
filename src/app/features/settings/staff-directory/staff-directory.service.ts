@@ -44,10 +44,10 @@ interface PaginatedData<T> {
 @Injectable({ providedIn: 'root' })
 export class StaffDirectoryService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = environment.apiUrl.replace(/\/$/, '');
-  private readonly staffUrl = `${this.apiUrl}/rmc/settings/staff`;
+  private readonly apiUrl = environment.apiBaseUrl;
+  private readonly staffUrl = `${this.apiUrl}/settings/staff`;
   private readonly syncUrl = `${this.staffUrl}/sync`;
-  private readonly departmentsUrl = `${this.apiUrl}/rmc/master-data/departments`;
+  private readonly departmentsUrl = `${this.apiUrl}/master-data/departments`;
 
   list(
     params: StaffListParams,

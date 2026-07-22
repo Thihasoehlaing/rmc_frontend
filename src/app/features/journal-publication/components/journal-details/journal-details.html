@@ -964,6 +964,28 @@
   (close)="closeSDGKeywordsModal()"
 >
   <form [formGroup]="sdgKeywordsForm">
+    <app-note class="sdg-reference-note">
+      <span class="sdg-reference-guidance">
+        <span>Note: Please refer to the links for the sample of SDG keywords.</span>
+        <span>
+          SciVal SDG keywords:
+          <a href="https://scival.com/sdg" target="_blank" rel="noopener noreferrer">
+            https://scival.com/sdg
+          </a>
+        </span>
+        <span>
+          Elsevier SDG keywords:
+          <a
+            href="https://elsevier.digitalcommonsdata.com/datasets/p52c7d3hfs/1"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Elsevier 2025 Sustainable Development Goals (SDGs) Mapping - Elsevier BV
+          </a>
+        </span>
+      </span>
+    </app-note>
+
     <div class="form-field">
       <label class="form-label">Keyword 1 <span class="asterisk">*</span></label>
       <input

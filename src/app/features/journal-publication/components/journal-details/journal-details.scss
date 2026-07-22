@@ -445,6 +445,27 @@
 
 
 // SDG Keywords Container & Chips Styles
+.sdg-reference-note {
+  display: block;
+  margin-bottom: var(--space-3);
+}
+
+.sdg-reference-guidance {
+  display: grid;
+  gap: var(--space-1);
+
+  a {
+    color: var(--color-primary);
+    font-weight: var(--fw-semibold);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+
+    &:hover {
+      color: var(--color-primary-dark);
+    }
+  }
+}
+
 .sdg-keywords-container {
   display: flex;
   flex-wrap: wrap;
@@ -475,7 +496,7 @@
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
-  background: var(--color-text);
+ background: var(--color-text);
   color: var(--color-surface);
   padding: var(--space-1) var(--space-3);
   border-radius: var(--radius-sm);

@@ -10,7 +10,7 @@
       <div class="section-fields upload-grid">
         <div class="form-field">
           <div class="upload-field-header">
-            <h3 class="upload-field-title">Acceptance Notification</h3>
+            <h3 class="upload-field-title is-required">Acceptance Notification</h3>
             <p class="upload-field-subtitle">Max file size: 10 MB. PDF ONLY</p>
           </div>
           <app-file-upload
@@ -23,11 +23,14 @@
             (fileSelected)="onDocumentSelected('acceptanceNotification', $any($event))"
           >
           </app-file-upload>
+          <app-validation-message
+            [control]="documentsForm.get('acceptanceNotification')"
+          ></app-validation-message>
         </div>
 
         <div class="form-field">
           <div class="upload-field-header">
-            <h3 class="upload-field-title">Reviewers' Feedback</h3>
+            <h3 class="upload-field-title is-required">Reviewers' Feedback</h3>
             <p class="upload-field-subtitle">Max file size: 10 MB. PDF ONLY</p>
           </div>
           <app-file-upload
@@ -40,11 +43,14 @@
             (fileSelected)="onDocumentSelected('reviewersFeedback', $any($event))"
           >
           </app-file-upload>
+          <app-validation-message
+            [control]="documentsForm.get('reviewersFeedback')"
+          ></app-validation-message>
         </div>
 
         <div class="form-field">
           <div class="upload-field-header">
-            <h3 class="upload-field-title">Screenshot of SCOPUS CiteScore</h3>
+            <h3 class="upload-field-title is-required">Screenshot of SCOPUS CiteScore</h3>
             <p class="upload-field-subtitle">Max file size: 10 MB. PDF ONLY</p>
           </div>
           <app-file-upload
@@ -57,11 +63,16 @@
             (fileSelected)="onDocumentSelected('scopusEvidencePublication', $any($event))"
           >
           </app-file-upload>
+          <app-validation-message
+            [control]="documentsForm.get('scopusEvidencePublication')"
+          ></app-validation-message>
         </div>
 
         <div class="form-field">
           <div class="upload-field-header">
-            <h3 class="upload-field-title">Approval by Strategic Research Institute (SRI)</h3>
+            <h3 class="upload-field-title is-required">
+              Approval by Strategic Research Institute (SRI)
+            </h3>
             <p class="upload-field-subtitle">Max file size: 10 MB. PDF ONLY</p>
           </div>
           <app-file-upload
@@ -74,6 +85,9 @@
             (fileSelected)="onDocumentSelected('sriApproval', $any($event))"
           >
           </app-file-upload>
+          <app-validation-message
+            [control]="documentsForm.get('sriApproval')"
+          ></app-validation-message>
           <app-note
             text="Please upload SRI approval on IRN country and SDG Keywords."
             [isTooltip]="false"
@@ -83,7 +97,7 @@
 
         <div class="form-field">
           <div class="upload-field-header">
-            <h3 class="upload-field-title">Turnitin Report</h3>
+            <h3 class="upload-field-title is-required">Turnitin Report</h3>
             <p class="upload-field-subtitle">Max file size: 10 MB. PDF ONLY</p>
           </div>
           <app-file-upload
@@ -96,11 +110,14 @@
             (fileSelected)="onDocumentSelected('turnitinReport', $any($event))"
           >
           </app-file-upload>
+          <app-validation-message
+            [control]="documentsForm.get('turnitinReport')"
+          ></app-validation-message>
         </div>
 
         <div class="form-field">
           <div class="upload-field-header">
-            <h3 class="upload-field-title">Final Paper Draft</h3>
+            <h3 class="upload-field-title is-required">Final Paper Draft</h3>
             <p class="upload-field-subtitle">Max file size: 10 MB. PDF ONLY</p>
           </div>
           <app-file-upload
@@ -113,11 +130,14 @@
             (fileSelected)="onDocumentSelected('finalPaperDraft', $any($event))"
           >
           </app-file-upload>
+          <app-validation-message
+            [control]="documentsForm.get('finalPaperDraft')"
+          ></app-validation-message>
         </div>
 
         <div class="form-field">
           <div class="upload-field-header">
-            <h3 class="upload-field-title">Journal Invoice</h3>
+            <h3 class="upload-field-title is-required">Journal Invoice</h3>
             <p class="upload-field-subtitle">Max file size: 10 MB. PDF ONLY</p>
           </div>
           <app-file-upload
@@ -130,6 +150,9 @@
             (fileSelected)="onDocumentSelected('journalInvoice', $any($event))"
           >
           </app-file-upload>
+          <app-validation-message
+            [control]="documentsForm.get('journalInvoice')"
+          ></app-validation-message>
           <app-note
             text="Please ensure billing name is: Asia Pacific University Sdn. Bhd."
             [isTooltip]="false"
@@ -148,7 +171,7 @@
     <div class="card__content">
       <div class="section-fields">
         <div class="form-field">
-          <label class="form-label">Name of Reviewer</label>
+          <label class="form-label is-required">Name of Reviewer</label>
           <input
             type="text"
             class="input--text"
@@ -156,10 +179,13 @@
             placeholder="Enter reviewer name"
             (input)="stripDigits($event)"
           />
+          <app-validation-message
+            [control]="documentsForm.get('reviewerName')"
+          ></app-validation-message>
         </div>
 
         <div class="form-field">
-          <label class="form-label"
+          <label class="form-label is-required"
             >The manuscript has been internally reviewed for the quality of content and
             English?</label
           >
@@ -173,10 +199,13 @@
               <span>No</span>
             </label>
           </div>
+          <app-validation-message
+            [control]="documentsForm.get('manuscriptInternallyReviewed')"
+          ></app-validation-message>
         </div>
 
         <div class="form-field">
-          <label class="form-label"
+          <label class="form-label is-required"
             >Has the manuscript and content been published in another journal or conference
             etc.?</label
           >
@@ -190,6 +219,9 @@
               <span>No</span>
             </label>
           </div>
+          <app-validation-message
+            [control]="documentsForm.get('manuscriptPreviouslyPublished')"
+          ></app-validation-message>
           <app-note
             text="Manuscript must not be published previously"
             [isTooltip]="false"

@@ -1,9 +1,10 @@
 import { Component, OnInit, ViewChild, inject, effect, Output, EventEmitter } from '@angular/core';
 import { CustomHeaderComponent } from '../../../../shared/components/custom-header/custom-header.component';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { FileUploadComponent } from '../../../../shared/components/file-upload/file-upload.component';
 import { NoteComponent } from '../../../../shared/components/note/note.component';
+import { ValidationMessageComponent } from '../../../../shared/components/validation-message/validation-message.component';
 import { JournalWorkflowService } from '../../services/journal-workflow.service';
 import {
   JournalAttachmentUpload,
@@ -25,6 +26,7 @@ interface PendingDocumentUpload {
     ReactiveFormsModule,
     FileUploadComponent,
     NoteComponent,
+    ValidationMessageComponent,
     CustomHeaderComponent,
   ],
   templateUrl: './documents.html',
@@ -78,16 +80,16 @@ export class DocumentsComponent implements OnInit {
 
   initializeDocumentsForm() {
     this.documentsForm = this.fb.group({
-      acceptanceNotification: [''],
-      reviewersFeedback: [''],
-      scopusEvidencePublication: [''],
-      sriApproval: [''],
-      turnitinReport: [''],
-      finalPaperDraft: [''],
-      journalInvoice: [''],
-      manuscriptInternallyReviewed: [''],
-      reviewerName: [''],
-      manuscriptPreviouslyPublished: [''],
+      acceptanceNotification: ['', Validators.required],
+      reviewersFeedback: ['', Validators.required],
+      scopusEvidencePublication: ['', Validators.required],
+      sriApproval: ['', Validators.required],
+      turnitinReport: ['', Validators.required],
+      finalPaperDraft: ['', Validators.required],
+      journalInvoice: ['', Validators.required],
+      manuscriptInternallyReviewed: ['', Validators.required],
+      reviewerName: ['', Validators.required],
+      manuscriptPreviouslyPublished: ['', Validators.required],
     });
 
     this.documentsForm.statusChanges.subscribe((status) => {
@@ -123,6 +125,7 @@ export class DocumentsComponent implements OnInit {
       },
       { emitEvent: false },
     );
+    this.formValidityChange.emit(this.documentsForm.valid);
   }
 
   onDocumentSelected(controlName: string, file: File | null) {

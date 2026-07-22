@@ -96,7 +96,11 @@ export class JournalPublicationFormComponent {
   stepStatuses: StepStatus[] = [
     { visited: false, valid: true, missingFields: [] },
     { visited: false, valid: false, missingFields: ['Complete Authors Details'] },
-    { visited: false, valid: true, missingFields: [] },
+    {
+      visited: false,
+      valid: false,
+      missingFields: ['Complete Upload Supporting Documents & Manuscript Details'],
+    },
     { visited: false, valid: false, missingFields: ['Complete Declaration'] },
   ];
 
@@ -104,7 +108,7 @@ export class JournalPublicationFormComponent {
   formValid: { [key: number]: boolean } = {
     1: false,
     2: false,
-    3: true,
+    3: false,
     4: false,
   };
 

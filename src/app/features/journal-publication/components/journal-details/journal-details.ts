@@ -28,9 +28,8 @@ import { PaginationComponent } from '../../../../shared/components/pagination/pa
 import { JournalOptionType, JournalOptionsService } from '../../services/journal-options.service';
 import { DropdownOption } from '../../../../core/interfaces/components.interface';
 import {
-  SDG_KEYWORD_EXAMPLE,
-  SDG_KEYWORD_NOTE,
-  sdgKeywordValidator,
+  SDG_KEYWORD_MAX_LENGTH,
+  SDG_KEYWORD_PLACEHOLDERS,
 } from '../../../../shared/validators/sdg-keyword.validator';
 import {
   JournalCostingPayload,
@@ -77,8 +76,8 @@ export class JournalDetails implements OnInit, OnDestroy {
   form!: FormGroup;
   breakdownForm!: FormGroup;
   sdgKeywordsForm!: FormGroup;
-  readonly sdgKeywordPlaceholder = SDG_KEYWORD_EXAMPLE;
-  readonly sdgKeywordNote = SDG_KEYWORD_NOTE;
+  readonly sdgKeywordMaxLength = SDG_KEYWORD_MAX_LENGTH;
+  readonly sdgKeywordPlaceholders = SDG_KEYWORD_PLACEHOLDERS;
   isBreakdownModalOpen = false;
   isSDGKeywordsModalOpen = false;
   breakdownType: 'internal-research' | 'external-research' | 'non-research' | null = null;
@@ -220,9 +219,9 @@ export class JournalDetails implements OnInit, OnDestroy {
       restrictedPublisher: ['', Validators.required],
       journalName: ['', [Validators.required, Validators.maxLength(150)]],
       paperTitle: ['', [Validators.required, Validators.maxLength(200)]],
-      sdgKeyword1: ['', [Validators.required, sdgKeywordValidator]],
-      sdgKeyword2: ['', [Validators.required, sdgKeywordValidator]],
-      sdgKeyword3: ['', [Validators.required, sdgKeywordValidator]],
+      sdgKeyword1: ['', [Validators.required, Validators.maxLength(SDG_KEYWORD_MAX_LENGTH)]],
+      sdgKeyword2: ['', [Validators.required, Validators.maxLength(SDG_KEYWORD_MAX_LENGTH)]],
+      sdgKeyword3: ['', [Validators.required, Validators.maxLength(SDG_KEYWORD_MAX_LENGTH)]],
       citedApuPaper: ['', Validators.required],
       citedApuPaperExplanation: ['', [Validators.maxLength(255)]],
       projectAccountCode: [''],
@@ -313,9 +312,9 @@ export class JournalDetails implements OnInit, OnDestroy {
     });
 
     this.sdgKeywordsForm = this.fb.group({
-      keyword1: ['', [Validators.required, sdgKeywordValidator]],
-      keyword2: ['', [Validators.required, sdgKeywordValidator]],
-      keyword3: ['', [Validators.required, sdgKeywordValidator]],
+      keyword1: ['', [Validators.required, Validators.maxLength(SDG_KEYWORD_MAX_LENGTH)]],
+      keyword2: ['', [Validators.required, Validators.maxLength(SDG_KEYWORD_MAX_LENGTH)]],
+      keyword3: ['', [Validators.required, Validators.maxLength(SDG_KEYWORD_MAX_LENGTH)]],
     });
 
     this.refreshDropdownOptions();

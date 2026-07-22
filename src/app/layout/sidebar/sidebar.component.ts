@@ -79,17 +79,8 @@ export class SidebarComponent implements OnInit {
     )
   );
 
-  // Track profile dropdown
-  profileOpen = signal(false);
-
   ngOnInit(): void {
     this.formCache.getActiveForms().subscribe({ error: () => undefined });
-  }
-
-  toggleProfile() {
-    if (this.isExpanded()) {
-      this.profileOpen.update(v => !v);
-    }
   }
 
   onAvatarError(event: Event): void {
@@ -147,7 +138,6 @@ export class SidebarComponent implements OnInit {
 
   onMouseLeave() {
     this.sidebarService.setHover(false);
-    this.profileOpen.set(false);
   }
 
   togglePin() { this.sidebarService.togglePin(); }
@@ -161,4 +151,3 @@ export class SidebarComponent implements OnInit {
     this.authService.logout();
   }
 }
-

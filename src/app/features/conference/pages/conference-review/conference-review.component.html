@@ -278,7 +278,8 @@
                   <thead>
                     <tr>
                       <th>Date</th>
-                      <th>Time</th>
+                      <th>Start Time</th>
+                      <th>End Time</th>
                       <th>Event</th>
                     </tr>
                   </thead>
@@ -286,7 +287,8 @@
                     @for (event of travelEvents(); track event.id ?? $index) {
                       <tr>
                         <td>{{ fmtDateOnly(event.event_date) }}</td>
-                        <td>{{ val(event.event_time) }}</td>
+                        <td>{{ val(event.start_time || event.event_time) }}</td>
+                        <td>{{ val(event.end_time) }}</td>
                         <td class="table-cell--wrap">{{ val(event.description) }}</td>
                       </tr>
                     }

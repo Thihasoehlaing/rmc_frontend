@@ -30,9 +30,8 @@ import {
   RegionOption,
 } from '../../../../../core/services/master-data.service';
 import {
-  SDG_KEYWORD_EXAMPLE,
-  SDG_KEYWORD_NOTE,
-  sdgKeywordValidator,
+  SDG_KEYWORD_MAX_LENGTH,
+  SDG_KEYWORD_PLACEHOLDERS,
 } from '../../../../../shared/validators/sdg-keyword.validator';
 
 import { TableActionIconComponent } from '../../../../../shared/components/table-action-icon/table-action-icon.component';
@@ -71,11 +70,12 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
   breakdownForm!: FormGroup;
   sdgKeywordsForm!: FormGroup;
   activityForm!: FormGroup;
-  readonly sdgKeywordPlaceholder = SDG_KEYWORD_EXAMPLE;
-  readonly sdgKeywordNote = SDG_KEYWORD_NOTE;
+  readonly sdgKeywordMaxLength = SDG_KEYWORD_MAX_LENGTH;
+  readonly sdgKeywordPlaceholders = SDG_KEYWORD_PLACEHOLDERS;
   isBreakdownModalOpen = false;
   isSDGKeywordsModalOpen = false;
   isActivityModalOpen = false;
+  isRestrictedPublisherWarningOpen = false;
   activityEditingIndex: number | null = null;
   breakdownType: 'research' | 'external-research' | 'local' | null = null;
   breakdownEditingIndex: number | null = null;
@@ -86,7 +86,8 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
   localBreakdowns: any[] = [];
   readonly activityTableColumns: DataTableColumn[] = [
     { key: 'date', label: 'Date', width: '180px' },
-    { key: 'time', label: 'Time', width: '150px' },
+    { key: 'startTime', label: 'Start Time', width: '150px' },
+    { key: 'endTime', label: 'End Time', width: '150px' },
     { key: 'description', label: 'Description', width: '420px' },
     { key: 'actions', label: 'Actions', width: '96px', align: 'center', headerAlign: 'center' },
   ];
@@ -512,17 +513,17 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     if (!control.value) {
       return null;
     }
-    const selectedDate = new Date(control.value);
+    const selectedDate = this.parseLocalDate(control.value);
     const minimumStartDate = this.getMinimumConferenceStartDateValue();
 
-    if (selectedDate < minimumStartDate) {
+    if (!selectedDate || selectedDate < minimumStartDate) {
       return { minDate: { value: control.value } };
     }
     return null;
   }
 
   getMinimumConferenceStartDate(): string {
-    return this.getMinimumConferenceStartDateValue().toISOString().split('T')[0];
+    return this.formatLocalDate(this.getMinimumConferenceStartDateValue());
   }
 
   private getMinimumConferenceStartDateValue(): Date {
@@ -530,6 +531,30 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     minimumStartDate.setHours(0, 0, 0, 0);
     minimumStartDate.setDate(minimumStartDate.getDate() + 21);
     return minimumStartDate;
+  }
+
+  private parseLocalDate(value: unknown): Date | null {
+    if (typeof value !== 'string') return null;
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+    if (!match) return null;
+
+    const year = Number(match[1]);
+    const month = Number(match[2]);
+    const day = Number(match[3]);
+    const date = new Date(year, month - 1, day);
+
+    return date.getFullYear() === year &&
+      date.getMonth() === month - 1 &&
+      date.getDate() === day
+      ? date
+      : null;
+  }
+
+  private formatLocalDate(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
 
   /**
@@ -826,9 +851,9 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
 
   initializeSDGKeywordsForm() {
     this.sdgKeywordsForm = this.fb.group({
-      keyword1: ['', [Validators.required, sdgKeywordValidator]],
-      keyword2: ['', [Validators.required, sdgKeywordValidator]],
-      keyword3: ['', [Validators.required, sdgKeywordValidator]],
+      keyword1: ['', [Validators.required, Validators.maxLength(SDG_KEYWORD_MAX_LENGTH)]],
+      keyword2: ['', [Validators.required, Validators.maxLength(SDG_KEYWORD_MAX_LENGTH)]],
+      keyword3: ['', [Validators.required, Validators.maxLength(SDG_KEYWORD_MAX_LENGTH)]],
     });
   }
 
@@ -845,10 +870,10 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
       selectedColleagues: [[]],
       authorshipType: ['', [Validators.required]],
       scopusPublicationGuaranteed: ['', [Validators.required]],
-      restrictedPublisher: ['', [Validators.required]],
-      sdgKeyword1: ['', [Validators.required, sdgKeywordValidator]],
-      sdgKeyword2: ['', [Validators.required, sdgKeywordValidator]],
-      sdgKeyword3: ['', [Validators.required, sdgKeywordValidator]],
+      restrictedPublisher: ['', [Validators.required, this.restrictedPublisherValidator]],
+      sdgKeyword1: ['', [Validators.required, Validators.maxLength(SDG_KEYWORD_MAX_LENGTH)]],
+      sdgKeyword2: ['', [Validators.required, Validators.maxLength(SDG_KEYWORD_MAX_LENGTH)]],
+      sdgKeyword3: ['', [Validators.required, Validators.maxLength(SDG_KEYWORD_MAX_LENGTH)]],
       conferenceName: ['', [Validators.required, Validators.maxLength(200)]],
       conferenceStartDate: ['', [Validators.required, this.minDateValidator.bind(this)]],
       conferenceEndDate: ['', [Validators.required, this.endDateValidator]],
@@ -948,20 +973,40 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     return selected.length > 10 ? { maxColleagues: true } : null;
   }
 
+  private restrictedPublisherValidator(control: AbstractControl): ValidationErrors | null {
+    return control.value === 'yes' ? { restrictedPublisherNotAllowed: true } : null;
+  }
+
+  showRestrictedPublisherWarning(): void {
+    this.form.get('restrictedPublisher')?.markAsTouched();
+    this.isRestrictedPublisherWarningOpen = true;
+  }
+
+  closeRestrictedPublisherWarning(): void {
+    this.isRestrictedPublisherWarningOpen = false;
+  }
+
   get activities(): FormArray {
     return this.form.get('activities') as FormArray;
   }
 
   createActivityGroup(activity?: {
     date?: string;
+    startTime?: string;
+    endTime?: string;
+    /** Legacy value used by drafts created before activity time ranges were introduced. */
     time?: string;
     description?: string;
   }): FormGroup {
-    return this.fb.group({
-      date: [activity?.date || '', [Validators.required, this.activityDateValidator.bind(this)]],
-      time: [activity?.time || '', [Validators.required]],
-      description: [activity?.description || '', [Validators.required, Validators.maxLength(255)]],
-    });
+    return this.fb.group(
+      {
+        date: [activity?.date || '', [Validators.required, this.activityDateValidator.bind(this)]],
+        startTime: [activity?.startTime || activity?.time || '', [Validators.required]],
+        endTime: [activity?.endTime || '', [Validators.required]],
+        description: [activity?.description || '', [Validators.required, Validators.maxLength(255)]],
+      },
+      { validators: this.activityTimeRangeValidator },
+    );
   }
 
   initializeActivityForm(): void {
@@ -972,6 +1017,20 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     return (
       !!this.form.get('conferenceStartDate')?.value && !!this.form.get('conferenceEndDate')?.value
     );
+  }
+
+  getMinimumActivityDate(): string | null {
+    const startDate = this.parseLocalDate(this.form.get('conferenceStartDate')?.value);
+    if (!startDate) return null;
+    startDate.setDate(startDate.getDate() - 1);
+    return this.formatLocalDate(startDate);
+  }
+
+  getMaximumActivityDate(): string | null {
+    const endDate = this.parseLocalDate(this.form.get('conferenceEndDate')?.value);
+    if (!endDate) return null;
+    endDate.setDate(endDate.getDate() + 1);
+    return this.formatLocalDate(endDate);
   }
 
   openActivityModal(index: number | null = null): void {
@@ -1037,9 +1096,15 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
       return null;
     }
 
-    const activityDate = new Date(control.value);
-    const startDate = new Date(start);
-    const endDate = new Date(end);
+    const activityDate = this.parseLocalDate(control.value);
+    const startDate = this.parseLocalDate(start);
+    const endDate = this.parseLocalDate(end);
+    if (!activityDate || !startDate || !endDate) {
+      return { activityDateOutOfRange: true };
+    }
+
+    startDate.setDate(startDate.getDate() - 1);
+    endDate.setDate(endDate.getDate() + 1);
     if (activityDate < startDate || activityDate > endDate) {
       return { activityDateOutOfRange: true };
     }
@@ -1047,10 +1112,19 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     return null;
   }
 
+  private activityTimeRangeValidator(control: AbstractControl): ValidationErrors | null {
+    const startTime = control.get('startTime')?.value;
+    const endTime = control.get('endTime')?.value;
+    if (!startTime || !endTime) return null;
+
+    return endTime > startTime ? null : { activityTimeRange: true };
+  }
+
   private validateActivityDates(): void {
     this.activities.controls.forEach((activity) => {
       activity.get('date')?.updateValueAndValidity({ emitEvent: false });
     });
+    this.activityForm?.get('date')?.updateValueAndValidity({ emitEvent: false });
   }
 
   getCharacterCount(fieldName: string): number {

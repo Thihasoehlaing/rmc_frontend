@@ -14,6 +14,7 @@ import { NoteComponent } from '../../../../../shared/components/note/note.compon
 import { CharacterCounterComponent } from '../../../../../shared/components/character-counter/character-counter.component';
 import { CustomSubheaderComponent } from '../../../../../shared/components/custom-subheader/custom-subheader.component';
 import { CustomHeaderComponent } from '../../../../../shared/components/custom-header/custom-header.component';
+import { DialogComponent } from '../../../../../shared/components/dialog/dialog.component';
 import { ConferenceWorkflowService } from '../../../services/conference-workflow.service';
 import { ConferenceFormStateService } from '../../../services/conference-form-state.service';
 
@@ -31,6 +32,7 @@ const manuscriptNotPreviouslyPublishedValidator: ValidatorFn = (
     FileUploadComponent,
     NoteComponent,
     CharacterCounterComponent,
+    DialogComponent,
     CustomHeaderComponent,
     CustomSubheaderComponent,
   ],
@@ -42,6 +44,7 @@ export class SupportingDocumentsFormComponent implements OnInit, OnDestroy {
   @Input() isFormReadOnly: boolean = false;
 
   form!: FormGroup;
+  isPreviouslyPublishedWarningOpen = false;
 
   // References to file upload components for manual reset if needed
   @ViewChild('acceptanceNotificationUpload', { static: false })
@@ -121,6 +124,15 @@ export class SupportingDocumentsFormComponent implements OnInit, OnDestroy {
   /** Flushes the live form into the shared state service — called by the wizard before saving. */
   flushFormState(): void {
     this.saveFormState();
+  }
+
+  showPreviouslyPublishedWarning(): void {
+    this.form.get('manuscriptPreviouslyPublished')?.markAsTouched();
+    this.isPreviouslyPublishedWarningOpen = true;
+  }
+
+  closePreviouslyPublishedWarning(): void {
+    this.isPreviouslyPublishedWarningOpen = false;
   }
 
   onFileSelected(controlName: string, file: File | null) {

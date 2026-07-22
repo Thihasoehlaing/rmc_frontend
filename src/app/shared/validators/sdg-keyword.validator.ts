@@ -1,8 +1,12 @@
 import { AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 
 export const SDG_KEYWORD_EXAMPLE = 'e.g. Climate action-SDG 13';
-export const SDG_KEYWORD_NOTE =
-  'Enter keyword with the related SDG number.\n(eg: xxxx keyword in abstract xxxxx-SDG X)';
+export const SDG_KEYWORD_MAX_LENGTH = 100;
+export const SDG_KEYWORD_PLACEHOLDERS = {
+  keyword1: 'Child Labour',
+  keyword2: 'Development Aid',
+  keyword3: 'Extreme Poverty',
+} as const;
 export const SDG_KEYWORD_FORMAT_MESSAGE =
   'Enter a keyword, followed by a hyphen, SDG, and a number from 1 to 17.';
 

@@ -199,7 +199,12 @@
         <label class="form-label is-required">Has the manuscript and content been published in another journal or conference etc.?</label>
         <div class="radio-field">
           <label class="radio-field__option">
-            <input type="radio" value="yes" formControlName="manuscriptPreviouslyPublished">
+            <input
+              type="radio"
+              value="yes"
+              formControlName="manuscriptPreviouslyPublished"
+              (change)="showPreviouslyPublishedWarning()"
+            >
             <span>Yes</span>
           </label>
           <label class="radio-field__option">
@@ -226,4 +231,26 @@
   </section>
 </form>
 
+@if (isPreviouslyPublishedWarningOpen) {
+  <app-dialog
+    title="Previously Published Manuscript Not Allowed"
+    [isOpen]="true"
+    size="small"
+    (close)="closePreviouslyPublishedWarning()"
+  >
+    <p>
+      You can't submit the application if Yes is selected. Your manuscript and content cannot
+      have been published before.
+    </p>
+
+    <button
+      dialog-footer
+      type="button"
+      class="btn btn-primary"
+      (click)="closePreviouslyPublishedWarning()"
+    >
+      OK
+    </button>
+  </app-dialog>
+}
 

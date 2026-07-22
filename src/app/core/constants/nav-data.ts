@@ -1,4 +1,14 @@
 import { NavGroup } from '../interfaces/nav.interface';
+import {
+    adminHistoryPermission,
+    adminOnlySettingsChildPermission,
+    disabledFeaturePermission,
+    externalProjectDataEntryPermission,
+    fundingApplicationPermission,
+    submissionsDraftPendingPermission,
+    submissionsInboxHistoryPermission,
+    systemSettingsPermission,
+} from '../routing/app-route-permissions';
 
 /**
  * NAVIGATION_DATA — central routing and permission configuration.
@@ -30,7 +40,7 @@ export const NAVIGATION_DATA: NavGroup[] = [
             { label: 'Dashboard', icon: 'dashboard', route: '/dashboard' },
 
             // ── Inbox ────────────────────────────────────────────────────────────────────
-            { label: 'Inbox', icon: 'mail', route: '/submissions/inbox' },
+            { label: 'Inbox', icon: 'mail', route: '/submissions/inbox', permission: submissionsInboxHistoryPermission },
             { label: 'Notifications', icon: 'notifications', route: '/notifications' },
 
             // ── Submissions ──────────────────────────────────────────────────────────────
@@ -40,14 +50,14 @@ export const NAVIGATION_DATA: NavGroup[] = [
                 icon: 'inbox',
                 isExpanded: true,
                 children: [
-                    { label: 'Draft',               icon: 'edit_note',      route: '/submissions/draft' },
-                    { label: 'Pending Application', icon: 'schedule',       route: '/submissions/pending' },
-                    { label: 'History',             icon: 'history',        route: '/submissions/history' },
+                    { label: 'Draft',               icon: 'edit_note',      route: '/submissions/draft', permission: submissionsDraftPendingPermission },
+                    { label: 'Pending Application', icon: 'schedule',       route: '/submissions/pending', permission: submissionsDraftPendingPermission },
+                    { label: 'History',             icon: 'history',        route: '/submissions/history', permission: submissionsInboxHistoryPermission },
                     {
                         label: 'Admin History',
                         icon: 'manage_history',
                         route: '/submissions/admin-history',
-                        permission: { anyOf: ['RMC', 'Admin'] },
+                        permission: adminHistoryPermission,
                     },
                 ],
             },
@@ -66,11 +76,7 @@ export const NAVIGATION_DATA: NavGroup[] = [
                         icon: 'description',
                         route: '/rdig/application',
                         formCode: 'RDIG',
-                        permission: {
-                            anyOf: ['full_time', 'contract'],
-                            allOf: ['academic'],
-                            excludeGroups: ['Reviewer', 'HOS'],
-                        },
+                        permission: disabledFeaturePermission,
                     },
                     // Conference: ((full_time OR contract) AND academic) OR HOS OR VC
                     {
@@ -78,13 +84,7 @@ export const NAVIGATION_DATA: NavGroup[] = [
                         icon: 'event',
                         route: '/conference/application',
                         formCode: 'CONFERENCE',
-                        permission: {
-                            anyCondition: [
-                                { anyOf: ['full_time', 'contract'], allOf: ['academic'] },
-                                { anyOf: ['HOS'] },
-                                { anyOf: ['VC'] },
-                            ],
-                        },
+                        permission: fundingApplicationPermission,
                     },
                     // Journal: ((full_time OR contract) AND academic) OR HOS OR VC
                     {
@@ -92,13 +92,7 @@ export const NAVIGATION_DATA: NavGroup[] = [
                         icon: 'menu_book',
                         route: '/journal/application',
                         formCode: 'JOURNAL',
-                        permission: {
-                            anyCondition: [
-                                { anyOf: ['full_time', 'contract'], allOf: ['academic'] },
-                                { anyOf: ['HOS'] },
-                                { anyOf: ['VC'] },
-                            ],
-                        },
+                        permission: fundingApplicationPermission,
                     },
                     // RA/GRA: (full_time OR contract) AND academic
                     {
@@ -106,10 +100,7 @@ export const NAVIGATION_DATA: NavGroup[] = [
                         icon: 'person_add',
                         route: '/ragra',
                         formCode: 'RA_GRA',
-                        permission: {
-                            anyOf: ['full_time', 'contract'],
-                            allOf: ['academic'],
-                        },
+                        permission: disabledFeaturePermission,
                     },
                     // Partnership: (full_time OR contract) AND academic
                     {
@@ -117,10 +108,7 @@ export const NAVIGATION_DATA: NavGroup[] = [
                         icon: 'handshake',
                         route: '/partnership/application',
                         formCode: 'PARTNERSHIP',
-                        permission: {
-                            anyOf: ['full_time', 'contract'],
-                            allOf: ['academic'],
-                        },
+                        permission: disabledFeaturePermission,
                     },
                     // Proposal: (full_time OR contract) AND academic
                     {
@@ -128,26 +116,21 @@ export const NAVIGATION_DATA: NavGroup[] = [
                         icon: 'assignment',
                         route: '/proposal',
                         formCode: 'PROPOSAL',
-                        permission: {
-                            anyOf: ['full_time', 'contract'],
-                            allOf: ['academic'],
-                        },
+                        permission: disabledFeaturePermission,
                     },
                     {
                         label: 'External Project Data Entry',
                         icon: 'folder_open',
                         route: '/external-project-data-entry',
                         formCode: 'EXTERNAL',
-                        permission: { anyOf: ['RMC', 'Admin'] },
-                    },                    // Travel Authorization: visible to all authenticated users except Admin
+                        permission: externalProjectDataEntryPermission,
+                    },
                     {
                         label: 'Travel Authorization',
                         icon: 'flight_takeoff',
                         route: '/travel-authorization/application',
                         formCode: 'TRAVEL_AUTH',
-                        permission: {
-                            excludeGroups: ['Admin'],
-                        },
+                        permission: disabledFeaturePermission,
                     },
                 ],
             },
@@ -158,16 +141,16 @@ export const NAVIGATION_DATA: NavGroup[] = [
                 label: 'Admin Settings',
                 icon: 'admin_panel_settings',
                 route: '/admin-settings',
-                permission: { anyOf: ['Admin'] },
+                permission: adminOnlySettingsChildPermission,
                 children: [
-                    { label: 'Guidelines', icon: 'description', route: '/admin-settings/guidelines', permission: { anyOf: ['Admin'] } },
-                    { label: 'Form Setting', icon: 'dynamic_form', route: '/admin-settings/form-setting', permission: { anyOf: ['Admin'] } },
-                    { label: 'Dropdowns', icon: 'list', route: '/admin-settings/dropdowns', permission: { anyOf: ['Admin'] } },
-                    { label: 'Manage Project Account Code', icon: 'account_balance_wallet', route: '/admin-settings/manage-project-account-code', permission: { anyOf: ['Admin'] } },
-                    { label: 'Manage External Form Category', icon: 'category', route: '/admin-settings/manage-external-form-category', permission: { anyOf: ['Admin'] } },
-                    { label: 'Batches', icon: 'batch_prediction', route: '/admin-settings/batches', permission: { anyOf: ['Admin'] } },
-                    { label: 'RDIG Blocked List', icon: 'person_add', route: '/admin-settings/staff-access', permission: { anyOf: ['Admin'] } },
-                    { label: 'Manage RDIG Reviewer', icon: 'groups', route: '/admin-settings/manage-rdig-reviewer', permission: { anyOf: ['Admin'] } },
+                    { label: 'Guidelines', icon: 'description', route: '/admin-settings/guidelines', permission: adminOnlySettingsChildPermission },
+                    { label: 'Form Setting', icon: 'dynamic_form', route: '/admin-settings/form-setting', permission: adminOnlySettingsChildPermission },
+                    { label: 'Dropdowns', icon: 'list', route: '/admin-settings/dropdowns', permission: adminOnlySettingsChildPermission },
+                    { label: 'Manage Project Account Code', icon: 'account_balance_wallet', route: '/admin-settings/manage-project-account-code', permission: adminOnlySettingsChildPermission },
+                    { label: 'Manage External Form Category', icon: 'category', route: '/admin-settings/manage-external-form-category', permission: adminOnlySettingsChildPermission },
+                    { label: 'Batches', icon: 'batch_prediction', route: '/admin-settings/batches', permission: adminOnlySettingsChildPermission },
+                    { label: 'RDIG Blocked List', icon: 'person_add', route: '/admin-settings/staff-access', permission: adminOnlySettingsChildPermission },
+                    { label: 'Manage RDIG Reviewer', icon: 'groups', route: '/admin-settings/manage-rdig-reviewer', permission: adminOnlySettingsChildPermission },
                 ],
             },
 
@@ -176,19 +159,19 @@ export const NAVIGATION_DATA: NavGroup[] = [
                 label: 'Settings',
                 icon: 'settings',
                 route: '/settings',
-                permission: { allOf: ['SystemAdmin'] },
+                permission: systemSettingsPermission,
                 children: [
-                    { label: 'Forms', icon: 'description', route: '/settings/forms', permission: { allOf: ['SystemAdmin'] } },
-                    { label: 'Dropdown Categories', icon: 'list_alt', route: '/settings/dropdown-categories', permission: { allOf: ['SystemAdmin'] } },
-                    { label: 'Account Code Categories', icon: 'category', route: '/settings/account-code-categories', permission: { allOf: ['SystemAdmin'] } },
-                    { label: 'Account Codes', icon: 'account_balance_wallet', route: '/settings/account-codes', permission: { allOf: ['SystemAdmin'] } },
-                    { label: 'Staff Directory', icon: 'badge', route: '/settings/staff-directory', permission: { allOf: ['SystemAdmin'] } },
-                    { label: 'Academic Staff', icon: 'school', route: '/settings/academic-staff', permission: { allOf: ['SystemAdmin'] } },
-                    { label: 'Users', icon: 'manage_accounts', route: '/settings/users', permission: { allOf: ['SystemAdmin'] } },
-                    { label: 'Roles', icon: 'verified_user', route: '/settings/roles', permission: { allOf: ['SystemAdmin'] } },
-                    { label: 'System Access', icon: 'admin_panel_settings', route: '/settings/system-access', permission: { allOf: ['SystemAdmin'] } },
-                    { label: 'Applicant Rules', icon: 'rule', route: '/settings/applicant-rules', permission: { allOf: ['SystemAdmin'] } },
-                    { label: 'Workflow Configuration', icon: 'account_tree', route: '/settings/workflow', permission: { allOf: ['SystemAdmin'] } },
+                    { label: 'Forms', icon: 'description', route: '/settings/forms', permission: systemSettingsPermission },
+                    { label: 'Dropdown Categories', icon: 'list_alt', route: '/settings/dropdown-categories', permission: systemSettingsPermission },
+                    { label: 'Account Code Categories', icon: 'category', route: '/settings/account-code-categories', permission: systemSettingsPermission },
+                    { label: 'Account Codes', icon: 'account_balance_wallet', route: '/settings/account-codes', permission: systemSettingsPermission },
+                    { label: 'Staff Directory', icon: 'badge', route: '/settings/staff-directory', permission: systemSettingsPermission },
+                    { label: 'Academic Staff', icon: 'school', route: '/settings/academic-staff', permission: systemSettingsPermission },
+                    { label: 'Users', icon: 'manage_accounts', route: '/settings/users', permission: systemSettingsPermission },
+                    { label: 'Roles', icon: 'verified_user', route: '/settings/roles', permission: systemSettingsPermission },
+                    { label: 'System Access', icon: 'admin_panel_settings', route: '/settings/system-access', permission: systemSettingsPermission },
+                    { label: 'Applicant Rules', icon: 'rule', route: '/settings/applicant-rules', permission: systemSettingsPermission },
+                    { label: 'Workflow Configuration', icon: 'account_tree', route: '/settings/workflow', permission: systemSettingsPermission },
                 ],
             },
         ],

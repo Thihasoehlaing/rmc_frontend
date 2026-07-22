@@ -1,0 +1,23 @@
+<main class="error-page error-page--forbidden">
+  <section class="error-card" aria-labelledby="no-access-title">
+    <div class="error-card__visual" aria-hidden="true">
+      <span class="material-icons">lock</span>
+    </div>
+
+    <div class="error-card__content">
+      <span class="error-card__eyebrow">Access restricted</span>
+      <h1 id="no-access-title">You don’t have access to this page</h1>
+      <p>
+        This area is available only to users with the required RMC role or system permission.
+        If you think this is a mistake, please contact the RMC administrator.
+      </p>
+    </div>
+
+    <div class="error-card__actions">
+      <a class="btn btn-primary" routerLink="/dashboard">
+        <span class="material-icons">dashboard</span>
+        Go to Dashboard
+      </a>
+    </div>
+  </section>
+</main>

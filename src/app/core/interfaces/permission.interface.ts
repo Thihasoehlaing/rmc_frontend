@@ -7,6 +7,7 @@ import { UserGroup } from './user.interface';
  *   3. allOf         — user must belong to all
  */
 export interface PermissionCondition {
+  denyAll?: boolean;
   anyOf?: UserGroup[];
   allOf?: UserGroup[];
   excludeGroups?: UserGroup[];

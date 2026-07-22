@@ -42,6 +42,7 @@ export class PermissionService {
    */
   canAccess(permission?: NavPermission): boolean {
     if (!permission) return true;
+    if (permission.denyAll) return false;
 
     const groups = this.userGroups();
 
@@ -56,6 +57,7 @@ export class PermissionService {
 
   /** Evaluate a single flat condition (AND-join of excludeGroups / anyOf / allOf). */
   private evalCondition(cond: PermissionCondition, groups: UserGroup[]): boolean {
+    if (cond.denyAll) return false;
     if (cond.excludeGroups?.some(g => groups.includes(g))) return false;
     if (cond.anyOf?.length && !cond.anyOf.some(g => groups.includes(g))) return false;
     if (cond.allOf?.length && !cond.allOf.every(g => groups.includes(g))) return false;

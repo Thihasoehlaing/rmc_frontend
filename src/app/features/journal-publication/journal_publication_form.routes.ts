@@ -1,6 +1,11 @@
 import { Routes } from '@angular/router';
 import { permissionGuard } from '../../core/guards/permission.guard';
 import { NavPermission } from '../../core/interfaces/permission.interface';
+import {
+  disabledFeaturePermission,
+  fundingApplicationPermission,
+  fundingDetailPermission,
+} from '../../core/routing/app-route-permissions';
 
 export const journalPublicationFormRoutes: Routes = [
   {
@@ -8,13 +13,18 @@ export const journalPublicationFormRoutes: Routes = [
     loadComponent: () =>
       import('./journal-publication-form.component').then(m => m.JournalPublicationFormComponent),
     canActivate: [permissionGuard],
-    // No permission data = any authenticated user may access
+    data: {
+      permission: fundingApplicationPermission,
+    },
   },
   {
     path: 'detail/:requestCode',
     loadComponent: () =>
       import('./pages/journal-review/journal-review.component').then(m => m.JournalReviewComponent),
     canActivate: [permissionGuard],
+    data: {
+      permission: fundingDetailPermission,
+    },
   },
   {
     path: 'settings',
@@ -22,9 +32,7 @@ export const journalPublicationFormRoutes: Routes = [
       import('./pages/journal-settings/journal-settings.component').then(m => m.JournalSettingsComponent),
     canActivate: [permissionGuard],
     data: {
-      permission: {
-        anyOf: ['Admin'],
-      } satisfies NavPermission,
+      permission: disabledFeaturePermission satisfies NavPermission,
     },
   },
   {
@@ -35,9 +43,7 @@ export const journalPublicationFormRoutes: Routes = [
       ),
     canActivate: [permissionGuard],
     data: {
-      permission: {
-        anyOf: ['Admin'],
-      } satisfies NavPermission,
+      permission: disabledFeaturePermission satisfies NavPermission,
     },
   },
   { path: '', redirectTo: 'application', pathMatch: 'full' },

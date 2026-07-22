@@ -1,6 +1,11 @@
 import { Routes } from '@angular/router';
 import { permissionGuard } from '../../core/guards/permission.guard';
 import { NavPermission } from '../../core/interfaces/permission.interface';
+import {
+  disabledFeaturePermission,
+  fundingApplicationPermission,
+  fundingDetailPermission,
+} from '../../core/routing/app-route-permissions';
 
 export const conferenceFormRoutes: Routes = [
   {
@@ -9,6 +14,10 @@ export const conferenceFormRoutes: Routes = [
       import('./pages/conference-application/conference-application').then(
         (m) => m.ConferenceApplication,
       ),
+    canActivate: [permissionGuard],
+    data: {
+      permission: fundingApplicationPermission,
+    },
   },
   {
     path: 'detail/:requestCode',
@@ -17,18 +26,19 @@ export const conferenceFormRoutes: Routes = [
         (m) => m.ConferenceReviewComponent,
       ),
     canActivate: [permissionGuard],
+    data: {
+      permission: fundingDetailPermission,
+    },
   },
   {
     path: 'settings',
     loadComponent: () =>
       import('./pages/conference-settings/conference-settings.component').then(
         (m) => m.ConferenceSettingsComponent,
-      ),
+    ),
     canActivate: [permissionGuard],
     data: {
-      permission: {
-        anyOf: ['Admin'],
-      } satisfies NavPermission,
+      permission: disabledFeaturePermission satisfies NavPermission,
     },
   },
   { path: '', redirectTo: 'application', pathMatch: 'full' },

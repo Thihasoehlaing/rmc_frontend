@@ -279,14 +279,6 @@
             @for (keyword of getDisplayedKeywordsArray(); track keyword) {
               <div class="keyword-chip">
                 <span class="chip-label">{{ keyword }}</span>
-                <button
-                  type="button"
-                  class="chip-close"
-                  (click)="removeKeyword(keyword); $event.stopPropagation()"
-                  aria-label="Remove keyword"
-                >
-                  <span class="material-icons">close</span>
-                </button>
               </div>
             }
           </div>
@@ -333,7 +325,7 @@
           formArrayName="activities"
           data-missing-field-target="activityTable"
         >
-          <label class="form-label">Activity Table</label>
+          <label class="form-label is-required">Activity Table</label>
           <div class="category-header activity-actions-row">
             <button
               type="button"
@@ -660,8 +652,13 @@
             </div>
 
             <!-- Detailed Breakdown for External Research Project -->
-            <div class="form-field">
-              <label class="form-label">Detailed Breakdown for External Research Project</label>
+            <div
+              class="form-field"
+              data-missing-field-target="externalResearchCostingEntries"
+            >
+              <label class="form-label is-required"
+                >Detailed Breakdown for External Research Project</label
+              >
               <div class="costing-breakdown">
                 <div class="list-section-header">
                   <button
@@ -1282,7 +1279,7 @@
         [title]="activityEditingIndex === null ? 'Add Activity' : 'Edit Activity'"
         [isOpen]="true"
         size="small"
-        (closed)="closeActivityModal()"
+        (close)="closeActivityModal()"
       >
         <form
           id="activity-entry-form"
@@ -1323,6 +1320,10 @@
               rows="3"
               maxlength="255"
             ></textarea>
+            <app-character-counter
+              [current]="activityForm.get('description')?.value?.length || 0"
+              [max]="255"
+            ></app-character-counter>
             @if (
               activityForm.get('description')?.invalid && activityForm.get('description')?.touched
             ) {

@@ -23,7 +23,25 @@ describe('JournalPublicationFormComponent', () => {
 
   it('uses the active Journal guideline-by-form API', () => {
     expect(component.guidelinesEndpoint).toBe(
-      `${environment.apiUrl.replace(/\/$/, '')}/rmc/admin-settings/guidelines/forms/JOURNAL`,
+      `${environment.apiBaseUrl}/admin-settings/guidelines/forms/JOURNAL`,
     );
+  });
+
+  it('lists each missing Journal Details field after the step is checked', () => {
+    component.onStepClick(2);
+
+    const labels = component.stepStatuses[0].missingFields.map((field) =>
+      typeof field === 'string' ? field : field.label,
+    );
+
+    expect(labels).toContain('Author Role');
+    expect(labels).toContain('Scopus Quartile');
+    expect(labels).toContain('Research Type');
+    expect(labels).toContain('Restricted Publisher');
+    expect(labels).toContain('APU/JATI/EJBM Citation');
+    expect(labels).toContain('Journal Name');
+    expect(labels).toContain('Paper Title');
+    expect(labels).toContain('Please key in 3 SDG keywords');
+    expect(labels).not.toContain('Complete Journal Details');
   });
 });

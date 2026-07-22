@@ -151,18 +151,23 @@
           type="text"
           class="input--text"
           formControlName="reviewerName"
-          placeholder="Enter reviewer name">
+          placeholder="Enter reviewer name"
+          maxlength="100">
+        <app-character-counter
+          [current]="form.get('reviewerName')?.value?.length || 0"
+          [max]="100"
+        ></app-character-counter>
       </div>
 
       <!-- Internal Review -->
       <div class="form-field" data-missing-field-target="manuscriptInternallyReviewed">
         <label class="form-label is-required">The manuscript has been internally reviewed for the quality of content and English?</label>
-        <div class="radio-group">
-          <label class="radio-label">
+        <div class="radio-field">
+          <label class="radio-field__option">
             <input type="radio" value="yes" formControlName="manuscriptInternallyReviewed">
             <span>Yes</span>
           </label>
-          <label class="radio-label">
+          <label class="radio-field__option">
             <input type="radio" value="no" formControlName="manuscriptInternallyReviewed">
             <span>No</span>
           </label>
@@ -171,12 +176,12 @@
 
       <div class="form-field" data-missing-field-target="manuscriptPreviouslyPublished">
         <label class="form-label is-required">Has the manuscript and content been published in another journal or conference etc.?</label>
-        <div class="radio-group">
-          <label class="radio-label">
+        <div class="radio-field">
+          <label class="radio-field__option">
             <input type="radio" value="yes" formControlName="manuscriptPreviouslyPublished">
             <span>Yes</span>
           </label>
-          <label class="radio-label">
+          <label class="radio-field__option">
             <input type="radio" value="no" formControlName="manuscriptPreviouslyPublished">
             <span>No</span>
           </label>

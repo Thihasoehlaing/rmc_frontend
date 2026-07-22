@@ -1,9 +1,10 @@
 import { Component, OnInit, ViewChild, inject, effect, Output, EventEmitter } from '@angular/core';
 import { CustomHeaderComponent } from '../../../../shared/components/custom-header/custom-header.component';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { FileUploadComponent } from '../../../../shared/components/file-upload/file-upload.component';
 import { NoteComponent } from '../../../../shared/components/note/note.component';
+import { CharacterCounterComponent } from '../../../../shared/components/character-counter/character-counter.component';
 import { JournalWorkflowService } from '../../services/journal-workflow.service';
 import {
   JournalAttachmentUpload,
@@ -26,6 +27,7 @@ interface PendingDocumentUpload {
     FileUploadComponent,
     NoteComponent,
     CustomHeaderComponent,
+    CharacterCounterComponent,
   ],
   templateUrl: './documents.html',
   styleUrl: './documents.scss',
@@ -86,7 +88,7 @@ export class DocumentsComponent implements OnInit {
       finalPaperDraft: [''],
       journalInvoice: [''],
       manuscriptInternallyReviewed: [''],
-      reviewerName: [''],
+      reviewerName: ['', [Validators.maxLength(100)]],
       manuscriptPreviouslyPublished: [''],
     });
 

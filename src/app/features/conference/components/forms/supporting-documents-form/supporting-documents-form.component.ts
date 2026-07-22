@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { FileUploadComponent } from '../../../../../shared/components/file-upload/file-upload.component';
 import { NoteComponent } from '../../../../../shared/components/note/note.component';
+import { CharacterCounterComponent } from '../../../../../shared/components/character-counter/character-counter.component';
 import { CustomSubheaderComponent } from '../../../../../shared/components/custom-subheader/custom-subheader.component';
 import { CustomHeaderComponent } from '../../../../../shared/components/custom-header/custom-header.component';
 import { ConferenceWorkflowService } from '../../../services/conference-workflow.service';
@@ -16,6 +17,7 @@ import { ConferenceFormStateService } from '../../../services/conference-form-st
     ReactiveFormsModule,
     FileUploadComponent,
     NoteComponent,
+    CharacterCounterComponent,
     CustomHeaderComponent,
     CustomSubheaderComponent,
   ],
@@ -74,7 +76,7 @@ export class SupportingDocumentsFormComponent implements OnInit, OnDestroy {
       finalPaperDraft: ['', [Validators.required]],
       conferenceInvoice: ['', [Validators.required]],
       manuscriptInternallyReviewed: ['', [Validators.required]],
-      reviewerName: ['', [Validators.required]],
+      reviewerName: ['', [Validators.required, Validators.maxLength(100)]],
       manuscriptPreviouslyPublished: ['', [Validators.required]],
     });
   }

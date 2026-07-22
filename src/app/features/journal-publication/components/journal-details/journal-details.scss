@@ -461,7 +461,6 @@
 
   &:hover {
     border-color: var(--color-primary);
-    background: var(--color-surface-hover);
   }
 
   &:focus-visible {
@@ -474,30 +473,14 @@
 .keyword-chip {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-1);
-  background: var(--color-text);
-  color: var(--color-surface);
+  background: var(--color-primary-subtle);
+  border: 1px solid var(--color-primary);
+  color: var(--color-primary-dark);
   padding: var(--space-1) var(--space-3);
   border-radius: var(--radius-sm);
   font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
   white-space: nowrap;
-}
-
-.chip-close {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  border: none;
-  color: inherit;
-  cursor: pointer;
-  padding: 0;
-  width: var(--space-4);
-  height: var(--space-4);
-
-  .material-icons {
-    font-size: 14px; // no token: material icon pixel size
-  }
 }
 
 

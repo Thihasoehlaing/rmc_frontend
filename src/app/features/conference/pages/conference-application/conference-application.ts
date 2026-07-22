@@ -632,6 +632,7 @@ export class ConferenceApplication implements OnInit {
     { path: 'conferenceName', label: 'Conference Name' },
     { path: 'conferenceStartDate', label: 'Conference Start Date' },
     { path: 'conferenceEndDate', label: 'Conference End Date' },
+    { path: 'activities', label: 'Conference Schedule - Add Activity', target: 'activityTable' },
     { path: 'localOrOverseas', label: 'Select Conference Venue' },
     { path: 'researchType', label: 'Research Type' },
     { path: 'citedJournalPaper', label: 'Cited APU/JATI/EJBM Paper' },
@@ -1158,8 +1159,17 @@ export class ConferenceApplication implements OnInit {
         ),
       ];
       this.conferenceDetailsStep.activities.controls.forEach((control) => {
-        if (control.invalid) missing.push({ label: 'Activity Table', target: 'activityTable' });
+        if (control.invalid) missing.push({ label: 'Conference Schedule - Add Activity', target: 'activityTable' });
       });
+      if (
+        this.conferenceDetailsStep.form.get('researchType')?.value === 'external-research' &&
+        this.conferenceDetailsStep.externalBreakdowns.length === 0
+      ) {
+        missing.push({
+          label: 'External Research Project Costing - Add Entry',
+          target: 'externalResearchCostingEntries',
+        });
+      }
       return this.uniqueLabels(missing);
     }
 
@@ -1176,6 +1186,7 @@ export class ConferenceApplication implements OnInit {
         citedJournalPaperExplanation: state['citedJournalPaper'] === 'no',
       }),
       ...this.getInvalidActivityLabels(state['activities']),
+      ...this.getMissingExternalResearchCostingLabels(state),
     ]);
   }
 
@@ -1245,7 +1256,22 @@ export class ConferenceApplication implements OnInit {
       const rowValue = (activity ?? {}) as Record<string, unknown>;
       return ['date', 'time', 'description'].some((field) => this.isEmptyRequiredValue(rowValue[field]));
     })
-      ? [{ label: 'Activity Table', target: 'activityTable' }]
+      ? [{ label: 'Conference Schedule - Add Activity', target: 'activityTable' }]
+      : [];
+  }
+
+  private getMissingExternalResearchCostingLabels(
+    state: Record<string, unknown>,
+  ): MissingField[] {
+    const entries = state['externalResearchBreakdown'];
+    return state['researchType'] === 'external-research' &&
+      (!Array.isArray(entries) || entries.length === 0)
+      ? [
+          {
+            label: 'External Research Project Costing - Add Entry',
+            target: 'externalResearchCostingEntries',
+          },
+        ]
       : [];
   }
 

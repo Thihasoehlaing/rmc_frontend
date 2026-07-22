@@ -28,12 +28,6 @@
   width: 100%;
 }
 
-// Override card title color to black for author subsection cards
-// (global card__title uses --color-heading which may resolve to primary/blue)
-.card__title {
-  color: var(--color-text);
-}
-
 // Note: .form-field, .form-label, .form-hint, .input--* are defined globally in _forms.scss
 // Use global classes directly; do not redefine locally
 
@@ -168,98 +162,11 @@
   }
 }
 
-// Modal styles
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: var(--space-4);
-}
-
-.modal-dialog {
-  background: var(--color-surface);
-  border-radius: var(--radius-lg);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-  max-width: 500px;
-  width: 100%;
-  max-height: 90vh;
-  overflow-y: auto;
-  animation: slideIn 0.3s ease-out;
-
-  &--wide {
-    max-width: 680px;
-  }
-
-  @media (max-width: 640px) {
-    max-width: 100%;
-  }
-}
-
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--space-4);
-  border-bottom: 1px solid var(--border-default); // 1px border — allowed exception
-  gap: var(--space-2);
-
-  h3 {
-    margin: 0;
-    font-size: var(--fs-lg);
-    font-weight: var(--fw-bold);
-    color: var(--color-heading);
-  }
-}
-
-.btn-close {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  padding: 0;
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  color: var(--color-text-muted);
-  transition: all var(--transition-fast);
-  border-radius: var(--radius-sm);
-
-  &:hover {
-    background: var(--color-surface-hover);
-    color: var(--color-text);
-  }
-
-  .material-icons {
-    font-size: 20px;
-  }
-}
-
-.modal-body {
-  padding: var(--space-4);
+.dialog-form {
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
 }
-
 // Modal form groups — use form-label class for consistent required asterisk styling
 .form-group {
   display: flex;
@@ -313,19 +220,6 @@
   }
 }
 
-.modal-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-top: var(--space-4);
-  margin-top: var(--space-4);
-  border-top: 1px solid var(--border-default);
-
-  .btn {
-    min-width: 100px;
-  }
-}
-
 // Table / card content layout
 // .card__content is a global class — use .card-body as a scoped wrapper inside it
 // so Angular's view encapsulation doesn't block the flex layout rule.
@@ -362,7 +256,7 @@ app-action-button {
   background-color: var(--color-surface-hover);
   padding: var(--space-3) var(--space-4);
   border-bottom: 1px solid var(--border-default);
-  
+
   h3 {
     margin: 0;
     font-size: var(--fs-md);
@@ -378,13 +272,10 @@ app-action-button {
 .list-section-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-}
-
-.list-count {
-  font-size: var(--fs-sm);
-  color: var(--color-text-muted);
-  font-weight: var(--fw-medium);
+  justify-content: flex-start;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-4);
 }
 
 .empty-state {

@@ -15,6 +15,10 @@ import { TableActionIconComponent } from '../../../shared/components/table-actio
 import { ToastService } from '../../../core/services/toast.service';
 import { DropdownOption } from '../../../core/interfaces/components.interface';
 import {
+  CachedFormOption,
+  FormCacheService,
+} from '../../../core/services/form-cache.service';
+import {
   AdminCatalogItem,
   AdminCatalogKind,
   AdminCatalogStoreService,
@@ -59,11 +63,27 @@ export class CatalogManagerComponent implements OnInit {
   private readonly store = inject(AdminCatalogStoreService);
   private readonly externalGrantCategories = inject(ExternalGrantCategoryService);
   private readonly projectAccountCodes = inject(ProjectAccountCodeService);
+  private readonly formCache = inject(FormCacheService);
   private readonly toast = inject(ToastService);
   private readonly router = inject(Router);
   private readonly datePipe = inject(DatePipe);
 
-  readonly availableForms = ['Conference Application', 'Journal Publication'];
+  private readonly fallbackForms: CachedFormOption[] = [
+    { id: 0, form_code: 'CONFERENCE', form_name: 'Conference Application', is_active: true },
+    { id: 0, form_code: 'JOURNAL', form_name: 'Journal Publication', is_active: true },
+  ];
+  readonly formOptionsData = signal<CachedFormOption[]>([]);
+  readonly availableFormNames = computed(() =>
+    this.activeFormOptionsData().map((form) => form.form_name),
+  );
+  readonly availableFormSharingOptions = computed<DropdownOption<string>[]>(() =>
+    this.activeFormOptionsData().map((form) => ({
+      value: form.form_name,
+      label: form.form_name,
+      description: form.form_code,
+      searchText: `${form.form_name} ${form.form_code}`,
+    })),
+  );
   readonly formFilterOptions: DropdownOption<string>[] = [
     { value: 'all', label: 'All' },
     { value: 'CONFERENCE', label: 'Conference Application' },
@@ -139,6 +159,7 @@ export class CatalogManagerComponent implements OnInit {
   );
 
   ngOnInit(): void {
+    this.loadActiveForms();
     if (this.usesCatalogApi()) {
       this.loadCatalogItems();
     }
@@ -333,6 +354,20 @@ export class CatalogManagerComponent implements OnInit {
 
   private ensureValidPage(): void {
     this.page.set(Math.min(this.page(), this.totalPages()));
+  }
+
+  private activeFormOptionsData(): CachedFormOption[] {
+    const activeForms = this.formOptionsData().filter((form) => form.is_active !== false);
+    return activeForms.length ? activeForms : this.fallbackForms;
+  }
+
+  private loadActiveForms(): void {
+    if (!this.showSharedWith) return;
+
+    this.formCache.getActiveForms().subscribe({
+      next: (response) => this.formOptionsData.set(response.data ?? []),
+      error: () => this.formOptionsData.set([]),
+    });
   }
 
   loadCatalogItems(): void {

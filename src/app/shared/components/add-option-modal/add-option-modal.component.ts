@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, Output, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { SearchableDropdownComponent } from '../searchable-dropdown/searchable-dropdown.component';
 import { DropdownOption } from '../../../core/interfaces/components.interface';
 
@@ -21,7 +21,7 @@ export interface AddOptionPayload {
   templateUrl: './add-option-modal.component.html',
   styleUrls: ['./add-option-modal.component.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule, SearchableDropdownComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, SearchableDropdownComponent],
 })
 export class AddOptionModalComponent implements OnChanges {
   @Input() isOpen = false;
@@ -56,6 +56,7 @@ export class AddOptionModalComponent implements OnChanges {
   code: string = '';
   status: 'Active' | 'Inactive' = 'Active';
   appliesTo: string[] = [];
+  readonly appliesToControl = new FormControl<string[]>([], { nonNullable: true });
   accountNumber: string = '';
   percentage: number | null = null;
   limit: number | null = null;
@@ -79,6 +80,7 @@ export class AddOptionModalComponent implements OnChanges {
       this.name = this.limitOptionName(init.name || '');
       this.status = init.status || 'Active';
       this.appliesTo = init.appliesTo || [];
+      this.appliesToControl.setValue(this.appliesTo, { emitEvent: false });
       this.accountNumber = init.accountNumber || '';
       this.percentage = init.percentage ?? null;
       this.limit = init.limit ?? null;
@@ -89,6 +91,7 @@ export class AddOptionModalComponent implements OnChanges {
       this.name = '';
       this.status = 'Active';
       this.appliesTo = [...this.defaultSelectedForms];
+      this.appliesToControl.setValue(this.appliesTo, { emitEvent: false });
       this.accountNumber = '';
       this.percentage = null;
       this.limit = null;
@@ -110,7 +113,7 @@ export class AddOptionModalComponent implements OnChanges {
       return false;
     }
 
-    if (this.allowFormSharing && this.appliesTo.length === 0) {
+    if (this.allowFormSharing && this.selectedAppliesTo.length === 0) {
       return false;
     }
 
@@ -128,11 +131,15 @@ export class AddOptionModalComponent implements OnChanges {
   }
 
   get showAppliesToError(): boolean {
-    return this.allowFormSharing && this.appliesTo.length === 0;
+    return this.allowFormSharing && this.selectedAppliesTo.length === 0;
   }
 
   get usesSearchableFormSharing(): boolean {
     return this.availableFormOptions.length > 0;
+  }
+
+  get selectedAppliesTo(): string[] {
+    return this.usesSearchableFormSharing ? this.appliesToControl.value : this.appliesTo;
   }
 
   onToggleForm(form: string) {
@@ -147,7 +154,7 @@ export class AddOptionModalComponent implements OnChanges {
 
   onSave() {
     if (!this.isValid) return;
-    const appliesTo = this.allowFormSharing ? [...this.appliesTo] : [...this.defaultSelectedForms];
+    const appliesTo = this.allowFormSharing ? [...this.selectedAppliesTo] : [...this.defaultSelectedForms];
     this.save.emit({
       code: this.showCode ? this.code.trim() : undefined,
       name: this.limitOptionName(this.name.trim()),

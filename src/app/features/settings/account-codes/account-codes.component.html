@@ -231,17 +231,18 @@
           </select>
         </label>
 
-        <label class="forms-filter">
-          <span>Shared Forms</span>
+        <div class="forms-filter account-code-shared-forms-field">
           <app-searchable-dropdown
+            label="Shared Forms"
             placeholder="Select forms..."
             [isMulti]="true"
+            [searchable]="true"
+            valueMode="array"
             [options]="formOptions()"
             [loading]="optionsLoading()"
-            [ngModel]="formCodes()"
-            (ngModelChange)="formCodes.set($event)"
+            [formControl]="formCodesControl"
           ></app-searchable-dropdown>
-        </label>
+        </div>
 
         <label class="forms-filter account-code-description-field">
           <span>Description</span>

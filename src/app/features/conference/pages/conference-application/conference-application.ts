@@ -15,7 +15,6 @@ import {
   MissingField,
 } from '../../../../shared/components/step-indicator/step-indicator.component';
 import { FormWizardNavComponent } from '../../../../shared/components/form-wizard-nav/form-wizard-nav.component';
-import { ConferenceGuidelinesModalComponent } from '../../components/conference-guidelines-modal/conference-guidelines-modal.component';
 import { FormMainTitleComponent } from '../../../../shared/components/form-main-title/form-main-title.component';
 import { ConferenceDetailsFormComponent } from '../../components/forms/conference-details-form/conference-details-form.component';
 import { AuthorDetailsFormComponent } from '../../components/forms/author-details-form/author-details-form.component';
@@ -37,6 +36,7 @@ import {
   RequestCommentDto,
   WorkflowRequestsService,
 } from '../../../../core/services/workflow-requests.service';
+import { environment } from '../../../../../environments/environment';
 
 @Component({
   selector: 'app-conference-application',
@@ -47,7 +47,6 @@ import {
     StepIndicatorComponent,
     FormWizardNavComponent,
     FormMainTitleComponent,
-    ConferenceGuidelinesModalComponent,
     ConferenceDetailsFormComponent,
     AuthorDetailsFormComponent,
     SupportingDocumentsFormComponent,
@@ -60,20 +59,12 @@ import {
     } @else {
       <div class="conference-wizard application-form-page">
         <app-form-main-title
-          #conferenceFormTitle
           title="Conference Application"
           modalTitle="Guidelines for Applicants"
           [guidelineContext]="guidelineContext"
-          [customModal]="true"
-          (helpClick)="openGuidelines()"
+          [endpoint]="guidelinesEndpoint"
         >
         </app-form-main-title>
-
-        <app-conference-guidelines-modal
-          #guidelinesModal
-          (closed)="conferenceFormTitle.onGuidelinesClosed()"
-        >
-        </app-conference-guidelines-modal>
 
         <app-step-indicator
           [currentStep]="currentStep()"
@@ -553,7 +544,7 @@ export class ConferenceApplication implements OnInit {
   readonly guidelineContext: GuidelineContext = this.route.snapshot.queryParamMap.has('request_id')
     ? 'existing-application'
     : 'new-application';
-  @ViewChild('guidelinesModal') guidelinesModal?: ConferenceGuidelinesModalComponent;
+  readonly guidelinesEndpoint = `${environment.apiBaseUrl}/admin-settings/guidelines/forms/CONFERENCE`;
   @ViewChild('conferenceDetailsStep') conferenceDetailsStep?: ConferenceDetailsFormComponent;
   @ViewChild('authorDetailsStep') authorDetailsStep?: AuthorDetailsFormComponent;
   @ViewChild('supportingDocumentsStep') supportingDocumentsStep?: SupportingDocumentsFormComponent;
@@ -697,10 +688,6 @@ export class ConferenceApplication implements OnInit {
   /** Helper to get a FormControl from the form */
   fc(path: string): FormControl {
     return this.applicantDetailsForm.get(path) as FormControl;
-  }
-
-  openGuidelines(): void {
-    this.guidelinesModal?.open();
   }
 
   // ── Comment toggles ────────────────────────────────────────────
@@ -1704,7 +1691,6 @@ export class ConferenceApplication implements OnInit {
     return error?.error?.message || error?.message || fallback;
   }
 }
-
 
 
 

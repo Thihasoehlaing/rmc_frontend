@@ -332,6 +332,7 @@
           <div class="author-block">
             <h3>APU Staff Co-Authors</h3>
             @if (staffAuthors().length) {
+              <app-table-scroll-hint></app-table-scroll-hint>
               <div class="modern-table">
                 <table>
                   <thead>
@@ -360,6 +361,7 @@
           <div class="author-block">
             <h3>APU Student Co-Authors</h3>
             @if (studentAuthors().length) {
+              <app-table-scroll-hint></app-table-scroll-hint>
               <div class="modern-table">
                 <table>
                   <thead>
@@ -390,12 +392,15 @@
           <div class="author-block">
             <h3>Non-APU Co-Authors</h3>
             @if (nonApuAuthors().length) {
+              <app-table-scroll-hint></app-table-scroll-hint>
               <div class="modern-table">
                 <table>
                   <thead>
                     <tr>
                       <th>Name</th>
                       <th>Institution</th>
+                      <th>School / Department</th>
+                      <th>Organisation Type</th>
                       <th>Country</th>
                       <th>Email</th>
                     </tr>
@@ -405,6 +410,8 @@
                       <tr>
                         <td>{{ val(author.full_name) }}</td>
                         <td>{{ val(author.institution_company_name) }}</td>
+                        <td>{{ val(author.school_department) }}</td>
+                        <td>{{ val(author.organisation_type) }}</td>
                         <td>{{ val(author.country) }}</td>
                         <td>{{ val(author.email) }}</td>
                       </tr>
@@ -468,6 +475,7 @@
           </div>
 
           @if (costingItems().length) {
+            <app-table-scroll-hint></app-table-scroll-hint>
             <div class="modern-table">
               <table>
                 <thead>
@@ -496,7 +504,7 @@
                       <td>{{ fmtMoney(item.cost_in_foreign_currency) }}</td>
                       <td>{{ val(item.exchange_rate) }}</td>
                       <td>{{ fmtMoney(item.cost_in_rm) }}</td>
-                      <td>{{ val(item.description) }}</td>
+                      <td class="table-cell--wrap">{{ val(item.description) }}</td>
                     </tr>
                   }
                 </tbody>

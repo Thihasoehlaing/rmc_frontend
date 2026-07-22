@@ -31,6 +31,15 @@ export class ConferenceDropdownOptionsComponent {
       nameLabel: 'Description',
     },
     {
+      key: 'ACCOUNT_CODE',
+      label: 'Account Code',
+      source: 'account-code',
+      formCode: 'CONFERENCE',
+      icon: 'account_balance',
+      codeLabel: 'Account Code',
+      nameLabel: 'Description',
+    },
+    {
       key: 'TYPE_OF_ORGANISATION',
       label: 'Type of Organisation',
       source: 'dropdown',

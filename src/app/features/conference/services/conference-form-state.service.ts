@@ -54,6 +54,7 @@ export interface ConferenceFormState {
     acceptanceNotification?: string;
     reviewersFeedback?: string;
     scopusEvidencePublication?: string;
+    sriApproval?: string;
     turnitinReport?: string;
     finalPaperDraft?: string;
     conferenceInvoice?: string;

@@ -646,6 +646,7 @@ export class ConferenceApplication implements OnInit {
     { path: 'acceptanceNotification', label: 'Acceptance Notification' },
     { path: 'reviewersFeedback', label: 'Reviewers Feedback' },
     { path: 'scopusEvidencePublication', label: 'SCOPUS Evidence Publication' },
+    { path: 'sriApproval', label: 'SRI Approval' },
     { path: 'turnitinReport', label: 'Turnitin Report' },
     { path: 'finalPaperDraft', label: 'Final Paper Draft' },
     { path: 'conferenceInvoice', label: 'Conference Invoice' },
@@ -1336,9 +1337,9 @@ export class ConferenceApplication implements OnInit {
       return of(void 0);
     }
     return forkJoin([
-      this.masterData.getVoteNumbers(),
-      this.masterData.getAccountCodes(),
-      this.masterData.getProjectAccountCodes(),
+      this.masterData.getVoteNumbers('CONFERENCE'),
+      this.masterData.getAccountCodes('CONFERENCE'),
+      this.masterData.getProjectAccountCodes('CONFERENCE'),
     ]).pipe(
       map(([voteNumbers, accountCodes, projectAccountCodes]) => {
         this.voteNumberIdByCode = new Map(
@@ -1599,6 +1600,7 @@ export class ConferenceApplication implements OnInit {
     'acceptanceNotification',
     'reviewersFeedback',
     'scopusEvidencePublication',
+    'sriApproval',
     'turnitinReport',
     'finalPaperDraft',
     'conferenceInvoice',

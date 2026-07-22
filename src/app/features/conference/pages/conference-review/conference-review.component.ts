@@ -266,6 +266,7 @@ export class ConferenceReviewComponent implements OnInit {
       acceptancenotification: 'Acceptance Notification',
       reviewersfeedback: "Reviewers' Feedback",
       scopusevidencepublication: 'Scopus Evidence of Publication',
+      sriapproval: 'Approval by Strategic Research Institute (SRI)',
       turnitinreport: 'Turnitin Report',
       finalpaperdraft: 'Final Paper Draft',
       conferenceinvoice: 'Conference Invoice',

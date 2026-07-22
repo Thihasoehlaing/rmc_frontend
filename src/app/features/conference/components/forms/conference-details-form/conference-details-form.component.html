@@ -537,7 +537,7 @@
               <span class="material-icons">warning</span>
             </div>
             <div class="warning-content">
-              <p class="warning-title">Funding Limit for {{ getFullRegionName(selectedRegion) }}</p>
+              <p class="warning-title">Funding Limit for {{ selectedRegionName }}</p>
               <p class="warning-text">{{ form.get('regionDescription')?.value }}</p>
             </div>
           </div>
@@ -549,7 +549,6 @@
                 type="text"
                 class="input--text"
                 formControlName="regionName"
-                [value]="selectedRegion"
                 readonly
               />
             </div>

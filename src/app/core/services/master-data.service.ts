@@ -123,19 +123,23 @@ export class MasterDataService {
     return this.http.get<ApiResponse<RegionOption[]>>(`${this.base}/master-data/regions`);
   }
 
-  getVoteNumbers(): Observable<ApiResponse<CodeOption[]>> {
-    return this.http.get<ApiResponse<CodeOption[]>>(`${this.base}/master-data/vote-numbers`);
+  getVoteNumbers(formCode?: string): Observable<ApiResponse<CodeOption[]>> {
+    return this.http.get<ApiResponse<CodeOption[]>>(`${this.base}/master-data/vote-numbers`, {
+      params: this.toFormCodeParams(formCode),
+    });
   }
 
-  getProjectAccountCodes(): Observable<ApiResponse<CodeOption[]>> {
+  getProjectAccountCodes(formCode?: string): Observable<ApiResponse<CodeOption[]>> {
     return this.http.get<ApiResponse<CodeOption[]>>(
       `${this.base}/master-data/project-account-codes`,
+      { params: this.toFormCodeParams(formCode) },
     );
   }
 
-  getAccountCodes(): Observable<ApiResponse<AccountCodeOption[]>> {
+  getAccountCodes(formCode?: string): Observable<ApiResponse<AccountCodeOption[]>> {
     return this.http.get<ApiResponse<AccountCodeOption[]>>(
       `${this.base}/master-data/account-codes`,
+      { params: this.toFormCodeParams(formCode) },
     );
   }
 
@@ -160,14 +164,17 @@ export class MasterDataService {
     categoryCode: string,
     formCode?: string,
   ): Observable<ApiResponse<DropdownOptionRecord[]>> {
-    let params = new HttpParams();
-    if (formCode?.trim()) {
-      params = params.set('form_code', formCode.trim());
-    }
-
     return this.http.get<ApiResponse<DropdownOptionRecord[]>>(
       `${this.base}/dropdowns/${categoryCode}/options`,
-      { params },
+      { params: this.toFormCodeParams(formCode) },
     );
+  }
+
+  private toFormCodeParams(formCode?: string): HttpParams {
+    let params = new HttpParams();
+    if (formCode?.trim()) {
+      params = params.set('form_code', formCode.trim().toUpperCase());
+    }
+    return params;
   }
 }

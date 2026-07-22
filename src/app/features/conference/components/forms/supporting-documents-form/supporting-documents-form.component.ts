@@ -49,6 +49,7 @@ export class SupportingDocumentsFormComponent implements OnInit, OnDestroy {
   @ViewChild('reviewersFeedbackUpload', { static: false })
   reviewersFeedbackUpload?: FileUploadComponent;
   @ViewChild('scopusEvidenceUpload', { static: false }) scopusEvidenceUpload?: FileUploadComponent;
+  @ViewChild('sriApprovalUpload', { static: false }) sriApprovalUpload?: FileUploadComponent;
   @ViewChild('turnitinReportUpload', { static: false }) turnitinReportUpload?: FileUploadComponent;
   @ViewChild('finalPaperUpload', { static: false }) finalPaperUpload?: FileUploadComponent;
   @ViewChild('conferenceInvoiceUpload', { static: false })
@@ -85,6 +86,7 @@ export class SupportingDocumentsFormComponent implements OnInit, OnDestroy {
       acceptanceNotification: ['', [Validators.required]],
       reviewersFeedback: ['', [Validators.required]],
       scopusEvidencePublication: ['', [Validators.required]],
+      sriApproval: ['', [Validators.required]],
       turnitinReport: ['', [Validators.required]],
       finalPaperDraft: ['', [Validators.required]],
       conferenceInvoice: ['', [Validators.required]],

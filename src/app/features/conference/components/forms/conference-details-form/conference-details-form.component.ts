@@ -128,6 +128,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
 
   /** Regions fetched from the real backend master-data list, keyed by id. */
   private regionsById = new Map<string, RegionOption>();
+  private allRegionOptions: DropdownOption[] = [];
   regionOptions = signal<DropdownOption[]>([]);
 
   projectAccountCodeOptions = signal<DropdownOption[]>([]);
@@ -274,7 +275,12 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
   ];
 
   getFullRegionName(regionShort: string): string {
-    return this.regionFullNames[regionShort] || regionShort;
+    return this.regionsById.get(regionShort)?.region_name || this.regionFullNames[regionShort] || regionShort;
+  }
+
+  get selectedRegionName(): string {
+    const selected = this.selectedRegion;
+    return this.form.get('regionName')?.value || this.regionsById.get(selected)?.region_name || selected;
   }
 
   getBreakdownOptionsForType(): DropdownOption[] {
@@ -430,12 +436,12 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     this.masterData.getRegions().subscribe((res) => {
       const regions = res.data ?? [];
       this.regionsById = new Map(regions.map((r) => [r.id.toString(), r]));
-      this.regionOptions.set(
-        regions.map((r) => ({ value: r.id.toString(), label: r.region_name })),
-      );
+      this.allRegionOptions = regions.map((r) => ({ value: r.id.toString(), label: r.region_name }));
+      this.syncRegionOptionsForVenue();
+      this.syncSelectedRegionMetadata(this.selectedRegion);
     });
 
-    this.masterData.getProjectAccountCodes().subscribe((res) => {
+    this.masterData.getProjectAccountCodes('CONFERENCE').subscribe((res) => {
       const managedOptions = this.getManagedProjectAccountCodeOptions();
       this.projectAccountCodeOptions.set(
         managedOptions.length
@@ -447,7 +453,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
       );
     });
 
-    this.masterData.getVoteNumbers().subscribe((res) => {
+    this.masterData.getVoteNumbers('CONFERENCE').subscribe((res) => {
       this.voteNumbersCache = res.data ?? [];
       this.voteNumberDescriptionOptions = this.voteNumbersCache.map((c) => ({
         value: c.description,
@@ -455,7 +461,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
       }));
     });
 
-    this.masterData.getAccountCodes().subscribe((res) => {
+    this.masterData.getAccountCodes('CONFERENCE').subscribe((res) => {
       this.localAccountCodesCache = (res.data ?? []).filter((c) => c.location_type === 'LOCAL');
       this.localBreakdownOptions = this.localAccountCodesCache.map((c) => ({
         value: c.description,
@@ -550,24 +556,13 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
    * Setup watchers for main form fields
    */
   setupFormWatchers() {
+    this.form.get('localOrOverseas')?.valueChanges.subscribe(() => {
+      this.syncRegionOptionsForVenue();
+    });
+
     // Watch for region changes and auto-set percentage, limit, and description
     this.form.get('selectedRegion')?.valueChanges.subscribe((region) => {
-      if (region) {
-        const backendRegion = this.regionsById.get(region);
-        const percentage = backendRegion
-          ? Number(backendRegion.percentage)
-          : this.getRegionPercentage(region);
-        const limit = backendRegion ? Number(backendRegion.limit_amount) : 5000;
-        const description = backendRegion
-          ? backendRegion.description
-          : this.getRegionDescription(region);
-        this.form
-          .get('regionName')
-          ?.patchValue(backendRegion?.region_name ?? region, { emitEvent: false });
-        this.form.get('percentage')?.patchValue(percentage, { emitEvent: false });
-        this.form.get('limit')?.patchValue(limit, { emitEvent: false });
-        this.form.get('regionDescription')?.patchValue(description, { emitEvent: false });
-      }
+      this.syncSelectedRegionMetadata(region);
     });
 
     // Watch for conference start date changes and re-validate end date
@@ -605,6 +600,60 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
         this.breakdownForm.get('accountCode')?.setValue(value || '', { emitEvent: false });
       }
     });
+  }
+
+  private syncRegionOptionsForVenue(): void {
+    const venue = this.selectedLocalOrOverseas;
+    const selectedRegion = this.selectedRegion;
+    const filteredOptions = this.allRegionOptions.filter((option) => {
+      const isMalaysia = this.isMalaysiaRegion(option);
+      if (venue === 'overseas') {
+        return !isMalaysia;
+      }
+      if (venue === 'klang-valley' || venue === 'local-except-kl') {
+        return isMalaysia;
+      }
+      return true;
+    });
+
+    this.regionOptions.set(filteredOptions);
+
+    if (selectedRegion && !filteredOptions.some((option) => option.value === selectedRegion)) {
+      this.clearRegionFields();
+    }
+  }
+
+  private syncSelectedRegionMetadata(region: string | null | undefined): void {
+    if (!region) {
+      this.clearRegionMetadata();
+      return;
+    }
+
+    const backendRegion = this.regionsById.get(region);
+    const percentage = backendRegion ? Number(backendRegion.percentage) : this.getRegionPercentage(region);
+    const limit = backendRegion ? Number(backendRegion.limit_amount) : 5000;
+    const description = backendRegion ? backendRegion.description : this.getRegionDescription(region);
+    this.form.get('regionName')?.patchValue(backendRegion?.region_name ?? region, { emitEvent: false });
+    this.form.get('percentage')?.patchValue(percentage, { emitEvent: false });
+    this.form.get('limit')?.patchValue(limit, { emitEvent: false });
+    this.form.get('regionDescription')?.patchValue(description, { emitEvent: false });
+  }
+
+  private clearRegionFields(): void {
+    this.form.get('selectedRegion')?.patchValue('');
+    this.clearRegionMetadata();
+  }
+
+  private clearRegionMetadata(): void {
+    this.form.get('regionName')?.patchValue('', { emitEvent: false });
+    this.form.get('percentage')?.patchValue('', { emitEvent: false });
+    this.form.get('limit')?.patchValue('', { emitEvent: false });
+    this.form.get('regionDescription')?.patchValue('', { emitEvent: false });
+  }
+
+  private isMalaysiaRegion(option: DropdownOption): boolean {
+    const regionName = this.regionsById.get(String(option.value))?.region_name || option.label || String(option.value);
+    return regionName.trim().toLowerCase() === 'malaysia';
   }
 
   private syncCitedJournalPaperExplanationValidator(

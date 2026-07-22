@@ -58,10 +58,10 @@ export class DropdownsComponent implements OnInit {
       formCode: 'CONFERENCE',
       title: 'Conference Dropdown Options',
       description:
-        'Maintain Conference region, vote number, item, and organisation dropdown values.',
+        'Maintain Conference region, vote number, account code, item, and organisation dropdown values.',
       route: '/admin-settings/dropdowns/conference-dropdown-options',
       icon: 'event',
-      categories: ['Select Region', 'Vote Number', 'Type of Organisation'],
+      categories: ['Select Region', 'Vote Number', 'Account Code', 'Type of Organisation'],
     },
     {
       id: 4,

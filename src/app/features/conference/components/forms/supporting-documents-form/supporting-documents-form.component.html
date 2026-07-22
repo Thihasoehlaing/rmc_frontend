@@ -95,6 +95,27 @@
         }
       </div>
 
+      <div class="form-field" data-missing-field-target="sriApproval">
+        <div class="upload-field-header">
+          <h3 class="upload-field-title is-required">Approval by Strategic Research Institute (SRI)</h3>
+          <p class="upload-field-subtitle">Max file size: 10 MB. PDF ONLY</p>
+        </div>
+        <app-file-upload
+          #sriApprovalUpload
+          label="Approval by Strategic Research Institute (SRI)"
+          [accept]="PDF_ACCEPT"
+          [maxSizeMB]="MAX_FILE_SIZE_MB"
+          [disabled]="!canUploadDocuments()"
+          [uploadedFileName]="form.get('sriApproval')?.value || null"
+          placeholder="Upload SRI approval PDF"
+          (fileSelected)="onFileSelected('sriApproval', $any($event))">
+        </app-file-upload>
+        <app-note text="Please upload SRI approval on IRN country and SDG Keywords."></app-note>
+        @if (form.get('sriApproval')?.invalid && form.get('sriApproval')?.touched) {
+          <span class="form-error-msg">SRI Approval is required</span>
+        }
+      </div>
+
       <!-- Turnitin Report -->
       <div class="form-field" data-missing-field-target="turnitinReport">
         <div class="upload-field-header">

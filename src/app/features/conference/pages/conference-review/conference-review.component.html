@@ -211,10 +211,18 @@
                 class="section-comment-input"
                 rows="3"
                 placeholder="Write a comment for Conference Details..."
-                [formControl]="sectionCommentControls['conference_details']"
-              ></textarea>
-              <div class="section-comment-actions">
-                <app-action-button
+              [formControl]="sectionCommentControls['conference_details']"
+              [attr.maxlength]="commentMaxLength"
+            ></textarea>
+            <div
+              class="comment-meta"
+              [class.comment-meta--error]="sectionCommentControls['conference_details'].hasError('maxlength')"
+            >
+              <span>Maximum {{ commentMaxLength }} characters.</span>
+              <span>{{ sectionCommentLength('conference_details') }}/{{ commentMaxLength }}</span>
+            </div>
+            <div class="section-comment-actions">
+              <app-action-button
                   type="primary"
                   label="Save Comment"
                   icon="send"
@@ -445,10 +453,18 @@
                 class="section-comment-input"
                 rows="3"
                 placeholder="Write a comment for Authors..."
-                [formControl]="sectionCommentControls['authors']"
-              ></textarea>
-              <div class="section-comment-actions">
-                <app-action-button
+              [formControl]="sectionCommentControls['authors']"
+              [attr.maxlength]="commentMaxLength"
+            ></textarea>
+            <div
+              class="comment-meta"
+              [class.comment-meta--error]="sectionCommentControls['authors'].hasError('maxlength')"
+            >
+              <span>Maximum {{ commentMaxLength }} characters.</span>
+              <span>{{ sectionCommentLength('authors') }}/{{ commentMaxLength }}</span>
+            </div>
+            <div class="section-comment-actions">
+              <app-action-button
                   type="primary"
                   label="Save Comment"
                   icon="send"
@@ -523,10 +539,18 @@
                 class="section-comment-input"
                 rows="3"
                 placeholder="Write a comment for Supporting Documents..."
-                [formControl]="sectionCommentControls['supporting_documents']"
-              ></textarea>
-              <div class="section-comment-actions">
-                <app-action-button
+              [formControl]="sectionCommentControls['supporting_documents']"
+              [attr.maxlength]="commentMaxLength"
+            ></textarea>
+            <div
+              class="comment-meta"
+              [class.comment-meta--error]="sectionCommentControls['supporting_documents'].hasError('maxlength')"
+            >
+              <span>Maximum {{ commentMaxLength }} characters.</span>
+              <span>{{ sectionCommentLength('supporting_documents') }}/{{ commentMaxLength }}</span>
+            </div>
+            <div class="section-comment-actions">
+              <app-action-button
                   type="primary"
                   label="Save Comment"
                   icon="send"
@@ -673,10 +697,18 @@
                 class="section-comment-input"
                 rows="3"
                 placeholder="Write a comment for Costing & Sponsorship..."
-                [formControl]="sectionCommentControls['costing_sponsorship']"
-              ></textarea>
-              <div class="section-comment-actions">
-                <app-action-button
+              [formControl]="sectionCommentControls['costing_sponsorship']"
+              [attr.maxlength]="commentMaxLength"
+            ></textarea>
+            <div
+              class="comment-meta"
+              [class.comment-meta--error]="sectionCommentControls['costing_sponsorship'].hasError('maxlength')"
+            >
+              <span>Maximum {{ commentMaxLength }} characters.</span>
+              <span>{{ sectionCommentLength('costing_sponsorship') }}/{{ commentMaxLength }}</span>
+            </div>
+            <div class="section-comment-actions">
+              <app-action-button
                   type="primary"
                   label="Save Comment"
                   icon="send"
@@ -710,6 +742,31 @@
             </div>
           }
           @if (canAct() && actions().length) {
+            @if (requiresAllSectionComments()) {
+              <div class="action-requirement" [class.action-requirement--complete]="canPerformActions()">
+                <span class="material-icons">{{ canPerformActions() ? 'check_circle' : 'info' }}</span>
+                <p>{{ actionRequirementMessage() }}</p>
+              </div>
+            } @else {
+              <div class="action-comment-box">
+                <label for="conference-decision-comment">Decision Comment <span>*</span></label>
+                <textarea
+                  id="conference-decision-comment"
+                  class="section-comment-input"
+                  rows="4"
+                  placeholder="Write your decision comment before taking action..."
+                  [formControl]="actionCommentControl"
+                  [attr.maxlength]="commentMaxLength"
+                ></textarea>
+                <div
+                  class="comment-meta"
+                  [class.comment-meta--error]="actionCommentControl.hasError('maxlength')"
+                >
+                  <span>{{ actionRequirementMessage() }}</span>
+                  <span>{{ actionCommentLength() }}/{{ commentMaxLength }}</span>
+                </div>
+              </div>
+            }
             <div class="workflow-actions">
               @for (action of actions(); track action.action_code) {
                 <div
@@ -723,7 +780,7 @@
                     [type]="actionType(action)"
                     [label]="action.action_name"
                     [icon]="actionIcon(action)"
-                    [disabled]="acting()"
+                    [disabled]="acting() || !canPerformActions()"
                     (clicked)="perform(action)"
                   ></app-action-button>
                 </div>

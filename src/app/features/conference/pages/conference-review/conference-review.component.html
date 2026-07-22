@@ -272,6 +272,7 @@
               </div>
             </dl>
             @if (travelEvents().length) {
+              <app-table-scroll-hint></app-table-scroll-hint>
               <div class="modern-table detail-grid--compact">
                 <table>
                   <thead>
@@ -286,7 +287,7 @@
                       <tr>
                         <td>{{ fmtDateOnly(event.event_date) }}</td>
                         <td>{{ val(event.event_time) }}</td>
-                        <td>{{ val(event.description) }}</td>
+                        <td class="table-cell--wrap">{{ val(event.description) }}</td>
                       </tr>
                     }
                   </tbody>
@@ -294,6 +295,7 @@
               </div>
             }
             @if (travellingColleagues().length) {
+              <app-table-scroll-hint></app-table-scroll-hint>
               <div class="modern-table detail-grid--compact">
                 <table>
                   <thead>
@@ -329,6 +331,7 @@
           <div class="author-block">
             <h3>APU Staff Co-Authors</h3>
             @if (staffAuthors().length) {
+              <app-table-scroll-hint></app-table-scroll-hint>
               <div class="modern-table">
                 <table>
                   <thead>
@@ -356,6 +359,7 @@
           <div class="author-block">
             <h3>APU Student Co-Authors</h3>
             @if (studentAuthors().length) {
+              <app-table-scroll-hint></app-table-scroll-hint>
               <div class="modern-table">
                 <table>
                   <thead>
@@ -385,6 +389,7 @@
           <div class="author-block">
             <h3>Co-Authors Outside Asia Pacific University of Technology & Innovation</h3>
             @if (nonApuAuthors().length) {
+              <app-table-scroll-hint></app-table-scroll-hint>
               <div class="modern-table">
                 <table>
                   <thead>
@@ -542,6 +547,7 @@
             </div>
           </div>
           @if (costingItems().length) {
+            <app-table-scroll-hint></app-table-scroll-hint>
             <div class="modern-table">
               <table>
                 <thead>
@@ -570,7 +576,7 @@
                       <td>{{ fmtMoney(item.cost_in_foreign_currency) }}</td>
                       <td>{{ val(item.exchange_rate) }}</td>
                       <td>{{ fmtMoney(item.cost_in_rm) }}</td>
-                      <td>{{ val(item.description) }}</td>
+                      <td class="table-cell--wrap">{{ val(item.description) }}</td>
                     </tr>
                   }
                 </tbody>

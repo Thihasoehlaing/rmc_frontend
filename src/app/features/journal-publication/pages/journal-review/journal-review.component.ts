@@ -17,6 +17,7 @@ import {
   WorkflowRequestsService,
 } from '../../../../core/services/workflow-requests.service';
 import { ActionButtonComponent } from '../../../../shared/components/action-button/action-button.component';
+import { TableScrollHintComponent } from '../../../../shared/components/table-scroll-hint/table-scroll-hint.component';
 
 const SCOPUS_QUARTILE_LABELS: Readonly<Record<string, string>> = {
   Q1: 'Q1: 75th - 100th percentile',
@@ -41,7 +42,7 @@ const SCOPUS_QUARTILE_LABELS: Readonly<Record<string, string>> = {
 @Component({
   selector: 'app-journal-review',
   standalone: true,
-  imports: [ReactiveFormsModule, ActionButtonComponent],
+  imports: [ReactiveFormsModule, ActionButtonComponent, TableScrollHintComponent],
   templateUrl: './journal-review.component.html',
   styleUrl: './journal-review.component.scss',
 })

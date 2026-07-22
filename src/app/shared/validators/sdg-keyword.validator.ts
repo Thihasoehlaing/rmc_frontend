@@ -10,11 +10,10 @@ export const SDG_KEYWORD_PLACEHOLDERS = {
 export const SDG_KEYWORD_FORMAT_MESSAGE =
   'Enter a keyword, followed by a hyphen, SDG, and a number from 1 to 17.';
 
-const SDG_KEYWORD_PATTERN =
-  /^\s*\S(?:.*\S)?\s*-\s*SDG\s*(?:[1-9]|1[0-7])\s*$/;
+const SDG_KEYWORD_PATTERN = /^\s*\S(?:.*\S)?\s*-\s*SDG\s*(?:[1-9]|1[0-7])\s*$/;
 
 export const sdgKeywordValidator: ValidatorFn = (
-  control: AbstractControl
+  control: AbstractControl,
 ): ValidationErrors | null => {
   const value = control.value;
 
@@ -30,7 +29,7 @@ export const sdgKeywordValidator: ValidatorFn = (
     pattern: {
       requiredPattern: SDG_KEYWORD_PATTERN.source,
       actualValue: value,
-      message: SDG_KEYWORD_FORMAT_MESSAGE
-    }
+      message: SDG_KEYWORD_FORMAT_MESSAGE,
+    },
   };
 };

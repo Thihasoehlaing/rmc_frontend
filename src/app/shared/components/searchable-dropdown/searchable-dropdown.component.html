@@ -64,8 +64,9 @@
         >
           &times;
         </button>
+      } @else if (!hasSelection()) {
+        <app-svg-icon class="arrow-icon" [icon]="chevronDownIcon" size="10px"></app-svg-icon>
       }
-      <app-svg-icon class="arrow-icon" [icon]="chevronDownIcon" size="10px"></app-svg-icon>
     </div>
   </div>
 

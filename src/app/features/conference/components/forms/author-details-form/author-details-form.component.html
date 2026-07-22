@@ -18,6 +18,7 @@
         @if (testSubsections.length > 0) {
           <div class="table-scroll">
             <app-data-table
+              class="co-author-table"
               [columns]="apuStaffColumns"
               [rows]="getApuStaffTableData()"
               [hoverable]="true"
@@ -81,6 +82,7 @@
         @if (studentCoAuthors.length > 0) {
           <div class="table-scroll">
             <app-data-table
+              class="co-author-table"
               [columns]="studentCoAuthorColumns"
               [rows]="getStudentCoAuthorTableData()"
               [hoverable]="true"
@@ -145,6 +147,7 @@
         @if (nonApuCoAuthors.length > 0) {
           <div class="table-scroll">
             <app-data-table
+              class="co-author-table"
               [columns]="nonApuCoAuthorColumns"
               [rows]="getNonApuCoAuthorTableData()"
               [hoverable]="true"

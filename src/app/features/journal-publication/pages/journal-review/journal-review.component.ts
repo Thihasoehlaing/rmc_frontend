@@ -17,6 +17,10 @@ import {
   WorkflowRequestsService,
 } from '../../../../core/services/workflow-requests.service';
 import { ActionButtonComponent } from '../../../../shared/components/action-button/action-button.component';
+import {
+  DataTableColumn,
+  DataTableComponent,
+} from '../../../../shared/components/data-table/data-table.component';
 import { TableScrollHintComponent } from '../../../../shared/components/table-scroll-hint/table-scroll-hint.component';
 
 const SCOPUS_QUARTILE_LABELS: Readonly<Record<string, string>> = {
@@ -42,7 +46,12 @@ const SCOPUS_QUARTILE_LABELS: Readonly<Record<string, string>> = {
 @Component({
   selector: 'app-journal-review',
   standalone: true,
-  imports: [ReactiveFormsModule, ActionButtonComponent, TableScrollHintComponent],
+  imports: [
+    ReactiveFormsModule,
+    ActionButtonComponent,
+    DataTableComponent,
+    TableScrollHintComponent,
+  ],
   templateUrl: './journal-review.component.html',
   styleUrl: './journal-review.component.scss',
 })
@@ -96,6 +105,68 @@ export class JournalReviewComponent implements OnInit {
   readonly studentAuthors = computed(() => this.data()?.apu_student_co_authors ?? []);
   readonly nonApuAuthors = computed(() => this.data()?.non_apu_co_authors ?? []);
   readonly costingItems = computed(() => this.data()?.costing_items ?? []);
+  readonly staffAuthorColumns: readonly DataTableColumn[] = [
+    { key: 'name', label: 'Name', width: '280px' },
+    { key: 'department', label: 'Department', width: '220px' },
+    { key: 'affiliation', label: 'Affiliation', width: '220px' },
+  ];
+  readonly studentAuthorColumns: readonly DataTableColumn[] = [
+    { key: 'tpNumber', label: 'TP Number', width: '150px' },
+    { key: 'name', label: 'Name', width: '240px' },
+    { key: 'department', label: 'School / Department', width: '220px' },
+    { key: 'affiliation', label: 'Affiliation', width: '220px' },
+  ];
+  readonly nonApuAuthorColumns: readonly DataTableColumn[] = [
+    { key: 'name', label: 'Name', width: '220px' },
+    { key: 'institution', label: 'Institution', width: '220px' },
+    { key: 'department', label: 'School / Department', width: '220px' },
+    { key: 'organisationType', label: 'Organisation Type', width: '190px' },
+    { key: 'country', label: 'Country', width: '160px' },
+    { key: 'email', label: 'Email', width: '240px' },
+  ];
+  readonly costingColumns: readonly DataTableColumn[] = [
+    { key: 'voteNumber', label: 'Vote Number', width: '190px' },
+    { key: 'accountCode', label: 'Account Code', width: '190px' },
+    { key: 'foreignCost', label: 'Foreign Cost', width: '160px' },
+    { key: 'exchangeRate', label: 'Exchange Rate', width: '170px' },
+    { key: 'costInRm', label: 'Cost in RM', width: '150px' },
+    { key: 'description', label: 'Description', width: '320px' },
+  ];
+  readonly staffAuthorRows = computed(() =>
+    this.staffAuthors().map((author) => ({
+      name: this.val(author.staff_name),
+      department: this.val(author.staff_department),
+      affiliation: this.val(author.affiliation),
+    })),
+  );
+  readonly studentAuthorRows = computed(() =>
+    this.studentAuthors().map((author) => ({
+      tpNumber: this.val(author.tp_number),
+      name: this.val(author.full_name),
+      department: this.val(author.school_department),
+      affiliation: this.val(author.affiliation),
+    })),
+  );
+  readonly nonApuAuthorRows = computed(() =>
+    this.nonApuAuthors().map((author) => ({
+      name: this.val(author.full_name),
+      institution: this.val(author.institution_company_name),
+      department: this.val(author.school_department),
+      organisationType: this.val(author.organisation_type),
+      country: this.val(author.country),
+      email: this.val(author.email),
+    })),
+  );
+  readonly costingRows = computed(() =>
+    this.costingItems().map((item) => ({
+      voteNumber: this.val(item.vote_number_snapshot || item.vote_number_description_snapshot),
+      accountCode: this.val(item.account_code_snapshot || item.account_code_description_snapshot),
+      foreignCost: this.fmtMoney(item.cost_in_foreign_currency),
+      exchangeRate: this.val(item.exchange_rate),
+      costInRm: this.fmtMoney(item.cost_in_rm),
+      description: this.val(item.description),
+    })),
+  );
   readonly attachments = computed(() => this.data()?.attachments ?? []);
   readonly supportingAttachments = computed(() =>
     this.attachments().filter((file) => !this.isCostingAttachment(file?.entity_type)),

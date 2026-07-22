@@ -102,7 +102,6 @@
   margin-top: var(--space-4);
 }
 
-
 .conditional-field app-character-counter {
   display: block;
   margin-bottom: calc(-1 * var(--space-3));
@@ -218,6 +217,11 @@
   font-weight: var(--fw-bold);
   color: var(--color-text);
   padding: var(--space-2) 0;
+}
+
+.costing-full-width {
+  width: 100%;
+  min-width: 0;
 }
 
 .total-display {
@@ -394,7 +398,6 @@
   line-height: 1.5;
 }
 
-
 .shrink-input {
   max-width: 300px; // no token: input constraint width
 }
@@ -429,11 +432,15 @@
 }
 
 .region-subsection {
-  background: var(--color-surface-hover);
+  background: var(--color-background-surface);
   border-left: var(--space-1) solid var(--color-primary);
   border-radius: var(--radius-md);
   padding: var(--space-4);
   margin-top: var(--space-4);
+}
+
+.region-funding-subheader {
+  --custom-subheader-card-background: var(--color-background-surface);
 }
 
 .region-details-grid {
@@ -514,8 +521,6 @@
   line-height: 1.5;
 }
 
-
-
 .schedule-panel {
   display: flex;
   flex-direction: column;
@@ -562,7 +567,6 @@
   }
 }
 
-
 .activity-description-cell {
   max-width: 420px;
   white-space: normal;
@@ -586,7 +590,6 @@
     padding: var(--space-4);
   }
 
-  
   .activity-table-header .btn {
     width: 100%;
   }
@@ -1078,10 +1081,3 @@
   cursor: not-allowed;
   opacity: 1;
 }
-
-
-
-
-
-
-

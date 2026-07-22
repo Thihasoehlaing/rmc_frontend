@@ -237,6 +237,21 @@
   gap: var(--space-1);
 }
 
+// Note-style validation surface for shared app-validation-message instances.
+.form-validation-note--error .validation-error {
+  display: block;
+  margin: var(--form-message-gap) 0 0;
+  padding: var(--space-1) var(--space-3);
+  border-left: var(--space-1) solid var(--color-error);
+  border-radius: var(--radius-sm);
+  background: var(--color-error-light);
+  color: var(--color-error-dark);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-normal);
+  line-height: var(--lh-normal);
+  white-space: pre-line;
+}
+
 .form-counter {
   font-size: var(--font-size-caption);
   line-height: var(--line-height-caption);

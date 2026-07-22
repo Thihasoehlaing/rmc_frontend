@@ -111,13 +111,13 @@
               <dt>Project Type</dt>
               <dd>{{ val(journal()?.project_type) }}</dd>
             </div>
-            <div class="detail-grid__wide">
-              <dt>Restricted Publisher(e.g., MDPI, Common Ground, Hindawi, or Frontier)</dt>
-              <dd>{{ val(journal()?.is_restricted_publisher) }}</dd>
-            </div>
             <div>
               <dt>APU JATI / EJBM Cited</dt>
               <dd>{{ val(journal()?.cited_apu_jati_ejbm) }}</dd>
+            </div>
+            <div class="detail-grid__wide">
+              <dt>Restricted Publisher (e.g., MDPI, Common Ground, Hindawi, or Frontiers)</dt>
+              <dd>{{ val(journal()?.is_restricted_publisher) }}</dd>
             </div>
             <div class="detail-grid__wide">
               <dt>SDG Keywords</dt>
@@ -178,7 +178,7 @@
             </div>
           </div>
           <dl class="detail-grid">
-            <div>
+            <div class="detail-grid__wide">
               <dt>Reviewer Name</dt>
               <dd>{{ val(journal()?.reviewer_name) }}</dd>
             </div>
@@ -333,26 +333,12 @@
             <h3>APU Staff Co-Authors</h3>
             @if (staffAuthors().length) {
               <app-table-scroll-hint></app-table-scroll-hint>
-              <div class="modern-table">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Name</th>
-                      <th>Department</th>
-                      <th>Affiliation</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    @for (author of staffAuthors(); track $index) {
-                      <tr>
-                        <td>{{ val(author.staff_name) }}</td>
-                        <td>{{ val(author.staff_department) }}</td>
-                        <td>{{ val(author.affiliation) }}</td>
-                      </tr>
-                    }
-                  </tbody>
-                </table>
-              </div>
+              <app-data-table
+                [columns]="staffAuthorColumns"
+                [rows]="staffAuthorRows()"
+                [hoverable]="false"
+                [striped]="false"
+              ></app-data-table>
             } @else {
               <p class="review-empty">None.</p>
             }
@@ -362,28 +348,12 @@
             <h3>APU Student Co-Authors</h3>
             @if (studentAuthors().length) {
               <app-table-scroll-hint></app-table-scroll-hint>
-              <div class="modern-table">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>TP Number</th>
-                      <th>Name</th>
-                      <th>School / Department</th>
-                      <th>Affiliation</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    @for (author of studentAuthors(); track $index) {
-                      <tr>
-                        <td>{{ val(author.tp_number) }}</td>
-                        <td>{{ val(author.full_name) }}</td>
-                        <td>{{ val(author.school_department) }}</td>
-                        <td>{{ val(author.affiliation) }}</td>
-                      </tr>
-                    }
-                  </tbody>
-                </table>
-              </div>
+              <app-data-table
+                [columns]="studentAuthorColumns"
+                [rows]="studentAuthorRows()"
+                [hoverable]="false"
+                [striped]="false"
+              ></app-data-table>
             } @else {
               <p class="review-empty">None.</p>
             }
@@ -393,32 +363,12 @@
             <h3>Non-APU Co-Authors</h3>
             @if (nonApuAuthors().length) {
               <app-table-scroll-hint></app-table-scroll-hint>
-              <div class="modern-table">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Name</th>
-                      <th>Institution</th>
-                      <th>School / Department</th>
-                      <th>Organisation Type</th>
-                      <th>Country</th>
-                      <th>Email</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    @for (author of nonApuAuthors(); track $index) {
-                      <tr>
-                        <td>{{ val(author.full_name) }}</td>
-                        <td>{{ val(author.institution_company_name) }}</td>
-                        <td>{{ val(author.school_department) }}</td>
-                        <td>{{ val(author.organisation_type) }}</td>
-                        <td>{{ val(author.country) }}</td>
-                        <td>{{ val(author.email) }}</td>
-                      </tr>
-                    }
-                  </tbody>
-                </table>
-              </div>
+              <app-data-table
+                [columns]="nonApuAuthorColumns"
+                [rows]="nonApuAuthorRows()"
+                [hoverable]="false"
+                [striped]="false"
+              ></app-data-table>
             } @else {
               <p class="review-empty">None.</p>
             }
@@ -476,40 +426,12 @@
 
           @if (costingItems().length) {
             <app-table-scroll-hint></app-table-scroll-hint>
-            <div class="modern-table">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Vote Number</th>
-                    <th>Account Code</th>
-                    <th>Foreign Cost</th>
-                    <th>Exchange Rate</th>
-                    <th>Cost in RM</th>
-                    <th>Description</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  @for (item of costingItems(); track item.id ?? $index) {
-                    <tr>
-                      <td>
-                        {{
-                          val(item.vote_number_snapshot || item.vote_number_description_snapshot)
-                        }}
-                      </td>
-                      <td>
-                        {{
-                          val(item.account_code_snapshot || item.account_code_description_snapshot)
-                        }}
-                      </td>
-                      <td>{{ fmtMoney(item.cost_in_foreign_currency) }}</td>
-                      <td>{{ val(item.exchange_rate) }}</td>
-                      <td>{{ fmtMoney(item.cost_in_rm) }}</td>
-                      <td class="table-cell--wrap">{{ val(item.description) }}</td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
-            </div>
+            <app-data-table
+              [columns]="costingColumns"
+              [rows]="costingRows()"
+              [hoverable]="false"
+              [striped]="false"
+            ></app-data-table>
           } @else {
             <p class="review-empty">No costing items.</p>
           }
@@ -704,9 +626,13 @@
 
           @if (approvals().length) {
             <ol class="review-timeline">
-              @for (history of approvals(); track history.id) {
+              @for (history of approvals(); track history.id; let isLatest = $first) {
                 <li>
-                  <div class="review-timeline__dot"></div>
+                  <div
+                    class="review-timeline__dot"
+                    [class.review-timeline__dot--active]="isLatest"
+                    [attr.aria-label]="isLatest ? 'Latest workflow activity' : null"
+                  ></div>
                   <div>
                     <strong>{{ approvalActionLabel(history) }}</strong>
                     <p>{{ val(history.staff_name || history.staff_username) }}</p>

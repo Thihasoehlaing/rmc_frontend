@@ -1,4 +1,3 @@
-
 .form-section {
   width: 100%;
   min-width: 0;
@@ -48,7 +47,9 @@
     margin-bottom: var(--space-2) !important;
   }
 
-  input, textarea, .total-value {
+  input,
+  textarea,
+  .total-value {
     width: 100%;
     flex: 1;
   }
@@ -77,6 +78,46 @@
   flex-direction: column;
   gap: var(--space-5);
   min-width: 0;
+}
+
+.journal-details-grid > .form-column {
+  display: contents;
+}
+
+.journal-details-primary-field {
+  order: -2;
+}
+
+.journal-details-left-field {
+  grid-column: 1;
+}
+
+// Keep the journal detail questions in a predictable two-column sequence.
+// The optional citation explanation follows the four core rows without
+// displacing their requested positions.
+.journal-details-research-type-field {
+  order: 1;
+}
+
+.journal-details-left-field:not(.journal-details-primary-field) {
+  order: 2;
+}
+
+.journal-details-cited-field {
+  order: 3;
+}
+
+.journal-details-left-field.sdg-keywords-field {
+  order: 4;
+}
+
+.journal-details-scopus-field {
+  order: 5;
+}
+
+.journal-details-citation-explanation {
+  order: 6;
+  grid-column: 1 / -1;
 }
 
 .section-fields .row {
@@ -224,121 +265,88 @@
   .form-label {
     margin: 0;
   }
+}
 
+.costing-layout {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  margin-top: var(--space-6);
+}
+
+.costing-subcard,
+.sponsorship-subsection {
+  min-width: 0;
+  overflow: hidden;
+  background: var(--color-surface);
+  box-shadow: none;
+}
+
+.costing-subcard > .card__content {
+  gap: var(--space-6);
 }
 
 .sponsorship-subsections-container {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
   gap: var(--space-6);
-  margin-bottom: var(--space-6);
-
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-  }
 }
 
 .sponsorship-subsection {
   display: flex;
   flex-direction: column;
-  padding: 0;
-}
-
-.subsection-title {
-  font-size: var(--fs-md);
-  font-weight: var(--fw-bold);
-  color: var(--color-text);
-  background-color: var(--color-primary-light);
-  padding: var(--space-3) var(--space-4);
-  margin: 0 0 var(--space-4) 0;
-  display: block;
-  border-left: var(--space-1) solid var(--color-primary); // 4px accent border
-  border-radius: var(--radius-sm);
-  letter-spacing: 0.5px; // no token: subtle letter-spacing for emphasis
 }
 
 .subsection-fields-wrapper {
   display: flex;
+  flex: 1;
   flex-direction: column;
   gap: var(--space-6);
-  flex: 1;
-  padding: var(--space-4);
-  background-color: var(--color-surface);
-  border: 1px solid var(--border-default); // 1px border — allowed exception
-  border-radius: var(--radius-sm);
+  background: var(--color-surface);
 }
 
 .sponsorship-subsection .row--2 {
   grid-template-columns: 1fr;
   gap: var(--space-6);
+}
 
-  @media (max-width: 768px) {
+.costing-summary-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  align-items: stretch;
+  gap: var(--space-6);
+}
+
+@media (max-width: 768px) {
+  .sponsorship-subsections-container,
+  .costing-summary-grid {
     grid-template-columns: 1fr;
   }
 }
 
-.costing-section {
-  padding: var(--space-4);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
-  margin-top: var(--space-6);
-}
-
-.costing-content {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-}
-
-.research-subsection {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-  padding: var(--space-4);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-md);
-  background: var(--color-surface-hover);
-}
-
-.research-title {
-  font-size: var(--fs-md);
-  font-weight: var(--fw-bold);
-  color: var(--color-text);
-  margin: 0 0 var(--space-2) 0;
-}
-
 .costing-breakdown {
-  margin-top: var(--space-2) !important;
-  padding: var(--space-3);
-  background: var(--color-surface);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-md);
   min-width: 0;
-  overflow-x: auto;
+}
+
+.costing-breakdown-label {
+  display: block;
+  margin-bottom: var(--space-3);
+  color: var(--color-text-muted);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-normal);
 }
 
 .list-section-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin-bottom: var(--space-3);
-}
-
-.list-count {
-  font-size: var(--fs-sm);
-  color: var(--color-text-muted);
-  font-weight: var(--fw-medium);
+  justify-content: flex-start;
+  margin-bottom: var(--space-4);
 }
 
 .table-scroll {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
-}
-
-.table-footer {
-  margin-top: var(--space-3);
-  width: 100%;
 }
 
 .table-summary {
@@ -354,7 +362,8 @@
 // and .research-table wrapper classes on the table-scroll div.
 .non-research-table,
 .research-table {
-  td, th {
+  td,
+  th {
     white-space: normal;
     word-break: break-word;
     vertical-align: middle;
@@ -388,61 +397,62 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  width: 100%;
-  box-sizing: border-box;
-  padding: var(--space-8) var(--space-4);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface);
+  gap: var(--space-3);
+  padding: var(--space-10, var(--space-8));
+  background: var(--color-surface-nested);
+  border: var(--control-border-width-strong) dashed var(--color-border-default);
+  border-radius: var(--radius-lg);
+  color: var(--color-text-secondary);
   text-align: center;
-  color: var(--color-text-muted);
 
   .material-icons {
-    font-size: 48px; // no token: empty state large icon size
-    margin-bottom: var(--space-2);
-    opacity: 0.5;
+    font-size: var(--size-icon-empty);
+    opacity: 0.4;
   }
 
   p {
     margin: 0;
-    line-height: 1.5;
+    font-size: var(--fs-sm);
   }
 }
 
 .total-display {
-  padding-bottom: var(--space-4);
-  border-bottom: 2px solid var(--border-default); // no token: 2px sub-space
-  margin-bottom: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-1);
+  padding: var(--space-6);
+  border: var(--control-border-width) solid var(--color-border-default);
+  border-radius: var(--radius-xl);
+  background: var(--color-surface-nested);
 
   .total-label {
-    font-size: var(--fs-md);
-    font-weight: var(--fw-bold);
-    color: var(--color-text);
-    margin-bottom: var(--space-2);
-    display: block;
+    color: var(--color-text-secondary);
+    font-size: var(--fs-sm);
   }
 
   .total-amount {
-    font-size: var(--fs-lg);
+    color: var(--color-primary);
+    font-size: var(--fs-2xl);
     font-weight: var(--fw-bold);
-    color: var(--color-text);
   }
+}
+
+.total-field,
+.costing-remarks {
+  min-width: 0;
+  padding: var(--space-5);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
 }
 
 .total-field {
-  background: var(--input-bg-readonly);
-  padding: var(--space-3);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-sm);
-
   .form-label {
-    font-size: var(--fs-md);
     color: var(--color-text);
-    margin-bottom: var(--space-2);
+    font-size: var(--fs-md);
   }
 }
-
 
 // SDG Keywords Container & Chips Styles
 .sdg-reference-note {
@@ -500,7 +510,8 @@
   min-height: var(--input-height-sm);
   align-items: center;
   cursor: pointer;
-  transition: border-color var(--transition-fast) var(--ease-default),
+  transition:
+    border-color var(--transition-fast) var(--ease-default),
     background-color var(--transition-fast) var(--ease-default);
 
   &:hover {
@@ -528,7 +539,6 @@
   white-space: nowrap;
 }
 
-
 // form-counter alignment
 .form-counter {
   font-size: var(--fs-xs);
@@ -537,7 +547,12 @@
   margin-top: var(--space-1);
 }
 
-.modal-footer, .breakdown-actions { display: flex; justify-content: space-between; width: 100%; }
+.modal-footer,
+.breakdown-actions {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
 
 // File badge shown in breakdown table cells for uploaded supporting documents
 .file-badge {

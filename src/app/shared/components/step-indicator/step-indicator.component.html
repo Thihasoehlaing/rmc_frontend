@@ -11,6 +11,7 @@
       [class.step--warning]="isWarning(i)"
       [class.step--pending]="isPending(i)"
       (click)="goToStep(i)"
+      (mousemove)="onStepHovered(i)"
       [attr.aria-label]="getAriaLabel(i)"
       [attr.aria-describedby]="showMissingTooltip(i) ? 'step-tooltip-' + i : null">
 
@@ -27,6 +28,10 @@
       </div>
 
       <span class="step__label">{{ step.label }}</span>
+
+      @if (missingFieldPromptVisible() && isError(i) && hasMissingFields(i)) {
+        <span class="step__missing-prompt">Hover to view missing fields</span>
+      }
 
       @if (showMissingTooltip(i)) {
         <div class="step-tooltip" [id]="'step-tooltip-' + i" role="tooltip">

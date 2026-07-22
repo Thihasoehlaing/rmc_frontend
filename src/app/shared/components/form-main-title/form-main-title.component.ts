@@ -111,11 +111,9 @@ export class FormMainTitleComponent implements AfterViewInit, OnChanges, OnDestr
     onGuidelinesClosed(): void {
         if (this.awaitingInitialClose && !this.manuallyOpened) {
             this.awaitingInitialClose = false;
+            clearTimeout(this.helpMessageTimer);
             this.showHelpMessage.set(true);
-            this.helpMessageTimer = setTimeout(
-                () => this.showHelpMessage.set(false),
-                3000
-            );
+            this.helpMessageTimer = setTimeout(() => this.showHelpMessage.set(false), 3000);
         }
     }
 
@@ -140,4 +138,5 @@ export class FormMainTitleComponent implements AfterViewInit, OnChanges, OnDestr
         this.awaitingInitialClose = true;
         this.automaticOpenTimer = setTimeout(() => this.openGuidelines());
     }
+
 }

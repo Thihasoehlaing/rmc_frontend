@@ -276,12 +276,18 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
   ];
 
   getFullRegionName(regionShort: string): string {
-    return this.regionsById.get(regionShort)?.region_name || this.regionFullNames[regionShort] || regionShort;
+    return (
+      this.regionsById.get(regionShort)?.region_name ||
+      this.regionFullNames[regionShort] ||
+      regionShort
+    );
   }
 
   get selectedRegionName(): string {
     const selected = this.selectedRegion;
-    return this.form.get('regionName')?.value || this.regionsById.get(selected)?.region_name || selected;
+    return (
+      this.form.get('regionName')?.value || this.regionsById.get(selected)?.region_name || selected
+    );
   }
 
   getBreakdownOptionsForType(): DropdownOption[] {
@@ -437,7 +443,10 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     this.masterData.getRegions().subscribe((res) => {
       const regions = res.data ?? [];
       this.regionsById = new Map(regions.map((r) => [r.id.toString(), r]));
-      this.allRegionOptions = regions.map((r) => ({ value: r.id.toString(), label: r.region_name }));
+      this.allRegionOptions = regions.map((r) => ({
+        value: r.id.toString(),
+        label: r.region_name,
+      }));
       this.syncRegionOptionsForVenue();
       this.syncSelectedRegionMetadata(this.selectedRegion);
     });
@@ -543,9 +552,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     const day = Number(match[3]);
     const date = new Date(year, month - 1, day);
 
-    return date.getFullYear() === year &&
-      date.getMonth() === month - 1 &&
-      date.getDate() === day
+    return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day
       ? date
       : null;
   }
@@ -655,10 +662,16 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     }
 
     const backendRegion = this.regionsById.get(region);
-    const percentage = backendRegion ? Number(backendRegion.percentage) : this.getRegionPercentage(region);
+    const percentage = backendRegion
+      ? Number(backendRegion.percentage)
+      : this.getRegionPercentage(region);
     const limit = backendRegion ? Number(backendRegion.limit_amount) : 5000;
-    const description = backendRegion ? backendRegion.description : this.getRegionDescription(region);
-    this.form.get('regionName')?.patchValue(backendRegion?.region_name ?? region, { emitEvent: false });
+    const description = backendRegion
+      ? backendRegion.description
+      : this.getRegionDescription(region);
+    this.form
+      .get('regionName')
+      ?.patchValue(backendRegion?.region_name ?? region, { emitEvent: false });
     this.form.get('percentage')?.patchValue(percentage, { emitEvent: false });
     this.form.get('limit')?.patchValue(limit, { emitEvent: false });
     this.form.get('regionDescription')?.patchValue(description, { emitEvent: false });
@@ -677,7 +690,10 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
   }
 
   private isMalaysiaRegion(option: DropdownOption): boolean {
-    const regionName = this.regionsById.get(String(option.value))?.region_name || option.label || String(option.value);
+    const regionName =
+      this.regionsById.get(String(option.value))?.region_name ||
+      option.label ||
+      String(option.value);
     return regionName.trim().toLowerCase() === 'malaysia';
   }
 
@@ -977,7 +993,9 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     return control.value === 'yes' ? { restrictedPublisherNotAllowed: true } : null;
   }
 
-  showRestrictedPublisherWarning(): void {
+  showRestrictedPublisherWarning(event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
     this.form.get('restrictedPublisher')?.markAsTouched();
     this.isRestrictedPublisherWarningOpen = true;
   }
@@ -1003,7 +1021,10 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
         date: [activity?.date || '', [Validators.required, this.activityDateValidator.bind(this)]],
         startTime: [activity?.startTime || activity?.time || '', [Validators.required]],
         endTime: [activity?.endTime || '', [Validators.required]],
-        description: [activity?.description || '', [Validators.required, Validators.maxLength(255)]],
+        description: [
+          activity?.description || '',
+          [Validators.required, Validators.maxLength(255)],
+        ],
       },
       { validators: this.activityTimeRangeValidator },
     );

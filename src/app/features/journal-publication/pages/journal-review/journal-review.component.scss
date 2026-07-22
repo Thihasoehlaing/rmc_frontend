@@ -162,6 +162,7 @@
       color-mix(in srgb, var(--color-primary) 7%, var(--color-surface)) 100%
     );
   box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+  min-width: 0;
 
   @media (max-width: 720px) {
     grid-template-columns: 1fr;
@@ -298,6 +299,9 @@
     font-size: clamp(2rem, 3vw, 3rem);
     line-height: 1.05;
     letter-spacing: -0.04em;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    word-break: break-word;
   }
 }
 
@@ -815,6 +819,8 @@
     color-mix(in srgb, var(--color-primary) 7%, var(--color-surface)) 0%,
     var(--color-surface) 72%
   );
+  min-width: 0;
+  max-width: 100%;
 
   h3 {
     margin: 0;
@@ -827,9 +833,13 @@
 .section-comments__list {
   display: grid;
   gap: var(--space-2);
+  min-width: 0;
 }
 
 .section-comment {
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 100%;
   padding: var(--space-3);
   border: 1px solid var(--border-light);
   border-radius: var(--radius-md);
@@ -844,12 +854,14 @@
   strong {
     color: var(--color-heading);
     font-size: var(--fs-sm);
+    overflow-wrap: anywhere;
   }
 
   span {
     margin-top: 2px;
     color: var(--color-text-muted);
     font-size: var(--fs-xs);
+    overflow-wrap: anywhere;
   }
 
   p {
@@ -858,10 +870,15 @@
     font-size: var(--fs-sm);
     line-height: 1.5;
     white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    word-break: break-word;
   }
 }
 
 .section-comment-input {
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 100%;
   width: 100%;
   min-height: 92px;
   padding: var(--space-3);
@@ -959,4 +976,31 @@
   border: 3px solid color-mix(in srgb, var(--color-primary) 28%, white);
   border-radius: 50%;
   background: var(--color-primary);
+
+  &--active::after {
+    content: '';
+    position: absolute;
+    inset: -6px;
+    border: 2px solid color-mix(in srgb, var(--color-primary) 48%, transparent);
+    border-radius: 50%;
+    animation: review-timeline-pulse 1.8s ease-out infinite;
+  }
+}
+
+@keyframes review-timeline-pulse {
+  from {
+    opacity: 0.75;
+    transform: scale(0.72);
+  }
+
+  to {
+    opacity: 0;
+    transform: scale(1.7);
+  }
+}
+
+@include reduced-motion {
+  .review-timeline__dot--active::after {
+    animation: none;
+  }
 }

@@ -18,13 +18,13 @@ import { SearchableDropdownComponent } from '../../../../shared/components/searc
 import { DialogComponent } from '../../../../shared/components/dialog/dialog.component';
 import { CharacterCounterComponent } from '../../../../shared/components/character-counter/character-counter.component';
 import { CustomHeaderComponent } from '../../../../shared/components/custom-header/custom-header.component';
+import { CustomSubheaderComponent } from '../../../../shared/components/custom-subheader/custom-subheader.component';
 import { FileUploadComponent } from '../../../../shared/components/file-upload/file-upload.component';
 import { ValidationMessageComponent } from '../../../../shared/components/validation-message/validation-message.component';
 import {
   DataTableComponent,
   DataTableColumn,
 } from '../../../../shared/components/data-table/data-table.component';
-import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
 import { JournalOptionType, JournalOptionsService } from '../../services/journal-options.service';
 import { DropdownOption } from '../../../../core/interfaces/components.interface';
 import {
@@ -38,6 +38,8 @@ import {
 } from '../../services/journal-application-api.service';
 
 import { TableActionIconComponent } from '../../../../shared/components/table-action-icon/table-action-icon.component';
+import { TableScrollHintComponent } from '../../../../shared/components/table-scroll-hint/table-scroll-hint.component';
+import { ActionButtonComponent } from '../../../../shared/components/action-button/action-button.component';
 
 export interface JournalCostingSaveItem {
   payload: JournalCostingPayload;
@@ -49,17 +51,19 @@ export interface JournalCostingSaveItem {
   standalone: true,
   imports: [
     TableActionIconComponent,
+    TableScrollHintComponent,
+    ActionButtonComponent,
     CommonModule,
     ReactiveFormsModule,
     CharacterCounterComponent,
     CustomHeaderComponent,
+    CustomSubheaderComponent,
     DataTableComponent,
     DialogComponent,
     FileUploadComponent,
     NoteComponent,
     SearchableDropdownComponent,
     ValidationMessageComponent,
-    PaginationComponent,
   ],
   templateUrl: './journal-details.html',
   styleUrl: './journal-details.scss',

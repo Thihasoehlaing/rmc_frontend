@@ -372,57 +372,26 @@
 .table-scroll {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-md);
+  width: 100%;
+  min-width: 0;
 }
 
-.list-table {
+app-data-table {
+  display: block;
   width: 100%;
-  border-collapse: collapse;
-  font-size: var(--fs-sm);
+  min-width: 0;
+}
 
-  thead {
-    background: var(--color-surface-hover);
-  }
+:host ::ng-deep .co-author-table table {
+  width: 100%;
+  table-layout: fixed;
+}
 
-  th {
-    padding: var(--space-3);
-    text-align: left;
-    font-weight: var(--fw-semibold);
-    color: var(--color-heading);
-    border-bottom: 2px solid var(--border-default);
-  }
-
-  td {
-    padding: var(--space-3);
-    border-bottom: 1px solid var(--border-default);
-    color: var(--color-label);
-
-    &.col-no {
-      width: 40px; // no token: table row number column width
-      text-align: center;
-    }
-
-    &.col-actions {
-      width: 100px; // no token: table actions column width
-      text-align: center;
-      display: flex;
-      gap: var(--space-2);
-      justify-content: center;
-    }
-  }
-
-  tbody tr {
-    transition: background-color var(--transition-fast);
-
-    &:hover {
-      background: var(--color-surface-hover);
-    }
-
-    &:last-child td {
-      border-bottom: none;
-    }
-  }
+:host ::ng-deep .co-author-table .header-content,
+:host ::ng-deep .co-author-table tbody td {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .empty-state {

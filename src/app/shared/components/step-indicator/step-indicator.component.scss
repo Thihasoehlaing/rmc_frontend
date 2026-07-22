@@ -71,6 +71,40 @@
     word-break: break-word;
   }
 
+  &__missing-prompt {
+    position: absolute;
+    z-index: 10;
+    top: calc(100% + var(--space-2));
+    left: 50%;
+    width: max-content;
+    max-width: 150px;
+    padding: var(--space-1) var(--space-2);
+    border: 1px solid var(--color-error);
+    border-radius: var(--radius-sm);
+    background: var(--color-error-light);
+    box-shadow: var(--shadow-sm);
+    color: var(--color-error-dark);
+    font-size: var(--fs-xs);
+    font-weight: var(--fw-semibold);
+    line-height: var(--lh-tight);
+    text-align: center;
+    transform: translateX(-50%);
+    pointer-events: none;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: -5px;
+      left: 50%;
+      width: 8px;
+      height: 8px;
+      border-top: 1px solid var(--color-error);
+      border-left: 1px solid var(--color-error);
+      background: var(--color-error-light);
+      transform: translateX(-50%) rotate(45deg);
+    }
+  }
+
   // ── Complete ───────────────────────────────────────────────────
   &--complete {
     .step__bubble {

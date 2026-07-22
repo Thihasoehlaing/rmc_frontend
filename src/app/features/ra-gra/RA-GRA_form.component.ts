@@ -34,6 +34,7 @@ export class RagraFormComponent {
     this.route.snapshot.queryParamMap.has('id') ? 'existing-application' : 'new-application';
 
   @ViewChild(ProjectDetailsComponent) projectDetailsComponent?: ProjectDetailsComponent;
+  @ViewChild(StepIndicatorComponent) stepIndicator?: StepIndicatorComponent;
   @ViewChild(StudentDetailsComponent) studentDetailsComponent?: StudentDetailsComponent;
   @ViewChild(DeclarationComponent) declarationComponent?: DeclarationComponent;
 
@@ -197,11 +198,16 @@ export class RagraFormComponent {
     this.stepStatuses = this.stepStatuses.map((status, index) => ({
       ...status,
       visited: true,
-      valid: this.formValid[index + 1] || false
+      valid: this.formValid[index + 1] || false,
+      missingFields: this.formValid[index + 1]
+        ? []
+        : [`Complete ${this.steps[index].label}`]
     }));
 
     const allValid = Object.values(this.formValid).every(Boolean);
     if (!allValid) {
+      this.stepIndicator?.showMissingFieldPrompt();
+      window.requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: 'smooth' }));
       return;
     }
 

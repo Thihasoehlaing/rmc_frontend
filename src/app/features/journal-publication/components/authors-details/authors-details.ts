@@ -3,6 +3,7 @@ import { Subscription } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 import { CustomHeaderComponent } from '../../../../shared/components/custom-header/custom-header.component';
 import { ValidationMessageComponent } from '../../../../shared/components/validation-message/validation-message.component';
+import { CharacterCounterComponent } from '../../../../shared/components/character-counter/character-counter.component';
 import { ActionButtonComponent } from '../../../../shared/components/action-button/action-button.component';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
@@ -40,6 +41,7 @@ import { TableActionIconComponent } from '../../../../shared/components/table-ac
     SearchableDropdownComponent,
     CustomHeaderComponent,
     ValidationMessageComponent,
+    CharacterCounterComponent,
     ActionButtonComponent,
     DataTableComponent,
     NoteComponent,
@@ -48,6 +50,8 @@ import { TableActionIconComponent } from '../../../../shared/components/table-ac
 })
 export class AuthorsDetails implements OnInit {
   readonly apuAffiliation = 'Asia Pacific University';
+  readonly authorTextMaxLength = 100;
+  readonly tpNumberMaxLength = 6;
   @Output() formValidityChange = new EventEmitter<boolean>();
   form!: FormGroup;
   projectType: string | null = null;
@@ -584,6 +588,22 @@ export class AuthorsDetails implements OnInit {
         });
       }
     }
+
+    this.applyAuthorTextLengthLimits(type);
+  }
+
+  private applyAuthorTextLengthLimits(type: 'apu-staff' | 'student' | 'non-apu'): void {
+    if (type === 'apu-staff') return;
+
+    const fieldNames =
+      type === 'student'
+        ? ['fullName', 'schoolDepartment']
+        : ['fullName', 'email', 'schoolDepartment', 'institutionName'];
+
+    fieldNames.forEach((fieldName) => {
+      this.editForm.get(fieldName)?.addValidators(Validators.maxLength(this.authorTextMaxLength));
+    });
+    this.editForm.updateValueAndValidity({ emitEvent: false });
   }
 
   closeModal() {

@@ -16,7 +16,7 @@
 // When placed as the first child inside a .card — acts as card section header
 :host-context(.card) {
   .custom-subheader {
-    background-color: var(--color-surface-nested);
+    background-color: var(--custom-subheader-card-background, var(--color-surface-nested));
     border-bottom: 1px solid var(--border-default);
     border-radius: var(--radius-lg) var(--radius-lg) 0 0;
     margin-bottom: 0;

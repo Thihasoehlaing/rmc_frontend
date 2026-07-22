@@ -10,9 +10,32 @@
 
       <div class="modal-body">
         @if (isLoading()) {
-          <div class="loading-state">
-            <div class="spinner"></div>
-            <p>Loading guidelines...</p>
+          <div
+            class="guidelines-skeleton"
+            role="status"
+            aria-label="Loading guidelines"
+          >
+            <span class="skeleton-block guidelines-skeleton__heading"></span>
+            <div class="guidelines-skeleton__section">
+              <span
+                class="skeleton-block guidelines-skeleton__line guidelines-skeleton__line--long"
+              ></span>
+              <span
+                class="skeleton-block guidelines-skeleton__line guidelines-skeleton__line--medium"
+              ></span>
+              <span
+                class="skeleton-block guidelines-skeleton__line guidelines-skeleton__line--short"
+              ></span>
+            </div>
+            <div class="guidelines-skeleton__section">
+              <span class="skeleton-block guidelines-skeleton__subheading"></span>
+              <span
+                class="skeleton-block guidelines-skeleton__line guidelines-skeleton__line--long"
+              ></span>
+              <span
+                class="skeleton-block guidelines-skeleton__line guidelines-skeleton__line--medium"
+              ></span>
+            </div>
           </div>
         } @else {
           <div class="guidelines-content" [innerHTML]="content()"></div>

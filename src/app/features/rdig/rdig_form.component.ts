@@ -1,4 +1,4 @@
-import { Component, signal, computed, inject, OnInit, OnDestroy, effect } from '@angular/core';
+import { Component, signal, computed, inject, OnInit, OnDestroy, effect, ViewChild } from '@angular/core';
 import {
   ReactiveFormsModule,
   FormBuilder,
@@ -104,6 +104,8 @@ export function isApplicantSubmissionWindowOpen(
   styleUrl: './rdig_form.component.scss',
 })
 export class RdigApplicationComponent implements OnInit, OnDestroy {
+  @ViewChild(StepIndicatorComponent) stepIndicator?: StepIndicatorComponent;
+
   readonly loadingSpinnerIcon = SVG_ICON_LOADING_SPINNER;
   readonly successCheckIcon = SVG_ICON_SUCCESS_CHECK;
 
@@ -1766,10 +1768,11 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
         'Your form has missing or invalid fields. Please review all steps.',
       );
       this.showValidationSummary.set(true);
+      this.stepIndicator?.showMissingFieldPrompt();
+      window.requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: 'smooth' }));
       setTimeout(() => {
         const summary = document.querySelector<HTMLElement>('.validation-summary');
-        summary?.focus();
-        summary?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        summary?.focus({ preventScroll: true });
       });
       return;
     }

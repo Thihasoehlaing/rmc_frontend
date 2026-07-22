@@ -74,31 +74,31 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
 
   // DataTable column definitions
   apuStaffColumns: readonly DataTableColumn[] = [
-    { key: 'index', label: '#', width: '50px', align: 'center' },
-    { key: 'staffName', label: 'Please select Staff Name' },
-    { key: 'schoolDepartment', label: 'School/Department' },
-    { key: 'affiliation', label: 'Second Affiliation (If any)' },
-    { key: 'actions', label: 'Actions', width: '100px', align: 'center' },
+    { key: 'index', label: '#', width: '5%', align: 'center', headerAlign: 'center' },
+    { key: 'staffName', label: 'Please select Staff Name', width: '28%' },
+    { key: 'schoolDepartment', label: 'School/Department', width: '32%' },
+    { key: 'affiliation', label: 'Second Affiliation (If any)', width: '25%' },
+    { key: 'actions', label: 'Actions', width: '10%', align: 'center', headerAlign: 'center' },
   ];
 
   studentCoAuthorColumns: readonly DataTableColumn[] = [
-    { key: 'index', label: '#', width: '50px', align: 'center' },
-    { key: 'tpNumber', label: 'TP Number' },
-    { key: 'fullName', label: 'Full Name (as per IC/Passport)' },
-    { key: 'schoolDepartment', label: 'School/Department' },
-    { key: 'affiliation', label: 'Second Affiliation' },
-    { key: 'actions', label: 'Actions', width: '100px', align: 'center' },
+    { key: 'index', label: '#', width: '5%', align: 'center', headerAlign: 'center' },
+    { key: 'tpNumber', label: 'TP Number', width: '12%' },
+    { key: 'fullName', label: 'Full Name (as per IC/Passport)', width: '25%' },
+    { key: 'schoolDepartment', label: 'School/Department', width: '26%' },
+    { key: 'affiliation', label: 'Second Affiliation', width: '22%' },
+    { key: 'actions', label: 'Actions', width: '10%', align: 'center', headerAlign: 'center' },
   ];
 
   nonApuCoAuthorColumns: readonly DataTableColumn[] = [
-    { key: 'index', label: '#', width: '50px', align: 'center' },
-    { key: 'fullName', label: 'Full Name (as per IC/Passport)' },
-    { key: 'country', label: 'Country' },
-    { key: 'email', label: 'Email' },
-    { key: 'organisationType', label: 'Type of Organisation' },
-    { key: 'schoolDepartment', label: 'School/Department' },
-    { key: 'institutionName', label: 'Institution/Company Name' },
-    { key: 'actions', label: 'Actions', width: '100px', align: 'center' },
+    { key: 'index', label: '#', width: '5%', align: 'center', headerAlign: 'center' },
+    { key: 'fullName', label: 'Full Name (as per IC/Passport)', width: '16%' },
+    { key: 'country', label: 'Country', width: '10%' },
+    { key: 'email', label: 'Email', width: '15%' },
+    { key: 'organisationType', label: 'Type of Organisation', width: '13%' },
+    { key: 'schoolDepartment', label: 'School/Department', width: '16%' },
+    { key: 'institutionName', label: 'Institution/Company Name', width: '15%' },
+    { key: 'actions', label: 'Actions', width: '10%', align: 'center', headerAlign: 'center' },
   ];
 
   ngOnInit() {

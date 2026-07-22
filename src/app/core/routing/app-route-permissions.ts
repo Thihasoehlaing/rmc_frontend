@@ -16,6 +16,12 @@ export const conferencePermission = {
     {
       anyOf: ['Admin'],
     },
+    {
+      anyOf: ['HOS'],
+    },
+    {
+      anyOf: ['VC'],
+    },
   ],
 } satisfies NavPermission;
 

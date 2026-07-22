@@ -100,6 +100,7 @@
           @if (studentCoAuthors.length > 0) {
             <div class="table-scroll">
               <app-data-table
+                class="co-author-table"
                 [columns]="studentColumns"
                 [rows]="getPaginatedStudentCoAuthorsControls()"
                 [hoverable]="true"
@@ -191,6 +192,7 @@
           @if (nonApuCoAuthors.length > 0) {
             <div class="table-scroll">
               <app-data-table
+                class="co-author-table"
                 [columns]="nonApuColumns"
                 [rows]="getPaginatedNonApuCoAuthorsControls()"
                 [hoverable]="true"
@@ -283,7 +285,10 @@
           @if (staffOptionsLoadFailed) {
             <small class="text-danger">Unable to load staff options. Try searching again.</small>
           }
-          <app-validation-message [control]="editForm.get('staffName')"></app-validation-message>
+          <app-validation-message
+            class="form-validation-note--error"
+            [control]="editForm.get('staffName')"
+          ></app-validation-message>
         </div>
 
         <div class="form-group">
@@ -297,6 +302,7 @@
             readonly
           />
           <app-validation-message
+            class="form-validation-note--error"
             [control]="editForm.get('schoolDepartment')"
           ></app-validation-message>
         </div>
@@ -326,11 +332,18 @@
               class="form-control input-prefix-group__input"
               formControlName="tpNumber"
               placeholder="e.g. 123456"
-              maxlength="6"
+              [attr.maxlength]="tpNumberMaxLength"
               (input)="enforceTPNumber($event)"
             />
           </div>
-          <app-validation-message [control]="editForm.get('tpNumber')"></app-validation-message>
+          <app-character-counter
+            [current]="editForm.get('tpNumber')?.value?.length || 0"
+            [max]="tpNumberMaxLength"
+          ></app-character-counter>
+          <app-validation-message
+            class="form-validation-note--error"
+            [control]="editForm.get('tpNumber')"
+          ></app-validation-message>
         </div>
 
         <div class="form-group">
@@ -342,8 +355,16 @@
             formControlName="fullName"
             placeholder="Ex. Jessica Teh Sze Hui"
             (input)="stripDigits($event)"
+            [attr.maxlength]="authorTextMaxLength"
           />
-          <app-validation-message [control]="editForm.get('fullName')"></app-validation-message>
+          <app-character-counter
+            [current]="editForm.get('fullName')?.value?.length || 0"
+            [max]="authorTextMaxLength"
+          ></app-character-counter>
+          <app-validation-message
+            class="form-validation-note--error"
+            [control]="editForm.get('fullName')"
+          ></app-validation-message>
         </div>
 
         <div class="form-group">
@@ -355,8 +376,14 @@
             formControlName="schoolDepartment"
             placeholder="Ex. School of Computing and Technology"
             (input)="stripDigits($event)"
+            [attr.maxlength]="authorTextMaxLength"
           />
+          <app-character-counter
+            [current]="editForm.get('schoolDepartment')?.value?.length || 0"
+            [max]="authorTextMaxLength"
+          ></app-character-counter>
           <app-validation-message
+            class="form-validation-note--error"
             [control]="editForm.get('schoolDepartment')"
           ></app-validation-message>
         </div>
@@ -384,8 +411,16 @@
             formControlName="fullName"
             placeholder="Ex. Jessica Teh Sze Hui"
             (input)="stripDigits($event)"
+            [attr.maxlength]="authorTextMaxLength"
           />
-          <app-validation-message [control]="editForm.get('fullName')"></app-validation-message>
+          <app-character-counter
+            [current]="editForm.get('fullName')?.value?.length || 0"
+            [max]="authorTextMaxLength"
+          ></app-character-counter>
+          <app-validation-message
+            class="form-validation-note--error"
+            [control]="editForm.get('fullName')"
+          ></app-validation-message>
         </div>
 
         <div class="form-group">
@@ -401,7 +436,10 @@
           <app-note
             text="Please check with the SRI regarding prioritised IRN countries before submitting the form"
           ></app-note>
-          <app-validation-message [control]="editForm.get('country')"></app-validation-message>
+          <app-validation-message
+            class="form-validation-note--error"
+            [control]="editForm.get('country')"
+          ></app-validation-message>
         </div>
 
         <div class="form-group">
@@ -412,8 +450,16 @@
             class="form-control"
             formControlName="email"
             placeholder="Ex. user@example.com"
+            [attr.maxlength]="authorTextMaxLength"
           />
-          <app-validation-message [control]="editForm.get('email')"></app-validation-message>
+          <app-character-counter
+            [current]="editForm.get('email')?.value?.length || 0"
+            [max]="authorTextMaxLength"
+          ></app-character-counter>
+          <app-validation-message
+            class="form-validation-note--error"
+            [control]="editForm.get('email')"
+          ></app-validation-message>
         </div>
 
         <div class="form-group">
@@ -425,8 +471,14 @@
             formControlName="schoolDepartment"
             placeholder="Ex. School of Computing and Technology"
             (input)="stripDigits($event)"
+            [attr.maxlength]="authorTextMaxLength"
           />
+          <app-character-counter
+            [current]="editForm.get('schoolDepartment')?.value?.length || 0"
+            [max]="authorTextMaxLength"
+          ></app-character-counter>
           <app-validation-message
+            class="form-validation-note--error"
             [control]="editForm.get('schoolDepartment')"
           ></app-validation-message>
         </div>
@@ -450,6 +502,7 @@
             }
           </select>
           <app-validation-message
+            class="form-validation-note--error"
             [control]="editForm.get('typeOfOrganisation')"
           ></app-validation-message>
         </div>
@@ -463,8 +516,14 @@
             formControlName="institutionName"
             placeholder="Ex. Shanghai Hypergryph Network Technology Co., Ltd."
             (input)="stripDigits($event)"
+            [attr.maxlength]="authorTextMaxLength"
           />
+          <app-character-counter
+            [current]="editForm.get('institutionName')?.value?.length || 0"
+            [max]="authorTextMaxLength"
+          ></app-character-counter>
           <app-validation-message
+            class="form-validation-note--error"
             [control]="editForm.get('institutionName')"
           ></app-validation-message>
         </div>

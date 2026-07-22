@@ -1,11 +1,19 @@
 import { Component, OnInit, ViewChild, inject, effect, Output, EventEmitter } from '@angular/core';
 import { CustomHeaderComponent } from '../../../../shared/components/custom-header/custom-header.component';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import {
+  AbstractControl,
+  ReactiveFormsModule,
+  FormBuilder,
+  FormGroup,
+  ValidationErrors,
+  Validators,
+} from '@angular/forms';
 import { FileUploadComponent } from '../../../../shared/components/file-upload/file-upload.component';
 import { NoteComponent } from '../../../../shared/components/note/note.component';
 import { ValidationMessageComponent } from '../../../../shared/components/validation-message/validation-message.component';
 import { CharacterCounterComponent } from '../../../../shared/components/character-counter/character-counter.component';
+import { DialogComponent } from '../../../../shared/components/dialog/dialog.component';
 import { JournalWorkflowService } from '../../services/journal-workflow.service';
 import {
   JournalAttachmentUpload,
@@ -30,6 +38,7 @@ interface PendingDocumentUpload {
     ValidationMessageComponent,
     CustomHeaderComponent,
     CharacterCounterComponent,
+    DialogComponent,
   ],
   templateUrl: './documents.html',
   styleUrl: './documents.scss',
@@ -37,6 +46,7 @@ interface PendingDocumentUpload {
 export class DocumentsComponent implements OnInit {
   @Output() formValidityChange = new EventEmitter<boolean>();
   documentsForm!: FormGroup;
+  isPreviouslyPublishedWarningOpen = false;
 
   // References to file upload components for manual reset if needed
   @ViewChild('acceptanceNotificationUpload', { static: false })
@@ -91,7 +101,7 @@ export class DocumentsComponent implements OnInit {
       journalInvoice: ['', Validators.required],
       manuscriptInternallyReviewed: ['', Validators.required],
       reviewerName: ['', [Validators.required, Validators.maxLength(100)]],
-      manuscriptPreviouslyPublished: ['', Validators.required],
+      manuscriptPreviouslyPublished: ['', [Validators.required, this.previouslyPublishedValidator]],
     });
 
     this.documentsForm.statusChanges.subscribe((status) => {
@@ -176,6 +186,20 @@ export class DocumentsComponent implements OnInit {
     }
   }
 
+  showPreviouslyPublishedWarning(event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.documentsForm.get('manuscriptPreviouslyPublished')?.markAsTouched();
+    this.isPreviouslyPublishedWarningOpen = true;
+  }
+
+  closePreviouslyPublishedWarning(): void {
+    this.isPreviouslyPublishedWarningOpen = false;
+  }
+
+  private previouslyPublishedValidator(control: AbstractControl): ValidationErrors | null {
+    return control.value === 'yes' ? { previouslyPublishedNotAllowed: true } : null;
+  }
   private toOptionalBoolean(value: unknown): boolean | undefined {
     if (value === 'yes') return true;
     if (value === 'no') return false;

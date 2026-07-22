@@ -32,6 +32,7 @@ import { AuthService } from '../../../../core/services/auth.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { GuidelineContext } from '../../../../shared/components/form-main-title/form-main-title.component';
 import { FormPageSkeletonComponent } from '../../../../shared/components/form-page-skeleton/form-page-skeleton.component';
+import { FormValidationWarningDialogComponent } from '../../../../shared/components/form-validation-warning-dialog/form-validation-warning-dialog.component';
 import {
   RequestCommentDto,
   WorkflowRequestsService,
@@ -52,6 +53,7 @@ import { environment } from '../../../../../environments/environment';
     SupportingDocumentsFormComponent,
     DeclarationFormComponent,
     FormPageSkeletonComponent,
+    FormValidationWarningDialogComponent,
   ],
   template: `
     @if (isLoadingApplication()) {
@@ -198,6 +200,11 @@ import { environment } from '../../../../../environments/environment';
           @if (submissionErrorMessage()) {
             <p class="submission-error">{{ submissionErrorMessage() }}</p>
           }
+
+          <app-form-validation-warning-dialog
+            [isOpen]="showMissingFieldsWarning()"
+            (close)="onMissingFieldsWarningClosed()"
+          ></app-form-validation-warning-dialog>
 
           <!-- Navigation Buttons -->
           <app-form-wizard-nav
@@ -546,6 +553,7 @@ export class ConferenceApplication implements OnInit {
     : 'new-application';
   readonly guidelinesEndpoint = `${environment.apiBaseUrl}/admin-settings/guidelines/forms/CONFERENCE`;
   @ViewChild('conferenceDetailsStep') conferenceDetailsStep?: ConferenceDetailsFormComponent;
+  @ViewChild(StepIndicatorComponent) stepIndicator?: StepIndicatorComponent;
   @ViewChild('authorDetailsStep') authorDetailsStep?: AuthorDetailsFormComponent;
   @ViewChild('supportingDocumentsStep') supportingDocumentsStep?: SupportingDocumentsFormComponent;
   @ViewChild('declarationStep') declarationStep?: DeclarationFormComponent;
@@ -556,6 +564,7 @@ export class ConferenceApplication implements OnInit {
   isSubmitting = signal(false);
   isLoadingApplication = signal(false);
   submissionErrorMessage = signal('');
+  showMissingFieldsWarning = signal(false);
   sectionComments = signal<RequestCommentDto[]>([]);
   isLoadingSectionComments = signal(false);
   selectedFeedbackActorCode = signal<string | null>(null);
@@ -1717,10 +1726,13 @@ export class ConferenceApplication implements OnInit {
       this.checkedSteps.add(firstInvalidStep + 1);
       this.currentStep.set(firstInvalidStep + 1);
       this.submissionErrorMessage.set('Complete the required fields before submitting.');
+      this.showMissingFieldsWarning.set(true);
+      window.requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: 'smooth' }));
       return;
     }
 
     this.submissionErrorMessage.set('');
+    this.showMissingFieldsWarning.set(false);
     this.isSubmitting.set(true);
 
     const currentStatus = this.applicantDetailsForm.get('metadata.applicationStatus')?.value as ConferenceStatus;
@@ -1752,6 +1764,11 @@ export class ConferenceApplication implements OnInit {
           );
         },
       });
+  }
+
+  onMissingFieldsWarningClosed(): void {
+    this.showMissingFieldsWarning.set(false);
+    this.stepIndicator?.showMissingFieldPrompt();
   }
 
   private extractErrorMessage(error: any, fallback: string): string {

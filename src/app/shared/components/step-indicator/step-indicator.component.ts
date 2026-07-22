@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnDestroy, signal } from '@angular/core';
 
 export interface WizardStep {
   label: string;
@@ -25,7 +25,7 @@ export interface StepStatus {
   templateUrl: './step-indicator.component.html',
   styleUrls: ['./step-indicator.component.scss']
 })
-export class StepIndicatorComponent {
+export class StepIndicatorComponent implements OnDestroy {
   @Input() currentStep = 1;
   @Input() steps: WizardStep[] = [];
   @Input() stepStatuses: StepStatus[] = [];
@@ -33,6 +33,12 @@ export class StepIndicatorComponent {
   @Input() submitAttempted = false;
   @Output() stepClick = new EventEmitter<number>();
   @Output() missingFieldClick = new EventEmitter<{ step: number; field: MissingField }>();
+  readonly missingFieldPromptVisible = signal(false);
+  private missingFieldPromptTimer?: ReturnType<typeof setTimeout>;
+
+  ngOnDestroy(): void {
+    clearTimeout(this.missingFieldPromptTimer);
+  }
 
   isActive(index: number) { return index + 1 === this.currentStep; }
 
@@ -101,6 +107,23 @@ export class StepIndicatorComponent {
     const label = step?.label ?? `Step ${index + 1}`;
     if (!this.showMissingTooltip(index)) return label;
     return `${label}. ${this.getTooltipTitle(index)}: ${this.getMissingFields(index).map((field) => this.getMissingFieldLabel(field)).join(', ')}`;
+  }
+
+  showMissingFieldPrompt(durationMs = 6000): void {
+    clearTimeout(this.missingFieldPromptTimer);
+    this.missingFieldPromptVisible.set(true);
+    this.missingFieldPromptTimer = setTimeout(() => this.dismissMissingFieldPrompt(), durationMs);
+  }
+
+  dismissMissingFieldPrompt(): void {
+    clearTimeout(this.missingFieldPromptTimer);
+    this.missingFieldPromptVisible.set(false);
+  }
+
+  onStepHovered(index: number): void {
+    if (this.missingFieldPromptVisible() && this.isError(index) && this.hasMissingFields(index)) {
+      this.dismissMissingFieldPrompt();
+    }
   }
 
   goToStep(index: number) {

@@ -1,5 +1,4 @@
 @use '../../../../../styles/index' as *;
-@use '../../../conference/styles/radio-group';
 
 .form-section {
   padding: var(--space-4);
@@ -85,5 +84,4 @@
   .form-label {
     margin: 0;
   }
-
 }

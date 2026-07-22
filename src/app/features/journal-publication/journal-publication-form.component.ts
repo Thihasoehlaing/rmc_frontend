@@ -17,6 +17,7 @@ import {
   GuidelineContext,
 } from '../../shared/components/form-main-title/form-main-title.component';
 import { FormWizardNavComponent } from '../../shared/components/form-wizard-nav/form-wizard-nav.component';
+import { FormValidationWarningDialogComponent } from '../../shared/components/form-validation-warning-dialog/form-validation-warning-dialog.component';
 import { JournalWorkflowService } from './services/journal-workflow.service';
 import { ReviewBlockComponent } from '../rdig/components/review-block/review-block.component';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -48,6 +49,7 @@ import { environment } from '../../../environments/environment';
     FormMainTitleComponent,
     FormWizardNavComponent,
     ReviewBlockComponent,
+    FormValidationWarningDialogComponent,
   ],
   templateUrl: './journal-publication-form.component.html',
   styleUrl: './journal-publication-form.component.scss',
@@ -64,6 +66,7 @@ export class JournalPublicationFormComponent {
   isOptionsLoading = false;
   loadError: string | null = null;
   actionError: string | null = null;
+  showMissingFieldsWarning = false;
   sectionComments: RequestCommentDto[] = [];
   isLoadingSectionComments = false;
   readonly hasExistingRequestParam = this.hasRequestIdParam();
@@ -81,6 +84,7 @@ export class JournalPublicationFormComponent {
   };
 
   @ViewChild(JournalDetails) journalDetailsComponent?: JournalDetails;
+  @ViewChild(StepIndicatorComponent) stepIndicator?: StepIndicatorComponent;
   @ViewChild(AuthorsDetails) authorsDetailsComponent?: AuthorsDetails;
   @ViewChild(DocumentsComponent) documentsComponent?: DocumentsComponent;
   @ViewChild(DeclarationComponent) declarationComponent?: DeclarationComponent;
@@ -550,8 +554,12 @@ export class JournalPublicationFormComponent {
 
     const allValid = Object.values(this.formValid).every(Boolean);
     if (!allValid) {
+      this.showMissingFieldsWarning = true;
+      window.requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: 'smooth' }));
       return;
     }
+
+    this.showMissingFieldsWarning = false;
 
     this.isSubmitting = true;
     this.actionError = null;
@@ -567,6 +575,11 @@ export class JournalPublicationFormComponent {
     } finally {
       this.isSubmitting = false;
     }
+  }
+
+  onMissingFieldsWarningClosed(): void {
+    this.showMissingFieldsWarning = false;
+    this.stepIndicator?.showMissingFieldPrompt();
   }
 
   toggleCommentSection(section: 'hos' | 'rmc' | 'vc' | 'hr' | 'ceo') {

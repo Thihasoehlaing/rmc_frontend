@@ -60,6 +60,7 @@
               </label>
             </div>
             <app-validation-message
+              class="form-validation-note--error"
               [control]="form.get('fundingRequestType')"
             ></app-validation-message>
           </div>
@@ -84,6 +85,7 @@
               text="Klang Valley includes Kuala Lumpur, Selangor, Cyberjaya &amp; Putrajaya"
             ></app-note>
             <app-validation-message
+              class="form-validation-note--error"
               [control]="form.get('localOrOverseas')"
             ></app-validation-message>
           </div>
@@ -105,7 +107,10 @@
             <app-note
               text="Tick Yes for Conference outside of Asia Pacific University of Technology &amp; Innovation"
             ></app-note>
-            <app-validation-message [control]="form.get('travelRequired')"></app-validation-message>
+            <app-validation-message
+              class="form-validation-note--error"
+              [control]="form.get('travelRequired')"
+            ></app-validation-message>
           </div>
 
           <div class="form-field">
@@ -122,7 +127,10 @@
                 <span>National Conference</span>
               </label>
             </div>
-            <app-validation-message [control]="form.get('conferenceType')"></app-validation-message>
+            <app-validation-message
+              class="form-validation-note--error"
+              [control]="form.get('conferenceType')"
+            ></app-validation-message>
           </div>
         </div>
       </div>
@@ -153,7 +161,10 @@
             <app-note
               text="Applicant must be either first or corresponding author or both"
             ></app-note>
-            <app-validation-message [control]="form.get('authorshipType')"></app-validation-message>
+            <app-validation-message
+              class="form-validation-note--error"
+              [control]="form.get('authorshipType')"
+            ></app-validation-message>
           </div>
 
           <div class="form-field">
@@ -171,6 +182,7 @@
               </label>
             </div>
             <app-validation-message
+              class="form-validation-note--error"
               [control]="form.get('citedJournalPaper')"
             ></app-validation-message>
 
@@ -193,6 +205,7 @@
                   [max]="255"
                 ></app-character-counter>
                 <app-validation-message
+                  class="form-validation-note--error"
                   [control]="form.get('citedJournalPaperExplanation')"
                 ></app-validation-message>
               </div>
@@ -212,7 +225,7 @@
                   type="radio"
                   value="yes"
                   formControlName="restrictedPublisher"
-                  (change)="showRestrictedPublisherWarning()"
+                  (click)="showRestrictedPublisherWarning($event)"
                 />
                 <span>Yes</span>
               </label>
@@ -223,11 +236,14 @@
             </div>
             <app-note text="Expected Answer for Approval: No"></app-note>
             @if (form.get('restrictedPublisher')?.hasError('restrictedPublisherNotAllowed')) {
-              <span class="error-message">
-                Applications involving restricted publishers cannot be submitted.
-              </span>
+              <app-validation-message
+                class="form-validation-note--error"
+                [control]="form.get('restrictedPublisher')"
+                message="Applications involving restricted publishers cannot be submitted."
+              ></app-validation-message>
             } @else {
               <app-validation-message
+                class="form-validation-note--error"
                 [control]="form.get('restrictedPublisher')"
               ></app-validation-message>
             }
@@ -248,6 +264,7 @@
               </label>
             </div>
             <app-validation-message
+              class="form-validation-note--error"
               [control]="form.get('scopusPublicationGuaranteed')"
             ></app-validation-message>
           </div>
@@ -273,7 +290,10 @@
           <app-note
             text="If External Research Project is selected, all required funding will be fully subsidised from External Sources."
           ></app-note>
-          <app-validation-message [control]="form.get('researchType')"></app-validation-message>
+          <app-validation-message
+            class="form-validation-note--error"
+            [control]="form.get('researchType')"
+          ></app-validation-message>
         </div>
 
         <div class="form-field">
@@ -293,9 +313,18 @@
               </div>
             }
           </div>
-          <app-validation-message [control]="form.get('sdgKeyword1')"></app-validation-message>
-          <app-validation-message [control]="form.get('sdgKeyword2')"></app-validation-message>
-          <app-validation-message [control]="form.get('sdgKeyword3')"></app-validation-message>
+          <app-validation-message
+            class="form-validation-note--error"
+            [control]="form.get('sdgKeyword1')"
+          ></app-validation-message>
+          <app-validation-message
+            class="form-validation-note--error"
+            [control]="form.get('sdgKeyword2')"
+          ></app-validation-message>
+          <app-validation-message
+            class="form-validation-note--error"
+            [control]="form.get('sdgKeyword3')"
+          ></app-validation-message>
         </div>
       </div>
     </section>
@@ -318,6 +347,7 @@
               formControlName="conferenceStartDate"
             />
             <app-validation-message
+              class="form-validation-note--error"
               [control]="form.get('conferenceStartDate')"
             ></app-validation-message>
           </div>
@@ -330,6 +360,7 @@
               formControlName="conferenceEndDate"
             />
             <app-validation-message
+              class="form-validation-note--error"
               [control]="form.get('conferenceEndDate')"
             ></app-validation-message>
           </div>
@@ -422,7 +453,10 @@
               [current]="getCharacterCount('conferenceName')"
               [max]="200"
             ></app-character-counter>
-            <app-validation-message [control]="form.get('conferenceName')"></app-validation-message>
+            <app-validation-message
+              class="form-validation-note--error"
+              [control]="form.get('conferenceName')"
+            ></app-validation-message>
           </div>
           <div class="form-field">
             <label class="form-label is-required">Conference Location</label>
@@ -438,6 +472,7 @@
               [max]="200"
             ></app-character-counter>
             <app-validation-message
+              class="form-validation-note--error"
               [control]="form.get('conferenceLocation')"
             ></app-validation-message>
           </div>
@@ -456,7 +491,10 @@
             [current]="getCharacterCount('paperTitle')"
             [max]="200"
           ></app-character-counter>
-          <app-validation-message [control]="form.get('paperTitle')"></app-validation-message>
+          <app-validation-message
+            class="form-validation-note--error"
+            [control]="form.get('paperTitle')"
+          ></app-validation-message>
         </div>
 
         <div class="row row--2 conference-field-grid">
@@ -472,7 +510,10 @@
                 <span>No</span>
               </label>
             </div>
-            <app-validation-message [control]="form.get('hasAdvance')"></app-validation-message>
+            <app-validation-message
+              class="form-validation-note--error"
+              [control]="form.get('hasAdvance')"
+            ></app-validation-message>
           </div>
 
           <div class="form-field">
@@ -489,7 +530,10 @@
                 <span>No</span>
               </label>
             </div>
-            <app-validation-message [control]="form.get('hasColleagues')"></app-validation-message>
+            <app-validation-message
+              class="form-validation-note--error"
+              [control]="form.get('hasColleagues')"
+            ></app-validation-message>
           </div>
         </div>
 
@@ -507,7 +551,10 @@
               [current]="form.get('advanceReason')?.value?.length || 0"
               [max]="500"
             ></app-character-counter>
-            <app-validation-message [control]="form.get('advanceReason')"></app-validation-message>
+            <app-validation-message
+              class="form-validation-note--error"
+              [control]="form.get('advanceReason')"
+            ></app-validation-message>
           </div>
         }
 
@@ -527,6 +574,7 @@
             </app-searchable-dropdown>
             <app-note text="Select up to 10 colleagues."></app-note>
             <app-validation-message
+              class="form-validation-note--error"
               [control]="form.get('selectedColleagues')"
             ></app-validation-message>
             @if (form.get('selectedColleagues')?.hasError('maxColleagues')) {
@@ -549,7 +597,10 @@
 
     @if (selectedRegion) {
       <section class="card region-subsection">
-        <app-custom-subheader title="Region Funding Details"></app-custom-subheader>
+        <app-custom-subheader
+          class="region-funding-subheader"
+          title="Region Funding Details"
+        ></app-custom-subheader>
         <div class="card__content section-fields">
           <!-- Funding Warning Box -->
           <div class="funding-warning-box">
@@ -565,12 +616,7 @@
           <div class="region-details-grid">
             <div class="form-field">
               <label class="form-label">Region Name</label>
-              <input
-                type="text"
-                class="input--text"
-                formControlName="regionName"
-                readonly
-              />
+              <input type="text" class="input--text" formControlName="regionName" readonly />
             </div>
 
             <div class="form-field">
@@ -624,7 +670,10 @@
               <span>Other</span>
             </label>
           </div>
-          <app-validation-message [control]="form.get('bookingDoneBy')"></app-validation-message>
+          <app-validation-message
+            class="form-validation-note--error"
+            [control]="form.get('bookingDoneBy')"
+          ></app-validation-message>
         </div>
 
         @if (form.get('bookingDoneBy')?.value === 'other') {
@@ -644,6 +693,7 @@
               [max]="300"
             ></app-character-counter>
             <app-validation-message
+              class="form-validation-note--error"
               [control]="form.get('bookingDoneByOther')"
             ></app-validation-message>
           </div>
@@ -671,10 +721,7 @@
             </div>
 
             <!-- Detailed Breakdown for External Research Project -->
-            <div
-              class="form-field"
-              data-missing-field-target="externalResearchCostingEntries"
-            >
+            <div class="form-field" data-missing-field-target="externalResearchCostingEntries">
               <label class="form-label is-required"
                 >Detailed Breakdown for External Research Project</label
               >
@@ -845,14 +892,14 @@
             </div>
 
             <!-- Cost to be borne by Applicant (Read Only) -->
-            <div class="form-field total-field">
+            <div class="form-field total-field costing-full-width">
               <label class="form-label">Cost to be borne by Applicant (RM)</label>
               <div class="total-value-display">
                 {{ externalCostBorneByApplicant | number: '1.2-2' }}
               </div>
             </div>
 
-            <div class="form-field">
+            <div class="form-field costing-full-width">
               <label class="form-label">Remarks (Optional)</label>
               <textarea
                 class="input--textarea"
@@ -1032,14 +1079,14 @@
               </div>
             </div>
 
-            <div class="form-field total-field">
+            <div class="form-field total-field costing-full-width">
               <label class="form-label">Cost to be borne by Applicant (RM)</label>
               <div class="total-value-display">
                 {{ localCostBorneByApplicant | number: '1.2-2' }}
               </div>
             </div>
 
-            <div class="form-field">
+            <div class="form-field costing-full-width">
               <label class="form-label">Remarks (Optional)</label>
               <textarea
                 class="input--textarea"
@@ -1301,8 +1348,8 @@
         (close)="closeRestrictedPublisherWarning()"
       >
         <p>
-          You can't submit the application if Yes is selected. Your conference proceeding
-          publisher cannot be one of the restricted publishers.
+          You can't submit the application if Yes is selected. Your conference proceeding publisher
+          cannot be one of the restricted publishers.
         </p>
 
         <button
@@ -1339,15 +1386,17 @@
               [attr.min]="getMinimumActivityDate()"
               [attr.max]="getMaximumActivityDate()"
             />
-            @if (activityForm.get('date')?.hasError('required') && activityForm.get('date')?.touched) {
+            @if (
+              activityForm.get('date')?.hasError('required') && activityForm.get('date')?.touched
+            ) {
               <span class="error-message">Activity date is required.</span>
             } @else if (
               activityForm.get('date')?.hasError('activityDateOutOfRange') &&
               activityForm.get('date')?.touched
             ) {
               <span class="error-message">
-                Activity date must be between one day before the conference starts and one day
-                after it ends.
+                Activity date must be between one day before the conference starts and one day after
+                it ends.
               </span>
             }
           </div>
@@ -1471,6 +1520,7 @@
             />
             <div class="conference-sdg-keyword-feedback">
               <app-validation-message
+                class="form-validation-note--error"
                 [control]="sdgKeywordsForm.get('keyword1')"
               ></app-validation-message>
               <app-character-counter
@@ -1491,6 +1541,7 @@
             />
             <div class="conference-sdg-keyword-feedback">
               <app-validation-message
+                class="form-validation-note--error"
                 [control]="sdgKeywordsForm.get('keyword2')"
               ></app-validation-message>
               <app-character-counter
@@ -1511,6 +1562,7 @@
             />
             <div class="conference-sdg-keyword-feedback">
               <app-validation-message
+                class="form-validation-note--error"
                 [control]="sdgKeywordsForm.get('keyword3')"
               ></app-validation-message>
               <app-character-counter

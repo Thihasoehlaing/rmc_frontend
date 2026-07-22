@@ -12,6 +12,7 @@ import {
   WorkflowRequestsService,
 } from '../../../../core/services/workflow-requests.service';
 import { ActionButtonComponent } from '../../../../shared/components/action-button/action-button.component';
+import { TableScrollHintComponent } from '../../../../shared/components/table-scroll-hint/table-scroll-hint.component';
 import {
   ConferenceApiService,
   ConferenceAttachmentDto,
@@ -22,7 +23,7 @@ import { CONFERENCE_REVIEW_PREVIEW } from './conference-review.preview-data';
 @Component({
   selector: 'app-conference-review',
   standalone: true,
-  imports: [ReactiveFormsModule, ActionButtonComponent],
+  imports: [ReactiveFormsModule, ActionButtonComponent, TableScrollHintComponent],
   templateUrl: './conference-review.component.html',
   // The conference and journal detail views intentionally share one visual contract.
   styleUrl: '../../../journal-publication/pages/journal-review/journal-review.component.scss',

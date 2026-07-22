@@ -104,7 +104,12 @@
         <span class="material-icons">search</span>
         Search
       </button>
-      <button class="btn btn-secondary" type="button" (click)="resetFilters()" [disabled]="isLoading()">
+      <button
+        class="btn btn-secondary"
+        type="button"
+        (click)="resetFilters()"
+        [disabled]="isLoading()"
+      >
         <span class="material-icons">restart_alt</span>
         Reset
       </button>
@@ -178,6 +183,20 @@
                 {{ row.is_active ? 'Active' : 'Inactive' }}
               </span>
             </td>
+            <td class="is-align-center">
+              <div class="table-actions">
+                <button
+                  class="table-action"
+                  type="button"
+                  title="Assign departments"
+                  data-tooltip="Assign departments"
+                  aria-label="Assign departments"
+                  (click)="openDepartmentAssignmentDialog(row)"
+                >
+                  <span class="material-icons">account_tree</span>
+                </button>
+              </div>
+            </td>
           </tr>
         </ng-template>
       </app-data-table>
@@ -185,8 +204,6 @@
 
     @if (!isLoading() && !loadFailed()) {
       <footer class="forms-table-card__footer">
-        
-
         <app-pagination
           [currentPage]="page()"
           [totalPages]="totalPages()"
@@ -199,9 +216,92 @@
           (pageSizeChange)="onPageSizeChange($event)"
         >
         </app-pagination>
-
-        
       </footer>
     }
   </section>
+
+  <app-dialog
+    [isOpen]="staffForDepartmentAssignment() !== null"
+    title="Assign Departments"
+    size="medium"
+    (close)="closeDepartmentAssignmentDialog()"
+  >
+    @if (staffForDepartmentAssignment(); as selectedStaff) {
+      <div class="staff-department-assignment">
+        <p>
+          Assign one primary department and any additional secondary departments for
+          <strong>{{ selectedStaff.fullname || selectedStaff.username }}</strong
+          >. Specialization departments are not changed.
+        </p>
+
+        @if (isLoadingAssignments()) {
+          <div class="staff-department-assignment__loading" role="status">
+            <span class="material-icons">hourglass_top</span>
+            Loading department assignments...
+          </div>
+        } @else {
+          <label class="form-field">
+            <span class="form-label">Primary Department *</span>
+            <app-searchable-dropdown
+              [options]="departmentOptions()"
+              [searchable]="true"
+              placeholder="Search primary department..."
+              [ngModel]="assignedPrimaryDepartmentId()"
+              (ngModelChange)="onPrimaryDepartmentChange($event)"
+            >
+            </app-searchable-dropdown>
+          </label>
+
+          <label class="form-field">
+            <span class="form-label">Secondary Departments</span>
+            <app-searchable-dropdown
+              [options]="secondaryDepartmentOptions()"
+              [searchable]="true"
+              [isMulti]="true"
+              placeholder="Search secondary departments..."
+              [ngModel]="assignedSecondaryDepartmentIds()"
+              (ngModelChange)="assignedSecondaryDepartmentIds.set($event)"
+            >
+            </app-searchable-dropdown>
+            <span class="form-hint">You may select more than one secondary department.</span>
+          </label>
+
+          <p class="staff-department-assignment__note">
+            Primary and secondary assignments are preserved when staff data is synchronized. Use
+            reset to restore the synchronized department values.
+          </p>
+        }
+      </div>
+    }
+
+    <div dialog-footer class="staff-department-assignment__footer">
+      <button
+        class="btn btn-warning"
+        type="button"
+        [disabled]="isSavingAssignments() || isLoadingAssignments()"
+        (click)="resetDepartmentAssignments()"
+      >
+        Reset to Synchronized
+      </button>
+      <span class="staff-department-assignment__footer-spacer"></span>
+      <button
+        class="btn btn-secondary"
+        type="button"
+        [disabled]="isSavingAssignments()"
+        (click)="closeDepartmentAssignmentDialog()"
+      >
+        Cancel
+      </button>
+      <button
+        class="btn btn-primary"
+        type="button"
+        [disabled]="
+          isSavingAssignments() || isLoadingAssignments() || assignedPrimaryDepartmentId() === null
+        "
+        (click)="saveDepartmentAssignments()"
+      >
+        {{ isSavingAssignments() ? 'Saving...' : 'Save' }}
+      </button>
+    </div>
+  </app-dialog>
 </main>

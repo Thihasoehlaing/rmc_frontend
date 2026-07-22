@@ -11,6 +11,7 @@ import {
   DataTableComponent,
 } from '../../../shared/components/data-table/data-table.component';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
+import { DialogComponent } from '../../../shared/components/dialog/dialog.component';
 import { SearchableDropdownComponent } from '../../../shared/components/searchable-dropdown/searchable-dropdown.component';
 import { TableSkeletonComponent } from '../../../shared/components/table-skeleton/table-skeleton.component';
 import {
@@ -27,6 +28,7 @@ import {
     CommonModule,
     FormsModule,
     DataTableComponent,
+    DialogComponent,
     PaginationComponent,
     SearchableDropdownComponent,
     TableSkeletonComponent,
@@ -66,6 +68,11 @@ export class StaffDirectoryComponent implements OnInit {
   readonly isLoading = signal(true);
   readonly loadFailed = signal(false);
   readonly isSyncing = signal(false);
+  readonly staffForDepartmentAssignment = signal<StaffRecord | null>(null);
+  readonly assignedPrimaryDepartmentId = signal<number | null>(null);
+  readonly assignedSecondaryDepartmentIds = signal<number[]>([]);
+  readonly isLoadingAssignments = signal(false);
+  readonly isSavingAssignments = signal(false);
 
   readonly columns: readonly DataTableColumn[] = [
     { key: 'number', label: 'No.', width: '72px', align: 'center' },
@@ -75,10 +82,16 @@ export class StaffDirectoryComponent implements OnInit {
     { key: 'type', label: 'Type', width: '130px', align: 'center' },
     { key: 'syncedAt', label: 'Synced At', width: '190px' },
     { key: 'status', label: 'Status', width: '120px', align: 'center' },
+    {
+      key: 'actions',
+      label: 'Actions',
+      width: '110px',
+      align: 'center',
+      headerAlign: 'center',
+    },
   ];
 
-  readonly rowTrackFn: TrackByFunction<unknown> = (_index, row) =>
-    (row as StaffRecord).id;
+  readonly rowTrackFn: TrackByFunction<unknown> = (_index, row) => (row as StaffRecord).id;
 
   ngOnInit(): void {
     this.loadInitialData();
@@ -88,6 +101,14 @@ export class StaffDirectoryComponent implements OnInit {
     return this.departments().map((department) => ({
       value: department.id,
       label: department.department_name,
+    }));
+  }
+
+  secondaryDepartmentOptions(): DropdownOption<number>[] {
+    const primaryId = this.assignedPrimaryDepartmentId();
+    return this.departmentOptions().map((option) => ({
+      ...option,
+      disabled: option.value === primaryId,
     }));
   }
 
@@ -189,6 +210,88 @@ export class StaffDirectoryComponent implements OnInit {
     this.router.navigate(['/settings/departments']);
   }
 
+  openDepartmentAssignmentDialog(staff: StaffRecord): void {
+    this.staffForDepartmentAssignment.set(staff);
+    this.assignedPrimaryDepartmentId.set(null);
+    this.assignedSecondaryDepartmentIds.set([]);
+    this.isLoadingAssignments.set(true);
+
+    this.staffService
+      .getDepartmentAssignments(staff.id)
+      .pipe(finalize(() => this.isLoadingAssignments.set(false)))
+      .subscribe({
+        next: (response) => {
+          const assignments = response.data;
+          this.assignedPrimaryDepartmentId.set(
+            this.departmentIdForName(assignments.primary_department?.department_name),
+          );
+          this.assignedSecondaryDepartmentIds.set(
+            assignments.secondary_departments
+              .map((department) => this.departmentIdForName(department.department_name))
+              .filter((departmentId): departmentId is number => departmentId !== null),
+          );
+        },
+        error: () => this.closeDepartmentAssignmentDialog(),
+      });
+  }
+
+  closeDepartmentAssignmentDialog(): void {
+    if (this.isSavingAssignments()) return;
+    this.staffForDepartmentAssignment.set(null);
+    this.assignedPrimaryDepartmentId.set(null);
+    this.assignedSecondaryDepartmentIds.set([]);
+  }
+
+  onPrimaryDepartmentChange(departmentId: number | null): void {
+    this.assignedPrimaryDepartmentId.set(departmentId);
+    if (departmentId !== null) {
+      this.assignedSecondaryDepartmentIds.update((departmentIds) =>
+        departmentIds.filter((id) => id !== departmentId),
+      );
+    }
+  }
+
+  saveDepartmentAssignments(): void {
+    const staff = this.staffForDepartmentAssignment();
+    const primaryDepartmentId = this.assignedPrimaryDepartmentId();
+    if (!staff || primaryDepartmentId === null || this.isSavingAssignments()) return;
+
+    this.isSavingAssignments.set(true);
+    this.staffService
+      .updateDepartmentAssignments(staff.id, {
+        primary_department_id: primaryDepartmentId,
+        secondary_department_ids: this.assignedSecondaryDepartmentIds().filter(
+          (departmentId) => departmentId !== primaryDepartmentId,
+        ),
+      })
+      .pipe(finalize(() => this.isSavingAssignments.set(false)))
+      .subscribe({
+        next: () => {
+          this.staffForDepartmentAssignment.set(null);
+          this.loadStaff();
+        },
+      });
+  }
+
+  resetDepartmentAssignments(): void {
+    const staff = this.staffForDepartmentAssignment();
+    if (!staff || this.isSavingAssignments()) return;
+
+    this.isSavingAssignments.set(true);
+    this.staffService
+      .resetDepartmentAssignments(staff.id)
+      .pipe(
+        switchMap(() => this.staffService.sync(true)),
+        finalize(() => this.isSavingAssignments.set(false)),
+      )
+      .subscribe({
+        next: () => {
+          this.staffForDepartmentAssignment.set(null);
+          this.loadInitialData();
+        },
+      });
+  }
+
   initials(item: StaffRecord): string {
     const source = item.fullname || item.email || item.username || '';
     return source
@@ -259,5 +362,15 @@ export class StaffDirectoryComponent implements OnInit {
       if (!unique.has(key)) unique.set(key, department);
     }
     return [...unique.values()];
+  }
+
+  private departmentIdForName(departmentName: string | null | undefined): number | null {
+    const normalizedName = departmentName?.trim().toLowerCase();
+    if (!normalizedName) return null;
+    return (
+      this.departments().find(
+        (department) => department.department_name.trim().toLowerCase() === normalizedName,
+      )?.id ?? null
+    );
   }
 }

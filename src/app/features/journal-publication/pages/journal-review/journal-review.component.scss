@@ -642,12 +642,14 @@
 
 .modern-table {
   overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  -webkit-overflow-scrolling: touch;
   border: 1px solid var(--border-default);
   border-radius: 16px;
 
   table {
-    width: 100%;
-    min-width: 620px;
+    width: max-content;
+    min-width: 100%;
     border-collapse: collapse;
     font-size: var(--fs-sm);
   }
@@ -655,8 +657,17 @@
   th,
   td {
     padding: var(--space-3);
+    min-width: 150px;
     text-align: left;
     border-bottom: 1px solid var(--border-light);
+    white-space: nowrap;
+  }
+
+  .table-cell--wrap {
+    width: 320px;
+    min-width: 280px;
+    max-width: 360px;
+    white-space: normal;
     overflow-wrap: anywhere;
   }
 

@@ -36,6 +36,29 @@ export interface StaffSyncResult {
   [key: string]: unknown;
 }
 
+export interface StaffDepartmentLink {
+  id: number;
+  department_name: string;
+  department_type: 'PRIMARY' | 'SECONDARY' | 'SPECIALIZATION';
+  is_primary: boolean;
+}
+
+export interface StaffDepartmentAssignments {
+  staff: {
+    id: number;
+    username: string;
+    fullname: string | null;
+    email: string | null;
+  };
+  primary_department: StaffDepartmentLink | null;
+  secondary_departments: StaffDepartmentLink[];
+}
+
+export interface StaffDepartmentAssignmentPayload {
+  primary_department_id: number;
+  secondary_department_ids: number[];
+}
+
 interface PaginatedData<T> {
   items: T[];
   pagination: ApiPagination;
@@ -49,12 +72,8 @@ export class StaffDirectoryService {
   private readonly syncUrl = `${this.staffUrl}/sync`;
   private readonly departmentsUrl = `${this.apiUrl}/master-data/departments`;
 
-  list(
-    params: StaffListParams,
-  ): Observable<ApiResponse<PaginatedData<StaffRecord>>> {
-    let httpParams = new HttpParams()
-      .set('page', params.page)
-      .set('per_page', params.perPage);
+  list(params: StaffListParams): Observable<ApiResponse<PaginatedData<StaffRecord>>> {
+    let httpParams = new HttpParams().set('page', params.page).set('per_page', params.perPage);
 
     if (params.search?.trim()) {
       httpParams = httpParams.set('search', params.search.trim());
@@ -78,13 +97,31 @@ export class StaffDirectoryService {
     return this.http.post<ApiResponse<StaffSyncResult>>(this.syncUrl, { force });
   }
 
-  listDepartments(
-    includeInactive = false,
-  ): Observable<ApiResponse<DepartmentRecord[]>> {
-    const params = new HttpParams().set(
-      'include_inactive',
-      includeInactive ? 'true' : 'false',
+  getDepartmentAssignments(staffId: number): Observable<ApiResponse<StaffDepartmentAssignments>> {
+    return this.http.get<ApiResponse<StaffDepartmentAssignments>>(
+      `${this.staffUrl}/${staffId}/departments`,
     );
+  }
+
+  updateDepartmentAssignments(
+    staffId: number,
+    payload: StaffDepartmentAssignmentPayload,
+  ): Observable<ApiResponse<StaffDepartmentAssignments>> {
+    return this.http.put<ApiResponse<StaffDepartmentAssignments>>(
+      `${this.staffUrl}/${staffId}/departments`,
+      payload,
+    );
+  }
+
+  resetDepartmentAssignments(staffId: number): Observable<ApiResponse<StaffDepartmentAssignments>> {
+    return this.http.post<ApiResponse<StaffDepartmentAssignments>>(
+      `${this.staffUrl}/${staffId}/departments/reset`,
+      {},
+    );
+  }
+
+  listDepartments(includeInactive = false): Observable<ApiResponse<DepartmentRecord[]>> {
+    const params = new HttpParams().set('include_inactive', includeInactive ? 'true' : 'false');
     return this.http.get<ApiResponse<DepartmentRecord[]>>(this.departmentsUrl, {
       params,
     });

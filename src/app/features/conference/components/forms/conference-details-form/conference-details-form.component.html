@@ -208,7 +208,12 @@
             >
             <div class="radio-field">
               <label class="radio-field__option">
-                <input type="radio" value="yes" formControlName="restrictedPublisher" />
+                <input
+                  type="radio"
+                  value="yes"
+                  formControlName="restrictedPublisher"
+                  (change)="showRestrictedPublisherWarning()"
+                />
                 <span>Yes</span>
               </label>
               <label class="radio-field__option">
@@ -217,9 +222,15 @@
               </label>
             </div>
             <app-note text="Expected Answer for Approval: No"></app-note>
-            <app-validation-message
-              [control]="form.get('restrictedPublisher')"
-            ></app-validation-message>
+            @if (form.get('restrictedPublisher')?.hasError('restrictedPublisherNotAllowed')) {
+              <span class="error-message">
+                Applications involving restricted publishers cannot be submitted.
+              </span>
+            } @else {
+              <app-validation-message
+                [control]="form.get('restrictedPublisher')"
+              ></app-validation-message>
+            }
           </div>
 
           <div class="form-field">
@@ -282,7 +293,6 @@
               </div>
             }
           </div>
-          <app-note [text]="sdgKeywordNote"></app-note>
           <app-validation-message [control]="form.get('sdgKeyword1')"></app-validation-message>
           <app-validation-message [control]="form.get('sdgKeyword2')"></app-validation-message>
           <app-validation-message [control]="form.get('sdgKeyword3')"></app-validation-message>
@@ -293,6 +303,11 @@
     <section class="card">
       <app-custom-subheader title="Conference Schedule"></app-custom-subheader>
       <div class="card__content section-fields">
+        <app-note
+          text="Applications must be submitted at least three weeks before the Conference Start Date."
+          [isTooltip]="false"
+        ></app-note>
+
         <div class="row row--2 conference-field-grid">
           <div class="form-field">
             <label class="form-label is-required">Conference Start Date</label>
@@ -326,6 +341,10 @@
           data-missing-field-target="activityTable"
         >
           <label class="form-label is-required">Activity Table</label>
+          <app-note
+            text="Activities can include travel, i.e. one day before the Conference Start Date and one day after the Conference End Date."
+            [isTooltip]="false"
+          ></app-note>
           <div class="category-header activity-actions-row">
             <button
               type="button"
@@ -354,7 +373,8 @@
                 <ng-template #rowTemplate let-row let-i="index">
                   <tr>
                     <td>{{ row.value.date || '-' }}</td>
-                    <td>{{ formatActivityTime(row.value.time) }}</td>
+                    <td>{{ formatActivityTime(row.value.startTime) }}</td>
+                    <td>{{ formatActivityTime(row.value.endTime) }}</td>
                     <td class="activity-description-cell">{{ row.value.description || '-' }}</td>
                     <td class="action-cell">
                       <div class="data-table__actions activity-row-actions">
@@ -1273,6 +1293,29 @@
       </app-dialog>
     }
 
+    @if (isRestrictedPublisherWarningOpen) {
+      <app-dialog
+        title="Restricted Publisher Not Allowed"
+        [isOpen]="true"
+        size="small"
+        (close)="closeRestrictedPublisherWarning()"
+      >
+        <p>
+          You can't submit the application if Yes is selected. Your conference proceeding
+          publisher cannot be one of the restricted publishers.
+        </p>
+
+        <button
+          dialog-footer
+          type="button"
+          class="btn btn-primary"
+          (click)="closeRestrictedPublisherWarning()"
+        >
+          OK
+        </button>
+      </app-dialog>
+    }
+
     @if (isActivityModalOpen) {
       <app-dialog
         [title]="activityEditingIndex === null ? 'Add Activity' : 'Edit Activity'"
@@ -1293,19 +1336,55 @@
               type="date"
               class="form-control"
               formControlName="date"
-              [attr.min]="form.get('conferenceStartDate')?.value"
-              [attr.max]="form.get('conferenceEndDate')?.value"
+              [attr.min]="getMinimumActivityDate()"
+              [attr.max]="getMaximumActivityDate()"
             />
-            @if (activityForm.get('date')?.invalid && activityForm.get('date')?.touched) {
+            @if (activityForm.get('date')?.hasError('required') && activityForm.get('date')?.touched) {
               <span class="error-message">Activity date is required.</span>
+            } @else if (
+              activityForm.get('date')?.hasError('activityDateOutOfRange') &&
+              activityForm.get('date')?.touched
+            ) {
+              <span class="error-message">
+                Activity date must be between one day before the conference starts and one day
+                after it ends.
+              </span>
             }
           </div>
 
           <div class="form-group">
-            <label for="activityTime">Time <span class="asterisk">*</span></label>
-            <input id="activityTime" type="time" class="form-control" formControlName="time" />
-            @if (activityForm.get('time')?.invalid && activityForm.get('time')?.touched) {
-              <span class="error-message">Activity time is required.</span>
+            <label for="activityStartTime">Start Time <span class="asterisk">*</span></label>
+            <input
+              id="activityStartTime"
+              type="time"
+              class="form-control"
+              formControlName="startTime"
+            />
+            @if (
+              activityForm.get('startTime')?.hasError('required') &&
+              activityForm.get('startTime')?.touched
+            ) {
+              <span class="error-message">Activity start time is required.</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="activityEndTime">End Time <span class="asterisk">*</span></label>
+            <input
+              id="activityEndTime"
+              type="time"
+              class="form-control"
+              formControlName="endTime"
+            />
+            @if (
+              activityForm.get('endTime')?.hasError('required') &&
+              activityForm.get('endTime')?.touched
+            ) {
+              <span class="error-message">Activity end time is required.</span>
+            } @else if (
+              activityForm.hasError('activityTimeRange') && activityForm.get('endTime')?.touched
+            ) {
+              <span class="error-message">End time must be later than start time.</span>
             }
           </div>
 
@@ -1358,7 +1437,7 @@
         size="small"
         (close)="closeSDGKeywordsModal()"
       >
-        <form class="dialog-form" [formGroup]="sdgKeywordsForm">
+        <form class="dialog-form conference-sdg-keywords-form" [formGroup]="sdgKeywordsForm">
           <app-note class="sdg-reference-note">
             <span class="sdg-reference-guidance">
               <span>Note: Please refer to the links for the sample of SDG keywords.</span>
@@ -1381,43 +1460,64 @@
             </span>
           </app-note>
 
-          <div class="form-field">
+          <div class="form-field conference-sdg-keyword-field">
             <label class="form-label is-required">Keyword 1</label>
             <input
               type="text"
               class="input--text"
               formControlName="keyword1"
-              [placeholder]="sdgKeywordPlaceholder"
+              [placeholder]="sdgKeywordPlaceholders.keyword1"
+              [maxlength]="sdgKeywordMaxLength"
             />
-            <app-validation-message
-              [control]="sdgKeywordsForm.get('keyword1')"
-            ></app-validation-message>
+            <div class="conference-sdg-keyword-feedback">
+              <app-validation-message
+                [control]="sdgKeywordsForm.get('keyword1')"
+              ></app-validation-message>
+              <app-character-counter
+                [current]="sdgKeywordsForm.get('keyword1')?.value?.length || 0"
+                [max]="sdgKeywordMaxLength"
+              ></app-character-counter>
+            </div>
           </div>
 
-          <div class="form-field">
+          <div class="form-field conference-sdg-keyword-field">
             <label class="form-label is-required">Keyword 2</label>
             <input
               type="text"
               class="input--text"
               formControlName="keyword2"
-              [placeholder]="sdgKeywordPlaceholder"
+              [placeholder]="sdgKeywordPlaceholders.keyword2"
+              [maxlength]="sdgKeywordMaxLength"
             />
-            <app-validation-message
-              [control]="sdgKeywordsForm.get('keyword2')"
-            ></app-validation-message>
+            <div class="conference-sdg-keyword-feedback">
+              <app-validation-message
+                [control]="sdgKeywordsForm.get('keyword2')"
+              ></app-validation-message>
+              <app-character-counter
+                [current]="sdgKeywordsForm.get('keyword2')?.value?.length || 0"
+                [max]="sdgKeywordMaxLength"
+              ></app-character-counter>
+            </div>
           </div>
 
-          <div class="form-field">
+          <div class="form-field conference-sdg-keyword-field">
             <label class="form-label is-required">Keyword 3</label>
             <input
               type="text"
               class="input--text"
               formControlName="keyword3"
-              [placeholder]="sdgKeywordPlaceholder"
+              [placeholder]="sdgKeywordPlaceholders.keyword3"
+              [maxlength]="sdgKeywordMaxLength"
             />
-            <app-validation-message
-              [control]="sdgKeywordsForm.get('keyword3')"
-            ></app-validation-message>
+            <div class="conference-sdg-keyword-feedback">
+              <app-validation-message
+                [control]="sdgKeywordsForm.get('keyword3')"
+              ></app-validation-message>
+              <app-character-counter
+                [current]="sdgKeywordsForm.get('keyword3')?.value?.length || 0"
+                [max]="sdgKeywordMaxLength"
+              ></app-character-counter>
+            </div>
           </div>
         </form>
 

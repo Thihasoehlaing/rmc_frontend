@@ -20,8 +20,7 @@
   </div>
 
   <!-- User Profile Section -->
-  <div class="sidebar__profile" [class.sidebar__profile--open]="profileOpen() && isExpanded()" (click)="toggleProfile()"
-    [class.sidebar__profile--expanded]="isExpanded()">
+  <div class="sidebar__profile" [class.sidebar__profile--expanded]="isExpanded()">
     <div class="profile-avatar">
       <span>{{ currentUser()?.name?.charAt(0) ?? '?' }}</span>
       @if (currentUser()?.photoUrl) {
@@ -38,23 +37,8 @@
       <div class="profile-name">{{ currentUser()?.name }}</div>
       <div class="profile-email">{{ currentUser()?.email }}</div>
     </div>
-    <span class="material-icons profile-chevron" [class.rotated]="profileOpen()">expand_more</span>
     }
   </div>
-
-  <!-- Profile Dropdown Actions (only when open) -->
-  @if (isExpanded() && profileOpen()) {
-  <div class="profile-dropdown">
-    <a routerLink="/profile" class="profile-dropdown__item">
-      <span class="material-icons">person</span>
-      <span>Profile</span>
-    </a>
-    <button class="profile-dropdown__item profile-dropdown__item--danger" (click)="logout()">
-      <span class="material-icons">logout</span>
-      <span>Logout</span>
-    </button>
-  </div>
-  }
 
   <!-- Navigation -->
   <nav class="sidebar__nav">
@@ -104,4 +88,30 @@
     </div>
     }
   </nav>
+
+  <footer class="sidebar__footer" aria-label="Account actions">
+    <a
+      routerLink="/profile"
+      routerLinkActive="active"
+      class="sidebar-account-action"
+      title="Profile"
+      (click)="closeMobileSidebar()"
+    >
+      <span class="material-icons sidebar-account-action__icon">person</span>
+      @if (isExpanded()) {
+        <span class="sidebar-account-action__label">Profile</span>
+      }
+    </a>
+    <button
+      type="button"
+      class="sidebar-account-action sidebar-account-action--danger"
+      title="Logout"
+      (click)="logout()"
+    >
+      <span class="material-icons sidebar-account-action__icon">logout</span>
+      @if (isExpanded()) {
+        <span class="sidebar-account-action__label">Logout</span>
+      }
+    </button>
+  </footer>
 </aside>

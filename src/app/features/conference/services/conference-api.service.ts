@@ -124,6 +124,9 @@ export interface ConferenceAttachmentDto {
 export interface ConferenceTravelEventDto {
   id?: number;
   event_date?: string | null;
+  start_time?: string | null;
+  end_time?: string | null;
+  /** Legacy response field retained while older Conference drafts are migrated. */
   event_time?: string | null;
   description?: string | null;
   display_order?: number | null;

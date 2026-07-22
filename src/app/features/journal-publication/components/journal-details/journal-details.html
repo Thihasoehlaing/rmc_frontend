@@ -267,7 +267,6 @@
                   </div>
                 }
               </div>
-              <app-note [text]="sdgKeywordNote"></app-note>
               <app-validation-message [control]="form.get('sdgKeyword1')"></app-validation-message>
               <app-validation-message [control]="form.get('sdgKeyword2')"></app-validation-message>
               <app-validation-message [control]="form.get('sdgKeyword3')"></app-validation-message>
@@ -956,7 +955,7 @@
   [width]="'600px'"
   (close)="closeSDGKeywordsModal()"
 >
-  <form [formGroup]="sdgKeywordsForm">
+  <form class="sdg-keywords-form" [formGroup]="sdgKeywordsForm">
     <app-note class="sdg-reference-note">
       <span class="sdg-reference-guidance">
         <span>Note: Please refer to the links for the sample of SDG keywords.</span>
@@ -979,37 +978,58 @@
       </span>
     </app-note>
 
-    <div class="form-field">
+    <div class="form-field sdg-keyword-field">
       <label class="form-label">Keyword 1 <span class="asterisk">*</span></label>
       <input
         type="text"
         class="input--text"
         formControlName="keyword1"
-        [placeholder]="sdgKeywordPlaceholder"
+        [placeholder]="sdgKeywordPlaceholders.keyword1"
+        [maxlength]="sdgKeywordMaxLength"
       />
-      <app-validation-message [control]="sdgKeywordsForm.get('keyword1')"></app-validation-message>
+      <div class="sdg-keyword-feedback">
+        <app-validation-message [control]="sdgKeywordsForm.get('keyword1')"></app-validation-message>
+        <app-character-counter
+          [current]="sdgKeywordsForm.get('keyword1')?.value?.length || 0"
+          [max]="sdgKeywordMaxLength"
+        ></app-character-counter>
+      </div>
     </div>
 
-    <div class="form-field">
+    <div class="form-field sdg-keyword-field">
       <label class="form-label">Keyword 2 <span class="asterisk">*</span></label>
       <input
         type="text"
         class="input--text"
         formControlName="keyword2"
-        [placeholder]="sdgKeywordPlaceholder"
+        [placeholder]="sdgKeywordPlaceholders.keyword2"
+        [maxlength]="sdgKeywordMaxLength"
       />
-      <app-validation-message [control]="sdgKeywordsForm.get('keyword2')"></app-validation-message>
+      <div class="sdg-keyword-feedback">
+        <app-validation-message [control]="sdgKeywordsForm.get('keyword2')"></app-validation-message>
+        <app-character-counter
+          [current]="sdgKeywordsForm.get('keyword2')?.value?.length || 0"
+          [max]="sdgKeywordMaxLength"
+        ></app-character-counter>
+      </div>
     </div>
 
-    <div class="form-field">
+    <div class="form-field sdg-keyword-field">
       <label class="form-label">Keyword 3 <span class="asterisk">*</span></label>
       <input
         type="text"
         class="input--text"
         formControlName="keyword3"
-        [placeholder]="sdgKeywordPlaceholder"
+        [placeholder]="sdgKeywordPlaceholders.keyword3"
+        [maxlength]="sdgKeywordMaxLength"
       />
-      <app-validation-message [control]="sdgKeywordsForm.get('keyword3')"></app-validation-message>
+      <div class="sdg-keyword-feedback">
+        <app-validation-message [control]="sdgKeywordsForm.get('keyword3')"></app-validation-message>
+        <app-character-counter
+          [current]="sdgKeywordsForm.get('keyword3')?.value?.length || 0"
+          [max]="sdgKeywordMaxLength"
+        ></app-character-counter>
+      </div>
     </div>
   </form>
 

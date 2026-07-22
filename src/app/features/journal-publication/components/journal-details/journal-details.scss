@@ -447,7 +447,30 @@
 // SDG Keywords Container & Chips Styles
 .sdg-reference-note {
   display: block;
-  margin-bottom: var(--space-3);
+}
+
+.sdg-keywords-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.sdg-keyword-field {
+  gap: var(--space-1);
+}
+
+.sdg-keyword-feedback {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  column-gap: var(--space-3);
+  min-height: var(--line-height-caption);
+
+  app-validation-message,
+  app-character-counter {
+    display: block;
+    min-width: 0;
+  }
 }
 
 .sdg-reference-guidance {

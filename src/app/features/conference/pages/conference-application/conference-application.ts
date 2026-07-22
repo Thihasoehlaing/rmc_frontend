@@ -925,7 +925,8 @@ export class ConferenceApplication implements OnInit {
       activities: data.travel_events.map((item) => ({
         backendId: item.id,
         date: item.event_date ?? '',
-        time: item.event_time ?? '',
+        startTime: item.start_time ?? item.event_time ?? '',
+        endTime: item.end_time ?? '',
         description: item.description ?? '',
       })),
       localOrOverseas: conference.location_type ?? '',
@@ -1196,7 +1197,14 @@ export class ConferenceApplication implements OnInit {
     }
 
     const state = this.formStateService.getFormSection('supportingDocuments') ?? {};
-    return this.getMissingFromValue(state, this.supportingDocumentsFieldChecks);
+    const missing = this.getMissingFromValue(state, this.supportingDocumentsFieldChecks);
+    if (state['manuscriptPreviouslyPublished'] === 'yes') {
+      missing.push({
+        label: 'Manuscript Previously Published',
+        target: 'manuscriptPreviouslyPublished',
+      });
+    }
+    return this.uniqueLabels(missing);
   }
 
   private getDeclarationMissingFields(): MissingField[] {
@@ -1246,7 +1254,9 @@ export class ConferenceApplication implements OnInit {
     const rows = Array.isArray(activities) ? activities : [];
     return rows.some((activity) => {
       const rowValue = (activity ?? {}) as Record<string, unknown>;
-      return ['date', 'time', 'description'].some((field) => this.isEmptyRequiredValue(rowValue[field]));
+      return ['date', 'startTime', 'endTime', 'description'].some((field) =>
+        this.isEmptyRequiredValue(rowValue[field]),
+      );
     })
       ? [{ label: 'Conference Schedule - Add Activity', target: 'activityTable' }]
       : [];
@@ -1415,7 +1425,8 @@ export class ConferenceApplication implements OnInit {
       has_travelling_colleagues: toBool(cd.hasColleagues),
       travel_events: (cd.activities ?? []).map((activity: any, index: number) => ({
         event_date: activity.date || null,
-        event_time: activity.time || null,
+        start_time: activity.startTime || null,
+        end_time: activity.endTime || null,
         description: activity.description || null,
         display_order: index + 1,
       })),
@@ -1680,6 +1691,27 @@ export class ConferenceApplication implements OnInit {
   submitForm(): void {
     this.submitAttempted.set(true);
     this.flushActiveStepFormState();
+
+    const conferenceDetails = this.formStateService.getFormSection('conferenceDetails');
+    if (conferenceDetails?.['restrictedPublisher'] === 'yes') {
+      this.checkedSteps.add(1);
+      this.currentStep.set(1);
+      this.submissionErrorMessage.set(
+        "You can't submit this application because the conference proceeding publisher is restricted.",
+      );
+      return;
+    }
+
+    const supportingDocuments = this.formStateService.getFormSection('supportingDocuments');
+    if (supportingDocuments?.['manuscriptPreviouslyPublished'] === 'yes') {
+      this.checkedSteps.add(3);
+      this.currentStep.set(3);
+      this.submissionErrorMessage.set(
+        "You can't submit this application because the manuscript or content was published previously.",
+      );
+      return;
+    }
+
     const firstInvalidStep = this.getStepStatuses().findIndex((step) => !step.valid);
     if (firstInvalidStep >= 0) {
       this.checkedSteps.add(firstInvalidStep + 1);
@@ -1726,9 +1758,6 @@ export class ConferenceApplication implements OnInit {
     return error?.error?.message || error?.message || fallback;
   }
 }
-
-
-
 
 
 

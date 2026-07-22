@@ -803,7 +803,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
       conferenceName: ['', [Validators.required, Validators.maxLength(200)]],
       conferenceStartDate: ['', [Validators.required, this.minDateValidator.bind(this)]],
       conferenceEndDate: ['', [Validators.required, this.endDateValidator]],
-      activities: this.fb.array([]),
+      activities: this.fb.array([], [Validators.required]),
       localOrOverseas: ['', [Validators.required]],
       researchType: ['', [Validators.required]],
       citedJournalPaper: ['', [Validators.required]],

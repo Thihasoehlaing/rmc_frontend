@@ -1,0 +1,163 @@
+<main class="dashboard" [ngClass]="'dashboard--' + viewConfig().audience">
+  <header class="dashboard-header">
+    <div>
+      <span class="role-label">
+        <span class="material-icons">verified_user</span>{{ viewConfig().roleLabel }}
+      </span>
+      <h1>{{ viewConfig().title }}</h1>
+      <p>Welcome back, {{ username }}. {{ viewConfig().subtitle }}</p>
+    </div>
+    <a class="btn btn-primary header-action" [routerLink]="viewConfig().primaryAction.route">
+      <span class="material-icons">{{ viewConfig().primaryAction.icon }}</span>
+      {{ viewConfig().primaryAction.label }}
+    </a>
+  </header>
+
+  <section class="metrics-grid" aria-label="Dashboard totals">
+    @for (metric of metrics(); track metric.key) {
+      <a class="metric-card" [ngClass]="'metric-card--' + metric.tone" [routerLink]="metric.route">
+        <span class="metric-icon material-icons">{{ metric.icon }}</span>
+        <span class="metric-label">{{ metric.label }}</span>
+        <strong>{{ metric.value }}</strong>
+        <small>{{ metric.helper }}</small>
+        <span class="metric-arrow material-icons">north_east</span>
+      </a>
+    }
+  </section>
+
+  @if (viewConfig().showAnalytics) {
+    <section class="analytics-grid" aria-label="Application analytics">
+      <article class="analytics-card form-chart">
+        <header class="card-heading">
+          <div>
+            <span>Form analytics</span>
+            <h2>{{ viewConfig().formChartTitle }}</h2>
+            <p>{{ viewConfig().formChartDescription }}</p>
+          </div>
+          <div class="chart-key">
+            <i></i>{{ viewConfig().formChartPrimaryLabel }} <i></i>Required action
+          </div>
+        </header>
+        @if (formBreakdown().length) {
+          <div class="form-bars">
+            @for (form of formBreakdown(); track form.form_code) {
+              <div class="form-bar-row">
+                <div class="form-bar-label">
+                  <strong>{{ form.form_name }}</strong>
+                  <small>{{ formTotal(form) }} total</small>
+                </div>
+                <div class="bar-stack">
+                  <div class="bar-track">
+                    <span class="bar-primary" [style.width.%]="barWidth(formPrimaryValue(form))"></span>
+                  </div>
+                  <div class="bar-track">
+                    <span class="bar-action" [style.width.%]="barWidth(form.required_action)"></span>
+                  </div>
+                </div>
+                <div class="bar-values">
+                  <strong>{{ formPrimaryValue(form) }}</strong>
+                  <strong>{{ form.required_action }}</strong>
+                </div>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="chart-empty">Form activity will appear here.</div>
+        }
+      </article>
+
+      <article class="analytics-card status-card">
+        <header class="card-heading">
+          <div>
+            <span>Portfolio</span>
+            <h2>Application status</h2>
+            <p>Current status distribution</p>
+          </div>
+        </header>
+        <div class="donut-wrap">
+          <div class="donut" [style.background]="donutBackground()">
+            <div>
+              <strong>{{ distributionTotal() }}</strong>
+              <small>Total</small>
+            </div>
+          </div>
+          <ul class="legend">
+            <li><i class="approved"></i><span>Complete</span><strong>{{ statusDistribution().approved }}</strong></li>
+            <li><i class="rejected"></i><span>Rejected</span><strong>{{ statusDistribution().rejected }}</strong></li>
+            <li><i class="pending"></i><span>Pending</span><strong>{{ statusDistribution().pending }}</strong></li>
+          </ul>
+        </div>
+      </article>
+
+      <article class="analytics-card trend-card">
+        <header class="card-heading">
+          <div>
+            <span>Six-month trend</span>
+            <h2>Submitted applications</h2>
+            <p>Monthly submission volume</p>
+          </div>
+        </header>
+        <div class="month-chart">
+          @for (month of monthlySubmissions(); track month.month) {
+            <div class="month-column" [attr.aria-label]="month.label + ': ' + month.count">
+              <strong>{{ month.count }}</strong>
+              <div class="month-track">
+                <span [style.height.%]="monthHeight(month.count)"></span>
+              </div>
+              <small>{{ month.label }}</small>
+            </div>
+          }
+        </div>
+      </article>
+    </section>
+  }
+
+  <section class="recent-card">
+    <header class="card-heading recent-heading">
+      <div>
+        <span>Latest updates</span>
+        <h2>{{ viewConfig().recentTitle }}</h2>
+        <p>Open an application to see its complete workflow.</p>
+      </div>
+      <a [routerLink]="viewConfig().recentRoute">
+        View all <span class="material-icons">arrow_forward</span>
+      </a>
+    </header>
+    @if (visibleRecentApps().length) {
+      <div class="recent-table" role="table" aria-label="Recent applications">
+        <div class="recent-table-head" role="row">
+          <span>Application</span><span>Form</span><span>Updated</span><span>Status</span><span></span>
+        </div>
+        @for (app of visibleRecentApps(); track app.id ?? app.request_code) {
+          <a class="recent-row" [routerLink]="getFormRoute(app)" role="row">
+            <span class="application-title">
+              <i class="material-icons">description</i>
+              <span>
+                <strong>{{ getTitle(app) }}</strong>
+                <small>{{ app.request_code || 'Draft' }}</small>
+              </span>
+            </span>
+            <span>{{ getFormTypeLabel(app) }}</span>
+            <span>{{ formatDate(app) }}</span>
+            <span>
+              @if (needsAction(app)) {
+                <em class="status-pill action">Action needed</em>
+              } @else {
+                <em class="status-pill" [style.--status-color]="getStatusColor(app)">
+                  {{ getStatusLabel(app) }}
+                </em>
+              }
+            </span>
+            <span class="material-icons row-arrow">chevron_right</span>
+          </a>
+        }
+      </div>
+    } @else {
+      <div class="empty-state">
+        <span class="material-icons">inbox</span>
+        <strong>{{ viewConfig().emptyTitle }}</strong>
+        <p>{{ viewConfig().emptyDescription }}</p>
+      </div>
+    }
+  </section>
+</main>

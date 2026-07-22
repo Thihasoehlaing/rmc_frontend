@@ -1,6 +1,6 @@
 import { Component, inject, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
 import { JournalDetails } from './components/journal-details/journal-details';
 import { AuthorsDetails } from './components/authors-details/authors-details';
@@ -10,6 +10,7 @@ import {
   StepIndicatorComponent,
   WizardStep,
   StepStatus,
+  MissingField,
 } from '../../shared/components/step-indicator/step-indicator.component';
 import {
   FormMainTitleComponent,
@@ -70,7 +71,7 @@ export class JournalPublicationFormComponent {
     ? 'existing-application'
     : 'new-application';
   /** Active Journal guideline served by the applicant-safe guideline-by-form endpoint. */
-  readonly guidelinesEndpoint = `${environment.apiUrl.replace(/\/$/, '')}/rmc/admin-settings/guidelines/forms/JOURNAL`;
+  readonly guidelinesEndpoint = `${environment.apiBaseUrl}/admin-settings/guidelines/forms/JOURNAL`;
   reviewComments = {
     hosComment: new FormControl(''),
     rmcComment: new FormControl(''),
@@ -111,6 +112,42 @@ export class JournalPublicationFormComponent {
     3: false,
     4: false,
   };
+  private readonly checkedSteps = new Set<number>();
+
+  private readonly journalDetailsFieldChecks = [
+    { path: 'authorshipType', label: 'Author Role' },
+    { path: 'scopusQuartile', label: 'Scopus Quartile' },
+    { path: 'researchType', label: 'Research Type' },
+    { path: 'restrictedPublisher', label: 'Restricted Publisher' },
+    { path: 'citedApuPaper', label: 'APU/JATI/EJBM Citation' },
+    { path: 'citedApuPaperExplanation', label: 'Citation Explanation' },
+    { path: 'journalName', label: 'Journal Name' },
+    { path: 'paperTitle', label: 'Paper Title' },
+    { path: 'sdgKeyword1', label: 'Please key in 3 SDG keywords', target: 'sdgKeywords' },
+    { path: 'sdgKeyword2', label: 'Please key in 3 SDG keywords', target: 'sdgKeywords' },
+    { path: 'sdgKeyword3', label: 'Please key in 3 SDG keywords', target: 'sdgKeywords' },
+    { path: 'projectAccountCode', label: 'Project Account Code' },
+    { path: 'sponsoredBy', label: 'Sponsored By' },
+    { path: 'costingRemarks', label: 'Costing Remarks' },
+  ];
+
+  private readonly documentFieldChecks = [
+    { path: 'acceptanceNotification', label: 'Acceptance Notification' },
+    { path: 'reviewersFeedback', label: "Reviewers' Feedback" },
+    { path: 'scopusEvidencePublication', label: 'Screenshot of SCOPUS CiteScore' },
+    { path: 'sriApproval', label: 'SRI Approval' },
+    { path: 'turnitinReport', label: 'Turnitin Report' },
+    { path: 'finalPaperDraft', label: 'Final Paper Draft' },
+    { path: 'journalInvoice', label: 'Journal Invoice' },
+    { path: 'reviewerName', label: 'Name of Reviewer' },
+    { path: 'manuscriptInternallyReviewed', label: 'Manuscript Internally Reviewed' },
+    { path: 'manuscriptPreviouslyPublished', label: 'Manuscript Previously Published' },
+  ];
+
+  private readonly declarationFieldChecks = [
+    { path: 'agreeToTerms', label: 'Terms Agreement' },
+    { path: 'acknowledgeGrantFunder', label: 'Grant Funder Acknowledgement' },
+  ];
 
   submitAttempted = false;
   selectedCommentSection: 'hos' | 'rmc' | 'vc' | 'hr' | 'ceo' | null = null;
@@ -169,6 +206,7 @@ export class JournalPublicationFormComponent {
         break;
     }
 
+    isValid = isValid && this.getMissingFieldsForStep(this.currentStep).length === 0;
     this.formValid[this.currentStep] = isValid;
     return isValid;
   }
@@ -177,32 +215,208 @@ export class JournalPublicationFormComponent {
     if (stepIndex === this.currentStep) return;
 
     this.validateCurrentStep(false);
-    this.stepStatuses[this.currentStep - 1] = {
-      visited: true,
-      valid: this.formValid[this.currentStep] || false,
-      missingFields: this.formValid[this.currentStep]
-        ? []
-        : [this.getStepMissingLabel(this.currentStep)],
-    };
-
+    this.checkedSteps.add(this.currentStep);
+    this.refreshStepStatuses();
     this.currentStep = stepIndex;
-    this.stepStatuses = [...this.stepStatuses];
   }
 
-  // Call this from child components when their form changes
+  goToMissingField(event: { step: number; field: MissingField }): void {
+    if (event.step !== this.currentStep) {
+      this.onStepClick(event.step);
+    }
+
+    const target =
+      typeof event.field === 'string'
+        ? event.field
+        : event.field.target ?? event.field.label;
+
+    window.setTimeout(() => {
+      const escapedTarget = target.replace(/"/g, '\\"');
+      const selector =
+        '[data-missing-field-target="' +
+        escapedTarget +
+        '"], [formControlName="' +
+        escapedTarget +
+        '"]';
+      const element = document.querySelector<HTMLElement>(selector);
+      const focusTarget = this.getSafeMissingFieldFocusTarget(element);
+      const scrollTarget = this.getMissingFieldScrollTarget(element, focusTarget);
+
+      scrollTarget?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      this.highlightMissingFieldTarget(scrollTarget ?? element ?? undefined);
+      focusTarget?.focus({ preventScroll: true });
+
+      if (focusTarget && this.canProgrammaticallyClickMissingField(focusTarget)) {
+        focusTarget.click();
+      }
+    });
+  }
+
+  // Called by child components whenever their form validity changes.
   updateFormValidity(stepNumber: number, isValid: boolean) {
     this.formValid[stepNumber] = isValid;
-    if (this.stepStatuses[stepNumber - 1]) {
-      this.stepStatuses[stepNumber - 1].valid = isValid;
-      this.stepStatuses[stepNumber - 1].missingFields = isValid
-        ? []
-        : [this.getStepMissingLabel(stepNumber)];
-      this.stepStatuses = [...this.stepStatuses]; // Trigger change detection
+    this.refreshStepStatuses();
+  }
+
+  private refreshStepStatuses(): void {
+    this.stepStatuses = this.steps.map((_, index) => {
+      const stepNumber = index + 1;
+      const missingFields = this.getMissingFieldsForStep(stepNumber);
+      const valid = missingFields.length === 0;
+      this.formValid[stepNumber] = valid;
+      return {
+        visited: this.checkedSteps.has(stepNumber),
+        valid,
+        missingFields,
+      };
+    });
+  }
+
+  private getMissingFieldsForStep(stepNumber: number): MissingField[] {
+    switch (stepNumber) {
+      case 1:
+        return this.getJournalDetailsMissingFields();
+      case 2:
+        return this.getAuthorsMissingFields();
+      case 3:
+        return this.getDocumentsMissingFields();
+      case 4:
+        return this.getDeclarationMissingFields();
+      default:
+        return [];
     }
   }
 
-  private getStepMissingLabel(stepNumber: number): string {
-    return `Complete ${this.steps[stepNumber - 1]?.label ?? `Step ${stepNumber}`}`;
+  private getJournalDetailsMissingFields(): MissingField[] {
+    const component = this.journalDetailsComponent;
+    if (!component?.form) return this.getFallbackMissingFields(1);
+
+    const missing = this.getInvalidLabelsFromForm(
+      component.form,
+      this.journalDetailsFieldChecks,
+    );
+    const projectType = component.researchType ?? '';
+    const requiresBreakdown = ['external-research', 'non-research'].includes(projectType);
+    if (requiresBreakdown && component.getBreakdownArray(projectType).length === 0) {
+      missing.push({ label: 'Detailed Costing Breakdown', target: 'costingBreakdown' });
+    }
+    return this.uniqueMissingFields(missing);
+  }
+
+  private getAuthorsMissingFields(): MissingField[] {
+    const component = this.authorsDetailsComponent;
+    if (!component?.form) return this.getFallbackMissingFields(2);
+
+    const missing: MissingField[] = [];
+    if (component.studentCoAuthors.invalid) {
+      missing.push({ label: 'Student Co-Authors', target: 'studentCoAuthors' });
+    }
+    if (component.nonApuCoAuthors.invalid || !component.hasRequiredNonApuCoAuthor) {
+      missing.push({ label: 'Non-APU Co-Authors', target: 'nonApuCoAuthors' });
+    }
+    return this.uniqueMissingFields(missing);
+  }
+
+  private getDocumentsMissingFields(): MissingField[] {
+    const form = this.documentsComponent?.documentsForm;
+    return form
+      ? this.getInvalidLabelsFromForm(form, this.documentFieldChecks)
+      : this.getFallbackMissingFields(3);
+  }
+
+  private getDeclarationMissingFields(): MissingField[] {
+    const form = this.declarationComponent?.declarationForm;
+    return form
+      ? this.getInvalidLabelsFromForm(form, this.declarationFieldChecks)
+      : this.getFallbackMissingFields(4);
+  }
+
+  private getInvalidLabelsFromForm(
+    form: FormGroup,
+    checks: Array<{ path: string; label: string; target?: string }>,
+  ): MissingField[] {
+    return checks
+      .filter(({ path }) => {
+        const control = form.get(path);
+        return !!control && control.enabled && control.invalid;
+      })
+      .map(({ path, label, target }) => ({ label, target: target ?? path }));
+  }
+
+  private getFallbackMissingFields(stepNumber: number): MissingField[] {
+    return this.formValid[stepNumber]
+      ? []
+      : [{ label: `Complete ${this.steps[stepNumber - 1]?.label ?? `Step ${stepNumber}`}` }];
+  }
+
+  private uniqueMissingFields(fields: MissingField[]): MissingField[] {
+    const seen = new Set<string>();
+    return fields.filter((field) => {
+      const key =
+        typeof field === 'string' ? field : `${field.label}:${field.target ?? ''}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }
+
+  private getSafeMissingFieldFocusTarget(
+    element?: HTMLElement | null,
+  ): HTMLElement | undefined {
+    if (!element) return undefined;
+    const target = element.matches('input, textarea, select, button, [tabindex]')
+      ? element
+      : element.querySelector<HTMLElement>('input, textarea, select, button, [tabindex]');
+
+    if (!target) return undefined;
+    if (this.isValueChangingChoiceControl(target)) {
+      return this.getMissingFieldScrollTarget(element, target);
+    }
+    return target;
+  }
+
+  private getMissingFieldScrollTarget(
+    element?: HTMLElement | null,
+    focusTarget?: HTMLElement,
+  ): HTMLElement | undefined {
+    const source = focusTarget ?? element ?? undefined;
+    if (!source) return undefined;
+    return (
+      source.closest<HTMLElement>(
+        '[data-missing-field-target], .form-field, .form-group, .radio-group, .checkbox-group, .toggle-group',
+      ) ?? source
+    );
+  }
+
+  private canProgrammaticallyClickMissingField(element: HTMLElement): boolean {
+    if (this.isValueChangingChoiceControl(element)) return false;
+    if (element.matches('input[type="file"]')) return false;
+    return element.matches(
+      'button, select, input[type="date"], input[type="datetime-local"], [role="button"], [role="combobox"]',
+    );
+  }
+
+  private isValueChangingChoiceControl(element: HTMLElement): boolean {
+    const input = element instanceof HTMLInputElement ? element : null;
+    if (input && ['radio', 'checkbox'].includes(input.type)) return true;
+    const role = element.getAttribute('role');
+    return role === 'switch' || role === 'checkbox' || role === 'radio';
+  }
+
+  private highlightMissingFieldTarget(element?: HTMLElement): void {
+    if (!element) return;
+    const previousOutline = element.style.outline;
+    const previousBoxShadow = element.style.boxShadow;
+    const previousBorderRadius = element.style.borderRadius;
+    element.style.outline = '2px solid var(--color-primary)';
+    element.style.boxShadow = '0 0 0 4px var(--color-primary-light)';
+    element.style.borderRadius = 'var(--radius-md)';
+
+    window.setTimeout(() => {
+      element.style.outline = previousOutline;
+      element.style.boxShadow = previousBoxShadow;
+      element.style.borderRadius = previousBorderRadius;
+    }, 1800);
   }
 
   private syncAuthorsProjectType(): void {
@@ -331,11 +545,8 @@ export class JournalPublicationFormComponent {
       this.formValid[2] = authorsValid;
     }
 
-    this.stepStatuses = this.stepStatuses.map((status, index) => ({
-      ...status,
-      visited: true,
-      valid: this.formValid[index + 1] || false,
-    }));
+    this.steps.forEach((_, index) => this.checkedSteps.add(index + 1));
+    this.refreshStepStatuses();
 
     const allValid = Object.values(this.formValid).every(Boolean);
     if (!allValid) {

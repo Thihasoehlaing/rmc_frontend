@@ -33,6 +33,7 @@ export class SidebarComponent implements OnInit {
   private readonly restrictedSidebarRoutes = new Set([
     '/dashboard',
     '/submissions/inbox',
+    '/submissions/history',
     '/notifications',
   ]);
 

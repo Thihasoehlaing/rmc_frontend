@@ -177,11 +177,16 @@
             class="input--text"
             formControlName="reviewerName"
             placeholder="Enter reviewer name"
+            maxlength="100"
             (input)="stripDigits($event)"
           />
           <app-validation-message
             [control]="documentsForm.get('reviewerName')"
           ></app-validation-message>
+          <app-character-counter
+            [current]="documentsForm.get('reviewerName')?.value?.length || 0"
+            [max]="100"
+          ></app-character-counter>
         </div>
 
         <div class="form-field">

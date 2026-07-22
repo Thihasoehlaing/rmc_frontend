@@ -60,6 +60,13 @@ export interface AcademicStaffOption {
   department: string;
 }
 
+export interface DepartmentOption {
+  id: number;
+  department_name: string;
+  department_type: string;
+  is_active: boolean;
+}
+
 export interface CodeOption {
   id: number;
   code: string;
@@ -138,6 +145,13 @@ export class MasterDataService {
       params = params.set('search', search.trim());
     }
     return this.http.get<ApiResponse<AcademicStaffOption[]>>(`${this.base}/academic-staff`, {
+      params,
+    });
+  }
+
+  getDepartments(includeInactive = false): Observable<ApiResponse<DepartmentOption[]>> {
+    const params = new HttpParams().set('include_inactive', includeInactive ? 'true' : 'false');
+    return this.http.get<ApiResponse<DepartmentOption[]>>(`${this.base}/master-data/departments`, {
       params,
     });
   }

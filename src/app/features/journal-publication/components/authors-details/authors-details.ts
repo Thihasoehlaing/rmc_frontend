@@ -18,6 +18,7 @@ import {
   DataTableColumn,
 } from '../../../../shared/components/data-table/data-table.component';
 import { NoteComponent } from '../../../../shared/components/note/note.component';
+import { DialogComponent } from '../../../../shared/components/dialog/dialog.component';
 import {
   JournalFormData,
   JournalNonApuAuthorPayload,
@@ -42,6 +43,7 @@ import { TableActionIconComponent } from '../../../../shared/components/table-ac
     ActionButtonComponent,
     DataTableComponent,
     NoteComponent,
+    DialogComponent,
   ],
 })
 export class AuthorsDetails implements OnInit {
@@ -135,7 +137,6 @@ export class AuthorsDetails implements OnInit {
     'Iran',
     'Iraq',
     'Ireland',
-    'Israel',
     'Italy',
     'Japan',
     'Jordan',
@@ -528,8 +529,8 @@ export class AuthorsDetails implements OnInit {
       if (type === 'apu-staff') {
         data = this.testSubsections.at(index).value;
         this.editForm = this.fb.group({
-          staffName: [data.staffName],
-          schoolDepartment: [data.schoolDepartment],
+          staffName: [data.staffName, [Validators.required]],
+          schoolDepartment: [data.schoolDepartment, [Validators.required]],
           affiliation: [this.apuAffiliation],
         });
         this.setupStaffSelection(data.staffName);
@@ -560,8 +561,8 @@ export class AuthorsDetails implements OnInit {
       this.editingIndex = null;
       if (type === 'apu-staff') {
         this.editForm = this.fb.group({
-          staffName: [''],
-          schoolDepartment: [''],
+          staffName: ['', [Validators.required]],
+          schoolDepartment: ['', [Validators.required]],
           affiliation: [this.apuAffiliation],
         });
         this.setupStaffSelection();

@@ -254,6 +254,7 @@
               <label class="form-label is-required">Please key in 3 SDG keywords in abstract</label>
               <div
                 class="sdg-keywords-container"
+                data-missing-field-target="sdgKeywords"
                 (click)="openSDGKeywordsModal()"
                 role="button"
                 tabindex="0"
@@ -263,14 +264,6 @@
                 @for (keyword of getDisplayedKeywordsArray(); track keyword) {
                   <div class="keyword-chip">
                     <span class="chip-label">{{ keyword }}</span>
-                    <button
-                      type="button"
-                      class="chip-close"
-                      (click)="removeKeyword(keyword); $event.stopPropagation()"
-                      aria-label="Remove keyword"
-                    >
-                      <span class="material-icons">close</span>
-                    </button>
                   </div>
                 }
               </div>
@@ -304,7 +297,7 @@
                 </div>
               }
 
-              <div class="form-field">
+              <div class="form-field" data-missing-field-target="costingBreakdown">
                 <label class="form-label">
                   {{
                     researchType === 'non-research'

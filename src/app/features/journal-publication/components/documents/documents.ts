@@ -5,6 +5,7 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angula
 import { FileUploadComponent } from '../../../../shared/components/file-upload/file-upload.component';
 import { NoteComponent } from '../../../../shared/components/note/note.component';
 import { ValidationMessageComponent } from '../../../../shared/components/validation-message/validation-message.component';
+import { CharacterCounterComponent } from '../../../../shared/components/character-counter/character-counter.component';
 import { JournalWorkflowService } from '../../services/journal-workflow.service';
 import {
   JournalAttachmentUpload,
@@ -28,6 +29,7 @@ interface PendingDocumentUpload {
     NoteComponent,
     ValidationMessageComponent,
     CustomHeaderComponent,
+    CharacterCounterComponent,
   ],
   templateUrl: './documents.html',
   styleUrl: './documents.scss',
@@ -88,7 +90,7 @@ export class DocumentsComponent implements OnInit {
       finalPaperDraft: ['', Validators.required],
       journalInvoice: ['', Validators.required],
       manuscriptInternallyReviewed: ['', Validators.required],
-      reviewerName: ['', Validators.required],
+      reviewerName: ['', [Validators.required, Validators.maxLength(100)]],
       manuscriptPreviouslyPublished: ['', Validators.required],
     });
 

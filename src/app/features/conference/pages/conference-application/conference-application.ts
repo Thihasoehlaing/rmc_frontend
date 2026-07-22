@@ -623,6 +623,7 @@ export class ConferenceApplication implements OnInit {
     { path: 'conferenceName', label: 'Conference Name' },
     { path: 'conferenceStartDate', label: 'Conference Start Date' },
     { path: 'conferenceEndDate', label: 'Conference End Date' },
+    { path: 'activities', label: 'Conference Schedule - Add Activity', target: 'activityTable' },
     { path: 'localOrOverseas', label: 'Select Conference Venue' },
     { path: 'researchType', label: 'Research Type' },
     { path: 'citedJournalPaper', label: 'Cited APU/JATI/EJBM Paper' },
@@ -1007,6 +1008,10 @@ export class ConferenceApplication implements OnInit {
       supportingDocuments[field] = attachment?.file_name ?? '';
     }
     this.formStateService.saveFormSection('supportingDocuments', supportingDocuments);
+    this.formStateService.saveFormSection('declaration', {
+      agreeToTerms: !!conference.declaration_terms_accepted,
+      acknowledgeGrantFunder: !!conference.declaration_funder_acknowledged,
+    });
 
     this.loadedCoAuthorIds = {
       staff: new Set(data.apu_staff_co_authors.map((item) => item.id).filter((id): id is number => !!id)),
@@ -1145,8 +1150,17 @@ export class ConferenceApplication implements OnInit {
         ),
       ];
       this.conferenceDetailsStep.activities.controls.forEach((control) => {
-        if (control.invalid) missing.push({ label: 'Activity Table', target: 'activityTable' });
+        if (control.invalid) missing.push({ label: 'Conference Schedule - Add Activity', target: 'activityTable' });
       });
+      if (
+        this.conferenceDetailsStep.form.get('researchType')?.value === 'external-research' &&
+        this.conferenceDetailsStep.externalBreakdowns.length === 0
+      ) {
+        missing.push({
+          label: 'External Research Project Costing - Add Entry',
+          target: 'externalResearchCostingEntries',
+        });
+      }
       return this.uniqueLabels(missing);
     }
 
@@ -1163,6 +1177,7 @@ export class ConferenceApplication implements OnInit {
         citedJournalPaperExplanation: state['citedJournalPaper'] === 'no',
       }),
       ...this.getInvalidActivityLabels(state['activities']),
+      ...this.getMissingExternalResearchCostingLabels(state),
     ]);
   }
 
@@ -1232,7 +1247,22 @@ export class ConferenceApplication implements OnInit {
       const rowValue = (activity ?? {}) as Record<string, unknown>;
       return ['date', 'time', 'description'].some((field) => this.isEmptyRequiredValue(rowValue[field]));
     })
-      ? [{ label: 'Activity Table', target: 'activityTable' }]
+      ? [{ label: 'Conference Schedule - Add Activity', target: 'activityTable' }]
+      : [];
+  }
+
+  private getMissingExternalResearchCostingLabels(
+    state: Record<string, unknown>,
+  ): MissingField[] {
+    const entries = state['externalResearchBreakdown'];
+    return state['researchType'] === 'external-research' &&
+      (!Array.isArray(entries) || entries.length === 0)
+      ? [
+          {
+            label: 'External Research Project Costing - Add Entry',
+            target: 'externalResearchCostingEntries',
+          },
+        ]
       : [];
   }
 
@@ -1328,6 +1358,7 @@ export class ConferenceApplication implements OnInit {
   private buildConferenceRequestDto(): Partial<ConferenceRequestDto> {
     const cd: any = this.formStateService.getFormSection('conferenceDetails') ?? {};
     const sd: any = this.formStateService.getFormSection('supportingDocuments') ?? {};
+    const declaration: any = this.formStateService.getFormSection('declaration') ?? {};
     const researchType = cd.researchType || '';
     const isExternal = researchType === 'external-research';
     const isResearch = researchType === 'research';
@@ -1370,6 +1401,8 @@ export class ConferenceApplication implements OnInit {
       is_manuscript_internally_reviewed: toBool(sd.manuscriptInternallyReviewed),
       reviewer_name: sd.reviewerName || null,
       is_published_elsewhere: toBool(sd.manuscriptPreviouslyPublished),
+      declaration_terms_accepted: toBool(declaration.agreeToTerms),
+      declaration_funder_acknowledged: toBool(declaration.acknowledgeGrantFunder),
       external_sponsorship_amount: nullableDecimal(sponsoredAmount),
       external_sponsored_by: sponsoredBy || null,
       remarks: remarks || null,

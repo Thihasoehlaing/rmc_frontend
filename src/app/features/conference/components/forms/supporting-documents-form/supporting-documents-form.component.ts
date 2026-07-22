@@ -1,6 +1,14 @@
 import { Component, OnInit, OnDestroy, ViewChild, Input, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import {
+  AbstractControl,
+  ReactiveFormsModule,
+  FormBuilder,
+  FormGroup,
+  ValidationErrors,
+  ValidatorFn,
+  Validators,
+} from '@angular/forms';
 import { FileUploadComponent } from '../../../../../shared/components/file-upload/file-upload.component';
 import { NoteComponent } from '../../../../../shared/components/note/note.component';
 import { CharacterCounterComponent } from '../../../../../shared/components/character-counter/character-counter.component';
@@ -8,6 +16,11 @@ import { CustomSubheaderComponent } from '../../../../../shared/components/custo
 import { CustomHeaderComponent } from '../../../../../shared/components/custom-header/custom-header.component';
 import { ConferenceWorkflowService } from '../../../services/conference-workflow.service';
 import { ConferenceFormStateService } from '../../../services/conference-form-state.service';
+
+const manuscriptNotPreviouslyPublishedValidator: ValidatorFn = (
+  control: AbstractControl,
+): ValidationErrors | null =>
+  !control.value || control.value === 'no' ? null : { manuscriptAlreadyPublished: true };
 
 @Component({
   selector: 'app-supporting-documents-form',
@@ -77,7 +90,10 @@ export class SupportingDocumentsFormComponent implements OnInit, OnDestroy {
       conferenceInvoice: ['', [Validators.required]],
       manuscriptInternallyReviewed: ['', [Validators.required]],
       reviewerName: ['', [Validators.required, Validators.maxLength(100)]],
-      manuscriptPreviouslyPublished: ['', [Validators.required]],
+      manuscriptPreviouslyPublished: [
+        '',
+        [Validators.required, manuscriptNotPreviouslyPublishedValidator],
+      ],
     });
   }
 

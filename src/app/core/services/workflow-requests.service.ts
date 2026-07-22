@@ -192,8 +192,16 @@ export interface ListQuery {
   search?: string;
 }
 
+export type DashboardAudience =
+  | 'applicant'
+  | 'workflow_actor'
+  | 'finance'
+  | 'rmc_admin'
+  | 'system_admin';
+
 export interface DashboardSummaryDto {
-  audience: 'academic' | 'rmc_admin';
+  audience: DashboardAudience;
+  view_type?: DashboardAudience;
   metrics: {
     required_action: number;
     pending: number;
@@ -204,6 +212,9 @@ export interface DashboardSummaryDto {
     decided_by_me: number;
     total_submitted: number;
     new_today: number;
+    history: number;
+    drafts: number;
+    failed_mail: number;
   };
   form_breakdown: DashboardFormBreakdownDto[];
   status_distribution: DashboardStatusDistributionDto;
@@ -228,7 +239,6 @@ export interface DashboardStatusDistributionDto {
   approved: number;
   rejected: number;
   pending: number;
-  draft: number;
 }
 
 export interface DashboardTrendPointDto {

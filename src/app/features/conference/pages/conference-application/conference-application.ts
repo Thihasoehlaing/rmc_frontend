@@ -1008,6 +1008,10 @@ export class ConferenceApplication implements OnInit {
       supportingDocuments[field] = attachment?.file_name ?? '';
     }
     this.formStateService.saveFormSection('supportingDocuments', supportingDocuments);
+    this.formStateService.saveFormSection('declaration', {
+      agreeToTerms: !!conference.declaration_terms_accepted,
+      acknowledgeGrantFunder: !!conference.declaration_funder_acknowledged,
+    });
 
     this.loadedCoAuthorIds = {
       staff: new Set(data.apu_staff_co_authors.map((item) => item.id).filter((id): id is number => !!id)),
@@ -1354,6 +1358,7 @@ export class ConferenceApplication implements OnInit {
   private buildConferenceRequestDto(): Partial<ConferenceRequestDto> {
     const cd: any = this.formStateService.getFormSection('conferenceDetails') ?? {};
     const sd: any = this.formStateService.getFormSection('supportingDocuments') ?? {};
+    const declaration: any = this.formStateService.getFormSection('declaration') ?? {};
     const researchType = cd.researchType || '';
     const isExternal = researchType === 'external-research';
     const isResearch = researchType === 'research';
@@ -1396,6 +1401,8 @@ export class ConferenceApplication implements OnInit {
       is_manuscript_internally_reviewed: toBool(sd.manuscriptInternallyReviewed),
       reviewer_name: sd.reviewerName || null,
       is_published_elsewhere: toBool(sd.manuscriptPreviouslyPublished),
+      declaration_terms_accepted: toBool(declaration.agreeToTerms),
+      declaration_funder_acknowledged: toBool(declaration.acknowledgeGrantFunder),
       external_sponsorship_amount: nullableDecimal(sponsoredAmount),
       external_sponsored_by: sponsoredBy || null,
       remarks: remarks || null,

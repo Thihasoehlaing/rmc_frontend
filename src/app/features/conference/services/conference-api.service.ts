@@ -38,6 +38,8 @@ export interface ConferenceRequestDto {
   is_manuscript_internally_reviewed?: boolean;
   reviewer_name?: string | null;
   is_published_elsewhere?: boolean;
+  declaration_terms_accepted?: boolean;
+  declaration_funder_acknowledged?: boolean;
   external_sponsorship_amount?: string | null;
   external_sponsored_by?: string | null;
   apu_sponsorship_percentage?: string | null;

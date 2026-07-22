@@ -212,6 +212,7 @@
             [searchable]="true"
             placeholder="Search staff..."
             formControlName="staffName"
+            (searchChange)="loadAcademicStaffOptions($event)"
           >
           </app-searchable-dropdown>
           @if (editForm.get('staffName')?.invalid && editForm.get('staffName')?.touched) {
@@ -226,7 +227,7 @@
             id="schoolDept1"
             class="form-control"
             formControlName="schoolDepartment"
-            placeholder="Ex. School of Culinary Arts and Hospitality"
+            placeholder="Auto-selected after staff selection"
           />
           @if (
             editForm.get('schoolDepartment')?.invalid && editForm.get('schoolDepartment')?.touched
@@ -251,20 +252,24 @@
       @if (modalType === 'student') {
         <div class="form-group">
           <label for="tpNumber">TP Number <span class="asterisk">*</span></label>
-          <input
-            type="text"
-            id="tpNumber"
-            class="form-control"
-            formControlName="tpNumber"
-            placeholder="Ex. 123456"
-            maxlength="6"
-            (input)="filterTpNumber($event)"
-          />
+          <div class="input-prefix-group">
+            <span class="input-prefix">TP</span>
+            <input
+              type="text"
+              id="tpNumber"
+              inputmode="numeric"
+              class="form-control input-prefix-group__input"
+              formControlName="tpNumber"
+              placeholder="e.g. 123456"
+              maxlength="6"
+              (input)="filterTpNumber($event)"
+            />
+          </div>
           @if (editForm.get('tpNumber')?.invalid && editForm.get('tpNumber')?.touched) {
             @if (editForm.get('tpNumber')?.errors?.['required']) {
               <span class="error-message">TP Number is required</span>
             } @else if (editForm.get('tpNumber')?.errors?.['pattern']) {
-              <span class="error-message">TP Number must be exactly 6 digits</span>
+              <span class="error-message">TP Number must contain 1 to 6 digits and cannot be all zeros</span>
             }
           }
         </div>
@@ -286,14 +291,14 @@
         </div>
 
         <div class="form-group">
-          <label for="schoolDept2">School/Department <span class="asterisk">*</span></label>
-          <input
-            type="text"
-            id="schoolDept2"
-            class="form-control"
+          <label>School/Department <span class="asterisk">*</span></label>
+          <app-searchable-dropdown
+            [options]="departmentOptions"
+            [searchable]="true"
+            placeholder="Search and select school/department..."
             formControlName="schoolDepartment"
-            placeholder="Ex. School of Culinary Arts and Hospitality"
-          />
+          >
+          </app-searchable-dropdown>
           @if (
             editForm.get('schoolDepartment')?.invalid && editForm.get('schoolDepartment')?.touched
           ) {

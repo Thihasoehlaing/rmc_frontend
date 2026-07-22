@@ -187,6 +187,18 @@
           </label>
         </div>
         <app-note text="Manuscript must not be published previously"></app-note>
+        @if (
+          form.get('manuscriptPreviouslyPublished')?.hasError('required') &&
+          form.get('manuscriptPreviouslyPublished')?.touched
+        ) {
+          <span class="form-error-msg">Please confirm whether the manuscript has been published previously.</span>
+        }
+        @if (
+          form.get('manuscriptPreviouslyPublished')?.hasError('manuscriptAlreadyPublished') &&
+          form.get('manuscriptPreviouslyPublished')?.touched
+        ) {
+          <span class="form-error-msg">Select No to confirm the manuscript has not been published previously.</span>
+        }
       </div>
     </div>
     </div>

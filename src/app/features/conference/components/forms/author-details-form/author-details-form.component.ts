@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy, Input, effect, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
+import { Subscription } from 'rxjs';
 import { SearchableDropdownComponent } from '../../../../../shared/components/searchable-dropdown/searchable-dropdown.component';
 import { ActionButtonComponent } from '../../../../../shared/components/action-button/action-button.component';
 import {
@@ -13,7 +14,10 @@ import { DialogComponent } from '../../../../../shared/components/dialog/dialog.
 import { DropdownOption } from '../../../../../core/interfaces/components.interface';
 import { ConferenceWorkflowService } from '../../../services/conference-workflow.service';
 import { ConferenceFormStateService } from '../../../services/conference-form-state.service';
-import { MasterDataService } from '../../../../../core/services/master-data.service';
+import {
+  AcademicStaffOption,
+  MasterDataService,
+} from '../../../../../core/services/master-data.service';
 
 import { TableActionIconComponent } from '../../../../../shared/components/table-action-icon/table-action-icon.component';
 
@@ -48,7 +52,10 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
   editingIndex: number | null = null;
 
   staffOptions: DropdownOption[] = [];
+  departmentOptions: DropdownOption<string>[] = [];
   organisationTypeOptions: DropdownOption[] = [];
+  private academicStaffByName = new Map<string, AcademicStaffOption>();
+  private staffSelectionSubscription?: Subscription;
 
   constructor(
     private fb: FormBuilder,
@@ -98,9 +105,8 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
     this.initializeForm();
     this.loadFormState();
 
-    this.masterData.searchAcademicStaff().subscribe((res) => {
-      this.staffOptions = (res.data ?? []).map((s) => ({ value: s.fullname, label: s.fullname }));
-    });
+    this.loadAcademicStaffOptions();
+    this.loadDepartmentOptions();
     this.masterData.getDropdownOptions('TYPE_OF_ORGANISATION').subscribe((res) => {
       this.organisationTypeOptions = (res.data ?? [])
         .filter((o) => o.status === 'ACTIVE')
@@ -111,6 +117,7 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     // Save form state before component is destroyed
     this.saveFormState();
+    this.staffSelectionSubscription?.unsubscribe();
   }
 
   initializeForm() {
@@ -149,7 +156,7 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
             backendId: [data?.backendId ?? null],
             tpNumber: [
               data?.tpNumber || '',
-              [Validators.required, Validators.pattern('^[0-9]{6}$')],
+              [Validators.required],
             ],
             fullName: [data?.fullName || '', [Validators.required]],
             schoolDepartment: [data?.schoolDepartment || '', [Validators.required]],
@@ -193,7 +200,7 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
 
   createStudentCoAuthor(): FormGroup {
     return this.fb.group({
-      tpNumber: ['', [Validators.required, Validators.pattern('^[0-9]{6}$')]],
+      tpNumber: ['', [Validators.required]],
       fullName: ['', [Validators.required]],
       schoolDepartment: ['', [Validators.required]],
       affiliation: [this.apuAffiliation],
@@ -274,10 +281,14 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
           schoolDepartment: [data.schoolDepartment, [Validators.required]],
           affiliation: [data.affiliation || ''],
         });
+        this.setupStaffSelection(data.staffName);
       } else if (type === 'student') {
         data = this.studentCoAuthors.at(index).value;
         this.editForm = this.fb.group({
-          tpNumber: [data.tpNumber, [Validators.required, Validators.pattern('^[0-9]{6}$')]],
+          tpNumber: [
+            this.parseTPNumber(data.tpNumber),
+            [Validators.required, Validators.pattern('^(?!0+$)[0-9]{1,6}$')],
+          ],
           fullName: [data.fullName, [Validators.required]],
           schoolDepartment: [data.schoolDepartment, [Validators.required]],
           affiliation: [this.apuAffiliation],
@@ -302,9 +313,10 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
           schoolDepartment: ['', [Validators.required]],
           affiliation: [''],
         });
+        this.setupStaffSelection();
       } else if (type === 'student') {
         this.editForm = this.fb.group({
-          tpNumber: ['', [Validators.required, Validators.pattern('^[0-9]{6}$')]],
+          tpNumber: ['', [Validators.required, Validators.pattern('^(?!0+$)[0-9]{1,6}$')]],
           fullName: ['', [Validators.required]],
           schoolDepartment: ['', [Validators.required]],
           affiliation: [this.apuAffiliation],
@@ -326,10 +338,13 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
       this.editForm.disable({ emitEvent: false });
     } else {
       this.editForm.enable({ emitEvent: false });
+      this.applyModalControlLocks();
     }
   }
 
   closeModal() {
+    this.staffSelectionSubscription?.unsubscribe();
+    this.staffSelectionSubscription = undefined;
     this.isModalOpen = false;
     this.editingIndex = null;
     this.modalType = null;
@@ -342,9 +357,15 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
     }
 
     const formData = {
-      ...this.editForm.value,
-      ...(this.modalType === 'student' ? { affiliation: this.apuAffiliation } : {}),
+      ...this.editForm.getRawValue(),
+      ...(this.modalType === 'apu-staff' || this.modalType === 'student'
+        ? { affiliation: this.apuAffiliation }
+        : {}),
     };
+
+    if (this.modalType === 'student' && formData.tpNumber) {
+      formData.tpNumber = this.formatTPNumber(formData.tpNumber);
+    }
 
     if (this.editingIndex !== null) {
       // Update existing entry
@@ -399,5 +420,99 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
     const input = event.target as HTMLInputElement;
     input.value = input.value.replace(/[^0-9]/g, '').slice(0, 6);
     this.editForm.get('tpNumber')?.setValue(input.value, { emitEvent: false });
+  }
+
+  loadAcademicStaffOptions(search = ''): void {
+    const selectedStaffName = this.editForm?.get('staffName')?.value;
+    this.masterData.searchAcademicStaff(search).subscribe((res) => {
+      const staff = res.data ?? [];
+      this.academicStaffByName.clear();
+      const options = staff.map((item) => this.toAcademicStaffDropdownOption(item));
+      const selectedValue = String(selectedStaffName ?? '').trim();
+
+      if (selectedValue && !options.some((option) => option.value === selectedValue)) {
+        options.unshift({ value: selectedValue, label: selectedValue, displayLabel: selectedValue });
+      }
+
+      this.staffOptions = options;
+    });
+  }
+
+  private loadDepartmentOptions(): void {
+    this.masterData.getDepartments().subscribe((res) => {
+      const seen = new Set<string>();
+      this.departmentOptions = (res.data ?? [])
+        .filter((department) => department.is_active)
+        .filter((department) => {
+          const key = department.department_name.trim().toLowerCase();
+          if (!key || seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        })
+        .map((department) => ({
+          value: department.department_name,
+          label: department.department_name,
+          description: department.department_type,
+        }));
+    });
+  }
+
+  private toAcademicStaffDropdownOption(staff: AcademicStaffOption): DropdownOption<string> {
+    const value = staff.fullname || staff.username || staff.email || `Staff ${staff.id}`;
+    this.academicStaffByName.set(value, staff);
+
+    return {
+      value,
+      label: value,
+      description: [staff.email, staff.department].filter(Boolean).join(' • '),
+      displayLabel: value,
+      searchText: [staff.username, staff.fullname, staff.email, staff.department]
+        .filter(Boolean)
+        .join(' '),
+    };
+  }
+
+  private setupStaffSelection(selectedStaffName = ''): void {
+    this.staffSelectionSubscription?.unsubscribe();
+    const selectedValue = selectedStaffName.trim();
+    if (selectedValue && !this.staffOptions.some((option) => option.value === selectedValue)) {
+      this.staffOptions = [
+        { value: selectedValue, label: selectedValue, displayLabel: selectedValue },
+        ...this.staffOptions,
+      ];
+    }
+
+    this.patchDepartmentFromSelectedStaff(selectedValue);
+    this.staffSelectionSubscription = this.editForm.get('staffName')?.valueChanges.subscribe((staffName) => {
+      this.patchDepartmentFromSelectedStaff(String(staffName ?? ''));
+    });
+  }
+
+  private patchDepartmentFromSelectedStaff(staffName: string): void {
+    const staff = this.academicStaffByName.get(staffName);
+    if (!staff) return;
+
+    this.editForm.patchValue(
+      {
+        schoolDepartment: staff.department || '',
+        affiliation: this.apuAffiliation,
+      },
+      { emitEvent: false },
+    );
+  }
+
+  private applyModalControlLocks(): void {
+    if (this.modalType === 'apu-staff') {
+      this.editForm.get('schoolDepartment')?.disable({ emitEvent: false });
+    }
+  }
+
+  private formatTPNumber(raw: string): string {
+    const digits = raw.replace(/[^0-9]/g, '');
+    return digits ? `TP${digits}` : '';
+  }
+
+  private parseTPNumber(stored: string): string {
+    return String(stored || '').replace(/^TP/i, '');
   }
 }

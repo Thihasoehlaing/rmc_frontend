@@ -369,19 +369,13 @@
 
         <div class="form-group">
           <label for="schoolDept2" class="is-required">School / Department</label>
-          <input
-            type="text"
+          <app-searchable-dropdown
             id="schoolDept2"
-            class="form-control"
+            [options]="departmentOptions"
+            [searchable]="true"
             formControlName="schoolDepartment"
-            placeholder="Ex. School of Computing and Technology"
-            (input)="stripDigits($event)"
-            [attr.maxlength]="authorTextMaxLength"
-          />
-          <app-character-counter
-            [current]="editForm.get('schoolDepartment')?.value?.length || 0"
-            [max]="authorTextMaxLength"
-          ></app-character-counter>
+            placeholder="Search and select school/department..."
+          ></app-searchable-dropdown>
           <app-validation-message
             class="form-validation-note--error"
             [control]="editForm.get('schoolDepartment')"

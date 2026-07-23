@@ -24,17 +24,29 @@ export type QuillToolbarOptions = Array<
 >;
 
 const DEFAULT_TOOLBAR_OPTIONS: QuillToolbarOptions = [
-  [{ header: [1, 2, 3, false] }],
-  ['bold', 'italic', 'underline'],
-  [{ list: 'ordered' }, { list: 'bullet' }],
+  [{ header: [1, 2, 3, 4, false] }],
+  ['bold', 'italic', 'underline', 'strike'],
+  [{ script: 'sub' }, { script: 'super' }],
+  [{ color: [] }, { background: [] }],
+  [{ list: 'ordered' }, { list: 'bullet' }, { list: 'check' }],
   [{ indent: '-1' }, { indent: '+1' }],
   [{ align: [] }],
-  ['link', 'table'],
-  ['clean'],
+  ['blockquote', 'code-block'],
+  ['link'],
+  ['table', 'table-row', 'table-column', 'table-delete'],
+  ['undo', 'redo', 'clean'],
 ];
 
 type QuillTableModule = {
   insertTable(rows: number, columns: number): void;
+  insertRowBelow(): void;
+  insertColumnRight(): void;
+  deleteTable(): void;
+};
+
+type QuillHistoryModule = {
+  undo(): void;
+  redo(): void;
 };
 
 @Component({
@@ -94,6 +106,7 @@ export class TextEditorComponent
     }
 
     const { default: QuillConstructor } = await import('quill');
+    this.registerCustomToolbarIcons(QuillConstructor);
     this.quill = new QuillConstructor(this.editorHost.nativeElement, {
       bounds: this.editorHost.nativeElement,
       modules: {
@@ -103,6 +116,12 @@ export class TextEditorComponent
               container: this.toolbarOptions,
               handlers: {
                 table: () => this.insertDefaultTable(),
+                'table-row': () => this.updateTable((tableModule) => tableModule.insertRowBelow()),
+                'table-column': () =>
+                  this.updateTable((tableModule) => tableModule.insertColumnRight()),
+                'table-delete': () => this.updateTable((tableModule) => tableModule.deleteTable()),
+                undo: () => this.updateHistory((historyModule) => historyModule.undo()),
+                redo: () => this.updateHistory((historyModule) => historyModule.redo()),
               },
             },
         table: true,
@@ -121,6 +140,7 @@ export class TextEditorComponent
     });
 
     this.applyMinHeight();
+    this.applyToolbarLabels();
     this.setEditorHtml(this.pendingHtml);
     this.quill.enable(!this.isEditorReadOnly());
 
@@ -263,20 +283,83 @@ export class TextEditorComponent
   }
 
   private insertDefaultTable(): void {
+    this.updateTable((tableModule) => tableModule.insertTable(3, 3));
+  }
+
+  private updateTable(action: (tableModule: QuillTableModule) => void): void {
     const tableModule = this.quill?.getModule('table') as QuillTableModule | undefined;
     if (!this.quill || !tableModule) {
       return;
     }
 
     this.quill.focus();
-    tableModule.insertTable(3, 3);
+    action(tableModule);
+    this.emitCurrentHtml();
+  }
+
+  private updateHistory(action: (historyModule: QuillHistoryModule) => void): void {
+    const historyModule = this.quill?.getModule('history') as QuillHistoryModule | undefined;
+    if (!this.quill || !historyModule) {
+      return;
+    }
+
+    action(historyModule);
+    this.emitCurrentHtml();
+  }
+
+  private registerCustomToolbarIcons(QuillConstructor: typeof Quill): void {
+    const icons = QuillConstructor.import('ui/icons') as Record<string, string>;
+
+    icons['table-row'] =
+      '<svg viewBox="0 0 18 18"><rect class="ql-stroke" height="10" width="12" x="3" y="4"/><line class="ql-stroke" x1="3" x2="15" y1="8" y2="8"/><line class="ql-stroke" x1="3" x2="15" y1="11" y2="11"/><line class="ql-stroke" x1="9" x2="9" y1="4" y2="14"/><line class="ql-stroke" x1="6" x2="12" y1="16" y2="16"/><line class="ql-stroke" x1="9" x2="9" y1="13" y2="17"/></svg>';
+    icons['table-column'] =
+      '<svg viewBox="0 0 18 18"><rect class="ql-stroke" height="10" width="12" x="3" y="4"/><line class="ql-stroke" x1="7" x2="7" y1="4" y2="14"/><line class="ql-stroke" x1="11" x2="11" y1="4" y2="14"/><line class="ql-stroke" x1="3" x2="15" y1="9" y2="9"/><line class="ql-stroke" x1="16" x2="16" y1="6" y2="12"/><line class="ql-stroke" x1="13" x2="17" y1="9" y2="9"/></svg>';
+    icons['table-delete'] =
+      '<svg viewBox="0 0 18 18"><rect class="ql-stroke" height="10" width="12" x="3" y="5"/><line class="ql-stroke" x1="3" x2="15" y1="9" y2="9"/><line class="ql-stroke" x1="7" x2="7" y1="5" y2="15"/><line class="ql-stroke" x1="11" x2="11" y1="5" y2="15"/><line class="ql-stroke" x1="5" x2="13" y1="2" y2="2"/><line class="ql-stroke" x1="6" x2="12" y1="17" y2="17"/></svg>';
+    icons['undo'] =
+      '<svg viewBox="0 0 18 18"><polyline class="ql-stroke" points="7 5 3 9 7 13"/><path class="ql-stroke" d="M4 9h7a4 4 0 0 1 0 8"/></svg>';
+    icons['redo'] =
+      '<svg viewBox="0 0 18 18"><polyline class="ql-stroke" points="11 5 15 9 11 13"/><path class="ql-stroke" d="M14 9H7a4 4 0 0 0 0 8"/></svg>';
+  }
+
+  private applyToolbarLabels(): void {
+    const toolbarElement =
+      this.editorHost?.nativeElement.parentElement?.querySelector<HTMLElement>('.ql-toolbar');
+    if (!toolbarElement) {
+      return;
+    }
+
+    const labels: Record<string, string> = {
+      blockquote: 'Block quote',
+      bold: 'Bold',
+      'code-block': 'Code block',
+      clean: 'Clear formatting',
+      italic: 'Italic',
+      link: 'Insert link',
+      redo: 'Redo',
+      strike: 'Strikethrough',
+      table: 'Insert 3 by 3 table',
+      'table-column': 'Add table column to the right',
+      'table-delete': 'Delete table',
+      'table-row': 'Add table row below',
+      underline: 'Underline',
+      undo: 'Undo',
+    };
+
+    for (const [className, label] of Object.entries(labels)) {
+      const button = toolbarElement.querySelector<HTMLButtonElement>(`.ql-${className}`);
+      button?.setAttribute('title', label);
+      button?.setAttribute('aria-label', label);
+    }
   }
 
   private cleanNode(parent: Node): void {
     const allowedTags = new Set([
       'a',
       'b',
+      'blockquote',
       'br',
+      'code',
       'div',
       'em',
       'h1',
@@ -286,8 +369,12 @@ export class TextEditorComponent
       'li',
       'ol',
       'p',
+      'pre',
+      's',
       'span',
       'strong',
+      'sub',
+      'sup',
       'table',
       'tbody',
       'td',
@@ -332,9 +419,11 @@ export class TextEditorComponent
     const className = this.getSafeClassName(element.className);
     const href = tagName === 'a' ? this.getSafeHref(element.getAttribute('href')) : null;
     const dataList = tagName === 'li' ? element.getAttribute('data-list') : null;
+    const dataLanguage = tagName === 'pre' ? element.getAttribute('data-language') : null;
     const dataRow = ['td', 'th'].includes(tagName) ? element.getAttribute('data-row') : null;
     const colSpan = ['td', 'th'].includes(tagName) ? element.getAttribute('colspan') : null;
     const rowSpan = ['td', 'th'].includes(tagName) ? element.getAttribute('rowspan') : null;
+    const style = this.getSafeStyle(element);
 
     for (const attribute of Array.from(element.attributes)) {
       element.removeAttribute(attribute.name);
@@ -350,12 +439,20 @@ export class TextEditorComponent
       element.setAttribute('rel', 'noopener noreferrer');
     }
 
-    if (dataList && ['bullet', 'ordered'].includes(dataList)) {
+    if (dataList && ['bullet', 'checked', 'ordered', 'unchecked'].includes(dataList)) {
       element.setAttribute('data-list', dataList);
+    }
+
+    if (dataLanguage && /^[a-z0-9_-]{1,32}$/i.test(dataLanguage)) {
+      element.setAttribute('data-language', dataLanguage);
     }
 
     if (dataRow && /^row-[a-z0-9]+$/i.test(dataRow)) {
       element.setAttribute('data-row', dataRow);
+    }
+
+    if (style) {
+      element.setAttribute('style', style);
     }
 
     this.setSafeTableSpan(element, 'colspan', colSpan);
@@ -379,6 +476,43 @@ export class TextEditorComponent
     const trimmed = href.trim();
     if (/^(https?:|mailto:|tel:)/i.test(trimmed)) {
       return trimmed;
+    }
+
+    return null;
+  }
+
+  private getSafeStyle(element: HTMLElement): string {
+    const styles: string[] = [];
+    const color = this.getSafeColor(element.style.color);
+    const backgroundColor = this.getSafeColor(element.style.backgroundColor);
+
+    if (color) {
+      styles.push(`color: ${color}`);
+    }
+
+    if (backgroundColor) {
+      styles.push(`background-color: ${backgroundColor}`);
+    }
+
+    return styles.join('; ');
+  }
+
+  private getSafeColor(color: string): string | null {
+    const normalized = color.trim().toLowerCase();
+    if (!normalized) {
+      return null;
+    }
+
+    if (
+      /^#[0-9a-f]{3,8}$/i.test(normalized) ||
+      /^rgba?\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}(?:\s*,\s*(?:0|1|0?\.\d+))?\s*\)$/.test(
+        normalized,
+      ) ||
+      /^hsla?\(\s*\d{1,3}\s*,\s*\d{1,3}%\s*,\s*\d{1,3}%(?:\s*,\s*(?:0|1|0?\.\d+))?\s*\)$/.test(
+        normalized,
+      )
+    ) {
+      return normalized;
     }
 
     return null;

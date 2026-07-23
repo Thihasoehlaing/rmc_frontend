@@ -12,10 +12,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import {
-  QuillToolbarOptions,
-  TextEditorComponent,
-} from '../../../../shared/components/text-editor/text-editor.component';
+import { TextEditorComponent } from '../../../../shared/components/text-editor/text-editor.component';
 import { GuidelinesModalComponent } from '../../../../shared/components/guidelines-modal/guidelines-modal.component';
 import { DialogComponent } from '../../../../shared/components/dialog/dialog.component';
 import { FormOption, WorkflowService } from '../../../settings/workflow/workflow.service';
@@ -51,14 +48,6 @@ export class AddGuidelineModalComponent implements OnChanges, OnInit {
   @ViewChild('previewModal') previewModal?: GuidelinesModalComponent;
 
   readonly forms = signal<FormOption[]>([]);
-
-  readonly editorToolbarOptions: QuillToolbarOptions = [
-    [{ header: [1, 2, 3, false] }],
-    ['bold', 'italic', 'underline'],
-    [{ list: 'bullet' }, { list: 'ordered' }],
-    ['link'],
-    ['clean'],
-  ];
 
   guidelineContent = signal('');
   guidelineConfig = signal<GuidelineConfig>(this.getDefaultConfig());

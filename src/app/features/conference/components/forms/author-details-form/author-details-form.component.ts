@@ -443,6 +443,7 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
       const seen = new Set<string>();
       this.departmentOptions = (res.data ?? [])
         .filter((department) => department.is_active)
+        .filter((department) => this.isStudentSchoolDepartment(department.department_name))
         .filter((department) => {
           const key = department.department_name.trim().toLowerCase();
           if (!key || seen.has(key)) return false;
@@ -455,6 +456,11 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
           description: department.department_type,
         }));
     });
+  }
+
+  private isStudentSchoolDepartment(departmentName: string | null | undefined): boolean {
+    const name = String(departmentName ?? '').trim().toLowerCase();
+    return name.startsWith('graduate school') || name.startsWith('school of');
   }
 
   private toAcademicStaffDropdownOption(staff: AcademicStaffOption): DropdownOption<string> {

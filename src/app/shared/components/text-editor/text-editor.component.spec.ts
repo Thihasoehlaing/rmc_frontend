@@ -34,10 +34,19 @@ describe('TextEditorComponent', () => {
 
   it('preserves Quill list indentation and alignment classes', () => {
     const html =
-      '<ol><li class="ql-indent-1 unknown-class" data-list="ordered">Nested</li></ol><p class="ql-align-center">Centered</p>';
+      '<ol><li class="ql-indent-1 unknown-class" data-list="checked">Nested</li></ol><p class="ql-align-center">Centered</p>';
 
     expect(component.sanitizeForStorage(html)).toBe(
-      '<ol><li class="ql-indent-1" data-list="ordered">Nested</li></ol><p class="ql-align-center">Centered</p>',
+      '<ol><li class="ql-indent-1" data-list="checked">Nested</li></ol><p class="ql-align-center">Centered</p>',
+    );
+  });
+
+  it('keeps safe formatting added by the expanded toolbar', () => {
+    const html =
+      '<blockquote>Quote</blockquote><pre data-language="typescript" onclick="alert(1)">const x = 1;</pre><p><s>Strike</s> H<sub>2</sub>O X<sup>2</sup> <span style="color: rgb(230, 0, 0); background-color: rgb(255, 255, 0); position: fixed;">Color</span></p>';
+
+    expect(component.sanitizeForStorage(html)).toBe(
+      '<blockquote>Quote</blockquote><pre data-language="typescript">const x = 1;</pre><p><s>Strike</s> H<sub>2</sub>O X<sup>2</sup> <span style="color: rgb(230, 0, 0); background-color: rgb(255, 255, 0)">Color</span></p>',
     );
   });
 

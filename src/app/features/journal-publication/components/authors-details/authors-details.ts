@@ -101,6 +101,7 @@ export class AuthorsDetails implements OnInit {
   nonApuCoAuthorsPageSize = 5;
 
   staffOptions: DropdownOption<string>[] = [];
+  departmentOptions: DropdownOption<string>[] = [];
   staffOptionsLoading = false;
   staffOptionsLoadFailed = false;
   organisationTypeOptions: DropdownOption<string>[] = [];
@@ -211,6 +212,7 @@ export class AuthorsDetails implements OnInit {
   ngOnInit() {
     this.initializeForm();
     this.loadAcademicStaffOptions();
+    this.loadDepartmentOptions();
     this.loadOrganisationTypeOptions();
   }
 
@@ -698,6 +700,36 @@ export class AuthorsDetails implements OnInit {
           this.organisationTypeOptionsLoadFailed = true;
         },
       });
+  }
+
+  private loadDepartmentOptions(): void {
+    this.masterData.getDepartments().subscribe({
+      next: (response) => {
+        const seen = new Set<string>();
+        this.departmentOptions = (response.success ? (response.data ?? []) : [])
+          .filter((department) => department.is_active)
+          .filter((department) => this.isStudentSchoolDepartment(department.department_name))
+          .filter((department) => {
+            const key = department.department_name.trim().toLowerCase();
+            if (!key || seen.has(key)) return false;
+            seen.add(key);
+            return true;
+          })
+          .map((department) => ({
+            value: department.department_name,
+            label: department.department_name,
+            description: department.department_type,
+          }));
+      },
+      error: () => {
+        this.departmentOptions = [];
+      },
+    });
+  }
+
+  private isStudentSchoolDepartment(departmentName: string | null | undefined): boolean {
+    const name = String(departmentName ?? '').trim().toLowerCase();
+    return name.startsWith('graduate school') || name.startsWith('school of');
   }
 
   private setupStaffSelection(selectedStaffName = ''): void {

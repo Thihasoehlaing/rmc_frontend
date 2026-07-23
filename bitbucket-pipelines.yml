@@ -11,7 +11,8 @@
 # Required Repository Variables:
 #   AWS_ACCESS_KEY_ID                 — IAM deployer access key
 #   AWS_SECRET_ACCESS_KEY             — IAM deployer secret key
-#   AWS_DEFAULT_REGION                — AWS region (e.g. ap-southeast-1)
+#   AWS_DEFAULT_REGION                — AWS region for staging/prod
+#   AWS_DEFAULT_REGION_DEV            — AWS region for dev
 #   CLOUDFRONT_DISTRIBUTION_ID_DEV    — CloudFront distribution ID for dev
 #   CLOUDFRONT_DISTRIBUTION_ID_PROD   — CloudFront distribution ID for prod
 # =============================================================================
@@ -32,7 +33,7 @@ pipelines:
               variables:
                 AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
                 AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
-                AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION
+                AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION_DEV
                 S3_BUCKET: 'frontend-rmc-dev'
                 LOCAL_PATH: 'dist/RMC_project/browser'
                 DELETE_FLAG: 'true'
@@ -40,7 +41,7 @@ pipelines:
               variables:
                 AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
                 AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
-                AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION
+                AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION_DEV
                 DISTRIBUTION_ID: $CLOUDFRONT_DISTRIBUTION_ID_DEV
           artifacts:
             - dist/**

@@ -3,8 +3,8 @@ import { Location } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
-import { environment } from '../../../../environments/environment';
 import { AuthService } from '../../../core/services/auth.service';
+import { TestingLoginAccount, TestingLoginService } from './testing-login.service';
 
 @Component({
   selector: 'app-login',
@@ -18,11 +18,12 @@ export class LoginComponent implements OnInit {
   private readonly location = inject(Location);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly testingLoginService = inject(TestingLoginService);
   private returnRoute = '/dashboard';
 
   readonly currentYear = new Date().getFullYear();
-  readonly showTestingLogin = !environment.production;
-  readonly testingAccounts = signal<{ username: string; label: string; groups: string }[]>([]);
+  readonly showTestingLogin = this.testingLoginService.enabled;
+  readonly testingAccounts = signal<TestingLoginAccount[]>([]);
   readonly isLoading = signal(false);
   readonly loginError = signal('');
 
@@ -106,7 +107,7 @@ export class LoginComponent implements OnInit {
       return;
     }
 
-    this.authService.getDemoAccounts().subscribe({
+    this.testingLoginService.listAccounts().subscribe({
       next: accounts => this.testingAccounts.set(accounts),
       error: () => {
         this.isLoading.set(false);

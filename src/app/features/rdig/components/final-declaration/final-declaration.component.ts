@@ -1,4 +1,4 @@
-import { Component, Input, inject, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy } from '@angular/core';
 import { ReactiveFormsModule, FormGroup, FormControl } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { ValidationMessageComponent } from '../../../../shared/components/validation-message/validation-message.component';
@@ -6,7 +6,6 @@ import { CharacterCounterComponent } from '../../../../shared/components/charact
 import { ReviewBlockComponent } from '../review-block/review-block.component';
 import { ApprovalCardComponent } from '../approval-card/approval-card.component';
 import { RdigWorkflowService } from '../../services/rdig-workflow.service';
-import { AuthService } from '../../../../core/services/auth.service';
 
 @Component({
     selector: 'app-final-declaration',
@@ -34,9 +33,8 @@ export class FinalDeclarationComponent implements OnInit, OnDestroy {
              this.showRdigChairComments || this.showVcComments || this.showCeoComments;
     }
 
-    private auth = inject(AuthService);
-    /** Potential reviewers for dropdown assignment */
-    reviewers = this.auth.getPotentialReviewers();
+    /** Potential reviewers are no longer sourced from frontend dummy auth users. */
+    reviewers: { id: string; name: string }[] = [];
 
     private rmcSub?: Subscription;
 

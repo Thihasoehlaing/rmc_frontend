@@ -20,6 +20,7 @@ import {
   ConferenceFormData,
 } from '../../services/conference-api.service';
 import { CONFERENCE_REVIEW_PREVIEW } from './conference-review.preview-data';
+import { ActionLoadingService } from '../../../../core/services/action-loading.service';
 
 const COMMENT_MAX_LENGTH = 500;
 
@@ -39,6 +40,7 @@ export class ConferenceReviewComponent implements OnInit {
   private readonly requests = inject(WorkflowRequestsService);
   private readonly authService = inject(AuthService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly actionLoading = inject(ActionLoadingService);
 
   private requestId: number | null = null;
   private returnTo: string | null = null;
@@ -435,22 +437,31 @@ export class ConferenceReviewComponent implements OnInit {
 
     this.acting.set(true);
     this.feedback.set(null);
+    const loadingId = this.actionLoading.begin(`Processing ${action.action_name}`);
+    let actionSucceeded = false;
     const actionComment = this.requiresDecisionComment()
       ? (this.actionCommentControl.value ?? '').trim()
       : null;
     this.requests
       .actOnRequest(this.requestId, { action_code: action.action_code, comment_text: actionComment })
       .pipe(
-        finalize(() => this.acting.set(false)),
+        finalize(() => {
+          this.acting.set(false);
+          if (!actionSucceeded) {
+            this.actionLoading.end(loadingId);
+          }
+        }),
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe({
         next: () => {
+          actionSucceeded = true;
           this.feedback.set({ type: 'success', text: `${action.action_name} recorded.` });
-          setTimeout(
-            () => void this.router.navigateByUrl(this.returnTo ?? '/submissions/inbox'),
-            1200,
-          );
+          setTimeout(() => {
+            void this.router
+              .navigateByUrl(this.returnTo ?? '/submissions/inbox')
+              .finally(() => this.actionLoading.end(loadingId));
+          }, 1200);
         },
         error: (err) =>
           this.feedback.set({

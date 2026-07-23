@@ -1,0 +1,17 @@
+@if (actionLoading.state(); as action) {
+  <div
+    class="action-loading-overlay"
+    role="status"
+    aria-live="assertive"
+    aria-busy="true"
+    [attr.aria-label]="action.title"
+  >
+    <section class="action-loading-card">
+      <div class="action-loading-card__spinner" aria-hidden="true">
+        <app-svg-icon [icon]="loadingSpinnerIcon" size="var(--size-loader-spinner)" />
+      </div>
+      <h2>{{ action.title }}</h2>
+      <p>{{ action.message }}</p>
+    </section>
+  </div>
+}

@@ -23,6 +23,7 @@ import {
   DataTableComponent,
 } from '../../../../shared/components/data-table/data-table.component';
 import { TableScrollHintComponent } from '../../../../shared/components/table-scroll-hint/table-scroll-hint.component';
+import { ActionLoadingService } from '../../../../core/services/action-loading.service';
 
 const SCOPUS_QUARTILE_LABELS: Readonly<Record<string, string>> = {
   Q1: 'Q1: 75th - 100th percentile',
@@ -66,6 +67,7 @@ export class JournalReviewComponent implements OnInit {
   private readonly requests = inject(WorkflowRequestsService);
   private readonly authService = inject(AuthService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly actionLoading = inject(ActionLoadingService);
 
   private requestId: number | null = null;
   private returnTo: string | null = null;
@@ -538,6 +540,8 @@ export class JournalReviewComponent implements OnInit {
 
     this.acting.set(true);
     this.feedback.set(null);
+    const loadingId = this.actionLoading.begin(`Processing ${action.action_name}`);
+    let actionSucceeded = false;
     const actionComment = this.requiresDecisionComment()
       ? (this.actionCommentControl.value ?? '').trim()
       : null;
@@ -547,13 +551,23 @@ export class JournalReviewComponent implements OnInit {
         comment_text: actionComment,
       })
       .pipe(
-        finalize(() => this.acting.set(false)),
+        finalize(() => {
+          this.acting.set(false);
+          if (!actionSucceeded) {
+            this.actionLoading.end(loadingId);
+          }
+        }),
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe({
         next: () => {
+          actionSucceeded = true;
           this.feedback.set({ type: 'success', text: `${action.action_name} recorded.` });
-          setTimeout(() => this.navigateToReturnTarget('/submissions/inbox'), 1200);
+          setTimeout(() => {
+            void this.navigateToReturnTarget('/submissions/inbox').finally(() =>
+              this.actionLoading.end(loadingId),
+            );
+          }, 1200);
         },
         error: (err) => {
           const msg = err?.error?.message || 'Failed to record your action. Please try again.';
@@ -596,8 +610,8 @@ export class JournalReviewComponent implements OnInit {
     );
   }
 
-  private navigateToReturnTarget(fallback: string): void {
-    void this.router.navigateByUrl(this.returnTo ?? fallback);
+  private navigateToReturnTarget(fallback: string): Promise<boolean> {
+    return this.router.navigateByUrl(this.returnTo ?? fallback);
   }
 
   private safeInternalPath(value: string | null): string | null {

@@ -3,8 +3,8 @@ import { Location } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
-import { environment } from '../../../../environments/environment';
 import { AuthService } from '../../../core/services/auth.service';
+import { TestingLoginAccount, TestingLoginService } from './testing-login.service';
 
 @Component({
   selector: 'app-login',
@@ -18,11 +18,12 @@ export class LoginComponent implements OnInit {
   private readonly location = inject(Location);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly testingLoginService = inject(TestingLoginService);
   private returnRoute = '/dashboard';
 
   readonly currentYear = new Date().getFullYear();
-  readonly showTestingLogin = !environment.production;
-  readonly testingAccounts = signal<{ username: string; label: string; groups: string }[]>([]);
+  readonly showTestingLogin = this.testingLoginService.enabled;
+  readonly testingAccounts = signal<TestingLoginAccount[]>([]);
   readonly isLoading = signal(false);
   readonly loginError = signal('');
 
@@ -34,7 +35,8 @@ export class LoginComponent implements OnInit {
 
     if (!code) {
       if (this.authService.isAuthenticated()) {
-        void this.router.navigateByUrl(this.returnRoute);
+        this.isLoading.set(true);
+        void this.navigateAfterLogin();
         return;
       }
 
@@ -47,7 +49,7 @@ export class LoginComponent implements OnInit {
     this.authService.completeApuLogin(code).subscribe({
       next: () => {
         sessionStorage.removeItem(this.APU_RETRY_KEY);
-        void this.router.navigateByUrl(this.returnRoute);
+        void this.navigateAfterLogin();
       },
       error: (error: unknown) => {
         if (
@@ -78,8 +80,7 @@ export class LoginComponent implements OnInit {
 
     this.authService.loginAsTestingUser(username).subscribe({
       next: () => {
-        this.isLoading.set(false);
-        void this.router.navigateByUrl(this.returnRoute);
+        void this.navigateAfterLogin();
       },
       error: (error: unknown) => {
         this.isLoading.set(false);
@@ -88,12 +89,25 @@ export class LoginComponent implements OnInit {
     });
   }
 
+  private async navigateAfterLogin(): Promise<void> {
+    try {
+      const navigated = await this.router.navigateByUrl(this.returnRoute);
+      if (!navigated) {
+        this.loginError.set('We could not open the requested page. Please try again.');
+      }
+    } catch {
+      this.loginError.set('We could not open the requested page. Please try again.');
+    } finally {
+      this.isLoading.set(false);
+    }
+  }
+
   private loadTestingAccounts(): void {
     if (!this.showTestingLogin) {
       return;
     }
 
-    this.authService.getDemoAccounts().subscribe({
+    this.testingLoginService.listAccounts().subscribe({
       next: accounts => this.testingAccounts.set(accounts),
       error: () => {
         this.isLoading.set(false);

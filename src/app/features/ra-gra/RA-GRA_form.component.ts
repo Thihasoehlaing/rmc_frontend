@@ -11,6 +11,7 @@ import { ProjectDetailsComponent } from './components/Project Details/Project De
 import { StudentDetailsComponent } from './components/Student Details/Student Details';
 import { DeclarationComponent } from './components/Declaration/Declaration';
 import { ActivatedRoute } from '@angular/router';
+import { ActionLoadingService } from '../../core/services/action-loading.service';
 
 @Component({
   selector: 'app-ragra-form',
@@ -30,6 +31,7 @@ import { ActivatedRoute } from '@angular/router';
 })
 export class RagraFormComponent {
   private route = inject(ActivatedRoute);
+  private actionLoading = inject(ActionLoadingService);
   readonly guidelineContext: GuidelineContext =
     this.route.snapshot.queryParamMap.has('id') ? 'existing-application' : 'new-application';
 
@@ -212,8 +214,10 @@ export class RagraFormComponent {
     }
 
     this.isSubmitting = true;
+    const loadingId = this.actionLoading.begin('Submitting RA/GRA application');
     setTimeout(() => {
       this.isSubmitting = false;
+      this.actionLoading.end(loadingId);
       this.submitSuccess = true;
     }, 1000);
   }

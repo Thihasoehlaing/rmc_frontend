@@ -79,6 +79,7 @@
               <app-validation-message
                 class="form-validation-note--error"
                 [control]="form.get('authorshipType')"
+                fieldName="Author selection"
               ></app-validation-message>
             </div>
 
@@ -103,6 +104,7 @@
               <app-validation-message
                 class="form-validation-note--error"
                 [control]="form.get('restrictedPublisher')"
+                fieldName="Restricted publisher"
               ></app-validation-message>
             </div>
 
@@ -125,6 +127,7 @@
               <app-validation-message
                 class="form-validation-note--error"
                 [control]="form.get('researchType')"
+                fieldName="Select Research or Non-Research Project"
               ></app-validation-message>
             </div>
 
@@ -167,6 +170,7 @@
               <app-validation-message
                 class="form-validation-note--error"
                 [control]="form.get('scopusQuartile')"
+                fieldName="Please select Scopus Quartile"
               ></app-validation-message>
             </div>
 
@@ -188,6 +192,7 @@
               <app-validation-message
                 class="form-validation-note--error"
                 [control]="form.get('citedApuPaper')"
+                fieldName="Have you cited at least 1 journal paper from Asia Pacific University of Technology & Innovation JATI & EJBM?"
               ></app-validation-message>
             </div>
 
@@ -213,6 +218,7 @@
                 <app-validation-message
                   class="form-validation-note--error"
                   [control]="form.get('citedApuPaperExplanation')"
+                  fieldName="If No, please explain"
                 ></app-validation-message>
               </div>
             }
@@ -240,14 +246,17 @@
               <app-validation-message
                 class="form-validation-note--error"
                 [control]="form.get('sdgKeyword1')"
+                fieldName="SDG Keyword 1"
               ></app-validation-message>
               <app-validation-message
                 class="form-validation-note--error"
                 [control]="form.get('sdgKeyword2')"
+                fieldName="SDG Keyword 2"
               ></app-validation-message>
               <app-validation-message
                 class="form-validation-note--error"
                 [control]="form.get('sdgKeyword3')"
+                fieldName="SDG Keyword 3"
               ></app-validation-message>
             </div>
 
@@ -270,6 +279,7 @@
               <app-validation-message
                 class="form-validation-note--error"
                 [control]="form.get('paperTitle')"
+                fieldName="Paper Title"
               ></app-validation-message>
             </div>
 
@@ -292,6 +302,7 @@
               <app-validation-message
                 class="form-validation-note--error"
                 [control]="form.get('journalName')"
+                fieldName="Journal Name"
               ></app-validation-message>
             </div>
           </div>
@@ -617,6 +628,7 @@
               <app-validation-message
                 class="form-validation-note--error"
                 [control]="form.get('costingRemarks')"
+                fieldName="Remarks"
               ></app-validation-message>
             </div>
           </div>
@@ -725,6 +737,7 @@
               <app-validation-message
                 class="form-validation-note--error"
                 [control]="form.get('costingRemarks')"
+                fieldName="Remarks"
               ></app-validation-message>
             </div>
           </div>
@@ -923,6 +936,7 @@
       <app-validation-message
         class="form-validation-note--error"
         [control]="breakdownForm.get('description')"
+        fieldName="Description"
       ></app-validation-message>
     </div>
 
@@ -1000,6 +1014,7 @@
         <app-validation-message
           class="form-validation-note--error"
           [control]="sdgKeywordsForm.get('keyword1')"
+          fieldName="Keyword 1"
         ></app-validation-message>
         <app-character-counter
           [current]="sdgKeywordsForm.get('keyword1')?.value?.length || 0"
@@ -1021,6 +1036,7 @@
         <app-validation-message
           class="form-validation-note--error"
           [control]="sdgKeywordsForm.get('keyword2')"
+          fieldName="Keyword 2"
         ></app-validation-message>
         <app-character-counter
           [current]="sdgKeywordsForm.get('keyword2')?.value?.length || 0"
@@ -1042,6 +1058,7 @@
         <app-validation-message
           class="form-validation-note--error"
           [control]="sdgKeywordsForm.get('keyword3')"
+          fieldName="Keyword 3"
         ></app-validation-message>
         <app-character-counter
           [current]="sdgKeywordsForm.get('keyword3')?.value?.length || 0"

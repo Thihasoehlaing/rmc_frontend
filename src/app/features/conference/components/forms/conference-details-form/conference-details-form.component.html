@@ -62,6 +62,7 @@
             <app-validation-message
               class="form-validation-note--error"
               [control]="form.get('fundingRequestType')"
+              fieldName="Conference Funding Request Type"
             ></app-validation-message>
           </div>
 
@@ -87,6 +88,7 @@
             <app-validation-message
               class="form-validation-note--error"
               [control]="form.get('localOrOverseas')"
+              fieldName="Select Conference Venue"
             ></app-validation-message>
           </div>
         </div>
@@ -110,6 +112,7 @@
             <app-validation-message
               class="form-validation-note--error"
               [control]="form.get('travelRequired')"
+              fieldName="Is Travelling Required?"
             ></app-validation-message>
           </div>
 
@@ -130,6 +133,7 @@
             <app-validation-message
               class="form-validation-note--error"
               [control]="form.get('conferenceType')"
+              fieldName="Select conference type for current application"
             ></app-validation-message>
           </div>
         </div>
@@ -164,6 +168,7 @@
             <app-validation-message
               class="form-validation-note--error"
               [control]="form.get('authorshipType')"
+              fieldName="Author selection"
             ></app-validation-message>
           </div>
 
@@ -184,6 +189,7 @@
             <app-validation-message
               class="form-validation-note--error"
               [control]="form.get('citedJournalPaper')"
+              fieldName="Have you cited at least 1 journal paper from APU JATI & EJBM?"
             ></app-validation-message>
 
             @if (form.get('citedJournalPaper')?.value === 'no') {
@@ -207,6 +213,7 @@
                 <app-validation-message
                   class="form-validation-note--error"
                   [control]="form.get('citedJournalPaperExplanation')"
+                  fieldName="If No, please explain"
                 ></app-validation-message>
               </div>
             }
@@ -245,6 +252,7 @@
               <app-validation-message
                 class="form-validation-note--error"
                 [control]="form.get('restrictedPublisher')"
+                fieldName="Restricted publisher"
               ></app-validation-message>
             }
           </div>
@@ -266,6 +274,7 @@
             <app-validation-message
               class="form-validation-note--error"
               [control]="form.get('scopusPublicationGuaranteed')"
+              fieldName="Scopus-indexed conference proceeding"
             ></app-validation-message>
           </div>
         </div>
@@ -293,6 +302,7 @@
           <app-validation-message
             class="form-validation-note--error"
             [control]="form.get('researchType')"
+            fieldName="Select Research or Non-Research Project"
           ></app-validation-message>
         </div>
 
@@ -316,14 +326,17 @@
           <app-validation-message
             class="form-validation-note--error"
             [control]="form.get('sdgKeyword1')"
+            fieldName="SDG Keyword 1"
           ></app-validation-message>
           <app-validation-message
             class="form-validation-note--error"
             [control]="form.get('sdgKeyword2')"
+            fieldName="SDG Keyword 2"
           ></app-validation-message>
           <app-validation-message
             class="form-validation-note--error"
             [control]="form.get('sdgKeyword3')"
+            fieldName="SDG Keyword 3"
           ></app-validation-message>
         </div>
       </div>
@@ -349,6 +362,7 @@
             <app-validation-message
               class="form-validation-note--error"
               [control]="form.get('conferenceStartDate')"
+              fieldName="Conference Start Date"
             ></app-validation-message>
           </div>
           <div class="form-field">
@@ -362,6 +376,7 @@
             <app-validation-message
               class="form-validation-note--error"
               [control]="form.get('conferenceEndDate')"
+              fieldName="Conference End Date"
             ></app-validation-message>
           </div>
         </div>
@@ -456,6 +471,7 @@
             <app-validation-message
               class="form-validation-note--error"
               [control]="form.get('conferenceName')"
+              fieldName="Conference Name"
             ></app-validation-message>
           </div>
           <div class="form-field">
@@ -474,6 +490,7 @@
             <app-validation-message
               class="form-validation-note--error"
               [control]="form.get('conferenceLocation')"
+              fieldName="Conference Location"
             ></app-validation-message>
           </div>
         </div>
@@ -494,6 +511,7 @@
           <app-validation-message
             class="form-validation-note--error"
             [control]="form.get('paperTitle')"
+            fieldName="Paper Title"
           ></app-validation-message>
         </div>
 
@@ -513,6 +531,7 @@
             <app-validation-message
               class="form-validation-note--error"
               [control]="form.get('hasAdvance')"
+              fieldName="Is there an advance?"
             ></app-validation-message>
           </div>
 
@@ -533,6 +552,7 @@
             <app-validation-message
               class="form-validation-note--error"
               [control]="form.get('hasColleagues')"
+              fieldName="Does the applicant have any colleagues involved?"
             ></app-validation-message>
           </div>
         </div>
@@ -554,6 +574,7 @@
             <app-validation-message
               class="form-validation-note--error"
               [control]="form.get('advanceReason')"
+              fieldName="Please explain why the advance is needed"
             ></app-validation-message>
           </div>
         }
@@ -576,6 +597,7 @@
             <app-validation-message
               class="form-validation-note--error"
               [control]="form.get('selectedColleagues')"
+              fieldName="Select Colleagues"
             ></app-validation-message>
             @if (form.get('selectedColleagues')?.hasError('maxColleagues')) {
               <p class="form-error-msg">Maximum 10 colleagues can be selected.</p>
@@ -673,6 +695,7 @@
           <app-validation-message
             class="form-validation-note--error"
             [control]="form.get('bookingDoneBy')"
+            fieldName="Booking Done By"
           ></app-validation-message>
         </div>
 
@@ -695,6 +718,7 @@
             <app-validation-message
               class="form-validation-note--error"
               [control]="form.get('bookingDoneByOther')"
+              fieldName="Please specify who is responsible for the booking"
             ></app-validation-message>
           </div>
         }
@@ -1522,6 +1546,7 @@
               <app-validation-message
                 class="form-validation-note--error"
                 [control]="sdgKeywordsForm.get('keyword1')"
+                fieldName="Keyword 1"
               ></app-validation-message>
               <app-character-counter
                 [current]="sdgKeywordsForm.get('keyword1')?.value?.length || 0"
@@ -1543,6 +1568,7 @@
               <app-validation-message
                 class="form-validation-note--error"
                 [control]="sdgKeywordsForm.get('keyword2')"
+                fieldName="Keyword 2"
               ></app-validation-message>
               <app-character-counter
                 [current]="sdgKeywordsForm.get('keyword2')?.value?.length || 0"
@@ -1564,6 +1590,7 @@
               <app-validation-message
                 class="form-validation-note--error"
                 [control]="sdgKeywordsForm.get('keyword3')"
+                fieldName="Keyword 3"
               ></app-validation-message>
               <app-character-counter
                 [current]="sdgKeywordsForm.get('keyword3')?.value?.length || 0"

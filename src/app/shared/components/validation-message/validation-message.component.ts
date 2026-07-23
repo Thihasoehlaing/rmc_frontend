@@ -12,6 +12,7 @@ import { AbstractControl } from '@angular/forms';
 export class ValidationMessageComponent {
   @Input() control: AbstractControl | null | undefined = null;
   @Input() message = '';
+  @Input() fieldName = '';
 
   get errorMessage(): string | null {
     if (this.message) return this.message;
@@ -20,7 +21,7 @@ export class ValidationMessageComponent {
     const errors = this.control.errors;
     if (!errors) return null;
 
-    if (errors['required']) return 'This field is required.';
+    if (errors['required']) return this.fieldName ? `${this.fieldName} field is required.` : 'This field is required.';
     if (errors['email']) return 'Invalid email address.';
     if (errors['maxlength']) return `Maximum ${errors['maxlength'].requiredLength} characters allowed.`;
     if (errors['minlength']) return `Minimum ${errors['minlength'].requiredLength} characters required.`;

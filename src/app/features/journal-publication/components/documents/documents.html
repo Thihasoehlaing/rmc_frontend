@@ -25,6 +25,7 @@
           </app-file-upload>
           <app-validation-message
             [control]="documentsForm.get('acceptanceNotification')"
+            fieldName="Acceptance Notification"
           ></app-validation-message>
         </div>
 
@@ -45,6 +46,7 @@
           </app-file-upload>
           <app-validation-message
             [control]="documentsForm.get('reviewersFeedback')"
+            fieldName="Reviewers' Feedback"
           ></app-validation-message>
         </div>
 
@@ -65,6 +67,7 @@
           </app-file-upload>
           <app-validation-message
             [control]="documentsForm.get('scopusEvidencePublication')"
+            fieldName="Screenshot of SCOPUS CiteScore"
           ></app-validation-message>
         </div>
 
@@ -87,6 +90,7 @@
           </app-file-upload>
           <app-validation-message
             [control]="documentsForm.get('sriApproval')"
+            fieldName="Approval by Strategic Research Institute (SRI)"
           ></app-validation-message>
           <app-note
             text="Please upload SRI approval on IRN country and SDG Keywords."
@@ -112,6 +116,7 @@
           </app-file-upload>
           <app-validation-message
             [control]="documentsForm.get('turnitinReport')"
+            fieldName="Turnitin Report"
           ></app-validation-message>
         </div>
 
@@ -132,6 +137,7 @@
           </app-file-upload>
           <app-validation-message
             [control]="documentsForm.get('finalPaperDraft')"
+            fieldName="Final Paper Draft"
           ></app-validation-message>
         </div>
 
@@ -152,6 +158,7 @@
           </app-file-upload>
           <app-validation-message
             [control]="documentsForm.get('journalInvoice')"
+            fieldName="Journal Invoice"
           ></app-validation-message>
           <app-note
             text="Please ensure billing name is: Asia Pacific University Sdn. Bhd."
@@ -182,6 +189,7 @@
           />
           <app-validation-message
             [control]="documentsForm.get('reviewerName')"
+            fieldName="Name of Reviewer"
           ></app-validation-message>
           <app-character-counter
             [current]="documentsForm.get('reviewerName')?.value?.length || 0"
@@ -206,6 +214,7 @@
           </div>
           <app-validation-message
             [control]="documentsForm.get('manuscriptInternallyReviewed')"
+            fieldName="Manuscript internally reviewed"
           ></app-validation-message>
         </div>
 
@@ -243,6 +252,7 @@
             <app-validation-message
               class="form-validation-note--error"
               [control]="documentsForm.get('manuscriptPreviouslyPublished')"
+              fieldName="Manuscript previously published"
             ></app-validation-message>
           }
           <app-note

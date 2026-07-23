@@ -8,7 +8,9 @@ import {
   DataTableComponent,
 } from '../../../shared/components/data-table/data-table.component';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
+import { SubmissionsSearchComponent } from '../../../shared/components/submissions-search/submissions-search.component';
 import { TableSkeletonComponent } from '../../../shared/components/table-skeleton/table-skeleton.component';
+import { AdminSettingsPageHeaderComponent } from '../../../shared/components/admin-settings-page-header/admin-settings-page-header.component';
 import { FormSettingItem, FormSettingService } from './form-setting.service';
 
 type StatusFilter = 'all' | 'active' | 'inactive';
@@ -17,10 +19,12 @@ type StatusFilter = 'all' | 'active' | 'inactive';
   selector: 'app-form-setting',
   standalone: true,
   imports: [
+    AdminSettingsPageHeaderComponent,
     CommonModule,
     FormsModule,
     DataTableComponent,
     PaginationComponent,
+    SubmissionsSearchComponent,
     TableSkeletonComponent,
   ],
   templateUrl: './form-setting.component.html',
@@ -98,6 +102,11 @@ export class FormSettingComponent implements OnInit {
     this.appliedSearch.set(this.searchDraft().trim());
     this.appliedStatus.set(this.statusDraft());
     this.page.set(1);
+  }
+
+  onSearch(query: string): void {
+    this.searchDraft.set(query);
+    this.applyFilters();
   }
 
   resetFilters(): void {

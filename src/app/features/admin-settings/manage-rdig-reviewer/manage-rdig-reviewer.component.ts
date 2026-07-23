@@ -2,7 +2,6 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
 
 import { DropdownOption } from '../../../core/interfaces/components.interface';
@@ -13,18 +12,21 @@ import { PaginationComponent } from '../../../shared/components/pagination/pagin
 import { SearchableDropdownComponent } from '../../../shared/components/searchable-dropdown/searchable-dropdown.component';
 import { SubmissionsSearchComponent } from '../../../shared/components/submissions-search/submissions-search.component';
 import { TableActionIconComponent } from '../../../shared/components/table-action-icon/table-action-icon.component';
+import { SkeletonColumn, TableSkeletonComponent } from '../../../shared/components/table-skeleton/table-skeleton.component';
 import {
   AcademicStaffOptionRecord,
   AcademicStaffService,
   DepartmentRecord,
 } from '../../settings/academic-staff/academic-staff.service';
 import { RdigReviewerRecord, RdigReviewerService } from './rdig-reviewer.service';
+import { AdminSettingsPageHeaderComponent } from '../../../shared/components/admin-settings-page-header/admin-settings-page-header.component';
 
 type StatusFilter = 'all' | 'active' | 'inactive';
 
 @Component({
   selector: 'app-manage-rdig-reviewer',
   imports: [
+    AdminSettingsPageHeaderComponent,
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
@@ -34,6 +36,7 @@ type StatusFilter = 'all' | 'active' | 'inactive';
     SearchableDropdownComponent,
     SubmissionsSearchComponent,
     TableActionIconComponent,
+    TableSkeletonComponent,
   ],
   templateUrl: './manage-rdig-reviewer.component.html',
   styleUrls: [
@@ -45,7 +48,6 @@ export class ManageRdigReviewerComponent implements OnInit {
   private readonly academicStaffService = inject(AcademicStaffService);
   private readonly rdigReviewerService = inject(RdigReviewerService);
   private readonly toast = inject(ToastService);
-  private readonly router = inject(Router);
 
   readonly reviewers = signal<RdigReviewerRecord[]>([]);
   readonly academicOptions = signal<AcademicStaffOptionRecord[]>([]);
@@ -59,6 +61,14 @@ export class ManageRdigReviewerComponent implements OnInit {
   readonly page = signal(1);
   readonly pageSize = signal(10);
   readonly pageSizeOptions = [10, 15, 30, 50];
+  readonly skeletonColumns: readonly SkeletonColumn[] = [
+    { width: '7%' },
+    { width: '28%' },
+    { width: '20%' },
+    { width: '20%' },
+    { width: '12%' },
+    { width: '13%' },
+  ];
   readonly totalItems = signal(0);
   readonly totalPages = signal(1);
 
@@ -98,9 +108,6 @@ export class ManageRdigReviewerComponent implements OnInit {
     return this.selectedStaffControl.value.length;
   }
 
-  goBack(): void {
-    this.router.navigate(['/admin-settings']);
-  }
 
   loadInitialOptions(): void {
     this.isLoading.set(true);

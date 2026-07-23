@@ -50,41 +50,25 @@
     <!-- ══════════════════════════════════════════════════════════════════ -->
     <div *ngIf="selectedGroup()" class="details-view settings-container fade-in">
 
-      <!-- ── Page header ─────────────────────────────────────────────── -->
       <div class="settings-card">
-        <div class="settings-card__header">
-          <div class="settings-card__header-row">
-            <button
-              type="button"
-              class="back-button"
-              (click)="goBack()"
-              aria-label="Back to dropdown forms"
-            >
-              <span class="material-icons">arrow_back</span>
-            </button>
+        <app-admin-settings-page-header
+          [title]="(selectedGroup()?.title || 'RDIG') + ' Dropdown Options Management'"
+          [description]="'Manage all ' + (selectedGroup()?.title || 'RDIG') + ' dropdown options from a single maintainable page.'"
+          backRoute="/admin-settings/dropdowns"
+          backLabel="Back to Dropdown Management"
+        >
+          @if (!isRegionMetadataCategory()) {
+            <app-action-button
+              header-action
+              type="primary"
+              label="Add New"
+              icon="add"
+              [disabled]="!selectedCategory() || (selectedCategory() === 'Sub-Research Domain' && !selectedSubDomainParentId())"
+              (clicked)="addOption()"
+            ></app-action-button>
+          }
+        </app-admin-settings-page-header>
 
-            <div>
-              <h2 class="card__title">{{ selectedGroup()?.title }} Dropdown Options Management</h2>
-              <p class="settings-card__subtitle">
-                Manage all {{ selectedGroup()?.title }} dropdown options from a single maintainable
-                page.
-              </p>
-            </div>
-
-            @if (!isRegionMetadataCategory()) {
-              <app-action-button
-                class="settings-header-action"
-                type="primary"
-                label="Add New"
-                icon="add"
-                [disabled]="!selectedCategory() || (selectedCategory() === 'Sub-Research Domain' && !selectedSubDomainParentId())"
-                (clicked)="addOption()"
-              ></app-action-button>
-            }
-          </div>
-        </div>
-
-        <!-- ── Skeleton layout while loading ─────────────────────────── -->
         @if (apiLoading()) {
           <div class="page-skeleton">
 

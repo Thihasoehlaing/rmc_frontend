@@ -27,6 +27,7 @@ import { TableActionIconComponent } from '../../../../shared/components/table-ac
 import { SubmissionsSearchComponent } from '../../../../shared/components/submissions-search/submissions-search.component';
 import { SearchableDropdownComponent } from '../../../../shared/components/searchable-dropdown/searchable-dropdown.component';
 import { DropdownOption as SelectOption } from '../../../../core/interfaces/components.interface';
+import { AdminSettingsPageHeaderComponent } from '../../../../shared/components/admin-settings-page-header/admin-settings-page-header.component';
 
 interface DropdownOption {
   id: number;
@@ -100,6 +101,7 @@ interface CategorySharingConfig {
   selector: 'app-rdig-dropdown-options',
   standalone: true,
   imports: [
+    AdminSettingsPageHeaderComponent,
     TableActionIconComponent,
     SubmissionsSearchComponent,
     CommonModule,
@@ -896,9 +898,6 @@ export class RdigDropdownOptionsComponent implements OnInit {
     }
   }
 
-  goBack(): void {
-    this.router.navigate(['/admin-settings/dropdowns']);
-  }
 
   addOption(): void {
     this.editingOptionId.set(null);

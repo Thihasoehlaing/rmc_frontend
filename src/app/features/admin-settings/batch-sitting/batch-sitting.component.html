@@ -1,16 +1,9 @@
 <section class="batch-container fade-in">
   <div class="card batch-card elevation-1">
-    <!-- ── Header ─────────────────────────────────────────────────────────── -->
-    <div class="card__header batch-card__header">
-      <span class="material-icons batch-card__icon">event_available</span>
-      <div>
-        <h1 class="batch-page__title">Batch Sitting Management</h1>
-        <p class="batch-card__subtitle">
-          Manage RDIG application cycle windows. One active batch runs at a time. Completed batches
-          are preserved in history and can be retrieved.
-        </p>
-      </div>
-    </div>
+    <app-admin-settings-page-header
+      title="Batch Sitting Management"
+      description="Manage RDIG application cycle windows. One active batch runs at a time. Completed batches are preserved in history and can be retrieved."
+    ></app-admin-settings-page-header>
 
     <!-- ── Feedback ───────────────────────────────────────────────────────── -->
     @if (feedback(); as note) {
@@ -36,11 +29,13 @@
 
     @if (!isLoading()) {
       <div class="batch-sections">
-        <section class="batch-section-switcher" aria-label="Batch section selector">
+        <section class="batch-section-switcher" role="tablist" aria-label="Batch section selector">
           <button
             class="batch-section-switcher__item"
             [class.is-active]="selectedSection() === 'active'"
             type="button"
+            role="tab"
+            [attr.aria-selected]="selectedSection() === 'active'"
             (click)="selectedSection.set('active')"
           >
             <span class="material-icons">play_circle</span>
@@ -53,6 +48,8 @@
             class="batch-section-switcher__item"
             [class.is-active]="selectedSection() === 'upcoming'"
             type="button"
+            role="tab"
+            [attr.aria-selected]="selectedSection() === 'upcoming'"
             (click)="selectedSection.set('upcoming')"
           >
             <span class="material-icons">schedule</span>
@@ -63,6 +60,8 @@
             class="batch-section-switcher__item"
             [class.is-active]="selectedSection() === 'history'"
             type="button"
+            role="tab"
+            [attr.aria-selected]="selectedSection() === 'history'"
             (click)="selectedSection.set('history')"
           >
             <span class="material-icons">history</span>

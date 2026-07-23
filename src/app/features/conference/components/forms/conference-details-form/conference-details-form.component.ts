@@ -25,9 +25,9 @@ import { ConferenceWorkflowService } from '../../../services/conference-workflow
 import { ConferenceFormStateService } from '../../../services/conference-form-state.service';
 import { BreakdownOptionsService } from '../../../services/breakdown-options.service';
 import {
-  AcademicStaffOption,
   MasterDataService,
   RegionOption,
+  StaffOption,
 } from '../../../../../core/services/master-data.service';
 import {
   SDG_KEYWORD_MAX_LENGTH,
@@ -909,7 +909,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
 
   private loadColleagueOptions(search = ''): void {
     this.colleaguesLoading.set(true);
-    this.masterData.searchAcademicStaff(search).subscribe({
+    this.masterData.searchStaff(search).subscribe({
       next: (res) => {
         const staff = res.data ?? [];
         this.colleagueOptions.set(staff.map((member) => this.toColleagueOption(member)));
@@ -922,7 +922,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     });
   }
 
-  private toColleagueOption(member: AcademicStaffOption): DropdownOption<string> {
+  private toColleagueOption(member: StaffOption): DropdownOption<string> {
     return {
       value: member.username || member.id.toString(),
       label: member.fullname || member.username,

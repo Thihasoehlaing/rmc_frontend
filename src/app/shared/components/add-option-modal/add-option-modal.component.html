@@ -116,7 +116,7 @@
             [isMulti]="true"
             valueMode="array"
             placeholder="Select forms"
-            [(ngModel)]="appliesTo"
+            [formControl]="appliesToControl"
           ></app-searchable-dropdown>
 
           <ng-template #formChipSharing>
@@ -142,10 +142,10 @@
             At least one Dropdown should be selected
           </p>
 
-          <div *ngIf="appliesTo.length" class="shared-note">
+          <div *ngIf="selectedAppliesTo.length" class="shared-note">
             <span class="icon">🔗</span>
-            This option will be shared across {{ appliesTo.length }} form{{
-              appliesTo.length > 1 ? 's' : ''
+            This option will be shared across {{ selectedAppliesTo.length }} form{{
+              selectedAppliesTo.length > 1 ? 's' : ''
             }}.
           </div>
         </ng-container>

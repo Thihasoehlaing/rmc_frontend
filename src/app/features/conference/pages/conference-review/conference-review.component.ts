@@ -1,7 +1,7 @@
 import { Location } from '@angular/common';
 import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { finalize, forkJoin } from 'rxjs';
 
@@ -11,6 +11,7 @@ import {
   WorkflowActionDto,
   WorkflowRequestsService,
 } from '../../../../core/services/workflow-requests.service';
+import { AuthService } from '../../../../core/services/auth.service';
 import { ActionButtonComponent } from '../../../../shared/components/action-button/action-button.component';
 import { TableScrollHintComponent } from '../../../../shared/components/table-scroll-hint/table-scroll-hint.component';
 import {
@@ -19,6 +20,8 @@ import {
   ConferenceFormData,
 } from '../../services/conference-api.service';
 import { CONFERENCE_REVIEW_PREVIEW } from './conference-review.preview-data';
+
+const COMMENT_MAX_LENGTH = 500;
 
 @Component({
   selector: 'app-conference-review',
@@ -34,6 +37,7 @@ export class ConferenceReviewComponent implements OnInit {
   private readonly location = inject(Location);
   private readonly conferenceApi = inject(ConferenceApiService);
   private readonly requests = inject(WorkflowRequestsService);
+  private readonly authService = inject(AuthService);
   private readonly destroyRef = inject(DestroyRef);
 
   private requestId: number | null = null;
@@ -53,11 +57,13 @@ export class ConferenceReviewComponent implements OnInit {
   readonly savingSectionComment = signal<string | null>(null);
 
   readonly sectionCommentControls: Record<string, FormControl<string | null>> = {
-    conference_details: new FormControl(''),
-    authors: new FormControl(''),
-    supporting_documents: new FormControl(''),
-    costing_sponsorship: new FormControl(''),
+    conference_details: new FormControl('', [Validators.maxLength(COMMENT_MAX_LENGTH)]),
+    authors: new FormControl('', [Validators.maxLength(COMMENT_MAX_LENGTH)]),
+    supporting_documents: new FormControl('', [Validators.maxLength(COMMENT_MAX_LENGTH)]),
+    costing_sponsorship: new FormControl('', [Validators.maxLength(COMMENT_MAX_LENGTH)]),
   };
+  readonly actionCommentControl = new FormControl('', [Validators.maxLength(COMMENT_MAX_LENGTH)]);
+  readonly commentMaxLength = COMMENT_MAX_LENGTH;
 
   readonly sectionNames: Record<string, string> = {
     conference_details: 'Conference Details',
@@ -84,6 +90,12 @@ export class ConferenceReviewComponent implements OnInit {
   readonly totalCostInRm = computed(() =>
     this.costingItems().reduce((total, item) => total + this.toNumber(item.cost_in_rm), 0),
   );
+  readonly missingRequiredSectionNames = computed(() => {
+    if (!this.requiresAllSectionComments()) return [];
+    return Object.entries(this.sectionNames)
+      .filter(([sectionCode]) => !this.hasCurrentActorSectionComment(sectionCode))
+      .map(([, sectionName]) => sectionName);
+  });
 
   ngOnInit(): void {
     this.configureBackTarget();
@@ -221,8 +233,76 @@ export class ConferenceReviewComponent implements OnInit {
   }
 
   canWriteSectionComments(): boolean {
-    const actor = (this.request()?.current_actor_role ?? '').toLowerCase();
-    return this.canAct() && !actor.includes('applicant') && !actor.includes('finance');
+    return this.canAct() && this.requiresAllSectionComments();
+  }
+
+  actionCommentLength(): number {
+    return (this.actionCommentControl.value ?? '').length;
+  }
+
+  sectionCommentLength(sectionCode: string): number {
+    return (this.sectionCommentControls[sectionCode]?.value ?? '').length;
+  }
+
+  requiresAllSectionComments(): boolean {
+    const actor = this.currentActorRole();
+    return actor.includes('hos') || actor.includes('hod') || actor.includes('rmc');
+  }
+
+  requiresDecisionComment(): boolean {
+    const actor = this.currentActorRole();
+    return (
+      this.canAct() &&
+      this.actions().length > 0 &&
+      !this.requiresAllSectionComments() &&
+      !actor.includes('applicant') &&
+      !actor.includes('finance')
+    );
+  }
+
+  canPerformActions(): boolean {
+    if (this.requiresAllSectionComments()) return this.missingRequiredSectionNames().length === 0;
+    if (this.requiresDecisionComment()) {
+      const comment = (this.actionCommentControl.value ?? '').trim();
+      return Boolean(comment) && this.actionCommentControl.valid;
+    }
+    return true;
+  }
+
+  actionRequirementMessage(): string | null {
+    if (this.requiresAllSectionComments()) {
+      const missing = this.missingRequiredSectionNames();
+      return missing.length
+        ? `Save section comments for: ${missing.join(', ')}.`
+        : 'All required section comments are saved. You can take action now.';
+    }
+    if (this.requiresDecisionComment()) {
+      if (this.actionCommentControl.hasError('maxlength')) {
+        return `Decision comment cannot exceed ${this.commentMaxLength} characters.`;
+      }
+      return 'Write a decision comment before taking action.';
+    }
+    return null;
+  }
+
+  private hasCurrentActorSectionComment(sectionCode: string): boolean {
+    const currentUsername = this.authService.currentUser()?.username?.trim().toLowerCase();
+    return this.commentsForSection(sectionCode).some((comment) => {
+      const commentUsername = comment.staff_username?.trim().toLowerCase();
+      if (currentUsername && commentUsername) return commentUsername === currentUsername;
+
+      const actor = (this.request()?.current_actor_role ?? '').toLowerCase();
+      const commentActor = (comment.actor_type_code ?? '').toLowerCase();
+      return (
+        (actor.includes('rmc') && commentActor.includes('rmc')) ||
+        ((actor.includes('hos') || actor.includes('hod')) &&
+          (commentActor.includes('hos') || commentActor.includes('hod')))
+      );
+    });
+  }
+
+  private currentActorRole(): string {
+    return (this.request()?.current_actor_role ?? '').toLowerCase();
   }
 
   saveSectionComment(sectionCode: string): void {
@@ -231,6 +311,13 @@ export class ConferenceReviewComponent implements OnInit {
     const commentText = (control?.value ?? '').trim();
     if (!commentText) {
       this.feedback.set({ type: 'error', text: 'Please write a comment before saving.' });
+      return;
+    }
+    if (control?.invalid) {
+      this.feedback.set({
+        type: 'error',
+        text: `Comment cannot exceed ${this.commentMaxLength} characters.`,
+      });
       return;
     }
 
@@ -338,10 +425,21 @@ export class ConferenceReviewComponent implements OnInit {
 
   perform(action: WorkflowActionDto): void {
     if (this.requestId == null || this.acting()) return;
+    if (!this.canPerformActions()) {
+      this.feedback.set({
+        type: 'error',
+        text: this.actionRequirementMessage() || 'Please complete the required comments first.',
+      });
+      return;
+    }
+
     this.acting.set(true);
     this.feedback.set(null);
+    const actionComment = this.requiresDecisionComment()
+      ? (this.actionCommentControl.value ?? '').trim()
+      : null;
     this.requests
-      .actOnRequest(this.requestId, { action_code: action.action_code, comment_text: null })
+      .actOnRequest(this.requestId, { action_code: action.action_code, comment_text: actionComment })
       .pipe(
         finalize(() => this.acting.set(false)),
         takeUntilDestroyed(this.destroyRef),

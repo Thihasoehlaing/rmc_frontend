@@ -60,6 +60,15 @@ export interface AcademicStaffOption {
   department: string;
 }
 
+export interface StaffOption {
+  id: number;
+  username: string;
+  fullname: string;
+  email: string;
+  staff_type?: string;
+  department: string | null;
+}
+
 export interface DepartmentOption {
   id: number;
   department_name: string;
@@ -149,6 +158,16 @@ export class MasterDataService {
       params = params.set('search', search.trim());
     }
     return this.http.get<ApiResponse<AcademicStaffOption[]>>(`${this.base}/academic-staff`, {
+      params,
+    });
+  }
+
+  searchStaff(search?: string): Observable<ApiResponse<StaffOption[]>> {
+    let params = new HttpParams();
+    if (search?.trim()) {
+      params = params.set('search', search.trim());
+    }
+    return this.http.get<ApiResponse<StaffOption[]>>(`${this.base}/master-data/staff`, {
       params,
     });
   }

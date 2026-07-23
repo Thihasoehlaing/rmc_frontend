@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, TrackByFunction, computed, inject, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { finalize, forkJoin } from 'rxjs';
 
@@ -35,6 +35,7 @@ type LocationFilter = '' | LocationType;
   imports: [
     CommonModule,
     FormsModule,
+    ReactiveFormsModule,
     DataTableComponent,
     DetailPanelSkeletonComponent,
     DialogComponent,
@@ -80,7 +81,7 @@ export class AccountCodesComponent implements OnInit {
   readonly code = signal('');
   readonly description = signal('');
   readonly locationType = signal<LocationType>('LOCAL');
-  readonly formCodes = signal<string[]>([]);
+  readonly formCodesControl = new FormControl<string[]>([], { nonNullable: true });
   readonly accountCodeActive = signal(true);
   readonly isDetailLoading = signal(false);
   readonly detailFailed = signal(false);
@@ -216,7 +217,7 @@ export class AccountCodesComponent implements OnInit {
     this.code.set('');
     this.description.set('');
     this.locationType.set('LOCAL');
-    this.formCodes.set([]);
+    this.formCodesControl.setValue([], { emitEvent: false });
     this.accountCodeActive.set(true);
     this.detailFailed.set(false);
     this.dialogMode.set('create');
@@ -253,7 +254,7 @@ export class AccountCodesComponent implements OnInit {
       description,
       location_type: this.locationType(),
       is_active: this.accountCodeActive(),
-      form_codes: this.formCodes(),
+      form_codes: this.formCodesControl.value,
     };
     const request =
       mode === 'create'
@@ -359,7 +360,7 @@ export class AccountCodesComponent implements OnInit {
           this.code.set(data.code);
           this.description.set(data.description);
           this.locationType.set(this.normalizeLocationType(data.location_type));
-          this.formCodes.set(data.form_codes ?? []);
+          this.formCodesControl.setValue(data.form_codes ?? [], { emitEvent: false });
           this.accountCodeActive.set(data.is_active);
           this.toastService.success(response.message);
         },

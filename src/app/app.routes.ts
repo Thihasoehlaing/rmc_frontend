@@ -4,8 +4,7 @@ import { authGuard } from './core/guards/auth.guard';
 import { permissionGuard } from './core/guards/permission.guard';
 import {
   adminSettingsPermission,
-  conferencePermission,
-  journalPermission,
+  disabledFeaturePermission,
   partnershipPermission,
   ragraPermission,
   rdigPermission,
@@ -42,6 +41,10 @@ export const routes: Routes = [
       },
       {
         path: 'showcase',
+        canActivate: [permissionGuard],
+        data: {
+          permission: disabledFeaturePermission,
+        },
         loadChildren: () =>
           import('./shared/components/showcase/showcase.routes').then(m => m.showcaseRoutes),
       },
@@ -61,19 +64,11 @@ export const routes: Routes = [
       },
       {
         path: 'conference',
-        canActivate: [permissionGuard],
-        data: {
-          permission: conferencePermission,
-        },
         loadChildren: () =>
           import('./features/conference/conference_form.routes').then(m => m.conferenceFormRoutes),
       },
       {
         path: 'journal',
-        canActivate: [permissionGuard],
-        data: {
-          permission: journalPermission,
-        },
         loadChildren: () =>
           import('./features/journal-publication/journal_publication_form.routes').then(
             m => m.journalPublicationFormRoutes,
@@ -112,6 +107,10 @@ export const routes: Routes = [
       },
       {
         path: 'external-project-data-entry/detail/:requestCode',
+        canActivate: [permissionGuard],
+        data: {
+          permission: externalProjectDataEntryPermission,
+        },
         loadComponent: () =>
           import('./features/external-project-data-entry/external-project-detail.component').then(
             m => m.ExternalProjectDetailComponent,
@@ -127,7 +126,8 @@ export const routes: Routes = [
           import('./features/external-project-data-entry/external-project-data-entry.component').then(
             m => m.ExternalProjectDataEntryComponent,
           ),
-      },      {
+      },
+      {
         path: 'admin-settings',
         canActivate: [permissionGuard],
         data: {
@@ -147,10 +147,31 @@ export const routes: Routes = [
         loadChildren: () =>
           import('./features/settings/settings.routes').then(m => m.settingsRoutes),
       },
+      {
+        path: 'no-access',
+        loadComponent: () =>
+          import('./features/error-pages/no-access/no-access.component').then(
+            m => m.NoAccessComponent,
+          ),
+      },
+      {
+        path: 'not-found',
+        loadComponent: () =>
+          import('./features/error-pages/not-found/not-found.component').then(
+            m => m.NotFoundComponent,
+          ),
+      },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+      {
+        path: '**',
+        loadComponent: () =>
+          import('./features/error-pages/not-found/not-found.component').then(
+            m => m.NotFoundComponent,
+          ),
+      },
     ],
   },
-  { path: '**', redirectTo: '/login' },
+  { path: '**', redirectTo: '/not-found' },
 ];
 
 

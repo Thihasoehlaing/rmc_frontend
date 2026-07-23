@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { permissionGuard } from '../../core/guards/permission.guard';
 import { NavPermission } from '../../core/interfaces/permission.interface';
+import { adminOnlySettingsChildPermission } from '../../core/routing/app-route-permissions';
 
 export const adminSettingsRoutes: Routes = [
   {
@@ -105,7 +106,7 @@ export const adminSettingsRoutes: Routes = [
     path: 'batch-sitting',
     canActivate: [permissionGuard],
     data: {
-      permission: { allOf: ['RMC'] } satisfies NavPermission,
+      permission: adminOnlySettingsChildPermission satisfies NavPermission,
     },
     loadComponent: () =>
       import('./batch-sitting/batch-sitting.component').then(m => m.BatchSittingComponent),

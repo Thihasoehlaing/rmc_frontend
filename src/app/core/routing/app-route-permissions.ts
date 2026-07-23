@@ -1,69 +1,85 @@
 import { NavPermission } from '../interfaces/permission.interface';
 
-export const rdigPermission = {
-  anyOf: ['full_time', 'contract'],
-  allOf: ['academic'],
-  excludeGroups: ['Reviewer', 'HOS'],
+export const disabledFeaturePermission = {
+  denyAll: true,
 } satisfies NavPermission;
 
-export const conferencePermission = {
+export const adminPermission = {
+  anyOf: ['Admin'],
+} satisfies NavPermission;
+
+export const systemOrRmcAdminPermission = {
+  anyOf: ['Admin', 'RMC'],
+} satisfies NavPermission;
+
+export const academicHosChancelloryPermission = {
   anyCondition: [
     {
       anyOf: ['full_time', 'contract'],
       allOf: ['academic'],
-      excludeGroups: ['Reviewer', 'HOS'],
-    },
-    {
-      anyOf: ['Admin'],
     },
     {
       anyOf: ['HOS'],
     },
     {
-      anyOf: ['VC'],
+      anyOf: ['Chancellory'],
     },
   ],
 } satisfies NavPermission;
 
-export const journalPermission = {
+export const fundingApplicationPermission = academicHosChancelloryPermission;
+
+export const fundingDetailPermission = {
   anyCondition: [
-    { anyOf: ['full_time', 'contract'], allOf: ['academic'] },
-    { anyOf: ['HOS'] },
-    { anyOf: ['VC'] },
-    { anyOf: ['Admin'] },
+    ...academicHosChancelloryPermission.anyCondition,
+    {
+      anyOf: ['VC', 'HR', 'CEO', 'Finance', 'Admin', 'RMC'],
+    },
   ],
 } satisfies NavPermission;
 
-export const ragraPermission = {
-  anyOf: ['full_time', 'contract'],
-  allOf: ['academic'],
-} satisfies NavPermission;
+export const conferencePermission = fundingDetailPermission;
 
-export const travelAuthorizationPermission = {
-  excludeGroups: ['Admin'],
-} satisfies NavPermission;
+export const journalPermission = fundingDetailPermission;
 
-export const partnershipPermission = {
+export const submissionsInboxHistoryPermission = {
   anyCondition: [
+    ...academicHosChancelloryPermission.anyCondition,
     {
-      anyOf: ['full_time', 'contract'],
-      allOf: ['academic'],
-    },
-    {
-      anyOf: ['Admin'],
+      anyOf: ['VC', 'HR', 'CEO', 'Finance', 'Admin', 'RMC'],
     },
   ],
 } satisfies NavPermission;
 
-export const adminSettingsPermission = {
-  anyOf: ['Admin'],
+export const submissionsDraftPendingPermission = {
+  anyCondition: [
+    ...academicHosChancelloryPermission.anyCondition,
+    {
+      anyOf: ['Admin', 'RMC'],
+    },
+  ],
 } satisfies NavPermission;
+
+export const submissionsAdminOnlyPermission = systemOrRmcAdminPermission;
+
+export const rdigPermission = disabledFeaturePermission;
+
+export const ragraPermission = disabledFeaturePermission;
+
+export const travelAuthorizationPermission = disabledFeaturePermission;
+
+export const partnershipPermission = disabledFeaturePermission;
+
+export const adminSettingsPermission = adminPermission;
 
 export const systemSettingsPermission = {
   allOf: ['SystemAdmin'],
 } satisfies NavPermission;
 
 export const externalProjectDataEntryPermission = {
-  anyOf: ['RMC', 'Admin'],
+  anyOf: ['RMC'],
 } satisfies NavPermission;
 
+export const adminHistoryPermission = systemOrRmcAdminPermission;
+
+export const adminOnlySettingsChildPermission = adminPermission;

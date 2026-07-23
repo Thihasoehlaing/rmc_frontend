@@ -12,6 +12,7 @@ import { FormCommentPanelComponent, CommentItem } from '../../shared/components/
 import { ProposalDetails } from './components/proposal-details/proposal-details';
 import { RiskAssessment } from './components/risk-assessment/risk-assessment';
 import { ActivatedRoute } from '@angular/router';
+import { ActionLoadingService } from '../../core/services/action-loading.service';
 
 export type PartnershipStatus =
   | 'draft'
@@ -37,6 +38,7 @@ export type PartnershipStatus =
 export class PartnershipFormComponent {
   private fb = inject(FormBuilder);
   private route = inject(ActivatedRoute);
+  private actionLoading = inject(ActionLoadingService);
   readonly guidelineContext: GuidelineContext =
     this.route.snapshot.queryParamMap.has('id') ? 'existing-application' : 'new-application';
 
@@ -160,6 +162,13 @@ export class PartnershipFormComponent {
   onSubmit(): void {
     this.submitAttempted.set(true);
     this.isSubmitting.set(true);
-    setTimeout(() => this.isSubmitting.set(false), 1500);
+    const isResubmission = this.applicationStatus().includes('resubmission');
+    const loadingId = this.actionLoading.begin(
+      isResubmission ? 'Resubmitting partnership application' : 'Submitting partnership application',
+    );
+    setTimeout(() => {
+      this.isSubmitting.set(false);
+      this.actionLoading.end(loadingId);
+    }, 1500);
   }
 }

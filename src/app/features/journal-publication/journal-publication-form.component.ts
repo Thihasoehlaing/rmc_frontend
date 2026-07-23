@@ -29,6 +29,7 @@ import {
 } from './services/journal-application-api.service';
 import { JournalOptionsService } from './services/journal-options.service';
 import { ToastService } from '../../core/services/toast.service';
+import { ActionLoadingService } from '../../core/services/action-loading.service';
 import {
   RequestCommentDto,
   WorkflowRequestsService,
@@ -62,6 +63,7 @@ export class JournalPublicationFormComponent {
   private journalOptions = inject(JournalOptionsService);
   private toastService = inject(ToastService);
   private workflowRequests = inject(WorkflowRequestsService);
+  private actionLoading = inject(ActionLoadingService);
   requestId: number | null = this.readRequestId();
   isOptionsLoading = false;
   loadError: string | null = null;
@@ -564,6 +566,10 @@ export class JournalPublicationFormComponent {
     this.isSubmitting = true;
     this.actionError = null;
     this.submitSuccess = false;
+    const isResubmission = this.workflow.status().includes('resubmission');
+    const loadingId = this.actionLoading.begin(
+      isResubmission ? 'Resubmitting journal application' : 'Submitting journal application',
+    );
 
     try {
       const requestId = await this.saveDraftToBackend();
@@ -574,6 +580,7 @@ export class JournalPublicationFormComponent {
       this.actionError = this.extractErrorMessage(error, 'Unable to submit journal application.');
     } finally {
       this.isSubmitting = false;
+      this.actionLoading.end(loadingId);
     }
   }
 

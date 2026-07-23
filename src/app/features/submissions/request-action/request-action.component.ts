@@ -12,6 +12,7 @@ import {
   WorkflowRequestsService,
 } from '../../../core/services/workflow-requests.service';
 import { formTypeLabel, STATUS_COLORS } from '../../../core/services/request-display.util';
+import { ActionLoadingService } from '../../../core/services/action-loading.service';
 
 @Component({
   selector: 'app-request-action',
@@ -24,6 +25,7 @@ export class RequestActionComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly requests = inject(WorkflowRequestsService);
+  private readonly actionLoading = inject(ActionLoadingService);
 
   loading = signal(true);
   saving = signal(false);
@@ -90,17 +92,31 @@ export class RequestActionComponent implements OnInit {
 
     this.saving.set(true);
     this.error.set(null);
+    const loadingId = this.actionLoading.begin(`Processing ${action.action_name}`);
+    let actionSucceeded = false;
     this.requests
       .actOnRequest(requestId, {
         action_code: action.action_code,
         comment_text: this.commentText().trim() || null,
         selected_reviewer_usernames,
       })
-      .pipe(finalize(() => this.saving.set(false)))
+      .pipe(
+        finalize(() => {
+          this.saving.set(false);
+          if (!actionSucceeded) {
+            this.actionLoading.end(loadingId);
+          }
+        }),
+      )
       .subscribe({
         next: () => {
+          actionSucceeded = true;
           this.success.set('Action completed successfully.');
-          setTimeout(() => this.router.navigate(['/submissions/inbox']), 900);
+          setTimeout(() => {
+            void this.router
+              .navigate(['/submissions/inbox'])
+              .finally(() => this.actionLoading.end(loadingId));
+          }, 900);
         },
         error: (err) => this.error.set(err?.error?.message || 'Could not complete this action.'),
       });

@@ -14,6 +14,7 @@ import { ActionButtonComponent } from '../../shared/components/action-button/act
 import { SearchableDropdownComponent } from '../../shared/components/searchable-dropdown/searchable-dropdown.component';
 import { DialogComponent } from '../../shared/components/dialog/dialog.component';
 import { DropdownOption } from '../../core/interfaces/components.interface';
+import { ActionLoadingService } from '../../core/services/action-loading.service';
 
 import { TableActionIconComponent } from '../../shared/components/table-action-icon/table-action-icon.component';
 import { AdminCatalogStoreService } from '../admin-settings/catalog-management/admin-catalog-store.service';
@@ -99,6 +100,7 @@ export class ExternalProjectDataEntryComponent {
   private readonly router = inject(Router);
   private readonly externalProjectApi = inject(ExternalProjectApiService);
   private readonly adminCatalogs = inject(AdminCatalogStoreService);
+  private readonly actionLoading = inject(ActionLoadingService);
   private requestId =
     Number(
       this.route.snapshot.queryParamMap.get('id') ??
@@ -735,6 +737,7 @@ export class ExternalProjectDataEntryComponent {
     this.isSubmitting = true;
     this.actionError = null;
     this.submitSuccess = false;
+    const loadingId = this.actionLoading.begin('Submitting external project');
 
     try {
       const requestId = await this.saveDraftToBackend();
@@ -752,6 +755,7 @@ export class ExternalProjectDataEntryComponent {
       this.actionError = this.extractErrorMessage(error, 'Unable to submit external project.');
     } finally {
       this.isSubmitting = false;
+      this.actionLoading.end(loadingId);
       this.cdr.markForCheck();
     }
   }

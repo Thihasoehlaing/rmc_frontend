@@ -7,7 +7,7 @@ import {
   FormControl,
   Validators,
 } from '@angular/forms';
-import { Observable, forkJoin, map, of, switchMap, tap } from 'rxjs';
+import { Observable, finalize, forkJoin, map, of, switchMap, tap } from 'rxjs';
 import {
   StepIndicatorComponent,
   WizardStep,
@@ -38,6 +38,7 @@ import {
   WorkflowRequestsService,
 } from '../../../../core/services/workflow-requests.service';
 import { environment } from '../../../../../environments/environment';
+import { ActionLoadingService } from '../../../../core/services/action-loading.service';
 
 @Component({
   selector: 'app-conference-application',
@@ -547,6 +548,7 @@ export class ConferenceApplication implements OnInit {
   private workflowRequests = inject(WorkflowRequestsService);
   private formStateService = inject(ConferenceFormStateService);
   private masterData = inject(MasterDataService);
+  private actionLoading = inject(ActionLoadingService);
   readonly hasExistingRequestParam = this.route.snapshot.queryParamMap.has('request_id');
   readonly guidelineContext: GuidelineContext = this.route.snapshot.queryParamMap.has('request_id')
     ? 'existing-application'
@@ -1741,6 +1743,10 @@ export class ConferenceApplication implements OnInit {
       currentStatus === 'rmc_request_resubmission' ||
       currentStatus === 'pending_applicant_resubmission_hos' ||
       currentStatus === 'pending_applicant_resubmission_rmc';
+    const loadingId = this.actionLoading.begin(
+      isResubmission ? 'Resubmitting conference application' : 'Submitting conference application',
+    );
+    let submissionSucceeded = false;
 
     this.syncToRealBackend()
       .pipe(
@@ -1749,12 +1755,20 @@ export class ConferenceApplication implements OnInit {
           if (isResubmission) return this.conferenceApi.resubmit(id);
           throw new Error(`Conference request cannot be submitted from status "${currentStatus}".`);
         }),
+        finalize(() => {
+          if (!submissionSucceeded) {
+            this.actionLoading.end(loadingId);
+          }
+        }),
       )
       .subscribe({
         next: () => {
+          submissionSucceeded = true;
           this.isSubmitting.set(false);
           this.formStateService.clearFormState();
-          this.router.navigateByUrl('/submissions/pending?tab=all');
+          void this.router
+            .navigateByUrl('/submissions/pending?tab=all')
+            .finally(() => this.actionLoading.end(loadingId));
         },
         error: (err) => {
           console.error('Submit failed:', err);
@@ -1775,8 +1789,6 @@ export class ConferenceApplication implements OnInit {
     return error?.error?.message || error?.message || fallback;
   }
 }
-
-
 
 
 

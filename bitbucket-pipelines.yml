@@ -82,7 +82,7 @@ pipelines:
                 AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
                 AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
                 AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION
-                S3_BUCKET: 'rmc-frontend-prod'
+                S3_BUCKET: 'rmc-frontend-prod-my'
                 LOCAL_PATH: 'dist/RMC_project/browser'
                 DELETE_FLAG: 'true'
             - pipe: atlassian/aws-cloudfront-invalidate:0.6.0

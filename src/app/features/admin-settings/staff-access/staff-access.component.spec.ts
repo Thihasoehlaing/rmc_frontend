@@ -13,7 +13,7 @@ describe('StaffAccessComponent', () => {
   let fixture: ComponentFixture<StaffAccessComponent>;
   let http: HttpTestingController;
 
-  const apiUrl = environment.apiBaseUrl;
+  const apiUrl = environment.apiUrl;
   const staffAccessUrl = `${apiUrl}/admin-settings/staff-access`;
   const departmentsUrl = `${apiUrl}/master-data/departments`;
 

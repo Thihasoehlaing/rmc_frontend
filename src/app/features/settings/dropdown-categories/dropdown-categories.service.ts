@@ -41,7 +41,7 @@ interface DropdownCategoryListData {
 export class DropdownCategoriesService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl =
-    `${environment.apiBaseUrl}/settings/dropdown-categories`;
+    `${environment.apiUrl}/settings/dropdown-categories`;
 
   list(params: {
     page: number;

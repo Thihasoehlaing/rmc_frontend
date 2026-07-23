@@ -74,7 +74,7 @@ export class JournalPublicationFormComponent {
     ? 'existing-application'
     : 'new-application';
   /** Active Journal guideline served by the applicant-safe guideline-by-form endpoint. */
-  readonly guidelinesEndpoint = `${environment.apiBaseUrl}/admin-settings/guidelines/forms/JOURNAL`;
+  readonly guidelinesEndpoint = `${environment.apiUrl}/admin-settings/guidelines/forms/JOURNAL`;
   reviewComments = {
     hosComment: new FormControl(''),
     rmcComment: new FormControl(''),

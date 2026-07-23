@@ -8,7 +8,7 @@ import { ProjectAccountCodeService } from './project-account-code.service';
 describe('ProjectAccountCodeService', () => {
   let service: ProjectAccountCodeService;
   let http: HttpTestingController;
-  const baseUrl = `${environment.apiBaseUrl}/admin-settings/project-account-codes`;
+  const baseUrl = `${environment.apiUrl}/admin-settings/project-account-codes`;
 
   beforeEach(() => {
     TestBed.configureTestingModule({

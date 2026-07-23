@@ -33,7 +33,7 @@ import {
   WorkflowStageWindow,
 } from '../../core/interfaces/batch-sitting.interface';
 
-const BASE_URL = `${environment.apiBaseUrl}/admin-settings/batches`;
+const BASE_URL = `${environment.apiUrl}/admin-settings/batches`;
 
 interface ApiResponse<T> {
   success: boolean;

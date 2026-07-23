@@ -15,7 +15,7 @@ describe('GuidelinesComponent', () => {
   let http: HttpTestingController;
 
   const baseUrl =
-    `${environment.apiBaseUrl}/admin-settings/guidelines`;
+    `${environment.apiUrl}/admin-settings/guidelines`;
 
   const listResponse = {
     success: true,

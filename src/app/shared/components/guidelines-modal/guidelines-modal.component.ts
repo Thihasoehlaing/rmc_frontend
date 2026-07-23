@@ -70,7 +70,7 @@ export class GuidelinesModalComponent implements OnChanges {
     try {
       const endpoint = /^https?:\/\//i.test(this.endpoint)
         ? this.endpoint
-        : `${environment.apiBaseUrl}/${this.endpoint.replace(/^\/+/, '')}`;
+        : `${environment.apiUrl}/${this.endpoint.replace(/^\/+/, '')}`;
       const res = await firstValueFrom(this.http.get<GuidelinesResponse>(endpoint));
       // Two response shapes are supported: the real admin-settings guideline
       // endpoint returns a single object ({ data: { content_html } }); the

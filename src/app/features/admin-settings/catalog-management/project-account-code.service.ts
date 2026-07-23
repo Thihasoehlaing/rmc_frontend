@@ -30,7 +30,7 @@ export interface ProjectAccountCodeListData {
 @Injectable({ providedIn: 'root' })
 export class ProjectAccountCodeService {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = `${environment.apiBaseUrl}/admin-settings/project-account-codes`;
+  private readonly baseUrl = `${environment.apiUrl}/admin-settings/project-account-codes`;
 
   list(params: {
     page: number;

@@ -307,7 +307,7 @@ export class AuthService {
   }
 
   loadProfile(): Observable<User> {
-    const apiUrl = environment.apiBaseUrl;
+    const apiUrl = environment.apiUrl;
 
     return this.http
       .get<AuthCheckResponse>(`${apiUrl}/auth/profile`, {
@@ -416,7 +416,7 @@ export class AuthService {
 
   /** Expose backend dev-auth accounts for display on the login page. */
   getDemoAccounts(): Observable<{ username: string; label: string; groups: string }[]> {
-    const apiUrl = environment.apiBaseUrl;
+    const apiUrl = environment.apiUrl;
 
     if (environment.production) {
       return throwError(() => new Error('Testing login is not available in production.'));
@@ -469,7 +469,7 @@ export class AuthService {
   }
 
   private checkAuthentication(): Observable<AuthCheckResponse> {
-    const apiUrl = environment.apiBaseUrl;
+    const apiUrl = environment.apiUrl;
 
     return this.http
       .get<AuthCheckResponse>(`${apiUrl}/auth/check`)

@@ -97,7 +97,7 @@ export interface SystemAccessAuditLog {
 @Injectable({ providedIn: 'root' })
 export class SystemAccessService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = environment.apiBaseUrl;
+  private readonly apiUrl = environment.apiUrl;
   private readonly baseUrl = `${this.apiUrl}/settings/system-access`;
 
   listUsers(params: {

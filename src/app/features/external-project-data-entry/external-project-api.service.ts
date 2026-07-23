@@ -106,7 +106,7 @@ export interface BillingItemPayload {
 @Injectable({ providedIn: 'root' })
 export class ExternalProjectApiService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = environment.apiBaseUrl;
+  private readonly apiUrl = environment.apiUrl;
   private readonly externalProjectUrl = `${this.apiUrl}/requests/external-project`;
   private readonly masterDataUrl = `${this.apiUrl}/master-data`;
 

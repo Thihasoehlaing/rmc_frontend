@@ -53,7 +53,7 @@ export class FormsService {
   private readonly http = inject(HttpClient);
   private readonly formCache = inject(FormCacheService);
   private readonly baseUrl =
-    `${environment.apiBaseUrl}/settings/forms`;
+    `${environment.apiUrl}/settings/forms`;
 
   list(
     params: ManagedFormListParams,

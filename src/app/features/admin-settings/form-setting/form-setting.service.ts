@@ -20,7 +20,7 @@ interface ApiResponse<T> {
 @Injectable({ providedIn: 'root' })
 export class FormSettingService {
   private readonly http = inject(HttpClient);
-  private readonly endpoint = `${environment.apiBaseUrl}/forms`;
+  private readonly endpoint = `${environment.apiUrl}/forms`;
 
   listAll(): Observable<ApiResponse<FormSettingItem[]>> {
     const params = new HttpParams().set('include_inactive', true);

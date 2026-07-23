@@ -551,7 +551,7 @@ export class ConferenceApplication implements OnInit {
   readonly guidelineContext: GuidelineContext = this.route.snapshot.queryParamMap.has('request_id')
     ? 'existing-application'
     : 'new-application';
-  readonly guidelinesEndpoint = `${environment.apiBaseUrl}/admin-settings/guidelines/forms/CONFERENCE`;
+  readonly guidelinesEndpoint = `${environment.apiUrl}/admin-settings/guidelines/forms/CONFERENCE`;
   @ViewChild('conferenceDetailsStep') conferenceDetailsStep?: ConferenceDetailsFormComponent;
   @ViewChild(StepIndicatorComponent) stepIndicator?: StepIndicatorComponent;
   @ViewChild('authorDetailsStep') authorDetailsStep?: AuthorDetailsFormComponent;

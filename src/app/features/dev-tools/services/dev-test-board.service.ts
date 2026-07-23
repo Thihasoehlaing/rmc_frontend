@@ -16,7 +16,7 @@ export interface DevTestBoard {
   providedIn: 'root',
 })
 export class DevTestBoardService {
-  private readonly apiUrl = `${environment.apiBaseUrl}/dev-test-boards`;
+  private readonly apiUrl = `${environment.apiUrl}/dev-test-boards`;
 
   constructor(private http: HttpClient) {}
 

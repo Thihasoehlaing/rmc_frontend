@@ -81,7 +81,7 @@ interface PaginatedData<T> {
 @Injectable({ providedIn: 'root' })
 export class ApplicantRulesService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = environment.apiBaseUrl;
+  private readonly apiUrl = environment.apiUrl;
   private readonly baseUrl = `${this.apiUrl}/settings/applicant-rules`;
   private readonly formsUrl = `${this.apiUrl}/forms`;
   private readonly departmentsUrl = `${this.apiUrl}/master-data/departments`;

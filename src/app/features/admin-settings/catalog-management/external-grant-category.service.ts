@@ -28,7 +28,7 @@ export interface ExternalGrantCategoryListData {
 @Injectable({ providedIn: 'root' })
 export class ExternalGrantCategoryService {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = `${environment.apiBaseUrl}/admin-settings/external-grant-categories`;
+  private readonly baseUrl = `${environment.apiUrl}/admin-settings/external-grant-categories`;
 
   list(params: {
     page: number;

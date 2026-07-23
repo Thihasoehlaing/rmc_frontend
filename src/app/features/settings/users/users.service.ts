@@ -69,7 +69,7 @@ interface PaginatedData<T> {
 @Injectable({ providedIn: 'root' })
 export class UsersService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = environment.apiBaseUrl;
+  private readonly apiUrl = environment.apiUrl;
   private readonly usersUrl = `${this.apiUrl}/settings/users`;
   private readonly rolesUrl = `${this.apiUrl}/settings/roles`;
   private readonly departmentsUrl = `${this.apiUrl}/master-data/departments`;

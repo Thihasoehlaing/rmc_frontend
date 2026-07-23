@@ -23,7 +23,7 @@ describe('JournalPublicationFormComponent', () => {
 
   it('uses the active Journal guideline-by-form API', () => {
     expect(component.guidelinesEndpoint).toBe(
-      `${environment.apiBaseUrl}/admin-settings/guidelines/forms/JOURNAL`,
+      `${environment.apiUrl}/admin-settings/guidelines/forms/JOURNAL`,
     );
   });
 

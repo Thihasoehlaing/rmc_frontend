@@ -25,17 +25,6 @@ export const authTokenInterceptor: HttpInterceptorFn = (request, next) => {
 };
 
 export function isRmcApiRequest(url: string): boolean {
-  const apiPrefix = environment.apiPrefix.trim().replace(/^\/+|\/+$/g, '');
-  if (
-    apiPrefix &&
-    (url === apiPrefix ||
-      url === `/${apiPrefix}` ||
-      url.startsWith(`${apiPrefix}/`) ||
-      url.startsWith(`/${apiPrefix}/`))
-  ) {
-    return true;
-  }
-
   const apiUrl = environment.apiUrl.trim();
   if (!apiUrl) {
     return false;

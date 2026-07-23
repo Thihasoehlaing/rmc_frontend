@@ -265,7 +265,7 @@ export interface RequestContextDto {
 @Injectable({ providedIn: 'root' })
 export class WorkflowRequestsService {
   private readonly http = inject(HttpClient);
-  private readonly base = environment.apiBaseUrl;
+  private readonly base = environment.apiUrl;
 
   private toParams(query: ListQuery | undefined): HttpParams {
     let params = new HttpParams();

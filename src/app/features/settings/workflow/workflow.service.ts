@@ -166,7 +166,7 @@ const ENDPOINTS: Record<WorkflowTabKey, string> = {
 export class WorkflowService {
   private readonly http = inject(HttpClient);
   private readonly formCache = inject(FormCacheService);
-  private readonly apiUrl = environment.apiBaseUrl;
+  private readonly apiUrl = environment.apiUrl;
   private readonly settingsUrl = `${this.apiUrl}/settings`;
 
   list<T>(

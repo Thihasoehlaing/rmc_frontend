@@ -1,7 +1,9 @@
 import { environment } from '../../../environments/environment';
 
-const apiEndpoint = (path: string): string =>
-  `/${environment.apiPrefix.replace(/^\/+|\/+$/g, '')}/${path}`;
+const apiEndpoint = (path: string): string => {
+  const base = environment.apiUrl.replace(/\/$/, '');
+  return `${base}/${path}`;
+};
 
 export type SettingsTone =
   | 'blue'

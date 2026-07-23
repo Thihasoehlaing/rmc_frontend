@@ -67,7 +67,7 @@ export interface StaffAccessListParams {
 @Injectable({ providedIn: 'root' })
 export class StaffAccessService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = environment.apiBaseUrl;
+  private readonly apiUrl = environment.apiUrl;
   private readonly baseUrl =
     `${this.apiUrl}/admin-settings/staff-access`;
 

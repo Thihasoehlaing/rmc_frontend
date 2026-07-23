@@ -34,7 +34,8 @@ export class LoginComponent implements OnInit {
 
     if (!code) {
       if (this.authService.isAuthenticated()) {
-        void this.router.navigateByUrl(this.returnRoute);
+        this.isLoading.set(true);
+        void this.navigateAfterLogin();
         return;
       }
 
@@ -47,7 +48,7 @@ export class LoginComponent implements OnInit {
     this.authService.completeApuLogin(code).subscribe({
       next: () => {
         sessionStorage.removeItem(this.APU_RETRY_KEY);
-        void this.router.navigateByUrl(this.returnRoute);
+        void this.navigateAfterLogin();
       },
       error: (error: unknown) => {
         if (
@@ -78,14 +79,26 @@ export class LoginComponent implements OnInit {
 
     this.authService.loginAsTestingUser(username).subscribe({
       next: () => {
-        this.isLoading.set(false);
-        void this.router.navigateByUrl(this.returnRoute);
+        void this.navigateAfterLogin();
       },
       error: (error: unknown) => {
         this.isLoading.set(false);
         this.loginError.set(this.getErrorMessage(error));
       },
     });
+  }
+
+  private async navigateAfterLogin(): Promise<void> {
+    try {
+      const navigated = await this.router.navigateByUrl(this.returnRoute);
+      if (!navigated) {
+        this.loginError.set('We could not open the requested page. Please try again.');
+      }
+    } catch {
+      this.loginError.set('We could not open the requested page. Please try again.');
+    } finally {
+      this.isLoading.set(false);
+    }
   }
 
   private loadTestingAccounts(): void {

@@ -1,0 +1,56 @@
+@use '../../../../styles/index' as *;
+
+:host {
+  display: contents;
+}
+
+.action-loading-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  display: grid;
+  place-items: center;
+  padding: var(--space-6);
+  background: var(--color-overlay);
+  backdrop-filter: blur(var(--blur-overlay));
+}
+
+.action-loading-card {
+  display: grid;
+  justify-items: center;
+  width: min(100%, var(--size-overlay-card));
+  padding: var(--space-10) var(--space-8);
+  text-align: center;
+  border: var(--control-border-width) solid var(--color-border-default);
+  border-radius: var(--radius-xl);
+  background: var(--color-background-surface);
+  box-shadow: var(--shadow-xl);
+
+  h2 {
+    margin: var(--space-5) 0 var(--space-3);
+    color: var(--color-text-primary);
+  }
+
+  p {
+    max-width: var(--size-message-max-width);
+    margin: 0;
+    color: var(--color-text-secondary);
+    line-height: var(--line-height-body);
+  }
+}
+
+.action-loading-card__spinner {
+  display: grid;
+  place-items: center;
+  width: var(--size-loader-circle);
+  height: var(--size-loader-circle);
+  color: var(--color-primary);
+  border-radius: var(--radius-full);
+  background: var(--color-primary-light);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .action-loading-overlay {
+    backdrop-filter: none;
+  }
+}

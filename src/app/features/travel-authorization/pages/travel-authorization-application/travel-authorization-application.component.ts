@@ -32,6 +32,7 @@ import {
 } from '../../../../shared/components/form-main-title/form-main-title.component';
 import { ActivatedRoute } from '@angular/router';
 import { StaffDirectoryService, StaffRecord } from '../../../settings/staff-directory/staff-directory.service';
+import { ActionLoadingService } from '../../../../core/services/action-loading.service';
 
 import { TableActionIconComponent } from '../../../../shared/components/table-action-icon/table-action-icon.component';
 
@@ -68,6 +69,7 @@ export class TravelAuthorizationApplicationComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private readonly staffDirectoryService = inject(StaffDirectoryService, { optional: true });
   private readonly destroyRef = inject(DestroyRef);
+  private readonly actionLoading = inject(ActionLoadingService);
   readonly guidelineContext: GuidelineContext = this.route.snapshot.queryParamMap.has('id')
     ? 'existing-application'
     : 'new-application';
@@ -895,10 +897,12 @@ export class TravelAuthorizationApplicationComponent implements OnInit {
   onSubmitForm(): void {
     if (this.travelAuthForm.valid) {
       this.isSubmitting.set(true);
+      const loadingId = this.actionLoading.begin('Submitting travel authorization application');
       // TODO: Replace with actual API call
       // Simulate API call
       setTimeout(() => {
         this.isSubmitting.set(false);
+        this.actionLoading.end(loadingId);
         // Handle success/redirect
       }, 1500);
     }

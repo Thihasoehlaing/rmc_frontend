@@ -14,9 +14,12 @@ import { SkeletonColumn } from '../../../shared/components/table-skeleton/table-
 import { TableSkeletonComponent } from '../../../shared/components/table-skeleton/table-skeleton.component';
 import { DialogComponent } from '../../../shared/components/dialog/dialog.component';
 import { SearchableDropdownComponent } from '../../../shared/components/searchable-dropdown/searchable-dropdown.component';
+import { SubmissionsSearchComponent } from '../../../shared/components/submissions-search/submissions-search.component';
 import { ToastService } from '../../../core/services/toast.service';
 import { AcademicStaffService, DepartmentRecord } from '../../settings/academic-staff/academic-staff.service';
 import { StaffAccessRecordApi, StaffAccessService, StaffOption } from './staff-access.service';
+import { AdminSettingsPageHeaderComponent } from '../../../shared/components/admin-settings-page-header/admin-settings-page-header.component';
+import { TableScrollHintComponent } from '../../../shared/components/table-scroll-hint/table-scroll-hint.component';
 
 type AccessStatus = 'active' | 'blocked';
 type StatusFilter = 'all' | AccessStatus;
@@ -39,12 +42,15 @@ interface StaffAccessRecord {
   selector: 'app-staff-access',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    AdminSettingsPageHeaderComponent,
     DataTableComponent,
     TableActionIconComponent,
     PaginationComponent,
     TableSkeletonComponent,
     DialogComponent,
     SearchableDropdownComponent,
+    SubmissionsSearchComponent,
+    TableScrollHintComponent,
     FormsModule,
   ],
   templateUrl: './staff-access.component.html',
@@ -74,6 +80,7 @@ export class StaffAccessComponent implements OnInit {
 
   readonly staffRecords = signal<StaffAccessRecord[]>([]);
   readonly loading = signal(false);
+  readonly loadFailed = signal(false);
   readonly loadingId = signal<number | null>(null);
 
   readonly departments = signal<DepartmentRecord[]>([]);
@@ -147,6 +154,7 @@ export class StaffAccessComponent implements OnInit {
 
   loadStaff(): void {
     this.loading.set(true);
+    this.loadFailed.set(false);
     this.staffAccessService
       .list({
         page: this.page(),
@@ -158,14 +166,23 @@ export class StaffAccessComponent implements OnInit {
       .subscribe({
         next: (res) => {
           this.loading.set(false);
-          if (!res.success) return;
+          if (!res.success) {
+            this.loadFailed.set(true);
+            this.staffRecords.set([]);
+            this.totalItems.set(0);
+            this.totalPages.set(1);
+            return;
+          }
           this.staffRecords.set((res.data.items ?? []).map((item) => this.toRow(item)));
           this.totalItems.set(res.data.pagination.total_items);
           this.totalPages.set(Math.max(1, res.data.pagination.total_pages));
         },
         error: () => {
           this.loading.set(false);
+          this.loadFailed.set(true);
           this.staffRecords.set([]);
+          this.totalItems.set(0);
+          this.totalPages.set(1);
           this.toast.error('Failed to load staff access records.');
         },
       });

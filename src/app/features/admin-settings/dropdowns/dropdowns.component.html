@@ -1,18 +1,9 @@
 <section class="dropdowns-page">
-  <!-- ── Header ──────────────────────────────────────────────────────────── -->
-  <header class="dropdowns-page__header">
-    <div class="dropdowns-page__title-wrap">
-      <h1 class="dropdowns-title">
-        <span class="material-icons" aria-hidden="true">tune</span>
-        Dropdown Management
-      </h1>
-      <p class="dropdowns-subtitle">
-        Select a form area to manage the dropdown options used in applications and review forms.
-      </p>
-    </div>
-  </header>
+  <app-admin-settings-page-header
+    title="Dropdown Management"
+    description="Select a form area to manage the dropdown options used in applications and review forms."
+  ></app-admin-settings-page-header>
 
-  <!-- ── Grid shell ──────────────────────────────────────────────────────── -->
   <section class="dropdowns-grid-shell" aria-label="Dropdown sections">
     <!-- Skeleton state -->
     @if (loading()) {

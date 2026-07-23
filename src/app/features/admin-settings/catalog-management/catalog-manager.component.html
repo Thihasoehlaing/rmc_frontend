@@ -1,34 +1,17 @@
 <section class="dropdowns-container">
   <div class="dropdowns-shell">
     <div class="details-view settings-container fade-in">
-      <div class="settings-card__header">
-        <div
-          class="settings-card__header-row"
-          [class.settings-card__header-row--without-action]="!allowAdd"
-        >
-          <button
-            type="button"
-            class="back-button"
-            (click)="goBack()"
-            aria-label="Back to admin settings"
-          >
-            <span class="material-icons">arrow_back</span>
-          </button>
-          <div>
-            <h1 class="card__title">{{ title }}</h1>
-            <p class="settings-card__subtitle">{{ subtitle }}</p>
-          </div>
-          @if (allowAdd) {
-            <app-action-button
-              class="settings-header-action"
-              type="primary"
-              label="Add New"
-              icon="add"
-              (clicked)="openAddModal()"
-            ></app-action-button>
-          }
-        </div>
-      </div>
+      <app-admin-settings-page-header [title]="title" [description]="subtitle">
+        @if (allowAdd) {
+          <app-action-button
+            header-action
+            type="primary"
+            label="Add New"
+            icon="add"
+            (clicked)="openAddModal()"
+          ></app-action-button>
+        }
+      </app-admin-settings-page-header>
 
       <div class="dropdown-options-panel">
         <div class="dropdown-search-panel">

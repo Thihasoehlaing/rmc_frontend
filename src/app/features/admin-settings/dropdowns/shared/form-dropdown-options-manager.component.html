@@ -1,35 +1,22 @@
 <section class="dropdowns-container">
   <div class="dropdowns-shell">
     <div class="details-view settings-container fade-in">
-      <!-- ── Page header ───────────────────────────────────────────────── -->
-      <div class="settings-card__header">
-        <div class="settings-card__header-row">
-          <button
-            type="button"
-            class="back-button"
-            (click)="goBack()"
-            aria-label="Back to dropdown forms"
-          >
-            <span class="material-icons">arrow_back</span>
-          </button>
+      <app-admin-settings-page-header
+        [title]="title"
+        [description]="subtitle"
+        backRoute="/admin-settings/dropdowns"
+        backLabel="Back to Dropdown Management"
+      >
+        <app-action-button
+          header-action
+          type="primary"
+          label="Add New"
+          icon="add"
+          [disabled]="!selectedTab() || isEmptyTab()"
+          (clicked)="openAddModal()"
+        ></app-action-button>
+      </app-admin-settings-page-header>
 
-          <div>
-            <h2 class="card__title">{{ title }}</h2>
-            <p class="settings-card__subtitle">{{ subtitle }}</p>
-          </div>
-
-          <app-action-button
-            class="settings-header-action"
-            type="primary"
-            label="Add New"
-            icon="add"
-            [disabled]="!selectedTab() || isEmptyTab()"
-            (clicked)="openAddModal()"
-          ></app-action-button>
-        </div>
-      </div>
-
-      <!-- ── Skeleton layout (matches real page structure) ───────────── -->
       @if (loading()) {
         <div class="page-skeleton">
           <!-- Tabs skeleton -->

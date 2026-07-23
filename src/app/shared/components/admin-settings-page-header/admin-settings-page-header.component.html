@@ -1,0 +1,19 @@
+<header class="admin-settings-page-header">
+  <a
+    class="admin-settings-page-header__back"
+    [routerLink]="backRoute"
+    [attr.aria-label]="backLabel"
+    [title]="backLabel"
+  >
+    <span class="material-icons" aria-hidden="true">arrow_back</span>
+  </a>
+
+  <div class="admin-settings-page-header__content">
+    <h1>{{ title }}</h1>
+    <p>{{ description }}</p>
+  </div>
+
+  <div class="admin-settings-page-header__action">
+    <ng-content select="[header-action]"></ng-content>
+  </div>
+</header>

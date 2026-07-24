@@ -490,23 +490,14 @@
         </div>
 
         <div class="form-group">
-          <label for="typeOfOrganisation" class="is-required"
-            >Type of Organisation (Please Select One)</label
+          <label>Type of Organisation <span class="asterisk">*</span></label>
+          <app-searchable-dropdown
+            [options]="organisationTypeOptions"
+            [searchable]="true"
+            placeholder="Search organisation type..."
+            formControlName="typeOfOrganisation"
           >
-          <select id="typeOfOrganisation" class="form-control" formControlName="typeOfOrganisation">
-            <option value="" disabled>
-              @if (organisationTypeOptionsLoading) {
-                Loading organisation types...
-              } @else if (organisationTypeOptionsLoadFailed) {
-                Unable to load organisation types
-              } @else {
-                --Select the Type of Organisation--
-              }
-            </option>
-            @for (option of organisationTypeOptions; track option.value) {
-              <option [value]="option.value">{{ option.label }}</option>
-            }
-          </select>
+          </app-searchable-dropdown>
           <app-validation-message
             class="form-validation-note--error"
             [control]="editForm.get('typeOfOrganisation')"

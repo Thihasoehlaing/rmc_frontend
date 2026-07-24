@@ -15,6 +15,7 @@ import { CharacterCounterComponent } from '../../../../../shared/components/char
 import { CustomSubheaderComponent } from '../../../../../shared/components/custom-subheader/custom-subheader.component';
 import { CustomHeaderComponent } from '../../../../../shared/components/custom-header/custom-header.component';
 import { DialogComponent } from '../../../../../shared/components/dialog/dialog.component';
+import { ValidationMessageComponent } from '../../../../../shared/components/validation-message/validation-message.component';
 import { ConferenceWorkflowService } from '../../../services/conference-workflow.service';
 import { ConferenceFormStateService } from '../../../services/conference-form-state.service';
 
@@ -33,6 +34,7 @@ const manuscriptNotPreviouslyPublishedValidator: ValidatorFn = (
     NoteComponent,
     CharacterCounterComponent,
     DialogComponent,
+    ValidationMessageComponent,
     CustomHeaderComponent,
     CustomSubheaderComponent,
   ],

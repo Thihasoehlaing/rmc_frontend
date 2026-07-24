@@ -642,6 +642,7 @@ export class ConferenceApplication implements OnInit {
     { path: 'conferenceLocation', label: 'Conference Location' },
     { path: 'paperTitle', label: 'Paper Title' },
     { path: 'selectedRegion', label: 'Select Region' },
+    { path: 'externalProjectAccountCode', label: 'Project Account Code' },
   ];
 
   private readonly authorDetailsFieldChecks: Array<{ path: string; label: string; target?: string }> = [
@@ -678,9 +679,9 @@ export class ConferenceApplication implements OnInit {
         conferenceRequestId: [null], // the real backend's conference request id
         applicantUserId: [null],
       }),
-      applicantName: [''],
-      email: [''],
-      schoolName: [''],
+      applicantName: ['', [Validators.required]],
+      email: ['', [Validators.required]],
+      schoolName: ['', [Validators.required]],
       // Review Comments
       reviewComments: this.fb.group({
         hosComment: ['', Validators.maxLength(500)],
@@ -1188,6 +1189,7 @@ export class ConferenceApplication implements OnInit {
         advanceReason: state['hasAdvance'] === 'yes',
         selectedColleagues: state['hasColleagues'] === 'yes',
         citedJournalPaperExplanation: state['citedJournalPaper'] === 'no',
+        externalProjectAccountCode: state['researchType'] === 'external-research',
       }),
       ...this.getInvalidActivityLabels(state['activities']),
       ...this.getMissingExternalResearchCostingLabels(state),
@@ -1338,6 +1340,23 @@ export class ConferenceApplication implements OnInit {
       return true;
     });
   }
+
+  private markCurrentStepFormTouched(): void {
+    if (this.currentStep() === 1) {
+      this.applicantDetailsForm.markAllAsTouched();
+      this.conferenceDetailsStep?.form.markAllAsTouched();
+      return;
+    }
+
+    const activeForm =
+      this.currentStep() === 2
+        ? this.authorDetailsStep?.form
+        : this.currentStep() === 3
+          ? this.supportingDocumentsStep?.form
+          : this.declarationStep?.form;
+    activeForm?.markAllAsTouched();
+  }
+
   /** Flushes whichever sub-form is currently mounted into the shared state service. */
   private flushActiveStepFormState(): void {
     this.conferenceDetailsStep?.flushFormState();
@@ -1729,7 +1748,10 @@ export class ConferenceApplication implements OnInit {
       this.currentStep.set(firstInvalidStep + 1);
       this.submissionErrorMessage.set('Complete the required fields before submitting.');
       this.showMissingFieldsWarning.set(true);
-      window.requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: 'smooth' }));
+      window.requestAnimationFrame(() => {
+        this.markCurrentStepFormTouched();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
       return;
     }
 

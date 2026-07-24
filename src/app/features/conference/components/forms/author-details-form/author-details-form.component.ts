@@ -20,12 +20,14 @@ import {
 } from '../../../../../core/services/master-data.service';
 
 import { TableActionIconComponent } from '../../../../../shared/components/table-action-icon/table-action-icon.component';
+import { ValidationMessageComponent } from '../../../../../shared/components/validation-message/validation-message.component';
 
 @Component({
   selector: 'app-author-details-form',
   standalone: true,
   imports: [
     TableActionIconComponent,
+    ValidationMessageComponent,
     CommonModule,
     ReactiveFormsModule,
     SearchableDropdownComponent,
@@ -40,6 +42,7 @@ import { TableActionIconComponent } from '../../../../../shared/components/table
 })
 export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
   readonly apuAffiliation = 'Asia Pacific University';
+  readonly tableRecordLimit = 10;
   @Input() workflow?: ConferenceWorkflowService;
   @Input() isFormReadOnly: boolean = false;
 
@@ -264,8 +267,20 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
     this.nonApuCoAuthors.removeAt(index);
   }
 
+  canCreateCoAuthor(type: 'apu-staff' | 'student' | 'non-apu'): boolean {
+    return this.canAddCoAuthors() && this.getCoAuthorArray(type).length < this.tableRecordLimit;
+  }
+
+  private getCoAuthorArray(type: 'apu-staff' | 'student' | 'non-apu'): FormArray {
+    if (type === 'apu-staff') return this.testSubsections;
+    if (type === 'student') return this.studentCoAuthors;
+    return this.nonApuCoAuthors;
+  }
+
   // Modal Methods
   openEditModal(type: 'apu-staff' | 'student' | 'non-apu', index?: number) {
+    if (index === undefined && !this.canCreateCoAuthor(type)) return;
+
     this.modalType = type;
     this.isModalOpen = true;
 
@@ -353,6 +368,15 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
 
   submitModal() {
     if (this.editForm.invalid) {
+      this.editForm.markAllAsTouched();
+      return;
+    }
+
+    if (
+      this.editingIndex === null &&
+      this.modalType &&
+      !this.canCreateCoAuthor(this.modalType)
+    ) {
       return;
     }
 

@@ -1,7 +1,6 @@
 import { CommonModule, DatePipe } from '@angular/common';
 import { Component, Input, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
 import {
   AddOptionModalComponent,
   AddOptionPayload,
@@ -28,11 +27,13 @@ import {
   ExternalGrantCategoryService,
 } from './external-grant-category.service';
 import { ProjectAccountCodeApi, ProjectAccountCodeService } from './project-account-code.service';
+import { AdminSettingsPageHeaderComponent } from '../../../shared/components/admin-settings-page-header/admin-settings-page-header.component';
 
 @Component({
   selector: 'app-catalog-manager',
   standalone: true,
   imports: [
+    AdminSettingsPageHeaderComponent,
     CommonModule,
     FormsModule,
     ActionButtonComponent,
@@ -65,7 +66,6 @@ export class CatalogManagerComponent implements OnInit {
   private readonly projectAccountCodes = inject(ProjectAccountCodeService);
   private readonly formCache = inject(FormCacheService);
   private readonly toast = inject(ToastService);
-  private readonly router = inject(Router);
   private readonly datePipe = inject(DatePipe);
 
   private readonly fallbackForms: CachedFormOption[] = [
@@ -165,9 +165,6 @@ export class CatalogManagerComponent implements OnInit {
     }
   }
 
-  goBack(): void {
-    this.router.navigate(['/admin-settings']);
-  }
 
   openAddModal(): void {
     if (!this.allowAdd) return;

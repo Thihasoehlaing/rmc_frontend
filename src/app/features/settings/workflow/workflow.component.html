@@ -5,10 +5,12 @@
       <h1>Workflow Configuration</h1>
       <p>Configure workflow actors, processes, steps, actions, assignments, and delegations.</p>
     </div>
-    <button class="btn btn-primary forms-page__create-button" type="button" (click)="openCreateDialog()">
-      <span class="material-icons">add</span>
-      {{ activeTab().createLabel }}
-    </button>
+    @if (canManageWorkflowSettings()) {
+      <button class="btn btn-primary forms-page__create-button" type="button" (click)="openCreateDialog()">
+        <span class="material-icons">add</span>
+        {{ activeTab().createLabel }}
+      </button>
+    }
   </header>
 
   <nav class="workflow-tabs" aria-label="Workflow configuration tabs">
@@ -141,7 +143,7 @@
 
     @if (isLoading()) {
       <app-table-skeleton
-        [columns]="activeTab().columns"
+        [columns]="activeColumns()"
         [showSearch]="false"
         loadingLabel="Loading workflow settings"
       >
@@ -157,13 +159,17 @@
       <div class="forms-state">
         <span class="material-icons">{{ activeTab().emptyIcon }}</span>
         <h2>No {{ activeTab().label.toLowerCase() }} found</h2>
-        <p>Adjust the filters or create a new record.</p>
+        @if (canManageWorkflowSettings()) {
+          <p>Adjust the filters or create a new record.</p>
+        } @else {
+          <p>Adjust the filters.</p>
+        }
       </div>
     } @else {
-      <app-data-table [columns]="activeTab().columns" [rows]="rows()" [rowTrackFn]="rowTrackFn">
+      <app-data-table [columns]="activeColumns()" [rows]="rows()" [rowTrackFn]="rowTrackFn">
         <ng-template #rowTemplate let-row let-index="index">
           <tr>
-            @for (column of activeTab().columns; track column.key) {
+            @for (column of activeColumns(); track column.key) {
               @if (column.key === 'number') {
                 <td class="is-align-center">{{ rowNumber(index) }}</td>
               } @else if (column.key === 'status') {

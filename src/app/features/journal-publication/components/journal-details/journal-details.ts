@@ -1,4 +1,4 @@
-import {
+﻿import {
   Component,
   OnInit,
   OnDestroy,
@@ -72,6 +72,7 @@ export class JournalDetails implements OnInit, OnDestroy {
   readonly nonResearchAccountCodeDescription = 'TRAINING PRESENTATION PUBLICATION';
   readonly nonResearchAccountCode = '6203/100';
   readonly breakdownDescriptionMaxLength = 400;
+  readonly tableRecordLimit = 10;
   auth = inject(AuthService);
   workflow = inject(JournalWorkflowService);
   private journalOptionsService = inject(JournalOptionsService);
@@ -89,7 +90,7 @@ export class JournalDetails implements OnInit, OnDestroy {
 
   // Pagination
   readonly ITEMS_PER_PAGE = 5;
-  readonly ITEMS_PER_PAGE_OPTIONS = [5, 15, 30, 50];
+  readonly ITEMS_PER_PAGE_OPTIONS = [5, 10];
   nonResearchBreakdownCurrentPage = 1;
   externalResearchBreakdownCurrentPage = 1;
   internalResearchBreakdownCurrentPage = 1;
@@ -488,7 +489,17 @@ export class JournalDetails implements OnInit, OnDestroy {
     return rows.slice(startIndex, startIndex + pageSize);
   }
 
+  canCreateBreakdownEntry(type: string): boolean {
+    return (
+      !!type &&
+      !this.workflow.isFormReadOnly() &&
+      this.getBreakdownArray(type).length < this.tableRecordLimit
+    );
+  }
+
   openBreakdownModal(type: string, index?: number) {
+    if (index === undefined && !this.canCreateBreakdownEntry(type)) return;
+
     this.breakdownType = type as any;
     setTimeout(() => {
       // Resolve dropdown options
@@ -675,6 +686,7 @@ export class JournalDetails implements OnInit, OnDestroy {
     if (this.breakdownEditingIndex !== null) {
       array[this.breakdownEditingIndex] = entryToSave;
     } else {
+      if (array.length >= this.tableRecordLimit) return;
       array.push(entryToSave);
     }
 
@@ -1085,6 +1097,7 @@ export class JournalDetails implements OnInit, OnDestroy {
 
   confirmSDGKeywords() {
     if (this.sdgKeywordsForm.invalid) {
+      this.sdgKeywordsForm.markAllAsTouched();
       return;
     }
     const { keyword1, keyword2, keyword3 } = this.sdgKeywordsForm.value;

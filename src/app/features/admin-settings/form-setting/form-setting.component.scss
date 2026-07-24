@@ -37,10 +37,6 @@
 }
 
 .form-setting-toolbar {
-  display: grid;
-  grid-template-columns: minmax(280px, 1fr) minmax(180px, 0.35fr) auto;
-  align-items: end;
-  gap: var(--space-4);
   margin-bottom: var(--space-5);
   padding: var(--space-4);
   border: 1px solid var(--border-subtle);
@@ -49,53 +45,44 @@
   box-shadow: var(--shadow-xs);
 }
 
-.form-setting-filter {
-  display: grid;
-  gap: var(--space-2);
-  min-width: 0;
-
-  > span:first-child {
-    color: var(--color-label);
-    font-size: var(--fs-xs);
-    font-weight: var(--fw-semibold);
-  }
-
-  input,
-  select {
-    width: 100%;
-  }
+:host ::ng-deep .form-setting-toolbar app-submissions-search {
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
-.form-setting-search {
-  position: relative;
-  display: block;
-
-  > .material-icons {
-    position: absolute;
-    top: 50%;
-    left: var(--space-3);
-    color: var(--color-text-muted);
-    font-size: var(--size-icon-control);
-    pointer-events: none;
-    transform: translateY(-50%);
-  }
-
-  .input--text {
-    padding-left: var(--space-9);
-  }
+:host ::ng-deep .form-setting-toolbar app-submissions-search .submissions-search-top-row {
+  display: none;
 }
 
-.form-setting-toolbar__actions {
-  display: flex;
-  gap: var(--space-2);
-
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-2);
-  }
+:host ::ng-deep .form-setting-toolbar app-submissions-search .submissions-search-filters {
+  flex: 0 0 auto;
+  margin-left: auto;
 }
 
+:host
+  ::ng-deep
+  .form-setting-toolbar
+  app-submissions-search
+  .submissions-search-filters
+  [search-filters] {
+  width: 13rem;
+  min-width: 13rem;
+}
+
+.form-setting-status-filter .input--select {
+  height: 38px;
+  min-height: 38px;
+  padding-block: 0;
+  padding-inline: var(--space-4) var(--space-9);
+  border-radius: var(--radius-full);
+  background-color: var(--color-surface);
+  font-size: var(--fs-sm);
+  line-height: 38px;
+}
 .form-setting-table-panel,
 .form-setting-pagination-panel {
   overflow: hidden;
@@ -208,11 +195,4 @@
     flex-direction: column;
   }
 
-  .form-setting-toolbar {
-    grid-template-columns: 1fr;
-  }
-
-  .form-setting-toolbar__actions .btn {
-    flex: 1;
-  }
 }

@@ -5,6 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Observable, finalize, forkJoin, map, of, tap } from 'rxjs';
 
 import { DropdownOption } from '../../../core/interfaces/components.interface';
+import { AuthService } from '../../../core/services/auth.service';
 import { ToastService } from '../../../core/services/toast.service';
 import {
   DataTableColumn,
@@ -251,6 +252,7 @@ const TABS: readonly WorkflowTab[] = [
 })
 export class WorkflowComponent implements OnInit {
   private readonly workflowService = inject(WorkflowService);
+  private readonly authService = inject(AuthService);
   private readonly toastService = inject(ToastService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -259,6 +261,14 @@ export class WorkflowComponent implements OnInit {
   readonly tabs = TABS;
   readonly activeTabKey = signal<WorkflowTabKey>('processes');
   readonly activeTab = computed(() => this.tabs.find((tab) => tab.key === this.activeTabKey()) ?? this.tabs[0]);
+  readonly canManageWorkflowSettings = computed(
+    () => this.authService.currentUser()?.username?.trim().toLowerCase() === 'thiha.hlaing',
+  );
+  readonly activeColumns = computed(() =>
+    this.canManageWorkflowSettings()
+      ? this.activeTab().columns
+      : this.activeTab().columns.filter((column) => column.key !== 'actions'),
+  );
 
   readonly rows = signal<Record<string, unknown>[]>([]);
   readonly page = signal(1);
@@ -430,6 +440,8 @@ export class WorkflowComponent implements OnInit {
   }
 
   openCreateDialog(): void {
+    if (!this.canManageWorkflowSettings()) return;
+
     this.selectedRow.set(null);
     this.detailFailed.set(false);
     this.formModel.set(this.defaultModel());
@@ -439,6 +451,8 @@ export class WorkflowComponent implements OnInit {
   }
 
   openEditDialog(row: Record<string, unknown>): void {
+    if (!this.canManageWorkflowSettings()) return;
+
     const id = Number(row['id']);
     this.selectedRow.set(row);
     this.dialogMode.set('edit');
@@ -477,7 +491,7 @@ export class WorkflowComponent implements OnInit {
 
   save(): void {
     const mode = this.dialogMode();
-    if (!mode || this.isSaving() || !this.isValid()) return;
+    if (!this.canManageWorkflowSettings() || !mode || this.isSaving() || !this.isValid()) return;
 
     const payload = this.payloadFromModel();
     const request =
@@ -503,6 +517,8 @@ export class WorkflowComponent implements OnInit {
   }
 
   openDeleteDialog(row: Record<string, unknown>): void {
+    if (!this.canManageWorkflowSettings()) return;
+
     this.rowToDelete.set(row);
   }
 
@@ -521,7 +537,7 @@ export class WorkflowComponent implements OnInit {
 
   confirmDelete(): void {
     const row = this.rowToDelete();
-    if (!row || this.isSaving()) return;
+    if (!this.canManageWorkflowSettings() || !row || this.isSaving()) return;
 
     this.isSaving.set(true);
     this.workflowService

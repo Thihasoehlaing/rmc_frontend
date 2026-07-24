@@ -12,6 +12,7 @@ import { AbstractControl } from '@angular/forms';
 export class ValidationMessageComponent {
   @Input() control: AbstractControl | null | undefined = null;
   @Input() message = '';
+  @Input() fieldName = '';
 
   get errorMessage(): string | null {
     if (this.message) return this.message;
@@ -20,12 +21,13 @@ export class ValidationMessageComponent {
     const errors = this.control.errors;
     if (!errors) return null;
 
-    if (errors['required']) return 'This field is required.';
+    if (errors['required']) return this.fieldName ? `${this.fieldName} field is required.` : 'This field is required.';
     if (errors['email']) return 'Invalid email address.';
     if (errors['maxlength']) return `Maximum ${errors['maxlength'].requiredLength} characters allowed.`;
     if (errors['minlength']) return `Minimum ${errors['minlength'].requiredLength} characters required.`;
     if (errors['pattern']) return errors['pattern'].message || 'Invalid format.';
-    if (errors['requiredTrue']) return 'You must agree to continue.';
+    if (errors['requiredTrue'])
+      return this.fieldName ? `${this.fieldName} is required.` : 'You must agree to continue.';
 
     // These are rendered by a dedicated, more specific <span> next to this
     // component elsewhere (e.g. batch-sitting's start-date scheduling rules) —

@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, effect, Output, EventEmitter } from '@angular/core';
+﻿import { Component, OnInit, inject, effect, Output, EventEmitter } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 import { CustomHeaderComponent } from '../../../../shared/components/custom-header/custom-header.component';
@@ -52,6 +52,7 @@ export class AuthorsDetails implements OnInit {
   readonly apuAffiliation = 'Asia Pacific University';
   readonly authorTextMaxLength = 100;
   readonly tpNumberMaxLength = 6;
+  readonly tableRecordLimit = 10;
   @Output() formValidityChange = new EventEmitter<boolean>();
   form!: FormGroup;
   projectType: string | null = null;
@@ -92,7 +93,7 @@ export class AuthorsDetails implements OnInit {
 
   // Pagination
   readonly ITEMS_PER_PAGE = 5;
-  readonly ITEMS_PER_PAGE_OPTIONS = [5, 15, 30, 50];
+  readonly ITEMS_PER_PAGE_OPTIONS = [5, 10];
   apuStaffCurrentPage = 1;
   studentCoAuthorsCurrentPage = 1;
   nonApuCoAuthorsCurrentPage = 1;
@@ -493,6 +494,7 @@ export class AuthorsDetails implements OnInit {
   }
 
   addTestSubsection() {
+    if (!this.canCreateCoAuthor('apu-staff')) return;
     this.testSubsections.push(this.createTestSubsection());
     this.emitFormValidity();
   }
@@ -503,6 +505,7 @@ export class AuthorsDetails implements OnInit {
   }
 
   addStudentCoAuthor() {
+    if (!this.canCreateCoAuthor('student')) return;
     this.studentCoAuthors.push(this.createStudentCoAuthor());
     this.emitFormValidity();
   }
@@ -513,6 +516,7 @@ export class AuthorsDetails implements OnInit {
   }
 
   addNonApuCoAuthor() {
+    if (!this.canCreateCoAuthor('non-apu')) return;
     this.nonApuCoAuthors.push(this.createNonApuCoAuthor());
     this.emitFormValidity();
   }
@@ -522,8 +526,23 @@ export class AuthorsDetails implements OnInit {
     this.emitFormValidity();
   }
 
+  canCreateCoAuthor(type: 'apu-staff' | 'student' | 'non-apu'): boolean {
+    return (
+      !this.workflow.isFormReadOnly() &&
+      this.getCoAuthorArray(type).length < this.tableRecordLimit
+    );
+  }
+
+  private getCoAuthorArray(type: 'apu-staff' | 'student' | 'non-apu'): FormArray {
+    if (type === 'apu-staff') return this.testSubsections;
+    if (type === 'student') return this.studentCoAuthors;
+    return this.nonApuCoAuthors;
+  }
+
   // Modal Methods
   openEditModal(type: 'apu-staff' | 'student' | 'non-apu', index?: number) {
+    if (index === undefined && !this.canCreateCoAuthor(type)) return;
+
     this.modalType = type;
     this.isModalOpen = true;
 
@@ -619,6 +638,15 @@ export class AuthorsDetails implements OnInit {
 
   submitModal() {
     if (this.editForm.invalid) {
+      this.editForm.markAllAsTouched();
+      return;
+    }
+
+    if (
+      this.editingIndex === null &&
+      this.modalType &&
+      !this.canCreateCoAuthor(this.modalType)
+    ) {
       return;
     }
 

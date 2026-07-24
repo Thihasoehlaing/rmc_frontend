@@ -94,6 +94,8 @@
 .batch-section-switcher {
   display: flex;
   align-items: stretch;
+  width: 100%;
+  min-width: 0;
   gap: 0;
   padding: 0;
   border: 1px solid var(--border-default);
@@ -118,9 +120,9 @@
   min-height: 44px;
   margin-bottom: -1px;
   padding: 0 var(--space-4);
-  border: 0;
+  border: 1px solid transparent;
   border-bottom: 2px solid transparent;
-  border-radius: 0;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
   background: transparent;
   color: var(--color-text-muted);
   font-size: var(--fs-sm);
@@ -131,7 +133,7 @@
 
   .material-icons {
     color: currentColor;
-    font-size: var(--icon-sm);
+    font-size: 1.1rem;
     line-height: 1;
   }
 
@@ -142,6 +144,7 @@
 
   &.is-active,
   &.is-active:hover {
+    border-color: var(--border-default);
     border-bottom-color: var(--color-primary);
     background: var(--color-surface);
     color: var(--color-primary);
@@ -831,16 +834,13 @@
   }
 }
 
-@media (max-width: 600px) {
-  .batch-section-switcher {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
+@media (max-width: 640px) {
   .batch-section-switcher__item {
-    width: 100%;
+    flex: 0 0 auto;
   }
+}
 
+@media (max-width: 600px) {
   .global-grid {
     grid-template-columns: 1fr;
   }

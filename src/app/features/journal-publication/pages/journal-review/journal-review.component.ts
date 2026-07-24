@@ -24,6 +24,8 @@ import {
 } from '../../../../shared/components/data-table/data-table.component';
 import { TableScrollHintComponent } from '../../../../shared/components/table-scroll-hint/table-scroll-hint.component';
 import { ActionLoadingService } from '../../../../core/services/action-loading.service';
+import { TextareaAutosizeDirective } from '../../../../shared/directives/textarea-autosize.directive';
+import { TableActionIconComponent } from '../../../../shared/components/table-action-icon/table-action-icon.component';
 
 const SCOPUS_QUARTILE_LABELS: Readonly<Record<string, string>> = {
   Q1: 'Q1: 75th - 100th percentile',
@@ -55,6 +57,8 @@ const COMMENT_MAX_LENGTH = 500;
     ActionButtonComponent,
     DataTableComponent,
     TableScrollHintComponent,
+    TextareaAutosizeDirective,
+    TableActionIconComponent,
   ],
   templateUrl: './journal-review.component.html',
   styleUrl: './journal-review.component.scss',
@@ -79,6 +83,9 @@ export class JournalReviewComponent implements OnInit {
   approvals = signal<ApprovalDto[]>([]);
   sectionComments = signal<RequestCommentDto[]>([]);
   savingSectionComment = signal<string | null>(null);
+  editingSectionCommentId = signal<number | null>(null);
+  savingEditedSectionCommentId = signal<number | null>(null);
+  deletingSectionCommentId = signal<number | null>(null);
   loading = signal(true);
   error = signal<string | null>(null);
 
@@ -92,6 +99,7 @@ export class JournalReviewComponent implements OnInit {
     authors: new FormControl('', [Validators.maxLength(COMMENT_MAX_LENGTH)]),
     costing_sponsorship: new FormControl('', [Validators.maxLength(COMMENT_MAX_LENGTH)]),
   };
+  readonly sectionEditCommentControl = new FormControl('', [Validators.maxLength(COMMENT_MAX_LENGTH)]);
   readonly actionCommentControl = new FormControl('', [Validators.maxLength(COMMENT_MAX_LENGTH)]);
   readonly commentMaxLength = COMMENT_MAX_LENGTH;
 
@@ -443,24 +451,91 @@ export class JournalReviewComponent implements OnInit {
     return this.canAct() && this.requiresAllSectionComments();
   }
 
-  private hasCurrentActorSectionComment(sectionCode: string): boolean {
-    const currentUsername = this.authService.currentUser()?.username?.trim().toLowerCase();
-    return this.commentsForSection(sectionCode).some((comment) => {
-      const commentUsername = comment.staff_username?.trim().toLowerCase();
-      if (currentUsername && commentUsername) return commentUsername === currentUsername;
+  currentActorSectionComment(sectionCode: string): RequestCommentDto | null {
+    return (
+      this.commentsForSection(sectionCode).find((comment) => this.canChangeSectionComment(comment)) ??
+      null
+    );
+  }
 
-      const actor = (this.request()?.current_actor_role ?? '').toLowerCase();
-      const commentActor = (comment.actor_type_code ?? '').toLowerCase();
-      return (
-        (actor.includes('rmc') && commentActor.includes('rmc')) ||
-        ((actor.includes('hos') || actor.includes('hod')) &&
-          (commentActor.includes('hos') || commentActor.includes('hod')))
-      );
-    });
+  isEditingSectionComment(sectionCode: string): boolean {
+    const comment = this.currentActorSectionComment(sectionCode);
+    return Boolean(comment && this.editingSectionCommentId() === comment.id);
+  }
+
+  isSectionCommentSaving(sectionCode: string): boolean {
+    const comment = this.currentActorSectionComment(sectionCode);
+    return (
+      this.savingSectionComment() === sectionCode ||
+      Boolean(comment && this.savingEditedSectionCommentId() === comment.id)
+    );
+  }
+
+  submitSectionComment(sectionCode: string): void {
+    const comment = this.currentActorSectionComment(sectionCode);
+    if (comment && this.editingSectionCommentId() === comment.id) {
+      this.updateSectionComment(comment);
+      return;
+    }
+    this.saveSectionComment(sectionCode);
+  }
+
+  hasCurrentActorSectionComment(sectionCode: string): boolean {
+    return this.currentActorSectionComment(sectionCode) !== null;
+  }
+
+  canChangeSectionComment(comment: RequestCommentDto): boolean {
+    if (!this.canWriteSectionComments()) return false;
+    if (!this.isCurrentUserComment(comment)) return false;
+    if (!this.isCurrentActorComment(comment)) return false;
+    return this.isCurrentStatusWindowComment(comment);
+  }
+
+  private isCurrentUserComment(comment: RequestCommentDto): boolean {
+    const currentUsername = this.authService.currentUser()?.username?.trim().toLowerCase();
+    const commentUsername = comment.staff_username?.trim().toLowerCase();
+    return Boolean(currentUsername && commentUsername && commentUsername === currentUsername);
+  }
+
+  private isCurrentActorComment(comment: RequestCommentDto): boolean {
+    const actor = this.currentActorRole();
+    const commentActor = (comment.actor_type_code ?? '').toLowerCase();
+    return (
+      (actor.includes('rmc') && commentActor.includes('rmc')) ||
+      ((actor.includes('hos') || actor.includes('hod')) &&
+        (commentActor.includes('hos') || commentActor.includes('hod')))
+    );
+  }
+
+  private isCurrentStatusWindowComment(comment: RequestCommentDto): boolean {
+    const startedAt = this.currentStatusStartedAt();
+    const commentAt = this.parseTime(comment.created_at);
+    return commentAt !== null && (startedAt === null || commentAt >= startedAt);
+  }
+
+  private currentStatusStartedAt(): number | null {
+    const statusCode = this.request()?.status_code;
+    const statusStart = this.approvals()
+      .filter((approval) => approval.to_status_code === statusCode && approval.action_at)
+      .map((approval) => this.parseTime(approval.action_at))
+      .filter((time): time is number => time !== null)
+      .sort((a, b) => b - a)[0];
+    if (statusStart !== undefined) return statusStart;
+    return this.parseTime(this.request()?.submitted_at) ?? this.parseTime(this.request()?.created_at);
+  }
+
+  private parseTime(value: string | null | undefined): number | null {
+    if (!value) return null;
+    const time = new Date(value).getTime();
+    return Number.isFinite(time) ? time : null;
   }
 
   saveSectionComment(sectionCode: string): void {
     if (this.requestId == null || this.savingSectionComment()) return;
+    if (this.currentActorSectionComment(sectionCode)) {
+      this.feedback.set({ type: 'error', text: 'You already saved a comment for this section.' });
+      return;
+    }
 
     const control = this.sectionCommentControls[sectionCode];
     const commentText = (control?.value ?? '').trim();
@@ -496,6 +571,93 @@ export class JournalReviewComponent implements OnInit {
         },
         error: (err) => {
           const msg = err?.error?.message || 'Could not save this section comment.';
+          this.feedback.set({ type: 'error', text: msg });
+        },
+      });
+  }
+
+  startEditSectionComment(comment: RequestCommentDto): void {
+    if (!this.canChangeSectionComment(comment)) return;
+    this.editingSectionCommentId.set(comment.id);
+    if (comment.section_code) {
+      this.sectionCommentControls[comment.section_code]?.setValue(comment.comment_text ?? '');
+    }
+    this.feedback.set(null);
+  }
+
+  cancelEditSectionComment(sectionCode?: string | null): void {
+    this.editingSectionCommentId.set(null);
+    this.sectionEditCommentControl.reset('');
+    if (sectionCode) {
+      this.sectionCommentControls[sectionCode]?.reset('');
+    }
+  }
+
+  editedSectionCommentLength(): number {
+    return (this.sectionEditCommentControl.value ?? '').length;
+  }
+
+  updateSectionComment(comment: RequestCommentDto): void {
+    if (this.requestId == null || this.savingEditedSectionCommentId()) return;
+    const control = comment.section_code ? this.sectionCommentControls[comment.section_code] : null;
+    const commentText = (control?.value ?? '').trim();
+    if (!commentText) {
+      this.feedback.set({ type: 'error', text: 'Please write a comment before saving.' });
+      return;
+    }
+    if (control?.invalid) {
+      this.feedback.set({
+        type: 'error',
+        text: `Comment cannot exceed ${this.commentMaxLength} characters.`,
+      });
+      return;
+    }
+
+    this.savingEditedSectionCommentId.set(comment.id);
+    this.feedback.set(null);
+    this.requests
+      .updateSectionComment(this.requestId, comment.id, { comment_text: commentText })
+      .pipe(
+        finalize(() => this.savingEditedSectionCommentId.set(null)),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe({
+        next: ({ data }) => {
+          this.sectionComments.update((comments) =>
+            comments.map((item) => (item.id === data.id ? data : item)),
+          );
+          this.cancelEditSectionComment(data.section_code);
+          this.feedback.set({ type: 'success', text: 'Section comment updated.' });
+        },
+        error: (err) => {
+          const msg = err?.error?.message || 'Could not update this section comment.';
+          this.feedback.set({ type: 'error', text: msg });
+        },
+      });
+  }
+
+  deleteSectionComment(comment: RequestCommentDto): void {
+    if (this.requestId == null || this.deletingSectionCommentId()) return;
+    if (!this.canChangeSectionComment(comment)) return;
+
+    this.deletingSectionCommentId.set(comment.id);
+    this.feedback.set(null);
+    this.requests
+      .deleteSectionComment(this.requestId, comment.id)
+      .pipe(
+        finalize(() => this.deletingSectionCommentId.set(null)),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe({
+        next: () => {
+          this.sectionComments.update((comments) => comments.filter((item) => item.id !== comment.id));
+          if (this.editingSectionCommentId() === comment.id) {
+            this.cancelEditSectionComment(comment.section_code);
+          }
+          this.feedback.set({ type: 'success', text: 'Section comment deleted.' });
+        },
+        error: (err) => {
+          const msg = err?.error?.message || 'Could not delete this section comment.';
           this.feedback.set({ type: 'error', text: msg });
         },
       });

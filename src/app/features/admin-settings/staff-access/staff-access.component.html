@@ -1,76 +1,51 @@
 <main class="forms-page forms-page--settings staff-access-page">
-  <header class="forms-page__header">
-    <div>
-      <span class="forms-page__eyebrow">Admin Settings</span>
-      <h1>RDIG Blocked List</h1>
-      <p>Manage staff who are blocked from RDIG application workflows.</p>
-    </div>
+  <app-admin-settings-page-header
+    title="RDIG Blocked List"
+    description="Manage staff who are blocked from RDIG application workflows."
+  >
     <button
+      header-action
       class="btn btn-primary forms-page__create-button"
       type="button"
       (click)="openBlockStaffDialog()"
       [disabled]="loading()"
     >
-      <span class="material-icons">person_off</span>
+      <span class="material-icons" aria-hidden="true">add</span>
       Block Staff
     </button>
-  </header>
+  </app-admin-settings-page-header>
 
-  <section class="forms-toolbar staff-access-toolbar" aria-label="Staff access filters">
-    <h2 class="forms-toolbar__title">Search &amp; Filters</h2>
+  <section class="staff-access-search-panel" aria-label="Staff access filters">
+    <app-submissions-search
+      placeholder="Search staff by name or username..."
+      [value]="searchFilter()"
+      (search)="setSearchFilter($event)"
+      (refresh)="resetFilters()"
+    >
+      <label search-filters class="staff-access-department-filter">
+        <app-searchable-dropdown
+          [options]="departmentOptions()"
+          [ngModel]="departmentFilter()"
+          (ngModelChange)="setDepartmentFilter($event)"
+          valueMode="single"
+          placeholder="All departments"
+        ></app-searchable-dropdown>
+      </label>
 
-    <label class="forms-filter forms-filter--search">
-      <span class="forms-search-input">
-        <span class="material-icons" aria-hidden="true">search</span>
-        <input
-          class="input--text"
-          type="search"
-          aria-label="Search staff by name or username"
-          placeholder="Search staff by name or username..."
-          [ngModel]="searchFilter()"
-          (ngModelChange)="searchFilter.set($event)"
-          (keydown.enter)="setSearchFilter(searchFilter())"
+      <label search-filters class="staff-access-status-filter">
+        <select
+          class="input--select"
+          [value]="statusFilter()"
+          (change)="setStatusFilter(statusSelect.value)"
           [disabled]="loading()"
-        />
-      </span>
-    </label>
-
-    <label class="forms-filter">
-      <span>Department</span>
-      <app-searchable-dropdown
-        [options]="departmentOptions()"
-        [ngModel]="departmentFilter()"
-        (ngModelChange)="setDepartmentFilter($event)"
-        valueMode="single"
-        placeholder="All departments"
-      ></app-searchable-dropdown>
-    </label>
-
-    <label class="forms-filter">
-      <span>Access Status</span>
-      <select
-        class="input--select"
-        [value]="statusFilter()"
-        (change)="setStatusFilter(statusSelect.value)"
-        [disabled]="loading()"
-        #statusSelect
-      >
-        <option value="all">All</option>
-        <option value="active">Active</option>
-        <option value="blocked">Blocked</option>
-      </select>
-    </label>
-
-    <div class="forms-toolbar__actions">
-      <button class="btn btn-primary" type="button" (click)="setSearchFilter(searchFilter())" [disabled]="loading()">
-        <span class="material-icons">search</span>
-        Search
-      </button>
-      <button class="btn btn-secondary" type="button" (click)="resetFilters()" [disabled]="loading()">
-        <span class="material-icons">restart_alt</span>
-        Reset
-      </button>
-    </div>
+          #statusSelect
+        >
+          <option value="all">All</option>
+          <option value="active">Active</option>
+          <option value="blocked">Blocked</option>
+        </select>
+      </label>
+    </app-submissions-search>
   </section>
 
   <section class="forms-table-card">
@@ -93,6 +68,8 @@
       </button>
     </header>
 
+    <app-table-scroll-hint></app-table-scroll-hint>
+
     @if (loading()) {
       <app-table-skeleton
         [columns]="skeletonColumns"
@@ -100,12 +77,6 @@
         [showSearch]="false"
         loadingLabel="Loading staff access records"
       ></app-table-skeleton>
-    } @else if (staffRecords().length === 0) {
-      <div class="forms-state">
-        <span class="material-icons">person_off</span>
-        <h2>No staff found</h2>
-        <p>Adjust the filters or block staff from RDIG access.</p>
-      </div>
     } @else {
       <app-data-table
         class="staff-access-table"
@@ -115,6 +86,29 @@
         [sortDirection]="sortDirection()"
         (sortChange)="setSort($event)"
       >
+        <ng-template #emptyTemplate>
+          <div class="staff-access-empty-state">
+            <span class="material-icons" aria-hidden="true">
+              {{ loadFailed() ? 'cloud_off' : 'person_off' }}
+            </span>
+            <strong>{{ loadFailed() ? 'Unable to load staff access' : 'No staff found' }}</strong>
+            <span>
+              {{
+                loadFailed()
+                  ? 'The staff access records could not be retrieved.'
+                  : 'Try changing the search, department, or access status filter.'
+              }}
+            </span>
+            <button
+              class="btn btn-primary staff-access-retry-button"
+              type="button"
+              (click)="refreshStaffAccess()"
+            >
+              Try Again
+            </button>
+          </div>
+        </ng-template>
+
         <ng-template #rowTemplate let-staff let-index="index">
           <tr [class.staff-access-row--blocked]="staff.status === 'blocked'">
             <td>{{ rowNumber(index) }}</td>

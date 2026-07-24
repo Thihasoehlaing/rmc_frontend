@@ -21,6 +21,7 @@ import { SVG_ICON_TRASH } from '../../../shared/icons/svg-icons';
 import { TableActionIconComponent } from '../../../shared/components/table-action-icon/table-action-icon.component';
 import { SubmissionsSearchComponent } from '../../../shared/components/submissions-search/submissions-search.component';
 import { SkeletonColumn } from '../../../shared/components/table-skeleton/table-skeleton.component';
+import { AdminSettingsPageHeaderComponent } from '../../../shared/components/admin-settings-page-header/admin-settings-page-header.component';
 
 interface Guideline {
   id: number;
@@ -39,6 +40,7 @@ type GuidelineSortKey = 'form' | 'title' | 'lastUpdated' | 'createdBy';
   selector: 'app-guidelines',
   standalone: true,
   imports: [
+    AdminSettingsPageHeaderComponent,
     TableActionIconComponent,
     SubmissionsSearchComponent,
     CommonModule,

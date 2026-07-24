@@ -16,6 +16,7 @@ import { TableActionIconComponent } from '../../../../shared/components/table-ac
 import { DropdownOption as SelectOption } from '../../../../core/interfaces/components.interface';
 import { ToastService } from '../../../../core/services/toast.service';
 import { SVG_ICON_TRASH } from '../../../../shared/icons/svg-icons';
+import { AdminSettingsPageHeaderComponent } from '../../../../shared/components/admin-settings-page-header/admin-settings-page-header.component';
 import {
   AccountCodeRow,
   DropdownOptionRow,
@@ -63,6 +64,7 @@ interface ViewRow {
   selector: 'app-form-dropdown-options-manager',
   standalone: true,
   imports: [
+    AdminSettingsPageHeaderComponent,
     CommonModule,
     FormsModule,
     RouterModule,
@@ -160,9 +162,6 @@ export class FormDropdownOptionsManagerComponent implements OnInit {
     });
   }
 
-  goBack(): void {
-    this.router.navigate(['/admin-settings/dropdowns']);
-  }
 
   onSearch(value: string): void {
     this.searchQuery.set(value);

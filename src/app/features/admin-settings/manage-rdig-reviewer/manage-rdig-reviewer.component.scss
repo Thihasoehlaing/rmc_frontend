@@ -2,40 +2,9 @@
   display: block;
 }
 
-.mgr-department-filter {
-  min-width: 0;
-}
-
-.mgr-status-filter {
-  min-width: 0;
-}
-
 .mgr-department-filter app-searchable-dropdown {
   display: block;
   width: 100%;
-}
-
-:host ::ng-deep .dropdown-search-panel app-submissions-search .submissions-search-controls {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  align-items: center;
-  gap: var(--space-3);
-}
-
-:host ::ng-deep .dropdown-search-panel app-submissions-search .submissions-search {
-  width: 100%;
-  min-width: 0;
-}
-
-:host ::ng-deep .dropdown-search-panel app-submissions-search .submissions-search--focused,
-:host ::ng-deep .dropdown-search-panel app-submissions-search .submissions-search:focus-within {
-  width: 100%;
-}
-
-:host ::ng-deep .dropdown-search-panel app-submissions-search .submissions-search-filters {
-  display: contents;
-  margin-left: 0;
-  min-width: 0;
 }
 
 :host
@@ -44,8 +13,8 @@
   app-submissions-search
   .submissions-search-filters
   [search-filters].mgr-department-filter {
-  width: 100%;
-  min-width: 0;
+  width: 12rem;
+  min-width: 12rem;
 }
 
 :host
@@ -54,21 +23,8 @@
   app-submissions-search
   .submissions-search-filters
   [search-filters].mgr-status-filter {
-  width: 100%;
-  min-width: 0;
-}
-
-:host ::ng-deep .dropdown-search-panel app-submissions-search .submissions-search-actions {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--space-3);
-  margin-left: 0;
-  min-width: 0;
-}
-
-:host ::ng-deep .dropdown-search-panel app-submissions-search .submissions-search-actions .btn,
-:host ::ng-deep .dropdown-search-panel app-submissions-search .submissions-search-actions button {
-  width: 100%;
+  width: 8rem;
+  min-width: 8rem;
 }
 
 :host ::ng-deep .mgr-department-filter app-searchable-dropdown .dropdown-trigger {
@@ -130,6 +86,10 @@
   }
 }
 
+:host ::ng-deep .reviewer-table-skeleton .skeleton-block--cell {
+  height: 3rem;
+}
+
 .reviewer-empty-state {
   padding: var(--space-8);
   color: var(--color-text-muted);
@@ -150,10 +110,6 @@
     margin-bottom: var(--space-1);
     color: var(--color-heading);
   }
-}
-
-.reviewer-loading-icon {
-  animation: reviewer-spin 0.9s linear infinite;
 }
 
 .reviewer-retry-button {
@@ -267,29 +223,4 @@
 
 .switch-control input:checked + .switch-slider::before {
   transform: translateX(2rem);
-}
-
-@keyframes reviewer-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@media (max-width: 900px) {
-  :host ::ng-deep .dropdown-search-panel app-submissions-search .submissions-search-controls {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    align-items: stretch;
-  }
-
-  .mgr-department-filter,
-  .mgr-status-filter {
-    min-width: 0;
-    width: 100%;
-  }
-}
-
-@media (max-width: 640px) {
-  :host ::ng-deep .dropdown-search-panel app-submissions-search .submissions-search-controls {
-    grid-template-columns: 1fr;
-  }
 }

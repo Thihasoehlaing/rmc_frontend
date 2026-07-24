@@ -94,6 +94,15 @@ SCA: OWASP Top 10 — Injection, XSS
    - Validate file type, size, and name on the client.
    - Never execute or render uploaded content without backend validation.
 
+5. **SQL injection prevention (frontend responsibility)** — The frontend does not execute SQL directly, but it must not construct or relay unsafe query fragments:
+   - Never pass raw user input as part of query-string filters to the backend without encoding. Use Angular's `HttpParams` which auto-encodes values.
+   - Never build dynamic API URLs by string-concatenating user input. Use parameterized URL construction (`HttpClient` params object).
+   - Do not expose backend query syntax (field names, operators) directly to user-controlled inputs.
+   - If the app builds search/filter queries from form inputs, sanitize special characters (`'`, `"`, `;`, `--`, `/*`) before transmission — or better, use typed filter objects that the backend interprets safely.
+   - Drop-down and autocomplete values sent to the backend must be from a known allowlist or validated against expected patterns.
+   - Any `encodeURIComponent()` or `HttpParams` usage is preferred over manual string concatenation for query values.
+   - If a backend returns SQL error messages in API responses, the `apiMessageInterceptor` must sanitize or suppress them before displaying to users.
+
 ---
 
 ## D. Data Protection and Confidentiality
@@ -259,7 +268,7 @@ SCA: CI/CD pipeline security
 
 ## J. Current Codebase Audit Results
 
-Last audited: 2026-07-20
+Last audited: 2026-07-24
 
 ### PASS — Controls Met
 
@@ -278,12 +287,14 @@ Last audited: 2026-07-20
 | 11 | Safe redirect validation | SCA (Open Redirect) | PASS | `getSafeReturnRoute()` blocks `//`, validates paths, strips dangerous params |
 | 12 | CORS origin allowlist | NACSA, ISO A.8.20 | PASS | Mock server rejects unknown origins with 403 |
 | 13 | Security headers on mock server | ISO A.8.9 | PASS | X-Content-Type-Options, X-Frame-Options, Referrer-Policy, CORP, Cache-Control all set |
+| 14 | No SQL-injectable query construction | SCA (Injection), NACSA | PASS | All API calls use Angular `HttpClient` with `HttpParams`; no raw string-concatenated query values found |
+| 15 | Testing login gated by environment flag | ISO A.5.17, SCA | PASS | `loginAsTestingUser()` checks `environment.enableTestingLogin === true`; production config sets this to `false` |
 
 ### FAIL — Issues Requiring Remediation
 
 | # | Finding | Standard | Severity | File(s) | Detail |
 |---|---------|----------|----------|---------|--------|
-| F1 | Plaintext credentials in source | ISO A.5.17, NACSA, SCA | **HIGH** | `src/app/core/services/auth.service.ts` (lines 28–130) | `DUMMY_USERS` array contains 12+ plaintext passwords. No `environment.production` guard. This code ships in ALL builds including production. |
+| F1 | ~~Plaintext credentials in source~~ | ISO A.5.17, NACSA, SCA | ~~HIGH~~ | `src/app/core/services/auth.service.ts` | **RESOLVED** — `DUMMY_USERS` array removed. Testing login now gated behind `environment.enableTestingLogin` and uses backend auth flow. |
 | F2 | `.env` files not excluded by `.gitignore` | ISO A.5.33, SCA | **MEDIUM** | `.gitignore` | If `.env` files are introduced, they will be committed to version control. No `.env*` pattern exists. |
 | F3 | `bypassSecurityTrustHtml` usage | SCA (XSS), ISO A.8.26 | **LOW** | `src/app/shared/components/svg-icon/svg-icon.component.ts` | Uses `bypassSecurityTrustHtml` for SVG rendering. Acceptable because input is from internal `SvgIconDefinition` constants, not user input. Document this risk acceptance. |
 | F4 | `innerHTML` binding with backend content | SCA (XSS), ISO A.8.26 | **MEDIUM** | `journal-guidelines-modal.component.html`, `guidelines-modal.component.html` | Renders `guideline.content` and `content()` via `[innerHTML]`. If this content originates from a backend CMS or user-editable field, it is an XSS vector. Angular sanitizes by default but complex HTML may still pose risk. |
@@ -308,7 +319,7 @@ Last audited: 2026-07-20
 
 ### Immediate (before next release)
 
-1. **F1** — Wrap `DUMMY_USERS` in a dev-only guard or move to a file excluded from production builds.
+1. ~~**F1** — Wrap `DUMMY_USERS` in a dev-only guard or move to a file excluded from production builds.~~ **DONE**
 2. **F5** — Add `environment.production` check to prevent ABAC override from rendering in production.
 
 ### Short-term (next sprint)
@@ -333,7 +344,8 @@ Before approving any PR, verify:
 - [ ] New routes have appropriate permission guards
 - [ ] User input is validated with reactive form validators
 - [ ] No `bypassSecurityTrust*` usage without documented justification
-- [ ] Error messages do not leak implementation details
+- [ ] No raw string concatenation for API URLs or query parameters (use `HttpParams`)
+- [ ] Error messages do not leak implementation details or SQL fragments
 - [ ] New dependencies have been audited (`npm audit`)
 - [ ] Auth token is not exposed in logs or error reports
 - [ ] HTTPS is used for all non-localhost API calls

@@ -1,31 +1,18 @@
 <section class="dropdowns-container">
   <div class="dropdowns-shell">
     <div class="details-view settings-container fade-in">
-      <div class="settings-card__header">
-        <div class="settings-card__header-row">
-          <button
-            type="button"
-            class="back-button"
-            (click)="goBack()"
-            aria-label="Back to admin settings"
-          >
-            <span class="material-icons">arrow_back</span>
-          </button>
-          <div>
-            <h1 class="card__title">RDIG Reviewers</h1>
-            <p class="settings-card__subtitle">
-              Manage academic staff who can be assigned as RDIG reviewers.
-            </p>
-          </div>
-          <app-action-button
-            class="settings-header-action"
-            type="primary"
-            label="Add Reviewer"
-            icon="add"
-            (clicked)="openAddModal()"
-          ></app-action-button>
-        </div>
-      </div>
+      <app-admin-settings-page-header
+        title="RDIG Reviewers"
+        description="Manage academic staff who can be assigned as RDIG reviewers."
+      >
+        <app-action-button
+          header-action
+          type="primary"
+          label="Add Reviewer"
+          icon="add"
+          (clicked)="openAddModal()"
+        ></app-action-button>
+      </app-admin-settings-page-header>
 
       <div class="dropdown-options-panel">
         <div class="dropdown-search-panel">
@@ -64,8 +51,18 @@
 
         <div class="dropdown-table-panel">
           <div class="shared-options-table">
-            <table>
-              <thead>
+            @if (isLoading()) {
+              <app-table-skeleton
+                class="reviewer-table-skeleton"
+                [columns]="skeletonColumns"
+                [rows]="pageSize()"
+                [showSearch]="false"
+                minWidth="760px"
+                loadingLabel="Loading reviewers"
+              ></app-table-skeleton>
+            } @else {
+              <table>
+                <thead>
                 <tr>
                   <th>No.</th>
                   <th>Staff</th>
@@ -76,15 +73,7 @@
                 </tr>
               </thead>
               <tbody>
-                @if (isLoading()) {
-                  <tr>
-                    <td class="reviewer-empty-state" colspan="6">
-                      <span class="material-icons reviewer-loading-icon">progress_activity</span>
-                      <strong>Loading reviewers</strong>
-                      <span>Please wait while the reviewer list is retrieved.</span>
-                    </td>
-                  </tr>
-                } @else if (loadFailed()) {
+                @if (loadFailed()) {
                   <tr>
                     <td class="reviewer-empty-state" colspan="6">
                       <span class="material-icons">cloud_off</span>
@@ -168,7 +157,8 @@
                   }
                 }
               </tbody>
-            </table>
+              </table>
+            }
           </div>
         </div>
 

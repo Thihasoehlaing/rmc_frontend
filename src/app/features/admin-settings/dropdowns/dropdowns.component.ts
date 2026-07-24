@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { finalize } from 'rxjs';
 
 import { FormCacheService } from '../../../core/services/form-cache.service';
+import { AdminSettingsPageHeaderComponent } from '../../../shared/components/admin-settings-page-header/admin-settings-page-header.component';
 
 interface DropdownSection {
   id: number;
@@ -18,7 +19,7 @@ interface DropdownSection {
 @Component({
   selector: 'app-dropdowns',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, AdminSettingsPageHeaderComponent],
   templateUrl: './dropdowns.component.html',
   styleUrls: ['./dropdowns.component.scss'],
 })

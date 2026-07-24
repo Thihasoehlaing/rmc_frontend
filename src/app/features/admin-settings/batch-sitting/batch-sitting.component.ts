@@ -56,6 +56,7 @@ import {
 } from '../../../shared/components/data-table/data-table.component';
 import { TableActionIconComponent } from '../../../shared/components/table-action-icon/table-action-icon.component';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
+import { AdminSettingsPageHeaderComponent } from '../../../shared/components/admin-settings-page-header/admin-settings-page-header.component';
 
 type BatchSectionView = 'active' | 'upcoming' | 'history';
 
@@ -188,6 +189,7 @@ function stageWithinBatchValidator(startFn: () => string, endFn: () => string) {
   selector: 'app-batch-sitting',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    AdminSettingsPageHeaderComponent,
     TableActionIconComponent,
     CommonModule,
     ReactiveFormsModule,

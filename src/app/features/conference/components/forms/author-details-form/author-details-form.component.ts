@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, Input, effect, inject } from '@angular/core';
+﻿import { Component, OnInit, OnDestroy, Input, effect, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
 import { Subscription } from 'rxjs';
@@ -20,12 +20,17 @@ import {
 } from '../../../../../core/services/master-data.service';
 
 import { TableActionIconComponent } from '../../../../../shared/components/table-action-icon/table-action-icon.component';
+import { ValidationMessageComponent } from '../../../../../shared/components/validation-message/validation-message.component';
+import { CharacterCounterComponent } from '../../../../../shared/components/character-counter/character-counter.component';
+import { COUNTRY_LIST } from '../../../../../core/constants/countries.constant';
 
 @Component({
   selector: 'app-author-details-form',
   standalone: true,
   imports: [
     TableActionIconComponent,
+    ValidationMessageComponent,
+    CharacterCounterComponent,
     CommonModule,
     ReactiveFormsModule,
     SearchableDropdownComponent,
@@ -40,6 +45,9 @@ import { TableActionIconComponent } from '../../../../../shared/components/table
 })
 export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
   readonly apuAffiliation = 'Asia Pacific University';
+  readonly tableRecordLimit = 10;
+  readonly coAuthorTextMaxLength = 100;
+  readonly countryOptions: DropdownOption<string>[] = COUNTRY_LIST;
   @Input() workflow?: ConferenceWorkflowService;
   @Input() isFormReadOnly: boolean = false;
 
@@ -165,12 +173,12 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
         nonApuCoAuthors: (data: any) =>
           this.fb.group({
             backendId: [data?.backendId ?? null],
-            fullName: [data?.fullName || '', [Validators.required]],
-            country: [data?.country || '', [Validators.required]],
-            email: [data?.email || '', [Validators.required, Validators.email]],
+            fullName: [data?.fullName || '', [Validators.required, Validators.maxLength(this.coAuthorTextMaxLength)]],
+            country: [data?.country || '', [Validators.required, Validators.maxLength(this.coAuthorTextMaxLength)]],
+            email: [data?.email || '', [Validators.required, Validators.email, Validators.maxLength(this.coAuthorTextMaxLength)]],
             organisationType: [data?.organisationType || '', [Validators.required]],
-            schoolDepartment: [data?.schoolDepartment || '', [Validators.required]],
-            institutionName: [data?.institutionName || '', [Validators.required]],
+            schoolDepartment: [data?.schoolDepartment || '', [Validators.required, Validators.maxLength(this.coAuthorTextMaxLength)]],
+            institutionName: [data?.institutionName || '', [Validators.required, Validators.maxLength(this.coAuthorTextMaxLength)]],
           }),
       };
 
@@ -209,12 +217,12 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
 
   createNonApuCoAuthor(): FormGroup {
     return this.fb.group({
-      fullName: ['', [Validators.required]],
-      country: ['', [Validators.required]],
-      email: ['', [Validators.required, Validators.email]],
+      fullName: ['', [Validators.required, Validators.maxLength(this.coAuthorTextMaxLength)]],
+      country: ['', [Validators.required, Validators.maxLength(this.coAuthorTextMaxLength)]],
+      email: ['', [Validators.required, Validators.email, Validators.maxLength(this.coAuthorTextMaxLength)]],
       organisationType: ['', [Validators.required]],
-      schoolDepartment: ['', [Validators.required]],
-      institutionName: ['', [Validators.required]],
+      schoolDepartment: ['', [Validators.required, Validators.maxLength(this.coAuthorTextMaxLength)]],
+      institutionName: ['', [Validators.required, Validators.maxLength(this.coAuthorTextMaxLength)]],
     });
   }
 
@@ -264,8 +272,20 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
     this.nonApuCoAuthors.removeAt(index);
   }
 
+  canCreateCoAuthor(type: 'apu-staff' | 'student' | 'non-apu'): boolean {
+    return this.canAddCoAuthors() && this.getCoAuthorArray(type).length < this.tableRecordLimit;
+  }
+
+  private getCoAuthorArray(type: 'apu-staff' | 'student' | 'non-apu'): FormArray {
+    if (type === 'apu-staff') return this.testSubsections;
+    if (type === 'student') return this.studentCoAuthors;
+    return this.nonApuCoAuthors;
+  }
+
   // Modal Methods
   openEditModal(type: 'apu-staff' | 'student' | 'non-apu', index?: number) {
+    if (index === undefined && !this.canCreateCoAuthor(type)) return;
+
     this.modalType = type;
     this.isModalOpen = true;
 
@@ -296,12 +316,12 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
       } else if (type === 'non-apu') {
         data = this.nonApuCoAuthors.at(index).value;
         this.editForm = this.fb.group({
-          fullName: [data.fullName, [Validators.required]],
-          country: [data.country, [Validators.required]],
-          email: [data.email, [Validators.required, Validators.email]],
+          fullName: [data.fullName, [Validators.required, Validators.maxLength(this.coAuthorTextMaxLength)]],
+          country: [data.country, [Validators.required, Validators.maxLength(this.coAuthorTextMaxLength)]],
+          email: [data.email, [Validators.required, Validators.email, Validators.maxLength(this.coAuthorTextMaxLength)]],
           organisationType: [data.organisationType, [Validators.required]],
-          schoolDepartment: [data.schoolDepartment, [Validators.required]],
-          institutionName: [data.institutionName, [Validators.required]],
+          schoolDepartment: [data.schoolDepartment, [Validators.required, Validators.maxLength(this.coAuthorTextMaxLength)]],
+          institutionName: [data.institutionName, [Validators.required, Validators.maxLength(this.coAuthorTextMaxLength)]],
         });
       }
     } else {
@@ -323,12 +343,12 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
         });
       } else if (type === 'non-apu') {
         this.editForm = this.fb.group({
-          fullName: ['', [Validators.required]],
-          country: ['', [Validators.required]],
-          email: ['', [Validators.required, Validators.email]],
+          fullName: ['', [Validators.required, Validators.maxLength(this.coAuthorTextMaxLength)]],
+          country: ['', [Validators.required, Validators.maxLength(this.coAuthorTextMaxLength)]],
+          email: ['', [Validators.required, Validators.email, Validators.maxLength(this.coAuthorTextMaxLength)]],
           organisationType: ['', [Validators.required]],
-          schoolDepartment: ['', [Validators.required]],
-          institutionName: ['', [Validators.required]],
+          schoolDepartment: ['', [Validators.required, Validators.maxLength(this.coAuthorTextMaxLength)]],
+          institutionName: ['', [Validators.required, Validators.maxLength(this.coAuthorTextMaxLength)]],
         });
       }
     }
@@ -353,6 +373,15 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
 
   submitModal() {
     if (this.editForm.invalid) {
+      this.editForm.markAllAsTouched();
+      return;
+    }
+
+    if (
+      this.editingIndex === null &&
+      this.modalType &&
+      !this.canCreateCoAuthor(this.modalType)
+    ) {
       return;
     }
 

@@ -1,4 +1,4 @@
-<form [formGroup]="form" class="form-section">
+﻿<form [formGroup]="form" class="form-section">
   <app-custom-header icon="description" title="Supporting Documents"></app-custom-header>
   <section class="card">
     <app-custom-subheader title="Acceptance Evidence and Financial Document"></app-custom-subheader>
@@ -19,9 +19,11 @@
           placeholder="Upload acceptance notification PDF"
           (fileSelected)="onFileSelected('acceptanceNotification', $any($event))">
         </app-file-upload>
-        @if (form.get('acceptanceNotification')?.invalid && form.get('acceptanceNotification')?.touched) {
-          <span class="form-error-msg">Acceptance Notification is required</span>
-        }
+        <app-validation-message
+          class="form-validation-note--error"
+          [control]="form.get('acceptanceNotification')"
+          fieldName="Acceptance Notification"
+        ></app-validation-message>
       </div>
 
       <!-- Conference Invoice -->
@@ -43,9 +45,11 @@
           (fileSelected)="onFileSelected('conferenceInvoice', $any($event))">
         </app-file-upload>
         <app-note text="Please ensure billing name is: Asia Pacific University Sdn. Bhd."></app-note>
-        @if (form.get('conferenceInvoice')?.invalid && form.get('conferenceInvoice')?.touched) {
-          <span class="form-error-msg">Conference Invoice is required</span>
-        }
+        <app-validation-message
+          class="form-validation-note--error"
+          [control]="form.get('conferenceInvoice')"
+          fieldName="Conference Invoice"
+        ></app-validation-message>
       </div>
     </div>
     </div>
@@ -70,9 +74,11 @@
           placeholder="Upload reviewers' feedback PDF"
           (fileSelected)="onFileSelected('reviewersFeedback', $any($event))">
         </app-file-upload>
-        @if (form.get('reviewersFeedback')?.invalid && form.get('reviewersFeedback')?.touched) {
-          <span class="form-error-msg">Reviewers' Feedback is required</span>
-        }
+        <app-validation-message
+          class="form-validation-note--error"
+          [control]="form.get('reviewersFeedback')"
+          fieldName="Reviewers' Feedback"
+        ></app-validation-message>
       </div>
 
       <div class="form-field" data-missing-field-target="scopusEvidencePublication">
@@ -90,9 +96,11 @@
           placeholder="Upload SCOPUS publication evidence PDF"
           (fileSelected)="onFileSelected('scopusEvidencePublication', $any($event))">
         </app-file-upload>
-        @if (form.get('scopusEvidencePublication')?.invalid && form.get('scopusEvidencePublication')?.touched) {
-          <span class="form-error-msg">Evidence of Guaranteed SCOPUS Indexed Publication is required</span>
-        }
+        <app-validation-message
+          class="form-validation-note--error"
+          [control]="form.get('scopusEvidencePublication')"
+          fieldName="Evidence of Guaranteed SCOPUS Indexed Publication"
+        ></app-validation-message>
       </div>
 
       <div class="form-field" data-missing-field-target="sriApproval">
@@ -111,9 +119,11 @@
           (fileSelected)="onFileSelected('sriApproval', $any($event))">
         </app-file-upload>
         <app-note text="Please upload SRI approval on IRN country and SDG Keywords."></app-note>
-        @if (form.get('sriApproval')?.invalid && form.get('sriApproval')?.touched) {
-          <span class="form-error-msg">SRI Approval is required</span>
-        }
+        <app-validation-message
+          class="form-validation-note--error"
+          [control]="form.get('sriApproval')"
+          fieldName="SRI Approval"
+        ></app-validation-message>
       </div>
 
       <!-- Turnitin Report -->
@@ -132,9 +142,11 @@
           placeholder="Upload Turnitin report PDF"
           (fileSelected)="onFileSelected('turnitinReport', $any($event))">
         </app-file-upload>
-        @if (form.get('turnitinReport')?.invalid && form.get('turnitinReport')?.touched) {
-          <span class="form-error-msg">Turnitin Report is required</span>
-        }
+        <app-validation-message
+          class="form-validation-note--error"
+          [control]="form.get('turnitinReport')"
+          fieldName="Turnitin Report"
+        ></app-validation-message>
       </div>
 
       <!-- Final Paper Draft -->
@@ -153,9 +165,11 @@
           placeholder="Upload final paper draft PDF"
           (fileSelected)="onFileSelected('finalPaperDraft', $any($event))">
         </app-file-upload>
-        @if (form.get('finalPaperDraft')?.invalid && form.get('finalPaperDraft')?.touched) {
-          <span class="form-error-msg">Final Paper Draft is required</span>
-        }
+        <app-validation-message
+          class="form-validation-note--error"
+          [control]="form.get('finalPaperDraft')"
+          fieldName="Final Paper Draft"
+        ></app-validation-message>
       </div>
     </div>
     </div>
@@ -174,6 +188,11 @@
           formControlName="reviewerName"
           placeholder="Enter reviewer name"
           maxlength="100">
+        <app-validation-message
+          class="form-validation-note--error"
+          [control]="form.get('reviewerName')"
+          fieldName="Name of Reviewer"
+        ></app-validation-message>
         <app-character-counter
           [current]="form.get('reviewerName')?.value?.length || 0"
           [max]="100"
@@ -193,6 +212,11 @@
             <span>No</span>
           </label>
         </div>
+        <app-validation-message
+          class="form-validation-note--error"
+          [control]="form.get('manuscriptInternallyReviewed')"
+          fieldName="Internal Manuscript Review Confirmation"
+        ></app-validation-message>
       </div>
 
       <div class="form-field" data-missing-field-target="manuscriptPreviouslyPublished">
@@ -213,11 +237,12 @@
           </label>
         </div>
         <app-note text="Manuscript must not be published previously"></app-note>
-        @if (
-          form.get('manuscriptPreviouslyPublished')?.hasError('required') &&
-          form.get('manuscriptPreviouslyPublished')?.touched
-        ) {
-          <span class="form-error-msg">Please confirm whether the manuscript has been published previously.</span>
+        @if (form.get('manuscriptPreviouslyPublished')?.hasError('required')) {
+          <app-validation-message
+            class="form-validation-note--error"
+            [control]="form.get('manuscriptPreviouslyPublished')"
+            fieldName="Previous Manuscript Publication Confirmation"
+          ></app-validation-message>
         }
         @if (
           form.get('manuscriptPreviouslyPublished')?.hasError('manuscriptAlreadyPublished') &&

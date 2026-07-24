@@ -107,6 +107,7 @@
   max-width: 100%;
   min-width: 0;
   white-space: normal;
+  overflow-x: auto;
   overflow-wrap: anywhere;
   word-break: break-word;
 
@@ -135,17 +136,38 @@
     }
 
     table {
-      display: block;
       width: 100%;
+      min-width: 100%;
       max-width: 100%;
-      overflow-x: auto;
       border-collapse: collapse;
+      table-layout: fixed;
+      margin: 0 0 var(--space-4);
+      color: var(--color-label);
     }
 
     td,
     th {
+      min-width: var(--space-8);
+      padding: var(--space-2);
+      border: 1px solid var(--border-default);
+      vertical-align: top;
       overflow-wrap: anywhere;
       word-break: break-word;
+    }
+
+    th {
+      background: var(--color-surface-nested);
+      font-weight: var(--fw-semibold);
+      text-align: left;
+    }
+
+    td > :last-child,
+    th > :last-child {
+      margin-bottom: 0;
+    }
+
+    table:last-child {
+      margin-bottom: 0;
     }
   }
 }

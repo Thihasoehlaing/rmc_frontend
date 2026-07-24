@@ -167,6 +167,16 @@
   flex-direction: column;
   gap: var(--space-4);
 }
+
+.modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex: 1 1 100%;
+  width: 100%;
+  margin: 0;
+}
 // Modal form groups — use form-label class for consistent required asterisk styling
 .form-group {
   display: flex;

@@ -535,17 +535,18 @@
       }
     </form>
 
-    <button dialog-footer type="button" class="btn btn-secondary" (click)="closeModal()">
-      Cancel
-    </button>
-    <button
-      dialog-footer
-      type="submit"
-      form="author-entry-form"
-      class="btn btn-primary"
-      [disabled]="editForm.invalid"
-    >
-      Save
-    </button>
+    <div dialog-footer class="modal-footer">
+      <button type="button" class="btn btn-secondary" (click)="closeModal()">
+        Cancel
+      </button>
+      <button
+        type="submit"
+        form="author-entry-form"
+        class="btn btn-primary"
+        [disabled]="editForm.invalid"
+      >
+        Save
+      </button>
+    </div>
   </app-dialog>
 }

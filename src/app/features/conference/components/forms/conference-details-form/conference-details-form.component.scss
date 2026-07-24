@@ -948,20 +948,12 @@
 
 .modal-footer {
   display: flex;
-  gap: var(--space-3);
-  padding: var(--space-3) var(--space-4);
-  border-top: 1px solid var(--border-default);
-  justify-content: space-between;
   align-items: center;
-  flex-shrink: 0;
-  grid-column: 1 / -1;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex: 1 1 100%;
   width: 100%;
-  box-sizing: border-box;
   margin: 0;
-
-  .btn {
-    min-width: 100px;
-  }
 }
 
 .text-muted {

@@ -224,7 +224,7 @@
       </div>
     } @else {
       <div class="form-editor">
-        <label class="forms-filter">
+        <div class="forms-filter">
           <span>Form</span>
           <app-searchable-dropdown
             [options]="formOptions()"
@@ -234,7 +234,7 @@
             (ngModelChange)="formCode.set($event)"
           >
           </app-searchable-dropdown>
-        </label>
+        </div>
 
         <label class="forms-filter">
           <span>Rule Type</span>
@@ -249,35 +249,37 @@
           </select>
         </label>
 
-        <label class="forms-filter">
+        <div class="forms-filter">
           <span>Rule Value</span>
           @if (ruleType() === 'DEPARTMENT') {
             <app-searchable-dropdown
               [options]="departmentOptions()"
               [searchable]="true"
+              [isMulti]="true"
+              valueMode="array"
               placeholder="Search department..."
-              [ngModel]="ruleValue()"
-              (ngModelChange)="ruleValue.set($event)"
+              [formControl]="ruleValuesControl"
             >
             </app-searchable-dropdown>
-            <small>Department name will be stored as the rule value.</small>
+            <small>Each selected department name will be stored as a separate rule value.</small>
           } @else if (ruleType() === 'STAFF') {
             <app-searchable-dropdown
               [options]="staffDropdownOptions()"
               [searchable]="true"
-              placeholder="Search academic staff..."
-              [ngModel]="ruleValue()"
-              (ngModelChange)="ruleValue.set($event)"
+              [isMulti]="true"
+              valueMode="array"
+              placeholder="Search staff..."
+              [formControl]="ruleValuesControl"
             >
             </app-searchable-dropdown>
-            <small>Username will be stored as the rule value.</small>
+            <small>Each selected username will be stored as a separate rule value.</small>
           } @else {
             <select class="input--select" disabled>
               <option>Select value</option>
             </select>
             <small>Select rule type first.</small>
           }
-        </label>
+        </div>
 
         <label class="forms-filter">
           <span>Description</span>
@@ -321,7 +323,7 @@
         <button
           class="btn btn-primary"
           type="button"
-          [disabled]="isSaving() || !formCode() || !ruleType().trim() || !ruleValue().trim()"
+          [disabled]="isSaving() || !formCode() || !ruleType().trim() || ruleValuesControl.value.length === 0"
           (click)="saveRule()"
         >
           {{

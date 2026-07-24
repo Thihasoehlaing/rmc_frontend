@@ -172,6 +172,8 @@ export const NAVIGATION_DATA: NavGroup[] = [
                     { label: 'System Access', icon: 'admin_panel_settings', route: '/settings/system-access', permission: systemSettingsPermission },
                     { label: 'Applicant Rules', icon: 'rule', route: '/settings/applicant-rules', permission: systemSettingsPermission },
                     { label: 'Workflow Configuration', icon: 'account_tree', route: '/settings/workflow', permission: systemSettingsPermission },
+                    { label: 'Monitoring Logs', icon: 'monitor_heart', route: '/settings/monitoring', permission: systemSettingsPermission },
+                    { label: 'Request Statuses', icon: 'published_with_changes', route: '/settings/request-statuses', permission: systemSettingsPermission },
                 ],
             },
         ],

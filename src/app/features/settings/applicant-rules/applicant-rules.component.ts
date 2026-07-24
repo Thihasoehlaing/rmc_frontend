@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, TrackByFunction, inject, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { finalize, forkJoin, switchMap, tap } from 'rxjs';
 
 import { DropdownOption } from '../../../core/interfaces/components.interface';
@@ -45,6 +45,7 @@ const EMPTY_FILTERS: ApplicantRuleListParams = {
   imports: [
     CommonModule,
     FormsModule,
+    ReactiveFormsModule,
     DataTableComponent,
     DialogComponent,
     PaginationComponent,
@@ -82,7 +83,7 @@ export class ApplicantRulesComponent implements OnInit {
   readonly selectedRule = signal<ApplicantRule | null>(null);
   readonly formCode = signal<string | null>(null);
   readonly ruleType = signal<RuleType | ''>('');
-  readonly ruleValue = signal('');
+  readonly ruleValuesControl = new FormControl<string[]>([], { nonNullable: true });
   readonly description = signal('');
   readonly ruleActive = signal(true);
   readonly isDetailLoading = signal(false);
@@ -124,7 +125,18 @@ export class ApplicantRulesComponent implements OnInit {
   }
 
   departmentOptions(): DropdownOption<string>[] {
-    return this.departments().map((department) => ({
+    const departmentsByName = new Map<string, DepartmentOption>();
+    for (const department of this.departments()) {
+      const name = department.department_name?.trim();
+      if (!name) continue;
+      const key = name.toLowerCase();
+      const existing = departmentsByName.get(key);
+      if (!existing || existing.department_type !== 'PRIMARY') {
+        departmentsByName.set(key, department);
+      }
+    }
+
+    return Array.from(departmentsByName.values()).map((department) => ({
       value: department.department_name,
       label: department.department_name,
       description: department.department_type,
@@ -226,7 +238,7 @@ export class ApplicantRulesComponent implements OnInit {
     this.selectedRule.set(null);
     this.formCode.set(null);
     this.ruleType.set('');
-    this.ruleValue.set('');
+    this.ruleValuesControl.setValue([], { emitEvent: false });
     this.description.set('');
     this.ruleActive.set(true);
     this.detailFailed.set(false);
@@ -255,24 +267,24 @@ export class ApplicantRulesComponent implements OnInit {
     const mode = this.dialogMode();
     const formCode = this.formCode();
     const ruleType = this.ruleType();
-    const ruleValue = this.ruleValue().trim();
+    const ruleValues = this.normalizedRuleValues();
 
-    if (!mode || !formCode || !ruleType || !ruleValue || this.isSaving()) return;
+    if (!mode || !formCode || !ruleType || ruleValues.length === 0 || this.isSaving()) return;
 
-    const payload: ApplicantRulePayload = {
+    const buildPayload = (ruleValue: string): ApplicantRulePayload => ({
       form_code: formCode,
       rule_type: ruleType,
       rule_value: ruleValue,
       description: this.description().trim() || null,
       is_active: this.ruleActive(),
-    };
-    const request =
+    });
+    const requests =
       mode === 'create'
-        ? this.applicantRulesService.create(payload)
-        : this.applicantRulesService.update(this.selectedRule()!.id, payload);
+        ? ruleValues.map((ruleValue) => this.applicantRulesService.create(buildPayload(ruleValue)))
+        : this.buildEditRequests(ruleValues, buildPayload);
 
     this.isSaving.set(true);
-    request.pipe(finalize(() => this.isSaving.set(false))).subscribe({
+    forkJoin(requests).pipe(finalize(() => this.isSaving.set(false))).subscribe({
       next: () => {
         this.dialogMode.set(null);
         this.selectedRule.set(null);
@@ -321,7 +333,7 @@ export class ApplicantRulesComponent implements OnInit {
 
   onRuleTypeChange(value: RuleType | ''): void {
     this.ruleType.set(value);
-    this.ruleValue.set('');
+    this.ruleValuesControl.setValue([], { emitEvent: false });
   }
 
   rowNumber(index: number): number {
@@ -369,7 +381,9 @@ export class ApplicantRulesComponent implements OnInit {
           this.selectedRule.set(rule);
           this.formCode.set(rule.form_code);
           this.ruleType.set(this.toKnownRuleType(rule.rule_type));
-          this.ruleValue.set(rule.rule_value);
+          this.ruleValuesControl.setValue(rule.rule_value ? [rule.rule_value] : [], {
+            emitEvent: false,
+          });
           this.description.set(rule.description ?? '');
           this.ruleActive.set(rule.is_active);
           this.toastService.success(response.message);
@@ -396,5 +410,35 @@ export class ApplicantRulesComponent implements OnInit {
 
   private toKnownRuleType(value: string): RuleType | '' {
     return value === 'DEPARTMENT' || value === 'STAFF' ? value : '';
+  }
+
+  private normalizedRuleValues(): string[] {
+    return Array.from(
+      new Set(
+        this.ruleValuesControl.value
+          .map((value) => value.trim())
+          .filter(Boolean),
+      ),
+    );
+  }
+
+  private buildEditRequests(
+    ruleValues: string[],
+    buildPayload: (ruleValue: string) => ApplicantRulePayload,
+  ) {
+    const selectedRule = this.selectedRule();
+    if (!selectedRule) return [];
+
+    const currentRuleValue = selectedRule.rule_value?.trim();
+    const updateValue =
+      currentRuleValue && ruleValues.includes(currentRuleValue)
+        ? currentRuleValue
+        : ruleValues[0];
+    const createValues = ruleValues.filter((ruleValue) => ruleValue !== updateValue);
+
+    return [
+      this.applicantRulesService.update(selectedRule.id, buildPayload(updateValue)),
+      ...createValues.map((ruleValue) => this.applicantRulesService.create(buildPayload(ruleValue))),
+    ];
   }
 }

@@ -20,7 +20,7 @@ export type ActionButtonType = 'primary' | 'danger' | 'secondary';
         @if (icon) {
           <span class="material-icons" aria-hidden="true">{{ icon }}</span>
         }
-        <span>{{ label }}</span>
+        <span class="action-button__label">{{ label }}</span>
       </span>
       @if (loading) {
         <span class="action-button__content" aria-live="polite">
@@ -45,6 +45,17 @@ export type ActionButtonType = 'primary' | 'danger' | 'secondary';
       justify-content: center;
       gap: var(--space-2);
       white-space: nowrap;
+    }
+    :host-context(.workflow-action-button) .action-button__content {
+      flex-direction: column;
+      min-width: 0;
+      white-space: normal;
+    }
+    :host-context(.workflow-action-button) .action-button__label {
+      max-width: 100%;
+      line-height: 1.25;
+      overflow-wrap: anywhere;
+      text-align: center;
     }
     .action-button__content--hidden { visibility: hidden; }
     .material-icons { font-size: var(--size-icon-control); }

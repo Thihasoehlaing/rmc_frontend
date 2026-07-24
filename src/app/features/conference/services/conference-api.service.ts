@@ -1,8 +1,9 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpContext } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { environment } from '../../../../environments/environment';
+import { SKIP_API_SUCCESS_TOAST } from '../../../core/interceptors/api-message.interceptor';
 import { RequestSummaryDto } from '../../../core/services/workflow-requests.service';
 
 export interface ApiResponse<T> {
@@ -163,7 +164,11 @@ export class ConferenceApiService {
   createDraft(
     payload: Partial<ConferenceRequestDto>,
   ): Observable<ApiResponse<ConferenceFormData>> {
-    return this.http.post<ApiResponse<ConferenceFormData>>(`${this.base}/drafts`, payload);
+    return this.http.post<ApiResponse<ConferenceFormData>>(
+      `${this.base}/drafts`,
+      payload,
+      this.skipSuccessToastOptions(),
+    );
   }
 
   getForm(id: number): Observable<ApiResponse<ConferenceFormData>> {
@@ -174,7 +179,11 @@ export class ConferenceApiService {
     id: number,
     payload: Partial<ConferenceRequestDto>,
   ): Observable<ApiResponse<ConferenceFormData>> {
-    return this.http.put<ApiResponse<ConferenceFormData>>(`${this.base}/${id}/draft`, payload);
+    return this.http.put<ApiResponse<ConferenceFormData>>(
+      `${this.base}/${id}/draft`,
+      payload,
+      this.skipSuccessToastOptions(),
+    );
   }
 
   submit(id: number): Observable<ApiResponse<RequestSummaryDto>> {
@@ -199,6 +208,7 @@ export class ConferenceApiService {
     return this.http.post<ApiResponse<ConferenceStaffCoAuthorDto>>(
       `${this.base}/${id}/apu-staff-co-authors`,
       payload,
+      this.skipSuccessToastOptions(),
     );
   }
 
@@ -210,12 +220,14 @@ export class ConferenceApiService {
     return this.http.put<ApiResponse<ConferenceStaffCoAuthorDto>>(
       `${this.base}/${id}/apu-staff-co-authors/${itemId}`,
       payload,
+      this.skipSuccessToastOptions(),
     );
   }
 
   deleteStaffCoAuthor(id: number, itemId: number): Observable<ApiResponse<unknown>> {
     return this.http.delete<ApiResponse<unknown>>(
       `${this.base}/${id}/apu-staff-co-authors/${itemId}`,
+      this.skipSuccessToastOptions(),
     );
   }
 
@@ -233,6 +245,7 @@ export class ConferenceApiService {
     return this.http.post<ApiResponse<ConferenceStudentCoAuthorDto>>(
       `${this.base}/${id}/apu-student-co-authors`,
       payload,
+      this.skipSuccessToastOptions(),
     );
   }
 
@@ -244,12 +257,14 @@ export class ConferenceApiService {
     return this.http.put<ApiResponse<ConferenceStudentCoAuthorDto>>(
       `${this.base}/${id}/apu-student-co-authors/${itemId}`,
       payload,
+      this.skipSuccessToastOptions(),
     );
   }
 
   deleteStudentCoAuthor(id: number, itemId: number): Observable<ApiResponse<unknown>> {
     return this.http.delete<ApiResponse<unknown>>(
       `${this.base}/${id}/apu-student-co-authors/${itemId}`,
+      this.skipSuccessToastOptions(),
     );
   }
 
@@ -267,6 +282,7 @@ export class ConferenceApiService {
     return this.http.post<ApiResponse<ConferenceNonApuCoAuthorDto>>(
       `${this.base}/${id}/non-apu-co-authors`,
       payload,
+      this.skipSuccessToastOptions(),
     );
   }
 
@@ -278,12 +294,14 @@ export class ConferenceApiService {
     return this.http.put<ApiResponse<ConferenceNonApuCoAuthorDto>>(
       `${this.base}/${id}/non-apu-co-authors/${itemId}`,
       payload,
+      this.skipSuccessToastOptions(),
     );
   }
 
   deleteNonApuCoAuthor(id: number, itemId: number): Observable<ApiResponse<unknown>> {
     return this.http.delete<ApiResponse<unknown>>(
       `${this.base}/${id}/non-apu-co-authors/${itemId}`,
+      this.skipSuccessToastOptions(),
     );
   }
 
@@ -301,6 +319,7 @@ export class ConferenceApiService {
     return this.http.post<ApiResponse<ConferenceCostingItemDto>>(
       `${this.base}/${id}/costing-items`,
       payload,
+      this.skipSuccessToastOptions(),
     );
   }
 
@@ -312,11 +331,15 @@ export class ConferenceApiService {
     return this.http.put<ApiResponse<ConferenceCostingItemDto>>(
       `${this.base}/${id}/costing-items/${itemId}`,
       payload,
+      this.skipSuccessToastOptions(),
     );
   }
 
   deleteCostingItem(id: number, itemId: number): Observable<ApiResponse<unknown>> {
-    return this.http.delete<ApiResponse<unknown>>(`${this.base}/${id}/costing-items/${itemId}`);
+    return this.http.delete<ApiResponse<unknown>>(
+      `${this.base}/${id}/costing-items/${itemId}`,
+      this.skipSuccessToastOptions(),
+    );
   }
 
   // ── Attachments ──────────────────────────────────────────────────
@@ -339,6 +362,7 @@ export class ConferenceApiService {
     return this.http.post<ApiResponse<ConferenceAttachmentDto>>(
       `${this.base}/${id}/attachments`,
       formData,
+      this.skipSuccessToastOptions(),
     );
   }
 
@@ -352,6 +376,15 @@ export class ConferenceApiService {
   }
 
   deleteAttachment(id: number, attachmentId: number): Observable<ApiResponse<unknown>> {
-    return this.http.delete<ApiResponse<unknown>>(`${this.base}/${id}/attachments/${attachmentId}`);
+    return this.http.delete<ApiResponse<unknown>>(
+      `${this.base}/${id}/attachments/${attachmentId}`,
+      this.skipSuccessToastOptions(),
+    );
+  }
+
+  private skipSuccessToastOptions(): { context: HttpContext } {
+    return {
+      context: new HttpContext().set(SKIP_API_SUCCESS_TOAST, true),
+    };
   }
 }

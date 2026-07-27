@@ -156,6 +156,8 @@ export class SearchableDropdownComponent<T = number> implements ControlValueAcce
 
   private _onChange: (value: T | T[] | null) => void = () => {};
   private _onTouched: () => void = () => {};
+  private multiSelectionCache: T[] = [];
+  private pendingMultiWrite: T[] | null = null;
 
   constructor() {
     this.document.addEventListener('pointerdown', this.onDocumentPointerDown, true);
@@ -176,16 +178,33 @@ export class SearchableDropdownComponent<T = number> implements ControlValueAcce
 
   writeValue(value: T | T[] | null | undefined): void {
     if (value == null) {
+      if (this.shouldIgnoreStaleMultiWrite([])) return;
       this.selectedValues.set([]);
+      if (this.isMulti) this.multiSelectionCache = [];
       return;
     }
 
     if (Array.isArray(value)) {
-      this.selectedValues.set(value.filter((v) => !this.isEmptySelectionValue(v)));
+      const next = this.normalizeIncomingMultiValue(
+        value.filter((v) => !this.isEmptySelectionValue(v)),
+      );
+      if (this.shouldIgnoreStaleMultiWrite(next)) return;
+      this.selectedValues.set(next);
+      if (this.isMulti) this.multiSelectionCache = next;
       return;
     }
 
-    this.selectedValues.set(this.isEmptySelectionValue(value) ? [] : [value]);
+    const next = this.normalizeIncomingMultiValue(
+      this.isEmptySelectionValue(value) ? [] : [value],
+    );
+    if (this.shouldIgnoreStaleMultiWrite(next)) return;
+    this.selectedValues.set(next);
+    if (this.isMulti) this.multiSelectionCache = next;
+  }
+
+  private shouldIgnoreStaleMultiWrite(next: T[]): boolean {
+    if (!this.isMulti || !this.isOpen()) return false;
+    return next.length < this.selectedValues().length;
   }
 
   private isEmptySelectionValue(value: unknown): boolean {
@@ -246,7 +265,7 @@ export class SearchableDropdownComponent<T = number> implements ControlValueAcce
     if (this.isOptionDisabled(option) || this.isDisabled()) return;
 
     if (this.isMulti) {
-      const current = this.selectedValues();
+      const current = this.currentMultiValues();
       const existing = current.findIndex((v) => this.compareWith(v, option.value));
       if (existing === -1 && this.maxSelections !== null && current.length >= this.maxSelections) {
         return;
@@ -254,6 +273,8 @@ export class SearchableDropdownComponent<T = number> implements ControlValueAcce
       const next =
         existing === -1 ? [...current, option.value] : current.filter((_, i) => i !== existing);
       this.selectedValues.set(next);
+      this.multiSelectionCache = next;
+      this.pendingMultiWrite = next;
       this._onChange(next);
     } else {
       this.selectedValues.set([option.value]);
@@ -266,8 +287,10 @@ export class SearchableDropdownComponent<T = number> implements ControlValueAcce
   removeChip(value: T, event: Event): void {
     if (this.isDisabled()) return;
     event.stopPropagation();
-    const next = this.selectedValues().filter((v) => !this.compareWith(v, value));
+    const next = this.currentMultiValues().filter((v) => !this.compareWith(v, value));
     this.selectedValues.set(next);
+    if (this.isMulti) this.multiSelectionCache = next;
+    if (this.isMulti) this.pendingMultiWrite = next;
     this._onChange(next);
   }
 
@@ -275,6 +298,8 @@ export class SearchableDropdownComponent<T = number> implements ControlValueAcce
     if (this.isDisabled()) return;
     event.stopPropagation();
     this.selectedValues.set([]);
+    if (this.isMulti) this.multiSelectionCache = [];
+    if (this.isMulti) this.pendingMultiWrite = [];
     this._onChange(this.isMulti || this.valueMode === 'array' ? [] : null);
     this._resetSearch();
     this.searchChange.emit('');
@@ -306,6 +331,45 @@ export class SearchableDropdownComponent<T = number> implements ControlValueAcce
 
   private selectedOption(value: T): DropdownOption<T> | undefined {
     return this._options().find((option) => this.compareWith(option.value, value));
+  }
+
+  private currentMultiValues(): T[] {
+    return this.uniqueValues([...this.multiSelectionCache, ...this.selectedValues()]);
+  }
+
+  private normalizeIncomingMultiValue(next: T[]): T[] {
+    if (!this.isMulti) return next;
+
+    if (
+      this.isOpen() &&
+      this.pendingMultiWrite !== null &&
+      !this.hasSameSelection(next, this.pendingMultiWrite)
+    ) {
+      return this.pendingMultiWrite;
+    }
+
+    if (this.pendingMultiWrite !== null && this.hasSameSelection(next, this.pendingMultiWrite)) {
+      this.pendingMultiWrite = null;
+    }
+
+    return next;
+  }
+
+  private hasSameSelection(left: T[], right: T[]): boolean {
+    return (
+      left.length === right.length &&
+      left.every((leftValue) => right.some((rightValue) => this.compareWith(leftValue, rightValue)))
+    );
+  }
+
+  private uniqueValues(values: T[]): T[] {
+    const unique: T[] = [];
+    for (const value of values) {
+      if (!unique.some((item) => this.compareWith(item, value))) {
+        unique.push(value);
+      }
+    }
+    return unique;
   }
 
   private optionSearchText(option: DropdownOption<T>): string {

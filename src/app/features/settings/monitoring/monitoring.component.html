@@ -1,0 +1,228 @@
+<main class="forms-page forms-page--settings workflow-page monitoring-page">
+  <header class="forms-page__header">
+    <div>
+      <span class="forms-page__eyebrow">System Settings</span>
+      <h1>Monitoring Logs</h1>
+      <p>Review production-safe operational logs without direct database access.</p>
+    </div>
+  </header>
+
+  <nav class="workflow-tabs" aria-label="Monitoring tabs">
+    @for (tab of tabs; track tab.key) {
+      <button
+        type="button"
+        class="workflow-tab"
+        [class.workflow-tab--active]="tab.key === activeTab()"
+        (click)="setTab(tab.key)"
+      >
+        {{ tab.label }}
+      </button>
+    }
+  </nav>
+
+  <section class="forms-toolbar workflow-toolbar monitoring-toolbar" aria-label="Monitoring filters">
+    <h2 class="forms-toolbar__title">Search &amp; Filters</h2>
+
+    <label class="forms-filter forms-filter--search">
+      <span class="forms-search-input">
+        <span class="material-icons" aria-hidden="true">search</span>
+        <input
+          class="input--text"
+          type="search"
+          placeholder="Search {{ activeTabConfig.label.toLowerCase() }}"
+          [ngModel]="searchTerm()"
+          (ngModelChange)="searchTerm.set($event)"
+          (keydown.enter)="search()"
+          [disabled]="isLoading()"
+        />
+      </span>
+    </label>
+
+    <label class="forms-filter">
+      <span>Status</span>
+      <select
+        class="input--select"
+        [ngModel]="selectedStatus()"
+        (ngModelChange)="selectedStatus.set($event)"
+        [disabled]="isLoading()"
+      >
+        <option value="">All</option>
+        @if (activeTab() === 'mail-logs') {
+          <option value="PENDING">Pending</option>
+          <option value="SENT">Sent</option>
+          <option value="FAILED">Failed</option>
+          <option value="SKIPPED">Skipped</option>
+        } @else {
+          <option value="SUCCESS">Success</option>
+          <option value="FAILED">Failed</option>
+          <option value="RUNNING">Running</option>
+        }
+      </select>
+    </label>
+
+    @if (activeTab() === 'mail-logs') {
+      <label class="forms-filter">
+        <span>Request Code</span>
+        <input
+          class="input--text"
+          type="search"
+          placeholder="e.g. JOUR-260001"
+          [ngModel]="requestCode()"
+          (ngModelChange)="requestCode.set($event)"
+          (keydown.enter)="search()"
+          [disabled]="isLoading()"
+        />
+      </label>
+    } @else {
+      <label class="forms-filter">
+        <span>Sync Source</span>
+        <input
+          class="input--text"
+          type="search"
+          placeholder="e.g. APSPACE"
+          [ngModel]="syncSource()"
+          (ngModelChange)="syncSource.set($event)"
+          (keydown.enter)="search()"
+          [disabled]="isLoading()"
+        />
+      </label>
+
+      <label class="forms-filter">
+        <span>Triggered By</span>
+        <input
+          class="input--text"
+          type="search"
+          placeholder="Username"
+          [ngModel]="triggeredBy()"
+          (ngModelChange)="triggeredBy.set($event)"
+          (keydown.enter)="search()"
+          [disabled]="isLoading()"
+        />
+      </label>
+    }
+
+    <label class="forms-filter">
+      <span>Date From</span>
+      <input
+        class="input--text"
+        type="date"
+        [ngModel]="dateFrom()"
+        (ngModelChange)="dateFrom.set($event)"
+        [disabled]="isLoading()"
+      />
+    </label>
+
+    <label class="forms-filter">
+      <span>Date To</span>
+      <input
+        class="input--text"
+        type="date"
+        [ngModel]="dateTo()"
+        (ngModelChange)="dateTo.set($event)"
+        [disabled]="isLoading()"
+      />
+    </label>
+
+    <div class="forms-toolbar__actions">
+      <button class="btn btn-primary" type="button" (click)="search()" [disabled]="isLoading()">
+        <span class="material-icons">search</span>
+        Search
+      </button>
+      <button class="btn btn-secondary" type="button" (click)="resetFilters()" [disabled]="isLoading()">
+        <span class="material-icons">restart_alt</span>
+        Reset
+      </button>
+    </div>
+  </section>
+
+  <section class="forms-table-card">
+    <header class="forms-table-card__header">
+      <div>
+        <div class="forms-table-card__title-row">
+          <h2>{{ activeTabConfig.title }}</h2>
+          <span class="forms-table-card__count">{{ totalItems() }}</span>
+        </div>
+        <p>{{ activeTabConfig.description }}</p>
+      </div>
+      <button class="btn btn-secondary forms-table-card__refresh" type="button" (click)="loadRows()" [disabled]="isLoading()">
+        <span class="material-icons">refresh</span>
+        Refresh
+      </button>
+    </header>
+
+    @if (isLoading()) {
+      <app-table-skeleton [columns]="activeColumns()" [showSearch]="false" loadingLabel="Loading monitoring logs"></app-table-skeleton>
+    } @else if (loadFailed()) {
+      <div class="forms-state">
+        <span class="material-icons">cloud_off</span>
+        <h2>Unable to load {{ activeTabConfig.label.toLowerCase() }}</h2>
+        <p>Check the API connection and try again.</p>
+        <button class="btn btn-primary" type="button" (click)="loadRows()">Try Again</button>
+      </div>
+    } @else if (rows().length === 0) {
+      <div class="forms-state">
+        <span class="material-icons">{{ activeTabConfig.emptyIcon }}</span>
+        <h2>No {{ activeTabConfig.label.toLowerCase() }} found</h2>
+        <p>Adjust the filters.</p>
+      </div>
+    } @else {
+      <app-data-table [columns]="activeColumns()" [rows]="rows()" [rowTrackFn]="rowTrackFn">
+        <ng-template #rowTemplate let-row let-index="index">
+          @if (activeTab() === 'mail-logs') {
+            <tr>
+              <td class="is-align-center">{{ rowNumber(index) }}</td>
+              <td>
+                <span class="form-code">{{ mailRow(row).request_code || '-' }}</span>
+                <small class="monitoring-subtext">{{ mailRow(row).form_code || '-' }}</small>
+              </td>
+              <td>
+                <span class="workflow-cell">{{ mailRow(row).recipient_name || mailRow(row).recipient_username || '-' }}</span>
+                <small class="monitoring-subtext">{{ mailRow(row).recipient_email || '-' }}</small>
+              </td>
+              <td class="is-align-center">
+                <span [class]="statusBadgeClass(mailRow(row).mail_status)">{{ mailRow(row).mail_status }}</span>
+              </td>
+              <td class="is-align-center">{{ mailRow(row).dingdong_status_code || '-' }}</td>
+              <td>{{ formatDateTime(mailRow(row).created_at) }}</td>
+              <td>{{ formatDateTime(mailRow(row).sent_at) }}</td>
+              <td><span class="workflow-cell">{{ mailRow(row).error_message || '-' }}</span></td>
+            </tr>
+          } @else {
+            <tr>
+              <td class="is-align-center">{{ rowNumber(index) }}</td>
+              <td><span class="form-code">{{ staffRow(row).sync_source }}</span></td>
+              <td class="is-align-center">
+                <span [class]="statusBadgeClass(staffRow(row).sync_status)">{{ staffRow(row).sync_status }}</span>
+              </td>
+              <td>
+                <span class="monitoring-counts">
+                  Total {{ staffRow(row).total_records }} · Created {{ staffRow(row).created_count }} · Updated {{ staffRow(row).updated_count }} · Failed {{ staffRow(row).failed_count }}
+                </span>
+              </td>
+              <td><span class="workflow-cell">{{ staffRow(row).triggered_by || '-' }}</span></td>
+              <td>{{ formatDateTime(staffRow(row).started_at) }}</td>
+              <td>{{ formatDateTime(staffRow(row).completed_at) }}</td>
+              <td><span class="workflow-cell">{{ staffRow(row).error_message || '-' }}</span></td>
+            </tr>
+          }
+        </ng-template>
+      </app-data-table>
+    }
+
+    @if (!isLoading() && !loadFailed()) {
+      <footer class="forms-table-card__footer">
+        <app-pagination
+          [currentPage]="page()"
+          [totalPages]="totalPages()"
+          [pageSize]="pageSize()"
+          [pageSizeOptions]="pageSizeOptions"
+          [totalItems]="totalItems()"
+          [itemCount]="rows().length"
+          itemLabel="logs"
+          (pageChange)="onPageChange($event)"
+          (pageSizeChange)="onPageSizeChange($event)"
+        ></app-pagination>
+      </footer>
+    }
+  </section>
+</main>

@@ -3,13 +3,20 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { CustomSubheaderComponent } from '../../../../../shared/components/custom-subheader/custom-subheader.component';
 import { CustomHeaderComponent } from '../../../../../shared/components/custom-header/custom-header.component';
+import { ValidationMessageComponent } from '../../../../../shared/components/validation-message/validation-message.component';
 import { ConferenceWorkflowService } from '../../../services/conference-workflow.service';
 import { ConferenceFormStateService } from '../../../services/conference-form-state.service';
 
 @Component({
   selector: 'app-declaration-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, CustomHeaderComponent, CustomSubheaderComponent],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    CustomHeaderComponent,
+    CustomSubheaderComponent,
+    ValidationMessageComponent,
+  ],
   templateUrl: './declaration-form.component.html',
   styleUrl: './declaration-form.component.scss',
 })

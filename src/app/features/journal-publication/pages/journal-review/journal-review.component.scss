@@ -965,15 +965,11 @@
 }
 
 .section-comment-input {
-  width: 100%;
-  min-height: 92px;
   padding: var(--space-3);
   border: 1px solid var(--border-default);
   border-radius: var(--radius-md);
   background: var(--color-surface);
   color: var(--color-text);
-  font: inherit;
-  resize: vertical;
 
   &:focus {
     border-color: var(--color-primary);
@@ -983,6 +979,9 @@
 }
 
 .section-comment-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
   justify-self: flex-end;
 }
 

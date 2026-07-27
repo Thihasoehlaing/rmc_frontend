@@ -173,6 +173,10 @@ export interface CreateSectionCommentPayload {
   comment_text: string;
 }
 
+export interface UpdateSectionCommentPayload {
+  comment_text: string;
+}
+
 /** Body for POST /requests/{id}/actions (schemas/requests.py::RequestActionSchema). */
 export interface ActOnRequestPayload {
   action_code: string;
@@ -418,6 +422,26 @@ export class WorkflowRequestsService {
         ...payload,
         comment_type: 'section_review',
       },
+    );
+  }
+
+  updateSectionComment(
+    requestId: number,
+    commentId: number,
+    payload: UpdateSectionCommentPayload,
+  ): Observable<ApiResponse<RequestCommentDto>> {
+    return this.http.patch<ApiResponse<RequestCommentDto>>(
+      `${this.base}/requests/${requestId}/comments/${commentId}`,
+      payload,
+    );
+  }
+
+  deleteSectionComment(
+    requestId: number,
+    commentId: number,
+  ): Observable<ApiResponse<unknown>> {
+    return this.http.delete<ApiResponse<unknown>>(
+      `${this.base}/requests/${requestId}/comments/${commentId}`,
     );
   }
 

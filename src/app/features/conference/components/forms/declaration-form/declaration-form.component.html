@@ -27,6 +27,11 @@
               required>
             <span class="is-required">I have read and agree to the terms and conditions outlined in the Declaration and Agreement for Conference Funding.</span>
           </label>
+          <app-validation-message
+            class="form-validation-note--error"
+            [control]="form.get('agreeToTerms')"
+            fieldName="Declaration and Agreement Confirmation"
+          ></app-validation-message>
           <label class="agreement-trigger">
             <input
               type="checkbox"
@@ -34,6 +39,11 @@
               required>
             <span class="is-required">I certify that the grant funder(s) has/have been appropriately acknowledged in the publication.</span>
           </label>
+          <app-validation-message
+            class="form-validation-note--error"
+            [control]="form.get('acknowledgeGrantFunder')"
+            fieldName="Grant Funder Acknowledgement"
+          ></app-validation-message>
       </div>
     </section>
   </div>

@@ -1,4 +1,4 @@
-<form [formGroup]="form" class="form-section">
+﻿<form [formGroup]="form" class="form-section">
   <app-custom-header icon="description" title="Journal Details"></app-custom-header>
 
   <div class="section-fields">
@@ -211,15 +211,15 @@
                   "
                   (input)="autoExpandTextarea($event)"
                 ></textarea>
-                <app-character-counter
-                  [current]="form.get('citedApuPaperExplanation')?.value?.length || 0"
-                  [max]="255"
-                ></app-character-counter>
                 <app-validation-message
                   class="form-validation-note--error"
                   [control]="form.get('citedApuPaperExplanation')"
                   fieldName="If No, please explain"
                 ></app-validation-message>
+                <app-character-counter
+                  [current]="form.get('citedApuPaperExplanation')?.value?.length || 0"
+                  [max]="255"
+                ></app-character-counter>
               </div>
             }
           </div>
@@ -272,15 +272,15 @@
                 "
                 (input)="autoExpandTextarea($event)"
               ></textarea>
-              <app-character-counter
-                [current]="getCharacterCount('paperTitle')"
-                [max]="200"
-              ></app-character-counter>
               <app-validation-message
                 class="form-validation-note--error"
                 [control]="form.get('paperTitle')"
                 fieldName="Paper Title"
               ></app-validation-message>
+              <app-character-counter
+                [current]="getCharacterCount('paperTitle')"
+                [max]="200"
+              ></app-character-counter>
             </div>
 
             <div class="form-field journal-details-primary-field">
@@ -295,15 +295,15 @@
                 "
                 (input)="autoExpandTextarea($event)"
               ></textarea>
-              <app-character-counter
-                [current]="getCharacterCount('journalName')"
-                [max]="150"
-              ></app-character-counter>
               <app-validation-message
                 class="form-validation-note--error"
                 [control]="form.get('journalName')"
                 fieldName="Journal Name"
               ></app-validation-message>
+              <app-character-counter
+                [current]="getCharacterCount('journalName')"
+                [max]="150"
+              ></app-character-counter>
             </div>
           </div>
         </div>
@@ -347,6 +347,7 @@
                     type="primary"
                     label="Add Entry"
                     icon="add"
+                    [disabled]="!canCreateBreakdownEntry(researchType || '')"
                     (clicked)="openBreakdownModal(researchType || '')"
                   ></app-action-button>
                 </div>
@@ -621,15 +622,15 @@
                 maxlength="500"
                 (input)="autoExpandTextarea($event)"
               ></textarea>
-              <app-character-counter
-                [current]="form.get('costingRemarks')?.value?.length || 0"
-                [max]="500"
-              ></app-character-counter>
               <app-validation-message
                 class="form-validation-note--error"
                 [control]="form.get('costingRemarks')"
                 fieldName="Remarks"
               ></app-validation-message>
+              <app-character-counter
+                [current]="form.get('costingRemarks')?.value?.length || 0"
+                [max]="500"
+              ></app-character-counter>
             </div>
           </div>
         } @else {
@@ -730,15 +731,15 @@
                 maxlength="500"
                 (input)="autoExpandTextarea($event)"
               ></textarea>
-              <app-character-counter
-                [current]="form.get('costingRemarks')?.value?.length || 0"
-                [max]="500"
-              ></app-character-counter>
               <app-validation-message
                 class="form-validation-note--error"
                 [control]="form.get('costingRemarks')"
                 fieldName="Remarks"
               ></app-validation-message>
+              <app-character-counter
+                [current]="form.get('costingRemarks')?.value?.length || 0"
+                [max]="500"
+              ></app-character-counter>
             </div>
           </div>
         }
@@ -791,20 +792,11 @@
         >
         </app-searchable-dropdown>
       }
-      @if (
-        breakdownForm.get('itemDescription')?.invalid &&
-        breakdownForm.get('itemDescription')?.touched
-      ) {
-        <span class="error-message">
-          {{
-            breakdownType === 'external-research'
-              ? 'Vote number description is required'
-              : breakdownType === 'non-research'
-                ? 'Account code description is required'
-                : 'Item description is required'
-          }}
-        </span>
-      }
+      <app-validation-message
+        class="form-validation-note--error"
+        [control]="breakdownForm.get('itemDescription')"
+        [fieldName]="breakdownType === 'external-research' ? 'Vote Number Description' : breakdownType === 'non-research' ? 'Account Code Description' : 'Item Description'"
+      ></app-validation-message>
     </div>
 
     @if (breakdownType === 'external-research') {
@@ -847,9 +839,11 @@
           readonly
           placeholder="Auto-Filled from vote number description"
         />
-        @if (breakdownForm.get('voteNumber')?.invalid && breakdownForm.get('voteNumber')?.touched) {
-          <span class="error-message">Vote number is required</span>
-        }
+        <app-validation-message
+          class="form-validation-note--error"
+          [control]="breakdownForm.get('voteNumber')"
+          fieldName="Vote Number"
+        ></app-validation-message>
       </div>
     }
 
@@ -873,9 +867,11 @@
         step="0.01"
         (input)="clampPositive($event); recalcCostInRM()"
       />
-      @if (breakdownForm.get('cost')?.invalid && breakdownForm.get('cost')?.touched) {
-        <span class="error-message">Cost is required</span>
-      }
+      <app-validation-message
+        class="form-validation-note--error"
+        [control]="breakdownForm.get('cost')"
+        fieldName="Cost"
+      ></app-validation-message>
     </div>
 
     <!-- Exchange Rate -->
@@ -886,18 +882,18 @@
       <input
         id="exchangeRate"
         type="text"
-        inputmode="numeric"
+        inputmode="decimal"
         class="input--text"
         formControlName="exchangeRate"
-        placeholder="e.g. 1, 4, 5"
-        (input)="enforceInteger($event)"
+        placeholder="e.g. 1, 4.35, 5.123456"
+        (input)="enforceExchangeRateDecimal($event)"
       />
       <app-note text="For Malaysia Ringgit/MYR, please put 1 as the exchange rate."></app-note>
-      @if (
-        breakdownForm.get('exchangeRate')?.invalid && breakdownForm.get('exchangeRate')?.touched
-      ) {
-        <span class="error-message">Exchange rate is required (whole numbers only)</span>
-      }
+      <app-validation-message
+        class="form-validation-note--error"
+        [control]="breakdownForm.get('exchangeRate')"
+        fieldName="Exchange Rate"
+      ></app-validation-message>
     </div>
 
     <!-- Cost in RM (Read-only calculated field) -->
@@ -929,15 +925,15 @@
         "
         (input)="autoExpandTextarea($event)"
       ></textarea>
-      <app-character-counter
-        [current]="getBreakdownCharacterCount('description')"
-        [max]="breakdownDescriptionMaxLength"
-      ></app-character-counter>
       <app-validation-message
         class="form-validation-note--error"
         [control]="breakdownForm.get('description')"
         fieldName="Description"
       ></app-validation-message>
+      <app-character-counter
+        [current]="getBreakdownCharacterCount('description')"
+        [max]="breakdownDescriptionMaxLength"
+      ></app-character-counter>
     </div>
 
     <!-- Supporting Documents -->
@@ -1076,7 +1072,6 @@
       type="button"
       class="btn btn-primary"
       (click)="confirmSDGKeywords()"
-      [disabled]="sdgKeywordsForm.invalid"
     >
       Confirm
     </button>

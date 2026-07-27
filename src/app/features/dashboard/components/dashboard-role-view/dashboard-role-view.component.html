@@ -7,10 +7,12 @@
       <h1>{{ viewConfig().title }}</h1>
       <p>Welcome back, {{ username }}. {{ viewConfig().subtitle }}</p>
     </div>
-    <a class="btn btn-primary header-action" [routerLink]="viewConfig().primaryAction.route">
-      <span class="material-icons">{{ viewConfig().primaryAction.icon }}</span>
-      {{ viewConfig().primaryAction.label }}
-    </a>
+    @if (viewConfig().primaryAction; as primaryAction) {
+      <a class="btn btn-primary header-action" [routerLink]="primaryAction.route">
+        <span class="material-icons">{{ primaryAction.icon }}</span>
+        {{ primaryAction.label }}
+      </a>
+    }
   </header>
 
   <section class="metrics-grid" aria-label="Dashboard totals">

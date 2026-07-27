@@ -24,6 +24,7 @@
           >
           </app-file-upload>
           <app-validation-message
+            class="form-validation-note--error"
             [control]="documentsForm.get('acceptanceNotification')"
             fieldName="Acceptance Notification"
           ></app-validation-message>
@@ -45,6 +46,7 @@
           >
           </app-file-upload>
           <app-validation-message
+            class="form-validation-note--error"
             [control]="documentsForm.get('reviewersFeedback')"
             fieldName="Reviewers' Feedback"
           ></app-validation-message>
@@ -66,6 +68,7 @@
           >
           </app-file-upload>
           <app-validation-message
+            class="form-validation-note--error"
             [control]="documentsForm.get('scopusEvidencePublication')"
             fieldName="Screenshot of SCOPUS CiteScore"
           ></app-validation-message>
@@ -89,6 +92,7 @@
           >
           </app-file-upload>
           <app-validation-message
+            class="form-validation-note--error"
             [control]="documentsForm.get('sriApproval')"
             fieldName="Approval by Strategic Research Institute (SRI)"
           ></app-validation-message>
@@ -115,6 +119,7 @@
           >
           </app-file-upload>
           <app-validation-message
+            class="form-validation-note--error"
             [control]="documentsForm.get('turnitinReport')"
             fieldName="Turnitin Report"
           ></app-validation-message>
@@ -136,6 +141,7 @@
           >
           </app-file-upload>
           <app-validation-message
+            class="form-validation-note--error"
             [control]="documentsForm.get('finalPaperDraft')"
             fieldName="Final Paper Draft"
           ></app-validation-message>
@@ -157,6 +163,7 @@
           >
           </app-file-upload>
           <app-validation-message
+            class="form-validation-note--error"
             [control]="documentsForm.get('journalInvoice')"
             fieldName="Journal Invoice"
           ></app-validation-message>
@@ -188,6 +195,7 @@
             (input)="stripDigits($event)"
           />
           <app-validation-message
+            class="form-validation-note--error"
             [control]="documentsForm.get('reviewerName')"
             fieldName="Name of Reviewer"
           ></app-validation-message>
@@ -197,68 +205,71 @@
           ></app-character-counter>
         </div>
 
-        <div class="form-field">
-          <label class="form-label is-required"
-            >The manuscript has been internally reviewed for the quality of content and
-            English?</label
-          >
-          <div class="radio-group">
-            <label class="radio-option">
-              <input type="radio" value="yes" formControlName="manuscriptInternallyReviewed" />
-              <span>Yes</span>
-            </label>
-            <label class="radio-option">
-              <input type="radio" value="no" formControlName="manuscriptInternallyReviewed" />
-              <span>No</span>
-            </label>
+        <div class="row row--2">
+          <div class="form-field">
+            <label class="form-label is-required"
+              >The manuscript has been internally reviewed for the quality of content and
+              English?</label
+            >
+            <div class="radio-group">
+              <label class="radio-option">
+                <input type="radio" value="yes" formControlName="manuscriptInternallyReviewed" />
+                <span>Yes</span>
+              </label>
+              <label class="radio-option">
+                <input type="radio" value="no" formControlName="manuscriptInternallyReviewed" />
+                <span>No</span>
+              </label>
+            </div>
+            <app-validation-message
+              class="form-validation-note--error"
+              [control]="documentsForm.get('manuscriptInternallyReviewed')"
+              fieldName="Manuscript internally reviewed"
+            ></app-validation-message>
           </div>
-          <app-validation-message
-            [control]="documentsForm.get('manuscriptInternallyReviewed')"
-            fieldName="Manuscript internally reviewed"
-          ></app-validation-message>
-        </div>
 
-        <div class="form-field">
-          <label class="form-label is-required"
-            >Has the manuscript and content been published in another journal or conference
-            etc.?</label
-          >
-          <div class="radio-group">
-            <label class="radio-option">
-              <input
-                type="radio"
-                value="yes"
-                formControlName="manuscriptPreviouslyPublished"
-                (click)="showPreviouslyPublishedWarning($event)"
-              />
-              <span>Yes</span>
-            </label>
-            <label class="radio-option">
-              <input type="radio" value="no" formControlName="manuscriptPreviouslyPublished" />
-              <span>No</span>
-            </label>
+          <div class="form-field">
+            <label class="form-label is-required"
+              >Has the manuscript and content been published in another journal or conference
+              etc.?</label
+            >
+            <div class="radio-group">
+              <label class="radio-option">
+                <input
+                  type="radio"
+                  value="yes"
+                  formControlName="manuscriptPreviouslyPublished"
+                  (click)="showPreviouslyPublishedWarning($event)"
+                />
+                <span>Yes</span>
+              </label>
+              <label class="radio-option">
+                <input type="radio" value="no" formControlName="manuscriptPreviouslyPublished" />
+                <span>No</span>
+              </label>
+            </div>
+            @if (
+              documentsForm
+                .get('manuscriptPreviouslyPublished')
+                ?.hasError('previouslyPublishedNotAllowed')
+            ) {
+              <app-validation-message
+                class="form-validation-note--error"
+                [control]="documentsForm.get('manuscriptPreviouslyPublished')"
+                message="This manuscript cannot have been published previously."
+              ></app-validation-message>
+            } @else {
+              <app-validation-message
+                class="form-validation-note--error"
+                [control]="documentsForm.get('manuscriptPreviouslyPublished')"
+                fieldName="Manuscript previously published"
+              ></app-validation-message>
+            }
+            <app-note
+              text="Manuscript must not be published previously"
+              [isTooltip]="false"
+            ></app-note>
           </div>
-          @if (
-            documentsForm
-              .get('manuscriptPreviouslyPublished')
-              ?.hasError('previouslyPublishedNotAllowed')
-          ) {
-            <app-validation-message
-              class="form-validation-note--error"
-              [control]="documentsForm.get('manuscriptPreviouslyPublished')"
-              message="This manuscript cannot have been published previously."
-            ></app-validation-message>
-          } @else {
-            <app-validation-message
-              class="form-validation-note--error"
-              [control]="documentsForm.get('manuscriptPreviouslyPublished')"
-              fieldName="Manuscript previously published"
-            ></app-validation-message>
-          }
-          <app-note
-            text="Manuscript must not be published previously"
-            [isTooltip]="false"
-          ></app-note>
         </div>
       </div>
     </div>

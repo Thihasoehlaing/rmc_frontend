@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, Input, effect, inject, signal } from '@angular/core';
+﻿import { Component, OnInit, OnDestroy, Input, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   ReactiveFormsModule,
@@ -59,6 +59,8 @@ import { AdminCatalogStoreService } from '../../../../admin-settings/catalog-man
 export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
   readonly klangValleyAccountCodeDescription = 'TRAINING PRESENTATION PUBLICATION';
   readonly klangValleyAccountCode = '6203/100';
+  readonly tableRecordLimit = 10;
+  readonly activityRecordLimit = 20;
   @Input() workflow?: ConferenceWorkflowService;
   @Input() applicantDetailsForm?: FormGroup;
   @Input() isFormReadOnly: boolean = false;
@@ -114,16 +116,16 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
 
   // Pagination state for breakdown tables
   researchPage: number = 1;
-  researchPageSize: number = 15;
-  researchPageSizeOptions: number[] = [5, 15, 30, 50];
+  researchPageSize: number = 10;
+  researchPageSizeOptions: number[] = [5, 10];
 
   externalPage: number = 1;
-  externalPageSize: number = 15;
-  externalPageSizeOptions: number[] = [5, 15, 30, 50];
+  externalPageSize: number = 10;
+  externalPageSizeOptions: number[] = [5, 10];
 
   localPage: number = 1;
-  localPageSize: number = 15;
-  localPageSizeOptions: number[] = [5, 15, 30, 50];
+  localPageSize: number = 10;
+  localPageSizeOptions: number[] = [5, 10];
 
   regions = ['Americas', 'ASEAN', 'Asia', 'Australasia', 'Europe', 'Malaysia', 'MEA', 'Pacific'];
 
@@ -434,6 +436,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     this.syncBookingDoneByOtherValidator();
     this.syncAdvanceReasonValidator();
     this.syncSelectedColleaguesValidator();
+    this.syncExternalProjectAccountCodeValidator();
     this.normalizePages();
     this.loadMasterData();
   }
@@ -621,6 +624,10 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
 
     this.form.get('hasColleagues')?.valueChanges.subscribe((answer) => {
       this.syncSelectedColleaguesValidator(answer);
+    });
+
+    this.form.get('researchType')?.valueChanges.subscribe((researchType) => {
+      this.syncExternalProjectAccountCodeValidator(researchType);
     });
 
     // Keep the external breakdown Account Code in sync with the selected project.
@@ -946,6 +953,20 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     };
   }
 
+  private syncExternalProjectAccountCodeValidator(
+    researchType = this.form.get('researchType')?.value,
+  ): void {
+    const control = this.form.get('externalProjectAccountCode');
+    if (!control) return;
+
+    if (researchType === 'external-research') {
+      control.setValidators([Validators.required]);
+    } else {
+      control.clearValidators();
+    }
+    control.updateValueAndValidity({ emitEvent: false });
+  }
+
   private syncBookingDoneByOtherValidator(answer = this.form.get('bookingDoneBy')?.value): void {
     const control = this.form.get('bookingDoneByOther');
     if (!control) return;
@@ -1035,6 +1056,10 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
   }
 
   canAddActivity(): boolean {
+    return this.hasActivityDateRange() && this.activities.length < this.activityRecordLimit;
+  }
+
+  private hasActivityDateRange(): boolean {
     return (
       !!this.form.get('conferenceStartDate')?.value && !!this.form.get('conferenceEndDate')?.value
     );
@@ -1055,7 +1080,8 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
   }
 
   openActivityModal(index: number | null = null): void {
-    if (!this.canAddActivity()) return;
+    if (!this.hasActivityDateRange()) return;
+    if (index === null && this.activities.length >= this.activityRecordLimit) return;
 
     this.activityEditingIndex = index;
     const current = index !== null ? this.activities.at(index)?.value : null;
@@ -1079,6 +1105,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     if (this.activityEditingIndex !== null) {
       this.activities.setControl(this.activityEditingIndex, this.createActivityGroup(value));
     } else {
+      if (this.activities.length >= this.activityRecordLimit) return;
       this.activities.push(this.createActivityGroup(value));
     }
     this.closeActivityModal();
@@ -1387,6 +1414,8 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
   }
 
   openBreakdownModal(type: 'research' | 'external-research' | 'local', index?: number) {
+    if (index === undefined && !this.canCreateBreakdownEntry(type)) return;
+
     this.breakdownType = type;
     this.isBreakdownModalOpen = true;
     const useFixedKlangValleyAccount = type === 'local' && this.isKlangValleyNonResearch();
@@ -1488,6 +1517,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
 
   submitBreakdownModal() {
     if (this.breakdownForm.invalid) {
+      this.breakdownForm.markAllAsTouched();
       return;
     }
 
@@ -1527,6 +1557,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
       array[this.breakdownEditingIndex] = entry;
     } else {
       // Add new entry
+      if (array.length >= this.tableRecordLimit) return;
       array.push(entry);
     }
 
@@ -1620,6 +1651,13 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     return titles[this.breakdownType];
   }
 
+  canCreateBreakdownEntry(type: 'research' | 'external-research' | 'local'): boolean {
+    return (
+      this.canAddBreakdownEntries() &&
+      this.getBreakdownArray(type).length < this.tableRecordLimit
+    );
+  }
+
   canAddBreakdownEntries(): boolean {
     if (!this.workflow) return true;
     const status = this.workflow.status();
@@ -1674,6 +1712,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
    */
   confirmSDGKeywords() {
     if (this.sdgKeywordsForm.invalid) {
+      this.sdgKeywordsForm.markAllAsTouched();
       return;
     }
 

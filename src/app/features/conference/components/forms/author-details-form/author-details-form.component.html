@@ -1,4 +1,4 @@
-<form [formGroup]="form" class="form-section">
+﻿<form [formGroup]="form" class="form-section">
   <app-custom-header icon="group" title="Author Details"></app-custom-header>
   <div class="section-fields">
     <section class="card" data-missing-field-target="apuStaffCoAuthors">
@@ -11,6 +11,7 @@
             type="primary"
             label="Add Entry"
             icon="add"
+            [disabled]="!canCreateCoAuthor('apu-staff')"
             (clicked)="openEditModal('apu-staff')"
           ></app-action-button>
         </div>
@@ -75,6 +76,7 @@
             type="primary"
             label="Add Entry"
             icon="add"
+            [disabled]="!canCreateCoAuthor('student')"
             (clicked)="openEditModal('student')"
           ></app-action-button>
         </div>
@@ -140,6 +142,7 @@
             type="primary"
             label="Add Entry"
             icon="add"
+            [disabled]="!canCreateCoAuthor('non-apu')"
             (clicked)="openEditModal('non-apu')"
           ></app-action-button>
         </div>
@@ -218,9 +221,11 @@
             (searchChange)="loadAcademicStaffOptions($event)"
           >
           </app-searchable-dropdown>
-          @if (editForm.get('staffName')?.invalid && editForm.get('staffName')?.touched) {
-            <span class="error-message">Staff name is required</span>
-          }
+          <app-validation-message
+            class="form-validation-note--error"
+            [control]="editForm.get('staffName')"
+            fieldName="Staff Name"
+          ></app-validation-message>
         </div>
 
         <div class="form-group">
@@ -232,11 +237,11 @@
             formControlName="schoolDepartment"
             placeholder="Auto-selected after staff selection"
           />
-          @if (
-            editForm.get('schoolDepartment')?.invalid && editForm.get('schoolDepartment')?.touched
-          ) {
-            <span class="error-message">School/Department is required</span>
-          }
+          <app-validation-message
+            class="form-validation-note--error"
+            [control]="editForm.get('schoolDepartment')"
+            fieldName="School/Department"
+          ></app-validation-message>
         </div>
 
         <div class="form-group">
@@ -247,6 +252,7 @@
             class="form-control"
             formControlName="affiliation"
             placeholder="Ex. Taylor's University"
+            readonly
           />
         </div>
       }
@@ -268,12 +274,18 @@
               (input)="filterTpNumber($event)"
             />
           </div>
-          @if (editForm.get('tpNumber')?.invalid && editForm.get('tpNumber')?.touched) {
-            @if (editForm.get('tpNumber')?.errors?.['required']) {
-              <span class="error-message">TP Number is required</span>
-            } @else if (editForm.get('tpNumber')?.errors?.['pattern']) {
-              <span class="error-message">TP Number must contain 1 to 6 digits and cannot be all zeros</span>
-            }
+          @if (editForm.get('tpNumber')?.hasError('required')) {
+            <app-validation-message
+              class="form-validation-note--error"
+              [control]="editForm.get('tpNumber')"
+              fieldName="TP Number"
+            ></app-validation-message>
+          } @else if (
+            editForm.get('tpNumber')?.hasError('pattern') && editForm.get('tpNumber')?.touched
+          ) {
+            <span class="form-error-msg">
+              TP Number must contain 1 to 6 digits and cannot be all zeros.
+            </span>
           }
         </div>
 
@@ -288,9 +300,11 @@
             formControlName="fullName"
             placeholder="Ex. Jessica Teh Sze Hui"
           />
-          @if (editForm.get('fullName')?.invalid && editForm.get('fullName')?.touched) {
-            <span class="error-message">Full name is required</span>
-          }
+          <app-validation-message
+            class="form-validation-note--error"
+            [control]="editForm.get('fullName')"
+            fieldName="Full Name"
+          ></app-validation-message>
         </div>
 
         <div class="form-group">
@@ -302,11 +316,11 @@
             formControlName="schoolDepartment"
           >
           </app-searchable-dropdown>
-          @if (
-            editForm.get('schoolDepartment')?.invalid && editForm.get('schoolDepartment')?.touched
-          ) {
-            <span class="error-message">School/Department is required</span>
-          }
+          <app-validation-message
+            class="form-validation-note--error"
+            [control]="editForm.get('schoolDepartment')"
+            fieldName="School/Department"
+          ></app-validation-message>
         </div>
 
         <div class="form-group">
@@ -333,24 +347,41 @@
             class="form-control"
             formControlName="fullName"
             placeholder="Ex. Jessica Teh Sze Hui"
+            [attr.maxlength]="coAuthorTextMaxLength"
           />
-          @if (editForm.get('fullName')?.invalid && editForm.get('fullName')?.touched) {
-            <span class="error-message">Full name is required</span>
-          }
+          <app-validation-message
+            class="form-validation-note--error"
+            [control]="editForm.get('fullName')"
+            fieldName="Full Name"
+          ></app-validation-message>
+          <app-character-counter
+            [current]="editForm.get('fullName')?.value?.length || 0"
+            [max]="coAuthorTextMaxLength"
+          ></app-character-counter>
         </div>
 
         <div class="form-group">
-          <label for="country">Country <span class="asterisk">*</span></label>
+          <label for="countryNonApu" class="is-required">Country</label>
           <input
             type="text"
-            id="country"
+            id="countryNonApu"
             class="form-control"
             formControlName="country"
-            placeholder="Ex. Jordan"
+            placeholder="Ex. Malaysia"
+            [attr.maxlength]="coAuthorTextMaxLength"
           />
-          @if (editForm.get('country')?.invalid && editForm.get('country')?.touched) {
-            <span class="error-message">Country is required</span>
-          }
+          <app-note
+            text="Please check with the SRI regarding prioritised IRN countries before submitting the form"
+          ></app-note>
+          <app-validation-message
+            class="form-validation-note--error"
+            [control]="editForm.get('country')"
+            fieldName="Country"
+          ></app-validation-message>
+          <app-character-counter
+            [current]="editForm.get('country')?.value?.length || 0"
+            [max]="coAuthorTextMaxLength"
+          ></app-character-counter>
         </div>
 
         <div class="form-group">
@@ -361,10 +392,17 @@
             class="form-control"
             formControlName="email"
             placeholder="Ex. user@example.com"
+            [attr.maxlength]="coAuthorTextMaxLength"
           />
-          @if (editForm.get('email')?.invalid && editForm.get('email')?.touched) {
-            <span class="error-message">Valid email is required</span>
-          }
+          <app-validation-message
+            class="form-validation-note--error"
+            [control]="editForm.get('email')"
+            fieldName="Email"
+          ></app-validation-message>
+          <app-character-counter
+            [current]="editForm.get('email')?.value?.length || 0"
+            [max]="coAuthorTextMaxLength"
+          ></app-character-counter>
         </div>
 
         <div class="form-group">
@@ -376,11 +414,11 @@
             formControlName="organisationType"
           >
           </app-searchable-dropdown>
-          @if (
-            editForm.get('organisationType')?.invalid && editForm.get('organisationType')?.touched
-          ) {
-            <span class="error-message">Organisation type is required</span>
-          }
+          <app-validation-message
+            class="form-validation-note--error"
+            [control]="editForm.get('organisationType')"
+            fieldName="Type of Organisation"
+          ></app-validation-message>
         </div>
 
         <div class="form-group">
@@ -391,12 +429,17 @@
             class="form-control"
             formControlName="schoolDepartment"
             placeholder="Ex. School of Culinary Arts and Hospitality"
+            [attr.maxlength]="coAuthorTextMaxLength"
           />
-          @if (
-            editForm.get('schoolDepartment')?.invalid && editForm.get('schoolDepartment')?.touched
-          ) {
-            <span class="error-message">School/Department is required</span>
-          }
+          <app-validation-message
+            class="form-validation-note--error"
+            [control]="editForm.get('schoolDepartment')"
+            fieldName="School/Department"
+          ></app-validation-message>
+          <app-character-counter
+            [current]="editForm.get('schoolDepartment')?.value?.length || 0"
+            [max]="coAuthorTextMaxLength"
+          ></app-character-counter>
         </div>
 
         <div class="form-group">
@@ -409,12 +452,17 @@
             class="form-control"
             formControlName="institutionName"
             placeholder="Ex. Shanghai Hypergryph Network Technology Co., Ltd."
+            [attr.maxlength]="coAuthorTextMaxLength"
           />
-          @if (
-            editForm.get('institutionName')?.invalid && editForm.get('institutionName')?.touched
-          ) {
-            <span class="error-message">Institution/Company name is required</span>
-          }
+          <app-validation-message
+            class="form-validation-note--error"
+            [control]="editForm.get('institutionName')"
+            fieldName="Institution/Company Name"
+          ></app-validation-message>
+          <app-character-counter
+            [current]="editForm.get('institutionName')?.value?.length || 0"
+            [max]="coAuthorTextMaxLength"
+          ></app-character-counter>
         </div>
       }
     </form>
@@ -427,7 +475,7 @@
         type="submit"
         form="author-entry-form"
         class="btn btn-primary"
-        [disabled]="editForm.invalid"
+        [disabled]="editForm.invalid || !canAddCoAuthors()"
       >
         Save
       </button>

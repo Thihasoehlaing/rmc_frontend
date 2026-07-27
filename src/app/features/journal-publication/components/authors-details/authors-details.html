@@ -1,4 +1,4 @@
-<form [formGroup]="form" class="form-section">
+﻿<form [formGroup]="form" class="form-section">
   <app-custom-header icon="group" title="Authors Details"></app-custom-header>
   <div class="section-fields">
     <!-- ── Asia Pacific University of Technology & Innovation Staff Co-Author Details ─────────────────────────── -->
@@ -15,6 +15,7 @@
               type="primary"
               label="Add Entry"
               icon="add"
+              [disabled]="!canCreateCoAuthor('apu-staff')"
               (clicked)="openEditModal('apu-staff')"
             ></app-action-button>
           </div>
@@ -93,6 +94,7 @@
               type="primary"
               label="Add Entry"
               icon="add"
+              [disabled]="!canCreateCoAuthor('student')"
               (clicked)="openEditModal('student')"
             ></app-action-button>
           </div>
@@ -185,6 +187,7 @@
               type="primary"
               label="Add Entry"
               icon="add"
+              [disabled]="!canCreateCoAuthor('non-apu')"
               (clicked)="openEditModal('non-apu')"
             ></app-action-button>
           </div>
@@ -338,15 +341,15 @@
               (input)="enforceTPNumber($event)"
             />
           </div>
-          <app-character-counter
-            [current]="editForm.get('tpNumber')?.value?.length || 0"
-            [max]="tpNumberMaxLength"
-          ></app-character-counter>
           <app-validation-message
             class="form-validation-note--error"
             [control]="editForm.get('tpNumber')"
             fieldName="TP Number"
           ></app-validation-message>
+          <app-character-counter
+            [current]="editForm.get('tpNumber')?.value?.length || 0"
+            [max]="tpNumberMaxLength"
+          ></app-character-counter>
         </div>
 
         <div class="form-group">
@@ -360,15 +363,15 @@
             (input)="stripDigits($event)"
             [attr.maxlength]="authorTextMaxLength"
           />
-          <app-character-counter
-            [current]="editForm.get('fullName')?.value?.length || 0"
-            [max]="authorTextMaxLength"
-          ></app-character-counter>
           <app-validation-message
             class="form-validation-note--error"
             [control]="editForm.get('fullName')"
             fieldName="Full Name"
           ></app-validation-message>
+          <app-character-counter
+            [current]="editForm.get('fullName')?.value?.length || 0"
+            [max]="authorTextMaxLength"
+          ></app-character-counter>
         </div>
 
         <div class="form-group">
@@ -412,27 +415,27 @@
             (input)="stripDigits($event)"
             [attr.maxlength]="authorTextMaxLength"
           />
-          <app-character-counter
-            [current]="editForm.get('fullName')?.value?.length || 0"
-            [max]="authorTextMaxLength"
-          ></app-character-counter>
           <app-validation-message
             class="form-validation-note--error"
             [control]="editForm.get('fullName')"
             fieldName="Full Name"
           ></app-validation-message>
+          <app-character-counter
+            [current]="editForm.get('fullName')?.value?.length || 0"
+            [max]="authorTextMaxLength"
+          ></app-character-counter>
         </div>
 
         <div class="form-group">
-          <label class="is-required">Country</label>
-          <app-searchable-dropdown
-            [options]="countryOptions"
-            [searchable]="true"
-            placeholder="Search and select country..."
+          <label for="countryNonApu" class="is-required">Country</label>
+          <input
+            type="text"
+            id="countryNonApu"
+            class="form-control"
             formControlName="country"
-            class="country-dropdown"
-          >
-          </app-searchable-dropdown>
+            placeholder="Ex. Malaysia"
+            [attr.maxlength]="authorTextMaxLength"
+          />
           <app-note
             text="Please check with the SRI regarding prioritised IRN countries before submitting the form"
           ></app-note>
@@ -441,6 +444,10 @@
             [control]="editForm.get('country')"
             fieldName="Country"
           ></app-validation-message>
+          <app-character-counter
+            [current]="editForm.get('country')?.value?.length || 0"
+            [max]="authorTextMaxLength"
+          ></app-character-counter>
         </div>
 
         <div class="form-group">
@@ -453,15 +460,15 @@
             placeholder="Ex. user@example.com"
             [attr.maxlength]="authorTextMaxLength"
           />
-          <app-character-counter
-            [current]="editForm.get('email')?.value?.length || 0"
-            [max]="authorTextMaxLength"
-          ></app-character-counter>
           <app-validation-message
             class="form-validation-note--error"
             [control]="editForm.get('email')"
             fieldName="Email"
           ></app-validation-message>
+          <app-character-counter
+            [current]="editForm.get('email')?.value?.length || 0"
+            [max]="authorTextMaxLength"
+          ></app-character-counter>
         </div>
 
         <div class="form-group">
@@ -475,35 +482,26 @@
             (input)="stripDigits($event)"
             [attr.maxlength]="authorTextMaxLength"
           />
-          <app-character-counter
-            [current]="editForm.get('schoolDepartment')?.value?.length || 0"
-            [max]="authorTextMaxLength"
-          ></app-character-counter>
           <app-validation-message
             class="form-validation-note--error"
             [control]="editForm.get('schoolDepartment')"
             fieldName="School / Department"
           ></app-validation-message>
+          <app-character-counter
+            [current]="editForm.get('schoolDepartment')?.value?.length || 0"
+            [max]="authorTextMaxLength"
+          ></app-character-counter>
         </div>
 
         <div class="form-group">
-          <label for="typeOfOrganisation" class="is-required"
-            >Type of Organisation (Please Select One)</label
+          <label>Type of Organisation <span class="asterisk">*</span></label>
+          <app-searchable-dropdown
+            [options]="organisationTypeOptions"
+            [searchable]="true"
+            placeholder="Search organisation type..."
+            formControlName="typeOfOrganisation"
           >
-          <select id="typeOfOrganisation" class="form-control" formControlName="typeOfOrganisation">
-            <option value="" disabled>
-              @if (organisationTypeOptionsLoading) {
-                Loading organisation types...
-              } @else if (organisationTypeOptionsLoadFailed) {
-                Unable to load organisation types
-              } @else {
-                --Select the Type of Organisation--
-              }
-            </option>
-            @for (option of organisationTypeOptions; track option.value) {
-              <option [value]="option.value">{{ option.label }}</option>
-            }
-          </select>
+          </app-searchable-dropdown>
           <app-validation-message
             class="form-validation-note--error"
             [control]="editForm.get('typeOfOrganisation')"
@@ -522,15 +520,15 @@
             (input)="stripDigits($event)"
             [attr.maxlength]="authorTextMaxLength"
           />
-          <app-character-counter
-            [current]="editForm.get('institutionName')?.value?.length || 0"
-            [max]="authorTextMaxLength"
-          ></app-character-counter>
           <app-validation-message
             class="form-validation-note--error"
             [control]="editForm.get('institutionName')"
             fieldName="Institution / Company Name"
           ></app-validation-message>
+          <app-character-counter
+            [current]="editForm.get('institutionName')?.value?.length || 0"
+            [max]="authorTextMaxLength"
+          ></app-character-counter>
         </div>
       }
     </form>

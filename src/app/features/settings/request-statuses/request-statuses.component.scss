@@ -1,0 +1,53 @@
+.request-statuses-toolbar {
+  grid-template-columns: minmax(280px, 1fr) minmax(220px, 0.7fr) minmax(160px, 0.5fr) auto;
+
+  .forms-toolbar__title {
+    grid-column: 1 / -1;
+  }
+
+  .forms-toolbar__actions {
+    justify-self: end;
+  }
+}
+
+.request-statuses-subtext {
+  display: block;
+  margin-top: 4px;
+  color: var(--color-text-muted);
+  font-size: var(--fs-xs);
+}
+
+.request-status-editor {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+.request-status-editor__switches {
+  display: grid;
+  grid-column: 1 / -1;
+  gap: var(--space-3);
+  padding-top: var(--space-2);
+}
+
+.dialog-state--confirm {
+  min-height: 150px;
+
+  > .material-icons {
+    color: var(--color-error);
+  }
+}
+
+@media (max-width: 980px) {
+  .request-statuses-toolbar {
+    grid-template-columns: 1fr;
+
+    .forms-toolbar__actions {
+      justify-self: start;
+    }
+  }
+
+  .request-status-editor {
+    grid-template-columns: 1fr;
+  }
+}

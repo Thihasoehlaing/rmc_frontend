@@ -1,4 +1,4 @@
-import {
+﻿import {
   Component,
   OnInit,
   OnDestroy,
@@ -72,6 +72,7 @@ export class JournalDetails implements OnInit, OnDestroy {
   readonly nonResearchAccountCodeDescription = 'TRAINING PRESENTATION PUBLICATION';
   readonly nonResearchAccountCode = '6203/100';
   readonly breakdownDescriptionMaxLength = 400;
+  readonly tableRecordLimit = 10;
   auth = inject(AuthService);
   workflow = inject(JournalWorkflowService);
   private journalOptionsService = inject(JournalOptionsService);
@@ -89,7 +90,7 @@ export class JournalDetails implements OnInit, OnDestroy {
 
   // Pagination
   readonly ITEMS_PER_PAGE = 5;
-  readonly ITEMS_PER_PAGE_OPTIONS = [5, 15, 30, 50];
+  readonly ITEMS_PER_PAGE_OPTIONS = [5, 10];
   nonResearchBreakdownCurrentPage = 1;
   externalResearchBreakdownCurrentPage = 1;
   internalResearchBreakdownCurrentPage = 1;
@@ -282,8 +283,8 @@ export class JournalDetails implements OnInit, OnDestroy {
       this.form.get('citedApuPaperExplanation')?.updateValueAndValidity();
     });
 
-    const decimalPattern = '^[0-9]+(\\\\.[0-9]{1,2})?$';
-    const integerPattern = '^[0-9]+$';
+    const decimalPattern = '^[0-9]+(\\.[0-9]{1,2})?$';
+    const exchangeRatePattern = '^[0-9]+(\\.[0-9]{1,6})?$';
 
     this.breakdownForm = this.fb.group({
       itemDescription: ['', Validators.required],
@@ -292,7 +293,7 @@ export class JournalDetails implements OnInit, OnDestroy {
       accountCode: { value: '', disabled: true },
       cost: ['', [Validators.required, Validators.pattern(decimalPattern)]],
       costForeign: [''],
-      exchangeRate: ['', [Validators.required, Validators.pattern(integerPattern)]],
+      exchangeRate: ['', [Validators.required, Validators.pattern(exchangeRatePattern)]],
       description: ['', [Validators.maxLength(this.breakdownDescriptionMaxLength)]],
       costInRM: { value: '', disabled: true },
     });
@@ -422,7 +423,7 @@ export class JournalDetails implements OnInit, OnDestroy {
         accountCodeDescription: item.account_code_description_snapshot || '',
         accountCode: item.account_code_snapshot || '',
         cost: item.cost_in_foreign_currency || item.cost_in_rm || '',
-        exchangeRate: this.toIntegerString(item.exchange_rate),
+        exchangeRate: this.toDecimalString(item.exchange_rate, 6),
         costInRM: item.cost_in_rm || '',
         description: item.description || '',
         fileName: attachment?.file_name || '',
@@ -488,7 +489,17 @@ export class JournalDetails implements OnInit, OnDestroy {
     return rows.slice(startIndex, startIndex + pageSize);
   }
 
+  canCreateBreakdownEntry(type: string): boolean {
+    return (
+      !!type &&
+      !this.workflow.isFormReadOnly() &&
+      this.getBreakdownArray(type).length < this.tableRecordLimit
+    );
+  }
+
   openBreakdownModal(type: string, index?: number) {
+    if (index === undefined && !this.canCreateBreakdownEntry(type)) return;
+
     this.breakdownType = type as any;
     setTimeout(() => {
       // Resolve dropdown options
@@ -545,7 +556,7 @@ export class JournalDetails implements OnInit, OnDestroy {
               itemDescription: this.nonResearchAccountCodeDescription,
               accountCode: this.nonResearchAccountCode,
               accountCodeDescription: this.nonResearchAccountCodeDescription,
-              exchangeRate: this.toIntegerString(entry.exchangeRate),
+              exchangeRate: this.toDecimalString(entry.exchangeRate, 6),
             },
             { emitEvent: false },
           );
@@ -553,7 +564,7 @@ export class JournalDetails implements OnInit, OnDestroy {
           this.breakdownForm.patchValue(
             {
               ...entry,
-              exchangeRate: this.toIntegerString(entry.exchangeRate),
+              exchangeRate: this.toDecimalString(entry.exchangeRate, 6),
               voteNumber:
                 entry.voteNumber ||
                 this.journalOptionsService.getConfiguredVoteNumber(entry.itemDescription),
@@ -675,6 +686,7 @@ export class JournalDetails implements OnInit, OnDestroy {
     if (this.breakdownEditingIndex !== null) {
       array[this.breakdownEditingIndex] = entryToSave;
     } else {
+      if (array.length >= this.tableRecordLimit) return;
       array.push(entryToSave);
     }
 
@@ -779,7 +791,7 @@ export class JournalDetails implements OnInit, OnDestroy {
           ? null
           : this.journalOptionsService.getAccountCodeId(accountCode),
       cost_in_foreign_currency: this.toMoneyString(entry.cost),
-      exchange_rate: this.toMoneyString(entry.exchangeRate),
+      exchange_rate: this.toDecimalString(entry.exchangeRate, 6),
       cost_in_rm: this.toMoneyString(entry.costInRM),
       description: entry.description || null,
       supporting_document_attachment_id: entry.supportingDocumentAttachmentId ?? null,
@@ -815,17 +827,22 @@ export class JournalDetails implements OnInit, OnDestroy {
     return Number.isFinite(amount) ? Math.round(amount * 100) / 100 : null;
   }
 
-  private toIntegerString(value: unknown): string {
+  private toDecimalString(value: unknown, places = 2): string | null {
     if (value === null || value === undefined || value === '') {
-      return '';
+      return null;
     }
 
     const amount = Number(String(value).replace(/,/g, ''));
     if (!Number.isFinite(amount)) {
-      return String(value);
+      return null;
     }
 
-    return String(Math.trunc(amount));
+    const factor = 10 ** places;
+    const rounded = Math.round(amount * factor) / factor;
+    return rounded
+      .toFixed(places)
+      .replace(/(\.\d*?)0+$/, '$1')
+      .replace(/\.$/, '');
   }
 
   getExternalSponsorshipLimitError(): string | null {
@@ -1060,9 +1077,15 @@ export class JournalDetails implements OnInit, OnDestroy {
     }
   }
 
-  enforceInteger(event: Event): void {
+  enforceExchangeRateDecimal(event: Event): void {
     const input = event.target as HTMLInputElement;
-    const cleaned = input.value.replace(/[^0-9]/g, '');
+    let cleaned = input.value.replace(/,/g, '').replace(/[^0-9.]/g, '');
+    const firstDotIndex = cleaned.indexOf('.');
+    if (firstDotIndex !== -1) {
+      const whole = cleaned.slice(0, firstDotIndex) || '0';
+      const decimals = cleaned.slice(firstDotIndex + 1).replace(/\./g, '').slice(0, 6);
+      cleaned = `${whole}.${decimals}`;
+    }
     if (cleaned !== input.value) {
       input.value = cleaned;
       this.breakdownForm.get('exchangeRate')?.setValue(cleaned, { emitEvent: false });
@@ -1085,6 +1108,7 @@ export class JournalDetails implements OnInit, OnDestroy {
 
   confirmSDGKeywords() {
     if (this.sdgKeywordsForm.invalid) {
+      this.sdgKeywordsForm.markAllAsTouched();
       return;
     }
     const { keyword1, keyword2, keyword3 } = this.sdgKeywordsForm.value;

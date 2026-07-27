@@ -4,7 +4,6 @@ import { authGuard } from './core/guards/auth.guard';
 import { permissionGuard } from './core/guards/permission.guard';
 import {
   adminSettingsPermission,
-  disabledFeaturePermission,
   partnershipPermission,
   ragraPermission,
   rdigPermission,
@@ -43,7 +42,7 @@ export const routes: Routes = [
         path: 'showcase',
         canActivate: [permissionGuard],
         data: {
-          permission: disabledFeaturePermission,
+          permission: systemSettingsPermission,
         },
         loadChildren: () =>
           import('./shared/components/showcase/showcase.routes').then(m => m.showcaseRoutes),

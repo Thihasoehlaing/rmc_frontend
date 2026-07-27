@@ -80,4 +80,14 @@ export const settingsRoutes: Routes = [
     loadComponent: () =>
       import('./workflow/workflow.component').then(m => m.WorkflowComponent),
   },
+  {
+    path: 'monitoring',
+    loadComponent: () =>
+      import('./monitoring/monitoring.component').then(m => m.MonitoringComponent),
+  },
+  {
+    path: 'request-statuses',
+    loadComponent: () =>
+      import('./request-statuses/request-statuses.component').then(m => m.RequestStatusesComponent),
+  },
 ];

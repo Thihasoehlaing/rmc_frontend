@@ -66,3 +66,48 @@ app-authors-details app-data-table th {
   color: var(--color-primary-dark);
   transform: translateY(-1px);
 }
+
+.table-actions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+}
+
+.table-action {
+  display: inline-grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-primary);
+  cursor: pointer;
+  transition:
+    background var(--transition-fast) var(--ease-default),
+    transform var(--transition-fast) var(--ease-default);
+}
+
+.table-action:hover:not(:disabled),
+.table-action:focus-visible:not(:disabled) {
+  background: var(--color-primary-light);
+}
+
+.table-action--danger {
+  color: var(--color-error);
+}
+
+.table-action--danger:hover:not(:disabled),
+.table-action--danger:focus-visible:not(:disabled) {
+  background: var(--color-error-light);
+}
+
+.table-action:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.table-action:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}

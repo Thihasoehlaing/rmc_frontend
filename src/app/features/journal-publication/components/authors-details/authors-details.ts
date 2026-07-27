@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, effect, Output, EventEmitter } from '@angular/core';
+﻿import { Component, OnInit, inject, effect, Output, EventEmitter } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 import { CustomHeaderComponent } from '../../../../shared/components/custom-header/custom-header.component';
@@ -52,6 +52,7 @@ export class AuthorsDetails implements OnInit {
   readonly apuAffiliation = 'Asia Pacific University';
   readonly authorTextMaxLength = 100;
   readonly tpNumberMaxLength = 6;
+  readonly tableRecordLimit = 10;
   @Output() formValidityChange = new EventEmitter<boolean>();
   form!: FormGroup;
   projectType: string | null = null;
@@ -92,7 +93,7 @@ export class AuthorsDetails implements OnInit {
 
   // Pagination
   readonly ITEMS_PER_PAGE = 5;
-  readonly ITEMS_PER_PAGE_OPTIONS = [5, 15, 30, 50];
+  readonly ITEMS_PER_PAGE_OPTIONS = [5, 10];
   apuStaffCurrentPage = 1;
   studentCoAuthorsCurrentPage = 1;
   nonApuCoAuthorsCurrentPage = 1;
@@ -109,87 +110,6 @@ export class AuthorsDetails implements OnInit {
   organisationTypeOptionsLoadFailed = false;
   private academicStaffByName = new Map<string, AcademicStaffOption>();
   private staffSelectionSubscription?: Subscription;
-
-  // Country dropdown — searchable list used in the Non-APU co-author modal
-  readonly countryOptions: DropdownOption<string>[] = [
-    'Afghanistan',
-    'Albania',
-    'Algeria',
-    'Argentina',
-    'Australia',
-    'Austria',
-    'Bangladesh',
-    'Belgium',
-    'Brazil',
-    'Cambodia',
-    'Canada',
-    'Chile',
-    'China',
-    'Colombia',
-    'Czech Republic',
-    'Denmark',
-    'Egypt',
-    'Ethiopia',
-    'Finland',
-    'France',
-    'Germany',
-    'Ghana',
-    'Greece',
-    'Hong Kong',
-    'Hungary',
-    'India',
-    'Indonesia',
-    'Iran',
-    'Iraq',
-    'Ireland',
-    'Italy',
-    'Japan',
-    'Jordan',
-    'Kazakhstan',
-    'Kenya',
-    'Kuwait',
-    'Lebanon',
-    'Libya',
-    'Malaysia',
-    'Mexico',
-    'Morocco',
-    'Myanmar',
-    'Nepal',
-    'Netherlands',
-    'New Zealand',
-    'Nigeria',
-    'Norway',
-    'Oman',
-    'Pakistan',
-    'Palestine',
-    'Philippines',
-    'Poland',
-    'Portugal',
-    'Qatar',
-    'Romania',
-    'Russia',
-    'Saudi Arabia',
-    'Singapore',
-    'South Africa',
-    'South Korea',
-    'Spain',
-    'Sri Lanka',
-    'Sudan',
-    'Sweden',
-    'Switzerland',
-    'Syria',
-    'Taiwan',
-    'Thailand',
-    'Tunisia',
-    'Turkey',
-    'Ukraine',
-    'United Arab Emirates',
-    'United Kingdom',
-    'United States',
-    'Vietnam',
-    'Yemen',
-    'Zimbabwe',
-  ].map((c) => ({ value: c, label: c }));
 
   workflow = inject(JournalWorkflowService);
   private readonly masterData = inject(MasterDataService);
@@ -349,7 +269,7 @@ export class AuthorsDetails implements OnInit {
   createNonApuCoAuthor(): FormGroup {
     return this.fb.group({
       fullName: ['', [Validators.required]],
-      country: ['', [Validators.required]],
+      country: ['', [Validators.required, Validators.maxLength(this.authorTextMaxLength)]],
       email: ['', [Validators.required, Validators.email]],
       schoolDepartment: ['', [Validators.required]],
       typeOfOrganisation: ['', [Validators.required]],
@@ -493,6 +413,7 @@ export class AuthorsDetails implements OnInit {
   }
 
   addTestSubsection() {
+    if (!this.canCreateCoAuthor('apu-staff')) return;
     this.testSubsections.push(this.createTestSubsection());
     this.emitFormValidity();
   }
@@ -503,6 +424,7 @@ export class AuthorsDetails implements OnInit {
   }
 
   addStudentCoAuthor() {
+    if (!this.canCreateCoAuthor('student')) return;
     this.studentCoAuthors.push(this.createStudentCoAuthor());
     this.emitFormValidity();
   }
@@ -513,6 +435,7 @@ export class AuthorsDetails implements OnInit {
   }
 
   addNonApuCoAuthor() {
+    if (!this.canCreateCoAuthor('non-apu')) return;
     this.nonApuCoAuthors.push(this.createNonApuCoAuthor());
     this.emitFormValidity();
   }
@@ -522,8 +445,23 @@ export class AuthorsDetails implements OnInit {
     this.emitFormValidity();
   }
 
+  canCreateCoAuthor(type: 'apu-staff' | 'student' | 'non-apu'): boolean {
+    return (
+      !this.workflow.isFormReadOnly() &&
+      this.getCoAuthorArray(type).length < this.tableRecordLimit
+    );
+  }
+
+  private getCoAuthorArray(type: 'apu-staff' | 'student' | 'non-apu'): FormArray {
+    if (type === 'apu-staff') return this.testSubsections;
+    if (type === 'student') return this.studentCoAuthors;
+    return this.nonApuCoAuthors;
+  }
+
   // Modal Methods
   openEditModal(type: 'apu-staff' | 'student' | 'non-apu', index?: number) {
+    if (index === undefined && !this.canCreateCoAuthor(type)) return;
+
     this.modalType = type;
     this.isModalOpen = true;
 
@@ -555,7 +493,7 @@ export class AuthorsDetails implements OnInit {
         data = this.nonApuCoAuthors.at(index).value;
         this.editForm = this.fb.group({
           fullName: [data.fullName, [Validators.required]],
-          country: [data.country, [Validators.required]],
+          country: [data.country, [Validators.required, Validators.maxLength(this.authorTextMaxLength)]],
           email: [data.email, [Validators.required, Validators.email]],
           schoolDepartment: [data.schoolDepartment, [Validators.required]],
           typeOfOrganisation: [data.typeOfOrganisation, [Validators.required]],
@@ -582,7 +520,7 @@ export class AuthorsDetails implements OnInit {
       } else if (type === 'non-apu') {
         this.editForm = this.fb.group({
           fullName: ['', [Validators.required]],
-          country: ['', [Validators.required]],
+          country: ['', [Validators.required, Validators.maxLength(this.authorTextMaxLength)]],
           email: ['', [Validators.required, Validators.email]],
           schoolDepartment: ['', [Validators.required]],
           typeOfOrganisation: ['', [Validators.required]],
@@ -619,6 +557,15 @@ export class AuthorsDetails implements OnInit {
 
   submitModal() {
     if (this.editForm.invalid) {
+      this.editForm.markAllAsTouched();
+      return;
+    }
+
+    if (
+      this.editingIndex === null &&
+      this.modalType &&
+      !this.canCreateCoAuthor(this.modalType)
+    ) {
       return;
     }
 

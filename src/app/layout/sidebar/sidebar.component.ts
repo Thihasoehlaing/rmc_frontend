@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { Router } from '@angular/router';
 import { SidebarService } from '../../core/services/sidebar.service';
@@ -16,7 +16,7 @@ import { UserGroup } from '../../core/interfaces/user.interface';
   templateUrl: './sidebar.component.html',
   styleUrls: ['./sidebar.component.scss']
 })
-export class SidebarComponent {
+export class SidebarComponent implements OnInit {
   sidebarService        = inject(SidebarService);
   private authService   = inject(AuthService);
   private permService   = inject(PermissionService);
@@ -28,6 +28,10 @@ export class SidebarComponent {
 
   /** Live user — updates automatically when login/logout fires. */
   currentUser = this.authService.currentUser;
+
+  ngOnInit(): void {
+    this.formCache.getActiveForms().subscribe({ error: () => undefined });
+  }
 
   private readonly restrictedWorkflowGroups: UserGroup[] = ['VC', 'HR', 'CEO', 'Finance'];
   private readonly restrictedSidebarRoutes = new Set([

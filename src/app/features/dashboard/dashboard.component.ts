@@ -1,9 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
-import { finalize, switchMap } from 'rxjs';
+import { finalize } from 'rxjs';
 
 import { AuthService } from '../../core/services/auth.service';
-import { LayoutStartupService } from '../../core/services/layout-startup.service';
 import { DashboardSummaryDto, WorkflowRequestsService } from '../../core/services/workflow-requests.service';
 import { DashboardSkeletonComponent } from '../../shared/components/dashboard-skeleton/dashboard-skeleton.component';
 import {
@@ -32,7 +31,6 @@ import { dashboardConfigFor } from './dashboard.config';
 })
 export class DashboardComponent implements OnInit {
   private readonly auth = inject(AuthService);
-  private readonly layoutStartup = inject(LayoutStartupService);
   private readonly requests = inject(WorkflowRequestsService);
 
   readonly user = computed(() => this.auth.currentUser());
@@ -51,8 +49,7 @@ export class DashboardComponent implements OnInit {
   loadDashboard(): void {
     this.loading.set(true);
     this.error.set(null);
-    this.layoutStartup.start().pipe(
-      switchMap(() => this.requests.getDashboard()),
+    this.requests.getDashboard().pipe(
       finalize(() => this.loading.set(false)),
     ).subscribe({
       next: (response) => this.summary.set(response.data),

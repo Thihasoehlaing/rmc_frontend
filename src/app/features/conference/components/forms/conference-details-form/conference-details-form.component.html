@@ -1369,23 +1369,19 @@
           </div>
         </form>
 
-        <button
-          dialog-footer
-          type="button"
-          class="btn btn-secondary"
-          (click)="closeBreakdownModal()"
-        >
-          Cancel
-        </button>
-        <button
-          dialog-footer
-          type="submit"
-          form="breakdown-entry-form"
-          class="btn btn-primary"
-          [disabled]="!canAddBreakdownEntries()"
-        >
-          Save
-        </button>
+        <div dialog-footer class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeBreakdownModal()">
+            Cancel
+          </button>
+          <button
+            type="submit"
+            form="breakdown-entry-form"
+            class="btn btn-primary"
+            [disabled]="breakdownForm.invalid || !canAddBreakdownEntries()"
+          >
+            Save
+          </button>
+        </div>
       </app-dialog>
     }
 
@@ -1510,22 +1506,19 @@
           </div>
         </form>
 
-        <button
-          dialog-footer
-          type="button"
-          class="btn btn-secondary"
-          (click)="closeActivityModal()"
-        >
-          Cancel
-        </button>
-        <button
-          dialog-footer
-          type="submit"
-          form="activity-entry-form"
-          class="btn btn-primary"
-        >
-          Save Activity
-        </button>
+        <div dialog-footer class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeActivityModal()">
+            Cancel
+          </button>
+          <button
+            type="submit"
+            form="activity-entry-form"
+            class="btn btn-primary"
+            [disabled]="activityForm.invalid"
+          >
+            Save Activity
+          </button>
+        </div>
       </app-dialog>
     }
     <!-- SDG Keywords Modal -->
@@ -1626,22 +1619,19 @@
           </div>
         </form>
 
-        <button
-          dialog-footer
-          type="button"
-          class="btn btn-secondary"
-          (click)="closeSDGKeywordsModal()"
-        >
-          Cancel
-        </button>
-        <button
-          dialog-footer
-          type="button"
-          class="btn btn-primary"
-          (click)="confirmSDGKeywords()"
-        >
-          Confirm
-        </button>
+        <div dialog-footer class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeSDGKeywordsModal()">
+            Cancel
+          </button>
+          <button
+            type="button"
+            class="btn btn-primary"
+            (click)="confirmSDGKeywords()"
+            [disabled]="sdgKeywordsForm.invalid"
+          >
+            Confirm
+          </button>
+        </div>
       </app-dialog>
     }
   </div>

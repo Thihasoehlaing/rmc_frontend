@@ -332,25 +332,12 @@
 
 .modal-footer {
   display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: var(--space-3);
-  padding: var(--space-4);
-  border-top: 1px solid var(--border-default);
-  justify-content: flex-end;
-  width: calc(100% + 2 * var(--space-4));
-  margin-left: calc(var(--space-4) * -1);
-  margin-right: calc(var(--space-4) * -1);
-
-  @media (max-width: 640px) {
-    flex-direction: column-reverse;
-
-    .btn {
-      width: 100%;
-    }
-  }
-
-  .btn {
-    min-width: 100px; // no token: button minimum width
-  }
+  flex: 1 1 100%;
+  width: 100%;
+  margin: 0;
 }
 
 // Table styles

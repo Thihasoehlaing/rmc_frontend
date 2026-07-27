@@ -22,7 +22,7 @@ import {
 import { TableActionIconComponent } from '../../../../../shared/components/table-action-icon/table-action-icon.component';
 import { ValidationMessageComponent } from '../../../../../shared/components/validation-message/validation-message.component';
 import { CharacterCounterComponent } from '../../../../../shared/components/character-counter/character-counter.component';
-import { COUNTRY_LIST } from '../../../../../core/constants/countries.constant';
+import { NoteComponent } from '../../../../../shared/components/note/note.component';
 
 @Component({
   selector: 'app-author-details-form',
@@ -39,6 +39,7 @@ import { COUNTRY_LIST } from '../../../../../core/constants/countries.constant';
     CustomHeaderComponent,
     CustomSubheaderComponent,
     DialogComponent,
+    NoteComponent,
   ],
   templateUrl: './author-details-form.component.html',
   styleUrl: './author-details-form.component.scss',
@@ -47,7 +48,6 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
   readonly apuAffiliation = 'Asia Pacific University';
   readonly tableRecordLimit = 10;
   readonly coAuthorTextMaxLength = 100;
-  readonly countryOptions: DropdownOption<string>[] = COUNTRY_LIST;
   @Input() workflow?: ConferenceWorkflowService;
   @Input() isFormReadOnly: boolean = false;
 

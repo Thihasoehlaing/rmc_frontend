@@ -1,8 +1,9 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
-import { finalize } from 'rxjs';
+import { finalize, switchMap } from 'rxjs';
 
 import { AuthService } from '../../core/services/auth.service';
+import { LayoutStartupService } from '../../core/services/layout-startup.service';
 import { DashboardSummaryDto, WorkflowRequestsService } from '../../core/services/workflow-requests.service';
 import { DashboardSkeletonComponent } from '../../shared/components/dashboard-skeleton/dashboard-skeleton.component';
 import {
@@ -31,6 +32,7 @@ import { dashboardConfigFor } from './dashboard.config';
 })
 export class DashboardComponent implements OnInit {
   private readonly auth = inject(AuthService);
+  private readonly layoutStartup = inject(LayoutStartupService);
   private readonly requests = inject(WorkflowRequestsService);
 
   readonly user = computed(() => this.auth.currentUser());
@@ -49,7 +51,10 @@ export class DashboardComponent implements OnInit {
   loadDashboard(): void {
     this.loading.set(true);
     this.error.set(null);
-    this.requests.getDashboard().pipe(finalize(() => this.loading.set(false))).subscribe({
+    this.layoutStartup.start().pipe(
+      switchMap(() => this.requests.getDashboard()),
+      finalize(() => this.loading.set(false)),
+    ).subscribe({
       next: (response) => this.summary.set(response.data),
       error: () => this.error.set('Could not load dashboard data. Please try again.'),
     });

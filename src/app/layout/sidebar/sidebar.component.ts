@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal, computed } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { Router } from '@angular/router';
 import { SidebarService } from '../../core/services/sidebar.service';
@@ -16,7 +16,7 @@ import { UserGroup } from '../../core/interfaces/user.interface';
   templateUrl: './sidebar.component.html',
   styleUrls: ['./sidebar.component.scss']
 })
-export class SidebarComponent implements OnInit {
+export class SidebarComponent {
   sidebarService        = inject(SidebarService);
   private authService   = inject(AuthService);
   private permService   = inject(PermissionService);
@@ -78,10 +78,6 @@ export class SidebarComponent implements OnInit {
         .map(f => f.label)
     )
   );
-
-  ngOnInit(): void {
-    this.formCache.getActiveForms().subscribe({ error: () => undefined });
-  }
 
   onAvatarError(event: Event): void {
     (event.target as HTMLImageElement).style.display = 'none';

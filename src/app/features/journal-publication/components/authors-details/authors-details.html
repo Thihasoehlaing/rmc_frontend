@@ -427,15 +427,15 @@
         </div>
 
         <div class="form-group">
-          <label class="is-required">Country</label>
-          <app-searchable-dropdown
-            [options]="countryOptions"
-            [searchable]="true"
-            placeholder="Search and select country..."
+          <label for="countryNonApu" class="is-required">Country</label>
+          <input
+            type="text"
+            id="countryNonApu"
+            class="form-control"
             formControlName="country"
-            class="country-dropdown"
-          >
-          </app-searchable-dropdown>
+            placeholder="Ex. Malaysia"
+            [attr.maxlength]="authorTextMaxLength"
+          />
           <app-note
             text="Please check with the SRI regarding prioritised IRN countries before submitting the form"
           ></app-note>
@@ -444,6 +444,10 @@
             [control]="editForm.get('country')"
             fieldName="Country"
           ></app-validation-message>
+          <app-character-counter
+            [current]="editForm.get('country')?.value?.length || 0"
+            [max]="authorTextMaxLength"
+          ></app-character-counter>
         </div>
 
         <div class="form-group">

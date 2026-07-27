@@ -882,11 +882,11 @@
       <input
         id="exchangeRate"
         type="text"
-        inputmode="numeric"
+        inputmode="decimal"
         class="input--text"
         formControlName="exchangeRate"
-        placeholder="e.g. 1, 4, 5"
-        (input)="enforceInteger($event)"
+        placeholder="e.g. 1, 4.35, 5.123456"
+        (input)="enforceExchangeRateDecimal($event)"
       />
       <app-note text="For Malaysia Ringgit/MYR, please put 1 as the exchange rate."></app-note>
       <app-validation-message

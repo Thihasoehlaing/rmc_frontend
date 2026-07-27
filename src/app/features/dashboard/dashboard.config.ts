@@ -33,7 +33,7 @@ export interface DashboardViewConfig {
   roleLabel: string;
   title: string;
   subtitle: string;
-  primaryAction: { label: string; icon: string; route: string };
+  primaryAction?: { label: string; icon: string; route: string };
   metrics: DashboardMetricConfig[];
   showAnalytics: boolean;
   formChartTitle: string;
@@ -51,7 +51,6 @@ const CONFIG: Record<DashboardAudience, DashboardViewConfig> = {
     roleLabel: 'Applicant workspace',
     title: 'Research dashboard',
     subtitle: 'Track your drafts, pending applications, and decisions from one place.',
-    primaryAction: { label: 'New application', icon: 'add', route: '/conference/application' },
     metrics: [
       { key: 'drafts', label: 'Drafts', helper: 'Saved but not submitted', icon: 'edit_note', route: '/submissions/draft', tone: 'violet' },
       { key: 'pending', label: 'Pending applications', helper: 'Currently under review', icon: 'hourglass_top', route: '/submissions/pending', tone: 'blue' },
@@ -135,7 +134,6 @@ const CONFIG: Record<DashboardAudience, DashboardViewConfig> = {
     roleLabel: 'System administration',
     title: 'System dashboard',
     subtitle: 'Monitor platform activity, active workflows, and system-side exceptions.',
-    primaryAction: { label: 'Open settings', icon: 'settings', route: '/settings/forms' },
     metrics: [
       { key: 'total_submitted', label: 'Total submitted', helper: 'Across all form types', icon: 'description', route: '/submissions/admin-history', tone: 'blue' },
       { key: 'new_today', label: 'New today', helper: 'Submitted since midnight', icon: 'fiber_new', route: '/submissions/admin-history', tone: 'violet' },

@@ -49,7 +49,9 @@ export class DashboardComponent implements OnInit {
   loadDashboard(): void {
     this.loading.set(true);
     this.error.set(null);
-    this.requests.getDashboard().pipe(finalize(() => this.loading.set(false))).subscribe({
+    this.requests.getDashboard().pipe(
+      finalize(() => this.loading.set(false)),
+    ).subscribe({
       next: (response) => this.summary.set(response.data),
       error: () => this.error.set('Could not load dashboard data. Please try again.'),
     });

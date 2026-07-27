@@ -93,7 +93,6 @@ export class TopHeaderComponent implements OnInit, OnDestroy {
         this.routerSub = this.router.events.pipe(
             filter((e): e is NavigationEnd => e instanceof NavigationEnd)
         ).subscribe(e => this.updateBreadcrumbs(e.urlAfterRedirects));
-
         this.notifSvc.loadUnreadCount().subscribe();
 
         // Badge pulse every 30 s — fires while panel is closed and there are unreads

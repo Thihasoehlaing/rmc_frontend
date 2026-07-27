@@ -29,6 +29,10 @@ export class SidebarComponent implements OnInit {
   /** Live user — updates automatically when login/logout fires. */
   currentUser = this.authService.currentUser;
 
+  ngOnInit(): void {
+    this.formCache.getActiveForms().subscribe({ error: () => undefined });
+  }
+
   private readonly restrictedWorkflowGroups: UserGroup[] = ['VC', 'HR', 'CEO', 'Finance'];
   private readonly restrictedSidebarRoutes = new Set([
     '/dashboard',
@@ -78,10 +82,6 @@ export class SidebarComponent implements OnInit {
         .map(f => f.label)
     )
   );
-
-  ngOnInit(): void {
-    this.formCache.getActiveForms().subscribe({ error: () => undefined });
-  }
 
   onAvatarError(event: Event): void {
     (event.target as HTMLImageElement).style.display = 'none';

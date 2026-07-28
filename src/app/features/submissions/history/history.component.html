@@ -96,8 +96,21 @@
                       [title]="getPrimaryActionTitle(app)"
                       [attr.aria-label]="getPrimaryActionTitle(app)"
                     >
-                      <app-table-action-icon [action]="getPrimaryActionIcon(app)"></app-table-action-icon>
+                      <app-table-action-icon
+                        [action]="getPrimaryActionIcon(app)"
+                      ></app-table-action-icon>
                     </a>
+                    @if (canEditExternalForm(app)) {
+                      <a
+                        class="btn-icon btn-icon--edit"
+                        routerLink="/external-project-data-entry"
+                        [queryParams]="getExternalEditQueryParams(app)"
+                        title="Edit external form"
+                        aria-label="Edit external form"
+                      >
+                        <app-table-action-icon action="edit"></app-table-action-icon>
+                      </a>
+                    }
                     @if (canPrint(app)) {
                       <button
                         type="button"

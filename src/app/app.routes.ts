@@ -10,6 +10,7 @@ import {
   systemSettingsPermission,
   travelAuthorizationPermission,
   externalProjectDataEntryPermission,
+  externalProjectDetailPermission,
 } from './core/routing/app-route-permissions';
 
 export const routes: Routes = [
@@ -108,7 +109,7 @@ export const routes: Routes = [
         path: 'external-project-data-entry/detail/:requestCode',
         canActivate: [permissionGuard],
         data: {
-          permission: externalProjectDataEntryPermission,
+          permission: externalProjectDetailPermission,
         },
         loadComponent: () =>
           import('./features/external-project-data-entry/external-project-detail.component').then(
@@ -172,6 +173,5 @@ export const routes: Routes = [
   },
   { path: '**', redirectTo: '/not-found' },
 ];
-
 
 

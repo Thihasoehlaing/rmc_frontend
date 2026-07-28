@@ -1,9 +1,32 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, DestroyRef, effect, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  DestroyRef,
+  inject,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import {
+  AbstractControl,
+  AsyncValidatorFn,
+  FormBuilder,
+  ReactiveFormsModule,
+  ValidationErrors,
+  Validators,
+} from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
-import { catchError, firstValueFrom, forkJoin, merge, of } from 'rxjs';
+import {
+  catchError,
+  firstValueFrom,
+  forkJoin,
+  map,
+  merge,
+  Observable,
+  of,
+  switchMap,
+  timer,
+} from 'rxjs';
 import { CustomSubheaderComponent } from '../../shared/components/custom-subheader/custom-subheader.component';
 import { CharacterCounterComponent } from '../../shared/components/character-counter/character-counter.component';
 import {
@@ -15,9 +38,11 @@ import { SearchableDropdownComponent } from '../../shared/components/searchable-
 import { DialogComponent } from '../../shared/components/dialog/dialog.component';
 import { DropdownOption } from '../../core/interfaces/components.interface';
 import { ActionLoadingService } from '../../core/services/action-loading.service';
+import { ToastService } from '../../core/services/toast.service';
+import { DecimalAmountDirective } from '../../shared/directives/decimal-amount.directive';
+import { ValidationMessageComponent } from '../../shared/components/validation-message/validation-message.component';
 
 import { TableActionIconComponent } from '../../shared/components/table-action-icon/table-action-icon.component';
-import { AdminCatalogStoreService } from '../admin-settings/catalog-management/admin-catalog-store.service';
 import {
   BudgetItemPayload,
   BudgetSectionPayload,
@@ -88,6 +113,8 @@ interface ExpectedOutcomeRow {
     ActionButtonComponent,
     SearchableDropdownComponent,
     DialogComponent,
+    DecimalAmountDirective,
+    ValidationMessageComponent,
   ],
   templateUrl: './external-project-data-entry.component.html',
   styleUrls: ['./external-project-data-entry.component.scss'],
@@ -99,19 +126,25 @@ export class ExternalProjectDataEntryComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly externalProjectApi = inject(ExternalProjectApiService);
-  private readonly adminCatalogs = inject(AdminCatalogStoreService);
   private readonly actionLoading = inject(ActionLoadingService);
+  private readonly toast = inject(ToastService);
   private requestId =
     Number(
       this.route.snapshot.queryParamMap.get('id') ??
         this.route.snapshot.queryParamMap.get('request_id'),
     ) || null;
+  readonly isAdminEditMode =
+    this.requestId != null &&
+    this.route.snapshot.queryParamMap.get('admin_edit')?.toLowerCase() === 'true';
   private readonly grantCategoryByName = new Map<string, ExternalGrantCategory>();
   private readonly grantCategoryById = new Map<number, ExternalGrantCategory>();
 
   readonly externalProjectForm = this.fb.group({
     externalGrantCategory: [''],
-    projectAccountCode: [''],
+    projectAccountCode: this.fb.control('', {
+      validators: [Validators.required, Validators.maxLength(255)],
+      asyncValidators: [this.projectAccountCodeAvailabilityValidator()],
+    }),
     referenceCode: [''],
     description: [''],
     staffName: [''],
@@ -136,14 +169,7 @@ export class ExternalProjectDataEntryComponent {
     amount: [''],
   });
 
-  private readonly fallbackGrantCategories: string[] = [
-    'National',
-    'International',
-    'Private (Industry)',
-    'Consultancy',
-  ];
-
-  protected grantCategories: string[] = [...this.fallbackGrantCategories];
+  protected grantCategories: string[] = [];
   private staffDirectory: StaffMember[] = [];
   projectLeaderOptions: DropdownOption<string>[] = [];
 
@@ -250,8 +276,6 @@ export class ExternalProjectDataEntryComponent {
   isSubmitting = false;
   loadError: string | null = null;
   actionError: string | null = null;
-  saveSuccess = false;
-  submitSuccess = false;
   tableEntryDialogOpen = false;
   activeTableEntryType: TableEntryType | null = null;
   activeSectionKey: string | null = null;
@@ -269,14 +293,6 @@ export class ExternalProjectDataEntryComponent {
   ];
 
   constructor() {
-    effect(() => {
-      const managedCategories = this.getManagedGrantCategoryNames();
-      if (managedCategories.length) {
-        this.setGrantCategories(managedCategories);
-        this.cdr.markForCheck();
-      }
-    });
-
     this.loadOptionsAndInitialForm();
 
     merge(
@@ -358,35 +374,26 @@ export class ExternalProjectDataEntryComponent {
       this.hydrateFromApi(response.data);
       this.actionError = null;
     } catch (error) {
-      this.actionError = this.extractErrorMessage(error, 'Unable to load this external project draft.');
+      this.actionError = this.extractErrorMessage(
+        error,
+        this.isAdminEditMode
+          ? 'Unable to load this external project.'
+          : 'Unable to load this external project draft.',
+      );
     } finally {
       this.cdr.markForCheck();
     }
   }
 
   private applyGrantCategories(categories: ExternalGrantCategory[]): void {
-    if (!categories.length) {
-      return;
-    }
-
     this.grantCategoryByName.clear();
     this.grantCategoryById.clear();
-    categories.forEach((category) => {
+    const activeCategories = categories.filter((category) => category.is_active !== false);
+    activeCategories.forEach((category) => {
       this.grantCategoryByName.set(category.name, category);
       this.grantCategoryById.set(category.id, category);
     });
-    const managedCategories = this.getManagedGrantCategoryNames();
-    this.setGrantCategories(
-      managedCategories.length ? managedCategories : categories.map((category) => category.name),
-    );
-  }
-
-  private getManagedGrantCategoryNames(): string[] {
-    return this.adminCatalogs.activeExternalGrantCategories().map((category) => category.name);
-  }
-
-  private setGrantCategories(categories: string[]): void {
-    this.grantCategories = categories.length ? categories : [...this.fallbackGrantCategories];
+    this.grantCategories = activeCategories.map((category) => category.name);
   }
 
   private applyStaffOptions(staffOptions: StaffOption[]): void {
@@ -425,11 +432,11 @@ export class ExternalProjectDataEntryComponent {
     }
 
     if (!categoriesLoaded && !staffLoaded) {
-      return 'Using local grant categories and empty staff options because backend options could not be loaded.';
+      return 'Grant categories and staff options could not be loaded. Please refresh and try again.';
     }
 
     if (!categoriesLoaded) {
-      return 'Using local grant categories because backend category options could not be loaded.';
+      return 'Grant categories could not be loaded. Please refresh and try again.';
     }
 
     return 'Staff options could not be loaded. Please refresh and try again.';
@@ -624,7 +631,7 @@ export class ExternalProjectDataEntryComponent {
 
   updateBillingAmount(sectionKey: string, value: string): void {
     this.updateBudgetSection(sectionKey, (section) => {
-      section.billingAmount = value;
+      section.billingAmount = value.replaceAll(',', '');
     });
   }
 
@@ -698,26 +705,45 @@ export class ExternalProjectDataEntryComponent {
   }
 
   async saveDraft(): Promise<void> {
-    if (this.isSaving || this.isSubmitting || this.isOptionsLoading) {
+    if (
+      this.isSaving ||
+      this.isSubmitting ||
+      this.isOptionsLoading ||
+      this.isProjectAccountCodeValidationPending()
+    ) {
+      return;
+    }
+
+    if (this.hasProjectAccountCodeConflict()) {
+      this.externalProjectForm.controls.projectAccountCode.markAsTouched();
+      this.actionError = 'Project account code already exists.';
       return;
     }
 
     this.isSaving = true;
     this.actionError = null;
-    this.saveSuccess = false;
+    const loadingId = this.actionLoading.begin(
+      this.isAdminEditMode ? 'Saving external project changes' : 'Saving external project draft',
+    );
 
     try {
       await this.saveDraftToBackend();
       this.externalProjectForm.markAsPristine();
-      this.saveSuccess = true;
-      setTimeout(() => {
-        this.saveSuccess = false;
-        this.cdr.markForCheck();
-      }, 3000);
+      this.toast.success(
+        this.isAdminEditMode
+          ? 'External form edited successfully.'
+          : 'External form saved as draft successfully.',
+      );
     } catch (error) {
-      this.actionError = this.extractErrorMessage(error, 'Unable to save external project draft.');
+      this.actionError = this.extractErrorMessage(
+        error,
+        this.isAdminEditMode
+          ? 'Unable to save external project changes.'
+          : 'Unable to save external project draft.',
+      );
     } finally {
       this.isSaving = false;
+      this.actionLoading.end(loadingId);
       this.cdr.markForCheck();
     }
   }
@@ -729,6 +755,10 @@ export class ExternalProjectDataEntryComponent {
 
     this.completeAttempted = true;
     this.externalProjectForm.markAllAsTouched();
+    if (this.hasProjectAccountCodeConflict()) {
+      this.actionError = 'Project account code already exists.';
+      return;
+    }
     if (this.externalProjectForm.invalid || !this.selectedGrantCategoryId()) {
       this.actionError = 'Please complete the required external project fields before submitting.';
       return;
@@ -736,20 +766,16 @@ export class ExternalProjectDataEntryComponent {
 
     this.isSubmitting = true;
     this.actionError = null;
-    this.submitSuccess = false;
     const loadingId = this.actionLoading.begin('Submitting external project');
 
     try {
       const requestId = await this.saveDraftToBackend();
       const response = await firstValueFrom(this.externalProjectApi.submit(requestId));
       this.hydrateFromApi(response.data);
-      this.submitSuccess = true;
+      this.toast.success('External form submitted successfully.');
       const requestCode = response.data.request?.request_code;
       if (requestCode) {
-        await this.router.navigate([
-          '/external-project-data-entry/detail',
-          String(requestCode),
-        ]);
+        await this.router.navigate(['/external-project-data-entry/detail', String(requestCode)]);
       }
     } catch (error) {
       this.actionError = this.extractErrorMessage(error, 'Unable to submit external project.');
@@ -807,7 +833,9 @@ export class ExternalProjectDataEntryComponent {
       research_title: this.clean(value.researchTitle),
       consultancy_title: this.clean(value.consultancyTitle),
       total_budget_request: this.budgetSummaryTotal(),
-      remark: this.clean(this.budgetSections.find((section) => section.key === 'management-fee')?.remark),
+      remark: this.clean(
+        this.budgetSections.find((section) => section.key === 'management-fee')?.remark,
+      ),
       is_billing_required: this.budgetSections.some((section) => section.billingRequired === 'Yes'),
     };
     if (categoryId !== null) {
@@ -817,6 +845,33 @@ export class ExternalProjectDataEntryComponent {
       delete payload.staff_name;
     }
     return payload;
+  }
+
+  hasProjectAccountCodeConflict(): boolean {
+    return this.externalProjectForm.controls.projectAccountCode.hasError(
+      'projectAccountCodeExists',
+    );
+  }
+
+  isProjectAccountCodeValidationPending(): boolean {
+    return this.externalProjectForm.controls.projectAccountCode.pending;
+  }
+
+  private projectAccountCodeAvailabilityValidator(): AsyncValidatorFn {
+    return (control: AbstractControl): Observable<ValidationErrors | null> => {
+      const code = String(control.value ?? '').trim();
+      if (!code) {
+        return of(null);
+      }
+
+      return timer(350).pipe(
+        switchMap(() =>
+          this.externalProjectApi.checkProjectAccountCodeAvailability(code, this.requestId),
+        ),
+        map((response) => (response.data.available ? null : { projectAccountCodeExists: true })),
+        catchError(() => of(null)),
+      );
+    };
   }
 
   private async replaceChildRows(requestId: number): Promise<void> {
@@ -886,7 +941,9 @@ export class ExternalProjectDataEntryComponent {
         quotation_attachment_id: null,
         display_order: index + 1,
       };
-      const response = await firstValueFrom(this.externalProjectApi.createBudgetSection(requestId, payload));
+      const response = await firstValueFrom(
+        this.externalProjectApi.createBudgetSection(requestId, payload),
+      );
       const sectionId = Number(response.data?.id);
 
       for (const [rowIndex, row] of section.rows.entries()) {
@@ -902,7 +959,9 @@ export class ExternalProjectDataEntryComponent {
   }
 
   private async replaceBillingRows(requestId: number): Promise<void> {
-    const billedSections = this.budgetSections.filter((section) => section.billingRequired === 'Yes');
+    const billedSections = this.budgetSections.filter(
+      (section) => section.billingRequired === 'Yes',
+    );
     if (!billedSections.length) {
       return;
     }
@@ -911,7 +970,8 @@ export class ExternalProjectDataEntryComponent {
       (total, section) => total + this.parseAmount(section.billingAmount),
       0,
     );
-    const firstBillingDate = billedSections.find((section) => !!section.billingDate)?.billingDate || null;
+    const firstBillingDate =
+      billedSections.find((section) => !!section.billingDate)?.billingDate || null;
 
     await firstValueFrom(
       this.externalProjectApi.createBilling(requestId, {
@@ -944,7 +1004,8 @@ export class ExternalProjectDataEntryComponent {
     const category = this.grantCategoryById.get(Number(project.external_grant_category_id));
     this.externalProjectForm.patchValue(
       {
-        externalGrantCategory: category?.name ?? this.externalProjectForm.controls.externalGrantCategory.value,
+        externalGrantCategory:
+          category?.name ?? this.externalProjectForm.controls.externalGrantCategory.value,
         projectAccountCode: project.project_account_code ?? project.project_code ?? '',
         referenceCode: project.reference_code ?? project.account_code ?? '',
         description: project.description ?? '',
@@ -980,7 +1041,9 @@ export class ExternalProjectDataEntryComponent {
 
   private hydrateBudgetRows(data: ExternalProjectFormData): void {
     for (const section of this.budgetSections) {
-      const apiSection = (data.budget_sections || []).find((item) => item.section_code === section.code);
+      const apiSection = (data.budget_sections || []).find(
+        (item) => item.section_code === section.code,
+      );
       const apiRows = (data.budget_items || []).filter(
         (item) => Number(item.external_form_budget_section_id) === Number(apiSection?.id),
       );
@@ -1146,7 +1209,7 @@ export class ExternalProjectDataEntryComponent {
   }
 
   private parseAmount(value: string): number {
-    const numeric = Number.parseFloat(value);
+    const numeric = Number.parseFloat(String(value).replaceAll(',', ''));
     return Number.isFinite(numeric) ? numeric : 0;
   }
 

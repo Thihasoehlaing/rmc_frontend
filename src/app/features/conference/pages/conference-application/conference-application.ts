@@ -39,6 +39,10 @@ import {
 } from '../../../../core/services/workflow-requests.service';
 import { environment } from '../../../../../environments/environment';
 import { ActionLoadingService } from '../../../../core/services/action-loading.service';
+import {
+  formatCountryForDisplay,
+  normalizeCountryForStorage,
+} from '../../../../shared/utils/country.util';
 
 @Component({
   selector: 'app-conference-application',
@@ -1004,7 +1008,7 @@ export class ConferenceApplication implements OnInit {
       nonApuCoAuthors: data.non_apu_co_authors.map((item) => ({
         backendId: item.id,
         fullName: item.full_name ?? '',
-        country: item.country ?? '',
+        country: formatCountryForDisplay(item.country),
         email: item.email ?? '',
         organisationType: item.organisation_type ?? '',
         schoolDepartment: item.school_department ?? '',
@@ -1553,7 +1557,7 @@ export class ConferenceApplication implements OnInit {
         nonApu,
         (raw) => ({
           full_name: raw.fullName || null,
-          country: raw.country || null,
+          country: normalizeCountryForStorage(raw.country),
           email: raw.email || null,
           organisation_type: raw.organisationType || null,
           school_department: raw.schoolDepartment || null,

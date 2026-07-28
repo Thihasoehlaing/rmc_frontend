@@ -5,6 +5,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { finalize, forkJoin } from 'rxjs';
 
 import { CachedFormOption, FormCacheService } from '../../../core/services/form-cache.service';
+import { AuthService } from '../../../core/services/auth.service';
 import {
   STATUS_COLORS,
   formRoute,
@@ -41,6 +42,7 @@ import {
 })
 export class HistoryComponent implements OnInit {
   private readonly requests = inject(WorkflowRequestsService);
+  private readonly auth = inject(AuthService);
   private readonly formCache = inject(FormCacheService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -56,7 +58,9 @@ export class HistoryComponent implements OnInit {
   page = signal(1);
   pageSize = signal(10);
   readonly pageSizeOptions = [10, 15, 30, 50];
-  readonly isAdminHistory = computed(() => this.route.snapshot.routeConfig?.path === 'admin-history');
+  readonly isAdminHistory = computed(
+    () => this.route.snapshot.routeConfig?.path === 'admin-history',
+  );
 
   readonly skeletonColumns: SkeletonColumn[] = [
     { width: '72px' },
@@ -98,18 +102,18 @@ export class HistoryComponent implements OnInit {
     return this.history().slice(start, start + this.pageSize());
   });
 
-  readonly totalPages = computed(() => Math.max(1, Math.ceil(this.history().length / this.pageSize())));
+  readonly totalPages = computed(() =>
+    Math.max(1, Math.ceil(this.history().length / this.pageSize())),
+  );
 
   ngOnInit(): void {
-    this.route.queryParamMap
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((params) => {
-        const tab = (params.get('tab') ?? 'all').toLowerCase();
-        this.selectedType.set(tab);
-        if (!params.has('tab')) {
-          this.setTab(tab);
-        }
-      });
+    this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
+      const tab = (params.get('tab') ?? 'all').toLowerCase();
+      this.selectedType.set(tab);
+      if (!params.has('tab')) {
+        this.setTab(tab);
+      }
+    });
 
     const list$ = this.isAdminHistory()
       ? this.requests.getAdminHistory({ page: 1, perPage: 100 })
@@ -231,6 +235,25 @@ export class HistoryComponent implements OnInit {
     return this.isExternalDraft(app) ? 'edit' : 'view';
   }
 
+  canEditExternalForm(app: RequestSummaryDto): boolean {
+    return (
+      this.isAdminHistory() &&
+      this.auth.inGroup('RMC') &&
+      (app.form_code ?? '').toUpperCase() === 'EXTERNAL' &&
+      !this.isExternalDraft(app) &&
+      requestIdOf(app) != null
+    );
+  }
+
+  getExternalEditQueryParams(app: RequestSummaryDto): Record<string, string | number> {
+    const requestId = requestIdOf(app);
+    return {
+      ...(requestId == null ? {} : { request_id: requestId }),
+      admin_edit: 'true',
+      ...this.getDetailQueryParams(),
+    };
+  }
+
   getDetailQueryParams(): { returnTo: string; returnLabel: string } {
     const tab = encodeURIComponent(this.selectedType());
     const basePath = this.isAdminHistory() ? '/submissions/admin-history' : '/submissions/history';
@@ -273,7 +296,11 @@ export class HistoryComponent implements OnInit {
 
   private formatIsoDate(iso: string | null | undefined): string {
     return iso
-      ? new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+      ? new Date(iso).toLocaleDateString('en-GB', {
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric',
+        })
       : '-';
   }
 
@@ -292,7 +319,10 @@ export class HistoryComponent implements OnInit {
       next: (response) => {
         const blob = response.body;
         if (!blob) return;
-        const fileName = this.printFileName(response.headers.get('content-disposition'), fallbackCode);
+        const fileName = this.printFileName(
+          response.headers.get('content-disposition'),
+          fallbackCode,
+        );
         const url = URL.createObjectURL(blob);
         const anchor = document.createElement('a');
         anchor.href = url;

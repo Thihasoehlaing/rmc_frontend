@@ -76,7 +76,7 @@ export class StudentDetailsComponent implements OnInit, OnChanges {
 
   // File constants
   readonly PDF_ACCEPT = '.pdf';
-  readonly MAX_FILE_SIZE_MB = 10;
+  readonly MAX_FILE_SIZE_MB = 4;
   readonly uploadPageSizeOptions = [4, 8, 12];
   uploadDocumentsCurrentPage = 1;
   uploadDocumentsPageSize = 4;
@@ -290,7 +290,7 @@ export class StudentDetailsComponent implements OnInit, OnChanges {
       controlName: 'employmentApplicationForm',
       placeholder: 'Upload employment application form PDF',
       required: true,
-      subtitle: 'Max file size: 10 MB. PDF ONLY',
+      subtitle: 'Max file size: 4 MB. PDF ONLY',
       note: 'Please ensure all sections are completed, and the form is signed by the applicant.',
       downloadLabel: 'Download Employment Application Form (PDF)',
       downloadAction: 'employment'
@@ -301,7 +301,7 @@ export class StudentDetailsComponent implements OnInit, OnChanges {
       controlName: 'academicTranscripts',
       placeholder: 'Upload academic transcripts PDF',
       required: true,
-      subtitle: 'Max file size: 10 MB. PDF ONLY',
+      subtitle: 'Max file size: 4 MB. PDF ONLY',
       note: 'Please combine all pages into one PDF file for submission.'
     },
     {
@@ -310,7 +310,7 @@ export class StudentDetailsComponent implements OnInit, OnChanges {
       controlName: 'ragraCv',
       placeholder: 'Upload CV PDF',
       required: true,
-      subtitle: 'Max file size: 10 MB. PDF ONLY',
+      subtitle: 'Max file size: 4 MB. PDF ONLY',
       note: 'Please ensure the Curriculum Vitae (CV) is updated and included relevant academic and research experiences.'
     },
     {
@@ -319,7 +319,7 @@ export class StudentDetailsComponent implements OnInit, OnChanges {
       controlName: 'bankStatement',
       placeholder: 'Upload bank statement PDF',
       required: true,
-      subtitle: 'Max file size: 10 MB. PDF ONLY',
+      subtitle: 'Max file size: 4 MB. PDF ONLY',
       note: "Please upload a screenshot of the first page of student's bank statement showing account holder name and account number."
     },
     {
@@ -328,7 +328,7 @@ export class StudentDetailsComponent implements OnInit, OnChanges {
       controlName: 'recruitmentSubmissionForm',
       placeholder: 'Upload recruitment submission form PDF',
       required: true,
-      subtitle: 'Max file size: 10 MB. PDF ONLY',
+      subtitle: 'Max file size: 4 MB. PDF ONLY',
       note: 'Please ensure all sections are completed, and the form is signed by the applicant.',
       downloadLabel: 'Download Recruitment Submission Form (PDF)',
       downloadAction: 'recruitment'
@@ -339,7 +339,7 @@ export class StudentDetailsComponent implements OnInit, OnChanges {
       controlName: 'confidentialityAgreementForm',
       placeholder: 'Upload confidentiality agreement form PDF',
       required: true,
-      subtitle: 'Max file size: 10 MB. PDF ONLY',
+      subtitle: 'Max file size: 4 MB. PDF ONLY',
       note: 'Please ensure all pages are completed, and signed by the student.',
       downloadLabel: 'Download Confidentiality Agreement Form (PDF)',
       downloadAction: 'confidentiality'
@@ -350,7 +350,7 @@ export class StudentDetailsComponent implements OnInit, OnChanges {
       controlName: 'otherSupportingDocuments',
       placeholder: 'Upload other supporting documents PDF',
       required: false,
-      subtitle: 'Max file size: 10 MB. PDF ONLY',
+      subtitle: 'Max file size: 4 MB. PDF ONLY',
       note: 'Please upload any other relevant supporting documents e.g. Research Agreement, Research Proposal etc. (if any).'
     },
     {
@@ -359,7 +359,7 @@ export class StudentDetailsComponent implements OnInit, OnChanges {
       controlName: 'nricPassportUpload',
       placeholder: 'Upload NRIC/Passport PDF',
       required: true,
-      subtitle: 'Max file size: 10 MB. PDF ONLY'
+      subtitle: 'Max file size: 4 MB. PDF ONLY'
     },
     {
       id: 'visa',
@@ -367,7 +367,7 @@ export class StudentDetailsComponent implements OnInit, OnChanges {
       controlName: 'visa',
       placeholder: 'Upload VISA PDF',
       required: false,
-      subtitle: 'Max file size: 10 MB. PDF ONLY'
+      subtitle: 'Max file size: 4 MB. PDF ONLY'
     }
   ];
 

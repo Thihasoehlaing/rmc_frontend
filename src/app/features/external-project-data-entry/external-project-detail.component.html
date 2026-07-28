@@ -154,8 +154,8 @@
           <div class="detail-card__header">
             <h2>External Collaborators</h2>
           </div>
-          <div class="table-wrap">
-            <table>
+          <div class="table-wrap table-wrap--wrapping">
+            <table class="collaborator-table">
               <thead>
                 <tr>
                   <th>No.</th>
@@ -167,8 +167,8 @@
                 @for (item of form()?.external_collaborators ?? []; track item.id; let index = $index) {
                   <tr>
                     <td class="text-muted is-align-center">{{ index + 1 }}</td>
-                    <td>{{ item.full_name || '-' }}</td>
-                    <td>{{ item.affiliation || '-' }}</td>
+                    <td class="collaborator-table__text">{{ item.full_name || '-' }}</td>
+                    <td class="collaborator-table__text">{{ item.affiliation || '-' }}</td>
                   </tr>
                 } @empty {
                   <tr><td colspan="3" class="empty-cell">No external collaborators.</td></tr>
@@ -208,8 +208,8 @@
                   </div>
                   <strong>RM {{ section.total_amount_rm || '0.00' }}</strong>
                 </div>
-                <div class="table-wrap">
-                  <table>
+                <div class="table-wrap table-wrap--wrapping">
+                  <table class="description-table">
                     <thead>
                       <tr>
                         <th>No.</th>
@@ -221,7 +221,7 @@
                       @for (item of budgetItemsFor(section.id); track item.id; let index = $index) {
                         <tr>
                           <td class="text-muted is-align-center">{{ index + 1 }}</td>
-                          <td>{{ item.description || '-' }}</td>
+                          <td class="description-cell">{{ item.description || '-' }}</td>
                           <td class="amount-cell">RM {{ item.amount_rm || '0.00' }}</td>
                         </tr>
                       } @empty {
@@ -252,8 +252,8 @@
                 <strong>{{ form()?.billing?.billing_date | date:'dd MMM yyyy' }}</strong>
               </div>
             </div>
-            <div class="table-wrap">
-              <table>
+            <div class="table-wrap table-wrap--wrapping">
+              <table class="description-table">
                 <thead>
                   <tr>
                     <th>No.</th>
@@ -265,7 +265,7 @@
                   @for (item of form()?.billing_items ?? []; track item.id; let index = $index) {
                     <tr>
                       <td class="text-muted is-align-center">{{ index + 1 }}</td>
-                      <td>{{ item.description || '-' }}</td>
+                      <td class="description-cell">{{ item.description || '-' }}</td>
                       <td class="amount-cell">RM {{ item.amount_rm || '0.00' }}</td>
                     </tr>
                   } @empty {

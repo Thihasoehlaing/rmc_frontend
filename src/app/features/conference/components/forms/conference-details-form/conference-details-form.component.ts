@@ -35,8 +35,7 @@ import {
 } from '../../../../../shared/validators/sdg-keyword.validator';
 
 import { TableActionIconComponent } from '../../../../../shared/components/table-action-icon/table-action-icon.component';
-import { AdminCatalogStoreService } from '../../../../admin-settings/catalog-management/admin-catalog-store.service';
-
+import { DecimalAmountDirective } from '../../../../../shared/directives/decimal-amount.directive';
 @Component({
   selector: 'app-conference-details-form',
   standalone: true,
@@ -52,6 +51,7 @@ import { AdminCatalogStoreService } from '../../../../admin-settings/catalog-man
     DialogComponent,
     CustomHeaderComponent,
     CustomSubheaderComponent,
+    DecimalAmountDirective,
   ],
   templateUrl: './conference-details-form.component.html',
   styleUrl: './conference-details-form.component.scss',
@@ -67,7 +67,6 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
 
   private breakdownOptionsService = inject(BreakdownOptionsService);
   private readonly masterData = inject(MasterDataService);
-  private readonly adminCatalogs = inject(AdminCatalogStoreService);
   form!: FormGroup;
   breakdownForm!: FormGroup;
   sdgKeywordsForm!: FormGroup;
@@ -109,9 +108,6 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
       }
     });
 
-    effect(() => {
-      this.projectAccountCodeOptions.set(this.getManagedProjectAccountCodeOptions());
-    });
   }
 
   // Pagination state for breakdown tables
@@ -455,14 +451,11 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     });
 
     this.masterData.getProjectAccountCodes('CONFERENCE').subscribe((res) => {
-      const managedOptions = this.getManagedProjectAccountCodeOptions();
       this.projectAccountCodeOptions.set(
-        managedOptions.length
-          ? managedOptions
-          : (res.data ?? []).map((c) => ({
-              value: c.code,
-              label: c.description ? `${c.code} - ${c.description}` : c.code,
-            })),
+        (res.data ?? []).map((c) => ({
+          value: c.code,
+          label: c.description ? `${c.code} - ${c.description}` : c.code,
+        })),
       );
     });
 
@@ -483,13 +476,6 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     });
 
     this.loadColleagueOptions();
-  }
-
-  private getManagedProjectAccountCodeOptions(): DropdownOption[] {
-    return this.adminCatalogs.activeProjectAccountCodes('Conference Application').map((item) => ({
-      value: item.code ?? item.name,
-      label: item.code ? `${item.code} - ${item.name}` : item.name,
-    }));
   }
 
   ngOnDestroy() {
@@ -1599,10 +1585,10 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
   onFileSelected(event: any) {
     const file: File = event.target.files?.[0];
     if (file) {
-      // Validate file size (10MB max)
-      const maxSize = 10 * 1024 * 1024;
+      // Keep the raw file below the effective API Gateway/Lambda payload ceiling.
+      const maxSize = 4 * 1024 * 1024;
       if (file.size > maxSize) {
-        alert('File size exceeds 10MB limit');
+        alert('File size exceeds 4MB limit');
         return;
       }
 

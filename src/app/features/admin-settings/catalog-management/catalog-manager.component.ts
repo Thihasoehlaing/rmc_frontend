@@ -17,11 +17,7 @@ import {
   CachedFormOption,
   FormCacheService,
 } from '../../../core/services/form-cache.service';
-import {
-  AdminCatalogItem,
-  AdminCatalogKind,
-  AdminCatalogStoreService,
-} from './admin-catalog-store.service';
+import { AdminCatalogItem, AdminCatalogKind } from './catalog-api.types';
 import {
   ExternalGrantCategoryApi,
   ExternalGrantCategoryService,
@@ -61,7 +57,6 @@ export class CatalogManagerComponent implements OnInit {
   @Input() codeLabel = 'Code';
   @Input() nameLabel = 'Category Name';
 
-  private readonly store = inject(AdminCatalogStoreService);
   private readonly externalGrantCategories = inject(ExternalGrantCategoryService);
   private readonly projectAccountCodes = inject(ProjectAccountCodeService);
   private readonly formCache = inject(FormCacheService);
@@ -120,49 +115,17 @@ export class CatalogManagerComponent implements OnInit {
 
   readonly usesExternalGrantCategoryApi = computed(() => this.kind === 'external-grant-category');
   readonly usesProjectAccountCodeApi = computed(() => this.kind === 'project-account-code');
-  readonly usesCatalogApi = computed(
-    () => this.usesExternalGrantCategoryApi() || this.usesProjectAccountCodeApi(),
+  readonly filteredRows = computed(() =>
+    this.apiRows().filter((item) => item.kind === this.kind),
   );
 
-  readonly filteredRows = computed(() => {
-    const query = this.searchQuery().toLocaleLowerCase();
-    const status = this.statusFilter();
-    const source = this.usesCatalogApi() ? this.apiRows() : this.store.items();
-    return source
-      .filter((item) => item.kind === this.kind)
-      .filter(
-        (item) =>
-          this.usesCatalogApi() || status === 'all' || item.status.toLocaleLowerCase() === status,
-      )
-      .filter((item) =>
-        this.usesCatalogApi() || !query
-          ? true
-          : `${item.code ?? ''} ${item.name}`.toLocaleLowerCase().includes(query),
-      );
-  });
-
-  readonly totalPages = computed(() =>
-    this.usesCatalogApi()
-      ? this.apiTotalPages()
-      : Math.max(1, Math.ceil(this.filteredRows().length / this.pageSize())),
-  );
-  readonly pagedRows = computed(() => {
-    if (this.usesCatalogApi()) {
-      return this.filteredRows();
-    }
-    const start = (this.page() - 1) * this.pageSize();
-    return this.filteredRows().slice(start, start + this.pageSize());
-  });
-
-  readonly totalItems = computed(() =>
-    this.usesCatalogApi() ? this.apiTotalItems() : this.filteredRows().length,
-  );
+  readonly totalPages = this.apiTotalPages.asReadonly();
+  readonly pagedRows = this.filteredRows;
+  readonly totalItems = this.apiTotalItems.asReadonly();
 
   ngOnInit(): void {
     this.loadActiveForms();
-    if (this.usesCatalogApi()) {
-      this.loadCatalogItems();
-    }
+    this.loadCatalogItems();
   }
 
 
@@ -183,12 +146,6 @@ export class CatalogManagerComponent implements OnInit {
   }
 
   saveModal(payload: AddOptionPayload): void {
-    const input = {
-      code: payload.code,
-      name: payload.name,
-      status: payload.status,
-      appliesTo: payload.appliesTo,
-    };
     const row = this.editingRow();
     if (this.usesProjectAccountCodeApi()) {
       if (row) this.saveProjectAccountCode(row, payload);
@@ -196,17 +153,7 @@ export class CatalogManagerComponent implements OnInit {
     }
     if (this.usesExternalGrantCategoryApi()) {
       this.saveExternalGrantCategory(row, payload);
-      return;
     }
-
-    if (row) {
-      this.store.update(row.id, input);
-    } else {
-      this.store.create(this.kind, input);
-    }
-    this.toast.success(row ? 'Option updated.' : 'Option added.');
-    this.closeModal();
-    this.ensureValidPage();
   }
 
   toggleStatus(row: AdminCatalogItem): void {
@@ -237,12 +184,9 @@ export class CatalogManagerComponent implements OnInit {
             this.busyRowId.set(null);
             this.toast.error('Unable to update the category status. Please try again.');
           },
-        });
+      });
       return;
     }
-
-    this.store.toggleStatus(row.id);
-    this.toast.success(`${row.name} ${row.status === 'Active' ? 'deactivated' : 'activated'}.`);
   }
 
   openSharedForms(row: AdminCatalogItem): void {
@@ -282,19 +226,12 @@ export class CatalogManagerComponent implements OnInit {
       });
       return;
     }
-
-    this.store.delete(row.id);
-    this.rowToDelete.set(null);
-    this.toast.success('Option deleted.');
-    this.ensureValidPage();
   }
 
   onSearch(value: string): void {
     this.searchQuery.set(value);
     this.page.set(1);
-    if (this.usesCatalogApi()) {
-      this.loadCatalogItems();
-    }
+    this.loadCatalogItems();
   }
 
   onReset(): void {
@@ -302,17 +239,13 @@ export class CatalogManagerComponent implements OnInit {
     this.statusFilter.set('all');
     this.formFilter.set('all');
     this.page.set(1);
-    if (this.usesCatalogApi()) {
-      this.loadCatalogItems();
-    }
+    this.loadCatalogItems();
   }
 
   onStatusChange(status: 'all' | 'active' | 'inactive'): void {
     this.statusFilter.set(status);
     this.page.set(1);
-    if (this.usesCatalogApi()) {
-      this.loadCatalogItems();
-    }
+    this.loadCatalogItems();
   }
 
   onFormFilterChange(formCode: string | null): void {
@@ -326,16 +259,12 @@ export class CatalogManagerComponent implements OnInit {
   onPageSizeChange(pageSize: number): void {
     this.pageSize.set(pageSize);
     this.page.set(1);
-    if (this.usesCatalogApi()) {
-      this.loadCatalogItems();
-    }
+    this.loadCatalogItems();
   }
 
   onPageChange(page: number): void {
     this.page.set(page);
-    if (this.usesCatalogApi()) {
-      this.loadCatalogItems();
-    }
+    this.loadCatalogItems();
   }
 
   formatDateTime(value: string): string {
@@ -347,10 +276,6 @@ export class CatalogManagerComponent implements OnInit {
       return row.name;
     }
     return `${row.name.slice(0, 100)}…`;
-  }
-
-  private ensureValidPage(): void {
-    this.page.set(Math.min(this.page(), this.totalPages()));
   }
 
   private activeFormOptionsData(): CachedFormOption[] {

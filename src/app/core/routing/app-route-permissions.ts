@@ -62,7 +62,11 @@ export const submissionsDraftPendingPermission = {
 
 export const submissionsAdminOnlyPermission = systemOrRmcAdminPermission;
 
-export const rdigPermission = disabledFeaturePermission;
+export const rdigPermission = {
+  anyOf: ['full_time', 'contract'],
+  allOf: ['academic'],
+  excludeGroups: ['Reviewer', 'HOS'],
+} satisfies NavPermission;
 
 export const ragraPermission = disabledFeaturePermission;
 
@@ -79,6 +83,8 @@ export const systemSettingsPermission = {
 export const externalProjectDataEntryPermission = {
   anyOf: ['RMC'],
 } satisfies NavPermission;
+
+export const externalProjectDetailPermission = systemOrRmcAdminPermission;
 
 export const adminHistoryPermission = systemOrRmcAdminPermission;
 

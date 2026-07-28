@@ -3,7 +3,6 @@ import { forkJoin, map, Observable, tap, timeout } from 'rxjs';
 import { DropdownOption } from '../../../core/interfaces/components.interface';
 import { DropdownsStoreService, StoredDropdownOption } from '../../admin-settings/dropdowns/dropdowns-store.service';
 import { FinanceOption, JournalApplicationApiService } from './journal-application-api.service';
-import { AdminCatalogStoreService } from '../../admin-settings/catalog-management/admin-catalog-store.service';
 
 export type JournalOptionType =
   | 'vote_number_description'
@@ -20,7 +19,6 @@ export class JournalOptionsService {
   private currentVersion = '2.0';
   private dropdownsStoreService = inject(DropdownsStoreService);
   private journalApi = inject(JournalApplicationApiService);
-  private adminCatalogs = inject(AdminCatalogStoreService);
   private readonly formName = 'Journal Application';
   private backendOptionsLoaded = false;
   private projectAccountCodeIds = new Map<string, number>();
@@ -88,9 +86,6 @@ export class JournalOptionsService {
       this.syncFromSettingsStore(this.dropdownsStoreService.entries());
     });
 
-    effect(() => {
-      this.projectAccountCodeOptions.set(this.getManagedProjectAccountCodeOptions());
-    });
   }
 
   loadBackendOptions(): Observable<void> {
@@ -138,11 +133,8 @@ export class JournalOptionsService {
     );
     this.accountCodeIds = new Map(accountCodes.map((item) => [item.code, item.id]));
 
-    const managedProjectAccountCodes = this.getManagedProjectAccountCodeOptions();
     this.projectAccountCodeOptions.set(
-      managedProjectAccountCodes.length
-        ? managedProjectAccountCodes
-        : projectAccountCodes.length
+      projectAccountCodes.length
         ? projectAccountCodes.map((item) => ({
             value: item.code,
             label: item.description ? `${item.code} - ${item.description}` : item.code,
@@ -173,13 +165,6 @@ export class JournalOptionsService {
         label: item.description || item.code,
       })),
     );
-  }
-
-  private getManagedProjectAccountCodeOptions(): DropdownOption[] {
-    return this.adminCatalogs.activeProjectAccountCodes('Journal Application').map((item) => ({
-      value: item.code ?? item.name,
-      label: item.code ? `${item.code} - ${item.name}` : item.name,
-    }));
   }
 
   /**

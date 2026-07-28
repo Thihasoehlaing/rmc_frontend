@@ -859,12 +859,12 @@
       </label>
       <input
         id="cost"
-        type="number"
+        appDecimalAmount
+        type="text"
         inputmode="decimal"
         class="input--text"
         formControlName="cost"
         placeholder="Enter cost"
-        step="0.01"
         (input)="clampPositive($event); recalcCostInRM()"
       />
       <app-validation-message
@@ -939,8 +939,8 @@
     <!-- Supporting Documents -->
     <div class="breakdown-field breakdown-field--full">
       <label class="form-label">Supporting Documents</label>
-      <p class="form-hint">Max file size: 10MB. Allowed file types: PDF only.</p>
-      <app-file-upload [accept]="'.pdf'" [maxSizeMB]="10" (fileSelected)="onFileSelected($event)">
+      <p class="form-hint">Max file size: 4MB. Allowed file types: PDF only.</p>
+      <app-file-upload [accept]="'.pdf'" [maxSizeMB]="4" (fileSelected)="onFileSelected($event)">
       </app-file-upload>
       @if (selectedFileName) {
         <div class="breakdown-file-summary">

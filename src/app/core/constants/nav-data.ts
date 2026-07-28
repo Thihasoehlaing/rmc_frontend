@@ -5,6 +5,7 @@ import {
     disabledFeaturePermission,
     externalProjectDataEntryPermission,
     fundingApplicationPermission,
+    rdigPermission,
     submissionsDraftPendingPermission,
     submissionsInboxHistoryPermission,
     systemSettingsPermission,
@@ -76,7 +77,7 @@ export const NAVIGATION_DATA: NavGroup[] = [
                         icon: 'description',
                         route: '/rdig/application',
                         formCode: 'RDIG',
-                        permission: disabledFeaturePermission,
+                        permission: rdigPermission,
                     },
                     // Conference: ((full_time OR contract) AND academic) OR HOS OR VC
                     {

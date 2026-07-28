@@ -1272,11 +1272,12 @@
             </label>
             <input
               id="cost"
-              type="number"
+              appDecimalAmount
+              type="text"
+              inputmode="decimal"
               class="form-control"
               formControlName="cost"
               placeholder="Enter cost"
-              step="0.01"
             />
             <app-validation-message
               class="form-validation-note--error"
@@ -1336,7 +1337,7 @@
           <!-- Supporting Documents Note -->
           <div class="form-group">
             <label>Supporting Documents</label>
-            <p class="form-hint">Max file size: 10MB. Allowed file types: PDF only.</p>
+            <p class="form-hint">Max file size: 4MB. Allowed file types: PDF only.</p>
             <div class="file-upload-wrapper">
               <input
                 type="file"
@@ -1349,7 +1350,7 @@
               <label for="supportingDoc" class="file-upload-label">
                 <span class="material-icons">cloud_upload</span>
                 <span class="file-text">Click to upload or drag and drop</span>
-                <span class="file-hint">PDF up to 10MB</span>
+                <span class="file-hint">PDF up to 4MB</span>
               </label>
               @if (selectedFileName) {
                 <div class="file-selected">

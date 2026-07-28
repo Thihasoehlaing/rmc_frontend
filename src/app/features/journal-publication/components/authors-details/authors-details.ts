@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, inject, effect, Output, EventEmitter } from '@angular/core';
+﻿import { Component, OnInit, inject, effect, Output, EventEmitter, signal } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 import { CustomHeaderComponent } from '../../../../shared/components/custom-header/custom-header.component';
@@ -28,6 +28,10 @@ import {
 } from '../../services/journal-application-api.service';
 
 import { TableActionIconComponent } from '../../../../shared/components/table-action-icon/table-action-icon.component';
+import {
+  formatCountryForDisplay,
+  normalizeCountryForStorage,
+} from '../../../../shared/utils/country.util';
 
 @Component({
   selector: 'app-authors-details',
@@ -57,6 +61,8 @@ export class AuthorsDetails implements OnInit {
   form!: FormGroup;
   projectType: string | null = null;
   showNonApuRequiredMessage = false;
+
+  readonly formatCountry = formatCountryForDisplay;
 
   readonly apuStaffColumns: DataTableColumn[] = [
     { key: 'no', label: '#', width: '5%', align: 'center', headerAlign: 'center' },
@@ -101,13 +107,13 @@ export class AuthorsDetails implements OnInit {
   studentCoAuthorsPageSize = 5;
   nonApuCoAuthorsPageSize = 5;
 
-  staffOptions: DropdownOption<string>[] = [];
-  departmentOptions: DropdownOption<string>[] = [];
-  staffOptionsLoading = false;
-  staffOptionsLoadFailed = false;
-  organisationTypeOptions: DropdownOption<string>[] = [];
-  organisationTypeOptionsLoading = false;
-  organisationTypeOptionsLoadFailed = false;
+  readonly staffOptions = signal<DropdownOption<string>[]>([]);
+  readonly departmentOptions = signal<DropdownOption<string>[]>([]);
+  readonly staffOptionsLoading = signal(false);
+  readonly staffOptionsLoadFailed = signal(false);
+  readonly organisationTypeOptions = signal<DropdownOption<string>[]>([]);
+  readonly organisationTypeOptionsLoading = signal(false);
+  readonly organisationTypeOptionsLoadFailed = signal(false);
   private academicStaffByName = new Map<string, AcademicStaffOption>();
   private staffSelectionSubscription?: Subscription;
 
@@ -185,7 +191,7 @@ export class AuthorsDetails implements OnInit {
         const value = control.value;
         return {
           full_name: value.fullName || null,
-          country: value.country || null,
+          country: normalizeCountryForStorage(value.country),
           email: value.email || null,
           organisation_type: value.typeOfOrganisation || null,
           school_department: value.schoolDepartment || null,
@@ -234,7 +240,7 @@ export class AuthorsDetails implements OnInit {
       group.patchValue(
         {
           fullName: item.full_name || '',
-          country: item.country || '',
+          country: formatCountryForDisplay(item.country),
           email: item.email || '',
           schoolDepartment: item.school_department || '',
           typeOfOrganisation: item.organisation_type || '',
@@ -275,108 +281,6 @@ export class AuthorsDetails implements OnInit {
       typeOfOrganisation: ['', [Validators.required]],
       institutionName: ['', [Validators.required]],
     });
-  }
-
-  getApuStaffPageSize(): number {
-    return this.apuStaffPageSize;
-  }
-
-  getStudentCoAuthorsPageSize(): number {
-    return this.studentCoAuthorsPageSize;
-  }
-
-  getNonApuCoAuthorsPageSize(): number {
-    return this.nonApuCoAuthorsPageSize;
-  }
-
-  getApuStaffTotalPages(): number {
-    return Math.max(1, Math.ceil(this.testSubsections.length / this.apuStaffPageSize));
-  }
-
-  getStudentCoAuthorsTotalPages(): number {
-    return Math.max(1, Math.ceil(this.studentCoAuthors.length / this.studentCoAuthorsPageSize));
-  }
-
-  getNonApuCoAuthorsTotalPages(): number {
-    return Math.max(1, Math.ceil(this.nonApuCoAuthors.length / this.nonApuCoAuthorsPageSize));
-  }
-
-  getApuStaffPageStart(): number {
-    return this.testSubsections.length === 0
-      ? 0
-      : (Math.min(this.apuStaffCurrentPage, this.getApuStaffTotalPages()) - 1) *
-          this.apuStaffPageSize +
-          1;
-  }
-
-  getApuStaffPageEnd(): number {
-    return this.testSubsections.length === 0
-      ? 0
-      : Math.min(
-          this.getApuStaffPageStart() + this.apuStaffPageSize - 1,
-          this.testSubsections.length,
-        );
-  }
-
-  getStudentCoAuthorsPageStart(): number {
-    return this.studentCoAuthors.length === 0
-      ? 0
-      : (Math.min(this.studentCoAuthorsCurrentPage, this.getStudentCoAuthorsTotalPages()) - 1) *
-          this.studentCoAuthorsPageSize +
-          1;
-  }
-
-  getStudentCoAuthorsPageEnd(): number {
-    return this.studentCoAuthors.length === 0
-      ? 0
-      : Math.min(
-          this.getStudentCoAuthorsPageStart() + this.studentCoAuthorsPageSize - 1,
-          this.studentCoAuthors.length,
-        );
-  }
-
-  getNonApuCoAuthorsPageStart(): number {
-    return this.nonApuCoAuthors.length === 0
-      ? 0
-      : (Math.min(this.nonApuCoAuthorsCurrentPage, this.getNonApuCoAuthorsTotalPages()) - 1) *
-          this.nonApuCoAuthorsPageSize +
-          1;
-  }
-
-  getNonApuCoAuthorsPageEnd(): number {
-    return this.nonApuCoAuthors.length === 0
-      ? 0
-      : Math.min(
-          this.getNonApuCoAuthorsPageStart() + this.nonApuCoAuthorsPageSize - 1,
-          this.nonApuCoAuthors.length,
-        );
-  }
-
-  getPaginatedApuStaffControls() {
-    const startIndex =
-      (Math.min(this.apuStaffCurrentPage, this.getApuStaffTotalPages()) - 1) *
-      this.apuStaffPageSize;
-    return this.testSubsections.controls.slice(startIndex, startIndex + this.apuStaffPageSize);
-  }
-
-  getPaginatedStudentCoAuthorsControls() {
-    const startIndex =
-      (Math.min(this.studentCoAuthorsCurrentPage, this.getStudentCoAuthorsTotalPages()) - 1) *
-      this.studentCoAuthorsPageSize;
-    return this.studentCoAuthors.controls.slice(
-      startIndex,
-      startIndex + this.studentCoAuthorsPageSize,
-    );
-  }
-
-  getPaginatedNonApuCoAuthorsControls() {
-    const startIndex =
-      (Math.min(this.nonApuCoAuthorsCurrentPage, this.getNonApuCoAuthorsTotalPages()) - 1) *
-      this.nonApuCoAuthorsPageSize;
-    return this.nonApuCoAuthors.controls.slice(
-      startIndex,
-      startIndex + this.nonApuCoAuthorsPageSize,
-    );
   }
 
   get testSubsections(): FormArray {
@@ -581,6 +485,10 @@ export class AuthorsDetails implements OnInit {
       formData.tpNumber = this.formatTPNumber(formData.tpNumber);
     }
 
+    if (this.modalType === 'non-apu') {
+      formData.country = formatCountryForDisplay(formData.country);
+    }
+
     if (this.editingIndex !== null) {
       // Update existing entry
       if (this.modalType === 'apu-staff') {
@@ -609,42 +517,44 @@ export class AuthorsDetails implements OnInit {
     search = '',
     selectedStaffName = this.editForm?.get('staffName')?.value,
   ): void {
-    this.staffOptionsLoading = true;
-    this.staffOptionsLoadFailed = false;
+    this.staffOptionsLoading.set(true);
+    this.staffOptionsLoadFailed.set(false);
 
     this.masterData
       .searchAcademicStaff(search)
-      .pipe(finalize(() => (this.staffOptionsLoading = false)))
+      .pipe(finalize(() => this.staffOptionsLoading.set(false)))
       .subscribe({
         next: (response) => {
           const staff = response.success ? (response.data ?? []) : [];
           this.applyAcademicStaffOptions(staff, selectedStaffName);
         },
         error: () => {
-          this.staffOptions = this.createSelectedStaffFallbackOption(selectedStaffName);
+          this.staffOptions.set(this.createSelectedStaffFallbackOption(selectedStaffName));
           this.academicStaffByName.clear();
-          this.staffOptionsLoadFailed = true;
+          this.staffOptionsLoadFailed.set(true);
         },
       });
   }
 
   private loadOrganisationTypeOptions(): void {
-    this.organisationTypeOptionsLoading = true;
-    this.organisationTypeOptionsLoadFailed = false;
+    this.organisationTypeOptionsLoading.set(true);
+    this.organisationTypeOptionsLoadFailed.set(false);
 
     this.masterData
       .getDropdownOptions('TYPE_OF_ORGANISATION', 'JOURNAL')
-      .pipe(finalize(() => (this.organisationTypeOptionsLoading = false)))
+      .pipe(finalize(() => this.organisationTypeOptionsLoading.set(false)))
       .subscribe({
         next: (response) => {
-          this.organisationTypeOptions = (response.success ? (response.data ?? []) : [])
-            .filter((option) => option.status === 'ACTIVE')
-            .map((option) => ({ value: option.option_name, label: option.option_name }));
-          this.organisationTypeOptionsLoadFailed = !response.success;
+          this.organisationTypeOptions.set(
+            (response.success ? (response.data ?? []) : [])
+              .filter((option) => option.status === 'ACTIVE')
+              .map((option) => ({ value: option.option_name, label: option.option_name })),
+          );
+          this.organisationTypeOptionsLoadFailed.set(!response.success);
         },
         error: () => {
-          this.organisationTypeOptions = [];
-          this.organisationTypeOptionsLoadFailed = true;
+          this.organisationTypeOptions.set([]);
+          this.organisationTypeOptionsLoadFailed.set(true);
         },
       });
   }
@@ -653,23 +563,25 @@ export class AuthorsDetails implements OnInit {
     this.masterData.getDepartments().subscribe({
       next: (response) => {
         const seen = new Set<string>();
-        this.departmentOptions = (response.success ? (response.data ?? []) : [])
-          .filter((department) => department.is_active)
-          .filter((department) => this.isStudentSchoolDepartment(department.department_name))
-          .filter((department) => {
-            const key = department.department_name.trim().toLowerCase();
-            if (!key || seen.has(key)) return false;
-            seen.add(key);
-            return true;
-          })
-          .map((department) => ({
-            value: department.department_name,
-            label: department.department_name,
-            description: department.department_type,
-          }));
+        this.departmentOptions.set(
+          (response.success ? (response.data ?? []) : [])
+            .filter((department) => department.is_active)
+            .filter((department) => this.isStudentSchoolDepartment(department.department_name))
+            .filter((department) => {
+              const key = department.department_name.trim().toLowerCase();
+              if (!key || seen.has(key)) return false;
+              seen.add(key);
+              return true;
+            })
+            .map((department) => ({
+              value: department.department_name,
+              label: department.department_name,
+              description: department.department_type,
+            })),
+        );
       },
       error: () => {
-        this.departmentOptions = [];
+        this.departmentOptions.set([]);
       },
     });
   }
@@ -684,9 +596,9 @@ export class AuthorsDetails implements OnInit {
     const selectedFallback = this.createSelectedStaffFallbackOption(selectedStaffName);
     if (
       selectedFallback.length &&
-      !this.staffOptions.some((option) => option.value === selectedFallback[0].value)
+      !this.staffOptions().some((option) => option.value === selectedFallback[0].value)
     ) {
-      this.staffOptions = [...selectedFallback, ...this.staffOptions];
+      this.staffOptions.update((options) => [...selectedFallback, ...options]);
     }
 
     const staffNameControl = this.editForm.get('staffName');
@@ -720,7 +632,7 @@ export class AuthorsDetails implements OnInit {
       options.unshift(...selectedFallback);
     }
 
-    this.staffOptions = options;
+    this.staffOptions.set(options);
   }
 
   private toAcademicStaffDropdownOption(staff: AcademicStaffOption): DropdownOption<string> {
@@ -809,31 +721,4 @@ export class AuthorsDetails implements OnInit {
     return stored.replace(/^TP/i, '');
   }
 
-  // Pagination handlers
-  onApuStaffPageChange(page: number) {
-    this.apuStaffCurrentPage = page;
-  }
-
-  onApuStaffPageSizeChange(pageSize: number) {
-    this.apuStaffPageSize = pageSize;
-    this.apuStaffCurrentPage = 1;
-  }
-
-  onStudentCoAuthorsPageChange(page: number) {
-    this.studentCoAuthorsCurrentPage = page;
-  }
-
-  onStudentCoAuthorsPageSizeChange(pageSize: number) {
-    this.studentCoAuthorsPageSize = pageSize;
-    this.studentCoAuthorsCurrentPage = 1;
-  }
-
-  onNonApuCoAuthorsPageChange(page: number) {
-    this.nonApuCoAuthorsCurrentPage = page;
-  }
-
-  onNonApuCoAuthorsPageSizeChange(pageSize: number) {
-    this.nonApuCoAuthorsPageSize = pageSize;
-    this.nonApuCoAuthorsCurrentPage = 1;
-  }
 }

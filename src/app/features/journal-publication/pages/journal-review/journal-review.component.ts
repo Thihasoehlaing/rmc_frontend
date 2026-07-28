@@ -26,6 +26,7 @@ import { TableScrollHintComponent } from '../../../../shared/components/table-sc
 import { ActionLoadingService } from '../../../../core/services/action-loading.service';
 import { TextareaAutosizeDirective } from '../../../../shared/directives/textarea-autosize.directive';
 import { TableActionIconComponent } from '../../../../shared/components/table-action-icon/table-action-icon.component';
+import { formatCountryForDisplay } from '../../../../shared/utils/country.util';
 
 const SCOPUS_QUARTILE_LABELS: Readonly<Record<string, string>> = {
   Q1: 'Q1: 75th - 100th percentile',
@@ -169,7 +170,7 @@ export class JournalReviewComponent implements OnInit {
       institution: this.val(author.institution_company_name),
       department: this.val(author.school_department),
       organisationType: this.val(author.organisation_type),
-      country: this.val(author.country),
+      country: this.val(formatCountryForDisplay(author.country)),
       email: this.val(author.email),
     })),
   );

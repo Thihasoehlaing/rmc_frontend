@@ -11,25 +11,17 @@
       <div class="external-project-form__divider" aria-hidden="true"></div>
     </div>
 
-    @if (loadError || actionError || saveSuccess || submitSuccess) {
+    @if (loadError || actionError) {
       <div class="external-project-form__messages" aria-live="polite">
         @if (loadError) {
-          <p class="form-hint external-project-form__message external-project-form__message--warning">
+          <p
+            class="form-hint external-project-form__message external-project-form__message--warning"
+          >
             {{ loadError }}
           </p>
         }
         @if (actionError) {
           <p class="form-error-msg external-project-form__message">{{ actionError }}</p>
-        }
-        @if (saveSuccess) {
-          <p class="form-hint external-project-form__message external-project-form__message--success">
-            External project draft saved.
-          </p>
-        }
-        @if (submitSuccess) {
-          <p class="form-hint external-project-form__message external-project-form__message--success">
-            External project submitted.
-          </p>
         }
       </div>
     }
@@ -40,9 +32,7 @@
           <label id="external-grant-category-label" class="form-label is-required"
             >External Grant Category</label
           >
-          <span class="grant-category-field__hint">
-            Choose one category configured by RMC.
-          </span>
+          <span class="grant-category-field__hint"> Choose one category configured by RMC. </span>
         </div>
         <div
           id="external-grant-category"
@@ -76,17 +66,36 @@
 
       @if (showProjectFlow()) {
         <section class="card external-details-card">
-          <app-custom-subheader
-            icon="assignment"
-            title="External Project Details"
-          >
+          <app-custom-subheader icon="assignment" title="External Project Details">
           </app-custom-subheader>
 
           <div class="card__content section-fields">
             <div class="row row--3">
               <div class="form-field">
-                <label class="form-label is-required">Project Account Code</label>
-                <input type="text" class="input--text" formControlName="projectAccountCode" />
+                <label class="form-label is-required" for="project-account-code">
+                  Project Account Code
+                </label>
+                <input
+                  id="project-account-code"
+                  type="text"
+                  class="input--text"
+                  formControlName="projectAccountCode"
+                  maxlength="255"
+                />
+                @if (isProjectAccountCodeValidationPending()) {
+                  <span class="form-hint" aria-live="polite">Checking availability...</span>
+                }
+                <app-validation-message
+                  [control]="externalProjectForm.controls.projectAccountCode"
+                  fieldName="Project Account Code"
+                  [message]="
+                    hasProjectAccountCodeConflict() &&
+                    (externalProjectForm.controls.projectAccountCode.dirty ||
+                      externalProjectForm.controls.projectAccountCode.touched)
+                      ? 'Project account code already exists.'
+                      : ''
+                  "
+                ></app-validation-message>
               </div>
               <div class="form-field">
                 <label class="form-label">Reference Code</label>
@@ -186,6 +195,7 @@
                 [hoverable]="true"
                 [striped]="true"
                 [dense]="true"
+                [wrapContent]="true"
               >
                 <ng-template #rowTemplate let-row let-index="index">
                   <tr>
@@ -240,6 +250,7 @@
                 [hoverable]="true"
                 [striped]="true"
                 [dense]="true"
+                [wrapContent]="true"
               >
                 <ng-template #rowTemplate let-row let-index="index">
                   <tr>
@@ -291,6 +302,7 @@
                 [hoverable]="true"
                 [striped]="true"
                 [dense]="true"
+                [wrapContent]="true"
               >
                 <ng-template #rowTemplate let-row let-index="index">
                   <tr>
@@ -337,7 +349,7 @@
               <input
                 type="text"
                 class="input--text input--disabled-readonly"
-                [value]="budgetSummaryTotal()"
+                [value]="budgetSummaryTotal() | number: '1.2-2'"
                 readonly
               />
             </div>
@@ -368,7 +380,7 @@
                         type="text"
                         class="input--text input--readonly"
                         readonly
-                        [value]="section.totalAmount || '0.00'"
+                        [value]="section.totalAmount || 0 | number: '1.2-2'"
                       />
                     </div>
                   </div>
@@ -391,6 +403,7 @@
                       [hoverable]="true"
                       [striped]="true"
                       [dense]="true"
+                      [wrapContent]="true"
                     >
                       <ng-template #rowTemplate let-row let-index="index">
                         <tr>
@@ -491,8 +504,30 @@
           <div class="card__content section-fields">
             <div class="row row--3">
               <div class="form-field">
-                <label class="form-label is-required">Project Account Code</label>
-                <input type="text" class="input--text" formControlName="projectAccountCode" />
+                <label class="form-label is-required" for="consultancy-project-account-code">
+                  Project Account Code
+                </label>
+                <input
+                  id="consultancy-project-account-code"
+                  type="text"
+                  class="input--text"
+                  formControlName="projectAccountCode"
+                  maxlength="255"
+                />
+                @if (isProjectAccountCodeValidationPending()) {
+                  <span class="form-hint" aria-live="polite">Checking availability...</span>
+                }
+                <app-validation-message
+                  [control]="externalProjectForm.controls.projectAccountCode"
+                  fieldName="Project Account Code"
+                  [message]="
+                    hasProjectAccountCodeConflict() &&
+                    (externalProjectForm.controls.projectAccountCode.dirty ||
+                      externalProjectForm.controls.projectAccountCode.touched)
+                      ? 'Project account code already exists.'
+                      : ''
+                  "
+                ></app-validation-message>
               </div>
               <div class="form-field">
                 <label class="form-label">Reference Code</label>
@@ -591,6 +626,7 @@
                 [hoverable]="true"
                 [striped]="true"
                 [dense]="true"
+                [wrapContent]="true"
               >
                 <ng-template #rowTemplate let-row let-index="index">
                   <tr>
@@ -641,7 +677,7 @@
               <input
                 type="text"
                 class="input--text input--disabled-readonly"
-                [value]="budgetSummaryTotal()"
+                [value]="budgetSummaryTotal() | number: '1.2-2'"
                 readonly
               />
             </div>
@@ -672,7 +708,7 @@
                         type="text"
                         class="input--text input--readonly"
                         readonly
-                        [value]="section.totalAmount || '0.00'"
+                        [value]="section.totalAmount || 0 | number: '1.2-2'"
                       />
                     </div>
                   </div>
@@ -695,6 +731,7 @@
                       [hoverable]="true"
                       [striped]="true"
                       [dense]="true"
+                      [wrapContent]="true"
                     >
                       <ng-template #rowTemplate let-row let-index="index">
                         <tr>
@@ -792,19 +829,39 @@
       <button
         type="button"
         class="btn btn-secondary"
-        [disabled]="isOptionsLoading || isSaving || isSubmitting"
+        [disabled]="
+          isOptionsLoading ||
+          isSaving ||
+          isSubmitting ||
+          isProjectAccountCodeValidationPending() ||
+          hasProjectAccountCodeConflict()
+        "
         (click)="saveDraft()"
       >
-        {{ isSaving || isOptionsLoading ? 'Saving...' : 'Save As Draft' }}
+        {{
+          isSaving || isOptionsLoading
+            ? 'Saving...'
+            : isAdminEditMode
+              ? 'Save Changes'
+              : 'Save As Draft'
+        }}
       </button>
-      <button
-        type="button"
-        class="btn btn-primary"
-        [disabled]="isOptionsLoading || isSaving || isSubmitting"
-        (click)="complete()"
-      >
-        {{ isSubmitting ? 'Submitting...' : 'Complete' }}
-      </button>
+      @if (!isAdminEditMode) {
+        <button
+          type="button"
+          class="btn btn-primary"
+          [disabled]="
+            isOptionsLoading ||
+            isSaving ||
+            isSubmitting ||
+            isProjectAccountCodeValidationPending() ||
+            hasProjectAccountCodeConflict()
+          "
+          (click)="complete()"
+        >
+          {{ isSubmitting ? 'Submitting...' : 'Complete' }}
+        </button>
+      }
     </footer>
   </form>
 </section>
@@ -822,13 +879,13 @@
             >Billing Amount (RM)</label
           >
           <input
-            type="number"
+            appDecimalAmount
+            type="text"
+            inputmode="decimal"
             class="input--text"
             [class.is-invalid]="isBillingFieldInvalid(section, 'amount')"
             [id]="section.key + '-' + idSuffix + '-billing-amount'"
-            min="0.01"
-            step="0.01"
-            [value]="section.billingAmount"
+            [value]="section.billingAmount | number: '1.2-2'"
             (input)="updateBillingAmount(section.key, $any($event.target).value)"
           />
           @if (isBillingFieldInvalid(section, 'amount')) {
@@ -875,6 +932,7 @@
           [hoverable]="true"
           [striped]="true"
           [dense]="true"
+          [wrapContent]="true"
         >
           <ng-template #rowTemplate let-row let-index="index">
             <tr>
@@ -1027,11 +1085,11 @@
         <label for="table-entry-amount" class="form-label is-required">Amount (RM)</label>
         <input
           id="table-entry-amount"
-          type="number"
+          appDecimalAmount
+          type="text"
+          inputmode="decimal"
           class="input--text"
           formControlName="amount"
-          min="0.01"
-          step="0.01"
         />
         @if (tableEntryForm.controls.amount.invalid && tableEntryForm.controls.amount.touched) {
           <span class="form-error-msg">Enter an amount greater than 0.</span>

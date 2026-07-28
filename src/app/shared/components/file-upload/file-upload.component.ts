@@ -16,7 +16,7 @@ export class FileUploadComponent {
   @Input() accept = '*';
 
   /** Maximum file size in megabytes. */
-  @Input() maxSizeMB = 10;
+  @Input() maxSizeMB = 4;
 
   /** Instruction text shown inside the zone. */
   @Input() placeholder = '';

@@ -1,8 +1,12 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpContext, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
+import {
+  SKIP_API_SUCCESS_TOAST,
+  SKIP_API_TOAST,
+} from '../../core/interceptors/api-message.interceptor';
 
 export interface ApiResponse<T> {
   success: boolean;
@@ -59,6 +63,12 @@ export interface ExternalProjectFormData {
   attachments: any[];
 }
 
+export interface ProjectAccountCodeAvailability {
+  code: string;
+  available: boolean;
+  is_current_request_code: boolean;
+}
+
 export interface InternalCoResearcherPayload {
   staff_name: string;
   school_department?: string | null;
@@ -109,6 +119,9 @@ export class ExternalProjectApiService {
   private readonly apiUrl = environment.apiUrl;
   private readonly externalProjectUrl = `${this.apiUrl}/requests/external-project`;
   private readonly masterDataUrl = `${this.apiUrl}/master-data`;
+  private readonly mutationOptions = {
+    context: new HttpContext().set(SKIP_API_SUCCESS_TOAST, true),
+  };
 
   listGrantCategories(): Observable<ApiResponse<ExternalGrantCategory[]>> {
     return this.http.get<ApiResponse<ExternalGrantCategory[]>>(
@@ -128,10 +141,29 @@ export class ExternalProjectApiService {
     return this.http.get<ApiResponse<StaffOption[]>>(`${this.masterDataUrl}/staff`, { params });
   }
 
+  checkProjectAccountCodeAvailability(
+    code: string,
+    requestId?: number | null,
+  ): Observable<ApiResponse<ProjectAccountCodeAvailability>> {
+    let params = new HttpParams().set('code', code.trim());
+    if (requestId) {
+      params = params.set('request_id', requestId);
+    }
+
+    return this.http.get<ApiResponse<ProjectAccountCodeAvailability>>(
+      `${this.externalProjectUrl}/project-account-code-availability`,
+      {
+        params,
+        context: new HttpContext().set(SKIP_API_TOAST, true),
+      },
+    );
+  }
+
   createDraft(payload: ExternalProjectPayload): Observable<ApiResponse<ExternalProjectFormData>> {
     return this.http.post<ApiResponse<ExternalProjectFormData>>(
       `${this.externalProjectUrl}/drafts`,
       payload,
+      this.mutationOptions,
     );
   }
 
@@ -148,6 +180,7 @@ export class ExternalProjectApiService {
     return this.http.put<ApiResponse<ExternalProjectFormData>>(
       `${this.externalProjectUrl}/${requestId}/draft`,
       payload,
+      this.mutationOptions,
     );
   }
 
@@ -155,6 +188,7 @@ export class ExternalProjectApiService {
     return this.http.post<ApiResponse<ExternalProjectFormData>>(
       `${this.externalProjectUrl}/${requestId}/submit`,
       {},
+      this.mutationOptions,
     );
   }
 
@@ -165,12 +199,14 @@ export class ExternalProjectApiService {
     return this.http.post<ApiResponse<any>>(
       `${this.externalProjectUrl}/${requestId}/internal-co-researchers`,
       payload,
+      this.mutationOptions,
     );
   }
 
   deleteInternalCoResearcher(requestId: number, itemId: number): Observable<ApiResponse<any>> {
     return this.http.delete<ApiResponse<any>>(
       `${this.externalProjectUrl}/${requestId}/internal-co-researchers/${itemId}`,
+      this.mutationOptions,
     );
   }
 
@@ -181,12 +217,14 @@ export class ExternalProjectApiService {
     return this.http.post<ApiResponse<any>>(
       `${this.externalProjectUrl}/${requestId}/external-collaborators`,
       payload,
+      this.mutationOptions,
     );
   }
 
   deleteExternalCollaborator(requestId: number, itemId: number): Observable<ApiResponse<any>> {
     return this.http.delete<ApiResponse<any>>(
       `${this.externalProjectUrl}/${requestId}/external-collaborators/${itemId}`,
+      this.mutationOptions,
     );
   }
 
@@ -197,12 +235,14 @@ export class ExternalProjectApiService {
     return this.http.post<ApiResponse<any>>(
       `${this.externalProjectUrl}/${requestId}/expected-outcomes`,
       payload,
+      this.mutationOptions,
     );
   }
 
   deleteExpectedOutcome(requestId: number, itemId: number): Observable<ApiResponse<any>> {
     return this.http.delete<ApiResponse<any>>(
       `${this.externalProjectUrl}/${requestId}/expected-outcomes/${itemId}`,
+      this.mutationOptions,
     );
   }
 
@@ -213,12 +253,14 @@ export class ExternalProjectApiService {
     return this.http.post<ApiResponse<any>>(
       `${this.externalProjectUrl}/${requestId}/budget-sections`,
       payload,
+      this.mutationOptions,
     );
   }
 
   deleteBudgetSection(requestId: number, itemId: number): Observable<ApiResponse<any>> {
     return this.http.delete<ApiResponse<any>>(
       `${this.externalProjectUrl}/${requestId}/budget-sections/${itemId}`,
+      this.mutationOptions,
     );
   }
 
@@ -226,12 +268,14 @@ export class ExternalProjectApiService {
     return this.http.post<ApiResponse<any>>(
       `${this.externalProjectUrl}/${requestId}/budget-items`,
       payload,
+      this.mutationOptions,
     );
   }
 
   deleteBudgetItem(requestId: number, itemId: number): Observable<ApiResponse<any>> {
     return this.http.delete<ApiResponse<any>>(
       `${this.externalProjectUrl}/${requestId}/budget-items/${itemId}`,
+      this.mutationOptions,
     );
   }
 
@@ -239,23 +283,29 @@ export class ExternalProjectApiService {
     return this.http.post<ApiResponse<any>>(
       `${this.externalProjectUrl}/${requestId}/billing`,
       payload,
+      this.mutationOptions,
     );
   }
 
   deleteBilling(requestId: number): Observable<ApiResponse<any>> {
-    return this.http.delete<ApiResponse<any>>(`${this.externalProjectUrl}/${requestId}/billing`);
+    return this.http.delete<ApiResponse<any>>(
+      `${this.externalProjectUrl}/${requestId}/billing`,
+      this.mutationOptions,
+    );
   }
 
   createBillingItem(requestId: number, payload: BillingItemPayload): Observable<ApiResponse<any>> {
     return this.http.post<ApiResponse<any>>(
       `${this.externalProjectUrl}/${requestId}/billing-items`,
       payload,
+      this.mutationOptions,
     );
   }
 
   deleteBillingItem(requestId: number, itemId: number): Observable<ApiResponse<any>> {
     return this.http.delete<ApiResponse<any>>(
       `${this.externalProjectUrl}/${requestId}/billing-items/${itemId}`,
+      this.mutationOptions,
     );
   }
 }

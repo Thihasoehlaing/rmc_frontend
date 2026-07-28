@@ -446,7 +446,7 @@
                     @for (author of nonApuAuthors(); track author.id ?? $index) {
                       <tr>
                         <td>{{ val(author.full_name) }}</td>
-                        <td>{{ val(author.country) }}</td>
+                        <td>{{ country(author.country) }}</td>
                         <td>{{ val(author.email) }}</td>
                         <td>{{ val(author.organisation_type) }}</td>
                         <td>{{ val(author.school_department) }}</td>

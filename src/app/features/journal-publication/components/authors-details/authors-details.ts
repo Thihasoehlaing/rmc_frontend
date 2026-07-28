@@ -28,6 +28,10 @@ import {
 } from '../../services/journal-application-api.service';
 
 import { TableActionIconComponent } from '../../../../shared/components/table-action-icon/table-action-icon.component';
+import {
+  formatCountryForDisplay,
+  normalizeCountryForStorage,
+} from '../../../../shared/utils/country.util';
 
 @Component({
   selector: 'app-authors-details',
@@ -57,6 +61,8 @@ export class AuthorsDetails implements OnInit {
   form!: FormGroup;
   projectType: string | null = null;
   showNonApuRequiredMessage = false;
+
+  readonly formatCountry = formatCountryForDisplay;
 
   readonly apuStaffColumns: DataTableColumn[] = [
     { key: 'no', label: '#', width: '5%', align: 'center', headerAlign: 'center' },
@@ -185,7 +191,7 @@ export class AuthorsDetails implements OnInit {
         const value = control.value;
         return {
           full_name: value.fullName || null,
-          country: value.country || null,
+          country: normalizeCountryForStorage(value.country),
           email: value.email || null,
           organisation_type: value.typeOfOrganisation || null,
           school_department: value.schoolDepartment || null,
@@ -234,7 +240,7 @@ export class AuthorsDetails implements OnInit {
       group.patchValue(
         {
           fullName: item.full_name || '',
-          country: item.country || '',
+          country: formatCountryForDisplay(item.country),
           email: item.email || '',
           schoolDepartment: item.school_department || '',
           typeOfOrganisation: item.organisation_type || '',
@@ -579,6 +585,10 @@ export class AuthorsDetails implements OnInit {
     // Prepend "TP" prefix to the student TP number before saving
     if (this.modalType === 'student' && formData.tpNumber) {
       formData.tpNumber = this.formatTPNumber(formData.tpNumber);
+    }
+
+    if (this.modalType === 'non-apu') {
+      formData.country = formatCountryForDisplay(formData.country);
     }
 
     if (this.editingIndex !== null) {

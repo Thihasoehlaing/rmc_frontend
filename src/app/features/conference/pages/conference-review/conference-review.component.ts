@@ -23,6 +23,7 @@ import { CONFERENCE_REVIEW_PREVIEW } from './conference-review.preview-data';
 import { ActionLoadingService } from '../../../../core/services/action-loading.service';
 import { TextareaAutosizeDirective } from '../../../../shared/directives/textarea-autosize.directive';
 import { TableActionIconComponent } from '../../../../shared/components/table-action-icon/table-action-icon.component';
+import { formatCountryForDisplay } from '../../../../shared/utils/country.util';
 
 const COMMENT_MAX_LENGTH = 500;
 
@@ -185,6 +186,10 @@ export class ConferenceReviewComponent implements OnInit {
     if (value === null || value === undefined || value === '') return '—';
     if (typeof value === 'boolean') return value ? 'Yes' : 'No';
     return String(value);
+  }
+
+  country(value: unknown): string {
+    return this.val(formatCountryForDisplay(value));
   }
 
   authorshipLabel(value: string | null | undefined): string {

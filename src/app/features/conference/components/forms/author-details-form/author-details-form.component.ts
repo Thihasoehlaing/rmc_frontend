@@ -23,6 +23,7 @@ import { TableActionIconComponent } from '../../../../../shared/components/table
 import { ValidationMessageComponent } from '../../../../../shared/components/validation-message/validation-message.component';
 import { CharacterCounterComponent } from '../../../../../shared/components/character-counter/character-counter.component';
 import { NoteComponent } from '../../../../../shared/components/note/note.component';
+import { formatCountryForDisplay } from '../../../../../shared/utils/country.util';
 
 @Component({
   selector: 'app-author-details-form',
@@ -174,7 +175,7 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
           this.fb.group({
             backendId: [data?.backendId ?? null],
             fullName: [data?.fullName || '', [Validators.required, Validators.maxLength(this.coAuthorTextMaxLength)]],
-            country: [data?.country || '', [Validators.required, Validators.maxLength(this.coAuthorTextMaxLength)]],
+            country: [formatCountryForDisplay(data?.country), [Validators.required, Validators.maxLength(this.coAuthorTextMaxLength)]],
             email: [data?.email || '', [Validators.required, Validators.email, Validators.maxLength(this.coAuthorTextMaxLength)]],
             organisationType: [data?.organisationType || '', [Validators.required]],
             schoolDepartment: [data?.schoolDepartment || '', [Validators.required, Validators.maxLength(this.coAuthorTextMaxLength)]],
@@ -256,6 +257,7 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
   getNonApuCoAuthorTableData(): (any & { index: number })[] {
     return this.nonApuCoAuthors.controls.map((control, index) => ({
       ...control.value,
+      country: formatCountryForDisplay(control.value.country),
       index: index + 1,
     }));
   }
@@ -394,6 +396,10 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
 
     if (this.modalType === 'student' && formData.tpNumber) {
       formData.tpNumber = this.formatTPNumber(formData.tpNumber);
+    }
+
+    if (this.modalType === 'non-apu') {
+      formData.country = formatCountryForDisplay(formData.country);
     }
 
     if (this.editingIndex !== null) {

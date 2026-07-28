@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, inject, effect, Output, EventEmitter } from '@angular/core';
+﻿import { Component, OnInit, inject, effect, Output, EventEmitter, signal } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 import { CustomHeaderComponent } from '../../../../shared/components/custom-header/custom-header.component';
@@ -97,13 +97,23 @@ export class AuthorsDetails implements OnInit {
   editingIndex: number | null = null;
   modalType: 'apu-staff' | 'student' | 'non-apu' | null = null;
 
-  staffOptions: DropdownOption<string>[] = [];
-  departmentOptions: DropdownOption<string>[] = [];
-  staffOptionsLoading = false;
-  staffOptionsLoadFailed = false;
-  organisationTypeOptions: DropdownOption<string>[] = [];
-  organisationTypeOptionsLoading = false;
-  organisationTypeOptionsLoadFailed = false;
+  // Pagination
+  readonly ITEMS_PER_PAGE = 5;
+  readonly ITEMS_PER_PAGE_OPTIONS = [5, 10];
+  apuStaffCurrentPage = 1;
+  studentCoAuthorsCurrentPage = 1;
+  nonApuCoAuthorsCurrentPage = 1;
+  apuStaffPageSize = 5;
+  studentCoAuthorsPageSize = 5;
+  nonApuCoAuthorsPageSize = 5;
+
+  readonly staffOptions = signal<DropdownOption<string>[]>([]);
+  readonly departmentOptions = signal<DropdownOption<string>[]>([]);
+  readonly staffOptionsLoading = signal(false);
+  readonly staffOptionsLoadFailed = signal(false);
+  readonly organisationTypeOptions = signal<DropdownOption<string>[]>([]);
+  readonly organisationTypeOptionsLoading = signal(false);
+  readonly organisationTypeOptionsLoadFailed = signal(false);
   private academicStaffByName = new Map<string, AcademicStaffOption>();
   private staffSelectionSubscription?: Subscription;
 
@@ -507,42 +517,44 @@ export class AuthorsDetails implements OnInit {
     search = '',
     selectedStaffName = this.editForm?.get('staffName')?.value,
   ): void {
-    this.staffOptionsLoading = true;
-    this.staffOptionsLoadFailed = false;
+    this.staffOptionsLoading.set(true);
+    this.staffOptionsLoadFailed.set(false);
 
     this.masterData
       .searchAcademicStaff(search)
-      .pipe(finalize(() => (this.staffOptionsLoading = false)))
+      .pipe(finalize(() => this.staffOptionsLoading.set(false)))
       .subscribe({
         next: (response) => {
           const staff = response.success ? (response.data ?? []) : [];
           this.applyAcademicStaffOptions(staff, selectedStaffName);
         },
         error: () => {
-          this.staffOptions = this.createSelectedStaffFallbackOption(selectedStaffName);
+          this.staffOptions.set(this.createSelectedStaffFallbackOption(selectedStaffName));
           this.academicStaffByName.clear();
-          this.staffOptionsLoadFailed = true;
+          this.staffOptionsLoadFailed.set(true);
         },
       });
   }
 
   private loadOrganisationTypeOptions(): void {
-    this.organisationTypeOptionsLoading = true;
-    this.organisationTypeOptionsLoadFailed = false;
+    this.organisationTypeOptionsLoading.set(true);
+    this.organisationTypeOptionsLoadFailed.set(false);
 
     this.masterData
       .getDropdownOptions('TYPE_OF_ORGANISATION', 'JOURNAL')
-      .pipe(finalize(() => (this.organisationTypeOptionsLoading = false)))
+      .pipe(finalize(() => this.organisationTypeOptionsLoading.set(false)))
       .subscribe({
         next: (response) => {
-          this.organisationTypeOptions = (response.success ? (response.data ?? []) : [])
-            .filter((option) => option.status === 'ACTIVE')
-            .map((option) => ({ value: option.option_name, label: option.option_name }));
-          this.organisationTypeOptionsLoadFailed = !response.success;
+          this.organisationTypeOptions.set(
+            (response.success ? (response.data ?? []) : [])
+              .filter((option) => option.status === 'ACTIVE')
+              .map((option) => ({ value: option.option_name, label: option.option_name })),
+          );
+          this.organisationTypeOptionsLoadFailed.set(!response.success);
         },
         error: () => {
-          this.organisationTypeOptions = [];
-          this.organisationTypeOptionsLoadFailed = true;
+          this.organisationTypeOptions.set([]);
+          this.organisationTypeOptionsLoadFailed.set(true);
         },
       });
   }
@@ -551,23 +563,25 @@ export class AuthorsDetails implements OnInit {
     this.masterData.getDepartments().subscribe({
       next: (response) => {
         const seen = new Set<string>();
-        this.departmentOptions = (response.success ? (response.data ?? []) : [])
-          .filter((department) => department.is_active)
-          .filter((department) => this.isStudentSchoolDepartment(department.department_name))
-          .filter((department) => {
-            const key = department.department_name.trim().toLowerCase();
-            if (!key || seen.has(key)) return false;
-            seen.add(key);
-            return true;
-          })
-          .map((department) => ({
-            value: department.department_name,
-            label: department.department_name,
-            description: department.department_type,
-          }));
+        this.departmentOptions.set(
+          (response.success ? (response.data ?? []) : [])
+            .filter((department) => department.is_active)
+            .filter((department) => this.isStudentSchoolDepartment(department.department_name))
+            .filter((department) => {
+              const key = department.department_name.trim().toLowerCase();
+              if (!key || seen.has(key)) return false;
+              seen.add(key);
+              return true;
+            })
+            .map((department) => ({
+              value: department.department_name,
+              label: department.department_name,
+              description: department.department_type,
+            })),
+        );
       },
       error: () => {
-        this.departmentOptions = [];
+        this.departmentOptions.set([]);
       },
     });
   }
@@ -582,9 +596,9 @@ export class AuthorsDetails implements OnInit {
     const selectedFallback = this.createSelectedStaffFallbackOption(selectedStaffName);
     if (
       selectedFallback.length &&
-      !this.staffOptions.some((option) => option.value === selectedFallback[0].value)
+      !this.staffOptions().some((option) => option.value === selectedFallback[0].value)
     ) {
-      this.staffOptions = [...selectedFallback, ...this.staffOptions];
+      this.staffOptions.update((options) => [...selectedFallback, ...options]);
     }
 
     const staffNameControl = this.editForm.get('staffName');
@@ -618,7 +632,7 @@ export class AuthorsDetails implements OnInit {
       options.unshift(...selectedFallback);
     }
 
-    this.staffOptions = options;
+    this.staffOptions.set(options);
   }
 
   private toAcademicStaffDropdownOption(staff: AcademicStaffOption): DropdownOption<string> {

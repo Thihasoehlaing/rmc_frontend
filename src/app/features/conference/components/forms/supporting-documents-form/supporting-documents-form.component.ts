@@ -61,7 +61,7 @@ export class SupportingDocumentsFormComponent implements OnInit, OnDestroy {
   conferenceInvoiceUpload?: FileUploadComponent;
   // File constants
   readonly PDF_ACCEPT = '.pdf';
-  readonly MAX_FILE_SIZE_MB = 10;
+  readonly MAX_FILE_SIZE_MB = 4;
 
   constructor(
     private fb: FormBuilder,

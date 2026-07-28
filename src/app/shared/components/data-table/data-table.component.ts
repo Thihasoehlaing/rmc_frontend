@@ -52,6 +52,7 @@ export class DataTableComponent {
   @Input() dense = false;
   @Input() hoverable = true;
   @Input() striped = true;
+  @Input() wrapContent = false;
   @Input() pageSize: number | null = null;
   @Input() currentPage: number = 0;
   @Output() sortChange = new EventEmitter<string>();

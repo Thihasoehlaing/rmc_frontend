@@ -1585,10 +1585,10 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
   onFileSelected(event: any) {
     const file: File = event.target.files?.[0];
     if (file) {
-      // Validate file size (10MB max)
-      const maxSize = 10 * 1024 * 1024;
+      // Keep the raw file below the effective API Gateway/Lambda payload ceiling.
+      const maxSize = 4 * 1024 * 1024;
       if (file.size > maxSize) {
-        alert('File size exceeds 10MB limit');
+        alert('File size exceeds 4MB limit');
         return;
       }
 

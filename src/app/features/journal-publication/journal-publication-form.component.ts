@@ -1,4 +1,4 @@
-import { Component, inject, ViewChild } from '@angular/core';
+import { Component, inject, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
@@ -66,8 +66,8 @@ export class JournalPublicationFormComponent {
   private actionLoading = inject(ActionLoadingService);
   requestId: number | null = this.readRequestId();
   isOptionsLoading = false;
-  loadError: string | null = null;
-  actionError: string | null = null;
+  readonly loadError = signal<string | null>(null);
+  readonly actionError = signal<string | null>(null);
   showMissingFieldsWarning = false;
   sectionComments: RequestCommentDto[] = [];
   isLoadingSectionComments = false;
@@ -435,28 +435,28 @@ export class JournalPublicationFormComponent {
     return this.steps.length;
   }
 
-  isSaving = false;
-  isSubmitting = false;
-  saveSuccess = false;
-  submitSuccess = false;
+  readonly isSaving = signal(false);
+  readonly isSubmitting = signal(false);
+  readonly saveSuccess = signal(false);
+  readonly submitSuccess = signal(false);
 
   constructor() {
     this.loadOptionsAndInitialForm();
   }
 
   private loadOptionsAndInitialForm(): void {
-    this.loadError = null;
+    this.loadError.set(null);
     this.journalOptions.reloadFromStorage();
 
     this.journalOptions.loadBackendOptions().subscribe({
       next: () => {
         setTimeout(() => {
-          this.loadError = null;
+          this.loadError.set(null);
         });
       },
       error: () => {
         setTimeout(() => {
-          this.loadError = 'Using local options because backend options could not be loaded.';
+          this.loadError.set('Using local options because backend options could not be loaded.');
         });
       },
     });
@@ -489,13 +489,13 @@ export class JournalPublicationFormComponent {
       await this.loadSectionComments(requestId);
     } catch {
       setTimeout(() => {
-        this.actionError = 'Unable to load this journal application.';
+        this.actionError.set('Unable to load this journal application.');
       });
     }
   }
 
   onNext() {
-    if (this.isSaving || this.isSubmitting || this.isOptionsLoading) return;
+    if (this.isSaving() || this.isSubmitting() || this.isOptionsLoading) return;
     if (this.currentStep < this.totalSteps) {
       const prevStep = this.currentStep;
       this.onStepClick(this.currentStep + 1);
@@ -506,7 +506,7 @@ export class JournalPublicationFormComponent {
   }
 
   onPrev() {
-    if (this.isSaving || this.isSubmitting || this.isOptionsLoading) return;
+    if (this.isSaving() || this.isSubmitting() || this.isOptionsLoading) return;
     if (this.currentStep > 1) {
       const prevStep = this.currentStep;
       this.onStepClick(this.currentStep - 1);
@@ -517,27 +517,27 @@ export class JournalPublicationFormComponent {
   }
 
   async onSaveDraft() {
-    if (this.isSaving || this.isSubmitting || this.isOptionsLoading) return;
-    this.isSaving = true;
-    this.actionError = null;
-    this.saveSuccess = false;
+    if (this.isSaving() || this.isSubmitting() || this.isOptionsLoading) return;
+    this.isSaving.set(true);
+    this.actionError.set(null);
+    this.saveSuccess.set(false);
 
     try {
       await this.saveDraftToBackend();
-      this.saveSuccess = true;
+      this.saveSuccess.set(true);
       this.toastService.success('Journal draft saved.');
       setTimeout(() => {
-        this.saveSuccess = false;
+        this.saveSuccess.set(false);
       }, 3000);
     } catch (error) {
-      this.actionError = this.extractErrorMessage(error, 'Unable to save journal draft.');
+      this.actionError.set(this.extractErrorMessage(error, 'Unable to save journal draft.'));
     } finally {
-      this.isSaving = false;
+      this.isSaving.set(false);
     }
   }
 
   async onSubmit() {
-    if (this.isSaving || this.isSubmitting || this.isOptionsLoading) return;
+    if (this.isSaving() || this.isSubmitting() || this.isOptionsLoading) return;
     this.submitAttempted = true;
     this.validateCurrentStep(true);
     this.syncAuthorsProjectType();
@@ -563,9 +563,9 @@ export class JournalPublicationFormComponent {
 
     this.showMissingFieldsWarning = false;
 
-    this.isSubmitting = true;
-    this.actionError = null;
-    this.submitSuccess = false;
+    this.isSubmitting.set(true);
+    this.actionError.set(null);
+    this.submitSuccess.set(false);
     const isResubmission = this.workflow.status().includes('resubmission');
     const loadingId = this.actionLoading.begin(
       isResubmission ? 'Resubmitting journal application' : 'Submitting journal application',
@@ -574,12 +574,14 @@ export class JournalPublicationFormComponent {
     try {
       const requestId = await this.saveDraftToBackend();
       await firstValueFrom(this.journalApi.submit(requestId));
-      this.submitSuccess = true;
+      this.submitSuccess.set(true);
       await this.router.navigateByUrl('/submissions/pending?tab=all');
     } catch (error) {
-      this.actionError = this.extractErrorMessage(error, 'Unable to submit journal application.');
+      this.actionError.set(
+        this.extractErrorMessage(error, 'Unable to submit journal application.'),
+      );
     } finally {
-      this.isSubmitting = false;
+      this.isSubmitting.set(false);
       this.actionLoading.end(loadingId);
     }
   }

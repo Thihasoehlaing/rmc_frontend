@@ -60,7 +60,7 @@ export class DocumentsComponent implements OnInit {
   @ViewChild('journalInvoiceUpload', { static: false }) journalInvoiceUpload?: FileUploadComponent;
   // File constants
   readonly PDF_ACCEPT = '.pdf';
-  readonly MAX_FILE_SIZE_MB = 10;
+  readonly MAX_FILE_SIZE_MB = 4;
   private readonly documentEntityTypes: Record<string, string> = {
     acceptanceNotification: 'acceptance_notification',
     reviewersFeedback: 'reviewers_feedback',

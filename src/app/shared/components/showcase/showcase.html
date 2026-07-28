@@ -1098,8 +1098,8 @@
             <app-file-upload
               label="Upload Support Letter"
               accept=".pdf"
-              [maxSizeMB]="10"
-              placeholder="Upload PDF support letter (max 10 MB)"
+              [maxSizeMB]="4"
+              placeholder="Upload PDF support letter (max 4 MB)"
               (fileSelected)="onFileSelected($event)"
             >
             </app-file-upload>
@@ -1108,7 +1108,7 @@
             <app-file-upload
               label="Upload Any Document"
               accept=".pdf,.docx,.xlsx"
-              [maxSizeMB]="5"
+              [maxSizeMB]="4"
               (fileSelected)="onFileSelected($event)"
             >
             </app-file-upload>
@@ -1145,7 +1145,7 @@
           <tr>
             <td><code>maxSizeMB</code></td>
             <td>number</td>
-            <td>Maximum file size in MB. Default: 10</td>
+            <td>Maximum file size in MB. Default: 4</td>
           </tr>
           <tr>
             <td><code>placeholder</code></td>

@@ -84,6 +84,8 @@ export const externalProjectDataEntryPermission = {
   anyOf: ['RMC'],
 } satisfies NavPermission;
 
+export const externalProjectDetailPermission = systemOrRmcAdminPermission;
+
 export const adminHistoryPermission = systemOrRmcAdminPermission;
 
 export const adminOnlySettingsChildPermission = adminPermission;

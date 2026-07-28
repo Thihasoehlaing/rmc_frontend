@@ -298,11 +298,49 @@
   background: var(--color-surface);
 }
 
+.table-wrap--wrapping {
+  overflow-x: hidden;
+}
+
 table {
   width: max-content;
   min-width: 100%;
   border-collapse: collapse;
   table-layout: fixed;
+}
+
+.description-table {
+  width: 100%;
+  min-width: 0;
+
+  th:last-child,
+  td:last-child {
+    width: 132px;
+  }
+}
+
+.collaborator-table {
+  width: 100%;
+  min-width: 0;
+
+  th:nth-child(2),
+  td:nth-child(2) {
+    width: 32%;
+  }
+}
+
+.collaborator-table__text {
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.description-cell {
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 thead th {
@@ -359,6 +397,7 @@ tbody tr:hover {
 .amount-cell {
   font-weight: var(--fw-semibold);
   color: var(--color-text);
+  white-space: nowrap;
 }
 
 .empty-cell,

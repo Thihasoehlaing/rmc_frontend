@@ -40,6 +40,7 @@ import {
 import { TableActionIconComponent } from '../../../../shared/components/table-action-icon/table-action-icon.component';
 import { TableScrollHintComponent } from '../../../../shared/components/table-scroll-hint/table-scroll-hint.component';
 import { ActionButtonComponent } from '../../../../shared/components/action-button/action-button.component';
+import { DecimalAmountDirective } from '../../../../shared/directives/decimal-amount.directive';
 
 export interface JournalCostingSaveItem {
   payload: JournalCostingPayload;
@@ -64,6 +65,7 @@ export interface JournalCostingSaveItem {
     NoteComponent,
     SearchableDropdownComponent,
     ValidationMessageComponent,
+    DecimalAmountDirective,
   ],
   templateUrl: './journal-details.html',
   styleUrl: './journal-details.scss',

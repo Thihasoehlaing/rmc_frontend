@@ -1272,11 +1272,12 @@
             </label>
             <input
               id="cost"
-              type="number"
+              appDecimalAmount
+              type="text"
+              inputmode="decimal"
               class="form-control"
               formControlName="cost"
               placeholder="Enter cost"
-              step="0.01"
             />
             <app-validation-message
               class="form-validation-note--error"

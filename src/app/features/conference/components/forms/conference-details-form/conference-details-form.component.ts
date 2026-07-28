@@ -35,6 +35,7 @@ import {
 } from '../../../../../shared/validators/sdg-keyword.validator';
 
 import { TableActionIconComponent } from '../../../../../shared/components/table-action-icon/table-action-icon.component';
+import { DecimalAmountDirective } from '../../../../../shared/directives/decimal-amount.directive';
 @Component({
   selector: 'app-conference-details-form',
   standalone: true,
@@ -50,6 +51,7 @@ import { TableActionIconComponent } from '../../../../../shared/components/table
     DialogComponent,
     CustomHeaderComponent,
     CustomSubheaderComponent,
+    DecimalAmountDirective,
   ],
   templateUrl: './conference-details-form.component.html',
   styleUrl: './conference-details-form.component.scss',

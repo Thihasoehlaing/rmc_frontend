@@ -35,8 +35,6 @@ import {
 } from '../../../../../shared/validators/sdg-keyword.validator';
 
 import { TableActionIconComponent } from '../../../../../shared/components/table-action-icon/table-action-icon.component';
-import { AdminCatalogStoreService } from '../../../../admin-settings/catalog-management/admin-catalog-store.service';
-
 @Component({
   selector: 'app-conference-details-form',
   standalone: true,
@@ -67,7 +65,6 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
 
   private breakdownOptionsService = inject(BreakdownOptionsService);
   private readonly masterData = inject(MasterDataService);
-  private readonly adminCatalogs = inject(AdminCatalogStoreService);
   form!: FormGroup;
   breakdownForm!: FormGroup;
   sdgKeywordsForm!: FormGroup;
@@ -109,9 +106,6 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
       }
     });
 
-    effect(() => {
-      this.projectAccountCodeOptions.set(this.getManagedProjectAccountCodeOptions());
-    });
   }
 
   // Pagination state for breakdown tables
@@ -455,14 +449,11 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     });
 
     this.masterData.getProjectAccountCodes('CONFERENCE').subscribe((res) => {
-      const managedOptions = this.getManagedProjectAccountCodeOptions();
       this.projectAccountCodeOptions.set(
-        managedOptions.length
-          ? managedOptions
-          : (res.data ?? []).map((c) => ({
-              value: c.code,
-              label: c.description ? `${c.code} - ${c.description}` : c.code,
-            })),
+        (res.data ?? []).map((c) => ({
+          value: c.code,
+          label: c.description ? `${c.code} - ${c.description}` : c.code,
+        })),
       );
     });
 
@@ -483,13 +474,6 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     });
 
     this.loadColleagueOptions();
-  }
-
-  private getManagedProjectAccountCodeOptions(): DropdownOption[] {
-    return this.adminCatalogs.activeProjectAccountCodes('Conference Application').map((item) => ({
-      value: item.code ?? item.name,
-      label: item.code ? `${item.code} - ${item.name}` : item.name,
-    }));
   }
 
   ngOnDestroy() {

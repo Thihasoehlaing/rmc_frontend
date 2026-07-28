@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, DestroyRef, effect, inject } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, DestroyRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -17,7 +17,6 @@ import { DropdownOption } from '../../core/interfaces/components.interface';
 import { ActionLoadingService } from '../../core/services/action-loading.service';
 
 import { TableActionIconComponent } from '../../shared/components/table-action-icon/table-action-icon.component';
-import { AdminCatalogStoreService } from '../admin-settings/catalog-management/admin-catalog-store.service';
 import {
   BudgetItemPayload,
   BudgetSectionPayload,
@@ -99,7 +98,6 @@ export class ExternalProjectDataEntryComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly externalProjectApi = inject(ExternalProjectApiService);
-  private readonly adminCatalogs = inject(AdminCatalogStoreService);
   private readonly actionLoading = inject(ActionLoadingService);
   private requestId =
     Number(
@@ -136,14 +134,7 @@ export class ExternalProjectDataEntryComponent {
     amount: [''],
   });
 
-  private readonly fallbackGrantCategories: string[] = [
-    'National',
-    'International',
-    'Private (Industry)',
-    'Consultancy',
-  ];
-
-  protected grantCategories: string[] = [...this.fallbackGrantCategories];
+  protected grantCategories: string[] = [];
   private staffDirectory: StaffMember[] = [];
   projectLeaderOptions: DropdownOption<string>[] = [];
 
@@ -269,14 +260,6 @@ export class ExternalProjectDataEntryComponent {
   ];
 
   constructor() {
-    effect(() => {
-      const managedCategories = this.getManagedGrantCategoryNames();
-      if (managedCategories.length) {
-        this.setGrantCategories(managedCategories);
-        this.cdr.markForCheck();
-      }
-    });
-
     this.loadOptionsAndInitialForm();
 
     merge(
@@ -365,28 +348,14 @@ export class ExternalProjectDataEntryComponent {
   }
 
   private applyGrantCategories(categories: ExternalGrantCategory[]): void {
-    if (!categories.length) {
-      return;
-    }
-
     this.grantCategoryByName.clear();
     this.grantCategoryById.clear();
-    categories.forEach((category) => {
+    const activeCategories = categories.filter((category) => category.is_active !== false);
+    activeCategories.forEach((category) => {
       this.grantCategoryByName.set(category.name, category);
       this.grantCategoryById.set(category.id, category);
     });
-    const managedCategories = this.getManagedGrantCategoryNames();
-    this.setGrantCategories(
-      managedCategories.length ? managedCategories : categories.map((category) => category.name),
-    );
-  }
-
-  private getManagedGrantCategoryNames(): string[] {
-    return this.adminCatalogs.activeExternalGrantCategories().map((category) => category.name);
-  }
-
-  private setGrantCategories(categories: string[]): void {
-    this.grantCategories = categories.length ? categories : [...this.fallbackGrantCategories];
+    this.grantCategories = activeCategories.map((category) => category.name);
   }
 
   private applyStaffOptions(staffOptions: StaffOption[]): void {
@@ -425,11 +394,11 @@ export class ExternalProjectDataEntryComponent {
     }
 
     if (!categoriesLoaded && !staffLoaded) {
-      return 'Using local grant categories and empty staff options because backend options could not be loaded.';
+      return 'Grant categories and staff options could not be loaded. Please refresh and try again.';
     }
 
     if (!categoriesLoaded) {
-      return 'Using local grant categories because backend category options could not be loaded.';
+      return 'Grant categories could not be loaded. Please refresh and try again.';
     }
 
     return 'Staff options could not be loaded. Please refresh and try again.';

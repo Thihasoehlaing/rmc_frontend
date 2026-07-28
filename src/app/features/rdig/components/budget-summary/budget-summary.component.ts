@@ -19,6 +19,7 @@ import { DialogComponent } from '../../../../shared/components/dialog/dialog.com
 import { ValidationMessageComponent } from '../../../../shared/components/validation-message/validation-message.component';
 import { ActionButtonComponent } from '../../../../shared/components/action-button/action-button.component';
 import { NoteComponent } from '../../../../shared/components/note/note.component';
+import { DecimalAmountDirective } from '../../../../shared/directives/decimal-amount.directive';
 
 import { TableActionIconComponent } from '../../../../shared/components/table-action-icon/table-action-icon.component';
 
@@ -44,6 +45,7 @@ type BudgetCategoryKey =
     ValidationMessageComponent,
     ActionButtonComponent,
     NoteComponent,
+    DecimalAmountDirective,
   ],
   templateUrl: './budget-summary.component.html',
   styleUrl: './budget-summary.component.scss',

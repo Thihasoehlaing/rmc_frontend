@@ -15,6 +15,7 @@ import { SearchableDropdownComponent } from '../../shared/components/searchable-
 import { DialogComponent } from '../../shared/components/dialog/dialog.component';
 import { DropdownOption } from '../../core/interfaces/components.interface';
 import { ActionLoadingService } from '../../core/services/action-loading.service';
+import { DecimalAmountDirective } from '../../shared/directives/decimal-amount.directive';
 
 import { TableActionIconComponent } from '../../shared/components/table-action-icon/table-action-icon.component';
 import {
@@ -87,6 +88,7 @@ interface ExpectedOutcomeRow {
     ActionButtonComponent,
     SearchableDropdownComponent,
     DialogComponent,
+    DecimalAmountDirective,
   ],
   templateUrl: './external-project-data-entry.component.html',
   styleUrls: ['./external-project-data-entry.component.scss'],
@@ -593,7 +595,7 @@ export class ExternalProjectDataEntryComponent {
 
   updateBillingAmount(sectionKey: string, value: string): void {
     this.updateBudgetSection(sectionKey, (section) => {
-      section.billingAmount = value;
+      section.billingAmount = value.replaceAll(',', '');
     });
   }
 
@@ -1115,7 +1117,7 @@ export class ExternalProjectDataEntryComponent {
   }
 
   private parseAmount(value: string): number {
-    const numeric = Number.parseFloat(value);
+    const numeric = Number.parseFloat(String(value).replaceAll(',', ''));
     return Number.isFinite(numeric) ? numeric : 0;
   }
 

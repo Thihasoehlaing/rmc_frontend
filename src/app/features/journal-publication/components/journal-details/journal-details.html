@@ -859,12 +859,12 @@
       </label>
       <input
         id="cost"
-        type="number"
+        appDecimalAmount
+        type="text"
         inputmode="decimal"
         class="input--text"
         formControlName="cost"
         placeholder="Enter cost"
-        step="0.01"
         (input)="clampPositive($event); recalcCostInRM()"
       />
       <app-validation-message

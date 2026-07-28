@@ -337,7 +337,7 @@
               <input
                 type="text"
                 class="input--text input--disabled-readonly"
-                [value]="budgetSummaryTotal()"
+                [value]="budgetSummaryTotal() | number: '1.2-2'"
                 readonly
               />
             </div>
@@ -368,7 +368,7 @@
                         type="text"
                         class="input--text input--readonly"
                         readonly
-                        [value]="section.totalAmount || '0.00'"
+                        [value]="(section.totalAmount || 0) | number: '1.2-2'"
                       />
                     </div>
                   </div>
@@ -641,7 +641,7 @@
               <input
                 type="text"
                 class="input--text input--disabled-readonly"
-                [value]="budgetSummaryTotal()"
+                [value]="budgetSummaryTotal() | number: '1.2-2'"
                 readonly
               />
             </div>
@@ -672,7 +672,7 @@
                         type="text"
                         class="input--text input--readonly"
                         readonly
-                        [value]="section.totalAmount || '0.00'"
+                        [value]="(section.totalAmount || 0) | number: '1.2-2'"
                       />
                     </div>
                   </div>
@@ -822,13 +822,13 @@
             >Billing Amount (RM)</label
           >
           <input
-            type="number"
+            appDecimalAmount
+            type="text"
+            inputmode="decimal"
             class="input--text"
             [class.is-invalid]="isBillingFieldInvalid(section, 'amount')"
             [id]="section.key + '-' + idSuffix + '-billing-amount'"
-            min="0.01"
-            step="0.01"
-            [value]="section.billingAmount"
+            [value]="section.billingAmount | number: '1.2-2'"
             (input)="updateBillingAmount(section.key, $any($event.target).value)"
           />
           @if (isBillingFieldInvalid(section, 'amount')) {
@@ -1027,11 +1027,11 @@
         <label for="table-entry-amount" class="form-label is-required">Amount (RM)</label>
         <input
           id="table-entry-amount"
-          type="number"
+          appDecimalAmount
+          type="text"
+          inputmode="decimal"
           class="input--text"
           formControlName="amount"
-          min="0.01"
-          step="0.01"
         />
         @if (tableEntryForm.controls.amount.invalid && tableEntryForm.controls.amount.touched) {
           <span class="form-error-msg">Enter an amount greater than 0.</span>

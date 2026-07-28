@@ -689,7 +689,7 @@
                           val(item.account_code_snapshot || item.account_code_description_snapshot)
                         }}
                       </td>
-                      <td>{{ fmtMoney(item.cost_in_foreign_currency) }}</td>
+                      <td>{{ fmtAmount(item.cost_in_foreign_currency) }}</td>
                       <td>{{ val(item.exchange_rate) }}</td>
                       <td>{{ fmtMoney(item.cost_in_rm) }}</td>
                       <td class="table-cell--wrap">{{ val(item.description) }}</td>
@@ -741,7 +741,7 @@
           <dl class="detail-grid detail-grid--compact">
             <div>
               <dt>External Sponsorship Amount</dt>
-              <dd>RM {{ fmtMoney(conference()?.external_sponsorship_amount) }}</dd>
+              <dd>{{ fmtMoney(conference()?.external_sponsorship_amount) }}</dd>
             </div>
             <div>
               <dt>Sponsored By</dt>
@@ -749,7 +749,7 @@
             </div>
             <div>
               <dt>APU Sponsorship</dt>
-              <dd>RM {{ fmtMoney(conference()?.apu_sponsorship_amount) }}</dd>
+              <dd>{{ fmtMoney(conference()?.apu_sponsorship_amount) }}</dd>
             </div>
             <div>
               <dt>APU Sponsorship Percentage</dt>
@@ -757,7 +757,7 @@
             </div>
             <div>
               <dt>Cost Borne by Applicant</dt>
-              <dd>RM {{ fmtMoney(conference()?.cost_to_be_borne_by_applicant) }}</dd>
+              <dd>{{ fmtMoney(conference()?.cost_to_be_borne_by_applicant) }}</dd>
             </div>
             <div class="detail-grid__wide">
               <dt>Remarks</dt>

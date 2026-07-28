@@ -1,4 +1,4 @@
-import { CommonModule, DatePipe, DecimalPipe } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { finalize, forkJoin, switchMap } from 'rxjs';
@@ -13,6 +13,7 @@ import {
   WorkflowRequestsService,
 } from '../../core/services/workflow-requests.service';
 import { STATUS_COLORS } from '../../core/services/request-display.util';
+import { formatMyrCurrency } from '../../shared/utils/currency.util';
 
 interface DetailField {
   label: string;
@@ -24,7 +25,7 @@ interface DetailField {
   selector: 'app-external-project-detail',
   standalone: true,
   imports: [CommonModule],
-  providers: [DatePipe, DecimalPipe],
+  providers: [DatePipe],
   templateUrl: './external-project-detail.component.html',
   styleUrl: './external-project-detail.component.scss',
 })
@@ -34,7 +35,6 @@ export class ExternalProjectDetailComponent implements OnInit {
   private readonly externalProjectApi = inject(ExternalProjectApiService);
   private readonly requests = inject(WorkflowRequestsService);
   private readonly datePipe = inject(DatePipe);
-  private readonly decimalPipe = inject(DecimalPipe);
 
   loading = signal(true);
   error = signal<string | null>(null);
@@ -146,10 +146,7 @@ export class ExternalProjectDetailComponent implements OnInit {
     if (value == null || value === '') return '-';
     if (field.type === 'boolean') return value ? 'Yes' : 'No';
     if (field.type === 'date') return this.datePipe.transform(value as string, 'dd MMM yyyy') ?? '-';
-    if (field.type === 'money') {
-      const amount = Number(value);
-      return Number.isFinite(amount) ? `RM ${this.decimalPipe.transform(amount, '1.2-2')}` : String(value);
-    }
+    if (field.type === 'money') return formatMyrCurrency(value, String(value));
     return String(value);
   }
 
@@ -157,6 +154,10 @@ export class ExternalProjectDetailComponent implements OnInit {
     return (this.form()?.budget_items ?? []).filter(
       (item) => item.external_form_budget_section_id === sectionId,
     );
+  }
+
+  money(value: unknown): string {
+    return formatMyrCurrency(value, 'RM 0.00');
   }
 
   goBack(): void {

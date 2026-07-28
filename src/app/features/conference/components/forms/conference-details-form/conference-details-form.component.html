@@ -677,12 +677,13 @@
             </div>
 
             <div class="form-field">
-              <label class="form-label">Limit</label>
+              <label class="form-label">Limit (RM)</label>
               <input
+                appDecimalAmount
                 type="text"
+                inputmode="decimal"
                 class="input--text"
                 formControlName="limit"
-                [value]="5000"
                 readonly
               />
             </div>
@@ -816,7 +817,7 @@
                           </td>
                           <td>{{ row.cost | number: '1.2-2' }}</td>
                           <td>{{ row.exchangeRate | number: '1.2-2' }}</td>
-                          <td>{{ row.costInRM | number: '1.2-2' }}</td>
+                          <td>{{ row.costInRM | myrCurrency }}</td>
                           <td class="col-actions is-align-center">
                             <div class="data-table__actions">
                               <button
@@ -861,7 +862,7 @@
             <div class="total-display">
               <span class="total-label">Total BEFORE SUBSIDY (RM)</span>
               <div class="total-amount">
-                {{ calculateBreakdownTotal('external-research') | number: '1.2-2' }}
+                {{ calculateBreakdownTotal('external-research') | myrCurrency }}
               </div>
             </div>
 
@@ -875,7 +876,9 @@
                     <div class="form-field">
                       <label class="form-label">Sponsored Amount by External (RM)</label>
                       <input
-                        type="number"
+                        appDecimalAmount
+                        type="text"
+                        inputmode="decimal"
                         class="input--text"
                         formControlName="externalSponsoredAmountExternal"
                         min="0"
@@ -920,8 +923,7 @@
                         type="text"
                         class="input--text"
                         [value]="
-                          getCappedSponsorshipAmount(externalResearchSponsorshipByAPU)
-                            | number: '1.2-2'
+                          getCappedSponsorshipAmount(externalResearchSponsorshipByAPU) | myrCurrency
                         "
                         readonly
                         aria-label="Sponsorship Amount by APU (Read Only)"
@@ -949,7 +951,7 @@
             <div class="form-field total-field costing-full-width">
               <label class="form-label">Cost to be borne by Applicant (RM)</label>
               <div class="total-value-display">
-                {{ externalCostBorneByApplicant | number: '1.2-2' }}
+                {{ externalCostBorneByApplicant | myrCurrency }}
               </div>
             </div>
 
@@ -1015,7 +1017,7 @@
                           <td>{{ row.supportingDocument || '-' }}</td>
                           <td>{{ row.cost | number: '1.2-2' }}</td>
                           <td>{{ row.exchangeRate | number: '1.2-2' }}</td>
-                          <td>{{ row.costInRM | number: '1.2-2' }}</td>
+                          <td>{{ row.costInRM | myrCurrency }}</td>
                           <td class="col-actions is-align-center">
                             <div class="data-table__actions">
                               <button
@@ -1058,7 +1060,7 @@
             <div class="total-display">
               <span class="total-label">Total BEFORE SUBSIDY (RM)</span>
               <div class="total-amount">
-                {{ calculateBreakdownTotal('local') | number: '1.2-2' }}
+                {{ calculateBreakdownTotal('local') | myrCurrency }}
               </div>
             </div>
 
@@ -1070,7 +1072,9 @@
                     <div class="form-field">
                       <label class="form-label">Sponsored Amount by External (RM)</label>
                       <input
-                        type="number"
+                        appDecimalAmount
+                        type="text"
+                        inputmode="decimal"
                         class="input--text"
                         formControlName="localSponsoredAmountExternal"
                         min="0"
@@ -1109,7 +1113,7 @@
                         type="text"
                         class="input--text"
                         [value]="
-                          getCappedSponsorshipAmount(localSponsorshipAmountByAPU) | number: '1.2-2'
+                          getCappedSponsorshipAmount(localSponsorshipAmountByAPU) | myrCurrency
                         "
                         disabled
                         aria-label="Sponsorship Amount by APU (Read Only)"
@@ -1136,7 +1140,7 @@
             <div class="form-field total-field costing-full-width">
               <label class="form-label">Cost to be borne by Applicant (RM)</label>
               <div class="total-value-display">
-                {{ localCostBorneByApplicant | number: '1.2-2' }}
+                {{ localCostBorneByApplicant | myrCurrency }}
               </div>
             </div>
 
@@ -1314,7 +1318,9 @@
             <label for="costInRM">Cost in RM (approximate)</label>
             <input
               id="costInRM"
-              type="number"
+              appDecimalAmount
+              type="text"
+              inputmode="decimal"
               class="form-control"
               formControlName="costInRM"
               readonly

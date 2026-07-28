@@ -206,7 +206,7 @@
                     <strong>{{ section.section_name || section.section_code }}</strong>
                     <span>{{ section.section_code }}</span>
                   </div>
-                  <strong>RM {{ section.total_amount_rm || '0.00' }}</strong>
+                  <strong>{{ money(section.total_amount_rm) }}</strong>
                 </div>
                 <div class="table-wrap table-wrap--wrapping">
                   <table class="description-table">
@@ -222,7 +222,7 @@
                         <tr>
                           <td class="text-muted is-align-center">{{ index + 1 }}</td>
                           <td class="description-cell">{{ item.description || '-' }}</td>
-                          <td class="amount-cell">RM {{ item.amount_rm || '0.00' }}</td>
+                          <td class="amount-cell">{{ money(item.amount_rm) }}</td>
                         </tr>
                       } @empty {
                         <tr><td colspan="3" class="empty-cell">No budget items.</td></tr>
@@ -245,7 +245,7 @@
             <div class="detail-card__content field-grid">
               <div class="field-item">
                 <span>Billing Amount</span>
-                <strong>RM {{ form()?.billing?.billing_amount || '0.00' }}</strong>
+                <strong>{{ money(form()?.billing?.billing_amount) }}</strong>
               </div>
               <div class="field-item">
                 <span>Billing Date</span>
@@ -266,7 +266,7 @@
                     <tr>
                       <td class="text-muted is-align-center">{{ index + 1 }}</td>
                       <td class="description-cell">{{ item.description || '-' }}</td>
-                      <td class="amount-cell">RM {{ item.amount_rm || '0.00' }}</td>
+                      <td class="amount-cell">{{ money(item.amount_rm) }}</td>
                     </tr>
                   } @empty {
                     <tr><td colspan="3" class="empty-cell">No billing items.</td></tr>

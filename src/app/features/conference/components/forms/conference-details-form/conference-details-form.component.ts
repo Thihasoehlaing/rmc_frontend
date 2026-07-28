@@ -36,6 +36,7 @@ import {
 
 import { TableActionIconComponent } from '../../../../../shared/components/table-action-icon/table-action-icon.component';
 import { DecimalAmountDirective } from '../../../../../shared/directives/decimal-amount.directive';
+import { MyrCurrencyPipe } from '../../../../../shared/pipes/myr-currency.pipe';
 @Component({
   selector: 'app-conference-details-form',
   standalone: true,
@@ -52,6 +53,7 @@ import { DecimalAmountDirective } from '../../../../../shared/directives/decimal
     CustomHeaderComponent,
     CustomSubheaderComponent,
     DecimalAmountDirective,
+    MyrCurrencyPipe,
   ],
   templateUrl: './conference-details-form.component.html',
   styleUrl: './conference-details-form.component.scss',
@@ -149,18 +151,18 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     // Fallback to default descriptions for predefined regions
     const defaultDescriptions: Record<string, string> = {
       americas:
-        'USA, Canada, Mexico and other parts of South America - (A maximum of 50% & limit to a maximum of RM5,000, whichever is lower)',
+        'USA, Canada, Mexico and other parts of South America - (A maximum of 50% & limit to a maximum of RM 5,000.00, whichever is lower)',
       asean:
-        'ASEAN Countries - (A maximum of 85% & limit to a maximum of RM5,000, whichever is lower)',
-      asia: 'Japan, China, Korea, Central Asia, India, Sri Lanka, Pakistan - (A maximum of 70% & limit to a maximum of RM5,000, whichever is lower)',
+        'ASEAN Countries - (A maximum of 85% & limit to a maximum of RM 5,000.00, whichever is lower)',
+      asia: 'Japan, China, Korea, Central Asia, India, Sri Lanka, Pakistan - (A maximum of 70% & limit to a maximum of RM 5,000.00, whichever is lower)',
       australasia:
-        'Australia, New Zealand, PNG, Timor Leste - (A maximum of 70% & limit to a maximum of RM5,000, whichever is lower)',
-      europe: 'Europe - (A maximum of 50% & limit to a maximum of RM5,000, whichever is lower)',
+        'Australia, New Zealand, PNG, Timor Leste - (A maximum of 70% & limit to a maximum of RM 5,000.00, whichever is lower)',
+      europe: 'Europe - (A maximum of 50% & limit to a maximum of RM 5,000.00, whichever is lower)',
       malaysia:
-        'Throughout Malaysia - (A maximum of 85% & limit to a maximum of RM5,000, whichever is lower)',
-      mea: 'Middle East and Africa - (A maximum of 60% & limit to a maximum of RM5,000, whichever is lower)',
+        'Throughout Malaysia - (A maximum of 85% & limit to a maximum of RM 5,000.00, whichever is lower)',
+      mea: 'Middle East and Africa - (A maximum of 60% & limit to a maximum of RM 5,000.00, whichever is lower)',
       pacific:
-        'Pacific Islands (Maldives etc.) - (A maximum of 70% & limit to a maximum of RM5,000, whichever is lower)',
+        'Pacific Islands (Maldives etc.) - (A maximum of 70% & limit to a maximum of RM 5,000.00, whichever is lower)',
     };
     return defaultDescriptions[regionValue.toLowerCase()] || '';
   }
@@ -183,14 +185,14 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
   localBreakdownOptions: DropdownOption[] = [];
 
   regionFundingInfo: Record<string, string> = {
-    Americas: '50% & limit to a maximum of RM5,000',
-    ASEAN: '85% & limit to a maximum of RM5,000',
-    Asia: '70% & limit to a maximum of RM5,000',
-    Australasia: '70% & limit to a maximum of RM5,000',
-    Europe: '50% & limit to a maximum of RM5,000',
-    Malaysia: '85% & limit to a maximum of RM5,000',
-    MEA: '60% & limit to a maximum of RM5,000',
-    Pacific: '70% & limit to a maximum of RM5,000',
+    Americas: '50% & limit to a maximum of RM 5,000.00',
+    ASEAN: '85% & limit to a maximum of RM 5,000.00',
+    Asia: '70% & limit to a maximum of RM 5,000.00',
+    Australasia: '70% & limit to a maximum of RM 5,000.00',
+    Europe: '50% & limit to a maximum of RM 5,000.00',
+    Malaysia: '85% & limit to a maximum of RM 5,000.00',
+    MEA: '60% & limit to a maximum of RM 5,000.00',
+    Pacific: '70% & limit to a maximum of RM 5,000.00',
   };
 
   regionFullNames: Record<string, string> = {
@@ -206,18 +208,18 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
 
   regionDescriptions: Record<string, string> = {
     Americas:
-      'USA, Canada, Mexico and other parts of South America - (A maximum of 50% & limit to a maximum of RM5,000, whichever is lower)',
+      'USA, Canada, Mexico and other parts of South America - (A maximum of 50% & limit to a maximum of RM 5,000.00, whichever is lower)',
     ASEAN:
-      'ASEAN Countries - (A maximum of 85% & limit to a maximum of RM5,000, whichever is lower)',
-    Asia: 'Japan, China, Korea, Central Asia, India, Sri Lanka, Pakistan - (A maximum of 70% & limit to a maximum of RM5,000, whichever is lower)',
+      'ASEAN Countries - (A maximum of 85% & limit to a maximum of RM 5,000.00, whichever is lower)',
+    Asia: 'Japan, China, Korea, Central Asia, India, Sri Lanka, Pakistan - (A maximum of 70% & limit to a maximum of RM 5,000.00, whichever is lower)',
     Australasia:
-      'Australia, New Zealand, PNG, Timor Leste - (A maximum of 70% & limit to a maximum of RM5,000, whichever is lower)',
-    Europe: 'Europe - (A maximum of 50% & limit to a maximum of RM5,000, whichever is lower)',
+      'Australia, New Zealand, PNG, Timor Leste - (A maximum of 70% & limit to a maximum of RM 5,000.00, whichever is lower)',
+    Europe: 'Europe - (A maximum of 50% & limit to a maximum of RM 5,000.00, whichever is lower)',
     Malaysia:
-      'Throughout Malaysia - (A maximum of 85% & limit to a maximum of RM5,000, whichever is lower)',
-    MEA: 'Middle East and Africa - (A maximum of 60% & limit to a maximum of RM5,000, whichever is lower)',
+      'Throughout Malaysia - (A maximum of 85% & limit to a maximum of RM 5,000.00, whichever is lower)',
+    MEA: 'Middle East and Africa - (A maximum of 60% & limit to a maximum of RM 5,000.00, whichever is lower)',
     Pacific:
-      'Pacific Islands (Maldives etc.) - (A maximum of 70% & limit to a maximum of RM5,000, whichever is lower)',
+      'Pacific Islands (Maldives etc.) - (A maximum of 70% & limit to a maximum of RM 5,000.00, whichever is lower)',
   };
 
   restrictedPublishers = ['MDPI', 'Common Ground', 'Hindawi', 'Frontiers', 'Other'];

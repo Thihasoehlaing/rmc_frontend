@@ -140,7 +140,7 @@
                     <th>{{ getNameLabel() }}</th>
                     <th *ngIf="showSharedColumn()">Shared With</th>
                     <th *ngIf="showRegionColumns()">Percentage</th>
-                    <th *ngIf="showRegionColumns()">Limit Amount</th>
+                    <th *ngIf="showRegionColumns()">Limit Amount (RM)</th>
                     <th *ngIf="showRegionColumns()">Description</th>
                     <th>Status</th>
                     <th *ngIf="showUpdatedColumn()">Last Updated</th>
@@ -187,7 +187,7 @@
                       </div>
                     </td>
                     <td *ngIf="showRegionColumns()">{{ row.percentage ?? '-' }}</td>
-                    <td *ngIf="showRegionColumns()">{{ row.limitAmount ?? '-' }}</td>
+                    <td *ngIf="showRegionColumns()">{{ row.limitAmount | myrCurrency }}</td>
                     <td *ngIf="showRegionColumns()" class="option-description-cell">
                       {{ row.description || '-' }}
                     </td>

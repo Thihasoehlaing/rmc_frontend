@@ -24,7 +24,7 @@ export class JournalGuidelinesService {
       title: 'Publication Claim Guidelines',
       formName: 'Journal Publication Form',
       sectionName: 'General',
-      content: '1. All claims must be accompanied by the published paper.\\n2. Claims must be submitted within 6 months of publication.\\n3. Scopus Q1/Q2 receive RM 1000, Q3/Q4 receive RM 500.',
+      content: '1. All claims must be accompanied by the published paper.\\n2. Claims must be submitted within 6 months of publication.\\n3. Scopus Q1/Q2 receive RM 1,000.00, Q3/Q4 receive RM 500.00.',
       status: 'Active',
       createdDate: new Date().toISOString()
     }

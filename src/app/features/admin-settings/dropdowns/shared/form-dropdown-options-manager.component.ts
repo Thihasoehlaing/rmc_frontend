@@ -17,6 +17,7 @@ import { DropdownOption as SelectOption } from '../../../../core/interfaces/comp
 import { ToastService } from '../../../../core/services/toast.service';
 import { SVG_ICON_TRASH } from '../../../../shared/icons/svg-icons';
 import { AdminSettingsPageHeaderComponent } from '../../../../shared/components/admin-settings-page-header/admin-settings-page-header.component';
+import { MyrCurrencyPipe } from '../../../../shared/pipes/myr-currency.pipe';
 import {
   AccountCodeRow,
   DropdownOptionRow,
@@ -65,6 +66,7 @@ interface ViewRow {
   standalone: true,
   imports: [
     AdminSettingsPageHeaderComponent,
+    MyrCurrencyPipe,
     CommonModule,
     FormsModule,
     RouterModule,

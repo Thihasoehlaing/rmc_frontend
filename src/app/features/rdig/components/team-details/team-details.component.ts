@@ -1,5 +1,4 @@
 import { Component, Input, OnInit, OnDestroy, inject, signal } from '@angular/core';
-import { DecimalPipe } from '@angular/common';
 import { Router } from '@angular/router';
 import {
   ReactiveFormsModule,
@@ -25,6 +24,8 @@ import { DataTableComponent } from '../../../../shared/components/data-table/dat
 import type { DataTableColumn } from '../../../../shared/components/data-table/data-table.component';
 import { ActionButtonComponent } from '../../../../shared/components/action-button/action-button.component';
 import { FieldNoteComponent } from '../../../../shared/components/field-note/field-note.component';
+import { DecimalAmountDirective } from '../../../../shared/directives/decimal-amount.directive';
+import { MyrCurrencyPipe } from '../../../../shared/pipes/myr-currency.pipe';
 
 import { TableActionIconComponent } from '../../../../shared/components/table-action-icon/table-action-icon.component';
 
@@ -33,7 +34,6 @@ import { TableActionIconComponent } from '../../../../shared/components/table-ac
   standalone: true,
   imports: [
     TableActionIconComponent,
-    DecimalPipe,
     ReactiveFormsModule,
     SearchableDropdownComponent,
     CharacterCounterComponent,
@@ -45,6 +45,8 @@ import { TableActionIconComponent } from '../../../../shared/components/table-ac
     DataTableComponent,
     ActionButtonComponent,
     FieldNoteComponent,
+    DecimalAmountDirective,
+    MyrCurrencyPipe,
   ],
   templateUrl: './team-details.component.html',
   styleUrl: './team-details.component.scss',

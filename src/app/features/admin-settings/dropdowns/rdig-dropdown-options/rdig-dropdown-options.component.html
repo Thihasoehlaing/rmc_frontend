@@ -238,7 +238,7 @@
 
                             @if (isRegionMetadataCategory()) {
                               <td>{{ row.percentage ?? '-' }}%</td>
-                              <td>RM{{ row.limit ?? '-' }}</td>
+                              <td>{{ row.limit | myrCurrency }}</td>
                               <td class="description-cell">{{ row.description || '-' }}</td>
                             } @else if (isAccountCodeMetadataCategory()) {
                               <td>{{ row.accountNumber || '-' }}</td>

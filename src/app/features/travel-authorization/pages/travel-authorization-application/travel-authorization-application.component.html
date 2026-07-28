@@ -395,7 +395,7 @@
                   <td>{{ row.voteNumber }}</td>
                   <td>{{ row.cost | number: '1.2-2' }}</td>
                   <td>{{ row.exchangeRate | number: '1.2-2' }}</td>
-                  <td>{{ row.costInRM | number: '1.2-2' }}</td>
+                  <td>{{ row.costInRM | myrCurrency }}</td>
                   <td class="col-actions is-align-center">
                     <button
                       type="button"
@@ -705,6 +705,7 @@
             >
             <input
               id="amountForeignCurrency"
+              appDecimalAmount
               type="text"
               inputmode="decimal"
               class="input--text"
@@ -746,6 +747,7 @@
             <label for="amountMYR" class="form-label">Cost in RM (approximate)</label>
             <input
               id="amountMYR"
+              appDecimalAmount
               type="text"
               class="input--text"
               readonly

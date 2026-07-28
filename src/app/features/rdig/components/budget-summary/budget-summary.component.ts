@@ -1,5 +1,4 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { DecimalPipe } from '@angular/common';
 import {
   ReactiveFormsModule,
   FormGroup,
@@ -20,6 +19,7 @@ import { ValidationMessageComponent } from '../../../../shared/components/valida
 import { ActionButtonComponent } from '../../../../shared/components/action-button/action-button.component';
 import { NoteComponent } from '../../../../shared/components/note/note.component';
 import { DecimalAmountDirective } from '../../../../shared/directives/decimal-amount.directive';
+import { MyrCurrencyPipe } from '../../../../shared/pipes/myr-currency.pipe';
 
 import { TableActionIconComponent } from '../../../../shared/components/table-action-icon/table-action-icon.component';
 
@@ -34,7 +34,6 @@ type BudgetCategoryKey =
   standalone: true,
   imports: [
     TableActionIconComponent,
-    DecimalPipe,
     ReactiveFormsModule,
     CustomHeaderComponent,
     CustomSubheaderComponent,
@@ -46,6 +45,7 @@ type BudgetCategoryKey =
     ActionButtonComponent,
     NoteComponent,
     DecimalAmountDirective,
+    MyrCurrencyPipe,
   ],
   templateUrl: './budget-summary.component.html',
   styleUrl: './budget-summary.component.scss',
@@ -300,8 +300,8 @@ export class BudgetSummaryComponent implements OnInit {
   }
 
   get budgetRangeMessage(): string {
-    if (this.category === 'S&T') return 'RM 20,000 - RM 30,000';
-    if (this.category === 'Non S&T') return 'RM 5,000 - RM 10,000';
+    if (this.category === 'S&T') return 'RM 20,000.00 - RM 30,000.00';
+    if (this.category === 'Non S&T') return 'RM 5,000.00 - RM 10,000.00';
     return '';
   }
 

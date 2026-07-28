@@ -86,7 +86,9 @@
           <div class="form-field">
             <label class="form-label">Limit (RM) *</label>
             <input
-              type="number"
+              appDecimalAmount
+              type="text"
+              inputmode="decimal"
               class="input--text"
               [(ngModel)]="limit"
               placeholder="Enter limit amount"

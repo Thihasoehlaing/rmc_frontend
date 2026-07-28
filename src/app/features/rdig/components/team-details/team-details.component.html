@@ -218,7 +218,7 @@
                 <div class="data-table__multiline">{{ row.value.department }}</div>
               </td>
               <td>{{ row.value.country }}</td>
-              <td>RM {{ row.value.funding | number: '1.0-0' }}</td>
+              <td>{{ row.value.funding | myrCurrency }}</td>
               <td>
                 <div class="data-table__multiline">{{ row.value.roles }}</div>
               </td>
@@ -509,7 +509,13 @@
       <!-- Full width: Matched Funding -->
       <div class="form-field">
         <label class="form-label is-required">Matched Funding (RM equivalent)</label>
-        <input type="text" class="input--text" formControlName="funding" />
+        <input
+          appDecimalAmount
+          type="text"
+          inputmode="decimal"
+          class="input--text"
+          formControlName="funding"
+        />
         <app-validation-message [control]="externalForm.get('funding')"></app-validation-message>
       </div>
 

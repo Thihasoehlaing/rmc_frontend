@@ -24,6 +24,10 @@ import { ActionLoadingService } from '../../../../core/services/action-loading.s
 import { TextareaAutosizeDirective } from '../../../../shared/directives/textarea-autosize.directive';
 import { TableActionIconComponent } from '../../../../shared/components/table-action-icon/table-action-icon.component';
 import { formatCountryForDisplay } from '../../../../shared/utils/country.util';
+import {
+  formatCurrencyAmount,
+  formatMyrCurrency,
+} from '../../../../shared/utils/currency.util';
 
 const COMMENT_MAX_LENGTH = 500;
 
@@ -224,10 +228,11 @@ export class ConferenceReviewComponent implements OnInit {
   }
 
   fmtMoney(value: unknown): string {
-    return this.toNumber(value).toLocaleString('en-MY', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
+    return formatMyrCurrency(value, 'RM 0.00');
+  }
+
+  fmtAmount(value: unknown): string {
+    return formatCurrencyAmount(value, '0.00');
   }
 
   fmtFileSize(value: unknown): string {

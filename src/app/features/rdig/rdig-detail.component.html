@@ -179,7 +179,7 @@
                     <td>{{ item.email || '-' }}</td>
                     <td>{{ item.position || '-' }}</td>
                     <td>{{ item.role_in_project || '-' }}</td>
-                    <td class="amount-cell">RM {{ item.matched_funding_amount || '0.00' }}</td>
+                    <td class="amount-cell">{{ money(item.matched_funding_amount) }}</td>
                   </tr>
                 } @empty {
                   <tr><td colspan="7" class="empty-cell">No external collaborators.</td></tr>
@@ -250,7 +250,7 @@
                           <td class="text-muted is-align-center">{{ index + 1 }}</td>
                           <td>{{ item.description || '-' }}</td>
                           <td>{{ item.remarks || '-' }}</td>
-                          <td class="amount-cell">RM {{ item.amount_rm || '0.00' }}</td>
+                          <td class="amount-cell">{{ money(item.amount_rm) }}</td>
                         </tr>
                       } @empty {
                         <tr><td colspan="4" class="empty-cell">No budget items.</td></tr>

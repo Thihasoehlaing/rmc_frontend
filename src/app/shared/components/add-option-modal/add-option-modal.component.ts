@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { SearchableDropdownComponent } from '../searchable-dropdown/searchable-dropdown.component';
 import { DropdownOption } from '../../../core/interfaces/components.interface';
+import { DecimalAmountDirective } from '../../directives/decimal-amount.directive';
 
 export interface AddOptionPayload {
   code?: string;
@@ -21,7 +22,13 @@ export interface AddOptionPayload {
   templateUrl: './add-option-modal.component.html',
   styleUrls: ['./add-option-modal.component.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, SearchableDropdownComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    SearchableDropdownComponent,
+    DecimalAmountDirective,
+  ],
 })
 export class AddOptionModalComponent implements OnChanges {
   @Input() isOpen = false;

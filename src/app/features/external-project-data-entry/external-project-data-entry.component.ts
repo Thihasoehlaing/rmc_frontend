@@ -40,6 +40,7 @@ import { DropdownOption } from '../../core/interfaces/components.interface';
 import { ActionLoadingService } from '../../core/services/action-loading.service';
 import { ToastService } from '../../core/services/toast.service';
 import { DecimalAmountDirective } from '../../shared/directives/decimal-amount.directive';
+import { MyrCurrencyPipe } from '../../shared/pipes/myr-currency.pipe';
 import { ValidationMessageComponent } from '../../shared/components/validation-message/validation-message.component';
 
 import { TableActionIconComponent } from '../../shared/components/table-action-icon/table-action-icon.component';
@@ -114,6 +115,7 @@ interface ExpectedOutcomeRow {
     SearchableDropdownComponent,
     DialogComponent,
     DecimalAmountDirective,
+    MyrCurrencyPipe,
     ValidationMessageComponent,
   ],
   templateUrl: './external-project-data-entry.component.html',

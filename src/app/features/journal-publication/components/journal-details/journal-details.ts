@@ -41,6 +41,8 @@ import { TableActionIconComponent } from '../../../../shared/components/table-ac
 import { TableScrollHintComponent } from '../../../../shared/components/table-scroll-hint/table-scroll-hint.component';
 import { ActionButtonComponent } from '../../../../shared/components/action-button/action-button.component';
 import { DecimalAmountDirective } from '../../../../shared/directives/decimal-amount.directive';
+import { MyrCurrencyPipe } from '../../../../shared/pipes/myr-currency.pipe';
+import { formatMyrCurrency } from '../../../../shared/utils/currency.util';
 
 export interface JournalCostingSaveItem {
   payload: JournalCostingPayload;
@@ -66,6 +68,7 @@ export interface JournalCostingSaveItem {
     SearchableDropdownComponent,
     ValidationMessageComponent,
     DecimalAmountDirective,
+    MyrCurrencyPipe,
   ],
   templateUrl: './journal-details.html',
   styleUrl: './journal-details.scss',
@@ -851,7 +854,7 @@ export class JournalDetails implements OnInit, OnDestroy {
     const totalRM = this.calculateBreakdownTotal(this.researchType || '');
     const external = this.normalizeAmount(this.form.get('sponsoredAmountExternal')?.value) ?? 0;
     if (totalRM > 0 && external > totalRM) {
-      return `External sponsorship amount cannot exceed total cost. Total cost is RM ${totalRM.toFixed(2)}.`;
+      return `External sponsorship amount cannot exceed total cost. Total cost is ${formatMyrCurrency(totalRM)}.`;
     }
     return null;
   }
@@ -1060,7 +1063,7 @@ export class JournalDetails implements OnInit, OnDestroy {
 
   clampPositiveMain(controlName: string, event: Event): void {
     const input = event.target as HTMLInputElement;
-    const val = parseFloat(input.value);
+    const val = parseFloat(input.value.replaceAll(',', ''));
     if (Number.isFinite(val) && val < 0) {
       input.value = '0';
       this.form.get(controlName)?.setValue(0, { emitEvent: true });

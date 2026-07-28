@@ -9,6 +9,8 @@ import {
   DataTableColumn,
 } from '../../../../shared/components/data-table/data-table.component';
 import { TableActionIconComponent } from '../../../../shared/components/table-action-icon/table-action-icon.component';
+import { DecimalAmountDirective } from '../../../../shared/directives/decimal-amount.directive';
+import { MyrCurrencyPipe } from '../../../../shared/pipes/myr-currency.pipe';
 
 type BreakdownTypeKey = 'research' | 'local' | 'region';
 
@@ -30,7 +32,14 @@ interface ExtendedOption extends DropdownOption {
 @Component({
   selector: 'app-conference-settings',
   standalone: true,
-  imports: [TableActionIconComponent, CommonModule, ReactiveFormsModule, DataTableComponent],
+  imports: [
+    TableActionIconComponent,
+    CommonModule,
+    ReactiveFormsModule,
+    DataTableComponent,
+    DecimalAmountDirective,
+    MyrCurrencyPipe,
+  ],
   templateUrl: './conference-settings.component.html',
   styleUrl: './conference-settings.component.scss',
   providers: [TableSortService],

@@ -193,16 +193,18 @@
 
           <!-- Monthly Allowance -->
           <div class="form-field">
-            <label class="form-label is-required">Monthly Allowance</label>
+            <label class="form-label is-required">Monthly Allowance (RM)</label>
             <input
-              type="number"
+              type="text"
+              inputmode="decimal"
+              appDecimalAmount
               class="input--text"
               formControlName="monthlyAllowance"
               min="500"
               max="2800"
               [class.is-invalid]="form.get('monthlyAllowance')?.invalid && form.get('monthlyAllowance')?.touched">
             <app-note
-              text="Monthly Allowance must be between RM500 and RM2800. Ensure you input a valid amount."
+              text="Monthly Allowance must be between RM 500.00 and RM 2,800.00. Ensure you input a valid amount."
               [isTooltip]="false">
             </app-note>
             <app-validation-message [control]="form.get('monthlyAllowance')"></app-validation-message>

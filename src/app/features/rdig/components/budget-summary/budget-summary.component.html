@@ -12,7 +12,7 @@
     <div class="budget-total">
       <span class="total-label">Total Amount Requested</span>
       <span class="total-amount"
-        >RM {{ budgetForm.get('totalRequest')?.value | number: '1.2-2' }}</span
+        >{{ budgetForm.get('totalRequest')?.value | myrCurrency }}</span
       >
     </div>
     @if (category === 'S&T' || category === 'Non S&T') {
@@ -56,7 +56,7 @@
                   {{ row.value.description }}
                 </div>
               </td>
-              <td class="amount-cell">{{ row.value.amount | number: '1.2-2' }}</td>
+              <td class="amount-cell">{{ row.value.amount | myrCurrency }}</td>
               <td>
                 <div class="data-table__multiline">{{ row.value.remarks }}</div>
               </td>
@@ -87,7 +87,7 @@
         <p class="empty-state">No items added. Click <strong>Add Item</strong> to begin.</p>
       }
       <app-note
-        text="RA/GRA Allowance � RM500 per month per RA/GRA. Please state number of month and number of student in the description."
+        text="RA/GRA Allowance — RM 500.00 per month per RA/GRA. Please state number of month and number of student in the description."
       ></app-note>
       @if (showAnyComments) {
         <div class="row row--2">
@@ -139,7 +139,7 @@
                   {{ row.value.description }}
                 </div>
               </td>
-              <td class="amount-cell">{{ row.value.amount | number: '1.2-2' }}</td>
+              <td class="amount-cell">{{ row.value.amount | myrCurrency }}</td>
               <td>
                 <div class="data-table__multiline">{{ row.value.remarks }}</div>
               </td>
@@ -222,7 +222,7 @@
                   {{ row.value.description }}
                 </div>
               </td>
-              <td class="amount-cell">{{ row.value.amount | number: '1.2-2' }}</td>
+              <td class="amount-cell">{{ row.value.amount | myrCurrency }}</td>
               <td>
                 <div class="data-table__multiline">{{ row.value.remarks }}</div>
               </td>
@@ -305,7 +305,7 @@
                   {{ row.value.description }}
                 </div>
               </td>
-              <td class="amount-cell">{{ row.value.amount | number: '1.2-2' }}</td>
+              <td class="amount-cell">{{ row.value.amount | myrCurrency }}</td>
               <td>
                 <div class="data-table__multiline">{{ row.value.remarks }}</div>
               </td>

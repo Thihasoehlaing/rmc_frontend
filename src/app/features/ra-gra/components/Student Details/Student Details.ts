@@ -34,6 +34,7 @@ interface UploadDocumentConfig {
 }
 import { CharacterCounterComponent } from '../../../../shared/components/character-counter/character-counter.component';
 import { FileUploadComponent } from '../../../../shared/components/file-upload/file-upload.component';
+import { DecimalAmountDirective } from '../../../../shared/directives/decimal-amount.directive';
 
 @Component({
   selector: 'app-ragra-student-details',
@@ -46,7 +47,8 @@ import { FileUploadComponent } from '../../../../shared/components/file-upload/f
     NoteComponent,
     CharacterCounterComponent,
     FileUploadComponent,
-    PaginationComponent
+    PaginationComponent,
+    DecimalAmountDirective
   ],
   templateUrl: './Student Details.html',
   styleUrls: ['./Student Details.scss']

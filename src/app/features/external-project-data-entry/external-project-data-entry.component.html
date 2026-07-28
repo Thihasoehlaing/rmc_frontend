@@ -349,7 +349,7 @@
               <input
                 type="text"
                 class="input--text input--disabled-readonly"
-                [value]="budgetSummaryTotal() | number: '1.2-2'"
+                [value]="budgetSummaryTotal() | myrCurrency"
                 readonly
               />
             </div>
@@ -380,7 +380,7 @@
                         type="text"
                         class="input--text input--readonly"
                         readonly
-                        [value]="section.totalAmount || 0 | number: '1.2-2'"
+                        [value]="section.totalAmount || 0 | myrCurrency"
                       />
                     </div>
                   </div>
@@ -413,7 +413,7 @@
                               {{ row.description }}
                             </div>
                           </td>
-                          <td class="amount-cell">{{ row.amount | number: '1.2-2' }}</td>
+                          <td class="amount-cell">{{ row.amount | myrCurrency }}</td>
                           <td class="is-align-center">
                             <div class="data-table__actions">
                               <button
@@ -677,7 +677,7 @@
               <input
                 type="text"
                 class="input--text input--disabled-readonly"
-                [value]="budgetSummaryTotal() | number: '1.2-2'"
+                [value]="budgetSummaryTotal() | myrCurrency"
                 readonly
               />
             </div>
@@ -708,7 +708,7 @@
                         type="text"
                         class="input--text input--readonly"
                         readonly
-                        [value]="section.totalAmount || 0 | number: '1.2-2'"
+                        [value]="section.totalAmount || 0 | myrCurrency"
                       />
                     </div>
                   </div>
@@ -741,7 +741,7 @@
                               {{ row.description }}
                             </div>
                           </td>
-                          <td class="amount-cell">{{ row.amount | number: '1.2-2' }}</td>
+                          <td class="amount-cell">{{ row.amount | myrCurrency }}</td>
                           <td class="is-align-center">
                             <div class="data-table__actions">
                               <button
@@ -940,7 +940,7 @@
               <td>
                 <div class="data-table__title data-table__title--small">{{ row.description }}</div>
               </td>
-              <td class="amount-cell">{{ row.amount | number: '1.2-2' }}</td>
+              <td class="amount-cell">{{ row.amount | myrCurrency }}</td>
               <td class="is-align-center">
                 <div class="data-table__actions">
                   <button

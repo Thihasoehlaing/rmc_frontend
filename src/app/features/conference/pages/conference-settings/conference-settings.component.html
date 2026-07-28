@@ -92,7 +92,7 @@
                 }
                 @if (isRegionType()) {
                   <td>{{ row.percentage || '-' }}%</td>
-                  <td>RM{{ row.limit || '-' }}</td>
+                  <td>{{ row.limit | myrCurrency }}</td>
                 }
                 @if (isResearchType() || isLocalType()) {
                   <td>
@@ -243,7 +243,9 @@
           <div class="form-field">
             <label class="form-label">Limit (RM)</label>
             <input
-              type="number"
+              appDecimalAmount
+              type="text"
+              inputmode="decimal"
               class="input--text"
               formControlName="limit"
               placeholder="Enter limit amount"

@@ -33,6 +33,8 @@ import {
 import { ActivatedRoute } from '@angular/router';
 import { StaffDirectoryService, StaffRecord } from '../../../settings/staff-directory/staff-directory.service';
 import { ActionLoadingService } from '../../../../core/services/action-loading.service';
+import { DecimalAmountDirective } from '../../../../shared/directives/decimal-amount.directive';
+import { MyrCurrencyPipe } from '../../../../shared/pipes/myr-currency.pipe';
 
 import { TableActionIconComponent } from '../../../../shared/components/table-action-icon/table-action-icon.component';
 
@@ -60,6 +62,8 @@ interface FunctionalAreaOption {
     ReviewBlockComponent,
     DataTableComponent,
     FormMainTitleComponent,
+    DecimalAmountDirective,
+    MyrCurrencyPipe,
   ],
   templateUrl: './travel-authorization-application.component.html',
   styleUrl: './travel-authorization-application.component.scss',

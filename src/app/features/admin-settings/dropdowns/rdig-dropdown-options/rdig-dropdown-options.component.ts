@@ -28,6 +28,7 @@ import { SubmissionsSearchComponent } from '../../../../shared/components/submis
 import { SearchableDropdownComponent } from '../../../../shared/components/searchable-dropdown/searchable-dropdown.component';
 import { DropdownOption as SelectOption } from '../../../../core/interfaces/components.interface';
 import { AdminSettingsPageHeaderComponent } from '../../../../shared/components/admin-settings-page-header/admin-settings-page-header.component';
+import { MyrCurrencyPipe } from '../../../../shared/pipes/myr-currency.pipe';
 
 interface DropdownOption {
   id: number;
@@ -102,6 +103,7 @@ interface CategorySharingConfig {
   standalone: true,
   imports: [
     AdminSettingsPageHeaderComponent,
+    MyrCurrencyPipe,
     TableActionIconComponent,
     SubmissionsSearchComponent,
     CommonModule,
@@ -214,61 +216,61 @@ export class RdigDropdownOptionsComponent implements OnInit {
       percentage: 50,
       limit: 5000,
       description:
-        'USA, Canada, Mexico and other parts of South America - (A maximum of 50% & limit to a maximum of RM5,000, whichever is lower)',
+        'USA, Canada, Mexico and other parts of South America - (A maximum of 50% & limit to a maximum of RM 5,000.00, whichever is lower)',
     },
     asean: {
       percentage: 85,
       limit: 5000,
       description:
-        'ASEAN Countries - (A maximum of 85% & limit to a maximum of RM5,000, whichever is lower)',
+        'ASEAN Countries - (A maximum of 85% & limit to a maximum of RM 5,000.00, whichever is lower)',
     },
     asia: {
       percentage: 70,
       limit: 5000,
       description:
-        'Japan, China, Korea, Central Asia, India, Sri Lanka, Pakistan - (A maximum of 70% & limit to a maximum of RM5,000, whichever is lower)',
+        'Japan, China, Korea, Central Asia, India, Sri Lanka, Pakistan - (A maximum of 70% & limit to a maximum of RM 5,000.00, whichever is lower)',
     },
     australasia: {
       percentage: 70,
       limit: 5000,
       description:
-        'Australia, New Zealand, PNG, Timor Leste - (A maximum of 70% & limit to a maximum of RM5,000, whichever is lower)',
+        'Australia, New Zealand, PNG, Timor Leste - (A maximum of 70% & limit to a maximum of RM 5,000.00, whichever is lower)',
     },
     europe: {
       percentage: 50,
       limit: 5000,
       description:
-        'Europe - (A maximum of 50% & limit to a maximum of RM5,000, whichever is lower)',
+        'Europe - (A maximum of 50% & limit to a maximum of RM 5,000.00, whichever is lower)',
     },
     malaysia: {
       percentage: 85,
       limit: 5000,
       description:
-        'Throughout Malaysia - (A maximum of 85% & limit to a maximum of RM5,000, whichever is lower)',
+        'Throughout Malaysia - (A maximum of 85% & limit to a maximum of RM 5,000.00, whichever is lower)',
     },
     'middle east and africa': {
       percentage: 60,
       limit: 5000,
       description:
-        'Middle East and Africa - (A maximum of 60% & limit to a maximum of RM5,000, whichever is lower)',
+        'Middle East and Africa - (A maximum of 60% & limit to a maximum of RM 5,000.00, whichever is lower)',
     },
     mea: {
       percentage: 60,
       limit: 5000,
       description:
-        'Middle East and Africa - (A maximum of 60% & limit to a maximum of RM5,000, whichever is lower)',
+        'Middle East and Africa - (A maximum of 60% & limit to a maximum of RM 5,000.00, whichever is lower)',
     },
     'pacific islands': {
       percentage: 70,
       limit: 5000,
       description:
-        'Pacific Islands (Maldives etc.) - (A maximum of 70% & limit to a maximum of RM5,000, whichever is lower)',
+        'Pacific Islands (Maldives etc.) - (A maximum of 70% & limit to a maximum of RM 5,000.00, whichever is lower)',
     },
     pacific: {
       percentage: 70,
       limit: 5000,
       description:
-        'Pacific Islands (Maldives etc.) - (A maximum of 70% & limit to a maximum of RM5,000, whichever is lower)',
+        'Pacific Islands (Maldives etc.) - (A maximum of 70% & limit to a maximum of RM 5,000.00, whichever is lower)',
     },
   };
 

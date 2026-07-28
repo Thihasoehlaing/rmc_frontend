@@ -370,7 +370,7 @@
                             <td>{{ row.accountCode || '—' }}</td>
                             <td>{{ row.cost | number: '1.2-2' }}</td>
                             <td>{{ row.exchangeRate || '—' }}</td>
-                            <td>{{ row.costInRM | number: '1.2-2' }}</td>
+                            <td>{{ row.costInRM | myrCurrency }}</td>
                             <td>
                               <div class="data-table__multiline">
                                 {{ formatDescription(row.description) }}
@@ -416,7 +416,7 @@
                             <td>{{ row.itemDescription }}</td>
                             <td>{{ row.accountCode || '—' }}</td>
                             <td>{{ row.voteNumber }}</td>
-                            <td>{{ row.costInRM | number: '1.2-2' }}</td>
+                            <td>{{ row.costInRM | myrCurrency }}</td>
                             <td>{{ row.cost | number: '1.2-2' }}</td>
                             <td>{{ row.exchangeRate || '—' }}</td>
                             <td>
@@ -466,7 +466,7 @@
                             <td>{{ row.voteNumber }}</td>
                             <td>{{ row.cost | number: '1.2-2' }}</td>
                             <td>{{ row.exchangeRate || '—' }}</td>
-                            <td>{{ row.costInRM | number: '1.2-2' }}</td>
+                            <td>{{ row.costInRM | myrCurrency }}</td>
                             <td>
                               <div class="data-table__multiline">
                                 {{ formatDescription(row.description) }}
@@ -528,7 +528,7 @@
           <div class="total-display">
             <span class="total-label">Total in RM</span>
             <div class="total-amount">
-              {{ calculateBreakdownTotal(researchType || '') | number: '1.2-2' }}
+              {{ calculateBreakdownTotal(researchType || '') | myrCurrency }}
             </div>
           </div>
 
@@ -543,7 +543,9 @@
                   <div class="form-field">
                     <label class="form-label">Sponsorship Amount by External (RM)</label>
                     <input
-                      type="number"
+                      appDecimalAmount
+                      type="text"
+                      inputmode="decimal"
                       class="input--text"
                       formControlName="sponsoredAmountExternal"
                       placeholder="0.00"
@@ -590,7 +592,9 @@
                   <div class="form-field">
                     <label class="form-label">Sponsorship Amount by APU </label>
                     <input
-                      type="number"
+                      appDecimalAmount
+                      type="text"
+                      inputmode="decimal"
                       class="input--text input--readonly"
                       formControlName="sponsorshipAmountAPU"
                       readonly
@@ -605,7 +609,9 @@
             <div class="form-field total-field">
               <label class="form-label">Cost to be Borne by Applicant (RM)</label>
               <input
-                type="number"
+                appDecimalAmount
+                type="text"
+                inputmode="decimal"
                 class="input--text input--readonly"
                 formControlName="costByApplicant"
                 readonly
@@ -637,7 +643,7 @@
           <div class="total-display">
             <span class="total-label">Total in RM</span>
             <div class="total-amount">
-              {{ calculateBreakdownTotal(researchType || '') | number: '1.2-2' }}
+              {{ calculateBreakdownTotal(researchType || '') | myrCurrency }}
             </div>
           </div>
 
@@ -652,7 +658,9 @@
                   <div class="form-field">
                     <label class="form-label">Sponsorship Amount by External (RM)</label>
                     <input
-                      type="number"
+                      appDecimalAmount
+                      type="text"
+                      inputmode="decimal"
                       class="input--text"
                       formControlName="sponsoredAmountExternal"
                       placeholder="0.00"
@@ -699,7 +707,9 @@
                   <div class="form-field">
                     <label class="form-label">Sponsorship Amount by APU (RM)</label>
                     <input
-                      type="number"
+                      appDecimalAmount
+                      type="text"
+                      inputmode="decimal"
                       class="input--text input--readonly"
                       formControlName="sponsorshipAmountAPU"
                       readonly
@@ -714,7 +724,9 @@
             <div class="form-field total-field">
               <label class="form-label">Cost to be Borne by Applicant (RM)</label>
               <input
-                type="number"
+                appDecimalAmount
+                type="text"
+                inputmode="decimal"
                 class="input--text input--readonly"
                 formControlName="costByApplicant"
                 readonly
@@ -901,7 +913,9 @@
       <label for="costInRM" class="form-label">Cost in RM (approximate)</label>
       <input
         id="costInRM"
-        type="number"
+        appDecimalAmount
+        type="text"
+        inputmode="decimal"
         class="input--text"
         formControlName="costInRM"
         readonly

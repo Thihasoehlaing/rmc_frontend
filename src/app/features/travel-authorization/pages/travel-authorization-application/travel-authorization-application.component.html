@@ -770,10 +770,10 @@
         <!-- Supporting Documents -->
         <div class="form-field">
           <label class="form-label">Supporting Documents</label>
-          <p class="form-hint">Max file size: 10MB. Allowed file types: PDF only.</p>
+          <p class="form-hint">Max file size: 4MB. Allowed file types: PDF only.</p>
           <app-file-upload
             [accept]="'.pdf'"
-            [maxSizeMB]="10"
+            [maxSizeMB]="4"
             (fileSelected)="onFileSelected($event)"
           >
           </app-file-upload>

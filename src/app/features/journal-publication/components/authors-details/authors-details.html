@@ -277,15 +277,15 @@
         <div class="form-group">
           <label class="is-required">Staff</label>
           <app-searchable-dropdown
-            [options]="staffOptions"
+            [options]="staffOptions()"
             [searchable]="true"
-            [loading]="staffOptionsLoading"
+            [loading]="staffOptionsLoading()"
             placeholder="Search staff..."
             formControlName="staffName"
             (searchChange)="loadAcademicStaffOptions($event)"
           >
           </app-searchable-dropdown>
-          @if (staffOptionsLoadFailed) {
+          @if (staffOptionsLoadFailed()) {
             <small class="text-danger">Unable to load staff options. Try searching again.</small>
           }
           <app-validation-message
@@ -378,7 +378,7 @@
           <label for="schoolDept2" class="is-required">School / Department</label>
           <app-searchable-dropdown
             id="schoolDept2"
-            [options]="departmentOptions"
+            [options]="departmentOptions()"
             [searchable]="true"
             formControlName="schoolDepartment"
             placeholder="Search and select school/department..."
@@ -496,7 +496,7 @@
         <div class="form-group">
           <label>Type of Organisation <span class="asterisk">*</span></label>
           <app-searchable-dropdown
-            [options]="organisationTypeOptions"
+            [options]="organisationTypeOptions()"
             [searchable]="true"
             placeholder="Search organisation type..."
             formControlName="typeOfOrganisation"

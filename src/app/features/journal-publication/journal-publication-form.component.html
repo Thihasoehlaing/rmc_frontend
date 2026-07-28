@@ -17,18 +17,18 @@
   >
   </app-step-indicator>
 
-  @if (loadError || actionError || saveSuccess || submitSuccess) {
+  @if (loadError() || actionError() || saveSuccess() || submitSuccess()) {
     <div class="journal-app__messages" aria-live="polite">
-      @if (loadError) {
-        <p class="form-hint journal-app__message journal-app__message--warning">{{ loadError }}</p>
+      @if (loadError(); as message) {
+        <p class="form-hint journal-app__message journal-app__message--warning">{{ message }}</p>
       }
-      @if (actionError) {
-        <p class="form-error-msg journal-app__message">{{ actionError }}</p>
+      @if (actionError(); as message) {
+        <p class="form-error-msg journal-app__message">{{ message }}</p>
       }
-      @if (saveSuccess) {
+      @if (saveSuccess()) {
         <p class="form-hint journal-app__message journal-app__message--success">Journal draft saved.</p>
       }
-      @if (submitSuccess) {
+      @if (submitSuccess()) {
         <p class="form-hint journal-app__message journal-app__message--success">Journal application submitted.</p>
       }
     </div>
@@ -93,7 +93,7 @@
   <!-- ── 3. Main Form ──────────────────────────────────────────── -->
   <fieldset
     class="form-container application-form-surface"
-    [disabled]="workflow.isFormReadOnly() || isOptionsLoading || isSaving || isSubmitting"
+    [disabled]="workflow.isFormReadOnly() || isOptionsLoading || isSaving() || isSubmitting()"
   >
     @if (isOptionsLoading) {
       <div class="journal-app__loading" aria-live="polite">Loading journal options...</div>
@@ -190,8 +190,8 @@
   <app-form-wizard-nav
     [currentStep]="currentStep"
     [totalSteps]="totalSteps"
-    [isSaving]="isSaving || isOptionsLoading"
-    [isSubmitting]="isSubmitting"
+    [isSaving]="isSaving() || isOptionsLoading"
+    [isSubmitting]="isSubmitting()"
     [readOnly]="workflow.isFormReadOnly() || isOptionsLoading"
     (prev)="onPrev()"
     (next)="onNext()"

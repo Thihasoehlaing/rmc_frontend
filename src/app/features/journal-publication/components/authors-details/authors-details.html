@@ -24,15 +24,13 @@
             <div class="table-scroll">
               <app-data-table
                 [columns]="apuStaffColumns"
-                [rows]="getPaginatedApuStaffControls()"
+                [rows]="testSubsections.controls"
                 [hoverable]="true"
                 [striped]="true"
               >
                 <ng-template #rowTemplate let-row let-index="index">
                   <tr>
-                    <td class="col-no text-muted is-align-center">
-                      {{ (apuStaffCurrentPage - 1) * apuStaffPageSize + index + 1 }}
-                    </td>
+                    <td class="col-no text-muted is-align-center">{{ index + 1 }}</td>
                     <td>{{ row.value.staffName }}</td>
                     <td>{{ row.value.schoolDepartment }}</td>
                     <td>{{ row.value.affiliation }}</td>
@@ -41,12 +39,7 @@
                         <button
                           type="button"
                           class="btn-icon btn-icon--edit"
-                          (click)="
-                            openEditModal(
-                              'apu-staff',
-                              (apuStaffCurrentPage - 1) * apuStaffPageSize + index
-                            )
-                          "
+                          (click)="openEditModal('apu-staff', index)"
                           aria-label="Edit entry"
                         >
                           <app-table-action-icon action="edit"></app-table-action-icon>
@@ -54,11 +47,7 @@
                         <button
                           type="button"
                           class="btn-icon btn-icon--delete"
-                          (click)="
-                            deleteTestSubsection(
-                              (apuStaffCurrentPage - 1) * apuStaffPageSize + index
-                            )
-                          "
+                          (click)="deleteTestSubsection(index)"
                           aria-label="Remove entry"
                         >
                           <app-table-action-icon action="delete"></app-table-action-icon>
@@ -104,15 +93,13 @@
               <app-data-table
                 class="co-author-table"
                 [columns]="studentColumns"
-                [rows]="getPaginatedStudentCoAuthorsControls()"
+                [rows]="studentCoAuthors.controls"
                 [hoverable]="true"
                 [striped]="true"
               >
                 <ng-template #rowTemplate let-row let-index="index">
                   <tr>
-                    <td class="col-no text-muted is-align-center">
-                      {{ (studentCoAuthorsCurrentPage - 1) * studentCoAuthorsPageSize + index + 1 }}
-                    </td>
+                    <td class="col-no text-muted is-align-center">{{ index + 1 }}</td>
                     <td>{{ row.value.tpNumber }}</td>
                     <td>{{ row.value.fullName }}</td>
                     <td>{{ row.value.schoolDepartment }}</td>
@@ -122,12 +109,7 @@
                         <button
                           type="button"
                           class="btn-icon btn-icon--edit"
-                          (click)="
-                            openEditModal(
-                              'student',
-                              (studentCoAuthorsCurrentPage - 1) * studentCoAuthorsPageSize + index
-                            )
-                          "
+                          (click)="openEditModal('student', index)"
                           aria-label="Edit entry"
                         >
                           <app-table-action-icon action="edit"></app-table-action-icon>
@@ -135,11 +117,7 @@
                         <button
                           type="button"
                           class="btn-icon btn-icon--delete"
-                          (click)="
-                            deleteStudentCoAuthor(
-                              (studentCoAuthorsCurrentPage - 1) * studentCoAuthorsPageSize + index
-                            )
-                          "
+                          (click)="deleteStudentCoAuthor(index)"
                           aria-label="Remove entry"
                         >
                           <app-table-action-icon action="delete"></app-table-action-icon>
@@ -197,15 +175,13 @@
               <app-data-table
                 class="co-author-table"
                 [columns]="nonApuColumns"
-                [rows]="getPaginatedNonApuCoAuthorsControls()"
+                [rows]="nonApuCoAuthors.controls"
                 [hoverable]="true"
                 [striped]="true"
               >
                 <ng-template #rowTemplate let-row let-index="index">
                   <tr>
-                    <td class="col-no text-muted is-align-center">
-                      {{ (nonApuCoAuthorsCurrentPage - 1) * nonApuCoAuthorsPageSize + index + 1 }}
-                    </td>
+                    <td class="col-no text-muted is-align-center">{{ index + 1 }}</td>
                     <td>{{ row.value.fullName }}</td>
                     <td>{{ row.value.email }}</td>
                     <td>{{ formatCountry(row.value.country) }}</td>
@@ -217,12 +193,7 @@
                         <button
                           type="button"
                           class="btn-icon btn-icon--edit"
-                          (click)="
-                            openEditModal(
-                              'non-apu',
-                              (nonApuCoAuthorsCurrentPage - 1) * nonApuCoAuthorsPageSize + index
-                            )
-                          "
+                          (click)="openEditModal('non-apu', index)"
                           aria-label="Edit entry"
                         >
                           <app-table-action-icon action="edit"></app-table-action-icon>
@@ -230,11 +201,7 @@
                         <button
                           type="button"
                           class="btn-icon btn-icon--delete"
-                          (click)="
-                            deleteNonApuCoAuthor(
-                              (nonApuCoAuthorsCurrentPage - 1) * nonApuCoAuthorsPageSize + index
-                            )
-                          "
+                          (click)="deleteNonApuCoAuthor(index)"
                           aria-label="Remove entry"
                         >
                           <app-table-action-icon action="delete"></app-table-action-icon>

@@ -179,7 +179,8 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
   isSubmitting = computed(() => this.submissionState() !== 'IDLE');
   submitAttempted = signal(false);
   showValidationSummary = signal(false);
-  isViewOnly = computed(() => !this.workflow.currentUserCanAct());
+  isAdminReadOnlyDraft = signal(false);
+  isViewOnly = computed(() => this.isAdminReadOnlyDraft() || !this.workflow.currentUserCanAct());
 
   /**
    * The json-server record ID for the currently loaded application.
@@ -1186,7 +1187,9 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
       nextUsers: [],
       history: [],
     });
-    this.workflow.currentUserCanAct.set(!!requestRow.can_act || status === 'draft');
+    const adminReadOnly = this.isSystemAdminReadOnlyRequest(requestRow);
+    this.isAdminReadOnlyDraft.set(adminReadOnly);
+    this.workflow.currentUserCanAct.set(!adminReadOnly && (!!requestRow.can_act || status === 'draft'));
     this.syncWorkflowFromForm();
   }
 
@@ -1901,6 +1904,14 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
         : 'Failed to submit your application. Please try again.');
     this.submissionErrorMessage.set(msg);
     this.submissionState.set('ERROR');
+  }
+
+  private isSystemAdminReadOnlyRequest(request: Record<string, unknown>): boolean {
+    if (!this.auth.inGroup('SystemAdmin')) return false;
+    const adminView = this.route.snapshot.queryParamMap.get('admin_view')?.toLowerCase() === 'true';
+    const applicantUsername = String(request['applicant_staff_username'] ?? '').trim().toLowerCase();
+    const currentUsername = this.auth.currentUser()?.username?.trim().toLowerCase();
+    return adminView || Boolean(applicantUsername && currentUsername && applicantUsername !== currentUsername);
   }
 
   // ── Notification dispatch ──────────────────────────────────────────────────

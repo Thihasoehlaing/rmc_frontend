@@ -4,6 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { finalize, forkJoin } from 'rxjs';
 
 import { CachedFormOption, FormCacheService } from '../../../core/services/form-cache.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { formRoute, formTypeLabel, requestIdOf } from '../../../core/services/request-display.util';
 import {
   RequestSummaryDto,
@@ -40,11 +41,13 @@ export class DraftsComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly auth = inject(AuthService);
 
   private raw = signal<RequestSummaryDto[]>([]);
   private forms = signal<CachedFormOption[]>([]);
   loading = signal(true);
   error = signal<string | null>(null);
+  deletingRequestId = signal<number | null>(null);
   searchQuery = signal('');
   createdDate = signal('');
   selectedType = signal('all');
@@ -52,6 +55,11 @@ export class DraftsComponent implements OnInit {
   page = signal(1);
   pageSize = signal(10);
   readonly pageSizeOptions = [10, 15, 30, 50];
+  readonly isSystemAdmin = computed(() => this.auth.inGroup('SystemAdmin'));
+  readonly canDeleteDrafts = computed(() => {
+    const username = this.auth.currentUser()?.username?.trim().toLowerCase();
+    return this.isSystemAdmin() && username === 'thiha.hlaing';
+  });
 
   readonly skeletonColumns: SkeletonColumn[] = [
     { width: '72px' },
@@ -79,7 +87,7 @@ export class DraftsComponent implements OnInit {
     const createdDate = this.createdDate();
     const type = this.selectedType();
     const items = this.raw()
-      .filter((app) => DRAFT_STATUSES.has(app.status_code))
+      .filter((app) => DRAFT_STATUSES.has((app.status_code ?? '').toLowerCase()))
       .filter((app) => (app.form_code ?? '').toUpperCase() !== 'EXTERNAL')
       .filter((app) => type === 'all' || (app.form_code ?? '').toLowerCase() === type)
       .filter((app) => !query || this.getCode(app).toLowerCase().includes(query))
@@ -110,7 +118,11 @@ export class DraftsComponent implements OnInit {
       });
 
     forkJoin({
-      requests: this.requests.getMyRequests({ page: 1, perPage: 100 }),
+      requests: this.requests.getMyRequests({
+        page: 1,
+        perPage: 100,
+        admin: this.isSystemAdmin(),
+      }),
       forms: this.formCache.getActiveForms(true),
     })
       .pipe(finalize(() => this.loading.set(false)))
@@ -168,7 +180,43 @@ export class DraftsComponent implements OnInit {
   openDraft(app: RequestSummaryDto): void {
     const requestId = requestIdOf(app);
     if (requestId == null) return;
-    this.router.navigate([formRoute(app.form_code)], { queryParams: { request_id: requestId } });
+    this.router.navigate([formRoute(app.form_code)], {
+      queryParams: {
+        request_id: requestId,
+        ...(this.isSystemAdmin() ? { admin_view: 'true' } : {}),
+      },
+    });
+  }
+
+  deleteDraft(app: RequestSummaryDto): void {
+    const requestId = requestIdOf(app);
+    if (requestId == null || this.deletingRequestId() != null || !this.canDeleteDrafts()) return;
+
+    const code = this.getCode(app);
+    if (!confirm(`Delete draft ${code} and all related data? This cannot be undone.`)) {
+      return;
+    }
+
+    this.deletingRequestId.set(requestId);
+    this.error.set(null);
+    this.requests
+      .deleteDraftRequest(requestId)
+      .pipe(finalize(() => this.deletingRequestId.set(null)))
+      .subscribe({
+        next: () => {
+          this.raw.update((items) => items.filter((item) => requestIdOf(item) !== requestId));
+          if (this.page() > this.totalPages()) {
+            this.page.set(this.totalPages());
+          }
+        },
+        error: (err) => {
+          this.error.set(err?.error?.message || 'Could not delete this draft. Please try again.');
+        },
+      });
+  }
+
+  getOpenActionLabel(): string {
+    return this.isSystemAdmin() ? 'View draft' : 'Continue draft';
   }
 
   getCode(app: RequestSummaryDto): string {

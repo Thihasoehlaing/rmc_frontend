@@ -17,7 +17,7 @@
   >
   </app-step-indicator>
 
-  @if (loadError() || actionError() || saveSuccess() || submitSuccess()) {
+  @if (loadError() || actionError() || saveSuccess() || submitSuccess() || isAdminReadOnlyDraft()) {
     <div class="journal-app__messages" aria-live="polite">
       @if (loadError(); as message) {
         <p class="form-hint journal-app__message journal-app__message--warning">{{ message }}</p>
@@ -30,6 +30,11 @@
       }
       @if (submitSuccess()) {
         <p class="form-hint journal-app__message journal-app__message--success">Journal application submitted.</p>
+      }
+      @if (isAdminReadOnlyDraft()) {
+        <p class="form-hint journal-app__message journal-app__message--warning">
+          System Admin view only. This draft can be inspected, but cannot be saved or submitted.
+        </p>
       }
     </div>
   }
@@ -93,7 +98,7 @@
   <!-- ── 3. Main Form ──────────────────────────────────────────── -->
   <fieldset
     class="form-container application-form-surface"
-    [disabled]="workflow.isFormReadOnly() || isOptionsLoading || isSaving() || isSubmitting()"
+    [disabled]="isEffectiveFormReadOnly() || isOptionsLoading || isSaving() || isSubmitting()"
   >
     @if (isOptionsLoading) {
       <div class="journal-app__loading" aria-live="polite">Loading journal options...</div>
@@ -192,7 +197,7 @@
     [totalSteps]="totalSteps"
     [isSaving]="isSaving() || isOptionsLoading"
     [isSubmitting]="isSubmitting()"
-    [readOnly]="workflow.isFormReadOnly() || isOptionsLoading"
+    [readOnly]="isEffectiveFormReadOnly() || isOptionsLoading"
     (prev)="onPrev()"
     (next)="onNext()"
     (saveDraft)="onSaveDraft()"

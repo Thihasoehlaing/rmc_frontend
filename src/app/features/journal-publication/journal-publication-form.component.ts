@@ -30,6 +30,7 @@ import {
 import { JournalOptionsService } from './services/journal-options.service';
 import { ToastService } from '../../core/services/toast.service';
 import { ActionLoadingService } from '../../core/services/action-loading.service';
+import { AuthService } from '../../core/services/auth.service';
 import {
   RequestCommentDto,
   WorkflowRequestsService,
@@ -64,6 +65,7 @@ export class JournalPublicationFormComponent {
   private toastService = inject(ToastService);
   private workflowRequests = inject(WorkflowRequestsService);
   private actionLoading = inject(ActionLoadingService);
+  private auth = inject(AuthService);
   requestId: number | null = this.readRequestId();
   isOptionsLoading = false;
   readonly loadError = signal<string | null>(null);
@@ -439,6 +441,7 @@ export class JournalPublicationFormComponent {
   readonly isSubmitting = signal(false);
   readonly saveSuccess = signal(false);
   readonly submitSuccess = signal(false);
+  readonly isAdminReadOnlyDraft = signal(false);
 
   constructor() {
     this.loadOptionsAndInitialForm();
@@ -485,6 +488,7 @@ export class JournalPublicationFormComponent {
         void this.router.navigateByUrl(this.journalDetailPath(response.data, requestId));
         return;
       }
+      this.isAdminReadOnlyDraft.set(this.isSystemAdminReadOnlyRequest(response.data?.request ?? {}));
       this.hydrateFromApi(response.data);
       await this.loadSectionComments(requestId);
     } catch {
@@ -517,6 +521,11 @@ export class JournalPublicationFormComponent {
   }
 
   async onSaveDraft() {
+    if (this.isAdminReadOnlyDraft()) {
+      this.actionError.set('System Admin can view this draft only. Save is disabled.');
+      return;
+    }
+
     if (this.isSaving() || this.isSubmitting() || this.isOptionsLoading) return;
     this.isSaving.set(true);
     this.actionError.set(null);
@@ -537,6 +546,11 @@ export class JournalPublicationFormComponent {
   }
 
   async onSubmit() {
+    if (this.isAdminReadOnlyDraft()) {
+      this.actionError.set('System Admin can view this draft only. Submit is disabled.');
+      return;
+    }
+
     if (this.isSaving() || this.isSubmitting() || this.isOptionsLoading) return;
     this.submitAttempted = true;
     this.validateCurrentStep(true);
@@ -858,5 +872,17 @@ export class JournalPublicationFormComponent {
   private extractErrorMessage(error: unknown, fallback: string): string {
     const maybeError = error as { error?: { message?: string }; message?: string };
     return maybeError?.error?.message || maybeError?.message || fallback;
+  }
+
+  isEffectiveFormReadOnly(): boolean {
+    return this.workflow.isFormReadOnly() || this.isAdminReadOnlyDraft();
+  }
+
+  private isSystemAdminReadOnlyRequest(request: Record<string, unknown>): boolean {
+    if (!this.auth.inGroup('SystemAdmin')) return false;
+    const adminView = this.route.snapshot.queryParamMap.get('admin_view')?.toLowerCase() === 'true';
+    const applicantUsername = String(request['applicant_staff_username'] ?? '').trim().toLowerCase();
+    const currentUsername = this.auth.currentUser()?.username?.trim().toLowerCase();
+    return adminView || Boolean(applicantUsername && currentUsername && applicantUsername !== currentUsername);
   }
 }

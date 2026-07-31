@@ -12,6 +12,10 @@ export const systemOrRmcAdminPermission = {
   anyOf: ['Admin', 'RMC'],
 } satisfies NavPermission;
 
+export const reportPermission = {
+  anyOf: ['SystemAdmin', 'Admin', 'RMC', 'HR', 'Finance'],
+} satisfies NavPermission;
+
 export const academicHosChancelloryPermission = {
   anyCondition: [
     {

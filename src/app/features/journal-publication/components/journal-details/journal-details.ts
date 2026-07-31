@@ -792,7 +792,7 @@ export class JournalDetails implements OnInit, OnDestroy {
           ? null
           : this.journalOptionsService.getVoteNumberId(entry.itemDescription),
       account_code_id:
-        projectType === 'external-research'
+        projectType === 'external-research' || projectType === 'non-research'
           ? null
           : this.journalOptionsService.getAccountCodeId(accountCode),
       cost_in_foreign_currency: this.toMoneyString(entry.cost),

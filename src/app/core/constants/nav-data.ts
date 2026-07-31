@@ -95,6 +95,12 @@ export const NAVIGATION_DATA: NavGroup[] = [
                         formCode: 'JOURNAL',
                         permission: fundingApplicationPermission,
                     },
+                    {
+                        label: 'Finance Claim List',
+                        icon: 'request_page',
+                        route: '/finance-claim-list',
+                        permission: fundingApplicationPermission,
+                    },
                     // RA/GRA: (full_time OR contract) AND academic
                     {
                         label: 'RA/GRA Application',

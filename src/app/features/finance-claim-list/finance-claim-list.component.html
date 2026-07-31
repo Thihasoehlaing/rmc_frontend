@@ -1,0 +1,175 @@
+<main class="forms-page forms-page--settings finance-claim-page">
+	
+	@if (viewMode() === 'list') {
+		<!-- ══════════════════════════════════════════════════════════
+			 LIST VIEW
+		══════════════════════════════════════════════════════════════ -->
+		<header class="finance-claim-page__header">
+			<div>
+				<h1>Finance Claim</h1>
+			</div>
+		</header>
+
+		<section class="finance-claim-approved-section">
+			<div class="forms-table-card__title-row">
+				<h2>Approved Applications</h2>
+				<span class="forms-table-card__count">{{ filteredClaims().length }}</span>
+			</div>
+			<p>Select an approved application to submit a finance claim.</p>
+		</section>
+
+		<section class="staff-access-search-panel finance-claim-search-panel" aria-label="Finance claim search">
+			<app-submissions-search
+				placeholder="Search by code or title..."
+				[value]="searchQuery()"
+				(search)="onSearch($event)"
+				(refresh)="resetFilters()"
+			></app-submissions-search>
+		</section>
+
+		<app-submission-form-tabs
+			[tabs]="tabs"
+			[selectedValue]="selectedTab()"
+			ariaLabel="Finance claim filters"
+			(selectedValueChange)="setTab($event)"
+		/>
+
+		<section class="forms-table-card finance-claim-table-card">
+
+			<div class="finance-claim-table-scroll-hint-wrapper">
+				<app-table-scroll-hint></app-table-scroll-hint>
+			</div>
+
+			<app-data-table
+				class="finance-claim-table"
+				[columns]="columns"
+				[rows]="pagedClaims()"
+				[rowTrackFn]="rowTrackFn"
+			>
+				<ng-template #emptyTemplate>
+					<div class="finance-claim-empty-state">
+						<span class="material-icons" aria-hidden="true">search_off</span>
+						<strong>No approved applications found</strong>
+						<span>Try a different code, title, or tab filter.</span>
+					</div>
+				</ng-template>
+
+				<ng-template #rowTemplate let-row let-index="index">
+					<tr>
+						<td>{{ index + 1 }}</td>
+						<td>
+							<span class="finance-claim-code">{{ row.code }}</span>
+						</td>
+						<td>
+							<span class="badge badge-form-type badge-form-type--{{ row.category }}">
+								<span class="material-icons badge-form-type__icon" aria-hidden="true">
+									{{ row.category === 'conference' ? 'event' : row.category === 'journal' ? 'description' : 'science' }}
+								</span>
+								{{ row.formType }}
+							</span>
+						</td>
+						<td>
+							<div class="finance-claim-description">
+								<span class="data-table__title">{{ row.title }}</span>
+								<span class="data-table__subtitle">Submitted: {{ formatDate(row.submittedDate) }}</span>
+							</div>
+						</td>
+						<td>
+							<span class="finance-claim-date">{{ formatDate(row.approvedDate) }}</span>
+						</td>
+						<td>
+							<span class="finance-claim-date">{{ formatDate(row.createdDate) }}</span>
+						</td>
+						<td class="is-align-right">
+							<span class="finance-claim-amount">{{ formatCurrency(row.estimatedExpenses) }}</span>
+						</td>
+						<td class="is-align-center">
+							<div class="table-actions">
+								<button class="btn btn-sm btn-primary finance-claim-claim-button" type="button" (click)="onClaim(row)">
+									Claim
+								</button>
+							</div>
+						</td>
+					</tr>
+				</ng-template>
+			</app-data-table>
+
+			<footer class="forms-table-card__footer finance-claim-pagination">
+				<app-pagination
+					[currentPage]="currentPage()"
+					[totalPages]="totalPages()"
+					[pageSize]="pageSize()"
+					[pageSizeOptions]="pageSizeOptions"
+					[totalItems]="filteredClaims().length"
+					[itemCount]="pagedClaims().length"
+					itemLabel="claims"
+					(pageChange)="onPageChange($event)"
+					(pageSizeChange)="onPageSizeChange($event)"
+				></app-pagination>
+			</footer>
+		</section>
+	} @else {
+		<!-- ══════════════════════════════════════════════════════════
+			 DETAIL VIEW (CLAIM & EXPENSES + DECLARATION)
+		══════════════════════════════════════════════════════════════ -->
+		<div class="finance-claim-detail-container">
+			<header class="finance-claim-detail-header">
+				<button class="btn btn-ghost back-button" type="button" (click)="onBackToList()">
+					<span class="material-icons">arrow_back</span>
+					Back to Finance Claim
+				</button>
+
+				<div class="finance-claim-info-card">
+					<div class="finance-claim-info-card__content">
+						<div class="finance-claim-info-card__left">
+							<h1 class="finance-claim-info-card__title">Finance Claim</h1>
+							<div class="finance-claim-info-card__meta">
+								<span class="material-icons finance-claim-info-card__icon">description</span>
+								<span class="finance-claim-info-card__ref">Ref: {{ selectedClaim()?.code }}</span>
+								<span class="finance-claim-info-card__separator">→</span>
+								<span class="finance-claim-info-card__form-type">{{ selectedClaim()?.formType }}</span>
+							</div>
+							<p class="finance-claim-info-card__subtitle">{{ selectedClaim()?.title }}</p>
+						</div>
+						<div class="finance-claim-info-card__right">
+							<span class="finance-claim-info-card__approved">Approved: {{ formatDate(selectedClaim()?.approvedDate || '') }}</span>
+						</div>
+					</div>
+				</div>
+			</header>
+
+			<app-step-indicator
+				[currentStep]="currentStep()"
+				[steps]="steps"
+				[stepStatuses]="stepStatuses()"
+				[submitAttempted]="submitAttempted()"
+				(stepClick)="onStepClick($event)"
+			></app-step-indicator>
+
+			<div class="finance-claim-detail-content">
+				@if (currentStep() === 1) {
+					<app-claim-expenses 
+						(formValidityChange)="onClaimExpensesValidityChange($event)"
+					></app-claim-expenses>
+				}
+				@if (currentStep() === 2) {
+					<app-finance-claim-declaration 
+						(formValidityChange)="onDeclarationValidityChange($event)"
+					></app-finance-claim-declaration>
+				}
+			</div>
+
+			<app-form-wizard-nav
+				[currentStep]="currentStep()"
+				[totalSteps]="totalSteps"
+				[isSaving]="isSaving()"
+				[isSubmitting]="isSubmitting()"
+				(prev)="onPrev()"
+				(next)="onNext()"
+				(saveDraft)="onSaveDraft()"
+				(submitForm)="onSubmit()"
+			></app-form-wizard-nav>
+		</div>
+	}
+
+</main>

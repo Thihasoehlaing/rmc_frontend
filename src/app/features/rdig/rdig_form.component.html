@@ -94,6 +94,12 @@
       >
       </app-step-indicator>
 
+      @if (isAdminReadOnlyDraft()) {
+        <p class="form-hint admin-readonly-note">
+          System Admin view only. This draft can be inspected, but cannot be saved or submitted.
+        </p>
+      }
+
       <div class="main-section application-form-content">
       @if (currentStep() === 1) {
         @if (hasActiveApplicantWindow()) {

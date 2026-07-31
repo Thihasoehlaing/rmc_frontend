@@ -267,6 +267,19 @@ td:first-child {
     outline: 2px solid var(--color-primary);
     outline-offset: 2px;
   }
+
+  &:disabled {
+    cursor: wait;
+    opacity: 0.55;
+  }
+}
+
+.table-action--delete {
+  color: var(--color-danger);
+
+  &:hover {
+    background: color-mix(in srgb, var(--color-danger) 12%, transparent);
+  }
 }
 
 .dropdown-pagination-panel {

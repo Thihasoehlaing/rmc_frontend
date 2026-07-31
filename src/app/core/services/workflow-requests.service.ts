@@ -310,6 +310,10 @@ export class WorkflowRequestsService {
     });
   }
 
+  deleteDraftRequest(requestId: number): Observable<ApiResponse<RequestSummaryDto>> {
+    return this.http.delete<ApiResponse<RequestSummaryDto>>(`${this.base}/requests/${requestId}`);
+  }
+
   getPendingRequests(query?: ListQuery): Observable<ApiResponse<PaginatedData<RequestSummaryDto>>> {
     return this.http.get<ApiResponse<PaginatedData<RequestSummaryDto>>>(
       `${this.base}/requests/pending`,

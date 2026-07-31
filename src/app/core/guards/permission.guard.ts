@@ -27,6 +27,12 @@ export const permissionGuard: CanActivateFn = route => {
 
   if (permService.canAccess(permission)) return true;
 
+  const isAdminDraftView =
+    route.queryParamMap.get('admin_view')?.toLowerCase() === 'true' &&
+    (route.queryParamMap.has('request_id') || route.queryParamMap.has('id')) &&
+    authService.inGroup('SystemAdmin');
+  if (isAdminDraftView) return true;
+
   // Authenticated but missing required groups: show a clear forbidden page.
   return router.createUrlTree(['/no-access']);
 };

@@ -170,7 +170,7 @@ import {
                   #conferenceDetailsStep
                   [workflow]="workflow"
                   [applicantDetailsForm]="applicantDetailsForm"
-                  [isFormReadOnly]="workflow.isFormReadOnly()"
+                  [isFormReadOnly]="isEffectiveFormReadOnly()"
                 >
                 </app-conference-details-form>
               }
@@ -178,7 +178,7 @@ import {
                 <app-author-details-form
                   #authorDetailsStep
                   [workflow]="workflow"
-                  [isFormReadOnly]="workflow.isFormReadOnly()"
+                  [isFormReadOnly]="isEffectiveFormReadOnly()"
                 >
                 </app-author-details-form>
               }
@@ -186,7 +186,7 @@ import {
                 <app-supporting-documents-form
                   #supportingDocumentsStep
                   [workflow]="workflow"
-                  [isFormReadOnly]="workflow.isFormReadOnly()"
+                  [isFormReadOnly]="isEffectiveFormReadOnly()"
                 >
                 </app-supporting-documents-form>
               }
@@ -194,7 +194,7 @@ import {
                 <app-declaration-form
                   #declarationStep
                   [workflow]="workflow"
-                  [isFormReadOnly]="workflow.isFormReadOnly()"
+                  [isFormReadOnly]="isEffectiveFormReadOnly()"
                 >
                 </app-declaration-form>
               }
@@ -204,6 +204,12 @@ import {
           <!-- Submission feedback -->
           @if (submissionErrorMessage()) {
             <p class="submission-error">{{ submissionErrorMessage() }}</p>
+          }
+
+          @if (isAdminReadOnlyDraft()) {
+            <p class="submission-error submission-info">
+              System Admin view only. This draft can be inspected, but cannot be saved or submitted.
+            </p>
           }
 
           <app-form-validation-warning-dialog
@@ -217,6 +223,7 @@ import {
             [totalSteps]="wizardSteps.length"
             [isSaving]="isSaving()"
             [isSubmitting]="isSubmitting()"
+            [readOnly]="isEffectiveFormReadOnly()"
             (prev)="previousStep()"
             (next)="nextStep()"
             (saveDraft)="saveDraft()"
@@ -530,6 +537,10 @@ import {
       margin: 0;
     }
 
+    .submission-info {
+      color: var(--color-primary);
+    }
+
     @keyframes stepFadeIn {
       from {
         opacity: 0;
@@ -571,6 +582,10 @@ export class ConferenceApplication implements OnInit {
   isLoadingApplication = signal(false);
   submissionErrorMessage = signal('');
   showMissingFieldsWarning = signal(false);
+  isAdminReadOnlyDraft = signal(false);
+  readonly isEffectiveFormReadOnly = computed(() =>
+    this.workflow.isFormReadOnly() || this.isAdminReadOnlyDraft(),
+  );
   sectionComments = signal<RequestCommentDto[]>([]);
   isLoadingSectionComments = signal(false);
   selectedFeedbackActorCode = signal<string | null>(null);
@@ -774,6 +789,7 @@ export class ConferenceApplication implements OnInit {
           return;
         }
         this.patchFromBackend(response.data);
+        this.isAdminReadOnlyDraft.set(this.isSystemAdminReadOnlyRequest(response.data.request ?? {}));
         this.loadSectionComments(requestId);
         this.isLoadingApplication.set(false);
       },
@@ -1704,6 +1720,11 @@ export class ConferenceApplication implements OnInit {
   }
 
   saveDraft(): void {
+    if (this.isAdminReadOnlyDraft()) {
+      this.submissionErrorMessage.set('System Admin can view this draft only. Save is disabled.');
+      return;
+    }
+
     this.submissionErrorMessage.set('');
     this.isSaving.set(true);
     this.syncToRealBackend().subscribe({
@@ -1723,6 +1744,11 @@ export class ConferenceApplication implements OnInit {
   }
 
   submitForm(): void {
+    if (this.isAdminReadOnlyDraft()) {
+      this.submissionErrorMessage.set('System Admin can view this draft only. Submit is disabled.');
+      return;
+    }
+
     this.submitAttempted.set(true);
     this.flushActiveStepFormState();
 
@@ -1813,6 +1839,14 @@ export class ConferenceApplication implements OnInit {
 
   private extractErrorMessage(error: any, fallback: string): string {
     return error?.error?.message || error?.message || fallback;
+  }
+
+  private isSystemAdminReadOnlyRequest(request: { applicant_staff_username?: string | null }): boolean {
+    if (!this.auth.inGroup('SystemAdmin')) return false;
+    const adminView = this.route.snapshot.queryParamMap.get('admin_view')?.toLowerCase() === 'true';
+    const applicantUsername = String(request.applicant_staff_username ?? '').trim().toLowerCase();
+    const currentUsername = this.auth.currentUser()?.username?.trim().toLowerCase();
+    return adminView || Boolean(applicantUsername && currentUsername && applicantUsername !== currentUsername);
   }
 }
 

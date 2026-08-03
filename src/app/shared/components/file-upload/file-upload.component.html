@@ -30,14 +30,36 @@
   }
 
   @if (displayFileName()) {
-    <div class="file-selected">
-      <span class="material-icons">{{ disabled ? 'visibility' : 'check_circle' }}</span>
-      <div class="file-selected-content">
-        <span>{{ displayFileName() }}</span>
-        @if (disabled) {
-          <a href="javascript:void(0)" class="view-document-link" title="Document is uploaded">View</a>
-        }
-      </div>
+    <div class="file-selected" [class.file-selected--readonly]="disabled">
+      <button
+        type="button"
+        class="file-preview-btn"
+        [disabled]="!canPreviewFile()"
+        title="Preview selected file"
+        aria-label="Preview selected file"
+        (click)="openFilePreview($event)"
+      >
+        <span class="material-icons file-selected-icon">
+          {{ disabled ? 'visibility' : 'description' }}
+        </span>
+        <span class="file-selected-content">
+          <span class="file-selected-name">{{ displayFileName() }}</span>
+          <span class="file-selected-status">
+            {{ canPreviewFile() ? 'Click to preview' : disabled ? 'Uploaded file' : 'Ready to upload' }}
+          </span>
+        </span>
+      </button>
+      @if (!disabled && hasSelectedFile()) {
+        <button
+          type="button"
+          class="file-remove-btn"
+          title="Remove selected file"
+          aria-label="Remove selected file"
+          (click)="removeSelectedFile($event)"
+        >
+          <span class="material-icons">delete</span>
+        </button>
+      }
     </div>
   }
 

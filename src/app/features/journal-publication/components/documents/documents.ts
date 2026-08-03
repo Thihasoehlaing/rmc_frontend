@@ -47,6 +47,8 @@ export class DocumentsComponent implements OnInit {
   @Output() formValidityChange = new EventEmitter<boolean>();
   documentsForm!: FormGroup;
   isPreviouslyPublishedWarningOpen = false;
+  uploadedFileUrlsByControl: Record<string, string> = {};
+  private uploadedFileNamesByControl: Record<string, string> = {};
 
   // References to file upload components for manual reset if needed
   @ViewChild('acceptanceNotificationUpload', { static: false })
@@ -126,6 +128,9 @@ export class DocumentsComponent implements OnInit {
     }
 
     const attachmentNames = this.attachmentNamesByControl(data.attachments || []);
+    const attachmentUrls = this.attachmentUrlsByControl(data.attachments || []);
+    this.uploadedFileNamesByControl = attachmentNames;
+    this.uploadedFileUrlsByControl = attachmentUrls;
     this.documentsForm.patchValue(
       {
         ...attachmentNames,
@@ -153,7 +158,7 @@ export class DocumentsComponent implements OnInit {
     } else {
       this.pendingUploads.delete(controlName);
       this.documentsForm.patchValue({
-        [controlName]: null,
+        [controlName]: this.uploadedFileNamesByControl[controlName] || null,
       });
     }
     this.documentsForm.get(controlName)?.markAsTouched();
@@ -213,19 +218,33 @@ export class DocumentsComponent implements OnInit {
   }
 
   private attachmentNamesByControl(attachments: any[]): Record<string, string> {
+    return this.attachmentValuesByControl(attachments, (attachment) => attachment.file_name || '');
+  }
+
+  private attachmentUrlsByControl(attachments: any[]): Record<string, string> {
+    return this.attachmentValuesByControl(
+      attachments,
+      (attachment) => attachment.download_url || attachment.file_url || attachment.url || '',
+    );
+  }
+
+  private attachmentValuesByControl(
+    attachments: any[],
+    valueForAttachment: (attachment: any) => string,
+  ): Record<string, string> {
     const entityToControl = new Map(
       Object.entries(this.documentEntityTypes).map(([control, entity]) => [entity, control]),
     );
     entityToControl.set('scopus_evidence_publication', 'scopusEvidencePublication');
-    const names: Record<string, string> = {};
+    const values: Record<string, string> = {};
 
     for (const attachment of attachments) {
       const controlName = entityToControl.get(attachment.entity_type);
-      if (controlName && !names[controlName]) {
-        names[controlName] = attachment.file_name || '';
+      if (controlName && !values[controlName]) {
+        values[controlName] = valueForAttachment(attachment);
       }
     }
 
-    return names;
+    return values;
   }
 }

@@ -19,6 +19,7 @@
             [accept]="PDF_ACCEPT"
             [maxSizeMB]="MAX_FILE_SIZE_MB"
             [uploadedFileName]="documentsForm.get('acceptanceNotification')?.value"
+            [uploadedFileUrl]="uploadedFileUrlsByControl['acceptanceNotification']"
             placeholder="Upload acceptance notification PDF"
             (fileSelected)="onDocumentSelected('acceptanceNotification', $any($event))"
           >
@@ -41,6 +42,7 @@
             [accept]="PDF_ACCEPT"
             [maxSizeMB]="MAX_FILE_SIZE_MB"
             [uploadedFileName]="documentsForm.get('reviewersFeedback')?.value"
+            [uploadedFileUrl]="uploadedFileUrlsByControl['reviewersFeedback']"
             placeholder="Upload reviewers' feedback PDF"
             (fileSelected)="onDocumentSelected('reviewersFeedback', $any($event))"
           >
@@ -63,6 +65,7 @@
             [accept]="PDF_ACCEPT"
             [maxSizeMB]="MAX_FILE_SIZE_MB"
             [uploadedFileName]="documentsForm.get('scopusEvidencePublication')?.value"
+            [uploadedFileUrl]="uploadedFileUrlsByControl['scopusEvidencePublication']"
             placeholder="Upload SCOPUS CiteScore screenshot PDF"
             (fileSelected)="onDocumentSelected('scopusEvidencePublication', $any($event))"
           >
@@ -87,6 +90,7 @@
             [accept]="PDF_ACCEPT"
             [maxSizeMB]="MAX_FILE_SIZE_MB"
             [uploadedFileName]="documentsForm.get('sriApproval')?.value"
+            [uploadedFileUrl]="uploadedFileUrlsByControl['sriApproval']"
             placeholder="Upload SRI approval PDF"
             (fileSelected)="onDocumentSelected('sriApproval', $any($event))"
           >
@@ -114,6 +118,7 @@
             [accept]="PDF_ACCEPT"
             [maxSizeMB]="MAX_FILE_SIZE_MB"
             [uploadedFileName]="documentsForm.get('turnitinReport')?.value"
+            [uploadedFileUrl]="uploadedFileUrlsByControl['turnitinReport']"
             placeholder="Upload Turnitin report PDF"
             (fileSelected)="onDocumentSelected('turnitinReport', $any($event))"
           >
@@ -136,6 +141,7 @@
             [accept]="PDF_ACCEPT"
             [maxSizeMB]="MAX_FILE_SIZE_MB"
             [uploadedFileName]="documentsForm.get('finalPaperDraft')?.value"
+            [uploadedFileUrl]="uploadedFileUrlsByControl['finalPaperDraft']"
             placeholder="Upload final paper draft PDF"
             (fileSelected)="onDocumentSelected('finalPaperDraft', $any($event))"
           >
@@ -158,6 +164,7 @@
             [accept]="PDF_ACCEPT"
             [maxSizeMB]="MAX_FILE_SIZE_MB"
             [uploadedFileName]="documentsForm.get('journalInvoice')?.value"
+            [uploadedFileUrl]="uploadedFileUrlsByControl['journalInvoice']"
             placeholder="Upload journal invoice PDF"
             (fileSelected)="onDocumentSelected('journalInvoice', $any($event))"
           >

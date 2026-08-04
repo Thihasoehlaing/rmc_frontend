@@ -81,6 +81,25 @@ export interface DingDongTestMailResult {
   sent_at: string | null;
 }
 
+export interface NotificationCheckCreateResult {
+  checked_count: number;
+  processed_approval_count: number;
+  skipped_existing_count: number;
+  skipped_missing_request_count: number;
+  created_notification_count: number;
+  created_notification_ids: number[];
+  failed_count: number;
+  failures: Array<{
+    approval_id: number;
+    request_id: number;
+    request_code: string;
+    action_code: string;
+    from_status_code: string | null;
+    to_status_code: string | null;
+    error: string;
+  }>;
+}
+
 export interface MailLog {
   id: number;
   notification_recipient_id: number;
@@ -145,6 +164,13 @@ export class MonitoringService {
   resendNotificationMail(notificationRecipientId: number): Observable<ApiResponse<NotificationLog>> {
     return this.http.post<ApiResponse<NotificationLog>>(
       `${this.settingsUrl}/notification-logs/${notificationRecipientId}/resend`,
+      {},
+    );
+  }
+
+  checkAndCreateNotifications(): Observable<ApiResponse<NotificationCheckCreateResult>> {
+    return this.http.post<ApiResponse<NotificationCheckCreateResult>>(
+      `${this.settingsUrl}/notification-logs/check-create`,
       {},
     );
   }

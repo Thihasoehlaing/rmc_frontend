@@ -144,6 +144,7 @@ export class MonitoringComponent implements OnInit {
   readonly isLoading = signal(false);
   readonly loadFailed = signal(false);
   readonly resendingRecipientId = signal<number | null>(null);
+  readonly isCheckingNotifications = signal(false);
   readonly dingDongRecipient = 'thiha.hlaing@apu.edu.my';
   readonly dingDongTitle = signal('RMC DingDong Test');
   readonly dingDongMessage = signal('<p>This is a DingDong service test from RMC monitoring.</p>');
@@ -374,6 +375,37 @@ export class MonitoringComponent implements OnInit {
 
   resendButtonLabel(row: MailLog | NotificationLog): string {
     return this.resendingRecipientId() === row.notification_recipient_id ? 'Sending' : 'Resend';
+  }
+
+  checkAndCreateNotifications(): void {
+    if (this.isCheckingNotifications()) return;
+
+    const confirmed = window.confirm(
+      'Check approval history and create missing request notifications? This will also send DingDong mail for newly created notifications.',
+    );
+    if (!confirmed) return;
+
+    this.isCheckingNotifications.set(true);
+    this.monitoringService
+      .checkAndCreateNotifications()
+      .pipe(finalize(() => this.isCheckingNotifications.set(false)))
+      .subscribe({
+        next: response => {
+          const result = response.data;
+          const created = result?.created_notification_count ?? 0;
+          const failed = result?.failed_count ?? 0;
+          if (failed > 0) {
+            this.toastService.info(`Created ${created} notification(s). ${failed} approval(s) failed.`);
+          } else {
+            this.toastService.success(`Created ${created} missing notification(s).`);
+          }
+          this.loadRows();
+        },
+        error: error => {
+          const message = error?.error?.message || 'Unable to check and create notifications.';
+          this.toastService.error(message);
+        },
+      });
   }
 
   formatDateTime(value: string | null | undefined): string {

@@ -230,6 +230,17 @@
         <span class="material-icons">restart_alt</span>
         Reset
       </button>
+      @if (activeTab() === 'notification-logs') {
+        <button
+          class="btn btn-secondary"
+          type="button"
+          (click)="checkAndCreateNotifications()"
+          [disabled]="isLoading() || isCheckingNotifications()"
+        >
+          <span class="material-icons">notification_add</span>
+          {{ isCheckingNotifications() ? 'Checking...' : 'Check & Create Notification' }}
+        </button>
+      }
     </div>
   </section>
 

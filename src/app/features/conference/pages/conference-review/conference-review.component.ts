@@ -29,7 +29,7 @@ import {
   formatMyrCurrency,
 } from '../../../../shared/utils/currency.util';
 
-const COMMENT_MAX_LENGTH = 500;
+const COMMENT_MAX_LENGTH = 1000;
 
 @Component({
   selector: 'app-conference-review',
@@ -660,9 +660,35 @@ export class ConferenceReviewComponent implements OnInit {
   }
 
   printRequest(): void {
-    if (this.requestId != null) {
-      window.open(this.requests.getPrintUrl(this.requestId), '_blank', 'noopener,noreferrer');
+    if (this.requestId == null) {
+      this.feedback.set({
+        type: 'error',
+        text: 'Unable to print before the application is loaded.',
+      });
+      return;
     }
+
+    this.requests
+      .downloadPrint(this.requestId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (response) => {
+          const blob = response.body;
+          if (!blob) return;
+          this.openPrintBlob(
+            blob,
+            this.printFileName(
+              response.headers.get('content-disposition'),
+              this.request()?.request_code || 'conference-request',
+            ),
+          );
+        },
+        error: () =>
+          this.feedback.set({
+            type: 'error',
+            text: 'Could not download the print PDF. Please try again.',
+          }),
+      });
   }
 
   private configureBackTarget(): void {
@@ -687,6 +713,23 @@ export class ConferenceReviewComponent implements OnInit {
   private toNumber(value: unknown): number {
     const number = Number(value ?? 0);
     return Number.isFinite(number) ? number : 0;
+  }
+
+  private openPrintBlob(blob: Blob, fileName: string): void {
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.target = '_blank';
+    anchor.rel = 'noopener';
+    anchor.download = fileName;
+    anchor.click();
+    setTimeout(() => URL.revokeObjectURL(url), 60_000);
+  }
+
+  private printFileName(contentDisposition: string | null, fallbackCode: string): string {
+    const match = contentDisposition?.match(/filename\*?=(?:UTF-8'')?"?([^";]+)"?/i);
+    const filename = match?.[1] ? decodeURIComponent(match[1]) : `${fallbackCode}.pdf`;
+    return filename.toLowerCase().endsWith('.pdf') ? filename : `${filename}.pdf`;
   }
 
   private openDownload(file: ConferenceAttachmentDto): void {

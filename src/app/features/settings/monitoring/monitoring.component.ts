@@ -8,11 +8,19 @@ import {
   DataTableColumn,
   DataTableComponent,
 } from '../../../shared/components/data-table/data-table.component';
+import { ToastService } from '../../../core/services/toast.service';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
 import { TableSkeletonComponent } from '../../../shared/components/table-skeleton/table-skeleton.component';
-import { MailLog, MonitoringService, StaffSyncLog } from './monitoring.service';
+import { TextEditorComponent } from '../../../shared/components/text-editor/text-editor.component';
+import {
+  DingDongTestMailResult,
+  MailLog,
+  MonitoringService,
+  NotificationLog,
+  StaffSyncLog,
+} from './monitoring.service';
 
-type MonitoringTab = 'mail-logs' | 'staff-sync-logs';
+type MonitoringTab = 'mail-logs' | 'notification-logs' | 'dingdong' | 'staff-sync-logs';
 
 interface MonitoringTabConfig {
   key: MonitoringTab;
@@ -32,6 +40,20 @@ const MAIL_LOG_COLUMNS: readonly DataTableColumn[] = [
   { key: 'created', label: 'Created', width: '190px' },
   { key: 'sent', label: 'Sent', width: '190px' },
   { key: 'error', label: 'Error', width: '320px' },
+  { key: 'actions', label: 'Actions', width: '150px', align: 'center', headerAlign: 'center' },
+];
+
+const NOTIFICATION_LOG_COLUMNS: readonly DataTableColumn[] = [
+  { key: 'number', label: 'No.', width: '72px', align: 'center', headerAlign: 'center' },
+  { key: 'request', label: 'Request', width: '190px' },
+  { key: 'event', label: 'Event', width: '220px' },
+  { key: 'recipient', label: 'Recipient', width: '300px' },
+  { key: 'mailStatus', label: 'Mail', width: '130px', align: 'center', headerAlign: 'center' },
+  { key: 'status', label: 'Status Change', width: '230px' },
+  { key: 'createdBy', label: 'Created By', width: '180px' },
+  { key: 'created', label: 'Created', width: '190px' },
+  { key: 'message', label: 'Message', width: '360px' },
+  { key: 'actions', label: 'Actions', width: '150px', align: 'center', headerAlign: 'center' },
 ];
 
 const STAFF_SYNC_COLUMNS: readonly DataTableColumn[] = [
@@ -50,9 +72,25 @@ const TABS: readonly MonitoringTabConfig[] = [
     key: 'mail-logs',
     label: 'Mail Logs',
     title: 'Notification Mail Logs',
-    description: 'Read-only DingDong delivery attempts for request notifications.',
+    description: 'DingDong delivery attempts for request notifications. Resend creates a new attempt log.',
     emptyIcon: 'mark_email_read',
     columns: MAIL_LOG_COLUMNS,
+  },
+  {
+    key: 'notification-logs',
+    label: 'Notification Logs',
+    title: 'Notification Logs',
+    description: 'Request notifications and recipients, including records without mail attempts.',
+    emptyIcon: 'notifications',
+    columns: NOTIFICATION_LOG_COLUMNS,
+  },
+  {
+    key: 'dingdong',
+    label: 'DingDong',
+    title: 'DingDong Test Mail',
+    description: 'Send a fixed-recipient production DingDong test mail.',
+    emptyIcon: 'outgoing_mail',
+    columns: [],
   },
   {
     key: 'staff-sync-logs',
@@ -67,12 +105,20 @@ const TABS: readonly MonitoringTabConfig[] = [
 @Component({
   selector: 'app-monitoring',
   standalone: true,
-  imports: [CommonModule, FormsModule, DataTableComponent, PaginationComponent, TableSkeletonComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    DataTableComponent,
+    PaginationComponent,
+    TableSkeletonComponent,
+    TextEditorComponent,
+  ],
   templateUrl: './monitoring.component.html',
   styleUrls: ['../forms/forms.component.scss', '../workflow/workflow.component.scss', './monitoring.component.scss'],
 })
 export class MonitoringComponent implements OnInit {
   private readonly monitoringService = inject(MonitoringService);
+  private readonly toastService = inject(ToastService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
 
@@ -88,6 +134,7 @@ export class MonitoringComponent implements OnInit {
   readonly syncSource = signal('');
   readonly triggeredBy = signal('');
 
+  readonly notificationLogs = signal<NotificationLog[]>([]);
   readonly mailLogs = signal<MailLog[]>([]);
   readonly staffSyncLogs = signal<StaffSyncLog[]>([]);
   readonly page = signal(1);
@@ -96,6 +143,12 @@ export class MonitoringComponent implements OnInit {
   readonly totalPages = signal(1);
   readonly isLoading = signal(false);
   readonly loadFailed = signal(false);
+  readonly resendingRecipientId = signal<number | null>(null);
+  readonly dingDongRecipient = 'thiha.hlaing@apu.edu.my';
+  readonly dingDongTitle = signal('RMC DingDong Test');
+  readonly dingDongMessage = signal('<p>This is a DingDong service test from RMC monitoring.</p>');
+  readonly dingDongResult = signal<DingDongTestMailResult | null>(null);
+  readonly isSendingDingDong = signal(false);
 
   readonly rowTrackFn: TrackByFunction<unknown> = (index, row) =>
     (row as { id?: number })?.id ?? index;
@@ -129,8 +182,10 @@ export class MonitoringComponent implements OnInit {
     return this.activeTabConfig.columns;
   }
 
-  rows(): readonly (MailLog | StaffSyncLog)[] {
-    return this.activeTab() === 'mail-logs' ? this.mailLogs() : this.staffSyncLogs();
+  rows(): readonly (MailLog | NotificationLog | StaffSyncLog)[] {
+    if (this.activeTab() === 'mail-logs') return this.mailLogs();
+    if (this.activeTab() === 'notification-logs') return this.notificationLogs();
+    return this.staffSyncLogs();
   }
 
   rowNumber(index: number): number {
@@ -168,6 +223,14 @@ export class MonitoringComponent implements OnInit {
   }
 
   loadRows(): void {
+    if (this.activeTab() === 'dingdong') {
+      this.isLoading.set(false);
+      this.loadFailed.set(false);
+      this.totalItems.set(0);
+      this.totalPages.set(1);
+      return;
+    }
+
     const query = {
       page: this.page(),
       perPage: this.pageSize(),
@@ -198,6 +261,21 @@ export class MonitoringComponent implements OnInit {
       return;
     }
 
+    if (this.activeTab() === 'notification-logs') {
+      this.monitoringService
+        .listNotificationLogs(query)
+        .pipe(finalize(() => this.isLoading.set(false)))
+        .subscribe({
+          next: response => {
+            this.notificationLogs.set(response.data.items ?? []);
+            this.totalItems.set(response.data.pagination?.total_items ?? 0);
+            this.totalPages.set(Math.max(1, response.data.pagination?.total_pages ?? 1));
+          },
+          error: () => this.handleLoadError(),
+        });
+      return;
+    }
+
     this.monitoringService
       .listStaffSyncLogs(query)
       .pipe(finalize(() => this.isLoading.set(false)))
@@ -218,6 +296,86 @@ export class MonitoringComponent implements OnInit {
     return 'status-badge';
   }
 
+  sendDingDongTestMail(): void {
+    const title = this.dingDongTitle().trim();
+    const messageHtml = this.dingDongMessage().trim();
+
+    if (!title) {
+      this.toastService.error('Please enter a DingDong test title.');
+      return;
+    }
+    if (!this.hasPlainText(messageHtml)) {
+      this.toastService.error('Please enter a DingDong test message.');
+      return;
+    }
+
+    const confirmed = window.confirm(`Send DingDong test mail to ${this.dingDongRecipient}?`);
+    if (!confirmed) return;
+
+    this.isSendingDingDong.set(true);
+    this.dingDongResult.set(null);
+    this.monitoringService
+      .sendDingDongTestMail({
+        title,
+        message_html: messageHtml,
+      })
+      .pipe(finalize(() => this.isSendingDingDong.set(false)))
+      .subscribe({
+        next: response => {
+          this.dingDongResult.set(response.data);
+          const status = response.data?.mail_status || 'UNKNOWN';
+          if (status === 'SENT') {
+            this.toastService.success('DingDong test mail sent.');
+          } else {
+            this.toastService.info(`DingDong test completed. Status: ${status}.`);
+          }
+        },
+        error: error => {
+          const message = error?.error?.message || 'Unable to send DingDong test mail.';
+          this.toastService.error(message);
+        },
+      });
+  }
+
+  resetDingDongTest(): void {
+    this.dingDongTitle.set('RMC DingDong Test');
+    this.dingDongMessage.set('<p>This is a DingDong service test from RMC monitoring.</p>');
+    this.dingDongResult.set(null);
+  }
+
+  canResendMail(row: MailLog | NotificationLog): boolean {
+    return !!row.notification_recipient_id;
+  }
+
+  resendMail(row: MailLog | NotificationLog): void {
+    const recipientId = row.notification_recipient_id;
+    if (!recipientId || this.resendingRecipientId()) return;
+
+    const requestCode = row.request_code || 'this notification';
+    const confirmed = window.confirm(`Resend notification mail for ${requestCode}?`);
+    if (!confirmed) return;
+
+    this.resendingRecipientId.set(recipientId);
+    this.monitoringService
+      .resendNotificationMail(recipientId)
+      .pipe(finalize(() => this.resendingRecipientId.set(null)))
+      .subscribe({
+        next: response => {
+          const status = response.data?.mail_status || 'UNKNOWN';
+          this.toastService.success(`Resend attempted. Mail status: ${status}.`);
+          this.loadRows();
+        },
+        error: error => {
+          const message = error?.error?.message || 'Unable to resend notification mail.';
+          this.toastService.error(message);
+        },
+      });
+  }
+
+  resendButtonLabel(row: MailLog | NotificationLog): string {
+    return this.resendingRecipientId() === row.notification_recipient_id ? 'Sending' : 'Resend';
+  }
+
   formatDateTime(value: string | null | undefined): string {
     if (!value) return '-';
     const date = new Date(value);
@@ -231,12 +389,20 @@ export class MonitoringComponent implements OnInit {
     });
   }
 
-  mailRow(row: MailLog | StaffSyncLog): MailLog {
+  mailRow(row: MailLog | NotificationLog | StaffSyncLog): MailLog {
     return row as MailLog;
   }
 
-  staffRow(row: MailLog | StaffSyncLog): StaffSyncLog {
+  notificationRow(row: MailLog | NotificationLog | StaffSyncLog): NotificationLog {
+    return row as NotificationLog;
+  }
+
+  staffRow(row: MailLog | NotificationLog | StaffSyncLog): StaffSyncLog {
     return row as StaffSyncLog;
+  }
+
+  private hasPlainText(html: string): boolean {
+    return html.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim().length > 0;
   }
 
   private tabFromQueryParam(value: string | null): MonitoringTab {
@@ -256,6 +422,8 @@ export class MonitoringComponent implements OnInit {
     this.loadFailed.set(true);
     if (this.activeTab() === 'mail-logs') {
       this.mailLogs.set([]);
+    } else if (this.activeTab() === 'notification-logs') {
+      this.notificationLogs.set([]);
     } else {
       this.staffSyncLogs.set([]);
     }

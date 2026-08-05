@@ -5,6 +5,7 @@ import {
     disabledFeaturePermission,
     externalProjectDataEntryPermission,
     fundingApplicationPermission,
+    reportPermission,
     rdigPermission,
     submissionsDraftPendingPermission,
     submissionsInboxHistoryPermission,
@@ -62,6 +63,8 @@ export const NAVIGATION_DATA: NavGroup[] = [
                     },
                 ],
             },
+
+            { label: 'Reports', icon: 'assessment', route: '/reports', permission: reportPermission },
 
             // ── Forms ────────────────────────────────────────────────────────────────────
             // Collapsible folder of application submission forms.

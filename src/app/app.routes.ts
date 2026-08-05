@@ -11,6 +11,7 @@ import {
   travelAuthorizationPermission,
   externalProjectDataEntryPermission,
   externalProjectDetailPermission,
+  reportPermission,
 } from './core/routing/app-route-permissions';
 
 export const routes: Routes = [
@@ -52,6 +53,17 @@ export const routes: Routes = [
         path: 'submissions',
         loadChildren: () =>
           import('./features/submissions/submissions.routes').then(m => m.submissionsRoutes),
+      },
+      {
+        path: 'reports',
+        canActivate: [permissionGuard],
+        data: {
+          permission: reportPermission,
+        },
+        loadComponent: () =>
+          import('./features/reports/request-reports.component').then(
+            m => m.RequestReportsComponent,
+          ),
       },
       {
         path: 'rdig',

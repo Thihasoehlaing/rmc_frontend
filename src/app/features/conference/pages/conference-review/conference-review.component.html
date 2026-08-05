@@ -118,14 +118,14 @@
             </div>
             <div>
               <dt>Conference Type</dt>
-              <dd>{{ val(conference()?.conference_type) }}</dd>
+              <dd>{{ capitalCaseLabel(conference()?.conference_type) }}</dd>
             </div>
             <div>
-              <dt>Funding Request Type</dt>
-              <dd>{{ val(conference()?.conference_funding_request_type) }}</dd>
+              <dt>Conference Funding Request Type</dt>
+              <dd>{{ fundingRequestTypeLabel(conference()?.conference_funding_request_type) }}</dd>
             </div>
             <div>
-              <dt>Applicant Authorship Type</dt>
+              <dt>Author Type</dt>
               <dd>{{ authorshipLabel(conference()?.author_role) }}</dd>
             </div>
             <div>
@@ -137,8 +137,8 @@
               <dd>{{ fmtDateOnly(conference()?.conference_end_date) }}</dd>
             </div>
             <div>
-              <dt>Location Type</dt>
-              <dd>{{ val(conference()?.location_type) }}</dd>
+              <dt>Conference Venue</dt>
+              <dd>{{ conferenceVenueLabel(conference()?.location_type) }}</dd>
             </div>
             <div>
               <dt>Conference Location</dt>
@@ -149,27 +149,30 @@
               <dd>{{ val(conference()?.paper_title) }}</dd>
             </div>
             <div>
-              <dt>Project Type</dt>
-              <dd>{{ val(conference()?.project_type) }}</dd>
+              <dt>Research Project Type</dt>
+              <dd>{{ researchProjectTypeLabel(conference()?.project_type) }}</dd>
             </div>
             <div>
               <dt>Project Account Code</dt>
               <dd>{{ val(conference()?.project_account_code) }}</dd>
             </div>
             <div>
-              <dt>Scopus Indexed</dt>
+              <dt>Is the conference proceeding with guaranteed publication Scopus-indexed?</dt>
               <dd>{{ val(conference()?.is_scopus_indexed) }}</dd>
             </div>
             <div>
-              <dt>Restricted Publisher</dt>
+              <dt>
+                Is the publisher of your conference proceeding one of the restricted publishers
+                (e.g., MDPI, Common Ground, Hindawi, or Frontier)?
+              </dt>
               <dd>{{ val(conference()?.is_restricted_publisher) }}</dd>
             </div>
             <div>
-              <dt>APU JATI / EJBM Cited</dt>
+              <dt>cited at least 1 journal paper from APU JATI &amp; EJBM?</dt>
               <dd>{{ val(conference()?.cited_apu_jati_ejbm) }}</dd>
             </div>
             <div>
-              <dt>Internal Manuscript Review</dt>
+              <dt>The manuscript has been internally reviewed for the quality of content and English?</dt>
               <dd>{{ val(conference()?.is_manuscript_internally_reviewed) }}</dd>
             </div>
             <div>
@@ -177,7 +180,7 @@
               <dd>{{ val(conference()?.reviewer_name) }}</dd>
             </div>
             <div>
-              <dt>Published Elsewhere</dt>
+              <dt>Has the manuscript and content been published in another journal or conference etc.?</dt>
               <dd>{{ val(conference()?.is_published_elsewhere) }}</dd>
             </div>
             <div class="detail-grid__wide">

@@ -106,27 +106,33 @@
               </dd>
             </div>
             <div>
-              <dt>Author Role</dt>
-              <dd>{{ val(journal()?.author_role) }}</dd>
+              <dt>Author Type</dt>
+              <dd>{{ authorRoleLabel() }}</dd>
             </div>
             <div>
               <dt>Scopus Quartile</dt>
               <dd>{{ scopusQuartileLabel() }}</dd>
             </div>
             <div>
-              <dt>Project Type</dt>
-              <dd>{{ val(journal()?.project_type) }}</dd>
+              <dt>Research Project Type</dt>
+              <dd>{{ projectTypeLabel() }}</dd>
             </div>
             <div>
-              <dt>APU JATI / EJBM Cited</dt>
+              <dt>
+                Have you cited at least 1 journal paper from Asia Pacific University of Technology
+                &amp; Innovation JATI &amp; EJBM?
+              </dt>
               <dd>{{ val(journal()?.cited_apu_jati_ejbm) }}</dd>
             </div>
             <div class="detail-grid__wide">
-              <dt>Restricted Publisher (e.g., MDPI, Common Ground, Hindawi, or Frontiers)</dt>
+              <dt>
+                Is the publisher of your journal one of the restricted publishers (e.g., MDPI,
+                Common Ground, Hindawi, or Frontier)?
+              </dt>
               <dd>{{ val(journal()?.is_restricted_publisher) }}</dd>
             </div>
             <div class="detail-grid__wide">
-              <dt>SDG Keywords</dt>
+              <dt>3 SDG Keywords</dt>
               <dd>
                 {{ val(journal()?.sdg_keyword_1) }} · {{ val(journal()?.sdg_keyword_2) }} ·
                 {{ val(journal()?.sdg_keyword_3) }}

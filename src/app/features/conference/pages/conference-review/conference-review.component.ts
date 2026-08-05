@@ -31,6 +31,12 @@ import {
 
 const COMMENT_MAX_LENGTH = 1000;
 
+const CONFERENCE_VENUE_LABELS: Readonly<Record<string, string>> = {
+  'klang-valley': 'Klang Valley',
+  'local-except-kl': 'Local (Except Klang Valley)',
+  overseas: 'Overseas',
+};
+
 @Component({
   selector: 'app-conference-review',
   standalone: true,
@@ -196,6 +202,22 @@ export class ConferenceReviewComponent implements OnInit {
     return this.val(formatCountryForDisplay(value));
   }
 
+  capitalCaseLabel(value: string | null | undefined): string {
+    const normalized = value?.replace(/[-_]+/g, ' ').trim().toLowerCase();
+    if (!normalized) return this.val(null);
+    return normalized
+      .split(/\s+/)
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  }
+
+  fundingRequestTypeLabel(value: string | null | undefined): string {
+    if (!value) return this.val(null);
+    return value.trim().toLowerCase() === 'with-paper'
+      ? 'Conference (with paper presentation)'
+      : 'Conference (without paper presentation-conference in Malaysia only)';
+  }
+
   authorshipLabel(value: string | null | undefined): string {
     const labels: Record<string, string> = {
       'first-author': 'First Author',
@@ -203,6 +225,18 @@ export class ConferenceReviewComponent implements OnInit {
       both: 'First and Corresponding Author',
     };
     return labels[value ?? ''] ?? this.val(value);
+  }
+
+  conferenceVenueLabel(value: string | null | undefined): string {
+    const venue = value?.trim().toLowerCase();
+    return venue ? (CONFERENCE_VENUE_LABELS[venue] ?? this.capitalCaseLabel(venue)) : this.val(null);
+  }
+
+  researchProjectTypeLabel(value: string | null | undefined): string {
+    if (!value) return this.val(null);
+    return value.trim().toLowerCase() === 'non-research'
+      ? 'Non-Research Project'
+      : 'External Research Project';
   }
 
   fmtDate(value: string | null | undefined): string {

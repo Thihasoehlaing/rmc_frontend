@@ -38,6 +38,17 @@ const SCOPUS_QUARTILE_LABELS: Readonly<Record<string, string>> = {
   Q3: 'Q3: 25th - 49th percentile',
 };
 
+const AUTHOR_ROLE_LABELS: Readonly<Record<string, string>> = {
+  'first-author': 'First Author',
+  'co-author': 'Corresponding Author',
+  'corresponding-author': 'First and Corresponding Author',
+};
+
+const PROJECT_TYPE_LABELS: Readonly<Record<string, string>> = {
+  'external-research': 'External Research Project',
+  'non-research': 'Non-Research Project',
+};
+
 const COMMENT_MAX_LENGTH = 1000;
 
 /**
@@ -121,6 +132,14 @@ export class JournalReviewComponent implements OnInit {
   readonly scopusQuartileLabel = computed(() => {
     const quartile = this.journal()?.scopus_quartile?.trim().toUpperCase();
     return quartile ? (SCOPUS_QUARTILE_LABELS[quartile] ?? quartile) : '—';
+  });
+  readonly authorRoleLabel = computed(() => {
+    const authorRole = this.journal()?.author_role?.trim().toLowerCase();
+    return authorRole ? (AUTHOR_ROLE_LABELS[authorRole] ?? this.val(authorRole)) : this.val(null);
+  });
+  readonly projectTypeLabel = computed(() => {
+    const projectType = this.journal()?.project_type?.trim().toLowerCase();
+    return projectType ? (PROJECT_TYPE_LABELS[projectType] ?? this.val(projectType)) : this.val(null);
   });
   readonly staffAuthors = computed(() => this.data()?.apu_staff_co_authors ?? []);
   readonly studentAuthors = computed(() => this.data()?.apu_student_co_authors ?? []);

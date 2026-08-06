@@ -25,6 +25,7 @@ import { ConferenceWorkflowService } from '../../../services/conference-workflow
 import { ConferenceFormStateService } from '../../../services/conference-form-state.service';
 import { BreakdownOptionsService } from '../../../services/breakdown-options.service';
 import {
+  AccountCodeOption,
   MasterDataService,
   RegionOption,
   StaffOption,
@@ -180,8 +181,8 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
   private voteNumbersCache: { code: string; description: string }[] = [];
   voteNumberDescriptionOptions: DropdownOption[] = [];
 
-  /** Local-conference account codes from the real backend (location_type = LOCAL). */
-  private localAccountCodesCache: { code: string; description: string }[] = [];
+  /** Conference account codes from the backend; options are filtered by venue. */
+  private accountCodesCache: AccountCodeOption[] = [];
   localBreakdownOptions: DropdownOption[] = [];
 
   regionFundingInfo: Record<string, string> = {
@@ -470,11 +471,8 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     });
 
     this.masterData.getAccountCodes('CONFERENCE').subscribe((res) => {
-      this.localAccountCodesCache = (res.data ?? []).filter((c) => c.location_type === 'LOCAL');
-      this.localBreakdownOptions = this.localAccountCodesCache.map((c) => ({
-        value: c.description,
-        label: c.description,
-      }));
+      this.accountCodesCache = res.data ?? [];
+      this.syncLocalBreakdownOptionsForVenue();
     });
 
     this.loadColleagueOptions();
@@ -581,6 +579,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
   setupFormWatchers() {
     this.form.get('localOrOverseas')?.valueChanges.subscribe(() => {
       this.syncRegionOptionsForVenue();
+      this.syncLocalBreakdownOptionsForVenue();
     });
 
     // Watch for region changes and auto-set percentage, limit, and description
@@ -648,6 +647,50 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     if (selectedRegion && !filteredOptions.some((option) => option.value === selectedRegion)) {
       this.clearRegionFields();
     }
+  }
+
+  private syncLocalBreakdownOptionsForVenue(): void {
+    const options = this.accountCodesForSelectedVenue().map((c) => ({
+      value: c.description,
+      label: c.description,
+    }));
+    this.localBreakdownOptions = options;
+
+    if (this.breakdownType !== 'local') {
+      return;
+    }
+
+    const selectedDescription = this.breakdownForm.get('itemDescription')?.value;
+    if (selectedDescription && !options.some((option) => option.value === selectedDescription)) {
+      this.breakdownForm.patchValue(
+        {
+          itemDescription: '',
+          voteNumber: '',
+        },
+        { emitEvent: false },
+      );
+    }
+  }
+
+  private accountCodesForSelectedVenue(): AccountCodeOption[] {
+    const locationType = this.accountCodeLocationTypeForVenue();
+    if (!locationType) {
+      return [];
+    }
+    return this.accountCodesCache.filter(
+      (c) => String(c.location_type || '').toUpperCase() === locationType,
+    );
+  }
+
+  private accountCodeLocationTypeForVenue(): AccountCodeOption['location_type'] | null {
+    const venue = this.selectedLocalOrOverseas;
+    if (venue === 'overseas') {
+      return 'FOREIGN';
+    }
+    if (venue === 'klang-valley' || venue === 'local-except-kl') {
+      return 'LOCAL';
+    }
+    return null;
   }
 
   private syncSelectedRegionMetadata(region: string | null | undefined): void {
@@ -1491,7 +1534,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
       return '';
     }
 
-    return this.localAccountCodesCache.find((c) => c.description === optionValue)?.code || '';
+    return this.accountCodesForSelectedVenue().find((c) => c.description === optionValue)?.code || '';
   }
 
   closeBreakdownModal() {

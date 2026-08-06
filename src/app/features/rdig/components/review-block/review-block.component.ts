@@ -1,6 +1,7 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { ReactiveFormsModule, FormControl } from '@angular/forms';
 import { CharacterCounterComponent } from '../../../../shared/components/character-counter/character-counter.component';
+import { ValidationMessageComponent } from '../../../../shared/components/validation-message/validation-message.component';
 import { syncRequiredValidator } from '../../../../shared/utils/form.utils';
 
 /**
@@ -15,7 +16,7 @@ import { syncRequiredValidator } from '../../../../shared/utils/form.utils';
 @Component({
   selector: 'app-review-block',
   standalone: true,
-  imports: [ReactiveFormsModule, CharacterCounterComponent],
+  imports: [ReactiveFormsModule, CharacterCounterComponent, ValidationMessageComponent],
   template: `
     @if (visible) {
       <div class="review-block" [class.review-block--readonly]="readonly">
@@ -38,6 +39,7 @@ import { syncRequiredValidator } from '../../../../shared/utils/form.utils';
               [current]="commentControl.value?.length ?? 0"
               [max]="maxChars">
             </app-character-counter>
+            <app-validation-message class="form-validation-note--error" [control]="commentControl" [fieldName]="label"></app-validation-message>
           </div>
 
           <!-- Optional score dropdown -->
@@ -53,6 +55,7 @@ import { syncRequiredValidator } from '../../../../shared/utils/form.utils';
                   <option [value]="s">{{ s }}</option>
                 }
               </select>
+              <app-validation-message class="form-validation-note--error" [control]="scoreControl" [fieldName]="label + ' Score'"></app-validation-message>
             </div>
           }
         </div>

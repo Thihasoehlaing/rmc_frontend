@@ -33,8 +33,9 @@
                       type="text"
                       class="input--text"
                       formControlName="name"
-                    /><app-validation-message
+                    /><app-validation-message class="form-validation-note--error"
                       [control]="activity.get('name')"
+                      fieldName="Activity Description"
                     ></app-validation-message>
                   </td>
                   <td>
@@ -98,6 +99,7 @@
             </app-data-table>
           </ng-container>
         </div>
+        <app-table-row-counter [current]="activities.length" [max]="maxActivities"></app-table-row-counter>
       } @else {
         <div class="empty-state">
           <span class="material-icons">event_note</span>

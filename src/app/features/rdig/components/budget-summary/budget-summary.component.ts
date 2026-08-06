@@ -20,6 +20,7 @@ import { ActionButtonComponent } from '../../../../shared/components/action-butt
 import { NoteComponent } from '../../../../shared/components/note/note.component';
 import { DecimalAmountDirective } from '../../../../shared/directives/decimal-amount.directive';
 import { MyrCurrencyPipe } from '../../../../shared/pipes/myr-currency.pipe';
+import { TableRowCounterComponent } from '../../../../shared/components/table-row-counter/table-row-counter.component';
 
 import { TableActionIconComponent } from '../../../../shared/components/table-action-icon/table-action-icon.component';
 
@@ -46,11 +47,19 @@ type BudgetCategoryKey =
     NoteComponent,
     DecimalAmountDirective,
     MyrCurrencyPipe,
+    TableRowCounterComponent,
   ],
   templateUrl: './budget-summary.component.html',
   styleUrl: './budget-summary.component.scss',
 })
 export class BudgetSummaryComponent implements OnInit {
+  readonly maxRowsByCategory: Record<BudgetCategoryKey, number> = {
+    studentAllowances: 3,
+    travelAccommodation: 10,
+    materialsSupplies: 10,
+    specialServices: 5,
+  };
+
   @Input({ required: true }) parentForm!: FormGroup;
   @Input() showHosComments = false;
   @Input() showRmcComments = false;
@@ -181,6 +190,8 @@ export class BudgetSummaryComponent implements OnInit {
   }
 
   openAddItemModal(category: BudgetCategoryKey): void {
+    if (this.isBudgetCategoryFull(category)) return;
+
     this.activeBudgetCategory = category;
     this.editingRowIndex = null;
     this.addItemModalOpen = true;
@@ -254,6 +265,10 @@ export class BudgetSummaryComponent implements OnInit {
   get activeCategoryHint(): string {
     if (!this.activeBudgetCategory) return 'Describe the requested budget item.';
     return this.budgetCategoryHints[this.activeBudgetCategory];
+  }
+
+  isBudgetCategoryFull(category: BudgetCategoryKey): boolean {
+    return this.getBudgetArray(category).length >= this.maxRowsByCategory[category];
   }
 
   private getBudgetArray(category: BudgetCategoryKey): FormArray {

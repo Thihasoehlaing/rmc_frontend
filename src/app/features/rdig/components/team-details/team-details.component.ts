@@ -26,6 +26,7 @@ import { ActionButtonComponent } from '../../../../shared/components/action-butt
 import { FieldNoteComponent } from '../../../../shared/components/field-note/field-note.component';
 import { DecimalAmountDirective } from '../../../../shared/directives/decimal-amount.directive';
 import { MyrCurrencyPipe } from '../../../../shared/pipes/myr-currency.pipe';
+import { TableRowCounterComponent } from '../../../../shared/components/table-row-counter/table-row-counter.component';
 
 import { TableActionIconComponent } from '../../../../shared/components/table-action-icon/table-action-icon.component';
 
@@ -47,6 +48,7 @@ import { TableActionIconComponent } from '../../../../shared/components/table-ac
     FieldNoteComponent,
     DecimalAmountDirective,
     MyrCurrencyPipe,
+    TableRowCounterComponent,
   ],
   templateUrl: './team-details.component.html',
   styleUrl: './team-details.component.scss',

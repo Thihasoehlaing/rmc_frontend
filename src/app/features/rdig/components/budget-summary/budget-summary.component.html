@@ -36,7 +36,7 @@
           type="primary"
           label="Add Item"
           icon="add"
-          [disabled]="workflow.isFormReadOnly()"
+          [disabled]="workflow.isFormReadOnly() || isBudgetCategoryFull('studentAllowances')"
           (clicked)="openAddItemModal('studentAllowances')"
         >
         </app-action-button>
@@ -83,6 +83,7 @@
             </tr>
           </ng-template>
         </app-data-table>
+        <app-table-row-counter [current]="studentAllowances.length" [max]="maxRowsByCategory.studentAllowances"></app-table-row-counter>
       } @else {
         <p class="empty-state">No items added. Click <strong>Add Item</strong> to begin.</p>
       }
@@ -119,7 +120,7 @@
           type="primary"
           label="Add Item"
           icon="add"
-          [disabled]="workflow.isFormReadOnly()"
+          [disabled]="workflow.isFormReadOnly() || isBudgetCategoryFull('travelAccommodation')"
           (clicked)="openAddItemModal('travelAccommodation')"
         >
         </app-action-button>
@@ -166,6 +167,7 @@
             </tr>
           </ng-template>
         </app-data-table>
+        <app-table-row-counter [current]="travelAccommodation.length" [max]="maxRowsByCategory.travelAccommodation"></app-table-row-counter>
       } @else {
         <p class="empty-state">No items added.</p>
       }
@@ -202,7 +204,7 @@
           type="primary"
           label="Add Item"
           icon="add"
-          [disabled]="workflow.isFormReadOnly()"
+          [disabled]="workflow.isFormReadOnly() || isBudgetCategoryFull('materialsSupplies')"
           (clicked)="openAddItemModal('materialsSupplies')"
         >
         </app-action-button>
@@ -249,6 +251,7 @@
             </tr>
           </ng-template>
         </app-data-table>
+        <app-table-row-counter [current]="materialsSupplies.length" [max]="maxRowsByCategory.materialsSupplies"></app-table-row-counter>
       } @else {
         <p class="empty-state">No items added.</p>
       }
@@ -285,7 +288,7 @@
           type="primary"
           label="Add Item"
           icon="add"
-          [disabled]="workflow.isFormReadOnly()"
+          [disabled]="workflow.isFormReadOnly() || isBudgetCategoryFull('specialServices')"
           (clicked)="openAddItemModal('specialServices')"
         >
         </app-action-button>
@@ -332,6 +335,7 @@
             </tr>
           </ng-template>
         </app-data-table>
+        <app-table-row-counter [current]="specialServices.length" [max]="maxRowsByCategory.specialServices"></app-table-row-counter>
       } @else {
         <p class="empty-state">No items added.</p>
       }
@@ -426,7 +430,7 @@
           [current]="otherRemarksControl.value?.length ?? 0"
           [max]="300"
         ></app-character-counter>
-        <app-validation-message [control]="otherRemarksControl"></app-validation-message>
+        <app-validation-message class="form-validation-note--error" [control]="otherRemarksControl" fieldName="Remarks"></app-validation-message>
       </div>
     </div>
   </div>
@@ -456,7 +460,7 @@
           [current]="descriptionControl.value?.length ?? 0"
           [max]="200"
         ></app-character-counter>
-        <app-validation-message [control]="descriptionControl"></app-validation-message>
+        <app-validation-message class="form-validation-note--error" [control]="descriptionControl" fieldName="Description of Expense"></app-validation-message>
       </div>
 
       <div class="row row--2 textarea-row">
@@ -469,7 +473,7 @@
             class="input--text"
             formControlName="amount"
           />
-          <app-validation-message [control]="amountControl"></app-validation-message>
+          <app-validation-message class="form-validation-note--error" [control]="amountControl" fieldName="Amount"></app-validation-message>
         </div>
         <div class="form-field">
           <label class="form-label is-required">Remarks</label>
@@ -478,7 +482,7 @@
             [current]="remarksControl.value?.length ?? 0"
             [max]="300"
           ></app-character-counter>
-          <app-validation-message [control]="remarksControl"></app-validation-message>
+          <app-validation-message class="form-validation-note--error" [control]="remarksControl" fieldName="Remarks"></app-validation-message>
         </div>
       </div>
     </div>

@@ -42,6 +42,7 @@ import { TableScrollHintComponent } from '../../../../shared/components/table-sc
 import { ActionButtonComponent } from '../../../../shared/components/action-button/action-button.component';
 import { DecimalAmountDirective } from '../../../../shared/directives/decimal-amount.directive';
 import { MyrCurrencyPipe } from '../../../../shared/pipes/myr-currency.pipe';
+import { TableRowCounterComponent } from '../../../../shared/components/table-row-counter/table-row-counter.component';
 import { formatMyrCurrency } from '../../../../shared/utils/currency.util';
 
 export interface JournalCostingSaveItem {
@@ -58,6 +59,7 @@ export interface JournalCostingSaveItem {
     ActionButtonComponent,
     CommonModule,
     ReactiveFormsModule,
+    TableRowCounterComponent,
     CharacterCounterComponent,
     CustomHeaderComponent,
     CustomSubheaderComponent,
@@ -78,6 +80,7 @@ export class JournalDetails implements OnInit, OnDestroy {
   readonly nonResearchAccountCode = '6203/100';
   readonly breakdownDescriptionMaxLength = 400;
   readonly tableRecordLimit = 10;
+  readonly projectCostMax = 5;
   auth = inject(AuthService);
   workflow = inject(JournalWorkflowService);
   private journalOptionsService = inject(JournalOptionsService);
@@ -498,7 +501,8 @@ export class JournalDetails implements OnInit, OnDestroy {
     return (
       !!type &&
       !this.workflow.isFormReadOnly() &&
-      this.getBreakdownArray(type).length < this.tableRecordLimit
+      this.getBreakdownArray(type).length <
+      (type === 'non-research' ? this.projectCostMax : this.tableRecordLimit)
     );
   }
 

@@ -20,6 +20,7 @@ import {
   DataTableComponent,
 } from '../../../../shared/components/data-table/data-table.component';
 import { TableActionIconComponent } from '../../../../shared/components/table-action-icon/table-action-icon.component';
+import { TableRowCounterComponent } from '../../../../shared/components/table-row-counter/table-row-counter.component';
 
 @Component({
   selector: 'app-research-activities',
@@ -34,11 +35,14 @@ import { TableActionIconComponent } from '../../../../shared/components/table-ac
     NoteComponent,
     ReviewBlockComponent,
     DataTableComponent,
+    TableRowCounterComponent,
   ],
   templateUrl: './research-activities.component.html',
   styleUrls: ['./research-activities.component.scss'],
 })
 export class ResearchActivitiesComponent implements OnInit, OnDestroy {
+  readonly maxActivities = 24;
+
   readonly activityColumns: DataTableColumn[] = [
     {
       key: 'index',
@@ -185,10 +189,11 @@ export class ResearchActivitiesComponent implements OnInit, OnDestroy {
   }
 
   canAddActivity(): boolean {
-    return !this.workflow?.isFormReadOnly();
+    return !this.workflow?.isFormReadOnly() && this.activities.length < this.maxActivities;
   }
 
   getAddActivityTitle(): string {
+    if (this.activities.length >= this.maxActivities) return `Maximum ${this.maxActivities} activities reached`;
     if (!this.canAddActivity()) return 'This form is read-only';
     return '';
   }

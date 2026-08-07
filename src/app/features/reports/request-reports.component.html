@@ -56,20 +56,49 @@
   </section>
 
   @if (isExternalFormSelected()) {
-    <section class="reports-external-fields" aria-label="External Excel variables">
-      <div>
-        <h2>External Excel Variables</h2>
-        <p>Selected variables will be added as Excel column headers.</p>
+    <section class="reports-external-fields" aria-label="External Excel columns">
+      <div class="reports-external-fields__header">
+        <div>
+          <h2>External Excel Columns</h2>
+          <p>Selected columns will be added as Excel column headers.</p>
+        </div>
+        <div class="external-columns__actions">
+          <button
+            class="external-columns__action external-columns__action--select"
+            type="button"
+            (click)="selectAllExternalFields()"
+            [disabled]="externalFieldOptions().length === 0"
+          >
+            <span class="material-icons" aria-hidden="true">done_all</span>
+            Select all
+          </button>
+          <button
+            class="external-columns__action external-columns__action--clear"
+            type="button"
+            (click)="clearExternalFields()"
+            [disabled]="selectedExternalFields().length === 0"
+          >
+            <span class="material-icons" aria-hidden="true">close</span>
+            Clear
+          </button>
+        </div>
       </div>
-      <app-searchable-dropdown
-        label="Variables"
-        placeholder="Choose variables"
-        [options]="externalFieldOptions()"
-        [isMulti]="true"
-        [ngModel]="selectedExternalFields()"
-        (ngModelChange)="selectedExternalFields.set($event ?? [])"
-        [loading]="externalFieldOptions().length === 0"
-      ></app-searchable-dropdown>
+
+      <div class="external-columns__list" role="group" aria-label="External Excel columns">
+        @for (option of externalFieldOptions(); track option.value) {
+          <button
+            class="external-column-chip"
+            type="button"
+            [class.external-column-chip--selected]="isExternalFieldSelected(option.value)"
+            [attr.aria-pressed]="isExternalFieldSelected(option.value)"
+            (click)="toggleExternalField(option.value)"
+          >
+            {{ option.label }}
+          </button>
+        } @empty {
+          <span class="external-columns__empty">Loading columns...</span>
+        }
+      </div>
     </section>
   }
 

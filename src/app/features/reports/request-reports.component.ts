@@ -150,6 +150,28 @@ export class RequestReportsComponent implements OnInit {
     return this.selectedFormCode().toUpperCase() === 'EXTERNAL';
   }
 
+  isExternalFieldSelected(value: string): boolean {
+    return this.selectedExternalFields().includes(value);
+  }
+
+  toggleExternalField(value: string): void {
+    this.selectedExternalFields.update((fields) =>
+      fields.includes(value)
+        ? fields.filter((field) => field !== value)
+        : [...fields, value],
+    );
+  }
+
+  selectAllExternalFields(): void {
+    this.selectedExternalFields.set(
+      this.externalFieldOptions().map((option) => option.value),
+    );
+  }
+
+  clearExternalFields(): void {
+    this.selectedExternalFields.set([]);
+  }
+
   isDateRangeValid(): boolean {
     const from = this.dateFrom();
     const to = this.dateTo();

@@ -1,0 +1,40 @@
+<div class="horizontal-bars">
+  <div class="horizontal-bars__total">
+    <span>Total Amount</span>
+    <strong [attr.title]="formatValue(total())">{{ formatValue(total(), true) }}</strong>
+  </div>
+
+  @if (bars().length) {
+    <div class="horizontal-bars__list">
+      @for (bar of bars(); track bar.key) {
+        <div
+          class="horizontal-bar"
+          tabindex="0"
+          (mouseenter)="activeKey.set(bar.key)"
+          (mouseleave)="activeKey.set(null)"
+          (focus)="activeKey.set(bar.key)"
+          (blur)="activeKey.set(null)"
+        >
+          <div class="horizontal-bar__label">
+            <span>{{ bar.label }}</span>
+            <strong [attr.title]="bar.exactValue">{{ bar.formattedValue }}</strong>
+          </div>
+          <div class="horizontal-bar__track">
+            <span [style.width.%]="bar.width" [style.background]="bar.color"></span>
+          </div>
+          @if (activeKey() === bar.key) {
+            <app-chart-tooltip
+              [visible]="true"
+              [color]="bar.color"
+              [label]="bar.label"
+              [value]="bar.exactValue"
+              detail="Total requested amount"
+            />
+          }
+        </div>
+      }
+    </div>
+  } @else {
+    <div class="horizontal-bars__empty">{{ emptyLabel }}</div>
+  }
+</div>

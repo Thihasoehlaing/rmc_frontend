@@ -478,6 +478,62 @@
   <section class="showcase-section">
     <app-custom-header title="Shared Angular Components" icon="widgets"></app-custom-header>
 
+    <div class="component-block">
+      <div class="component-block__header">
+        <span class="comp-name">ChartTooltip</span>
+        <code class="comp-selector">&lt;app-chart-tooltip&gt;</code>
+        <p class="comp-desc">
+          Reusable accessible hover detail for donut, bar, line, and other data visualisations.
+        </p>
+      </div>
+      <div class="component-block__demo">
+        <app-chart-tooltip
+          [visible]="true"
+          [inline]="true"
+          color="var(--color-success)"
+          label="External Project Data Entry"
+          value="12 applications"
+          detail="Completed forms"
+        />
+      </div>
+      <table class="props-table">
+        <thead>
+          <tr>
+            <th>Input</th>
+            <th>Type</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>visible</code></td>
+            <td>boolean</td>
+            <td>Controls hover visibility.</td>
+          </tr>
+          <tr>
+            <td><code>color</code></td>
+            <td>string</td>
+            <td>Series colour indicator.</td>
+          </tr>
+          <tr>
+            <td><code>label</code></td>
+            <td>string</td>
+            <td>Series or form name.</td>
+          </tr>
+          <tr>
+            <td><code>value</code></td>
+            <td>string</td>
+            <td>Formatted chart value.</td>
+          </tr>
+          <tr>
+            <td><code>detail</code></td>
+            <td>string</td>
+            <td>Optional chart context.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
     <!-- ── FormMainTitle ─────────────────────────────────────────── -->
     <div class="component-block">
       <div class="component-block__header">

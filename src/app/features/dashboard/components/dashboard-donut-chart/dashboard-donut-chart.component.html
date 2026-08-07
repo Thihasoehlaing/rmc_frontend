@@ -1,0 +1,66 @@
+<div class="donut-chart-layout" [class.donut-chart-layout--compact]="compact">
+  @if (segments().length) {
+    <div class="donut-chart-visual">
+      <svg
+        viewBox="0 0 128 128"
+        role="img"
+        [attr.aria-label]="centerLabel + ': ' + formatValue(total())"
+      >
+        <circle class="donut-chart-track" cx="64" cy="64" r="52"></circle>
+        @for (segment of segments(); track segment.key) {
+          <circle
+            class="donut-chart-segment"
+            cx="64"
+            cy="64"
+            r="52"
+            [attr.stroke]="segment.color"
+            [attr.stroke-dasharray]="segment.dashArray"
+            [attr.stroke-dashoffset]="segment.dashOffset"
+            [attr.aria-label]="segment.label + ': ' + segment.formattedValue"
+            tabindex="0"
+            (mouseenter)="activeSegment.set(segment)"
+            (mouseleave)="activeSegment.set(null)"
+            (focus)="activeSegment.set(segment)"
+            (blur)="activeSegment.set(null)"
+          >
+            <title>
+              {{ segment.label }}: {{ segment.formattedValue }} ({{
+                segment.percentage | number: '1.0-1'
+              }}%)
+            </title>
+          </circle>
+        }
+      </svg>
+      <div class="donut-chart-total" aria-hidden="true">
+        <strong>{{ formatValue(total()) }}</strong>
+        <span>{{ centerLabel }}</span>
+      </div>
+      @if (activeSegment(); as active) {
+        <app-chart-tooltip
+          [visible]="true"
+          [color]="active.color"
+          [label]="active.label"
+          [value]="active.formattedValue"
+          [detail]="(active.percentage | number: '1.0-1') + '% of total'"
+        />
+      }
+    </div>
+
+    @if (!compact) {
+      <ul class="donut-chart-legend" aria-label="Chart legend">
+        @for (segment of segments(); track segment.key) {
+          <li [attr.title]="segment.label + ': ' + segment.formattedValue">
+            <i [style.background]="segment.color"></i>
+            <span>{{ segment.label }}</span>
+            <strong>{{ segment.formattedValue }}</strong>
+          </li>
+        }
+      </ul>
+    }
+  } @else {
+    <div class="chart-empty-state">
+      <span class="material-icons">donut_large</span>
+      <span>{{ emptyLabel }}</span>
+    </div>
+  }
+</div>

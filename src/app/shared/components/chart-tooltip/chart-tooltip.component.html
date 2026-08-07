@@ -1,0 +1,16 @@
+<div
+  class="chart-tooltip"
+  [class.chart-tooltip--visible]="visible"
+  [class.chart-tooltip--inline]="inline"
+  role="status"
+  aria-live="polite"
+>
+  <span class="chart-tooltip__dot" [style.background]="color"></span>
+  <span class="chart-tooltip__content">
+    <span class="chart-tooltip__label">{{ label }}</span>
+    @if (detail) {
+      <small>{{ detail }}</small>
+    }
+  </span>
+  <strong>{{ value }}</strong>
+</div>

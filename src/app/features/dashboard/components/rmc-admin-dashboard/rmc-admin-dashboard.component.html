@@ -1,0 +1,286 @@
+<main class="dashboard dashboard--rmc_admin admin-dashboard">
+  <header class="dashboard-header admin-dashboard__header">
+    <div>
+      <span class="role-label">{{ view.roleLabel }}</span>
+      <h1>Analysis Dashboard</h1>
+    </div>
+    <button
+      type="button"
+      class="btn btn-secondary dashboard-filter-trigger"
+      aria-controls="dashboard-filter-panel"
+      [attr.aria-expanded]="filtersOpen()"
+      (click)="openFilters()"
+    >
+      <span class="material-icons">filter_list</span>
+      Filters
+    </button>
+  </header>
+
+  <div class="analysis-layout">
+    <div class="analysis-layout__main">
+      @if (error()) {
+        <div class="dashboard-data-note" role="status">
+          <span class="material-icons">info</span>
+          <span>{{ error() }}</span>
+          <button type="button" class="btn btn-secondary btn-sm" (click)="loadAnalytics()">
+            Retry
+          </button>
+        </div>
+      }
+
+      <section class="card analytics-workspace" aria-label="RMC portfolio analytics">
+        <div class="analytics-workspace__header">
+          <div>
+            <span class="dashboard-eyebrow">Portfolio overview</span>
+            <h2 class="card__title">{{ selectedFormLabel() }}</h2>
+          </div>
+          <span class="analytics-workspace__range">
+            <span class="material-icons">date_range</span>
+            {{ startDate() | date: 'dd MMM yyyy' }} – {{ endDate() | date: 'dd MMM yyyy' }}
+          </span>
+        </div>
+
+        <div class="form-color-legend" aria-label="Form colour legend">
+          <strong>Form colours</strong>
+          <ul>
+            @for (form of visibleFormLegend(); track form.code) {
+              <li><i [style.background]="form.color"></i>{{ form.name }}</li>
+            }
+          </ul>
+        </div>
+
+        <div class="summary-donuts" aria-label="Application status totals">
+          <article class="summary-donut">
+            <div class="summary-donut__heading">
+              <span class="material-icons">description</span>
+              <h3>All Forms</h3>
+            </div>
+            <app-dashboard-donut-chart
+              [series]="applicationsSeries()"
+              [compact]="true"
+              centerLabel="Applications"
+              emptyLabel="No applications"
+            />
+          </article>
+
+          <article class="summary-donut">
+            <div class="summary-donut__heading">
+              <span class="material-icons">task_alt</span>
+              <h3>Completed Forms</h3>
+            </div>
+            <app-dashboard-donut-chart
+              [series]="completedSeries()"
+              [compact]="true"
+              centerLabel="Completed"
+              emptyLabel="No completed forms"
+            />
+          </article>
+
+          <article class="summary-donut">
+            <div class="summary-donut__heading">
+              <span class="material-icons">cancel</span>
+              <h3>Rejected</h3>
+            </div>
+            <app-dashboard-donut-chart
+              [series]="rejectedSeries()"
+              [compact]="true"
+              centerLabel="Rejected"
+              emptyLabel="No rejected forms"
+            />
+          </article>
+
+          <article class="summary-donut">
+            <div class="summary-donut__heading">
+              <span class="material-icons">account_tree</span>
+              <h3>In Progress</h3>
+            </div>
+            <app-dashboard-donut-chart
+              [series]="inProgressSeries()"
+              [compact]="true"
+              centerLabel="In progress"
+              emptyLabel="No forms in progress"
+            />
+          </article>
+        </div>
+      </section>
+
+      <section class="card performance-workspace" aria-label="Date based performance analytics">
+        <section class="performance-panel" aria-labelledby="performance-heading">
+          <div class="performance-panel__header">
+            <div>
+              <span class="dashboard-eyebrow">Date based</span>
+              <h2 id="performance-heading" class="card__title">{{ trendTitle() }}</h2>
+              <span class="performance-panel__interval">{{ trendIntervalLabel() }}</span>
+            </div>
+
+            <div class="performance-filters">
+              <div class="form-field">
+                <label class="form-label" for="dashboard-chart-type">Chart type</label>
+                <select
+                  id="dashboard-chart-type"
+                  class="input--select"
+                  [ngModel]="chartType()"
+                  (ngModelChange)="setChartType($event)"
+                >
+                  @for (type of chartTypes; track type.value) {
+                    <option [value]="type.value">{{ type.label }}</option>
+                  }
+                </select>
+              </div>
+
+              <div class="form-field">
+                <label class="form-label" for="dashboard-trend-mode">Show</label>
+                <select
+                  id="dashboard-trend-mode"
+                  class="input--select"
+                  [ngModel]="trendMode()"
+                  (ngModelChange)="setTrendMode($event)"
+                >
+                  <option value="completed">Completed forms</option>
+                  <option value="spend">Money spent</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="performance-panel__chart">
+            @switch (chartType()) {
+              @case ('bar') {
+                <app-dashboard-bar-chart
+                  [points]="trendFormPoints()"
+                  [currency]="trendMode() === 'spend'"
+                />
+              }
+              @case ('donut') {
+                <app-dashboard-donut-chart
+                  [series]="trendDonutSeries()"
+                  [currency]="trendMode() === 'spend'"
+                  [centerLabel]="trendTitle()"
+                  emptyLabel="No performance data in this date range"
+                />
+              }
+              @default {
+                <app-dashboard-line-chart
+                  [points]="trendPoints()"
+                  [currency]="trendMode() === 'spend'"
+                />
+              }
+            }
+          </div>
+        </section>
+      </section>
+    </div>
+
+    <aside class="card analysis-summary" aria-label="Amount summary">
+      <div class="analysis-summary__header">
+        <span class="dashboard-eyebrow">Selected range</span>
+        <h2 class="card__title">Amount summary</h2>
+      </div>
+      <section class="analysis-summary__section" aria-labelledby="total-amount-heading">
+        <div class="analysis-summary__title">
+          <span class="material-icons">payments</span>
+          <h3 id="total-amount-heading">Total Amount</h3>
+        </div>
+        <app-dashboard-horizontal-bar [series]="totalCostSeries()" />
+      </section>
+    </aside>
+  </div>
+
+  @if (filtersOpen()) {
+    <button
+      type="button"
+      class="dashboard-filter-backdrop"
+      aria-label="Close filters"
+      (click)="closeFilters()"
+    ></button>
+    <aside
+      id="dashboard-filter-panel"
+      class="dashboard-filter-panel"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="dashboard-filter-heading"
+    >
+      <header class="dashboard-filter-panel__header">
+        <div>
+          <span class="dashboard-eyebrow">Analysis controls</span>
+          <h2 id="dashboard-filter-heading">Filters</h2>
+        </div>
+        <button
+          type="button"
+          class="btn btn-icon btn-secondary"
+          aria-label="Close filters"
+          (click)="closeFilters()"
+        >
+          <span class="material-icons">close</span>
+        </button>
+      </header>
+
+      <div class="dashboard-filter__controls">
+        <app-note
+          text="All dashboard analytics are based on the selected application form and date range."
+        />
+
+        <div class="form-field dashboard-filter__form">
+          <label class="form-label" for="dashboard-form-filter">Application form</label>
+          <select
+            id="dashboard-form-filter"
+            class="input--select"
+            [ngModel]="selectedForm()"
+            (ngModelChange)="onFormChange($event)"
+          >
+            <option [value]="allForms">All forms</option>
+            @for (form of formOptions(); track form.code) {
+              <option [value]="form.code">{{ form.name }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-field dashboard-filter__date">
+          <label class="form-label" for="dashboard-start-date">From</label>
+          <input
+            id="dashboard-start-date"
+            class="input--text"
+            type="date"
+            [ngModel]="startDate()"
+            [max]="endDate()"
+            (ngModelChange)="onStartDateChange($event)"
+          />
+        </div>
+
+        <div class="form-field dashboard-filter__date">
+          <label class="form-label" for="dashboard-end-date">To</label>
+          <input
+            id="dashboard-end-date"
+            class="input--text"
+            type="date"
+            [ngModel]="endDate()"
+            [min]="startDate()"
+            [max]="maxEndDate()"
+            (ngModelChange)="onEndDateChange($event)"
+          />
+        </div>
+
+        <p class="dashboard-filter__range-help">
+          <span class="material-icons">date_range</span>
+          Maximum range: 10 years. Chart intervals adapt to the selected range.
+        </p>
+
+        @if (dateRangeNotice()) {
+          <p class="dashboard-filter__range-notice" role="status">
+            {{ dateRangeNotice() }}
+          </p>
+        }
+
+        @if (loading()) {
+          <span class="filter-loading" role="status">
+            <span class="material-icons">sync</span> Loading detailed costs
+          </span>
+        }
+      </div>
+
+      <footer class="dashboard-filter-panel__footer">
+        <button type="button" class="btn btn-primary" (click)="closeFilters()">Done</button>
+      </footer>
+    </aside>
+  }
+</main>

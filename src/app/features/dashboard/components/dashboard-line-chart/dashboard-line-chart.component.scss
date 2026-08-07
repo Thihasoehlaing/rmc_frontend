@@ -1,0 +1,101 @@
+.line-chart {
+  width: 100%;
+  padding: var(--space-4) var(--space-5) var(--space-2);
+  overflow: hidden;
+}
+
+.line-chart__summary {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  color: var(--color-text-muted);
+  font-size: var(--fs-xs);
+
+  strong {
+    color: var(--color-secondary);
+    font-size: var(--fs-md);
+  }
+}
+
+svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.grid-line {
+  stroke: var(--border-subtle);
+  stroke-width: 1;
+}
+
+.axis-label {
+  fill: var(--color-text-muted);
+  font-size: var(--fs-xs);
+
+  &--y {
+    text-anchor: end;
+  }
+
+  &--x {
+    text-anchor: middle;
+  }
+}
+
+.trend-area {
+  fill: color-mix(in srgb, var(--color-primary) 12%, transparent);
+  stroke: none;
+}
+
+.trend-line {
+  fill: none;
+  stroke: var(--color-primary);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 4;
+}
+
+.point-guide {
+  opacity: 0;
+  stroke: var(--color-primary);
+  stroke-dasharray: 4 4;
+  stroke-width: 1;
+  transition: opacity var(--transition-fast);
+}
+
+.trend-point {
+  fill: var(--color-surface);
+  stroke: var(--color-primary);
+  stroke-width: 4;
+  cursor: help;
+  transition:
+    r var(--transition-fast),
+    fill var(--transition-fast);
+
+  &:hover,
+  &:focus {
+    r: 8;
+    fill: var(--color-primary-light);
+    outline: none;
+  }
+}
+
+.point-guide:has(+ .trend-point:hover),
+.point-guide:has(+ .trend-point:focus) {
+  opacity: 1;
+}
+
+.line-chart-empty {
+  display: grid;
+  place-items: center;
+  gap: var(--space-2);
+  min-height: 286px;
+  color: var(--color-text-muted);
+  font-size: var(--fs-sm);
+
+  .material-icons {
+    color: var(--color-primary);
+    font-size: var(--size-icon-empty);
+  }
+}

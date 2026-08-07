@@ -1,0 +1,44 @@
+.vote-numbers-page {
+  .vote-numbers-toolbar {
+    grid-template-columns:
+      minmax(220px, 1fr)
+      minmax(200px, 0.85fr)
+      minmax(150px, 0.45fr)
+      auto;
+  }
+
+  .vote-number-forms {
+    display: block;
+    max-width: 360px;
+    color: var(--color-heading);
+    font-weight: var(--fw-semibold);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 1020px) {
+  .vote-numbers-page {
+    .vote-numbers-toolbar {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .forms-toolbar__actions {
+      grid-column: 1 / -1;
+      justify-content: flex-start;
+    }
+  }
+}
+
+@media (max-width: 720px) {
+  .vote-numbers-page {
+    .vote-numbers-toolbar {
+      grid-template-columns: 1fr;
+    }
+
+    .vote-number-forms {
+      max-width: 220px;
+    }
+  }
+}

@@ -67,6 +67,16 @@ export const SETTINGS_MODULES: SettingsModuleConfig[] = [
     endpoints: [apiEndpoint('settings/account-codes'), apiEndpoint('settings/account-code-categories')],
   },
   {
+    key: 'vote-numbers',
+    title: 'Vote Numbers',
+    description: 'Review and edit vote number values shared with application forms.',
+    icon: 'pin',
+    category: 'Finance Setup',
+    route: '/settings/vote-numbers',
+    tone: 'blue',
+    endpoints: [apiEndpoint('admin-settings/vote-numbers')],
+  },
+  {
     key: 'staff-directory',
     title: 'Staff Directory',
     description: 'Synchronize and review staff records from the APU directory.',

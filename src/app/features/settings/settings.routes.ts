@@ -31,6 +31,11 @@ export const settingsRoutes: Routes = [
       import('./account-codes/account-codes.component').then(m => m.AccountCodesComponent),
   },
   {
+    path: 'vote-numbers',
+    loadComponent: () =>
+      import('./vote-numbers/vote-numbers.component').then(m => m.VoteNumbersComponent),
+  },
+  {
     path: 'staff-directory',
     loadComponent: () =>
       import('./staff-directory/staff-directory.component').then(m => m.StaffDirectoryComponent),

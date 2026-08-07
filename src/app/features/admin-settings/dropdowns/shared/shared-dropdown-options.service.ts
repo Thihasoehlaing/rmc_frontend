@@ -75,6 +75,7 @@ export interface FormOption {
 export interface ListParams {
   category_code?: string;
   search?: string;
+  code?: string;
   status?: string;
   form_code?: string;
   page?: number;
@@ -118,6 +119,10 @@ export class SharedDropdownOptionsService {
 
     if (params.search) {
       httpParams = httpParams.set('search', params.search);
+    }
+
+    if (params.code) {
+      httpParams = httpParams.set('code', params.code);
     }
 
     if (params.status && params.status !== 'all') {

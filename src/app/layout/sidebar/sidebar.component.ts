@@ -5,6 +5,7 @@ import { SidebarService } from '../../core/services/sidebar.service';
 import { AuthService } from '../../core/services/auth.service';
 import { PermissionService } from '../../core/services/permission.service';
 import { NAVIGATION_DATA } from '../../core/constants/nav-data';
+import { RESTRICTED_WORKFLOW_SIDEBAR_ROUTES } from '../../core/constants/restricted-sidebar-routes';
 import { NavElement, NavFolder } from '../../core/interfaces/nav.interface';
 import { FormCacheService } from '../../core/services/form-cache.service';
 import { UserGroup } from '../../core/interfaces/user.interface';
@@ -34,12 +35,7 @@ export class SidebarComponent implements OnInit {
   }
 
   private readonly restrictedWorkflowGroups: UserGroup[] = ['VC', 'HR', 'CEO', 'Finance'];
-  private readonly restrictedSidebarRoutes = new Set([
-    '/dashboard',
-    '/submissions/inbox',
-    '/submissions/history',
-    '/notifications',
-  ]);
+  private readonly restrictedSidebarRoutes = new Set<string>(RESTRICTED_WORKFLOW_SIDEBAR_ROUTES);
 
   /**
    * Computed: navigation groups and their elements are filtered through

@@ -4,14 +4,15 @@ import { authGuard } from './core/guards/auth.guard';
 import { permissionGuard } from './core/guards/permission.guard';
 import {
   adminSettingsPermission,
+  externalProjectDataEntryPermission,
+  externalProjectDetailPermission,
   partnershipPermission,
   ragraPermission,
   rdigPermission,
+  reportPermission,
+  systemOrRmcAdminPermission,
   systemSettingsPermission,
   travelAuthorizationPermission,
-  externalProjectDataEntryPermission,
-  externalProjectDetailPermission,
-  systemOrRmcAdminPermission,
 } from './core/routing/app-route-permissions';
 
 export const routes: Routes = [
@@ -63,6 +64,17 @@ export const routes: Routes = [
         path: 'submissions',
         loadChildren: () =>
           import('./features/submissions/submissions.routes').then((m) => m.submissionsRoutes),
+      },
+      {
+        path: 'reports',
+        canActivate: [permissionGuard],
+        data: {
+          permission: reportPermission,
+        },
+        loadComponent: () =>
+          import('./features/reports/request-reports.component').then(
+            (m) => m.RequestReportsComponent,
+          ),
       },
       {
         path: 'rdig',

@@ -6,6 +6,7 @@ import {
   externalProjectDataEntryPermission,
   fundingApplicationPermission,
   rdigPermission,
+  reportPermission,
   submissionsDraftPendingPermission,
   submissionsInboxHistoryPermission,
   systemOrRmcAdminPermission,
@@ -13,12 +14,12 @@ import {
 } from '../routing/app-route-permissions';
 
 /**
- * NAVIGATION_DATA — central routing and permission configuration.
+ * NAVIGATION_DATA - central routing and permission configuration.
  *
  * Permission rules use the ABAC model defined in NavPermission:
- *   permission.anyOf         — user must belong to at least ONE of these groups
- *   permission.allOf         — user must belong to ALL of these groups
- *   permission.excludeGroups — user must NOT belong to any of these groups
+ *   permission.anyOf         - user must belong to at least ONE of these groups
+ *   permission.allOf         - user must belong to ALL of these groups
+ *   permission.excludeGroups - user must NOT belong to any of these groups
  *
  * Permission is evaluated top-down:
  *   NavGroup permission  -> hides the entire group section
@@ -35,9 +36,8 @@ import {
  */
 export const NAVIGATION_DATA: NavGroup[] = [
   {
-    groupName: '', // No visible section header — single unified nav list
+    groupName: '',
     elements: [
-      // ── Dashboard ────────────────────────────────────────────────────────────────
       { label: 'Dashboard', icon: 'dashboard', route: '/dashboard' },
       {
         label: 'Analysis Dashboard',
@@ -45,8 +45,6 @@ export const NAVIGATION_DATA: NavGroup[] = [
         route: '/analysis-dashboard',
         permission: systemOrRmcAdminPermission,
       },
-
-      // ── Inbox ────────────────────────────────────────────────────────────────────
       {
         label: 'Inbox',
         icon: 'mail',
@@ -54,9 +52,6 @@ export const NAVIGATION_DATA: NavGroup[] = [
         permission: submissionsInboxHistoryPermission,
       },
       { label: 'Notifications', icon: 'notifications', route: '/notifications' },
-
-      // ── Submissions ──────────────────────────────────────────────────────────────
-      // Collapsible folder visible to every authenticated user. Open by default.
       {
         label: 'Submissions',
         icon: 'inbox',
@@ -88,16 +83,11 @@ export const NAVIGATION_DATA: NavGroup[] = [
           },
         ],
       },
-
-      // ── Forms ────────────────────────────────────────────────────────────────────
-      // Collapsible folder of application submission forms.
-      // No folder-level permission — child-level ABAC handles visibility.
-      // The folder is automatically hidden when all children are filtered out.
+      { label: 'Reports', icon: 'assessment', route: '/reports', permission: reportPermission },
       {
         label: 'Forms',
         icon: 'edit_document',
         children: [
-          // RDIG: (full_time OR contract) AND academic, NOT Reviewer, NOT HOS
           {
             label: 'RDIG Application',
             icon: 'description',
@@ -105,7 +95,6 @@ export const NAVIGATION_DATA: NavGroup[] = [
             formCode: 'RDIG',
             permission: rdigPermission,
           },
-          // Conference: ((full_time OR contract) AND academic) OR HOS OR VC
           {
             label: 'Conference Application',
             icon: 'event',
@@ -113,7 +102,6 @@ export const NAVIGATION_DATA: NavGroup[] = [
             formCode: 'CONFERENCE',
             permission: fundingApplicationPermission,
           },
-          // Journal: ((full_time OR contract) AND academic) OR HOS OR VC
           {
             label: 'Journal Publication',
             icon: 'menu_book',
@@ -121,7 +109,6 @@ export const NAVIGATION_DATA: NavGroup[] = [
             formCode: 'JOURNAL',
             permission: fundingApplicationPermission,
           },
-          // RA/GRA: (full_time OR contract) AND academic
           {
             label: 'RA/GRA Application',
             icon: 'person_add',
@@ -129,7 +116,6 @@ export const NAVIGATION_DATA: NavGroup[] = [
             formCode: 'RA_GRA',
             permission: disabledFeaturePermission,
           },
-          // Partnership: (full_time OR contract) AND academic
           {
             label: 'Partnership Application',
             icon: 'handshake',
@@ -137,7 +123,6 @@ export const NAVIGATION_DATA: NavGroup[] = [
             formCode: 'PARTNERSHIP',
             permission: disabledFeaturePermission,
           },
-          // Proposal: (full_time OR contract) AND academic
           {
             label: 'Proposal Application',
             icon: 'assignment',
@@ -161,9 +146,6 @@ export const NAVIGATION_DATA: NavGroup[] = [
           },
         ],
       },
-
-      // ── Admin Settings ──────────────────────────────────────────────────────────────
-      // Admin-only configuration folder.
       {
         label: 'Admin Settings',
         icon: 'admin_panel_settings',
@@ -220,8 +202,6 @@ export const NAVIGATION_DATA: NavGroup[] = [
           },
         ],
       },
-
-      // System configuration is restricted to SYSTEM_ADMIN users.
       {
         label: 'Settings',
         icon: 'settings',
@@ -252,7 +232,12 @@ export const NAVIGATION_DATA: NavGroup[] = [
             route: '/settings/account-codes',
             permission: systemSettingsPermission,
           },
-                    { label: 'Vote Numbers', icon: 'pin', route: '/settings/vote-numbers', permission: systemSettingsPermission },
+          {
+            label: 'Vote Numbers',
+            icon: 'pin',
+            route: '/settings/vote-numbers',
+            permission: systemSettingsPermission,
+          },
           {
             label: 'Staff Directory',
             icon: 'badge',

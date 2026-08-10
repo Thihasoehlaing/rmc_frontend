@@ -1,0 +1,171 @@
+<main class="reports-page">
+  <header class="reports-page__header">
+    <div>
+      <span class="reports-page__eyebrow">Reports</span>
+      <h1>Request Reports</h1>
+      <p>Filter submitted form requests for print review and Excel download.</p>
+    </div>
+  </header>
+
+  <section class="reports-toolbar" aria-label="Report filters">
+    <h2 class="reports-toolbar__title">Search &amp; Filters</h2>
+
+    <app-searchable-dropdown
+      label="Form"
+      placeholder="Select form"
+      [options]="formOptions()"
+      [ngModel]="selectedFormCode()"
+      (ngModelChange)="selectedFormCode.set($event ?? '')"
+      [loading]="formOptions().length === 0"
+    ></app-searchable-dropdown>
+
+    <label class="form-field reports-filter--request-code">
+      <span class="form-label">Request Code</span>
+      <span class="reports-search-input">
+        <span class="material-icons" aria-hidden="true">search</span>
+        <input
+          class="input--text"
+          type="search"
+          placeholder="Search request code"
+          [ngModel]="requestCode()"
+          (ngModelChange)="requestCode.set($event)"
+          (keydown.enter)="applyFilters()"
+          [disabled]="isLoading()"
+        />
+      </span>
+    </label>
+
+    <app-report-date-range-picker
+      [dateFrom]="dateFrom()"
+      [dateTo]="dateTo()"
+      [disabled]="isLoading()"
+      (dateFromChange)="dateFrom.set($event)"
+      (dateToChange)="dateTo.set($event)"
+    ></app-report-date-range-picker>
+
+    <div class="reports-toolbar__actions">
+      <button class="btn btn-primary" type="button" (click)="applyFilters()" [disabled]="isLoading()">
+        <span class="material-icons">search</span>
+        Search
+      </button>
+      <button class="btn btn-secondary" type="button" (click)="resetFilters()" [disabled]="isLoading()">
+        <span class="material-icons">restart_alt</span>
+        Reset
+      </button>
+    </div>
+  </section>
+
+  @if (isExternalFormSelected()) {
+    <section class="reports-external-fields" aria-label="External Excel columns">
+      <div class="reports-external-fields__header">
+        <div>
+          <h2>External Excel Columns</h2>
+          <p>Selected columns will be added as Excel column headers.</p>
+        </div>
+        <div class="external-columns__actions">
+          <button
+            class="external-columns__action external-columns__action--select"
+            type="button"
+            (click)="selectAllExternalFields()"
+            [disabled]="externalFieldOptions().length === 0"
+          >
+            <span class="material-icons" aria-hidden="true">done_all</span>
+            Select all
+          </button>
+          <button
+            class="external-columns__action external-columns__action--clear"
+            type="button"
+            (click)="clearExternalFields()"
+            [disabled]="selectedExternalFields().length === 0"
+          >
+            <span class="material-icons" aria-hidden="true">close</span>
+            Clear
+          </button>
+        </div>
+      </div>
+
+      <div class="external-columns__list" role="group" aria-label="External Excel columns">
+        @for (option of externalFieldOptions(); track option.value) {
+          <button
+            class="external-column-chip"
+            type="button"
+            [class.external-column-chip--selected]="isExternalFieldSelected(option.value)"
+            [attr.aria-pressed]="isExternalFieldSelected(option.value)"
+            (click)="toggleExternalField(option.value)"
+          >
+            {{ option.label }}
+          </button>
+        } @empty {
+          <span class="external-columns__empty">Loading columns...</span>
+        }
+      </div>
+    </section>
+  }
+
+  <div class="reports-export-row">
+    <button class="btn btn-primary" type="button" (click)="exportExcel()" [disabled]="isLoading() || isExporting()">
+      <span class="material-icons">download</span>
+      {{ isExporting() ? 'Downloading...' : 'Download Excel' }}
+    </button>
+  </div>
+
+  <section class="reports-table-card">
+    <header class="reports-table-card__header">
+      <div>
+        <div class="reports-table-card__title-row">
+          <h2>Approved Requests</h2>
+          <span class="reports-table-card__count">{{ totalItems() }}</span>
+        </div>
+        <p>Showing all final-step submitted requests.</p>
+      </div>
+      <button
+        class="btn btn-secondary reports-table-card__refresh"
+        type="button"
+        (click)="loadReports()"
+        [disabled]="isLoading()"
+      >
+        <span class="material-icons">refresh</span>
+        Refresh
+      </button>
+    </header>
+
+    @if (isLoading()) {
+      <app-table-skeleton [columns]="columns" [showSearch]="false" loadingLabel="Loading reports">
+      </app-table-skeleton>
+    } @else if (loadFailed()) {
+      <div class="reports-state">
+        <span class="material-icons">cloud_off</span>
+        <h2>Unable to load reports</h2>
+        <p>Check the API connection and try again.</p>
+        <button class="btn btn-primary" type="button" (click)="loadReports()">Try Again</button>
+      </div>
+    } @else if (rows().length === 0) {
+      <div class="reports-state">
+        <span class="material-icons">assessment</span>
+        <h2>No submitted requests found</h2>
+        <p>Adjust the form type, request code, or submission date range.</p>
+      </div>
+    } @else {
+      <app-data-table [columns]="columns" [rows]="rows()" [rowTrackFn]="rowTrackFn">
+        <ng-template #rowTemplate let-row let-index="index">
+          <tr>
+            <td class="is-align-center">{{ rowNumber(index) }}</td>
+            <td>
+              <span class="request-code">{{ row.request_code || '-' }}</span>
+            </td>
+            <td>
+              <strong class="report-form-name">{{ row.form_name || '-' }}</strong>
+            </td>
+            <td>
+              <div class="report-applicant">
+                <strong>{{ row.applicant_name || '-' }}</strong>
+                <span>{{ row.applicant_staff_username || row.applicant_email || '-' }}</span>
+              </div>
+            </td>
+            <td>{{ row.submitted_at ? (row.submitted_at | date: 'dd MMM yyyy, h:mm a') : '-' }}</td>
+          </tr>
+        </ng-template>
+      </app-data-table>
+    }
+  </section>
+</main>

@@ -166,6 +166,7 @@ export const NAVIGATION_DATA: NavGroup[] = [
                     { label: 'Dropdown Categories', icon: 'list_alt', route: '/settings/dropdown-categories', permission: systemSettingsPermission },
                     { label: 'Account Code Categories', icon: 'category', route: '/settings/account-code-categories', permission: systemSettingsPermission },
                     { label: 'Account Codes', icon: 'account_balance_wallet', route: '/settings/account-codes', permission: systemSettingsPermission },
+                    { label: 'Vote Numbers', icon: 'pin', route: '/settings/vote-numbers', permission: systemSettingsPermission },
                     { label: 'Staff Directory', icon: 'badge', route: '/settings/staff-directory', permission: systemSettingsPermission },
                     { label: 'Academic Staff', icon: 'school', route: '/settings/academic-staff', permission: systemSettingsPermission },
                     { label: 'Users', icon: 'manage_accounts', route: '/settings/users', permission: systemSettingsPermission },

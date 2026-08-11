@@ -187,6 +187,10 @@ export interface ActOnRequestPayload {
   metadata?: Record<string, unknown>;
 }
 
+export interface RollbackRequestPayload {
+  comment_text: string;
+}
+
 export interface ListQuery {
   page?: number;
   perPage?: number;
@@ -396,6 +400,16 @@ export class WorkflowRequestsService {
   actOnRequest(requestId: number, payload: ActOnRequestPayload): Observable<ApiResponse<unknown>> {
     return this.http.post<ApiResponse<unknown>>(
       `${this.base}/requests/${requestId}/actions`,
+      payload,
+    );
+  }
+
+  rollbackRequestAction(
+    requestId: number,
+    payload: RollbackRequestPayload,
+  ): Observable<ApiResponse<unknown>> {
+    return this.http.post<ApiResponse<unknown>>(
+      `${this.base}/requests/${requestId}/rollback`,
       payload,
     );
   }

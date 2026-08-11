@@ -122,6 +122,18 @@
                         <span class="material-icons" aria-hidden="true">print</span>
                       </button>
                     }
+                    @if (canRollback(app)) {
+                      <button
+                        type="button"
+                        class="btn-icon btn-icon--rollback"
+                        title="Rollback last action"
+                        aria-label="Rollback last action"
+                        [disabled]="rollbackRequestId() === (app.id ?? app.request_id)"
+                        (click)="openRollbackDialog(app)"
+                      >
+                        <span class="material-icons" aria-hidden="true">undo</span>
+                      </button>
+                    }
                   </div>
                 </td>
               </tr>
@@ -155,4 +167,50 @@
       ></app-pagination>
     </section>
   }
+
+  <app-dialog
+    [isOpen]="rollbackTarget() !== null"
+    title="Rollback Last Action"
+    size="small"
+    (close)="closeRollbackDialog()"
+  >
+    @if (rollbackTarget(); as target) {
+      <div class="rollback-dialog">
+        <p>
+          Roll back <strong>{{ getCode(target) }}</strong>
+          from <strong>{{ target.last_action?.to_status_code }}</strong>
+          to <strong>{{ target.last_action?.from_status_code }}</strong>.
+        </p>
+        <label class="form-field">
+          <span class="form-label">Reason</span>
+          <textarea
+            class="input--textarea"
+            rows="4"
+            maxlength="1000"
+            [value]="rollbackReason()"
+            (input)="rollbackReason.set($any($event.target).value)"
+          ></textarea>
+        </label>
+      </div>
+    }
+
+    <div dialog-footer class="form-dialog__footer">
+      <button
+        type="button"
+        class="btn btn-secondary"
+        [disabled]="rollbackRequestId() !== null"
+        (click)="closeRollbackDialog()"
+      >
+        Cancel
+      </button>
+      <button
+        type="button"
+        class="btn btn-danger"
+        [disabled]="rollbackRequestId() !== null || !rollbackReason().trim()"
+        (click)="confirmRollback()"
+      >
+        {{ rollbackRequestId() !== null ? 'Rolling back...' : 'Rollback' }}
+      </button>
+    </div>
+  </app-dialog>
 </div>

@@ -23,6 +23,7 @@ import { CONFERENCE_REVIEW_PREVIEW } from './conference-review.preview-data';
 import { ActionLoadingService } from '../../../../core/services/action-loading.service';
 import { TextareaAutosizeDirective } from '../../../../shared/directives/textarea-autosize.directive';
 import { TableActionIconComponent } from '../../../../shared/components/table-action-icon/table-action-icon.component';
+import { DialogComponent } from '../../../../shared/components/dialog/dialog.component';
 import { formatCountryForDisplay } from '../../../../shared/utils/country.util';
 import {
   formatCurrencyAmount,
@@ -46,6 +47,7 @@ const CONFERENCE_VENUE_LABELS: Readonly<Record<string, string>> = {
     TableScrollHintComponent,
     TextareaAutosizeDirective,
     TableActionIconComponent,
+    DialogComponent,
   ],
   templateUrl: './conference-review.component.html',
   // The conference and journal detail views intentionally share one visual contract.
@@ -72,6 +74,8 @@ export class ConferenceReviewComponent implements OnInit {
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
   readonly acting = signal(false);
+  readonly rollbacking = signal(false);
+  readonly rollbackDialogOpen = signal(false);
   readonly feedback = signal<{ type: 'success' | 'error'; text: string } | null>(null);
   readonly backLabel = signal('Back');
   readonly downloadingAttachmentId = signal<number | null>(null);
@@ -88,6 +92,7 @@ export class ConferenceReviewComponent implements OnInit {
   };
   readonly sectionEditCommentControl = new FormControl('', [Validators.maxLength(COMMENT_MAX_LENGTH)]);
   readonly actionCommentControl = new FormControl('', [Validators.maxLength(COMMENT_MAX_LENGTH)]);
+  readonly rollbackReasonControl = new FormControl('', [Validators.maxLength(COMMENT_MAX_LENGTH)]);
   readonly commentMaxLength = COMMENT_MAX_LENGTH;
 
   readonly sectionNames: Record<string, string> = {
@@ -98,6 +103,21 @@ export class ConferenceReviewComponent implements OnInit {
   };
 
   readonly request = computed(() => this.data()?.request ?? null);
+  readonly latestApproval = computed(() => {
+    const approvals = this.approvals();
+    return approvals.length ? approvals[approvals.length - 1] : null;
+  });
+  readonly canRollbackLatestAction = computed(() => {
+    if (!this.authService.inGroup('SystemAdmin')) return false;
+
+    const latest = this.latestApproval();
+    const request = this.request();
+    if (!latest || !request) return false;
+    if (latest.action_code?.toLowerCase() === 'admin_rollback') return false;
+    if (!latest.from_status_code || !latest.to_status_code) return false;
+    if (latest.from_status_code === latest.to_status_code) return false;
+    return request.status_code === latest.to_status_code;
+  });
   readonly conference = computed(() => this.data()?.conference ?? null);
   readonly staffAuthors = computed(() => this.data()?.apu_staff_co_authors ?? []);
   readonly studentAuthors = computed(() => this.data()?.apu_student_co_authors ?? []);
@@ -284,6 +304,13 @@ export class ConferenceReviewComponent implements OnInit {
 
   approvalActionLabel(history: ApprovalDto): string {
     return history.action_name?.trim() || this.prettyActor(history.action_code);
+  }
+
+  approvalActorLabel(history: ApprovalDto): string {
+    if (history.action_code?.toLowerCase() === 'admin_rollback') {
+      return 'System';
+    }
+    return this.val(history.staff_name || history.staff_username);
   }
 
   commentsForSection(sectionCode: string): RequestCommentDto[] {
@@ -679,6 +706,65 @@ export class ConferenceReviewComponent implements OnInit {
           this.feedback.set({
             type: 'error',
             text: err?.error?.message || 'Failed to record your action. Please try again.',
+          }),
+      });
+  }
+
+  openRollbackDialog(): void {
+    if (!this.canRollbackLatestAction()) return;
+    this.feedback.set(null);
+    this.rollbackReasonControl.reset('');
+    this.rollbackDialogOpen.set(true);
+  }
+
+  closeRollbackDialog(): void {
+    if (this.rollbacking()) return;
+    this.rollbackDialogOpen.set(false);
+    this.rollbackReasonControl.reset('');
+  }
+
+  rollbackLatestAction(): void {
+    if (this.requestId == null || this.rollbacking() || !this.canRollbackLatestAction()) return;
+
+    const requestId = this.requestId;
+    const reason = (this.rollbackReasonControl.value ?? '').trim();
+
+    if (!reason) {
+      this.feedback.set({ type: 'error', text: 'Rollback reason is required.' });
+      return;
+    }
+
+    if (this.rollbackReasonControl.invalid) {
+      this.feedback.set({
+        type: 'error',
+        text: `Rollback reason must be ${this.commentMaxLength} characters or fewer.`,
+      });
+      return;
+    }
+
+    this.rollbacking.set(true);
+    this.feedback.set(null);
+    const loadingId = this.actionLoading.begin('Rolling back request action');
+    this.requests
+      .rollbackRequestAction(requestId, { comment_text: reason })
+      .pipe(
+        finalize(() => {
+          this.rollbacking.set(false);
+          this.actionLoading.end(loadingId);
+        }),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe({
+        next: () => {
+          this.feedback.set({ type: 'success', text: 'Request action rolled back.' });
+          this.rollbackDialogOpen.set(false);
+          this.rollbackReasonControl.reset('');
+          this.load(requestId);
+        },
+        error: (err) =>
+          this.feedback.set({
+            type: 'error',
+            text: err?.error?.message || 'Could not roll back this request.',
           }),
       });
   }

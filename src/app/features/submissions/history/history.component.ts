@@ -6,6 +6,7 @@ import { finalize, forkJoin } from 'rxjs';
 
 import { CachedFormOption, FormCacheService } from '../../../core/services/form-cache.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { ToastService } from '../../../core/services/toast.service';
 import {
   STATUS_COLORS,
   formRoute,
@@ -24,6 +25,7 @@ import {
   SkeletonColumn,
   TableSkeletonComponent,
 } from '../../../shared/components/table-skeleton/table-skeleton.component';
+import { DialogComponent } from '../../../shared/components/dialog/dialog.component';
 
 @Component({
   selector: 'app-history',
@@ -36,6 +38,7 @@ import {
     SubmissionFormTabsComponent,
     TableActionIconComponent,
     TableSkeletonComponent,
+    DialogComponent,
   ],
   templateUrl: './history.component.html',
   styleUrl: './history.component.scss',
@@ -44,6 +47,7 @@ export class HistoryComponent implements OnInit {
   private readonly requests = inject(WorkflowRequestsService);
   private readonly auth = inject(AuthService);
   private readonly formCache = inject(FormCacheService);
+  private readonly toast = inject(ToastService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
@@ -55,6 +59,9 @@ export class HistoryComponent implements OnInit {
   searchQuery = signal('');
   createdDate = signal('');
   selectedType = signal('all');
+  rollbackRequestId = signal<number | null>(null);
+  rollbackTarget = signal<RequestSummaryDto | null>(null);
+  rollbackReason = signal('');
   page = signal(1);
   pageSize = signal(10);
   readonly pageSizeOptions = [10, 15, 30, 50];
@@ -115,6 +122,12 @@ export class HistoryComponent implements OnInit {
       }
     });
 
+    this.loadHistory();
+  }
+
+  private loadHistory(): void {
+    this.loading.set(true);
+    this.error.set(null);
     const list$ = this.isAdminHistory()
       ? this.requests.getAdminHistory({ page: 1, perPage: 100 })
       : this.requests.getHistoryRequests({ page: 1, perPage: 100 });
@@ -269,6 +282,54 @@ export class HistoryComponent implements OnInit {
     }
 
     return app.status_code.toLowerCase() !== 'draft';
+  }
+
+  canRollback(app: RequestSummaryDto): boolean {
+    if (!this.isAdminHistory() || !this.auth.inGroup('SystemAdmin')) return false;
+
+    const latest = app.last_action;
+    if (!latest || latest.action_code?.toLowerCase() === 'admin_rollback') return false;
+    if (!latest.from_status_code || !latest.to_status_code) return false;
+    if (latest.from_status_code === latest.to_status_code) return false;
+    return app.status_code === latest.to_status_code;
+  }
+
+  openRollbackDialog(app: RequestSummaryDto): void {
+    if (!this.canRollback(app)) return;
+    this.rollbackTarget.set(app);
+    this.rollbackReason.set('');
+  }
+
+  closeRollbackDialog(): void {
+    if (this.rollbackRequestId() != null) return;
+    this.rollbackTarget.set(null);
+    this.rollbackReason.set('');
+  }
+
+  confirmRollback(): void {
+    const app = this.rollbackTarget();
+    const requestId = app?.id ?? app?.request_id;
+    if (!app || requestId == null || !this.canRollback(app)) return;
+
+    const reason = this.rollbackReason().trim();
+    if (!reason) {
+      this.toast.error('Rollback reason is required.');
+      return;
+    }
+
+    this.rollbackRequestId.set(requestId);
+    this.requests
+      .rollbackRequestAction(requestId, { comment_text: reason })
+      .pipe(finalize(() => this.rollbackRequestId.set(null)))
+      .subscribe({
+        next: () => {
+          this.toast.success('Request action rolled back.');
+          this.rollbackTarget.set(null);
+          this.rollbackReason.set('');
+          this.loadHistory();
+        },
+        error: (err) => this.toast.error(err?.error?.message || 'Could not roll back this request.'),
+      });
   }
 
   openPrint(app: RequestSummaryDto): void {

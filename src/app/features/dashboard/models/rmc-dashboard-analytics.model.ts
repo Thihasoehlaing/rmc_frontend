@@ -39,7 +39,7 @@ export interface RmcDashboardPortfolio {
   costsAvailable: boolean;
 }
 
-export type DashboardTrendMode = 'completed' | 'spend';
+export type DashboardTrendMode = 'all' | 'completed' | 'rejected' | 'spend';
 export type DashboardChartType = 'bar' | 'line' | 'donut';
 
 export const DASHBOARD_FORM_COLORS = [

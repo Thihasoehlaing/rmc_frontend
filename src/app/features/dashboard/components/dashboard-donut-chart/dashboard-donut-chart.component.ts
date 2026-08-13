@@ -30,6 +30,8 @@ export class DashboardDonutChartComponent {
 
   @Input() currency = false;
   @Input() compact = false;
+  @Input() showCenterTotal = true;
+  @Input() showLegend = false;
   @Input() centerLabel = 'Total';
   @Input() emptyLabel = 'No data in this range';
 

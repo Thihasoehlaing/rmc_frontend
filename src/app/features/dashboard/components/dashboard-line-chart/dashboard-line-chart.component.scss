@@ -1,21 +1,8 @@
 .line-chart {
+  position: relative;
   width: 100%;
   padding: var(--space-4) var(--space-5) var(--space-2);
   overflow: hidden;
-}
-
-.line-chart__summary {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: var(--space-2);
-  color: var(--color-text-muted);
-  font-size: var(--fs-xs);
-
-  strong {
-    color: var(--color-secondary);
-    font-size: var(--fs-md);
-  }
 }
 
 svg {
@@ -40,6 +27,7 @@ svg {
 
   &--x {
     text-anchor: middle;
+    font-weight: var(--fw-semibold);
   }
 }
 
@@ -68,7 +56,7 @@ svg {
   fill: var(--color-surface);
   stroke: var(--color-primary);
   stroke-width: 4;
-  cursor: help;
+  cursor: url('/cursors/chart-point.svg') 8 8, pointer;
   transition:
     r var(--transition-fast),
     fill var(--transition-fast);
@@ -79,6 +67,12 @@ svg {
     fill: var(--color-primary-light);
     outline: none;
   }
+}
+
+app-chart-tooltip {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
 }
 
 .point-guide:has(+ .trend-point:hover),

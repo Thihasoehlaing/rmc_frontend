@@ -31,11 +31,9 @@ export function buildDashboardTimeBuckets(
     return [];
   }
 
-  if (isSameMonth(rangeStart, rangeEnd)) {
-    return buildWeeklyBuckets(rangeStart, rangeEnd).map((bucket) => ({
-      ...bucket,
-      intervalLabel: 'Weekly',
-    }));
+  const totalDays = Math.floor((rangeEnd.getTime() - rangeStart.getTime()) / 86_400_000) + 1;
+  if (totalDays < 31 && !isFullCalendarMonth(rangeStart, rangeEnd)) {
+    return buildDayBuckets(rangeStart, rangeEnd, 10);
   }
 
   const totalMonths =
@@ -43,44 +41,27 @@ export function buildDashboardTimeBuckets(
     rangeEnd.getMonth() -
     rangeStart.getMonth() +
     1;
-  const intervalMonths = totalMonths <= 12 ? 1 : totalMonths <= 36 ? 3 : totalMonths <= 72 ? 6 : 12;
+  const intervalMonths = totalMonths <= 6 ? 1 : totalMonths <= 12 ? 3 : totalMonths < 36 ? 6 : 12;
 
-  const firstMonthEnd = endOfDay(new Date(rangeStart.getFullYear(), rangeStart.getMonth() + 1, 0));
-  const lastMonthStart = startOfDay(new Date(rangeEnd.getFullYear(), rangeEnd.getMonth(), 1));
-  const firstMonthBuckets = buildWeeklyBuckets(rangeStart, firstMonthEnd);
-  const lastMonthBuckets = buildWeeklyBuckets(lastMonthStart, rangeEnd);
-  const middleStart = startOfDay(new Date(rangeStart.getFullYear(), rangeStart.getMonth() + 1, 1));
-  const middleEnd = endOfDay(new Date(rangeEnd.getFullYear(), rangeEnd.getMonth(), 0));
-  const middleBuckets =
-    middleStart <= middleEnd ? buildMonthBuckets(middleStart, middleEnd, intervalMonths) : [];
-  const intervalLabel = middleBuckets.length
-    ? `Weekly first/last month · ${monthIntervalLabel(intervalMonths)} middle`
-    : 'Weekly by month';
-
-  return [...firstMonthBuckets, ...middleBuckets, ...lastMonthBuckets].map((bucket) => ({
-    ...bucket,
-    intervalLabel,
-  }));
+  return intervalMonths === 12
+    ? buildYearBuckets(rangeStart, rangeEnd)
+    : buildMonthBuckets(rangeStart, rangeEnd, intervalMonths);
 }
 
-function buildWeeklyBuckets(start: Date, end: Date): DashboardTimeBucket[] {
+function buildDayBuckets(start: Date, end: Date, intervalDays: number): DashboardTimeBucket[] {
   const buckets: DashboardTimeBucket[] = [];
   let cursor = startOfDay(start);
 
   while (cursor <= end) {
-    const weekNumber = Math.floor((cursor.getDate() - 1) / 7) + 1;
-    const calendarWeekEnd = new Date(
-      cursor.getFullYear(),
-      cursor.getMonth(),
-      Math.min(weekNumber * 7, new Date(cursor.getFullYear(), cursor.getMonth() + 1, 0).getDate()),
+    const bucketEnd = new Date(
+      Math.min(end.getTime(), endOfDay(addDays(cursor, intervalDays - 1)).getTime()),
     );
-    const bucketEnd = new Date(Math.min(end.getTime(), endOfDay(calendarWeekEnd).getTime()));
     buckets.push({
       key: `${toInputDate(cursor)}:${toInputDate(bucketEnd)}`,
-      label: formatWeekLabel(cursor, weekNumber),
+      label: formatDayRange(cursor, bucketEnd),
       start: cursor,
       end: bucketEnd,
-      intervalLabel: 'Weekly',
+      intervalLabel: 'Every 10 days',
     });
     cursor = addDays(startOfDay(bucketEnd), 1);
   }
@@ -108,6 +89,28 @@ function buildMonthBuckets(start: Date, end: Date, intervalMonths: number): Dash
   return buckets;
 }
 
+function buildYearBuckets(start: Date, end: Date): DashboardTimeBucket[] {
+  const buckets: DashboardTimeBucket[] = [];
+  let cursor = startOfDay(start);
+
+  while (cursor <= end) {
+    const year = cursor.getFullYear();
+    const bucketEnd = new Date(
+      Math.min(end.getTime(), endOfDay(new Date(year, 11, 31)).getTime()),
+    );
+    buckets.push({
+      key: `${toInputDate(cursor)}:${toInputDate(bucketEnd)}`,
+      label: String(year),
+      start: cursor,
+      end: bucketEnd,
+      intervalLabel: 'Yearly',
+    });
+    cursor = startOfDay(new Date(year + 1, 0, 1));
+  }
+
+  return buckets;
+}
+
 function monthIntervalLabel(intervalMonths: number): string {
   if (intervalMonths === 1) return 'Monthly';
   if (intervalMonths === 3) return 'Every 3 months';
@@ -115,18 +118,8 @@ function monthIntervalLabel(intervalMonths: number): string {
   return 'Yearly';
 }
 
-function isSameMonth(first: Date, second: Date): boolean {
-  return first.getFullYear() === second.getFullYear() && first.getMonth() === second.getMonth();
-}
-
-function formatWeekLabel(date: Date, weekNumber: number): string {
-  const month = date.toLocaleDateString('en-MY', { month: 'short' });
-  const shortYear = String(date.getFullYear()).slice(-2);
-  return `${month} ’${shortYear} – Week ${weekNumber}`;
-}
-
 function formatMonthRange(start: Date, end: Date): string {
-  const month = (date: Date) => date.toLocaleDateString('en-MY', { month: 'short' });
+  const month = (date: Date) => date.toLocaleDateString('en-US', { month: 'short' });
   const shortYear = (date: Date) => String(date.getFullYear()).slice(-2);
 
   if (start.getMonth() === end.getMonth() && start.getFullYear() === end.getFullYear()) {
@@ -136,6 +129,25 @@ function formatMonthRange(start: Date, end: Date): string {
     return `${month(start)}–${month(end)} ’${shortYear(end)}`;
   }
   return `${month(start)} ’${shortYear(start)}–${month(end)} ’${shortYear(end)}`;
+}
+
+function formatDayRange(start: Date, end: Date): string {
+  const format = (date: Date) => {
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = date.toLocaleDateString('en-US', { month: 'short' });
+    return `${day} ${month} ’${String(date.getFullYear()).slice(-2)}`;
+  };
+  return `${format(start)}–${format(end)}`;
+}
+
+function isFullCalendarMonth(start: Date, end: Date): boolean {
+  const finalDay = new Date(start.getFullYear(), start.getMonth() + 1, 0).getDate();
+  return (
+    start.getDate() === 1 &&
+    end.getDate() === finalDay &&
+    start.getMonth() === end.getMonth() &&
+    start.getFullYear() === end.getFullYear()
+  );
 }
 
 function parseInputDate(value: string): Date {

@@ -1,4 +1,8 @@
-<div class="donut-chart-layout" [class.donut-chart-layout--compact]="compact">
+<div
+  class="donut-chart-layout"
+  [class.donut-chart-layout--compact]="compact"
+  [class.donut-chart-layout--with-legend]="showLegend"
+>
   @if (segments().length) {
     <div class="donut-chart-visual">
       <svg
@@ -31,10 +35,12 @@
           </circle>
         }
       </svg>
-      <div class="donut-chart-total" aria-hidden="true">
-        <strong>{{ formatValue(total()) }}</strong>
-        <span>{{ centerLabel }}</span>
-      </div>
+      @if (showCenterTotal) {
+        <div class="donut-chart-total" aria-hidden="true">
+          <strong>{{ formatValue(total()) }}</strong>
+          <span>{{ centerLabel }}</span>
+        </div>
+      }
       @if (activeSegment(); as active) {
         <app-chart-tooltip
           [visible]="true"
@@ -46,7 +52,7 @@
       }
     </div>
 
-    @if (!compact) {
+    @if (!compact || showLegend) {
       <ul class="donut-chart-legend" aria-label="Chart legend">
         @for (segment of segments(); track segment.key) {
           <li [attr.title]="segment.label + ': ' + segment.formattedValue">

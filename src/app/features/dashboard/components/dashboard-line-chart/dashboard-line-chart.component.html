@@ -1,16 +1,12 @@
 @if (plotPoints().length) {
   <div class="line-chart">
-    <div class="line-chart__summary">
-      <span>Chart total</span>
-      <strong>{{ formatValue(total()) }}</strong>
-    </div>
     <svg viewBox="0 0 720 338" role="img" aria-label="Date range trend chart">
       @for (line of gridLines(); track line.y) {
-        <line class="grid-line" x1="58" x2="698" [attr.y1]="line.y" [attr.y2]="line.y"></line>
-        <text class="axis-label axis-label--y" x="48" [attr.y]="line.y + 4">{{ line.label }}</text>
+        <line class="grid-line" [attr.x1]="left" [attr.x2]="plotRight" [attr.y1]="line.y" [attr.y2]="line.y"></line>
+        <text class="axis-label axis-label--y" [attr.x]="left - 10" [attr.y]="line.y + 4">{{ line.label }}</text>
       }
 
-      <polyline class="trend-area" [attr.points]="polyline() + ' 698,218 58,218'"></polyline>
+      <polyline class="trend-area" [attr.points]="areaPolygon()"></polyline>
       <polyline class="trend-line" [attr.points]="polyline()"></polyline>
 
       @for (point of plotPoints(); track point.key) {
@@ -19,7 +15,7 @@
           [attr.x1]="point.x"
           [attr.x2]="point.x"
           [attr.y1]="point.y"
-          y2="218"
+          [attr.y2]="plotBottom"
         ></line>
         <circle
           class="trend-point"
@@ -28,9 +24,11 @@
           r="5"
           tabindex="0"
           [attr.aria-label]="point.label + ': ' + point.formattedValue"
-        >
-          <title>{{ point.label }}: {{ point.formattedValue }}</title>
-        </circle>
+          (mouseenter)="activePoint.set(point)"
+          (mouseleave)="activePoint.set(null)"
+          (focus)="activePoint.set(point)"
+          (blur)="activePoint.set(null)"
+        ></circle>
         <text class="axis-label axis-label--x" [attr.x]="point.x" [attr.y]="point.axisLabelY">
           <tspan [attr.x]="point.x">{{ point.axisLabel }}</tspan>
           @if (point.axisDetail) {
@@ -39,6 +37,14 @@
         </text>
       }
     </svg>
+    <app-chart-tooltip
+      [visible]="activePoint() !== null"
+      [animate]="false"
+      color="var(--color-primary)"
+      [label]="activePoint()?.label ?? ''"
+      [value]="activePoint()?.formattedValue ?? ''"
+      [detail]="totalLabel"
+    />
   </div>
 } @else {
   <div class="line-chart-empty">

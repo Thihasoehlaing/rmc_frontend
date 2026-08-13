@@ -72,6 +72,44 @@ function createRequest(
   };
 }
 
+function appendYearlyVolume(records: RmcDashboardRecord[]): void {
+  let nextId = records.reduce((maximum, record) => Math.max(maximum, record.requestId), 0) + 1;
+
+  for (let year = 2026; year <= 2036; year += 1) {
+    const annualCount = year === 2026 ? 1_000 : 100;
+
+    for (let index = 0; index < annualCount; index += 1) {
+      const form = FORM_CATALOG[index % FORM_CATALOG.length];
+      const month = index % 12;
+      const day = ((index * 7) % 28) + 1;
+      const submittedAt = new Date(year, month, day, 9 + (index % 8));
+      const statusPosition = index % 10;
+      const statusCode =
+        statusPosition < 7 ? 'APPROVED' : statusPosition === 7 ? 'REJECTED' : 'IN_PROGRESS';
+      const isCompleted = statusCode === 'APPROVED';
+      const isRejected = statusCode === 'REJECTED';
+      const completedAt =
+        isCompleted || isRejected
+          ? new Date(year, month, Math.min(day + 2, 28), 16)
+          : null;
+      const request = createRequest(nextId, form, statusCode, submittedAt);
+
+      records.push({
+        request,
+        requestId: nextId,
+        formCode: form.code,
+        formName: form.name,
+        submittedAt,
+        completedAt,
+        requiresAction: statusCode === 'IN_PROGRESS' && index % 2 === 0,
+        isCompleted,
+        cost: form.minimumCost * ((index % 12) + 1),
+      });
+      nextId += 1;
+    }
+  }
+}
+
 function buildMockAnalysisData(): MockAnalysisData {
   const now = new Date();
   const start = new Date(now.getFullYear() - 1, 0, 1);
@@ -136,6 +174,8 @@ function buildMockAnalysisData(): MockAnalysisData {
       cost: TRAVEL_FORM.minimumCost * (index + 1),
     });
   });
+
+  appendYearlyVolume(records);
 
   const todayKey = now.toISOString().slice(0, 10);
   const completed = records.filter((record) => record.isCompleted);

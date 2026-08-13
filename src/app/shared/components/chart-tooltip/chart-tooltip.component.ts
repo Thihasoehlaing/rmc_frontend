@@ -10,6 +10,7 @@ import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 export class ChartTooltipComponent {
   @Input() visible = false;
   @Input() inline = false;
+  @Input() animate = true;
   @Input() color = 'var(--color-primary)';
   @Input() label = '';
   @Input() value = '';

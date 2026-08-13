@@ -38,6 +38,10 @@
     transform: none;
   }
 
+  &--no-motion {
+    transition: none;
+  }
+
   strong {
     color: var(--color-secondary);
     white-space: nowrap;

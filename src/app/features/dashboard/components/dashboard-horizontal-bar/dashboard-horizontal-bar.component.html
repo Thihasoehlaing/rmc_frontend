@@ -1,9 +1,4 @@
 <div class="horizontal-bars">
-  <div class="horizontal-bars__total">
-    <span>Total Amount</span>
-    <strong [attr.title]="formatValue(total())">{{ formatValue(total(), true) }}</strong>
-  </div>
-
   @if (bars().length) {
     <div class="horizontal-bars__list">
       @for (bar of bars(); track bar.key) {

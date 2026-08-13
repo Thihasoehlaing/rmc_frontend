@@ -1,46 +1,41 @@
 @if (bars().length) {
-  <div class="bar-chart" role="img" aria-label="Date range vertical bar chart grouped by form">
-    <div class="bar-chart__summary">
-      <span>Chart total</span>
-      <strong>{{ formatValue(total()) }}</strong>
-    </div>
+  <div class="bar-chart" role="img" aria-label="Horizontal bar chart with form categories">
     <div class="bar-chart__body">
+      <div class="bar-chart__axis-spacer" aria-hidden="true"></div>
       <div class="bar-chart__axis" aria-hidden="true">
         @for (tick of axisTicks(); track tick.ratio) {
           <span>{{ tick.label }}</span>
         }
       </div>
-      <div class="bar-chart__plot">
-        @for (bar of bars(); track bar.key) {
-          <div class="bar-chart__item" [attr.aria-label]="bar.label + ': ' + bar.formattedTotal">
-            <strong>{{ bar.formattedTotal }}</strong>
-            <div class="bar-chart__track">
-              @for (segment of bar.segments; track segment.key) {
-                <span
-                  class="bar-chart__segment"
-                  tabindex="0"
-                  [style.height.%]="segment.height"
-                  [style.background]="segment.color"
-                  (mouseenter)="showSegment(segment, bar.label)"
-                  (mouseleave)="activeSegment.set(null)"
-                  (focus)="showSegment(segment, bar.label)"
-                  (blur)="activeSegment.set(null)"
-                ></span>
-              }
-            </div>
-            <small>{{ bar.label }}</small>
+      <div class="bar-chart__value-spacer" aria-hidden="true"></div>
+      @for (bar of bars(); track bar.key) {
+        <div class="bar-chart__item" [attr.aria-label]="bar.label + ': ' + bar.formattedTotal">
+          <small>{{ bar.label }}</small>
+          <div class="bar-chart__track">
+            @for (segment of bar.segments; track segment.key) {
+              <span
+                class="bar-chart__segment"
+                tabindex="0"
+                [style.width.%]="segment.width"
+                [style.background]="segment.color"
+                (mouseenter)="showSegment(segment, bar.label)"
+                (mouseleave)="activeSegment.set(null)"
+                (focus)="showSegment(segment, bar.label)"
+                (blur)="activeSegment.set(null)"
+              ></span>
+            }
           </div>
-        }
-        @if (activeSegment(); as active) {
-          <app-chart-tooltip
-            [visible]="true"
-            [color]="active.color"
-            [label]="active.label"
-            [value]="active.formattedValue"
-            [detail]="active.period"
-          />
-        }
-      </div>
+          <strong>{{ bar.formattedTotal }}</strong>
+        </div>
+      }
+      <app-chart-tooltip
+        [visible]="activeSegment() !== null"
+        [animate]="false"
+        [color]="activeSegment()?.color ?? ''"
+        [label]="activeSegment()?.label ?? ''"
+        [value]="activeSegment()?.formattedValue ?? ''"
+        [detail]="totalLabel"
+      />
     </div>
   </div>
 } @else {

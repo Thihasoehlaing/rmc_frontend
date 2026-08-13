@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, HostListener, Input, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, HostListener, Input, OnInit, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
 
@@ -8,11 +8,11 @@ import {
   DashboardSummaryDto,
 } from '../../../../core/services/workflow-requests.service';
 import { NoteComponent } from '../../../../shared/components/note/note.component';
+import { SearchableDropdownComponent } from '../../../../shared/components/searchable-dropdown/searchable-dropdown.component';
+import { DropdownOption } from '../../../../core/interfaces/components.interface';
 import { DashboardViewConfig } from '../../dashboard.config';
 import {
-  ALL_FORMS_FILTER,
   DASHBOARD_FORM_COLORS,
-  DashboardChartType,
   DashboardChartDatum,
   DashboardLinePoint,
   DashboardStackedBarPoint,
@@ -21,7 +21,6 @@ import {
 } from '../../models/rmc-dashboard-analytics.model';
 import { RmcDashboardAnalyticsService } from '../../services/rmc-dashboard-analytics.service';
 import { DashboardBarChartComponent } from '../dashboard-bar-chart/dashboard-bar-chart.component';
-import { DashboardDonutChartComponent } from '../dashboard-donut-chart/dashboard-donut-chart.component';
 import { DashboardLineChartComponent } from '../dashboard-line-chart/dashboard-line-chart.component';
 import { DashboardHorizontalBarComponent } from '../dashboard-horizontal-bar/dashboard-horizontal-bar.component';
 import { buildDashboardTimeBuckets, dashboardMaxEndDate } from '../../utils/dashboard-date-range';
@@ -39,8 +38,8 @@ interface FormFilterOption {
     CommonModule,
     FormsModule,
     NoteComponent,
+    SearchableDropdownComponent,
     DashboardBarChartComponent,
-    DashboardDonutChartComponent,
     DashboardLineChartComponent,
     DashboardHorizontalBarComponent,
   ],
@@ -58,13 +57,12 @@ export class RmcAdminAnalyticsDashboardComponent implements OnInit {
   @Input({ required: true }) view!: DashboardViewConfig;
   @Input() username = 'Guest';
 
-  readonly allForms = ALL_FORMS_FILTER;
   readonly records = signal<RmcDashboardRecord[]>([]);
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
-  readonly selectedForm = signal(ALL_FORMS_FILTER);
-  readonly trendMode = signal<DashboardTrendMode>('completed');
-  readonly chartType = signal<DashboardChartType>('line');
+  readonly selectedForms = signal<string[]>([]);
+  readonly barTrendMode = signal<DashboardTrendMode>('completed');
+  readonly lineTrendMode = signal<DashboardTrendMode>('completed');
   readonly filtersOpen = signal(false);
   readonly startDate = signal(this.toInputDate(new Date(new Date().getFullYear(), 0, 1)));
   readonly endDate = signal(this.toInputDate(new Date()));
@@ -73,19 +71,6 @@ export class RmcAdminAnalyticsDashboardComponent implements OnInit {
   private readonly trendBuckets = computed(() =>
     buildDashboardTimeBuckets(this.startDate(), this.endDate()),
   );
-  readonly trendIntervalLabel = computed(
-    () => this.trendBuckets()[0]?.intervalLabel ?? 'No valid interval',
-  );
-  readonly chartTypes: ReadonlyArray<{
-    value: DashboardChartType;
-    label: string;
-    icon: string;
-  }> = [
-    { value: 'bar', label: 'Vertical bar', icon: 'bar_chart' },
-    { value: 'line', label: 'Line', icon: 'show_chart' },
-    { value: 'donut', label: 'Donut', icon: 'donut_large' },
-  ];
-
   readonly formOptions = computed<FormFilterOption[]>(() => {
     const forms = new Map<string, string>();
     for (const form of this.summaryValue()?.form_breakdown ?? []) {
@@ -102,12 +87,9 @@ export class RmcAdminAnalyticsDashboardComponent implements OnInit {
       }));
   });
 
-  readonly selectedFormLabel = computed(() => {
-    if (this.selectedForm() === ALL_FORMS_FILTER) return 'All forms';
-    return (
-      this.formOptions().find((form) => form.code === this.selectedForm())?.name ?? 'All forms'
-    );
-  });
+  readonly formFilterOptions = computed<DropdownOption<string>[]>(() =>
+    this.formOptions().map((form) => ({ value: form.code, label: form.code })),
+  );
 
   readonly submittedRecords = computed(() =>
     this.records().filter(
@@ -133,6 +115,15 @@ export class RmcAdminAnalyticsDashboardComponent implements OnInit {
     this.submittedRecords().filter((record) => this.isRejected(record)),
   );
 
+  readonly rejectedTrendRecords = computed(() =>
+    this.records().filter(
+      (record) =>
+        this.isRejected(record) &&
+        this.matchesForm(record) &&
+        this.isWithinRange(record.completedAt ?? record.submittedAt),
+    ),
+  );
+
   readonly inProgressRecords = computed(() =>
     this.submittedRecords().filter((record) => !record.isCompleted && !this.isRejected(record)),
   );
@@ -140,6 +131,7 @@ export class RmcAdminAnalyticsDashboardComponent implements OnInit {
   readonly totalCostSeries = computed(() =>
     this.seriesFor(this.submittedRecords(), (record) => record.cost),
   );
+  readonly totalCostAmount = computed(() => this.seriesTotal(this.totalCostSeries()));
 
   readonly applicationsSeries = computed(() =>
     this.seriesForRecordsOrSummary(this.submittedRecords(), 'total_submitted', (record) => 1),
@@ -155,76 +147,65 @@ export class RmcAdminAnalyticsDashboardComponent implements OnInit {
 
   readonly inProgressSeries = computed(() => this.seriesFor(this.inProgressRecords(), () => 1));
 
+  readonly applicationsTotal = computed(() => this.seriesTotal(this.applicationsSeries()));
+  readonly completedTotal = computed(() => this.seriesTotal(this.completedSeries()));
+  readonly rejectedTotal = computed(() => this.seriesTotal(this.rejectedSeries()));
+  readonly inProgressTotal = computed(() => this.seriesTotal(this.inProgressSeries()));
+
   readonly visibleFormLegend = computed(() =>
-    this.formOptions().filter(
-      (form) => this.selectedForm() === ALL_FORMS_FILTER || form.code === this.selectedForm(),
-    ),
+    this.formOptions().filter((form) => this.isFormSelected(form.code)),
   );
 
-  readonly trendPoints = computed<DashboardLinePoint[]>(() => {
-    const source = this.completedTrendRecords();
+  readonly barMetricLabel = computed(() => this.metricLabel(this.barTrendMode()));
+  readonly lineMetricLabel = computed(() => this.metricLabel(this.lineTrendMode()));
+
+  constructor() {
+    effect(() => {
+      const codes = this.formOptions().map((form) => form.code);
+      const selected = this.selectedForms();
+      if (codes.length && !selected.length) {
+        this.selectedForms.set(codes);
+      }
+    });
+  }
+
+  readonly lineTrendPoints = computed<DashboardLinePoint[]>(() => {
+    const source = this.recordsForTrend(this.lineTrendMode());
 
     return this.trendBuckets().map((bucket) => {
       const matching = source.filter((record) => {
-        const completedAt = record.completedAt ?? record.submittedAt;
-        return completedAt && this.isWithinBucket(completedAt, bucket.start, bucket.end);
+        const trendDate = this.trendDate(record, this.lineTrendMode());
+        return trendDate && this.isWithinBucket(trendDate, bucket.start, bucket.end);
       });
       return {
         key: bucket.key,
         label: bucket.label,
         value:
-          this.trendMode() === 'completed'
-            ? matching.length
-            : matching.reduce((total, record) => total + record.cost, 0),
+          this.lineTrendMode() === 'spend'
+            ? matching.reduce((total, record) => total + record.cost, 0)
+            : matching.length,
       };
     });
   });
 
-  readonly trendDonutSeries = computed<DashboardChartDatum[]>(() =>
-    this.trendPoints().map((point, index) => ({
-      key: point.key,
-      label: point.label,
-      value: point.value,
-      color: DASHBOARD_FORM_COLORS[index % DASHBOARD_FORM_COLORS.length],
-    })),
-  );
+  readonly barTrendFormPoints = computed<DashboardStackedBarPoint[]>(() => {
+    const source = this.recordsForTrend(this.barTrendMode());
 
-  readonly trendFormPoints = computed<DashboardStackedBarPoint[]>(() => {
-    const source = this.completedTrendRecords();
-
-    return this.trendBuckets().map((bucket) => {
-      const segments = this.visibleFormLegend().map((form) => {
-        const records = source.filter((record) => {
-          const completedAt = record.completedAt ?? record.submittedAt;
-          return (
-            record.formCode === form.code &&
-            completedAt &&
-            this.isWithinBucket(completedAt, bucket.start, bucket.end)
-          );
-        });
-        return {
-          key: form.code,
-          label: form.name,
-          color: form.color,
-          value:
-            this.trendMode() === 'completed'
-              ? records.length
-              : records.reduce((total, record) => total + record.cost, 0),
-        };
-      });
+    return this.visibleFormLegend().map((form) => {
+      const records = source.filter((record) => record.formCode === form.code);
+      const value =
+        this.barTrendMode() === 'spend'
+          ? records.reduce((total, record) => total + record.cost, 0)
+          : records.length;
 
       return {
-        key: bucket.key,
-        label: bucket.label,
-        total: segments.reduce((total, segment) => total + segment.value, 0),
-        segments,
+        key: form.code,
+        label: form.code,
+        total: value,
+        segments: [{ key: form.code, label: form.code, color: form.color, value }],
       };
     });
   });
-
-  readonly trendTitle = computed(() =>
-    this.trendMode() === 'completed' ? 'Completed forms' : 'Money spent',
-  );
 
   ngOnInit(): void {
     this.loadAnalytics();
@@ -252,8 +233,16 @@ export class RmcAdminAnalyticsDashboardComponent implements OnInit {
       });
   }
 
-  onFormChange(value: string): void {
-    this.selectedForm.set(value);
+  onFormSelectionChange(values: string[] | null): void {
+    const next = values ?? [];
+    const codes = this.formOptions().map((form) => form.code);
+    const selectedCodes = next.filter((value) => codes.includes(value));
+
+    if (!next.length) {
+      this.selectedForms.set(this.allFormSelection());
+      return;
+    }
+    this.selectedForms.set(selectedCodes);
   }
 
   onStartDateChange(value: string): void {
@@ -284,12 +273,12 @@ export class RmcAdminAnalyticsDashboardComponent implements OnInit {
     if (value < this.startDate()) this.startDate.set(value);
   }
 
-  setTrendMode(mode: DashboardTrendMode): void {
-    this.trendMode.set(mode);
+  setBarTrendMode(mode: DashboardTrendMode): void {
+    this.barTrendMode.set(mode);
   }
 
-  setChartType(type: DashboardChartType): void {
-    this.chartType.set(type);
+  setLineTrendMode(mode: DashboardTrendMode): void {
+    this.lineTrendMode.set(mode);
   }
 
   openFilters(): void {
@@ -317,13 +306,13 @@ export class RmcAdminAnalyticsDashboardComponent implements OnInit {
 
     return this.formOptions()
       .filter(
-        (form) => this.selectedForm() === ALL_FORMS_FILTER || form.code === this.selectedForm(),
+        (form) => this.isFormSelected(form.code),
       )
       .map((form) => {
         const breakdown = this.summaryValue()?.form_breakdown.find(
           (item) => item.form_code.toUpperCase() === form.code,
         );
-        return { ...form, key: form.code, label: form.name, value: breakdown?.[summaryKey] ?? 0 };
+        return { ...form, key: form.code, label: form.code, value: breakdown?.[summaryKey] ?? 0 };
       });
   }
 
@@ -333,11 +322,11 @@ export class RmcAdminAnalyticsDashboardComponent implements OnInit {
   ): DashboardChartDatum[] {
     return this.formOptions()
       .filter(
-        (form) => this.selectedForm() === ALL_FORMS_FILTER || form.code === this.selectedForm(),
+        (form) => this.isFormSelected(form.code),
       )
       .map((form) => ({
         key: form.code,
-        label: form.name,
+        label: form.code,
         color: form.color,
         value: records
           .filter((record) => record.formCode === form.code)
@@ -346,7 +335,35 @@ export class RmcAdminAnalyticsDashboardComponent implements OnInit {
   }
 
   private matchesForm(record: RmcDashboardRecord): boolean {
-    return this.selectedForm() === ALL_FORMS_FILTER || record.formCode === this.selectedForm();
+    return this.isFormSelected(record.formCode);
+  }
+
+  private isFormSelected(formCode: string): boolean {
+    return this.selectedForms().includes(formCode);
+  }
+
+  private recordsForTrend(mode: DashboardTrendMode): RmcDashboardRecord[] {
+    if (mode === 'all') return this.submittedRecords();
+    return mode === 'rejected' ? this.rejectedTrendRecords() : this.completedTrendRecords();
+  }
+
+  private trendDate(record: RmcDashboardRecord, mode: DashboardTrendMode): Date | null {
+    return mode === 'all' ? record.submittedAt : record.completedAt ?? record.submittedAt;
+  }
+
+  private metricLabel(mode: DashboardTrendMode): string {
+    if (mode === 'all') return 'Total Submissions';
+    if (mode === 'spend') return 'Total money spend';
+    if (mode === 'rejected') return 'Rejected forms';
+    return 'Completed forms';
+  }
+
+  private allFormSelection(): string[] {
+    return this.formOptions().map((form) => form.code);
+  }
+
+  private seriesTotal(series: DashboardChartDatum[]): number {
+    return series.reduce((total, item) => total + Math.max(0, item.value), 0);
   }
 
   private isRejected(record: RmcDashboardRecord): boolean {

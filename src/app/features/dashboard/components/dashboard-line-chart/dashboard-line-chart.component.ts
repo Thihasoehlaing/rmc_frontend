@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input, computed, signal } from '@angular/core';
 
+import { ChartTooltipComponent } from '../../../../shared/components/chart-tooltip/chart-tooltip.component';
 import { DashboardLinePoint } from '../../models/rmc-dashboard-analytics.model';
 
 interface PlotPoint extends DashboardLinePoint {
@@ -15,27 +16,27 @@ interface PlotPoint extends DashboardLinePoint {
 @Component({
   selector: 'app-dashboard-line-chart',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, ChartTooltipComponent],
   templateUrl: './dashboard-line-chart.component.html',
   styleUrls: ['./dashboard-line-chart.component.scss'],
 })
 export class DashboardLineChartComponent {
   private readonly width = 720;
   private readonly height = 338;
-  private readonly left = 58;
-  private readonly right = 22;
+  readonly left = 88;
+  private readonly right = 88;
   private readonly top = 22;
   private readonly bottom = 120;
   private readonly pointsValue = signal<DashboardLinePoint[]>([]);
+  readonly activePoint = signal<PlotPoint | null>(null);
 
   @Input({ required: true }) set points(value: DashboardLinePoint[]) {
     this.pointsValue.set(value ?? []);
   }
 
   @Input() currency = false;
+  @Input() totalLabel = '';
   @Input() emptyLabel = 'No trend data in this range';
-
-  readonly total = computed(() => this.pointsValue().reduce((sum, point) => sum + point.value, 0));
 
   readonly maxValue = computed(() =>
     Math.max(1, ...this.pointsValue().map((point) => point.value)),
@@ -46,7 +47,6 @@ export class DashboardLineChartComponent {
     const plotWidth = this.width - this.left - this.right;
     const plotHeight = this.height - this.top - this.bottom;
     const step = points.length > 1 ? plotWidth / (points.length - 1) : 0;
-    const labelRows = points.length > 12 ? 3 : points.length > 6 ? 2 : 1;
 
     return points.map((point, index) => {
       const labelParts = this.axisLabelParts(point.label);
@@ -57,7 +57,7 @@ export class DashboardLineChartComponent {
         formattedValue: this.formatValue(point.value),
         axisLabel: labelParts.label,
         axisDetail: labelParts.detail,
-        axisLabelY: 244 + (index % labelRows) * 32,
+        axisLabelY: 252,
       };
     });
   });
@@ -66,6 +66,12 @@ export class DashboardLineChartComponent {
     this.plotPoints()
       .map((point) => `${point.x},${point.y}`)
       .join(' '),
+  );
+
+  readonly plotRight = this.width - this.right;
+  readonly plotBottom = this.height - this.bottom;
+  readonly areaPolygon = computed(
+    () => `${this.polyline()} ${this.plotRight},${this.plotBottom} ${this.left},${this.plotBottom}`,
   );
 
   readonly gridLines = computed(() =>
@@ -94,15 +100,6 @@ export class DashboardLineChartComponent {
   }
 
   private axisLabelParts(label: string): { label: string; detail: string } {
-    const weeklyParts = label.split(' – Week ');
-    if (weeklyParts.length === 2) {
-      return { label: weeklyParts[0], detail: `Week ${weeklyParts[1]}` };
-    }
-
-    const years = [...label.matchAll(/’\d{2}/g)].map((match) => match[0]);
-    return {
-      label: label.replace(/\s?’\d{2}/g, ''),
-      detail: [...new Set(years)].join('–'),
-    };
+    return { label, detail: '' };
   }
 }

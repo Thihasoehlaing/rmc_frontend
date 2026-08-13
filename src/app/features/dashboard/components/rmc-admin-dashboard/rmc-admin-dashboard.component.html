@@ -1,189 +1,157 @@
 <main class="dashboard dashboard--rmc_admin admin-dashboard">
   <header class="dashboard-header admin-dashboard__header">
     <div>
-      <span class="role-label">{{ view.roleLabel }}</span>
       <h1>Analysis Dashboard</h1>
     </div>
-    <button
-      type="button"
-      class="btn btn-secondary dashboard-filter-trigger"
-      aria-controls="dashboard-filter-panel"
-      [attr.aria-expanded]="filtersOpen()"
-      (click)="openFilters()"
-    >
-      <span class="material-icons">filter_list</span>
-      Filters
-    </button>
+    <div class="admin-dashboard__actions">
+      <button
+        type="button"
+        class="btn btn-secondary dashboard-filter-trigger"
+        aria-controls="dashboard-filter-panel"
+        [attr.aria-expanded]="filtersOpen()"
+        (click)="openFilters()"
+      >
+        <span class="material-icons">filter_list</span>
+        Filters
+      </button>
+    </div>
   </header>
 
+  @if (error()) {
+    <div class="dashboard-data-note" role="status">
+      <span class="material-icons">info</span>
+      <span>{{ error() }}</span>
+      <button type="button" class="btn btn-secondary btn-sm" (click)="loadAnalytics()">
+        Retry
+      </button>
+    </div>
+  }
+
   <div class="analysis-layout">
-    <div class="analysis-layout__main">
-      @if (error()) {
-        <div class="dashboard-data-note" role="status">
-          <span class="material-icons">info</span>
-          <span>{{ error() }}</span>
-          <button type="button" class="btn btn-secondary btn-sm" (click)="loadAnalytics()">
-            Retry
-          </button>
-        </div>
-      }
+    <section class="card form-color-legend" aria-label="Form colour legend">
+      <div class="form-color-legend__forms">
+        <strong>Form colours</strong>
+        <ul>
+          @for (form of visibleFormLegend(); track form.code) {
+            <li><i [style.background]="form.color"></i>{{ form.code }}</li>
+          }
+        </ul>
+      </div>
+      <span class="form-color-legend__range">
+        {{ startDate() | date: 'dd MMM yyyy' }} – {{ endDate() | date: 'dd MMM yyyy' }}
+      </span>
+    </section>
 
-      <section class="card analytics-workspace" aria-label="RMC portfolio analytics">
-        <div class="analytics-workspace__header">
-          <div>
-            <span class="dashboard-eyebrow">Portfolio overview</span>
-            <h2 class="card__title">{{ selectedFormLabel() }}</h2>
+    <section class="summary-cards" aria-label="Application status totals">
+      <article class="card summary-card">
+        <header class="summary-card__heading">
+          <div class="summary-card__topline">
+            <span>Total Submissions</span>
+            <span class="material-icons" aria-hidden="true">description</span>
           </div>
-          <span class="analytics-workspace__range">
-            <span class="material-icons">date_range</span>
-            {{ startDate() | date: 'dd MMM yyyy' }} – {{ endDate() | date: 'dd MMM yyyy' }}
-          </span>
+          <strong>{{ applicationsTotal() | number }}</strong>
+        </header>
+      </article>
+
+      <article class="card summary-card">
+        <header class="summary-card__heading">
+          <div class="summary-card__topline">
+            <span>Completed Forms</span>
+            <span class="material-icons" aria-hidden="true">task_alt</span>
+          </div>
+          <strong>{{ completedTotal() | number }}</strong>
+        </header>
+      </article>
+
+      <article class="card summary-card">
+        <header class="summary-card__heading">
+          <div class="summary-card__topline">
+            <span>Rejected</span>
+            <span class="material-icons" aria-hidden="true">cancel</span>
+          </div>
+          <strong>{{ rejectedTotal() | number }}</strong>
+        </header>
+      </article>
+
+      <article class="card summary-card">
+        <header class="summary-card__heading">
+          <div class="summary-card__topline">
+            <span>In Progress</span>
+            <span class="material-icons" aria-hidden="true">pending_actions</span>
+          </div>
+          <strong>{{ inProgressTotal() | number }}</strong>
+        </header>
+      </article>
+    </section>
+
+    <div class="analysis-layout__middle-row">
+      <section class="card performance-workspace" aria-label="Vertical performance bar chart">
+        <div class="performance-toolbar">
+          <div class="performance-toolbar__context">
+            <strong>{{ barMetricLabel() }}</strong>
+            <span>
+              {{ startDate() | date: 'dd MMM yyyy' }} – {{ endDate() | date: 'dd MMM yyyy' }}
+            </span>
+          </div>
+          <div class="form-field performance-toolbar__select">
+            <select
+              id="dashboard-bar-mode"
+              class="input--select"
+              aria-label="Select bar chart metric"
+              [ngModel]="barTrendMode()"
+              (ngModelChange)="setBarTrendMode($event)"
+            >
+              <option value="all">Total Submissions</option>
+              <option value="completed">Completed forms</option>
+              <option value="rejected">Rejected forms</option>
+              <option value="spend">Money spent</option>
+            </select>
+          </div>
         </div>
-
-        <div class="form-color-legend" aria-label="Form colour legend">
-          <strong>Form colours</strong>
-          <ul>
-            @for (form of visibleFormLegend(); track form.code) {
-              <li><i [style.background]="form.color"></i>{{ form.name }}</li>
-            }
-          </ul>
-        </div>
-
-        <div class="summary-donuts" aria-label="Application status totals">
-          <article class="summary-donut">
-            <div class="summary-donut__heading">
-              <span class="material-icons">description</span>
-              <h3>All Forms</h3>
-            </div>
-            <app-dashboard-donut-chart
-              [series]="applicationsSeries()"
-              [compact]="true"
-              centerLabel="Applications"
-              emptyLabel="No applications"
-            />
-          </article>
-
-          <article class="summary-donut">
-            <div class="summary-donut__heading">
-              <span class="material-icons">task_alt</span>
-              <h3>Completed Forms</h3>
-            </div>
-            <app-dashboard-donut-chart
-              [series]="completedSeries()"
-              [compact]="true"
-              centerLabel="Completed"
-              emptyLabel="No completed forms"
-            />
-          </article>
-
-          <article class="summary-donut">
-            <div class="summary-donut__heading">
-              <span class="material-icons">cancel</span>
-              <h3>Rejected</h3>
-            </div>
-            <app-dashboard-donut-chart
-              [series]="rejectedSeries()"
-              [compact]="true"
-              centerLabel="Rejected"
-              emptyLabel="No rejected forms"
-            />
-          </article>
-
-          <article class="summary-donut">
-            <div class="summary-donut__heading">
-              <span class="material-icons">account_tree</span>
-              <h3>In Progress</h3>
-            </div>
-            <app-dashboard-donut-chart
-              [series]="inProgressSeries()"
-              [compact]="true"
-              centerLabel="In progress"
-              emptyLabel="No forms in progress"
-            />
-          </article>
-        </div>
+        <app-dashboard-bar-chart
+          [points]="barTrendFormPoints()"
+          [currency]="barTrendMode() === 'spend'"
+          [totalLabel]="barMetricLabel()"
+        />
       </section>
 
-      <section class="card performance-workspace" aria-label="Date based performance analytics">
-        <section class="performance-panel" aria-labelledby="performance-heading">
-          <div class="performance-panel__header">
-            <div>
-              <span class="dashboard-eyebrow">Date based</span>
-              <h2 id="performance-heading" class="card__title">{{ trendTitle() }}</h2>
-              <span class="performance-panel__interval">{{ trendIntervalLabel() }}</span>
-            </div>
-
-            <div class="performance-filters">
-              <div class="form-field">
-                <label class="form-label" for="dashboard-chart-type">Chart type</label>
-                <select
-                  id="dashboard-chart-type"
-                  class="input--select"
-                  [ngModel]="chartType()"
-                  (ngModelChange)="setChartType($event)"
-                >
-                  @for (type of chartTypes; track type.value) {
-                    <option [value]="type.value">{{ type.label }}</option>
-                  }
-                </select>
-              </div>
-
-              <div class="form-field">
-                <label class="form-label" for="dashboard-trend-mode">Show</label>
-                <select
-                  id="dashboard-trend-mode"
-                  class="input--select"
-                  [ngModel]="trendMode()"
-                  (ngModelChange)="setTrendMode($event)"
-                >
-                  <option value="completed">Completed forms</option>
-                  <option value="spend">Money spent</option>
-                </select>
-              </div>
-            </div>
+      <aside class="card analysis-summary" aria-label="Amount summary">
+        <section class="analysis-summary__section">
+          <div class="analysis-summary__total">
+            <h2>Total Amount</h2>
+            <strong>{{ totalCostAmount() | currency: 'MYR' : 'symbol' : '1.0-0' }}</strong>
           </div>
-
-          <div class="performance-panel__chart">
-            @switch (chartType()) {
-              @case ('bar') {
-                <app-dashboard-bar-chart
-                  [points]="trendFormPoints()"
-                  [currency]="trendMode() === 'spend'"
-                />
-              }
-              @case ('donut') {
-                <app-dashboard-donut-chart
-                  [series]="trendDonutSeries()"
-                  [currency]="trendMode() === 'spend'"
-                  [centerLabel]="trendTitle()"
-                  emptyLabel="No performance data in this date range"
-                />
-              }
-              @default {
-                <app-dashboard-line-chart
-                  [points]="trendPoints()"
-                  [currency]="trendMode() === 'spend'"
-                />
-              }
-            }
-          </div>
+          <app-dashboard-horizontal-bar [series]="totalCostSeries()" />
         </section>
-      </section>
+      </aside>
     </div>
 
-    <aside class="card analysis-summary" aria-label="Amount summary">
-      <div class="analysis-summary__header">
-        <span class="dashboard-eyebrow">Selected range</span>
-        <h2 class="card__title">Amount summary</h2>
-      </div>
-      <section class="analysis-summary__section" aria-labelledby="total-amount-heading">
-        <div class="analysis-summary__title">
-          <span class="material-icons">payments</span>
-          <h3 id="total-amount-heading">Total Amount</h3>
+    <section class="card line-workspace" aria-label="Performance line chart">
+      <div class="performance-toolbar">
+        <div class="performance-toolbar__context">
+          <strong>{{ lineMetricLabel() }}</strong>
         </div>
-        <app-dashboard-horizontal-bar [series]="totalCostSeries()" />
-      </section>
-    </aside>
+        <div class="form-field performance-toolbar__select">
+          <select
+            id="dashboard-line-mode"
+            class="input--select"
+            aria-label="Select line chart metric"
+            [ngModel]="lineTrendMode()"
+            (ngModelChange)="setLineTrendMode($event)"
+          >
+            <option value="all">Total Submissions</option>
+            <option value="completed">Completed forms</option>
+            <option value="rejected">Rejected forms</option>
+            <option value="spend">Money spent</option>
+          </select>
+        </div>
+      </div>
+      <app-dashboard-line-chart
+        [points]="lineTrendPoints()"
+        [currency]="lineTrendMode() === 'spend'"
+        [totalLabel]="lineMetricLabel()"
+      />
+    </section>
   </div>
 
   @if (filtersOpen()) {
@@ -220,20 +188,15 @@
           text="All dashboard analytics are based on the selected application form and date range."
         />
 
-        <div class="form-field dashboard-filter__form">
-          <label class="form-label" for="dashboard-form-filter">Application form</label>
-          <select
-            id="dashboard-form-filter"
-            class="input--select"
-            [ngModel]="selectedForm()"
-            (ngModelChange)="onFormChange($event)"
-          >
-            <option [value]="allForms">All forms</option>
-            @for (form of formOptions(); track form.code) {
-              <option [value]="form.code">{{ form.name }}</option>
-            }
-          </select>
-        </div>
+        <app-searchable-dropdown
+          class="dashboard-filter__form"
+          label="Application forms"
+          placeholder="Select one or more forms"
+          [isMulti]="true"
+          [options]="formFilterOptions()"
+          [ngModel]="selectedForms()"
+          (ngModelChange)="onFormSelectionChange($event)"
+        />
 
         <div class="form-field dashboard-filter__date">
           <label class="form-label" for="dashboard-start-date">From</label>

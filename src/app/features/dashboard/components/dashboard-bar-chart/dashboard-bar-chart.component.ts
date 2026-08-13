@@ -8,7 +8,7 @@ import {
 } from '../../models/rmc-dashboard-analytics.model';
 
 interface StackedSegment extends DashboardChartDatum {
-  height: number;
+  width: number;
   formattedValue: string;
 }
 
@@ -38,14 +38,14 @@ export class DashboardBarChartComponent {
   }
 
   @Input() currency = false;
+  @Input() totalLabel = '';
   @Input() emptyLabel = 'No bar chart data in this range';
 
-  readonly total = computed(() => this.pointsValue().reduce((sum, point) => sum + point.total, 0));
   readonly maxValue = computed(() =>
     Math.max(1, ...this.pointsValue().map((point) => point.total)),
   );
   readonly axisTicks = computed(() =>
-    [1, 0.75, 0.5, 0.25, 0].map((ratio) => ({
+    [0, 0.25, 0.5, 0.75, 1].map((ratio) => ({
       ratio,
       label: this.formatAxisValue(this.maxValue() * ratio),
     })),
@@ -59,7 +59,7 @@ export class DashboardBarChartComponent {
         .filter((segment) => segment.value > 0)
         .map((segment) => ({
           ...segment,
-          height: (segment.value / this.maxValue()) * 100,
+          width: (segment.value / this.maxValue()) * 100,
           formattedValue: this.formatValue(segment.value),
         })),
     })),

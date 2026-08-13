@@ -86,6 +86,7 @@ export class ConferenceReviewComponent implements OnInit {
 
   readonly sectionCommentControls: Record<string, FormControl<string | null>> = {
     conference_details: new FormControl('', [Validators.maxLength(COMMENT_MAX_LENGTH)]),
+    travel_details: new FormControl('', [Validators.maxLength(COMMENT_MAX_LENGTH)]),
     authors: new FormControl('', [Validators.maxLength(COMMENT_MAX_LENGTH)]),
     supporting_documents: new FormControl('', [Validators.maxLength(COMMENT_MAX_LENGTH)]),
     costing_sponsorship: new FormControl('', [Validators.maxLength(COMMENT_MAX_LENGTH)]),
@@ -97,12 +98,14 @@ export class ConferenceReviewComponent implements OnInit {
 
   readonly sectionNames: Record<string, string> = {
     conference_details: 'Conference Details',
+    travel_details: 'Travel Details',
     authors: 'Authors',
     supporting_documents: 'Supporting Documents',
     costing_sponsorship: 'Costing & Sponsorship',
   };
 
   readonly request = computed(() => this.data()?.request ?? null);
+  readonly requiredSectionCodes = computed(() => Object.keys(this.sectionNames));
   readonly latestApproval = computed(() => {
     const approvals = this.approvals();
     return approvals.length ? approvals[approvals.length - 1] : null;
@@ -137,9 +140,9 @@ export class ConferenceReviewComponent implements OnInit {
   );
   readonly missingRequiredSectionNames = computed(() => {
     if (!this.requiresAllSectionComments()) return [];
-    return Object.entries(this.sectionNames)
-      .filter(([sectionCode]) => !this.hasCurrentActorSectionComment(sectionCode))
-      .map(([, sectionName]) => sectionName);
+    return this.requiredSectionCodes()
+      .filter((sectionCode) => !this.hasCurrentActorSectionComment(sectionCode))
+      .map((sectionCode) => this.sectionNames[sectionCode]);
   });
 
   ngOnInit(): void {

@@ -22,6 +22,39 @@ export interface DashboardStackedBarPoint {
   segments: DashboardChartDatum[];
 }
 
+export interface DashboardDepartmentComparisonPoint {
+  departmentCode: string;
+  approvedApplications: number;
+  fundApproved: number;
+}
+
+export interface DashboardExternalDepartmentPoint {
+  departmentCode: string;
+  categories: DashboardChartDatum[];
+  totalApplications: number;
+  fundApproved: number;
+}
+
+export type DashboardProjectType = 'External' | 'Non-Research';
+export type DashboardConferenceType = 'International' | 'National';
+export type DashboardScopusQuartile = 'Q1' | 'Q2' | 'Q3';
+
+export interface DashboardCostBreakdown {
+  apu: number;
+  external: number;
+  applicant: number;
+}
+
+export interface RmcDashboardDimensions {
+  departmentCode?: string | null;
+  externalGrantCategory?: string | null;
+  fundApproved?: number | null;
+  projectType?: DashboardProjectType | null;
+  conferenceType?: DashboardConferenceType | null;
+  scopusQuartile?: DashboardScopusQuartile | null;
+  costBreakdown?: DashboardCostBreakdown | null;
+}
+
 export interface RmcDashboardRecord {
   request: RequestSummaryDto;
   requestId: number;
@@ -32,6 +65,7 @@ export interface RmcDashboardRecord {
   requiresAction: boolean;
   isCompleted: boolean;
   cost: number;
+  analytics?: RmcDashboardDimensions;
 }
 
 export interface RmcDashboardPortfolio {

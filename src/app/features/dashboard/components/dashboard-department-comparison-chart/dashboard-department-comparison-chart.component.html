@@ -1,0 +1,112 @@
+@if (chartPoints().length) {
+  <div class="department-chart">
+    <div class="department-chart__titles" aria-hidden="true">
+      <strong>Number of Completed Applications</strong>
+      <strong>Fund Approved (RM)</strong>
+    </div>
+
+    <div class="department-chart__scroll">
+      <div class="department-chart__canvas" [style.min-width.px]="chartMinimumWidth()">
+        <div class="department-chart__axis department-chart__axis--applications" aria-hidden="true">
+          @for (tick of applicationTicks(); track tick) {
+            <span>{{ formatApplicationTick(tick) }}</span>
+          }
+        </div>
+
+        <div
+          class="department-chart__plot"
+          role="img"
+          aria-label="Completed applications and approved funding by department code"
+        >
+          <div class="department-chart__grid" aria-hidden="true">
+            @for (tick of applicationTicks(); track tick) {
+              <i></i>
+            }
+          </div>
+
+          <div
+            class="department-chart__categories"
+            [style.grid-template-columns]="
+              'repeat(' + chartPoints().length + ', minmax(92px, 1fr))'
+            "
+          >
+            @for (point of chartPoints(); track point.departmentCode) {
+              <div class="department-chart__category">
+                <div class="department-chart__bars">
+                  <div class="department-chart__metric">
+                    <span
+                      class="department-chart__value department-chart__value--applications"
+                      [style.bottom]="'calc(' + point.applicationHeight + '% + 5px)'"
+                    >
+                      {{ point.formattedApplications }}
+                    </span>
+                    <button
+                      type="button"
+                      class="department-chart__bar department-chart__bar--applications"
+                      [style.height.%]="point.applicationHeight"
+                      [attr.aria-label]="
+                        point.departmentCode +
+                        ', completed applications: ' +
+                        point.formattedApplications
+                      "
+                      (mouseenter)="showMetric(point, 'approvedApplications')"
+                      (mouseleave)="activeMetric.set(null)"
+                      (focus)="showMetric(point, 'approvedApplications')"
+                      (blur)="activeMetric.set(null)"
+                    ></button>
+                  </div>
+
+                  <div class="department-chart__metric">
+                    <span
+                      class="department-chart__value department-chart__value--fund"
+                      [style.bottom]="'calc(' + point.fundHeight + '% + 5px)'"
+                    >
+                      {{ point.formattedFund }}
+                    </span>
+                    <button
+                      type="button"
+                      class="department-chart__bar department-chart__bar--fund"
+                      [style.height.%]="point.fundHeight"
+                      [attr.aria-label]="
+                        point.departmentCode + ', fund approved: ' + point.formattedFund
+                      "
+                      (mouseenter)="showMetric(point, 'fundApproved')"
+                      (mouseleave)="activeMetric.set(null)"
+                      (focus)="showMetric(point, 'fundApproved')"
+                      (blur)="activeMetric.set(null)"
+                    ></button>
+                  </div>
+                </div>
+                <strong>{{ point.departmentCode }}</strong>
+              </div>
+            }
+          </div>
+
+          @if (activeMetric(); as active) {
+            <app-chart-tooltip
+              [visible]="true"
+              [animate]="false"
+              [color]="active.color"
+              [label]="active.label"
+              [value]="active.value"
+              [detail]="active.departmentCode"
+            />
+          }
+        </div>
+
+        <div class="department-chart__axis department-chart__axis--fund" aria-hidden="true">
+          @for (tick of fundTicks(); track tick) {
+            <span>{{ formatFund(tick) }}</span>
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="department-chart__legend" aria-label="Chart legend">
+      <span><i [style.background]="applicationColor"></i>Completed Applications</span>
+      <span><i [style.background]="fundColor"></i>Fund Approved</span>
+    </div>
+  </div>
+} @else {
+  <div class="department-chart__empty">No department data in this range</div>
+}

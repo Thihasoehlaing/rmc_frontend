@@ -42,83 +42,189 @@
       </span>
     </section>
 
-    <section class="summary-cards" aria-label="Application status totals">
-      <article class="card summary-card">
-        <header class="summary-card__heading">
-          <div class="summary-card__topline">
-            <span>Total Submissions</span>
-            <span class="material-icons" aria-hidden="true">description</span>
-          </div>
-          <strong>{{ applicationsTotal() | number }}</strong>
-        </header>
-      </article>
+    @if (isExternalDashboard()) {
+      <section
+        class="summary-cards summary-cards--external"
+        aria-label="External application totals"
+      >
+        <article class="card summary-card">
+          <header class="summary-card__heading">
+            <div class="summary-card__topline">
+              <span>Total Submissions</span>
+              <span class="material-icons" aria-hidden="true">description</span>
+            </div>
+            <strong>{{ applicationsTotal() | number }}</strong>
+          </header>
+        </article>
 
-      <article class="card summary-card">
-        <header class="summary-card__heading">
-          <div class="summary-card__topline">
-            <span>Completed Forms</span>
-            <span class="material-icons" aria-hidden="true">task_alt</span>
-          </div>
-          <strong>{{ completedTotal() | number }}</strong>
-        </header>
-      </article>
+        <article class="card summary-card">
+          <header class="summary-card__heading">
+            <div class="summary-card__topline">
+              <span>Number of Categories</span>
+              <span class="material-icons" aria-hidden="true">category</span>
+            </div>
+            <strong>{{ externalCategoryTotal() | number }}</strong>
+          </header>
+        </article>
 
-      <article class="card summary-card">
-        <header class="summary-card__heading">
-          <div class="summary-card__topline">
-            <span>Rejected</span>
-            <span class="material-icons" aria-hidden="true">cancel</span>
-          </div>
-          <strong>{{ rejectedTotal() | number }}</strong>
-        </header>
-      </article>
+        <article class="card summary-card">
+          <header class="summary-card__heading">
+            <div class="summary-card__topline">
+              <span>Number of Departments</span>
+              <span class="material-icons" aria-hidden="true">apartment</span>
+            </div>
+            <strong>{{ externalDepartmentTotal() | number }}</strong>
+          </header>
+        </article>
+      </section>
+    } @else {
+      <section class="summary-cards" aria-label="Application status totals">
+        <article class="card summary-card">
+          <header class="summary-card__heading">
+            <div class="summary-card__topline">
+              <span>Total Submissions</span>
+              <span class="material-icons" aria-hidden="true">description</span>
+            </div>
+            <strong>{{ applicationsTotal() | number }}</strong>
+          </header>
+        </article>
 
-      <article class="card summary-card">
-        <header class="summary-card__heading">
-          <div class="summary-card__topline">
-            <span>In Progress</span>
-            <span class="material-icons" aria-hidden="true">pending_actions</span>
-          </div>
-          <strong>{{ inProgressTotal() | number }}</strong>
-        </header>
-      </article>
-    </section>
+        <article class="card summary-card">
+          <header class="summary-card__heading">
+            <div class="summary-card__topline">
+              <span>Completed Forms</span>
+              <span class="material-icons" aria-hidden="true">task_alt</span>
+            </div>
+            <strong>{{ completedTotal() | number }}</strong>
+          </header>
+        </article>
 
-    <div class="analysis-layout__middle-row">
-      <section class="card performance-workspace" aria-label="Vertical performance bar chart">
+        <article class="card summary-card">
+          <header class="summary-card__heading">
+            <div class="summary-card__topline">
+              <span>Rejected</span>
+              <span class="material-icons" aria-hidden="true">cancel</span>
+            </div>
+            <strong>{{ rejectedTotal() | number }}</strong>
+          </header>
+        </article>
+
+        <article class="card summary-card">
+          <header class="summary-card__heading">
+            <div class="summary-card__topline">
+              <span>In Progress</span>
+              <span class="material-icons" aria-hidden="true">pending_actions</span>
+            </div>
+            <strong>{{ inProgressTotal() | number }}</strong>
+          </header>
+        </article>
+      </section>
+    }
+
+    @if (isExternalDashboard()) {
+      <section class="card performance-workspace" aria-label="External grants by department">
         <div class="performance-toolbar">
           <div class="performance-toolbar__context">
-            <strong>{{ barMetricLabel() }}</strong>
-            <span>
-              {{ startDate() | date: 'dd MMM yyyy' }} – {{ endDate() | date: 'dd MMM yyyy' }}
-            </span>
-          </div>
-          <div class="form-field performance-toolbar__select">
-            <select
-              id="dashboard-bar-mode"
-              class="input--select"
-              aria-label="Select bar chart metric"
-              [ngModel]="barTrendMode()"
-              (ngModelChange)="setBarTrendMode($event)"
-            >
-              <option value="all">Total Submissions</option>
-              <option value="completed">Completed forms</option>
-              <option value="rejected">Rejected forms</option>
-              <option value="spend">Money spent</option>
-            </select>
+            <strong>External Grants by Department</strong>
           </div>
         </div>
-        <app-dashboard-bar-chart
-          [points]="barTrendFormPoints()"
-          [currency]="barTrendMode() === 'spend'"
-          [totalLabel]="barMetricLabel()"
-        />
+        <app-dashboard-external-department-chart [points]="externalDepartmentPoints()" />
       </section>
+    }
+
+    @if (customDashboardForm(); as formCode) {
+      <section class="custom-analytics-row" [attr.aria-label]="formCode + ' analytics'">
+        <article class="card custom-analytics-card">
+          <header class="custom-analytics-card__header">
+            <h2>Cost</h2>
+          </header>
+          <app-dashboard-donut-chart
+            variant="pie"
+            [series]="customCostSeries()"
+            [currency]="true"
+            [compact]="true"
+            [showCenterTotal]="false"
+            [showLegend]="true"
+            centerLabel="Cost"
+          />
+        </article>
+
+        <article class="card custom-analytics-card">
+          <header class="custom-analytics-card__header">
+            <h2>Project Type</h2>
+          </header>
+          <app-dashboard-donut-chart
+            variant="pie"
+            [series]="projectTypeSeries()"
+            [compact]="true"
+            [showCenterTotal]="false"
+            [showLegend]="true"
+            centerLabel="Forms"
+          />
+        </article>
+
+        <article class="card custom-analytics-card">
+          <header class="custom-analytics-card__header">
+            <h2>{{ formCode === 'CONFERENCE' ? 'Conference Type' : 'Scopus Quartile' }}</h2>
+          </header>
+          <app-dashboard-donut-chart
+            variant="pie"
+            [series]="formCode === 'CONFERENCE' ? conferenceTypeSeries() : scopusQuartileSeries()"
+            [compact]="true"
+            [showCenterTotal]="false"
+            [showLegend]="true"
+            [centerLabel]="formCode === 'CONFERENCE' ? 'Forms' : 'Quartiles'"
+          />
+        </article>
+      </section>
+
+      <section
+        class="card performance-workspace department-performance"
+        aria-label="Department performance"
+      >
+        <div class="performance-toolbar">
+          <div class="performance-toolbar__context">
+            <strong>Department Performance</strong>
+          </div>
+        </div>
+        <app-dashboard-department-comparison-chart [points]="departmentComparisonPoints()" />
+      </section>
+    }
+
+    <div
+      class="analysis-layout__middle-row"
+      [class.analysis-layout__middle-row--summary-only]="!showPortfolioBarChart()"
+    >
+      @if (showPortfolioBarChart()) {
+        <section class="card performance-workspace" aria-label="Vertical performance bar chart">
+          <div class="performance-toolbar">
+            <div class="performance-toolbar__context">
+              <strong>{{ barMetricLabel() }}</strong>
+              <span>
+                {{ startDate() | date: 'dd MMM yyyy' }} – {{ endDate() | date: 'dd MMM yyyy' }}
+              </span>
+            </div>
+            <app-searchable-dropdown
+              class="performance-toolbar__select"
+              placeholder="Select bar chart metric"
+              [searchable]="false"
+              [options]="trendMetricOptions"
+              [ngModel]="barTrendMode()"
+              (ngModelChange)="setBarTrendMode($event)"
+            />
+          </div>
+          <app-dashboard-bar-chart
+            [points]="barTrendFormPoints()"
+            [currency]="barTrendMode() === 'spend'"
+            [totalLabel]="barMetricLabel()"
+          />
+        </section>
+      }
 
       <aside class="card analysis-summary" aria-label="Amount summary">
         <section class="analysis-summary__section">
           <div class="analysis-summary__total">
-            <h2>Total Amount</h2>
+            <h2>Fund Approved</h2>
             <strong>{{ totalCostAmount() | currency: 'MYR' : 'symbol' : '1.0-0' }}</strong>
           </div>
           <app-dashboard-horizontal-bar [series]="totalCostSeries()" />
@@ -126,32 +232,28 @@
       </aside>
     </div>
 
-    <section class="card line-workspace" aria-label="Performance line chart">
-      <div class="performance-toolbar">
-        <div class="performance-toolbar__context">
-          <strong>{{ lineMetricLabel() }}</strong>
-        </div>
-        <div class="form-field performance-toolbar__select">
-          <select
-            id="dashboard-line-mode"
-            class="input--select"
-            aria-label="Select line chart metric"
+    @if (!isExternalDashboard()) {
+      <section class="card line-workspace" aria-label="Performance line chart">
+        <div class="performance-toolbar">
+          <div class="performance-toolbar__context">
+            <strong>{{ lineMetricLabel() }}</strong>
+          </div>
+          <app-searchable-dropdown
+            class="performance-toolbar__select"
+            placeholder="Select line chart metric"
+            [searchable]="false"
+            [options]="trendMetricOptions"
             [ngModel]="lineTrendMode()"
             (ngModelChange)="setLineTrendMode($event)"
-          >
-            <option value="all">Total Submissions</option>
-            <option value="completed">Completed forms</option>
-            <option value="rejected">Rejected forms</option>
-            <option value="spend">Money spent</option>
-          </select>
+          />
         </div>
-      </div>
-      <app-dashboard-line-chart
-        [points]="lineTrendPoints()"
-        [currency]="lineTrendMode() === 'spend'"
-        [totalLabel]="lineMetricLabel()"
-      />
-    </section>
+        <app-dashboard-line-chart
+          [points]="lineTrendPoints()"
+          [currency]="lineTrendMode() === 'spend'"
+          [totalLabel]="lineMetricLabel()"
+        />
+      </section>
+    }
   </div>
 
   @if (filtersOpen()) {

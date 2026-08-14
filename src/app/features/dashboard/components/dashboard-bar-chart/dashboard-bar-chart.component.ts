@@ -39,6 +39,7 @@ export class DashboardBarChartComponent {
 
   @Input() currency = false;
   @Input() totalLabel = '';
+  @Input() ariaLabel = 'Horizontal bar chart with form categories';
   @Input() emptyLabel = 'No bar chart data in this range';
 
   readonly maxValue = computed(() =>

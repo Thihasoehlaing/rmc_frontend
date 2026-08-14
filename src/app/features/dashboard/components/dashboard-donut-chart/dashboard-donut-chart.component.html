@@ -2,6 +2,7 @@
   class="donut-chart-layout"
   [class.donut-chart-layout--compact]="compact"
   [class.donut-chart-layout--with-legend]="showLegend"
+  [class.donut-chart-layout--pie]="isPie()"
 >
   @if (segments().length) {
     <div class="donut-chart-visual">
@@ -10,13 +11,14 @@
         role="img"
         [attr.aria-label]="centerLabel + ': ' + formatValue(total())"
       >
-        <circle class="donut-chart-track" cx="64" cy="64" r="52"></circle>
+        <circle class="donut-chart-track" cx="64" cy="64" [attr.r]="chartRadius()"></circle>
         @for (segment of segments(); track segment.key) {
           <circle
             class="donut-chart-segment"
             cx="64"
             cy="64"
-            r="52"
+            [attr.r]="chartRadius()"
+            transform="rotate(-90 64 64)"
             [attr.stroke]="segment.color"
             [attr.stroke-dasharray]="segment.dashArray"
             [attr.stroke-dashoffset]="segment.dashOffset"
@@ -33,6 +35,18 @@
               }}%)
             </title>
           </circle>
+        }
+        @if (isPie()) {
+          @for (segment of segments(); track segment.key) {
+            <text
+              class="pie-chart-percentage"
+              [attr.x]="segment.labelX"
+              [attr.y]="segment.labelY"
+              aria-hidden="true"
+            >
+              {{ segment.percentage | number: '1.0-0' }}%
+            </text>
+          }
         }
       </svg>
       @if (showCenterTotal) {

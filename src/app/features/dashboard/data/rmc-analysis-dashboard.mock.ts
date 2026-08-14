@@ -25,6 +25,33 @@ const TRAVEL_FORM: MockFormDefinition = {
 
 const FORM_CATALOG: readonly MockFormDefinition[] = [...RANDOM_FORMS, TRAVEL_FORM];
 
+const MOCK_DEPARTMENT_CODES = [
+  'SOCT',
+  'SOT',
+  'SOE',
+  'SOM',
+  'SOB',
+  'SOA',
+  'SOD',
+  'SOL',
+  'RMC',
+  'CTI',
+  'CSD',
+  'QA',
+  'HR',
+  'FIN',
+  'REG',
+  'LIB',
+] as const;
+
+const MOCK_EXTERNAL_GRANT_CATEGORIES = [
+  'NATIONAL',
+  'INTERNATIONAL',
+  'PRIVATE_INDUSTRY',
+  'CONSULTANCY',
+  'OTHER',
+] as const;
+
 interface MockAnalysisData {
   summary: DashboardSummaryDto;
   portfolio: RmcDashboardPortfolio;
@@ -72,6 +99,38 @@ function createRequest(
   };
 }
 
+function createAnalyticsDimensions(form: MockFormDefinition, index: number, cost: number) {
+  const departmentCode = MOCK_DEPARTMENT_CODES[index % MOCK_DEPARTMENT_CODES.length];
+  if (form.code === 'EXTERNAL') {
+    return {
+      departmentCode,
+      externalGrantCategory:
+        MOCK_EXTERNAL_GRANT_CATEGORIES[
+          Math.floor(index / FORM_CATALOG.length) % MOCK_EXTERNAL_GRANT_CATEGORIES.length
+        ],
+      fundApproved: cost,
+    };
+  }
+  if (form.code !== 'CONFERENCE' && form.code !== 'JOURNAL') return undefined;
+
+  const external = Math.round(cost * (index % 2 === 0 ? 0.24 : 0.12));
+  const apu = Math.round(cost * (index % 3 === 0 ? 0.56 : 0.64));
+  const applicant = Math.max(0, cost - external - apu);
+
+  return {
+    departmentCode,
+    fundApproved: cost,
+    projectType: (index % 2 === 0 ? 'External' : 'Non-Research') as 'External' | 'Non-Research',
+    conferenceType:
+      form.code === 'CONFERENCE'
+        ? ((index % 3 === 0 ? 'National' : 'International') as 'National' | 'International')
+        : null,
+    scopusQuartile:
+      form.code === 'JOURNAL' ? ((['Q1', 'Q2', 'Q3'] as const)[index % 3] ?? 'Q1') : null,
+    costBreakdown: { apu, external, applicant },
+  };
+}
+
 function appendYearlyVolume(records: RmcDashboardRecord[]): void {
   let nextId = records.reduce((maximum, record) => Math.max(maximum, record.requestId), 0) + 1;
 
@@ -89,10 +148,9 @@ function appendYearlyVolume(records: RmcDashboardRecord[]): void {
       const isCompleted = statusCode === 'APPROVED';
       const isRejected = statusCode === 'REJECTED';
       const completedAt =
-        isCompleted || isRejected
-          ? new Date(year, month, Math.min(day + 2, 28), 16)
-          : null;
+        isCompleted || isRejected ? new Date(year, month, Math.min(day + 2, 28), 16) : null;
       const request = createRequest(nextId, form, statusCode, submittedAt);
+      const cost = form.minimumCost * ((index % 12) + 1);
 
       records.push({
         request,
@@ -103,7 +161,8 @@ function appendYearlyVolume(records: RmcDashboardRecord[]): void {
         completedAt,
         requiresAction: statusCode === 'IN_PROGRESS' && index % 2 === 0,
         isCompleted,
-        cost: form.minimumCost * ((index % 12) + 1),
+        cost,
+        analytics: createAnalyticsDimensions(form, index, cost),
       });
       nextId += 1;
     }
@@ -137,6 +196,7 @@ function buildMockAnalysisData(): MockAnalysisData {
           )
         : null;
     const request = createRequest(index, form, statusCode, submittedAt);
+    const cost = randomInteger(form.minimumCost, form.minimumCost * 12);
 
     records.push({
       request,
@@ -147,7 +207,8 @@ function buildMockAnalysisData(): MockAnalysisData {
       completedAt,
       requiresAction: statusCode === 'IN_PROGRESS' && Math.random() < 0.42,
       isCompleted,
-      cost: randomInteger(form.minimumCost, form.minimumCost * 12),
+      cost,
+      analytics: createAnalyticsDimensions(form, index, cost),
     });
   }
 

@@ -109,6 +109,36 @@
   gap: var(--space-4);
 }
 
+.summary-cards--external {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.custom-analytics-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+.custom-analytics-card {
+  min-width: 0;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.custom-analytics-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-5) var(--space-5) 0;
+
+  h2 {
+    margin: 0;
+    color: var(--color-text);
+    font-size: var(--fs-lg);
+  }
+}
+
 .summary-card,
 .performance-workspace,
 .analysis-summary,
@@ -152,15 +182,23 @@
 }
 
 .analysis-layout__middle-row {
+  position: relative;
+  z-index: 2;
   display: grid;
   grid-template-columns: minmax(0, 2fr) minmax(300px, 1fr);
   align-items: stretch;
   gap: var(--space-6);
 }
 
+.analysis-layout__middle-row--summary-only {
+  grid-template-columns: 1fr;
+}
+
 .performance-workspace {
+  position: relative;
   display: grid;
   align-content: start;
+  overflow: visible;
 }
 
 .performance-toolbar {
@@ -183,6 +221,11 @@
   .input--select {
     min-height: var(--input-height-sm);
   }
+}
+
+.performance-toolbar__select {
+  display: block;
+  width: min(100%, 220px);
 }
 
 .performance-toolbar__context {
@@ -225,7 +268,7 @@
 
   strong {
     color: var(--color-text);
-    font-size: var(--fs-2xl);
+    font-size: var(--fs-xl);
     line-height: 1;
   }
 }
@@ -237,9 +280,12 @@
 }
 
 .line-workspace {
+  position: relative;
+  z-index: 1;
   display: grid;
   align-content: start;
   min-height: 326px;
+  overflow: visible;
 }
 
 .dashboard-data-note {
@@ -394,6 +440,10 @@
   .summary-cards {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .custom-analytics-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 900px) {
@@ -403,7 +453,8 @@
 }
 
 @media (max-width: 620px) {
-  .summary-cards {
+  .summary-cards,
+  .custom-analytics-row {
     grid-template-columns: 1fr;
   }
 
@@ -411,7 +462,8 @@
     align-items: flex-start;
     flex-direction: column;
 
-    .form-field {
+    .form-field,
+    .performance-toolbar__select {
       width: 100%;
     }
   }

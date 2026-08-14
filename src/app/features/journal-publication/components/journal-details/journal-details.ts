@@ -27,6 +27,7 @@ import {
 } from '../../../../shared/components/data-table/data-table.component';
 import { JournalOptionType, JournalOptionsService } from '../../services/journal-options.service';
 import { DropdownOption } from '../../../../core/interfaces/components.interface';
+import { COSTING_ITEM_ROW_LIMIT } from '../../../../core/constants/form-limits.constant';
 import {
   SDG_KEYWORD_MAX_LENGTH,
   SDG_KEYWORD_PLACEHOLDERS,
@@ -77,7 +78,7 @@ export class JournalDetails implements OnInit, OnDestroy {
   readonly nonResearchAccountCodeDescription = 'TRAINING PRESENTATION PUBLICATION';
   readonly nonResearchAccountCode = '6203/100';
   readonly breakdownDescriptionMaxLength = 400;
-  readonly tableRecordLimit = 10;
+  readonly tableRecordLimit = COSTING_ITEM_ROW_LIMIT;
   auth = inject(AuthService);
   workflow = inject(JournalWorkflowService);
   private journalOptionsService = inject(JournalOptionsService);

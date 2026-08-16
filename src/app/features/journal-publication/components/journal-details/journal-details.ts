@@ -94,16 +94,6 @@ export class JournalDetails implements OnInit, OnDestroy {
   breakdownType: 'internal-research' | 'external-research' | 'non-research' | null = null;
   breakdownEditingIndex: number | null = null;
 
-  // Pagination
-  readonly ITEMS_PER_PAGE = 5;
-  readonly ITEMS_PER_PAGE_OPTIONS = [5, 10];
-  nonResearchBreakdownCurrentPage = 1;
-  externalResearchBreakdownCurrentPage = 1;
-  internalResearchBreakdownCurrentPage = 1;
-  nonResearchBreakdownPageSize = 5;
-  externalResearchBreakdownPageSize = 5;
-  internalResearchBreakdownPageSize = 5;
-
   researchBreakdowns: any[] = [];
   externalBreakdowns: any[] = [];
   NonResearchBreakdowns: any[] = [];
@@ -447,52 +437,6 @@ export class JournalDetails implements OnInit, OnDestroy {
     if (type === 'external-research') return this.externalBreakdowns;
     if (type === 'non-research') return this.NonResearchBreakdowns;
     return [];
-  }
-
-  getBreakdownPageSize(type: string): number {
-    if (type === 'internal-research') return this.internalResearchBreakdownPageSize;
-    if (type === 'external-research') return this.externalResearchBreakdownPageSize;
-    if (type === 'non-research') return this.nonResearchBreakdownPageSize;
-    return this.ITEMS_PER_PAGE;
-  }
-
-  getBreakdownCurrentPage(type: string): number {
-    if (type === 'internal-research') return this.internalResearchBreakdownCurrentPage;
-    if (type === 'external-research') return this.externalResearchBreakdownCurrentPage;
-    if (type === 'non-research') return this.nonResearchBreakdownCurrentPage;
-    return 1;
-  }
-
-  getBreakdownTotalPages(type: string): number {
-    const pageSize = this.getBreakdownPageSize(type);
-    return Math.max(1, Math.ceil(this.getBreakdownArray(type).length / pageSize));
-  }
-
-  getBreakdownPageStart(type: string): number {
-    const total = this.getBreakdownArray(type).length;
-    if (total === 0) return 0;
-    const currentPage = Math.min(
-      this.getBreakdownCurrentPage(type),
-      this.getBreakdownTotalPages(type),
-    );
-    return (currentPage - 1) * this.getBreakdownPageSize(type) + 1;
-  }
-
-  getBreakdownPageEnd(type: string): number {
-    const total = this.getBreakdownArray(type).length;
-    if (total === 0) return 0;
-    return Math.min(this.getBreakdownPageStart(type) + this.getBreakdownPageSize(type) - 1, total);
-  }
-
-  getPaginatedBreakdownArray(type: string): any[] {
-    const rows = this.getBreakdownArray(type);
-    const currentPage = Math.min(
-      this.getBreakdownCurrentPage(type),
-      this.getBreakdownTotalPages(type),
-    );
-    const pageSize = this.getBreakdownPageSize(type);
-    const startIndex = (currentPage - 1) * pageSize;
-    return rows.slice(startIndex, startIndex + pageSize);
   }
 
   canCreateBreakdownEntry(type: string): boolean {
@@ -1168,31 +1112,4 @@ export class JournalDetails implements OnInit, OnDestroy {
     return option?.label || value || '-';
   }
 
-  // Pagination handlers
-  onNonResearchBreakdownPageChange(page: number) {
-    this.nonResearchBreakdownCurrentPage = page;
-  }
-
-  onExternalResearchBreakdownPageChange(page: number) {
-    this.externalResearchBreakdownCurrentPage = page;
-  }
-
-  onInternalResearchBreakdownPageChange(page: number) {
-    this.internalResearchBreakdownCurrentPage = page;
-  }
-
-  onNonResearchBreakdownPageSizeChange(pageSize: number) {
-    this.nonResearchBreakdownPageSize = pageSize;
-    this.nonResearchBreakdownCurrentPage = 1;
-  }
-
-  onExternalResearchBreakdownPageSizeChange(pageSize: number) {
-    this.externalResearchBreakdownPageSize = pageSize;
-    this.externalResearchBreakdownCurrentPage = 1;
-  }
-
-  onInternalResearchBreakdownPageSizeChange(pageSize: number) {
-    this.internalResearchBreakdownPageSize = pageSize;
-    this.internalResearchBreakdownCurrentPage = 1;
-  }
 }

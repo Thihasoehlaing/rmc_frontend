@@ -169,6 +169,7 @@ export const NAVIGATION_DATA: NavGroup[] = [
                     { label: 'Vote Numbers', icon: 'pin', route: '/settings/vote-numbers', permission: systemSettingsPermission },
                     { label: 'Staff Directory', icon: 'badge', route: '/settings/staff-directory', permission: systemSettingsPermission },
                     { label: 'Academic Staff', icon: 'school', route: '/settings/academic-staff', permission: systemSettingsPermission },
+                    { label: 'Form Correction', icon: 'fact_check', route: '/settings/form-correction', permission: systemSettingsPermission },
                     { label: 'Users', icon: 'manage_accounts', route: '/settings/users', permission: systemSettingsPermission },
                     { label: 'Roles', icon: 'verified_user', route: '/settings/roles', permission: systemSettingsPermission },
                     { label: 'System Access', icon: 'admin_panel_settings', route: '/settings/system-access', permission: systemSettingsPermission },

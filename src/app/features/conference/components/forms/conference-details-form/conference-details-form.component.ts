@@ -34,6 +34,7 @@ import {
   SDG_KEYWORD_MAX_LENGTH,
   SDG_KEYWORD_PLACEHOLDERS,
 } from '../../../../../shared/validators/sdg-keyword.validator';
+import { COSTING_ITEM_ROW_LIMIT } from '../../../../../core/constants/form-limits.constant';
 
 import { TableActionIconComponent } from '../../../../../shared/components/table-action-icon/table-action-icon.component';
 import { DecimalAmountDirective } from '../../../../../shared/directives/decimal-amount.directive';
@@ -62,7 +63,7 @@ import { MyrCurrencyPipe } from '../../../../../shared/pipes/myr-currency.pipe';
 export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
   readonly klangValleyAccountCodeDescription = 'TRAINING PRESENTATION PUBLICATION';
   readonly klangValleyAccountCode = '6203/100';
-  readonly tableRecordLimit = 10;
+  readonly tableRecordLimit = COSTING_ITEM_ROW_LIMIT;
   readonly activityRecordLimit = 20;
   @Input() workflow?: ConferenceWorkflowService;
   @Input() applicantDetailsForm?: FormGroup;

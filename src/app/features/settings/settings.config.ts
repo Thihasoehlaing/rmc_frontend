@@ -111,6 +111,16 @@ export const SETTINGS_MODULES: SettingsModuleConfig[] = [
     endpoints: [apiEndpoint('settings/academic-staff')],
   },
   {
+    key: 'form-correction',
+    title: 'Form Correction',
+    description: 'Find Conference or Journal requests and correct APU staff co-authors.',
+    icon: 'fact_check',
+    category: 'Request Maintenance',
+    route: '/settings/form-correction',
+    tone: 'amber',
+    endpoints: [apiEndpoint('settings/form-corrections/lookup')],
+  },
+  {
     key: 'users',
     title: 'Users',
     description: 'Manage local user profiles, account status, and role assignments.',

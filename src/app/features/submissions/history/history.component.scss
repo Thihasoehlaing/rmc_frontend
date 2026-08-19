@@ -192,7 +192,7 @@ td:first-child {
 
 .actions-heading,
 .actions-cell {
-  width: 128px;
+  width: 160px;
   text-align: center;
 }
 
@@ -268,6 +268,15 @@ td:first-child {
   }
 }
 
+.btn-icon--rollback {
+  color: var(--color-error);
+
+  &:hover:not(:disabled) {
+    background: var(--color-error-light);
+    color: var(--color-error);
+  }
+}
+
 .dropdown-pagination-panel {
   padding: var(--space-3) var(--space-4);
   background: var(--color-surface);
@@ -280,6 +289,23 @@ td:first-child {
   padding: var(--space-8) var(--space-4);
   text-align: center;
   color: var(--color-text-muted);
+}
+
+.rollback-dialog {
+  display: grid;
+  gap: var(--space-4);
+
+  p {
+    margin: 0;
+    color: var(--color-text-secondary);
+    font-size: var(--fs-sm);
+  }
+}
+
+.form-dialog__footer {
+  display: flex;
+  gap: var(--space-3);
+  justify-content: flex-end;
 }
 
 .state-message {

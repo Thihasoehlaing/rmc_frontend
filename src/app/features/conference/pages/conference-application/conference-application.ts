@@ -593,6 +593,7 @@ export class ConferenceApplication implements OnInit {
 
   readonly commentSections = [
     { code: 'conference_details', label: 'Conference Details', icon: 'event_note' },
+    { code: 'travel_details', label: 'Travel Details', icon: 'flight_takeoff' },
     { code: 'authors', label: 'Authors', icon: 'group' },
     { code: 'supporting_documents', label: 'Supporting Documents', icon: 'upload_file' },
     { code: 'costing_sponsorship', label: 'Costing & Sponsorship', icon: 'payments' },

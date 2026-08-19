@@ -251,6 +251,12 @@ export const NAVIGATION_DATA: NavGroup[] = [
             permission: systemSettingsPermission,
           },
           {
+            label: 'Form Correction',
+            icon: 'fact_check',
+            route: '/settings/form-correction',
+            permission: systemSettingsPermission,
+          },
+          {
             label: 'Users',
             icon: 'manage_accounts',
             route: '/settings/users',

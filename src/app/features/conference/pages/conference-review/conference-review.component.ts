@@ -29,6 +29,10 @@ import {
   formatCurrencyAmount,
   formatMyrCurrency,
 } from '../../../../shared/utils/currency.util';
+import {
+  formatMalaysiaDateTime,
+  getApiDateTimeMs,
+} from '../../../../shared/utils/date-time.util';
 
 const COMMENT_MAX_LENGTH = 1000;
 
@@ -263,15 +267,7 @@ export class ConferenceReviewComponent implements OnInit {
   }
 
   fmtDate(value: string | null | undefined): string {
-    return value
-      ? new Date(value).toLocaleString('en-GB', {
-          day: '2-digit',
-          month: 'short',
-          year: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit',
-        })
-      : '—';
+    return formatMalaysiaDateTime(value, '—');
   }
 
   fmtDateOnly(value: string | null | undefined): string {
@@ -447,9 +443,7 @@ export class ConferenceReviewComponent implements OnInit {
   }
 
   private parseTime(value: string | null | undefined): number | null {
-    if (!value) return null;
-    const time = new Date(value).getTime();
-    return Number.isFinite(time) ? time : null;
+    return getApiDateTimeMs(value);
   }
 
   private currentActorRole(): string {

@@ -132,6 +132,17 @@
           </div>
 
           <div class="form-field">
+            <label class="form-label">Purpose of Business Travel</label>
+            <textarea
+              class="input--textarea"
+              formControlName="purposeOfBusinessTravel"
+              placeholder="Enter purpose of business travel"
+              (input)="autoExpandTextarea($event)"
+              rows="3"
+            ></textarea>
+          </div>
+
+          <div class="form-field">
             <label class="form-label is-required"
               >Select conference type for current application</label
             >

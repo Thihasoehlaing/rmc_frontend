@@ -795,6 +795,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
       fundingRequestType: ['', [Validators.required]],
       conferenceType: ['', [Validators.required]],
       travelRequired: ['', [Validators.required]],
+      purposeOfBusinessTravel: [''],
       bookingDoneBy: ['', [Validators.required]],
       bookingDoneByOther: [''],
       hasAdvance: ['', [Validators.required]],

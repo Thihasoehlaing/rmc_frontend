@@ -193,9 +193,9 @@
 
     <div
       class="analysis-layout__middle-row"
-      [class.analysis-layout__middle-row--summary-only]="!showPortfolioBarChart()"
+      [class.analysis-layout__middle-row--summary-only]="!showMultiFormCharts()"
     >
-      @if (showPortfolioBarChart()) {
+      @if (showMultiFormCharts()) {
         <section class="card performance-workspace" aria-label="Vertical performance bar chart">
           <div class="performance-toolbar">
             <div class="performance-toolbar__context">
@@ -208,7 +208,7 @@
               class="performance-toolbar__select"
               placeholder="Select bar chart metric"
               [searchable]="false"
-              [options]="trendMetricOptions"
+              [options]="barMetricOptions"
               [ngModel]="barTrendMode()"
               (ngModelChange)="setBarTrendMode($event)"
             />
@@ -232,7 +232,7 @@
       </aside>
     </div>
 
-    @if (!isExternalDashboard()) {
+    @if (showMultiFormCharts()) {
       <section class="card line-workspace" aria-label="Performance line chart">
         <div class="performance-toolbar">
           <div class="performance-toolbar__context">
@@ -296,7 +296,7 @@
           placeholder="Select one or more forms"
           [isMulti]="true"
           [options]="formFilterOptions()"
-          [ngModel]="selectedForms()"
+          [ngModel]="draftSelectedForms()"
           (ngModelChange)="onFormSelectionChange($event)"
         />
 
@@ -306,8 +306,8 @@
             id="dashboard-start-date"
             class="input--text"
             type="date"
-            [ngModel]="startDate()"
-            [max]="endDate()"
+            [ngModel]="draftStartDate()"
+            [max]="draftEndDate()"
             (ngModelChange)="onStartDateChange($event)"
           />
         </div>
@@ -318,8 +318,8 @@
             id="dashboard-end-date"
             class="input--text"
             type="date"
-            [ngModel]="endDate()"
-            [min]="startDate()"
+            [ngModel]="draftEndDate()"
+            [min]="draftStartDate()"
             [max]="maxEndDate()"
             (ngModelChange)="onEndDateChange($event)"
           />
@@ -344,7 +344,9 @@
       </div>
 
       <footer class="dashboard-filter-panel__footer">
-        <button type="button" class="btn btn-primary" (click)="closeFilters()">Done</button>
+        <button type="button" class="btn btn-primary" (click)="applyFilters()">
+          Apply Filters
+        </button>
       </footer>
     </aside>
   }

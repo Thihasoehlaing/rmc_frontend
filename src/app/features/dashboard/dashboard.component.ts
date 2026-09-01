@@ -18,7 +18,6 @@ import {
   WorkflowActorDashboardComponent,
 } from './components/role-dashboards/role-dashboards.component';
 import { dashboardConfigFor } from './dashboard.config';
-import { RMC_ANALYSIS_MOCK_DATA } from './data/rmc-analysis-dashboard.mock';
 
 @Component({
   selector: 'app-dashboard',
@@ -48,18 +47,13 @@ export class DashboardComponent implements OnInit {
   readonly view = computed(() =>
     dashboardConfigFor(
       this.user(),
-      this.analysisMode ? null : (this.summary()?.view_type ?? this.summary()?.audience),
+      this.summary()?.view_type ?? this.summary()?.audience,
     ),
   );
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
 
   ngOnInit(): void {
-    if (this.analysisMode) {
-      this.summary.set(RMC_ANALYSIS_MOCK_DATA.summary);
-      this.loading.set(false);
-      return;
-    }
     this.loadDashboard();
   }
 

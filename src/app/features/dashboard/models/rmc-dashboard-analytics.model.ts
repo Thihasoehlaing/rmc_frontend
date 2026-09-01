@@ -73,7 +73,51 @@ export interface RmcDashboardPortfolio {
   costsAvailable: boolean;
 }
 
-export type DashboardTrendMode = 'all' | 'completed' | 'rejected' | 'spend';
+export interface RmcDashboardAnalyticsQuery {
+  startDate: string;
+  endDate: string;
+  formCodes?: string[];
+}
+
+export interface RmcDashboardCostBreakdownDto {
+  apu: number | string;
+  external: number | string;
+  applicant: number | string;
+}
+
+export interface RmcDashboardDimensionsDto {
+  department_code?: string | null;
+  external_grant_category?: string | null;
+  fund_approved?: number | string | null;
+  project_type?: DashboardProjectType | null;
+  conference_type?: DashboardConferenceType | null;
+  scopus_quartile?: DashboardScopusQuartile | null;
+  cost_breakdown?: RmcDashboardCostBreakdownDto | null;
+}
+
+export interface RmcDashboardRecordDto {
+  request: RequestSummaryDto;
+  request_id: number;
+  form_code: string;
+  form_name: string;
+  submitted_at: string | null;
+  completed_at: string | null;
+  requires_action: boolean;
+  is_completed: boolean;
+  cost: number | string;
+  analytics?: RmcDashboardDimensionsDto | null;
+}
+
+export interface RmcDashboardPortfolioDto {
+  start_date: string;
+  end_date: string;
+  form_codes: string[];
+  record_count: number;
+  records: RmcDashboardRecordDto[];
+  costs_available: boolean;
+}
+
+export type DashboardTrendMode = 'all' | 'completed' | 'rejected' | 'in_progress' | 'spend';
 export type DashboardChartType = 'bar' | 'line' | 'donut';
 
 export const DASHBOARD_FORM_COLORS = [

@@ -38,6 +38,10 @@ import { DashboardDonutChartComponent } from '../dashboard-donut-chart/dashboard
 import { DashboardDepartmentComparisonChartComponent } from '../dashboard-department-comparison-chart/dashboard-department-comparison-chart.component';
 import { DashboardExternalDepartmentChartComponent } from '../dashboard-external-department-chart/dashboard-external-department-chart.component';
 import { buildDashboardTimeBuckets, dashboardMaxEndDate } from '../../utils/dashboard-date-range';
+import {
+  DASHBOARD_BAR_METRIC_OPTIONS,
+  DASHBOARD_TREND_METRIC_OPTIONS,
+} from '../../utils/dashboard-metric-options';
 
 interface FormFilterOption {
   code: string;
@@ -67,6 +71,7 @@ export class RmcAdminAnalyticsDashboardComponent implements OnInit {
   private readonly analytics = inject(RmcDashboardAnalyticsService);
   private readonly summaryValue = signal<DashboardSummaryDto | null>(null);
   private readonly formSelectionInitialized = signal(false);
+  private analyticsRequestId = 0;
 
   @Input({ required: true }) set summary(value: DashboardSummaryDto) {
     this.summaryValue.set(value);
@@ -84,8 +89,11 @@ export class RmcAdminAnalyticsDashboardComponent implements OnInit {
   readonly filtersOpen = signal(false);
   readonly startDate = signal(this.toInputDate(new Date(new Date().getFullYear(), 0, 1)));
   readonly endDate = signal(this.toInputDate(new Date()));
+  readonly draftSelectedForms = signal<string[]>([]);
+  readonly draftStartDate = signal(this.startDate());
+  readonly draftEndDate = signal(this.endDate());
   readonly dateRangeNotice = signal<string | null>(null);
-  readonly maxEndDate = computed(() => dashboardMaxEndDate(this.startDate()));
+  readonly maxEndDate = computed(() => dashboardMaxEndDate(this.draftStartDate()));
   private readonly trendBuckets = computed(() =>
     buildDashboardTimeBuckets(this.startDate(), this.endDate()),
   );
@@ -106,7 +114,7 @@ export class RmcAdminAnalyticsDashboardComponent implements OnInit {
   });
 
   readonly formFilterOptions = computed<DropdownOption<string>[]>(() => {
-    const selected = this.selectedForms();
+    const selected = this.draftSelectedForms();
     const externalSelected = selected.includes('EXTERNAL');
     const nonExternalSelected = selected.some((code) => code !== 'EXTERNAL');
 
@@ -128,12 +136,8 @@ export class RmcAdminAnalyticsDashboardComponent implements OnInit {
     });
   });
 
-  readonly trendMetricOptions: DropdownOption<DashboardTrendMode>[] = [
-    { value: 'all', label: 'Total Submissions' },
-    { value: 'completed', label: 'Completed forms' },
-    { value: 'rejected', label: 'Rejected forms' },
-    { value: 'spend', label: 'Fund Approved' },
-  ];
+  readonly trendMetricOptions = DASHBOARD_TREND_METRIC_OPTIONS;
+  readonly barMetricOptions = DASHBOARD_BAR_METRIC_OPTIONS;
 
   readonly submittedRecords = computed(() =>
     this.records().filter(
@@ -208,7 +212,7 @@ export class RmcAdminAnalyticsDashboardComponent implements OnInit {
   readonly isExternalDashboard = computed(
     () => this.selectedForms().length === 1 && this.selectedForms()[0] === 'EXTERNAL',
   );
-  readonly showPortfolioBarChart = computed(() => this.selectedForms().length !== 1);
+  readonly showMultiFormCharts = computed(() => this.selectedForms().length > 1);
 
   private readonly externalCategoryCodes = computed(() =>
     [
@@ -258,7 +262,7 @@ export class RmcAdminAnalyticsDashboardComponent implements OnInit {
   });
 
   readonly customCostSeries = computed<DashboardChartDatum[]>(() => {
-    const totals = this.submittedRecords().reduce(
+    const totals = this.completedRecords().reduce(
       (result, record) => {
         const breakdown = record.analytics?.costBreakdown;
         if (!breakdown) {
@@ -290,18 +294,27 @@ export class RmcAdminAnalyticsDashboardComponent implements OnInit {
   });
 
   readonly projectTypeSeries = computed(() =>
-    this.dimensionSeries(['External', 'Non-Research'], (record) => record.analytics?.projectType),
+    this.dimensionSeries(
+      ['External', 'Non-Research'],
+      (record) => record.analytics?.projectType,
+      this.completedRecords(),
+    ),
   );
 
   readonly conferenceTypeSeries = computed(() =>
     this.dimensionSeries(
       ['International', 'National'],
       (record) => record.analytics?.conferenceType,
+      this.completedRecords(),
     ),
   );
 
   readonly scopusQuartileSeries = computed(() =>
-    this.dimensionSeries(['Q1', 'Q2', 'Q3'], (record) => record.analytics?.scopusQuartile),
+    this.dimensionSeries(
+      ['Q1', 'Q2', 'Q3'],
+      (record) => record.analytics?.scopusQuartile,
+      this.completedRecords(),
+    ),
   );
 
   private readonly departmentMetrics = computed(() => {
@@ -334,7 +347,9 @@ export class RmcAdminAnalyticsDashboardComponent implements OnInit {
     effect(() => {
       const codes = this.formOptions().map((form) => form.code);
       if (codes.length && !this.formSelectionInitialized()) {
-        this.selectedForms.set(this.allFormSelection());
+        const initialSelection = this.allFormSelection();
+        this.selectedForms.set(initialSelection);
+        this.draftSelectedForms.set([...initialSelection]);
         this.formSelectionInitialized.set(true);
       }
     });
@@ -383,24 +398,34 @@ export class RmcAdminAnalyticsDashboardComponent implements OnInit {
   }
 
   loadAnalytics(): void {
+    const requestId = ++this.analyticsRequestId;
     this.loading.set(true);
     this.error.set(null);
     this.analytics
-      .loadPortfolio()
-      .pipe(finalize(() => this.loading.set(false)))
+      .loadPortfolio({
+        startDate: this.startDate(),
+        endDate: this.endDate(),
+        formCodes: this.selectedForms(),
+      })
+      .pipe(
+        finalize(() => {
+          if (requestId === this.analyticsRequestId) this.loading.set(false);
+        }),
+      )
       .subscribe({
         next: (portfolio) => {
+          if (requestId !== this.analyticsRequestId) return;
           this.records.set(portfolio.records);
           if (!portfolio.records.length) {
-            this.error.set(
-              'Detailed portfolio data is unavailable. Summary totals are shown where possible.',
-            );
+            this.error.set('No submitted applications match the selected filters.');
           }
         },
-        error: () =>
+        error: () => {
+          if (requestId !== this.analyticsRequestId) return;
           this.error.set(
             'Detailed portfolio data is unavailable. Summary totals are shown where possible.',
-          ),
+          );
+        },
       });
   }
 
@@ -410,35 +435,35 @@ export class RmcAdminAnalyticsDashboardComponent implements OnInit {
     const selectedCodes = next.filter((value) => codes.includes(value));
 
     if (!next.length) {
-      this.selectedForms.set([]);
+      this.draftSelectedForms.set([]);
       return;
     }
 
     const externalSelected = selectedCodes.includes('EXTERNAL');
-    const externalWasSelected = this.selectedForms().includes('EXTERNAL');
+    const externalWasSelected = this.draftSelectedForms().includes('EXTERNAL');
     if (externalSelected && !externalWasSelected) {
-      this.selectedForms.set(['EXTERNAL']);
+      this.draftSelectedForms.set(['EXTERNAL']);
       return;
     }
     if (externalSelected && selectedCodes.length > 1) {
-      this.selectedForms.set(selectedCodes.filter((code) => code !== 'EXTERNAL'));
+      this.draftSelectedForms.set(selectedCodes.filter((code) => code !== 'EXTERNAL'));
       return;
     }
 
-    this.selectedForms.set(selectedCodes);
+    this.draftSelectedForms.set(selectedCodes);
   }
 
   onStartDateChange(value: string): void {
     if (!value) return;
-    this.startDate.set(value);
+    this.draftStartDate.set(value);
     this.dateRangeNotice.set(null);
-    if (value > this.endDate()) {
-      this.endDate.set(value);
+    if (value > this.draftEndDate()) {
+      this.draftEndDate.set(value);
       return;
     }
     const maximumEnd = dashboardMaxEndDate(value);
-    if (this.endDate() > maximumEnd) {
-      this.endDate.set(maximumEnd);
+    if (this.draftEndDate() > maximumEnd) {
+      this.draftEndDate.set(maximumEnd);
       this.dateRangeNotice.set('The end date was adjusted to the maximum 10-year range.');
     }
   }
@@ -446,18 +471,18 @@ export class RmcAdminAnalyticsDashboardComponent implements OnInit {
   onEndDateChange(value: string): void {
     if (!value) return;
     this.dateRangeNotice.set(null);
-    const maximumEnd = dashboardMaxEndDate(this.startDate());
+    const maximumEnd = dashboardMaxEndDate(this.draftStartDate());
     if (value > maximumEnd) {
-      this.endDate.set(maximumEnd);
+      this.draftEndDate.set(maximumEnd);
       this.dateRangeNotice.set('Date ranges cannot exceed 10 years.');
       return;
     }
-    this.endDate.set(value);
-    if (value < this.startDate()) this.startDate.set(value);
+    this.draftEndDate.set(value);
+    if (value < this.draftStartDate()) this.draftStartDate.set(value);
   }
 
   setBarTrendMode(mode: DashboardTrendMode | null): void {
-    if (mode) this.barTrendMode.set(mode);
+    if (mode && mode !== 'spend') this.barTrendMode.set(mode);
   }
 
   setLineTrendMode(mode: DashboardTrendMode | null): void {
@@ -465,16 +490,49 @@ export class RmcAdminAnalyticsDashboardComponent implements OnInit {
   }
 
   openFilters(): void {
+    this.resetDraftFilters();
     this.filtersOpen.set(true);
   }
 
   closeFilters(): void {
+    this.resetDraftFilters();
     this.filtersOpen.set(false);
+  }
+
+  applyFilters(): void {
+    const nextForms = [...this.draftSelectedForms()];
+    const nextStartDate = this.draftStartDate();
+    const nextEndDate = this.draftEndDate();
+    const changed =
+      nextStartDate !== this.startDate() ||
+      nextEndDate !== this.endDate() ||
+      !this.sameFormSelection(nextForms, this.selectedForms());
+
+    this.selectedForms.set(nextForms);
+    this.startDate.set(nextStartDate);
+    this.endDate.set(nextEndDate);
+    this.filtersOpen.set(false);
+    this.dateRangeNotice.set(null);
+
+    if (changed) this.loadAnalytics();
   }
 
   @HostListener('document:keydown.escape')
   onEscape(): void {
     this.closeFilters();
+  }
+
+  private resetDraftFilters(): void {
+    this.draftSelectedForms.set([...this.selectedForms()]);
+    this.draftStartDate.set(this.startDate());
+    this.draftEndDate.set(this.endDate());
+    this.dateRangeNotice.set(null);
+  }
+
+  private sameFormSelection(left: string[], right: string[]): boolean {
+    if (left.length !== right.length) return false;
+    const rightSet = new Set(right);
+    return left.every((code) => rightSet.has(code));
   }
 
   private seriesForRecordsOrSummary(
@@ -516,12 +574,13 @@ export class RmcAdminAnalyticsDashboardComponent implements OnInit {
   private dimensionSeries(
     labels: readonly string[],
     dimension: (record: RmcDashboardRecord) => string | null | undefined,
+    records: RmcDashboardRecord[] = this.submittedRecords(),
   ): DashboardChartDatum[] {
     return labels.map((label, index) => ({
       key: label.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
       label,
       color: DASHBOARD_FORM_COLORS[index % DASHBOARD_FORM_COLORS.length],
-      value: this.submittedRecords().filter((record) => dimension(record) === label).length,
+      value: records.filter((record) => dimension(record) === label).length,
     }));
   }
 
@@ -552,17 +611,21 @@ export class RmcAdminAnalyticsDashboardComponent implements OnInit {
 
   private recordsForTrend(mode: DashboardTrendMode): RmcDashboardRecord[] {
     if (mode === 'all') return this.submittedRecords();
+    if (mode === 'in_progress') return this.inProgressRecords();
     return mode === 'rejected' ? this.rejectedTrendRecords() : this.completedTrendRecords();
   }
 
   private trendDate(record: RmcDashboardRecord, mode: DashboardTrendMode): Date | null {
-    return mode === 'all' ? record.submittedAt : (record.completedAt ?? record.submittedAt);
+    return mode === 'all' || mode === 'in_progress'
+      ? record.submittedAt
+      : (record.completedAt ?? record.submittedAt);
   }
 
   private metricLabel(mode: DashboardTrendMode): string {
     if (mode === 'all') return 'Total Submissions';
     if (mode === 'spend') return 'Total money spend';
     if (mode === 'rejected') return 'Rejected forms';
+    if (mode === 'in_progress') return 'In Progress';
     return 'Completed forms';
   }
 

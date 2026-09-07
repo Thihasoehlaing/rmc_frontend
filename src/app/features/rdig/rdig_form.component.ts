@@ -56,7 +56,7 @@ import { FormPageSkeletonComponent } from '../../shared/components/form-page-ske
 import { Observable, catchError, finalize, forkJoin, map, of, switchMap, tap } from 'rxjs';
 import { SvgIconComponent } from '../../shared/components/svg-icon/svg-icon.component';
 import { SVG_ICON_LOADING_SPINNER, SVG_ICON_SUCCESS_CHECK } from '../../shared/icons/svg-icons';
-import { RdigApiService, RdigRequestDto } from './services/rdig-api.service';
+import { RdigApiService, RdigFormData, RdigRequestDto } from './services/rdig-api.service';
 
 export function isApplicantSubmissionWindowOpen(
   hasActiveBatch: boolean,
@@ -1031,7 +1031,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
       .pipe(finalize(() => this.isLoadingApplication.set(false)))
       .subscribe({
         next: (res) => {
-          this.patchFormFromBackend(res.data as any);
+          this.patchFormFromBackend(res.data);
         },
         error: (err) => {
           console.error('Failed to load application:', err);
@@ -1040,8 +1040,8 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
       });
   }
 
-  private patchFormFromBackend(data: any): void {
-    const requestRow = data.request ?? {};
+  private patchFormFromBackend(data: RdigFormData): void {
+    const requestRow = data.request;
     const rdig = data.rdig ?? {};
     const requestId = requestRow.id ?? rdig.request_id;
     this.loadedAppId.set(requestId != null ? String(requestId) : null);
@@ -1073,8 +1073,8 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
           stakeholders: rdig.benefit_to_stakeholders ?? '',
         },
         visionMission: rdig.vision_mission_alignment ?? '',
-        esgs: (data.esg_selections ?? []).map((item: any) => String(item.esg_id)),
-        sdgs: (data.sdg_selections ?? []).map((item: any) => String(item.sdg_id)),
+        esgs: (data.esg_selections ?? []).map((item) => String(item.esg_id)),
+        sdgs: (data.sdg_selections ?? []).map((item) => String(item.sdg_id)),
       },
       outputs: {
         journal: {
@@ -1106,7 +1106,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
 
     this.rebuildArray(
       this.rdigForm.get('teamDetails.internalResearchers') as FormArray,
-      (data.apu_co_researchers ?? []).map((item: any) => ({
+      (data.apu_co_researchers ?? []).map((item) => ({
         backendId: item.id,
         staffId: item.staff_id,
         staffName: item.staff_name,
@@ -1122,7 +1122,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
 
     this.rebuildArray(
       this.rdigForm.get('teamDetails.externalResearchers') as FormArray,
-      (data.collaborators ?? []).map((item: any) => ({
+      (data.collaborators ?? []).map((item) => ({
         backendId: item.id,
         title: item.title,
         fullName: item.full_name,
@@ -1144,7 +1144,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
 
     this.rebuildArray(
       this.rdigForm.get('activities') as FormArray,
-      (data.research_activities ?? []).map((item: any) => ({
+      (data.research_activities ?? []).map((item) => ({
         backendId: item.id,
         name: item.activity_name,
         startMonth: item.start_month,
@@ -1154,8 +1154,14 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
     );
     this.captureLoadedBackendIds('activities', this.rdigForm.get('activities') as FormArray);
 
-    const sectionById = new Map((data.budget_sections ?? []).map((item: any) => [item.id, item.section_code]));
-    const itemsByKey: Record<string, any[]> = {
+    const sectionById = new Map<number, string>();
+    for (const section of data.budget_sections ?? []) {
+      const sectionId = section.id ?? section.budget_section_id;
+      if (sectionId != null && section.section_code) {
+        sectionById.set(sectionId, section.section_code);
+      }
+    }
+    const itemsByKey: Record<string, Array<Record<string, unknown>>> = {
       studentAllowances: [],
       travelAccommodation: [],
       materialsSupplies: [],
@@ -1589,7 +1595,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
       ? this.rdigApi.updateDraft(existingId, dto).pipe(map(() => existingId))
       : this.rdigApi.createDraft(dto).pipe(
           map((res) => {
-            const newId = (res.data as any)?.request?.id ?? (res.data as any)?.id ?? res.data?.request_id;
+            const newId = res.data.request?.id ?? res.data.request?.request_id ?? res.data.rdig?.request_id;
             if (!newId) throw new Error('Backend did not return a new RDIG request id.');
             this.rdigForm.get('metadata.rdigRequestId')?.setValue(newId, { emitEvent: false });
             return newId;
@@ -1910,10 +1916,10 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
     this.submissionState.set('ERROR');
   }
 
-  private isSystemAdminReadOnlyRequest(request: Record<string, unknown>): boolean {
+  private isSystemAdminReadOnlyRequest(request: { applicant_staff_username?: string | null }): boolean {
     if (!this.auth.inGroup('SystemAdmin')) return false;
     const adminView = this.route.snapshot.queryParamMap.get('admin_view')?.toLowerCase() === 'true';
-    const applicantUsername = String(request['applicant_staff_username'] ?? '').trim().toLowerCase();
+    const applicantUsername = String(request.applicant_staff_username ?? '').trim().toLowerCase();
     const currentUsername = this.auth.currentUser()?.username?.trim().toLowerCase();
     return adminView || Boolean(applicantUsername && currentUsername && applicantUsername !== currentUsername);
   }

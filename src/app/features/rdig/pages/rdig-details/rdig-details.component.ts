@@ -12,6 +12,7 @@ import {
   RdigBudgetSectionDto,
   RdigCoResearcherDto,
   RdigCollaboratorDto,
+  RdigFormData,
   RdigResearchActivityDto,
   RdigRequestDto,
 } from '../../services/rdig-api.service';
@@ -62,18 +63,6 @@ interface FieldCommentDef {
   label: string;
   /** Max score if this field carries a rating (0-10 or 0-5, matching the Form View). */
   maxScore?: number;
-}
-
-interface RdigDetailData {
-  request?: RequestSummaryDto;
-  rdig?: RdigRequestDto;
-  apu_co_researchers?: RdigCoResearcherDto[];
-  collaborators?: RdigCollaboratorDto[];
-  research_activities?: RdigResearchActivityDto[];
-  budget_sections?: RdigBudgetSectionDto[];
-  budget_items?: RdigBudgetItemDto[];
-  attachments?: RdigAttachmentDto[];
-  [key: string]: unknown;
 }
 
 const GROUP_FIELD_CODE: Record<GroupCode, string> = {
@@ -162,7 +151,7 @@ export class RdigDetailsComponent implements OnInit {
   private returnTo: string | null = null;
   downloadingAttachmentId = signal<number | null>(null);
 
-  data = signal<RdigDetailData | null>(null);
+  data = signal<RdigFormData | null>(null);
   actions = signal<WorkflowActionDto[]>([]);
   canAct = signal(false);
   approvals = signal<ApprovalDto[]>([]);

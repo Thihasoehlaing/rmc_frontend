@@ -10,6 +10,7 @@ import {
   RdigBudgetSectionDto,
   RdigCoResearcherDto,
   RdigCollaboratorDto,
+  RdigFormData,
   RdigResearchActivityDto,
   RdigRequestDto,
 } from './services/rdig-api.service';
@@ -25,18 +26,6 @@ interface DetailField {
   label: string;
   value: unknown;
   type?: 'date' | 'money' | 'boolean';
-}
-
-interface RdigDetailData {
-  request?: RequestSummaryDto;
-  rdig?: RdigRequestDto;
-  apu_co_researchers?: RdigCoResearcherDto[];
-  collaborators?: RdigCollaboratorDto[];
-  research_activities?: RdigResearchActivityDto[];
-  budget_sections?: RdigBudgetSectionDto[];
-  budget_items?: RdigBudgetItemDto[];
-  attachments?: RdigAttachmentDto[];
-  [key: string]: unknown;
 }
 
 @Component({
@@ -56,7 +45,7 @@ export class RdigDetailComponent implements OnInit {
   loading = signal(true);
   error = signal<string | null>(null);
   request = signal<RequestSummaryDto | null>(null);
-  form = signal<RdigDetailData | null>(null);
+  form = signal<RdigFormData | null>(null);
   actions = signal<WorkflowActionDto[]>([]);
 
   readonly rdig = computed(() => this.form()?.rdig ?? null);

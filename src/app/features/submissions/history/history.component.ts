@@ -69,13 +69,14 @@ export class HistoryComponent implements OnInit {
     () => this.route.snapshot.routeConfig?.path === 'admin-history',
   );
 
-  readonly skeletonColumns: SkeletonColumn[] = [
+  readonly skeletonColumns = computed<SkeletonColumn[]>(() => [
     { width: '72px' },
     { width: '24%' },
+    ...(this.isAdminHistory() ? [{ width: '18%' }] : []),
     { width: '18%' },
     { width: '18%' },
     { width: '96px' },
-  ];
+  ]);
 
   readonly formTabs = computed(() => {
     const includeExternal = this.isAdminHistory();
@@ -98,7 +99,7 @@ export class HistoryComponent implements OnInit {
     const items = this.raw()
       .filter((app) => includeExternal || (app.form_code ?? '').toUpperCase() !== 'EXTERNAL')
       .filter((app) => type === 'all' || (app.form_code ?? '').toLowerCase() === type)
-      .filter((app) => !query || this.getCode(app).toLowerCase().includes(query))
+      .filter((app) => !query || this.matchesSearch(app, query))
       .filter((app) => !createdDate || this.dateInputValue(app.created_at) === createdDate);
 
     return [...items].sort((a, b) => this.completedTs(b) - this.completedTs(a));
@@ -198,6 +199,10 @@ export class HistoryComponent implements OnInit {
 
   getStatusColor(app: RequestSummaryDto): string {
     return STATUS_COLORS[app.status_code] ?? '#6b7280';
+  }
+
+  getApplicantLabel(app: RequestSummaryDto): string {
+    return app.applicant_name?.trim() || app.applicant_staff_username?.trim() || '-';
   }
 
   getFormTypeLabel(app: RequestSummaryDto): string {
@@ -353,6 +358,14 @@ export class HistoryComponent implements OnInit {
   private completedTs(app: RequestSummaryDto): number {
     const iso = app.updated_at ?? app.submitted_at ?? app.created_at;
     return iso ? new Date(iso).getTime() : 0;
+  }
+
+  private matchesSearch(app: RequestSummaryDto, query: string): boolean {
+    const values: Array<string | null | undefined> = [this.getCode(app)];
+    if (this.isAdminHistory()) {
+      values.push(app.applicant_name, app.applicant_staff_username, app.applicant_email);
+    }
+    return values.some((value) => (value ?? '').toLowerCase().includes(query));
   }
 
   private formatIsoDate(iso: string | null | undefined): string {

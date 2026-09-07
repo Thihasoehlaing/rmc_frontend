@@ -156,7 +156,7 @@
 
 table {
   width: 100%;
-  min-width: 600px;
+  min-width: 720px;
   border-collapse: collapse;
 }
 
@@ -207,6 +207,22 @@ td:first-child {
 }
 
 .form-type-label {
+  display: block;
+  margin-top: var(--space-1);
+  font-size: var(--fs-xs);
+  color: var(--color-text-secondary);
+}
+
+.applicant-cell {
+  min-width: 11rem;
+}
+
+.applicant-name {
+  display: block;
+  font-weight: var(--fw-medium);
+}
+
+.applicant-username {
   display: block;
   margin-top: var(--space-1);
   font-size: var(--fs-xs);
@@ -352,7 +368,7 @@ td:first-child {
   }
 
   table {
-    min-width: 560px;
+    min-width: 680px;
   }
 
   th,

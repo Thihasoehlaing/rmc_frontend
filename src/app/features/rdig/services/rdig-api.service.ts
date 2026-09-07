@@ -55,9 +55,24 @@ export interface RdigRequestDto {
   indexed_journal_quantity?: number | null;
   conceptual_design_selected?: boolean;
   knowledge_transfer_programme_selected?: boolean;
+  knowledge_transfer_community?: string | null;
   application_external_grant_selected?: boolean;
+  external_grant_scheme?: string | null;
   other_output_selected?: boolean;
   other_output_specification?: string | null;
+  research_cluster_name?: string | null;
+  research_domain_name?: string | null;
+  sub_research_domain_name?: string | null;
+  esg_names?: string | null;
+  esgs?: string | null;
+  sdg_names?: string | null;
+  sdgs?: string | null;
+  ethics_declaration?: boolean | null;
+  ethics_approval_required?: boolean;
+  ethics_approval_attachment_id?: number | null;
+  coresearchers_declaration?: boolean | null;
+  justification?: string | null;
+  novelty_statement?: string | null;
   [key: string]: unknown;
 }
 

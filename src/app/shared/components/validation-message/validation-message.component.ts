@@ -21,7 +21,7 @@ export class ValidationMessageComponent {
     const errors = this.control.errors;
     if (!errors) return null;
 
-    if (errors['required']) return this.fieldName ? `${this.fieldName} field is required.` : 'This field is required.';
+    if (errors['required']) return this.fieldName ? `${this.fieldName} is required.` : 'This field is required.';
     if (errors['email']) return 'Invalid email address.';
     if (errors['maxlength']) return `Maximum ${errors['maxlength'].requiredLength} characters allowed.`;
     if (errors['minlength']) return `Minimum ${errors['minlength'].requiredLength} characters required.`;

@@ -25,6 +25,7 @@ import { ValidationMessageComponent } from '../../../../../shared/components/val
 import { CharacterCounterComponent } from '../../../../../shared/components/character-counter/character-counter.component';
 import { NoteComponent } from '../../../../../shared/components/note/note.component';
 import { formatCountryForDisplay } from '../../../../../shared/utils/country.util';
+import { TableRowCounterComponent } from '../../../../../shared/components/table-row-counter/table-row-counter.component';
 
 @Component({
   selector: 'app-author-details-form',
@@ -33,6 +34,7 @@ import { formatCountryForDisplay } from '../../../../../shared/utils/country.uti
     TableActionIconComponent,
     ValidationMessageComponent,
     CharacterCounterComponent,
+    TableRowCounterComponent,
     CommonModule,
     ReactiveFormsModule,
     SearchableDropdownComponent,

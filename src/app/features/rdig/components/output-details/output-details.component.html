@@ -10,9 +10,7 @@
           <input type="checkbox" formControlName="checked">
           <span class="item-label is-required">Indexed Journal Publication (SCOPUS-Indexed Q1 and Q2)</span>
         </label>
-        @if (outputForm.get('journal.checked')?.touched && outputForm.get('journal.checked')?.invalid) {
-          <p class="validation-error">This output is required.</p>
-        }
+        <app-validation-message class="form-validation-note--error" [control]="outputForm.get('journal.checked')" fieldName="Indexed Journal Publication"></app-validation-message>
         @if (outputForm.get('journal.checked')?.value) {
           <div class="item-content">
             <div class="form-field" data-missing-field-target="outputs.journal.quantity">
@@ -28,7 +26,7 @@
               @if (!projectDuration) {
                 <app-note text="Please complete the Project Duration field first."></app-note>
               }
-              <app-validation-message [control]="outputForm.get('journal.quantity')"></app-validation-message>
+              <app-validation-message class="form-validation-note--error" [control]="outputForm.get('journal.quantity')" fieldName="Quantity"></app-validation-message>
             </div>
           </div>
         }
@@ -40,9 +38,7 @@
           <input type="checkbox" formControlName="conceptualDesign">
           <span class="item-label is-required">Conceptual Design or Theoretical Framework</span>
         </label>
-        @if (outputForm.get('conceptualDesign')?.touched && outputForm.get('conceptualDesign')?.invalid) {
-          <p class="validation-error">This output is required.</p>
-        }
+        <app-validation-message class="form-validation-note--error" [control]="outputForm.get('conceptualDesign')" fieldName="Conceptual Design or Theoretical Framework"></app-validation-message>
       </div>
 
       <!-- ── Knowledge Transfer ────────────────────────────────── -->
@@ -52,15 +48,13 @@
           <input type="checkbox" formControlName="checked">
           <span class="item-label is-required">Knowledge Transfer Programme - is a structured program which has documented programs approval, objectives, methodology, and financial arrangement.</span>
         </label>
-        @if (outputForm.get('knowledgeTransfer.checked')?.touched && outputForm.get('knowledgeTransfer.checked')?.invalid) {
-          <p class="validation-error">This output is required.</p>
-        }
+        <app-validation-message class="form-validation-note--error" [control]="outputForm.get('knowledgeTransfer.checked')" fieldName="Knowledge Transfer Programme"></app-validation-message>
         @if (outputForm.get('knowledgeTransfer.checked')?.value) {
           <div class="item-content">
             <div class="form-field" data-missing-field-target="outputs.knowledgeTransfer.community">
               <label class="form-label is-required">Community to be impacted:</label>
               <input type="text" class="input--text" formControlName="community">
-              <app-validation-message [control]="outputForm.get('knowledgeTransfer.community')"></app-validation-message>
+              <app-validation-message class="form-validation-note--error" [control]="outputForm.get('knowledgeTransfer.community')" fieldName="Community to be impacted"></app-validation-message>
             </div>
           </div>
         }
@@ -78,7 +72,7 @@
             <div class="form-field" data-missing-field-target="outputs.externalGrant.scheme">
               <label class="form-label is-required">Grant scheme:</label>
               <input type="text" class="input--text" formControlName="scheme">
-              <app-validation-message [control]="outputForm.get('externalGrant.scheme')"></app-validation-message>
+              <app-validation-message class="form-validation-note--error" [control]="outputForm.get('externalGrant.scheme')" fieldName="Grant scheme"></app-validation-message>
             </div>
           </div>
         }
@@ -97,7 +91,7 @@
               <label class="form-label is-required">Describe other outputs:</label>
               <textarea class="input--textarea" formControlName="details"></textarea>
               <app-note text="Please state matching grant amount and name of university/organisation and any other description."></app-note>
-              <app-validation-message [control]="outputForm.get('others.details')"></app-validation-message>
+              <app-validation-message class="form-validation-note--error" [control]="outputForm.get('others.details')" fieldName="Describe other outputs"></app-validation-message>
             </div>
           </div>
         }

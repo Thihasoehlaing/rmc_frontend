@@ -858,6 +858,13 @@
                   <div class="table-summary">
                     {{ getExternalBreakdownTableData().length }} item(s)
                   </div>
+                  <div class="table-summary">
+                    <app-table-row-counter
+                      class="co-author-counter"
+                      [current]="externalBreakdowns.length"
+                      [max]="10"
+                    ></app-table-row-counter>
+                  </div>
                 } @else {
                   <div class="empty-state">
                     <span class="material-icons">receipt</span>
@@ -1056,6 +1063,13 @@
                     </app-data-table>
                   </div>
                   <div class="table-summary">{{ getLocalBreakdownTableData().length }} item(s)</div>
+                  <div class="table-summary">
+                    <app-table-row-counter
+                      class="co-author-counter"
+                      [current]="localBreakdowns.length"
+                      [max]="10"
+                    ></app-table-row-counter>
+                  </div>
                 } @else {
                   <div class="empty-state">
                     <span class="material-icons">receipt</span>

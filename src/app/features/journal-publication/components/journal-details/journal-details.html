@@ -403,6 +403,9 @@
                     <div class="table-summary">
                       {{ getBreakdownArray('non-research').length }} item(s)
                     </div>
+                    <div class="table-summary">
+                      <app-table-row-counter [current]="getBreakdownArray('non-research').length" [max]="5"></app-table-row-counter>
+                    </div>
                   } @else if (researchType === 'external-research') {
                     <div class="table-scroll research-table">
                       <app-data-table
@@ -450,6 +453,9 @@
                     </div>
                     <div class="table-summary">
                       {{ getBreakdownArray('external-research').length }} item(s)
+                    </div>
+                    <div class="table-summary">
+                      <app-table-row-counter [current]="getBreakdownArray('external-research').length" [max]="5"></app-table-row-counter>
                     </div>
                   } @else {
                     <div class="table-scroll research-table">
@@ -508,6 +514,9 @@
                     </div>
                     <div class="table-summary">
                       {{ getBreakdownArray(researchType || '').length }} item(s)
+                    </div>
+                    <div class="table-summary">
+                      <app-table-row-counter [current]="getBreakdownArray(researchType || '').length" [max]="5"></app-table-row-counter>
                     </div>
                   }
                 } @else {

@@ -6,7 +6,7 @@ export const rdigApplicationRoutes: Routes = [
   {
     path: 'detail/:requestCode',
     loadComponent: () =>
-      import('./rdig-detail.component').then(m => m.RdigDetailComponent),
+      import('./pages/rdig-details/rdig-details.component').then(m => m.RdigDetailsComponent),
   },
   {
     path: 'application',

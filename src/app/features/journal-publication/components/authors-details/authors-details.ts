@@ -29,6 +29,7 @@ import {
 } from '../../services/journal-application-api.service';
 
 import { TableActionIconComponent } from '../../../../shared/components/table-action-icon/table-action-icon.component';
+import { TableRowCounterComponent } from '../../../../shared/components/table-row-counter/table-row-counter.component';
 import {
   formatCountryForDisplay,
   normalizeCountryForStorage,
@@ -41,6 +42,7 @@ import {
   standalone: true,
   imports: [
     TableActionIconComponent,
+    TableRowCounterComponent,
     CommonModule,
     ReactiveFormsModule,
     SearchableDropdownComponent,

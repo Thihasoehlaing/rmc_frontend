@@ -39,6 +39,7 @@ import { COSTING_ITEM_ROW_LIMIT } from '../../../../../core/constants/form-limit
 import { TableActionIconComponent } from '../../../../../shared/components/table-action-icon/table-action-icon.component';
 import { DecimalAmountDirective } from '../../../../../shared/directives/decimal-amount.directive';
 import { MyrCurrencyPipe } from '../../../../../shared/pipes/myr-currency.pipe';
+import { TableRowCounterComponent } from '../../../../../shared/components/table-row-counter/table-row-counter.component';
 @Component({
   selector: 'app-conference-details-form',
   standalone: true,
@@ -46,6 +47,7 @@ import { MyrCurrencyPipe } from '../../../../../shared/pipes/myr-currency.pipe';
     TableActionIconComponent,
     CommonModule,
     ReactiveFormsModule,
+    TableRowCounterComponent,
     NoteComponent,
     SearchableDropdownComponent,
     ValidationMessageComponent,

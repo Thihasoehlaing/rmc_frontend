@@ -164,6 +164,14 @@ export interface RequestCommentDto {
   staff_email: string | null;
   comment_text: string;
   created_at: string | null;
+  /**
+   * TODO(backend): reviewer score for this section comment is not yet
+   * persisted/returned by the API. Wired frontend-only for now (RDIG Details
+   * view score field on reviewer section comments) — remove this TODO and
+   * make the field authoritative once the backend adds a `score` column to
+   * the request_comments table and returns it here.
+   */
+  score?: number | string | null;
 }
 
 export interface CreateSectionCommentPayload {
@@ -171,10 +179,14 @@ export interface CreateSectionCommentPayload {
   section_code: string;
   section_name?: string | null;
   comment_text: string;
+  /** TODO(backend): see RequestCommentDto.score — sent but not yet persisted server-side. */
+  score?: number | string | null;
 }
 
 export interface UpdateSectionCommentPayload {
   comment_text: string;
+  /** TODO(backend): see RequestCommentDto.score — sent but not yet persisted server-side. */
+  score?: number | string | null;
 }
 
 /** Body for POST /requests/{id}/actions (schemas/requests.py::RequestActionSchema). */

@@ -19,6 +19,21 @@
         <app-validation-message class="form-validation-note--error" [control]="projectDetails.get('applicationType')" fieldName="Application Type"></app-validation-message>
       </div>
 
+      <div class="form-field">
+        <label class="form-label is-required">Track</label>
+        <div class="radio-field">
+          <label class="radio-field__option">
+            <input type="radio" value="social-innovation" formControlName="track">
+            <span>Social Innovation</span>
+          </label>
+          <label class="radio-field__option">
+            <input type="radio" value="fundamental-research" formControlName="track">
+            <span>Fundamental Research</span>
+          </label>
+        </div>
+        <app-validation-message [control]="projectDetails.get('track')"></app-validation-message>
+      </div>
+
       <div class="form-field" formGroupName="declarations" data-missing-field-target="projectDetails.declarations.ethics">
         <label class="form-label is-required">Declarations</label>
         <div class="checkbox-group">

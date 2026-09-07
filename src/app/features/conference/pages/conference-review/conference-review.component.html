@@ -45,6 +45,17 @@
             <span>· {{ request()?.applicant_department }}</span>
           }
         </div>
+        @if (canRollbackLatestAction()) {
+          <button
+            type="button"
+            class="review-back"
+            [disabled]="rollbacking()"
+            (click)="openRollbackDialog()"
+          >
+            <span class="material-icons">undo</span>
+            {{ rollbacking() ? 'Rolling back...' : 'Rollback' }}
+          </button>
+        }
       </div>
 
       <button type="button" class="review-print" (click)="printRequest()">
@@ -118,14 +129,14 @@
             </div>
             <div>
               <dt>Conference Type</dt>
-              <dd>{{ val(conference()?.conference_type) }}</dd>
+              <dd>{{ capitalCaseLabel(conference()?.conference_type) }}</dd>
             </div>
             <div>
-              <dt>Funding Request Type</dt>
-              <dd>{{ val(conference()?.conference_funding_request_type) }}</dd>
+              <dt>Conference Funding Request Type</dt>
+              <dd>{{ fundingRequestTypeLabel(conference()?.conference_funding_request_type) }}</dd>
             </div>
             <div>
-              <dt>Applicant Authorship Type</dt>
+              <dt>Author Type</dt>
               <dd>{{ authorshipLabel(conference()?.author_role) }}</dd>
             </div>
             <div>
@@ -137,8 +148,8 @@
               <dd>{{ fmtDateOnly(conference()?.conference_end_date) }}</dd>
             </div>
             <div>
-              <dt>Location Type</dt>
-              <dd>{{ val(conference()?.location_type) }}</dd>
+              <dt>Conference Venue</dt>
+              <dd>{{ conferenceVenueLabel(conference()?.location_type) }}</dd>
             </div>
             <div>
               <dt>Conference Location</dt>
@@ -149,27 +160,30 @@
               <dd>{{ val(conference()?.paper_title) }}</dd>
             </div>
             <div>
-              <dt>Project Type</dt>
-              <dd>{{ val(conference()?.project_type) }}</dd>
+              <dt>Research Project Type</dt>
+              <dd>{{ researchProjectTypeLabel(conference()?.project_type) }}</dd>
             </div>
             <div>
               <dt>Project Account Code</dt>
               <dd>{{ val(conference()?.project_account_code) }}</dd>
             </div>
             <div>
-              <dt>Scopus Indexed</dt>
+              <dt>Is the conference proceeding with guaranteed publication Scopus-indexed?</dt>
               <dd>{{ val(conference()?.is_scopus_indexed) }}</dd>
             </div>
             <div>
-              <dt>Restricted Publisher</dt>
+              <dt>
+                Is the publisher of your conference proceeding one of the restricted publishers
+                (e.g., MDPI, Common Ground, Hindawi, or Frontier)?
+              </dt>
               <dd>{{ val(conference()?.is_restricted_publisher) }}</dd>
             </div>
             <div>
-              <dt>APU JATI / EJBM Cited</dt>
+              <dt>cited at least 1 journal paper from APU JATI &amp; EJBM?</dt>
               <dd>{{ val(conference()?.cited_apu_jati_ejbm) }}</dd>
             </div>
             <div>
-              <dt>Internal Manuscript Review</dt>
+              <dt>The manuscript has been internally reviewed for the quality of content and English?</dt>
               <dd>{{ val(conference()?.is_manuscript_internally_reviewed) }}</dd>
             </div>
             <div>
@@ -177,7 +191,7 @@
               <dd>{{ val(conference()?.reviewer_name) }}</dd>
             </div>
             <div>
-              <dt>Published Elsewhere</dt>
+              <dt>Has the manuscript and content been published in another journal or conference etc.?</dt>
               <dd>{{ val(conference()?.is_published_elsewhere) }}</dd>
             </div>
             <div class="detail-grid__wide">
@@ -266,8 +280,7 @@
           </div>
         </section>
 
-        @if (conference()?.is_travelling_required) {
-          <section class="detail-section">
+        <section class="detail-section">
             <div class="section-heading">
               <span class="material-icons">flight_takeoff</span>
               <div>
@@ -357,8 +370,83 @@
                 </table>
               </div>
             }
-          </section>
-        }
+            <div class="section-comments">
+              <h3>Section Comments</h3>
+              @if (commentsForSection('travel_details').length) {
+                <div class="section-comments__list">
+                  @for (comment of commentsForSection('travel_details'); track comment.id) {
+                    <article class="section-comment">
+                      <strong>{{ val(comment.staff_name || comment.staff_username) }}</strong>
+                      <span
+                        >{{ prettyActor(comment.actor_type_code) }} Â·
+                        {{ fmtDate(comment.created_at) }}</span
+                      >
+                      <p>{{ comment.comment_text }}</p>
+                      @if (canChangeSectionComment(comment) && editingSectionCommentId() !== comment.id) {
+                        <div class="section-comment__actions table-actions">
+                          <button
+                            type="button"
+                            class="table-action"
+                            title="Edit comment"
+                            aria-label="Edit comment"
+                            (click)="startEditSectionComment(comment)"
+                          >
+                            <app-table-action-icon action="edit"></app-table-action-icon>
+                          </button>
+                          <button
+                            type="button"
+                            class="table-action table-action--danger"
+                            [title]="deletingSectionCommentId() === comment.id ? 'Deleting comment' : 'Delete comment'"
+                            [attr.aria-label]="deletingSectionCommentId() === comment.id ? 'Deleting comment' : 'Delete comment'"
+                            [disabled]="deletingSectionCommentId() === comment.id"
+                            (click)="deleteSectionComment(comment)"
+                          >
+                            <app-table-action-icon action="delete"></app-table-action-icon>
+                          </button>
+                        </div>
+                      }
+                    </article>
+                  }
+                </div>
+              } @else {
+                <p class="review-empty">No section comments yet.</p>
+              }
+              @if (canWriteSectionComments() && (!currentActorSectionComment('travel_details') || isEditingSectionComment('travel_details'))) {
+                <textarea
+                  class="section-comment-input"
+                  appTextareaAutosize
+                  [minRows]="3"
+                  rows="3"
+                  placeholder="Write a comment for Travel Details..."
+                  [formControl]="sectionCommentControls['travel_details']"
+                  [attr.maxlength]="commentMaxLength"
+                ></textarea>
+                <div
+                  class="comment-meta"
+                  [class.comment-meta--error]="sectionCommentControls['travel_details'].hasError('maxlength')"
+                >
+                  <span>Maximum {{ commentMaxLength }} characters.</span>
+                  <span>{{ sectionCommentLength('travel_details') }}/{{ commentMaxLength }}</span>
+                </div>
+                <div class="section-comment-actions">
+                  <app-action-button
+                    type="primary"
+                    [label]="isEditingSectionComment('travel_details') ? 'Update Comment' : 'Save Comment'"
+                    icon="send"
+                    [loadingLabel]="isEditingSectionComment('travel_details') ? 'Updating...' : 'Saving...'"
+                    [loading]="isSectionCommentSaving('travel_details')"
+                    [disabled]="isSectionCommentSaving('travel_details')"
+                    (clicked)="submitSectionComment('travel_details')"
+                  ></app-action-button>
+                  @if (isEditingSectionComment('travel_details')) {
+                    <button type="button" class="comment-cancel-button" (click)="cancelEditSectionComment('travel_details')">
+                      Cancel
+                    </button>
+                  }
+                </div>
+              }
+            </div>
+        </section>
 
         <section class="detail-section">
           <div class="section-heading">
@@ -928,12 +1016,8 @@
                   <div class="review-timeline__dot"></div>
                   <div>
                     <strong>{{ approvalActionLabel(history) }}</strong>
-                    <p>{{ val(history.staff_name || history.staff_username) }}</p>
-                    <span>{{ fmtDate(history.action_at) }}</span
-                    ><small
-                      >{{ prettyActor(history.from_status_code) }} →
-                      {{ prettyActor(history.to_status_code) }}</small
-                    >
+                    <p>{{ approvalActorLabel(history) }}</p>
+                    <span>{{ fmtDate(history.action_at) }}</span>
                   </div>
                 </li>
               }
@@ -944,5 +1028,51 @@
         </section>
       </aside>
     </div>
+
+    <app-dialog
+      [isOpen]="rollbackDialogOpen()"
+      title="Rollback Last Action"
+      size="small"
+      (close)="closeRollbackDialog()"
+    >
+      @if (latestApproval(); as latest) {
+        <div class="form-field">
+          <p>
+            Roll back <strong>{{ val(request()?.request_code) }}</strong>
+            from <strong>{{ prettyActor(latest.to_status_code) }}</strong>
+            to <strong>{{ prettyActor(latest.from_status_code) }}</strong>.
+          </p>
+        </div>
+
+        <label class="form-field">
+          <span class="form-label">Reason</span>
+          <textarea
+            class="input--textarea"
+            rows="4"
+            maxlength="1000"
+            [formControl]="rollbackReasonControl"
+          ></textarea>
+        </label>
+      }
+
+      <button
+        dialog-footer
+        type="button"
+        class="btn btn-secondary"
+        [disabled]="rollbacking()"
+        (click)="closeRollbackDialog()"
+      >
+        Cancel
+      </button>
+      <button
+        dialog-footer
+        type="button"
+        class="btn btn-danger"
+        [disabled]="rollbacking() || !rollbackReasonControl.value?.trim()"
+        (click)="rollbackLatestAction()"
+      >
+        {{ rollbacking() ? 'Rolling back...' : 'Rollback' }}
+      </button>
+    </app-dialog>
   }
 </section>

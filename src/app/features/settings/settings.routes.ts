@@ -31,6 +31,11 @@ export const settingsRoutes: Routes = [
       import('./account-codes/account-codes.component').then(m => m.AccountCodesComponent),
   },
   {
+    path: 'vote-numbers',
+    loadComponent: () =>
+      import('./vote-numbers/vote-numbers.component').then(m => m.VoteNumbersComponent),
+  },
+  {
     path: 'staff-directory',
     loadComponent: () =>
       import('./staff-directory/staff-directory.component').then(m => m.StaffDirectoryComponent),
@@ -44,6 +49,11 @@ export const settingsRoutes: Routes = [
     path: 'academic-staff',
     loadComponent: () =>
       import('./academic-staff/academic-staff.component').then(m => m.AcademicStaffComponent),
+  },
+  {
+    path: 'form-correction',
+    loadComponent: () =>
+      import('./form-correction/form-correction.component').then(m => m.FormCorrectionComponent),
   },
   {
     path: 'users',

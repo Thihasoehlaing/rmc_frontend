@@ -575,13 +575,13 @@ export class TravelAuthorizationApplicationComponent implements OnInit {
       declarationInformationCorrect: [false, Validators.requiredTrue],
       // Review comments group for all 7 roles
       reviewComments: this.fb.group({
-        hosComment: ['', [Validators.maxLength(500)]],
-        rmcComment: ['', [Validators.maxLength(500)]],
-        vcComment: ['', [Validators.maxLength(500)]],
-        hrComment: ['', [Validators.maxLength(500)]],
-        ceoComment: ['', [Validators.maxLength(500)]],
-        financeComment: ['', [Validators.maxLength(500)]],
-        cooComment: ['', [Validators.maxLength(500)]],
+        hosComment: ['', [Validators.maxLength(1000)]],
+        rmcComment: ['', [Validators.maxLength(1000)]],
+        vcComment: ['', [Validators.maxLength(1000)]],
+        hrComment: ['', [Validators.maxLength(1000)]],
+        ceoComment: ['', [Validators.maxLength(1000)]],
+        financeComment: ['', [Validators.maxLength(1000)]],
+        cooComment: ['', [Validators.maxLength(1000)]],
       }),
     });
 

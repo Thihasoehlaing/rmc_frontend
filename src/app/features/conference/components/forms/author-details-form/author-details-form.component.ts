@@ -18,6 +18,7 @@ import {
   AcademicStaffOption,
   MasterDataService,
 } from '../../../../../core/services/master-data.service';
+import { AuthService } from '../../../../../core/services/auth.service';
 
 import { TableActionIconComponent } from '../../../../../shared/components/table-action-icon/table-action-icon.component';
 import { ValidationMessageComponent } from '../../../../../shared/components/validation-message/validation-message.component';
@@ -57,6 +58,7 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
   form!: FormGroup;
   editForm!: FormGroup;
   private readonly masterData = inject(MasterDataService);
+  private readonly auth = inject(AuthService);
 
   // Modal state
   isModalOpen = false;
@@ -464,7 +466,9 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
     this.masterData.searchAcademicStaff(search).subscribe((res) => {
       const staff = res.data ?? [];
       this.academicStaffByName.clear();
-      const options = staff.map((item) => this.toAcademicStaffDropdownOption(item));
+      const options = staff
+        .filter((item) => !this.isCurrentUserStaff(item))
+        .map((item) => this.toAcademicStaffDropdownOption(item));
       const selectedValue = String(selectedStaffName ?? '').trim();
 
       if (selectedValue && !options.some((option) => option.value === selectedValue)) {
@@ -513,6 +517,17 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
         .filter(Boolean)
         .join(' '),
     };
+  }
+
+  private isCurrentUserStaff(staff: AcademicStaffOption): boolean {
+    const currentUsername = this.auth.currentUser()?.username?.split('@', 1)[0]?.trim().toLowerCase();
+    if (!currentUsername) {
+      return false;
+    }
+
+    const staffUsername = staff.username?.trim().toLowerCase();
+    const staffEmailUsername = staff.email?.split('@', 1)[0]?.trim().toLowerCase();
+    return staffUsername === currentUsername || staffEmailUsername === currentUsername;
   }
 
   private setupStaffSelection(selectedStaffName = ''): void {

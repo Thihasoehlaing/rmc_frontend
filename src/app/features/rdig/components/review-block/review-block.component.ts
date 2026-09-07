@@ -148,7 +148,7 @@ export class ReviewBlockComponent implements OnChanges {
   /** Whether the fields are read-only */
   @Input() readonly = true;
   /** Max characters for the textarea */
-  @Input() maxChars = 500;
+  @Input() maxChars = 1000;
   /** Whether to show the score dropdown */
   @Input() showScore = false;
   /** Whether the score dropdown is disabled (independent of readonly) */

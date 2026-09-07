@@ -1,0 +1,353 @@
+<main class="dashboard dashboard--rmc_admin admin-dashboard">
+  <header class="dashboard-header admin-dashboard__header">
+    <div>
+      <h1>Analysis Dashboard</h1>
+    </div>
+    <div class="admin-dashboard__actions">
+      <button
+        type="button"
+        class="btn btn-secondary dashboard-filter-trigger"
+        aria-controls="dashboard-filter-panel"
+        [attr.aria-expanded]="filtersOpen()"
+        (click)="openFilters()"
+      >
+        <span class="material-icons">filter_list</span>
+        Filters
+      </button>
+    </div>
+  </header>
+
+  @if (error()) {
+    <div class="dashboard-data-note" role="status">
+      <span class="material-icons">info</span>
+      <span>{{ error() }}</span>
+      <button type="button" class="btn btn-secondary btn-sm" (click)="loadAnalytics()">
+        Retry
+      </button>
+    </div>
+  }
+
+  <div class="analysis-layout">
+    <section class="card form-color-legend" aria-label="Form colour legend">
+      <div class="form-color-legend__forms">
+        <strong>Form colours</strong>
+        <ul>
+          @for (form of visibleFormLegend(); track form.code) {
+            <li><i [style.background]="form.color"></i>{{ form.code }}</li>
+          }
+        </ul>
+      </div>
+      <span class="form-color-legend__range">
+        {{ startDate() | date: 'dd MMM yyyy' }} – {{ endDate() | date: 'dd MMM yyyy' }}
+      </span>
+    </section>
+
+    @if (isExternalDashboard()) {
+      <section
+        class="summary-cards summary-cards--external"
+        aria-label="External application totals"
+      >
+        <article class="card summary-card">
+          <header class="summary-card__heading">
+            <div class="summary-card__topline">
+              <span>Total Submissions</span>
+              <span class="material-icons" aria-hidden="true">description</span>
+            </div>
+            <strong>{{ applicationsTotal() | number }}</strong>
+          </header>
+        </article>
+
+        <article class="card summary-card">
+          <header class="summary-card__heading">
+            <div class="summary-card__topline">
+              <span>Number of Categories</span>
+              <span class="material-icons" aria-hidden="true">category</span>
+            </div>
+            <strong>{{ externalCategoryTotal() | number }}</strong>
+          </header>
+        </article>
+
+        <article class="card summary-card">
+          <header class="summary-card__heading">
+            <div class="summary-card__topline">
+              <span>Number of Departments</span>
+              <span class="material-icons" aria-hidden="true">apartment</span>
+            </div>
+            <strong>{{ externalDepartmentTotal() | number }}</strong>
+          </header>
+        </article>
+      </section>
+    } @else {
+      <section class="summary-cards" aria-label="Application status totals">
+        <article class="card summary-card">
+          <header class="summary-card__heading">
+            <div class="summary-card__topline">
+              <span>Total Submissions</span>
+              <span class="material-icons" aria-hidden="true">description</span>
+            </div>
+            <strong>{{ applicationsTotal() | number }}</strong>
+          </header>
+        </article>
+
+        <article class="card summary-card">
+          <header class="summary-card__heading">
+            <div class="summary-card__topline">
+              <span>Completed Forms</span>
+              <span class="material-icons" aria-hidden="true">task_alt</span>
+            </div>
+            <strong>{{ completedTotal() | number }}</strong>
+          </header>
+        </article>
+
+        <article class="card summary-card">
+          <header class="summary-card__heading">
+            <div class="summary-card__topline">
+              <span>Rejected</span>
+              <span class="material-icons" aria-hidden="true">cancel</span>
+            </div>
+            <strong>{{ rejectedTotal() | number }}</strong>
+          </header>
+        </article>
+
+        <article class="card summary-card">
+          <header class="summary-card__heading">
+            <div class="summary-card__topline">
+              <span>In Progress</span>
+              <span class="material-icons" aria-hidden="true">pending_actions</span>
+            </div>
+            <strong>{{ inProgressTotal() | number }}</strong>
+          </header>
+        </article>
+      </section>
+    }
+
+    @if (isExternalDashboard()) {
+      <section class="card performance-workspace" aria-label="External grants by department">
+        <div class="performance-toolbar">
+          <div class="performance-toolbar__context">
+            <strong>External Grants by Department</strong>
+          </div>
+        </div>
+        <app-dashboard-external-department-chart [points]="externalDepartmentPoints()" />
+      </section>
+    }
+
+    @if (customDashboardForm(); as formCode) {
+      <section class="custom-analytics-row" [attr.aria-label]="formCode + ' analytics'">
+        <article class="card custom-analytics-card">
+          <header class="custom-analytics-card__header">
+            <h2>Cost</h2>
+          </header>
+          <app-dashboard-donut-chart
+            variant="pie"
+            [series]="customCostSeries()"
+            [currency]="true"
+            [compact]="true"
+            [showCenterTotal]="false"
+            [showLegend]="true"
+            centerLabel="Cost"
+          />
+        </article>
+
+        <article class="card custom-analytics-card">
+          <header class="custom-analytics-card__header">
+            <h2>Project Type</h2>
+          </header>
+          <app-dashboard-donut-chart
+            variant="pie"
+            [series]="projectTypeSeries()"
+            [compact]="true"
+            [showCenterTotal]="false"
+            [showLegend]="true"
+            centerLabel="Forms"
+          />
+        </article>
+
+        <article class="card custom-analytics-card">
+          <header class="custom-analytics-card__header">
+            <h2>{{ formCode === 'CONFERENCE' ? 'Conference Type' : 'Scopus Quartile' }}</h2>
+          </header>
+          <app-dashboard-donut-chart
+            variant="pie"
+            [series]="formCode === 'CONFERENCE' ? conferenceTypeSeries() : scopusQuartileSeries()"
+            [compact]="true"
+            [showCenterTotal]="false"
+            [showLegend]="true"
+            [centerLabel]="formCode === 'CONFERENCE' ? 'Forms' : 'Quartiles'"
+          />
+        </article>
+      </section>
+
+      <section
+        class="card performance-workspace department-performance"
+        aria-label="Department performance"
+      >
+        <div class="performance-toolbar">
+          <div class="performance-toolbar__context">
+            <strong>Department Performance</strong>
+          </div>
+        </div>
+        <app-dashboard-department-comparison-chart [points]="departmentComparisonPoints()" />
+      </section>
+    }
+
+    <div
+      class="analysis-layout__middle-row"
+      [class.analysis-layout__middle-row--summary-only]="!showMultiFormCharts()"
+    >
+      @if (showMultiFormCharts()) {
+        <section class="card performance-workspace" aria-label="Vertical performance bar chart">
+          <div class="performance-toolbar">
+            <div class="performance-toolbar__context">
+              <strong>{{ barMetricLabel() }}</strong>
+              <span>
+                {{ startDate() | date: 'dd MMM yyyy' }} – {{ endDate() | date: 'dd MMM yyyy' }}
+              </span>
+            </div>
+            <app-searchable-dropdown
+              class="performance-toolbar__select"
+              placeholder="Select bar chart metric"
+              [searchable]="false"
+              [options]="barMetricOptions"
+              [ngModel]="barTrendMode()"
+              (ngModelChange)="setBarTrendMode($event)"
+            />
+          </div>
+          <app-dashboard-bar-chart
+            [points]="barTrendFormPoints()"
+            [currency]="barTrendMode() === 'spend'"
+            [totalLabel]="barMetricLabel()"
+          />
+        </section>
+      }
+
+      <aside class="card analysis-summary" aria-label="Amount summary">
+        <section class="analysis-summary__section">
+          <div class="analysis-summary__total">
+            <h2>Fund Approved</h2>
+            <strong>{{ totalCostAmount() | currency: 'MYR' : 'symbol' : '1.0-0' }}</strong>
+          </div>
+          <app-dashboard-horizontal-bar [series]="totalCostSeries()" />
+        </section>
+      </aside>
+    </div>
+
+    @if (showMultiFormCharts()) {
+      <section class="card line-workspace" aria-label="Performance line chart">
+        <div class="performance-toolbar">
+          <div class="performance-toolbar__context">
+            <strong>{{ lineMetricLabel() }}</strong>
+          </div>
+          <app-searchable-dropdown
+            class="performance-toolbar__select"
+            placeholder="Select line chart metric"
+            [searchable]="false"
+            [options]="trendMetricOptions"
+            [ngModel]="lineTrendMode()"
+            (ngModelChange)="setLineTrendMode($event)"
+          />
+        </div>
+        <app-dashboard-line-chart
+          [points]="lineTrendPoints()"
+          [currency]="lineTrendMode() === 'spend'"
+          [totalLabel]="lineMetricLabel()"
+        />
+      </section>
+    }
+  </div>
+
+  @if (filtersOpen()) {
+    <button
+      type="button"
+      class="dashboard-filter-backdrop"
+      aria-label="Close filters"
+      (click)="closeFilters()"
+    ></button>
+    <aside
+      id="dashboard-filter-panel"
+      class="dashboard-filter-panel"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="dashboard-filter-heading"
+    >
+      <header class="dashboard-filter-panel__header">
+        <div>
+          <span class="dashboard-eyebrow">Analysis controls</span>
+          <h2 id="dashboard-filter-heading">Filters</h2>
+        </div>
+        <button
+          type="button"
+          class="btn btn-icon btn-secondary"
+          aria-label="Close filters"
+          (click)="closeFilters()"
+        >
+          <span class="material-icons">close</span>
+        </button>
+      </header>
+
+      <div class="dashboard-filter__controls">
+        <app-note
+          text="All dashboard analytics are based on the selected application form and date range."
+        />
+
+        <app-searchable-dropdown
+          class="dashboard-filter__form"
+          label="Application forms"
+          placeholder="Select one or more forms"
+          [isMulti]="true"
+          [options]="formFilterOptions()"
+          [ngModel]="draftSelectedForms()"
+          (ngModelChange)="onFormSelectionChange($event)"
+        />
+
+        <div class="form-field dashboard-filter__date">
+          <label class="form-label" for="dashboard-start-date">From</label>
+          <input
+            id="dashboard-start-date"
+            class="input--text"
+            type="date"
+            [ngModel]="draftStartDate()"
+            [max]="draftEndDate()"
+            (ngModelChange)="onStartDateChange($event)"
+          />
+        </div>
+
+        <div class="form-field dashboard-filter__date">
+          <label class="form-label" for="dashboard-end-date">To</label>
+          <input
+            id="dashboard-end-date"
+            class="input--text"
+            type="date"
+            [ngModel]="draftEndDate()"
+            [min]="draftStartDate()"
+            [max]="maxEndDate()"
+            (ngModelChange)="onEndDateChange($event)"
+          />
+        </div>
+
+        <p class="dashboard-filter__range-help">
+          <span class="material-icons">date_range</span>
+          Maximum range: 10 years. Chart intervals adapt to the selected range.
+        </p>
+
+        @if (dateRangeNotice()) {
+          <p class="dashboard-filter__range-notice" role="status">
+            {{ dateRangeNotice() }}
+          </p>
+        }
+
+        @if (loading()) {
+          <span class="filter-loading" role="status">
+            <span class="material-icons">sync</span> Loading detailed costs
+          </span>
+        }
+      </div>
+
+      <footer class="dashboard-filter-panel__footer">
+        <button type="button" class="btn btn-primary" (click)="applyFilters()">
+          Apply Filters
+        </button>
+      </footer>
+    </aside>
+  }
+</main>

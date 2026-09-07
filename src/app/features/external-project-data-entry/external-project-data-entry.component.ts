@@ -130,6 +130,7 @@ export class ExternalProjectDataEntryComponent {
   private readonly externalProjectApi = inject(ExternalProjectApiService);
   private readonly actionLoading = inject(ActionLoadingService);
   private readonly toast = inject(ToastService);
+  readonly titleMaxLength = 500;
   private requestId =
     Number(
       this.route.snapshot.queryParamMap.get('id') ??

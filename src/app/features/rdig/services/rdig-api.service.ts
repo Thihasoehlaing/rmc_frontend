@@ -10,12 +10,15 @@ export interface ApiResponse<T> {
   data: T;
 }
 
+export type RdigTrack = 'social-innovation' | 'fundamental-research';
+
 /** Payload/response shape for the RDIG request's own fields (snake_case — mirrors schemas/rdig.py). */
 export interface RdigRequestDto {
   id?: number;
   request_id?: number;
   application_type?: string | null;
   project_category?: string | null;
+  track?: RdigTrack | null;
   project_duration_months?: number | null;
   project_title?: string | null;
   research_area?: string | null;

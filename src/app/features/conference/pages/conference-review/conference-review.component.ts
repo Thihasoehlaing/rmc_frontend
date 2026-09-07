@@ -23,13 +23,24 @@ import { CONFERENCE_REVIEW_PREVIEW } from './conference-review.preview-data';
 import { ActionLoadingService } from '../../../../core/services/action-loading.service';
 import { TextareaAutosizeDirective } from '../../../../shared/directives/textarea-autosize.directive';
 import { TableActionIconComponent } from '../../../../shared/components/table-action-icon/table-action-icon.component';
+import { DialogComponent } from '../../../../shared/components/dialog/dialog.component';
 import { formatCountryForDisplay } from '../../../../shared/utils/country.util';
 import {
   formatCurrencyAmount,
   formatMyrCurrency,
 } from '../../../../shared/utils/currency.util';
+import {
+  formatMalaysiaDateTime,
+  getApiDateTimeMs,
+} from '../../../../shared/utils/date-time.util';
 
-const COMMENT_MAX_LENGTH = 500;
+const COMMENT_MAX_LENGTH = 1000;
+
+const CONFERENCE_VENUE_LABELS: Readonly<Record<string, string>> = {
+  'klang-valley': 'Klang Valley',
+  'local-except-kl': 'Local (Except Klang Valley)',
+  overseas: 'Overseas',
+};
 
 @Component({
   selector: 'app-conference-review',
@@ -40,6 +51,7 @@ const COMMENT_MAX_LENGTH = 500;
     TableScrollHintComponent,
     TextareaAutosizeDirective,
     TableActionIconComponent,
+    DialogComponent,
   ],
   templateUrl: './conference-review.component.html',
   // The conference and journal detail views intentionally share one visual contract.
@@ -66,6 +78,8 @@ export class ConferenceReviewComponent implements OnInit {
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
   readonly acting = signal(false);
+  readonly rollbacking = signal(false);
+  readonly rollbackDialogOpen = signal(false);
   readonly feedback = signal<{ type: 'success' | 'error'; text: string } | null>(null);
   readonly backLabel = signal('Back');
   readonly downloadingAttachmentId = signal<number | null>(null);
@@ -76,22 +90,41 @@ export class ConferenceReviewComponent implements OnInit {
 
   readonly sectionCommentControls: Record<string, FormControl<string | null>> = {
     conference_details: new FormControl('', [Validators.maxLength(COMMENT_MAX_LENGTH)]),
+    travel_details: new FormControl('', [Validators.maxLength(COMMENT_MAX_LENGTH)]),
     authors: new FormControl('', [Validators.maxLength(COMMENT_MAX_LENGTH)]),
     supporting_documents: new FormControl('', [Validators.maxLength(COMMENT_MAX_LENGTH)]),
     costing_sponsorship: new FormControl('', [Validators.maxLength(COMMENT_MAX_LENGTH)]),
   };
   readonly sectionEditCommentControl = new FormControl('', [Validators.maxLength(COMMENT_MAX_LENGTH)]);
   readonly actionCommentControl = new FormControl('', [Validators.maxLength(COMMENT_MAX_LENGTH)]);
+  readonly rollbackReasonControl = new FormControl('', [Validators.maxLength(COMMENT_MAX_LENGTH)]);
   readonly commentMaxLength = COMMENT_MAX_LENGTH;
 
   readonly sectionNames: Record<string, string> = {
     conference_details: 'Conference Details',
+    travel_details: 'Travel Details',
     authors: 'Authors',
     supporting_documents: 'Supporting Documents',
     costing_sponsorship: 'Costing & Sponsorship',
   };
 
   readonly request = computed(() => this.data()?.request ?? null);
+  readonly requiredSectionCodes = computed(() => Object.keys(this.sectionNames));
+  readonly latestApproval = computed(() => {
+    const approvals = this.approvals();
+    return approvals.length ? approvals[approvals.length - 1] : null;
+  });
+  readonly canRollbackLatestAction = computed(() => {
+    if (!this.authService.inGroup('SystemAdmin')) return false;
+
+    const latest = this.latestApproval();
+    const request = this.request();
+    if (!latest || !request) return false;
+    if (latest.action_code?.toLowerCase() === 'admin_rollback') return false;
+    if (!latest.from_status_code || !latest.to_status_code) return false;
+    if (latest.from_status_code === latest.to_status_code) return false;
+    return request.status_code === latest.to_status_code;
+  });
   readonly conference = computed(() => this.data()?.conference ?? null);
   readonly staffAuthors = computed(() => this.data()?.apu_staff_co_authors ?? []);
   readonly studentAuthors = computed(() => this.data()?.apu_student_co_authors ?? []);
@@ -111,9 +144,9 @@ export class ConferenceReviewComponent implements OnInit {
   );
   readonly missingRequiredSectionNames = computed(() => {
     if (!this.requiresAllSectionComments()) return [];
-    return Object.entries(this.sectionNames)
-      .filter(([sectionCode]) => !this.hasCurrentActorSectionComment(sectionCode))
-      .map(([, sectionName]) => sectionName);
+    return this.requiredSectionCodes()
+      .filter((sectionCode) => !this.hasCurrentActorSectionComment(sectionCode))
+      .map((sectionCode) => this.sectionNames[sectionCode]);
   });
 
   ngOnInit(): void {
@@ -196,6 +229,22 @@ export class ConferenceReviewComponent implements OnInit {
     return this.val(formatCountryForDisplay(value));
   }
 
+  capitalCaseLabel(value: string | null | undefined): string {
+    const normalized = value?.replace(/[-_]+/g, ' ').trim().toLowerCase();
+    if (!normalized) return this.val(null);
+    return normalized
+      .split(/\s+/)
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  }
+
+  fundingRequestTypeLabel(value: string | null | undefined): string {
+    if (!value) return this.val(null);
+    return value.trim().toLowerCase() === 'with-paper'
+      ? 'Conference (with paper presentation)'
+      : 'Conference (without paper presentation-conference in Malaysia only)';
+  }
+
   authorshipLabel(value: string | null | undefined): string {
     const labels: Record<string, string> = {
       'first-author': 'First Author',
@@ -205,16 +254,20 @@ export class ConferenceReviewComponent implements OnInit {
     return labels[value ?? ''] ?? this.val(value);
   }
 
+  conferenceVenueLabel(value: string | null | undefined): string {
+    const venue = value?.trim().toLowerCase();
+    return venue ? (CONFERENCE_VENUE_LABELS[venue] ?? this.capitalCaseLabel(venue)) : this.val(null);
+  }
+
+  researchProjectTypeLabel(value: string | null | undefined): string {
+    if (!value) return this.val(null);
+    return value.trim().toLowerCase() === 'non-research'
+      ? 'Non-Research Project'
+      : 'External Research Project';
+  }
+
   fmtDate(value: string | null | undefined): string {
-    return value
-      ? new Date(value).toLocaleString('en-GB', {
-          day: '2-digit',
-          month: 'short',
-          year: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit',
-        })
-      : '—';
+    return formatMalaysiaDateTime(value, '—');
   }
 
   fmtDateOnly(value: string | null | undefined): string {
@@ -250,6 +303,13 @@ export class ConferenceReviewComponent implements OnInit {
 
   approvalActionLabel(history: ApprovalDto): string {
     return history.action_name?.trim() || this.prettyActor(history.action_code);
+  }
+
+  approvalActorLabel(history: ApprovalDto): string {
+    if (history.action_code?.toLowerCase() === 'admin_rollback') {
+      return 'System';
+    }
+    return this.val(history.staff_name || history.staff_username);
   }
 
   commentsForSection(sectionCode: string): RequestCommentDto[] {
@@ -383,9 +443,7 @@ export class ConferenceReviewComponent implements OnInit {
   }
 
   private parseTime(value: string | null | undefined): number | null {
-    if (!value) return null;
-    const time = new Date(value).getTime();
-    return Number.isFinite(time) ? time : null;
+    return getApiDateTimeMs(value);
   }
 
   private currentActorRole(): string {
@@ -649,6 +707,65 @@ export class ConferenceReviewComponent implements OnInit {
       });
   }
 
+  openRollbackDialog(): void {
+    if (!this.canRollbackLatestAction()) return;
+    this.feedback.set(null);
+    this.rollbackReasonControl.reset('');
+    this.rollbackDialogOpen.set(true);
+  }
+
+  closeRollbackDialog(): void {
+    if (this.rollbacking()) return;
+    this.rollbackDialogOpen.set(false);
+    this.rollbackReasonControl.reset('');
+  }
+
+  rollbackLatestAction(): void {
+    if (this.requestId == null || this.rollbacking() || !this.canRollbackLatestAction()) return;
+
+    const requestId = this.requestId;
+    const reason = (this.rollbackReasonControl.value ?? '').trim();
+
+    if (!reason) {
+      this.feedback.set({ type: 'error', text: 'Rollback reason is required.' });
+      return;
+    }
+
+    if (this.rollbackReasonControl.invalid) {
+      this.feedback.set({
+        type: 'error',
+        text: `Rollback reason must be ${this.commentMaxLength} characters or fewer.`,
+      });
+      return;
+    }
+
+    this.rollbacking.set(true);
+    this.feedback.set(null);
+    const loadingId = this.actionLoading.begin('Rolling back request action');
+    this.requests
+      .rollbackRequestAction(requestId, { comment_text: reason })
+      .pipe(
+        finalize(() => {
+          this.rollbacking.set(false);
+          this.actionLoading.end(loadingId);
+        }),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe({
+        next: () => {
+          this.feedback.set({ type: 'success', text: 'Request action rolled back.' });
+          this.rollbackDialogOpen.set(false);
+          this.rollbackReasonControl.reset('');
+          this.load(requestId);
+        },
+        error: (err) =>
+          this.feedback.set({
+            type: 'error',
+            text: err?.error?.message || 'Could not roll back this request.',
+          }),
+      });
+  }
+
   goBack(): void {
     if (this.returnTo) {
       void this.router.navigateByUrl(this.returnTo);
@@ -660,9 +777,35 @@ export class ConferenceReviewComponent implements OnInit {
   }
 
   printRequest(): void {
-    if (this.requestId != null) {
-      window.open(this.requests.getPrintUrl(this.requestId), '_blank', 'noopener,noreferrer');
+    if (this.requestId == null) {
+      this.feedback.set({
+        type: 'error',
+        text: 'Unable to print before the application is loaded.',
+      });
+      return;
     }
+
+    this.requests
+      .downloadPrint(this.requestId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (response) => {
+          const blob = response.body;
+          if (!blob) return;
+          this.openPrintBlob(
+            blob,
+            this.printFileName(
+              response.headers.get('content-disposition'),
+              this.request()?.request_code || 'conference-request',
+            ),
+          );
+        },
+        error: () =>
+          this.feedback.set({
+            type: 'error',
+            text: 'Could not download the print PDF. Please try again.',
+          }),
+      });
   }
 
   private configureBackTarget(): void {
@@ -687,6 +830,23 @@ export class ConferenceReviewComponent implements OnInit {
   private toNumber(value: unknown): number {
     const number = Number(value ?? 0);
     return Number.isFinite(number) ? number : 0;
+  }
+
+  private openPrintBlob(blob: Blob, fileName: string): void {
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.target = '_blank';
+    anchor.rel = 'noopener';
+    anchor.download = fileName;
+    anchor.click();
+    setTimeout(() => URL.revokeObjectURL(url), 60_000);
+  }
+
+  private printFileName(contentDisposition: string | null, fallbackCode: string): string {
+    const match = contentDisposition?.match(/filename\*?=(?:UTF-8'')?"?([^";]+)"?/i);
+    const filename = match?.[1] ? decodeURIComponent(match[1]) : `${fallbackCode}.pdf`;
+    return filename.toLowerCase().endsWith('.pdf') ? filename : `${filename}.pdf`;
   }
 
   private openDownload(file: ConferenceAttachmentDto): void {

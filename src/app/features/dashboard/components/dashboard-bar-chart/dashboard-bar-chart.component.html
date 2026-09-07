@@ -1,0 +1,46 @@
+@if (bars().length) {
+  <div class="bar-chart" role="img" [attr.aria-label]="ariaLabel">
+    <div class="bar-chart__body">
+      <div class="bar-chart__axis-spacer" aria-hidden="true"></div>
+      <div class="bar-chart__axis" aria-hidden="true">
+        @for (tick of axisTicks(); track tick.ratio) {
+          <span>{{ tick.label }}</span>
+        }
+      </div>
+      <div class="bar-chart__value-spacer" aria-hidden="true"></div>
+      @for (bar of bars(); track bar.key) {
+        <div class="bar-chart__item" [attr.aria-label]="bar.label + ': ' + bar.formattedTotal">
+          <small>{{ bar.label }}</small>
+          <div class="bar-chart__track">
+            @for (segment of bar.segments; track segment.key) {
+              <span
+                class="bar-chart__segment"
+                tabindex="0"
+                [style.width.%]="segment.width"
+                [style.background]="segment.color"
+                (mouseenter)="showSegment(segment, bar.label)"
+                (mouseleave)="activeSegment.set(null)"
+                (focus)="showSegment(segment, bar.label)"
+                (blur)="activeSegment.set(null)"
+              ></span>
+            }
+          </div>
+          <strong>{{ bar.formattedTotal }}</strong>
+        </div>
+      }
+      <app-chart-tooltip
+        [visible]="activeSegment() !== null"
+        [animate]="false"
+        [color]="activeSegment()?.color ?? ''"
+        [label]="activeSegment()?.label ?? ''"
+        [value]="activeSegment()?.formattedValue ?? ''"
+        [detail]="totalLabel"
+      />
+    </div>
+  </div>
+} @else {
+  <div class="bar-chart-empty">
+    <span class="material-icons">bar_chart</span>
+    <span>{{ emptyLabel }}</span>
+  </div>
+}

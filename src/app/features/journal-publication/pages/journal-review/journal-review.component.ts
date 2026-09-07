@@ -26,11 +26,16 @@ import { TableScrollHintComponent } from '../../../../shared/components/table-sc
 import { ActionLoadingService } from '../../../../core/services/action-loading.service';
 import { TextareaAutosizeDirective } from '../../../../shared/directives/textarea-autosize.directive';
 import { TableActionIconComponent } from '../../../../shared/components/table-action-icon/table-action-icon.component';
+import { DialogComponent } from '../../../../shared/components/dialog/dialog.component';
 import { formatCountryForDisplay } from '../../../../shared/utils/country.util';
 import {
   formatCurrencyAmount,
   formatMyrCurrency,
 } from '../../../../shared/utils/currency.util';
+import {
+  formatMalaysiaDateTime,
+  getApiDateTimeMs,
+} from '../../../../shared/utils/date-time.util';
 
 const SCOPUS_QUARTILE_LABELS: Readonly<Record<string, string>> = {
   Q1: 'Q1: 75th - 100th percentile',
@@ -38,7 +43,18 @@ const SCOPUS_QUARTILE_LABELS: Readonly<Record<string, string>> = {
   Q3: 'Q3: 25th - 49th percentile',
 };
 
-const COMMENT_MAX_LENGTH = 500;
+const AUTHOR_ROLE_LABELS: Readonly<Record<string, string>> = {
+  'first-author': 'First Author',
+  'co-author': 'Corresponding Author',
+  'corresponding-author': 'First and Corresponding Author',
+};
+
+const PROJECT_TYPE_LABELS: Readonly<Record<string, string>> = {
+  'external-research': 'External Research Project',
+  'non-research': 'Non-Research Project',
+};
+
+const COMMENT_MAX_LENGTH = 1000;
 
 /**
  * journal-review.component.ts
@@ -64,6 +80,7 @@ const COMMENT_MAX_LENGTH = 500;
     TableScrollHintComponent,
     TextareaAutosizeDirective,
     TableActionIconComponent,
+    DialogComponent,
   ],
   templateUrl: './journal-review.component.html',
   styleUrl: './journal-review.component.scss',
@@ -95,6 +112,8 @@ export class JournalReviewComponent implements OnInit {
   error = signal<string | null>(null);
 
   acting = signal(false);
+  rollbacking = signal(false);
+  rollbackDialogOpen = signal(false);
   feedback = signal<{ type: 'success' | 'error'; text: string } | null>(null);
   backLabel = signal('Back');
   readonly sectionCommentControls: Record<string, FormControl<string | null>> = {
@@ -106,6 +125,7 @@ export class JournalReviewComponent implements OnInit {
   };
   readonly sectionEditCommentControl = new FormControl('', [Validators.maxLength(COMMENT_MAX_LENGTH)]);
   readonly actionCommentControl = new FormControl('', [Validators.maxLength(COMMENT_MAX_LENGTH)]);
+  readonly rollbackReasonControl = new FormControl('', [Validators.maxLength(COMMENT_MAX_LENGTH)]);
   readonly commentMaxLength = COMMENT_MAX_LENGTH;
 
   readonly sectionNames: Record<string, string> = {
@@ -117,10 +137,33 @@ export class JournalReviewComponent implements OnInit {
   };
 
   readonly request = computed(() => this.data()?.request ?? null);
+  readonly latestApproval = computed(() => {
+    const approvals = this.approvals();
+    return approvals.length ? approvals[approvals.length - 1] : null;
+  });
+  readonly canRollbackLatestAction = computed(() => {
+    if (!this.authService.inGroup('SystemAdmin')) return false;
+
+    const latest = this.latestApproval();
+    const request = this.request();
+    if (!latest || !request) return false;
+    if (latest.action_code?.toLowerCase() === 'admin_rollback') return false;
+    if (!latest.from_status_code || !latest.to_status_code) return false;
+    if (latest.from_status_code === latest.to_status_code) return false;
+    return request.status_code === latest.to_status_code;
+  });
   readonly journal = computed(() => this.data()?.journal ?? null);
   readonly scopusQuartileLabel = computed(() => {
     const quartile = this.journal()?.scopus_quartile?.trim().toUpperCase();
     return quartile ? (SCOPUS_QUARTILE_LABELS[quartile] ?? quartile) : '—';
+  });
+  readonly authorRoleLabel = computed(() => {
+    const authorRole = this.journal()?.author_role?.trim().toLowerCase();
+    return authorRole ? (AUTHOR_ROLE_LABELS[authorRole] ?? this.val(authorRole)) : this.val(null);
+  });
+  readonly projectTypeLabel = computed(() => {
+    const projectType = this.journal()?.project_type?.trim().toLowerCase();
+    return projectType ? (PROJECT_TYPE_LABELS[projectType] ?? this.val(projectType)) : this.val(null);
   });
   readonly staffAuthors = computed(() => this.data()?.apu_staff_co_authors ?? []);
   readonly studentAuthors = computed(() => this.data()?.apu_student_co_authors ?? []);
@@ -283,15 +326,7 @@ export class JournalReviewComponent implements OnInit {
   }
 
   fmtDate(iso: string | null | undefined): string {
-    return iso
-      ? new Date(iso).toLocaleString('en-GB', {
-          day: '2-digit',
-          month: 'short',
-          year: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit',
-        })
-      : '—';
+    return formatMalaysiaDateTime(iso, '—');
   }
 
   actionType(action: WorkflowActionDto): 'primary' | 'danger' | 'secondary' {
@@ -334,6 +369,13 @@ export class JournalReviewComponent implements OnInit {
 
   approvalActionLabel(history: ApprovalDto): string {
     return history.action_name?.trim() || this.prettyActor(history.action_code);
+  }
+
+  approvalActorLabel(history: ApprovalDto): string {
+    if (history.action_code?.toLowerCase() === 'admin_rollback') {
+      return 'System';
+    }
+    return this.val(history.staff_name || history.staff_username);
   }
 
   prettyActor(code: string | null): string {
@@ -530,9 +572,7 @@ export class JournalReviewComponent implements OnInit {
   }
 
   private parseTime(value: string | null | undefined): number | null {
-    if (!value) return null;
-    const time = new Date(value).getTime();
-    return Number.isFinite(time) ? time : null;
+    return getApiDateTimeMs(value);
   }
 
   saveSectionComment(sectionCode: string): void {
@@ -743,6 +783,63 @@ export class JournalReviewComponent implements OnInit {
       });
   }
 
+  openRollbackDialog(): void {
+    if (!this.canRollbackLatestAction()) return;
+    this.feedback.set(null);
+    this.rollbackReasonControl.reset('');
+    this.rollbackDialogOpen.set(true);
+  }
+
+  closeRollbackDialog(): void {
+    if (this.rollbacking()) return;
+    this.rollbackDialogOpen.set(false);
+    this.rollbackReasonControl.reset('');
+  }
+
+  rollbackLatestAction(): void {
+    if (this.requestId == null || this.rollbacking() || !this.canRollbackLatestAction()) return;
+
+    const reason = (this.rollbackReasonControl.value ?? '').trim();
+
+    if (!reason) {
+      this.feedback.set({ type: 'error', text: 'Rollback reason is required.' });
+      return;
+    }
+
+    if (this.rollbackReasonControl.invalid) {
+      this.feedback.set({
+        type: 'error',
+        text: `Rollback reason must be ${this.commentMaxLength} characters or fewer.`,
+      });
+      return;
+    }
+
+    this.rollbacking.set(true);
+    this.feedback.set(null);
+    const loadingId = this.actionLoading.begin('Rolling back request action');
+    this.requests
+      .rollbackRequestAction(this.requestId, { comment_text: reason })
+      .pipe(
+        finalize(() => {
+          this.rollbacking.set(false);
+          this.actionLoading.end(loadingId);
+        }),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe({
+        next: () => {
+          this.feedback.set({ type: 'success', text: 'Request action rolled back.' });
+          this.rollbackDialogOpen.set(false);
+          this.rollbackReasonControl.reset('');
+          this.load();
+        },
+        error: (err) => {
+          const msg = err?.error?.message || 'Could not roll back this request.';
+          this.feedback.set({ type: 'error', text: msg });
+        },
+      });
+  }
+
   goBack(): void {
     if (this.returnTo) {
       void this.router.navigateByUrl(this.returnTo);
@@ -766,7 +863,27 @@ export class JournalReviewComponent implements OnInit {
       return;
     }
 
-    window.open(this.requests.getPrintUrl(this.requestId), '_blank', 'noopener,noreferrer');
+    this.requests
+      .downloadPrint(this.requestId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (response) => {
+          const blob = response.body;
+          if (!blob) return;
+          this.openPrintBlob(
+            blob,
+            this.printFileName(
+              response.headers.get('content-disposition'),
+              this.request()?.request_code || 'journal-request',
+            ),
+          );
+        },
+        error: () =>
+          this.feedback.set({
+            type: 'error',
+            text: 'Could not download the print PDF. Please try again.',
+          }),
+      });
   }
 
   private configureBackTarget(): void {
@@ -802,6 +919,23 @@ export class JournalReviewComponent implements OnInit {
   private toNumber(value: unknown): number {
     const number = Number(value ?? 0);
     return Number.isFinite(number) ? number : 0;
+  }
+
+  private openPrintBlob(blob: Blob, fileName: string): void {
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.target = '_blank';
+    anchor.rel = 'noopener';
+    anchor.download = fileName;
+    anchor.click();
+    setTimeout(() => URL.revokeObjectURL(url), 60_000);
+  }
+
+  private printFileName(contentDisposition: string | null, fallbackCode: string): string {
+    const match = contentDisposition?.match(/filename\*?=(?:UTF-8'')?"?([^";]+)"?/i);
+    const filename = match?.[1] ? decodeURIComponent(match[1]) : `${fallbackCode}.pdf`;
+    return filename.toLowerCase().endsWith('.pdf') ? filename : `${filename}.pdf`;
   }
 
   private openDownload(file: JournalAttachmentDownload): void {

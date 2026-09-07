@@ -167,13 +167,13 @@
               <textarea
                 class="input--textarea"
                 formControlName="researchTitle"
-                [maxlength]="200"
+                [maxlength]="titleMaxLength"
                 rows="3"
               >
               </textarea>
               <app-character-counter
                 [current]="researchTitleLength()"
-                [max]="200"
+                [max]="titleMaxLength"
               ></app-character-counter>
             </div>
 
@@ -598,13 +598,13 @@
               <textarea
                 class="input--textarea"
                 formControlName="consultancyTitle"
-                [maxlength]="200"
+                [maxlength]="titleMaxLength"
                 rows="3"
               >
               </textarea>
               <app-character-counter
                 [current]="consultancyTitleLength()"
-                [max]="200"
+                [max]="titleMaxLength"
               ></app-character-counter>
             </div>
 

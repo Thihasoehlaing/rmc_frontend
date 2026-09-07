@@ -593,6 +593,7 @@ export class ConferenceApplication implements OnInit {
 
   readonly commentSections = [
     { code: 'conference_details', label: 'Conference Details', icon: 'event_note' },
+    { code: 'travel_details', label: 'Travel Details', icon: 'flight_takeoff' },
     { code: 'authors', label: 'Authors', icon: 'group' },
     { code: 'supporting_documents', label: 'Supporting Documents', icon: 'upload_file' },
     { code: 'costing_sponsorship', label: 'Costing & Sponsorship', icon: 'payments' },
@@ -703,10 +704,10 @@ export class ConferenceApplication implements OnInit {
       schoolName: ['', [Validators.required]],
       // Review Comments
       reviewComments: this.fb.group({
-        hosComment: ['', Validators.maxLength(500)],
-        rmcComment: ['', Validators.maxLength(500)],
-        vcComment: ['', Validators.maxLength(500)],
-        hrComment: ['', Validators.maxLength(500)],
+        hosComment: ['', Validators.maxLength(1000)],
+        rmcComment: ['', Validators.maxLength(1000)],
+        vcComment: ['', Validators.maxLength(1000)],
+        hrComment: ['', Validators.maxLength(1000)],
       }),
     });
 
@@ -932,6 +933,7 @@ export class ConferenceApplication implements OnInit {
       fundingRequestType: conference.conference_funding_request_type ?? '',
       conferenceType: conference.conference_type ?? '',
       travelRequired: toYesNo(conference.is_travelling_required),
+      purposeOfBusinessTravel: conference.purpose_of_business_travel ?? '',
       bookingDoneBy:
         conference.bookings_done_by_type === 'SELF'
           ? 'themselves'
@@ -1442,6 +1444,7 @@ export class ConferenceApplication implements OnInit {
       conference_funding_request_type: cd.fundingRequestType || null,
       conference_type: cd.conferenceType || null,
       is_travelling_required: toBool(cd.travelRequired),
+      purpose_of_business_travel: cd.purposeOfBusinessTravel || null,
       author_role: cd.authorshipType || null,
       is_scopus_indexed: toBool(cd.scopusPublicationGuaranteed),
       is_restricted_publisher: toBool(cd.restrictedPublisher),

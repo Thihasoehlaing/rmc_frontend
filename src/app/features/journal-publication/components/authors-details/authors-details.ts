@@ -14,6 +14,7 @@ import {
   MasterDataService,
 } from '../../../../core/services/master-data.service';
 import { JournalWorkflowService } from '../../services/journal-workflow.service';
+import { AuthService } from '../../../../core/services/auth.service';
 import {
   DataTableComponent,
   DataTableColumn,
@@ -121,6 +122,7 @@ export class AuthorsDetails implements OnInit {
 
   workflow = inject(JournalWorkflowService);
   private readonly masterData = inject(MasterDataService);
+  private readonly auth = inject(AuthService);
 
   constructor(private fb: FormBuilder) {
     effect(() => {
@@ -626,7 +628,9 @@ export class AuthorsDetails implements OnInit {
   ): void {
     this.academicStaffByName.clear();
 
-    const options = staff.map((item) => this.toAcademicStaffDropdownOption(item));
+    const options = staff
+      .filter((item) => !this.isCurrentUserStaff(item))
+      .map((item) => this.toAcademicStaffDropdownOption(item));
     const selectedFallback = this.createSelectedStaffFallbackOption(selectedStaffName);
     const selectedValue = selectedStaffName?.trim();
 
@@ -650,6 +654,17 @@ export class AuthorsDetails implements OnInit {
         .filter(Boolean)
         .join(' '),
     };
+  }
+
+  private isCurrentUserStaff(staff: AcademicStaffOption): boolean {
+    const currentUsername = this.auth.currentUser()?.username?.split('@', 1)[0]?.trim().toLowerCase();
+    if (!currentUsername) {
+      return false;
+    }
+
+    const staffUsername = staff.username?.trim().toLowerCase();
+    const staffEmailUsername = staff.email?.split('@', 1)[0]?.trim().toLowerCase();
+    return staffUsername === currentUsername || staffEmailUsername === currentUsername;
   }
 
   private createSelectedStaffFallbackOption(staffName?: string | null): DropdownOption<string>[] {

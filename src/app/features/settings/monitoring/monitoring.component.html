@@ -20,6 +20,104 @@
     }
   </nav>
 
+  @if (activeTab() === 'dingdong') {
+    <section class="forms-table-card dingdong-test-card">
+      <header class="forms-table-card__header">
+        <div>
+          <div class="forms-table-card__title-row">
+            <h2>DingDong Test Mail</h2>
+          </div>
+          <p>Test production DingDong mail delivery. Recipient is fixed by backend.</p>
+        </div>
+      </header>
+
+      <div class="dingdong-test-recipient">
+        <span class="material-icons" aria-hidden="true">lock</span>
+        <div>
+          <span>Fixed recipient</span>
+          <strong>{{ dingDongRecipient }}</strong>
+        </div>
+      </div>
+
+      <div class="dingdong-test-form">
+        <label class="forms-filter dingdong-title-field">
+          <span>Title</span>
+          <input
+            class="input--text"
+            type="text"
+            placeholder="DingDong test title"
+            maxlength="500"
+            [ngModel]="dingDongTitle()"
+            (ngModelChange)="dingDongTitle.set($event)"
+            [disabled]="isSendingDingDong()"
+          />
+        </label>
+
+        <app-text-editor
+          label="Message"
+          placeholder="Write the DingDong test message..."
+          [required]="true"
+          [showCounter]="false"
+          minHeight="260px"
+          [ngModel]="dingDongMessage()"
+          (ngModelChange)="dingDongMessage.set($event)"
+          [readOnly]="isSendingDingDong()"
+        ></app-text-editor>
+
+        <div class="dingdong-test-actions">
+          <button
+            class="btn btn-primary"
+            type="button"
+            (click)="sendDingDongTestMail()"
+            [disabled]="isSendingDingDong()"
+          >
+            <span class="material-icons">outgoing_mail</span>
+            {{ isSendingDingDong() ? 'Sending...' : 'Send Test Mail' }}
+          </button>
+          <button
+            class="btn btn-secondary"
+            type="button"
+            (click)="resetDingDongTest()"
+            [disabled]="isSendingDingDong()"
+          >
+            <span class="material-icons">restart_alt</span>
+            Reset
+          </button>
+        </div>
+      </div>
+
+      @if (dingDongResult()) {
+        <div class="dingdong-result-card">
+          <div>
+            <span [class]="statusBadgeClass(dingDongResult()?.mail_status)">
+              {{ dingDongResult()?.mail_status }}
+            </span>
+            <h3>Latest test result</h3>
+            <p>Recipient: {{ dingDongResult()?.recipient }}</p>
+          </div>
+
+          <dl>
+            <div>
+              <dt>DingDong Status</dt>
+              <dd>{{ dingDongResult()?.dingdong_status_code || '-' }}</dd>
+            </div>
+            <div>
+              <dt>Sent At</dt>
+              <dd>{{ formatDateTime(dingDongResult()?.sent_at) }}</dd>
+            </div>
+            <div>
+              <dt>Error</dt>
+              <dd>{{ dingDongResult()?.error_message || '-' }}</dd>
+            </div>
+            <div>
+              <dt>Response</dt>
+              <dd>{{ dingDongResult()?.dingdong_response || '-' }}</dd>
+            </div>
+          </dl>
+        </div>
+      }
+    </section>
+  } @else {
   <section class="forms-toolbar workflow-toolbar monitoring-toolbar" aria-label="Monitoring filters">
     <h2 class="forms-toolbar__title">Search &amp; Filters</h2>
 
@@ -47,7 +145,7 @@
         [disabled]="isLoading()"
       >
         <option value="">All</option>
-        @if (activeTab() === 'mail-logs') {
+        @if (activeTab() === 'mail-logs' || activeTab() === 'notification-logs') {
           <option value="PENDING">Pending</option>
           <option value="SENT">Sent</option>
           <option value="FAILED">Failed</option>
@@ -60,7 +158,7 @@
       </select>
     </label>
 
-    @if (activeTab() === 'mail-logs') {
+    @if (activeTab() === 'mail-logs' || activeTab() === 'notification-logs') {
       <label class="forms-filter">
         <span>Request Code</span>
         <input
@@ -132,6 +230,17 @@
         <span class="material-icons">restart_alt</span>
         Reset
       </button>
+      @if (activeTab() === 'notification-logs') {
+        <button
+          class="btn btn-secondary"
+          type="button"
+          (click)="checkAndCreateNotifications()"
+          [disabled]="isLoading() || isCheckingNotifications()"
+        >
+          <span class="material-icons">notification_add</span>
+          {{ isCheckingNotifications() ? 'Checking...' : 'Check & Create Notification' }}
+        </button>
+      }
     </div>
   </section>
 
@@ -186,6 +295,58 @@
               <td>{{ formatDateTime(mailRow(row).created_at) }}</td>
               <td>{{ formatDateTime(mailRow(row).sent_at) }}</td>
               <td><span class="workflow-cell">{{ mailRow(row).error_message || '-' }}</span></td>
+              <td class="is-align-center">
+                <button
+                  class="btn btn-secondary monitoring-action-btn"
+                  type="button"
+                  (click)="resendMail(mailRow(row))"
+                  [disabled]="!canResendMail(mailRow(row)) || !!resendingRecipientId()"
+                >
+                  <span class="material-icons">outgoing_mail</span>
+                  {{ resendButtonLabel(mailRow(row)) }}
+                </button>
+              </td>
+            </tr>
+          } @else if (activeTab() === 'notification-logs') {
+            <tr>
+              <td class="is-align-center">{{ rowNumber(index) }}</td>
+              <td>
+                <span class="form-code">{{ notificationRow(row).request_code || '-' }}</span>
+                <small class="monitoring-subtext">{{ notificationRow(row).form_code || '-' }}</small>
+              </td>
+              <td>
+                <span class="workflow-cell">{{ notificationRow(row).event_type || '-' }}</span>
+                <small class="monitoring-subtext">{{ notificationRow(row).template_code || '-' }}</small>
+              </td>
+              <td>
+                <span class="workflow-cell">{{ notificationRow(row).recipient_name || notificationRow(row).recipient_username || '-' }}</span>
+                <small class="monitoring-subtext">{{ notificationRow(row).recipient_email || notificationRow(row).recipient_type || '-' }}</small>
+              </td>
+              <td class="is-align-center">
+                <span [class]="statusBadgeClass(notificationRow(row).mail_status)">{{ notificationRow(row).mail_status || '-' }}</span>
+              </td>
+              <td>
+                <span class="workflow-cell">
+                  {{ notificationRow(row).from_status_code || '-' }} → {{ notificationRow(row).to_status_code || '-' }}
+                </span>
+                <small class="monitoring-subtext">{{ notificationRow(row).action_code || '-' }}</small>
+              </td>
+              <td>
+                <span class="workflow-cell">{{ notificationRow(row).created_by_name || notificationRow(row).created_by_username || '-' }}</span>
+              </td>
+              <td>{{ formatDateTime(notificationRow(row).created_at) }}</td>
+              <td><span class="workflow-cell">{{ notificationRow(row).message || notificationRow(row).title || '-' }}</span></td>
+              <td class="is-align-center">
+                <button
+                  class="btn btn-secondary monitoring-action-btn"
+                  type="button"
+                  (click)="resendMail(notificationRow(row))"
+                  [disabled]="!canResendMail(notificationRow(row)) || !!resendingRecipientId()"
+                >
+                  <span class="material-icons">outgoing_mail</span>
+                  {{ resendButtonLabel(notificationRow(row)) }}
+                </button>
+              </td>
             </tr>
           } @else {
             <tr>
@@ -225,4 +386,5 @@
       </footer>
     }
   </section>
+  }
 </main>

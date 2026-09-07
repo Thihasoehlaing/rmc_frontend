@@ -50,6 +50,17 @@
             <span>· {{ request()?.applicant_department }}</span>
           }
         </div>
+        @if (canRollbackLatestAction()) {
+          <button
+            type="button"
+            class="review-back"
+            [disabled]="rollbacking()"
+            (click)="openRollbackDialog()"
+          >
+            <span class="material-icons">undo</span>
+            {{ rollbacking() ? 'Rolling back...' : 'Rollback' }}
+          </button>
+        }
       </div>
 
       <button type="button" class="review-print" (click)="printRequest()">
@@ -106,27 +117,33 @@
               </dd>
             </div>
             <div>
-              <dt>Author Role</dt>
-              <dd>{{ val(journal()?.author_role) }}</dd>
+              <dt>Author Type</dt>
+              <dd>{{ authorRoleLabel() }}</dd>
             </div>
             <div>
               <dt>Scopus Quartile</dt>
               <dd>{{ scopusQuartileLabel() }}</dd>
             </div>
             <div>
-              <dt>Project Type</dt>
-              <dd>{{ val(journal()?.project_type) }}</dd>
+              <dt>Research Project Type</dt>
+              <dd>{{ projectTypeLabel() }}</dd>
             </div>
             <div>
-              <dt>APU JATI / EJBM Cited</dt>
+              <dt>
+                Have you cited at least 1 journal paper from Asia Pacific University of Technology
+                &amp; Innovation JATI &amp; EJBM?
+              </dt>
               <dd>{{ val(journal()?.cited_apu_jati_ejbm) }}</dd>
             </div>
             <div class="detail-grid__wide">
-              <dt>Restricted Publisher (e.g., MDPI, Common Ground, Hindawi, or Frontiers)</dt>
+              <dt>
+                Is the publisher of your journal one of the restricted publishers (e.g., MDPI,
+                Common Ground, Hindawi, or Frontier)?
+              </dt>
               <dd>{{ val(journal()?.is_restricted_publisher) }}</dd>
             </div>
             <div class="detail-grid__wide">
-              <dt>SDG Keywords</dt>
+              <dt>3 SDG Keywords</dt>
               <dd>
                 {{ val(journal()?.sdg_keyword_1) }} · {{ val(journal()?.sdg_keyword_2) }} ·
                 {{ val(journal()?.sdg_keyword_3) }}
@@ -858,12 +875,8 @@
                   ></div>
                   <div>
                     <strong>{{ approvalActionLabel(history) }}</strong>
-                    <p>{{ val(history.staff_name || history.staff_username) }}</p>
+                    <p>{{ approvalActorLabel(history) }}</p>
                     <span>{{ fmtDate(history.action_at) }}</span>
-                    <small
-                      >{{ prettyActor(history.from_status_code) }} →
-                      {{ prettyActor(history.to_status_code) }}</small
-                    >
                   </div>
                 </li>
               }
@@ -874,5 +887,51 @@
         </section>
       </aside>
     </div>
+
+    <app-dialog
+      [isOpen]="rollbackDialogOpen()"
+      title="Rollback Last Action"
+      size="small"
+      (close)="closeRollbackDialog()"
+    >
+      @if (latestApproval(); as latest) {
+        <div class="form-field">
+          <p>
+            Roll back <strong>{{ val(request()?.request_code) }}</strong>
+            from <strong>{{ prettyActor(latest.to_status_code) }}</strong>
+            to <strong>{{ prettyActor(latest.from_status_code) }}</strong>.
+          </p>
+        </div>
+
+        <label class="form-field">
+          <span class="form-label">Reason</span>
+          <textarea
+            class="input--textarea"
+            rows="4"
+            maxlength="1000"
+            [formControl]="rollbackReasonControl"
+          ></textarea>
+        </label>
+      }
+
+      <button
+        dialog-footer
+        type="button"
+        class="btn btn-secondary"
+        [disabled]="rollbacking()"
+        (click)="closeRollbackDialog()"
+      >
+        Cancel
+      </button>
+      <button
+        dialog-footer
+        type="button"
+        class="btn btn-danger"
+        [disabled]="rollbacking() || !rollbackReasonControl.value?.trim()"
+        (click)="rollbackLatestAction()"
+      >
+        {{ rollbacking() ? 'Rolling back...' : 'Rollback' }}
+      </button>
+    </app-dialog>
   }
 </section>

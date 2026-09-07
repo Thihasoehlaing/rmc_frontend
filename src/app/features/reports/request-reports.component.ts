@@ -150,6 +150,28 @@ export class RequestReportsComponent implements OnInit {
     return this.selectedFormCode().toUpperCase() === 'EXTERNAL';
   }
 
+  isExternalFieldSelected(value: string): boolean {
+    return this.selectedExternalFields().includes(value);
+  }
+
+  toggleExternalField(value: string): void {
+    this.selectedExternalFields.update((fields) =>
+      fields.includes(value)
+        ? fields.filter((field) => field !== value)
+        : [...fields, value],
+    );
+  }
+
+  selectAllExternalFields(): void {
+    this.selectedExternalFields.set(
+      this.externalFieldOptions().map((option) => option.value),
+    );
+  }
+
+  clearExternalFields(): void {
+    this.selectedExternalFields.set([]);
+  }
+
   isDateRangeValid(): boolean {
     const from = this.dateFrom();
     const to = this.dateTo();
@@ -257,10 +279,37 @@ export class RequestReportsComponent implements OnInit {
   private resolveFilename(response: { headers: { get(name: string): string | null } }): string | null {
     const disposition = response.headers.get('content-disposition');
     const match = disposition?.match(/filename\*?=(?:UTF-8'')?["']?([^"';]+)["']?/i);
-    return match?.[1] ? decodeURIComponent(match[1]) : null;
+    return match?.[1] ? decodeURIComponent(match[1].replace(/(^"|"$)/g, '')) : null;
   }
 
   private defaultExportName(): string {
-    return `rmc-request-report-${new Date().toISOString().slice(0, 10)}.xlsx`;
+    return `rmc_${this.safeFilename(this.selectedExportFormName())}_${this.exportDatePart()}.xlsx`;
+  }
+
+  private selectedExportFormName(): string {
+    const formCode = this.appliedFormCode();
+    return (
+      this.forms().find((form) => form.form_code === formCode)?.form_name ||
+      formCode ||
+      'request_report'
+    );
+  }
+
+  private exportDatePart(): string {
+    const dateFrom = this.appliedDateFrom();
+    const dateTo = this.appliedDateTo();
+    if (dateFrom && dateTo) {
+      return `${dateFrom}_to_${dateTo}`;
+    }
+    return dateFrom || dateTo || new Date().toISOString().slice(0, 10);
+  }
+
+  private safeFilename(value: string): string {
+    return (
+      value
+        .toLowerCase()
+        .replace(/[^a-z0-9_-]+/g, '_')
+        .replace(/^_+|_+$/g, '') || 'report'
+    );
   }
 }

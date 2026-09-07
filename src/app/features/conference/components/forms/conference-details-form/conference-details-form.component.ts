@@ -25,6 +25,7 @@ import { ConferenceWorkflowService } from '../../../services/conference-workflow
 import { ConferenceFormStateService } from '../../../services/conference-form-state.service';
 import { BreakdownOptionsService } from '../../../services/breakdown-options.service';
 import {
+  AccountCodeOption,
   MasterDataService,
   RegionOption,
   StaffOption,
@@ -33,6 +34,7 @@ import {
   SDG_KEYWORD_MAX_LENGTH,
   SDG_KEYWORD_PLACEHOLDERS,
 } from '../../../../../shared/validators/sdg-keyword.validator';
+import { COSTING_ITEM_ROW_LIMIT } from '../../../../../core/constants/form-limits.constant';
 
 import { TableActionIconComponent } from '../../../../../shared/components/table-action-icon/table-action-icon.component';
 import { DecimalAmountDirective } from '../../../../../shared/directives/decimal-amount.directive';
@@ -63,7 +65,7 @@ import { TableRowCounterComponent } from '../../../../../shared/components/table
 export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
   readonly klangValleyAccountCodeDescription = 'TRAINING PRESENTATION PUBLICATION';
   readonly klangValleyAccountCode = '6203/100';
-  readonly tableRecordLimit = 10;
+  readonly tableRecordLimit = COSTING_ITEM_ROW_LIMIT;
   readonly activityRecordLimit = 20;
   @Input() workflow?: ConferenceWorkflowService;
   @Input() applicantDetailsForm?: FormGroup;
@@ -113,19 +115,6 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     });
 
   }
-
-  // Pagination state for breakdown tables
-  researchPage: number = 1;
-  researchPageSize: number = 10;
-  researchPageSizeOptions: number[] = [5, 10];
-
-  externalPage: number = 1;
-  externalPageSize: number = 10;
-  externalPageSizeOptions: number[] = [5, 10];
-
-  localPage: number = 1;
-  localPageSize: number = 10;
-  localPageSizeOptions: number[] = [5, 10];
 
   regions = ['Americas', 'ASEAN', 'Asia', 'Australasia', 'Europe', 'Malaysia', 'MEA', 'Pacific'];
 
@@ -182,8 +171,8 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
   private voteNumbersCache: { code: string; description: string }[] = [];
   voteNumberDescriptionOptions: DropdownOption[] = [];
 
-  /** Local-conference account codes from the real backend (location_type = LOCAL). */
-  private localAccountCodesCache: { code: string; description: string }[] = [];
+  /** Conference account codes from the backend; options are filtered by venue. */
+  private accountCodesCache: AccountCodeOption[] = [];
   localBreakdownOptions: DropdownOption[] = [];
 
   regionFundingInfo: Record<string, string> = {
@@ -314,39 +303,6 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     }));
   }
 
-  getResearchBreakdownTableDataPaginated(): (any & { index: number })[] {
-    const data = this.getResearchBreakdownTableData();
-    const start = (this.researchPage - 1) * this.researchPageSize;
-    return data.slice(start, start + this.researchPageSize);
-  }
-
-  getResearchTotalPages(): number {
-    const len = this.getResearchBreakdownTableData().length;
-    return Math.max(1, Math.ceil(len / this.researchPageSize));
-  }
-
-  researchPageStart(): number {
-    const total = this.getResearchBreakdownTableData().length;
-    if (total === 0) return 0;
-    return (this.researchPage - 1) * this.researchPageSize + 1;
-  }
-
-  researchPageEnd(): number {
-    return Math.min(
-      this.getResearchBreakdownTableData().length,
-      this.researchPage * this.researchPageSize,
-    );
-  }
-
-  onResearchPageChange(page: number) {
-    this.researchPage = page;
-  }
-
-  onResearchPageSizeChange(size: number) {
-    this.researchPageSize = size;
-    this.researchPage = 1;
-  }
-
   getExternalBreakdownTableData(): (any & { index: number })[] {
     return this.externalBreakdowns.map((item, index) => ({
       ...item,
@@ -354,74 +310,11 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     }));
   }
 
-  getExternalBreakdownTableDataPaginated(): (any & { index: number })[] {
-    const data = this.getExternalBreakdownTableData();
-    const start = (this.externalPage - 1) * this.externalPageSize;
-    return data.slice(start, start + this.externalPageSize);
-  }
-
-  getExternalTotalPages(): number {
-    const len = this.getExternalBreakdownTableData().length;
-    return Math.max(1, Math.ceil(len / this.externalPageSize));
-  }
-
-  externalPageStart(): number {
-    const total = this.getExternalBreakdownTableData().length;
-    if (total === 0) return 0;
-    return (this.externalPage - 1) * this.externalPageSize + 1;
-  }
-
-  externalPageEnd(): number {
-    return Math.min(
-      this.getExternalBreakdownTableData().length,
-      this.externalPage * this.externalPageSize,
-    );
-  }
-
-  onExternalPageChange(page: number) {
-    this.externalPage = page;
-  }
-
-  onExternalPageSizeChange(size: number) {
-    this.externalPageSize = size;
-    this.externalPage = 1;
-  }
-
   getLocalBreakdownTableData(): (any & { index: number })[] {
     return this.localBreakdowns.map((item, index) => ({
       ...item,
       index: index + 1,
     }));
-  }
-
-  getLocalBreakdownTableDataPaginated(): (any & { index: number })[] {
-    const data = this.getLocalBreakdownTableData();
-    const start = (this.localPage - 1) * this.localPageSize;
-    return data.slice(start, start + this.localPageSize);
-  }
-
-  getLocalTotalPages(): number {
-    const len = this.getLocalBreakdownTableData().length;
-    return Math.max(1, Math.ceil(len / this.localPageSize));
-  }
-
-  localPageStart(): number {
-    const total = this.getLocalBreakdownTableData().length;
-    if (total === 0) return 0;
-    return (this.localPage - 1) * this.localPageSize + 1;
-  }
-
-  localPageEnd(): number {
-    return Math.min(this.getLocalBreakdownTableData().length, this.localPage * this.localPageSize);
-  }
-
-  onLocalPageChange(page: number) {
-    this.localPage = page;
-  }
-
-  onLocalPageSizeChange(size: number) {
-    this.localPageSize = size;
-    this.localPage = 1;
   }
 
   ngOnInit() {
@@ -437,7 +330,6 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     this.syncAdvanceReasonValidator();
     this.syncSelectedColleaguesValidator();
     this.syncExternalProjectAccountCodeValidator();
-    this.normalizePages();
     this.loadMasterData();
   }
 
@@ -472,11 +364,8 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     });
 
     this.masterData.getAccountCodes('CONFERENCE').subscribe((res) => {
-      this.localAccountCodesCache = (res.data ?? []).filter((c) => c.location_type === 'LOCAL');
-      this.localBreakdownOptions = this.localAccountCodesCache.map((c) => ({
-        value: c.description,
-        label: c.description,
-      }));
+      this.accountCodesCache = res.data ?? [];
+      this.syncLocalBreakdownOptionsForVenue();
     });
 
     this.loadColleagueOptions();
@@ -583,6 +472,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
   setupFormWatchers() {
     this.form.get('localOrOverseas')?.valueChanges.subscribe(() => {
       this.syncRegionOptionsForVenue();
+      this.syncLocalBreakdownOptionsForVenue();
     });
 
     // Watch for region changes and auto-set percentage, limit, and description
@@ -650,6 +540,50 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     if (selectedRegion && !filteredOptions.some((option) => option.value === selectedRegion)) {
       this.clearRegionFields();
     }
+  }
+
+  private syncLocalBreakdownOptionsForVenue(): void {
+    const options = this.accountCodesForSelectedVenue().map((c) => ({
+      value: c.description,
+      label: c.description,
+    }));
+    this.localBreakdownOptions = options;
+
+    if (this.breakdownType !== 'local') {
+      return;
+    }
+
+    const selectedDescription = this.breakdownForm.get('itemDescription')?.value;
+    if (selectedDescription && !options.some((option) => option.value === selectedDescription)) {
+      this.breakdownForm.patchValue(
+        {
+          itemDescription: '',
+          voteNumber: '',
+        },
+        { emitEvent: false },
+      );
+    }
+  }
+
+  private accountCodesForSelectedVenue(): AccountCodeOption[] {
+    const locationType = this.accountCodeLocationTypeForVenue();
+    if (!locationType) {
+      return [];
+    }
+    return this.accountCodesCache.filter(
+      (c) => String(c.location_type || '').toUpperCase() === locationType,
+    );
+  }
+
+  private accountCodeLocationTypeForVenue(): AccountCodeOption['location_type'] | null {
+    const venue = this.selectedLocalOrOverseas;
+    if (venue === 'overseas') {
+      return 'FOREIGN';
+    }
+    if (venue === 'klang-valley' || venue === 'local-except-kl') {
+      return 'LOCAL';
+    }
+    return null;
   }
 
   private syncSelectedRegionMetadata(region: string | null | undefined): void {
@@ -838,18 +772,6 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     this.saveFormState();
   }
 
-  // Ensure page numbers are within valid bounds after initial load
-  private normalizePages() {
-    if (this.researchPage > this.getResearchTotalPages())
-      this.researchPage = this.getResearchTotalPages();
-    if (this.externalPage > this.getExternalTotalPages())
-      this.externalPage = this.getExternalTotalPages();
-    if (this.localPage > this.getLocalTotalPages()) this.localPage = this.getLocalTotalPages();
-    if (this.researchPage < 1) this.researchPage = 1;
-    if (this.externalPage < 1) this.externalPage = 1;
-    if (this.localPage < 1) this.localPage = 1;
-  }
-
   initializeBreakdownForm() {
     this.breakdownForm = this.fb.group({
       itemDescription: ['', [Validators.required]],
@@ -875,6 +797,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
       fundingRequestType: ['', [Validators.required]],
       conferenceType: ['', [Validators.required]],
       travelRequired: ['', [Validators.required]],
+      purposeOfBusinessTravel: [''],
       bookingDoneBy: ['', [Validators.required]],
       bookingDoneByOther: [''],
       hasAdvance: ['', [Validators.required]],
@@ -1493,7 +1416,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
       return '';
     }
 
-    return this.localAccountCodesCache.find((c) => c.description === optionValue)?.code || '';
+    return this.accountCodesForSelectedVenue().find((c) => c.description === optionValue)?.code || '';
   }
 
   closeBreakdownModal() {
@@ -1551,39 +1474,12 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
       array.push(entry);
     }
 
-    // Ensure pagination stays valid and show new entry when added
-    if (this.breakdownEditingIndex === null) {
-      // new entry added -> jump to last page for that type
-      if (this.breakdownType === 'research') this.researchPage = this.getResearchTotalPages();
-      if (this.breakdownType === 'external-research')
-        this.externalPage = this.getExternalTotalPages();
-      if (this.breakdownType === 'local') this.localPage = this.getLocalTotalPages();
-    } else {
-      // updated entry -> ensure current page still valid
-      if (this.breakdownType === 'research' && this.researchPage > this.getResearchTotalPages())
-        this.researchPage = this.getResearchTotalPages();
-      if (
-        this.breakdownType === 'external-research' &&
-        this.externalPage > this.getExternalTotalPages()
-      )
-        this.externalPage = this.getExternalTotalPages();
-      if (this.breakdownType === 'local' && this.localPage > this.getLocalTotalPages())
-        this.localPage = this.getLocalTotalPages();
-    }
-
     this.closeBreakdownModal();
   }
 
   deleteBreakdown(type: 'research' | 'external-research' | 'local', index: number) {
     const array = this.getBreakdownArray(type);
     array.splice(index, 1);
-    // Ensure page bounds after deletion
-    if (type === 'research' && this.researchPage > this.getResearchTotalPages())
-      this.researchPage = this.getResearchTotalPages();
-    if (type === 'external-research' && this.externalPage > this.getExternalTotalPages())
-      this.externalPage = this.getExternalTotalPages();
-    if (type === 'local' && this.localPage > this.getLocalTotalPages())
-      this.localPage = this.getLocalTotalPages();
   }
 
   onFileSelected(event: any) {

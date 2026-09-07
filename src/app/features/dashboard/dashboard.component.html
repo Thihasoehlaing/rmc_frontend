@@ -3,7 +3,9 @@
     <section class="error-panel" role="alert">
       <span class="material-icons">error_outline</span>
       <span>{{ error() }}</span>
-      <button type="button" class="btn btn-secondary btn-sm" (click)="loadDashboard()">Try again</button>
+      <button type="button" class="btn btn-secondary btn-sm" (click)="loadDashboard()">
+        Try again
+      </button>
     </section>
   </main>
 }
@@ -18,16 +20,40 @@
       <app-applicant-dashboard [summary]="summary()!" [view]="view()" [username]="username()" />
     }
     @case ('workflow_actor') {
-      <app-workflow-actor-dashboard [summary]="summary()!" [view]="view()" [username]="username()" />
+      <app-workflow-actor-dashboard
+        [summary]="summary()!"
+        [view]="view()"
+        [username]="username()"
+      />
     }
     @case ('finance') {
       <app-finance-dashboard [summary]="summary()!" [view]="view()" [username]="username()" />
     }
     @case ('rmc_admin') {
-      <app-rmc-admin-dashboard [summary]="summary()!" [view]="view()" [username]="username()" />
+      @if (analysisMode) {
+        <app-rmc-admin-analysis-dashboard
+          [summary]="summary()!"
+          [view]="view()"
+          [username]="username()"
+        />
+      } @else {
+        <app-rmc-admin-dashboard [summary]="summary()!" [view]="view()" [username]="username()" />
+      }
     }
     @case ('system_admin') {
-      <app-system-admin-dashboard [summary]="summary()!" [view]="view()" [username]="username()" />
+      @if (analysisMode) {
+        <app-rmc-admin-analysis-dashboard
+          [summary]="summary()!"
+          [view]="view()"
+          [username]="username()"
+        />
+      } @else {
+        <app-system-admin-dashboard
+          [summary]="summary()!"
+          [view]="view()"
+          [username]="username()"
+        />
+      }
     }
   }
 }

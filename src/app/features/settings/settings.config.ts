@@ -67,6 +67,16 @@ export const SETTINGS_MODULES: SettingsModuleConfig[] = [
     endpoints: [apiEndpoint('settings/account-codes'), apiEndpoint('settings/account-code-categories')],
   },
   {
+    key: 'vote-numbers',
+    title: 'Vote Numbers',
+    description: 'Review and edit vote number values shared with application forms.',
+    icon: 'pin',
+    category: 'Finance Setup',
+    route: '/settings/vote-numbers',
+    tone: 'blue',
+    endpoints: [apiEndpoint('admin-settings/vote-numbers')],
+  },
+  {
     key: 'staff-directory',
     title: 'Staff Directory',
     description: 'Synchronize and review staff records from the APU directory.',
@@ -99,6 +109,16 @@ export const SETTINGS_MODULES: SettingsModuleConfig[] = [
     route: '/settings/academic-staff',
     tone: 'indigo',
     endpoints: [apiEndpoint('settings/academic-staff')],
+  },
+  {
+    key: 'form-correction',
+    title: 'Form Correction',
+    description: 'Find Conference or Journal requests and correct APU staff co-authors.',
+    icon: 'fact_check',
+    category: 'Request Maintenance',
+    route: '/settings/form-correction',
+    tone: 'amber',
+    endpoints: [apiEndpoint('settings/form-corrections/lookup')],
   },
   {
     key: 'users',

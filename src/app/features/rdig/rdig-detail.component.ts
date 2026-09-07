@@ -81,6 +81,7 @@ export class RdigDetailComponent implements OnInit {
     return [
       { label: 'Application Type', value: rdig?.application_type },
       { label: 'Project Category', value: rdig?.project_category },
+      { label: 'Track', value: this.formatTrack(rdig?.track) },
       { label: 'Duration', value: rdig?.project_duration_months ? `${rdig.project_duration_months} months` : null },
       { label: 'Research Area', value: rdig?.research_area },
       { label: 'Research Cluster', value: rdig?.research_cluster_id },
@@ -100,6 +101,12 @@ export class RdigDetailComponent implements OnInit {
       { label: 'Role in Project', value: rdig?.project_leader_role_in_project },
     ];
   });
+
+  private formatTrack(track: unknown): string | null {
+    if (track === 'social-innovation') return 'Social Innovation';
+    if (track === 'fundamental-research') return 'Fundamental Research';
+    return typeof track === 'string' && track.trim() ? track : null;
+  }
 
   readonly narrativeFields = computed<DetailField[]>(() => {
     const rdig = this.rdig();

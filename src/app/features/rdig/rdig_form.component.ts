@@ -255,6 +255,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
       { path: 'projectDetails.applicationType', label: 'Application Type' },
       { path: 'projectDetails.declarations.ethics', label: 'RDIG Project Declaration' },
       { path: 'projectDetails.declarations.conflict', label: 'Co-Researcher Declaration' },
+      { path: 'projectDetails.track', label: 'Track' },
       { path: 'projectDetails.duration', label: 'Project Duration' },
       { path: 'projectDetails.title', label: 'Project Title' },
       { path: 'projectDetails.researchArea', label: 'Research Area' },
@@ -557,6 +558,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
           conflict: [false, Validators.requiredTrue],
         }),
         category: ['S&T'],
+        track: ['', Validators.required],
         duration: ['', Validators.required],
         title: ['', [Validators.required, Validators.maxLength(200)]],
         researchArea: ['', [Validators.required, Validators.maxLength(100)]],
@@ -1049,6 +1051,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
       projectDetails: {
         applicationType: rdig.application_type ?? null,
         category: rdig.project_category ?? null,
+        track: rdig.track ?? null,
         duration: rdig.project_duration_months ?? null,
         title: rdig.project_title ?? '',
         researchArea: rdig.research_area ?? '',
@@ -1347,6 +1350,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
     return {
       application_type: pd.applicationType || null,
       project_category: pd.category || null,
+      track: pd.track || null,
       project_duration_months: pd.duration ? Number(pd.duration) || null : null,
       project_title: pd.title || null,
       research_area: pd.researchArea || null,

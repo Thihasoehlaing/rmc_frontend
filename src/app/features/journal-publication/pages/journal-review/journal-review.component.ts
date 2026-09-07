@@ -32,6 +32,10 @@ import {
   formatCurrencyAmount,
   formatMyrCurrency,
 } from '../../../../shared/utils/currency.util';
+import {
+  formatMalaysiaDateTime,
+  getApiDateTimeMs,
+} from '../../../../shared/utils/date-time.util';
 
 const SCOPUS_QUARTILE_LABELS: Readonly<Record<string, string>> = {
   Q1: 'Q1: 75th - 100th percentile',
@@ -322,15 +326,7 @@ export class JournalReviewComponent implements OnInit {
   }
 
   fmtDate(iso: string | null | undefined): string {
-    return iso
-      ? new Date(iso).toLocaleString('en-GB', {
-          day: '2-digit',
-          month: 'short',
-          year: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit',
-        })
-      : '—';
+    return formatMalaysiaDateTime(iso, '—');
   }
 
   actionType(action: WorkflowActionDto): 'primary' | 'danger' | 'secondary' {
@@ -576,9 +572,7 @@ export class JournalReviewComponent implements OnInit {
   }
 
   private parseTime(value: string | null | undefined): number | null {
-    if (!value) return null;
-    const time = new Date(value).getTime();
-    return Number.isFinite(time) ? time : null;
+    return getApiDateTimeMs(value);
   }
 
   saveSectionComment(sectionCode: string): void {

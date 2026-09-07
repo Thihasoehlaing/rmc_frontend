@@ -933,6 +933,7 @@ export class ConferenceApplication implements OnInit {
       fundingRequestType: conference.conference_funding_request_type ?? '',
       conferenceType: conference.conference_type ?? '',
       travelRequired: toYesNo(conference.is_travelling_required),
+      purposeOfBusinessTravel: conference.purpose_of_business_travel ?? '',
       bookingDoneBy:
         conference.bookings_done_by_type === 'SELF'
           ? 'themselves'
@@ -1443,6 +1444,7 @@ export class ConferenceApplication implements OnInit {
       conference_funding_request_type: cd.fundingRequestType || null,
       conference_type: cd.conferenceType || null,
       is_travelling_required: toBool(cd.travelRequired),
+      purpose_of_business_travel: cd.purposeOfBusinessTravel || null,
       author_role: cd.authorshipType || null,
       is_scopus_indexed: toBool(cd.scopusPublicationGuaranteed),
       is_restricted_publisher: toBool(cd.restrictedPublisher),

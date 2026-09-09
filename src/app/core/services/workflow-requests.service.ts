@@ -83,6 +83,13 @@ export interface RequestSummaryDto {
     batch_name: string;
     start_date: string | null;
     end_date: string | null;
+    status?: string | null;
+    stage_windows?: Array<{
+      id?: number;
+      stage_name: string;
+      stage_start_date: string | null;
+      stage_end_date: string | null;
+    }>;
   } | null;
   applicant_staff_username: string | null;
   applicant_name: string | null;

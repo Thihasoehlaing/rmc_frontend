@@ -30,6 +30,9 @@ export interface RdigRequestDto {
   research_cluster_id?: number | null;
   research_domain_id?: number | null;
   sub_research_domain_id?: number | null;
+  research_cluster_name_snapshot?: string | null;
+  research_domain_name_snapshot?: string | null;
+  sub_research_domain_name_snapshot?: string | null;
   executive_summary?: string | null;
   keywords?: string | null;
   introduction?: string | null;

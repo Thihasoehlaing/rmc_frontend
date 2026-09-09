@@ -88,8 +88,13 @@ export function detailRoute(app: {
 }): string {
   const requestCode = app.request_code?.trim();
   const formCode = (app.form_code ?? '').toUpperCase();
-  if (requestCode && (formCode === 'JOURNAL' || formCode === 'CONFERENCE')) {
-    const feature = formCode === 'JOURNAL' ? 'journal' : 'conference';
+  if (requestCode && (formCode === 'JOURNAL' || formCode === 'CONFERENCE' || formCode === 'RDIG')) {
+    const feature =
+      formCode === 'JOURNAL'
+        ? 'journal'
+        : formCode === 'CONFERENCE'
+          ? 'conference'
+          : 'rdig';
     return `/${feature}/detail/${encodeURIComponent(requestCode)}`;
   }
 
@@ -105,7 +110,7 @@ export function actionRoute(app: {
 }): string {
   const id = requestIdOf(app);
   if (id == null) return '/submissions/inbox';
-  if (['JOURNAL', 'CONFERENCE'].includes((app.form_code ?? '').toUpperCase())) {
+  if (['JOURNAL', 'CONFERENCE', 'RDIG'].includes((app.form_code ?? '').toUpperCase())) {
     return detailRoute(app);
   }
   return `/submissions/action/${id}`;

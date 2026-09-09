@@ -42,7 +42,8 @@
       <div class="form-field">
         <label class="form-label is-required">Select Research Cluster</label>
         <app-searchable-dropdown
-          [options]="clusters"
+          [options]="clusters()"
+          [compareWith]="compareOptionValues"
           [isMulti]="false"
           formControlName="researchCluster"
         >

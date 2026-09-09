@@ -132,6 +132,17 @@ export class SearchableDropdownComponent<T = number> implements ControlValueAcce
     return map;
   });
 
+  readonly stringLabelMap = computed<Map<string, string>>(() => {
+    const map = new Map<string, string>();
+    for (const opt of this._options()) {
+      const key = String(opt.value);
+      if (!map.has(key)) {
+        map.set(key, opt.label);
+      }
+    }
+    return map;
+  });
+
   // ── Debounced search ─────────────────────────────────────────────
 
   readonly searchCtrl = new FormControl<string>('', { nonNullable: true });
@@ -322,11 +333,21 @@ export class SearchableDropdownComponent<T = number> implements ControlValueAcce
   get displayValue(): string {
     const sel = this.selectedValues();
     if (sel.length === 0) return '';
-    return this.selectedOption(sel[0])?.displayLabel ?? this.labelMap().get(sel[0]) ?? String(sel[0]);
+    return (
+      this.selectedOption(sel[0])?.displayLabel ??
+      this.labelMap().get(sel[0]) ??
+      this.stringLabelMap().get(String(sel[0])) ??
+      String(sel[0])
+    );
   }
 
   getChipLabel(value: T): string {
-    return this.selectedOption(value)?.displayLabel ?? this.labelMap().get(value) ?? String(value);
+    return (
+      this.selectedOption(value)?.displayLabel ??
+      this.labelMap().get(value) ??
+      this.stringLabelMap().get(String(value)) ??
+      String(value)
+    );
   }
 
   private selectedOption(value: T): DropdownOption<T> | undefined {

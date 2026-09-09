@@ -63,6 +63,7 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
   /** Academic staff list loaded from the real backend — used for the internal co-researcher dropdown. */
   private academicStaffList: AcademicStaffOption[] = [];
   staffOptions: { label: string; value: string }[] = [];
+  compareOptionValues = (left: unknown, right: unknown): boolean => String(left) === String(right);
 
   @Input({ required: true }) parentForm!: FormGroup;
   @Input() showHosComments = false;
@@ -173,7 +174,7 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
   internalForm: FormGroup;
   externalForm: FormGroup;
 
-  clusters: { label: string; value: string }[] = [];
+  clusters = signal<{ label: string; value: string }[]>([]);
   orgTypes: { label: string; value: string }[] = [];
   countryOptions: { label: string; value: string }[] = [];
   countriesLoading = false;
@@ -219,9 +220,10 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
       .getResearchClusters()
       .pipe(takeUntil(this.destroy$))
       .subscribe((res) => {
-        this.clusters = (res.data ?? [])
+        const clusters = (res.data ?? [])
           .filter((o) => o.is_active)
           .map((o) => ({ label: o.cluster_name, value: o.id.toString() }));
+        setTimeout(() => this.clusters.set(clusters));
       });
 
     this.loadOrganisationTypes();

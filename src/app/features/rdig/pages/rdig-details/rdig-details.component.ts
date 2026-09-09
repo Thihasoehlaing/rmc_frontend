@@ -35,8 +35,9 @@ import { TableActionIconComponent } from '../../../../shared/components/table-ac
 import { ReviewBlockComponent } from '../../components/review-block/review-block.component';
 import { CustomSubheaderComponent } from '../../../../shared/components/custom-subheader/custom-subheader.component';
 import { formatMyrCurrency } from '../../../../shared/utils/currency.util';
+import { WORKFLOW_STAGE_META } from '../../../../core/interfaces/batch-sitting.interface';
 
-const COMMENT_MAX_LENGTH = 500;
+const COMMENT_MAX_LENGTH = 1000;
 
 /**
  * TODO(backend): RequestCommentDto has no `score` column persisted server-side yet.
@@ -180,6 +181,7 @@ export class RdigDetailsComponent implements OnInit {
   sectionComments = signal<ScoredComment[]>([]);
   editingCommentId = signal<number | null>(null);
   deletingCommentId = signal<number | null>(null);
+  savingCommentKey = signal<string | null>(null);
   loading = signal(true);
   error = signal<string | null>(null);
 
@@ -649,15 +651,99 @@ export class RdigDetailsComponent implements OnInit {
   readonly totalTeamSize = computed(
     () => this.coResearchers().length + this.collaborators().length,
   );
+  readonly researchClusterLabel = computed(() =>
+    this.val(
+      this.rdig()?.research_cluster_name_snapshot ||
+        this.rdig()?.research_cluster_name ||
+        this.rdig()?.research_cluster_id,
+    ),
+  );
+  readonly researchDomainLabel = computed(() =>
+    this.val(
+      this.rdig()?.research_domain_name_snapshot ||
+        this.rdig()?.research_domain_name ||
+        this.rdig()?.research_domain_id,
+    ),
+  );
+  readonly subResearchDomainLabel = computed(() =>
+    this.val(
+      this.rdig()?.sub_research_domain_name_snapshot ||
+        this.rdig()?.sub_research_domain_name ||
+        this.rdig()?.sub_research_domain_id,
+    ),
+  );
+  readonly esgLabel = computed(() =>
+    this.joinSelectionNames(
+      this.data()?.esg_selections,
+      'esg_name_snapshot',
+      'esg_id',
+      this.rdig()?.esg_names || this.rdig()?.esgs,
+    ),
+  );
+  readonly sdgLabel = computed(() =>
+    this.joinSelectionNames(
+      this.data()?.sdg_selections,
+      'sdg_name_snapshot',
+      'sdg_id',
+      this.rdig()?.sdg_names || this.rdig()?.sdgs,
+    ),
+  );
 
-  /** The batch's submission window — sourced from the same `request.batch` the API already returns. */
-  readonly submissionWindowLabel = computed(() => {
-    const batch = this.request()?.batch;
-    const start = this.fmtDateLong(batch?.start_date);
-    const end = this.fmtDateLong(batch?.end_date);
-    if (!start && !end) return '—';
-    return `${start ?? '—'} – ${end ?? '—'}`;
+  readonly currentStageWindowTitle = computed(() => {
+    const stage = this.currentWorkflowStageMeta();
+    return stage?.label ?? 'Current Stage';
   });
+
+  readonly currentBatchName = computed(() => this.val(this.request()?.batch?.batch_name));
+
+  readonly currentStageWindowOpensLabel = computed(() => {
+    const stage = this.currentWorkflowStageMeta();
+    return this.fmtDate(this.stageWindowForLabel(stage?.label)?.stage_start_date);
+  });
+
+  readonly currentStageWindowClosesLabel = computed(() => {
+    const stage = this.currentWorkflowStageMeta();
+    return this.fmtDate(this.stageWindowForLabel(stage?.label)?.stage_end_date);
+  });
+
+  private currentWorkflowStageMeta() {
+    const normalizedStatus = this.status();
+    return (
+      WORKFLOW_STAGE_META.find((stage) =>
+        stage.rdigStatuses.some((status) => status.toLowerCase() === normalizedStatus),
+      ) ?? null
+    );
+  }
+
+  private stageWindowLabel(stageLabel: string): string {
+    const window = this.stageWindowForLabel(stageLabel);
+    const start = this.fmtDate(window?.stage_start_date);
+    const end = this.fmtDate(window?.stage_end_date);
+    if (start === '—' && end === '—') return '—';
+    return `${start} – ${end}`;
+  }
+
+  private stageWindowForLabel(stageLabel: string | null | undefined) {
+    if (!stageLabel) return null;
+    return (
+      this.request()?.batch?.stage_windows?.find(
+        (stage) => stage.stage_name.trim().toLowerCase() === stageLabel.trim().toLowerCase(),
+      ) ?? null
+    );
+  }
+
+  private joinSelectionNames<T extends object>(
+    selections: T[] | null | undefined,
+    nameKey: keyof T,
+    idKey: keyof T,
+    fallback: unknown,
+  ): string {
+    const values = (selections ?? [])
+      .map((item) => item[nameKey] || item[idKey])
+      .filter((value) => value !== null && value !== undefined && value !== '')
+      .map((value) => String(value));
+    return values.length ? values.join(', ') : this.val(fallback);
+  }
 
   // ── Reviewer identity ──────────────────────────────────────────────────────
   private readonly reviewer1Username = computed(() => this.reviewerUsernameByNo(1));
@@ -777,7 +863,7 @@ export class RdigDetailsComponent implements OnInit {
       .sort((a, b) => a - b);
   }
 
-  private commentSubmissionVersion(comment: RequestCommentDto): number {
+  commentSubmissionVersion(comment: RequestCommentDto): number {
     const createdAt = this.parseTime(comment.created_at);
     if (createdAt === null) return this.currentSubmissionVersion();
     let version = 1;
@@ -894,16 +980,6 @@ export class RdigDetailsComponent implements OnInit {
           minute: '2-digit',
         })
       : '—';
-  }
-
-  /** Date-only, long-month format (e.g. "1 August 2026") — used for the Submission Window card. */
-  fmtDateLong(iso: string | null | undefined): string | null {
-    if (!iso) return null;
-    return new Date(iso).toLocaleDateString('en-GB', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-    });
   }
 
   fmtMoney(value: unknown): string {
@@ -1080,14 +1156,14 @@ export class RdigDetailsComponent implements OnInit {
     if (this.requiresAllGroupComments()) {
       const missing = this.missingRequiredGroupLabels();
       return missing.length
-        ? `Write a comment for: ${missing.join(', ')}.`
-        : 'All required comments are complete. You can take action now.';
+        ? `Save section comments for: ${missing.join(', ')}.`
+        : 'All required section comments are saved. You can take action now.';
     }
     if (this.requiresAllFieldComments()) {
       const missing = this.missingRequiredFieldLabels();
       return missing.length
-        ? `Write a comment for: ${missing.join(', ')}.`
-        : 'All required comments are complete. You can take action now.';
+        ? `Save section comments for: ${missing.join(', ')}.`
+        : 'All required section comments are saved. You can take action now.';
     }
     if (this.requiresWholeFormComment()) {
       return this.hasRequiredWholeFormComment()
@@ -1108,16 +1184,16 @@ export class RdigDetailsComponent implements OnInit {
     if (!this.requiresAllGroupComments()) return [];
     const actor: GroupActor = this.isCurrentActorHos() ? 'hos' : 'rmc';
     return this.groups
-      .filter((g) => !this.hasCurrentActorGroupComment(g, actor) && !this.groupCommentDraft(g, actor))
+      .filter((g) => !this.hasCurrentActorGroupComment(g, actor))
       .map((g) => this.groupLabel(g));
   });
 
-  /** Reviewer 1/2 must write a comment (draft or already-saved) on every field before acting. */
+  /** Reviewer 1/2 must save a comment on every field before acting. */
   readonly missingRequiredFieldLabels = computed(() => {
     if (!this.requiresAllFieldComments()) return [];
     const actor: ReviewerActor = this.isCurrentUserReviewer(1) ? 'reviewer1' : 'reviewer2';
     return this.allFieldDefs
-      .filter((f) => !this.hasCurrentActorFieldComment(f.fieldCode, actor) && !this.fieldCommentDraft(f.fieldCode, actor))
+      .filter((f) => !this.hasCurrentActorFieldComment(f.fieldCode, actor))
       .map((f) => f.label);
   });
 
@@ -1131,13 +1207,13 @@ export class RdigDetailsComponent implements OnInit {
     if (this.requiresAllGroupComments()) {
       const actor: GroupActor = this.isCurrentActorHos() ? 'hos' : 'rmc';
       return this.groups
-        .filter((g) => !this.hasCurrentActorGroupComment(g, actor) && !this.groupCommentDraft(g, actor))
+        .filter((g) => !this.hasCurrentActorGroupComment(g, actor))
         .map((g) => ({ label: this.groupLabel(g), anchorId: GROUP_SECTION_ID[g] }));
     }
     if (this.requiresAllFieldComments()) {
       const actor: ReviewerActor = this.isCurrentUserReviewer(1) ? 'reviewer1' : 'reviewer2';
       return this.allFieldDefs
-        .filter((f) => !this.hasCurrentActorFieldComment(f.fieldCode, actor) && !this.fieldCommentDraft(f.fieldCode, actor))
+        .filter((f) => !this.hasCurrentActorFieldComment(f.fieldCode, actor))
         .map((f) => ({ label: f.label, anchorId: this.fieldCommentAnchorId(f.fieldCode, actor) }));
     }
     return [];
@@ -1211,6 +1287,108 @@ export class RdigDetailsComponent implements OnInit {
 
   canChangeGroupComment(group: GroupCode, actor: GroupActor, comment: ScoredComment): boolean {
     return this.canChangeComment(comment, () => this.canWriteGroupComment(actor));
+  }
+
+  isGroupCommentSaving(group: GroupCode, actor: GroupActor): boolean {
+    return this.savingCommentKey() === this.groupKey(group, actor);
+  }
+
+  submitGroupComment(group: GroupCode, actor: GroupActor): void {
+    const existing = this.currentVersionGroupComment(group, actor);
+    if (existing && this.isEditingGroupComment(group, actor)) {
+      this.updateGroupComment(group, actor, existing);
+      return;
+    }
+    this.saveGroupComment(group, actor);
+  }
+
+  private saveGroupComment(group: GroupCode, actor: GroupActor): void {
+    if (this.requestId == null || this.isGroupCommentSaving(group, actor)) return;
+    if (this.currentVersionGroupComment(group, actor)) {
+      this.feedback.set({ type: 'error', text: 'You already saved a comment for this section.' });
+      return;
+    }
+
+    const control = this.groupCommentControl(group, actor);
+    const commentText = this.groupCommentDraft(group, actor);
+    if (!commentText) {
+      this.feedback.set({ type: 'error', text: 'Please write a comment before saving.' });
+      return;
+    }
+    if (control.invalid) {
+      this.feedback.set({
+        type: 'error',
+        text: `Comment cannot exceed ${this.commentMaxLength} characters.`,
+      });
+      return;
+    }
+
+    const key = this.groupKey(group, actor);
+    this.savingCommentKey.set(key);
+    this.feedback.set(null);
+    this.requests
+      .createSectionComment(this.requestId, {
+        section_code: GROUP_FIELD_CODE[group],
+        section_name: this.groupLabel(group),
+        comment_text: commentText,
+      })
+      .pipe(
+        finalize(() => this.savingCommentKey.set(null)),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe({
+        next: ({ data }) => {
+          this.sectionComments.update((comments) => [data, ...comments]);
+          control.reset('');
+          this.feedback.set({ type: 'success', text: 'Section comment saved.' });
+        },
+        error: (err) => {
+          const msg = err?.error?.message || 'Could not save this section comment.';
+          this.feedback.set({ type: 'error', text: msg });
+        },
+      });
+  }
+
+  private updateGroupComment(group: GroupCode, actor: GroupActor, comment: ScoredComment): void {
+    if (this.requestId == null || this.isGroupCommentSaving(group, actor)) return;
+    if (!this.canChangeGroupComment(group, actor, comment)) return;
+
+    const control = this.groupCommentControl(group, actor);
+    const commentText = this.groupCommentDraft(group, actor);
+    if (!commentText) {
+      this.feedback.set({ type: 'error', text: 'Please write a comment before saving.' });
+      return;
+    }
+    if (control.invalid) {
+      this.feedback.set({
+        type: 'error',
+        text: `Comment cannot exceed ${this.commentMaxLength} characters.`,
+      });
+      return;
+    }
+
+    const key = this.groupKey(group, actor);
+    this.savingCommentKey.set(key);
+    this.feedback.set(null);
+    this.requests
+      .updateSectionComment(this.requestId, comment.id, { comment_text: commentText })
+      .pipe(
+        finalize(() => this.savingCommentKey.set(null)),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe({
+        next: ({ data }) => {
+          this.sectionComments.update((comments) =>
+            comments.map((item) => (item.id === data.id ? data : item)),
+          );
+          this.cancelEditGroupComment(group, actor);
+          this.feedback.set({ type: 'success', text: 'Section comment updated.' });
+        },
+        error: (err) => {
+          const msg = err?.error?.message || 'Could not update this section comment.';
+          this.feedback.set({ type: 'error', text: msg });
+        },
+      });
   }
 
   // ── Field-level comments (Reviewer 1 / Reviewer 2): read ────────────────────
@@ -1289,6 +1467,123 @@ export class RdigDetailsComponent implements OnInit {
 
   canChangeFieldComment(fieldCode: string, actor: ReviewerActor, comment: ScoredComment): boolean {
     return this.canChangeComment(comment, () => this.canWriteFieldComment(actor));
+  }
+
+  isFieldCommentSaving(fieldCode: string, actor: ReviewerActor): boolean {
+    return this.savingCommentKey() === this.fieldKey(fieldCode, actor);
+  }
+
+  submitFieldComment(field: FieldCommentDef, actor: ReviewerActor): void {
+    const existing = this.currentVersionFieldComment(field.fieldCode, actor);
+    if (existing && this.isEditingFieldComment(field.fieldCode, actor)) {
+      this.updateFieldComment(field, actor, existing);
+      return;
+    }
+    this.saveFieldComment(field, actor);
+  }
+
+  private saveFieldComment(field: FieldCommentDef, actor: ReviewerActor): void {
+    if (this.requestId == null || this.isFieldCommentSaving(field.fieldCode, actor)) return;
+    if (this.currentVersionFieldComment(field.fieldCode, actor)) {
+      this.feedback.set({ type: 'error', text: 'You already saved a comment for this section.' });
+      return;
+    }
+
+    const control = this.fieldCommentControl(field.fieldCode, actor);
+    const commentText = this.fieldCommentDraft(field.fieldCode, actor);
+    if (!commentText) {
+      this.feedback.set({ type: 'error', text: 'Please write a comment before saving.' });
+      return;
+    }
+    if (control.invalid) {
+      this.feedback.set({
+        type: 'error',
+        text: `Comment cannot exceed ${this.commentMaxLength} characters.`,
+      });
+      return;
+    }
+
+    const score = this.scorePayload(field, actor);
+    const key = this.fieldKey(field.fieldCode, actor);
+    this.savingCommentKey.set(key);
+    this.feedback.set(null);
+    this.requests
+      .createSectionComment(this.requestId, {
+        section_code: field.fieldCode,
+        section_name: field.label,
+        comment_text: commentText,
+        ...(score !== undefined ? ({ score } as Record<string, unknown>) : {}),
+      })
+      .pipe(
+        finalize(() => this.savingCommentKey.set(null)),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe({
+        next: ({ data }) => {
+          this.sectionComments.update((comments) => [data, ...comments]);
+          control.reset('');
+          this.fieldScoreControl(field.fieldCode, actor).reset('');
+          this.feedback.set({ type: 'success', text: 'Section comment saved.' });
+        },
+        error: (err) => {
+          const msg = err?.error?.message || 'Could not save this section comment.';
+          this.feedback.set({ type: 'error', text: msg });
+        },
+      });
+  }
+
+  private updateFieldComment(field: FieldCommentDef, actor: ReviewerActor, comment: ScoredComment): void {
+    if (this.requestId == null || this.isFieldCommentSaving(field.fieldCode, actor)) return;
+    if (!this.canChangeFieldComment(field.fieldCode, actor, comment)) return;
+
+    const control = this.fieldCommentControl(field.fieldCode, actor);
+    const commentText = this.fieldCommentDraft(field.fieldCode, actor);
+    if (!commentText) {
+      this.feedback.set({ type: 'error', text: 'Please write a comment before saving.' });
+      return;
+    }
+    if (control.invalid) {
+      this.feedback.set({
+        type: 'error',
+        text: `Comment cannot exceed ${this.commentMaxLength} characters.`,
+      });
+      return;
+    }
+
+    const score = this.scorePayload(field, actor);
+    const key = this.fieldKey(field.fieldCode, actor);
+    this.savingCommentKey.set(key);
+    this.feedback.set(null);
+    this.requests
+      .updateSectionComment(this.requestId, comment.id, {
+        comment_text: commentText,
+        ...(score !== undefined ? ({ score } as Record<string, unknown>) : {}),
+      })
+      .pipe(
+        finalize(() => this.savingCommentKey.set(null)),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe({
+        next: ({ data }) => {
+          this.sectionComments.update((comments) =>
+            comments.map((item) => (item.id === data.id ? data : item)),
+          );
+          this.cancelEditFieldComment(field.fieldCode, actor);
+          this.feedback.set({ type: 'success', text: 'Section comment updated.' });
+        },
+        error: (err) => {
+          const msg = err?.error?.message || 'Could not update this section comment.';
+          this.feedback.set({ type: 'error', text: msg });
+        },
+      });
+  }
+
+  private scorePayload(field: FieldCommentDef, actor: ReviewerActor): number | undefined {
+    if (field.maxScore == null) return undefined;
+    const scoreValue = this.fieldScoreControl(field.fieldCode, actor).value;
+    if (scoreValue === null || scoreValue === '') return undefined;
+    const score = Number(scoreValue);
+    return Number.isFinite(score) ? score : undefined;
   }
 
   // ── Whole-form comments: RDIG Chair / VC / CEO ──────────────────────────────
@@ -1371,67 +1666,11 @@ export class RdigDetailsComponent implements OnInit {
   }
 
   // ── Perform an action ───────────────────────────────────────────────────────
-  /**
-   * Builds every not-yet-saved comment (group / field / whole-form) the current
-   * actor has drafted, as pending API calls. There is no separate "Save Comment"
-   * button anywhere on this page any more — every comment is written to a draft
-   * FormControl and only actually persisted here, bundled with the workflow
-   * action the user takes.
-   */
+  /** Builds whole-form comments that are saved together with executive workflow actions. */
   private pendingCommentSaves$(): Observable<unknown>[] {
     const saves: Observable<unknown>[] = [];
     if (this.requestId == null) return saves;
     const requestId = this.requestId;
-
-    if (this.requiresAllGroupComments()) {
-      const actor: GroupActor = this.isCurrentActorHos() ? 'hos' : 'rmc';
-      for (const group of this.groups) {
-        const draft = this.groupCommentDraft(group, actor);
-        if (!draft) continue;
-        const existing = this.currentVersionGroupComment(group, actor);
-        if (existing && this.isCurrentUserComment(existing)) {
-          if (draft === (existing.comment_text ?? '').trim()) continue;
-          saves.push(this.requests.updateSectionComment(requestId, existing.id, { comment_text: draft }));
-        } else {
-          saves.push(
-            this.requests.createSectionComment(requestId, {
-              section_code: GROUP_FIELD_CODE[group],
-              section_name: this.groupLabel(group),
-              comment_text: draft,
-            }),
-          );
-        }
-      }
-    }
-
-    if (this.requiresAllFieldComments()) {
-      const actor: ReviewerActor = this.isCurrentUserReviewer(1) ? 'reviewer1' : 'reviewer2';
-      for (const field of this.allFieldDefs) {
-        const draft = this.fieldCommentDraft(field.fieldCode, actor);
-        if (!draft) continue;
-        const scoreValue = this.fieldScoreControl(field.fieldCode, actor).value;
-        const score = scoreValue !== null && scoreValue !== '' ? Number(scoreValue) : undefined;
-        const existing = this.currentVersionFieldComment(field.fieldCode, actor);
-        if (existing && this.isCurrentUserComment(existing)) {
-          if (draft === (existing.comment_text ?? '').trim() && score === existing.score) continue;
-          saves.push(
-            this.requests.updateSectionComment(requestId, existing.id, {
-              comment_text: draft,
-              ...(score !== undefined ? ({ score } as Record<string, unknown>) : {}),
-            }),
-          );
-        } else {
-          saves.push(
-            this.requests.createSectionComment(requestId, {
-              section_code: field.fieldCode,
-              section_name: field.label,
-              comment_text: draft,
-              ...(score !== undefined ? ({ score } as Record<string, unknown>) : {}),
-            }),
-          );
-        }
-      }
-    }
 
     if (this.requiresWholeFormComment()) {
       const role: WholeFormActor = this.isCurrentActorRdigChair()

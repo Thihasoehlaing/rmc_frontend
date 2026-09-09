@@ -12,7 +12,12 @@ import {
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
-import { BatchSitting } from '../../core/interfaces/batch-sitting.interface';
+import {
+  BatchSitting,
+  WORKFLOW_STAGE_META,
+  WorkflowStageKey,
+  WorkflowStageWindow,
+} from '../../core/interfaces/batch-sitting.interface';
 import { NotificationService } from '../../core/services/notification.service';
 import { ToastService } from '../../core/services/toast.service';
 
@@ -57,7 +62,12 @@ import { FormPageSkeletonComponent } from '../../shared/components/form-page-ske
 import { Observable, catchError, finalize, forkJoin, map, of, switchMap, tap } from 'rxjs';
 import { SvgIconComponent } from '../../shared/components/svg-icon/svg-icon.component';
 import { SVG_ICON_LOADING_SPINNER, SVG_ICON_SUCCESS_CHECK } from '../../shared/icons/svg-icons';
-import { RdigApiService, RdigFormData, RdigRequestDto } from './services/rdig-api.service';
+import {
+  RdigActiveBatchResponse,
+  RdigApiService,
+  RdigFormData,
+  RdigRequestDto,
+} from './services/rdig-api.service';
 
 export function isApplicantSubmissionWindowOpen(
   hasActiveBatch: boolean,
@@ -169,6 +179,38 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
       hour: '2-digit',
       minute: '2-digit',
     });
+  }
+
+  private emptyStageWindows(): Record<WorkflowStageKey, WorkflowStageWindow> {
+    return Object.fromEntries(
+      WORKFLOW_STAGE_META.map((stage) => [stage.key, { startDate: null, endDate: null }]),
+    ) as Record<WorkflowStageKey, WorkflowStageWindow>;
+  }
+
+  private batchStagesFromApi(
+    batch: NonNullable<RdigActiveBatchResponse['batch']>,
+    applicantStart: string | null,
+    applicantEnd: string | null,
+  ): Record<WorkflowStageKey, WorkflowStageWindow> {
+    const stages = this.emptyStageWindows();
+    const keyByLabel = new Map(
+      WORKFLOW_STAGE_META.map((stage) => [stage.label.trim().toLowerCase(), stage.key]),
+    );
+
+    for (const stageWindow of batch.stage_windows ?? []) {
+      const key = keyByLabel.get(stageWindow.stage_name.trim().toLowerCase());
+      if (!key) continue;
+      stages[key] = {
+        startDate: stageWindow.stage_start_date,
+        endDate: stageWindow.stage_end_date,
+      };
+    }
+
+    stages.applicant = {
+      startDate: applicantStart,
+      endDate: applicantEnd,
+    };
+    return stages;
   }
 
   // ── Wizard state ───────────────────────────────────────────────
@@ -913,12 +955,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
                 status: batch.status,
                 startDate: batch.start_date,
                 endDate: batch.end_date,
-                stages: {
-                  applicant: {
-                    startDate: applicantStart,
-                    endDate: applicantEnd,
-                  },
-                },
+                stages: this.batchStagesFromApi(batch, applicantStart, applicantEnd),
               } as unknown as BatchSitting)
             : null,
         );
@@ -1054,11 +1091,15 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
         applicationType: rdig.application_type ?? null,
         category: rdig.project_category ?? null,
         track: rdig.track ?? null,
-        duration: rdig.project_duration_months ?? null,
+        duration: this.toRadioValue(rdig.project_duration_months),
+        declarations: {
+          ethics: !!rdig.declaration_no_ongoing_rdig_self,
+          conflict: !!rdig.declaration_no_ongoing_rdig_coresearchers,
+        },
         title: rdig.project_title ?? '',
         researchArea: rdig.research_area ?? '',
-        domain: rdig.research_domain_id ?? null,
-        subDomain: rdig.sub_research_domain_id ?? null,
+        domain: this.toDropdownId(rdig.research_domain_id),
+        subDomain: this.toDropdownId(rdig.sub_research_domain_id),
         executiveSummary: rdig.executive_summary ?? '',
         keywords: rdig.keywords ?? '',
         introduction: rdig.introduction ?? '',
@@ -1084,8 +1125,14 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
           quantity: rdig.indexed_journal_quantity ?? 0,
         },
         conceptualDesign: !!rdig.conceptual_design_selected,
-        knowledgeTransfer: { checked: !!rdig.knowledge_transfer_programme_selected },
-        externalGrant: { checked: !!rdig.application_external_grant_selected },
+        knowledgeTransfer: {
+          checked: !!rdig.knowledge_transfer_programme_selected,
+          community: rdig.knowledge_transfer_community ?? '',
+        },
+        externalGrant: {
+          checked: !!rdig.application_external_grant_selected,
+          scheme: rdig.external_grant_scheme ?? '',
+        },
         others: {
           checked: !!rdig.other_output_selected,
           details: rdig.other_output_specification ?? '',
@@ -1102,7 +1149,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
       leaderName: rdig.project_leader_name ?? requestRow.applicant_name ?? '',
       leaderEmail: rdig.project_leader_email ?? requestRow.applicant_email ?? '',
       department: rdig.project_leader_department ?? requestRow.applicant_department ?? '',
-      researchCluster: rdig.research_cluster_id ?? null,
+      researchCluster: this.toDropdownId(rdig.research_cluster_id),
       leaderRoles: rdig.project_leader_role_in_project ?? '',
     });
 
@@ -1215,7 +1262,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
     // ── Simple groups (patchValue handles nested objects) ────────
     this.rdigForm.patchValue({
       metadata: data.metadata ?? {},
-      projectDetails: data.projectDetails ?? {},
+      projectDetails: this.normalizeSavedProjectDetails(data.projectDetails),
       outputs: data.outputs ?? {},
       finalDeclaration: data.finalDeclaration ?? {},
       reviewTeam: data.reviewTeam ?? {},
@@ -1231,7 +1278,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
       leaderName: data.teamDetails?.leaderName ?? '',
       leaderEmail: data.teamDetails?.leaderEmail ?? '',
       department: data.teamDetails?.department ?? '',
-      researchCluster: data.teamDetails?.researchCluster ?? null,
+      researchCluster: this.toDropdownId(data.teamDetails?.researchCluster),
       leaderRoles: data.teamDetails?.leaderRoles ?? '',
     });
 
@@ -1310,6 +1357,66 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
     this.workflow.reviewer2UserId.set(r2);
   }
 
+  private normalizeSavedProjectDetails(projectDetails: any): any {
+    if (!projectDetails) return {};
+    return {
+      ...projectDetails,
+      duration: this.toRadioValue(projectDetails.duration),
+      domain: this.toDropdownId(projectDetails.domain),
+      subDomain: this.toDropdownId(projectDetails.subDomain),
+      esgs: this.toDropdownIds(projectDetails.esgs),
+      sdgs: this.toDropdownIds(projectDetails.sdgs),
+    };
+  }
+
+  private toDropdownId(value: unknown): string | null {
+    if (value === null || value === undefined || value === '') return null;
+    return String(value);
+  }
+
+  private toDropdownIds(values: unknown): string[] {
+    if (!Array.isArray(values)) return [];
+    return values
+      .filter((value) => value !== null && value !== undefined && value !== '')
+      .map((value) => String(value));
+  }
+
+  private toRadioValue(value: unknown): string | null {
+    if (value === null || value === undefined || value === '') return null;
+    return String(value);
+  }
+
+  private toDecimalNumber(value: unknown): number {
+    return this.parseDecimalAmount(value) ?? 0;
+  }
+
+  private toDecimalPayload(value: unknown): string | null {
+    const amount = this.parseDecimalAmount(value);
+    return amount === null ? null : amount.toFixed(2);
+  }
+
+  private parseDecimalAmount(value: unknown): number | null {
+    if (value === null || value === undefined || value === '') return null;
+    const normalized = String(value).replace(/,/g, '').trim();
+    if (!normalized) return null;
+    const amount = Number(normalized);
+    return Number.isFinite(amount) ? amount : null;
+  }
+
+  private calculateBudgetTotalForPayload(budget: any): number {
+    const categoryKeys = [
+      'studentAllowances',
+      'travelAccommodation',
+      'materialsSupplies',
+      'specialServices',
+    ];
+
+    return categoryKeys.reduce((total, key) => {
+      const rows = Array.isArray(budget?.[key]) ? budget[key] : [];
+      return total + rows.reduce((sum: number, row: any) => sum + this.toDecimalNumber(row?.amount), 0);
+    }, 0);
+  }
+
   /** Clear a FormArray and rebuild it from a plain-object array. */
   private rebuildArray(arr: FormArray, items: any[]): void {
     arr.clear({ emitEvent: false });
@@ -1354,6 +1461,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
     const outputs = raw.outputs ?? {};
     const budget = raw.budget ?? {};
     const finalDecl = raw.finalDeclaration ?? {};
+    const totalBudgetRequest = this.calculateBudgetTotalForPayload(budget);
 
     return {
       application_type: pd.applicationType || null,
@@ -1383,15 +1491,19 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
       project_leader_email: team.leaderEmail || null,
       project_leader_department: team.department || null,
       project_leader_role_in_project: team.leaderRoles || null,
+      declaration_no_ongoing_rdig_self: !!pd.declarations?.ethics,
+      declaration_no_ongoing_rdig_coresearchers: !!pd.declarations?.conflict,
       declaration_agreement_accepted: !!finalDecl.agreed,
       novelty_justification: finalDecl.noveltyJustification || null,
       budget_remarks: budget.otherRemarks || null,
-      total_budget_request: budget.totalRequest != null ? String(budget.totalRequest) : null,
+      total_budget_request: this.toDecimalPayload(totalBudgetRequest),
       indexed_journal_selected: !!outputs.journal?.checked,
       indexed_journal_quantity: outputs.journal?.quantity ?? null,
       conceptual_design_selected: !!outputs.conceptualDesign,
       knowledge_transfer_programme_selected: !!outputs.knowledgeTransfer?.checked,
+      knowledge_transfer_community: outputs.knowledgeTransfer?.community || null,
       application_external_grant_selected: !!outputs.externalGrant?.checked,
+      external_grant_scheme: outputs.externalGrant?.scheme || null,
       other_output_selected: !!outputs.others?.checked,
       other_output_specification: outputs.others?.details || null,
     };
@@ -1573,7 +1685,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
               (raw) => ({
                 rdig_budget_section_id: sectionIds[code],
                 description: raw.description || null,
-                amount_rm: raw.amount != null ? String(raw.amount) : null,
+                amount_rm: this.toDecimalPayload(raw.amount),
                 remarks: raw.remarks || null,
               }),
               (payload) => this.rdigApi.createBudgetItem(id, payload),
@@ -1913,7 +2025,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
     }
 
     this.submissionState.set('SUCCESS');
-    setTimeout(() => this.router.navigate(['/dashboard']), 2200);
+    setTimeout(() => this.router.navigateByUrl('/submissions/pending?tab=all'), 2200);
   }
 
   /** Applicant submit/resubmit failed — surface the backend's message. */

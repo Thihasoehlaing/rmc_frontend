@@ -8,7 +8,6 @@ import {
   externalProjectDetailPermission,
   partnershipPermission,
   ragraPermission,
-  rdigPermission,
   reportPermission,
   systemOrRmcAdminPermission,
   systemSettingsPermission,
@@ -78,10 +77,6 @@ export const routes: Routes = [
       },
       {
         path: 'rdig',
-        canActivate: [permissionGuard],
-        data: {
-          permission: rdigPermission,
-        },
         loadChildren: () =>
           import('./features/rdig/rdig_form.routes').then((m) => m.rdigApplicationRoutes),
       },

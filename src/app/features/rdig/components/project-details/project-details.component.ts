@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, OnDestroy, inject } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { ReactiveFormsModule, FormGroup, FormControl } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Subject } from 'rxjs';
@@ -57,35 +57,39 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy {
     get reviewProject() { return this.parentForm.get('reviewProject') as FormGroup; }
     fc(name: string): FormControl { return this.reviewProject.get(name) as FormControl; }
 
-    domains: { label: string; value: string }[] = [];
-    filteredSubDomains: { label: string; value: string }[] = [];
-    esgs: { label: string; value: string }[] = [];
-    sdgs: { label: string; value: string }[] = [];
+    domains = signal<{ label: string; value: string }[]>([]);
+    filteredSubDomains = signal<{ label: string; value: string }[]>([]);
+    esgs = signal<{ label: string; value: string }[]>([]);
+    sdgs = signal<{ label: string; value: string }[]>([]);
+    compareOptionValues = (left: unknown, right: unknown): boolean => String(left) === String(right);
 
     ngOnInit(): void {
         // Domains, ESGs and SDGs come from the real backend master-data lists.
         this.masterData.getResearchDomains()
             .pipe(takeUntil(this.destroy$))
             .subscribe(res => {
-                this.domains = (res.data ?? [])
+                const domains = (res.data ?? [])
                     .filter(o => o.is_active)
                     .map(o => ({ label: o.domain_name, value: o.id.toString() }));
+                setTimeout(() => this.domains.set(domains));
             });
 
         this.masterData.getEsgs()
             .pipe(takeUntil(this.destroy$))
             .subscribe(res => {
-                this.esgs = (res.data ?? [])
+                const esgs = (res.data ?? [])
                     .filter(o => o.is_active)
                     .map(o => ({ label: o.esg_name, value: o.id.toString() }));
+                setTimeout(() => this.esgs.set(esgs));
             });
 
         this.masterData.getSdgs()
             .pipe(takeUntil(this.destroy$))
             .subscribe(res => {
-                this.sdgs = (res.data ?? [])
+                const sdgs = (res.data ?? [])
                     .filter(o => o.is_active)
                     .map(o => ({ label: o.sdg_name, value: o.id.toString() }));
+                setTimeout(() => this.sdgs.set(sdgs));
             });
 
         // React to domain selection changes → fetch that domain's sub-domains
@@ -105,16 +109,17 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy {
 
     private filterSubDomains(domainIdStr: string): void {
         if (!domainIdStr) {
-            this.filteredSubDomains = [];
+            this.filteredSubDomains.set([]);
             return;
         }
         const domainId = parseInt(domainIdStr, 10);
         this.masterData.getSubResearchDomains(domainId)
             .pipe(takeUntil(this.destroy$))
             .subscribe(res => {
-                this.filteredSubDomains = (res.data ?? [])
+                const subDomains = (res.data ?? [])
                     .filter(o => o.is_active)
                     .map(o => ({ label: o.sub_domain_name, value: o.id.toString() }));
+                setTimeout(() => this.filteredSubDomains.set(subDomains));
             });
     }
 

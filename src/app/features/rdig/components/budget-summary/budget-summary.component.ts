@@ -234,7 +234,7 @@ export class BudgetSummaryComponent implements OnInit {
     const categoryArray = this.getBudgetArray(this.activeBudgetCategory);
     const payload = {
       description: this.descriptionControl.value,
-      amount: this.amountControl.value,
+      amount: this.toAmountNumber(this.amountControl.value),
       remarks: this.remarksControl.value,
     };
 
@@ -281,7 +281,7 @@ export class BudgetSummaryComponent implements OnInit {
 
   calculateTotal() {
     const sum = (arr: FormArray) =>
-      arr.controls.reduce((acc, ctrl) => acc + (ctrl.get('amount')?.value || 0), 0);
+      arr.controls.reduce((acc, ctrl) => acc + this.toAmountNumber(ctrl.get('amount')?.value), 0);
     const total =
       sum(this.studentAllowances) +
       sum(this.travelAccommodation) +
@@ -293,14 +293,14 @@ export class BudgetSummaryComponent implements OnInit {
   }
 
   get isBudgetInvalidRange(): boolean {
-    const total = this.budgetForm.get('totalRequest')?.value ?? 0;
+    const total = this.toAmountNumber(this.budgetForm.get('totalRequest')?.value);
     if (this.category === 'S&T') return total < 20000 || total > 30000;
     if (this.category === 'Non S&T') return total < 5000 || total > 10000;
     return false;
   }
 
   get budgetAlertColor(): string {
-    const total = this.budgetForm.get('totalRequest')?.value ?? 0;
+    const total = this.toAmountNumber(this.budgetForm.get('totalRequest')?.value);
     let limitMin = 0;
     if (this.category === 'S&T') limitMin = 20000;
     else if (this.category === 'Non S&T') limitMin = 5000;
@@ -326,5 +326,12 @@ export class BudgetSummaryComponent implements OnInit {
 
   fc(name: string): FormControl {
     return this.reviewBudget.get(name) as FormControl;
+  }
+
+  private toAmountNumber(value: unknown): number {
+    if (value === null || value === undefined || value === '') return 0;
+    const normalized = String(value).replace(/,/g, '').trim();
+    const amount = Number(normalized);
+    return Number.isFinite(amount) ? amount : 0;
   }
 }

@@ -16,7 +16,7 @@
       <div class="dropdown-options-panel">
         <div class="dropdown-search-panel">
           <app-submissions-search
-            [placeholder]="showCode ? 'Search code or description' : 'Search category name'"
+            [placeholder]="searchPlaceholder"
             [value]="searchQuery()"
             (search)="onSearch($event)"
             (refresh)="onReset()"
@@ -58,7 +58,13 @@
                   @if (showCode) {
                     <th>{{ codeLabel }}</th>
                   }
+                  @if (usesCurrencyApi()) {
+                    <th>Symbol</th>
+                  }
                   <th>{{ nameLabel }}</th>
+                  @if (usesCurrencyApi()) {
+                    <th>Country</th>
+                  }
                   @if (showSharedWith) {
                     <th>Shared With</th>
                   }
@@ -70,10 +76,7 @@
               <tbody>
                 @if (isLoading()) {
                   <tr>
-                    <td
-                      class="catalog-empty-state"
-                      [attr.colspan]="4 + (showCode ? 1 : 0) + (showSharedWith ? 1 : 0)"
-                    >
+                    <td class="catalog-empty-state" [attr.colspan]="tableColumnCount">
                       <span class="material-icons catalog-loading-icon">progress_activity</span>
                       <strong>Loading options</strong>
                       <span>Please wait while the categories are retrieved.</span>
@@ -81,10 +84,7 @@
                   </tr>
                 } @else if (loadFailed()) {
                   <tr>
-                    <td
-                      class="catalog-empty-state"
-                      [attr.colspan]="4 + (showCode ? 1 : 0) + (showSharedWith ? 1 : 0)"
-                    >
+                    <td class="catalog-empty-state" [attr.colspan]="tableColumnCount">
                       <span class="material-icons">cloud_off</span>
                       <strong>Unable to load options</strong>
                       <button
@@ -103,9 +103,17 @@
                       @if (showCode) {
                         <td class="catalog-code-cell">{{ row.code }}</td>
                       }
+                      @if (usesCurrencyApi()) {
+                        <td class="catalog-code-cell">{{ row.symbol }}</td>
+                      }
                       <td class="option-name-cell" [title]="row.name">
                         {{ displayName(row) }}
                       </td>
+                      @if (usesCurrencyApi()) {
+                        <td class="option-name-cell" [title]="row.countryName || '-'">
+                          {{ row.countryName || '-' }}
+                        </td>
+                      }
                       @if (showSharedWith) {
                         <td>
                           <div
@@ -188,10 +196,7 @@
                     </tr>
                   } @empty {
                     <tr>
-                      <td
-                        class="catalog-empty-state"
-                        [attr.colspan]="4 + (showCode ? 1 : 0) + (showSharedWith ? 1 : 0)"
-                      >
+                      <td class="catalog-empty-state" [attr.colspan]="tableColumnCount">
                         <span class="material-icons">inbox</span>
                         <strong>No options found</strong>
                         <span>Try changing the search or status filter.</span>
@@ -228,9 +233,13 @@
   [showCategory]="false"
   [showCode]="showCode"
   [codeLabel]="codeLabel"
+  [showSymbol]="usesCurrencyApi()"
+  symbolLabel="Currency Symbol"
   [optionNameLabel]="nameLabel"
-  [optionNameMaxLength]="usesProjectAccountCodeApi() ? 100 : null"
+  [optionNameMaxLength]="usesProjectAccountCodeApi() || usesCountryApi() ? 100 : null"
   [showOptionNameCounter]="usesProjectAccountCodeApi()"
+  [showCountry]="usesCurrencyApi()"
+  [countryOptions]="countryOptions()"
   [availableForms]="availableFormNames()"
   [availableFormOptions]="availableFormSharingOptions()"
   [allowFormSharing]="showSharedWith"
@@ -253,7 +262,7 @@
       >?
     </p>
     <p class="delete-dialog-note">
-      This removes the option from every form where it is currently available.
+      {{ deleteDialogNote() }}
     </p>
   }
   <div dialog-footer>

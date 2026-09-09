@@ -7,6 +7,7 @@ import { DecimalAmountDirective } from '../../directives/decimal-amount.directiv
 
 export interface AddOptionPayload {
   code?: string;
+  symbol?: string;
   name: string;
   status: 'Active' | 'Inactive';
   appliesTo: string[]; // form names
@@ -15,6 +16,7 @@ export interface AddOptionPayload {
   limit?: number | null;
   description?: string;
   parentDomainId?: number | null;
+  countryId?: number | null;
 }
 
 @Component({
@@ -37,6 +39,8 @@ export class AddOptionModalComponent implements OnChanges {
   @Input() categoryLabel = '';
   @Input() showCode = false;
   @Input() codeLabel = 'Code';
+  @Input() showSymbol = false;
+  @Input() symbolLabel = 'Symbol';
   @Input() optionNameLabel = 'Option Name';
   @Input() optionNameMaxLength: number | null = null;
   @Input() showOptionNameCounter = false;
@@ -55,12 +59,16 @@ export class AddOptionModalComponent implements OnChanges {
   @Input() showParentDomain = false;
   @Input() parentDomainLabel = 'Parent Research Domain';
   @Input() parentDomainOptions: { label: string; value: string }[] = [];
+  @Input() showCountry = false;
+  @Input() countryLabel = 'Country';
+  @Input() countryOptions: { label: string; value: string }[] = [];
 
   @Output() close = new EventEmitter<void>();
   @Output() save = new EventEmitter<AddOptionPayload>();
 
   name: string = '';
   code: string = '';
+  symbol: string = '';
   status: 'Active' | 'Inactive' = 'Active';
   appliesTo: string[] = [];
   readonly appliesToControl = new FormControl<string[]>([], { nonNullable: true });
@@ -69,6 +77,7 @@ export class AddOptionModalComponent implements OnChanges {
   limit: number | null = null;
   description: string = '';
   parentDomainId: string = '';
+  countryId: string = '';
 
   ngOnChanges(changes: SimpleChanges) {
     // Only reset when the modal opens or while it is closed and a new edit value is
@@ -84,6 +93,7 @@ export class AddOptionModalComponent implements OnChanges {
     const init = this.initial;
     if (init) {
       this.code = init.code || '';
+      this.symbol = init.symbol || '';
       this.name = this.limitOptionName(init.name || '');
       this.status = init.status || 'Active';
       this.appliesTo = init.appliesTo || [];
@@ -93,8 +103,10 @@ export class AddOptionModalComponent implements OnChanges {
       this.limit = init.limit ?? null;
       this.description = init.description || '';
       this.parentDomainId = init.parentDomainId != null ? String(init.parentDomainId) : '';
+      this.countryId = init.countryId != null ? String(init.countryId) : '';
     } else {
       this.code = '';
+      this.symbol = '';
       this.name = '';
       this.status = 'Active';
       this.appliesTo = [...this.defaultSelectedForms];
@@ -104,6 +116,7 @@ export class AddOptionModalComponent implements OnChanges {
       this.limit = null;
       this.description = '';
       this.parentDomainId = '';
+      this.countryId = '';
     }
   }
 
@@ -116,7 +129,15 @@ export class AddOptionModalComponent implements OnChanges {
       return false;
     }
 
+    if (this.showSymbol && !this.symbol.trim()) {
+      return false;
+    }
+
     if (this.showParentDomain && !this.parentDomainId) {
+      return false;
+    }
+
+    if (this.showCountry && !this.countryId) {
       return false;
     }
 
@@ -161,9 +182,12 @@ export class AddOptionModalComponent implements OnChanges {
 
   onSave() {
     if (!this.isValid) return;
-    const appliesTo = this.allowFormSharing ? [...this.selectedAppliesTo] : [...this.defaultSelectedForms];
+    const appliesTo = this.allowFormSharing
+      ? [...this.selectedAppliesTo]
+      : [...this.defaultSelectedForms];
     this.save.emit({
       code: this.showCode ? this.code.trim() : undefined,
+      symbol: this.showSymbol ? this.symbol.trim() : undefined,
       name: this.limitOptionName(this.name.trim()),
       status: this.status,
       appliesTo,
@@ -172,6 +196,7 @@ export class AddOptionModalComponent implements OnChanges {
       limit: this.showRegionMetadata ? this.limit : undefined,
       description: this.showRegionMetadata ? this.description.trim() : undefined,
       parentDomainId: this.showParentDomain ? Number(this.parentDomainId) : undefined,
+      countryId: this.showCountry ? Number(this.countryId) : undefined,
     });
   }
 

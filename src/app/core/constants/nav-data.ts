@@ -183,6 +183,18 @@ export const NAVIGATION_DATA: NavGroup[] = [
             permission: adminOnlySettingsChildPermission,
           },
           {
+            label: 'Manage Countries',
+            icon: 'public',
+            route: '/admin-settings/manage-countries',
+            permission: adminOnlySettingsChildPermission,
+          },
+          {
+            label: 'Manage Currencies',
+            icon: 'payments',
+            route: '/admin-settings/manage-currencies',
+            permission: adminOnlySettingsChildPermission,
+          },
+          {
             label: 'Batches',
             icon: 'batch_prediction',
             route: '/admin-settings/batches',

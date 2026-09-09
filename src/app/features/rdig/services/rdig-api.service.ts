@@ -4,7 +4,10 @@ import { Observable } from 'rxjs';
 
 import { environment } from '../../../../environments/environment';
 import { SKIP_API_SUCCESS_TOAST } from '../../../core/interceptors/api-message.interceptor';
-import { RequestSummaryDto } from '../../../core/services/workflow-requests.service';
+import {
+  PaginatedData,
+  RequestSummaryDto,
+} from '../../../core/services/workflow-requests.service';
 
 export interface ApiResponse<T> {
   success: boolean;
@@ -254,8 +257,10 @@ export class RdigApiService {
   }
 
   // ── APU Co-Researchers ──────────────────────────────────────────
-  listCoResearchers(id: number): Observable<ApiResponse<RdigCoResearcherDto[]>> {
-    return this.http.get<ApiResponse<RdigCoResearcherDto[]>>(`${this.base}/${id}/apu-co-researchers`);
+  listCoResearchers(id: number): Observable<ApiResponse<PaginatedData<RdigCoResearcherDto>>> {
+    return this.http.get<ApiResponse<PaginatedData<RdigCoResearcherDto>>>(
+      `${this.base}/${id}/apu-co-researchers`,
+    );
   }
 
   createCoResearcher(
@@ -289,8 +294,10 @@ export class RdigApiService {
   }
 
   // ── Collaborators ────────────────────────────────────────────────
-  listCollaborators(id: number): Observable<ApiResponse<RdigCollaboratorDto[]>> {
-    return this.http.get<ApiResponse<RdigCollaboratorDto[]>>(`${this.base}/${id}/collaborators`);
+  listCollaborators(id: number): Observable<ApiResponse<PaginatedData<RdigCollaboratorDto>>> {
+    return this.http.get<ApiResponse<PaginatedData<RdigCollaboratorDto>>>(
+      `${this.base}/${id}/collaborators`,
+    );
   }
 
   createCollaborator(
@@ -324,8 +331,10 @@ export class RdigApiService {
   }
 
   // ── ESG / SDG selections (bulk replace) ─────────────────────────
-  listEsgSelections(id: number): Observable<ApiResponse<RdigEsgSelectionDto[]>> {
-    return this.http.get<ApiResponse<RdigEsgSelectionDto[]>>(`${this.base}/${id}/esg-selections`);
+  listEsgSelections(id: number): Observable<ApiResponse<PaginatedData<RdigEsgSelectionDto>>> {
+    return this.http.get<ApiResponse<PaginatedData<RdigEsgSelectionDto>>>(
+      `${this.base}/${id}/esg-selections`,
+    );
   }
 
   replaceEsgSelections(id: number, esgIds: number[]): Observable<ApiResponse<RdigEsgSelectionDto[]>> {
@@ -336,8 +345,10 @@ export class RdigApiService {
     );
   }
 
-  listSdgSelections(id: number): Observable<ApiResponse<RdigSdgSelectionDto[]>> {
-    return this.http.get<ApiResponse<RdigSdgSelectionDto[]>>(`${this.base}/${id}/sdg-selections`);
+  listSdgSelections(id: number): Observable<ApiResponse<PaginatedData<RdigSdgSelectionDto>>> {
+    return this.http.get<ApiResponse<PaginatedData<RdigSdgSelectionDto>>>(
+      `${this.base}/${id}/sdg-selections`,
+    );
   }
 
   replaceSdgSelections(id: number, sdgIds: number[]): Observable<ApiResponse<RdigSdgSelectionDto[]>> {
@@ -349,8 +360,8 @@ export class RdigApiService {
   }
 
   // ── Research Activities ─────────────────────────────────────────
-  listResearchActivities(id: number): Observable<ApiResponse<RdigResearchActivityDto[]>> {
-    return this.http.get<ApiResponse<RdigResearchActivityDto[]>>(
+  listResearchActivities(id: number): Observable<ApiResponse<PaginatedData<RdigResearchActivityDto>>> {
+    return this.http.get<ApiResponse<PaginatedData<RdigResearchActivityDto>>>(
       `${this.base}/${id}/research-activities`,
     );
   }
@@ -386,8 +397,10 @@ export class RdigApiService {
   }
 
   // ── Budget Sections (auto-created on draft creation) ────────────
-  listBudgetSections(id: number): Observable<ApiResponse<RdigBudgetSectionDto[]>> {
-    return this.http.get<ApiResponse<RdigBudgetSectionDto[]>>(`${this.base}/${id}/budget-sections`);
+  listBudgetSections(id: number): Observable<ApiResponse<{ items: RdigBudgetSectionDto[] }>> {
+    return this.http.get<ApiResponse<{ items: RdigBudgetSectionDto[] }>>(
+      `${this.base}/${id}/budget-sections`,
+    );
   }
 
   createBudgetSection(
@@ -421,8 +434,10 @@ export class RdigApiService {
   }
 
   // ── Budget Items ─────────────────────────────────────────────────
-  listBudgetItems(id: number): Observable<ApiResponse<RdigBudgetItemDto[]>> {
-    return this.http.get<ApiResponse<RdigBudgetItemDto[]>>(`${this.base}/${id}/budget-items`);
+  listBudgetItems(id: number): Observable<ApiResponse<PaginatedData<RdigBudgetItemDto>>> {
+    return this.http.get<ApiResponse<PaginatedData<RdigBudgetItemDto>>>(
+      `${this.base}/${id}/budget-items`,
+    );
   }
 
   createBudgetItem(
@@ -456,8 +471,10 @@ export class RdigApiService {
   }
 
   // ── Attachments ──────────────────────────────────────────────────
-  listAttachments(id: number): Observable<ApiResponse<RdigAttachmentDto[]>> {
-    return this.http.get<ApiResponse<RdigAttachmentDto[]>>(`${this.base}/${id}/attachments`);
+  listAttachments(id: number): Observable<ApiResponse<PaginatedData<RdigAttachmentDto>>> {
+    return this.http.get<ApiResponse<PaginatedData<RdigAttachmentDto>>>(
+      `${this.base}/${id}/attachments`,
+    );
   }
 
   uploadAttachment(

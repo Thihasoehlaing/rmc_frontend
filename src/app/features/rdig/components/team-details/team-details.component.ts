@@ -10,7 +10,6 @@ import {
 } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { COUNTRY_LIST } from '../../../../core/constants/countries.constant';
 import { SearchableDropdownComponent } from '../../../../shared/components/searchable-dropdown/searchable-dropdown.component';
 import { CharacterCounterComponent } from '../../../../shared/components/character-counter/character-counter.component';
 import { ValidationMessageComponent } from '../../../../shared/components/validation-message/validation-message.component';
@@ -19,7 +18,10 @@ import { FileUploadComponent } from '../../../../shared/components/file-upload/f
 import { DialogComponent } from '../../../../shared/components/dialog/dialog.component';
 import { ReviewBlockComponent } from '../review-block/review-block.component';
 import { RdigWorkflowService } from '../../services/rdig-workflow.service';
-import { MasterDataService, AcademicStaffOption } from '../../../../core/services/master-data.service';
+import {
+  MasterDataService,
+  AcademicStaffOption,
+} from '../../../../core/services/master-data.service';
 import { DataTableComponent } from '../../../../shared/components/data-table/data-table.component';
 import type { DataTableColumn } from '../../../../shared/components/data-table/data-table.component';
 import { ActionButtonComponent } from '../../../../shared/components/action-button/action-button.component';
@@ -207,7 +209,8 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
       country: ['', Validators.required],
       funding: ['', [Validators.required, Validators.pattern('^[0-9]+(\\.[0-9]{1,2})?$')]],
       roles: ['', [Validators.required, Validators.maxLength(600)]],
-      supportLetter: [null, Validators.required],
+      supportLetter: [null],
+      supportLetterAttachmentId: [null],
     });
   }
 
@@ -293,8 +296,25 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
   }
 
   private loadCountryOptions(): void {
-    this.countryOptions = COUNTRY_LIST;
-    this.countriesLoading = false;
+    this.countriesLoading = true;
+    this.masterData
+      .getCountries()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res) => {
+          this.countryOptions = (res.data ?? [])
+            .filter((country) => country.is_active)
+            .map((country) => ({
+              label: country.name,
+              value: country.name,
+            }));
+          this.countriesLoading = false;
+        },
+        error: () => {
+          this.countryOptions = [];
+          this.countriesLoading = false;
+        },
+      });
   }
 
   openInternalModal(): void {

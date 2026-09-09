@@ -7,17 +7,17 @@ export const adminSettingsRoutes: Routes = [
   {
     path: '',
     loadComponent: () =>
-      import('./admin-settings/admin-settings.component').then(m => m.AdminSettingsComponent),
+      import('./admin-settings/admin-settings.component').then((m) => m.AdminSettingsComponent),
   },
   {
     path: 'guidelines',
     loadComponent: () =>
-      import('./guidelines/guidelines.component').then(m => m.GuidelinesComponent),
+      import('./guidelines/guidelines.component').then((m) => m.GuidelinesComponent),
   },
   {
     path: 'form-setting',
     loadComponent: () =>
-      import('./form-setting/form-setting.component').then(m => m.FormSettingComponent),
+      import('./form-setting/form-setting.component').then((m) => m.FormSettingComponent),
   },
   {
     path: 'dropdowns',
@@ -25,48 +25,48 @@ export const adminSettingsRoutes: Routes = [
       {
         path: '',
         loadComponent: () =>
-          import('./dropdowns/dropdowns.component').then(m => m.DropdownsComponent),
+          import('./dropdowns/dropdowns.component').then((m) => m.DropdownsComponent),
       },
       {
         path: 'rdig-dropdown-options',
         loadComponent: () =>
           import('./dropdowns/rdig-dropdown-options/rdig-dropdown-options.component').then(
-            m => m.RdigDropdownOptionsComponent,
+            (m) => m.RdigDropdownOptionsComponent,
           ),
       },
       {
         path: 'ra-gra-dropdown-options',
         loadComponent: () =>
           import('./dropdowns/ra-gra-dropdown-options/ra-gra-dropdown-options.component').then(
-            m => m.RaGraDropdownOptionsComponent,
+            (m) => m.RaGraDropdownOptionsComponent,
           ),
       },
       {
         path: 'conference-dropdown-options',
         loadComponent: () =>
           import('./dropdowns/conference-dropdown-options/conference-dropdown-options.component').then(
-            m => m.ConferenceDropdownOptionsComponent,
+            (m) => m.ConferenceDropdownOptionsComponent,
           ),
       },
       {
         path: 'journal-dropdown-options',
         loadComponent: () =>
           import('./dropdowns/journal-dropdown-options/journal-dropdown-options.component').then(
-            m => m.JournalDropdownOptionsComponent,
+            (m) => m.JournalDropdownOptionsComponent,
           ),
       },
       {
         path: 'travel-dropdown-options',
         loadComponent: () =>
           import('./dropdowns/travel-dropdown-options/travel-dropdown-options.component').then(
-            m => m.TravelDropdownOptionsComponent,
+            (m) => m.TravelDropdownOptionsComponent,
           ),
       },
       {
         path: 'partnership-dropdown-options',
         loadComponent: () =>
           import('./dropdowns/partnership-dropdown-options/partnership-dropdown-options.component').then(
-            m => m.PartnershipDropdownOptionsComponent,
+            (m) => m.PartnershipDropdownOptionsComponent,
           ),
       },
     ],
@@ -74,32 +74,44 @@ export const adminSettingsRoutes: Routes = [
   {
     path: 'batches',
     loadComponent: () =>
-      import('./batch-sitting/batch-sitting.component').then(m => m.BatchSittingComponent),
+      import('./batch-sitting/batch-sitting.component').then((m) => m.BatchSittingComponent),
   },
   {
     path: 'staff-access',
     loadComponent: () =>
-      import('./staff-access/staff-access.component').then(m => m.StaffAccessComponent),
+      import('./staff-access/staff-access.component').then((m) => m.StaffAccessComponent),
   },
   {
     path: 'manage-rdig-reviewer',
     loadComponent: () =>
       import('./manage-rdig-reviewer/manage-rdig-reviewer.component').then(
-        m => m.ManageRdigReviewerComponent,
+        (m) => m.ManageRdigReviewerComponent,
       ),
   },
   {
     path: 'manage-project-account-code',
     loadComponent: () =>
       import('./catalog-management/manage-project-account-code.component').then(
-        m => m.ManageProjectAccountCodeComponent,
+        (m) => m.ManageProjectAccountCodeComponent,
       ),
   },
   {
     path: 'manage-external-form-category',
     loadComponent: () =>
       import('./catalog-management/manage-external-form-category.component').then(
-        m => m.ManageExternalFormCategoryComponent,
+        (m) => m.ManageExternalFormCategoryComponent,
+      ),
+  },
+  {
+    path: 'manage-countries',
+    loadComponent: () =>
+      import('./catalog-management/manage-country.component').then((m) => m.ManageCountryComponent),
+  },
+  {
+    path: 'manage-currencies',
+    loadComponent: () =>
+      import('./catalog-management/manage-currency.component').then(
+        (m) => m.ManageCurrencyComponent,
       ),
   },
   {
@@ -109,6 +121,6 @@ export const adminSettingsRoutes: Routes = [
       permission: adminOnlySettingsChildPermission satisfies NavPermission,
     },
     loadComponent: () =>
-      import('./batch-sitting/batch-sitting.component').then(m => m.BatchSittingComponent),
+      import('./batch-sitting/batch-sitting.component').then((m) => m.BatchSittingComponent),
   },
 ];

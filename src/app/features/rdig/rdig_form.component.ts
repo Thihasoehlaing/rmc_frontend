@@ -14,6 +14,7 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { BatchSitting } from '../../core/interfaces/batch-sitting.interface';
 import { NotificationService } from '../../core/services/notification.service';
+import { ToastService } from '../../core/services/toast.service';
 
 // Shared layout components
 import {
@@ -115,6 +116,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private notifSvc = inject(NotificationService);
+  private toastSvc = inject(ToastService);
   private rdigApi = inject(RdigApiService);
   readonly guidelineContext: GuidelineContext = this.route.snapshot.queryParamMap.has('request_id') || this.route.snapshot.queryParamMap.has('id')
     ? 'existing-application'
@@ -1481,8 +1483,8 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
     return this.rdigApi.listBudgetSections(id).pipe(
       map((res) => {
         const sectionMap: Record<string, number> = {};
-        for (const section of res.data ?? []) {
-          const sectionId = (section as any).id ?? section.budget_section_id;
+        for (const section of res.data?.items ?? []) {
+          const sectionId = section.id ?? section.budget_section_id;
           if (section.section_code && sectionId) sectionMap[section.section_code] = sectionId;
         }
         this.budgetSectionIdByCode = sectionMap;
@@ -1598,11 +1600,21 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
             const newId = res.data.request?.id ?? res.data.request?.request_id ?? res.data.rdig?.request_id;
             if (!newId) throw new Error('Backend did not return a new RDIG request id.');
             this.rdigForm.get('metadata.rdigRequestId')?.setValue(newId, { emitEvent: false });
+            this.budgetSectionIdByCode = this.toBudgetSectionIdMap(res.data.budget_sections);
             return newId;
           }),
         );
 
     return ensureDraft$.pipe(switchMap((id) => this.syncChildArrays(id).pipe(map(() => id))));
+  }
+
+  private toBudgetSectionIdMap(sections: RdigFormData['budget_sections']): Record<string, number> | null {
+    const sectionMap: Record<string, number> = {};
+    for (const section of sections ?? []) {
+      const sectionId = section.id ?? section.budget_section_id;
+      if (section.section_code && sectionId) sectionMap[section.section_code] = sectionId;
+    }
+    return Object.keys(sectionMap).length ? sectionMap : null;
   }
 
   // ── Wizard navigation ──────────────────────────────────────────
@@ -1658,6 +1670,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
         this.isSaving.set(false);
         clearTimeout(this.draftSaveTimer);
         this.draftSaveSuccess.set(true);
+        this.toastSvc.success('RDIG draft saved.');
         this.draftSaveTimer = setTimeout(() => this.draftSaveSuccess.set(false), 3000);
       },
       error: (err) => {

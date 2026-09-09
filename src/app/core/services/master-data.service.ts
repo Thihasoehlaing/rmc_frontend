@@ -52,6 +52,24 @@ export interface RegionOption {
   is_active: boolean;
 }
 
+export interface CountryOption {
+  id: number;
+  name: string;
+  code: string;
+  is_active: boolean;
+}
+
+export interface CurrencyOption {
+  id: number;
+  country_id: number;
+  name: string;
+  symbol: string;
+  code: string;
+  country_name: string | null;
+  country_code: string | null;
+  is_active: boolean;
+}
+
 export interface AcademicStaffOption {
   id: number;
   username: string;
@@ -130,6 +148,22 @@ export class MasterDataService {
 
   getRegions(): Observable<ApiResponse<RegionOption[]>> {
     return this.http.get<ApiResponse<RegionOption[]>>(`${this.base}/master-data/regions`);
+  }
+
+  getCountries(includeInactive = false): Observable<ApiResponse<CountryOption[]>> {
+    const params = new HttpParams().set('include_inactive', includeInactive ? 'true' : 'false');
+    return this.http.get<ApiResponse<CountryOption[]>>(
+      `${this.base}/master-data/countries/options`,
+      { params },
+    );
+  }
+
+  getCurrencies(includeInactive = false): Observable<ApiResponse<CurrencyOption[]>> {
+    const params = new HttpParams().set('include_inactive', includeInactive ? 'true' : 'false');
+    return this.http.get<ApiResponse<CurrencyOption[]>>(
+      `${this.base}/master-data/currencies/options`,
+      { params },
+    );
   }
 
   getVoteNumbers(formCode?: string): Observable<ApiResponse<CodeOption[]>> {

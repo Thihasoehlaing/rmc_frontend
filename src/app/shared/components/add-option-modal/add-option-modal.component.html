@@ -31,6 +31,17 @@
           />
         </div>
 
+        <div class="form-field" *ngIf="showSymbol">
+          <label class="form-label">{{ symbolLabel }} *</label>
+          <input
+            type="text"
+            class="input--text"
+            [(ngModel)]="symbol"
+            maxlength="10"
+            [placeholder]="'Enter ' + symbolLabel.toLowerCase()"
+          />
+        </div>
+
         <div class="form-field">
           <label class="form-label">{{ optionNameLabel }} *</label>
           <input
@@ -49,6 +60,17 @@
           >
             {{ name.length }}/{{ optionNameMaxLength }}
           </div>
+        </div>
+
+        <div class="form-field" *ngIf="showCountry">
+          <label class="form-label">{{ countryLabel }} *</label>
+          <app-searchable-dropdown
+            [options]="countryOptions"
+            [isMulti]="false"
+            valueMode="single"
+            placeholder="Select country"
+            [(ngModel)]="countryId"
+          ></app-searchable-dropdown>
         </div>
 
         <div class="form-field" *ngIf="showParentDomain">

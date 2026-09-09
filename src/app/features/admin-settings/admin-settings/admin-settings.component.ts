@@ -45,7 +45,8 @@ export class AdminSettingsComponent {
     },
     {
       title: 'Manage Project Account Code',
-      description: 'Maintain externally sourced project account codes used by Conference and Journal forms.',
+      description:
+        'Maintain externally sourced project account codes used by Conference and Journal forms.',
       icon: 'account_balance_wallet',
       category: 'Finance Configuration',
       route: '/admin-settings/manage-project-account-code',
@@ -53,11 +54,28 @@ export class AdminSettingsComponent {
     },
     {
       title: 'Manage External Form Category',
-      description: 'Configure External Grant Category options for the External Project Data Entry form.',
+      description:
+        'Configure External Grant Category options for the External Project Data Entry form.',
       icon: 'category',
       category: 'Form Configuration',
       route: '/admin-settings/manage-external-form-category',
       tone: 'violet',
+    },
+    {
+      title: 'Manage Countries',
+      description: 'Maintain country options used by RDIG external collaborator forms.',
+      icon: 'public',
+      category: 'Master Data',
+      route: '/admin-settings/manage-countries',
+      tone: 'teal',
+    },
+    {
+      title: 'Manage Currencies',
+      description: 'Maintain currency codes and link them to countries.',
+      icon: 'payments',
+      category: 'Master Data',
+      route: '/admin-settings/manage-currencies',
+      tone: 'blue',
     },
     {
       title: 'Batches',

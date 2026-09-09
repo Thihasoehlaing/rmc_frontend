@@ -368,6 +368,7 @@
                               {{ row.accountCodeDescription || row.itemDescription || '—' }}
                             </td>
                             <td>{{ row.accountCode || '—' }}</td>
+                            <td>{{ row.currency || 'MYR' }}</td>
                             <td>{{ row.cost | number: '1.2-2' }}</td>
                             <td>{{ row.exchangeRate || '—' }}</td>
                             <td>{{ row.costInRM | myrCurrency }}</td>
@@ -404,7 +405,10 @@
                       {{ getBreakdownArray('non-research').length }} item(s)
                     </div>
                     <div class="table-summary">
-                      <app-table-row-counter [current]="getBreakdownArray('non-research').length" [max]="5"></app-table-row-counter>
+                      <app-table-row-counter
+                        [current]="getBreakdownArray('non-research').length"
+                        [max]="5"
+                      ></app-table-row-counter>
                     </div>
                   } @else if (researchType === 'external-research') {
                     <div class="table-scroll research-table">
@@ -420,6 +424,7 @@
                             <td>{{ row.accountCode || '—' }}</td>
                             <td>{{ row.voteNumber }}</td>
                             <td>{{ row.costInRM | myrCurrency }}</td>
+                            <td>{{ row.currency || 'MYR' }}</td>
                             <td>{{ row.cost | number: '1.2-2' }}</td>
                             <td>{{ row.exchangeRate || '—' }}</td>
                             <td>
@@ -455,7 +460,10 @@
                       {{ getBreakdownArray('external-research').length }} item(s)
                     </div>
                     <div class="table-summary">
-                      <app-table-row-counter [current]="getBreakdownArray('external-research').length" [max]="5"></app-table-row-counter>
+                      <app-table-row-counter
+                        [current]="getBreakdownArray('external-research').length"
+                        [max]="5"
+                      ></app-table-row-counter>
                     </div>
                   } @else {
                     <div class="table-scroll research-table">
@@ -470,6 +478,7 @@
                             <td class="col-no text-muted is-align-center">{{ index + 1 }}</td>
                             <td>{{ row.itemDescription }}</td>
                             <td>{{ row.voteNumber }}</td>
+                            <td>{{ row.currency || 'MYR' }}</td>
                             <td>{{ row.cost | number: '1.2-2' }}</td>
                             <td>{{ row.exchangeRate || '—' }}</td>
                             <td>{{ row.costInRM | myrCurrency }}</td>
@@ -516,7 +525,10 @@
                       {{ getBreakdownArray(researchType || '').length }} item(s)
                     </div>
                     <div class="table-summary">
-                      <app-table-row-counter [current]="getBreakdownArray(researchType || '').length" [max]="5"></app-table-row-counter>
+                      <app-table-row-counter
+                        [current]="getBreakdownArray(researchType || '').length"
+                        [max]="5"
+                      ></app-table-row-counter>
                     </div>
                   }
                 } @else {
@@ -816,7 +828,13 @@
       <app-validation-message
         class="form-validation-note--error"
         [control]="breakdownForm.get('itemDescription')"
-        [fieldName]="breakdownType === 'external-research' ? 'Vote Number Description' : breakdownType === 'non-research' ? 'Account Code Description' : 'Item Description'"
+        [fieldName]="
+          breakdownType === 'external-research'
+            ? 'Vote Number Description'
+            : breakdownType === 'non-research'
+              ? 'Account Code Description'
+              : 'Item Description'
+        "
       ></app-validation-message>
     </div>
 
@@ -867,6 +885,22 @@
         ></app-validation-message>
       </div>
     }
+
+    <div class="breakdown-field">
+      <app-searchable-dropdown
+        label="Currency"
+        [required]="true"
+        [options]="currencyOptions"
+        placeholder="Select currency"
+        formControlName="currency"
+        valueMode="single"
+      ></app-searchable-dropdown>
+      <app-validation-message
+        class="form-validation-note--error"
+        [control]="breakdownForm.get('currency')"
+        fieldName="Currency"
+      ></app-validation-message>
+    </div>
 
     <!-- Cost in Foreign Currency / MYR -->
     <div class="breakdown-field">
@@ -1091,12 +1125,6 @@
     <button type="button" class="btn btn-secondary" (click)="closeSDGKeywordsModal()">
       Cancel
     </button>
-    <button
-      type="button"
-      class="btn btn-primary"
-      (click)="confirmSDGKeywords()"
-    >
-      Confirm
-    </button>
+    <button type="button" class="btn btn-primary" (click)="confirmSDGKeywords()">Confirm</button>
   </div>
 </app-dialog>

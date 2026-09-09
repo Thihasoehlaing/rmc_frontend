@@ -826,6 +826,7 @@
                           <td>
                             <div class="data-table__multiline">{{ row.description || '-' }}</div>
                           </td>
+                          <td>{{ row.currency || 'MYR' }}</td>
                           <td>{{ row.cost | number: '1.2-2' }}</td>
                           <td>{{ row.exchangeRate | number: '1.2-2' }}</td>
                           <td>{{ row.costInRM | myrCurrency }}</td>
@@ -1033,6 +1034,7 @@
                             <div class="data-table__multiline">{{ row.description || '-' }}</div>
                           </td>
                           <td>{{ row.supportingDocument || '-' }}</td>
+                          <td>{{ row.currency || 'MYR' }}</td>
                           <td>{{ row.cost | number: '1.2-2' }}</td>
                           <td>{{ row.exchangeRate | number: '1.2-2' }}</td>
                           <td>{{ row.costInRM | myrCurrency }}</td>
@@ -1286,6 +1288,22 @@
               class="form-validation-note--error"
               [control]="breakdownForm.get('voteNumber')"
               [fieldName]="breakdownType === 'local' ? 'Account Code' : 'Vote Number'"
+            ></app-validation-message>
+          </div>
+
+          <div class="form-group">
+            <app-searchable-dropdown
+              label="Currency"
+              [required]="true"
+              [options]="currencyOptions()"
+              placeholder="Select currency"
+              formControlName="currency"
+              valueMode="single"
+            ></app-searchable-dropdown>
+            <app-validation-message
+              class="form-validation-note--error"
+              [control]="breakdownForm.get('currency')"
+              fieldName="Currency"
             ></app-validation-message>
           </div>
 

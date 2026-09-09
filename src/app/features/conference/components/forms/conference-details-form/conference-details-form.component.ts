@@ -26,6 +26,7 @@ import { ConferenceFormStateService } from '../../../services/conference-form-st
 import { BreakdownOptionsService } from '../../../services/breakdown-options.service';
 import {
   AccountCodeOption,
+  CurrencyOption,
   MasterDataService,
   RegionOption,
   StaffOption,
@@ -113,7 +114,6 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
         this.form?.enable({ emitEvent: false });
       }
     });
-
   }
 
   regions = ['Americas', 'ASEAN', 'Asia', 'Australasia', 'Europe', 'Malaysia', 'MEA', 'Pacific'];
@@ -124,6 +124,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
   regionOptions = signal<DropdownOption[]>([]);
 
   projectAccountCodeOptions = signal<DropdownOption[]>([]);
+  currencyOptions = signal<DropdownOption<string>[]>([]);
   colleagueOptions = signal<DropdownOption<string>[]>([]);
   colleaguesLoading = signal(false);
 
@@ -221,6 +222,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     { key: 'itemDescription', label: 'Vote Number Description', width: '220px' },
     { key: 'voteNumber', label: 'Vote Number', width: '120px' },
     { key: 'description', label: 'Description', width: '260px' },
+    { key: 'currency', label: 'Currency', width: '120px' },
     { key: 'cost', label: 'Cost (Foreign/MYR)', width: '180px' },
     { key: 'exchangeRate', label: 'Exchange Rate', width: '140px' },
     { key: 'costInRM', label: 'Cost in RM', width: '140px' },
@@ -238,6 +240,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     { key: 'accountCode', label: 'Account Code', width: '140px' },
     { key: 'voteNumber', label: 'Vote Number', width: '120px' },
     { key: 'description', label: 'Description', width: '260px' },
+    { key: 'currency', label: 'Currency', width: '120px' },
     { key: 'cost', label: 'Cost (Foreign/MYR)', width: '180px' },
     { key: 'exchangeRate', label: 'Exchange Rate', width: '140px' },
     { key: 'costInRM', label: 'Cost in RM', width: '140px' },
@@ -255,6 +258,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     { key: 'voteNumber', label: 'Account Code', width: '140px' },
     { key: 'description', label: 'Description', width: '260px' },
     { key: 'supportingDocument', label: 'Document', width: '180px' },
+    { key: 'currency', label: 'Currency', width: '120px' },
     { key: 'cost', label: 'Cost (Foreign/MYR)', width: '180px' },
     { key: 'exchangeRate', label: 'Exchange Rate', width: '140px' },
     { key: 'costInRM', label: 'Cost in RM', width: '140px' },
@@ -368,7 +372,26 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
       this.syncLocalBreakdownOptionsForVenue();
     });
 
+    this.masterData.getCurrencies().subscribe((res) => {
+      this.currencyOptions.set(this.toCurrencyOptions(res.data ?? []));
+    });
+
     this.loadColleagueOptions();
+  }
+
+  private toCurrencyOptions(currencies: CurrencyOption[]): DropdownOption<string>[] {
+    const unique = new Map<string, CurrencyOption>();
+    for (const currency of currencies) {
+      if (currency.code && !unique.has(currency.code)) {
+        unique.set(currency.code, currency);
+      }
+    }
+    return [...unique.values()].map((currency) => ({
+      value: currency.code,
+      label: `${currency.code} - ${currency.name}`,
+      description: currency.symbol,
+      searchText: `${currency.code} ${currency.name} ${currency.symbol}`,
+    }));
   }
 
   ngOnDestroy() {
@@ -777,6 +800,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
       itemDescription: ['', [Validators.required]],
       voteNumber: ['', [Validators.required]],
       accountCode: [{ value: '', disabled: true }],
+      currency: ['MYR', [Validators.required]],
       cost: ['', [Validators.required, Validators.min(0)]],
       exchangeRate: ['1', [Validators.required, Validators.min(0.01)]],
       costInRM: [{ value: '', disabled: true }],
@@ -1353,6 +1377,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
                 this.form.get('externalProjectAccountCode')?.value ||
                 ''
               : '',
+          currency: data.currency || 'MYR',
           cost: data.cost,
           exchangeRate: data.exchangeRate,
           costInRM: data.costInRM,
@@ -1366,6 +1391,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
       this.breakdownEditingIndex = null;
       this.breakdownForm.reset(
         {
+          currency: 'MYR',
           exchangeRate: 1,
           itemDescription: useFixedKlangValleyAccount ? this.klangValleyAccountCodeDescription : '',
           voteNumber: useFixedKlangValleyAccount
@@ -1416,7 +1442,9 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
       return '';
     }
 
-    return this.accountCodesForSelectedVenue().find((c) => c.description === optionValue)?.code || '';
+    return (
+      this.accountCodesForSelectedVenue().find((c) => c.description === optionValue)?.code || ''
+    );
   }
 
   closeBreakdownModal() {
@@ -1539,8 +1567,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
 
   canCreateBreakdownEntry(type: 'research' | 'external-research' | 'local'): boolean {
     return (
-      this.canAddBreakdownEntries() &&
-      this.getBreakdownArray(type).length < this.tableRecordLimit
+      this.canAddBreakdownEntries() && this.getBreakdownArray(type).length < this.tableRecordLimit
     );
   }
 

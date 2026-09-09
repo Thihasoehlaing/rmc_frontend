@@ -20,7 +20,10 @@ import { ConferenceDetailsFormComponent } from '../../components/forms/conferenc
 import { AuthorDetailsFormComponent } from '../../components/forms/author-details-form/author-details-form.component';
 import { SupportingDocumentsFormComponent } from '../../components/forms/supporting-documents-form/supporting-documents-form.component';
 import { DeclarationFormComponent } from '../../components/forms/declaration-form/declaration-form.component';
-import { ConferenceWorkflowService, ConferenceStatus } from '../../services/conference-workflow.service';
+import {
+  ConferenceWorkflowService,
+  ConferenceStatus,
+} from '../../services/conference-workflow.service';
 import { ConferenceFormStateService } from '../../services/conference-form-state.service';
 import {
   ConferenceApiService,
@@ -107,7 +110,9 @@ import {
                   <button
                     type="button"
                     class="applicant-comment-actor"
-                    [class.applicant-comment-actor--active]="selectedFeedbackActorCode() === actor.code"
+                    [class.applicant-comment-actor--active]="
+                      selectedFeedbackActorCode() === actor.code
+                    "
                     (click)="toggleFeedbackActor(actor.code)"
                   >
                     <span class="material-icons" aria-hidden="true">{{ actor.icon }}</span>
@@ -128,7 +133,10 @@ import {
                       <div>
                         <h3>{{ section.label }}</h3>
                         <small>
-                          {{ commentsForActorSection(selectedFeedbackActorCode(), section.code).length }}
+                          {{
+                            commentsForActorSection(selectedFeedbackActorCode(), section.code)
+                              .length
+                          }}
                           comment(s)
                         </small>
                       </div>
@@ -143,7 +151,9 @@ import {
                       ) {
                         <div class="applicant-comment">
                           <div class="applicant-comment__meta">
-                            <strong>{{ comment.staff_name || comment.staff_username || 'Reviewer' }}</strong>
+                            <strong>{{
+                              comment.staff_name || comment.staff_username || 'Reviewer'
+                            }}</strong>
                             <span>
                               {{ prettyActor(comment.actor_type_code) }} ·
                               {{ formatCommentDate(comment.created_at) }}
@@ -250,7 +260,6 @@ import {
         padding: var(--space-3) 0;
       }
     }
-
 
     .main-section {
       display: flex;
@@ -583,8 +592,8 @@ export class ConferenceApplication implements OnInit {
   submissionErrorMessage = signal('');
   showMissingFieldsWarning = signal(false);
   isAdminReadOnlyDraft = signal(false);
-  readonly isEffectiveFormReadOnly = computed(() =>
-    this.workflow.isFormReadOnly() || this.isAdminReadOnlyDraft(),
+  readonly isEffectiveFormReadOnly = computed(
+    () => this.workflow.isFormReadOnly() || this.isAdminReadOnlyDraft(),
   );
   sectionComments = signal<RequestCommentDto[]>([]);
   isLoadingSectionComments = signal(false);
@@ -629,13 +638,21 @@ export class ConferenceApplication implements OnInit {
     { label: 'Declaration', icon: 'check_circle' },
   ];
 
-  private readonly applicantDetailsFieldChecks: Array<{ path: string; label: string; target?: string }> = [
+  private readonly applicantDetailsFieldChecks: Array<{
+    path: string;
+    label: string;
+    target?: string;
+  }> = [
     { path: 'applicantName', label: 'Applicant Name' },
     { path: 'email', label: 'Applicant Email' },
     { path: 'schoolName', label: 'Applicant School / Department' },
   ];
 
-  private readonly conferenceDetailsFieldChecks: Array<{ path: string; label: string; target?: string }> = [
+  private readonly conferenceDetailsFieldChecks: Array<{
+    path: string;
+    label: string;
+    target?: string;
+  }> = [
     { path: 'fundingRequestType', label: 'Conference Funding Request Type' },
     { path: 'conferenceType', label: 'Conference Type' },
     { path: 'travelRequired', label: 'Is Travelling Required?' },
@@ -665,7 +682,11 @@ export class ConferenceApplication implements OnInit {
     { path: 'externalProjectAccountCode', label: 'Project Account Code' },
   ];
 
-  private readonly authorDetailsFieldChecks: Array<{ path: string; label: string; target?: string }> = [
+  private readonly authorDetailsFieldChecks: Array<{
+    path: string;
+    label: string;
+    target?: string;
+  }> = [
     { path: 'fullName', label: 'Full Name' },
     { path: 'employeeId', label: 'Employee ID' },
     { path: 'designation', label: 'Designation' },
@@ -674,7 +695,11 @@ export class ConferenceApplication implements OnInit {
     { path: 'phoneNumber', label: 'Phone Number' },
   ];
 
-  private readonly supportingDocumentsFieldChecks: Array<{ path: string; label: string; target?: string }> = [
+  private readonly supportingDocumentsFieldChecks: Array<{
+    path: string;
+    label: string;
+    target?: string;
+  }> = [
     { path: 'acceptanceNotification', label: 'Acceptance Notification' },
     { path: 'reviewersFeedback', label: 'Reviewers Feedback' },
     { path: 'scopusEvidencePublication', label: 'SCOPUS Evidence Publication' },
@@ -687,10 +712,11 @@ export class ConferenceApplication implements OnInit {
     { path: 'manuscriptPreviouslyPublished', label: 'Manuscript Previously Published' },
   ];
 
-  private readonly declarationFieldChecks: Array<{ path: string; label: string; target?: string }> = [
-    { path: 'agreeToTerms', label: 'Terms Agreement' },
-    { path: 'acknowledgeGrantFunder', label: 'Grant Funder Acknowledgement' },
-  ];
+  private readonly declarationFieldChecks: Array<{ path: string; label: string; target?: string }> =
+    [
+      { path: 'agreeToTerms', label: 'Terms Agreement' },
+      { path: 'acknowledgeGrantFunder', label: 'Grant Funder Acknowledgement' },
+    ];
 
   constructor(private fb: FormBuilder) {
     this.applicantDetailsForm = this.fb.group({
@@ -757,11 +783,9 @@ export class ConferenceApplication implements OnInit {
     }
 
     // Listen for status changes
-    this.applicantDetailsForm
-      .get('metadata.applicationStatus')
-      ?.valueChanges.subscribe((val) => {
-        if (val) this.workflow.status.set(val as ConferenceStatus);
-      });
+    this.applicantDetailsForm.get('metadata.applicationStatus')?.valueChanges.subscribe((val) => {
+      if (val) this.workflow.status.set(val as ConferenceStatus);
+    });
   }
 
   private loadApplication(requestId: number): void {
@@ -790,7 +814,9 @@ export class ConferenceApplication implements OnInit {
           return;
         }
         this.patchFromBackend(response.data);
-        this.isAdminReadOnlyDraft.set(this.isSystemAdminReadOnlyRequest(response.data.request ?? {}));
+        this.isAdminReadOnlyDraft.set(
+          this.isSystemAdminReadOnlyRequest(response.data.request ?? {}),
+        );
         this.loadSectionComments(requestId);
         this.isLoadingApplication.set(false);
       },
@@ -921,12 +947,15 @@ export class ConferenceApplication implements OnInit {
         item.vote_number_description_snapshot ?? item.account_code_description_snapshot ?? '',
       voteNumber: item.vote_number_snapshot ?? item.account_code_snapshot ?? '',
       accountCode: item.project_account_code_snapshot ?? '',
+      currency: item.currency ?? 'MYR',
       cost: item.cost_in_foreign_currency ?? '',
       exchangeRate: item.exchange_rate ?? '1',
       costInRM: item.cost_in_rm ?? '',
       description: item.description ?? '',
       supportingDocument:
-        data.attachments.find((attachment) => attachment.id === item.supporting_document_attachment_id)?.file_name ?? '',
+        data.attachments.find(
+          (attachment) => attachment.id === item.supporting_document_attachment_id,
+        )?.file_name ?? '',
       supportingDocumentAttachmentId: item.supporting_document_attachment_id ?? null,
     }));
     this.formStateService.saveFormSection('conferenceDetails', {
@@ -974,31 +1003,34 @@ export class ConferenceApplication implements OnInit {
       percentage: conference['region_percentage_snapshot'] ?? '',
       limit: conference['region_limit_snapshot'] ?? '',
       regionDescription: conference['region_description_snapshot'] ?? '',
-      projectAccountCode: projectType === 'research' ? conference.project_account_code ?? '' : '',
+      projectAccountCode: projectType === 'research' ? (conference.project_account_code ?? '') : '',
       externalProjectAccountCode:
-        projectType === 'external-research' ? conference.project_account_code ?? '' : '',
+        projectType === 'external-research' ? (conference.project_account_code ?? '') : '',
       sponsoredAmountExternal:
-        projectType === 'research' ? conference.external_sponsorship_amount ?? '' : '',
-      sponsoredBy: projectType === 'research' ? conference.external_sponsored_by ?? '' : '',
-      costingRemarks: projectType === 'research' ? conference.remarks ?? '' : '',
+        projectType === 'research' ? (conference.external_sponsorship_amount ?? '') : '',
+      sponsoredBy: projectType === 'research' ? (conference.external_sponsored_by ?? '') : '',
+      costingRemarks: projectType === 'research' ? (conference.remarks ?? '') : '',
       externalSponsoredAmountExternal:
-        projectType === 'external-research' ? conference.external_sponsorship_amount ?? '' : '',
+        projectType === 'external-research' ? (conference.external_sponsorship_amount ?? '') : '',
       externalSponsoredBy:
-        projectType === 'external-research' ? conference.external_sponsored_by ?? '' : '',
-      externalCostingRemarks: projectType === 'external-research' ? conference.remarks ?? '' : '',
+        projectType === 'external-research' ? (conference.external_sponsored_by ?? '') : '',
+      externalCostingRemarks: projectType === 'external-research' ? (conference.remarks ?? '') : '',
       localSponsoredAmountExternal:
         projectType !== 'research' && projectType !== 'external-research'
-          ? conference.external_sponsorship_amount ?? ''
+          ? (conference.external_sponsorship_amount ?? '')
           : '',
       localSponsoredBy:
         projectType !== 'research' && projectType !== 'external-research'
-          ? conference.external_sponsored_by ?? ''
+          ? (conference.external_sponsored_by ?? '')
           : '',
       localCostingRemarks:
-        projectType !== 'research' && projectType !== 'external-research' ? conference.remarks ?? '' : '',
+        projectType !== 'research' && projectType !== 'external-research'
+          ? (conference.remarks ?? '')
+          : '',
       researchBreakdown: projectType === 'research' ? breakdown : [],
       externalResearchBreakdown: projectType === 'external-research' ? breakdown : [],
-      localBreakdown: projectType !== 'research' && projectType !== 'external-research' ? breakdown : [],
+      localBreakdown:
+        projectType !== 'research' && projectType !== 'external-research' ? breakdown : [],
     });
 
     this.formStateService.saveFormSection('authorDetails', {
@@ -1040,7 +1072,9 @@ export class ConferenceApplication implements OnInit {
       manuscriptPreviouslyPublished: toYesNo(conference.is_published_elsewhere),
     };
     for (const field of this.supportingDocumentFields) {
-      const attachment = data.attachments.find((item) => item.entity_type === `conference_${field}`);
+      const attachment = data.attachments.find(
+        (item) => item.entity_type === `conference_${field}`,
+      );
       supportingDocuments[field] = attachment?.file_name ?? '';
     }
     this.formStateService.saveFormSection('supportingDocuments', supportingDocuments);
@@ -1050,10 +1084,18 @@ export class ConferenceApplication implements OnInit {
     });
 
     this.loadedCoAuthorIds = {
-      staff: new Set(data.apu_staff_co_authors.map((item) => item.id).filter((id): id is number => !!id)),
-      student: new Set(data.apu_student_co_authors.map((item) => item.id).filter((id): id is number => !!id)),
-      nonApu: new Set(data.non_apu_co_authors.map((item) => item.id).filter((id): id is number => !!id)),
-      costing: new Set(data.costing_items.map((item) => item.id).filter((id): id is number => !!id)),
+      staff: new Set(
+        data.apu_staff_co_authors.map((item) => item.id).filter((id): id is number => !!id),
+      ),
+      student: new Set(
+        data.apu_student_co_authors.map((item) => item.id).filter((id): id is number => !!id),
+      ),
+      nonApu: new Set(
+        data.non_apu_co_authors.map((item) => item.id).filter((id): id is number => !!id),
+      ),
+      costing: new Set(
+        data.costing_items.map((item) => item.id).filter((id): id is number => !!id),
+      ),
     };
   }
 
@@ -1080,11 +1122,16 @@ export class ConferenceApplication implements OnInit {
   goToMissingField(event: { step: number; field: MissingField }): void {
     this.goToStep(event.step);
     const field = event.field;
-    const target = typeof field === 'string' ? field : field.target ?? field.label;
+    const target = typeof field === 'string' ? field : (field.target ?? field.label);
 
     setTimeout(() => {
       const escapedTarget = target.replace(/"/g, '\\"');
-      const selector = '[data-missing-field-target="' + escapedTarget + '"], [formControlName="' + escapedTarget + '"]';
+      const selector =
+        '[data-missing-field-target="' +
+        escapedTarget +
+        '"], [formControlName="' +
+        escapedTarget +
+        '"]';
       const element = document.querySelector<HTMLElement>(selector);
       const focusTarget = this.getSafeMissingFieldFocusTarget(element);
       const scrollTarget = this.getMissingFieldScrollTarget(element, focusTarget);
@@ -1119,15 +1166,18 @@ export class ConferenceApplication implements OnInit {
     const source = focusTarget ?? element ?? undefined;
     if (!source) return undefined;
     return (
-      source.closest<HTMLElement>('[data-missing-field-target], .form-field, .form-group, .radio-group, .checkbox-group, .toggle-group') ??
-      source
+      source.closest<HTMLElement>(
+        '[data-missing-field-target], .form-field, .form-group, .radio-group, .checkbox-group, .toggle-group',
+      ) ?? source
     );
   }
 
   private canProgrammaticallyClickMissingField(element: HTMLElement): boolean {
     if (this.isValueChangingChoiceControl(element)) return false;
     if (element.matches('input[type="file"]')) return false;
-    return element.matches('button, select, input[type="date"], input[type="datetime-local"], [role="combobox"]');
+    return element.matches(
+      'button, select, input[type="date"], input[type="datetime-local"], [role="combobox"]',
+    );
   }
 
   private isValueChangingChoiceControl(element: HTMLElement): boolean {
@@ -1186,7 +1236,8 @@ export class ConferenceApplication implements OnInit {
         ),
       ];
       this.conferenceDetailsStep.activities.controls.forEach((control) => {
-        if (control.invalid) missing.push({ label: 'Conference Schedule - Add Activity', target: 'activityTable' });
+        if (control.invalid)
+          missing.push({ label: 'Conference Schedule - Add Activity', target: 'activityTable' });
       });
       if (
         this.conferenceDetailsStep.form.get('researchType')?.value === 'external-research' &&
@@ -1247,7 +1298,9 @@ export class ConferenceApplication implements OnInit {
 
     if (this.workflow.isApplicantEditable()) {
       if (this.declarationStep?.form) {
-        missing.push(...this.getInvalidLabelsFromForm(this.declarationStep.form, this.declarationFieldChecks));
+        missing.push(
+          ...this.getInvalidLabelsFromForm(this.declarationStep.form, this.declarationFieldChecks),
+        );
       } else {
         const state = this.formStateService.getFormSection('declaration') ?? {};
         missing.push(...this.getMissingFromValue(state, this.declarationFieldChecks, {}, true));
@@ -1297,9 +1350,7 @@ export class ConferenceApplication implements OnInit {
       : [];
   }
 
-  private getMissingExternalResearchCostingLabels(
-    state: Record<string, unknown>,
-  ): MissingField[] {
+  private getMissingExternalResearchCostingLabels(state: Record<string, unknown>): MissingField[] {
     const entries = state['externalResearchBreakdown'];
     return state['researchType'] === 'external-research' &&
       (!Array.isArray(entries) || entries.length === 0)
@@ -1312,11 +1363,7 @@ export class ConferenceApplication implements OnInit {
       : [];
   }
 
-  private getInvalidArrayLabels(
-    rows: unknown,
-    label: string,
-    target: string,
-  ): MissingField[] {
+  private getInvalidArrayLabels(rows: unknown, label: string, target: string): MissingField[] {
     if (!Array.isArray(rows)) return [];
     const hasIncompleteRow = rows.some((row) => {
       const rowValue = (row ?? {}) as Record<string, unknown>;
@@ -1344,7 +1391,9 @@ export class ConferenceApplication implements OnInit {
   private syncReviewCommentRequired(path: string, required: boolean): void {
     const control = this.applicantDetailsForm.get(`reviewComments.${path}`);
     if (!control) return;
-    required ? control.addValidators(Validators.required) : control.removeValidators(Validators.required);
+    required
+      ? control.addValidators(Validators.required)
+      : control.removeValidators(Validators.required);
     control.updateValueAndValidity({ emitEvent: false });
   }
 
@@ -1431,8 +1480,16 @@ export class ConferenceApplication implements OnInit {
       : isResearch
         ? cd.sponsoredAmountExternal
         : cd.localSponsoredAmountExternal;
-    const sponsoredBy = isExternal ? cd.externalSponsoredBy : isResearch ? cd.sponsoredBy : cd.localSponsoredBy;
-    const remarks = isExternal ? cd.externalCostingRemarks : isResearch ? cd.costingRemarks : cd.localCostingRemarks;
+    const sponsoredBy = isExternal
+      ? cd.externalSponsoredBy
+      : isResearch
+        ? cd.sponsoredBy
+        : cd.localSponsoredBy;
+    const remarks = isExternal
+      ? cd.externalCostingRemarks
+      : isResearch
+        ? cd.costingRemarks
+        : cd.localCostingRemarks;
 
     const toBool = (v: unknown) => v === true || v === 'yes' || v === 'true';
     const nullableDecimal = (value: unknown) => {
@@ -1459,7 +1516,8 @@ export class ConferenceApplication implements OnInit {
       location_type: cd.localOrOverseas || null,
       conference_location: cd.conferenceLocation || null,
       project_type: researchType || null,
-      project_account_code: (isExternal ? cd.externalProjectAccountCode : cd.projectAccountCode) || null,
+      project_account_code:
+        (isExternal ? cd.externalProjectAccountCode : cd.projectAccountCode) || null,
       paper_title: cd.paperTitle || null,
       region_id: cd.selectedRegion ? Number(cd.selectedRegion) : null,
       is_manuscript_internally_reviewed: toBool(sd.manuscriptInternallyReviewed),
@@ -1472,7 +1530,8 @@ export class ConferenceApplication implements OnInit {
       remarks: remarks || null,
       bookings_done_by_type:
         cd.bookingDoneBy === 'themselves' ? 'SELF' : cd.bookingDoneBy === 'other' ? 'OTHER' : null,
-      bookings_done_by_other_name: cd.bookingDoneBy === 'other' ? cd.bookingDoneByOther || null : null,
+      bookings_done_by_other_name:
+        cd.bookingDoneBy === 'other' ? cd.bookingDoneByOther || null : null,
       is_cash_advance_required: toBool(cd.hasAdvance),
       cash_advance_reason: toBool(cd.hasAdvance) ? cd.advanceReason || null : null,
       has_travelling_colleagues: toBool(cd.hasColleagues),
@@ -1602,14 +1661,16 @@ export class ConferenceApplication implements OnInit {
     const file = this.formStateService.getPendingFile(entry.pendingFileKey);
     if (!file) return of(entry.supportingDocumentAttachmentId ?? null);
 
-    return this.conferenceApi.uploadAttachment(id, file, 'conference_costing_supporting_document').pipe(
-      map((res) => {
-        const attachmentId = res?.data?.id ?? null;
-        entry.supportingDocumentAttachmentId = attachmentId;
-        this.formStateService.clearPendingFile(entry.pendingFileKey);
-        return attachmentId;
-      }),
-    );
+    return this.conferenceApi
+      .uploadAttachment(id, file, 'conference_costing_supporting_document')
+      .pipe(
+        map((res) => {
+          const attachmentId = res?.data?.id ?? null;
+          entry.supportingDocumentAttachmentId = attachmentId;
+          this.formStateService.clearPendingFile(entry.pendingFileKey);
+          return attachmentId;
+        }),
+      );
   }
 
   private syncCostingItems(id: number): Observable<unknown> {
@@ -1618,14 +1679,16 @@ export class ConferenceApplication implements OnInit {
     const isVoteNumberType = researchType === 'external-research' || researchType === 'research';
     const items: any[] =
       researchType === 'external-research'
-        ? cd.externalResearchBreakdown ?? []
+        ? (cd.externalResearchBreakdown ?? [])
         : researchType === 'research'
-          ? cd.researchBreakdown ?? []
-          : cd.localBreakdown ?? [];
+          ? (cd.researchBreakdown ?? [])
+          : (cd.localBreakdown ?? []);
 
     return this.loadCodeLookups().pipe(
       switchMap(() =>
-        items.length ? forkJoin(items.map((entry) => this.uploadPendingCostingFile(id, entry))) : of([]),
+        items.length
+          ? forkJoin(items.map((entry) => this.uploadPendingCostingFile(id, entry)))
+          : of([]),
       ),
       switchMap(() =>
         this.syncPlainArray(
@@ -1638,10 +1701,15 @@ export class ConferenceApplication implements OnInit {
             // conference-level project_account_code string covers that).
             project_account_code_id: null,
             vote_number_id:
-              isVoteNumberType && raw.voteNumber ? this.voteNumberIdByCode?.get(raw.voteNumber) ?? null : null,
+              isVoteNumberType && raw.voteNumber
+                ? (this.voteNumberIdByCode?.get(raw.voteNumber) ?? null)
+                : null,
             account_code_id:
-              !isVoteNumberType && raw.voteNumber ? this.accountCodeIdByCode?.get(raw.voteNumber) ?? null : null,
+              !isVoteNumberType && raw.voteNumber
+                ? (this.accountCodeIdByCode?.get(raw.voteNumber) ?? null)
+                : null,
             supporting_document_attachment_id: raw.supportingDocumentAttachmentId ?? null,
+            currency: String(raw.currency || 'MYR').toUpperCase(),
             cost_in_foreign_currency: raw.cost != null ? String(raw.cost) : null,
             exchange_rate: raw.exchangeRate != null ? String(raw.exchangeRate) : null,
             cost_in_rm: raw.costInRM != null ? String(raw.costInRM) : null,
@@ -1676,9 +1744,11 @@ export class ConferenceApplication implements OnInit {
       const file = this.formStateService.getPendingFile(`supportingDocuments.${field}`);
       if (file) {
         uploads.push(
-          this.conferenceApi.uploadAttachment(id, file, `conference_${field}`).pipe(
-            tap(() => this.formStateService.clearPendingFile(`supportingDocuments.${field}`)),
-          ),
+          this.conferenceApi
+            .uploadAttachment(id, file, `conference_${field}`)
+            .pipe(
+              tap(() => this.formStateService.clearPendingFile(`supportingDocuments.${field}`)),
+            ),
         );
       }
     }
@@ -1792,7 +1862,8 @@ export class ConferenceApplication implements OnInit {
     this.showMissingFieldsWarning.set(false);
     this.isSubmitting.set(true);
 
-    const currentStatus = this.applicantDetailsForm.get('metadata.applicationStatus')?.value as ConferenceStatus;
+    const currentStatus = this.applicantDetailsForm.get('metadata.applicationStatus')
+      ?.value as ConferenceStatus;
     const isResubmission =
       currentStatus === 'hos_request_resubmission' ||
       currentStatus === 'rmc_request_resubmission' ||
@@ -1844,14 +1915,18 @@ export class ConferenceApplication implements OnInit {
     return error?.error?.message || error?.message || fallback;
   }
 
-  private isSystemAdminReadOnlyRequest(request: { applicant_staff_username?: string | null }): boolean {
+  private isSystemAdminReadOnlyRequest(request: {
+    applicant_staff_username?: string | null;
+  }): boolean {
     if (!this.auth.inGroup('SystemAdmin')) return false;
     const adminView = this.route.snapshot.queryParamMap.get('admin_view')?.toLowerCase() === 'true';
-    const applicantUsername = String(request.applicant_staff_username ?? '').trim().toLowerCase();
+    const applicantUsername = String(request.applicant_staff_username ?? '')
+      .trim()
+      .toLowerCase();
     const currentUsername = this.auth.currentUser()?.username?.trim().toLowerCase();
-    return adminView || Boolean(applicantUsername && currentUsername && applicantUsername !== currentUsername);
+    return (
+      adminView ||
+      Boolean(applicantUsername && currentUsername && applicantUsername !== currentUsername)
+    );
   }
 }
-
-
-

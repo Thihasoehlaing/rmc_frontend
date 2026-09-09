@@ -183,7 +183,9 @@
               <dd>{{ val(conference()?.cited_apu_jati_ejbm) }}</dd>
             </div>
             <div>
-              <dt>The manuscript has been internally reviewed for the quality of content and English?</dt>
+              <dt>
+                The manuscript has been internally reviewed for the quality of content and English?
+              </dt>
               <dd>{{ val(conference()?.is_manuscript_internally_reviewed) }}</dd>
             </div>
             <div>
@@ -191,7 +193,9 @@
               <dd>{{ val(conference()?.reviewer_name) }}</dd>
             </div>
             <div>
-              <dt>Has the manuscript and content been published in another journal or conference etc.?</dt>
+              <dt>
+                Has the manuscript and content been published in another journal or conference etc.?
+              </dt>
               <dd>{{ val(conference()?.is_published_elsewhere) }}</dd>
             </div>
             <div class="detail-grid__wide">
@@ -214,7 +218,9 @@
                       {{ fmtDate(comment.created_at) }}</span
                     >
                     <p>{{ comment.comment_text }}</p>
-                    @if (canChangeSectionComment(comment) && editingSectionCommentId() !== comment.id) {
+                    @if (
+                      canChangeSectionComment(comment) && editingSectionCommentId() !== comment.id
+                    ) {
                       <div class="section-comment__actions table-actions">
                         <button
                           type="button"
@@ -228,8 +234,16 @@
                         <button
                           type="button"
                           class="table-action table-action--danger"
-                          [title]="deletingSectionCommentId() === comment.id ? 'Deleting comment' : 'Delete comment'"
-                          [attr.aria-label]="deletingSectionCommentId() === comment.id ? 'Deleting comment' : 'Delete comment'"
+                          [title]="
+                            deletingSectionCommentId() === comment.id
+                              ? 'Deleting comment'
+                              : 'Delete comment'
+                          "
+                          [attr.aria-label]="
+                            deletingSectionCommentId() === comment.id
+                              ? 'Deleting comment'
+                              : 'Delete comment'
+                          "
                           [disabled]="deletingSectionCommentId() === comment.id"
                           (click)="deleteSectionComment(comment)"
                         >
@@ -243,35 +257,51 @@
             } @else {
               <p class="review-empty">No section comments yet.</p>
             }
-            @if (canWriteSectionComments() && (!currentActorSectionComment('conference_details') || isEditingSectionComment('conference_details'))) {
+            @if (
+              canWriteSectionComments() &&
+              (!currentActorSectionComment('conference_details') ||
+                isEditingSectionComment('conference_details'))
+            ) {
               <textarea
                 class="section-comment-input"
                 appTextareaAutosize
                 [minRows]="3"
                 rows="3"
                 placeholder="Write a comment for Conference Details..."
-              [formControl]="sectionCommentControls['conference_details']"
-              [attr.maxlength]="commentMaxLength"
-            ></textarea>
-            <div
-              class="comment-meta"
-              [class.comment-meta--error]="sectionCommentControls['conference_details'].hasError('maxlength')"
-            >
-              <span>Maximum {{ commentMaxLength }} characters.</span>
-              <span>{{ sectionCommentLength('conference_details') }}/{{ commentMaxLength }}</span>
-            </div>
-            <div class="section-comment-actions">
-              <app-action-button
+                [formControl]="sectionCommentControls['conference_details']"
+                [attr.maxlength]="commentMaxLength"
+              ></textarea>
+              <div
+                class="comment-meta"
+                [class.comment-meta--error]="
+                  sectionCommentControls['conference_details'].hasError('maxlength')
+                "
+              >
+                <span>Maximum {{ commentMaxLength }} characters.</span>
+                <span>{{ sectionCommentLength('conference_details') }}/{{ commentMaxLength }}</span>
+              </div>
+              <div class="section-comment-actions">
+                <app-action-button
                   type="primary"
-                  [label]="isEditingSectionComment('conference_details') ? 'Update Comment' : 'Save Comment'"
+                  [label]="
+                    isEditingSectionComment('conference_details')
+                      ? 'Update Comment'
+                      : 'Save Comment'
+                  "
                   icon="send"
-                  [loadingLabel]="isEditingSectionComment('conference_details') ? 'Updating...' : 'Saving...'"
+                  [loadingLabel]="
+                    isEditingSectionComment('conference_details') ? 'Updating...' : 'Saving...'
+                  "
                   [loading]="isSectionCommentSaving('conference_details')"
                   [disabled]="isSectionCommentSaving('conference_details')"
                   (clicked)="submitSectionComment('conference_details')"
                 ></app-action-button>
                 @if (isEditingSectionComment('conference_details')) {
-                  <button type="button" class="comment-cancel-button" (click)="cancelEditSectionComment('conference_details')">
+                  <button
+                    type="button"
+                    class="comment-cancel-button"
+                    (click)="cancelEditSectionComment('conference_details')"
+                  >
                     Cancel
                   </button>
                 }
@@ -281,171 +311,195 @@
         </section>
 
         <section class="detail-section">
-            <div class="section-heading">
-              <span class="material-icons">flight_takeoff</span>
-              <div>
-                <h2>Travel Details</h2>
-                <p>Business travel arrangements, itinerary, and colleagues.</p>
-              </div>
+          <div class="section-heading">
+            <span class="material-icons">flight_takeoff</span>
+            <div>
+              <h2>Travel Details</h2>
+              <p>Business travel arrangements, itinerary, and colleagues.</p>
             </div>
-            <dl class="detail-grid">
-              <div>
-                <dt>Travel Required</dt>
-                <dd>{{ val(conference()?.is_travelling_required) }}</dd>
-              </div>
-              <div>
-                <dt>Bookings Done By</dt>
-                <dd>
-                  {{
-                    val(
-                      conference()?.['bookings_done_by_other_name'] ||
-                        conference()?.['bookings_done_by_username'] ||
-                        conference()?.['bookings_done_by_type']
-                    )
-                  }}
-                </dd>
-              </div>
-              <div>
-                <dt>Cash Advance Required</dt>
-                <dd>{{ val(conference()?.['is_cash_advance_required']) }}</dd>
-              </div>
-              <div>
-                <dt>Travelling Colleagues</dt>
-                <dd>{{ travellingColleagues().length }}</dd>
-              </div>
-              <div class="detail-grid__wide">
-                <dt>Purpose of Business Travel</dt>
-                <dd>{{ val(conference()?.['purpose_of_business_travel']) }}</dd>
-              </div>
-              <div class="detail-grid__wide">
-                <dt>Cash Advance Reason</dt>
-                <dd>{{ val(conference()?.['cash_advance_reason']) }}</dd>
-              </div>
-            </dl>
-            @if (travelEvents().length) {
-              <app-table-scroll-hint></app-table-scroll-hint>
-              <div class="modern-table detail-grid--compact">
-                <table>
-                  <thead>
+          </div>
+          <dl class="detail-grid">
+            <div>
+              <dt>Travel Required</dt>
+              <dd>{{ val(conference()?.is_travelling_required) }}</dd>
+            </div>
+            <div>
+              <dt>Bookings Done By</dt>
+              <dd>
+                {{
+                  val(
+                    conference()?.['bookings_done_by_other_name'] ||
+                      conference()?.['bookings_done_by_username'] ||
+                      conference()?.['bookings_done_by_type']
+                  )
+                }}
+              </dd>
+            </div>
+            <div>
+              <dt>Cash Advance Required</dt>
+              <dd>{{ val(conference()?.['is_cash_advance_required']) }}</dd>
+            </div>
+            <div>
+              <dt>Travelling Colleagues</dt>
+              <dd>{{ travellingColleagues().length }}</dd>
+            </div>
+            <div class="detail-grid__wide">
+              <dt>Purpose of Business Travel</dt>
+              <dd>{{ val(conference()?.['purpose_of_business_travel']) }}</dd>
+            </div>
+            <div class="detail-grid__wide">
+              <dt>Cash Advance Reason</dt>
+              <dd>{{ val(conference()?.['cash_advance_reason']) }}</dd>
+            </div>
+          </dl>
+          @if (travelEvents().length) {
+            <app-table-scroll-hint></app-table-scroll-hint>
+            <div class="modern-table detail-grid--compact">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Start Time</th>
+                    <th>End Time</th>
+                    <th>Event</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (event of travelEvents(); track event.id ?? $index) {
                     <tr>
-                      <th>Date</th>
-                      <th>Start Time</th>
-                      <th>End Time</th>
-                      <th>Event</th>
+                      <td>{{ fmtDateOnly(event.event_date) }}</td>
+                      <td>{{ val(event.start_time || event.event_time) }}</td>
+                      <td>{{ val(event.end_time) }}</td>
+                      <td class="table-cell--wrap">{{ val(event.description) }}</td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    @for (event of travelEvents(); track event.id ?? $index) {
-                      <tr>
-                        <td>{{ fmtDateOnly(event.event_date) }}</td>
-                        <td>{{ val(event.start_time || event.event_time) }}</td>
-                        <td>{{ val(event.end_time) }}</td>
-                        <td class="table-cell--wrap">{{ val(event.description) }}</td>
-                      </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+          @if (travellingColleagues().length) {
+            <app-table-scroll-hint></app-table-scroll-hint>
+            <div class="modern-table detail-grid--compact">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Staff</th>
+                    <th>Username</th>
+                    <th>Department</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (colleague of travellingColleagues(); track colleague.id ?? $index) {
+                    <tr>
+                      <td>{{ val(colleague.staff_name_snapshot) }}</td>
+                      <td>{{ val(colleague.staff_username) }}</td>
+                      <td>{{ val(colleague.department_name_snapshot) }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+          <div class="section-comments">
+            <h3>Section Comments</h3>
+            @if (commentsForSection('travel_details').length) {
+              <div class="section-comments__list">
+                @for (comment of commentsForSection('travel_details'); track comment.id) {
+                  <article class="section-comment">
+                    <strong>{{ val(comment.staff_name || comment.staff_username) }}</strong>
+                    <span
+                      >{{ prettyActor(comment.actor_type_code) }} Â·
+                      {{ fmtDate(comment.created_at) }}</span
+                    >
+                    <p>{{ comment.comment_text }}</p>
+                    @if (
+                      canChangeSectionComment(comment) && editingSectionCommentId() !== comment.id
+                    ) {
+                      <div class="section-comment__actions table-actions">
+                        <button
+                          type="button"
+                          class="table-action"
+                          title="Edit comment"
+                          aria-label="Edit comment"
+                          (click)="startEditSectionComment(comment)"
+                        >
+                          <app-table-action-icon action="edit"></app-table-action-icon>
+                        </button>
+                        <button
+                          type="button"
+                          class="table-action table-action--danger"
+                          [title]="
+                            deletingSectionCommentId() === comment.id
+                              ? 'Deleting comment'
+                              : 'Delete comment'
+                          "
+                          [attr.aria-label]="
+                            deletingSectionCommentId() === comment.id
+                              ? 'Deleting comment'
+                              : 'Delete comment'
+                          "
+                          [disabled]="deletingSectionCommentId() === comment.id"
+                          (click)="deleteSectionComment(comment)"
+                        >
+                          <app-table-action-icon action="delete"></app-table-action-icon>
+                        </button>
+                      </div>
                     }
-                  </tbody>
-                </table>
+                  </article>
+                }
+              </div>
+            } @else {
+              <p class="review-empty">No section comments yet.</p>
+            }
+            @if (
+              canWriteSectionComments() &&
+              (!currentActorSectionComment('travel_details') ||
+                isEditingSectionComment('travel_details'))
+            ) {
+              <textarea
+                class="section-comment-input"
+                appTextareaAutosize
+                [minRows]="3"
+                rows="3"
+                placeholder="Write a comment for Travel Details..."
+                [formControl]="sectionCommentControls['travel_details']"
+                [attr.maxlength]="commentMaxLength"
+              ></textarea>
+              <div
+                class="comment-meta"
+                [class.comment-meta--error]="
+                  sectionCommentControls['travel_details'].hasError('maxlength')
+                "
+              >
+                <span>Maximum {{ commentMaxLength }} characters.</span>
+                <span>{{ sectionCommentLength('travel_details') }}/{{ commentMaxLength }}</span>
+              </div>
+              <div class="section-comment-actions">
+                <app-action-button
+                  type="primary"
+                  [label]="
+                    isEditingSectionComment('travel_details') ? 'Update Comment' : 'Save Comment'
+                  "
+                  icon="send"
+                  [loadingLabel]="
+                    isEditingSectionComment('travel_details') ? 'Updating...' : 'Saving...'
+                  "
+                  [loading]="isSectionCommentSaving('travel_details')"
+                  [disabled]="isSectionCommentSaving('travel_details')"
+                  (clicked)="submitSectionComment('travel_details')"
+                ></app-action-button>
+                @if (isEditingSectionComment('travel_details')) {
+                  <button
+                    type="button"
+                    class="comment-cancel-button"
+                    (click)="cancelEditSectionComment('travel_details')"
+                  >
+                    Cancel
+                  </button>
+                }
               </div>
             }
-            @if (travellingColleagues().length) {
-              <app-table-scroll-hint></app-table-scroll-hint>
-              <div class="modern-table detail-grid--compact">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Staff</th>
-                      <th>Username</th>
-                      <th>Department</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    @for (colleague of travellingColleagues(); track colleague.id ?? $index) {
-                      <tr>
-                        <td>{{ val(colleague.staff_name_snapshot) }}</td>
-                        <td>{{ val(colleague.staff_username) }}</td>
-                        <td>{{ val(colleague.department_name_snapshot) }}</td>
-                      </tr>
-                    }
-                  </tbody>
-                </table>
-              </div>
-            }
-            <div class="section-comments">
-              <h3>Section Comments</h3>
-              @if (commentsForSection('travel_details').length) {
-                <div class="section-comments__list">
-                  @for (comment of commentsForSection('travel_details'); track comment.id) {
-                    <article class="section-comment">
-                      <strong>{{ val(comment.staff_name || comment.staff_username) }}</strong>
-                      <span
-                        >{{ prettyActor(comment.actor_type_code) }} Â·
-                        {{ fmtDate(comment.created_at) }}</span
-                      >
-                      <p>{{ comment.comment_text }}</p>
-                      @if (canChangeSectionComment(comment) && editingSectionCommentId() !== comment.id) {
-                        <div class="section-comment__actions table-actions">
-                          <button
-                            type="button"
-                            class="table-action"
-                            title="Edit comment"
-                            aria-label="Edit comment"
-                            (click)="startEditSectionComment(comment)"
-                          >
-                            <app-table-action-icon action="edit"></app-table-action-icon>
-                          </button>
-                          <button
-                            type="button"
-                            class="table-action table-action--danger"
-                            [title]="deletingSectionCommentId() === comment.id ? 'Deleting comment' : 'Delete comment'"
-                            [attr.aria-label]="deletingSectionCommentId() === comment.id ? 'Deleting comment' : 'Delete comment'"
-                            [disabled]="deletingSectionCommentId() === comment.id"
-                            (click)="deleteSectionComment(comment)"
-                          >
-                            <app-table-action-icon action="delete"></app-table-action-icon>
-                          </button>
-                        </div>
-                      }
-                    </article>
-                  }
-                </div>
-              } @else {
-                <p class="review-empty">No section comments yet.</p>
-              }
-              @if (canWriteSectionComments() && (!currentActorSectionComment('travel_details') || isEditingSectionComment('travel_details'))) {
-                <textarea
-                  class="section-comment-input"
-                  appTextareaAutosize
-                  [minRows]="3"
-                  rows="3"
-                  placeholder="Write a comment for Travel Details..."
-                  [formControl]="sectionCommentControls['travel_details']"
-                  [attr.maxlength]="commentMaxLength"
-                ></textarea>
-                <div
-                  class="comment-meta"
-                  [class.comment-meta--error]="sectionCommentControls['travel_details'].hasError('maxlength')"
-                >
-                  <span>Maximum {{ commentMaxLength }} characters.</span>
-                  <span>{{ sectionCommentLength('travel_details') }}/{{ commentMaxLength }}</span>
-                </div>
-                <div class="section-comment-actions">
-                  <app-action-button
-                    type="primary"
-                    [label]="isEditingSectionComment('travel_details') ? 'Update Comment' : 'Save Comment'"
-                    icon="send"
-                    [loadingLabel]="isEditingSectionComment('travel_details') ? 'Updating...' : 'Saving...'"
-                    [loading]="isSectionCommentSaving('travel_details')"
-                    [disabled]="isSectionCommentSaving('travel_details')"
-                    (clicked)="submitSectionComment('travel_details')"
-                  ></app-action-button>
-                  @if (isEditingSectionComment('travel_details')) {
-                    <button type="button" class="comment-cancel-button" (click)="cancelEditSectionComment('travel_details')">
-                      Cancel
-                    </button>
-                  }
-                </div>
-              }
-            </div>
+          </div>
         </section>
 
         <section class="detail-section">
@@ -560,7 +614,9 @@
                       {{ fmtDate(comment.created_at) }}</span
                     >
                     <p>{{ comment.comment_text }}</p>
-                    @if (canChangeSectionComment(comment) && editingSectionCommentId() !== comment.id) {
+                    @if (
+                      canChangeSectionComment(comment) && editingSectionCommentId() !== comment.id
+                    ) {
                       <div class="section-comment__actions table-actions">
                         <button
                           type="button"
@@ -574,8 +630,16 @@
                         <button
                           type="button"
                           class="table-action table-action--danger"
-                          [title]="deletingSectionCommentId() === comment.id ? 'Deleting comment' : 'Delete comment'"
-                          [attr.aria-label]="deletingSectionCommentId() === comment.id ? 'Deleting comment' : 'Delete comment'"
+                          [title]="
+                            deletingSectionCommentId() === comment.id
+                              ? 'Deleting comment'
+                              : 'Delete comment'
+                          "
+                          [attr.aria-label]="
+                            deletingSectionCommentId() === comment.id
+                              ? 'Deleting comment'
+                              : 'Delete comment'
+                          "
                           [disabled]="deletingSectionCommentId() === comment.id"
                           (click)="deleteSectionComment(comment)"
                         >
@@ -589,25 +653,30 @@
             } @else {
               <p class="review-empty">No section comments yet.</p>
             }
-            @if (canWriteSectionComments() && (!currentActorSectionComment('authors') || isEditingSectionComment('authors'))) {
+            @if (
+              canWriteSectionComments() &&
+              (!currentActorSectionComment('authors') || isEditingSectionComment('authors'))
+            ) {
               <textarea
                 class="section-comment-input"
                 appTextareaAutosize
                 [minRows]="3"
                 rows="3"
                 placeholder="Write a comment for Authors..."
-              [formControl]="sectionCommentControls['authors']"
-              [attr.maxlength]="commentMaxLength"
-            ></textarea>
-            <div
-              class="comment-meta"
-              [class.comment-meta--error]="sectionCommentControls['authors'].hasError('maxlength')"
-            >
-              <span>Maximum {{ commentMaxLength }} characters.</span>
-              <span>{{ sectionCommentLength('authors') }}/{{ commentMaxLength }}</span>
-            </div>
-            <div class="section-comment-actions">
-              <app-action-button
+                [formControl]="sectionCommentControls['authors']"
+                [attr.maxlength]="commentMaxLength"
+              ></textarea>
+              <div
+                class="comment-meta"
+                [class.comment-meta--error]="
+                  sectionCommentControls['authors'].hasError('maxlength')
+                "
+              >
+                <span>Maximum {{ commentMaxLength }} characters.</span>
+                <span>{{ sectionCommentLength('authors') }}/{{ commentMaxLength }}</span>
+              </div>
+              <div class="section-comment-actions">
+                <app-action-button
                   type="primary"
                   [label]="isEditingSectionComment('authors') ? 'Update Comment' : 'Save Comment'"
                   icon="send"
@@ -617,7 +686,11 @@
                   (clicked)="submitSectionComment('authors')"
                 ></app-action-button>
                 @if (isEditingSectionComment('authors')) {
-                  <button type="button" class="comment-cancel-button" (click)="cancelEditSectionComment('authors')">
+                  <button
+                    type="button"
+                    class="comment-cancel-button"
+                    (click)="cancelEditSectionComment('authors')"
+                  >
                     Cancel
                   </button>
                 }
@@ -676,7 +749,9 @@
                       {{ fmtDate(comment.created_at) }}</span
                     >
                     <p>{{ comment.comment_text }}</p>
-                    @if (canChangeSectionComment(comment) && editingSectionCommentId() !== comment.id) {
+                    @if (
+                      canChangeSectionComment(comment) && editingSectionCommentId() !== comment.id
+                    ) {
                       <div class="section-comment__actions table-actions">
                         <button
                           type="button"
@@ -690,8 +765,16 @@
                         <button
                           type="button"
                           class="table-action table-action--danger"
-                          [title]="deletingSectionCommentId() === comment.id ? 'Deleting comment' : 'Delete comment'"
-                          [attr.aria-label]="deletingSectionCommentId() === comment.id ? 'Deleting comment' : 'Delete comment'"
+                          [title]="
+                            deletingSectionCommentId() === comment.id
+                              ? 'Deleting comment'
+                              : 'Delete comment'
+                          "
+                          [attr.aria-label]="
+                            deletingSectionCommentId() === comment.id
+                              ? 'Deleting comment'
+                              : 'Delete comment'
+                          "
                           [disabled]="deletingSectionCommentId() === comment.id"
                           (click)="deleteSectionComment(comment)"
                         >
@@ -705,35 +788,53 @@
             } @else {
               <p class="review-empty">No section comments yet.</p>
             }
-            @if (canWriteSectionComments() && (!currentActorSectionComment('supporting_documents') || isEditingSectionComment('supporting_documents'))) {
+            @if (
+              canWriteSectionComments() &&
+              (!currentActorSectionComment('supporting_documents') ||
+                isEditingSectionComment('supporting_documents'))
+            ) {
               <textarea
                 class="section-comment-input"
                 appTextareaAutosize
                 [minRows]="3"
                 rows="3"
                 placeholder="Write a comment for Supporting Documents..."
-              [formControl]="sectionCommentControls['supporting_documents']"
-              [attr.maxlength]="commentMaxLength"
-            ></textarea>
-            <div
-              class="comment-meta"
-              [class.comment-meta--error]="sectionCommentControls['supporting_documents'].hasError('maxlength')"
-            >
-              <span>Maximum {{ commentMaxLength }} characters.</span>
-              <span>{{ sectionCommentLength('supporting_documents') }}/{{ commentMaxLength }}</span>
-            </div>
-            <div class="section-comment-actions">
-              <app-action-button
+                [formControl]="sectionCommentControls['supporting_documents']"
+                [attr.maxlength]="commentMaxLength"
+              ></textarea>
+              <div
+                class="comment-meta"
+                [class.comment-meta--error]="
+                  sectionCommentControls['supporting_documents'].hasError('maxlength')
+                "
+              >
+                <span>Maximum {{ commentMaxLength }} characters.</span>
+                <span
+                  >{{ sectionCommentLength('supporting_documents') }}/{{ commentMaxLength }}</span
+                >
+              </div>
+              <div class="section-comment-actions">
+                <app-action-button
                   type="primary"
-                  [label]="isEditingSectionComment('supporting_documents') ? 'Update Comment' : 'Save Comment'"
+                  [label]="
+                    isEditingSectionComment('supporting_documents')
+                      ? 'Update Comment'
+                      : 'Save Comment'
+                  "
                   icon="send"
-                  [loadingLabel]="isEditingSectionComment('supporting_documents') ? 'Updating...' : 'Saving...'"
+                  [loadingLabel]="
+                    isEditingSectionComment('supporting_documents') ? 'Updating...' : 'Saving...'
+                  "
                   [loading]="isSectionCommentSaving('supporting_documents')"
                   [disabled]="isSectionCommentSaving('supporting_documents')"
                   (clicked)="submitSectionComment('supporting_documents')"
                 ></app-action-button>
                 @if (isEditingSectionComment('supporting_documents')) {
-                  <button type="button" class="comment-cancel-button" (click)="cancelEditSectionComment('supporting_documents')">
+                  <button
+                    type="button"
+                    class="comment-cancel-button"
+                    (click)="cancelEditSectionComment('supporting_documents')"
+                  >
                     Cancel
                   </button>
                 }
@@ -758,6 +859,7 @@
                   <tr>
                     <th>Vote Number</th>
                     <th>Account Code</th>
+                    <th>Currency</th>
                     <th>Foreign Cost</th>
                     <th>Exchange Rate</th>
                     <th>Cost in RM</th>
@@ -777,6 +879,7 @@
                           val(item.account_code_snapshot || item.account_code_description_snapshot)
                         }}
                       </td>
+                      <td>{{ val(item.currency) }}</td>
                       <td>{{ fmtAmount(item.cost_in_foreign_currency) }}</td>
                       <td>{{ val(item.exchange_rate) }}</td>
                       <td>{{ fmtMoney(item.cost_in_rm) }}</td>
@@ -864,7 +967,9 @@
                       {{ fmtDate(comment.created_at) }}</span
                     >
                     <p>{{ comment.comment_text }}</p>
-                    @if (canChangeSectionComment(comment) && editingSectionCommentId() !== comment.id) {
+                    @if (
+                      canChangeSectionComment(comment) && editingSectionCommentId() !== comment.id
+                    ) {
                       <div class="section-comment__actions table-actions">
                         <button
                           type="button"
@@ -878,8 +983,16 @@
                         <button
                           type="button"
                           class="table-action table-action--danger"
-                          [title]="deletingSectionCommentId() === comment.id ? 'Deleting comment' : 'Delete comment'"
-                          [attr.aria-label]="deletingSectionCommentId() === comment.id ? 'Deleting comment' : 'Delete comment'"
+                          [title]="
+                            deletingSectionCommentId() === comment.id
+                              ? 'Deleting comment'
+                              : 'Delete comment'
+                          "
+                          [attr.aria-label]="
+                            deletingSectionCommentId() === comment.id
+                              ? 'Deleting comment'
+                              : 'Delete comment'
+                          "
                           [disabled]="deletingSectionCommentId() === comment.id"
                           (click)="deleteSectionComment(comment)"
                         >
@@ -893,35 +1006,53 @@
             } @else {
               <p class="review-empty">No section comments yet.</p>
             }
-            @if (canWriteSectionComments() && (!currentActorSectionComment('costing_sponsorship') || isEditingSectionComment('costing_sponsorship'))) {
+            @if (
+              canWriteSectionComments() &&
+              (!currentActorSectionComment('costing_sponsorship') ||
+                isEditingSectionComment('costing_sponsorship'))
+            ) {
               <textarea
                 class="section-comment-input"
                 appTextareaAutosize
                 [minRows]="3"
                 rows="3"
                 placeholder="Write a comment for Costing & Sponsorship..."
-              [formControl]="sectionCommentControls['costing_sponsorship']"
-              [attr.maxlength]="commentMaxLength"
-            ></textarea>
-            <div
-              class="comment-meta"
-              [class.comment-meta--error]="sectionCommentControls['costing_sponsorship'].hasError('maxlength')"
-            >
-              <span>Maximum {{ commentMaxLength }} characters.</span>
-              <span>{{ sectionCommentLength('costing_sponsorship') }}/{{ commentMaxLength }}</span>
-            </div>
-            <div class="section-comment-actions">
-              <app-action-button
+                [formControl]="sectionCommentControls['costing_sponsorship']"
+                [attr.maxlength]="commentMaxLength"
+              ></textarea>
+              <div
+                class="comment-meta"
+                [class.comment-meta--error]="
+                  sectionCommentControls['costing_sponsorship'].hasError('maxlength')
+                "
+              >
+                <span>Maximum {{ commentMaxLength }} characters.</span>
+                <span
+                  >{{ sectionCommentLength('costing_sponsorship') }}/{{ commentMaxLength }}</span
+                >
+              </div>
+              <div class="section-comment-actions">
+                <app-action-button
                   type="primary"
-                  [label]="isEditingSectionComment('costing_sponsorship') ? 'Update Comment' : 'Save Comment'"
+                  [label]="
+                    isEditingSectionComment('costing_sponsorship')
+                      ? 'Update Comment'
+                      : 'Save Comment'
+                  "
                   icon="send"
-                  [loadingLabel]="isEditingSectionComment('costing_sponsorship') ? 'Updating...' : 'Saving...'"
+                  [loadingLabel]="
+                    isEditingSectionComment('costing_sponsorship') ? 'Updating...' : 'Saving...'
+                  "
                   [loading]="isSectionCommentSaving('costing_sponsorship')"
                   [disabled]="isSectionCommentSaving('costing_sponsorship')"
                   (clicked)="submitSectionComment('costing_sponsorship')"
                 ></app-action-button>
                 @if (isEditingSectionComment('costing_sponsorship')) {
-                  <button type="button" class="comment-cancel-button" (click)="cancelEditSectionComment('costing_sponsorship')">
+                  <button
+                    type="button"
+                    class="comment-cancel-button"
+                    (click)="cancelEditSectionComment('costing_sponsorship')"
+                  >
                     Cancel
                   </button>
                 }
@@ -951,8 +1082,13 @@
           }
           @if (canAct() && actions().length) {
             @if (requiresAllSectionComments()) {
-              <div class="action-requirement" [class.action-requirement--complete]="canPerformActions()">
-                <span class="material-icons">{{ canPerformActions() ? 'check_circle' : 'info' }}</span>
+              <div
+                class="action-requirement"
+                [class.action-requirement--complete]="canPerformActions()"
+              >
+                <span class="material-icons">{{
+                  canPerformActions() ? 'check_circle' : 'info'
+                }}</span>
                 <p>{{ actionRequirementMessage() }}</p>
               </div>
             } @else {
@@ -1038,9 +1174,10 @@
       @if (latestApproval(); as latest) {
         <div class="form-field">
           <p>
-            Roll back <strong>{{ val(request()?.request_code) }}</strong>
-            from <strong>{{ prettyActor(latest.to_status_code) }}</strong>
-            to <strong>{{ prettyActor(latest.from_status_code) }}</strong>.
+            Roll back <strong>{{ val(request()?.request_code) }}</strong> from
+            <strong>{{ prettyActor(latest.to_status_code) }}</strong> to
+            <strong>{{ prettyActor(latest.from_status_code) }}</strong
+            >.
           </p>
         </div>
 

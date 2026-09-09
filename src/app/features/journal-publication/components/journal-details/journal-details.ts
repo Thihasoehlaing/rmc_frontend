@@ -27,6 +27,7 @@ import {
 } from '../../../../shared/components/data-table/data-table.component';
 import { JournalOptionType, JournalOptionsService } from '../../services/journal-options.service';
 import { DropdownOption } from '../../../../core/interfaces/components.interface';
+import { CurrencyOption, MasterDataService } from '../../../../core/services/master-data.service';
 import { COSTING_ITEM_ROW_LIMIT } from '../../../../core/constants/form-limits.constant';
 import {
   SDG_KEYWORD_MAX_LENGTH,
@@ -85,6 +86,7 @@ export class JournalDetails implements OnInit, OnDestroy {
   auth = inject(AuthService);
   workflow = inject(JournalWorkflowService);
   private journalOptionsService = inject(JournalOptionsService);
+  private masterData = inject(MasterDataService);
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
   form!: FormGroup;
@@ -114,6 +116,7 @@ export class JournalDetails implements OnInit, OnDestroy {
   voteNumberOptions: { value: string; label: string }[] = [];
   accountCodeDescriptionOptions: { value: string; label: string }[] = [];
   accountCodeOptions: { value: string; label: string }[] = [];
+  currencyOptions: DropdownOption<string>[] = [];
 
   readonly breakdownColumns: DataTableColumn[] = [
     {
@@ -125,6 +128,7 @@ export class JournalDetails implements OnInit, OnDestroy {
     },
     { key: 'itemDescription', label: 'Vote Number Description', width: '220px' },
     { key: 'voteNumber', label: 'Vote Number', width: '120px' },
+    { key: 'currency', label: 'Currency', width: '120px' },
     { key: 'cost', label: 'Cost (Foreign/MYR)', width: '180px' },
     { key: 'exchangeRate', label: 'Exchange Rate', width: '140px' },
     { key: 'costInRM', label: 'Cost in RM', width: '140px' },
@@ -144,6 +148,7 @@ export class JournalDetails implements OnInit, OnDestroy {
     { key: 'accountCode', label: 'Account Code', width: '140px' },
     { key: 'voteNumber', label: 'Vote Number', width: '120px' },
     { key: 'costInRM', label: 'Cost in RM (Approximate)', width: '180px' },
+    { key: 'currency', label: 'Currency', width: '120px' },
     { key: 'cost', label: 'Cost in Foreign Currency', width: '180px' },
     { key: 'exchangeRate', label: 'Exchange Rate', width: '140px' },
     { key: 'description', label: 'Description', width: '260px' },
@@ -159,6 +164,7 @@ export class JournalDetails implements OnInit, OnDestroy {
   readonly nonResearchBreakdownColumns: DataTableColumn[] = [
     { key: 'accountCodeDescription', label: 'Account Code Description', width: '220px' },
     { key: 'accountCode', label: 'Account Code', width: '140px' },
+    { key: 'currency', label: 'Currency', width: '120px' },
     { key: 'cost', label: 'Cost in Foreign Currency', width: '180px' },
     { key: 'exchangeRate', label: 'Exchange Rate', width: '140px' },
     { key: 'costInRM', label: 'Cost in RM (Approximate)', width: '180px' },
@@ -290,6 +296,7 @@ export class JournalDetails implements OnInit, OnDestroy {
       voteNumber: { value: '', disabled: true },
       accountCodeDescription: [''],
       accountCode: { value: '', disabled: true },
+      currency: ['MYR', [Validators.required]],
       cost: ['', [Validators.required, Validators.pattern(decimalPattern)]],
       costForeign: [''],
       exchangeRate: ['', [Validators.required, Validators.pattern(exchangeRatePattern)]],
@@ -322,7 +329,30 @@ export class JournalDetails implements OnInit, OnDestroy {
     });
 
     this.refreshDropdownOptions();
+    this.loadCurrencyOptions();
     window.addEventListener('rmc-dropdowns-updated', this.onJournalDropdownsUpdated);
+  }
+
+  private loadCurrencyOptions(): void {
+    this.masterData.getCurrencies().subscribe((response) => {
+      this.currencyOptions = this.toCurrencyOptions(response.data ?? []);
+      this.cdr.detectChanges();
+    });
+  }
+
+  private toCurrencyOptions(currencies: CurrencyOption[]): DropdownOption<string>[] {
+    const unique = new Map<string, CurrencyOption>();
+    for (const currency of currencies) {
+      if (currency.code && !unique.has(currency.code)) {
+        unique.set(currency.code, currency);
+      }
+    }
+    return [...unique.values()].map((currency) => ({
+      value: currency.code,
+      label: `${currency.code} - ${currency.name}`,
+      description: currency.symbol,
+      searchText: `${currency.code} ${currency.name} ${currency.symbol}`,
+    }));
   }
 
   ngOnDestroy(): void {
@@ -421,6 +451,7 @@ export class JournalDetails implements OnInit, OnDestroy {
         voteNumber: item.vote_number_snapshot || '',
         accountCodeDescription: item.account_code_description_snapshot || '',
         accountCode: item.account_code_snapshot || '',
+        currency: item.currency || 'MYR',
         cost: item.cost_in_foreign_currency || item.cost_in_rm || '',
         exchangeRate: this.toDecimalString(item.exchange_rate, 6),
         costInRM: item.cost_in_rm || '',
@@ -447,7 +478,7 @@ export class JournalDetails implements OnInit, OnDestroy {
       !!type &&
       !this.workflow.isFormReadOnly() &&
       this.getBreakdownArray(type).length <
-      (type === 'non-research' ? this.projectCostMax : this.tableRecordLimit)
+        (type === 'non-research' ? this.projectCostMax : this.tableRecordLimit)
     );
   }
 
@@ -470,6 +501,7 @@ export class JournalDetails implements OnInit, OnDestroy {
       }
 
       this.breakdownForm.reset({}, { emitEvent: false });
+      this.breakdownForm.patchValue({ currency: 'MYR' }, { emitEvent: false });
       this.selectedFile = null;
       this.selectedFileName = null;
 
@@ -745,6 +777,7 @@ export class JournalDetails implements OnInit, OnDestroy {
           ? null
           : this.journalOptionsService.getAccountCodeId(accountCode),
       cost_in_foreign_currency: this.toMoneyString(entry.cost),
+      currency: String(entry.currency || 'MYR').toUpperCase(),
       exchange_rate: this.toDecimalString(entry.exchangeRate, 6),
       cost_in_rm: this.toMoneyString(entry.costInRM),
       description: entry.description || null,
@@ -1037,7 +1070,10 @@ export class JournalDetails implements OnInit, OnDestroy {
     const firstDotIndex = cleaned.indexOf('.');
     if (firstDotIndex !== -1) {
       const whole = cleaned.slice(0, firstDotIndex) || '0';
-      const decimals = cleaned.slice(firstDotIndex + 1).replace(/\./g, '').slice(0, 6);
+      const decimals = cleaned
+        .slice(firstDotIndex + 1)
+        .replace(/\./g, '')
+        .slice(0, 6);
       cleaned = `${whole}.${decimals}`;
     }
     if (cleaned !== input.value) {
@@ -1115,5 +1151,4 @@ export class JournalDetails implements OnInit, OnDestroy {
     const option = this.getDropdownOptions(type).find((opt) => opt.value === value);
     return option?.label || value || '-';
   }
-
 }

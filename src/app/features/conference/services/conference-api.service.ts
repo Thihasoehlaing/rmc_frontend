@@ -100,6 +100,7 @@ export interface ConferenceCostingItemDto {
   account_code_description_snapshot?: string | null;
   supporting_document_attachment_id?: number | null;
   cost_in_rm?: string | null;
+  currency?: string | null;
   cost_in_foreign_currency?: string | null;
   exchange_rate?: string | null;
   description?: string | null;
@@ -161,9 +162,7 @@ export class ConferenceApiService {
   private readonly base = `${this.apiUrl}/conference`;
 
   // ── Lifecycle ────────────────────────────────────────────────────
-  createDraft(
-    payload: Partial<ConferenceRequestDto>,
-  ): Observable<ApiResponse<ConferenceFormData>> {
+  createDraft(payload: Partial<ConferenceRequestDto>): Observable<ApiResponse<ConferenceFormData>> {
     return this.http.post<ApiResponse<ConferenceFormData>>(
       `${this.base}/drafts`,
       payload,

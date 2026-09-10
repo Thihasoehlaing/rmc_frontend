@@ -224,10 +224,24 @@
         </div>
         <div class="form-field">
           <label class="form-label is-required">Keywords</label>
-          <textarea class="input--textarea input--autosize" appTextareaAutosize [minRows]="3" formControlName="keywords" [maxlength]="200"></textarea>
-          <app-note text="Maximum 5 keywords, separated by commas"></app-note>
-          <div class="keyword-counter" [class.keyword-counter--over]="keywordCount > 5">{{ keywordCount }} / 5 keywords
+          <div
+            class="keywords-container"
+            [class.keywords-container--readonly]="workflow.isFormReadOnly()"
+            data-missing-field-target="projectDetails.keywords"
+            role="button"
+            [attr.tabindex]="workflow.isFormReadOnly() ? -1 : 0"
+            aria-label="Edit five project keywords"
+            (click)="openKeywordsModal()"
+            (keydown.enter)="openKeywordsModal()"
+            (keydown.space)="openKeywordsModal()"
+          >
+            @for (keyword of displayedKeywords; track $index) {
+              <span class="keyword-chip">{{ keyword }}</span>
+            } @empty {
+              <span class="keywords-placeholder">Click to enter five keywords</span>
+            }
           </div>
+          <app-note text="Enter 1 to 5 keywords. Each keyword can contain up to 100 characters."></app-note>
           <app-validation-message class="form-validation-note--error" [control]="projectDetails.get('keywords')" fieldName="Keywords"></app-validation-message>
         </div>
       </div>
@@ -515,3 +529,56 @@
   <!-- HOS page-level comment moved to after Research Activities -->
 
 </section>
+
+<app-dialog
+  title="Enter Project Keywords"
+  [isOpen]="isKeywordsModalOpen"
+  width="600px"
+  (close)="closeKeywordsModal()"
+>
+  <form class="keywords-form" [formGroup]="keywordsForm">
+    @for (slot of keywordSlots; track slot.controlName) {
+      <div class="form-field keyword-field">
+        <label class="form-label" [for]="'rdig-' + slot.controlName">
+          {{ slot.label }}
+          @if ($first) {
+            <span class="asterisk">*</span>
+          }
+        </label>
+        <input
+          [id]="'rdig-' + slot.controlName"
+          type="text"
+          class="input--text"
+          [formControlName]="slot.controlName"
+          [maxlength]="keywordMaxLength"
+          [placeholder]="'Enter ' + slot.label.toLowerCase()"
+        />
+        <div class="keyword-feedback">
+          <app-validation-message
+            class="form-validation-note--error"
+            [control]="keywordsForm.get(slot.controlName)"
+            [fieldName]="slot.label"
+          ></app-validation-message>
+          <app-character-counter
+            [current]="keywordsForm.get(slot.controlName)?.value?.length || 0"
+            [max]="keywordMaxLength"
+          ></app-character-counter>
+        </div>
+      </div>
+    }
+  </form>
+
+  <div dialog-footer class="keywords-modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="closeKeywordsModal()">
+      Cancel
+    </button>
+    <button
+      type="button"
+      class="btn btn-primary"
+      [disabled]="keywordsForm.invalid"
+      (click)="confirmKeywords()"
+    >
+      Confirm
+    </button>
+  </div>
+</app-dialog>

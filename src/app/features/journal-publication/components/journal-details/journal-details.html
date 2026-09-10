@@ -109,25 +109,25 @@
             </div>
 
             <div class="form-field journal-details-research-type-field">
-              <label class="form-label is-required">Select Research or Non-Research Project</label>
+              <label class="form-label is-required">Select Funded or Non-Funded Project</label>
               <div class="radio-group">
                 <label class="radio-option">
                   <input
                     type="radio"
                     formControlName="researchType"
                     value="external-research"
-                  /><span>External Research Project</span>
+                  /><span>Funded by Research Grant</span>
                 </label>
                 <label class="radio-option">
                   <input type="radio" formControlName="researchType" value="non-research" /><span
-                    >Non-Research Project</span
+                    >Non-Funded by Research Grant</span
                   >
                 </label>
               </div>
               <app-validation-message
                 class="form-validation-note--error"
                 [control]="form.get('researchType')"
-                fieldName="Select Research or Non-Research Project"
+                fieldName="Select Funded or Non-Funded Project"
               ></app-validation-message>
             </div>
 

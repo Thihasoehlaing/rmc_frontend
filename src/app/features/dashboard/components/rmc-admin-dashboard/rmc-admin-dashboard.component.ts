@@ -626,7 +626,7 @@ export class RmcAdminAnalyticsDashboardComponent implements OnInit {
     if (mode === 'spend') return 'Total money spend';
     if (mode === 'rejected') return 'Rejected forms';
     if (mode === 'in_progress') return 'In Progress';
-    return 'Completed forms';
+    return 'Approved Forms';
   }
 
   private allFormSelection(): string[] {

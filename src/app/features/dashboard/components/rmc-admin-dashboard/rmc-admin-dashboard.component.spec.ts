@@ -52,6 +52,13 @@ describe('RmcAdminAnalyticsDashboardComponent filters', () => {
 
   afterEach(() => TestBed.resetTestingModule());
 
+  it('uses title case for the approved metric headings', () => {
+    const { component } = createComponent();
+
+    expect(component.barMetricLabel()).toBe('Approved Forms');
+    expect(component.lineMetricLabel()).toBe('Approved Forms');
+  });
+
   it('waits for Apply Filters before loading analytics with draft filters', () => {
     const { component, loadPortfolio } = createComponent();
     component.selectedForms.set(['CONFERENCE', 'JOURNAL']);

@@ -92,7 +92,7 @@
         <article class="card summary-card">
           <header class="summary-card__heading">
             <div class="summary-card__topline">
-              <span>Completed Forms</span>
+              <span>Approved Forms</span>
               <span class="material-icons" aria-hidden="true">task_alt</span>
             </div>
             <strong>{{ completedTotal() | number }}</strong>
@@ -102,7 +102,7 @@
         <article class="card summary-card">
           <header class="summary-card__heading">
             <div class="summary-card__topline">
-              <span>Rejected</span>
+              <span>Rejected Forms</span>
               <span class="material-icons" aria-hidden="true">cancel</span>
             </div>
             <strong>{{ rejectedTotal() | number }}</strong>
@@ -112,7 +112,7 @@
         <article class="card summary-card">
           <header class="summary-card__heading">
             <div class="summary-card__topline">
-              <span>In Progress</span>
+              <span>In Progress Forms</span>
               <span class="material-icons" aria-hidden="true">pending_actions</span>
             </div>
             <strong>{{ inProgressTotal() | number }}</strong>
@@ -122,10 +122,10 @@
     }
 
     @if (isExternalDashboard()) {
-      <section class="card performance-workspace" aria-label="External grants by department">
+      <section class="card performance-workspace" aria-label="Funding breakdown by Schools">
         <div class="performance-toolbar">
           <div class="performance-toolbar__context">
-            <strong>External Grants by Department</strong>
+            <strong>Funding breakdown by Schools</strong>
           </div>
         </div>
         <app-dashboard-external-department-chart [points]="externalDepartmentPoints()" />
@@ -180,11 +180,11 @@
 
       <section
         class="card performance-workspace department-performance"
-        aria-label="Department performance"
+        aria-label="Funding breakdown by Schools"
       >
         <div class="performance-toolbar">
           <div class="performance-toolbar__context">
-            <strong>Department Performance</strong>
+            <strong>Funding breakdown by Schools</strong>
           </div>
         </div>
         <app-dashboard-department-comparison-chart [points]="departmentComparisonPoints()" />

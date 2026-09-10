@@ -3,8 +3,8 @@ import { DashboardTrendMode } from '../models/rmc-dashboard-analytics.model';
 
 export const DASHBOARD_TREND_METRIC_OPTIONS: DropdownOption<DashboardTrendMode>[] = [
   { value: 'all', label: 'Total Submissions' },
-  { value: 'completed', label: 'Completed forms' },
-  { value: 'rejected', label: 'Rejected forms' },
+  { value: 'completed', label: 'Approved Forms' },
+  { value: 'rejected', label: 'Rejected Forms' },
   { value: 'in_progress', label: 'In Progress' },
   { value: 'spend', label: 'Fund Approved' },
 ];

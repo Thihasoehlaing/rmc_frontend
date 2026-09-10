@@ -68,6 +68,7 @@ import {
   RdigFormData,
   RdigRequestDto,
 } from './services/rdig-api.service';
+import { rdigKeywordsValidator } from './utils/rdig-keywords.util';
 
 export function isApplicantSubmissionWindowOpen(
   hasActiveBatch: boolean,
@@ -611,7 +612,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
         esgs: [[], [Validators.required, Validators.minLength(1), Validators.maxLength(3)]],
         sdgs: [[], [Validators.required, Validators.minLength(1), Validators.maxLength(3)]],
         executiveSummary: ['', [Validators.required, Validators.maxLength(1500)]],
-        keywords: ['', [Validators.required, Validators.maxLength(200)]],
+        keywords: ['', [Validators.required, rdigKeywordsValidator]],
         introduction: ['', [Validators.required, Validators.maxLength(3000)]],
         problemStatement: ['', [Validators.required, Validators.maxLength(3000)]],
         researchAim: ['', [Validators.required, Validators.maxLength(1000)]],
@@ -2166,4 +2167,3 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
     }
   }
 }
-

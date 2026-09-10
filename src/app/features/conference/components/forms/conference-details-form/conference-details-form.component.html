@@ -311,15 +311,15 @@
       <app-custom-subheader title="Research Classification"></app-custom-subheader>
       <div class="card__content section-fields">
         <div class="form-field">
-          <label class="form-label is-required">Select Research or Non-Research Project</label>
+          <label class="form-label is-required">Select Funded or Non-Funded Project</label>
           <div class="radio-field">
             <label class="radio-field__option">
               <input type="radio" value="external-research" formControlName="researchType" />
-              <span>External Research Project</span>
+              <span>Funded by Research Grant</span>
             </label>
             <label class="radio-field__option">
               <input type="radio" value="non-research" formControlName="researchType" />
-              <span>Non-Research Project</span>
+              <span>Non-Funded by Research Grant</span>
             </label>
           </div>
           <app-note
@@ -328,7 +328,7 @@
           <app-validation-message
             class="form-validation-note--error"
             [control]="form.get('researchType')"
-            fieldName="Select Research or Non-Research Project"
+            fieldName="Select Funded or Non-Funded Project"
           ></app-validation-message>
         </div>
 

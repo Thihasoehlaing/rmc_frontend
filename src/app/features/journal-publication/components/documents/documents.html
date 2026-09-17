@@ -54,13 +54,14 @@
           ></app-validation-message>
         </div>
 
-        <div class="form-field">
+        <div class="form-field upload-field-aligned">
           <div class="upload-field-header">
             <h3 class="upload-field-title is-required">Screenshot of SCOPUS CiteScore</h3>
             <p class="upload-field-subtitle">Max file size: 4 MB. PDF ONLY</p>
           </div>
           <app-file-upload
             #scopusEvidenceUpload
+            class="upload-label-aligned"
             label="Screenshot of SCOPUS CiteScore"
             [accept]="PDF_ACCEPT"
             [maxSizeMB]="MAX_FILE_SIZE_MB"
@@ -77,7 +78,7 @@
           ></app-validation-message>
         </div>
 
-        <div class="form-field">
+        <div class="form-field upload-field-aligned">
           <div class="upload-field-header">
             <h3 class="upload-field-title is-required">
               Approval by Strategic Research Institute (SRI)
@@ -86,7 +87,8 @@
           </div>
           <app-file-upload
             #sriApprovalUpload
-            label="Approval by Strategic Research Institute (SRI)"
+            class="upload-label-aligned"
+            label="Approval by Strategic Research Institute (SRI) on IRN country and SDG Keywords"
             [accept]="PDF_ACCEPT"
             [maxSizeMB]="MAX_FILE_SIZE_MB"
             [uploadedFileName]="documentsForm.get('sriApproval')?.value"
@@ -105,29 +107,6 @@
             [isTooltip]="false"
           >
           </app-note>
-        </div>
-
-        <div class="form-field">
-          <div class="upload-field-header">
-            <h3 class="upload-field-title is-required">Turnitin Report</h3>
-            <p class="upload-field-subtitle">Max file size: 4 MB. PDF ONLY</p>
-          </div>
-          <app-file-upload
-            #turnitinReportUpload
-            label="Turnitin Report"
-            [accept]="PDF_ACCEPT"
-            [maxSizeMB]="MAX_FILE_SIZE_MB"
-            [uploadedFileName]="documentsForm.get('turnitinReport')?.value"
-            [uploadedFileUrl]="uploadedFileUrlsByControl['turnitinReport']"
-            placeholder="Upload Turnitin report PDF"
-            (fileSelected)="onDocumentSelected('turnitinReport', $any($event))"
-          >
-          </app-file-upload>
-          <app-validation-message
-            class="form-validation-note--error"
-            [control]="documentsForm.get('turnitinReport')"
-            fieldName="Turnitin Report"
-          ></app-validation-message>
         </div>
 
         <div class="form-field">

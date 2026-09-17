@@ -144,7 +144,6 @@ export class JournalPublicationFormComponent {
     { path: 'reviewersFeedback', label: "Reviewers' Feedback" },
     { path: 'scopusEvidencePublication', label: 'Screenshot of SCOPUS CiteScore' },
     { path: 'sriApproval', label: 'SRI Approval' },
-    { path: 'turnitinReport', label: 'Turnitin Report' },
     { path: 'finalPaperDraft', label: 'Final Paper Draft' },
     { path: 'journalInvoice', label: 'Journal Invoice' },
     { path: 'reviewerName', label: 'Name of Reviewer' },

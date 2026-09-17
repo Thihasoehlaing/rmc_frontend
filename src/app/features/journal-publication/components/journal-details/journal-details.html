@@ -177,7 +177,7 @@
             <div class="form-field journal-details-cited-field">
               <label class="form-label is-required"
                 >Have you cited at least 1 journal paper from Asia Pacific University of Technology
-                & Innovation JATI &amp; EJBM?</label
+                & Innovation JATI/EJBM/any APU affiliated journals?</label
               >
               <div class="radio-group">
                 <label class="radio-option">
@@ -192,36 +192,60 @@
               <app-validation-message
                 class="form-validation-note--error"
                 [control]="form.get('citedApuPaper')"
-                fieldName="Have you cited at least 1 journal paper from Asia Pacific University of Technology & Innovation JATI & EJBM?"
+                fieldName="Have you cited at least 1 journal paper from Asia Pacific University of Technology & Innovation JATI/EJBM/any APU affiliated journals?"
               ></app-validation-message>
+              @if (form.get('citedApuPaper')?.value === 'Yes') {
+                <div class="form-field">
+                  <label class="form-label is-required">Please Provide Journal Paper Link</label>
+                  <input
+                    type="text"
+                    class="input--text"
+                    formControlName="citedApuPaperDoi"
+                    placeholder="Enter journal paper link here"
+                    maxlength="255"
+                    [class.is-invalid]="
+                      form.get('citedApuPaperDoi')?.invalid &&
+                      form.get('citedApuPaperDoi')?.touched
+                    "
+                  />
+                  <app-validation-message
+                    class="form-validation-note--error"
+                    [control]="form.get('citedApuPaperDoi')"
+                    fieldName="Please Provide Journal Paper Link"
+                  ></app-validation-message>
+                  <app-character-counter
+                    [current]="form.get('citedApuPaperDoi')?.value?.length || 0"
+                    [max]="255"
+                  ></app-character-counter>
+                </div>
+              }
+              @if (form.get('citedApuPaper')?.value === 'No') {
+                <div class="form-field journal-details-citation-explanation">
+                  <label class="form-label is-required">If No, please explain</label>
+                  <textarea
+                    class="input--textarea"
+                    formControlName="citedApuPaperExplanation"
+                    placeholder="Enter explanation here"
+                    rows="3"
+                    maxlength="255"
+                    [class.is-invalid]="
+                      form.get('citedApuPaperExplanation')?.invalid &&
+                      form.get('citedApuPaperExplanation')?.touched
+                    "
+                    (input)="autoExpandTextarea($event)"
+                  ></textarea>
+                  <app-validation-message
+                    class="form-validation-note--error"
+                    [control]="form.get('citedApuPaperExplanation')"
+                    fieldName="If No, please explain"
+                  ></app-validation-message>
+                  <app-character-counter
+                    [current]="form.get('citedApuPaperExplanation')?.value?.length || 0"
+                    [max]="255"
+                  ></app-character-counter>
+                </div>
+              }
             </div>
-
-            @if (form.get('citedApuPaper')?.value === 'No') {
-              <div class="form-field journal-details-citation-explanation">
-                <label class="form-label is-required">If No, please explain</label>
-                <textarea
-                  class="input--textarea"
-                  formControlName="citedApuPaperExplanation"
-                  placeholder="Enter explanation here"
-                  rows="3"
-                  maxlength="255"
-                  [class.is-invalid]="
-                    form.get('citedApuPaperExplanation')?.invalid &&
-                    form.get('citedApuPaperExplanation')?.touched
-                  "
-                  (input)="autoExpandTextarea($event)"
-                ></textarea>
-                <app-validation-message
-                  class="form-validation-note--error"
-                  [control]="form.get('citedApuPaperExplanation')"
-                  fieldName="If No, please explain"
-                ></app-validation-message>
-                <app-character-counter
-                  [current]="form.get('citedApuPaperExplanation')?.value?.length || 0"
-                  [max]="255"
-                ></app-character-counter>
-              </div>
-            }
           </div>
 
           <!-- Right Column -->

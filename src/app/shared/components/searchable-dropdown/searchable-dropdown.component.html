@@ -79,6 +79,15 @@
       [attr.aria-multiselectable]="isMulti"
       [attr.aria-label]="label || placeholder"
     >
+      @if (optionListTitle) {
+        <div class="options-header">
+          <span class="options-header__title">{{ optionListTitle }}</span>
+          @if (optionListCount !== null) {
+            <span class="options-header__count">FOUND {{ optionListCount }}</span>
+          }
+        </div>
+      }
+
       <!-- Search input -->
       @if (searchable) {
         <div class="search-container">
@@ -125,6 +134,17 @@
                 <span class="option-description">{{ opt.description }}</span>
               }
             </span>
+
+            @if (opt.actionLabel) {
+              <span class="option-action" [class.option-action--warning]="opt.warning">
+                @if (opt.actionIcon) {
+                  <span class="material-icons option-action__icon" aria-hidden="true">{{
+                    opt.actionIcon
+                  }}</span>
+                }
+                {{ opt.actionLabel }}
+              </span>
+            }
 
             <!-- Single-select checkmark -->
             @if (!isMulti && isSelected(opt.value)) {

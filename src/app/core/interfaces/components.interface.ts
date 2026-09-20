@@ -6,6 +6,9 @@ export interface DropdownOption<T = any> {
     displayLabel?: string;
     searchText?: string;
     disabled?: boolean;
+    actionLabel?: string;
+    actionIcon?: string;
+    warning?: boolean;
 }
 
 export interface GuidelinesResponse {

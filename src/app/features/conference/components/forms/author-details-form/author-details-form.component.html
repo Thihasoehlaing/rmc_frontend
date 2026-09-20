@@ -237,6 +237,8 @@
           <app-searchable-dropdown
             [options]="staffOptions"
             [searchable]="true"
+            optionListTitle="AVAILABLE APU ACADEMIC STAFF"
+            [optionListCount]="staffOptions.length"
             placeholder="Search staff..."
             formControlName="staffName"
             (searchChange)="loadAcademicStaffOptions($event)"

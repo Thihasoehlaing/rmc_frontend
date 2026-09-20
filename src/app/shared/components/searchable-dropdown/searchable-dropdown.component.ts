@@ -76,6 +76,8 @@ export class SearchableDropdownComponent<T = number> implements ControlValueAcce
   @Input() isMulti = false;
   @Input() searchable = true;
   @Input() maxSelections: number | null = null;
+  @Input() optionListTitle = '';
+  @Input() optionListCount: number | null = null;
 
   /** Show a spinner and disable interaction while options are loading asynchronously. */
   @Input() loading = false;

@@ -328,6 +328,7 @@ export class AuthorsDetails implements OnInit {
 
   deleteTestSubsection(index: number) {
     this.testSubsections.removeAt(index);
+    this.updateStaffOptionStates();
     this.emitFormValidity();
   }
 
@@ -484,6 +485,12 @@ export class AuthorsDetails implements OnInit {
         : {}),
     };
 
+    if (this.modalType === 'apu-staff' && this.isStaffAlreadySelected(formData.staffName)) {
+      this.editForm.get('staffName')?.setErrors({ duplicateStaff: true });
+      this.editForm.get('staffName')?.markAsTouched();
+      return;
+    }
+
     // Prepend "TP" prefix to the student TP number before saving
     if (this.modalType === 'student' && formData.tpNumber) {
       formData.tpNumber = this.formatTPNumber(formData.tpNumber);
@@ -514,6 +521,7 @@ export class AuthorsDetails implements OnInit {
     }
 
     this.closeModal();
+    this.updateStaffOptionStates();
     this.emitFormValidity();
   }
 
@@ -533,7 +541,9 @@ export class AuthorsDetails implements OnInit {
           this.applyAcademicStaffOptions(staff, selectedStaffName);
         },
         error: () => {
-          this.staffOptions.set(this.createSelectedStaffFallbackOption(selectedStaffName));
+          this.staffOptions.set(
+            selectedStaffName ? [this.createStaffFallbackOption(selectedStaffName)] : [],
+          );
           this.academicStaffByName.clear();
           this.staffOptionsLoadFailed.set(true);
         },
@@ -597,7 +607,9 @@ export class AuthorsDetails implements OnInit {
 
   private setupStaffSelection(selectedStaffName = ''): void {
     this.staffSelectionSubscription?.unsubscribe();
-    const selectedFallback = this.createSelectedStaffFallbackOption(selectedStaffName);
+    const selectedFallback = selectedStaffName
+      ? [this.createStaffFallbackOption(selectedStaffName)]
+      : [];
     if (
       selectedFallback.length &&
       !this.staffOptions().some((option) => option.value === selectedFallback[0].value)
@@ -605,6 +617,7 @@ export class AuthorsDetails implements OnInit {
       this.staffOptions.update((options) => [...selectedFallback, ...options]);
     }
 
+    this.updateStaffOptionStates();
     const staffNameControl = this.editForm.get('staffName');
     this.staffSelectionSubscription = staffNameControl?.valueChanges.subscribe((staffName) => {
       const staff = this.academicStaffByName.get(String(staffName ?? ''));
@@ -631,7 +644,9 @@ export class AuthorsDetails implements OnInit {
     const options = staff
       .filter((item) => !this.isCurrentUserStaff(item))
       .map((item) => this.toAcademicStaffDropdownOption(item));
-    const selectedFallback = this.createSelectedStaffFallbackOption(selectedStaffName);
+    const selectedFallback = selectedStaffName
+      ? [this.createStaffFallbackOption(selectedStaffName)]
+      : [];
     const selectedValue = selectedStaffName?.trim();
 
     if (selectedValue && !options.some((option) => option.value === selectedValue)) {
@@ -642,18 +657,79 @@ export class AuthorsDetails implements OnInit {
   }
 
   private toAcademicStaffDropdownOption(staff: AcademicStaffOption): DropdownOption<string> {
-    const value = staff.fullname || staff.username || staff.email || `Staff ${staff.id}`;
+    const value = this.getStaffOptionValue(staff);
+    const alreadySelected = this.isStaffAlreadySelected(value);
     this.academicStaffByName.set(value, staff);
 
     return {
       value,
-      label: value,
-      description: [staff.email, staff.department].filter(Boolean).join(' • '),
+      label: `${value} (${staff.username || staff.id})`,
       displayLabel: value,
+      description: staff.department,
       searchText: [staff.username, staff.fullname, staff.email, staff.department]
         .filter(Boolean)
         .join(' '),
+      disabled: alreadySelected,
+      actionLabel: alreadySelected ? 'Already Added' : undefined,
+      actionIcon: alreadySelected ? 'warning' : undefined,
+      warning: alreadySelected,
     };
+  }
+
+  private createStaffFallbackOption(value: string): DropdownOption<string> {
+    const alreadySelected = this.isStaffAlreadySelected(value);
+    return {
+      value,
+      label: value,
+      displayLabel: value,
+      disabled: alreadySelected,
+      actionLabel: alreadySelected ? 'Already Added' : undefined,
+      actionIcon: alreadySelected ? 'warning' : undefined,
+      warning: alreadySelected,
+    };
+  }
+
+  private getStaffOptionValue(staff: AcademicStaffOption): string {
+    return staff.fullname || staff.username || staff.email || `Staff ${staff.id}`;
+  }
+
+  private getUnavailableStaffNames(): Set<string> {
+    return new Set(
+      this.testSubsections.controls
+        .map((control, index) => (index === this.editingIndex ? '' : control.get('staffName')?.value))
+        .filter((staffName): staffName is string => !!staffName)
+        .map((staffName) => this.normalizeStaffName(staffName)),
+    );
+  }
+
+  private isStaffAlreadySelected(staffName: string): boolean {
+    const normalizedName = this.normalizeStaffName(staffName);
+    if (!normalizedName) return false;
+
+    return this.testSubsections.controls.some(
+      (control, index) =>
+        index !== this.editingIndex &&
+        this.normalizeStaffName(control.get('staffName')?.value) === normalizedName,
+    );
+  }
+
+  private normalizeStaffName(staffName: unknown): string {
+    return String(staffName ?? '').trim().toLowerCase();
+  }
+
+  private updateStaffOptionStates(): void {
+    this.staffOptions.update((options) =>
+      options.map((option) => {
+        const alreadySelected = this.isStaffAlreadySelected(String(option.value));
+        return {
+          ...option,
+          disabled: alreadySelected,
+          actionLabel: alreadySelected ? 'Already Added' : undefined,
+          actionIcon: alreadySelected ? 'warning' : undefined,
+          warning: alreadySelected,
+        };
+      }),
+    );
   }
 
   private isCurrentUserStaff(staff: AcademicStaffOption): boolean {
@@ -665,11 +741,6 @@ export class AuthorsDetails implements OnInit {
     const staffUsername = staff.username?.trim().toLowerCase();
     const staffEmailUsername = staff.email?.split('@', 1)[0]?.trim().toLowerCase();
     return staffUsername === currentUsername || staffEmailUsername === currentUsername;
-  }
-
-  private createSelectedStaffFallbackOption(staffName?: string | null): DropdownOption<string>[] {
-    const value = staffName?.trim();
-    return value ? [{ value, label: value, displayLabel: value }] : [];
   }
 
   private emitFormValidity(): void {

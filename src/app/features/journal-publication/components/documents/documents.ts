@@ -57,7 +57,6 @@ export class DocumentsComponent implements OnInit {
   reviewersFeedbackUpload?: FileUploadComponent;
   @ViewChild('scopusEvidenceUpload', { static: false }) scopusEvidenceUpload?: FileUploadComponent;
   @ViewChild('sriApprovalUpload', { static: false }) sriApprovalUpload?: FileUploadComponent;
-  @ViewChild('turnitinReportUpload', { static: false }) turnitinReportUpload?: FileUploadComponent;
   @ViewChild('finalPaperUpload', { static: false }) finalPaperUpload?: FileUploadComponent;
   @ViewChild('journalInvoiceUpload', { static: false }) journalInvoiceUpload?: FileUploadComponent;
   // File constants
@@ -68,7 +67,6 @@ export class DocumentsComponent implements OnInit {
     reviewersFeedback: 'reviewers_feedback',
     scopusEvidencePublication: 'scopus_citescore_screenshot',
     sriApproval: 'sri_approval',
-    turnitinReport: 'turnitin_report',
     finalPaperDraft: 'final_paper_draft',
     journalInvoice: 'journal_invoice',
   };
@@ -98,7 +96,6 @@ export class DocumentsComponent implements OnInit {
       reviewersFeedback: ['', Validators.required],
       scopusEvidencePublication: ['', Validators.required],
       sriApproval: ['', Validators.required],
-      turnitinReport: ['', Validators.required],
       finalPaperDraft: ['', Validators.required],
       journalInvoice: ['', Validators.required],
       manuscriptInternallyReviewed: ['', Validators.required],

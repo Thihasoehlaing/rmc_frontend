@@ -9,7 +9,14 @@
   ChangeDetectorRef,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  AbstractControl,
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  ValidationErrors,
+  Validators,
+} from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../../core/services/auth.service';
 import { JournalWorkflowService } from '../../services/journal-workflow.service';
@@ -234,6 +241,7 @@ export class JournalDetails implements OnInit, OnDestroy {
       sdgKeyword3: ['', [Validators.required, Validators.maxLength(SDG_KEYWORD_MAX_LENGTH)]],
       citedApuPaper: ['', Validators.required],
       citedApuPaperExplanation: ['', [Validators.maxLength(255)]],
+      citedApuPaperDoi: ['', [Validators.maxLength(255)]],
       projectAccountCode: [''],
       externalProjectAccountCode: [''],
       totalRM: [{ value: 0, disabled: true }],
@@ -280,12 +288,8 @@ export class JournalDetails implements OnInit, OnDestroy {
     });
 
     this.form.get('citedApuPaper')?.valueChanges.subscribe((value) => {
-      if (value === 'No') {
-        this.form.get('citedApuPaperExplanation')?.setValidators([Validators.required]);
-      } else {
-        this.form.get('citedApuPaperExplanation')?.clearValidators();
-      }
-      this.form.get('citedApuPaperExplanation')?.updateValueAndValidity();
+      this.updateCitationExplanationValidation(value);
+      this.updateCitationDoiValidation(value);
     });
 
     const decimalPattern = '^[0-9]+(\\.[0-9]{1,2})?$';
@@ -434,6 +438,8 @@ export class JournalDetails implements OnInit, OnDestroy {
       },
       { emitEvent: false },
     );
+    this.updateCitationExplanationValidation(this.form.get('citedApuPaper')?.value);
+    this.updateCitationDoiValidation(this.form.get('citedApuPaper')?.value);
     this.syncScopusQuartileForResearchType(journal.project_type || '');
 
     this.researchBreakdowns = [];
@@ -464,6 +470,57 @@ export class JournalDetails implements OnInit, OnDestroy {
 
     this.calculateTotals();
     this.cdr.detectChanges();
+  }
+
+  private updateCitationExplanationValidation(value: unknown, clearWhenNotRequired = true): void {
+    const explanationControl = this.form.get('citedApuPaperExplanation');
+    if (!explanationControl) return;
+
+    if (value === 'No') {
+      explanationControl.setValidators([Validators.required, Validators.maxLength(255)]);
+    } else {
+      explanationControl.clearValidators();
+      if (clearWhenNotRequired) {
+        explanationControl.setValue('', { emitEvent: false });
+        explanationControl.markAsUntouched();
+        explanationControl.markAsPristine();
+      }
+    }
+    explanationControl.updateValueAndValidity({ emitEvent: false });
+  }
+
+  private updateCitationDoiValidation(value: unknown): void {
+    const doiControl = this.form.get('citedApuPaperDoi');
+    if (!doiControl) return;
+
+    if (value === 'Yes') {
+      doiControl.setValidators([
+        Validators.required,
+        Validators.maxLength(255),
+        this.validLinkValidator,
+      ]);
+    } else {
+      doiControl.clearValidators();
+      doiControl.setValue('', { emitEvent: false });
+      doiControl.markAsUntouched();
+      doiControl.markAsPristine();
+    }
+    doiControl.updateValueAndValidity({ emitEvent: false });
+  }
+
+  private validLinkValidator(control: AbstractControl): ValidationErrors | null {
+    const value = String(control.value || '').trim();
+    if (!value) return null;
+
+    try {
+      const url = new URL(value);
+      if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+        return { pattern: { message: 'Please enter a valid link.' } };
+      }
+      return null;
+    } catch {
+      return { pattern: { message: 'Please enter a valid link.' } };
+    }
   }
 
   getBreakdownArray(type: string): any[] {

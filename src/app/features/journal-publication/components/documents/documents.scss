@@ -41,6 +41,17 @@
   gap: var(--space-1);
 }
 
+.upload-field-aligned .upload-field-header {
+  min-height: calc(
+    (2 * var(--fs-md) * var(--lh-tight)) + var(--space-1) +
+      (var(--fs-xs) * var(--lh-normal))
+  );
+}
+
+.upload-field-aligned .upload-field-title {
+  line-height: var(--lh-tight);
+}
+
 .upload-field-title {
   font-size: var(--fs-md);
   font-weight: var(--fw-bold);

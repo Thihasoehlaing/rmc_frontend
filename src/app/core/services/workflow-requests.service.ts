@@ -171,14 +171,6 @@ export interface RequestCommentDto {
   staff_email: string | null;
   comment_text: string;
   created_at: string | null;
-  /**
-   * TODO(backend): reviewer score for this section comment is not yet
-   * persisted/returned by the API. Wired frontend-only for now (RDIG Details
-   * view score field on reviewer section comments) — remove this TODO and
-   * make the field authoritative once the backend adds a `score` column to
-   * the request_comments table and returns it here.
-   */
-  score?: number | string | null;
 }
 
 export interface CreateSectionCommentPayload {
@@ -186,14 +178,49 @@ export interface CreateSectionCommentPayload {
   section_code: string;
   section_name?: string | null;
   comment_text: string;
-  /** TODO(backend): see RequestCommentDto.score — sent but not yet persisted server-side. */
-  score?: number | string | null;
 }
 
 export interface UpdateSectionCommentPayload {
   comment_text: string;
-  /** TODO(backend): see RequestCommentDto.score — sent but not yet persisted server-side. */
-  score?: number | string | null;
+}
+
+export interface RdigReviewerScoreDto {
+  id: number | null;
+  criterion_code: string;
+  criterion_name: string;
+  score: number | null;
+  maximum_score: number;
+}
+
+export interface RdigReviewerReviewDto {
+  rdig_request_reviewer_id: number;
+  reviewer_no: number;
+  username: string;
+  name: string;
+  review_cycle: number;
+  scores: RdigReviewerScoreDto[];
+  total_score: number;
+  maximum_score: number;
+  is_complete: boolean;
+  can_approve: boolean;
+}
+
+export interface RdigReviewerScoreSheetDto {
+  request_id: number;
+  rdig_request_id: number;
+  review_cycle: number;
+  approval_threshold: number;
+  maximum_score: number;
+  criteria: Array<{
+    criterion_code: string;
+    criterion_name: string;
+    maximum_score: number;
+  }>;
+  reviews: RdigReviewerReviewDto[];
+}
+
+export interface SaveRdigReviewerScoresPayload {
+  scores: Array<{ criterion_code: string; score: number }>;
 }
 
 /** Body for POST /requests/{id}/actions (schemas/requests.py::RequestActionSchema). */
@@ -479,6 +506,22 @@ export class WorkflowRequestsService {
   ): Observable<ApiResponse<unknown>> {
     return this.http.delete<ApiResponse<unknown>>(
       `${this.base}/requests/${requestId}/comments/${commentId}`,
+    );
+  }
+
+  getRdigReviewerScores(requestId: number): Observable<ApiResponse<RdigReviewerScoreSheetDto>> {
+    return this.http.get<ApiResponse<RdigReviewerScoreSheetDto>>(
+      `${this.base}/requests/${requestId}/rdig-reviewer-scores`,
+    );
+  }
+
+  saveRdigReviewerScores(
+    requestId: number,
+    payload: SaveRdigReviewerScoresPayload,
+  ): Observable<ApiResponse<RdigReviewerScoreSheetDto>> {
+    return this.http.put<ApiResponse<RdigReviewerScoreSheetDto>>(
+      `${this.base}/requests/${requestId}/rdig-reviewer-scores`,
+      payload,
     );
   }
 

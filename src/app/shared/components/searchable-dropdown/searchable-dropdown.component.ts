@@ -97,6 +97,7 @@ export class SearchableDropdownComponent<T = number> implements ControlValueAcce
    */
   @Input() compareWith: (a: T, b: T) => boolean = (a, b) => a === b;
   @Output() searchChange = new EventEmitter<string>();
+  @Output() openChange = new EventEmitter<boolean>();
 
   // ── Options (signal-backed so computed can react to changes) ─────
 
@@ -237,7 +238,7 @@ export class SearchableDropdownComponent<T = number> implements ControlValueAcce
     disabled
       ? this.searchCtrl.disable({ emitEvent: false })
       : this.searchCtrl.enable({ emitEvent: false });
-    if (disabled) this.isOpen.set(false);
+    if (disabled) this.setOpenState(false);
   }
 
   // ── Dropdown open / close ────────────────────────────────────────
@@ -248,7 +249,7 @@ export class SearchableDropdownComponent<T = number> implements ControlValueAcce
   }
 
   open(): void {
-    this.isOpen.set(true);
+    this.setOpenState(true);
     this.focusedIndex.set(-1);
     this._resetSearch();
     this._onTouched();
@@ -263,8 +264,14 @@ export class SearchableDropdownComponent<T = number> implements ControlValueAcce
   }
 
   close(): void {
-    this.isOpen.set(false);
+    this.setOpenState(false);
     this._resetSearch();
+  }
+
+  private setOpenState(open: boolean): void {
+    if (this.isOpen() === open) return;
+    this.isOpen.set(open);
+    this.openChange.emit(open);
   }
 
   private _resetSearch(): void {
@@ -316,7 +323,7 @@ export class SearchableDropdownComponent<T = number> implements ControlValueAcce
     this._onChange(this.isMulti || this.valueMode === 'array' ? [] : null);
     this._resetSearch();
     this.searchChange.emit('');
-    this.isOpen.set(false);
+    this.setOpenState(false);
   }
 
   isSelected(value: T): boolean {

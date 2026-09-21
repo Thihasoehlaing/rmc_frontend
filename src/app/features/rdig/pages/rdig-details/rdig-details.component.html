@@ -1,11 +1,6 @@
 <section class="review-page">
   @if (loading()) {
-    <div
-      class="review-loading"
-      role="status"
-      aria-live="polite"
-      aria-label="Loading RDIG application detail"
-    >
+    <div class="review-loading" role="status" aria-live="polite" aria-label="Loading RDIG application detail">
       <div class="review-loading__orb">
         <span class="material-icons">science</span>
       </div>
@@ -40,9 +35,7 @@
         </h1>
         <div class="review-hero__meta">
           <span class="review-chip review-chip--strong">{{ val(request()?.request_code) }}</span>
-          <span class="review-chip review-chip--status">{{
-            val(request()?.status_name || request()?.status_code)
-          }}</span>
+          <span class="review-chip review-chip--status">{{ val(request()?.status_name || request()?.status_code) }}</span>
           <span
             >Submitted by <strong>{{ val(request()?.applicant_name) }}</strong></span
           >
@@ -149,7 +142,9 @@
             </div>
             <div>
               <dt>Project Leader's School / Department</dt>
-              <dd>{{ val(rdig()?.project_leader_department || request()?.applicant_department) }}</dd>
+              <dd>
+                {{ val(rdig()?.project_leader_department || request()?.applicant_department) }}
+              </dd>
             </div>
             <div>
               <dt>Research Cluster</dt>
@@ -165,12 +160,7 @@
             <app-custom-subheader icon="badge" title="Internal Co-Researchers"></app-custom-subheader>
             @if (coResearchers().length) {
               <app-table-scroll-hint></app-table-scroll-hint>
-              <app-data-table
-                [columns]="coResearcherColumns"
-                [rows]="coResearcherRows()"
-                [hoverable]="false"
-                [striped]="false"
-              ></app-data-table>
+              <app-data-table [columns]="coResearcherColumns" [rows]="coResearcherRows()" [hoverable]="false" [striped]="false"></app-data-table>
             } @else {
               <p class="review-empty">None.</p>
             }
@@ -180,12 +170,7 @@
             <app-custom-subheader icon="public" title="External Co-Researchers"></app-custom-subheader>
             @if (collaborators().length) {
               <app-table-scroll-hint></app-table-scroll-hint>
-              <app-data-table
-                [columns]="collaboratorColumns"
-                [rows]="collaboratorRows()"
-                [hoverable]="false"
-                [striped]="false"
-              ></app-data-table>
+              <app-data-table [columns]="collaboratorColumns" [rows]="collaboratorRows()" [hoverable]="false" [striped]="false"></app-data-table>
             } @else {
               <p class="review-empty">None.</p>
             }
@@ -195,14 +180,10 @@
           @if (isToggled('hos') || isToggled('rmc')) {
             <div class="group-comments">
               @if (isToggled('hos')) {
-                <ng-container
-                  *ngTemplateOutlet="groupCommentBlock; context: { group: 'team', actor: 'hos', source: 'hos' }"
-                ></ng-container>
+                <ng-container *ngTemplateOutlet="groupCommentBlock; context: { group: 'team', actor: 'hos', source: 'hos' }"></ng-container>
               }
               @if (isToggled('rmc')) {
-                <ng-container
-                  *ngTemplateOutlet="groupCommentBlock; context: { group: 'team', actor: 'rmc', source: 'rmc' }"
-                ></ng-container>
+                <ng-container *ngTemplateOutlet="groupCommentBlock; context: { group: 'team', actor: 'rmc', source: 'rmc' }"></ng-container>
               }
             </div>
           }
@@ -212,14 +193,10 @@
             <div class="section-comments">
               @for (field of teamFields; track field.fieldCode) {
                 @if (isToggled('reviewer1')) {
-                  <ng-container
-                    *ngTemplateOutlet="fieldCommentBlock; context: { field: field, actor: 'reviewer1', source: 'reviewer1' }"
-                  ></ng-container>
+                  <ng-container *ngTemplateOutlet="fieldCommentBlock; context: { field: field, actor: 'reviewer1', source: 'reviewer1' }"></ng-container>
                 }
                 @if (isToggled('reviewer2')) {
-                  <ng-container
-                    *ngTemplateOutlet="fieldCommentBlock; context: { field: field, actor: 'reviewer2', source: 'reviewer2' }"
-                  ></ng-container>
+                  <ng-container *ngTemplateOutlet="fieldCommentBlock; context: { field: field, actor: 'reviewer2', source: 'reviewer2' }"></ng-container>
                 }
               }
             </div>
@@ -246,10 +223,8 @@
             <div class="detail-grid__wide">
               <dt>Application Declarations</dt>
               <dd>
-                {{ val(rdig()?.declaration_no_ongoing_rdig_self) }} — I do not have any on-going RDIG
-                project.<br />
-                {{ val(rdig()?.declaration_no_ongoing_rdig_coresearchers) }} — My co-researchers do not
-                have any on-going RDIG project.
+                {{ val(rdig()?.declaration_no_ongoing_rdig_self) }} — I do not have any on-going RDIG project.<br />
+                {{ val(rdig()?.declaration_no_ongoing_rdig_coresearchers) }} — My co-researchers do not have any on-going RDIG project.
               </dd>
             </div>
             <div>
@@ -289,12 +264,26 @@
             <div class="section-comments section-comments--inline">
               @if (isToggled('reviewer1')) {
                 <ng-container
-                  *ngTemplateOutlet="fieldCommentBlock; context: { field: fieldDef('project_classification'), actor: 'reviewer1', source: 'reviewer1' }"
+                  *ngTemplateOutlet="
+                    fieldCommentBlock;
+                    context: {
+                      field: fieldDef('project_classification'),
+                      actor: 'reviewer1',
+                      source: 'reviewer1',
+                    }
+                  "
                 ></ng-container>
               }
               @if (isToggled('reviewer2')) {
                 <ng-container
-                  *ngTemplateOutlet="fieldCommentBlock; context: { field: fieldDef('project_classification'), actor: 'reviewer2', source: 'reviewer2' }"
+                  *ngTemplateOutlet="
+                    fieldCommentBlock;
+                    context: {
+                      field: fieldDef('project_classification'),
+                      actor: 'reviewer2',
+                      source: 'reviewer2',
+                    }
+                  "
                 ></ng-container>
               }
             </div>
@@ -309,15 +298,68 @@
           @if (isToggled('reviewer1') || isToggled('reviewer2')) {
             <div class="section-comments section-comments--inline">
               @if (isToggled('reviewer1')) {
-                <ng-container *ngTemplateOutlet="fieldCommentBlock; context: { field: fieldDef('project_title'), actor: 'reviewer1', source: 'reviewer1' }"></ng-container>
+                <ng-container
+                  *ngTemplateOutlet="
+                    fieldCommentBlock;
+                    context: {
+                      field: fieldDef('project_title'),
+                      actor: 'reviewer1',
+                      source: 'reviewer1',
+                    }
+                  "
+                ></ng-container>
               }
               @if (isToggled('reviewer2')) {
-                <ng-container *ngTemplateOutlet="fieldCommentBlock; context: { field: fieldDef('project_title'), actor: 'reviewer2', source: 'reviewer2' }"></ng-container>
+                <ng-container
+                  *ngTemplateOutlet="
+                    fieldCommentBlock;
+                    context: {
+                      field: fieldDef('project_title'),
+                      actor: 'reviewer2',
+                      source: 'reviewer2',
+                    }
+                  "
+                ></ng-container>
               }
             </div>
           }
 
           <dl class="detail-grid detail-grid--compact">
+            <div class="detail-grid__wide">
+              <dt>Keywords</dt>
+              <dd>{{ val(rdig()?.keywords) }}</dd>
+            </div>
+          </dl>
+          @if (isToggled('reviewer1') || isToggled('reviewer2')) {
+            <div class="section-comments section-comments--inline">
+              @if (isToggled('reviewer1')) {
+                <ng-container
+                  *ngTemplateOutlet="
+                    fieldCommentBlock;
+                    context: {
+                      field: fieldDef('project_keywords'),
+                      actor: 'reviewer1',
+                      source: 'reviewer1',
+                    }
+                  "
+                ></ng-container>
+              }
+              @if (isToggled('reviewer2')) {
+                <ng-container
+                  *ngTemplateOutlet="
+                    fieldCommentBlock;
+                    context: {
+                      field: fieldDef('project_keywords'),
+                      actor: 'reviewer2',
+                      source: 'reviewer2',
+                    }
+                  "
+                ></ng-container>
+              }
+            </div>
+          }
+
+          <dl class="detail-grid detail-grid--compact project-research-area">
             <div class="detail-grid__wide">
               <dt>Research Area</dt>
               <dd class="detail-value--long">{{ val(rdig()?.research_area) }}</dd>
@@ -326,10 +368,28 @@
           @if (isToggled('reviewer1') || isToggled('reviewer2')) {
             <div class="section-comments section-comments--inline">
               @if (isToggled('reviewer1')) {
-                <ng-container *ngTemplateOutlet="fieldCommentBlock; context: { field: fieldDef('project_research_area'), actor: 'reviewer1', source: 'reviewer1' }"></ng-container>
+                <ng-container
+                  *ngTemplateOutlet="
+                    fieldCommentBlock;
+                    context: {
+                      field: fieldDef('project_research_area'),
+                      actor: 'reviewer1',
+                      source: 'reviewer1',
+                    }
+                  "
+                ></ng-container>
               }
               @if (isToggled('reviewer2')) {
-                <ng-container *ngTemplateOutlet="fieldCommentBlock; context: { field: fieldDef('project_research_area'), actor: 'reviewer2', source: 'reviewer2' }"></ng-container>
+                <ng-container
+                  *ngTemplateOutlet="
+                    fieldCommentBlock;
+                    context: {
+                      field: fieldDef('project_research_area'),
+                      actor: 'reviewer2',
+                      source: 'reviewer2',
+                    }
+                  "
+                ></ng-container>
               }
             </div>
           }
@@ -355,186 +415,399 @@
           @if (isToggled('reviewer1') || isToggled('reviewer2')) {
             <div class="section-comments section-comments--inline">
               @if (isToggled('reviewer1')) {
-                <ng-container *ngTemplateOutlet="fieldCommentBlock; context: { field: fieldDef('project_esg'), actor: 'reviewer1', source: 'reviewer1' }"></ng-container>
+                <ng-container
+                  *ngTemplateOutlet="
+                    fieldCommentBlock;
+                    context: {
+                      field: fieldDef('project_esg'),
+                      actor: 'reviewer1',
+                      source: 'reviewer1',
+                    }
+                  "
+                ></ng-container>
               }
               @if (isToggled('reviewer2')) {
-                <ng-container *ngTemplateOutlet="fieldCommentBlock; context: { field: fieldDef('project_esg'), actor: 'reviewer2', source: 'reviewer2' }"></ng-container>
+                <ng-container
+                  *ngTemplateOutlet="
+                    fieldCommentBlock;
+                    context: {
+                      field: fieldDef('project_esg'),
+                      actor: 'reviewer2',
+                      source: 'reviewer2',
+                    }
+                  "
+                ></ng-container>
               }
               @if (isToggled('reviewer1')) {
-                <ng-container *ngTemplateOutlet="fieldCommentBlock; context: { field: fieldDef('project_sdg'), actor: 'reviewer1', source: 'reviewer1' }"></ng-container>
+                <ng-container
+                  *ngTemplateOutlet="
+                    fieldCommentBlock;
+                    context: {
+                      field: fieldDef('project_sdg'),
+                      actor: 'reviewer1',
+                      source: 'reviewer1',
+                    }
+                  "
+                ></ng-container>
               }
               @if (isToggled('reviewer2')) {
-                <ng-container *ngTemplateOutlet="fieldCommentBlock; context: { field: fieldDef('project_sdg'), actor: 'reviewer2', source: 'reviewer2' }"></ng-container>
+                <ng-container
+                  *ngTemplateOutlet="
+                    fieldCommentBlock;
+                    context: {
+                      field: fieldDef('project_sdg'),
+                      actor: 'reviewer2',
+                      source: 'reviewer2',
+                    }
+                  "
+                ></ng-container>
               }
             </div>
           }
 
-          <dl class="detail-grid detail-grid--compact">
-            <div class="detail-grid__wide">
-              <dt>Executive Summary</dt>
-              <dd class="detail-value--long">{{ val(rdig()?.executive_summary) }}</dd>
+          <div class="accordion-note" role="note">
+            <span class="material-icons" aria-hidden="true">touch_app</span>
+            <p><strong>How to view proposal content:</strong> Select a heading below to expand or collapse it. You can keep more than one section open.</p>
+          </div>
+
+          <details class="project-narrative" open>
+            <summary>
+              <span>Executive Summary</span>
+              <span class="material-icons project-narrative__chevron" aria-hidden="true">expand_more</span>
+            </summary>
+            <div class="project-narrative__content detail-value--long">
+              {{ val(rdig()?.executive_summary) }}
             </div>
-          </dl>
+          </details>
           @if (isToggled('reviewer1') || isToggled('reviewer2')) {
             <div class="section-comments section-comments--inline">
               @if (isToggled('reviewer1')) {
-                <ng-container *ngTemplateOutlet="fieldCommentBlock; context: { field: fieldDef('project_summary'), actor: 'reviewer1', source: 'reviewer1' }"></ng-container>
+                <ng-container
+                  *ngTemplateOutlet="
+                    fieldCommentBlock;
+                    context: {
+                      field: fieldDef('project_summary'),
+                      actor: 'reviewer1',
+                      source: 'reviewer1',
+                    }
+                  "
+                ></ng-container>
               }
               @if (isToggled('reviewer2')) {
-                <ng-container *ngTemplateOutlet="fieldCommentBlock; context: { field: fieldDef('project_summary'), actor: 'reviewer2', source: 'reviewer2' }"></ng-container>
+                <ng-container
+                  *ngTemplateOutlet="
+                    fieldCommentBlock;
+                    context: {
+                      field: fieldDef('project_summary'),
+                      actor: 'reviewer2',
+                      source: 'reviewer2',
+                    }
+                  "
+                ></ng-container>
               }
             </div>
           }
 
-          <dl class="detail-grid detail-grid--compact">
-            <div class="detail-grid__wide">
-              <dt>Keywords</dt>
-              <dd>{{ val(rdig()?.keywords) }}</dd>
+          <details class="project-narrative">
+            <summary>
+              <span>Introduction</span>
+              <span class="material-icons project-narrative__chevron" aria-hidden="true">expand_more</span>
+            </summary>
+            <div class="project-narrative__content detail-value--long">
+              {{ val(rdig()?.introduction) }}
             </div>
-          </dl>
+          </details>
           @if (isToggled('reviewer1') || isToggled('reviewer2')) {
             <div class="section-comments section-comments--inline">
               @if (isToggled('reviewer1')) {
-                <ng-container *ngTemplateOutlet="fieldCommentBlock; context: { field: fieldDef('project_keywords'), actor: 'reviewer1', source: 'reviewer1' }"></ng-container>
+                <ng-container
+                  *ngTemplateOutlet="
+                    fieldCommentBlock;
+                    context: {
+                      field: fieldDef('project_intro'),
+                      actor: 'reviewer1',
+                      source: 'reviewer1',
+                    }
+                  "
+                ></ng-container>
               }
               @if (isToggled('reviewer2')) {
-                <ng-container *ngTemplateOutlet="fieldCommentBlock; context: { field: fieldDef('project_keywords'), actor: 'reviewer2', source: 'reviewer2' }"></ng-container>
+                <ng-container
+                  *ngTemplateOutlet="
+                    fieldCommentBlock;
+                    context: {
+                      field: fieldDef('project_intro'),
+                      actor: 'reviewer2',
+                      source: 'reviewer2',
+                    }
+                  "
+                ></ng-container>
               }
             </div>
           }
 
-          <dl class="detail-grid detail-grid--compact">
-            <div class="detail-grid__wide">
-              <dt>Introduction</dt>
-              <dd class="detail-value--long">{{ val(rdig()?.introduction) }}</dd>
+          <details class="project-narrative">
+            <summary>
+              <span>Problem Statement</span>
+              <span class="material-icons project-narrative__chevron" aria-hidden="true">expand_more</span>
+            </summary>
+            <div class="project-narrative__content detail-value--long">
+              {{ val(rdig()?.problem_statement) }}
             </div>
-          </dl>
+          </details>
           @if (isToggled('reviewer1') || isToggled('reviewer2')) {
             <div class="section-comments section-comments--inline">
               @if (isToggled('reviewer1')) {
-                <ng-container *ngTemplateOutlet="fieldCommentBlock; context: { field: fieldDef('project_intro'), actor: 'reviewer1', source: 'reviewer1' }"></ng-container>
+                <ng-container
+                  *ngTemplateOutlet="
+                    fieldCommentBlock;
+                    context: {
+                      field: fieldDef('project_problem'),
+                      actor: 'reviewer1',
+                      source: 'reviewer1',
+                    }
+                  "
+                ></ng-container>
               }
               @if (isToggled('reviewer2')) {
-                <ng-container *ngTemplateOutlet="fieldCommentBlock; context: { field: fieldDef('project_intro'), actor: 'reviewer2', source: 'reviewer2' }"></ng-container>
+                <ng-container
+                  *ngTemplateOutlet="
+                    fieldCommentBlock;
+                    context: {
+                      field: fieldDef('project_problem'),
+                      actor: 'reviewer2',
+                      source: 'reviewer2',
+                    }
+                  "
+                ></ng-container>
               }
             </div>
           }
 
-          <dl class="detail-grid detail-grid--compact">
-            <div class="detail-grid__wide">
-              <dt>Problem Statement</dt>
-              <dd class="detail-value--long">{{ val(rdig()?.problem_statement) }}</dd>
+          <details class="project-narrative">
+            <summary>
+              <span>Research Aim and Objectives</span>
+              <span class="material-icons project-narrative__chevron" aria-hidden="true">expand_more</span>
+            </summary>
+            <div class="project-narrative__content detail-value--long">
+              {{ val(rdig()?.research_aim_objectives) }}
             </div>
-          </dl>
+          </details>
           @if (isToggled('reviewer1') || isToggled('reviewer2')) {
             <div class="section-comments section-comments--inline">
               @if (isToggled('reviewer1')) {
-                <ng-container *ngTemplateOutlet="fieldCommentBlock; context: { field: fieldDef('project_problem'), actor: 'reviewer1', source: 'reviewer1' }"></ng-container>
+                <ng-container
+                  *ngTemplateOutlet="
+                    fieldCommentBlock;
+                    context: {
+                      field: fieldDef('project_aim'),
+                      actor: 'reviewer1',
+                      source: 'reviewer1',
+                    }
+                  "
+                ></ng-container>
               }
               @if (isToggled('reviewer2')) {
-                <ng-container *ngTemplateOutlet="fieldCommentBlock; context: { field: fieldDef('project_problem'), actor: 'reviewer2', source: 'reviewer2' }"></ng-container>
+                <ng-container
+                  *ngTemplateOutlet="
+                    fieldCommentBlock;
+                    context: {
+                      field: fieldDef('project_aim'),
+                      actor: 'reviewer2',
+                      source: 'reviewer2',
+                    }
+                  "
+                ></ng-container>
               }
             </div>
           }
 
-          <dl class="detail-grid detail-grid--compact">
-            <div class="detail-grid__wide">
-              <dt>Research Aim and Objectives</dt>
-              <dd class="detail-value--long">{{ val(rdig()?.research_aim_objectives) }}</dd>
+          <details class="project-narrative">
+            <summary>
+              <span>Research Questions</span>
+              <span class="material-icons project-narrative__chevron" aria-hidden="true">expand_more</span>
+            </summary>
+            <div class="project-narrative__content detail-value--long">
+              {{ val(rdig()?.research_questions) }}
             </div>
-          </dl>
+          </details>
           @if (isToggled('reviewer1') || isToggled('reviewer2')) {
             <div class="section-comments section-comments--inline">
               @if (isToggled('reviewer1')) {
-                <ng-container *ngTemplateOutlet="fieldCommentBlock; context: { field: fieldDef('project_aim'), actor: 'reviewer1', source: 'reviewer1' }"></ng-container>
+                <ng-container
+                  *ngTemplateOutlet="
+                    fieldCommentBlock;
+                    context: {
+                      field: fieldDef('project_questions'),
+                      actor: 'reviewer1',
+                      source: 'reviewer1',
+                    }
+                  "
+                ></ng-container>
               }
               @if (isToggled('reviewer2')) {
-                <ng-container *ngTemplateOutlet="fieldCommentBlock; context: { field: fieldDef('project_aim'), actor: 'reviewer2', source: 'reviewer2' }"></ng-container>
+                <ng-container
+                  *ngTemplateOutlet="
+                    fieldCommentBlock;
+                    context: {
+                      field: fieldDef('project_questions'),
+                      actor: 'reviewer2',
+                      source: 'reviewer2',
+                    }
+                  "
+                ></ng-container>
               }
             </div>
           }
 
-          <dl class="detail-grid detail-grid--compact">
-            <div class="detail-grid__wide">
-              <dt>Research Questions</dt>
-              <dd class="detail-value--long">{{ val(rdig()?.research_questions) }}</dd>
+          <details class="project-narrative">
+            <summary>
+              <span>Hypothesis / Propositions</span>
+              <span class="material-icons project-narrative__chevron" aria-hidden="true">expand_more</span>
+            </summary>
+            <div class="project-narrative__content detail-value--long">
+              {{ val(rdig()?.hypothesis_propositions) }}
             </div>
-          </dl>
+          </details>
           @if (isToggled('reviewer1') || isToggled('reviewer2')) {
             <div class="section-comments section-comments--inline">
               @if (isToggled('reviewer1')) {
-                <ng-container *ngTemplateOutlet="fieldCommentBlock; context: { field: fieldDef('project_questions'), actor: 'reviewer1', source: 'reviewer1' }"></ng-container>
+                <ng-container
+                  *ngTemplateOutlet="
+                    fieldCommentBlock;
+                    context: {
+                      field: fieldDef('project_hypothesis'),
+                      actor: 'reviewer1',
+                      source: 'reviewer1',
+                    }
+                  "
+                ></ng-container>
               }
               @if (isToggled('reviewer2')) {
-                <ng-container *ngTemplateOutlet="fieldCommentBlock; context: { field: fieldDef('project_questions'), actor: 'reviewer2', source: 'reviewer2' }"></ng-container>
+                <ng-container
+                  *ngTemplateOutlet="
+                    fieldCommentBlock;
+                    context: {
+                      field: fieldDef('project_hypothesis'),
+                      actor: 'reviewer2',
+                      source: 'reviewer2',
+                    }
+                  "
+                ></ng-container>
               }
             </div>
           }
 
-          <dl class="detail-grid detail-grid--compact">
-            <div class="detail-grid__wide">
-              <dt>Hypothesis / Propositions</dt>
-              <dd class="detail-value--long">{{ val(rdig()?.hypothesis_propositions) }}</dd>
+          <details class="project-narrative">
+            <summary>
+              <span>Literature Review</span>
+              <span class="material-icons project-narrative__chevron" aria-hidden="true">expand_more</span>
+            </summary>
+            <div class="project-narrative__content detail-value--long">
+              {{ val(rdig()?.literature_review) }}
             </div>
-          </dl>
+          </details>
           @if (isToggled('reviewer1') || isToggled('reviewer2')) {
             <div class="section-comments section-comments--inline">
               @if (isToggled('reviewer1')) {
-                <ng-container *ngTemplateOutlet="fieldCommentBlock; context: { field: fieldDef('project_hypothesis'), actor: 'reviewer1', source: 'reviewer1' }"></ng-container>
+                <ng-container
+                  *ngTemplateOutlet="
+                    fieldCommentBlock;
+                    context: {
+                      field: fieldDef('project_lit_review'),
+                      actor: 'reviewer1',
+                      source: 'reviewer1',
+                    }
+                  "
+                ></ng-container>
               }
               @if (isToggled('reviewer2')) {
-                <ng-container *ngTemplateOutlet="fieldCommentBlock; context: { field: fieldDef('project_hypothesis'), actor: 'reviewer2', source: 'reviewer2' }"></ng-container>
+                <ng-container
+                  *ngTemplateOutlet="
+                    fieldCommentBlock;
+                    context: {
+                      field: fieldDef('project_lit_review'),
+                      actor: 'reviewer2',
+                      source: 'reviewer2',
+                    }
+                  "
+                ></ng-container>
               }
             </div>
           }
 
-          <dl class="detail-grid detail-grid--compact">
-            <div class="detail-grid__wide">
-              <dt>Literature Review</dt>
-              <dd class="detail-value--long">{{ val(rdig()?.literature_review) }}</dd>
+          <details class="project-narrative">
+            <summary>
+              <span>Research Methodology</span>
+              <span class="material-icons project-narrative__chevron" aria-hidden="true">expand_more</span>
+            </summary>
+            <div class="project-narrative__content detail-value--long">
+              {{ val(rdig()?.research_methodology) }}
             </div>
-          </dl>
+          </details>
           @if (isToggled('reviewer1') || isToggled('reviewer2')) {
             <div class="section-comments section-comments--inline">
               @if (isToggled('reviewer1')) {
-                <ng-container *ngTemplateOutlet="fieldCommentBlock; context: { field: fieldDef('project_lit_review'), actor: 'reviewer1', source: 'reviewer1' }"></ng-container>
+                <ng-container
+                  *ngTemplateOutlet="
+                    fieldCommentBlock;
+                    context: {
+                      field: fieldDef('project_methodology'),
+                      actor: 'reviewer1',
+                      source: 'reviewer1',
+                    }
+                  "
+                ></ng-container>
               }
               @if (isToggled('reviewer2')) {
-                <ng-container *ngTemplateOutlet="fieldCommentBlock; context: { field: fieldDef('project_lit_review'), actor: 'reviewer2', source: 'reviewer2' }"></ng-container>
+                <ng-container
+                  *ngTemplateOutlet="
+                    fieldCommentBlock;
+                    context: {
+                      field: fieldDef('project_methodology'),
+                      actor: 'reviewer2',
+                      source: 'reviewer2',
+                    }
+                  "
+                ></ng-container>
               }
             </div>
           }
 
-          <dl class="detail-grid detail-grid--compact">
-            <div class="detail-grid__wide">
-              <dt>Research Methodology</dt>
-              <dd class="detail-value--long">{{ val(rdig()?.research_methodology) }}</dd>
+          <details class="project-narrative">
+            <summary>
+              <span>References</span>
+              <span class="material-icons project-narrative__chevron" aria-hidden="true">expand_more</span>
+            </summary>
+            <div class="project-narrative__content detail-value--long">
+              {{ val(rdig()?.references_text) }}
             </div>
-          </dl>
+          </details>
           @if (isToggled('reviewer1') || isToggled('reviewer2')) {
             <div class="section-comments section-comments--inline">
               @if (isToggled('reviewer1')) {
-                <ng-container *ngTemplateOutlet="fieldCommentBlock; context: { field: fieldDef('project_methodology'), actor: 'reviewer1', source: 'reviewer1' }"></ng-container>
+                <ng-container
+                  *ngTemplateOutlet="
+                    fieldCommentBlock;
+                    context: {
+                      field: fieldDef('project_references'),
+                      actor: 'reviewer1',
+                      source: 'reviewer1',
+                    }
+                  "
+                ></ng-container>
               }
               @if (isToggled('reviewer2')) {
-                <ng-container *ngTemplateOutlet="fieldCommentBlock; context: { field: fieldDef('project_methodology'), actor: 'reviewer2', source: 'reviewer2' }"></ng-container>
-              }
-            </div>
-          }
-
-          <dl class="detail-grid detail-grid--compact">
-            <div class="detail-grid__wide">
-              <dt>References</dt>
-              <dd class="detail-value--long">{{ val(rdig()?.references_text) }}</dd>
-            </div>
-          </dl>
-          @if (isToggled('reviewer1') || isToggled('reviewer2')) {
-            <div class="section-comments section-comments--inline">
-              @if (isToggled('reviewer1')) {
-                <ng-container *ngTemplateOutlet="fieldCommentBlock; context: { field: fieldDef('project_references'), actor: 'reviewer1', source: 'reviewer1' }"></ng-container>
-              }
-              @if (isToggled('reviewer2')) {
-                <ng-container *ngTemplateOutlet="fieldCommentBlock; context: { field: fieldDef('project_references'), actor: 'reviewer2', source: 'reviewer2' }"></ng-container>
+                <ng-container
+                  *ngTemplateOutlet="
+                    fieldCommentBlock;
+                    context: {
+                      field: fieldDef('project_references'),
+                      actor: 'reviewer2',
+                      source: 'reviewer2',
+                    }
+                  "
+                ></ng-container>
               }
             </div>
           }
@@ -558,10 +831,28 @@
           @if (isToggled('reviewer1') || isToggled('reviewer2')) {
             <div class="section-comments section-comments--inline">
               @if (isToggled('reviewer1')) {
-                <ng-container *ngTemplateOutlet="fieldCommentBlock; context: { field: fieldDef('project_benefits'), actor: 'reviewer1', source: 'reviewer1' }"></ng-container>
+                <ng-container
+                  *ngTemplateOutlet="
+                    fieldCommentBlock;
+                    context: {
+                      field: fieldDef('project_benefits'),
+                      actor: 'reviewer1',
+                      source: 'reviewer1',
+                    }
+                  "
+                ></ng-container>
               }
               @if (isToggled('reviewer2')) {
-                <ng-container *ngTemplateOutlet="fieldCommentBlock; context: { field: fieldDef('project_benefits'), actor: 'reviewer2', source: 'reviewer2' }"></ng-container>
+                <ng-container
+                  *ngTemplateOutlet="
+                    fieldCommentBlock;
+                    context: {
+                      field: fieldDef('project_benefits'),
+                      actor: 'reviewer2',
+                      source: 'reviewer2',
+                    }
+                  "
+                ></ng-container>
               }
             </div>
           }
@@ -575,10 +866,28 @@
           @if (isToggled('reviewer1') || isToggled('reviewer2')) {
             <div class="section-comments section-comments--inline">
               @if (isToggled('reviewer1')) {
-                <ng-container *ngTemplateOutlet="fieldCommentBlock; context: { field: fieldDef('project_vision'), actor: 'reviewer1', source: 'reviewer1' }"></ng-container>
+                <ng-container
+                  *ngTemplateOutlet="
+                    fieldCommentBlock;
+                    context: {
+                      field: fieldDef('project_vision'),
+                      actor: 'reviewer1',
+                      source: 'reviewer1',
+                    }
+                  "
+                ></ng-container>
               }
               @if (isToggled('reviewer2')) {
-                <ng-container *ngTemplateOutlet="fieldCommentBlock; context: { field: fieldDef('project_vision'), actor: 'reviewer2', source: 'reviewer2' }"></ng-container>
+                <ng-container
+                  *ngTemplateOutlet="
+                    fieldCommentBlock;
+                    context: {
+                      field: fieldDef('project_vision'),
+                      actor: 'reviewer2',
+                      source: 'reviewer2',
+                    }
+                  "
+                ></ng-container>
               }
             </div>
           }
@@ -612,10 +921,28 @@
           @if (isToggled('reviewer1') || isToggled('reviewer2')) {
             <div class="section-comments section-comments--inline">
               @if (isToggled('reviewer1')) {
-                <ng-container *ngTemplateOutlet="fieldCommentBlock; context: { field: fieldDef('project_activities'), actor: 'reviewer1', source: 'reviewer1' }"></ng-container>
+                <ng-container
+                  *ngTemplateOutlet="
+                    fieldCommentBlock;
+                    context: {
+                      field: fieldDef('project_activities'),
+                      actor: 'reviewer1',
+                      source: 'reviewer1',
+                    }
+                  "
+                ></ng-container>
               }
               @if (isToggled('reviewer2')) {
-                <ng-container *ngTemplateOutlet="fieldCommentBlock; context: { field: fieldDef('project_activities'), actor: 'reviewer2', source: 'reviewer2' }"></ng-container>
+                <ng-container
+                  *ngTemplateOutlet="
+                    fieldCommentBlock;
+                    context: {
+                      field: fieldDef('project_activities'),
+                      actor: 'reviewer2',
+                      source: 'reviewer2',
+                    }
+                  "
+                ></ng-container>
               }
             </div>
           }
@@ -696,10 +1023,28 @@
           @if (isToggled('hos') || isToggled('rmc') || isToggled('reviewer1') || isToggled('reviewer2')) {
             <div class="section-comments section-comments--inline">
               @if (isToggled('reviewer1')) {
-                <ng-container *ngTemplateOutlet="fieldCommentBlock; context: { field: fieldDef('output_overall'), actor: 'reviewer1', source: 'reviewer1' }"></ng-container>
+                <ng-container
+                  *ngTemplateOutlet="
+                    fieldCommentBlock;
+                    context: {
+                      field: fieldDef('output_overall'),
+                      actor: 'reviewer1',
+                      source: 'reviewer1',
+                    }
+                  "
+                ></ng-container>
               }
               @if (isToggled('reviewer2')) {
-                <ng-container *ngTemplateOutlet="fieldCommentBlock; context: { field: fieldDef('output_overall'), actor: 'reviewer2', source: 'reviewer2' }"></ng-container>
+                <ng-container
+                  *ngTemplateOutlet="
+                    fieldCommentBlock;
+                    context: {
+                      field: fieldDef('output_overall'),
+                      actor: 'reviewer2',
+                      source: 'reviewer2',
+                    }
+                  "
+                ></ng-container>
               }
             </div>
           }
@@ -709,18 +1054,10 @@
           @if (budgetSectionsWithItems().length) {
             @for (entry of budgetSectionsWithItems(); track entry.section.id) {
               <div class="budget-block">
-                <app-custom-subheader
-                  icon="receipt_long"
-                  [title]="entry.section.section_name || entry.section.section_code"
-                ></app-custom-subheader>
+                <app-custom-subheader icon="receipt_long" [title]="entry.section.section_name || entry.section.section_code"></app-custom-subheader>
                 @if (entry.rows.length) {
                   <app-table-scroll-hint></app-table-scroll-hint>
-                  <app-data-table
-                    [columns]="budgetColumns"
-                    [rows]="entry.rows"
-                    [hoverable]="false"
-                    [striped]="false"
-                  ></app-data-table>
+                  <app-data-table [columns]="budgetColumns" [rows]="entry.rows" [hoverable]="false" [striped]="false"></app-data-table>
                 } @else {
                   <p class="review-empty">No items in this section.</p>
                 }
@@ -769,10 +1106,28 @@
           @if (isToggled('hos') || isToggled('rmc') || isToggled('reviewer1') || isToggled('reviewer2')) {
             <div class="section-comments section-comments--inline">
               @if (isToggled('reviewer1')) {
-                <ng-container *ngTemplateOutlet="fieldCommentBlock; context: { field: fieldDef('budget_summary'), actor: 'reviewer1', source: 'reviewer1' }"></ng-container>
+                <ng-container
+                  *ngTemplateOutlet="
+                    fieldCommentBlock;
+                    context: {
+                      field: fieldDef('budget_summary'),
+                      actor: 'reviewer1',
+                      source: 'reviewer1',
+                    }
+                  "
+                ></ng-container>
               }
               @if (isToggled('reviewer2')) {
-                <ng-container *ngTemplateOutlet="fieldCommentBlock; context: { field: fieldDef('budget_summary'), actor: 'reviewer2', source: 'reviewer2' }"></ng-container>
+                <ng-container
+                  *ngTemplateOutlet="
+                    fieldCommentBlock;
+                    context: {
+                      field: fieldDef('budget_summary'),
+                      actor: 'reviewer2',
+                      source: 'reviewer2',
+                    }
+                  "
+                ></ng-container>
               }
             </div>
           }
@@ -817,12 +1172,7 @@
                       }
                     </p>
                   </div>
-                  <button
-                    type="button"
-                    class="download-button"
-                    [disabled]="downloadingAttachmentId() === file.id"
-                    (click)="downloadAttachment(file)"
-                  >
+                  <button type="button" class="download-button" [disabled]="downloadingAttachmentId() === file.id" (click)="downloadAttachment(file)">
                     <span class="material-icons">download</span>
                     {{ downloadingAttachmentId() === file.id ? 'Preparing…' : 'Download' }}
                   </button>
@@ -892,31 +1242,13 @@
           @if (isWholeFormCommentViewer()) {
             <div class="whole-form-comment-group">
               @if (canEditWholeFormComment('rdig_chair')) {
-                <app-review-block
-                  label="RDIG Chair — Comment"
-                  icon="admin_panel_settings"
-                  [visible]="true"
-                  [readonly]="false"
-                  [commentControl]="rdigChairCommentControl"
-                ></app-review-block>
+                <app-review-block label="RDIG Chair — Comment" icon="admin_panel_settings" [visible]="true" [readonly]="false" [commentControl]="rdigChairCommentControl"></app-review-block>
               }
               @if (canEditWholeFormComment('vc')) {
-                <app-review-block
-                  label="Vice Chancellor — Comment"
-                  icon="account_balance"
-                  [visible]="true"
-                  [readonly]="false"
-                  [commentControl]="vcCommentControl"
-                ></app-review-block>
+                <app-review-block label="Vice Chancellor — Comment" icon="account_balance" [visible]="true" [readonly]="false" [commentControl]="vcCommentControl"></app-review-block>
               }
               @if (canEditWholeFormComment('ceo')) {
-                <app-review-block
-                  label="CEO — Comment"
-                  icon="business"
-                  [visible]="true"
-                  [readonly]="false"
-                  [commentControl]="ceoCommentControl"
-                ></app-review-block>
+                <app-review-block label="CEO — Comment" icon="business" [visible]="true" [readonly]="false" [commentControl]="ceoCommentControl"></app-review-block>
               }
             </div>
           }
@@ -939,13 +1271,23 @@
               </div>
             </div>
           }
+          @if (isCurrentUserReviewer1() || isCurrentUserReviewer2()) {
+            <div class="reviewer-score-save">
+              <p>{{ completedReviewerScoreCount() }} of {{ requiredScoreCount }} scoring areas completed.</p>
+              <app-action-button
+                type="primary"
+                label="Save Score Sheet"
+                icon="save"
+                loadingLabel="Saving Scores..."
+                [loading]="scoresSaving()"
+                [disabled]="scoresSaving() || !hasUnsavedReviewerScores()"
+                (clicked)="saveReviewerScores()">
+              </app-action-button>
+            </div>
+          }
 
           @if (feedback(); as note) {
-            <div
-              class="review-feedback"
-              [class.review-feedback--error]="note.type === 'error'"
-              [class.review-feedback--success]="note.type === 'success'"
-            >
+            <div class="review-feedback" [class.review-feedback--error]="note.type === 'error'" [class.review-feedback--success]="note.type === 'success'">
               {{ note.text }}
             </div>
           }
@@ -957,9 +1299,7 @@
                   <span class="material-icons">{{ canPerformActions() ? 'check_circle' : 'info' }}</span>
                   <p>{{ actionRequirementSummary() }}</p>
                   @if (hasRequirementDetails() && !canPerformActions()) {
-                    <span class="material-icons action-requirement__chevron">{{
-                      requirementListExpanded() ? 'expand_less' : 'expand_more'
-                    }}</span>
+                    <span class="material-icons action-requirement__chevron">{{ requirementListExpanded() ? 'expand_less' : 'expand_more' }}</span>
                   }
                 </button>
                 @if (requirementListExpanded() && !canPerformActions()) {
@@ -978,53 +1318,63 @@
             } @else if (!requiresWholeFormComment()) {
               <div class="action-comment-box">
                 <label for="rdig-decision-comment">Your Comment <span>*</span></label>
-                <textarea
-                  id="rdig-decision-comment"
-                  class="section-comment-input"
-                  rows="4"
-                  placeholder="Write your comment before taking action..."
-                  [formControl]="actionCommentControl"
-                  [attr.maxlength]="commentMaxLength"
-                ></textarea>
-                <div
-                  class="comment-meta"
-                  [class.comment-meta--error]="actionCommentControl.hasError('maxlength')"
-                >
+                <textarea id="rdig-decision-comment" class="section-comment-input" rows="4" placeholder="Write your comment before taking action..." [formControl]="actionCommentControl" [attr.maxlength]="commentMaxLength"></textarea>
+                <div class="comment-meta" [class.comment-meta--error]="actionCommentControl.hasError('maxlength')">
                   <span>{{ actionRequirementMessage() }}</span>
                   <span>{{ actionCommentLength() }}/{{ commentMaxLength }}</span>
                 </div>
               </div>
             }
-            <div class="workflow-actions">
-              @for (action of actions(); track action.action_code) {
-                @if (!isActionHiddenForLowScore(action)) {
-                  <div
-                    class="workflow-action-button"
-                    [class.workflow-action-button--positive]="actionTone(action) === 'positive'"
-                    [class.workflow-action-button--resubmit]="actionTone(action) === 'resubmit'"
-                    [class.workflow-action-button--verified]="actionTone(action) === 'verified'"
-                    [class.workflow-action-button--negative]="actionTone(action) === 'negative'"
-                    [class.workflow-action-button--neutral]="actionTone(action) === 'neutral'"
-                  >
-                    <app-action-button
-                      [type]="actionType(action)"
-                      [label]="action.action_name"
-                      [icon]="actionIcon(action)"
-                      [disabled]="acting() || !canPerformActions()"
-                      (clicked)="perform(action)"
-                    >
-                    </app-action-button>
+            @if (reviewerSelectionAction()) {
+              <div class="reviewer-selection-step" [class.reviewer-selection-step--complete]="reviewerSelectionConfirmed()">
+                <div class="reviewer-selection-step__header">
+                  <span class="material-icons" aria-hidden="true">group_add</span>
+                  <div>
+                    <strong>{{ reviewerSelectionConfirmed() ? 'Reviewers selected' : 'Choose reviewers first' }}</strong>
+                    <p>
+                      @if (reviewerSelectionConfirmed()) {
+                        Review the selection below. It will be assigned when you approve this application.
+                      } @else {
+                        Select exactly {{ reviewerSelectionCount() }} reviewers before approval or resubmission actions are shown.
+                      }
+                    </p>
+                  </div>
+                </div>
+                @if (reviewerSelectionConfirmed()) {
+                  <div class="reviewer-selection-step__chips" aria-label="Selected reviewers">
+                    @for (label of selectedReviewerLabels(); track $index) {
+                      <span class="reviewer-selection-step__reviewer">
+                        <span class="material-icons" aria-hidden="true">person</span>
+                        <span class="reviewer-selection-step__reviewer-name">{{ label }}</span>
+                      </span>
+                    }
                   </div>
                 }
-              }
-              @if (isCurrentUserReviewer1() || isCurrentUserReviewer2()) {
-                @if (hasAnyReviewerScoreDraft() && reviewerOwnTotalScore() < approveScoreThreshold) {
-                  <p class="review-hint workflow-actions__score-hint">
-                    Approve is unavailable — your score ({{ reviewerOwnTotalScore() }}/{{ maxTotalScoreValue }}) is below the {{ approveScoreThreshold }}-point threshold required to approve.
-                  </p>
+                <app-action-button type="primary" [label]="reviewerSelectionConfirmed() ? 'Change Reviewers' : 'Choose Reviewers'" icon="manage_accounts" [disabled]="acting() || !canPerformActions()" (clicked)="openReviewerSelection()"></app-action-button>
+                @if (!canPerformActions()) {
+                  <p class="reviewer-selection-step__help">Complete and save all required comments before choosing reviewers.</p>
                 }
-              }
-            </div>
+              </div>
+            }
+
+            @if (!reviewerSelectionAction() || reviewerSelectionConfirmed()) {
+              <div class="workflow-actions">
+                @for (action of actions(); track action.action_code) {
+                  @if (!isActionHiddenForLowScore(action)) {
+                    <div class="workflow-action-button" [class.workflow-action-button--positive]="actionTone(action) === 'positive'" [class.workflow-action-button--resubmit]="actionTone(action) === 'resubmit'" [class.workflow-action-button--verified]="actionTone(action) === 'verified'" [class.workflow-action-button--negative]="actionTone(action) === 'negative'" [class.workflow-action-button--neutral]="actionTone(action) === 'neutral'">
+                      <app-action-button [type]="actionType(action)" [label]="action.action_name" [icon]="actionIcon(action)" [disabled]="acting() || scoresSaving() || !canPerformActions()" (clicked)="perform(action)"> </app-action-button>
+                    </div>
+                  }
+                }
+                @if (isCurrentUserReviewer1() || isCurrentUserReviewer2()) {
+                  @if (missingRequiredScoreLabels().length) {
+                    <p class="review-hint workflow-actions__score-hint">Complete all {{ requiredScoreCount }} scoring areas before taking a reviewer action.</p>
+                  } @else if (reviewerOwnTotalScore() < approveScoreThreshold) {
+                    <p class="review-hint workflow-actions__score-hint">Approve is unavailable — your score ({{ reviewerOwnTotalScore() }}/{{ maxTotalScoreValue }}) is below the {{ approveScoreThreshold }}-point threshold required to approve.</p>
+                  }
+                }
+              </div>
+            }
           } @else {
             <p class="review-empty">No pending action is available for your account.</p>
           }
@@ -1075,19 +1425,11 @@
 
           <div class="comment-toggle-list">
             @for (source of permittedSources(); track source) {
-              <button
-                type="button"
-                class="comment-toggle"
-                [class.comment-toggle--active]="isToggled(source)"
-                [attr.aria-pressed]="isToggled(source)"
-                (click)="toggleSource(source)"
-              >
+              <button type="button" class="comment-toggle" [class.comment-toggle--active]="isToggled(source)" [attr.aria-pressed]="isToggled(source)" [attr.aria-disabled]="isCurrentUserSource(source)" [title]="isCurrentUserSource(source) ? 'Your comments are always shown' : ''" (click)="toggleSource(source)">
                 <span class="material-icons comment-toggle__icon">{{ iconForSource(source) }}</span>
                 <span class="comment-toggle__label">{{ labelForSource(source) }}</span>
                 <span class="comment-toggle__count">{{ commentCountForSource(source) }}</span>
-                <span class="material-icons comment-toggle__chevron">{{
-                  isToggled(source) ? 'visibility' : 'visibility_off'
-                }}</span>
+                <span class="material-icons comment-toggle__chevron">{{ isToggled(source) ? 'visibility' : 'visibility_off' }}</span>
               </button>
             }
           </div>
@@ -1106,19 +1448,12 @@
             <ol class="review-timeline">
               @for (history of sortedApprovals(); track history.id) {
                 <li>
-                  <div
-                    class="review-timeline__dot"
-                    [class.review-timeline__dot--active]="isActiveApprovalStep(history)"
-                    [attr.aria-label]="isActiveApprovalStep(history) ? 'Current workflow step' : null"
-                  ></div>
+                  <div class="review-timeline__dot" [class.review-timeline__dot--active]="isActiveApprovalStep(history)" [attr.aria-label]="isActiveApprovalStep(history) ? 'Current workflow step' : null"></div>
                   <div>
                     <strong>{{ approvalActionLabel(history) }}</strong>
                     <p>{{ val(history.staff_name || history.staff_username) }}</p>
                     <span>{{ fmtDate(history.action_at) }}</span>
-                    <small
-                      >{{ prettyActor(history.from_status_code) }} →
-                      {{ prettyActor(history.to_status_code) }}</small
-                    >
+                    <small>{{ prettyActor(history.from_status_code) }} → {{ prettyActor(history.to_status_code) }}</small>
                   </div>
                 </li>
               }
@@ -1131,6 +1466,41 @@
     </div>
   }
 </section>
+
+<app-dialog [isOpen]="reviewerSelectionOpen()" title="Choose RDIG Reviewers" size="medium" [height]="reviewerDropdownOpen() ? 'min(640px, calc(100dvh - var(--space-8)))' : null" maxHeight="calc(100dvh - var(--space-8))" (close)="closeReviewerSelection()">
+  <div class="reviewer-selection-dialog">
+    <div class="reviewer-selection-dialog__intro">
+      <span class="material-icons" aria-hidden="true">info</span>
+      <p>Select exactly {{ reviewerSelectionCount() }} active reviewers. Use the search box in the dropdown to find reviewers by name, username, department, or job title.</p>
+    </div>
+
+    <app-searchable-dropdown label="RDIG Reviewers" [required]="true" [options]="reviewerOptions()" [formControl]="selectedReviewersControl" [isMulti]="true" [searchable]="true" [maxSelections]="reviewerSelectionCount()" [loading]="reviewerOptionsLoading()" [optionListCount]="reviewerOptions().length" optionListTitle="Active reviewers" placeholder="Search and choose reviewers" (openChange)="onReviewerDropdownOpenChange($event)"></app-searchable-dropdown>
+
+    <div class="reviewer-selection-dialog__meta">
+      <span [class.is-complete]="selectedReviewerCount() === reviewerSelectionCount()"> {{ selectedReviewerCount() }} of {{ reviewerSelectionCount() }} selected </span>
+      <span>Both reviewers must be different.</span>
+    </div>
+
+    @if (reviewerOptionsError(); as reviewerError) {
+      <div class="reviewer-selection-dialog__error" role="alert">
+        <span class="material-icons" aria-hidden="true">error</span>
+        <span>{{ reviewerError }}</span>
+        <button type="button" (click)="loadReviewerOptions()">Try again</button>
+      </div>
+    }
+    @if (reviewerSelectionError(); as selectionError) {
+      <div class="reviewer-selection-dialog__error" role="alert">
+        <span class="material-icons" aria-hidden="true">error</span>
+        <span>{{ selectionError }}</span>
+      </div>
+    }
+  </div>
+
+  <div dialog-footer class="reviewer-selection-dialog__actions">
+    <button type="button" class="btn btn-secondary" (click)="closeReviewerSelection()">Cancel</button>
+    <button type="button" class="btn btn-primary" [disabled]="selectedReviewerCount() !== reviewerSelectionCount() || reviewerOptionsLoading()" (click)="confirmReviewerSelection()">Confirm Reviewers</button>
+  </div>
+</app-dialog>
 
 <!-- ══════════════════════════════════════════════════════════════════ -->
 <!-- SHARED TEMPLATES                                                    -->
@@ -1154,8 +1524,12 @@
             <p>{{ comment.comment_text }}</p>
             @if (canChangeGroupComment(group, actor, comment) && !isEditingGroupComment(group, actor)) {
               <div class="section-comment__actions table-actions">
-                <button type="button" class="table-action" title="Edit comment" aria-label="Edit comment" (click)="startEditGroupComment(group, actor, comment)"><app-table-action-icon action="edit"></app-table-action-icon></button>
-                <button type="button" class="table-action table-action--danger" [title]="deletingCommentId() === comment.id ? 'Deleting comment' : 'Delete comment'" [attr.aria-label]="deletingCommentId() === comment.id ? 'Deleting comment' : 'Delete comment'" [disabled]="deletingCommentId() === comment.id" (click)="deleteGroupComment(group, actor, comment)"><app-table-action-icon action="delete"></app-table-action-icon></button>
+                <button type="button" class="table-action" title="Edit comment" aria-label="Edit comment" (click)="startEditGroupComment(group, actor, comment)">
+                  <app-table-action-icon action="edit"></app-table-action-icon>
+                </button>
+                <button type="button" class="table-action table-action--danger" [title]="deletingCommentId() === comment.id ? 'Deleting comment' : 'Delete comment'" [attr.aria-label]="deletingCommentId() === comment.id ? 'Deleting comment' : 'Delete comment'" [disabled]="deletingCommentId() === comment.id" (click)="deleteGroupComment(group, actor, comment)">
+                  <app-table-action-icon action="delete"></app-table-action-icon>
+                </button>
               </div>
             }
           </article>
@@ -1165,24 +1539,9 @@
       <p class="review-empty">No section comments yet.</p>
     }
     @if (canWriteGroupComment(actor) && (!currentVersionGroupComment(group, actor) || isEditingGroupComment(group, actor))) {
-      <app-review-block
-        [label]="labelForSource(source) + ' — ' + groupLabel(group) + ' *'"
-        [icon]="iconForSource(source)"
-        [visible]="true"
-        [readonly]="false"
-        [commentControl]="groupCommentControl(group, actor)"
-        [maxChars]="commentMaxLength"
-      ></app-review-block>
+      <app-review-block [label]="labelForSource(source) + ' — ' + groupLabel(group) + ' *'" [icon]="iconForSource(source)" [visible]="true" [readonly]="false" [commentControl]="groupCommentControl(group, actor)" [maxChars]="commentMaxLength"></app-review-block>
       <div class="section-comment-actions">
-        <app-action-button
-          type="primary"
-          [label]="isEditingGroupComment(group, actor) ? 'Update Comment' : 'Save Comment'"
-          icon="send"
-          [loadingLabel]="isEditingGroupComment(group, actor) ? 'Updating...' : 'Saving...'"
-          [loading]="isGroupCommentSaving(group, actor)"
-          [disabled]="isGroupCommentSaving(group, actor)"
-          (clicked)="submitGroupComment(group, actor)"
-        ></app-action-button>
+        <app-action-button type="primary" [label]="isEditingGroupComment(group, actor) ? 'Update Comment' : 'Save Comment'" icon="send" [loadingLabel]="isEditingGroupComment(group, actor) ? 'Updating...' : 'Saving...'" [loading]="isGroupCommentSaving(group, actor)" [disabled]="isGroupCommentSaving(group, actor)" (clicked)="submitGroupComment(group, actor)"></app-action-button>
         @if (isEditingGroupComment(group, actor)) {
           <button type="button" class="comment-cancel-button" (click)="cancelEditGroupComment(group, actor)">Cancel</button>
         }
@@ -1195,6 +1554,32 @@
 <ng-template #fieldCommentBlock let-field="field" let-actor="actor" let-source="source">
   @if (field) {
     <div [id]="fieldCommentAnchorId(field.fieldCode, actor)" class="field-comment-anchor"></div>
+    @if (field.maxScore != null) {
+      <div [id]="fieldScoreAnchorId(field.fieldCode, actor)" class="reviewer-score-entry">
+        <div class="reviewer-score-entry__heading">
+          <span class="material-icons" aria-hidden="true">score</span>
+          <div>
+            <strong>{{ field.label }} Score</strong>
+            <span>Maximum {{ field.maxScore }} marks</span>
+          </div>
+        </div>
+        @if (canEditFieldScore(actor)) {
+          <label class="reviewer-score-entry__control">
+            <span class="sr-only">{{ field.label }} score</span>
+            <select [formControl]="fieldScoreControl(field.fieldCode, actor)">
+              <option value="">Select score</option>
+              @for (score of scoreOptions(field.maxScore); track score) {
+                <option [value]="score">{{ score }} / {{ field.maxScore }}</option>
+              }
+            </select>
+          </label>
+        } @else if (scoreForField(field.fieldCode, actor) !== null) {
+          <strong class="reviewer-score-entry__value">{{ scoreForField(field.fieldCode, actor) }} / {{ field.maxScore }}</strong>
+        } @else {
+          <span class="reviewer-score-entry__pending">Not scored</span>
+        }
+      </div>
+    }
     <div class="section-comments">
       <h3>Section Comments</h3>
       @if (commentsForField(field.fieldCode, actor).length) {
@@ -1208,14 +1593,15 @@
                 }
               </strong>
               <span class="section-comment__author">{{ prettyActor(comment.actor_type_code) }} · {{ fmtDate(comment.created_at) }}</span>
-              @if (comment.score != null) {
-                <span class="score-badge">Score: {{ comment.score }}{{ field.maxScore ? ' / ' + field.maxScore : '' }}</span>
-              }
               <p>{{ comment.comment_text }}</p>
               @if (canChangeFieldComment(field.fieldCode, actor, comment) && !isEditingFieldComment(field.fieldCode, actor)) {
                 <div class="section-comment__actions table-actions">
-                  <button type="button" class="table-action" title="Edit comment" aria-label="Edit comment" (click)="startEditFieldComment(field.fieldCode, actor, comment)"><app-table-action-icon action="edit"></app-table-action-icon></button>
-                  <button type="button" class="table-action table-action--danger" [title]="deletingCommentId() === comment.id ? 'Deleting comment' : 'Delete comment'" [attr.aria-label]="deletingCommentId() === comment.id ? 'Deleting comment' : 'Delete comment'" [disabled]="deletingCommentId() === comment.id" (click)="deleteFieldComment(field.fieldCode, actor, comment)"><app-table-action-icon action="delete"></app-table-action-icon></button>
+                  <button type="button" class="table-action" title="Edit comment" aria-label="Edit comment" (click)="startEditFieldComment(field.fieldCode, actor, comment)">
+                    <app-table-action-icon action="edit"></app-table-action-icon>
+                  </button>
+                  <button type="button" class="table-action table-action--danger" [title]="deletingCommentId() === comment.id ? 'Deleting comment' : 'Delete comment'" [attr.aria-label]="deletingCommentId() === comment.id ? 'Deleting comment' : 'Delete comment'" [disabled]="deletingCommentId() === comment.id" (click)="deleteFieldComment(field.fieldCode, actor, comment)">
+                    <app-table-action-icon action="delete"></app-table-action-icon>
+                  </button>
                 </div>
               }
             </article>
@@ -1225,28 +1611,9 @@
         <p class="review-empty">No section comments yet.</p>
       }
       @if (canWriteFieldComment(actor) && (!currentVersionFieldComment(field.fieldCode, actor) || isEditingFieldComment(field.fieldCode, actor))) {
-        <app-review-block
-          [label]="labelForSource(source) + ' — ' + field.label + ' *'"
-          icon="rate_review"
-          [visible]="true"
-          [readonly]="false"
-          [showScore]="field.maxScore != null"
-          [maxScore]="field.maxScore ?? 10"
-          [scoreDisabled]="false"
-          [commentControl]="fieldCommentControl(field.fieldCode, actor)"
-          [scoreControl]="fieldScoreControl(field.fieldCode, actor)"
-          [maxChars]="commentMaxLength"
-        ></app-review-block>
+        <app-review-block [label]="labelForSource(source) + ' — ' + field.label + ' Comment *'" icon="rate_review" [visible]="true" [readonly]="false" [commentControl]="fieldCommentControl(field.fieldCode, actor)" [maxChars]="commentMaxLength"></app-review-block>
         <div class="section-comment-actions">
-          <app-action-button
-            type="primary"
-            [label]="isEditingFieldComment(field.fieldCode, actor) ? 'Update Comment' : 'Save Comment'"
-            icon="send"
-            [loadingLabel]="isEditingFieldComment(field.fieldCode, actor) ? 'Updating...' : 'Saving...'"
-            [loading]="isFieldCommentSaving(field.fieldCode, actor)"
-            [disabled]="isFieldCommentSaving(field.fieldCode, actor)"
-            (clicked)="submitFieldComment(field, actor)"
-          ></app-action-button>
+          <app-action-button type="primary" [label]="isEditingFieldComment(field.fieldCode, actor) ? 'Update Comment' : 'Save Comment'" icon="send" [loadingLabel]="isEditingFieldComment(field.fieldCode, actor) ? 'Updating...' : 'Saving...'" [loading]="isFieldCommentSaving(field.fieldCode, actor)" [disabled]="isFieldCommentSaving(field.fieldCode, actor)" (clicked)="submitFieldComment(field, actor)"></app-action-button>
           @if (isEditingFieldComment(field.fieldCode, actor)) {
             <button type="button" class="comment-cancel-button" (click)="cancelEditFieldComment(field.fieldCode, actor)">Cancel</button>
           }

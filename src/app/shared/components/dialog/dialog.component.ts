@@ -25,6 +25,12 @@ export class DialogComponent {
    */
   @Input() width: string | null = null;
 
+  /** Optional max-height override for dialogs that need more vertical space. */
+  @Input() maxHeight: string | null = null;
+
+  /** Optional explicit height for dialogs with tall interactive content. */
+  @Input() height: string | null = null;
+
   /** Standard dialog width variant. */
   @Input() size: 'small' | 'medium' | 'large' = 'medium';
 

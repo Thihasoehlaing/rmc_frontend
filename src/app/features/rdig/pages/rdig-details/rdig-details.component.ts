@@ -3,7 +3,7 @@ import { Location, NgTemplateOutlet } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { finalize, forkJoin, of, switchMap, type Observable } from 'rxjs';
+import { finalize, forkJoin, of, switchMap, tap, type Observable } from 'rxjs';
 
 import {
   RdigApiService,
@@ -18,6 +18,8 @@ import {
 } from '../../services/rdig-api.service';
 import {
   ApprovalDto,
+  RdigReviewerReviewDto,
+  RdigReviewerScoreSheetDto,
   RequestCommentDto,
   RequestSummaryDto,
   WorkflowActionDto,
@@ -34,17 +36,19 @@ import { ActionLoadingService } from '../../../../core/services/action-loading.s
 import { TableActionIconComponent } from '../../../../shared/components/table-action-icon/table-action-icon.component';
 import { ReviewBlockComponent } from '../../components/review-block/review-block.component';
 import { CustomSubheaderComponent } from '../../../../shared/components/custom-subheader/custom-subheader.component';
+import { DialogComponent } from '../../../../shared/components/dialog/dialog.component';
+import { SearchableDropdownComponent } from '../../../../shared/components/searchable-dropdown/searchable-dropdown.component';
 import { formatMyrCurrency } from '../../../../shared/utils/currency.util';
 import { WORKFLOW_STAGE_META } from '../../../../core/interfaces/batch-sitting.interface';
+import { DropdownOption } from '../../../../core/interfaces/components.interface';
+import {
+  RdigReviewerRecord,
+  RdigReviewerService,
+} from '../../../admin-settings/manage-rdig-reviewer/rdig-reviewer.service';
 
 const COMMENT_MAX_LENGTH = 1000;
 
-/**
- * TODO(backend): RequestCommentDto has no `score` column persisted server-side yet.
- * Extended locally so the UI can collect/display a rating per field-level comment,
- * matching the Application Form View's ReviewBlockComponent.
- */
-type ScoredComment = RequestCommentDto & { score?: number | string | null };
+type ScoredComment = RequestCommentDto;
 
 /** Every distinct comment author role in the RDIG workflow. */
 export type CommentSource = 'hos' | 'rmc' | 'reviewer1' | 'reviewer2' | 'rdig_chair' | 'vc' | 'ceo';
@@ -111,8 +115,8 @@ const RESUBMISSION_STATUS_PREFIX = 'pending_applicant_resubmission';
  * Comment architecture:
  *  - HOS and RMC each write ONE comment per main group (Team Members, Project
  *    Details, Research Output & Budget, Declaration), one per submission version.
- *  - Reviewer 1 and Reviewer 2 each write ONE comment (+ optional score) under
- *    specific fields/tables/sections, matching the Application Form View's layout.
+ *  - Reviewer 1 and Reviewer 2 each write comments under the scored areas. Their
+ *    scoring sheet is persisted independently from comments and versioned by review cycle.
  *  - RDIG Chair, VC, CEO each write ONE application-level comment, edited from the
  *    fixed right-side panel.
  *  - Comments from other users are hidden by default. The right-side panel exposes a
@@ -134,6 +138,8 @@ const RESUBMISSION_STATUS_PREFIX = 'pending_applicant_resubmission';
     TableActionIconComponent,
     ReviewBlockComponent,
     CustomSubheaderComponent,
+    DialogComponent,
+    SearchableDropdownComponent,
   ],
   templateUrl: './rdig-details.component.html',
   styleUrl: './rdig-details.component.scss',
@@ -147,6 +153,7 @@ export class RdigDetailsComponent implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly actionLoading = inject(ActionLoadingService);
+  private readonly rdigReviewerService = inject(RdigReviewerService);
 
   private requestId: number | null = null;
   private returnTo: string | null = null;
@@ -163,7 +170,9 @@ export class RdigDetailsComponent implements OnInit {
    * rows in a particular order.
    */
   readonly sortedApprovals = computed(() =>
-    [...this.approvals()].sort((a, b) => (this.parseTime(b.action_at) ?? 0) - (this.parseTime(a.action_at) ?? 0)),
+    [...this.approvals()].sort(
+      (a, b) => (this.parseTime(b.action_at) ?? 0) - (this.parseTime(a.action_at) ?? 0),
+    ),
   );
 
   /**
@@ -179,6 +188,8 @@ export class RdigDetailsComponent implements OnInit {
   }
 
   sectionComments = signal<ScoredComment[]>([]);
+  reviewerScoreSheet = signal<RdigReviewerScoreSheetDto | null>(null);
+  scoresSaving = signal(false);
   editingCommentId = signal<number | null>(null);
   deletingCommentId = signal<number | null>(null);
   savingCommentKey = signal<string | null>(null);
@@ -190,7 +201,120 @@ export class RdigDetailsComponent implements OnInit {
   backLabel = signal('Back');
 
   readonly actionCommentControl = new FormControl('', [Validators.maxLength(COMMENT_MAX_LENGTH)]);
+  readonly selectedReviewersControl = new FormControl<string[]>([], { nonNullable: true });
   readonly commentMaxLength = COMMENT_MAX_LENGTH;
+
+  readonly reviewerSelectionOpen = signal(false);
+  readonly reviewerDropdownOpen = signal(false);
+  readonly reviewerSelectionError = signal<string | null>(null);
+  readonly reviewerOptionsLoading = signal(false);
+  readonly reviewerOptionsError = signal<string | null>(null);
+  readonly reviewerOptions = signal<DropdownOption<string>[]>([]);
+  readonly selectedReviewerUsernames = signal<readonly string[]>([]);
+  readonly reviewerSelectionAction = computed(
+    () => this.actions().find((action) => action.requires_reviewer_selection) ?? null,
+  );
+
+  reviewerSelectionCount(): number {
+    return this.reviewerSelectionAction()?.reviewer_selection_count ?? 2;
+  }
+
+  reviewerSelectionConfirmed(): boolean {
+    return this.selectedReviewerUsernames().length === this.reviewerSelectionCount();
+  }
+
+  selectedReviewerLabels(): string[] {
+    const labels = new Map(this.reviewerOptions().map((option) => [option.value, option.label]));
+    return this.selectedReviewerUsernames().map((username) => labels.get(username) ?? username);
+  }
+
+  selectedReviewerCount(): number {
+    return this.selectedReviewersControl.value.length;
+  }
+
+  onReviewerDropdownOpenChange(isOpen: boolean): void {
+    if (isOpen) this.reviewerDropdownOpen.set(true);
+  }
+
+  openReviewerSelection(): void {
+    this.selectedReviewersControl.setValue([...this.selectedReviewerUsernames()]);
+    this.reviewerSelectionError.set(null);
+    this.reviewerDropdownOpen.set(false);
+    this.reviewerSelectionOpen.set(true);
+    if (!this.reviewerOptions().length) this.loadReviewerOptions();
+  }
+
+  closeReviewerSelection(): void {
+    this.reviewerSelectionOpen.set(false);
+    this.reviewerDropdownOpen.set(false);
+    this.reviewerSelectionError.set(null);
+    this.selectedReviewersControl.setValue([...this.selectedReviewerUsernames()]);
+  }
+
+  confirmReviewerSelection(): void {
+    const selected = this.selectedReviewersControl.value;
+    const requiredCount = this.reviewerSelectionCount();
+    if (selected.length !== requiredCount) {
+      this.reviewerSelectionError.set(
+        `Select exactly ${requiredCount} different reviewers before continuing.`,
+      );
+      return;
+    }
+    this.selectedReviewerUsernames.set([...selected]);
+    this.reviewerSelectionOpen.set(false);
+    this.reviewerDropdownOpen.set(false);
+    this.reviewerSelectionError.set(null);
+    this.feedback.set({
+      type: 'success',
+      text: `${selected.length} reviewers selected. Choose Approve or Request Resubmission to continue.`,
+    });
+  }
+
+  loadReviewerOptions(): void {
+    if (this.reviewerOptionsLoading()) return;
+    this.reviewerOptionsLoading.set(true);
+    this.reviewerOptionsError.set(null);
+    this.rdigReviewerService
+      .listOptions()
+      .pipe(
+        finalize(() => this.reviewerOptionsLoading.set(false)),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe({
+        next: (response) => {
+          const options = (response.data ?? [])
+            .filter((reviewer): reviewer is RdigReviewerRecord & { staff_username: string } =>
+              Boolean(reviewer.staff_username?.trim()),
+            )
+            .map((reviewer) => this.toReviewerOption(reviewer));
+          this.reviewerOptions.set(options);
+          if (options.length < this.reviewerSelectionCount()) {
+            this.reviewerOptionsError.set(
+              `At least ${this.reviewerSelectionCount()} active RDIG reviewers are required.`,
+            );
+          }
+        },
+        error: (err) => {
+          this.reviewerOptionsError.set(
+            err?.error?.message || 'Unable to load reviewer options. Please try again.',
+          );
+        },
+      });
+  }
+
+  private toReviewerOption(
+    reviewer: RdigReviewerRecord & { staff_username: string },
+  ): DropdownOption<string> {
+    const username = reviewer.staff_username.trim().toLowerCase();
+    const name = reviewer.staff_fullname?.trim() || username;
+    const details = [username, reviewer.department, reviewer.job_title].filter(Boolean).join(' · ');
+    return {
+      value: username,
+      label: name,
+      description: details,
+      searchText: `${name} ${details}`,
+    };
+  }
 
   // ── Right-side panel: per-source toggle state (hidden by default) ──────────────
   private readonly toggledSources = signal<ReadonlySet<CommentSource>>(new Set());
@@ -202,6 +326,7 @@ export class RdigDetailsComponent implements OnInit {
   }
 
   toggleSource(source: CommentSource): void {
+    if (source === this.currentUserSource()) return;
     if (!this.canViewSource(source)) return;
     this.toggledSources.update((current) => {
       const next = new Set(current);
@@ -211,7 +336,15 @@ export class RdigDetailsComponent implements OnInit {
   }
 
   /** Sources a toggle/counter/comment may ever be rendered for, in right-panel order. */
-  readonly allSources: CommentSource[] = ['hos', 'rmc', 'reviewer1', 'reviewer2', 'rdig_chair', 'vc', 'ceo'];
+  readonly allSources: CommentSource[] = [
+    'hos',
+    'rmc',
+    'reviewer1',
+    'reviewer2',
+    'rdig_chair',
+    'vc',
+    'ceo',
+  ];
 
   labelForSource(source: CommentSource): string {
     return this.sourceLabel[source];
@@ -250,13 +383,17 @@ export class RdigDetailsComponent implements OnInit {
     if (source === this.currentUserSource()) return true;
 
     if (this.isCurrentActorHos()) return false;
-    if (this.isCurrentUserReviewer(1) || this.isCurrentUserReviewer(2)) return false;
+    if (this.isCurrentUserReviewer(1) || this.isCurrentUserReviewer(2)) {
+      return source === 'hos' || source === 'rmc';
+    }
 
     if (this.isCurrentActorRmc()) {
       return source === 'hos' || source === 'reviewer1' || source === 'reviewer2';
     }
     if (this.isCurrentActorRdigChair()) {
-      return source === 'rmc' || source === 'hos' || source === 'reviewer1' || source === 'reviewer2';
+      return (
+        source === 'rmc' || source === 'hos' || source === 'reviewer1' || source === 'reviewer2'
+      );
     }
     if (this.isCurrentActorVc()) {
       return (
@@ -292,14 +429,21 @@ export class RdigDetailsComponent implements OnInit {
     return null;
   }
 
+  isCurrentUserSource(source: CommentSource): boolean {
+    return source === this.currentUserSource();
+  }
+
   /**
-   * Sources the right-side panel should render a toggle+counter for. Excludes the
-   * viewer's own source — their own comments are always shown, not toggle-gated,
-   * so no toggle/counter is needed for it.
+   * Sources shown in the right-side comment summary. A reviewer also sees their
+   * own source and counter there; their inline comments remain always visible.
    */
-  readonly permittedSources = computed(() =>
-    this.allSources.filter((s) => s !== this.currentUserSource() && this.canViewSource(s)),
-  );
+  readonly permittedSources = computed(() => {
+    const isReviewer = this.isCurrentUserReviewer(1) || this.isCurrentUserReviewer(2);
+    return this.allSources.filter(
+      (source) =>
+        this.canViewSource(source) && (source !== this.currentUserSource() || isReviewer),
+    );
+  });
 
   /** Total (current + past version) comment count for a source — the toggle's counter badge. */
   commentCountForSource(source: CommentSource): number {
@@ -311,7 +455,7 @@ export class RdigDetailsComponent implements OnInit {
 
   // ── Field-level comment definitions (Reviewer 1 / Reviewer 2 only, spec §11) ───
   readonly teamFields: FieldCommentDef[] = [
-    { fieldCode: 'team_members_group', label: 'Team Members', maxScore: 10 },
+    { fieldCode: 'team_members_group', label: 'Team Combination and Expertise', maxScore: 10 },
   ];
 
   readonly projectFields: FieldCommentDef[] = [
@@ -323,14 +467,18 @@ export class RdigDetailsComponent implements OnInit {
     { fieldCode: 'project_summary', label: 'Executive Summary', maxScore: 10 },
     { fieldCode: 'project_keywords', label: 'Keywords' },
     { fieldCode: 'project_intro', label: 'Introduction', maxScore: 10 },
-    { fieldCode: 'project_problem', label: 'Problem Statement', maxScore: 10 },
-    { fieldCode: 'project_aim', label: 'Research Aim and Objectives', maxScore: 5 },
-    { fieldCode: 'project_questions', label: 'Research Questions', maxScore: 5 },
+    { fieldCode: 'project_problem', label: 'Problem Statement', maxScore: 5 },
+    { fieldCode: 'project_aim', label: 'Research Aims and Objectives', maxScore: 5 },
+    { fieldCode: 'project_questions', label: 'Research Questions', maxScore: 10 },
     { fieldCode: 'project_hypothesis', label: 'Hypothesis / Propositions', maxScore: 10 },
     { fieldCode: 'project_lit_review', label: 'Literature Review', maxScore: 10 },
     { fieldCode: 'project_methodology', label: 'Research Methodology', maxScore: 10 },
     { fieldCode: 'project_references', label: 'References' },
-    { fieldCode: 'project_benefits', label: 'Grant Utilisation and Benefits', maxScore: 10 },
+    {
+      fieldCode: 'project_benefits',
+      label: 'Benefits of Grant Utilisation to APU, Students and Stakeholders',
+      maxScore: 10,
+    },
     { fieldCode: 'project_vision', label: 'APU Vision and Mission Alignment' },
     { fieldCode: 'project_activities', label: 'Research Activities' },
   ];
@@ -341,7 +489,7 @@ export class RdigDetailsComponent implements OnInit {
     { fieldCode: 'budget_travel', label: 'Travelling and Transportation' },
     { fieldCode: 'budget_materials', label: 'Research Materials and Supplies' },
     { fieldCode: 'budget_services', label: 'Professional Services' },
-    { fieldCode: 'budget_summary', label: 'Budget Summary', maxScore: 10 },
+    { fieldCode: 'budget_summary', label: 'Budget - Fit for Purpose', maxScore: 10 },
   ];
 
   private readonly allFieldDefs: FieldCommentDef[] = [
@@ -349,6 +497,7 @@ export class RdigDetailsComponent implements OnInit {
     ...this.projectFields,
     ...this.outputBudgetFields,
   ];
+  private readonly scoredFieldDefs = this.allFieldDefs.filter((field) => field.maxScore != null);
 
   readonly fieldLabels: Record<string, string> = Object.fromEntries(
     this.allFieldDefs.map((f) => [f.fieldCode, f.label]),
@@ -360,26 +509,19 @@ export class RdigDetailsComponent implements OnInit {
   }
 
   /** Max possible total — sum of maxScore across every scoreable field. */
-  private readonly maxTotalScore = this.allFieldDefs
-    .filter((f) => f.maxScore != null)
+  private readonly maxTotalScore = this.scoredFieldDefs
     .reduce((sum, f) => sum + (f.maxScore ?? 0), 0);
 
   /**
    * Sum of a reviewer's own scores across every scoreable field, for the current
-   * submission version. Reads the live draft score control first — so the total
-   * updates immediately as the reviewer picks a score, before it's submitted —
-   * falling back to the last-saved comment's score once a draft control exists
-   * but hasn't been touched (e.g. after a page reload).
+   * review cycle. The current reviewer sees live draft values immediately; other
+   * viewers see the independently persisted score sheet.
    */
   private reviewerTotalScore(actor: ReviewerActor): number {
-    return this.allFieldDefs
-      .filter((f) => f.maxScore != null)
+    return this.scoredFieldDefs
       .reduce((sum, f) => {
-        const live = this.liveFieldScore(f.fieldCode, actor);
-        if (live !== null) return sum + live;
-        const comment = this.currentVersionFieldComment(f.fieldCode, actor);
-        const score = comment?.score;
-        return sum + (typeof score === 'number' ? score : Number(score) || 0);
+        const score = this.scoreForField(f.fieldCode, actor);
+        return sum + (score ?? 0);
       }, 0);
   }
 
@@ -391,17 +533,11 @@ export class RdigDetailsComponent implements OnInit {
 
   /** True once the reviewer has recorded at least one score this version — live draft or saved. */
   hasReviewerScored(actor: ReviewerActor): boolean {
-    return this.allFieldDefs
-      .filter((f) => f.maxScore != null)
-      .some(
-        (f) =>
-          this.liveFieldScore(f.fieldCode, actor) !== null ||
-          this.currentVersionFieldComment(f.fieldCode, actor)?.score != null,
-      );
+    return this.scoredFieldDefs.some((field) => this.scoreForField(field.fieldCode, actor) !== null);
   }
 
-  /** Minimum total score (out of maxTotalScoreValue) a reviewer needs before Approve is offered. */
-  readonly approveScoreThreshold = 70;
+  /** Minimum total score (out of 100) a reviewer needs before Approve is offered. */
+  readonly approveScoreThreshold = 80;
 
   /** The CURRENT viewer's own total score, when they are Reviewer 1 or Reviewer 2 — 0 otherwise. */
   readonly reviewerOwnTotalScore = computed(() => {
@@ -411,9 +547,8 @@ export class RdigDetailsComponent implements OnInit {
   });
 
   hasAnyReviewerScoreDraft(): boolean {
-    if (this.isCurrentUserReviewer(1)) return this.hasReviewerScored('reviewer1');
-    if (this.isCurrentUserReviewer(2)) return this.hasReviewerScored('reviewer2');
-    return false;
+    const actor = this.currentReviewerActor();
+    return actor ? this.hasReviewerScored(actor) : false;
   }
 
   /**
@@ -425,8 +560,7 @@ export class RdigDetailsComponent implements OnInit {
   isActionHiddenForLowScore(action: WorkflowActionDto): boolean {
     if (!(this.isCurrentUserReviewer(1) || this.isCurrentUserReviewer(2))) return false;
     if (this.actionTone(action) !== 'positive') return false;
-    if (!this.hasAnyReviewerScoreDraft()) return false;
-    return this.reviewerOwnTotalScore() < this.approveScoreThreshold;
+    return this.missingRequiredScoreLabels().length === 0 && this.reviewerOwnTotalScore() < this.approveScoreThreshold;
   }
 
   /** Only budget field defs that actually exist as budget sections on this application. */
@@ -434,9 +568,12 @@ export class RdigDetailsComponent implements OnInit {
     const codes = new Set(this.budgetSections().map((s) => (s.section_code ?? '').toLowerCase()));
     const has = (needle: string) => Array.from(codes).some((c) => c.includes(needle));
     return this.outputBudgetFields.filter((f) => {
-      if (f.fieldCode === 'budget_student') return has('student') || has('allowance') || has('v11000');
-      if (f.fieldCode === 'budget_travel') return has('travel') || has('accommodation') || has('v21000');
-      if (f.fieldCode === 'budget_materials') return has('material') || has('supplies') || has('v27000');
+      if (f.fieldCode === 'budget_student')
+        return has('student') || has('allowance') || has('v11000');
+      if (f.fieldCode === 'budget_travel')
+        return has('travel') || has('accommodation') || has('v21000');
+      if (f.fieldCode === 'budget_materials')
+        return has('material') || has('supplies') || has('v27000');
       if (f.fieldCode === 'budget_services') return has('service') || has('v29000');
       return true;
     });
@@ -447,7 +584,10 @@ export class RdigDetailsComponent implements OnInit {
   private readonly fieldScoreControls = new Map<string, FormControl<string | null>>();
   /** Signal mirror of each score control's live value, so the total updates as the reviewer picks a score. */
   private readonly fieldScoreSignals = new Map<string, ReturnType<typeof signal<string | null>>>();
-  private readonly fieldCommentSignals = new Map<FormControl<string | null>, ReturnType<typeof signal<string | null>>>();
+  private readonly fieldCommentSignals = new Map<
+    FormControl<string | null>,
+    ReturnType<typeof signal<string | null>>
+  >();
 
   private fieldKey(fieldCode: string, actor: ReviewerActor): string {
     return `${fieldCode}::${actor}`;
@@ -475,7 +615,9 @@ export class RdigDetailsComponent implements OnInit {
       control = new FormControl('');
       this.fieldScoreControls.set(key, control);
       const mirror = signal(control.value);
-      control.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((v) => mirror.set(v));
+      control.valueChanges
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe((v) => mirror.set(v));
       this.fieldScoreSignals.set(key, mirror);
     }
     return control;
@@ -491,6 +633,108 @@ export class RdigDetailsComponent implements OnInit {
     return Number.isFinite(parsed) ? parsed : null;
   }
 
+  private currentReviewerActor(): ReviewerActor | null {
+    if (this.isCurrentUserReviewer(1)) return 'reviewer1';
+    if (this.isCurrentUserReviewer(2)) return 'reviewer2';
+    return null;
+  }
+
+  private savedReviewerReview(actor: ReviewerActor): RdigReviewerReviewDto | null {
+    const reviewerNo = actor === 'reviewer1' ? 1 : 2;
+    return this.reviewerScoreSheet()?.reviews.find((review) => review.reviewer_no === reviewerNo) ?? null;
+  }
+
+  private savedFieldScore(fieldCode: string, actor: ReviewerActor): number | null {
+    return (
+      this.savedReviewerReview(actor)?.scores.find((score) => score.criterion_code === fieldCode)
+        ?.score ?? null
+    );
+  }
+
+  scoreForField(fieldCode: string, actor: ReviewerActor): number | null {
+    if (this.currentReviewerActor() === actor) {
+      const live = this.liveFieldScore(fieldCode, actor);
+      if (live !== null) return live;
+    }
+    return this.savedFieldScore(fieldCode, actor);
+  }
+
+  scoreOptions(maximum: number): number[] {
+    return Array.from({ length: maximum + 1 }, (_, index) => index);
+  }
+
+  canEditFieldScore(actor: ReviewerActor): boolean {
+    return this.canWriteFieldComment(actor);
+  }
+
+  private hydrateScoreControls(): void {
+    const actor = this.currentReviewerActor();
+    if (!actor) return;
+    this.scoredFieldDefs.forEach((field) => {
+      const saved = this.savedFieldScore(field.fieldCode, actor);
+      this.fieldScoreControl(field.fieldCode, actor).setValue(
+        saved === null ? '' : String(saved),
+        { emitEvent: true },
+      );
+    });
+  }
+
+  readonly missingRequiredScoreLabels = computed(() => {
+    const actor = this.currentReviewerActor();
+    if (!actor) return [];
+    return this.scoredFieldDefs
+      .filter((field) => this.scoreForField(field.fieldCode, actor) === null)
+      .map((field) => field.label);
+  });
+
+  readonly requiredScoreCount = this.scoredFieldDefs.length;
+
+  completedReviewerScoreCount(): number {
+    return this.requiredScoreCount - this.missingRequiredScoreLabels().length;
+  }
+
+  hasUnsavedReviewerScores(): boolean {
+    const actor = this.currentReviewerActor();
+    if (!actor) return false;
+    return this.scoredFieldDefs.some(
+      (field) => this.liveFieldScore(field.fieldCode, actor) !== this.savedFieldScore(field.fieldCode, actor),
+    );
+  }
+
+  private reviewerScorePayload(): Array<{ criterion_code: string; score: number }> {
+    const actor = this.currentReviewerActor();
+    if (!actor) return [];
+    return this.scoredFieldDefs.flatMap((field) => {
+      const score = this.scoreForField(field.fieldCode, actor);
+      return score === null ? [] : [{ criterion_code: field.fieldCode, score }];
+    });
+  }
+
+  private saveReviewerScores$(): Observable<unknown> {
+    if (this.requestId == null || !this.currentReviewerActor()) return of(null);
+    const scores = this.reviewerScorePayload();
+    if (!scores.length || !this.hasUnsavedReviewerScores()) return of(null);
+    this.scoresSaving.set(true);
+    return this.requests.saveRdigReviewerScores(this.requestId, { scores }).pipe(
+      tap(({ data }) => this.reviewerScoreSheet.set(data)),
+      finalize(() => this.scoresSaving.set(false)),
+    );
+  }
+
+  saveReviewerScores(): void {
+    if (this.scoresSaving() || !this.hasUnsavedReviewerScores()) return;
+    this.feedback.set(null);
+    this.saveReviewerScores$()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => this.feedback.set({ type: 'success', text: 'Reviewer scores saved.' }),
+        error: (err) => {
+          const message = err?.error?.message || 'Could not save reviewer scores.';
+          this.feedback.set({ type: 'error', text: message });
+        },
+      });
+  }
+
   /**
    * Mirrors a text FormControl's live value as a signal, so drafts can gate action
    * buttons reactively. Uses a plain signal fed by a subscription (not `toSignal`)
@@ -504,7 +748,9 @@ export class RdigDetailsComponent implements OnInit {
     let mirror = signals.get(control);
     if (!mirror) {
       mirror = signal(control.value);
-      control.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((v) => mirror!.set(v));
+      control.valueChanges
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe((v) => mirror!.set(v));
       signals.set(control, mirror);
     }
     return (mirror() ?? '').trim();
@@ -512,7 +758,10 @@ export class RdigDetailsComponent implements OnInit {
 
   // ── HOS / RMC — one comment per group, per submission version ──────────────────
   private readonly groupCommentControls = new Map<string, FormControl<string | null>>();
-  private readonly groupCommentSignals = new Map<FormControl<string | null>, ReturnType<typeof signal<string | null>>>();
+  private readonly groupCommentSignals = new Map<
+    FormControl<string | null>,
+    ReturnType<typeof signal<string | null>>
+  >();
 
   private groupKey(group: GroupCode, actor: GroupActor): string {
     return `${group}::${actor}`;
@@ -539,10 +788,15 @@ export class RdigDetailsComponent implements OnInit {
   }
 
   // ── RDIG Chair / VC / CEO — single whole-form comment (right-side panel) ───────
-  readonly rdigChairCommentControl = new FormControl('', [Validators.maxLength(COMMENT_MAX_LENGTH)]);
+  readonly rdigChairCommentControl = new FormControl('', [
+    Validators.maxLength(COMMENT_MAX_LENGTH),
+  ]);
   readonly vcCommentControl = new FormControl('', [Validators.maxLength(COMMENT_MAX_LENGTH)]);
   readonly ceoCommentControl = new FormControl('', [Validators.maxLength(COMMENT_MAX_LENGTH)]);
-  private readonly wholeFormCommentSignals = new Map<FormControl<string | null>, ReturnType<typeof signal<string | null>>>();
+  private readonly wholeFormCommentSignals = new Map<
+    FormControl<string | null>,
+    ReturnType<typeof signal<string | null>>
+  >();
 
   /** Draft text currently in a whole-form comment box (reactive). */
   wholeFormCommentDraft(role: WholeFormActor): string {
@@ -821,17 +1075,20 @@ export class RdigDetailsComponent implements OnInit {
   }
 
   canWriteGroupComment(actor: GroupActor): boolean {
-    if (actor === 'hos') return this.canAct() && this.isCurrentActorHos() && this.isHosEditableStatus();
+    if (actor === 'hos')
+      return this.canAct() && this.isCurrentActorHos() && this.isHosEditableStatus();
     return this.canAct() && this.isCurrentActorRmc() && this.isRmcEditableStatus();
   }
 
   canWriteFieldComment(actor: ReviewerActor): boolean {
-    if (actor === 'reviewer1') return this.canAct() && this.isCurrentUserReviewer(1) && this.isReviewerEditableStatus();
+    if (actor === 'reviewer1')
+      return this.canAct() && this.isCurrentUserReviewer(1) && this.isReviewerEditableStatus();
     return this.canAct() && this.isCurrentUserReviewer(2) && this.isReviewerEditableStatus();
   }
 
   canWriteWholeFormComment(role: WholeFormActor): boolean {
-    if (role === 'rdig_chair') return this.canAct() && this.isCurrentActorRdigChair() && this.isRdigChairEditableStatus();
+    if (role === 'rdig_chair')
+      return this.canAct() && this.isCurrentActorRdigChair() && this.isRdigChairEditableStatus();
     if (role === 'vc') return this.canAct() && this.isCurrentActorVc() && this.isVcEditableStatus();
     return this.canAct() && this.isCurrentActorCeo() && this.isCeoEditableStatus();
   }
@@ -923,10 +1180,11 @@ export class RdigDetailsComponent implements OnInit {
       form: this.rdigApi.getForm(id),
       approvals: this.requests.getApprovals(id, { page: 1, perPage: 100 }),
       comments: this.requests.getComments(id),
+      scores: this.requests.getRdigReviewerScores(id),
     })
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe({
-        next: ({ form, approvals, comments }) => {
+        next: ({ form, approvals, comments, scores }) => {
           this.data.set(form.data);
           this.actions.set((form.data.request?.available_actions ?? []) as WorkflowActionDto[]);
           this.canAct.set(Boolean(form.data.request?.can_act));
@@ -936,8 +1194,10 @@ export class RdigDetailsComponent implements OnInit {
               (comment) => comment.comment_type === 'section_review',
             ),
           );
+          this.reviewerScoreSheet.set(scores.data);
           this.hydrateWholeFormControls();
           this.hydrateGroupControls();
+          this.hydrateScoreControls();
         },
         error: () => this.error.set('Unable to load this RDIG application.'),
       });
@@ -1007,7 +1267,9 @@ export class RdigDetailsComponent implements OnInit {
    * Checked in this order because "resubmission" must never fall through to the
    * default 'positive' (green) tone just because it also contains "sub".
    */
-  actionTone(action: WorkflowActionDto): 'positive' | 'resubmit' | 'verified' | 'negative' | 'neutral' {
+  actionTone(
+    action: WorkflowActionDto,
+  ): 'positive' | 'resubmit' | 'verified' | 'negative' | 'neutral' {
     const label = `${action.action_code} ${action.action_name}`.toLowerCase();
     if (
       label.includes('reject') ||
@@ -1115,7 +1377,12 @@ export class RdigDetailsComponent implements OnInit {
 
   canPerformActions(): boolean {
     if (this.requiresAllGroupComments()) return this.missingRequiredGroupLabels().length === 0;
-    if (this.requiresAllFieldComments()) return this.missingRequiredFieldLabels().length === 0;
+    if (this.requiresAllFieldComments()) {
+      return (
+        this.missingRequiredFieldLabels().length === 0 &&
+        this.missingRequiredScoreLabels().length === 0
+      );
+    }
     if (this.requiresWholeFormComment()) return this.hasRequiredWholeFormComment();
     if (this.requiresDecisionComment()) {
       const comment = (this.actionCommentControl.value ?? '').trim();
@@ -1139,10 +1406,15 @@ export class RdigDetailsComponent implements OnInit {
         : 'All required comments are complete. You can take action now.';
     }
     if (this.requiresAllFieldComments()) {
-      const missing = this.missingRequiredFieldLabels();
-      return missing.length
-        ? `${missing.length} comment${missing.length === 1 ? '' : 's'} still required.`
-        : 'All required comments are complete. You can take action now.';
+      const missingComments = this.missingRequiredFieldLabels().length;
+      const missingScores = this.missingRequiredScoreLabels().length;
+      if (!missingComments && !missingScores) {
+        return 'All required comments and scores are complete. You can take action now.';
+      }
+      const parts = [];
+      if (missingComments) parts.push(`${missingComments} comment${missingComments === 1 ? '' : 's'}`);
+      if (missingScores) parts.push(`${missingScores} score${missingScores === 1 ? '' : 's'}`);
+      return `${parts.join(' and ')} still required.`;
     }
     return null;
   }
@@ -1160,10 +1432,11 @@ export class RdigDetailsComponent implements OnInit {
         : 'All required section comments are saved. You can take action now.';
     }
     if (this.requiresAllFieldComments()) {
-      const missing = this.missingRequiredFieldLabels();
-      return missing.length
-        ? `Save section comments for: ${missing.join(', ')}.`
-        : 'All required section comments are saved. You can take action now.';
+      const missingComments = this.missingRequiredFieldLabels();
+      const missingScores = this.missingRequiredScoreLabels();
+      if (missingComments.length) return `Save comments for: ${missingComments.join(', ')}.`;
+      if (missingScores.length) return `Enter scores for: ${missingScores.join(', ')}.`;
+      return 'All required comments and scores are saved. You can take action now.';
     }
     if (this.requiresWholeFormComment()) {
       return this.hasRequiredWholeFormComment()
@@ -1188,11 +1461,11 @@ export class RdigDetailsComponent implements OnInit {
       .map((g) => this.groupLabel(g));
   });
 
-  /** Reviewer 1/2 must save a comment on every field before acting. */
+  /** Reviewer 1/2 must save a comment for each of the 11 scored areas before acting. */
   readonly missingRequiredFieldLabels = computed(() => {
     if (!this.requiresAllFieldComments()) return [];
     const actor: ReviewerActor = this.isCurrentUserReviewer(1) ? 'reviewer1' : 'reviewer2';
-    return this.allFieldDefs
+    return this.scoredFieldDefs
       .filter((f) => !this.hasCurrentActorFieldComment(f.fieldCode, actor))
       .map((f) => f.label);
   });
@@ -1200,6 +1473,10 @@ export class RdigDetailsComponent implements OnInit {
   /** DOM id for a field's comment editor, so the requirement list can scroll straight to it. */
   fieldCommentAnchorId(fieldCode: string, actor: ReviewerActor): string {
     return `field-comment-${fieldCode}-${actor}`;
+  }
+
+  fieldScoreAnchorId(fieldCode: string, actor: ReviewerActor): string {
+    return `field-score-${fieldCode}-${actor}`;
   }
 
   /** Missing required comments, paired with the DOM id to scroll to when clicked. */
@@ -1212,9 +1489,13 @@ export class RdigDetailsComponent implements OnInit {
     }
     if (this.requiresAllFieldComments()) {
       const actor: ReviewerActor = this.isCurrentUserReviewer(1) ? 'reviewer1' : 'reviewer2';
-      return this.allFieldDefs
+      const commentItems = this.scoredFieldDefs
         .filter((f) => !this.hasCurrentActorFieldComment(f.fieldCode, actor))
-        .map((f) => ({ label: f.label, anchorId: this.fieldCommentAnchorId(f.fieldCode, actor) }));
+        .map((f) => ({ label: `${f.label} comment`, anchorId: this.fieldCommentAnchorId(f.fieldCode, actor) }));
+      const scoreItems = this.scoredFieldDefs
+        .filter((f) => this.scoreForField(f.fieldCode, actor) === null)
+        .map((f) => ({ label: `${f.label} score`, anchorId: this.fieldScoreAnchorId(f.fieldCode, actor) }));
+      return [...commentItems, ...scoreItems];
     }
     return [];
   });
@@ -1247,13 +1528,17 @@ export class RdigDetailsComponent implements OnInit {
   currentVersionGroupComment(group: GroupCode, actor: GroupActor): ScoredComment | null {
     const version = this.currentSubmissionVersion();
     return (
-      this.commentsForGroup(group, actor).find((c) => this.commentSubmissionVersion(c) === version) ?? null
+      this.commentsForGroup(group, actor).find(
+        (c) => this.commentSubmissionVersion(c) === version,
+      ) ?? null
     );
   }
 
   historyGroupComments(group: GroupCode, actor: GroupActor): ScoredComment[] {
     const version = this.currentSubmissionVersion();
-    return this.commentsForGroup(group, actor).filter((c) => this.commentSubmissionVersion(c) !== version);
+    return this.commentsForGroup(group, actor).filter(
+      (c) => this.commentSubmissionVersion(c) !== version,
+    );
   }
 
   hasCurrentActorGroupComment(group: GroupCode, actor: GroupActor): boolean {
@@ -1402,8 +1687,9 @@ export class RdigDetailsComponent implements OnInit {
   currentVersionFieldComment(fieldCode: string, actor: ReviewerActor): ScoredComment | null {
     const version = this.currentSubmissionVersion();
     return (
-      this.commentsForField(fieldCode, actor).find((c) => this.commentSubmissionVersion(c) === version) ??
-      null
+      this.commentsForField(fieldCode, actor).find(
+        (c) => this.commentSubmissionVersion(c) === version,
+      ) ?? null
     );
   }
 
@@ -1414,7 +1700,9 @@ export class RdigDetailsComponent implements OnInit {
 
   historyFieldComments(fieldCode: string, actor: ReviewerActor): ScoredComment[] {
     const version = this.currentSubmissionVersion();
-    return this.commentsForField(fieldCode, actor).filter((c) => this.commentSubmissionVersion(c) !== version);
+    return this.commentsForField(fieldCode, actor).filter(
+      (c) => this.commentSubmissionVersion(c) !== version,
+    );
   }
 
   private matchesSource(comment: RequestCommentDto, source: CommentSource): boolean {
@@ -1425,9 +1713,9 @@ export class RdigDetailsComponent implements OnInit {
       case 'rmc':
         return code.includes('rmc');
       case 'reviewer1':
-        return code.includes('reviewer1') || code === 'reviewer_1';
+        return this.matchesReviewerSource(comment, 1);
       case 'reviewer2':
-        return code.includes('reviewer2') || code === 'reviewer_2';
+        return this.matchesReviewerSource(comment, 2);
       case 'rdig_chair':
         return code.includes('rdig_chair') || code.includes('rdigchair') || code.includes('chair');
       case 'vc':
@@ -1435,6 +1723,15 @@ export class RdigDetailsComponent implements OnInit {
       case 'ceo':
         return code.includes('ceo');
     }
+  }
+
+  private matchesReviewerSource(comment: RequestCommentDto, reviewerNo: 1 | 2): boolean {
+    const code = (comment.actor_type_code ?? '').trim().toLowerCase();
+    if (code.includes(`reviewer${reviewerNo}`) || code === `reviewer_${reviewerNo}`) return true;
+    if (!code.includes('reviewer')) return false;
+
+    const commentUsername = comment.staff_username?.trim().toLowerCase();
+    return Boolean(commentUsername && commentUsername === this.reviewerUsernameByNo(reviewerNo));
   }
 
   isEditingFieldComment(fieldCode: string, actor: ReviewerActor): boolean {
@@ -1446,16 +1743,12 @@ export class RdigDetailsComponent implements OnInit {
     if (!this.canChangeComment(comment, () => this.canWriteFieldComment(actor))) return;
     this.editingCommentId.set(comment.id);
     this.fieldCommentControl(fieldCode, actor).setValue(comment.comment_text ?? '');
-    if (comment.score !== undefined && comment.score !== null) {
-      this.fieldScoreControl(fieldCode, actor).setValue(String(comment.score));
-    }
     this.feedback.set(null);
   }
 
   cancelEditFieldComment(fieldCode: string, actor: ReviewerActor): void {
     this.editingCommentId.set(null);
     this.fieldCommentControl(fieldCode, actor).reset('');
-    this.fieldScoreControl(fieldCode, actor).reset('');
   }
 
   deleteFieldComment(fieldCode: string, actor: ReviewerActor, comment: ScoredComment): void {
@@ -1503,7 +1796,6 @@ export class RdigDetailsComponent implements OnInit {
       return;
     }
 
-    const score = this.scorePayload(field, actor);
     const key = this.fieldKey(field.fieldCode, actor);
     this.savingCommentKey.set(key);
     this.feedback.set(null);
@@ -1512,7 +1804,6 @@ export class RdigDetailsComponent implements OnInit {
         section_code: field.fieldCode,
         section_name: field.label,
         comment_text: commentText,
-        ...(score !== undefined ? ({ score } as Record<string, unknown>) : {}),
       })
       .pipe(
         finalize(() => this.savingCommentKey.set(null)),
@@ -1522,7 +1813,6 @@ export class RdigDetailsComponent implements OnInit {
         next: ({ data }) => {
           this.sectionComments.update((comments) => [data, ...comments]);
           control.reset('');
-          this.fieldScoreControl(field.fieldCode, actor).reset('');
           this.feedback.set({ type: 'success', text: 'Section comment saved.' });
         },
         error: (err) => {
@@ -1532,7 +1822,11 @@ export class RdigDetailsComponent implements OnInit {
       });
   }
 
-  private updateFieldComment(field: FieldCommentDef, actor: ReviewerActor, comment: ScoredComment): void {
+  private updateFieldComment(
+    field: FieldCommentDef,
+    actor: ReviewerActor,
+    comment: ScoredComment,
+  ): void {
     if (this.requestId == null || this.isFieldCommentSaving(field.fieldCode, actor)) return;
     if (!this.canChangeFieldComment(field.fieldCode, actor, comment)) return;
 
@@ -1550,14 +1844,12 @@ export class RdigDetailsComponent implements OnInit {
       return;
     }
 
-    const score = this.scorePayload(field, actor);
     const key = this.fieldKey(field.fieldCode, actor);
     this.savingCommentKey.set(key);
     this.feedback.set(null);
     this.requests
       .updateSectionComment(this.requestId, comment.id, {
         comment_text: commentText,
-        ...(score !== undefined ? ({ score } as Record<string, unknown>) : {}),
       })
       .pipe(
         finalize(() => this.savingCommentKey.set(null)),
@@ -1578,17 +1870,11 @@ export class RdigDetailsComponent implements OnInit {
       });
   }
 
-  private scorePayload(field: FieldCommentDef, actor: ReviewerActor): number | undefined {
-    if (field.maxScore == null) return undefined;
-    const scoreValue = this.fieldScoreControl(field.fieldCode, actor).value;
-    if (scoreValue === null || scoreValue === '') return undefined;
-    const score = Number(scoreValue);
-    return Number.isFinite(score) ? score : undefined;
-  }
-
   // ── Whole-form comments: RDIG Chair / VC / CEO ──────────────────────────────
   private wholeFormComment(role: WholeFormActor): ScoredComment | null {
-    return this.sectionComments().find((c) => c.section_code === WHOLE_FORM_FIELD_CODE[role]) ?? null;
+    return (
+      this.sectionComments().find((c) => c.section_code === WHOLE_FORM_FIELD_CODE[role]) ?? null
+    );
   }
 
   readonly rdigChairWholeFormComment = computed(() => this.wholeFormComment('rdig_chair'));
@@ -1626,7 +1912,9 @@ export class RdigDetailsComponent implements OnInit {
       )
       .subscribe({
         next: () => {
-          this.sectionComments.update((comments) => comments.filter((item) => item.id !== comment.id));
+          this.sectionComments.update((comments) =>
+            comments.filter((item) => item.id !== comment.id),
+          );
           onDone();
           this.feedback.set({ type: 'success', text: 'Comment deleted.' });
         },
@@ -1681,7 +1969,9 @@ export class RdigDetailsComponent implements OnInit {
       const draft = this.wholeFormCommentDraft(role);
       const existing = this.wholeFormComment(role);
       if (draft && existing && this.isCurrentUserComment(existing)) {
-        saves.push(this.requests.updateSectionComment(requestId, existing.id, { comment_text: draft }));
+        saves.push(
+          this.requests.updateSectionComment(requestId, existing.id, { comment_text: draft }),
+        );
       } else if (draft && !existing) {
         saves.push(
           this.requests.createSectionComment(requestId, {
@@ -1702,8 +1992,17 @@ export class RdigDetailsComponent implements OnInit {
     if (!this.canPerformActions()) {
       this.feedback.set({
         type: 'error',
-        text: this.actionRequirementMessage() || 'Please complete the required comments first.',
+        text: this.actionRequirementMessage() || 'Please complete the required review first.',
       });
+      return;
+    }
+
+    if (action.requires_reviewer_selection && !this.reviewerSelectionConfirmed()) {
+      this.feedback.set({
+        type: 'error',
+        text: `Choose exactly ${this.reviewerSelectionCount()} reviewers before approving.`,
+      });
+      this.openReviewerSelection();
       return;
     }
 
@@ -1717,13 +2016,19 @@ export class RdigDetailsComponent implements OnInit {
 
     const commentSaves = this.pendingCommentSaves$();
     const requestId = this.requestId;
-    const saveComments$: Observable<unknown> = commentSaves.length ? forkJoin(commentSaves) : of(null);
+    const saveComments$: Observable<unknown> = commentSaves.length
+      ? forkJoin(commentSaves)
+      : of(null);
     saveComments$
       .pipe(
+        switchMap(() => this.saveReviewerScores$()),
         switchMap(() =>
           this.requests.actOnRequest(requestId, {
             action_code: action.action_code,
             comment_text: actionComment,
+            selected_reviewer_usernames: action.requires_reviewer_selection
+              ? [...this.selectedReviewerUsernames()]
+              : undefined,
           }),
         ),
         finalize(() => {

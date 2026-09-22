@@ -2001,28 +2001,17 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
         }),
       )
       .subscribe({
-        next: (id) => this.onSubmitSuccess(Number(id), currentStatus, transition),
+        next: (id) => this.onSubmitSuccess(Number(id)),
         error: (err) => this.onSubmitError(err),
       });
   }
 
   /** Applicant submit/resubmit succeeded on the backend — confirm and redirect. */
-  private onSubmitSuccess(savedId: number, currentStatus: RdigStatus, transition: any): void {
+  private onSubmitSuccess(savedId: number): void {
     if (savedId != null) {
       this.loadedAppId.set(String(savedId));
       // Clear any stale "action needed" notification for the current user.
       this.notifSvc.resolveAction(savedId, 'RDIG Application');
-    }
-
-    // Best-effort workflow notifications (fire-and-forget; never block the UI).
-    if (transition && savedId != null) {
-      this.fireWorkflowNotifications(
-        transition.nextStatus,
-        transition.actorRole,
-        savedId,
-        this.rdigForm.getRawValue(),
-        currentStatus,
-      );
     }
 
     this.submissionState.set('SUCCESS');
@@ -2050,120 +2039,4 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
     return adminView || Boolean(applicantUsername && currentUsername && applicantUsername !== currentUsername);
   }
 
-  // ── Notification dispatch ──────────────────────────────────────────────────
-
-  /**
-   * Fires the correct notification(s) after each workflow transition.
-   * Determines recipient(s) from the next status and the saved formData.
-   */
-  private fireWorkflowNotifications(
-    nextStatus: RdigStatus,
-    actorRole: string,
-    savedId: number,
-    formData: any,
-    currentStatus: RdigStatus,
-  ): void {
-    const actorName = this.auth.currentUser()?.name ?? 'Unknown';
-    const entityType = 'RDIG Application';
-    const entityModule = 'rdig';
-    const route = `/rdig?id=${savedId}`;
-    const applicantUserId = formData.metadata?.applicantUserId as string | null;
-    const appDepartment = (formData.teamDetails?.department as string) ?? '';
-    const nextUsers: string[] = formData.workflow?.nextUsers ?? [];
-
-    const fire = (key: string, ctx: Record<string, unknown>) => {
-      this.notifSvc
-        .create(
-          this.notifSvc.build(key, {
-            entityType,
-            entityId: savedId,
-            actorName,
-            stage: nextStatus,
-            ...ctx,
-            data: {
-              entityId: savedId,
-              entityType,
-              entityModule,
-              stage: nextStatus,
-              actorName,
-              route,
-              ...((ctx['data'] as object) ?? {}),
-            },
-          }),
-        )
-        .subscribe();
-    };
-
-    switch (nextStatus) {
-      case 'pending_hos':
-        // Notify HOS (department-scoped)
-        fire('REVIEW_ASSIGNED_TO_YOU', {
-          stage: 'HOS Review',
-          recipientRole: 'HOS',
-          recipientDepartment: appDepartment,
-        });
-        // Confirm submission to applicant on first submit only
-        if (currentStatus === 'draft') {
-          fire('APPLICATION_SUBMITTED_CONFIRMED', {
-            recipientUserId: this.auth.currentUser()?.id,
-            data: { route: null }, // This is strictly an FYI; strip the link
-          });
-        }
-        break;
-
-      case 'pending_hos_review':
-        // Applicant resubmitted → notify HOS again (department-scoped)
-        fire('APPLICATION_RESUBMITTED_BY', {
-          stage: 'HOS Re-Review',
-          recipientRole: 'HOS',
-          recipientDepartment: appDepartment,
-        });
-        break;
-
-      case 'pending_rmc':
-        fire('REVIEW_ASSIGNED_TO_YOU', { stage: 'RMC Review', recipientRole: 'RMC' });
-        break;
-
-      case 'pending_rmc_review':
-        // Applicant resubmitted after reviewers → notify RMC
-        fire('APPLICATION_RESUBMITTED_BY', { stage: 'RMC Final Review', recipientRole: 'RMC' });
-        break;
-
-      case 'pending_reviewers':
-        // Notify both assigned reviewers by their userId
-        nextUsers.forEach((uid) =>
-          fire('REVIEWER_ASSIGNED_TO_APPLICATION', { recipientUserId: uid }),
-        );
-        break;
-
-      case 'pending_rdig_chair':
-        fire('REVIEW_ASSIGNED_TO_YOU', { stage: 'RDIG Chair Review', recipientRole: 'RDIG_Chair' });
-        break;
-
-      case 'pending_vc':
-        fire('REVIEW_ASSIGNED_TO_YOU', { stage: 'VC Review', recipientRole: 'VC' });
-        break;
-
-      case 'pending_ceo':
-        fire('REVIEW_ASSIGNED_TO_YOU', { stage: 'CEO Review', recipientRole: 'CEO' });
-        break;
-
-      case 'pending_applicant_resubmission_hos':
-      case 'pending_applicant_resubmission_reviewers':
-        if (applicantUserId) {
-          fire('APPLICATION_RETURNED_FOR_REVISION', { recipientUserId: applicantUserId });
-        }
-        break;
-
-      case 'rejected_hos':
-      case 'rejected_rmc':
-      case 'rejected_rdig_chair':
-      case 'rejected_vc':
-      case 'rejected_ceo':
-        if (applicantUserId) {
-          fire('APPLICATION_REJECTED_BY', { stage: actorRole, recipientUserId: applicantUserId });
-        }
-        break;
-    }
-  }
 }

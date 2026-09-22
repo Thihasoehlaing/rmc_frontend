@@ -1369,8 +1369,8 @@
                 @if (isCurrentUserReviewer1() || isCurrentUserReviewer2()) {
                   @if (missingRequiredScoreLabels().length) {
                     <p class="review-hint workflow-actions__score-hint">Complete all {{ requiredScoreCount }} scoring areas before taking a reviewer action.</p>
-                  } @else if (reviewerOwnTotalScore() < approveScoreThreshold) {
-                    <p class="review-hint workflow-actions__score-hint">Approve is unavailable — your score ({{ reviewerOwnTotalScore() }}/{{ maxTotalScoreValue }}) is below the {{ approveScoreThreshold }}-point threshold required to approve.</p>
+                  } @else if (reviewerOwnTotalScore() < approveScoreThreshold()) {
+                    <p class="review-hint workflow-actions__score-hint">Approve is unavailable — your score ({{ reviewerOwnTotalScore() }}/{{ maxTotalScoreValue }}) is below the {{ approveScoreThreshold() }}-point threshold required to approve.</p>
                   }
                 }
               </div>

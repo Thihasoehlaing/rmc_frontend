@@ -1,6 +1,6 @@
 // ─── Page shell ──────────────────────────────────────────────────────────────
 :host {
-  --rdig-page-width: 1080px;
+  --rdig-page-width: var(--page-max-width);
 }
 
 .dropdowns-container {

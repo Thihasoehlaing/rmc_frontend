@@ -537,7 +537,9 @@ export class RdigDetailsComponent implements OnInit {
   }
 
   /** Minimum total score (out of 100) a reviewer needs before Approve is offered. */
-  readonly approveScoreThreshold = 80;
+  readonly approveScoreThreshold = computed(
+    () => this.reviewerScoreSheet()?.approval_threshold ?? 70,
+  );
 
   /** The CURRENT viewer's own total score, when they are Reviewer 1 or Reviewer 2 — 0 otherwise. */
   readonly reviewerOwnTotalScore = computed(() => {
@@ -560,7 +562,10 @@ export class RdigDetailsComponent implements OnInit {
   isActionHiddenForLowScore(action: WorkflowActionDto): boolean {
     if (!(this.isCurrentUserReviewer(1) || this.isCurrentUserReviewer(2))) return false;
     if (this.actionTone(action) !== 'positive') return false;
-    return this.missingRequiredScoreLabels().length === 0 && this.reviewerOwnTotalScore() < this.approveScoreThreshold;
+    return (
+      this.missingRequiredScoreLabels().length === 0 &&
+      this.reviewerOwnTotalScore() < this.approveScoreThreshold()
+    );
   }
 
   /** Only budget field defs that actually exist as budget sections on this application. */

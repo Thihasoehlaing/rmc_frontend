@@ -1,6 +1,6 @@
 // ─── Page shell ─────────────────────────────────────────────────────────────
 :host {
-  --mgr-page-width: 1080px;
+  --mgr-page-width: var(--page-max-width);
 }
 
 .dropdowns-container {

@@ -23,7 +23,7 @@
   &__content {
     flex: 1;
     padding: var(--space-6) var(--space-8);
-    max-width: var(--page-max-width);
+    max-width: var(--shell-content-max-width);
     margin: 0 auto;
     width: 100%;
     box-sizing: border-box;

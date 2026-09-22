@@ -1,10 +1,14 @@
 import { describe, expect, it } from 'vitest';
 
+import { NAVIGATION_DATA } from '../constants/nav-data';
 import {
   conferencePermission,
   externalProjectDataEntryPermission,
   externalProjectDetailPermission,
+  partnershipPermission,
+  ragraPermission,
   rdigPermission,
+  travelAuthorizationPermission,
 } from './app-route-permissions';
 
 describe('conferencePermission', () => {
@@ -25,6 +29,39 @@ describe('rdigPermission', () => {
       excludeGroups: ['Reviewer', 'HOS'],
     });
     expect(rdigPermission).not.toHaveProperty('denyAll', true);
+  });
+});
+
+describe('enabled application permissions', () => {
+  it.each([
+    ['RA/GRA', ragraPermission],
+    ['Partnership', partnershipPermission],
+  ])('allows eligible academic applicants to access %s', (_name, permission) => {
+    expect(permission).toEqual({
+      anyOf: ['full_time', 'contract'],
+      allOf: ['academic'],
+    });
+    expect(permission).not.toHaveProperty('denyAll', true);
+  });
+
+  it('allows authenticated non-admin users to access Travel Authorization', () => {
+    expect(travelAuthorizationPermission).toEqual({
+      excludeGroups: ['Admin'],
+    });
+    expect(travelAuthorizationPermission).not.toHaveProperty('denyAll', true);
+  });
+
+  it('uses the enabled permissions in the Forms sidebar menu', () => {
+    const forms = NAVIGATION_DATA.flatMap(group => group.elements).find(
+      element => element.label === 'Forms',
+    );
+    const permissionsByFormCode = Object.fromEntries(
+      (forms?.children ?? []).map(item => [item.formCode, item.permission]),
+    );
+
+    expect(permissionsByFormCode['RA_GRA']).toBe(ragraPermission);
+    expect(permissionsByFormCode['PARTNERSHIP']).toBe(partnershipPermission);
+    expect(permissionsByFormCode['TRAVEL_AUTH']).toBe(travelAuthorizationPermission);
   });
 });
 

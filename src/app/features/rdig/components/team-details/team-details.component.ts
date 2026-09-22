@@ -18,10 +18,11 @@ import { FileUploadComponent } from '../../../../shared/components/file-upload/f
 import { DialogComponent } from '../../../../shared/components/dialog/dialog.component';
 import { ReviewBlockComponent } from '../review-block/review-block.component';
 import { RdigWorkflowService } from '../../services/rdig-workflow.service';
+import { MasterDataService } from '../../../../core/services/master-data.service';
 import {
-  MasterDataService,
-  AcademicStaffOption,
-} from '../../../../core/services/master-data.service';
+  RdigApiService,
+  RdigCoResearcherOption,
+} from '../../services/rdig-api.service';
 import { DataTableComponent } from '../../../../shared/components/data-table/data-table.component';
 import type { DataTableColumn } from '../../../../shared/components/data-table/data-table.component';
 import { ActionButtonComponent } from '../../../../shared/components/action-button/action-button.component';
@@ -57,12 +58,13 @@ import { TableActionIconComponent } from '../../../../shared/components/table-ac
 })
 export class TeamDetailsComponent implements OnInit, OnDestroy {
   private readonly masterData = inject(MasterDataService);
+  private readonly rdigApi = inject(RdigApiService);
   private readonly router = inject(Router);
   private readonly destroy$ = new Subject<void>();
 
-  /** Academic staff list loaded from the real backend — used for the internal co-researcher dropdown. */
-  private academicStaffList: AcademicStaffOption[] = [];
-  staffOptions: { label: string; value: string }[] = [];
+  /** RDIG-eligible academic staff used only by the internal co-researcher dropdown. */
+  private academicStaffList: RdigCoResearcherOption[] = [];
+  staffOptions: { label: string; value: string; description?: string }[] = [];
   compareOptionValues = (left: unknown, right: unknown): boolean => String(left) === String(right);
 
   @Input({ required: true }) parentForm!: FormGroup;
@@ -228,15 +230,16 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
 
     this.loadOrganisationTypes();
 
-    // Load academic staff list from the real backend for the internal co-researcher dropdown
-    this.masterData
-      .searchAcademicStaff()
+    // Use the RDIG-specific option API so restricted roles and reviewers never reach this form.
+    this.rdigApi
+      .listCoResearcherOptions()
       .pipe(takeUntil(this.destroy$))
       .subscribe((res) => {
         this.academicStaffList = res.data ?? [];
         this.staffOptions = this.academicStaffList.map((s) => ({
           label: s.fullname,
           value: s.id.toString(),
+          description: [s.department, s.email].filter(Boolean).join(' · '),
         }));
       });
 

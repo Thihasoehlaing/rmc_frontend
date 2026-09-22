@@ -5,12 +5,15 @@ import {
   disabledFeaturePermission,
   externalProjectDataEntryPermission,
   fundingApplicationPermission,
+  partnershipPermission,
+  ragraPermission,
   rdigPermission,
   reportPermission,
   submissionsDraftPendingPermission,
   submissionsInboxHistoryPermission,
   systemOrRmcAdminPermission,
   systemSettingsPermission,
+  travelAuthorizationPermission,
 } from '../routing/app-route-permissions';
 
 /**
@@ -114,14 +117,14 @@ export const NAVIGATION_DATA: NavGroup[] = [
             icon: 'person_add',
             route: '/ragra',
             formCode: 'RA_GRA',
-            permission: disabledFeaturePermission,
+            permission: ragraPermission,
           },
           {
             label: 'Partnership Application',
             icon: 'handshake',
             route: '/partnership/application',
             formCode: 'PARTNERSHIP',
-            permission: disabledFeaturePermission,
+            permission: partnershipPermission,
           },
           {
             label: 'Proposal Application',
@@ -142,7 +145,7 @@ export const NAVIGATION_DATA: NavGroup[] = [
             icon: 'flight_takeoff',
             route: '/travel-authorization/application',
             formCode: 'TRAVEL_AUTH',
-            permission: disabledFeaturePermission,
+            permission: travelAuthorizationPermission,
           },
         ],
       },

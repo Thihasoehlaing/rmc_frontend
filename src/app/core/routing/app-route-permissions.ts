@@ -72,11 +72,18 @@ export const rdigPermission = {
   excludeGroups: ['Reviewer', 'HOS'],
 } satisfies NavPermission;
 
-export const ragraPermission = disabledFeaturePermission;
+export const academicApplicantPermission = {
+  anyOf: ['full_time', 'contract'],
+  allOf: ['academic'],
+} satisfies NavPermission;
 
-export const travelAuthorizationPermission = disabledFeaturePermission;
+export const ragraPermission = academicApplicantPermission;
 
-export const partnershipPermission = disabledFeaturePermission;
+export const travelAuthorizationPermission = {
+  excludeGroups: ['Admin'],
+} satisfies NavPermission;
+
+export const partnershipPermission = academicApplicantPermission;
 
 export const adminSettingsPermission = adminPermission;
 

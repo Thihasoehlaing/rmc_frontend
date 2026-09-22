@@ -96,6 +96,14 @@ export interface RdigCoResearcherDto {
   display_order?: number | null;
 }
 
+export interface RdigCoResearcherOption {
+  id: number;
+  username: string;
+  fullname: string;
+  email: string | null;
+  department: string | null;
+}
+
 export interface RdigCollaboratorDto {
   id?: number;
   rdig_request_id?: number;
@@ -260,6 +268,16 @@ export class RdigApiService {
   }
 
   // ── APU Co-Researchers ──────────────────────────────────────────
+  listCoResearcherOptions(search?: string): Observable<ApiResponse<RdigCoResearcherOption[]>> {
+    const options = search?.trim()
+      ? { params: { search: search.trim() } }
+      : undefined;
+    return this.http.get<ApiResponse<RdigCoResearcherOption[]>>(
+      `${this.base}/co-researcher-options`,
+      options,
+    );
+  }
+
   listCoResearchers(id: number): Observable<ApiResponse<PaginatedData<RdigCoResearcherDto>>> {
     return this.http.get<ApiResponse<PaginatedData<RdigCoResearcherDto>>>(
       `${this.base}/${id}/apu-co-researchers`,

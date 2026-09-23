@@ -18,6 +18,7 @@ import {
   TableSkeletonComponent,
 } from '../../shared/components/table-skeleton/table-skeleton.component';
 import { TableActionIconComponent } from '../../shared/components/table-action-icon/table-action-icon.component';
+import { formatDisplayDate } from '../../shared/utils/date-time.util';
 
 interface NotificationRow {
   id: number;
@@ -224,7 +225,7 @@ export class NotificationsComponent implements OnInit {
       status: this.statusLabel(notification),
       statusClass: this.statusClass(notification),
       read: notification.read,
-      createdAt: this.formatDisplayDate(notification.createdAt),
+      createdAt: formatDisplayDate(notification.createdAt),
       route: typeof notification.data?.['route'] === 'string'
         ? notification.data['route'] as string
         : null,
@@ -290,17 +291,5 @@ export class NotificationsComponent implements OnInit {
     return notification.type.toLowerCase();
   }
 
-  private formatDisplayDate(value: string): string {
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return '-';
-
-    return new Intl.DateTimeFormat('en-GB', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    }).format(date);
-  }
 }
 

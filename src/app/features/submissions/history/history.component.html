@@ -16,7 +16,7 @@
   </div>
 
   @if (loading()) {
-    <app-table-skeleton [columns]="skeletonColumns" loadingLabel="Loading application history">
+    <app-table-skeleton [columns]="skeletonColumns()" loadingLabel="Loading application history">
     </app-table-skeleton>
   }
 
@@ -37,7 +37,7 @@
 
     <section class="dropdown-search-panel" aria-label="History search">
       <app-submissions-search
-        placeholder="Search by code"
+        [placeholder]="searchPlaceholder()"
         [value]="searchQuery()"
         (search)="onSearch($event)"
         (refresh)="resetFilters()"
@@ -62,6 +62,13 @@
             <tr>
               <th>No.</th>
               <th>Code</th>
+              @if (isAdminHistory()) {
+                <th>Applicant</th>
+              }
+              @if (showExternalProjectColumns()) {
+                <th>Project Leader</th>
+                <th>Project Account Code</th>
+              }
               <th>Status</th>
               <th>Created Date</th>
               <th class="actions-heading">Actions</th>
@@ -75,6 +82,20 @@
                   <span class="request-code">{{ getCode(app) }}</span>
                   <span class="form-type-label">{{ getFormTypeLabel(app) }}</span>
                 </td>
+                @if (isAdminHistory()) {
+                  <td class="applicant-cell">
+                    <span class="applicant-name">{{ getApplicantLabel(app) }}</span>
+                    @if (app.applicant_staff_username && app.applicant_staff_username !== app.applicant_name) {
+                      <span class="applicant-username">{{ app.applicant_staff_username }}</span>
+                    }
+                  </td>
+                }
+                @if (showExternalProjectColumns()) {
+                  <td class="external-project-cell">{{ getProjectLeader(app) }}</td>
+                  <td class="external-project-cell external-project-account-code">
+                    {{ getProjectAccountCode(app) }}
+                  </td>
+                }
                 <td>
                   <span
                     class="status-chip"

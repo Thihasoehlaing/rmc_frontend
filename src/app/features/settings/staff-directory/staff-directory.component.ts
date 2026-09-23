@@ -1,4 +1,4 @@
-import { CommonModule, formatDate } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { Component, OnInit, TrackByFunction, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -14,6 +14,7 @@ import { PaginationComponent } from '../../../shared/components/pagination/pagin
 import { DialogComponent } from '../../../shared/components/dialog/dialog.component';
 import { SearchableDropdownComponent } from '../../../shared/components/searchable-dropdown/searchable-dropdown.component';
 import { TableSkeletonComponent } from '../../../shared/components/table-skeleton/table-skeleton.component';
+import { formatDisplayDate } from '../../../shared/utils/date-time.util';
 import {
   DepartmentRecord,
   StaffDirectoryService,
@@ -322,10 +323,7 @@ export class StaffDirectoryComponent implements OnInit {
   }
 
   formatSyncedAt(value: string | null | undefined): string {
-    if (!value) return 'Not synced';
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return 'Not synced';
-    return formatDate(date, 'yyyy-MM-dd hh:mm:ss a', 'en-MY');
+    return formatDisplayDate(value, 'Not synced');
   }
 
   private listRequest() {

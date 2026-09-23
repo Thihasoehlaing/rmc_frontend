@@ -292,8 +292,8 @@
                 <span [class]="statusBadgeClass(mailRow(row).mail_status)">{{ mailRow(row).mail_status }}</span>
               </td>
               <td class="is-align-center">{{ mailRow(row).dingdong_status_code || '-' }}</td>
-              <td>{{ formatDateTime(mailRow(row).created_at) }}</td>
-              <td>{{ formatDateTime(mailRow(row).sent_at) }}</td>
+              <td>{{ formatTableDate(mailRow(row).created_at) }}</td>
+              <td>{{ formatTableDate(mailRow(row).sent_at) }}</td>
               <td><span class="workflow-cell">{{ mailRow(row).error_message || '-' }}</span></td>
               <td class="is-align-center">
                 <button
@@ -334,7 +334,7 @@
               <td>
                 <span class="workflow-cell">{{ notificationRow(row).created_by_name || notificationRow(row).created_by_username || '-' }}</span>
               </td>
-              <td>{{ formatDateTime(notificationRow(row).created_at) }}</td>
+              <td>{{ formatTableDate(notificationRow(row).created_at) }}</td>
               <td><span class="workflow-cell">{{ notificationRow(row).message || notificationRow(row).title || '-' }}</span></td>
               <td class="is-align-center">
                 <button
@@ -361,8 +361,8 @@
                 </span>
               </td>
               <td><span class="workflow-cell">{{ staffRow(row).triggered_by || '-' }}</span></td>
-              <td>{{ formatDateTime(staffRow(row).started_at) }}</td>
-              <td>{{ formatDateTime(staffRow(row).completed_at) }}</td>
+              <td>{{ formatTableDate(staffRow(row).started_at) }}</td>
+              <td>{{ formatTableDate(staffRow(row).completed_at) }}</td>
               <td><span class="workflow-cell">{{ staffRow(row).error_message || '-' }}</span></td>
             </tr>
           }

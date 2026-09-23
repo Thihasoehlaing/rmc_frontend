@@ -1,4 +1,4 @@
-import { CommonModule, formatDate } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { Component, TrackByFunction, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
@@ -17,6 +17,7 @@ import { DialogComponent } from '../../../shared/components/dialog/dialog.compon
 import { SearchableDropdownComponent } from '../../../shared/components/searchable-dropdown/searchable-dropdown.component';
 import { TableActionIconComponent } from '../../../shared/components/table-action-icon/table-action-icon.component';
 import { TableSkeletonComponent } from '../../../shared/components/table-skeleton/table-skeleton.component';
+import { formatDisplayDateTime } from '../../../shared/utils/date-time.util';
 import {
   ApuStaffCoAuthorCorrectionPayload,
   ApuStaffCoAuthorCorrectionRow,
@@ -211,7 +212,7 @@ export class FormCorrectionComponent {
   }
 
   formatDateTime(value: string | null): string {
-    return value ? formatDate(value, 'dd MMM yyyy, h:mm a', 'en-US') : '-';
+    return formatDisplayDateTime(value);
   }
 
   private resetEditor(): void {

@@ -22,6 +22,7 @@ import { TableActionIconComponent } from '../../../shared/components/table-actio
 import { SubmissionsSearchComponent } from '../../../shared/components/submissions-search/submissions-search.component';
 import { SkeletonColumn } from '../../../shared/components/table-skeleton/table-skeleton.component';
 import { AdminSettingsPageHeaderComponent } from '../../../shared/components/admin-settings-page-header/admin-settings-page-header.component';
+import { formatDisplayDate, getApiDateTimeMs } from '../../../shared/utils/date-time.util';
 
 interface Guideline {
   id: number;
@@ -31,6 +32,7 @@ interface Guideline {
   title: string;
   isActive: boolean;
   lastUpdated: string;
+  lastUpdatedTimestamp: number;
   createdBy: string;
 }
 
@@ -333,6 +335,7 @@ export class GuidelinesComponent implements OnInit {
   }
 
   private toRow(item: GuidelineApi): Guideline {
+    const lastUpdated = item.updated_at || item.created_at;
     return {
       id: item.id,
       formId: item.form_id,
@@ -340,7 +343,8 @@ export class GuidelinesComponent implements OnInit {
       formCode: item.form_code || '',
       title: item.title || 'Untitled Guideline',
       isActive: item.is_active,
-      lastUpdated: this.formatDisplayDate(item.updated_at || item.created_at),
+      lastUpdated: formatDisplayDate(lastUpdated),
+      lastUpdatedTimestamp: getApiDateTimeMs(lastUpdated) ?? 0,
       createdBy: item.created_by || 'Unknown',
     };
   }
@@ -373,28 +377,11 @@ export class GuidelinesComponent implements OnInit {
     sortKey: GuidelineSortKey,
   ): number {
     if (sortKey === 'lastUpdated') {
-      return this.parseDisplayDate(first.lastUpdated) - this.parseDisplayDate(second.lastUpdated);
+      return first.lastUpdatedTimestamp - second.lastUpdatedTimestamp;
     }
 
     return first[sortKey].localeCompare(second[sortKey]);
   }
 
-  private formatDisplayDate(dateValue: string | null): string {
-    if (!dateValue) return '-';
-
-    const date = new Date(dateValue);
-    if (Number.isNaN(date.getTime())) return '-';
-
-    return new Intl.DateTimeFormat('en-GB', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-    }).format(date);
-  }
-
-  private parseDisplayDate(dateValue: string): number {
-    const [day, month, year] = dateValue.split('/').map(Number);
-    return day && month && year ? new Date(year, month - 1, day).getTime() : 0;
-  }
 }
 

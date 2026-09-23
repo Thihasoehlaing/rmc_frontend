@@ -10,6 +10,7 @@ import {
   DataTableComponent,
 } from '../../../../shared/components/data-table/data-table.component';
 import { TableActionIconComponent } from '../../../../shared/components/table-action-icon/table-action-icon.component';
+import { formatDisplayDate } from '../../../../shared/utils/date-time.util';
 
 type BreakdownTypeKey = JournalOptionType;
 
@@ -478,7 +479,7 @@ export class JournalSettingsComponent implements OnInit {
    * Get today's date formatted
    */
   getTodayDate(): string {
-    return new Date().toLocaleDateString('en-GB');
+    return formatDisplayDate(new Date());
   }
 
   /**
@@ -491,12 +492,11 @@ export class JournalSettingsComponent implements OnInit {
 
   formatRowDate(date?: string | null): string {
     if (!date) return this.getTodayDate();
-    try {
-      const d = new Date(date);
-      if (isNaN(d.getTime())) return String(date);
-      return d.toLocaleDateString('en-GB');
-    } catch {
-      return String(date);
+    const numericMatch = date.match(/^(\d{2})[-/](\d{2})[-/](\d{4})$/);
+    if (numericMatch) {
+      const [, day, month, year] = numericMatch;
+      return `${day}-${month}-${year}`;
     }
+    return formatDisplayDate(date, String(date));
   }
 }

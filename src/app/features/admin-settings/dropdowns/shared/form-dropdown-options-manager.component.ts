@@ -18,6 +18,7 @@ import { ToastService } from '../../../../core/services/toast.service';
 import { SVG_ICON_TRASH } from '../../../../shared/icons/svg-icons';
 import { AdminSettingsPageHeaderComponent } from '../../../../shared/components/admin-settings-page-header/admin-settings-page-header.component';
 import { MyrCurrencyPipe } from '../../../../shared/pipes/myr-currency.pipe';
+import { formatDisplayDate } from '../../../../shared/utils/date-time.util';
 import {
   AccountCodeRow,
   DropdownOptionRow,
@@ -300,25 +301,8 @@ export class FormDropdownOptionsManagerComponent implements OnInit {
     });
   }
 
-  formatDateTime(value?: string | null): string {
-    if (!value) {
-      return '-';
-    }
-
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) {
-      return '-';
-    }
-
-    const year = date.getFullYear();
-    const month = `${date.getMonth() + 1}`.padStart(2, '0');
-    const day = `${date.getDate()}`.padStart(2, '0');
-    let hour = date.getHours();
-    const suffix = hour >= 12 ? 'PM' : 'AM';
-    hour = hour % 12 || 12;
-    const minute = `${date.getMinutes()}`.padStart(2, '0');
-    const second = `${date.getSeconds()}`.padStart(2, '0');
-    return `${year}-${month}-${day} ${`${hour}`.padStart(2, '0')}:${minute}:${second} ${suffix}`;
+  formatDate(value?: string | null): string {
+    return formatDisplayDate(value);
   }
 
   showCodeColumn(): boolean {

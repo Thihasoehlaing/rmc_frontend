@@ -43,6 +43,7 @@ import {
   formatCountryForDisplay,
   normalizeCountryForStorage,
 } from '../../../../shared/utils/country.util';
+import { formatDisplayDateTime } from '../../../../shared/utils/date-time.util';
 
 @Component({
   selector: 'app-conference-application',
@@ -870,15 +871,7 @@ export class ConferenceApplication implements OnInit {
   }
 
   formatCommentDate(iso: string | null | undefined): string {
-    return iso
-      ? new Date(iso).toLocaleString('en-GB', {
-          day: '2-digit',
-          month: 'short',
-          year: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit',
-        })
-      : '-';
+    return formatDisplayDateTime(iso);
   }
 
   private normalizeActorCode(actorCode: string | null | undefined): string {

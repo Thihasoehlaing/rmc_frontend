@@ -14,9 +14,9 @@
         <div class="detail-hero__content">
           <div class="detail-hero__eyebrow">
             <span class="material-icons" aria-hidden="true">work</span>
-            External Project Detail
+            External Project Data Entry Detail
           </div>
-          <h1>{{ request()?.title || request()?.request_code || 'External Project Detail' }}</h1>
+          <h1>{{ request()?.title || request()?.request_code || 'External Project Data Entry Detail' }}</h1>
           <div class="detail-meta">
             <span class="detail-chip detail-chip--strong">{{ request()?.request_code }}</span>
             <span
@@ -41,7 +41,7 @@
         <article class="summary-card">
           <span class="material-icons" aria-hidden="true">category</span>
           <div>
-            <p>Grant Category</p>
+            <p>External Grant Category</p>
             <strong>{{ categoryName() }}</strong>
           </div>
         </article>
@@ -55,8 +55,8 @@
         <article class="summary-card">
           <span class="material-icons" aria-hidden="true">payments</span>
           <div>
-            <p>Total Budget Request</p>
-            <strong>{{ displayValue({ label: 'Total Budget Request', value: externalProject()?.total_budget_request, type: 'money' }) }}</strong>
+            <p>Total Budget Request (RM)</p>
+            <strong>{{ displayValue({ label: 'Total Budget Request (RM)', value: externalProject()?.total_budget_request, type: 'money' }) }}</strong>
           </div>
         </article>
       </div>
@@ -79,7 +79,7 @@
 
           <article class="card detail-card">
             <div class="detail-card__header">
-              <h2>Project Information</h2>
+              <h2>{{ projectSectionTitle() }}</h2>
             </div>
             <div class="detail-card__content field-grid">
               @for (field of projectFields(); track field.label) {
@@ -124,7 +124,7 @@
 
         <section class="card detail-card">
           <div class="detail-card__header">
-            <h2>Internal Co-Researchers</h2>
+            <h2>Internal Co-Researcher</h2>
           </div>
           <div class="table-wrap">
             <table>
@@ -132,7 +132,7 @@
                 <tr>
                   <th>No.</th>
                   <th>Staff Name</th>
-                  <th>School / Department</th>
+                  <th>School/Department</th>
                 </tr>
               </thead>
               <tbody>
@@ -180,7 +180,7 @@
 
         <section class="card detail-card">
           <div class="detail-card__header">
-            <h2>Expected Outcomes</h2>
+            <h2>Expected Outcome</h2>
           </div>
           <div class="outcome-list">
             @for (item of form()?.expected_outcomes ?? []; track item.id; let index = $index) {
@@ -196,7 +196,7 @@
 
         <section class="card detail-card">
           <div class="detail-card__header">
-            <h2>Budget</h2>
+            <h2>Budget Summary</h2>
           </div>
           <div class="budget-stack">
             @for (section of form()?.budget_sections ?? []; track section.id) {
@@ -214,7 +214,7 @@
                       <tr>
                         <th>No.</th>
                         <th>Description</th>
-                        <th>Amount</th>
+                        <th>Amount (RM)</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -239,17 +239,17 @@
 
         <section class="card detail-card">
           <div class="detail-card__header">
-            <h2>Billing</h2>
+            <h2>Billing Information</h2>
           </div>
           @if (form()?.billing) {
             <div class="detail-card__content field-grid">
               <div class="field-item">
-                <span>Billing Amount</span>
+                <span>Billing Amount (RM)</span>
                 <strong>{{ money(form()?.billing?.billing_amount) }}</strong>
               </div>
               <div class="field-item">
                 <span>Billing Date</span>
-                <strong>{{ form()?.billing?.billing_date | date:'dd MMM yyyy' }}</strong>
+                <strong>{{ form()?.billing?.billing_date | date:'dd-MM-yyyy' }}</strong>
               </div>
             </div>
             <div class="table-wrap table-wrap--wrapping">
@@ -258,7 +258,7 @@
                   <tr>
                     <th>No.</th>
                     <th>Description</th>
-                    <th>Amount</th>
+                    <th>Amount (RM)</th>
                   </tr>
                 </thead>
                 <tbody>

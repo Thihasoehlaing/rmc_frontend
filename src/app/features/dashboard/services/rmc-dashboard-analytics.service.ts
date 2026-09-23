@@ -29,6 +29,7 @@ function mapDimensions(source: RmcDashboardDimensionsDto | null | undefined) {
     departmentCode: source.department_code,
     externalGrantCategory: source.external_grant_category,
     fundApproved: toNumber(source.fund_approved),
+    budgetRequested: toNumber(source.budget_requested),
     projectType: source.project_type,
     conferenceType: source.conference_type,
     scopusQuartile: source.scopus_quartile,

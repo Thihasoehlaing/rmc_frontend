@@ -2,7 +2,7 @@
   <div class="external-department-chart">
     <div class="external-department-chart__titles" aria-hidden="true">
       <strong>External Grant Applications</strong>
-      <strong>Fund Approved (RM)</strong>
+      <strong>Total Budget (RM)</strong>
     </div>
 
     <div class="external-department-chart__scroll">
@@ -16,7 +16,7 @@
         <div
           class="external-department-chart__plot"
           role="img"
-          aria-label="External grant categories and approved funding by department"
+          aria-label="External grant categories and total budget by department"
         >
           <div class="external-department-chart__grid" aria-hidden="true">
             @for (tick of applicationTicks(); track tick) {
@@ -67,21 +67,21 @@
 
                   <div class="external-department-chart__metric">
                     <span
-                      class="external-department-chart__value external-department-chart__value--fund"
-                      [style.bottom]="'calc(' + point.fundHeight + '% + 5px)'"
+                      class="external-department-chart__value external-department-chart__value--budget"
+                      [style.bottom]="'calc(' + point.budgetHeight + '% + 5px)'"
                     >
-                      {{ point.formattedFund }}
+                      {{ point.formattedBudget }}
                     </span>
                     <button
                       type="button"
-                      class="external-department-chart__fund"
-                      [style.height.%]="point.fundHeight"
+                      class="external-department-chart__budget"
+                      [style.height.%]="point.budgetHeight"
                       [attr.aria-label]="
-                        point.departmentCode + ', fund approved: ' + point.formattedFund
+                        point.departmentCode + ', total budget: ' + point.formattedBudget
                       "
-                      (mouseenter)="showFund(point)"
+                      (mouseenter)="showBudget(point)"
                       (mouseleave)="activeMetric.set(null)"
-                      (focus)="showFund(point)"
+                      (focus)="showBudget(point)"
                       (blur)="activeMetric.set(null)"
                     ></button>
                   </div>
@@ -103,9 +103,9 @@
           }
         </div>
 
-        <div class="external-department-chart__axis external-department-chart__axis--fund">
-          @for (tick of fundTicks(); track tick) {
-            <span>{{ formatFund(tick) }}</span>
+        <div class="external-department-chart__axis external-department-chart__axis--budget">
+          @for (tick of budgetTicks(); track tick) {
+            <span>{{ formatBudget(tick) }}</span>
           }
         </div>
       </div>
@@ -115,8 +115,8 @@
       @for (category of categoryLegend(); track category.key) {
         <span><i [style.background]="category.color"></i>{{ category.label }}</span>
       }
-      <span class="external-department-chart__legend-fund">
-        <i [style.background]="fundColor"></i>Fund Approved
+      <span class="external-department-chart__legend-budget">
+        <i [style.background]="budgetColor"></i>Total Budget
       </span>
     </div>
   </div>

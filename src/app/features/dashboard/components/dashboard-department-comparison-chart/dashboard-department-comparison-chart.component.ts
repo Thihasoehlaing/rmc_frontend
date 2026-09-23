@@ -61,7 +61,7 @@ export class DashboardDepartmentComparisonChartComponent {
     this.activeMetric.set({
       color: applications ? this.applicationColor : this.fundColor,
       departmentCode: point.departmentCode,
-      label: applications ? 'Completed Applications' : 'Fund Approved',
+      label: applications ? 'Completed Applications' : 'Fund Approved by APU',
       value: applications ? point.formattedApplications : point.formattedFund,
     });
   }

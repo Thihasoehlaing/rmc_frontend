@@ -2,7 +2,7 @@
   <div class="department-chart">
     <div class="department-chart__titles" aria-hidden="true">
       <strong>Number of Completed Applications</strong>
-      <strong>Fund Approved (RM)</strong>
+      <strong>Fund Approved by APU (RM)</strong>
     </div>
 
     <div class="department-chart__scroll">
@@ -68,7 +68,7 @@
                       class="department-chart__bar department-chart__bar--fund"
                       [style.height.%]="point.fundHeight"
                       [attr.aria-label]="
-                        point.departmentCode + ', fund approved: ' + point.formattedFund
+                        point.departmentCode + ', fund approved by APU: ' + point.formattedFund
                       "
                       (mouseenter)="showMetric(point, 'fundApproved')"
                       (mouseleave)="activeMetric.set(null)"
@@ -103,8 +103,8 @@
     </div>
 
     <div class="department-chart__legend" aria-label="Chart legend">
-      <span><i [style.background]="applicationColor"></i>Completed Applications</span>
-      <span><i [style.background]="fundColor"></i>Fund Approved</span>
+      <span><i [style.background]="applicationColor"></i>Apporved Applications</span>
+      <span><i [style.background]="fundColor"></i>Fund Approved by APU</span>
     </div>
   </div>
 } @else {

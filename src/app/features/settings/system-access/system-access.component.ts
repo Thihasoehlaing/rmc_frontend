@@ -15,6 +15,7 @@ import { PaginationComponent } from '../../../shared/components/pagination/pagin
 import { SearchableDropdownComponent } from '../../../shared/components/searchable-dropdown/searchable-dropdown.component';
 import { TableActionIconComponent } from '../../../shared/components/table-action-icon/table-action-icon.component';
 import { TableSkeletonComponent } from '../../../shared/components/table-skeleton/table-skeleton.component';
+import { formatDisplayDate } from '../../../shared/utils/date-time.util';
 import {
   AccessStatus,
   AccessType,
@@ -479,16 +480,7 @@ export class SystemAccessComponent implements OnInit {
   }
 
   formatDate(value: string | null): string {
-    if (!value) return 'Not set';
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return 'Not set';
-    return new Intl.DateTimeFormat('en-GB', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    }).format(date);
+    return formatDisplayDate(value, 'Not set');
   }
 
   staffDropdownOptions(): DropdownOption<string>[] {

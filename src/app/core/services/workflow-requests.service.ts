@@ -104,6 +104,8 @@ export interface RequestSummaryDto {
   submitted_at: string | null;
   title: string | null;
   project_title?: string | null;
+  project_leader?: string | null;
+  project_account_code?: string | null;
   rdig_request_id: number | null;
   conference_request_id: number | null;
   journal_request_id: number | null;

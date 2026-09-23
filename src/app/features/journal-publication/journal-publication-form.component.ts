@@ -36,6 +36,7 @@ import {
   WorkflowRequestsService,
 } from '../../core/services/workflow-requests.service';
 import { environment } from '../../../environments/environment';
+import { formatDisplayDateTime } from '../../shared/utils/date-time.util';
 
 @Component({
   selector: 'app-journal-publication-form',
@@ -672,15 +673,7 @@ export class JournalPublicationFormComponent {
   }
 
   formatCommentDate(iso: string | null | undefined): string {
-    return iso
-      ? new Date(iso).toLocaleString('en-GB', {
-          day: '2-digit',
-          month: 'short',
-          year: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit',
-        })
-      : '-';
+    return formatDisplayDateTime(iso);
   }
 
   private async saveDraftToBackend(): Promise<number> {

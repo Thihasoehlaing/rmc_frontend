@@ -26,6 +26,7 @@ import {
   TableSkeletonComponent,
 } from '../../../shared/components/table-skeleton/table-skeleton.component';
 import { DialogComponent } from '../../../shared/components/dialog/dialog.component';
+import { formatDisplayDate } from '../../../shared/utils/date-time.util';
 
 @Component({
   selector: 'app-history',
@@ -68,11 +69,21 @@ export class HistoryComponent implements OnInit {
   readonly isAdminHistory = computed(
     () => this.route.snapshot.routeConfig?.path === 'admin-history',
   );
+  readonly showExternalProjectColumns = computed(
+    () => this.isAdminHistory() && this.selectedType() === 'external',
+  );
+  readonly searchPlaceholder = computed(() => {
+    if (!this.isAdminHistory()) return 'Search by code';
+    return this.showExternalProjectColumns()
+      ? 'Search by code, applicant, project leader or account code'
+      : 'Search by code or applicant';
+  });
 
   readonly skeletonColumns = computed<SkeletonColumn[]>(() => [
     { width: '72px' },
     { width: '24%' },
     ...(this.isAdminHistory() ? [{ width: '18%' }] : []),
+    ...(this.showExternalProjectColumns() ? [{ width: '18%' }, { width: '16%' }] : []),
     { width: '18%' },
     { width: '18%' },
     { width: '96px' },
@@ -203,6 +214,14 @@ export class HistoryComponent implements OnInit {
 
   getApplicantLabel(app: RequestSummaryDto): string {
     return app.applicant_name?.trim() || app.applicant_staff_username?.trim() || '-';
+  }
+
+  getProjectLeader(app: RequestSummaryDto): string {
+    return app.project_leader?.trim() || '-';
+  }
+
+  getProjectAccountCode(app: RequestSummaryDto): string {
+    return app.project_account_code?.trim() || '-';
   }
 
   getFormTypeLabel(app: RequestSummaryDto): string {
@@ -365,17 +384,14 @@ export class HistoryComponent implements OnInit {
     if (this.isAdminHistory()) {
       values.push(app.applicant_name, app.applicant_staff_username, app.applicant_email);
     }
+    if ((app.form_code ?? '').toUpperCase() === 'EXTERNAL') {
+      values.push(app.project_leader, app.project_account_code);
+    }
     return values.some((value) => (value ?? '').toLowerCase().includes(query));
   }
 
   private formatIsoDate(iso: string | null | undefined): string {
-    return iso
-      ? new Date(iso).toLocaleDateString('en-GB', {
-          day: '2-digit',
-          month: 'short',
-          year: 'numeric',
-        })
-      : '-';
+    return formatDisplayDate(iso);
   }
 
   private dateInputValue(iso: string | null | undefined): string {

@@ -18,6 +18,7 @@ import {
   SkeletonColumn,
   TableSkeletonComponent,
 } from '../../../shared/components/table-skeleton/table-skeleton.component';
+import { formatDisplayDate } from '../../../shared/utils/date-time.util';
 
 /** Statuses that represent an unsubmitted, still-editable application. */
 const DRAFT_STATUSES = new Set(['draft', 'fill_application', 'normal_application']);
@@ -245,9 +246,7 @@ export class DraftsComponent implements OnInit {
   }
 
   private formatIsoDate(iso: string | null | undefined): string {
-    return iso
-      ? new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
-      : '-';
+    return formatDisplayDate(iso);
   }
 
   private savedTs(app: RequestSummaryDto): number {

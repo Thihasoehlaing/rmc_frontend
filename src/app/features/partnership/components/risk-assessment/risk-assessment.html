@@ -220,8 +220,8 @@
                           {{ row.value.action }}
                         </div>
                       </td>
-                      <td>{{ row.value.startDate | date }}</td>
-                      <td>{{ row.value.endDate | date }}</td>
+                      <td>{{ row.value.startDate | date:'dd-MM-yyyy' }}</td>
+                      <td>{{ row.value.endDate | date:'dd-MM-yyyy' }}</td>
                       <td class="col-actions is-align-center">
                         <div class="data-table__actions">
                           <button
@@ -293,8 +293,8 @@
                           {{ row.value.outcome }}
                         </div>
                       </td>
-                      <td>{{ row.value.startDate | date }}</td>
-                      <td>{{ row.value.endDate | date }}</td>
+                      <td>{{ row.value.startDate | date:'dd-MM-yyyy' }}</td>
+                      <td>{{ row.value.endDate | date:'dd-MM-yyyy' }}</td>
                       <td class="col-actions is-align-center">
                         <div class="data-table__actions">
                           <button

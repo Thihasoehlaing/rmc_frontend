@@ -23,6 +23,7 @@ import {
   SkeletonColumn,
   TableSkeletonComponent,
 } from '../../../shared/components/table-skeleton/table-skeleton.component';
+import { formatDisplayDate } from '../../../shared/utils/date-time.util';
 
 @Component({
   selector: 'app-pending',
@@ -223,9 +224,7 @@ export class PendingComponent implements OnInit {
   }
 
   private formatIsoDate(iso: string | null | undefined): string {
-    return iso
-      ? new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
-      : '-';
+    return formatDisplayDate(iso);
   }
 
   private dateInputValue(iso: string | null | undefined): string {

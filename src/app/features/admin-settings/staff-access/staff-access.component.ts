@@ -20,6 +20,7 @@ import { AcademicStaffService, DepartmentRecord } from '../../settings/academic-
 import { StaffAccessRecordApi, StaffAccessService, StaffOption } from './staff-access.service';
 import { AdminSettingsPageHeaderComponent } from '../../../shared/components/admin-settings-page-header/admin-settings-page-header.component';
 import { TableScrollHintComponent } from '../../../shared/components/table-scroll-hint/table-scroll-hint.component';
+import { formatDisplayDate } from '../../../shared/utils/date-time.util';
 
 type AccessStatus = 'active' | 'blocked';
 type StatusFilter = 'all' | AccessStatus;
@@ -510,13 +511,7 @@ export class StaffAccessComponent implements OnInit {
   }
 
   private formatDisplayDate(dateValue: string | null): string {
-    if (!dateValue) return '';
-    const date = new Date(dateValue);
-    if (Number.isNaN(date.getTime())) return '';
-    const day = date.getDate().toString().padStart(2, '0');
-    const month = date.toLocaleString('en-US', { month: 'short' });
-    const year = date.getFullYear().toString();
-    return `${day} ${month} ${year}`;
+    return formatDisplayDate(dateValue, '');
   }
 }
 

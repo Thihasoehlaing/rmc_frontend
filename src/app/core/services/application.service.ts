@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { AuthService } from './auth.service';
+import { formatDisplayDate } from '../../shared/utils/date-time.util';
 
 /** Human-readable labels for every workflow status. */
 export const STATUS_LABELS: Record<string, string> = {
@@ -206,9 +207,6 @@ export class ApplicationService {
   }
 
   formatDate(iso: string | null): string {
-    if (!iso) return '—';
-    return new Date(iso).toLocaleDateString('en-GB', {
-      day: '2-digit', month: 'short', year: 'numeric',
-    });
+    return formatDisplayDate(iso, '—');
   }
 }

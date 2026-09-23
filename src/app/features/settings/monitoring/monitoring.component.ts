@@ -13,6 +13,10 @@ import { PaginationComponent } from '../../../shared/components/pagination/pagin
 import { TableSkeletonComponent } from '../../../shared/components/table-skeleton/table-skeleton.component';
 import { TextEditorComponent } from '../../../shared/components/text-editor/text-editor.component';
 import {
+  formatDisplayDate,
+  formatDisplayDateTime,
+} from '../../../shared/utils/date-time.util';
+import {
   DingDongTestMailResult,
   MailLog,
   MonitoringService,
@@ -409,16 +413,11 @@ export class MonitoringComponent implements OnInit {
   }
 
   formatDateTime(value: string | null | undefined): string {
-    if (!value) return '-';
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return value;
-    return date.toLocaleString('en-MY', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+    return formatDisplayDateTime(value, value || '-');
+  }
+
+  formatTableDate(value: string | null | undefined): string {
+    return formatDisplayDate(value, value || '-');
   }
 
   mailRow(row: MailLog | NotificationLog | StaffSyncLog): MailLog {

@@ -11,6 +11,7 @@ import {
   RequestSummaryDto,
 } from '../../../../core/services/workflow-requests.service';
 import { DashboardMetricConfig, DashboardViewConfig } from '../../dashboard.config';
+import { formatDisplayDate } from '../../../../shared/utils/date-time.util';
 
 const EMPTY_METRICS: DashboardSummaryDto['metrics'] = {
   required_action: 0,
@@ -161,12 +162,7 @@ export class DashboardRoleViewComponent {
 
   formatDate(app: RequestSummaryDto): string {
     const iso = app.updated_at ?? app.submitted_at ?? app.created_at;
-    if (!iso) return '—';
-    return new Date(iso).toLocaleDateString('en-GB', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-    });
+    return formatDisplayDate(iso, '—');
   }
 
   private recentDate(app: RequestSummaryDto): number {

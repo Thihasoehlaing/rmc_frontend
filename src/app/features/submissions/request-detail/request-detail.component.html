@@ -33,7 +33,7 @@
           <div><span>Name</span><strong>{{ request()?.applicant_name || '—' }}</strong></div>
           <div><span>Email</span><strong>{{ request()?.applicant_email || '—' }}</strong></div>
           <div><span>Department</span><strong>{{ request()?.applicant_department || '—' }}</strong></div>
-          <div><span>Submitted</span><strong>{{ request()?.submitted_at | date:'dd MMM yyyy' }}</strong></div>
+          <div><span>Submitted</span><strong>{{ request()?.submitted_at | date:'dd-MM-yyyy hh:mm a' }}</strong></div>
         </div>
       </article>
 

@@ -229,6 +229,15 @@ td:first-child {
   color: var(--color-text-secondary);
 }
 
+.external-project-cell {
+  min-width: 11rem;
+}
+
+.external-project-account-code {
+  font-weight: var(--fw-medium);
+  white-space: nowrap;
+}
+
 .status-chip {
   display: inline-flex;
   align-items: center;

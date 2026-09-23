@@ -20,6 +20,7 @@ import {
   UserRecord,
   UsersService,
 } from './users.service';
+import { formatDisplayDate } from '../../../shared/utils/date-time.util';
 
 const EMPTY_FILTERS: UserListFilters = {
   name: '',
@@ -287,15 +288,7 @@ export class UsersComponent implements OnInit {
   }
 
   formatDate(value: string | null): string {
-    if (!value) return 'Never';
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return 'Never';
-
-    return new Intl.DateTimeFormat('en-GB', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-    }).format(date);
+    return formatDisplayDate(value, 'Never');
   }
 
   private applyUsersResponse(

@@ -1,4 +1,4 @@
-import { CommonModule, DatePipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { Component, Input, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
@@ -23,6 +23,7 @@ import {
 } from './external-grant-category.service';
 import { ProjectAccountCodeApi, ProjectAccountCodeService } from './project-account-code.service';
 import { AdminSettingsPageHeaderComponent } from '../../../shared/components/admin-settings-page-header/admin-settings-page-header.component';
+import { formatDisplayDate } from '../../../shared/utils/date-time.util';
 
 @Component({
   selector: 'app-catalog-manager',
@@ -39,7 +40,6 @@ import { AdminSettingsPageHeaderComponent } from '../../../shared/components/adm
     SubmissionsSearchComponent,
     TableActionIconComponent,
   ],
-  providers: [DatePipe],
   templateUrl: './catalog-manager.component.html',
   styleUrls: [
     '../dropdowns/shared/form-dropdown-options-manager.component.scss',
@@ -62,7 +62,6 @@ export class CatalogManagerComponent implements OnInit {
   private readonly currencies = inject(CurrencyService);
   private readonly formCache = inject(FormCacheService);
   private readonly toast = inject(ToastService);
-  private readonly datePipe = inject(DatePipe);
 
   private readonly fallbackForms: CachedFormOption[] = [
     { id: 0, form_code: 'CONFERENCE', form_name: 'Conference Application', is_active: true },
@@ -321,8 +320,8 @@ export class CatalogManagerComponent implements OnInit {
     this.loadCatalogItems();
   }
 
-  formatDateTime(value: string): string {
-    return this.datePipe.transform(value, 'yyyy-MM-dd\nhh:mm:ss a') ?? '-';
+  formatDate(value: string): string {
+    return formatDisplayDate(value);
   }
 
   displayName(row: AdminCatalogItem): string {

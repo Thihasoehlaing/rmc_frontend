@@ -12,6 +12,7 @@ import { DataTableComponent } from '../../../../shared/components/data-table/dat
 import { nextTableSortState, SortDirection } from '../../../../shared/services/table-sort.service';
 import { DialogComponent } from '../../../../shared/components/dialog/dialog.component';
 import { TableActionIconComponent } from '../../../../shared/components/table-action-icon/table-action-icon.component';
+import { formatDisplayDate as sharedFormatDisplayDate } from '../../../../shared/utils/date-time.util';
 
 @Component({
   selector: 'app-partnership-settings',
@@ -286,10 +287,7 @@ export class PartnershipSettingsComponent implements OnInit {
   }
 
   private formatDisplayDate(date: Date): string {
-    const day = `${date.getDate()}`.padStart(2, '0');
-    const month = `${date.getMonth() + 1}`.padStart(2, '0');
-    const year = date.getFullYear();
-    return `${day}/${month}/${year}`;
+    return sharedFormatDisplayDate(date);
   }
 
   private parseDisplayDate(dateValue?: string): number {
@@ -297,9 +295,9 @@ export class PartnershipSettingsComponent implements OnInit {
       return 0;
     }
 
-    const slashMatch = dateValue.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
-    if (slashMatch) {
-      const [, day, month, year] = slashMatch;
+    const numericMatch = dateValue.match(/^(\d{2})[-/](\d{2})[-/](\d{4})$/);
+    if (numericMatch) {
+      const [, day, month, year] = numericMatch;
       return new Date(Number(year), Number(month) - 1, Number(day)).getTime();
     }
 

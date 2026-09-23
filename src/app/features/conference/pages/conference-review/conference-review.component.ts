@@ -30,6 +30,7 @@ import {
   formatMyrCurrency,
 } from '../../../../shared/utils/currency.util';
 import {
+  formatDisplayDate,
   formatMalaysiaDateTime,
   getApiDateTimeMs,
 } from '../../../../shared/utils/date-time.util';
@@ -271,13 +272,7 @@ export class ConferenceReviewComponent implements OnInit {
   }
 
   fmtDateOnly(value: string | null | undefined): string {
-    return value
-      ? new Date(value).toLocaleDateString('en-GB', {
-          day: '2-digit',
-          month: 'short',
-          year: 'numeric',
-        })
-      : '—';
+    return formatDisplayDate(value, '—');
   }
 
   fmtMoney(value: unknown): string {

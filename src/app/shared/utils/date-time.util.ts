@@ -1,23 +1,48 @@
 export const MALAYSIA_TIME_ZONE = 'Asia/Kuala_Lumpur';
+export const MALAYSIA_TIME_ZONE_OFFSET = '+0800';
+export const DISPLAY_DATE_FORMAT = 'dd-MM-yyyy';
+export const DISPLAY_DATE_TIME_FORMAT = 'dd-MM-yyyy hh:mm a';
 
 const ISO_TIME_ZONE_PATTERN = /(Z|[+-]\d{2}:?\d{2})$/i;
+
+const MALAYSIA_DATE_FORMATTER = new Intl.DateTimeFormat('en-GB', {
+  timeZone: MALAYSIA_TIME_ZONE,
+  day: '2-digit',
+  month: '2-digit',
+  year: 'numeric',
+});
 
 const MALAYSIA_DATE_TIME_FORMATTER = new Intl.DateTimeFormat('en-GB', {
   timeZone: MALAYSIA_TIME_ZONE,
   day: '2-digit',
-  month: 'short',
+  month: '2-digit',
   year: 'numeric',
   hour: '2-digit',
   minute: '2-digit',
-  hour12: false,
+  hour12: true,
 });
+
+export function formatDisplayDate(
+  value: string | Date | null | undefined,
+  fallback = '-',
+): string {
+  const date = parseApiDateTime(value);
+  return date ? formatDateParts(MALAYSIA_DATE_FORMATTER, date) : fallback;
+}
+
+export function formatDisplayDateTime(
+  value: string | Date | null | undefined,
+  fallback = '-',
+): string {
+  const date = parseApiDateTime(value);
+  return date ? formatDateTimeParts(MALAYSIA_DATE_TIME_FORMATTER, date) : fallback;
+}
 
 export function formatMalaysiaDateTime(
   value: string | Date | null | undefined,
   fallback = '-',
 ): string {
-  const date = parseApiDateTime(value);
-  return date ? MALAYSIA_DATE_TIME_FORMATTER.format(date) : fallback;
+  return formatDisplayDateTime(value, fallback);
 }
 
 export function getApiDateTimeMs(value: string | Date | null | undefined): number | null {
@@ -44,4 +69,23 @@ function parseApiDateTime(value: string | Date | null | undefined): Date | null 
   const date = new Date(normalized);
 
   return Number.isFinite(date.getTime()) ? date : null;
+}
+
+function formatDateParts(formatter: Intl.DateTimeFormat, date: Date): string {
+  const parts = dateParts(formatter, date);
+  return `${parts['day']}-${parts['month']}-${parts['year']}`;
+}
+
+function formatDateTimeParts(formatter: Intl.DateTimeFormat, date: Date): string {
+  const parts = dateParts(formatter, date);
+  return `${parts['day']}-${parts['month']}-${parts['year']} ${parts['hour']}:${parts['minute']} ${parts['dayPeriod'].toUpperCase()}`;
+}
+
+function dateParts(formatter: Intl.DateTimeFormat, date: Date): Record<string, string> {
+  return Object.fromEntries(
+    formatter
+      .formatToParts(date)
+      .filter((part) => part.type !== 'literal')
+      .map((part) => [part.type, part.value]),
+  );
 }

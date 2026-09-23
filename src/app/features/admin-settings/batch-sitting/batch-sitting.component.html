@@ -339,7 +339,7 @@
         <!-- /section planned -->
 
         <!-- ════════════════════════════════════════════════════════════════ -->
-        <!--  SECTION 3 � Batch History                                      -->
+        <!--  SECTION 3 � Batch History                                      -->
         <div class="batch-section" [class.batch-section--hidden]="selectedSection() !== 'history'">
           <div class="section-head">
             <div class="section-head__left">
@@ -367,7 +367,9 @@
                       <button
                         class="icon-btn icon-btn--muted"
                         type="button"
-                        [title]="isHistoryExpanded(batch.id) ? 'Collapse details' : 'Expand details'"
+                        [title]="
+                          isHistoryExpanded(batch.id) ? 'Collapse details' : 'Expand details'
+                        "
                         (click)="toggleHistory(batch.id)"
                       >
                         <span class="material-icons">
@@ -421,7 +423,9 @@
                         <div class="batch-summary__chip">
                           <span class="material-icons">folder_open</span>
                           <span class="batch-summary__label">Applications</span>
-                          <span class="app-count-chip">{{ batch.applicationIds?.length ?? 0 }}</span>
+                          <span class="app-count-chip">{{
+                            batch.applicationIds?.length ?? 0
+                          }}</span>
                         </div>
                       </div>
                       <ng-container
@@ -545,8 +549,8 @@
           <div class="data-table__title">{{ stage.label }}</div>
           <div class="data-table__subtitle">{{ stage.description }}</div>
         </td>
-        <td>{{ fmt(batch.stages[stage.key]?.startDate) }}</td>
-        <td>{{ fmt(batch.stages[stage.key]?.endDate) }}</td>
+        <td>{{ fmtTableDate(batch.stages[stage.key]?.startDate) }}</td>
+        <td>{{ fmtTableDate(batch.stages[stage.key]?.endDate) }}</td>
       </tr></ng-template
     >
   </app-data-table>
@@ -581,7 +585,9 @@
           />
           <app-validation-message [control]="form.get('batchName')"></app-validation-message>
           @if (hasBatchNameTaken(form)) {
-            <span class="field-error">A batch with this name already exists. Choose a different name.</span>
+            <span class="field-error"
+              >A batch with this name already exists. Choose a different name.</span
+            >
           }
         </div>
 
@@ -645,10 +651,14 @@
             <span class="field-error">End date cannot be before start date.</span>
           }
           @if (hasBatchOverlap(form)) {
-            <span class="field-error">This window overlaps another batch. Batches can't run at the same time.</span>
+            <span class="field-error"
+              >This window overlaps another batch. Batches can't run at the same time.</span
+            >
           }
           @if (hasBatchGapTooSmall(form)) {
-            <span class="field-error">Leave at least a 1-day gap between this batch and the next/previous one.</span>
+            <span class="field-error"
+              >Leave at least a 1-day gap between this batch and the next/previous one.</span
+            >
           }
         </div>
       </div>
@@ -745,7 +755,7 @@
       </app-action-button>
       <app-action-button
         type="primary"
-        [label]="isSaving() ? 'Saving…' : (isNew ? 'Start Batch' : 'Save Batch')"
+        [label]="isSaving() ? 'Saving…' : isNew ? 'Start Batch' : 'Save Batch'"
         [icon]="isNew ? 'play_arrow' : 'save'"
         [disabled]="isSaving()"
         (clicked)="type === 'active' ? saveActive() : savePlanned()"
@@ -754,9 +764,3 @@
     </div>
   </div>
 </ng-template>
-
-
-
-
-
-

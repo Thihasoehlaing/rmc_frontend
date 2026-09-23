@@ -1,4 +1,4 @@
-import { CommonModule, DatePipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { finalize, forkJoin, switchMap } from 'rxjs';
@@ -14,6 +14,7 @@ import {
 } from '../../core/services/workflow-requests.service';
 import { STATUS_COLORS } from '../../core/services/request-display.util';
 import { formatMyrCurrency } from '../../shared/utils/currency.util';
+import { formatDisplayDate } from '../../shared/utils/date-time.util';
 
 interface DetailField {
   label: string;
@@ -25,7 +26,6 @@ interface DetailField {
   selector: 'app-external-project-detail',
   standalone: true,
   imports: [CommonModule],
-  providers: [DatePipe],
   templateUrl: './external-project-detail.component.html',
   styleUrl: './external-project-detail.component.scss',
 })
@@ -34,7 +34,6 @@ export class ExternalProjectDetailComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly externalProjectApi = inject(ExternalProjectApiService);
   private readonly requests = inject(WorkflowRequestsService);
-  private readonly datePipe = inject(DatePipe);
 
   loading = signal(true);
   error = signal<string | null>(null);
@@ -48,6 +47,11 @@ export class ExternalProjectDetailComponent implements OnInit {
     const categoryId = this.externalProject()?.external_grant_category_id;
     return this.categories().find((category) => category.id === categoryId)?.name ?? categoryId ?? '-';
   });
+  readonly projectSectionTitle = computed(() =>
+    String(this.categoryName()).trim().toLowerCase() === 'consultancy'
+      ? 'Consultancy Project Details'
+      : 'External Project Details',
+  );
 
   readonly requestFields = computed<DetailField[]>(() => {
     const req = this.request();
@@ -69,11 +73,11 @@ export class ExternalProjectDetailComponent implements OnInit {
       { label: 'Project Account Code', value: project?.project_account_code ?? project?.project_code },
       { label: 'Reference Code', value: project?.reference_code ?? project?.account_code },
       { label: 'Description', value: project?.description },
-      { label: 'Staff Name', value: project?.staff_name },
-      { label: 'School / Department', value: project?.school_department },
+      { label: 'Project Leader/Principle Investigator', value: project?.staff_name },
+      { label: 'School/Department', value: project?.school_department },
       { label: 'Sponsor Name', value: project?.sponsor_name },
       { label: 'Grant Name', value: project?.grant_name },
-      { label: 'Client / Stakeholder', value: project?.client_stakeholder },
+      { label: 'Client/Stakeholder', value: project?.client_stakeholder },
     ];
   });
 
@@ -82,9 +86,9 @@ export class ExternalProjectDetailComponent implements OnInit {
     return [
       { label: 'Start Date', value: project?.start_date, type: 'date' },
       { label: 'End Date', value: project?.end_date, type: 'date' },
-      { label: 'Duration', value: project?.duration_months ? `${project.duration_months} months` : null },
-      { label: 'Billing Required', value: project?.is_billing_required, type: 'boolean' },
-      { label: 'Total Budget Request', value: project?.total_budget_request, type: 'money' },
+      { label: 'Duration of Project (Month)', value: project?.duration_months },
+      { label: 'Is Billing Required?', value: project?.is_billing_required, type: 'boolean' },
+      { label: 'Total Budget Request (RM)', value: project?.total_budget_request, type: 'money' },
     ];
   });
 
@@ -145,7 +149,7 @@ export class ExternalProjectDetailComponent implements OnInit {
     const value = field.value;
     if (value == null || value === '') return '-';
     if (field.type === 'boolean') return value ? 'Yes' : 'No';
-    if (field.type === 'date') return this.datePipe.transform(value as string, 'dd MMM yyyy') ?? '-';
+    if (field.type === 'date') return formatDisplayDate(value as string);
     if (field.type === 'money') return formatMyrCurrency(value, String(value));
     return String(value);
   }

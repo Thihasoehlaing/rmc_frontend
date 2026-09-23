@@ -444,7 +444,7 @@
               >
                 <ng-template #rowTemplate let-row let-i="index">
                   <tr>
-                    <td>{{ row.value.date || '-' }}</td>
+                    <td>{{ formatDate(row.value.date) }}</td>
                     <td>{{ formatActivityTime(row.value.startTime) }}</td>
                     <td>{{ formatActivityTime(row.value.endTime) }}</td>
                     <td class="activity-description-cell">{{ row.value.description || '-' }}</td>

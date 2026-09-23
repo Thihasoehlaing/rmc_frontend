@@ -14,6 +14,7 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { BatchSitting } from '../../core/interfaces/batch-sitting.interface';
 import { NotificationService } from '../../core/services/notification.service';
+import { formatDisplayDateTime } from '../../shared/utils/date-time.util';
 
 // Shared layout components
 import {
@@ -157,16 +158,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
 
   /** Formats an ISO date/datetime for display in the batch banner. */
   fmtWindow(iso: string | null): string {
-    if (!iso) return '\u2014';
-    const d = new Date(iso);
-    if (Number.isNaN(d.getTime())) return iso;
-    return d.toLocaleString('en-GB', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+    return formatDisplayDateTime(iso, iso || '\u2014');
   }
 
   // ── Wizard state ───────────────────────────────────────────────

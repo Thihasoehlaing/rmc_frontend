@@ -22,6 +22,7 @@ import {
   TableSkeletonComponent,
 } from '../../../shared/components/table-skeleton/table-skeleton.component';
 import { TableActionIconComponent } from '../../../shared/components/table-action-icon/table-action-icon.component';
+import { formatDisplayDate } from '../../../shared/utils/date-time.util';
 
 @Component({
   selector: 'app-inbox',
@@ -289,13 +290,7 @@ export class InboxComponent implements OnInit {
   }
 
   private formatIsoDate(iso: string | null | undefined): string {
-    return iso
-      ? new Date(iso).toLocaleDateString('en-GB', {
-          day: '2-digit',
-          month: 'short',
-          year: 'numeric',
-        })
-      : '-';
+    return formatDisplayDate(iso);
   }
 
   private dateInputValue(iso: string | null | undefined): string {

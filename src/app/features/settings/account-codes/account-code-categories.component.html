@@ -106,7 +106,7 @@
                 {{ row.is_active ? 'Active' : 'Inactive' }}
               </span>
             </td>
-            <td>{{ row.updated_at ? (row.updated_at | date: 'yyyy-MM-dd hh:mm:ss a') : '-' }}</td>
+            <td>{{ row.updated_at ? (row.updated_at | date: 'dd-MM-yyyy') : '-' }}</td>
             <td class="is-align-center">
               <div class="table-actions">
                 <button class="table-action" type="button" title="Edit category" aria-label="Edit category" (click)="openEditDialog(row)">

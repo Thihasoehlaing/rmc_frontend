@@ -39,6 +39,7 @@ import { COSTING_ITEM_ROW_LIMIT } from '../../../../../core/constants/form-limit
 import { TableActionIconComponent } from '../../../../../shared/components/table-action-icon/table-action-icon.component';
 import { DecimalAmountDirective } from '../../../../../shared/directives/decimal-amount.directive';
 import { MyrCurrencyPipe } from '../../../../../shared/pipes/myr-currency.pipe';
+import { formatDisplayDate } from '../../../../../shared/utils/date-time.util';
 @Component({
   selector: 'app-conference-details-form',
   standalone: true,
@@ -68,6 +69,10 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
   @Input() workflow?: ConferenceWorkflowService;
   @Input() applicantDetailsForm?: FormGroup;
   @Input() isFormReadOnly: boolean = false;
+
+  formatDate(value: string | null | undefined): string {
+    return formatDisplayDate(value);
+  }
 
   private breakdownOptionsService = inject(BreakdownOptionsService);
   private readonly masterData = inject(MasterDataService);

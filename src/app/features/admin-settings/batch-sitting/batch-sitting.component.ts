@@ -30,6 +30,10 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
+  formatDisplayDate,
+  formatDisplayDateTime,
+} from '../../../shared/utils/date-time.util';
+import {
   AbstractControl,
   FormBuilder,
   FormGroup,
@@ -1079,16 +1083,11 @@ export class BatchSittingComponent implements OnInit, OnDestroy {
   }
 
   fmt(d: string | null | undefined): string {
-    if (!d) return '—';
-    const dt = new Date(d);
-    if (Number.isNaN(dt.getTime())) return '—';
-    return dt.toLocaleString('en-GB', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+    return formatDisplayDateTime(d, '—');
+  }
+
+  fmtTableDate(d: string | null | undefined): string {
+    return formatDisplayDate(d, '—');
   }
 
   /**

@@ -29,6 +29,9 @@ import { SearchableDropdownComponent } from '../../../../shared/components/searc
 import { DropdownOption as SelectOption } from '../../../../core/interfaces/components.interface';
 import { AdminSettingsPageHeaderComponent } from '../../../../shared/components/admin-settings-page-header/admin-settings-page-header.component';
 import { MyrCurrencyPipe } from '../../../../shared/pipes/myr-currency.pipe';
+import {
+  formatDisplayDate as sharedFormatDisplayDate,
+} from '../../../../shared/utils/date-time.util';
 
 interface DropdownOption {
   id: number;
@@ -1205,7 +1208,7 @@ export class RdigDropdownOptionsComponent implements OnInit {
       category,
       code: r.code,
       value: r.value,
-      lastUpdated: this.formatDisplayDateTime(r.updatedAt),
+      lastUpdated: sharedFormatDisplayDate(r.updatedAt),
       createdBy: '',
       status: r.status,
       sharedWith: r.sharedWith ?? [],
@@ -2222,39 +2225,24 @@ export class RdigDropdownOptionsComponent implements OnInit {
   }
 
   private formatDisplayDate(date: Date): string {
-    const day = `${date.getDate()}`.padStart(2, '0');
-    const month = `${date.getMonth() + 1}`.padStart(2, '0');
-    const year = date.getFullYear();
-    return `${day}/${month}/${year}`;
-  }
-
-  private formatDisplayDateTime(dateValue?: string): string {
-    if (!dateValue) {
-      return '-';
-    }
-
-    const date = new Date(dateValue);
-    if (Number.isNaN(date.getTime())) {
-      return '-';
-    }
-
-    const year = date.getFullYear();
-    const month = `${date.getMonth() + 1}`.padStart(2, '0');
-    const day = `${date.getDate()}`.padStart(2, '0');
-    let hour = date.getHours();
-    const suffix = hour >= 12 ? 'PM' : 'AM';
-    hour = hour % 12 || 12;
-    const minute = `${date.getMinutes()}`.padStart(2, '0');
-    const second = `${date.getSeconds()}`.padStart(2, '0');
-
-    return `${year}-${month}-${day} ${`${hour}`.padStart(2, '0')}:${minute}:${second} ${suffix}`;
+    return sharedFormatDisplayDate(date);
   }
 
   private parseDisplayDate(dateValue: string): number {
-    const slashMatch = dateValue.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
-    if (slashMatch) {
-      const [, day, month, year] = slashMatch;
+    const numericMatch = dateValue.match(/^(\d{2})[-/](\d{2})[-/](\d{4})$/);
+    if (numericMatch) {
+      const [, day, month, year] = numericMatch;
       return new Date(Number(year), Number(month) - 1, Number(day)).getTime();
+    }
+
+    const dateTimeMatch = dateValue.match(
+      /^(\d{2})-(\d{2})-(\d{4})\s+(\d{2}):(\d{2})\s+(AM|PM)$/i,
+    );
+    if (dateTimeMatch) {
+      const [, day, month, year, hourValue, minute, period] = dateTimeMatch;
+      let hour = Number(hourValue) % 12;
+      if (period.toUpperCase() === 'PM') hour += 12;
+      return new Date(Number(year), Number(month) - 1, Number(day), hour, Number(minute)).getTime();
     }
 
     const match = dateValue.match(/^(\d{2})\s([A-Za-z]{3})\s(\d{4})$/);

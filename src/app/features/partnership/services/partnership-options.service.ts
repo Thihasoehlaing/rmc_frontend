@@ -2,6 +2,7 @@ import { Injectable, effect, inject, signal } from '@angular/core';
 import { DropdownOption } from '../../../core/interfaces/components.interface';
 import { DropdownsStoreService } from '../../admin-settings/dropdowns/dropdowns-store.service';
 import type { StoredDropdownOption } from '../../admin-settings/dropdowns/dropdowns-store.service';
+import { formatDisplayDate as sharedFormatDisplayDate } from '../../../shared/utils/date-time.util';
 
 export interface PartnershipDropdownOption extends DropdownOption {
   status?: string;
@@ -27,10 +28,10 @@ export class PartnershipOptionsService {
   ];
 
   private defaultCategoryOptions: PartnershipDropdownOption[] = [
-    { value: 'University Strategic Partnership', label: 'University Strategic Partnership', status: 'Active', createdDate: '21/04/2026' },
-    { value: 'Franchise Partnership', label: 'Franchise Partnership', status: 'Active', createdDate: '21/04/2026' },
-    { value: 'Subject/Discipline Partnership', label: 'Subject/Discipline Partnership', status: 'Active', createdDate: '21/04/2026' },
-    { value: 'School Partnership', label: 'School Partnership', status: 'Active', createdDate: '21/04/2026' }
+    { value: 'University Strategic Partnership', label: 'University Strategic Partnership', status: 'Active', createdDate: '21-04-2026' },
+    { value: 'Franchise Partnership', label: 'Franchise Partnership', status: 'Active', createdDate: '21-04-2026' },
+    { value: 'Subject/Discipline Partnership', label: 'Subject/Discipline Partnership', status: 'Active', createdDate: '21-04-2026' },
+    { value: 'School Partnership', label: 'School Partnership', status: 'Active', createdDate: '21-04-2026' }
   ];
 
   partnershipTypeOptions = signal<DropdownOption[]>([]);
@@ -158,10 +159,7 @@ export class PartnershipOptionsService {
   }
 
   private formatDisplayDate(date: Date): string {
-    const day = `${date.getDate()}`.padStart(2, '0');
-    const month = `${date.getMonth() + 1}`.padStart(2, '0');
-    const year = date.getFullYear();
-    return `${day}/${month}/${year}`;
+    return sharedFormatDisplayDate(date);
   }
 
   private parseDisplayDate(dateValue?: string): number {
@@ -169,9 +167,9 @@ export class PartnershipOptionsService {
       return 0;
     }
 
-    const slashMatch = dateValue.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
-    if (slashMatch) {
-      const [, day, month, year] = slashMatch;
+    const numericMatch = dateValue.match(/^(\d{2})[-/](\d{2})[-/](\d{4})$/);
+    if (numericMatch) {
+      const [, day, month, year] = numericMatch;
       return new Date(Number(year), Number(month) - 1, Number(day)).getTime();
     }
 

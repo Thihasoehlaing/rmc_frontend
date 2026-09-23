@@ -28,6 +28,7 @@ import { AuthService } from '../../../core/services/auth.service';
 import { ActionButtonComponent } from '../../../shared/components/action-button/action-button.component';
 import { ValidationMessageComponent } from '../../../shared/components/validation-message/validation-message.component';
 import { DialogComponent } from '../../../shared/components/dialog/dialog.component';
+import { formatDisplayDate } from '../../../shared/utils/date-time.util';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
 import {
   DataTableColumn,
@@ -471,7 +472,7 @@ export class BatchesComponent implements OnInit, OnDestroy {
   }
 
   fmt(date: string): string {
-    return new Date(date).toLocaleDateString();
+    return formatDisplayDate(date);
   }
 
   stagesForBatch(batch: BatchSitting): Array<{ key: WorkflowStageKey; meta: any; window: any }> {

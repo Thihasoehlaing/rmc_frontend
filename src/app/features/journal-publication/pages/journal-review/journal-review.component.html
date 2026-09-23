@@ -135,6 +135,14 @@
               </dt>
               <dd>{{ val(journal()?.cited_apu_jati_ejbm) }}</dd>
             </div>
+            @if (journal()?.cited_apu_jati_ejbm === false) {
+              <div class="detail-grid__wide">
+                <dt>If No, please explain</dt>
+                <dd class="detail-value--long">
+                  {{ val(journal()?.cited_apu_jati_ejbm_explanation) }}
+                </dd>
+              </div>
+            }
             <div class="detail-grid__wide">
               <dt>
                 Is the publisher of your journal one of the restricted publishers (e.g., MDPI,

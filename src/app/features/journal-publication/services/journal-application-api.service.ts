@@ -19,7 +19,11 @@ export interface JournalRequestPayload {
   project_account_code?: string | null;
   is_restricted_publisher?: boolean;
   cited_apu_jati_ejbm?: boolean;
+  cited_apu_jati_ejbm_doi?: string | null;
   cited_apu_jati_ejbm_explanation?: string | null;
+  cited_other_apu_affiliated_paper?: boolean | null;
+  cited_other_apu_affiliated_paper_doi?: string | null;
+  cited_other_apu_affiliated_paper_reason?: string | null;
   paper_title?: string | null;
   sdg_keyword_1?: string | null;
   sdg_keyword_2?: string | null;

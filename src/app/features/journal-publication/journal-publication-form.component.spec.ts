@@ -38,10 +38,10 @@ describe('JournalPublicationFormComponent', () => {
     expect(labels).toContain('Scopus Quartile');
     expect(labels).toContain('Research Type');
     expect(labels).toContain('Restricted Publisher');
-    expect(labels).toContain('APU/JATI/EJBM Citation');
+    expect(labels).toContain('APU Journal (JATI/EJBM) Citation');
     expect(labels).toContain('Journal Name');
     expect(labels).toContain('Paper Title');
-    expect(labels).toContain('Please key in 3 SDG keywords');
+    expect(labels).not.toContain('Please key in 3 SDG keywords');
     expect(labels).not.toContain('Complete Journal Details');
   });
 });

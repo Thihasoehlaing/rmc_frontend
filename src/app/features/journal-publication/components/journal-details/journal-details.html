@@ -175,10 +175,9 @@
             </div>
 
             <div class="form-field journal-details-cited-field">
-              <label class="form-label is-required"
-                >Have you cited at least 1 journal paper from Asia Pacific University of Technology
-                & Innovation JATI/EJBM/any APU affiliated journals?</label
-              >
+              <label class="form-label is-required">
+                Have you cited at least 1 journal paper from APU Journal (JATI/EJBM)?
+              </label>
               <div class="radio-group">
                 <label class="radio-option">
                   <input type="radio" formControlName="citedApuPaper" value="Yes" />
@@ -192,26 +191,25 @@
               <app-validation-message
                 class="form-validation-note--error"
                 [control]="form.get('citedApuPaper')"
-                fieldName="Have you cited at least 1 journal paper from Asia Pacific University of Technology & Innovation JATI/EJBM/any APU affiliated journals?"
+                fieldName="Have you cited at least 1 journal paper from APU Journal (JATI/EJBM)?"
               ></app-validation-message>
               @if (form.get('citedApuPaper')?.value === 'Yes') {
                 <div class="form-field">
-                  <label class="form-label is-required">Please Provide Journal Paper Link</label>
+                  <label class="form-label is-required">DOI link</label>
                   <input
                     type="text"
                     class="input--text"
                     formControlName="citedApuPaperDoi"
-                    placeholder="Enter journal paper link here"
+                    placeholder="Enter DOI link"
                     maxlength="255"
                     [class.is-invalid]="
-                      form.get('citedApuPaperDoi')?.invalid &&
-                      form.get('citedApuPaperDoi')?.touched
+                      form.get('citedApuPaperDoi')?.invalid && form.get('citedApuPaperDoi')?.touched
                     "
                   />
                   <app-validation-message
                     class="form-validation-note--error"
                     [control]="form.get('citedApuPaperDoi')"
-                    fieldName="Please Provide Journal Paper Link"
+                    fieldName="DOI link"
                   ></app-validation-message>
                   <app-character-counter
                     [current]="form.get('citedApuPaperDoi')?.value?.length || 0"
@@ -221,28 +219,77 @@
               }
               @if (form.get('citedApuPaper')?.value === 'No') {
                 <div class="form-field journal-details-citation-explanation">
-                  <label class="form-label is-required">If No, please explain</label>
-                  <textarea
-                    class="input--textarea"
-                    formControlName="citedApuPaperExplanation"
-                    placeholder="Enter explanation here"
-                    rows="3"
-                    maxlength="255"
-                    [class.is-invalid]="
-                      form.get('citedApuPaperExplanation')?.invalid &&
-                      form.get('citedApuPaperExplanation')?.touched
-                    "
-                    (input)="autoExpandTextarea($event)"
-                  ></textarea>
+                  <label class="form-label is-required">
+                    Have you cited any other journal paper that has APU affiliation?
+                  </label>
+                  <div class="radio-group">
+                    <label class="radio-option">
+                      <input type="radio" formControlName="citedOtherApuPaper" value="Yes" />
+                      <span>Yes</span>
+                    </label>
+                    <label class="radio-option">
+                      <input type="radio" formControlName="citedOtherApuPaper" value="No" />
+                      <span>No</span>
+                    </label>
+                  </div>
                   <app-validation-message
                     class="form-validation-note--error"
-                    [control]="form.get('citedApuPaperExplanation')"
-                    fieldName="If No, please explain"
+                    [control]="form.get('citedOtherApuPaper')"
+                    fieldName="Have you cited any other journal paper that has APU affiliation?"
                   ></app-validation-message>
-                  <app-character-counter
-                    [current]="form.get('citedApuPaperExplanation')?.value?.length || 0"
-                    [max]="255"
-                  ></app-character-counter>
+
+                  @if (form.get('citedOtherApuPaper')?.value === 'Yes') {
+                    <div class="form-field">
+                      <label class="form-label is-required">DOI link</label>
+                      <input
+                        type="text"
+                        class="input--text"
+                        formControlName="citedOtherApuPaperDoi"
+                        placeholder="Enter DOI link"
+                        maxlength="255"
+                        [class.is-invalid]="
+                          form.get('citedOtherApuPaperDoi')?.invalid &&
+                          form.get('citedOtherApuPaperDoi')?.touched
+                        "
+                      />
+                      <app-validation-message
+                        class="form-validation-note--error"
+                        [control]="form.get('citedOtherApuPaperDoi')"
+                        fieldName="DOI link"
+                      ></app-validation-message>
+                      <app-character-counter
+                        [current]="form.get('citedOtherApuPaperDoi')?.value?.length || 0"
+                        [max]="255"
+                      ></app-character-counter>
+                    </div>
+                  }
+
+                  @if (form.get('citedOtherApuPaper')?.value === 'No') {
+                    <div class="form-field">
+                      <label class="form-label is-required">Reason</label>
+                      <textarea
+                        class="input--textarea"
+                        formControlName="citedOtherApuPaperReason"
+                        placeholder="Enter reason"
+                        rows="3"
+                        maxlength="255"
+                        [class.is-invalid]="
+                          form.get('citedOtherApuPaperReason')?.invalid &&
+                          form.get('citedOtherApuPaperReason')?.touched
+                        "
+                        (input)="autoExpandTextarea($event)"
+                      ></textarea>
+                      <app-validation-message
+                        class="form-validation-note--error"
+                        [control]="form.get('citedOtherApuPaperReason')"
+                        fieldName="Reason"
+                      ></app-validation-message>
+                      <app-character-counter
+                        [current]="form.get('citedOtherApuPaperReason')?.value?.length || 0"
+                        [max]="255"
+                      ></app-character-counter>
+                    </div>
+                  }
                 </div>
               }
             </div>
@@ -250,40 +297,6 @@
 
           <!-- Right Column -->
           <div class="form-column">
-            <div class="form-field journal-details-left-field sdg-keywords-field">
-              <label class="form-label is-required">Please key in 3 SDG keywords in abstract</label>
-              <div
-                class="sdg-keywords-container"
-                data-missing-field-target="sdgKeywords"
-                (click)="openSDGKeywordsModal()"
-                role="button"
-                tabindex="0"
-                (keydown.enter)="openSDGKeywordsModal()"
-                (keydown.space)="openSDGKeywordsModal()"
-              >
-                @for (keyword of getDisplayedKeywordsArray(); track keyword) {
-                  <div class="keyword-chip">
-                    <span class="chip-label">{{ keyword }}</span>
-                  </div>
-                }
-              </div>
-              <app-validation-message
-                class="form-validation-note--error"
-                [control]="form.get('sdgKeyword1')"
-                fieldName="SDG Keyword 1"
-              ></app-validation-message>
-              <app-validation-message
-                class="form-validation-note--error"
-                [control]="form.get('sdgKeyword2')"
-                fieldName="SDG Keyword 2"
-              ></app-validation-message>
-              <app-validation-message
-                class="form-validation-note--error"
-                [control]="form.get('sdgKeyword3')"
-                fieldName="SDG Keyword 3"
-              ></app-validation-message>
-            </div>
-
             <div class="form-field journal-details-primary-field">
               <label class="form-label is-required">Paper Title</label>
               <textarea
@@ -1046,109 +1059,4 @@
       <button type="submit" class="btn btn-primary">Save</button>
     </div>
   </form>
-</app-dialog>
-
-<!-- SDG Keywords Modal -->
-<app-dialog
-  [title]="'Enter SDG Keywords'"
-  [isOpen]="isSDGKeywordsModalOpen"
-  [width]="'600px'"
-  (close)="closeSDGKeywordsModal()"
->
-  <form class="sdg-keywords-form" [formGroup]="sdgKeywordsForm">
-    <app-note class="sdg-reference-note">
-      <span class="sdg-reference-guidance">
-        <span>Note: Please refer to the links for the sample of SDG keywords.</span>
-        <span>
-          SciVal SDG keywords:
-          <a href="https://scival.com/sdg" target="_blank" rel="noopener noreferrer">
-            https://scival.com/sdg
-          </a>
-        </span>
-        <span>
-          Elsevier SDG keywords:
-          <a
-            href="https://elsevier.digitalcommonsdata.com/datasets/p52c7d3hfs/1"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Elsevier 2025 Sustainable Development Goals (SDGs) Mapping - Elsevier BV
-          </a>
-        </span>
-      </span>
-    </app-note>
-
-    <div class="form-field sdg-keyword-field">
-      <label class="form-label">Keyword 1 <span class="asterisk">*</span></label>
-      <input
-        type="text"
-        class="input--text"
-        formControlName="keyword1"
-        [placeholder]="sdgKeywordPlaceholders.keyword1"
-        [maxlength]="sdgKeywordMaxLength"
-      />
-      <div class="sdg-keyword-feedback">
-        <app-validation-message
-          class="form-validation-note--error"
-          [control]="sdgKeywordsForm.get('keyword1')"
-          fieldName="Keyword 1"
-        ></app-validation-message>
-        <app-character-counter
-          [current]="sdgKeywordsForm.get('keyword1')?.value?.length || 0"
-          [max]="sdgKeywordMaxLength"
-        ></app-character-counter>
-      </div>
-    </div>
-
-    <div class="form-field sdg-keyword-field">
-      <label class="form-label">Keyword 2 <span class="asterisk">*</span></label>
-      <input
-        type="text"
-        class="input--text"
-        formControlName="keyword2"
-        [placeholder]="sdgKeywordPlaceholders.keyword2"
-        [maxlength]="sdgKeywordMaxLength"
-      />
-      <div class="sdg-keyword-feedback">
-        <app-validation-message
-          class="form-validation-note--error"
-          [control]="sdgKeywordsForm.get('keyword2')"
-          fieldName="Keyword 2"
-        ></app-validation-message>
-        <app-character-counter
-          [current]="sdgKeywordsForm.get('keyword2')?.value?.length || 0"
-          [max]="sdgKeywordMaxLength"
-        ></app-character-counter>
-      </div>
-    </div>
-
-    <div class="form-field sdg-keyword-field">
-      <label class="form-label">Keyword 3 <span class="asterisk">*</span></label>
-      <input
-        type="text"
-        class="input--text"
-        formControlName="keyword3"
-        [placeholder]="sdgKeywordPlaceholders.keyword3"
-        [maxlength]="sdgKeywordMaxLength"
-      />
-      <div class="sdg-keyword-feedback">
-        <app-validation-message
-          class="form-validation-note--error"
-          [control]="sdgKeywordsForm.get('keyword3')"
-          fieldName="Keyword 3"
-        ></app-validation-message>
-        <app-character-counter
-          [current]="sdgKeywordsForm.get('keyword3')?.value?.length || 0"
-          [max]="sdgKeywordMaxLength"
-        ></app-character-counter>
-      </div>
-    </div>
-  </form>
-
-  <div dialog-footer class="modal-footer">
-    <button type="button" class="btn btn-secondary" (click)="closeSDGKeywordsModal()">
-      Cancel
-    </button>
-    <button type="button" class="btn btn-primary" (click)="confirmSDGKeywords()">Confirm</button>
-  </div>
 </app-dialog>

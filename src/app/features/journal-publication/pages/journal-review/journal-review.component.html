@@ -129,25 +129,45 @@
               <dd>{{ projectTypeLabel() }}</dd>
             </div>
             <div>
-              <dt>
-                Have you cited at least 1 journal paper from Asia Pacific University of Technology
-                &amp; Innovation JATI/EJBM/any APU affiliated journals?
-              </dt>
+              <dt>Have you cited at least 1 journal paper from APU Journal (JATI/EJBM)?</dt>
               <dd>{{ val(journal()?.cited_apu_jati_ejbm) }}</dd>
             </div>
+            @if (journal()?.cited_apu_jati_ejbm === true) {
+              <div class="detail-grid__wide">
+                <dt>DOI link</dt>
+                <dd class="detail-value--long">
+                  {{ val(journal()?.cited_apu_jati_ejbm_doi) }}
+                </dd>
+              </div>
+            }
+            @if (journal()?.cited_apu_jati_ejbm === false) {
+              <div class="detail-grid__wide">
+                <dt>Have you cited any other journal paper that has APU affiliation?</dt>
+                <dd>{{ val(journal()?.cited_other_apu_affiliated_paper) }}</dd>
+              </div>
+              @if (journal()?.cited_other_apu_affiliated_paper === true) {
+                <div class="detail-grid__wide">
+                  <dt>DOI link</dt>
+                  <dd class="detail-value--long">
+                    {{ val(journal()?.cited_other_apu_affiliated_paper_doi) }}
+                  </dd>
+                </div>
+              }
+              @if (journal()?.cited_other_apu_affiliated_paper === false) {
+                <div class="detail-grid__wide">
+                  <dt>Reason</dt>
+                  <dd class="detail-value--long">
+                    {{ val(journal()?.cited_other_apu_affiliated_paper_reason) }}
+                  </dd>
+                </div>
+              }
+            }
             <div class="detail-grid__wide">
               <dt>
                 Is the publisher of your journal one of the restricted publishers (e.g., MDPI,
                 Common Ground, Hindawi, or Frontier)?
               </dt>
               <dd>{{ val(journal()?.is_restricted_publisher) }}</dd>
-            </div>
-            <div class="detail-grid__wide">
-              <dt>3 SDG Keywords</dt>
-              <dd>
-                {{ val(journal()?.sdg_keyword_1) }} · {{ val(journal()?.sdg_keyword_2) }} ·
-                {{ val(journal()?.sdg_keyword_3) }}
-              </dd>
             </div>
           </dl>
           <div class="section-comments">

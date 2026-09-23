@@ -32,7 +32,7 @@ export interface DashboardExternalDepartmentPoint {
   departmentCode: string;
   categories: DashboardChartDatum[];
   totalApplications: number;
-  fundApproved: number;
+  budgetRequested: number;
 }
 
 export type DashboardProjectType = 'External' | 'Non-Research';
@@ -49,6 +49,7 @@ export interface RmcDashboardDimensions {
   departmentCode?: string | null;
   externalGrantCategory?: string | null;
   fundApproved?: number | null;
+  budgetRequested?: number | null;
   projectType?: DashboardProjectType | null;
   conferenceType?: DashboardConferenceType | null;
   scopusQuartile?: DashboardScopusQuartile | null;
@@ -89,6 +90,7 @@ export interface RmcDashboardDimensionsDto {
   department_code?: string | null;
   external_grant_category?: string | null;
   fund_approved?: number | string | null;
+  budget_requested?: number | string | null;
   project_type?: DashboardProjectType | null;
   conference_type?: DashboardConferenceType | null;
   scopus_quartile?: DashboardScopusQuartile | null;

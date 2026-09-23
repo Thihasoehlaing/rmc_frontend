@@ -38,6 +38,7 @@ import { DashboardDonutChartComponent } from '../dashboard-donut-chart/dashboard
 import { DashboardDepartmentComparisonChartComponent } from '../dashboard-department-comparison-chart/dashboard-department-comparison-chart.component';
 import { DashboardExternalDepartmentChartComponent } from '../dashboard-external-department-chart/dashboard-external-department-chart.component';
 import { buildDashboardTimeBuckets, dashboardMaxEndDate } from '../../utils/dashboard-date-range';
+import { dashboardDepartmentCode } from '../../utils/dashboard-department-code';
 import {
   DASHBOARD_BAR_METRIC_OPTIONS,
   DASHBOARD_TREND_METRIC_OPTIONS,
@@ -244,10 +245,10 @@ export class RmcAdminAnalyticsDashboardComponent implements OnInit {
       return {
         departmentCode,
         totalApplications: records.length,
-        fundApproved: records
-          .filter((record) => record.isCompleted && !this.isRejected(record))
+        budgetRequested: records
+          .filter((record) => !this.isRejected(record))
           .reduce(
-            (total, record) => total + Math.max(0, record.analytics?.fundApproved ?? record.cost),
+            (total, record) => total + Math.max(0, record.analytics?.budgetRequested ?? 0),
             0,
           ),
         categories: categories.map((category, index) => ({
@@ -585,20 +586,9 @@ export class RmcAdminAnalyticsDashboardComponent implements OnInit {
   }
 
   private departmentCode(record: RmcDashboardRecord): string {
-    const explicitCode = record.analytics?.departmentCode?.trim();
-    if (explicitCode) return explicitCode.toUpperCase();
-
-    const department = record.request.applicant_department?.trim();
-    if (!department) return 'UNKNOWN';
-    if (/^[A-Za-z0-9_-]{2,12}$/.test(department)) return department.toUpperCase();
-
-    const initials = department
-      .split(/\s+/)
-      .filter((word) => !['and', 'of', 'the', '&'].includes(word.toLowerCase()))
-      .map((word) => word[0])
-      .join('')
-      .toUpperCase();
-    return initials || 'UNKNOWN';
+    return dashboardDepartmentCode(
+      record.analytics?.departmentCode?.trim() || record.request.applicant_department,
+    );
   }
 
   private matchesForm(record: RmcDashboardRecord): boolean {

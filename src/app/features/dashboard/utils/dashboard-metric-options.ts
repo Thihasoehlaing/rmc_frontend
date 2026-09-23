@@ -6,7 +6,7 @@ export const DASHBOARD_TREND_METRIC_OPTIONS: DropdownOption<DashboardTrendMode>[
   { value: 'completed', label: 'Approved Forms' },
   { value: 'rejected', label: 'Rejected Forms' },
   { value: 'in_progress', label: 'In Progress' },
-  { value: 'spend', label: 'Fund Approved' },
+  { value: 'spend', label: 'Fund Approved by APU' },
 ];
 
 export const DASHBOARD_BAR_METRIC_OPTIONS = DASHBOARD_TREND_METRIC_OPTIONS.filter(

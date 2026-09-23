@@ -16,8 +16,8 @@ interface ExternalDepartmentViewPoint extends DashboardExternalDepartmentPoint {
   applicationHeight: number;
   categorySegments: ExternalCategorySegment[];
   formattedApplications: string;
-  formattedFund: string;
-  fundHeight: number;
+  formattedBudget: string;
+  budgetHeight: number;
 }
 
 interface ActiveExternalMetric {
@@ -38,7 +38,7 @@ interface ActiveExternalMetric {
 export class DashboardExternalDepartmentChartComponent {
   private readonly pointsValue = signal<DashboardExternalDepartmentPoint[]>([]);
 
-  readonly fundColor = 'var(--color-success)';
+  readonly budgetColor = 'var(--color-success)';
   readonly activeMetric = signal<ActiveExternalMetric | null>(null);
 
   @Input({ required: true }) set points(value: DashboardExternalDepartmentPoint[]) {
@@ -48,20 +48,20 @@ export class DashboardExternalDepartmentChartComponent {
   readonly applicationMaximum = computed(() =>
     this.niceMaximum(this.pointsValue().map((point) => point.totalApplications)),
   );
-  readonly fundMaximum = computed(() =>
-    this.niceMaximum(this.pointsValue().map((point) => point.fundApproved)),
+  readonly budgetMaximum = computed(() =>
+    this.niceMaximum(this.pointsValue().map((point) => point.budgetRequested)),
   );
   readonly applicationTicks = computed(() => this.ticks(this.applicationMaximum()));
-  readonly fundTicks = computed(() => this.ticks(this.fundMaximum()));
+  readonly budgetTicks = computed(() => this.ticks(this.budgetMaximum()));
   readonly chartMinimumWidth = computed(() => Math.max(880, this.pointsValue().length * 120));
   readonly categoryLegend = computed(() => this.pointsValue()[0]?.categories ?? []);
   readonly chartPoints = computed<ExternalDepartmentViewPoint[]>(() =>
     this.pointsValue().map((point) => ({
       ...point,
       applicationHeight: (point.totalApplications / this.applicationMaximum()) * 100,
-      fundHeight: (point.fundApproved / this.fundMaximum()) * 100,
+      budgetHeight: (point.budgetRequested / this.budgetMaximum()) * 100,
       formattedApplications: new Intl.NumberFormat('en-MY').format(point.totalApplications),
-      formattedFund: this.formatFund(point.fundApproved),
+      formattedBudget: this.formatBudget(point.budgetRequested),
       categorySegments: point.categories.map((category) => ({
         ...category,
         height: (category.value / this.applicationMaximum()) * 100,
@@ -79,12 +79,12 @@ export class DashboardExternalDepartmentChartComponent {
     });
   }
 
-  showFund(point: ExternalDepartmentViewPoint): void {
+  showBudget(point: ExternalDepartmentViewPoint): void {
     this.activeMetric.set({
-      color: this.fundColor,
+      color: this.budgetColor,
       departmentCode: point.departmentCode,
-      label: 'Fund Approved',
-      value: point.formattedFund,
+      label: 'Total Budget',
+      value: point.formattedBudget,
     });
   }
 
@@ -92,7 +92,7 @@ export class DashboardExternalDepartmentChartComponent {
     return Math.round(value).toString();
   }
 
-  formatFund(value: number): string {
+  formatBudget(value: number): string {
     if (value >= 1_000_000) {
       return `RM${(value / 1_000_000).toFixed(value >= 10_000_000 ? 0 : 2).replace(/\.0+$/, '')}M`;
     }

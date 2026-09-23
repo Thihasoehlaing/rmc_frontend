@@ -49,7 +49,7 @@
   color: var(--color-primary);
 }
 
-.external-department-chart__axis--fund {
+.external-department-chart__axis--budget {
   padding-left: var(--space-3);
   color: var(--color-success);
 }
@@ -119,7 +119,7 @@
 }
 
 .external-department-chart__segment,
-.external-department-chart__fund {
+.external-department-chart__budget {
   flex: 0 0 auto;
   width: 100%;
   min-height: 2px;
@@ -140,11 +140,11 @@
 }
 
 .external-department-chart__segment:last-child,
-.external-department-chart__fund {
+.external-department-chart__budget {
   border-radius: var(--radius-sm) var(--radius-sm) 0 0;
 }
 
-.external-department-chart__fund {
+.external-department-chart__budget {
   position: absolute;
   bottom: 0;
   left: 0;
@@ -167,7 +167,7 @@
   color: var(--color-primary);
 }
 
-.external-department-chart__value--fund {
+.external-department-chart__value--budget {
   color: var(--color-success-dark);
 }
 
@@ -192,7 +192,7 @@
   }
 }
 
-.external-department-chart__legend-fund {
+.external-department-chart__legend-budget {
   padding-left: var(--space-3);
   border-left: 1px solid var(--border-subtle);
 }

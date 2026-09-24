@@ -62,7 +62,7 @@
             <tr>
               <th>No.</th>
               <th>Code</th>
-              @if (isAdminHistory()) {
+              @if (isAdminHistory() && !showExternalProjectColumns()) {
                 <th>Applicant</th>
               }
               @if (showExternalProjectColumns()) {
@@ -82,7 +82,7 @@
                   <span class="request-code">{{ getCode(app) }}</span>
                   <span class="form-type-label">{{ getFormTypeLabel(app) }}</span>
                 </td>
-                @if (isAdminHistory()) {
+                @if (isAdminHistory() && !showExternalProjectColumns()) {
                   <td class="applicant-cell">
                     <span class="applicant-name">{{ getApplicantLabel(app) }}</span>
                     @if (app.applicant_staff_username && app.applicant_staff_username !== app.applicant_name) {

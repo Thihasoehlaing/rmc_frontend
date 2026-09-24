@@ -82,7 +82,7 @@ export class HistoryComponent implements OnInit {
   readonly skeletonColumns = computed<SkeletonColumn[]>(() => [
     { width: '72px' },
     { width: '24%' },
-    ...(this.isAdminHistory() ? [{ width: '18%' }] : []),
+    ...(this.isAdminHistory() && !this.showExternalProjectColumns() ? [{ width: '18%' }] : []),
     ...(this.showExternalProjectColumns() ? [{ width: '18%' }, { width: '16%' }] : []),
     { width: '18%' },
     { width: '18%' },

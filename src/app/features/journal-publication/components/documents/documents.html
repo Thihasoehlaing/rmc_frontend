@@ -1,5 +1,9 @@
 <form [formGroup]="documentsForm" class="form-section">
-  <app-custom-header icon="description" title="Documents"></app-custom-header>
+  <app-custom-header
+    icon="description"
+    title="Documents"
+    [presentation]="newDesign ? 'plain' : 'default'"
+  ></app-custom-header>
 
   <!-- ── Upload Supporting Documents ─────────────────────────── -->
   <section class="card">

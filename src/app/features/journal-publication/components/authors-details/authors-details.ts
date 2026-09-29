@@ -1,4 +1,5 @@
 ﻿import { Component, OnInit, inject, effect, Output, EventEmitter, signal } from '@angular/core';
+import { Input } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 import { CustomHeaderComponent } from '../../../../shared/components/custom-header/custom-header.component';
@@ -56,6 +57,7 @@ import {
   ],
 })
 export class AuthorsDetails implements OnInit {
+  @Input() newDesign = false;
   readonly apuAffiliation = 'Asia Pacific University';
   readonly authorTextMaxLength = 100;
   readonly tpNumberMaxLength = 6;
@@ -117,6 +119,9 @@ export class AuthorsDetails implements OnInit {
   readonly organisationTypeOptions = signal<DropdownOption<string>[]>([]);
   readonly organisationTypeOptionsLoading = signal(false);
   readonly organisationTypeOptionsLoadFailed = signal(false);
+  readonly countryOptions = signal<DropdownOption<string>[]>([]);
+  readonly countryOptionsLoading = signal(false);
+  readonly countryOptionsLoadFailed = signal(false);
   private academicStaffByName = new Map<string, AcademicStaffOption>();
   private staffSelectionSubscription?: Subscription;
 
@@ -144,6 +149,7 @@ export class AuthorsDetails implements OnInit {
     this.loadAcademicStaffOptions();
     this.loadDepartmentOptions();
     this.loadOrganisationTypeOptions();
+    this.loadCountryOptions();
   }
 
   initializeForm() {
@@ -356,8 +362,7 @@ export class AuthorsDetails implements OnInit {
 
   canCreateCoAuthor(type: 'apu-staff' | 'student' | 'non-apu'): boolean {
     return (
-      !this.workflow.isFormReadOnly() &&
-      this.getCoAuthorArray(type).length < this.tableRecordLimit
+      !this.workflow.isFormReadOnly() && this.getCoAuthorArray(type).length < this.tableRecordLimit
     );
   }
 
@@ -402,7 +407,10 @@ export class AuthorsDetails implements OnInit {
         data = this.nonApuCoAuthors.at(index).value;
         this.editForm = this.fb.group({
           fullName: [data.fullName, [Validators.required]],
-          country: [data.country, [Validators.required, Validators.maxLength(this.authorTextMaxLength)]],
+          country: [
+            data.country,
+            [Validators.required, Validators.maxLength(this.authorTextMaxLength)],
+          ],
           email: [data.email, [Validators.required, Validators.email]],
           schoolDepartment: [data.schoolDepartment, [Validators.required]],
           typeOfOrganisation: [data.typeOfOrganisation, [Validators.required]],
@@ -470,11 +478,7 @@ export class AuthorsDetails implements OnInit {
       return;
     }
 
-    if (
-      this.editingIndex === null &&
-      this.modalType &&
-      !this.canCreateCoAuthor(this.modalType)
-    ) {
+    if (this.editingIndex === null && this.modalType && !this.canCreateCoAuthor(this.modalType)) {
       return;
     }
 
@@ -573,6 +577,34 @@ export class AuthorsDetails implements OnInit {
       });
   }
 
+  private loadCountryOptions(): void {
+    this.countryOptionsLoading.set(true);
+    this.countryOptionsLoadFailed.set(false);
+
+    this.masterData
+      .getCountries()
+      .pipe(finalize(() => this.countryOptionsLoading.set(false)))
+      .subscribe({
+        next: (response) => {
+          this.countryOptions.set(
+            (response.success ? (response.data ?? []) : [])
+              .filter((country) => country.is_active)
+              .map((country) => ({
+                value: country.name,
+                label: country.name,
+                description: country.code,
+                searchText: `${country.name} ${country.code}`,
+              })),
+          );
+          this.countryOptionsLoadFailed.set(!response.success);
+        },
+        error: () => {
+          this.countryOptions.set([]);
+          this.countryOptionsLoadFailed.set(true);
+        },
+      });
+  }
+
   private loadDepartmentOptions(): void {
     this.masterData.getDepartments().subscribe({
       next: (response) => {
@@ -601,7 +633,9 @@ export class AuthorsDetails implements OnInit {
   }
 
   private isStudentSchoolDepartment(departmentName: string | null | undefined): boolean {
-    const name = String(departmentName ?? '').trim().toLowerCase();
+    const name = String(departmentName ?? '')
+      .trim()
+      .toLowerCase();
     return name.startsWith('graduate school') || name.startsWith('school of');
   }
 
@@ -696,7 +730,9 @@ export class AuthorsDetails implements OnInit {
   private getUnavailableStaffNames(): Set<string> {
     return new Set(
       this.testSubsections.controls
-        .map((control, index) => (index === this.editingIndex ? '' : control.get('staffName')?.value))
+        .map((control, index) =>
+          index === this.editingIndex ? '' : control.get('staffName')?.value,
+        )
         .filter((staffName): staffName is string => !!staffName)
         .map((staffName) => this.normalizeStaffName(staffName)),
     );
@@ -714,7 +750,9 @@ export class AuthorsDetails implements OnInit {
   }
 
   private normalizeStaffName(staffName: unknown): string {
-    return String(staffName ?? '').trim().toLowerCase();
+    return String(staffName ?? '')
+      .trim()
+      .toLowerCase();
   }
 
   private updateStaffOptionStates(): void {
@@ -733,7 +771,11 @@ export class AuthorsDetails implements OnInit {
   }
 
   private isCurrentUserStaff(staff: AcademicStaffOption): boolean {
-    const currentUsername = this.auth.currentUser()?.username?.split('@', 1)[0]?.trim().toLowerCase();
+    const currentUsername = this.auth
+      .currentUser()
+      ?.username?.split('@', 1)[0]
+      ?.trim()
+      .toLowerCase();
     if (!currentUsername) {
       return false;
     }
@@ -808,5 +850,4 @@ export class AuthorsDetails implements OnInit {
   private parseTPNumber(stored: string): string {
     return stored.replace(/^TP/i, '');
   }
-
 }

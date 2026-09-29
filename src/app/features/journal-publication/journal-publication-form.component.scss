@@ -47,12 +47,11 @@
   padding: var(--space-5);
   border: 1px solid color-mix(in srgb, var(--color-warning) 34%, var(--border-default));
   border-radius: var(--radius-xl);
-  background:
-    linear-gradient(
-      135deg,
-      color-mix(in srgb, var(--color-warning) 10%, var(--color-surface)) 0%,
-      var(--color-surface) 68%
-    );
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--color-warning) 10%, var(--color-surface)) 0%,
+    var(--color-surface) 68%
+  );
   box-shadow: var(--shadow-sm);
 }
 
@@ -507,6 +506,394 @@
 
   strong {
     color: var(--color-error);
+  }
+}
+
+// Figma concept route -------------------------------------------------------
+// The route uses the existing form components and controls. These overrides
+// are deliberately scoped to .journal-app--new-design so the production form
+// at /journal/application remains unchanged.
+.journal-app--new-design {
+  --journal-design-card-radius: 12px;
+  --journal-design-side-column: clamp(300px, 25vw, 400px);
+  --journal-design-column-gap: 20px;
+  --journal-design-ink: #172033;
+  --journal-design-muted: #667085;
+  --journal-design-blue: #1967d2;
+
+  max-width: none;
+  gap: 24px;
+  padding-top: 0;
+  padding-bottom: 0;
+
+  .form-container {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .journal-app__messages {
+    position: relative;
+    z-index: 2;
+  }
+
+  ::ng-deep {
+    .form-main-title-wrapper--wide .form-main-title-text,
+    .card__title,
+    .form-label,
+    .upload-field-title,
+    .declaration-box__title {
+      color: var(--journal-design-ink);
+    }
+
+    .form-main-title-wrapper--wide .form-main-title-eyebrow {
+      color: var(--journal-design-blue);
+    }
+
+    .form-main-title-wrapper--wide .form-main-title-description {
+      color: var(--journal-design-muted);
+    }
+
+    app-journal-details > .form-section > app-custom-header:first-child {
+      display: none;
+    }
+
+    app-journal-details > .form-section > .section-fields {
+      gap: 24px;
+    }
+
+    app-journal-details > .form-section > .section-fields > .card,
+    app-journal-details > .form-section > .section-fields > .costing-layout,
+    app-journal-details > .form-section > .section-fields > app-custom-header {
+      width: 100%;
+      min-width: 0;
+    }
+
+    .journal-app__step-indicator .step-indicator {
+      counter-reset: journal-step;
+      justify-content: stretch;
+      min-height: 64px;
+      padding: 12px 20px;
+      border-color: var(--border-light);
+      border-radius: var(--journal-design-card-radius);
+      box-shadow: none;
+    }
+
+    .journal-app__step-indicator .step {
+      counter-increment: journal-step;
+      flex: 0 1 auto;
+      min-width: 0;
+      flex-direction: row;
+      justify-content: center;
+      gap: var(--space-3);
+      padding: 4px 10px;
+    }
+
+    .journal-app__step-indicator .step__bubble {
+      width: 32px;
+      height: 32px;
+      flex: 0 0 32px;
+      border-width: 1px;
+      background: var(--color-surface);
+      border-color: var(--color-primary);
+      color: var(--color-primary);
+      box-shadow: none;
+    }
+
+    .journal-app__step-indicator .step__bubble .material-icons {
+      display: none;
+    }
+
+    .journal-app__step-indicator .step__bubble::before {
+      content: counter(journal-step);
+      font-size: var(--fs-sm);
+      font-weight: var(--fw-bold);
+    }
+
+    .journal-app__step-indicator .step__label {
+      max-width: 190px;
+      color: var(--journal-design-ink);
+      font-size: var(--fs-xs);
+      font-weight: var(--fw-semibold);
+      text-align: left;
+    }
+
+    .journal-app__step-indicator .step--active .step__bubble,
+    .journal-app__step-indicator .step--complete .step__bubble {
+      border-color: var(--color-primary);
+      background: var(--color-primary);
+      color: var(--color-text-inverse);
+      box-shadow: none;
+    }
+
+    .journal-app__step-indicator .step--active .step__label,
+    .journal-app__step-indicator .step--complete .step__label {
+      color: var(--journal-design-ink);
+    }
+
+    .journal-app__step-indicator .step--warning .step__bubble,
+    .journal-app__step-indicator .step--error .step__bubble {
+      color: var(--color-text-inverse);
+      box-shadow: none;
+    }
+
+    .journal-app__step-indicator .step-connector {
+      min-width: 44px;
+      margin-top: 20px;
+      height: 1px;
+    }
+
+    app-journal-details > .form-section,
+    app-authors-details > .form-section,
+    app-documents > .form-section,
+    app-declaration > .declaration-section {
+      padding: 0;
+    }
+
+    app-journal-details > .form-section > app-custom-header:first-child,
+    app-documents > .form-section > app-custom-header:first-child {
+      margin-bottom: var(--space-4);
+    }
+
+    app-journal-details .section-fields,
+    app-authors-details .section-fields,
+    app-documents .section-fields,
+    app-declaration .declaration-section {
+      gap: var(--space-5);
+    }
+
+    app-journal-details .card,
+    app-authors-details .card,
+    app-documents .card,
+    app-declaration .card,
+    app-declaration .declaration-box {
+      border: 1px solid var(--border-light);
+      border-radius: var(--journal-design-card-radius);
+      background: var(--color-surface);
+      box-shadow: none;
+    }
+
+    app-journal-details .card__header,
+    app-authors-details .card__header,
+    app-documents .card__header {
+      padding: var(--space-5) var(--space-5) 0;
+      border: 0;
+      background: transparent;
+    }
+
+    app-journal-details .card__content,
+    app-authors-details .card__content,
+    app-documents .card__content,
+    app-declaration .card__content {
+      padding: var(--space-5);
+    }
+
+    app-journal-details
+      > .form-section
+      > .section-fields
+      > .card:first-child
+      .row--2 {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    app-journal-details .journal-details-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      align-items: start;
+      gap: 24px;
+    }
+
+    app-journal-details .journal-details-grid > .form-column {
+      display: contents;
+    }
+
+    app-journal-details .journal-details-grid .form-field {
+      grid-column: 1 / -1;
+      order: initial;
+      min-width: 0;
+    }
+
+    app-journal-details
+      .journal-details-grid
+      > .form-column:first-child
+      > .form-field:first-child {
+      grid-column: 1 / -1;
+      order: 1;
+    }
+
+    app-journal-details .journal-details-grid .journal-details-left-field {
+      order: 2;
+    }
+
+    app-journal-details .journal-details-grid .journal-details-research-type-field {
+      order: 3;
+    }
+
+    app-journal-details .journal-details-grid .journal-details-scopus-field {
+      order: 4;
+    }
+
+    app-journal-details .journal-details-grid .journal-details-primary-field {
+      order: 5;
+    }
+
+    app-journal-details .journal-details-grid .journal-details-cited-field {
+      position: static;
+      order: 6;
+      width: auto;
+      min-height: 0;
+      padding: 0;
+      border: 0;
+      background: transparent;
+    }
+
+    app-journal-details .radio-group,
+    app-documents .radio-group {
+      gap: var(--space-2);
+    }
+
+    app-journal-details .radio-option,
+    app-documents .radio-option {
+      min-height: 34px;
+      padding: var(--space-2) var(--space-3);
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-full);
+      background: var(--color-surface);
+    }
+
+    app-journal-details .radio-option:has(input:checked),
+    app-documents .radio-option:has(input:checked) {
+      border-color: var(--color-primary);
+      background: var(--color-primary-light);
+      color: var(--color-primary-dark);
+    }
+
+    app-journal-details .costing-layout {
+      gap: 24px;
+      margin-top: 0;
+    }
+
+    app-journal-details .costing-subcard,
+    app-journal-details .sponsorship-subsection,
+    app-journal-details .total-field,
+    app-journal-details .costing-remarks {
+      border-color: var(--border-light);
+      border-radius: var(--radius-lg);
+    }
+
+    app-authors-details .list-section-header {
+      justify-content: flex-end;
+    }
+
+    app-authors-details .empty-state {
+      min-height: 180px;
+    }
+
+    app-documents .card {
+      margin-top: 0;
+    }
+
+    app-documents .upload-grid {
+      gap: var(--space-5);
+    }
+
+    app-declaration .declaration-box {
+      padding: var(--space-6);
+      border-left: 1px solid var(--border-light);
+    }
+
+    app-declaration .agreement-trigger {
+      border: 1px solid var(--border-light);
+      background: var(--color-surface);
+    }
+
+    .journal-app__wizard-nav {
+      position: static;
+      width: 100%;
+      min-width: 0;
+    }
+
+    .journal-app__wizard-nav .form-wizard-nav {
+      position: static;
+      width: 100%;
+      margin: 0;
+      padding: var(--space-4) var(--space-8);
+      border: 1px solid var(--border-light);
+      border-radius: var(--journal-design-card-radius);
+      background: var(--color-surface);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .journal-app__wizard-nav .btn {
+      min-width: 126px;
+    }
+  }
+}
+
+@media (max-width: 1200px) {
+  .journal-app--new-design {
+    ::ng-deep {
+      .journal-app__step-indicator .step {
+        min-width: 112px;
+      }
+
+      .journal-app__step-indicator .step__label {
+        max-width: 128px;
+      }
+
+      app-journal-details .journal-details-grid {
+        grid-template-columns: 1fr;
+      }
+
+      app-journal-details
+        .journal-details-grid
+        > .form-column:first-child
+        > .form-field:first-child,
+      app-journal-details .journal-details-primary-field,
+      app-journal-details .journal-details-left-field,
+      app-journal-details .journal-details-research-type-field,
+      app-journal-details .journal-details-scopus-field,
+      app-journal-details .journal-details-cited-field {
+        position: static;
+        grid-column: 1;
+        width: auto;
+        min-height: 0;
+      }
+    }
+  }
+}
+
+@media (max-width: 720px) {
+  .journal-app--new-design {
+    ::ng-deep {
+      .journal-app__step-indicator .step-indicator {
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        overflow-x: auto;
+      }
+
+      .journal-app__step-indicator .step {
+        min-width: 144px;
+      }
+
+      .journal-app__step-indicator .step-connector {
+        flex: 0 0 var(--space-6);
+      }
+
+      app-journal-details
+        > .form-section
+        > .section-fields
+        > .card:first-child
+        .row--2 {
+        grid-template-columns: 1fr;
+      }
+
+      .journal-app__wizard-nav .form-wizard-nav {
+        margin: var(--space-5) 0 0;
+        padding: var(--space-4);
+        border-radius: var(--journal-design-card-radius);
+      }
+    }
   }
 }
 

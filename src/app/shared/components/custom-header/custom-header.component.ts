@@ -13,4 +13,5 @@ export class CustomHeaderComponent {
   @Input() svgIcon: SvgIconDefinition | null = null;
   @Input() icon = '';
   @Input() title = '';
+  @Input() presentation: 'default' | 'plain' = 'default';
 }

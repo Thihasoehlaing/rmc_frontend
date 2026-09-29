@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { environment } from '../../../environments/environment';
 
 import { JournalPublicationFormComponent } from './journal-publication-form.component';
+import { journalPublicationFormRoutes } from './journal_publication_form.routes';
 
 describe('JournalPublicationFormComponent', () => {
   let component: JournalPublicationFormComponent;
@@ -25,6 +26,15 @@ describe('JournalPublicationFormComponent', () => {
     expect(component.guidelinesEndpoint).toBe(
       `${environment.apiUrl}/admin-settings/guidelines/forms/JOURNAL`,
     );
+  });
+
+  it('exposes the Figma presentation on a separate route', () => {
+    const route = journalPublicationFormRoutes.find(
+      (candidate) => candidate.path === 'application/new-design',
+    );
+
+    expect(route?.data?.['journalDesign']).toBe('figma');
+    expect(route?.data?.['permission']).toBeTruthy();
   });
 
   it('lists each missing Journal Details field after the step is checked', () => {

@@ -1054,7 +1054,7 @@
           @if (budgetSectionsWithItems().length) {
             @for (entry of budgetSectionsWithItems(); track entry.section.id) {
               <div class="budget-block">
-                <app-custom-subheader icon="receipt_long" [title]="entry.section.section_name || entry.section.section_code"></app-custom-subheader>
+                <app-custom-subheader icon="receipt_long" [title]="budgetSectionTitle(entry.section)"></app-custom-subheader>
                 @if (entry.rows.length) {
                   <app-table-scroll-hint></app-table-scroll-hint>
                   <app-data-table [columns]="budgetColumns" [rows]="entry.rows" [hoverable]="false" [striped]="false"></app-data-table>
@@ -1069,15 +1069,11 @@
 
           @if (isToggled('reviewer1') || isToggled('reviewer2')) {
             <div class="section-comments section-comments--inline">
-              @for (field of visibleBudgetFields(); track field.fieldCode) {
-                @if (field.fieldCode !== 'budget_summary') {
-                  @if (isToggled('reviewer1')) {
-                    <ng-container *ngTemplateOutlet="fieldCommentBlock; context: { field: field, actor: 'reviewer1', source: 'reviewer1' }"></ng-container>
-                  }
-                  @if (isToggled('reviewer2')) {
-                    <ng-container *ngTemplateOutlet="fieldCommentBlock; context: { field: field, actor: 'reviewer2', source: 'reviewer2' }"></ng-container>
-                  }
-                }
+              @if (isToggled('reviewer1')) {
+                <ng-container *ngTemplateOutlet="fieldCommentBlock; context: { field: fieldDef('budget_breakdown'), actor: 'reviewer1', source: 'reviewer1' }"></ng-container>
+              }
+              @if (isToggled('reviewer2')) {
+                <ng-container *ngTemplateOutlet="fieldCommentBlock; context: { field: fieldDef('budget_breakdown'), actor: 'reviewer2', source: 'reviewer2' }"></ng-container>
               }
             </div>
           }

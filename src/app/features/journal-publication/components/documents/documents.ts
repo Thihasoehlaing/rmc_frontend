@@ -1,4 +1,5 @@
 import { Component, OnInit, ViewChild, inject, effect, Output, EventEmitter } from '@angular/core';
+import { Input } from '@angular/core';
 import { CustomHeaderComponent } from '../../../../shared/components/custom-header/custom-header.component';
 import { CommonModule } from '@angular/common';
 import {
@@ -44,6 +45,7 @@ interface PendingDocumentUpload {
   styleUrl: './documents.scss',
 })
 export class DocumentsComponent implements OnInit {
+  @Input() newDesign = false;
   @Output() formValidityChange = new EventEmitter<boolean>();
   documentsForm!: FormGroup;
   isPreviouslyPublishedWarningOpen = false;

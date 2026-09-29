@@ -126,4 +126,29 @@ describe('FormMainTitleComponent guideline behavior', () => {
 
     expect(openCount).toBe(1);
   }));
+
+  it('renders the wide presentation without changing the supplied wording', () => {
+    const fixture = TestBed.createComponent(FormMainTitleComponent);
+    fixture.componentRef.setInput('title', 'Journal Publication');
+    fixture.componentRef.setInput('eyebrow', 'Journal Publication');
+    fixture.componentRef.setInput('description', 'Journal Publication Guidelines');
+    fixture.componentRef.setInput('helpLabel', 'Journal Publication Guidelines');
+    fixture.componentRef.setInput('presentation', 'wide');
+    fixture.detectChanges();
+
+    const element = fixture.nativeElement as HTMLElement;
+    expect(element.querySelector('.form-main-title-wrapper--wide')).toBeTruthy();
+    expect(element.querySelector('.form-main-title-eyebrow')?.textContent?.trim()).toBe(
+      'Journal Publication',
+    );
+    expect(element.querySelector('.form-main-title-text')?.textContent?.trim()).toBe(
+      'Journal Publication',
+    );
+    expect(element.querySelector('.form-main-title-description')?.textContent?.trim()).toBe(
+      'Journal Publication Guidelines',
+    );
+    expect(element.querySelector('.help-icon__label')?.textContent?.trim()).toBe(
+      'Journal Publication Guidelines',
+    );
+  });
 });

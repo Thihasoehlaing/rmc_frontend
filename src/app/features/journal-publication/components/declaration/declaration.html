@@ -1,6 +1,10 @@
 <section class="declaration-section" [formGroup]="declarationForm">
   <!-- Page Header -->
-  <app-custom-header icon="fact_check" title="Declaration and Agreement"></app-custom-header>
+  <app-custom-header
+    icon="fact_check"
+    title="Declaration and Agreement"
+    [presentation]="newDesign ? 'plain' : 'default'"
+  ></app-custom-header>
 
   <!-- ── Declaration Text ────────────────────────────────────── -->
   <div class="declaration-box">

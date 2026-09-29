@@ -485,10 +485,7 @@ export class RdigDetailsComponent implements OnInit {
 
   readonly outputBudgetFields: FieldCommentDef[] = [
     { fieldCode: 'output_overall', label: 'Research Outputs' },
-    { fieldCode: 'budget_student', label: 'Student Allowances' },
-    { fieldCode: 'budget_travel', label: 'Travelling and Transportation' },
-    { fieldCode: 'budget_materials', label: 'Research Materials and Supplies' },
-    { fieldCode: 'budget_services', label: 'Professional Services' },
+    { fieldCode: 'budget_breakdown', label: 'Budget Breakdown' },
     { fieldCode: 'budget_summary', label: 'Budget - Fit for Purpose', maxScore: 10 },
   ];
 
@@ -567,22 +564,6 @@ export class RdigDetailsComponent implements OnInit {
       this.reviewerOwnTotalScore() < this.approveScoreThreshold()
     );
   }
-
-  /** Only budget field defs that actually exist as budget sections on this application. */
-  visibleBudgetFields = computed(() => {
-    const codes = new Set(this.budgetSections().map((s) => (s.section_code ?? '').toLowerCase()));
-    const has = (needle: string) => Array.from(codes).some((c) => c.includes(needle));
-    return this.outputBudgetFields.filter((f) => {
-      if (f.fieldCode === 'budget_student')
-        return has('student') || has('allowance') || has('v11000');
-      if (f.fieldCode === 'budget_travel')
-        return has('travel') || has('accommodation') || has('v21000');
-      if (f.fieldCode === 'budget_materials')
-        return has('material') || has('supplies') || has('v27000');
-      if (f.fieldCode === 'budget_services') return has('service') || has('v29000');
-      return true;
-    });
-  });
 
   /** One FormControl per reviewer field comment, created lazily. */
   private readonly fieldCommentControls = new Map<string, FormControl<string | null>>();
@@ -906,6 +887,23 @@ export class RdigDetailsComponent implements OnInit {
         })),
     })),
   );
+
+  private readonly budgetSectionTitles: Readonly<Record<string, string>> = {
+    V11000: 'V11000 - Student Allowances',
+    V21000: 'V21000 - Travelling and Accommodation',
+    V27000: 'V27000 - Research Materials & Supplies',
+    V29000: 'V29000 - Special Services',
+  };
+
+  budgetSectionTitle(section: RdigBudgetSectionDto): string {
+    const code = (section.section_code ?? '').trim().toUpperCase();
+    const canonicalTitle = this.budgetSectionTitles[code];
+    if (canonicalTitle) return canonicalTitle;
+
+    const name = section.section_name?.trim() ?? '';
+    return code && name ? `${code} - ${name}` : name || code || 'Budget Section';
+  }
+
   readonly totalBudget = computed(() => this.toNumber(this.rdig()?.total_budget_request));
   readonly totalTeamSize = computed(
     () => this.coResearchers().length + this.collaborators().length,

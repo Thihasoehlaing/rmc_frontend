@@ -1,0 +1,124 @@
+.journal-app--new-design {
+  .journal-app__content {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) var(--journal-design-side-column);
+    align-items: start;
+    gap: var(--journal-design-column-gap);
+
+    > app-journal-details,
+    > app-authors-details,
+    > app-documents,
+    > app-declaration {
+      grid-column: 1;
+      grid-row: 1;
+      min-width: 0;
+    }
+  }
+
+  .journal-app__progress-panel {
+    display: grid;
+    grid-column: 2;
+    grid-row: 1;
+    gap: var(--space-4);
+    align-self: start;
+    min-width: 0;
+  }
+
+  .journal-app__progress-card,
+  .journal-app__checklist-card {
+    padding: var(--space-5);
+    border: 1px solid var(--border-light);
+    border-radius: var(--journal-design-card-radius);
+    background: var(--color-surface);
+    box-sizing: border-box;
+
+    h2 {
+      margin: 0;
+      color: var(--journal-design-ink);
+      font-size: var(--fs-md);
+      font-weight: var(--fw-bold);
+    }
+  }
+
+  .journal-app__progress-summary {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-4);
+    margin-top: var(--space-5);
+
+    strong {
+      color: var(--journal-design-ink);
+      font-size: 32px;
+      line-height: 1;
+    }
+
+    span {
+      color: var(--journal-design-muted);
+      font-size: var(--fs-sm);
+      text-align: right;
+    }
+  }
+
+  .journal-app__progress-track {
+    height: 8px;
+    margin-top: var(--space-5);
+    overflow: hidden;
+    border-radius: var(--radius-full);
+    background: #e5edf7;
+
+    span {
+      display: block;
+      height: 100%;
+      border-radius: inherit;
+      background: var(--color-primary);
+      transition: width var(--transition-base) var(--ease-default);
+    }
+  }
+
+  .journal-app__checklist-card {
+    display: grid;
+    gap: var(--space-3);
+  }
+
+  .journal-app__checklist-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    color: var(--journal-design-muted);
+    font-size: var(--fs-sm);
+
+    .material-icons {
+      font-size: 18px;
+    }
+
+    &--complete {
+      color: var(--color-success);
+    }
+
+    &--current:not(&--complete) {
+      color: var(--color-primary);
+    }
+  }
+}
+
+@media (max-width: 1200px) {
+  .journal-app--new-design {
+    .journal-app__content {
+      grid-template-columns: 1fr;
+
+      > app-journal-details,
+      > app-authors-details,
+      > app-documents,
+      > app-declaration {
+        grid-column: 1;
+        grid-row: 2;
+      }
+    }
+
+    .journal-app__progress-panel {
+      grid-column: 1;
+      grid-row: 1;
+    }
+  }
+}

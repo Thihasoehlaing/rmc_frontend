@@ -1,7 +1,6 @@
 import { Component, OnInit, Output, EventEmitter, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { CustomSubheaderComponent } from '../../../../shared/components/custom-subheader/custom-subheader.component';
 import { ValidationMessageComponent } from '../../../../shared/components/validation-message/validation-message.component';
 
 @Component({
@@ -10,7 +9,6 @@ import { ValidationMessageComponent } from '../../../../shared/components/valida
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    CustomSubheaderComponent,
     ValidationMessageComponent
   ],
   templateUrl: './Declaration.html',

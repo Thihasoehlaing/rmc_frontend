@@ -1,13 +1,19 @@
 <div class="ragra-app application-form-page">
 
   <app-form-main-title
-    title="RA/GRA Application"
+    class="ragra-app__main-title"
+    title="RA/GRA Requisition"
+    eyebrow="RA/GRA REQUISITION"
+    description="RA/GRA Requisition Guidelines"
+    helpLabel="RA/GRA Requisition Guidelines"
+    presentation="wide"
     modalTitle="RA/GRA Applicant Guidelines"
     [guidelineContext]="guidelineContext"
     endpoint="guidelines/ra-gra">
   </app-form-main-title>
 
   <app-step-indicator
+    class="ragra-app__step-indicator"
     [currentStep]="currentStep"
     [steps]="steps"
     [stepStatuses]="stepStatuses"
@@ -15,34 +21,243 @@
     (stepClick)="onStepClick($event)">
   </app-step-indicator>
 
-  <!-- ── 2. Main Form ──────────────────────────────────────────── -->
+  <!-- ── Main Form ──────────────────────────────────────────── -->
   <fieldset class="form-container application-form-surface">
     <div class="ragra-app__content">
 
-      <!-- Step 1: Applicant and Project Details -->
-      <app-ragra-project-details
-        *ngIf="currentStep === 1"
-        (formValidityChange)="updateFormValidity(1, $event)">
-      </app-ragra-project-details>
+      <!-- Step 1: Applicant and Project Details ONLY -->
+      @if (currentStep === 1) {
+        <app-ragra-project-details
+          (formValidityChange)="updateFormValidity(1, $event)">
+        </app-ragra-project-details>
+      }
 
-      <!-- Step 2: Student Details -->
-      <app-ragra-student-details
-        *ngIf="currentStep === 2"
-        [positionRequested]="positionRequested"
-        (formValidityChange)="updateFormValidity(2, $event)">
-      </app-ragra-student-details>
+      <!-- Step 2: Student Details + Appointment & Compensation + Supporting Documents -->
+      @if (currentStep === 2) {
+        <div class="step-2-container">
+          <app-ragra-student-details
+            [positionRequested]="positionRequested"
+            (formValidityChange)="updateFormValidity(2, $event)">
+          </app-ragra-student-details>
 
-      <!-- Step 3: Declaration -->
-      <app-ragra-declaration
-        *ngIf="currentStep === 3"
-        (formValidityChange)="updateFormValidity(3, $event)">
-      </app-ragra-declaration>
+          <!-- Supporting Documents Section (Part of Step 2) -->
+          <div class="supporting-documents-section">
+            <h2 class="section-main-title">Supporting Documents</h2>
+            <p class="section-description">Upload all required documents in PDF format. Maximum 4 MB per file.</p>
+            
+            <div class="documents-grid">
+              @for (doc of paginatedDocuments; track doc.id) {
+                <div class="document-card">
+                  <h3 class="document-card__title">{{ doc.title }} @if (doc.required) {<span class="required-asterisk">*</span>}</h3>
+                  <p class="document-card__description">{{ doc.description }}</p>
+                  <div class="document-card__upload">
+                    <span class="material-icons">cloud_upload</span>
+                    <p>Drop PDF here or browse</p>
+                  </div>
+                  <span class="document-card__meta">Maximum 4 MB</span>
+                  <span class="document-card__requirement">{{ doc.required ? 'Required' : 'Optional' }} · PDF ONLY</span>
+                </div>
+              }
+            </div>
+
+            <!-- Pagination -->
+            <div class="documents-pagination">
+              <div class="pagination-info">
+                Showing {{ paginationStart }}–{{ paginationEnd }} of {{ totalDocuments }} documents
+              </div>
+              <div class="pagination-controls">
+                @for (pageNum of pageNumbers; track pageNum) {
+                  <button 
+                    type="button"
+                    class="pagination-btn"
+                    [class.pagination-btn--active]="currentDocPage === pageNum"
+                    (click)="goToDocumentPage(pageNum)">
+                    {{ pageNum }}
+                  </button>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- Step 3: Declaration ONLY -->
+      @if (currentStep === 3) {
+        <app-ragra-declaration
+          (formValidityChange)="updateFormValidity(3, $event)">
+        </app-ragra-declaration>
+      }
+
+      <!-- Right Sidebar -->
+      <aside class="ragra-app__sidebar" aria-label="Application information">
+        
+        <!-- Application Progress (All Steps) -->
+        <section class="sidebar-card">
+          <h2 class="sidebar-card__title">Application progress</h2>
+          <div class="progress-summary">
+            <strong class="progress-summary__percentage">{{ applicationProgress }}%</strong>
+            <span class="progress-summary__text">{{ completedStepCount }} of {{ totalSteps }} steps complete</span>
+          </div>
+          <div
+            class="progress-bar"
+            role="progressbar"
+            aria-label="RA/GRA application completion"
+            aria-valuemin="0"
+            aria-valuemax="100"
+            [attr.aria-valuenow]="applicationProgress">
+            <span class="progress-bar__fill" [style.width.%]="applicationProgress"></span>
+          </div>
+        </section>
+
+        <!-- Appointment Snapshot (Step 1) -->
+        <section class="sidebar-card" *ngIf="currentStep === 1">
+          <h2 class="sidebar-card__title">Appointment Snapshot</h2>
+          <div class="snapshot-grid">
+            <div class="snapshot-item">
+              <span class="snapshot-item__label">POSITION</span>
+              <span class="snapshot-item__value">{{ positionRequested || 'Not selected' }}</span>
+            </div>
+            <div class="snapshot-item" *ngIf="placementType">
+              <span class="snapshot-item__label">PLACEMENT</span>
+              <span class="snapshot-item__value">{{ placementType }}</span>
+            </div>
+            <div class="snapshot-item" *ngIf="applicationType || year">
+              <span class="snapshot-item__label">APPLICATION</span>
+              <span class="snapshot-item__value">{{ applicationType }}{{ year ? ' · ' + year : '' }}</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Conditional Rules (Step 1) -->
+        <section class="sidebar-card sidebar-card--info" *ngIf="currentStep === 1">
+          <div class="sidebar-card__icon">
+            <span class="material-icons">info</span>
+          </div>
+          <h2 class="sidebar-card__title">Conditional Rules</h2>
+          <div class="info-content">
+            <p class="info-content__rule" *ngIf="positionRequested === 'RA'">
+              <strong>RA · UG Student</strong><br>
+              Research Project is auto-selected; Cluster disabled.
+            </p>
+            <p class="info-content__rule" *ngIf="positionRequested === 'GRA'">
+              <strong>GRA · PG Student</strong><br>
+              Project or Cluster placement is available.<br>
+              Programme and fee-reduction fields appear in Step 2.
+            </p>
+            <p class="info-content__rule" *ngIf="!positionRequested">
+              <strong>Selection Required</strong><br>
+              Please select a position to view applicable rules.
+            </p>
+          </div>
+        </section>
+
+        <!-- Approval Route (Step 1) -->
+        <section class="sidebar-card" *ngIf="currentStep === 1">
+          <h2 class="sidebar-card__title">Approval Route</h2>
+          <ul class="approval-route">
+            <li class="approval-route__step">
+              <span class="approval-route__number">1</span>
+              <div class="approval-route__content">
+                <strong>Head of School</strong>
+                <span>Academic and workload review</span>
+              </div>
+            </li>
+            <li class="approval-route__step">
+              <span class="approval-route__number">2</span>
+              <div class="approval-route__content">
+                <strong>RMC review</strong>
+                <span>Project, grant, and appointment checks</span>
+              </div>
+            </li>
+            <li class="approval-route__step">
+              <span class="approval-route__number">3</span>
+              <div class="approval-route__content">
+                <strong>HR & management</strong>
+                <span>Employment and final approvals</span>
+              </div>
+            </li>
+          </ul>
+        </section>
+
+        <!-- Student Snapshot (Step 2) -->
+        <section class="sidebar-card" *ngIf="currentStep === 2">
+          <h2 class="sidebar-card__title">Student Snapshot</h2>
+          <div class="snapshot-grid">
+            <div class="snapshot-item">
+              <span class="snapshot-item__label">POSITION</span>
+              <span class="snapshot-item__value">{{ positionRequested || 'Not selected' }}</span>
+            </div>
+            <div class="snapshot-item" *ngIf="monthlyAllowance">
+              <span class="snapshot-item__label">MONTHLY ALLOWANCE</span>
+              <span class="snapshot-item__value">{{ monthlyAllowance }}</span>
+            </div>
+            <div class="snapshot-item">
+              <span class="snapshot-item__label">APPOINTMENT</span>
+              <span class="snapshot-item__value">
+                {{ commencementDate !== 'Pending' ? commencementDate : 'Dates pending' }}
+              </span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Required Documents (Step 2) -->
+        <section class="sidebar-card" *ngIf="currentStep === 2">
+          <h2 class="sidebar-card__title">Required Documents</h2>
+          <ul class="document-checklist">
+            <li class="document-checklist__item">
+              <span class="material-icons document-checklist__icon document-checklist__icon--pending">radio_button_unchecked</span>
+              <span>Employment Application Form</span>
+            </li>
+            <li class="document-checklist__item">
+              <span class="material-icons document-checklist__icon document-checklist__icon--pending">radio_button_unchecked</span>
+              <span>Academic Transcripts</span>
+            </li>
+            <li class="document-checklist__item">
+              <span class="material-icons document-checklist__icon document-checklist__icon--pending">radio_button_unchecked</span>
+              <span>RA/GRA CV</span>
+            </li>
+            <li class="document-checklist__item">
+              <span class="material-icons document-checklist__icon document-checklist__icon--pending">radio_button_unchecked</span>
+              <span>Bank Statement</span>
+            </li>
+            <li class="document-checklist__item">
+              <span class="material-icons document-checklist__icon document-checklist__icon--pending">radio_button_unchecked</span>
+              <span>Recruitment Submission Form</span>
+            </li>
+            <li class="document-checklist__item">
+              <span class="material-icons document-checklist__icon document-checklist__icon--pending">radio_button_unchecked</span>
+              <span>Confidentiality Agreement</span>
+            </li>
+          </ul>
+        </section>
+
+        <!-- Validation Rules (Step 2) -->
+        <section class="sidebar-card sidebar-card--warning" *ngIf="currentStep === 2">
+          <div class="sidebar-card__icon">
+            <span class="material-icons">rule</span>
+          </div>
+          <h2 class="sidebar-card__title">Validation Rules</h2>
+          <div class="info-content">
+            <p class="info-content__rule" *ngIf="isGRA">
+              <strong>GRA fields are active</strong><br>
+              Programme and PG fee reduction are required.
+            </p>
+            <p class="info-content__rule">
+              <strong>Appointment dates</strong><br>
+              Commencement follows project start.<br>
+              End date respects project/visa limits.
+            </p>
+          </div>
+        </section>
+
+      </aside>
 
     </div>
   </fieldset>
 
-  <!-- ── 3. Wizard Navigation Footer ─────────────────────────── -->
+  <!-- ── Wizard Navigation Footer ─────────────────────────── -->
   <app-form-wizard-nav
+    class="ragra-app__wizard-nav"
     [currentStep]="currentStep"
     [totalSteps]="totalSteps"
     [isSaving]="isSaving"

@@ -28,12 +28,12 @@ describe('JournalPublicationFormComponent', () => {
     );
   });
 
-  it('exposes the Figma presentation on a separate route', () => {
+  it('exposes the current design on the primary application route', () => {
     const route = journalPublicationFormRoutes.find(
-      (candidate) => candidate.path === 'application/new-design',
+      (candidate) => candidate.path === 'application',
     );
 
-    expect(route?.data?.['journalDesign']).toBe('figma');
+    expect(route).toBeTruthy();
     expect(route?.data?.['permission']).toBeTruthy();
   });
 

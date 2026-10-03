@@ -74,7 +74,6 @@ export class JournalPublicationFormComponent {
   private workflowRequests = inject(WorkflowRequestsService);
   private actionLoading = inject(ActionLoadingService);
   private auth = inject(AuthService);
-  readonly isNewDesign = this.route.snapshot.data['journalDesign'] === 'figma';
   requestId: number | null = this.readRequestId();
   isOptionsLoading = false;
   readonly loadError = signal<string | null>(null);

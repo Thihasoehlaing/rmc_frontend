@@ -1,11 +1,11 @@
-<div class="journal-app application-form-page" [class.journal-app--new-design]="isNewDesign">
+<div class="journal-app application-form-page">
   <app-form-main-title
     class="journal-app__main-title"
     title="Journal Publication"
-    [eyebrow]="isNewDesign ? 'Journal Publication' : ''"
-    [description]="isNewDesign ? 'Journal Publication Guidelines' : ''"
-    [helpLabel]="isNewDesign ? 'Journal Publication Guidelines' : ''"
-    [presentation]="isNewDesign ? 'wide' : 'default'"
+    eyebrow="Journal Publication"
+    description="Journal Publication Guidelines"
+    helpLabel="Journal Publication Guidelines"
+    presentation="wide"
     [guidelineContext]="guidelineContext"
     modalTitle="Journal Publication Guidelines"
     [endpoint]="guidelinesEndpoint"
@@ -139,66 +139,61 @@
         ></app-journal-details>
         <app-authors-details
           [hidden]="currentStep !== 2"
-          [newDesign]="isNewDesign"
           (formValidityChange)="updateFormValidity(2, $event)"
         ></app-authors-details>
         <app-documents
           [hidden]="currentStep !== 3"
-          [newDesign]="isNewDesign"
           (formValidityChange)="updateFormValidity(3, $event)"
         ></app-documents>
         <app-declaration
           [hidden]="currentStep !== 4"
-          [newDesign]="isNewDesign"
           (formValidityChange)="updateFormValidity(4, $event)"
         >
         </app-declaration>
 
-        @if (isNewDesign) {
-          <aside class="journal-app__progress-panel" aria-label="Application progress">
-            <section class="journal-app__progress-card">
-              <h2>Application progress</h2>
-              <div class="journal-app__progress-summary">
-                <strong>{{ applicationProgress }}%</strong>
-                <span>{{ completedStepCount }} of {{ totalSteps }} steps complete</span>
-              </div>
-              <div
-                class="journal-app__progress-track"
-                role="progressbar"
-                aria-label="Journal application completion"
-                aria-valuemin="0"
-                aria-valuemax="100"
-                [attr.aria-valuenow]="applicationProgress"
-              >
-                <span [style.width.%]="applicationProgress"></span>
-              </div>
-            </section>
+        <aside class="journal-app__progress-panel" aria-label="Application progress">
+          <section class="journal-app__progress-card">
+            <h2>Application progress</h2>
+            <div class="journal-app__progress-summary">
+              <strong>{{ applicationProgress }}%</strong>
+              <span>{{ completedStepCount }} of {{ totalSteps }} steps complete</span>
+            </div>
+            <div
+              class="journal-app__progress-track"
+              role="progressbar"
+              aria-label="Journal application completion"
+              aria-valuemin="0"
+              aria-valuemax="100"
+              [attr.aria-valuenow]="applicationProgress"
+            >
+              <span [style.width.%]="applicationProgress"></span>
+            </div>
+          </section>
 
-            @if (currentStep === totalSteps) {
-              <section class="journal-app__checklist-card">
-                <h2>Completion checklist</h2>
-                @for (step of steps; track step.label; let index = $index) {
-                  <div
-                    class="journal-app__checklist-item"
-                    [class.journal-app__checklist-item--complete]="isStepComplete(index + 1)"
-                    [class.journal-app__checklist-item--current]="index + 1 === currentStep"
-                  >
-                    <span class="material-icons" aria-hidden="true">
-                      @if (isStepComplete(index + 1)) {
-                        check_circle
-                      } @else if (index + 1 === currentStep) {
-                        radio_button_checked
-                      } @else {
-                        radio_button_unchecked
-                      }
-                    </span>
-                    <span>{{ step.label }}</span>
-                  </div>
-                }
-              </section>
-            }
-          </aside>
-        }
+          @if (currentStep === totalSteps) {
+            <section class="journal-app__checklist-card">
+              <h2>Completion checklist</h2>
+              @for (step of steps; track step.label; let index = $index) {
+                <div
+                  class="journal-app__checklist-item"
+                  [class.journal-app__checklist-item--complete]="isStepComplete(index + 1)"
+                  [class.journal-app__checklist-item--current]="index + 1 === currentStep"
+                >
+                  <span class="material-icons" aria-hidden="true">
+                    @if (isStepComplete(index + 1)) {
+                      check_circle
+                    } @else if (index + 1 === currentStep) {
+                      radio_button_checked
+                    } @else {
+                      radio_button_unchecked
+                    }
+                  </span>
+                  <span>{{ step.label }}</span>
+                </div>
+              }
+            </section>
+          }
+        </aside>
       </div>
     }
   </fieldset>

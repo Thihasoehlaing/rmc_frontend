@@ -1,5 +1,4 @@
 import { Component, OnInit, Output, EventEmitter, inject, effect } from '@angular/core';
-import { Input } from '@angular/core';
 import { CustomHeaderComponent } from '../../../../shared/components/custom-header/custom-header.component';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -18,7 +17,6 @@ import {
   styleUrl: './declaration.scss',
 })
 export class DeclarationComponent implements OnInit {
-  @Input() newDesign = false;
   declarationForm!: FormGroup;
 
   @Output() formValidityChange = new EventEmitter<boolean>();

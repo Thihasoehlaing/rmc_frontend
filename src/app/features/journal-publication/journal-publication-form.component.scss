@@ -509,17 +509,14 @@
   }
 }
 
-// Figma concept route -------------------------------------------------------
-// The route uses the existing form components and controls. These overrides
-// are deliberately scoped to .journal-app--new-design so the production form
-// at /journal/application remains unchanged.
-.journal-app--new-design {
+// Current Journal application design ---------------------------------------
+.journal-app {
   --journal-design-card-radius: 12px;
   --journal-design-side-column: clamp(300px, 25vw, 400px);
   --journal-design-column-gap: 20px;
-  --journal-design-ink: #172033;
-  --journal-design-muted: #667085;
-  --journal-design-blue: #1967d2;
+  --journal-design-ink: var(--color-text-primary);
+  --journal-design-muted: var(--color-text-secondary);
+  --journal-design-blue: var(--color-primary);
 
   max-width: none;
   gap: 24px;
@@ -572,9 +569,10 @@
 
     .journal-app__step-indicator .step-indicator {
       counter-reset: journal-step;
-      justify-content: stretch;
-      min-height: 64px;
-      padding: 12px 20px;
+      align-items: flex-start;
+      justify-content: space-around;
+      min-height: 80px;
+      padding: 12px 24px;
       border-color: var(--border-light);
       border-radius: var(--journal-design-card-radius);
       box-shadow: none;
@@ -582,12 +580,12 @@
 
     .journal-app__step-indicator .step {
       counter-increment: journal-step;
-      flex: 0 1 auto;
+      flex: 1 1 0;
       min-width: 0;
-      flex-direction: row;
+      flex-direction: column;
       justify-content: center;
-      gap: var(--space-3);
-      padding: 4px 10px;
+      gap: 10px;
+      padding: 0 12px;
     }
 
     .journal-app__step-indicator .step__bubble {
@@ -595,9 +593,9 @@
       height: 32px;
       flex: 0 0 32px;
       border-width: 1px;
-      background: var(--color-surface);
-      border-color: var(--color-primary);
-      color: var(--color-primary);
+      background: var(--color-background-secondary);
+      border-color: var(--border-light);
+      color: var(--color-text-muted);
       box-shadow: none;
     }
 
@@ -612,11 +610,11 @@
     }
 
     .journal-app__step-indicator .step__label {
-      max-width: 190px;
-      color: var(--journal-design-ink);
+      max-width: 220px;
+      color: var(--journal-design-muted);
       font-size: var(--fs-xs);
-      font-weight: var(--fw-semibold);
-      text-align: left;
+      font-weight: var(--fw-medium);
+      text-align: center;
     }
 
     .journal-app__step-indicator .step--active .step__bubble,
@@ -632,6 +630,10 @@
       color: var(--journal-design-ink);
     }
 
+    .journal-app__step-indicator .step--active .step__label {
+      font-weight: var(--fw-bold);
+    }
+
     .journal-app__step-indicator .step--warning .step__bubble,
     .journal-app__step-indicator .step--error .step__bubble {
       color: var(--color-text-inverse);
@@ -639,9 +641,7 @@
     }
 
     .journal-app__step-indicator .step-connector {
-      min-width: 44px;
-      margin-top: 20px;
-      height: 1px;
+      display: none;
     }
 
     app-journal-details > .form-section,
@@ -831,14 +831,14 @@
 }
 
 @media (max-width: 1200px) {
-  .journal-app--new-design {
+  .journal-app {
     ::ng-deep {
       .journal-app__step-indicator .step {
-        min-width: 112px;
+        min-width: 0;
       }
 
       .journal-app__step-indicator .step__label {
-        max-width: 128px;
+        max-width: 160px;
       }
 
       app-journal-details .journal-details-grid {
@@ -864,7 +864,7 @@
 }
 
 @media (max-width: 720px) {
-  .journal-app--new-design {
+  .journal-app {
     ::ng-deep {
       .journal-app__step-indicator .step-indicator {
         flex-wrap: nowrap;
@@ -874,10 +874,6 @@
 
       .journal-app__step-indicator .step {
         min-width: 144px;
-      }
-
-      .journal-app__step-indicator .step-connector {
-        flex: 0 0 var(--space-6);
       }
 
       app-journal-details

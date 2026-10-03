@@ -1,5 +1,4 @@
 ﻿import { Component, OnInit, inject, effect, Output, EventEmitter, signal } from '@angular/core';
-import { Input } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 import { CustomHeaderComponent } from '../../../../shared/components/custom-header/custom-header.component';
@@ -57,7 +56,6 @@ import {
   ],
 })
 export class AuthorsDetails implements OnInit {
-  @Input() newDesign = false;
   readonly apuAffiliation = 'Asia Pacific University';
   readonly authorTextMaxLength = 100;
   readonly tpNumberMaxLength = 6;

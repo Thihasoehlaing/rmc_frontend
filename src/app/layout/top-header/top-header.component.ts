@@ -200,7 +200,6 @@ export class TopHeaderComponent implements OnInit, OnDestroy {
       '/rdig': 'RDIG Application',
       '/conference/application': 'Conference Application',
       '/journal/application': 'Journal Publication',
-      '/journal/application/new-design': 'Journal Publication',
       '/ragra': 'RA/GRA Application',
       '/travel': 'Travel Authorization Application',
       '/partnership/application': 'Partnership Application',

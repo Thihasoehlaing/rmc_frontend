@@ -8,16 +8,6 @@ import {
 } from '../../core/routing/app-route-permissions';
 
 export const journalPublicationFormRoutes: Routes = [
-  // {
-  //   path: 'application/new-design',
-  //   loadComponent: () =>
-  //     import('./journal-publication-form.component').then((m) => m.JournalPublicationFormComponent),
-  //   canActivate: [permissionGuard],
-  //   data: {
-  //     permission: fundingApplicationPermission,
-  //     journalDesign: 'figma',
-  //   },
-  // },
   {
     path: 'application',
     loadComponent: () =>
@@ -25,7 +15,6 @@ export const journalPublicationFormRoutes: Routes = [
     canActivate: [permissionGuard],
     data: {
       permission: fundingApplicationPermission,
-      journalDesign: 'figma',
     },
   },
   {

@@ -51,7 +51,7 @@ const COMMENT_MAX_LENGTH = 1000;
 type ScoredComment = RequestCommentDto;
 
 /** Every distinct comment author role in the RDIG workflow. */
-export type CommentSource = 'hos' | 'rmc' | 'reviewer1' | 'reviewer2' | 'rdig_chair' | 'vc' | 'ceo';
+export type CommentSource = 'hos' | 'rmc' | 'reviewer1' | 'reviewer2' | 'rdig_chair' | 'vc' | 'cfo';
 
 /** HOS and RMC write one comment per group, per submission version. */
 type GroupActor = 'hos' | 'rmc';
@@ -60,8 +60,8 @@ type GroupCode = 'team' | 'project' | 'output_budget' | 'declaration';
 /** Reviewer 1 / Reviewer 2 write one comment under each specific field/table/section. */
 type ReviewerActor = 'reviewer1' | 'reviewer2';
 
-/** RDIG Chair / VC / CEO each write exactly one application-level comment. */
-type WholeFormActor = 'rdig_chair' | 'vc' | 'ceo';
+/** RDIG Chair / VC / CFO each write exactly one application-level comment. */
+type WholeFormActor = 'rdig_chair' | 'vc' | 'cfo';
 
 interface FieldCommentDef {
   fieldCode: string;
@@ -95,7 +95,7 @@ const GROUP_SECTION_ID: Record<GroupCode, string> = {
 const WHOLE_FORM_FIELD_CODE: Record<WholeFormActor, string> = {
   rdig_chair: 'whole_form_rdig_chair',
   vc: 'whole_form_vc',
-  ceo: 'whole_form_ceo',
+  cfo: 'whole_form_cfo',
 };
 
 /**
@@ -117,7 +117,7 @@ const RESUBMISSION_STATUS_PREFIX = 'pending_applicant_resubmission';
  *    Details, Research Output & Budget, Declaration), one per submission version.
  *  - Reviewer 1 and Reviewer 2 each write comments under the scored areas. Their
  *    scoring sheet is persisted independently from comments and versioned by review cycle.
- *  - RDIG Chair, VC, CEO each write ONE application-level comment, edited from the
+ *  - RDIG Chair, VC, CFO each write ONE application-level comment, edited from the
  *    fixed right-side panel.
  *  - Comments from other users are hidden by default. The right-side panel exposes a
  *    toggle per PERMITTED source; toggling shows/hides that source's comments inline,
@@ -343,7 +343,7 @@ export class RdigDetailsComponent implements OnInit {
     'reviewer2',
     'rdig_chair',
     'vc',
-    'ceo',
+    'cfo',
   ];
 
   labelForSource(source: CommentSource): string {
@@ -361,7 +361,7 @@ export class RdigDetailsComponent implements OnInit {
     reviewer2: 'Reviewer 2',
     rdig_chair: 'RDIG Chair',
     vc: 'Vice Chancellor',
-    ceo: 'CEO',
+    cfo: 'CFO',
   };
 
   readonly sourceIcon: Record<CommentSource, string> = {
@@ -371,7 +371,7 @@ export class RdigDetailsComponent implements OnInit {
     reviewer2: 'rate_review',
     rdig_chair: 'admin_panel_settings',
     vc: 'account_balance',
-    ceo: 'business',
+    cfo: 'business',
   };
 
   /**
@@ -404,7 +404,7 @@ export class RdigDetailsComponent implements OnInit {
         source === 'reviewer2'
       );
     }
-    if (this.isCurrentActorCeo()) {
+    if (this.isCurrentActorCfo()) {
       return (
         source === 'vc' ||
         source === 'rdig_chair' ||
@@ -425,7 +425,7 @@ export class RdigDetailsComponent implements OnInit {
     if (this.isCurrentUserReviewer(2)) return 'reviewer2';
     if (this.isCurrentActorRdigChair()) return 'rdig_chair';
     if (this.isCurrentActorVc()) return 'vc';
-    if (this.isCurrentActorCeo()) return 'ceo';
+    if (this.isCurrentActorCfo()) return 'cfo';
     return null;
   }
 
@@ -447,7 +447,7 @@ export class RdigDetailsComponent implements OnInit {
 
   /** Total (current + past version) comment count for a source — the toggle's counter badge. */
   commentCountForSource(source: CommentSource): number {
-    if (source === 'rdig_chair' || source === 'vc' || source === 'ceo') {
+    if (source === 'rdig_chair' || source === 'vc' || source === 'cfo') {
       return this.wholeFormComment(source) ? 1 : 0;
     }
     return this.sectionComments().filter((c) => this.matchesSource(c, source)).length;
@@ -773,12 +773,12 @@ export class RdigDetailsComponent implements OnInit {
     return GROUP_LABEL[group];
   }
 
-  // ── RDIG Chair / VC / CEO — single whole-form comment (right-side panel) ───────
+  // ── RDIG Chair / VC / CFO — single whole-form comment (right-side panel) ───────
   readonly rdigChairCommentControl = new FormControl('', [
     Validators.maxLength(COMMENT_MAX_LENGTH),
   ]);
   readonly vcCommentControl = new FormControl('', [Validators.maxLength(COMMENT_MAX_LENGTH)]);
-  readonly ceoCommentControl = new FormControl('', [Validators.maxLength(COMMENT_MAX_LENGTH)]);
+  readonly cfoCommentControl = new FormControl('', [Validators.maxLength(COMMENT_MAX_LENGTH)]);
   private readonly wholeFormCommentSignals = new Map<
     FormControl<string | null>,
     ReturnType<typeof signal<string | null>>
@@ -794,7 +794,7 @@ export class RdigDetailsComponent implements OnInit {
       ? this.rdigChairCommentControl
       : role === 'vc'
         ? this.vcCommentControl
-        : this.ceoCommentControl;
+        : this.cfoCommentControl;
   }
 
   readonly request = computed(() => this.data()?.request ?? null);
@@ -1048,8 +1048,8 @@ export class RdigDetailsComponent implements OnInit {
   private isCurrentActorVc(): boolean {
     return this.currentActorRole().includes('vc');
   }
-  private isCurrentActorCeo(): boolean {
-    return this.currentActorRole().includes('ceo');
+  private isCurrentActorCfo(): boolean {
+    return this.currentActorRole().includes('cfo');
   }
 
   // ── Status / editable-window gates (mirrors RdigWorkflowService's stage gates) ──
@@ -1073,8 +1073,8 @@ export class RdigDetailsComponent implements OnInit {
   private isVcEditableStatus(): boolean {
     return this.status() === 'pending_vc';
   }
-  private isCeoEditableStatus(): boolean {
-    return this.status() === 'pending_ceo';
+  private isCfoEditableStatus(): boolean {
+    return this.status() === 'pending_cfo';
   }
 
   canWriteGroupComment(actor: GroupActor): boolean {
@@ -1093,12 +1093,12 @@ export class RdigDetailsComponent implements OnInit {
     if (role === 'rdig_chair')
       return this.canAct() && this.isCurrentActorRdigChair() && this.isRdigChairEditableStatus();
     if (role === 'vc') return this.canAct() && this.isCurrentActorVc() && this.isVcEditableStatus();
-    return this.canAct() && this.isCurrentActorCeo() && this.isCeoEditableStatus();
+    return this.canAct() && this.isCurrentActorCfo() && this.isCfoEditableStatus();
   }
 
-  /** True while the current viewer uses the whole-form side panel (RDIG Chair/VC/CEO). */
+  /** True while the current viewer uses the whole-form side panel (RDIG Chair/VC/CFO). */
   isWholeFormCommentViewer(): boolean {
-    return this.isCurrentActorRdigChair() || this.isCurrentActorVc() || this.isCurrentActorCeo();
+    return this.isCurrentActorRdigChair() || this.isCurrentActorVc() || this.isCurrentActorCfo();
   }
 
   currentActorLabel(): string {
@@ -1108,7 +1108,7 @@ export class RdigDetailsComponent implements OnInit {
     if (this.isCurrentUserReviewer(2)) return 'Reviewer 2';
     if (this.isCurrentActorRdigChair()) return 'RDIG Chair';
     if (this.isCurrentActorVc()) return 'Vice Chancellor';
-    if (this.isCurrentActorCeo()) return 'CEO';
+    if (this.isCurrentActorCfo()) return 'CFO';
     return this.prettyActor(this.request()?.current_actor_role ?? null);
   }
 
@@ -1207,7 +1207,7 @@ export class RdigDetailsComponent implements OnInit {
   }
 
   private hydrateWholeFormControls(): void {
-    (['rdig_chair', 'vc', 'ceo'] as WholeFormActor[]).forEach((role) => {
+    (['rdig_chair', 'vc', 'cfo'] as WholeFormActor[]).forEach((role) => {
       const mine = this.sectionComments().find(
         (c) => c.section_code === WHOLE_FORM_FIELD_CODE[role] && this.isCurrentUserComment(c),
       );
@@ -1324,7 +1324,7 @@ export class RdigDetailsComponent implements OnInit {
     if (value.includes('reviewer')) return 'Reviewer';
     if (value.includes('rdig_chair') || value.includes('rdigchair')) return 'RDIG Chair';
     if (value.includes('vc')) return 'Vice Chancellor';
-    if (value.includes('ceo')) return 'CEO';
+    if (value.includes('cfo')) return 'CFO';
     if (value.includes('applicant')) return 'Applicant';
     return this.prettyActor(code);
   }
@@ -1360,9 +1360,9 @@ export class RdigDetailsComponent implements OnInit {
     return this.isCurrentUserReviewer(1) || this.isCurrentUserReviewer(2);
   }
 
-  /** RDIG Chair / VC / CEO must fill their one application-level comment before acting. */
+  /** RDIG Chair / VC / CFO must fill their one application-level comment before acting. */
   requiresWholeFormComment(): boolean {
-    return this.isCurrentActorRdigChair() || this.isCurrentActorVc() || this.isCurrentActorCeo();
+    return this.isCurrentActorRdigChair() || this.isCurrentActorVc() || this.isCurrentActorCfo();
   }
 
   requiresDecisionComment(): boolean {
@@ -1508,13 +1508,13 @@ export class RdigDetailsComponent implements OnInit {
     document.getElementById(anchorId)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 
-  /** RDIG Chair/VC/CEO must have a non-empty whole-form comment (draft or already-saved) before acting. */
+  /** RDIG Chair/VC/CFO must have a non-empty whole-form comment (draft or already-saved) before acting. */
   hasRequiredWholeFormComment(): boolean {
     const role: WholeFormActor = this.isCurrentActorRdigChair()
       ? 'rdig_chair'
       : this.isCurrentActorVc()
         ? 'vc'
-        : 'ceo';
+        : 'cfo';
     const existing = this.wholeFormComment(role);
     if (existing && this.isCurrentUserComment(existing)) return true;
     return Boolean(this.wholeFormCommentDraft(role));
@@ -1723,8 +1723,8 @@ export class RdigDetailsComponent implements OnInit {
         return code.includes('rdig_chair') || code.includes('rdigchair') || code.includes('chair');
       case 'vc':
         return code.includes('vc');
-      case 'ceo':
-        return code.includes('ceo');
+      case 'cfo':
+        return code.includes('cfo');
     }
   }
 
@@ -1873,7 +1873,7 @@ export class RdigDetailsComponent implements OnInit {
       });
   }
 
-  // ── Whole-form comments: RDIG Chair / VC / CEO ──────────────────────────────
+  // ── Whole-form comments: RDIG Chair / VC / CFO ──────────────────────────────
   private wholeFormComment(role: WholeFormActor): ScoredComment | null {
     return (
       this.sectionComments().find((c) => c.section_code === WHOLE_FORM_FIELD_CODE[role]) ?? null
@@ -1882,7 +1882,7 @@ export class RdigDetailsComponent implements OnInit {
 
   readonly rdigChairWholeFormComment = computed(() => this.wholeFormComment('rdig_chair'));
   readonly vcWholeFormComment = computed(() => this.wholeFormComment('vc'));
-  readonly ceoWholeFormComment = computed(() => this.wholeFormComment('ceo'));
+  readonly cfoWholeFormComment = computed(() => this.wholeFormComment('cfo'));
 
   canEditWholeFormComment(role: WholeFormActor): boolean {
     if (!this.canWriteWholeFormComment(role)) return false;
@@ -1968,7 +1968,7 @@ export class RdigDetailsComponent implements OnInit {
         ? 'rdig_chair'
         : this.isCurrentActorVc()
           ? 'vc'
-          : 'ceo';
+          : 'cfo';
       const draft = this.wholeFormCommentDraft(role);
       const existing = this.wholeFormComment(role);
       if (draft && existing && this.isCurrentUserComment(existing)) {

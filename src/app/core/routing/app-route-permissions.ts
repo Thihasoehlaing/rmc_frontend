@@ -37,7 +37,7 @@ export const fundingDetailPermission = {
   anyCondition: [
     ...academicHosChancelloryPermission.anyCondition,
     {
-      anyOf: ['VC', 'HR', 'CEO', 'Finance', 'Admin', 'RMC'],
+      anyOf: ['VC', 'HR', 'CEO', 'CFO', 'Finance', 'Admin', 'RMC'],
     },
   ],
 } satisfies NavPermission;
@@ -50,7 +50,7 @@ export const submissionsInboxHistoryPermission = {
   anyCondition: [
     ...academicHosChancelloryPermission.anyCondition,
     {
-      anyOf: ['VC', 'HR', 'CEO', 'Finance', 'Admin', 'RMC'],
+      anyOf: ['VC', 'HR', 'CEO', 'CFO', 'Finance', 'Admin', 'RMC'],
     },
   ],
 } satisfies NavPermission;

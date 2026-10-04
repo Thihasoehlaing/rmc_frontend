@@ -17,6 +17,7 @@
  *   Reviewer2            — Assigned Reviewer 2 for an application
  *   RDIG_Chair           — RDIG Committee Chair
  *   CEO                  — Chief Executive Officer level approval
+ *   CFO                  — Chief Financial Officer level approval
  */
 export type UserGroup =
   | 'full_time'
@@ -34,6 +35,7 @@ export type UserGroup =
   | 'Reviewer2'
   | 'RDIG_Chair'
   | 'CEO'
+  | 'CFO'
   | 'Chancellory'
   | 'HR'
   | 'Finance';

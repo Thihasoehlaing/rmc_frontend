@@ -75,7 +75,7 @@ export class ResearchActivitiesComponent implements OnInit, OnDestroy {
   @Input() showR2Comments = false;
   @Input() showRdigChairComments = false;
   @Input() showVcComments = false;
-  @Input() showCeoComments = false;
+  @Input() showCfoComments = false;
   @Input() workflow!: RdigWorkflowService;
 
   get showAnyComments(): boolean {
@@ -86,7 +86,7 @@ export class ResearchActivitiesComponent implements OnInit, OnDestroy {
       this.showR2Comments ||
       this.showRdigChairComments ||
       this.showVcComments ||
-      this.showCeoComments
+      this.showCfoComments
     );
   }
 

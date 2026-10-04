@@ -19,6 +19,13 @@ describe('conferencePermission', () => {
 
     expect(allowedGroups).toEqual(expect.arrayContaining(['HOS', 'VC']));
   });
+
+  it('grants CFO the same reviewer-route access as CEO', () => {
+    const allowedGroups = conferencePermission.anyCondition.flatMap(
+      (condition) => condition.anyOf ?? [],
+    );
+    expect(allowedGroups).toEqual(expect.arrayContaining(['CEO', 'CFO']));
+  });
 });
 
 describe('rdigPermission', () => {

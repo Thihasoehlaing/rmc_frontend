@@ -15,8 +15,11 @@
   line-height: var(--lh-relaxed);
 
   input {
+    width: var(--size-selection-control);
+    height: var(--size-selection-control);
     margin-top: var(--form-space-1);
     flex-shrink: 0;
+    accent-color: var(--color-primary);
   }
 }
 

@@ -21,6 +21,7 @@ import { NoteComponent } from '../../../../shared/components/note/note.component
 import { DecimalAmountDirective } from '../../../../shared/directives/decimal-amount.directive';
 import { MyrCurrencyPipe } from '../../../../shared/pipes/myr-currency.pipe';
 import { TableRowCounterComponent } from '../../../../shared/components/table-row-counter/table-row-counter.component';
+import { FileUploadComponent } from '../../../../shared/components/file-upload/file-upload.component';
 
 import { TableActionIconComponent } from '../../../../shared/components/table-action-icon/table-action-icon.component';
 
@@ -48,6 +49,7 @@ type BudgetCategoryKey =
     DecimalAmountDirective,
     MyrCurrencyPipe,
     TableRowCounterComponent,
+    FileUploadComponent,
   ],
   templateUrl: './budget-summary.component.html',
   styleUrl: './budget-summary.component.scss',
@@ -67,7 +69,7 @@ export class BudgetSummaryComponent implements OnInit {
   @Input() showR2Comments = false;
   @Input() showRdigChairComments = false;
   @Input() showVcComments = false;
-  @Input() showCeoComments = false;
+  @Input() showCfoComments = false;
   @Input() submitAttempted = false;
 
   get showAnyComments(): boolean {
@@ -78,7 +80,7 @@ export class BudgetSummaryComponent implements OnInit {
       this.showR2Comments ||
       this.showRdigChairComments ||
       this.showVcComments ||
-      this.showCeoComments
+      this.showCfoComments
     );
   }
   @Input() workflow!: RdigWorkflowService;
@@ -152,6 +154,12 @@ export class BudgetSummaryComponent implements OnInit {
     },
   ];
 
+  private readonly attachmentColumn: DataTableColumn = {
+    key: 'attachment',
+    label: 'Attachment',
+    width: '180px',
+  };
+
   readonly trackByIndex = (index: number) => index;
 
   get descriptionControl(): FormControl {
@@ -166,11 +174,17 @@ export class BudgetSummaryComponent implements OnInit {
     return this.budgetItemForm.get('remarks') as FormControl;
   }
 
+  get attachmentFileControl(): FormControl {
+    return this.budgetItemForm.get('attachmentFile') as FormControl;
+  }
+
   constructor(private fb: FormBuilder) {
     this.budgetItemForm = this.fb.group({
       description: ['', [Validators.required, Validators.maxLength(200)]],
       amount: [null as number | null, [Validators.required, Validators.min(0.01)]],
       remarks: ['', [Validators.required, Validators.maxLength(300)]],
+      quotationAttachmentId: [null as number | null],
+      attachmentFile: [null as File | null],
     });
   }
 
@@ -195,7 +209,10 @@ export class BudgetSummaryComponent implements OnInit {
     this.activeBudgetCategory = category;
     this.editingRowIndex = null;
     this.addItemModalOpen = true;
-    this.budgetItemForm.reset({ description: '', amount: null, remarks: '' });
+    this.budgetItemForm.reset({
+      description: '', amount: null, remarks: '', quotationAttachmentId: null, attachmentFile: null,
+    });
+    this.updateAttachmentRequirement();
     this.budgetItemForm.markAsPristine();
     this.budgetItemForm.markAsUntouched();
   }
@@ -212,7 +229,10 @@ export class BudgetSummaryComponent implements OnInit {
       description: row.get('description')?.value ?? '',
       amount: row.get('amount')?.value ?? null,
       remarks: row.get('remarks')?.value ?? '',
+      quotationAttachmentId: row.get('quotationAttachmentId')?.value ?? null,
+      attachmentFile: null,
     });
+    this.updateAttachmentRequirement();
     this.budgetItemForm.markAsPristine();
     this.budgetItemForm.markAsUntouched();
   }
@@ -226,6 +246,8 @@ export class BudgetSummaryComponent implements OnInit {
   submitBudgetItem(): void {
     if (!this.activeBudgetCategory) return;
 
+    this.updateAttachmentRequirement();
+
     if (this.budgetItemForm.invalid) {
       this.budgetItemForm.markAllAsTouched();
       return;
@@ -236,6 +258,8 @@ export class BudgetSummaryComponent implements OnInit {
       description: this.descriptionControl.value,
       amount: this.toAmountNumber(this.amountControl.value),
       remarks: this.remarksControl.value,
+      quotationAttachmentId: this.budgetItemForm.get('quotationAttachmentId')?.value ?? null,
+      attachmentFile: this.attachmentFileControl.value ?? null,
     };
 
     if (this.editingRowIndex === null) {
@@ -244,6 +268,8 @@ export class BudgetSummaryComponent implements OnInit {
           description: [payload.description, Validators.required],
           amount: [payload.amount, [Validators.required, Validators.min(0.01)]],
           remarks: [payload.remarks, [Validators.required, Validators.maxLength(300)]],
+          quotationAttachmentId: [payload.quotationAttachmentId],
+          attachmentFile: [payload.attachmentFile],
         }),
       );
     } else {
@@ -265,6 +291,61 @@ export class BudgetSummaryComponent implements OnInit {
   get activeCategoryHint(): string {
     if (!this.activeBudgetCategory) return 'Describe the requested budget item.';
     return this.budgetCategoryHints[this.activeBudgetCategory];
+  }
+
+  budgetColumnsFor(category: BudgetCategoryKey): DataTableColumn[] {
+    if (category === 'studentAllowances') return this.budgetColumns;
+    return [
+      ...this.budgetColumns.slice(0, 4),
+      this.attachmentColumn,
+      ...this.budgetColumns.slice(4),
+    ];
+  }
+
+  budgetAttachmentLabel(row: { quotationAttachmentId?: number | null; attachmentFile?: File | null }): string {
+    if (row.attachmentFile instanceof File) return row.attachmentFile.name;
+    return row.quotationAttachmentId ? 'Attached' : '—';
+  }
+
+  onBudgetAttachmentSelected(file: File | null): void {
+    this.attachmentFileControl.setValue(file);
+    this.attachmentFileControl.markAsTouched();
+    this.updateAttachmentRequirement();
+  }
+
+  updateAttachmentRequirement(): void {
+    const control = this.attachmentFileControl;
+    const existingAttachmentId = this.budgetItemForm.get('quotationAttachmentId')?.value;
+    const description = String(this.descriptionControl.value ?? '').toLowerCase();
+    const isRequired = this.activeBudgetCategory === 'materialsSupplies'
+      || (this.activeBudgetCategory === 'specialServices'
+        && (description.includes('editing service') || description.includes('publication fee')));
+
+    if (isRequired && !existingAttachmentId) {
+      control.setValidators(Validators.required);
+    } else {
+      control.clearValidators();
+    }
+    control.updateValueAndValidity({ emitEvent: false });
+  }
+
+  get attachmentLabel(): string {
+    const category = this.activeBudgetCategory;
+    const description = String(this.descriptionControl.value ?? '').toLowerCase();
+    if (category === 'specialServices' && description.includes('publication fee')) {
+      return 'APC Page (Required)';
+    }
+    if (category === 'specialServices' && description.includes('editing service')) {
+      return 'Quotation (Required)';
+    }
+    return this.activeBudgetCategory === 'materialsSupplies'
+      ? 'Quotation (Required)'
+      : 'Supporting Attachment (Optional)';
+  }
+
+  get uploadedBudgetAttachmentName(): string | null {
+    const id = this.budgetItemForm.get('quotationAttachmentId')?.value;
+    return id ? `Existing attachment #${id}` : null;
   }
 
   isBudgetCategoryFull(category: BudgetCategoryKey): boolean {

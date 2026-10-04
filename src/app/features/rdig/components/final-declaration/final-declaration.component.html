@@ -96,7 +96,7 @@
   <!-- ── Approval Cards (auto-visible based on status, NOT dependent on toggle) ── -->
   @if (workflow.isHosApprovalVisible() || workflow.isRmcApprovalVisible() ||
        workflow.isReviewer1ApprovalVisible() || workflow.isReviewer2ApprovalVisible() || workflow.isRdigChairApprovalVisible() ||
-       workflow.isVcApprovalVisible() || workflow.isCeoApprovalVisible()) {
+       workflow.isVcApprovalVisible() || workflow.isCfoApprovalVisible()) {
     <div class="card">
       <div class="card__header">
         <h3 class="card__title">
@@ -166,13 +166,13 @@
         </app-approval-card>
 
         <app-approval-card
-          title="CEO Approval"
+          title="CFO Approval"
           fieldLabel="Decision"
           icon="business"
-          [visible]="workflow.isCeoApprovalVisible()"
-          [readonly]="!workflow.isCeoEditable()"
+          [visible]="workflow.isCfoApprovalVisible()"
+          [readonly]="!workflow.isCfoEditable()"
           [options]="workflow.rmcApprovalOptions"
-          data-missing-field-target="approvals.ceoStatus" [control]="ac('ceoStatus')">
+          data-missing-field-target="approvals.cfoStatus" [control]="ac('cfoStatus')">
         </app-approval-card>
       </div>
     </div>

@@ -22,7 +22,7 @@ const OPTION_META: Record<string, OptionMeta> = {
 const DEFAULT_META: OptionMeta = { icon: 'radio_button_unchecked', type: 'default' };
 
 /**
- * Reusable approval card for HOS, RMC, Reviewer 2, RDIG Chair, VC, CEO.
+ * Reusable approval card for HOS, RMC, Reviewer 2, RDIG Chair, VC, CFO.
  * Shown on the last page during the appropriate workflow stage.
  */
 @Component({

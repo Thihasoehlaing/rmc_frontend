@@ -22,12 +22,12 @@ export class OutputDetailsComponent implements OnInit, OnDestroy {
     @Input() showR2Comments = false;
     @Input() showRdigChairComments = false;
     @Input() showVcComments = false;
-    @Input() showCeoComments = false;
+    @Input() showCfoComments = false;
 
     get showAnyComments(): boolean {
       return this.showHosComments || this.showRmcComments ||
              this.showR1Comments || this.showR2Comments ||
-             this.showRdigChairComments || this.showVcComments || this.showCeoComments;
+             this.showRdigChairComments || this.showVcComments || this.showCfoComments;
     }
     @Input() workflow!: RdigWorkflowService;
     private readonly destroy$ = new Subject<void>();

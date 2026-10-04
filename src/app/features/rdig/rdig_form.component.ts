@@ -60,6 +60,7 @@ import {
   WorkflowHistoryEntry,
 } from '../../core/interfaces/rdig-application.interface';
 import { FormPageSkeletonComponent } from '../../shared/components/form-page-skeleton/form-page-skeleton.component';
+import { DialogComponent } from '../../shared/components/dialog/dialog.component';
 import { Observable, catchError, finalize, forkJoin, map, of, switchMap, tap } from 'rxjs';
 import { SvgIconComponent } from '../../shared/components/svg-icon/svg-icon.component';
 import { SVG_ICON_LOADING_SPINNER, SVG_ICON_SUCCESS_CHECK } from '../../shared/icons/svg-icons';
@@ -111,6 +112,7 @@ export function isApplicantSubmissionWindowOpen(
     ScoreSummaryComponent,
     ReviewBlockComponent,
     FormPageSkeletonComponent,
+    DialogComponent,
     SvgIconComponent,
   ],
   templateUrl: './rdig_form.component.html',
@@ -247,7 +249,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
   showR2Comments = signal(false);
   showRdigChairComments = signal(false);
   showVcComments = signal(false);
-  showCeoComments = signal(false);
+  showCfoComments = signal(false);
 
   /** True when any comment panel is visible */
   showAnyComments = computed(
@@ -258,7 +260,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
       this.showR2Comments() ||
       this.showRdigChairComments() ||
       this.showVcComments() ||
-      this.showCeoComments(),
+      this.showCfoComments(),
   );
 
   /** Tracks steps the user has left, making them eligible for warning/complete state */
@@ -280,7 +282,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
       { path: 'teamDetails.leaderEmail', label: "Project Leader's Email" },
       { path: 'teamDetails.department', label: 'School / Department' },
       { path: 'teamDetails.researchCluster', label: 'Select Research Cluster' },
-      { path: 'teamDetails.leaderRoles', label: 'Select Roles of Project Leader' },
+      { path: 'teamDetails.leaderRoles', label: 'Roles of Project Leader' },
       {
         path: 'teamDetails.internalResearchers',
         label: 'Asia Pacific University of Technology & Innovation Co-Researchers (min 1)',
@@ -375,7 +377,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
       .replace(/\bRmc\b/g, 'RMC')
       .replace(/\bRdig\b/g, 'RDIG')
       .replace(/\bVc\b/g, 'VC')
-      .replace(/\bCeo\b/g, 'CEO')
+      .replace(/\bCfo\b/g, 'CFO')
       .replace(/\bSdg\b/g, 'SDG')
       .replace(/\bEsg\b/g, 'ESG');
   }
@@ -815,7 +817,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
         reviewer2Decision: [''],
         rdigChairStatus: [''],
         vcStatus: [''],
-        ceoStatus: [''],
+        cfoStatus: [''],
         reviewer1Assignment: ['4'],
         reviewer2Assignment: ['4'],
       }),
@@ -933,8 +935,8 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
   toggleVcComments(): void {
     this.showVcComments.update((v) => !v);
   }
-  toggleCeoComments(): void {
-    this.showCeoComments.update((v) => !v);
+  toggleCfoComments(): void {
+    this.showCfoComments.update((v) => !v);
   }
 
   // ── Loading indicator for when fetching an existing application ──
@@ -1256,6 +1258,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
           description: item.description,
           amount: item.amount_rm,
           remarks: item.remarks,
+          quotationAttachmentId: item.quotation_attachment_id ?? null,
         });
       }
     }
@@ -1451,7 +1454,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
 
   // ── Real RDIG backend integration ───────────────────────────────
   // Applicant-facing lifecycle (create/save/load/submit) writes through to the
-  // real backend. The HOS/RMC/Reviewer/RDIG Chair/VC/CEO review workflow keeps
+  // real backend. The HOS/RMC/Reviewer/RDIG Chair/VC/CFO review workflow keeps
   // running against the local json-server store for now — that part of the
   // backend's generic workflow engine is a separate, later integration pass.
 
@@ -1615,6 +1618,42 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
     return uploads.length ? forkJoin(uploads) : of(null);
   }
 
+  /** Uploads newly selected quotations/supporting documents after budget rows have backend IDs. */
+  private uploadPendingBudgetAttachments(id: number): Observable<unknown> {
+    const budget = this.rdigForm.get('budget') as FormGroup;
+    const attachmentCategories = ['travelAccommodation', 'materialsSupplies', 'specialServices'];
+    const uploads: Observable<unknown>[] = [];
+
+    for (const category of attachmentCategories) {
+      const array = budget.get(category) as FormArray;
+      for (let index = 0; index < array.length; index++) {
+        const group = array.at(index) as FormGroup;
+        const file = group.get('attachmentFile')?.value;
+        const backendId = Number(group.get('backendId')?.value);
+        if (!(file instanceof File) || !backendId) continue;
+
+        uploads.push(
+          this.rdigApi.uploadAttachment(id, file, 'rdig_budget_item', backendId).pipe(
+            switchMap((res) => {
+              const attachmentId = res?.data?.id;
+              if (!attachmentId) throw new Error('Backend did not return the uploaded budget attachment id.');
+              return this.rdigApi.updateBudgetItem(id, backendId, {
+                quotation_attachment_id: attachmentId,
+              }).pipe(
+                tap(() => {
+                  group.get('quotationAttachmentId')?.setValue(attachmentId, { emitEvent: false });
+                  group.get('attachmentFile')?.setValue(null, { emitEvent: false });
+                }),
+              );
+            }),
+          ),
+        );
+      }
+    }
+
+    return uploads.length ? forkJoin(uploads) : of(null);
+  }
+
   /** Resolves the four fixed budget sections (V11000/V21000/V27000/V29000) to their backend ids. */
   private resolveBudgetSectionIds(id: number): Observable<Record<string, number>> {
     if (this.budgetSectionIdByCode) return of(this.budgetSectionIdByCode);
@@ -1713,6 +1752,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
                 description: raw.description || null,
                 amount_rm: this.toDecimalPayload(raw.amount),
                 remarks: raw.remarks || null,
+                quotation_attachment_id: raw.quotationAttachmentId ?? null,
               }),
               (payload) => this.rdigApi.createBudgetItem(id, payload),
               (backendId, payload) => this.rdigApi.updateBudgetItem(id, backendId, payload),
@@ -1720,7 +1760,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
             ),
           ),
           this.syncEsgSdgSelections(id),
-        ]),
+        ]).pipe(switchMap(() => this.uploadPendingBudgetAttachments(id))),
       ),
     );
   }

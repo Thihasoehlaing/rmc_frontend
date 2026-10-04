@@ -74,7 +74,7 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
   @Input() showR2Comments = false;
   @Input() showRdigChairComments = false;
   @Input() showVcComments = false;
-  @Input() showCeoComments = false;
+  @Input() showCfoComments = false;
 
   get showAnyComments(): boolean {
     return (
@@ -84,7 +84,7 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
       this.showR2Comments ||
       this.showRdigChairComments ||
       this.showVcComments ||
-      this.showCeoComments
+      this.showCfoComments
     );
   }
   @Input() workflow!: RdigWorkflowService;
@@ -212,7 +212,7 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
       country: ['', Validators.required],
       funding: ['', [Validators.required, Validators.pattern('^[0-9]+(\\.[0-9]{1,2})?$')]],
       roles: ['', [Validators.required, Validators.maxLength(600)]],
-      supportLetter: [null],
+      supportLetter: [null, Validators.required],
       supportLetterAttachmentId: [null],
     });
   }
@@ -360,6 +360,8 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
     if (this.externalResearchers.length >= 10) return;
     this.editingExternalIdx.set(null);
     this.externalForm.reset();
+    this.externalForm.get('supportLetter')?.setValidators(Validators.required);
+    this.externalForm.get('supportLetter')?.updateValueAndValidity({ emitEvent: false });
     this.showExternalModal.set(true);
   }
 
@@ -367,8 +369,13 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
     const row = this.externalResearchers.at(index).getRawValue();
     this.editingExternalIdx.set(index);
     this.externalForm.patchValue(row);
-    this.externalForm.get('supportLetter')?.clearValidators();
-    this.externalForm.get('supportLetter')?.updateValueAndValidity();
+    const supportLetter = this.externalForm.get('supportLetter');
+    if (row.supportLetterAttachmentId) {
+      supportLetter?.clearValidators();
+    } else {
+      supportLetter?.setValidators(Validators.required);
+    }
+    supportLetter?.updateValueAndValidity({ emitEvent: false });
     this.showExternalModal.set(true);
   }
 
@@ -392,8 +399,9 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
     this.externalResearchers.removeAt(index);
   }
 
-  onFileSelected(file: File): void {
+  onFileSelected(file: File | null): void {
     this.externalForm.get('supportLetter')?.setValue(file);
+    this.externalForm.get('supportLetter')?.markAsTouched();
   }
 
   /** True when a support letter is attached (a freshly-picked File or a persisted URL/attachment). */

@@ -1233,8 +1233,8 @@
             </div>
           </div>
 
-          <!-- ── RDIG Chair / VC / CEO — single persistent comment (editor) ──── -->
-          <!-- Only rendered for the RDIG Chair, VC, or CEO themselves — no other role ever sees or edits this. -->
+          <!-- ── RDIG Chair / VC / CFO — single persistent comment (editor) ──── -->
+          <!-- Only rendered for the RDIG Chair, VC, or CFO themselves — no other role ever sees or edits this. -->
           @if (isWholeFormCommentViewer()) {
             <div class="whole-form-comment-group">
               @if (canEditWholeFormComment('rdig_chair')) {
@@ -1243,8 +1243,8 @@
               @if (canEditWholeFormComment('vc')) {
                 <app-review-block label="Vice Chancellor — Comment" icon="account_balance" [visible]="true" [readonly]="false" [commentControl]="vcCommentControl"></app-review-block>
               }
-              @if (canEditWholeFormComment('ceo')) {
-                <app-review-block label="CEO — Comment" icon="business" [visible]="true" [readonly]="false" [commentControl]="ceoCommentControl"></app-review-block>
+              @if (canEditWholeFormComment('cfo')) {
+                <app-review-block label="CFO — Comment" icon="business" [visible]="true" [readonly]="false" [commentControl]="cfoCommentControl"></app-review-block>
               }
             </div>
           }
@@ -1376,8 +1376,8 @@
           }
         </section>
 
-        <!-- ── Toggled whole-form comments (RDIG Chair/VC/CEO) from OTHER roles ── -->
-        @if (isToggled('rdig_chair') || isToggled('vc') || isToggled('ceo')) {
+        <!-- ── Toggled whole-form comments (RDIG Chair/VC/CFO) from OTHER roles ── -->
+        @if (isToggled('rdig_chair') || isToggled('vc') || isToggled('cfo')) {
           <section class="detail-section detail-section--side">
             <div class="section-heading section-heading--compact">
               <span class="material-icons">forum</span>
@@ -1399,9 +1399,9 @@
                 <p>{{ c.comment_text }}</p>
               </article>
             }
-            @if (isToggled('ceo') && ceoWholeFormComment(); as c) {
+            @if (isToggled('cfo') && cfoWholeFormComment(); as c) {
               <article class="section-comment">
-                <strong>CEO</strong>
+                <strong>CFO</strong>
                 <span class="section-comment__author">{{ val(c.staff_name || c.staff_username) }} · {{ fmtDate(c.created_at) }}</span>
                 <p>{{ c.comment_text }}</p>
               </article>

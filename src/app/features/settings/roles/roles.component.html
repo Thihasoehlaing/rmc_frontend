@@ -198,9 +198,9 @@
             placeholder="e.g. SYSTEM_ADMIN"
             autocomplete="off"
             [ngModel]="roleCode()"
-            disabled
+            (ngModelChange)="roleCode.set($event)"
           />
-          <small>Generated automatically from the role name.</small>
+          <small>Use a unique code for this role.</small>
         </label>
 
         <label class="forms-filter">

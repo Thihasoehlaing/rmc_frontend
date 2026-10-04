@@ -179,9 +179,6 @@ export class RolesComponent implements OnInit {
 
   onNameChange(value: string): void {
     this.roleName.set(value);
-    if (this.dialogMode() !== 'create') return;
-
-    this.roleCode.set(value.trim().toUpperCase().replace(/\s+/g, '_'));
   }
 
   saveRole(): void {

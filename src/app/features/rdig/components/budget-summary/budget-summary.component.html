@@ -127,7 +127,7 @@
       </div>
       @if (travelAccommodation.length > 0) {
         <app-data-table
-          [columns]="budgetColumns"
+          [columns]="budgetColumnsFor('travelAccommodation')"
           [rows]="travelAccommodation.controls"
           [rowTrackFn]="trackByIndex"
           [dense]="true"
@@ -144,6 +144,7 @@
               <td>
                 <div class="data-table__multiline">{{ row.value.remarks }}</div>
               </td>
+              <td>{{ budgetAttachmentLabel(row.value) }}</td>
               <td class="action-cell">
                 <div class="data-table__actions">
                   <button
@@ -211,7 +212,7 @@
       </div>
       @if (materialsSupplies.length > 0) {
         <app-data-table
-          [columns]="budgetColumns"
+          [columns]="budgetColumnsFor('materialsSupplies')"
           [rows]="materialsSupplies.controls"
           [rowTrackFn]="trackByIndex"
           [dense]="true"
@@ -228,6 +229,7 @@
               <td>
                 <div class="data-table__multiline">{{ row.value.remarks }}</div>
               </td>
+              <td>{{ budgetAttachmentLabel(row.value) }}</td>
               <td class="action-cell">
                 <div class="data-table__actions">
                   <button
@@ -295,7 +297,7 @@
       </div>
       @if (specialServices.length > 0) {
         <app-data-table
-          [columns]="budgetColumns"
+          [columns]="budgetColumnsFor('specialServices')"
           [rows]="specialServices.controls"
           [rowTrackFn]="trackByIndex"
           [dense]="true"
@@ -312,6 +314,7 @@
               <td>
                 <div class="data-table__multiline">{{ row.value.remarks }}</div>
               </td>
+              <td>{{ budgetAttachmentLabel(row.value) }}</td>
               <td class="action-cell">
                 <div class="data-table__actions">
                   <button
@@ -455,6 +458,7 @@
           class="input--textarea"
           formControlName="description"
           [maxlength]="200"
+          (input)="updateAttachmentRequirement()"
         ></textarea>
         <app-character-counter
           [current]="descriptionControl.value?.length ?? 0"
@@ -462,6 +466,28 @@
         ></app-character-counter>
         <app-validation-message class="form-validation-note--error" [control]="descriptionControl" fieldName="Description of Expense"></app-validation-message>
       </div>
+
+      @if (activeBudgetCategory !== 'studentAllowances') {
+        <div class="form-field">
+          <app-file-upload
+            [label]="attachmentLabel"
+            accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+            [maxSizeMB]="4"
+            [uploadedFileName]="uploadedBudgetAttachmentName"
+            (fileSelected)="onBudgetAttachmentSelected($event)"
+          ></app-file-upload>
+          <app-validation-message
+            class="form-validation-note--error"
+            [control]="attachmentFileControl"
+            fieldName="Attachment"
+          ></app-validation-message>
+          @if (activeBudgetCategory === 'materialsSupplies') {
+            <p class="form-hint">Attach a quotation for every item. For software, also provide evidence that it is not available in APU.</p>
+          } @else if (activeBudgetCategory === 'specialServices') {
+            <p class="form-hint">Editing Service requires a quotation. Publication Fees requires an APC Page.</p>
+          }
+        </div>
+      }
 
       <div class="row row--2 textarea-row">
         <div class="form-field">

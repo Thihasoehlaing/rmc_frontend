@@ -13,7 +13,7 @@ export type WorkflowStageKey =
   | 'rmc_again'
   | 'rdig_chair'
   | 'vc'
-  | 'ceo';
+  | 'cfo';
 
 export interface WorkflowStageWindow {
   startDate: string | null;
@@ -55,5 +55,5 @@ export const WORKFLOW_STAGE_META: WorkflowStageMeta[] = [
   { key: 'rmc_again',             label: 'RMC (Again)',              description: 'RMC conducts final review after reviewers.',                      rdigStatuses: ['pending_rmc_review'] },
   { key: 'rdig_chair',             label: 'RDIG Chair',              description: 'RDIG Chair reviews and approves.',                               rdigStatuses: ['pending_rdig_chair'] },
   { key: 'vc',                     label: 'Vice Chancellor (VC)',     description: 'VC approves the research application.',                          rdigStatuses: ['pending_vc'] },
-  { key: 'ceo',                    label: 'CEO',                     description: 'CEO gives final approval.',                                      rdigStatuses: ['pending_ceo'] },
+  { key: 'cfo',                    label: 'CFO',                     description: 'CFO gives final approval.',                                      rdigStatuses: ['pending_cfo'] },
 ];

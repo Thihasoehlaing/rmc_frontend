@@ -19,10 +19,10 @@
   width: 100%;
   min-height: var(--input-height-sm);
   height: var(--input-height-sm);
-  font-family: var(--font-family-system);
-  font-size: var(--fs-base);
-  line-height: var(--lh-normal);
-  color: var(--color-label);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-control);
+  color: var(--color-text-primary);
   background: var(--input-bg-editable);
   border: 1px solid var(--input-border-default);
   border-radius: var(--radius-md);

@@ -34,7 +34,7 @@ export class SidebarComponent implements OnInit {
     this.formCache.getActiveForms(true).subscribe({ error: () => undefined });
   }
 
-  private readonly restrictedWorkflowGroups: UserGroup[] = ['VC', 'HR', 'CEO', 'Finance'];
+  private readonly restrictedWorkflowGroups: UserGroup[] = ['VC', 'HR', 'CEO', 'CFO', 'Finance'];
   private readonly restrictedSidebarRoutes = new Set<string>(RESTRICTED_WORKFLOW_SIDEBAR_ROUTES);
 
   /**

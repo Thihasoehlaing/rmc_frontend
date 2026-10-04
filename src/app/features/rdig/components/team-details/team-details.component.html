@@ -55,7 +55,7 @@
       </div>
 
       <div class="form-field">
-        <label class="form-label is-required">Select Roles of Project Leader</label>
+        <label class="form-label is-required">Roles of Project Leader</label>
         <textarea class="input--textarea" formControlName="leaderRoles" [maxlength]="600">
         </textarea>
         <app-character-counter
@@ -540,9 +540,10 @@
       <!-- Full width: Support Letter -->
       <div class="form-field">
         <app-file-upload
-          label="Support Letter (Optional)"
+          label="Support Letter (Required)"
           accept=".pdf"
           [maxSizeMB]="4"
+          [uploadedFileName]="externalForm.get('supportLetterAttachmentId')?.value ? 'Existing support letter attached' : null"
           (fileSelected)="onFileSelected($event)"
         >
         </app-file-upload>

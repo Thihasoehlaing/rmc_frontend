@@ -309,6 +309,7 @@ export class AuthService {
       VC: ['VC'],
       HUMAN_RESOURCE: ['HR'],
       CEO: ['CEO'],
+      CFO: ['CFO'],
       FINANCE: ['Finance'],
       CHANCELLORY: ['Chancellory'],
       RDIG_CHAIR: ['RDIG_Chair'],

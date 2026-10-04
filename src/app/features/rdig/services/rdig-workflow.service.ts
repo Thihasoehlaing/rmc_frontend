@@ -20,8 +20,8 @@ export type RdigStatus =
   | 'rejected_rdig_chair'
   | 'pending_vc'
   | 'rejected_vc'
-  | 'pending_ceo'
-  | 'rejected_ceo'
+  | 'pending_cfo'
+  | 'rejected_cfo'
   | 'approved';
 
 /** Statuses where the applicant can edit form fields */
@@ -74,8 +74,8 @@ export interface WorkflowStageConfig {
  *   pending_rmc_review → pending_rdig_chair | rejected_rmc
  *   pending_reviewers → pending_rdig_chair | pending_applicant_resubmission_reviewers
  *   pending_rdig_chair → pending_vc | rejected_rdig_chair
- *   pending_vc → pending_ceo | rejected_vc
- *   pending_ceo → approved | rejected_ceo
+ *   pending_vc → pending_cfo | rejected_vc
+ *   pending_cfo → approved | rejected_cfo
  */
 export const RDIG_WORKFLOW_CONFIG: Record<RdigStatus, WorkflowStageConfig> = {
   draft: {
@@ -220,7 +220,7 @@ export const RDIG_WORKFLOW_CONFIG: Record<RdigStatus, WorkflowStageConfig> = {
     transitions: [
       {
         action: 'approve',
-        nextStatus: 'pending_ceo',
+        nextStatus: 'pending_cfo',
         decisionField: 'vcStatus',
         decisionValue: 'approve',
       },
@@ -235,27 +235,27 @@ export const RDIG_WORKFLOW_CONFIG: Record<RdigStatus, WorkflowStageConfig> = {
 
   rejected_vc: { actorRole: 'VC', transitions: [] },
 
-  pending_ceo: {
-    actorRole: 'CEO',
+  pending_cfo: {
+    actorRole: 'CFO',
     transitions: [
       {
         action: 'approve',
         nextStatus: 'approved',
-        decisionField: 'ceoStatus',
+        decisionField: 'cfoStatus',
         decisionValue: 'approve',
       },
       {
         action: 'reject',
-        nextStatus: 'rejected_ceo',
-        decisionField: 'ceoStatus',
+        nextStatus: 'rejected_cfo',
+        decisionField: 'cfoStatus',
         decisionValue: 'reject',
       },
     ],
   },
 
-  rejected_ceo: { actorRole: 'CEO', transitions: [] },
+  rejected_cfo: { actorRole: 'CFO', transitions: [] },
 
-  approved: { actorRole: 'CEO', transitions: [] },
+  approved: { actorRole: 'CFO', transitions: [] },
 };
 
 /**
@@ -280,8 +280,8 @@ export function getNextRoles(status: RdigStatus): string[] {
       return ['RDIG_Chair'];
     case 'pending_vc':
       return ['VC'];
-    case 'pending_ceo':
-      return ['CEO'];
+    case 'pending_cfo':
+      return ['CFO'];
     default:
       return [];
   }
@@ -373,8 +373,8 @@ export class RdigWorkflowService {
   /** VC comment/approval editable only during pending_vc */
   isVcEditable = computed(() => this.currentUserCanAct() && this.status() === 'pending_vc');
 
-  /** CEO comment/approval editable only during pending_ceo */
-  isCeoEditable = computed(() => this.currentUserCanAct() && this.status() === 'pending_ceo');
+  /** CFO comment/approval editable only during pending_cfo */
+  isCfoEditable = computed(() => this.currentUserCanAct() && this.status() === 'pending_cfo');
 
   // ── Score dropdown editability ─────────────────────────────────
 
@@ -411,7 +411,7 @@ export class RdigWorkflowService {
         'rejected_rmc',
         'rejected_rdig_chair',
         'rejected_vc',
-        'rejected_ceo',
+        'rejected_cfo',
       ].includes(s)
     )
       return false;
@@ -420,7 +420,7 @@ export class RdigWorkflowService {
       'pending_reviewers',
       'pending_rdig_chair',
       'pending_vc',
-      'pending_ceo',
+      'pending_cfo',
       'approved',
     ].includes(s);
   });
@@ -441,8 +441,8 @@ export class RdigWorkflowService {
       'rejected_rdig_chair',
       'pending_vc',
       'rejected_vc',
-      'pending_ceo',
-      'rejected_ceo',
+      'pending_cfo',
+      'rejected_cfo',
       'approved',
     ].includes(this.status()),
   );
@@ -457,8 +457,8 @@ export class RdigWorkflowService {
       'rejected_rdig_chair',
       'pending_vc',
       'rejected_vc',
-      'pending_ceo',
-      'rejected_ceo',
+      'pending_cfo',
+      'rejected_cfo',
       'approved',
     ].includes(this.status()),
   );
@@ -470,11 +470,11 @@ export class RdigWorkflowService {
       'pending_reviewers',
       'pending_rdig_chair',
       'pending_vc',
-      'pending_ceo',
+      'pending_cfo',
       'rejected_rmc',
       'rejected_rdig_chair',
       'rejected_vc',
-      'rejected_ceo',
+      'rejected_cfo',
       'approved',
     ].includes(this.status()),
   );
@@ -497,22 +497,22 @@ export class RdigWorkflowService {
       'rejected_rdig_chair',
       'pending_vc',
       'rejected_vc',
-      'pending_ceo',
-      'rejected_ceo',
+      'pending_cfo',
+      'rejected_cfo',
       'approved',
     ].includes(this.status()),
   );
 
   showVcToggle = computed(() =>
-    ['pending_vc', 'rejected_vc', 'pending_ceo', 'rejected_ceo', 'approved'].includes(
+    ['pending_vc', 'rejected_vc', 'pending_cfo', 'rejected_cfo', 'approved'].includes(
       this.status(),
     ),
   );
 
-  showCeoToggle = computed(
+  showCfoToggle = computed(
     () =>
-      this.status() === 'pending_ceo' ||
-      this.status() === 'rejected_ceo' ||
+      this.status() === 'pending_cfo' ||
+      this.status() === 'rejected_cfo' ||
       this.status() === 'approved',
   );
 
@@ -550,8 +550,8 @@ export class RdigWorkflowService {
 
   isVcApprovalVisible = computed(() => this.currentUserCanAct() && this.status() === 'pending_vc');
 
-  isCeoApprovalVisible = computed(
-    () => this.currentUserCanAct() && this.status() === 'pending_ceo',
+  isCfoApprovalVisible = computed(
+    () => this.currentUserCanAct() && this.status() === 'pending_cfo',
   );
 
   // ── HOS approval options (version-dependent) ──────────────────

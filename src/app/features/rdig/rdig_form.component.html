@@ -2,30 +2,23 @@
   <div class="rdig-app">
     <!-- �"?�"? CLOSED-WINDOW MODAL (Req 6) �"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"? -->
     @if (showClosedWindowModal()) {
-      <div class="modal-backdrop" (click)="showClosedWindowModal.set(false)">
-        <div class="modal-card" (click)="$event.stopPropagation()">
-          <div class="modal-card__header">
-            <span class="material-icons modal-card__icon">event_busy</span>
-            <h3 class="modal-card__title">Submission Window Closed</h3>
-          </div>
-          <div class="modal-card__body">
-            <p>There is no active batch at the moment. Submission is not available right now.</p>
-            <p>
-              Please <strong>Save as Draft</strong> to keep your progress, then submit once a batch
-              is opened.
-            </p>
-          </div>
-          <div class="modal-card__footer">
-            <button
-              type="button"
-              class="btn btn-secondary"
-              (click)="showClosedWindowModal.set(false)"
-            >
-              Return to Form
-            </button>
-          </div>
+      <app-dialog
+        [isOpen]="showClosedWindowModal()"
+        title="Submission Window Closed"
+        size="small"
+        (close)="showClosedWindowModal.set(false)"
+      >
+        <p>There is no active batch at the moment. Submission is not available right now.</p>
+        <p>
+          Please <strong>Save as Draft</strong> to keep your progress, then submit once a batch
+          is opened.
+        </p>
+        <div dialog-footer>
+          <button type="button" class="btn btn-secondary" (click)="showClosedWindowModal.set(false)">
+            Return to Form
+          </button>
         </div>
-      </div>
+      </app-dialog>
     }
 
     <!-- �"?�"? FULLSCREEN SUBMISSION OVERLAY �"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"? -->
@@ -208,7 +201,7 @@
           workflow.showReviewerToggles() ||
           workflow.showRdigChairToggle() ||
           workflow.showVcToggle() ||
-          workflow.showCeoToggle()
+          workflow.showCfoToggle()
         ) {
           <div class="comment-toggle-bar">
             @if (workflow.showHosToggle()) {
@@ -284,15 +277,15 @@
               </button>
             }
 
-            @if (workflow.showCeoToggle()) {
+            @if (workflow.showCfoToggle()) {
               <button
                 type="button"
                 class="btn btn--comment-toggle"
-                [class.btn--comment-toggle-active]="showCeoComments()"
-                (click)="toggleCeoComments()"
+                [class.btn--comment-toggle-active]="showCfoComments()"
+                (click)="toggleCfoComments()"
               >
                 <span class="material-icons">business</span>
-                {{ showCeoComments() ? 'Hide CEO Comments' : 'CEO Comments' }}
+                {{ showCfoComments() ? 'Hide CFO Comments' : 'CFO Comments' }}
               </button>
             }
           </div>
@@ -320,7 +313,7 @@
                   [showR2Comments]="showR2Comments()"
                   [showRdigChairComments]="showRdigChairComments()"
                   [showVcComments]="showVcComments()"
-                  [showCeoComments]="showCeoComments()"
+                  [showCfoComments]="showCfoComments()"
                   [workflow]="workflow"
                 >
                 </app-team-details>
@@ -334,7 +327,7 @@
                   [showR2Comments]="showR2Comments()"
                   [showRdigChairComments]="showRdigChairComments()"
                   [showVcComments]="showVcComments()"
-                  [showCeoComments]="showCeoComments()"
+                  [showCfoComments]="showCfoComments()"
                   [workflow]="workflow"
                 >
                 </app-project-details>
@@ -346,7 +339,7 @@
                   [showR2Comments]="showR2Comments()"
                   [showRdigChairComments]="showRdigChairComments()"
                   [showVcComments]="showVcComments()"
-                  [showCeoComments]="showCeoComments()"
+                  [showCfoComments]="showCfoComments()"
                   [workflow]="workflow"
                 >
                 </app-research-activities>
@@ -386,7 +379,7 @@
                   [showR2Comments]="showR2Comments()"
                   [showRdigChairComments]="showRdigChairComments()"
                   [showVcComments]="showVcComments()"
-                  [showCeoComments]="showCeoComments()"
+                  [showCfoComments]="showCfoComments()"
                   [workflow]="workflow"
                 >
                 </app-output-details>
@@ -399,7 +392,7 @@
                   [showR2Comments]="showR2Comments()"
                   [showRdigChairComments]="showRdigChairComments()"
                   [showVcComments]="showVcComments()"
-                  [showCeoComments]="showCeoComments()"
+                  [showCfoComments]="showCfoComments()"
                   [workflow]="workflow"
                 >
                 </app-budget-summary>
@@ -413,7 +406,7 @@
                   [showR2Comments]="showR2Comments()"
                   [showRdigChairComments]="showRdigChairComments()"
                   [showVcComments]="showVcComments()"
-                  [showCeoComments]="showCeoComments()"
+                  [showCfoComments]="showCfoComments()"
                   [workflow]="workflow"
                   [reviewer1Total]="reviewer1Total"
                   [reviewer2Total]="reviewer2Total"

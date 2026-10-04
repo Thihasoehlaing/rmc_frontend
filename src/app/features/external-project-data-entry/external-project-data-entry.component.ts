@@ -35,6 +35,7 @@ import {
 } from '../../shared/components/data-table/data-table.component';
 import { ActionButtonComponent } from '../../shared/components/action-button/action-button.component';
 import { SearchableDropdownComponent } from '../../shared/components/searchable-dropdown/searchable-dropdown.component';
+import { DatePickerComponent } from '../../shared/components/date-picker/date-picker.component';
 import { DialogComponent } from '../../shared/components/dialog/dialog.component';
 import { DropdownOption } from '../../core/interfaces/components.interface';
 import { ActionLoadingService } from '../../core/services/action-loading.service';
@@ -113,6 +114,7 @@ interface ExpectedOutcomeRow {
     DataTableComponent,
     ActionButtonComponent,
     SearchableDropdownComponent,
+    DatePickerComponent,
     DialogComponent,
     DecimalAmountDirective,
     MyrCurrencyPipe,

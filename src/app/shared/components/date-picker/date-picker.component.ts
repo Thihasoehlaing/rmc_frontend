@@ -1,9 +1,13 @@
 import {
   Component,
   ElementRef,
+  EventEmitter,
   forwardRef,
   HostListener,
   Input,
+  OnChanges,
+  Output,
+  SimpleChanges,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
@@ -32,11 +36,14 @@ interface CalendarDay {
     },
   ],
 })
-export class DatePickerComponent implements ControlValueAccessor {
+export class DatePickerComponent implements ControlValueAccessor, OnChanges {
   @Input() minDate: string | null = null;
   @Input() maxDate: string | null = null;
   @Input() placeholder = 'Select date';
   @Input() ariaLabel = 'Choose date';
+  @Input() id = '';
+  @Input() dateValue: string | null = null;
+  @Output() dateValueChange = new EventEmitter<string>();
 
   value = '';
   disabled = false;
@@ -49,6 +56,14 @@ export class DatePickerComponent implements ControlValueAccessor {
   private onTouched: () => void = () => undefined;
 
   constructor(private readonly elementRef: ElementRef<HTMLElement>) {}
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if ('dateValue' in changes && this.dateValue !== null) {
+      this.value = this.dateValue.slice(0, 10);
+      const selected = this.parseIsoDate(this.value);
+      if (selected) this.visibleMonth = this.startOfMonth(selected);
+    }
+  }
 
   get displayValue(): string {
     const selected = this.parseIsoDate(this.value);
@@ -125,12 +140,14 @@ export class DatePickerComponent implements ControlValueAccessor {
     if (day.disabled) return;
     this.value = day.iso;
     this.onChange(day.iso);
+    this.dateValueChange.emit(day.iso);
     this.closeCalendar();
   }
 
   clearDate(): void {
     this.value = '';
     this.onChange('');
+    this.dateValueChange.emit('');
     this.closeCalendar();
   }
 
@@ -139,6 +156,7 @@ export class DatePickerComponent implements ControlValueAccessor {
     if ((this.minDate && todayIso < this.minDate) || (this.maxDate && todayIso > this.maxDate)) return;
     this.value = todayIso;
     this.onChange(todayIso);
+    this.dateValueChange.emit(todayIso);
     this.closeCalendar();
   }
 

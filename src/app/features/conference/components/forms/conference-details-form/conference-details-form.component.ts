@@ -18,6 +18,7 @@ import {
   DataTableColumn,
 } from '../../../../../shared/components/data-table/data-table.component';
 import { DialogComponent } from '../../../../../shared/components/dialog/dialog.component';
+import { DatePickerComponent } from '../../../../../shared/components/date-picker/date-picker.component';
 import { CustomSubheaderComponent } from '../../../../../shared/components/custom-subheader/custom-subheader.component';
 import { CustomHeaderComponent } from '../../../../../shared/components/custom-header/custom-header.component';
 import { DropdownOption } from '../../../../../core/interfaces/components.interface';
@@ -56,6 +57,7 @@ import { formatDisplayDate } from '../../../../../shared/utils/date-time.util';
     CharacterCounterComponent,
     DataTableComponent,
     DialogComponent,
+    DatePickerComponent,
     CustomHeaderComponent,
     CustomSubheaderComponent,
     DecimalAmountDirective,

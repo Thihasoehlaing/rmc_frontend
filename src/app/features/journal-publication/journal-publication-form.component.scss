@@ -523,6 +523,91 @@
   padding-top: 0;
   padding-bottom: 0;
 
+  &__content {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) var(--journal-design-side-column);
+    align-items: start;
+    gap: var(--journal-design-column-gap);
+    width: 100%;
+  }
+
+  &__progress-panel {
+    display: grid;
+    gap: var(--journal-design-column-gap);
+    align-self: start;
+  }
+
+  &__progress-card,
+  &__checklist-card {
+    padding: 20px;
+    border: 1px solid var(--border-light);
+    border-radius: var(--journal-design-card-radius);
+    background: var(--color-surface);
+  }
+
+  &__progress-card h2,
+  &__checklist-card h2 {
+    margin: 0;
+    color: var(--journal-design-ink);
+    font-size: var(--fs-lg);
+    font-weight: var(--fw-bold);
+  }
+
+  &__progress-summary {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-3);
+    margin-top: 18px;
+
+    strong {
+      color: var(--journal-design-ink);
+      font-size: 32px;
+      line-height: 1;
+    }
+
+    span {
+      color: var(--journal-design-muted);
+      font-size: var(--fs-sm);
+    }
+  }
+
+  &__progress-track {
+    height: 8px;
+    margin-top: 20px;
+    overflow: hidden;
+    border-radius: var(--radius-full);
+    background: var(--color-primary-light);
+
+    > span {
+      display: block;
+      height: 100%;
+      border-radius: inherit;
+      background: var(--journal-design-blue);
+    }
+  }
+
+  &__checklist-card {
+    display: grid;
+    gap: var(--space-3);
+  }
+
+  &__checklist-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    color: var(--journal-design-muted);
+    font-size: var(--fs-sm);
+
+    &--complete {
+      color: var(--journal-design-ink);
+
+      .material-icons {
+        color: var(--journal-design-blue);
+      }
+    }
+  }
+
   .form-container {
     padding: 0;
     border: 0;
@@ -859,6 +944,16 @@
         width: auto;
         min-height: 0;
       }
+    }
+  }
+}
+
+@media (max-width: 960px) {
+  .journal-app {
+    --journal-design-side-column: minmax(0, 1fr);
+
+    &__content {
+      grid-template-columns: minmax(0, 1fr);
     }
   }
 }

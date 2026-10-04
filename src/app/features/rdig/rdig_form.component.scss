@@ -7,10 +7,162 @@
   min-width: 0;
 }
 
+.rdig-app {
+  gap: var(--space-6);
+}
+
+.rdig-form-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) clamp(280px, 24vw, 340px);
+  align-items: start;
+  gap: var(--space-5);
+  min-width: 0;
+}
+
 .rdig-step-panel {
   display: flex;
   flex-direction: column;
   gap: var(--form-section-gap);
+}
+
+.rdig-step-panel.application-form-surface {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.rdig-step-panel > app-custom-header {
+  display: none;
+}
+
+.rdig-progress-panel {
+  position: sticky;
+  top: var(--space-5);
+  display: grid;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.rdig-progress-card,
+.rdig-checklist-card,
+.rdig-guidance-card {
+  display: grid;
+  gap: var(--space-3);
+  min-width: 0;
+  padding: var(--space-5);
+  border: var(--control-border-width) solid var(--color-border-default);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-xs);
+}
+
+.rdig-progress-card h2,
+.rdig-checklist-card h2,
+.rdig-guidance-card h2,
+.rdig-deadline-card h2 {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-bold);
+}
+
+.rdig-progress-summary {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+
+  strong {
+    color: var(--color-heading);
+    font-size: var(--fs-3xl);
+    line-height: var(--lh-tight);
+  }
+
+  span {
+    color: var(--color-text-secondary);
+    font-size: var(--fs-xs);
+    text-align: right;
+  }
+}
+
+.rdig-progress-track {
+  height: var(--space-2);
+  overflow: hidden;
+  border-radius: var(--radius-full);
+  background: var(--color-primary-light);
+
+  > span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--color-primary);
+    transition: width var(--transition-standard);
+  }
+}
+
+.rdig-checklist-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-text-secondary);
+  font-size: var(--fs-sm);
+
+  .material-icons {
+    color: var(--color-border-strong);
+    font-size: var(--size-icon-control);
+  }
+
+  &--complete {
+    color: var(--color-text-primary);
+
+    .material-icons {
+      color: var(--color-primary);
+    }
+  }
+
+  &--current:not(&--complete) {
+    color: var(--color-primary-dark);
+    font-weight: var(--fw-semibold);
+
+    .material-icons {
+      color: var(--color-primary);
+    }
+  }
+}
+
+.rdig-deadline-card {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-5);
+  border-radius: var(--radius-lg);
+  background: var(--color-primary-dark);
+  color: var(--color-surface);
+
+  h2,
+  strong {
+    color: var(--color-surface);
+  }
+
+  strong {
+    font-size: var(--fs-lg);
+    line-height: var(--lh-normal);
+  }
+
+  p {
+    margin: 0;
+    color: var(--color-primary-light);
+    font-size: var(--fs-xs);
+    line-height: var(--lh-normal);
+  }
+}
+
+.rdig-guidance-card p {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-normal);
 }
 
 .rdig-step-content {
@@ -25,6 +177,107 @@
 
 .rdig-app > app-step-indicator {
   --step-indicator-margin-bottom: 15px;
+}
+
+:host ::ng-deep {
+  app-form-main-title .form-main-title-wrapper--wide {
+    padding: 0;
+  }
+
+  app-form-main-title .form-main-title-text {
+    color: var(--color-text-primary);
+  }
+
+  app-form-main-title .form-main-title-description {
+    color: var(--color-text-secondary);
+  }
+
+  .rdig-step-content .card {
+    overflow: hidden;
+    border-color: var(--color-border-default);
+    border-radius: var(--radius-lg);
+    box-shadow: none;
+  }
+
+  .rdig-step-content app-custom-subheader .custom-subheader {
+    background: var(--color-surface);
+    border-bottom-color: var(--color-border-default);
+  }
+
+  .rdig-step-content app-custom-subheader .subheader-text {
+    color: var(--color-text-primary);
+  }
+
+  .rdig-step-indicator .step-indicator {
+    counter-reset: rdig-step;
+    align-items: flex-start;
+    justify-content: space-around;
+    min-height: 80px;
+    padding: var(--space-3) var(--space-5);
+    border-color: var(--color-border-default);
+    border-radius: var(--radius-lg);
+    box-shadow: none;
+  }
+
+  .rdig-step-indicator .step {
+    counter-increment: rdig-step;
+    flex: 1 1 0;
+    min-width: 0;
+    flex-direction: column;
+    justify-content: center;
+    gap: var(--space-2);
+    padding: 0 var(--space-3);
+  }
+
+  .rdig-step-indicator .step__bubble {
+    width: var(--space-7);
+    height: var(--space-7);
+    flex: 0 0 var(--space-7);
+    border-width: var(--control-border-width);
+    background: var(--color-background-secondary);
+    border-color: var(--color-border-default);
+    color: var(--color-text-muted);
+    box-shadow: none;
+
+    .material-icons {
+      display: none;
+    }
+
+    &::before {
+      content: counter(rdig-step);
+      font-size: var(--fs-sm);
+      font-weight: var(--fw-bold);
+    }
+  }
+
+  .rdig-step-indicator .step__label {
+    max-width: 220px;
+    color: var(--color-text-secondary);
+    font-size: var(--fs-xs);
+    font-weight: var(--fw-medium);
+    text-align: center;
+  }
+
+  .rdig-step-indicator .step--active .step__bubble,
+  .rdig-step-indicator .step--complete .step__bubble {
+    border-color: var(--color-primary);
+    background: var(--color-primary);
+    color: var(--color-text-inverse);
+    box-shadow: none;
+  }
+
+  .rdig-step-indicator .step--active .step__label,
+  .rdig-step-indicator .step--complete .step__label {
+    color: var(--color-text-primary);
+  }
+
+  .rdig-step-indicator .step--active .step__label {
+    font-weight: var(--fw-bold);
+  }
+
+  .rdig-step-indicator .step-connector {
+    display: none;
+  }
 }
 
 .rdig-step-panel > app-form-alert {
@@ -178,6 +431,23 @@
       border-top: var(--control-border-width) solid var(--color-border-default);
       border-left: 0;
     }
+  }
+}
+
+@media (max-width: 960px) {
+  .rdig-form-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .rdig-progress-panel {
+    position: static;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .rdig-progress-panel {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 

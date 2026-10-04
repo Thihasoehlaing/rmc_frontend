@@ -71,6 +71,10 @@ import { formatDisplayDateTime } from '../../../../shared/utils/date-time.util';
       <div class="conference-wizard application-form-page">
         <app-form-main-title
           title="Conference Application"
+          eyebrow="Conference Application"
+          description="Conference Application Guidelines"
+          helpLabel="Conference Application Guidelines"
+          presentation="wide"
           modalTitle="Guidelines for Applicants"
           [guidelineContext]="guidelineContext"
           [endpoint]="guidelinesEndpoint"
@@ -173,43 +177,95 @@ import { formatDisplayDateTime } from '../../../../shared/utils/date-time.util';
 
         <!-- Main Form Section with Shadow -->
         <div class="main-section application-form-content">
-          <!-- Form Content -->
-          <div class="wizard-content application-form-surface">
-            @switch (currentStep()) {
-              @case (1) {
-                <app-conference-details-form
-                  #conferenceDetailsStep
-                  [workflow]="workflow"
-                  [applicantDetailsForm]="applicantDetailsForm"
-                  [isFormReadOnly]="isEffectiveFormReadOnly()"
-                >
-                </app-conference-details-form>
+          <div class="conference-content-grid">
+            <!-- Form Content -->
+            <div class="wizard-content application-form-surface">
+              @switch (currentStep()) {
+                @case (1) {
+                  <app-conference-details-form
+                    #conferenceDetailsStep
+                    [workflow]="workflow"
+                    [applicantDetailsForm]="applicantDetailsForm"
+                    [isFormReadOnly]="isEffectiveFormReadOnly()"
+                  >
+                  </app-conference-details-form>
+                }
+                @case (2) {
+                  <app-author-details-form
+                    #authorDetailsStep
+                    [workflow]="workflow"
+                    [isFormReadOnly]="isEffectiveFormReadOnly()"
+                  >
+                  </app-author-details-form>
+                }
+                @case (3) {
+                  <app-supporting-documents-form
+                    #supportingDocumentsStep
+                    [workflow]="workflow"
+                    [isFormReadOnly]="isEffectiveFormReadOnly()"
+                  >
+                  </app-supporting-documents-form>
+                }
+                @case (4) {
+                  <app-declaration-form
+                    #declarationStep
+                    [workflow]="workflow"
+                    [isFormReadOnly]="isEffectiveFormReadOnly()"
+                  >
+                  </app-declaration-form>
+                }
               }
-              @case (2) {
-                <app-author-details-form
-                  #authorDetailsStep
-                  [workflow]="workflow"
-                  [isFormReadOnly]="isEffectiveFormReadOnly()"
+            </div>
+
+            <aside class="conference-progress-panel" aria-label="Application progress">
+              <section class="conference-progress-card">
+                <h2>Application progress</h2>
+                <div class="conference-progress-summary">
+                  <strong>{{ applicationProgress }}%</strong>
+                  <span>
+                    @if (applicationProgress === 100) {
+                      All required sections complete
+                    } @else {
+                      Step {{ currentStep() }} of {{ wizardSteps.length }} in progress
+                    }
+                  </span>
+                </div>
+                <div
+                  class="conference-progress-track"
+                  role="progressbar"
+                  aria-label="Conference application completion"
+                  aria-valuemin="0"
+                  aria-valuemax="100"
+                  [attr.aria-valuenow]="applicationProgress"
                 >
-                </app-author-details-form>
+                  <span [style.width.%]="applicationProgress"></span>
+                </div>
+              </section>
+
+              @if (currentStep() === wizardSteps.length) {
+                <section class="conference-checklist-card">
+                  <h2>Completion checklist</h2>
+                  @for (step of wizardSteps; track step.label; let index = $index) {
+                    <div
+                      class="conference-checklist-item"
+                      [class.conference-checklist-item--complete]="isStepComplete(index + 1)"
+                      [class.conference-checklist-item--current]="index + 1 === currentStep()"
+                    >
+                      <span class="material-icons" aria-hidden="true">
+                        @if (isStepComplete(index + 1)) {
+                          check_circle
+                        } @else if (index + 1 === currentStep()) {
+                          radio_button_checked
+                        } @else {
+                          radio_button_unchecked
+                        }
+                      </span>
+                      <span>{{ step.label }}</span>
+                    </div>
+                  }
+                </section>
               }
-              @case (3) {
-                <app-supporting-documents-form
-                  #supportingDocumentsStep
-                  [workflow]="workflow"
-                  [isFormReadOnly]="isEffectiveFormReadOnly()"
-                >
-                </app-supporting-documents-form>
-              }
-              @case (4) {
-                <app-declaration-form
-                  #declarationStep
-                  [workflow]="workflow"
-                  [isFormReadOnly]="isEffectiveFormReadOnly()"
-                >
-                </app-declaration-form>
-              }
-            }
+            </aside>
           </div>
 
           <!-- Submission feedback -->
@@ -256,6 +312,11 @@ import { formatDisplayDateTime } from '../../../../shared/utils/date-time.util';
       padding: var(--space-4) 0;
       box-sizing: border-box;
 
+      max-width: none;
+      gap: 24px;
+      padding-top: 0;
+      padding-bottom: 0;
+
       @media (max-width: 768px) {
         gap: var(--space-4);
         padding: var(--space-3) 0;
@@ -266,6 +327,183 @@ import { formatDisplayDateTime } from '../../../../shared/utils/date-time.util';
       display: flex;
       flex-direction: column;
       gap: var(--space-4);
+    }
+
+    .conference-content-grid {
+      --conference-side-column: clamp(300px, 25vw, 400px);
+
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) var(--conference-side-column);
+      align-items: start;
+      gap: 20px;
+      min-width: 0;
+      width: 100%;
+    }
+
+    .conference-progress-panel {
+      display: grid;
+      align-content: start;
+      gap: 20px;
+      min-width: 0;
+    }
+
+    .conference-progress-card,
+    .conference-checklist-card {
+      min-width: 0;
+      padding: 20px;
+      border: 1px solid var(--border-light);
+      border-radius: 12px;
+      background: var(--color-surface);
+    }
+
+    .conference-progress-card h2,
+    .conference-checklist-card h2 {
+      margin: 0;
+      color: var(--color-text-primary);
+      font-size: var(--fs-lg);
+      font-weight: var(--fw-bold);
+    }
+
+    .conference-progress-summary {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: var(--space-3);
+      margin-top: 18px;
+
+      strong {
+        color: var(--color-text-primary);
+        font-size: 32px;
+        line-height: 1;
+      }
+
+      span {
+        color: var(--color-text-secondary);
+        font-size: var(--fs-sm);
+        text-align: right;
+      }
+    }
+
+    .conference-progress-track {
+      height: 8px;
+      margin-top: 20px;
+      overflow: hidden;
+      border-radius: var(--radius-full);
+      background: var(--color-primary-light);
+
+      > span {
+        display: block;
+        height: 100%;
+        border-radius: inherit;
+        background: var(--color-primary);
+        transition: width var(--transition-base) ease;
+      }
+    }
+
+    .conference-checklist-card {
+      display: grid;
+      gap: var(--space-3);
+    }
+
+    .conference-checklist-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      color: var(--color-text-secondary);
+      font-size: var(--fs-sm);
+
+      .material-icons {
+        color: var(--color-text-muted);
+        font-size: 20px;
+      }
+
+      &--complete {
+        color: var(--color-text-primary);
+
+        .material-icons {
+          color: var(--color-primary);
+        }
+      }
+
+      &--current:not(&--complete) {
+        color: var(--color-text-primary);
+      }
+    }
+
+    .conference-wizard ::ng-deep {
+      .step-indicator {
+        align-items: flex-start;
+        justify-content: space-around;
+        min-height: 80px;
+        padding: 12px 24px;
+        border-color: var(--border-light);
+        border-radius: 12px;
+        box-shadow: none;
+      }
+
+      .step {
+        flex: 1 1 0;
+        min-width: 0;
+        flex-direction: column;
+        justify-content: center;
+        gap: 10px;
+        padding: 0 12px;
+      }
+
+      .step__bubble {
+        width: 32px;
+        height: 32px;
+        flex: 0 0 32px;
+        border-width: 1px;
+        box-shadow: none;
+      }
+
+      .step__bubble .material-icons {
+        display: none;
+      }
+
+      .step__bubble::before {
+        counter-increment: conference-step;
+        content: counter(conference-step);
+        font-size: var(--fs-sm);
+        font-weight: var(--fw-bold);
+      }
+
+      .step-indicator {
+        counter-reset: conference-step;
+      }
+
+      .step__label {
+        max-width: 220px;
+        color: var(--color-text-secondary);
+        font-size: var(--fs-xs);
+        font-weight: var(--fw-medium);
+        text-align: center;
+      }
+
+      .step--active .step__bubble,
+      .step--complete .step__bubble {
+        border-color: var(--color-primary);
+        background: var(--color-primary);
+        color: var(--color-text-inverse);
+      }
+
+      .step--active .step__label,
+      .step--complete .step__label {
+        color: var(--color-text-primary);
+      }
+
+      .step--active .step__label {
+        font-weight: var(--fw-bold);
+      }
+
+      .step-connector {
+        display: block;
+        min-width: 0;
+        height: 1px;
+        margin-top: 16px;
+        align-self: flex-start;
+      }
     }
 
     .applicant-section-comments {
@@ -517,8 +755,65 @@ import { formatDisplayDateTime } from '../../../../shared/utils/date-time.util';
 
     .wizard-content {
       flex: 1;
-      padding: var(--space-4);
+      min-width: 0;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      box-shadow: none;
       animation: stepFadeIn var(--transition-base) ease;
+    }
+
+    .conference-wizard ::ng-deep {
+      app-conference-details-form > .form-section,
+      app-author-details-form > .form-section,
+      app-supporting-documents-form > .form-section,
+      app-declaration-form > .form-section {
+        gap: 24px;
+        padding: 0;
+      }
+
+      app-conference-details-form .card,
+      app-author-details-form .card,
+      app-supporting-documents-form .card,
+      app-declaration-form .card {
+        border: 1px solid var(--border-light);
+        border-radius: 12px;
+        background: var(--color-surface);
+        box-shadow: none;
+      }
+
+      app-conference-details-form .card__header,
+      app-author-details-form .card__header,
+      app-supporting-documents-form .card__header,
+      app-declaration-form .card__header {
+        padding: var(--space-5) var(--space-5) 0;
+        border: 0;
+        background: transparent;
+      }
+
+      app-conference-details-form .card__content,
+      app-author-details-form .card__content,
+      app-supporting-documents-form .card__content,
+      app-declaration-form .card__content {
+        padding: var(--space-5);
+      }
+
+      app-conference-details-form .header-text,
+      app-author-details-form .header-text,
+      app-supporting-documents-form .header-text,
+      app-declaration-form .header-text,
+      app-conference-details-form .subheader-text,
+      app-author-details-form .subheader-text,
+      app-supporting-documents-form .subheader-text,
+      app-declaration-form .subheader-text {
+        color: var(--color-text-primary);
+      }
+    }
+
+    @media (max-width: 960px) {
+      .conference-content-grid {
+        grid-template-columns: minmax(0, 1fr);
+      }
     }
 
     .review-comments-section {
@@ -715,6 +1010,11 @@ export class ConferenceApplication implements OnInit {
 
   private readonly declarationFieldChecks: Array<{ path: string; label: string; target?: string }> =
     [
+      { path: 'confirmPresenter', label: 'Presenter Confirmation' },
+      { path: 'confirmScopusIndexed', label: 'SCOPUS Indexing Confirmation' },
+      { path: 'confirmNotResignedStaff', label: 'Staff Eligibility Confirmation' },
+      { path: 'confirmCompliance', label: 'Compliance Confirmation' },
+      { path: 'confirmPostReturn', label: 'Post-Return Commitment' },
       { path: 'agreeToTerms', label: 'Terms Agreement' },
       { path: 'acknowledgeGrantFunder', label: 'Grant Funder Acknowledgement' },
     ];
@@ -1200,6 +1500,107 @@ export class ConferenceApplication implements OnInit {
     this.checkedSteps.add(step);
   }
 
+  get completedStepCount(): number {
+    return this.getStepStatuses().filter((step) => step.valid).length;
+  }
+
+  get applicationProgress(): number {
+    const conference =
+      this.conferenceDetailsStep?.form.getRawValue() ??
+      this.formStateService.getFormSection('conferenceDetails') ?? {};
+    const authors =
+      this.authorDetailsStep?.form.getRawValue() ??
+      this.formStateService.getFormSection('authorDetails') ?? {};
+    const documents =
+      this.supportingDocumentsStep?.form.getRawValue() ??
+      this.formStateService.getFormSection('supportingDocuments') ?? {};
+    const declaration =
+      this.declarationStep?.form.getRawValue() ??
+      this.formStateService.getFormSection('declaration') ?? {};
+
+    const conferenceConditional: Record<string, boolean> = {
+      bookingDoneByOther: conference['bookingDoneBy'] === 'other',
+      advanceReason: conference['hasAdvance'] === 'yes',
+      selectedColleagues: conference['hasColleagues'] === 'yes',
+      citedJournalPaperExplanation: conference['citedJournalPaper'] === 'no',
+      externalProjectAccountCode: conference['researchType'] === 'external-research',
+    };
+    const conferenceChecks = this.conferenceDetailsFieldChecks.filter(
+      ({ path }) => path !== 'activities' && conferenceConditional[path] !== false,
+    );
+    const conferenceValues = this.completedValueCount(conference, conferenceChecks);
+    let completed = conferenceValues.completed;
+    let total = conferenceValues.total;
+
+    // A schedule counts as one required item; an incomplete activity must not
+    // make the progress look complete just because a row was added.
+    total += 1;
+    const activities = this.conferenceDetailsStep?.activities.getRawValue() ?? conference['activities'];
+    if (Array.isArray(activities) && activities.length > 0 && !this.getInvalidActivityLabels(activities).length) {
+      completed += 1;
+    }
+
+    const externalCostingRequired = conference['researchType'] === 'external-research';
+    if (externalCostingRequired) {
+      total += 1;
+      const breakdowns =
+        this.conferenceDetailsStep?.externalBreakdowns ?? conference['externalResearchBreakdown'];
+      if (Array.isArray(breakdowns) && breakdowns.length > 0) completed += 1;
+    }
+
+    // Applicant identity fields are prefilled profile data, not user progress.
+    const authorCore = this.completedValueCount(authors, this.authorDetailsFieldChecks);
+    completed += authorCore.completed;
+    total += authorCore.total;
+    const coAuthorRequirements: Array<[string, string[]]> = [
+      ['testSubsections', ['staffName', 'schoolDepartment']],
+      ['studentCoAuthors', ['tpNumber', 'fullName', 'schoolDepartment']],
+      ['nonApuCoAuthors', ['fullName', 'country', 'email', 'organisationType', 'schoolDepartment', 'institutionName']],
+    ];
+    for (const [arrayName, fields] of coAuthorRequirements) {
+      const rows = authors[arrayName];
+      if (!Array.isArray(rows)) continue;
+      for (const row of rows) {
+        const result = this.completedValueCount(row ?? {}, fields.map((path) => ({ path, label: path })));
+        completed += result.completed;
+        total += result.total;
+      }
+    }
+
+    const documentProgress = this.completedValueCount(documents, this.supportingDocumentsFieldChecks);
+    completed += documentProgress.completed;
+    total += documentProgress.total;
+    // A previously published manuscript is an answered but invalid response.
+    if (documents['manuscriptPreviouslyPublished'] === 'yes') {
+      completed -= 1;
+    }
+
+    const declarationProgress = this.completedValueCount(declaration, this.declarationFieldChecks, true);
+    completed += declarationProgress.completed;
+    total += declarationProgress.total;
+    return total ? Math.round((completed / total) * 100) : 0;
+  }
+
+  private completedValueCount(
+    value: Record<string, unknown>,
+    checks: Array<{ path: string; label: string }>,
+    requireTrue = false,
+  ): { completed: number; total: number } {
+    return checks.reduce(
+      (count, { path }) => {
+        const fieldValue = value[path];
+        count.total += 1;
+        if (requireTrue ? fieldValue === true : !this.isEmptyRequiredValue(fieldValue)) count.completed += 1;
+        return count;
+      },
+      { completed: 0, total: 0 },
+    );
+  }
+
+  isStepComplete(stepNumber: number): boolean {
+    return this.getStepStatuses()[stepNumber - 1]?.valid ?? false;
+  }
+
   getStepStatuses(): StepStatus[] {
     const missingByStep = [
       this.getConferenceDetailsMissingFields(),
@@ -1263,7 +1664,17 @@ export class ConferenceApplication implements OnInit {
   }
 
   private getAuthorDetailsMissingFields(): MissingField[] {
-    return [];
+    if (!this.workflow.isApplicantEditable()) return [];
+    const form = this.authorDetailsStep?.form;
+    const state =
+      form?.getRawValue() ?? this.formStateService.getFormSection('authorDetails') ?? {};
+    const missing = form
+      ? this.getInvalidLabelsFromForm(form, this.authorDetailsFieldChecks)
+      : this.getMissingFromValue(state, this.authorDetailsFieldChecks);
+    if (form?.invalid && !missing.length) {
+      missing.push({ label: 'Author Details', target: 'fullName' });
+    }
+    return this.uniqueLabels(missing);
   }
 
   private getSupportingDocumentsMissingFields(): MissingField[] {

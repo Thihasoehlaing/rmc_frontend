@@ -1,5 +1,5 @@
 ﻿<form [formGroup]="form" class="form-section">
-  <app-custom-header icon="description" title="Conference Details"></app-custom-header>
+  <app-custom-header presentation="plain" title="Conference Details"></app-custom-header>
   <div class="section-fields">
     @if (applicantDetailsForm) {
       <section class="card" [formGroup]="applicantDetailsForm">
@@ -379,12 +379,12 @@
         <div class="row row--2 conference-field-grid">
           <div class="form-field">
             <label class="form-label is-required">Conference Start Date</label>
-            <input
-              type="date"
-              class="input--text"
-              [attr.min]="getMinimumConferenceStartDate()"
+            <app-date-picker
               formControlName="conferenceStartDate"
-            />
+              [minDate]="getMinimumConferenceStartDate()"
+              placeholder="Select start date"
+              ariaLabel="Conference Start Date"
+            ></app-date-picker>
             <app-validation-message
               class="form-validation-note--error"
               [control]="form.get('conferenceStartDate')"
@@ -393,12 +393,12 @@
           </div>
           <div class="form-field">
             <label class="form-label is-required">Conference End Date</label>
-            <input
-              type="date"
-              class="input--text"
-              [attr.min]="form.get('conferenceStartDate')?.value || getMinimumConferenceStartDate()"
+            <app-date-picker
               formControlName="conferenceEndDate"
-            />
+              [minDate]="form.get('conferenceStartDate')?.value || getMinimumConferenceStartDate()"
+              placeholder="Select end date"
+              ariaLabel="Conference End Date"
+            ></app-date-picker>
             <app-validation-message
               class="form-validation-note--error"
               [control]="form.get('conferenceEndDate')"
@@ -1473,14 +1473,14 @@
         >
           <div class="form-group">
             <label for="activityDate">Date <span class="asterisk">*</span></label>
-            <input
+            <app-date-picker
               id="activityDate"
-              type="date"
-              class="form-control"
               formControlName="date"
-              [attr.min]="getMinimumActivityDate()"
-              [attr.max]="getMaximumActivityDate()"
-            />
+              [minDate]="getMinimumActivityDate()"
+              [maxDate]="getMaximumActivityDate()"
+              placeholder="Select activity date"
+              ariaLabel="Activity Date"
+            ></app-date-picker>
             @if (activityForm.get('date')?.hasError('required')) {
               <app-validation-message
                 class="form-validation-note--error"

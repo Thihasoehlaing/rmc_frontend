@@ -1,7 +1,9 @@
 ﻿import { Component, OnInit, OnDestroy, Input, effect, inject } from '@angular/core';
+import { signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
 import { Subscription } from 'rxjs';
+import { finalize } from 'rxjs/operators';
 import { SearchableDropdownComponent } from '../../../../../shared/components/searchable-dropdown/searchable-dropdown.component';
 import { ActionButtonComponent } from '../../../../../shared/components/action-button/action-button.component';
 import {
@@ -16,6 +18,7 @@ import { ConferenceWorkflowService } from '../../../services/conference-workflow
 import { ConferenceFormStateService } from '../../../services/conference-form-state.service';
 import {
   AcademicStaffOption,
+  CountryOption,
   MasterDataService,
 } from '../../../../../core/services/master-data.service';
 import { AuthService } from '../../../../../core/services/auth.service';
@@ -67,6 +70,9 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
   staffOptions: DropdownOption[] = [];
   departmentOptions: DropdownOption<string>[] = [];
   organisationTypeOptions: DropdownOption[] = [];
+  readonly countryOptions = signal<DropdownOption<string>[]>([]);
+  readonly countryOptionsLoading = signal(false);
+  readonly countryOptionsLoadFailed = signal(false);
   private academicStaffByName = new Map<string, AcademicStaffOption>();
   private staffSelectionSubscription?: Subscription;
 
@@ -120,6 +126,7 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
 
     this.loadAcademicStaffOptions();
     this.loadDepartmentOptions();
+    this.loadCountryOptions();
     this.masterData.getDropdownOptions('TYPE_OF_ORGANISATION').subscribe((res) => {
       this.organisationTypeOptions = (res.data ?? [])
         .filter((o) => o.status === 'ACTIVE')
@@ -515,6 +522,34 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
   private isStudentSchoolDepartment(departmentName: string | null | undefined): boolean {
     const name = String(departmentName ?? '').trim().toLowerCase();
     return name.startsWith('graduate school') || name.startsWith('school of');
+  }
+
+  private loadCountryOptions(): void {
+    this.countryOptionsLoading.set(true);
+    this.countryOptionsLoadFailed.set(false);
+
+    this.masterData
+      .getCountries()
+      .pipe(finalize(() => this.countryOptionsLoading.set(false)))
+      .subscribe({
+        next: (response) => {
+          this.countryOptions.set(
+            (response.success ? response.data ?? [] : [])
+              .filter((country: CountryOption) => country.is_active)
+              .map((country: CountryOption) => ({
+                value: country.name,
+                label: country.name,
+                description: country.code,
+                searchText: `${country.name} ${country.code}`,
+              })),
+          );
+          this.countryOptionsLoadFailed.set(!response.success);
+        },
+        error: () => {
+          this.countryOptions.set([]);
+          this.countryOptionsLoadFailed.set(true);
+        },
+      });
   }
 
   private toAcademicStaffDropdownOption(

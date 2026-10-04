@@ -74,10 +74,13 @@
     <!-- �"?�"? 1. Page Title �"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"? -->
     <app-form-main-title
       title="RDIG Application"
-      helpText="Click to view guidelines"
+      eyebrow="RDIG Application"
+      helpText=""
+      helpLabel="RDIG Application Guidelines"
       modalTitle="RDIG Applicant Guidelines"
       [guidelineContext]="guidelineContext"
       [endpoint]="guidelinesEndpoint"
+      presentation="wide"
     >
     </app-form-main-title>
 
@@ -85,6 +88,7 @@
       <app-form-page-skeleton [showBatchCard]="true"></app-form-page-skeleton>
     } @else {
       <app-step-indicator
+        class="rdig-step-indicator"
         [currentStep]="currentStep()"
         [steps]="steps"
         [stepStatuses]="getStepStatuses()"
@@ -101,7 +105,6 @@
       }
 
       <div class="main-section application-form-content">
-      @if (currentStep() === 1) {
         @if (hasActiveApplicantWindow()) {
           @if (activeBatch(); as ab) {
             <section class="active-batch-card" aria-label="Active Applicant submission window">
@@ -157,8 +160,8 @@
             </div>
           </section>
         }
-      }
       @if (!isBatchLoading() && canShowForm()) {
+        <div class="rdig-form-layout">
         <div class="rdig-step-panel application-form-surface">
           @switch (currentStep()) {
             @case (1) {
@@ -421,6 +424,55 @@
           </div>
 
         </form>
+        </div>
+        <aside class="rdig-progress-panel" aria-label="Application progress and guidance">
+          <section class="rdig-progress-card" aria-labelledby="rdig-progress-title">
+            <h2 id="rdig-progress-title">Application progress</h2>
+            <div class="rdig-progress-summary">
+              <strong>{{ applicationProgress() }}%</strong>
+              <span>Step {{ currentStep() }} of {{ totalSteps }} in progress</span>
+            </div>
+            <div class="rdig-progress-track" role="progressbar"
+              aria-label="RDIG application completion" aria-valuemin="0" aria-valuemax="100"
+              [attr.aria-valuenow]="applicationProgress()">
+              <span [style.width.%]="applicationProgress()"></span>
+            </div>
+          </section>
+          <section class="rdig-checklist-card" aria-labelledby="rdig-checklist-title">
+            <h2 id="rdig-checklist-title">Completion checklist</h2>
+            @for (step of steps; track step.label; let index = $index) {
+              <div class="rdig-checklist-item"
+                [class.rdig-checklist-item--complete]="isStepComplete(index + 1)"
+                [class.rdig-checklist-item--current]="index + 1 === currentStep()">
+                <span class="material-icons" aria-hidden="true">
+                  @if (isStepComplete(index + 1)) { check_circle }
+                  @else if (index + 1 === currentStep()) { radio_button_checked }
+                  @else { radio_button_unchecked }
+                </span>
+                <span>{{ step.label }}</span>
+              </div>
+            }
+          </section>
+          <section class="rdig-deadline-card" aria-labelledby="rdig-deadline-title">
+            <h2 id="rdig-deadline-title">Submission deadline</h2>
+            @if (hasActiveApplicantWindow() && submissionCloseIso(); as closeDate) {
+              <strong>{{ fmtWindow(closeDate) }}</strong>
+              <p>Complete and submit the application before the portal closes.</p>
+            } @else if (nextApplicantWindow(); as nextWindow) {
+              <strong>{{ fmtWindow(nextWindow.endDate) }}</strong>
+              <p>Next applicant submission window.</p>
+            } @else {
+              <strong>No active deadline</strong>
+              <p>You can save your application as a draft while the applicant window is closed.</p>
+            }
+          </section>
+          @if (currentStep() === 1) {
+            <section class="rdig-guidance-card" aria-labelledby="rdig-guidance-title">
+              <h2 id="rdig-guidance-title">Team eligibility</h2>
+              <p>Add eligible internal co-researchers and at least two external collaborators. Restricted roles and assigned RDIG reviewers are excluded from the eligible list.</p>
+            </section>
+          }
+        </aside>
         </div>
 
           <!-- �"?�"? Shared wizard navigation footer �"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"? -->

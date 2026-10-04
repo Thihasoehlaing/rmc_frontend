@@ -470,6 +470,39 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
     });
   }
 
+  applicationProgress(): number {
+    const criteria = this.stepFieldChecks.flat();
+    if (!criteria.length) return 0;
+
+    let completed = criteria.filter((check) => this.rdigForm.get(check.path)?.valid).length;
+    let total = criteria.length;
+
+    // Research Activities are a required part of Project Details even though their
+    // rows are managed in a separate form array.
+    if (this.workflow.isApplicantEditable()) {
+      const activities = this.rdigForm.get('activities') as FormArray | null;
+      total += 1;
+      if (activities?.length && activities.valid) completed += 1;
+    }
+
+    // Include cross-field validation that is not represented by a single field path.
+    const budget = this.rdigForm.get('budget');
+    if (budget) {
+      total += 1;
+      if (budget.valid && !budget.hasError('budgetRange')) completed += 1;
+    }
+
+    return Math.round((completed / total) * 100);
+  }
+
+  isStepComplete(stepNumber: number): boolean {
+    const checks = this.stepFieldChecks[stepNumber - 1] ?? [];
+    if (!checks.length) return false;
+    const fieldsComplete = checks.every((check) => this.rdigForm.get(check.path)?.valid);
+    const status = this.getStepStatuses()[stepNumber - 1];
+    return fieldsComplete && !!status?.valid;
+  }
+
   get validationSummaryItems(): ValidationSummaryItem[] {
     if (!this.showValidationSummary()) return [];
 

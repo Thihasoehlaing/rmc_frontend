@@ -1,5 +1,10 @@
-<div class="date-picker" [class.date-picker--open]="isOpen" [class.date-picker--above]="opensAbove">
-  <div class="date-picker__control" (click)="openCalendar()">
+<div class="date-picker" [class.date-picker--open]="isOpen">
+  <div
+    class="date-picker__control"
+    cdkOverlayOrigin
+    #pickerOrigin="cdkOverlayOrigin"
+    (click)="openCalendar()"
+  >
     <input
       type="text"
       class="date-picker__input"
@@ -25,8 +30,16 @@
     </button>
   </div>
 
-  @if (isOpen) {
-    <section class="date-picker__calendar" role="dialog" aria-label="Choose a date" (click)="$event.stopPropagation()">
+  <ng-template
+    cdk-connected-overlay
+    [cdkConnectedOverlayOrigin]="pickerOrigin"
+    [cdkConnectedOverlayOpen]="isOpen"
+    [cdkConnectedOverlayPositions]="overlayPositions"
+    [cdkConnectedOverlayPush]="true"
+    [cdkConnectedOverlayViewportMargin]="8"
+    (overlayOutsideClick)="closeCalendar()"
+  >
+    <section class="date-picker__calendar" role="dialog" aria-label="Choose a date">
       <header class="date-picker__header">
         <div class="date-picker__month-title">{{ monthTitle }}</div>
         <div class="date-picker__month-actions">
@@ -60,10 +73,23 @@
         }
       </div>
 
+      @if (includeTime) {
+        <label class="date-picker__time">
+          <span>Time</span>
+          <input type="time" [value]="timeValue" (change)="updateTime($any($event.target).value)" />
+        </label>
+      }
+
       <footer class="date-picker__footer">
         <button type="button" class="date-picker__text-action" (click)="clearDate()">Clear</button>
-        <button type="button" class="date-picker__text-action" (click)="selectToday()">Today</button>
+        @if (includeTime) {
+          <button type="button" class="date-picker__text-action" (click)="done()">Done</button>
+        } @else {
+          <button type="button" class="date-picker__text-action" (click)="selectToday()">
+            Today
+          </button>
+        }
       </footer>
     </section>
-  }
+  </ng-template>
 </div>

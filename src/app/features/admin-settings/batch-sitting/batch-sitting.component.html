@@ -594,29 +594,13 @@
         <!-- Start Date -->
         <div class="form-field">
           <label class="form-label is-required">Start Date &amp; Time</label>
-          <div class="date-input-wrap">
-            <input
-              type="datetime-local"
-              class="input--text input--date"
-              formControlName="startDate"
-              [attr.min]="minStart || null"
-            />
-            @if (!isNew) {
-              <span
-                class="material-icons date-trigger"
-                role="button"
-                title="Open date picker"
-                (click)="openDatePicker($event)"
-                >calendar_today</span
-              >
-            }
-          </div>
-          @if (isNew) {
-            <span class="form-section__hint"
-              >Locked to the current date and time — it updates to the exact moment you click Start
-              Batch.</span
-            >
-          }
+          <app-date-picker
+            formControlName="startDate"
+            [includeTime]="true"
+            placeholder="Select date and time"
+            [minDate]="dateOnly(minStart)"
+            ariaLabel="Start date and time"
+          ></app-date-picker>
           <app-validation-message [control]="form.get('startDate')"></app-validation-message>
           @if (type === 'active' && hasActiveStartTooSoon(form)) {
             <span class="field-error"
@@ -631,21 +615,13 @@
         <!-- End Date -->
         <div class="form-field">
           <label class="form-label is-required">End Date &amp; Time</label>
-          <div class="date-input-wrap">
-            <input
-              type="datetime-local"
-              class="input--text input--date"
-              formControlName="endDate"
-              [attr.min]="form.get('startDate')?.value || minStart || null"
-            />
-            <span
-              class="material-icons date-trigger"
-              role="button"
-              title="Open date picker"
-              (click)="openDatePicker($event)"
-              >calendar_today</span
-            >
-          </div>
+          <app-date-picker
+            formControlName="endDate"
+            [includeTime]="true"
+            placeholder="Select date and time"
+            [minDate]="dateOnly(form.get('startDate')?.value || minStart)"
+            ariaLabel="End date and time"
+          ></app-date-picker>
           <app-validation-message [control]="form.get('endDate')"></app-validation-message>
           @if (hasGlobalError(form)) {
             <span class="field-error">End date cannot be before start date.</span>
@@ -678,8 +654,16 @@
         </div>
       } @else {
         <p class="form-section__hint">
-          Stage dates must stay within the global batch window. End date cannot precede start date.
+          Stage dates automatically use the batch window. You can adjust individual stages;
+          customized dates must stay within the batch window.
         </p>
+        <app-action-button
+          type="secondary"
+          label="Apply batch window to all stages"
+          icon="date_range"
+          [disabled]="form.hasError('endBeforeStart')"
+          (clicked)="applyBatchWindowToStages(form)"
+        ></app-action-button>
       }
 
       <div formGroupName="stages">
@@ -691,45 +675,32 @@
                 <div class="data-table__subtitle">{{ stage.description }}</div>
               </td>
               <td>
-                <div class="date-input-wrap">
-                  <input
-                    type="datetime-local"
-                    class="input--text input--date"
-                    formControlName="startDate"
-                    [attr.min]="form.get('startDate')?.value || null"
-                    [attr.max]="form.get('endDate')?.value || null"
-                  /><span
-                    class="material-icons date-trigger"
-                    role="button"
-                    title="Open date picker"
-                    (click)="openDatePicker($event)"
-                    >calendar_today</span
-                  >
-                </div>
+                <app-date-picker
+                  formControlName="startDate"
+                  [includeTime]="true"
+                  placeholder="Select date and time"
+                  [minDate]="dateOnly(form.get('startDate')?.value)"
+                  [maxDate]="dateOnly(form.get('endDate')?.value)"
+                  [ariaLabel]="stage.label + ' start date and time'"
+                ></app-date-picker>
                 @if (hasStageErr(form, stage.key, 'startBeforeBatch')) {
                   <span class="field-error">Before batch start.</span>
                 }
               </td>
               <td>
-                <div class="date-input-wrap">
-                  <input
-                    type="datetime-local"
-                    class="input--text input--date"
-                    formControlName="endDate"
-                    [attr.min]="
+                <app-date-picker
+                  formControlName="endDate"
+                  [includeTime]="true"
+                  placeholder="Select date and time"
+                  [minDate]="
+                    dateOnly(
                       stageGroup(form, stage.key).get('startDate')?.value ||
-                      form.get('startDate')?.value ||
-                      null
-                    "
-                    [attr.max]="form.get('endDate')?.value || null"
-                  /><span
-                    class="material-icons date-trigger"
-                    role="button"
-                    title="Open date picker"
-                    (click)="openDatePicker($event)"
-                    >calendar_today</span
-                  >
-                </div>
+                        form.get('startDate')?.value
+                    )
+                  "
+                  [maxDate]="dateOnly(form.get('endDate')?.value)"
+                  [ariaLabel]="stage.label + ' end date and time'"
+                ></app-date-picker>
                 @if (hasStageErr(form, stage.key, 'endBeforeStart')) {
                   <span class="field-error">End before start.</span>
                 }

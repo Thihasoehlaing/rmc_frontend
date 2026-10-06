@@ -193,7 +193,9 @@
   }
 
   .rdig-step-content .card {
-    overflow: hidden;
+    // Searchable dropdown panels are positioned overlays and need to escape
+    // the card bounds (notably the domain, ESG and SDG selects).
+    overflow: visible;
     border-color: var(--color-border-default);
     border-radius: var(--radius-lg);
     box-shadow: none;

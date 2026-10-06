@@ -29,10 +29,7 @@ import {
   ElementRef,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import {
-  formatDisplayDate,
-  formatDisplayDateTime,
-} from '../../../shared/utils/date-time.util';
+import { formatDisplayDate, formatDisplayDateTime } from '../../../shared/utils/date-time.util';
 import {
   AbstractControl,
   FormBuilder,
@@ -61,6 +58,7 @@ import {
 import { TableActionIconComponent } from '../../../shared/components/table-action-icon/table-action-icon.component';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
 import { AdminSettingsPageHeaderComponent } from '../../../shared/components/admin-settings-page-header/admin-settings-page-header.component';
+import { DatePickerComponent } from '../../../shared/components/date-picker/date-picker.component';
 
 type BatchSectionView = 'active' | 'upcoming' | 'history';
 
@@ -194,6 +192,7 @@ function stageWithinBatchValidator(startFn: () => string, endFn: () => string) {
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     AdminSettingsPageHeaderComponent,
+    DatePickerComponent,
     TableActionIconComponent,
     CommonModule,
     ReactiveFormsModule,
@@ -308,9 +307,7 @@ export class BatchSittingComponent implements OnInit, OnDestroy {
       ...this.plannedBatches(),
       ...this.historyBatches(),
     ];
-    return new Set(
-      all.filter((b) => b.id !== selfId).map((b) => b.batchName.trim().toLowerCase()),
-    );
+    return new Set(all.filter((b) => b.id !== selfId).map((b) => b.batchName.trim().toLowerCase()));
   }
 
   /** The previous planned/active batch's endDate to chain a new/edited planned batch after, or '' if there isn't one. */
@@ -460,7 +457,6 @@ export class BatchSittingComponent implements OnInit, OnDestroy {
     this.selectedSection.set('history');
   }
 
-
   /**
    * Runs on load and every ~30s while the page is open. Stopping the active
    * batch never depends on a next planned batch existing (each batch stops
@@ -489,7 +485,12 @@ export class BatchSittingComponent implements OnInit, OnDestroy {
 
   private autoStopActive(active: BatchSitting, now: string): void {
     const stamp = new Date().toISOString();
-    const completed: BatchSitting = { ...active, status: 'completed', endedAt: stamp, updatedAt: stamp };
+    const completed: BatchSitting = {
+      ...active,
+      status: 'completed',
+      endedAt: stamp,
+      updatedAt: stamp,
+    };
     this.svc
       .update(completed)
       .pipe(takeUntil(this.destroy$))
@@ -540,12 +541,8 @@ export class BatchSittingComponent implements OnInit, OnDestroy {
     startFn: () => string,
     endFn: () => string,
   ): void {
-    this.plannedForm = this.makeBatchForm(
-      batch,
-      startFn,
-      endFn,
-      false,
-      () => this.otherTimelineBatches(batch?.id ?? null),
+    this.plannedForm = this.makeBatchForm(batch, startFn, endFn, false, () =>
+      this.otherTimelineBatches(batch?.id ?? null),
     );
     this.wireGlobalDates(this.plannedForm);
     this.syncStageEnabled(this.plannedForm);
@@ -588,20 +585,35 @@ export class BatchSittingComponent implements OnInit, OnDestroy {
   }
 
   private wireGlobalDates(form: FormGroup): void {
-    form
-      .get('startDate')!
-      .valueChanges.pipe(takeUntil(this.destroy$))
-      .subscribe(() => {
+    for (const field of ['startDate', 'endDate']) {
+      const control = form.get(field)!;
+      let previousValue = control.value;
+      control.valueChanges.pipe(takeUntil(this.destroy$)).subscribe((value) => {
+        // Empty fields inherit the batch window. Fields still matching the
+        // previous batch value follow changes; customized stage dates stay put.
+        for (const stage of WORKFLOW_STAGE_META) {
+          const stageControl = this.stageGroup(form, stage.key).get(field)!;
+          if (!stageControl.value || stageControl.value === previousValue) {
+            stageControl.setValue(value || null, { emitEvent: false });
+          }
+        }
+        previousValue = value;
         this.syncStageEnabled(form);
         this.revalidateStages(form);
       });
-    form
-      .get('endDate')!
-      .valueChanges.pipe(takeUntil(this.destroy$))
-      .subscribe(() => {
-        this.syncStageEnabled(form);
-        this.revalidateStages(form);
-      });
+    }
+  }
+
+  applyBatchWindowToStages(form: FormGroup): void {
+    if (!this.stagesEnabled(form) || form.hasError('endBeforeStart')) return;
+    const startDate = form.get('startDate')!.value;
+    const endDate = form.get('endDate')!.value;
+    for (const stage of WORKFLOW_STAGE_META) {
+      const group = this.stageGroup(form, stage.key);
+      group.patchValue({ startDate, endDate }, { emitEvent: false });
+      group.markAsDirty();
+    }
+    this.revalidateStages(form);
   }
 
   /** Enable stage controls when both global dates are filled, disable otherwise. */
@@ -622,12 +634,8 @@ export class BatchSittingComponent implements OnInit, OnDestroy {
   startEditActive(): void {
     this.buildActiveForm(this.activeBatch());
     if (!this.activeBatch()) {
-      // Brand-new active batch: stamp the start to the creation moment and lock
-      // the field — the admin never picks it. It's re-stamped to the exact
-      // click-of-"Start Batch" moment on save (see saveActive()), so the
-      // recorded start reflects when the batch actually went live.
+      // Default to now while allowing the admin to choose the batch start.
       this.activeForm.get('startDate')!.setValue(nowInputValue());
-      this.activeForm.get('startDate')!.disable({ emitEvent: false });
     }
     this.isEditingActive.set(true);
     this.feedback.set(null);
@@ -722,16 +730,11 @@ export class BatchSittingComponent implements OnInit, OnDestroy {
           error: () => this.feedback.set({ type: 'error', text: 'Failed to save.' }),
         });
     } else {
-      // The start field is locked to the creation moment (see startEditActive());
-      // re-stamp it to the actual click-of-"Start Batch" moment so the recorded
-      // start reflects when the batch truly went live, not when the form opened.
-      // A brand-new active batch therefore always starts now — future scheduling
-      // is done through "Add Planned Batch" instead.
+      // Persist the start date and time selected in the form.
       const user = this.auth.currentUser();
       this.svc
         .create({
           ...fv,
-          startDate: nowInputValue(),
           status: 'active',
           createdAt: now,
           updatedAt: now,
@@ -1071,15 +1074,8 @@ export class BatchSittingComponent implements OnInit, OnDestroy {
     return form.get('stages')!.get(key) as FormGroup;
   }
 
-  /** Open native date/time picker via icon click. */
-  openDatePicker(event: MouseEvent): void {
-    const wrap = (event.currentTarget as HTMLElement).closest('.date-input-wrap');
-    const input = wrap?.querySelector('input[type="datetime-local"]') as HTMLInputElement | null;
-    try {
-      input?.showPicker();
-    } catch {
-      /* browser may not support */
-    }
+  dateOnly(value: string | null | undefined): string | null {
+    return value ? value.slice(0, 10) : null;
   }
 
   fmt(d: string | null | undefined): string {
@@ -1105,7 +1101,3 @@ export class BatchSittingComponent implements OnInit, OnDestroy {
     });
   }
 }
-
-
-
-

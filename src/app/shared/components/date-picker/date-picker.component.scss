@@ -18,7 +18,9 @@
   border: 1px solid var(--border-default);
   border-radius: 8px;
   background: var(--color-surface);
-  transition: border-color 150ms ease, box-shadow 150ms ease;
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease;
   cursor: pointer;
 
   &:hover,
@@ -80,10 +82,6 @@
 }
 
 .date-picker__calendar {
-  position: absolute;
-  z-index: 1200;
-  top: calc(100% + 8px);
-  left: 0;
   width: min(296px, calc(100vw - 32px));
   padding: 12px;
   border: 1px solid var(--border-default);
@@ -94,9 +92,27 @@
   animation: calendar-enter 140ms ease-out both;
 }
 
-.date-picker--above .date-picker__calendar {
-  top: auto;
-  bottom: calc(100% + 8px);
+.date-picker__time {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-subtle);
+  color: var(--color-text-secondary);
+  font-size: 13px;
+
+  input {
+    width: 122px;
+    height: 34px;
+    padding: 0 8px;
+    border: 1px solid var(--border-default);
+    border-radius: 7px;
+    background: var(--color-surface);
+    color: var(--color-text-primary);
+    font: inherit;
+  }
 }
 
 .date-picker__header {
@@ -213,6 +229,12 @@
 }
 
 @keyframes calendar-enter {
-  from { opacity: 0; transform: translateY(-4px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

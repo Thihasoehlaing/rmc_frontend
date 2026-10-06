@@ -86,11 +86,6 @@ export const settingsRoutes: Routes = [
       import('./applicant-rules/applicant-rules.component').then(m => m.ApplicantRulesComponent),
   },
   {
-    path: 'workflow',
-    loadComponent: () =>
-      import('./workflow/workflow.component').then(m => m.WorkflowComponent),
-  },
-  {
     path: 'monitoring',
     loadComponent: () =>
       import('./monitoring/monitoring.component').then(m => m.MonitoringComponent),

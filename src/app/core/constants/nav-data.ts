@@ -296,12 +296,6 @@ export const NAVIGATION_DATA: NavGroup[] = [
             permission: systemSettingsPermission,
           },
           {
-            label: 'Workflow Configuration',
-            icon: 'account_tree',
-            route: '/settings/workflow',
-            permission: systemSettingsPermission,
-          },
-          {
             label: 'Monitoring Logs',
             icon: 'monitor_heart',
             route: '/settings/monitoring',

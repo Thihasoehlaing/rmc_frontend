@@ -1,6 +1,5 @@
 import {
   Component,
-  ElementRef,
   EventEmitter,
   forwardRef,
   HostListener,
@@ -11,6 +10,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { ConnectedPosition, OverlayModule } from '@angular/cdk/overlay';
 
 interface CalendarDay {
   date: Date;
@@ -25,7 +25,7 @@ interface CalendarDay {
 @Component({
   selector: 'app-date-picker',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, OverlayModule],
   templateUrl: './date-picker.component.html',
   styleUrl: './date-picker.component.scss',
   providers: [
@@ -41,6 +41,7 @@ export class DatePickerComponent implements ControlValueAccessor, OnChanges {
   @Input() maxDate: string | null = null;
   @Input() placeholder = 'Select date';
   @Input() ariaLabel = 'Choose date';
+  @Input() includeTime = false;
   @Input() id = '';
   @Input() dateValue: string | null = null;
   @Output() dateValueChange = new EventEmitter<string>();
@@ -48,18 +49,20 @@ export class DatePickerComponent implements ControlValueAccessor, OnChanges {
   value = '';
   disabled = false;
   isOpen = false;
-  opensAbove = false;
   visibleMonth = this.startOfMonth(new Date());
+  timeValue = '09:00';
+  readonly overlayPositions: ConnectedPosition[] = [
+    { originX: 'start', originY: 'bottom', overlayX: 'start', overlayY: 'top', offsetY: 8 },
+    { originX: 'start', originY: 'top', overlayX: 'start', overlayY: 'bottom', offsetY: -8 },
+  ];
   readonly weekdays = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
 
   private onChange: (value: string) => void = () => undefined;
   private onTouched: () => void = () => undefined;
 
-  constructor(private readonly elementRef: ElementRef<HTMLElement>) {}
-
   ngOnChanges(changes: SimpleChanges): void {
     if ('dateValue' in changes && this.dateValue !== null) {
-      this.value = this.dateValue.slice(0, 10);
+      this.setValueFromModel(this.dateValue);
       const selected = this.parseIsoDate(this.value);
       if (selected) this.visibleMonth = this.startOfMonth(selected);
     }
@@ -67,23 +70,40 @@ export class DatePickerComponent implements ControlValueAccessor, OnChanges {
 
   get displayValue(): string {
     const selected = this.parseIsoDate(this.value);
-    return selected
-      ? new Intl.DateTimeFormat('en', { month: 'short', day: 'numeric', year: 'numeric' }).format(selected)
-      : '';
+    if (!selected) return '';
+    const date = new Intl.DateTimeFormat('en', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    }).format(selected);
+    if (!this.includeTime) return date;
+    const [hours, minutes] = this.timeValue.split(':').map(Number);
+    const time = new Date(2000, 0, 1, hours || 0, minutes || 0);
+    return `${date}, ${new Intl.DateTimeFormat('en', { hour: 'numeric', minute: '2-digit' }).format(time)}`;
   }
 
   get monthTitle(): string {
-    return new Intl.DateTimeFormat('en', { month: 'long', year: 'numeric' }).format(this.visibleMonth);
+    return new Intl.DateTimeFormat('en', { month: 'long', year: 'numeric' }).format(
+      this.visibleMonth,
+    );
   }
 
   get calendarDays(): CalendarDay[] {
     const firstOfMonth = this.startOfMonth(this.visibleMonth);
-    const gridStart = new Date(firstOfMonth.getFullYear(), firstOfMonth.getMonth(), 1 - firstOfMonth.getDay());
+    const gridStart = new Date(
+      firstOfMonth.getFullYear(),
+      firstOfMonth.getMonth(),
+      1 - firstOfMonth.getDay(),
+    );
     const todayIso = this.toIsoDate(new Date());
     const selectedIso = this.value;
 
     return Array.from({ length: 42 }, (_, index) => {
-      const date = new Date(gridStart.getFullYear(), gridStart.getMonth(), gridStart.getDate() + index);
+      const date = new Date(
+        gridStart.getFullYear(),
+        gridStart.getMonth(),
+        gridStart.getDate() + index,
+      );
       const iso = this.toIsoDate(date);
       return {
         date,
@@ -98,7 +118,7 @@ export class DatePickerComponent implements ControlValueAccessor, OnChanges {
   }
 
   writeValue(value: unknown): void {
-    this.value = typeof value === 'string' ? value.slice(0, 10) : '';
+    this.setValueFromModel(typeof value === 'string' ? value : '');
     const selected = this.parseIsoDate(this.value);
     if (selected) this.visibleMonth = this.startOfMonth(selected);
   }
@@ -120,10 +140,6 @@ export class DatePickerComponent implements ControlValueAccessor, OnChanges {
     if (this.disabled) return;
     const selected = this.parseIsoDate(this.value);
     this.visibleMonth = this.startOfMonth(selected ?? new Date());
-    const bounds = this.elementRef.nativeElement.getBoundingClientRect();
-    const spaceBelow = window.innerHeight - bounds.bottom;
-    const spaceAbove = bounds.top;
-    this.opensAbove = spaceBelow < 360 && spaceAbove > spaceBelow;
     this.isOpen = true;
   }
 
@@ -133,15 +149,24 @@ export class DatePickerComponent implements ControlValueAccessor, OnChanges {
   }
 
   moveMonth(offset: number): void {
-    this.visibleMonth = new Date(this.visibleMonth.getFullYear(), this.visibleMonth.getMonth() + offset, 1);
+    this.visibleMonth = new Date(
+      this.visibleMonth.getFullYear(),
+      this.visibleMonth.getMonth() + offset,
+      1,
+    );
   }
 
   selectDate(day: CalendarDay): void {
     if (day.disabled) return;
     this.value = day.iso;
-    this.onChange(day.iso);
-    this.dateValueChange.emit(day.iso);
-    this.closeCalendar();
+    this.commitValue();
+    if (!this.includeTime) this.closeCalendar();
+  }
+
+  updateTime(value: string): void {
+    if (!value) return;
+    this.timeValue = value;
+    if (this.value) this.commitValue();
   }
 
   clearDate(): void {
@@ -153,18 +178,15 @@ export class DatePickerComponent implements ControlValueAccessor, OnChanges {
 
   selectToday(): void {
     const todayIso = this.toIsoDate(new Date());
-    if ((this.minDate && todayIso < this.minDate) || (this.maxDate && todayIso > this.maxDate)) return;
+    if ((this.minDate && todayIso < this.minDate) || (this.maxDate && todayIso > this.maxDate))
+      return;
     this.value = todayIso;
-    this.onChange(todayIso);
-    this.dateValueChange.emit(todayIso);
-    this.closeCalendar();
+    this.commitValue();
+    if (!this.includeTime) this.closeCalendar();
   }
 
-  @HostListener('document:click', ['$event'])
-  onDocumentClick(event: MouseEvent): void {
-    if (this.isOpen && !this.elementRef.nativeElement.contains(event.target as Node)) {
-      this.closeCalendar();
-    }
+  done(): void {
+    this.closeCalendar();
   }
 
   @HostListener('document:keydown.escape')
@@ -188,5 +210,17 @@ export class DatePickerComponent implements ControlValueAccessor, OnChanges {
 
   private startOfMonth(date: Date): Date {
     return new Date(date.getFullYear(), date.getMonth(), 1);
+  }
+
+  private setValueFromModel(value: string): void {
+    this.value = value.slice(0, 10);
+    const time = value.match(/T(\d{2}:\d{2})/)?.[1];
+    if (time) this.timeValue = time;
+  }
+
+  private commitValue(): void {
+    const value = this.includeTime ? `${this.value}T${this.timeValue}` : this.value;
+    this.onChange(value);
+    this.dateValueChange.emit(value);
   }
 }

@@ -195,100 +195,35 @@
         </app-validation-summary>
 
         <!-- �"?�"? 3. Comment Toggle Buttons (shown per ABAC status) �"?�"?�"?�"?�"?�"?�"?�"? -->
-        @if (
-          workflow.showHosToggle() ||
-          workflow.showRmcToggle() ||
-          workflow.showReviewerToggles() ||
-          workflow.showRdigChairToggle() ||
-          workflow.showVcToggle() ||
-          workflow.showCfoToggle()
-        ) {
-          <div class="comment-toggle-bar">
-            @if (workflow.showHosToggle()) {
-              <button
-                type="button"
-                class="btn btn--comment-toggle"
-                [class.btn--comment-toggle-active]="showHosComments()"
-                (click)="toggleHosComments()"
-              >
-                <span class="material-icons">supervisor_account</span>
-                {{ showHosComments() ? 'Hide HOS Comments' : 'HOS Comments' }}
-              </button>
-            }
-
-            @if (workflow.showRmcToggle()) {
-              <button
-                type="button"
-                class="btn btn--comment-toggle"
-                [class.btn--comment-toggle-active]="showRmcComments()"
-                (click)="toggleRmcComments()"
-              >
-                <span class="material-icons">verified</span>
-                {{ showRmcComments() ? 'Hide RMC Comments' : 'RMC Comments' }}
-              </button>
-            }
-
-            @if (workflow.showReviewerToggles()) {
-              @if (workflow.showR1Toggle()) {
-                <button
-                  type="button"
-                  class="btn btn--comment-toggle"
-                  [class.btn--comment-toggle-active]="showR1Comments()"
-                  (click)="toggleR1Comments()"
-                >
-                  <span class="material-icons">rate_review</span>
-                  {{ showR1Comments() ? 'Hide Reviewer 1' : 'Reviewer 1 Comments' }}
-                </button>
+        @if (savedFeedback().length) {
+          <section class="card feedback-controls" aria-label="Comment visibility">
+            <div class="card__content">
+              <h2 class="card__title">Review feedback</h2>
+              <p class="form-hint">Select a source to show its comments beside the related fields. Comments are read-only.</p>
+              <div class="feedback-controls__toggles">
+                @for (source of feedbackSources(); track source) {
+                  <button type="button" class="btn btn-secondary btn-sm"
+                    [class.btn-primary]="feedbackSourceVisible(source)"
+                    [attr.aria-pressed]="feedbackSourceVisible(source)"
+                    (click)="toggleFeedbackSource(source)">
+                    <span class="material-icons" aria-hidden="true">{{ feedbackSourceVisible(source) ? 'visibility' : 'visibility_off' }}</span>
+                    {{ source }} <span class="badge badge-info">{{ feedbackCount(source) }}</span>
+                  </button>
+                }
+              </div>
+              @if (visibleAdditionalFeedback().length) {
+                <div class="saved-feedback__content">
+                  <h3>Overall and additional feedback</h3>
+                  @for (comment of visibleAdditionalFeedback(); track comment.id) {
+                    <article class="saved-feedback__comment">
+                      <div class="saved-feedback__meta"><span class="badge badge-info">{{ comment.actor }}</span><h3>{{ comment.section }}</h3></div>
+                      <p>{{ comment.text }}</p>
+                    </article>
+                  }
+                </div>
               }
-              @if (workflow.showR2Toggle()) {
-                <button
-                  type="button"
-                  class="btn btn--comment-toggle"
-                  [class.btn--comment-toggle-active]="showR2Comments()"
-                  (click)="toggleR2Comments()"
-                >
-                  <span class="material-icons">rate_review</span>
-                  {{ showR2Comments() ? 'Hide Reviewer 2' : 'Reviewer 2 Comments' }}
-                </button>
-              }
-            }
-
-            @if (workflow.showRdigChairToggle()) {
-              <button
-                type="button"
-                class="btn btn--comment-toggle"
-                [class.btn--comment-toggle-active]="showRdigChairComments()"
-                (click)="toggleRdigChairComments()"
-              >
-                <span class="material-icons">admin_panel_settings</span>
-                {{ showRdigChairComments() ? 'Hide RDIG Chair Comments' : 'RDIG Chair Comments' }}
-              </button>
-            }
-
-            @if (workflow.showVcToggle()) {
-              <button
-                type="button"
-                class="btn btn--comment-toggle"
-                [class.btn--comment-toggle-active]="showVcComments()"
-                (click)="toggleVcComments()"
-              >
-                <span class="material-icons">account_balance</span>
-                {{ showVcComments() ? 'Hide VC Comments' : 'VC Comments' }}
-              </button>
-            }
-
-            @if (workflow.showCfoToggle()) {
-              <button
-                type="button"
-                class="btn btn--comment-toggle"
-                [class.btn--comment-toggle-active]="showCfoComments()"
-                (click)="toggleCfoComments()"
-              >
-                <span class="material-icons">business</span>
-                {{ showCfoComments() ? 'Hide CFO Comments' : 'CFO Comments' }}
-              </button>
-            }
-          </div>
+            </div>
+          </section>
         }
 
         <!-- �"?�"? 4. Main Form �"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"? -->

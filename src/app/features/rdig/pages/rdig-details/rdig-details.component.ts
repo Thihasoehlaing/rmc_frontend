@@ -201,6 +201,8 @@ export class RdigDetailsComponent implements OnInit {
   backLabel = signal('Back');
 
   readonly actionCommentControl = new FormControl('', [Validators.maxLength(COMMENT_MAX_LENGTH)]);
+  readonly rmcOverallComments = signal<RequestCommentDto[]>([]);
+  readonly approvedAmountControl = new FormControl<number | null>(null, [Validators.required, Validators.min(0), Validators.max(9999999999.99)]);
   readonly selectedReviewersControl = new FormControl<string[]>([], { nonNullable: true });
   readonly commentMaxLength = COMMENT_MAX_LENGTH;
 
@@ -347,6 +349,14 @@ export class RdigDetailsComponent implements OnInit {
   ];
 
   labelForSource(source: CommentSource): string {
+    if (!this.isRestrictedReviewerViewer() && (this.isSystemAdminViewer() || this.isCurrentActorRmc()) && (source === 'reviewer1' || source === 'reviewer2')) {
+      const number = source === 'reviewer1' ? 1 : 2;
+      const reviewer = this.request()?.rdig_reviewers?.find(
+        (item) => item.reviewer_no === number && item.is_active,
+      );
+      const name = reviewer?.name || reviewer?.username;
+      if (name) return `${this.sourceLabel[source]} — ${name}`;
+    }
     return this.sourceLabel[source];
   }
 
@@ -380,7 +390,9 @@ export class RdigDetailsComponent implements OnInit {
    * page (right-panel toggle, inline comment, counter). Authors always see their own.
    */
   canViewSource(source: CommentSource): boolean {
+    if (this.isSystemAdminViewer()) return true;
     if (source === this.currentUserSource()) return true;
+    if (this.currentActorRole() === 'applicant') return true;
 
     if (this.isCurrentActorHos()) return false;
     if (this.isCurrentUserReviewer(1) || this.isCurrentUserReviewer(2)) {
@@ -462,8 +474,7 @@ export class RdigDetailsComponent implements OnInit {
     { fieldCode: 'project_classification', label: 'Application Type / Classification' },
     { fieldCode: 'project_title', label: 'Project Title' },
     { fieldCode: 'project_research_area', label: 'Research Area' },
-    { fieldCode: 'project_esg', label: 'Appropriate ESGs' },
-    { fieldCode: 'project_sdg', label: 'Appropriate SDGs' },
+    { fieldCode: 'project_research_alignment', label: 'Research Domain, Sub-Research Domain, ESGs and SDGs' },
     { fieldCode: 'project_summary', label: 'Executive Summary', maxScore: 10 },
     { fieldCode: 'project_keywords', label: 'Keywords' },
     { fieldCode: 'project_intro', label: 'Introduction', maxScore: 10 },
@@ -479,8 +490,7 @@ export class RdigDetailsComponent implements OnInit {
       label: 'Benefits of Grant Utilisation to APU, Students and Stakeholders',
       maxScore: 10,
     },
-    { fieldCode: 'project_vision', label: 'APU Vision and Mission Alignment' },
-    { fieldCode: 'project_activities', label: 'Research Activities' },
+    { fieldCode: 'project_vision_activities', label: 'APU Vision and Mission Alignment & Research Activities' },
   ];
 
   readonly outputBudgetFields: FieldCommentDef[] = [
@@ -905,6 +915,12 @@ export class RdigDetailsComponent implements OnInit {
   }
 
   readonly totalBudget = computed(() => this.toNumber(this.rdig()?.total_budget_request));
+  readonly matchedFundingAmount = computed(() =>
+    this.collaborators().reduce((total, item) => total + this.toNumber(item.matched_funding_amount), 0),
+  );
+  readonly approvedAmount = computed(() =>
+    this.status() === 'approved' ? this.rdig()?.approved_amount_by_cfo : null,
+  );
   readonly totalTeamSize = computed(
     () => this.coResearchers().length + this.collaborators().length,
   );
@@ -1031,13 +1047,72 @@ export class RdigDetailsComponent implements OnInit {
   }
 
   private currentActorRole(): string {
-    return (this.request()?.current_actor_role ?? '').toLowerCase();
+    // Resolve the viewer, not the next actor awaiting action on the application.
+    const user = this.authService.currentUser();
+    const username = user?.username?.trim().toLowerCase();
+    if (username && username === this.request()?.applicant_staff_username?.trim().toLowerCase()) return 'applicant';
+    if (user?.groups.includes('HOS')) return 'hos';
+    if (username === 'murali') return 'rdig_chair';
+    if (username === 'mohd.helmy') return 'cfo';
+    if (username === 'ckho') return 'vc';
+    if (user?.groups.includes('RMC')) return 'rmc';
+    if (user?.groups.includes('VC')) return 'vc';
+    if (user?.groups.includes('CFO')) return 'cfo';
+    return (user?.role?.code ?? '').toLowerCase();
+  }
+
+  canViewReviewerScores(): boolean {
+    if (this.isSystemAdminViewer()) return true;
+    if (this.isRestrictedReviewerViewer()) return false;
+    if (this.isCurrentActorRmc()) return true;
+    if (this.isCurrentActorHos() || this.currentActorRole().includes('applicant')) return false;
+    return this.isCurrentUserReviewer(1) || this.isCurrentUserReviewer(2) ||
+      this.isCurrentActorRmc() || this.isCurrentActorRdigChair() ||
+      this.isCurrentActorVc() || this.isCurrentActorCfo();
+  }
+
+  reviewAuthorLabel(item: {
+    staff_name?: string | null;
+    staff_username?: string | null;
+    actor_type_code?: string | null;
+  }): string {
+    const actor = (item.actor_type_code ?? '').toLowerCase();
+    const username = item.staff_username?.trim().toLowerCase();
+    for (const number of [1, 2] as const) {
+      if (actor.includes(`reviewer${number}`) || actor.includes(`reviewer_${number}`) ||
+          (username && username === this.reviewerUsernameByNo(number))) {
+        return !this.isRestrictedReviewerViewer() && (this.isSystemAdminViewer() || this.isCurrentActorRmc())
+          ? `Reviewer ${number} — ${this.val(item.staff_name || item.staff_username)}`
+          : `Reviewer ${number}`;
+      }
+    }
+    return actor.includes('reviewer')
+      ? (!this.isRestrictedReviewerViewer() && (this.isSystemAdminViewer() || this.isCurrentActorRmc()) ? `Reviewer — ${this.val(item.staff_name || item.staff_username)}` : 'Reviewer')
+      : this.val(item.staff_name || item.staff_username);
   }
 
   private isCurrentActorHos(): boolean {
     const a = this.currentActorRole();
     return a.includes('hos') || a.includes('hod');
   }
+
+  /** Viewer identity takes precedence over the request's current workflow actor. */
+  private isRestrictedReviewerViewer(): boolean {
+    if (this.isSystemAdminViewer()) return false;
+    const user = this.authService.currentUser();
+    if (!user) return true;
+    const username = user.username?.trim().toLowerCase();
+    const applicant = this.request()?.applicant_staff_username?.trim().toLowerCase();
+    const role = user.role?.code?.trim().toUpperCase();
+    return Boolean(username && applicant && username === applicant) ||
+      user.groups.includes('HOS') ||
+      ['HEAD_OF_SCHOOL', 'HEAD_OF_DEPARTMENT', 'HOS', 'HOD', 'APPLICANT'].includes(role ?? '');
+  }
+  isSystemAdminViewer(): boolean {
+    const user = this.authService.currentUser();
+    return user?.role?.code?.toUpperCase() === 'SYSTEM_ADMIN' || Boolean(user?.groups.includes('SystemAdmin'));
+  }
+
   private isCurrentActorRmc(): boolean {
     return this.currentActorRole().includes('rmc');
   }
@@ -1080,7 +1155,7 @@ export class RdigDetailsComponent implements OnInit {
   canWriteGroupComment(actor: GroupActor): boolean {
     if (actor === 'hos')
       return this.canAct() && this.isCurrentActorHos() && this.isHosEditableStatus();
-    return this.canAct() && this.isCurrentActorRmc() && this.isRmcEditableStatus();
+    return this.canAct() && this.isCurrentActorRmc() && this.status() === 'pending_rmc';
   }
 
   canWriteFieldComment(actor: ReviewerActor): boolean {
@@ -1189,15 +1264,26 @@ export class RdigDetailsComponent implements OnInit {
       .subscribe({
         next: ({ form, approvals, comments, scores }) => {
           this.data.set(form.data);
+          this.approvedAmountControl.setValue(this.toNumber(this.rdig()?.approved_amount_by_cfo ?? this.rdig()?.total_budget_request));
           this.actions.set((form.data.request?.available_actions ?? []) as WorkflowActionDto[]);
           this.canAct.set(Boolean(form.data.request?.can_act));
           this.approvals.set(approvals.data?.items ?? []);
+          this.rmcOverallComments.set((comments.data ?? []).filter(
+            (comment) => comment.actor_type_code?.toUpperCase() === 'RMC' &&
+              comment.comment_type === 'workflow_action' && Boolean(comment.comment_text?.trim()),
+          ));
           this.sectionComments.set(
             ((comments.data ?? []) as ScoredComment[]).filter(
               (comment) => comment.comment_type === 'section_review',
             ),
           );
           this.reviewerScoreSheet.set(scores.data);
+          if (this.isCurrentActorRmc()) {
+            this.toggledSources.set(new Set<CommentSource>(['reviewer1', 'reviewer2']));
+          }
+          if (this.isSystemAdminViewer() || this.isCurrentActorRdigChair() || this.isCurrentActorVc() || this.isCurrentActorCfo()) {
+            this.toggledSources.set(new Set(this.allSources.filter((source) => this.canViewSource(source))));
+          }
           this.hydrateWholeFormControls();
           this.hydrateGroupControls();
           this.hydrateScoreControls();
@@ -1352,7 +1438,8 @@ export class RdigDetailsComponent implements OnInit {
   }
 
   requiresAllGroupComments(): boolean {
-    return this.isCurrentActorHos() || this.isCurrentActorRmc();
+    return this.isCurrentActorHos() ||
+      (this.isCurrentActorRmc() && this.status() !== 'pending_rmc_review');
   }
 
   /** Reviewer 1/2 must comment on every field before their action can proceed. */
@@ -1505,7 +1592,22 @@ export class RdigDetailsComponent implements OnInit {
 
   /** Smoothly scrolls the main content to a missing comment's field/section. */
   scrollToRequirementItem(anchorId: string): void {
-    document.getElementById(anchorId)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    const target = document.getElementById(anchorId);
+    const accordion = target?.closest('details');
+    if (accordion) accordion.open = true;
+    target?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  narrativeReviewStatusLabel(fieldCode: string, actor: ReviewerActor): string {
+    const field = this.fieldDef(fieldCode);
+    const saved = Boolean(this.currentVersionFieldComment(fieldCode, actor));
+    const score = this.canViewReviewerScores() && field?.maxScore != null
+      ? this.scoreForField(fieldCode, actor)
+      : null;
+    if (this.canViewReviewerScores() && field?.maxScore != null) {
+      return `${score === null ? 'Not scored' : `${score}/${field.maxScore}`} · ${saved ? 'Comment saved' : 'Review incomplete'}`;
+    }
+    return saved ? 'Comment saved' : 'No comment yet';
   }
 
   /** RDIG Chair/VC/CFO must have a non-empty whole-form comment (draft or already-saved) before acting. */
@@ -1682,8 +1784,14 @@ export class RdigDetailsComponent implements OnInit {
   // ── Field-level comments (Reviewer 1 / Reviewer 2): read ────────────────────
   commentsForField(fieldCode: string, actor: ReviewerActor): ScoredComment[] {
     const source: CommentSource = actor;
+    // Preserve legacy comments when displaying combined review sections.
+    const sectionCodes = fieldCode === 'project_research_alignment'
+      ? [fieldCode, 'project_esg', 'project_sdg']
+      : fieldCode === 'project_vision_activities'
+        ? [fieldCode, 'project_vision', 'project_activities']
+        : [fieldCode];
     return this.sectionComments()
-      .filter((c) => c.section_code === fieldCode && this.matchesSource(c, source))
+      .filter((c) => sectionCodes.includes(c.section_code ?? '') && this.matchesSource(c, source))
       .sort((a, b) => (this.parseTime(b.created_at) ?? 0) - (this.parseTime(a.created_at) ?? 0));
   }
 
@@ -1991,6 +2099,11 @@ export class RdigDetailsComponent implements OnInit {
 
   perform(action: WorkflowActionDto): void {
     if (this.requestId == null || this.acting()) return;
+    if (this.canEditWholeFormComment('cfo') && this.approvedAmountControl.invalid) {
+      this.approvedAmountControl.markAsTouched();
+      this.feedback.set({ type: 'error', text: 'Enter a valid Approved Amount (RM).' });
+      return;
+    }
 
     if (!this.canPerformActions()) {
       this.feedback.set({
@@ -2028,6 +2141,7 @@ export class RdigDetailsComponent implements OnInit {
         switchMap(() =>
           this.requests.actOnRequest(requestId, {
             action_code: action.action_code,
+            approved_amount_by_cfo: this.canEditWholeFormComment('cfo') ? this.approvedAmountControl.value! : undefined,
             comment_text: actionComment,
             selected_reviewer_usernames: action.requires_reviewer_selection
               ? [...this.selectedReviewerUsernames()]

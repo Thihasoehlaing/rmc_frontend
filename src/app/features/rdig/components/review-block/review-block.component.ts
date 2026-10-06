@@ -18,7 +18,7 @@ import { syncRequiredValidator } from '../../../../shared/utils/form.utils';
   standalone: true,
   imports: [ReactiveFormsModule, CharacterCounterComponent, ValidationMessageComponent],
   template: `
-    @if (visible) {
+    @if (visible && (!readonly || commentControl.value?.trim())) {
       <div class="review-block" [class.review-block--readonly]="readonly">
         <div class="review-block__header">
           <span class="material-icons review-block__icon">{{ icon }}</span>
@@ -28,6 +28,9 @@ import { syncRequiredValidator } from '../../../../shared/utils/form.utils';
         <div class="review-block__body" [class.review-block__body--with-score]="showScore">
           <!-- Comment textarea -->
           <div class="review-block__comment">
+            @if (readonly) {
+              <p class="review-block__text">{{ commentControl.value }}</p>
+            } @else {
             <textarea
               class="input--textarea"
               [class.input--disabled]="readonly"
@@ -40,6 +43,7 @@ import { syncRequiredValidator } from '../../../../shared/utils/form.utils';
               [max]="maxChars">
             </app-character-counter>
             <app-validation-message class="form-validation-note--error" [control]="commentControl" [fieldName]="label"></app-validation-message>
+            }
           </div>
 
           <!-- Optional score dropdown -->
@@ -90,6 +94,14 @@ import { syncRequiredValidator } from '../../../../shared/utils/form.utils';
       color: var(--color-text-secondary);
     }
 
+    // The detail-page comment section already supplies the surface and border.
+    :host-context(.section-comments) .review-block {
+      padding: 0;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+    }
+
     .review-block__icon {
       font-size: var(--font-size-subtitle);
       color: var(--color-primary);
@@ -124,6 +136,14 @@ import { syncRequiredValidator } from '../../../../shared/utils/form.utils';
     .review-block__comment {
       flex: 1;
       min-width: 0;
+    }
+
+    .review-block__text {
+      margin: 0;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      line-height: 1.6;
+      color: var(--color-text-primary);
     }
 
     .review-block__score {

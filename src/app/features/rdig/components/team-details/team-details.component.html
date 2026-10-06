@@ -226,12 +226,12 @@
                 <div class="data-table__multiline">{{ row.value.roles }}</div>
               </td>
               <td>
-                @if (hasSupportLetter(row.value.supportLetter)) {
+                @if (hasSupportLetter(row.value.supportLetter, row.value.supportLetterAttachmentId)) {
                   <button
                     type="button"
                     class="btn-icon btn-icon--view"
                     title="View / download support letter"
-                    (click)="openSupportLetter(row.value.supportLetter)"
+                    (click)="openSupportLetter(row.value.supportLetter, row.value.supportLetterAttachmentId)"
                   >
                     <app-table-action-icon action="view"></app-table-action-icon>
                   </button>

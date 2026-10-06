@@ -227,6 +227,7 @@ export interface SaveRdigReviewerScoresPayload {
 
 /** Body for POST /requests/{id}/actions (schemas/requests.py::RequestActionSchema). */
 export interface ActOnRequestPayload {
+  approved_amount_by_cfo?: number;
   action_code: string;
   comment_text?: string | null;
   /** RMC reviewer selection — usernames chosen when a step requires it. */

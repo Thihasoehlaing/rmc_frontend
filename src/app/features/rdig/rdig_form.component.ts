@@ -71,6 +71,7 @@ import {
   RdigRequestDto,
 } from './services/rdig-api.service';
 import { rdigKeywordsValidator } from './utils/rdig-keywords.util';
+import { WorkflowRequestsService, RequestCommentDto, RequestSummaryDto } from '../../core/services/workflow-requests.service';
 
 export function isApplicantSubmissionWindowOpen(
   hasActiveBatch: boolean,
@@ -132,6 +133,40 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
   private notifSvc = inject(NotificationService);
   private toastSvc = inject(ToastService);
   private rdigApi = inject(RdigApiService);
+  private readonly requestsApi = inject(WorkflowRequestsService);
+  readonly savedFeedback = signal<Array<{ id: number; actor: string; section: string; text: string }>>([]);
+  private readonly inlineFeedbackIds = signal<Set<number>>(new Set());
+  readonly feedbackSources = computed(() => [...new Set(this.savedFeedback().map((comment) => comment.actor))]);
+  readonly visibleAdditionalFeedback = computed(() => this.savedFeedback().filter((comment) =>
+    !this.inlineFeedbackIds().has(comment.id) && this.feedbackSourceVisible(comment.actor)));
+  private readonly additionalFeedbackSources = signal<Set<string>>(new Set());
+
+  private feedbackToggle(source: string) {
+    const toggles: Record<string, typeof this.showHosComments> = {
+      'HOS / HOD': this.showHosComments, HOS: this.showHosComments, RMC: this.showRmcComments,
+      'Reviewer 1': this.showR1Comments, 'Reviewer 2': this.showR2Comments,
+      'RDIG Chair': this.showRdigChairComments, 'Vice Chancellor': this.showVcComments, CFO: this.showCfoComments,
+    };
+    return toggles[source];
+  }
+
+  feedbackSourceVisible(source: string): boolean {
+    return this.feedbackToggle(source)?.() ?? this.additionalFeedbackSources().has(source);
+  }
+
+  feedbackCount(source: string): number {
+    return this.savedFeedback().filter((comment) => comment.actor === source).length;
+  }
+
+  toggleFeedbackSource(source: string): void {
+    const toggle = this.feedbackToggle(source);
+    if (toggle) toggle.update((visible) => !visible);
+    else this.additionalFeedbackSources.update((sources) => {
+      const next = new Set(sources);
+      if (next.has(source)) next.delete(source); else next.add(source);
+      return next;
+    });
+  }
   readonly guidelineContext: GuidelineContext = this.route.snapshot.queryParamMap.has('request_id') || this.route.snapshot.queryParamMap.has('id')
     ? 'existing-application'
     : 'new-application';
@@ -476,7 +511,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
     const criteria = this.stepFieldChecks.flat();
     if (!criteria.length) return 0;
 
-    let completed = criteria.filter((check) => this.rdigForm.get(check.path)?.valid).length;
+    let completed = criteria.filter((check) => this.isProgressFieldComplete(check.path)).length;
     let total = criteria.length;
 
     // Research Activities are a required part of Project Details even though their
@@ -500,9 +535,21 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
   isStepComplete(stepNumber: number): boolean {
     const checks = this.stepFieldChecks[stepNumber - 1] ?? [];
     if (!checks.length) return false;
-    const fieldsComplete = checks.every((check) => this.rdigForm.get(check.path)?.valid);
+    const fieldsComplete = checks.every((check) => this.isProgressFieldComplete(check.path));
     const status = this.getStepStatuses()[stepNumber - 1];
     return fieldsComplete && !!status?.valid;
+  }
+
+  private isProgressFieldComplete(path: string): boolean {
+    const control = this.rdigForm.get(path);
+    if (!control) return false;
+    if (!control.disabled) return control.valid;
+    // Prefilled identity controls are disabled for editing, but still count
+    // when populated. Other disabled controls are excluded by conditional rules.
+    if (['teamDetails.leaderName', 'teamDetails.leaderEmail', 'teamDetails.department'].includes(path)) {
+      return !!String(control.value ?? '').trim();
+    }
+    return true;
   }
 
   get validationSummaryItems(): ValidationSummaryItem[] {
@@ -1093,18 +1140,95 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
       return;
     }
     this.isLoadingApplication.set(true);
-    this.rdigApi
-      .getForm(requestId)
+    forkJoin({
+      form: this.rdigApi.getForm(requestId),
+      request: this.requestsApi.getRequest(requestId),
+      comments: this.requestsApi.getComments(requestId),
+    })
       .pipe(finalize(() => this.isLoadingApplication.set(false)))
       .subscribe({
         next: (res) => {
-          this.patchFormFromBackend(res.data);
+          this.patchFormFromBackend(res.form.data);
+          this.patchSavedFeedback(res.comments.data, res.request.data);
         },
         error: (err) => {
           console.error('Failed to load application:', err);
           alert(`Could not load application ${id}.`);
         },
       });
+  }
+
+  private patchSavedFeedback(comments: RequestCommentDto[], request: RequestSummaryDto): void {
+    // Include overall/action feedback as well as section feedback; never expose
+    // reviewer identities through the resubmission feedback heading.
+    this.savedFeedback.set(comments.filter((comment) => comment.comment_text?.trim()).map((comment) => {
+      const code = (comment.actor_type_code ?? '').toLowerCase();
+      const reviewer = request.rdig_reviewers?.find((item) =>
+        !!item.username && item.username.toLowerCase() === comment.staff_username?.toLowerCase());
+      const number = code.match(/reviewer_?([12])/)?.[1] ?? reviewer?.reviewer_no;
+      const labels: Record<string, string> = {
+        hos_hod: 'HOS / HOD', hos: 'HOS', rmc: 'RMC', rdig_chair: 'RDIG Chair',
+        vc: 'Vice Chancellor', cfo: 'CFO', applicant: 'Applicant',
+      };
+      return {
+        id: comment.id,
+        actor: number ? `Reviewer ${number}` : code.includes('reviewer') ? 'Reviewer' : labels[code] ?? 'Workflow Comment',
+        section: comment.comment_type === 'workflow_action'
+          ? 'Overall Comment' : comment.section_name ?? 'Section Comment',
+        text: comment.comment_text,
+      };
+    }));
+    const fields: Record<string, string> = {
+      team_members_group: 'reviewTeam.{actor}Comment',
+      project_classification: 'reviewProject.{actor}ClassificationComment',
+      project_title: 'reviewProject.{actor}TitleComment',
+      project_research_area: 'reviewProject.{actor}ResearchAreaComment',
+      project_research_alignment: 'reviewProject.{actor}EsgComment',
+      project_esg: 'reviewProject.{actor}EsgComment',
+      project_sdg: 'reviewProject.{actor}SdgComment',
+      project_summary: 'reviewProject.{actor}SummaryComment',
+      project_keywords: 'reviewProject.{actor}KeywordsComment',
+      project_intro: 'reviewProject.{actor}IntroComment',
+      project_problem: 'reviewProject.{actor}ProblemComment',
+      project_aim: 'reviewProject.{actor}AimComment',
+      project_questions: 'reviewProject.{actor}QuestionsComment',
+      project_hypothesis: 'reviewProject.{actor}HypothesisComment',
+      project_lit_review: 'reviewProject.{actor}LitReviewComment',
+      project_methodology: 'reviewProject.{actor}MethodComment',
+      project_references: 'reviewProject.{actor}ReferencesComment',
+      project_benefits: 'reviewProject.{actor}StakeholdersComment',
+      project_vision_activities: 'reviewProject.{actor}VisionComment',
+      project_vision: 'reviewProject.{actor}VisionComment',
+      project_activities: 'reviewProject.{actor}ActivitiesComment',
+      output_overall: 'reviewOutput.{actor}Comment',
+      budget_breakdown: 'reviewBudget.{actor}StudentComment',
+      budget_summary: 'reviewBudget.{actor}Comment',
+    };
+    const values = new Map<string, string[]>();
+    const inlineIds = new Set<number>();
+    for (const comment of comments) {
+      if (comment.comment_type !== 'section_review' || !comment.comment_text?.trim()) continue;
+      const code = (comment.actor_type_code ?? '').toLowerCase();
+      const reviewer = request.rdig_reviewers?.find((item) =>
+        item.username?.toLowerCase() === comment.staff_username?.toLowerCase());
+      const number = code.match(/reviewer_?([12])/)?.[1] ?? reviewer?.reviewer_no;
+      let path = number ? fields[comment.section_code ?? '']?.replace('{actor}', `reviewer${number}`) : undefined;
+      if (!number && (code === 'hos_hod' || code === 'rmc')) {
+        const actor = code === 'rmc' ? 'rmc' : 'hos';
+        const groups: Record<string, string> = {
+          group_team_members: `reviewTeam.${actor}Comment`,
+          group_project_details: actor === 'hos' ? 'reviewProject.hosPageComment' : 'reviewProject.rmcAimComment',
+          group_output_budget: `reviewBudget.${actor}Comment`,
+        };
+        path = groups[comment.section_code ?? ''];
+      }
+      if (!path || !this.rdigForm.get(path)) continue;
+      inlineIds.add(comment.id);
+      values.set(path, [...(values.get(path) ?? []), comment.comment_text]);
+    }
+    // Feedback is read-only and never hydrates reviewer identity or score controls.
+    for (const [path, texts] of values) this.rdigForm.get(path)?.setValue(texts.join('\n\n'), { emitEvent: false });
+    this.inlineFeedbackIds.set(inlineIds);
   }
 
   private patchFormFromBackend(data: RdigFormData): void {
@@ -1212,6 +1336,9 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
         funding: item.matched_funding_amount,
         roles: item.role_in_project,
         supportLetterAttachmentId: item.support_letter_attachment_id,
+        supportLetter: (data.attachments ?? []).find(
+          (attachment) => attachment.id === item.support_letter_attachment_id,
+        ) ?? null,
       })),
     );
     this.captureLoadedBackendIds(
@@ -1607,8 +1734,8 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
                 new FormControl(attachmentId),
                 { emitEvent: false },
               );
-              // Clear the raw File so it isn't re-uploaded on the next save in this session.
-              group.get('supportLetter')?.setValue(null, { emitEvent: false });
+              // Keep persisted metadata for display without uploading the File again.
+              group.get('supportLetter')?.setValue(res.data, { emitEvent: false });
             }),
           ),
         );

@@ -59,6 +59,7 @@ export interface RdigRequestDto {
   novelty_justification?: string | null;
   budget_remarks?: string | null;
   total_budget_request?: string | null;
+  approved_amount_by_cfo?: string | null;
   indexed_journal_selected?: boolean;
   indexed_journal_quantity?: number | null;
   conceptual_design_selected?: boolean;

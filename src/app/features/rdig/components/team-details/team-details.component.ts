@@ -1,5 +1,6 @@
 import { Component, Input, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
+import { ToastService } from '../../../../core/services/toast.service';
 import {
   ReactiveFormsModule,
   FormGroup,
@@ -60,6 +61,7 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
   private readonly masterData = inject(MasterDataService);
   private readonly rdigApi = inject(RdigApiService);
   private readonly router = inject(Router);
+  private readonly toast = inject(ToastService);
   private readonly destroy$ = new Subject<void>();
 
   /** RDIG-eligible academic staff used only by the internal co-researcher dropdown. */
@@ -405,8 +407,8 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
   }
 
   /** True when a support letter is attached (a freshly-picked File or a persisted URL/attachment). */
-  hasSupportLetter(value: unknown): boolean {
-    return !!this.supportLetterUrl(value) || value instanceof File;
+  hasSupportLetter(value: unknown, attachmentId?: number | null): boolean {
+    return !!attachmentId || !!this.supportLetterUrl(value) || value instanceof File;
   }
 
   /** Resolve a persisted support letter to an openable URL, if any. */
@@ -420,7 +422,7 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
   }
 
   /** Opens the support letter in a new tab — a persisted URL directly, or a freshly-picked File via a blob URL. */
-  openSupportLetter(value: unknown): void {
+  openSupportLetter(value: unknown, attachmentId?: number | null): void {
     const url = this.supportLetterUrl(value);
     if (url) {
       window.open(url, '_blank', 'noopener');
@@ -431,6 +433,20 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
       window.open(blobUrl, '_blank', 'noopener');
       // Revoke shortly after so the new tab has time to load it.
       setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000);
+      return;
+    }
+    const requestId = Number(this.parentForm.get('metadata.rdigRequestId')?.value);
+    if (requestId && attachmentId) {
+      this.rdigApi.getAttachmentDownloadUrl(requestId, attachmentId)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (response) => {
+            const downloadUrl = response.data?.download_url || response.data?.file_url;
+            if (downloadUrl) window.open(downloadUrl, '_blank', 'noopener');
+            else this.toast.error('Support letter download URL is unavailable.');
+          },
+          error: () => this.toast.error('Unable to open the support letter.'),
+        });
     }
   }
 

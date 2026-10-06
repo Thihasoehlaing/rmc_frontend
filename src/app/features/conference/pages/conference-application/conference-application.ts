@@ -978,19 +978,6 @@ export class ConferenceApplication implements OnInit {
     { path: 'externalProjectAccountCode', label: 'Project Account Code' },
   ];
 
-  private readonly authorDetailsFieldChecks: Array<{
-    path: string;
-    label: string;
-    target?: string;
-  }> = [
-    { path: 'fullName', label: 'Full Name' },
-    { path: 'employeeId', label: 'Employee ID' },
-    { path: 'designation', label: 'Designation' },
-    { path: 'department', label: 'Department' },
-    { path: 'email', label: 'Email' },
-    { path: 'phoneNumber', label: 'Phone Number' },
-  ];
-
   private readonly supportingDocumentsFieldChecks: Array<{
     path: string;
     label: string;
@@ -1010,11 +997,6 @@ export class ConferenceApplication implements OnInit {
 
   private readonly declarationFieldChecks: Array<{ path: string; label: string; target?: string }> =
     [
-      { path: 'confirmPresenter', label: 'Presenter Confirmation' },
-      { path: 'confirmScopusIndexed', label: 'SCOPUS Indexing Confirmation' },
-      { path: 'confirmNotResignedStaff', label: 'Staff Eligibility Confirmation' },
-      { path: 'confirmCompliance', label: 'Compliance Confirmation' },
-      { path: 'confirmPostReturn', label: 'Post-Return Commitment' },
       { path: 'agreeToTerms', label: 'Terms Agreement' },
       { path: 'acknowledgeGrantFunder', label: 'Grant Funder Acknowledgement' },
     ];
@@ -1548,10 +1530,8 @@ export class ConferenceApplication implements OnInit {
       if (Array.isArray(breakdowns) && breakdowns.length > 0) completed += 1;
     }
 
-    // Applicant identity fields are prefilled profile data, not user progress.
-    const authorCore = this.completedValueCount(authors, this.authorDetailsFieldChecks);
-    completed += authorCore.completed;
-    total += authorCore.total;
+    // Author identity is profile data (and not part of the visible form). Track
+    // only co-author rows the applicant actually adds.
     const coAuthorRequirements: Array<[string, string[]]> = [
       ['testSubsections', ['staffName', 'schoolDepartment']],
       ['studentCoAuthors', ['tpNumber', 'fullName', 'schoolDepartment']],
@@ -1668,13 +1648,37 @@ export class ConferenceApplication implements OnInit {
     const form = this.authorDetailsStep?.form;
     const state =
       form?.getRawValue() ?? this.formStateService.getFormSection('authorDetails') ?? {};
-    const missing = form
-      ? this.getInvalidLabelsFromForm(form, this.authorDetailsFieldChecks)
-      : this.getMissingFromValue(state, this.authorDetailsFieldChecks);
-    if (form?.invalid && !missing.length) {
-      missing.push({ label: 'Author Details', target: 'fullName' });
-    }
+    const missing = form ? this.getInvalidCoAuthorSections(form) : this.getInvalidCoAuthorSectionsFromState(state);
     return this.uniqueLabels(missing);
+  }
+
+  private getInvalidCoAuthorSections(form: FormGroup): MissingField[] {
+    const sections: Array<[string, string, string]> = [
+      ['testSubsections', 'APU Staff Co-Author Details', 'apuStaffCoAuthors'],
+      ['studentCoAuthors', 'APU Student Co-Authors', 'studentCoAuthors'],
+      ['nonApuCoAuthors', 'External Co-Authors', 'nonApuCoAuthors'],
+    ];
+    return sections.flatMap(([path, label, target]) => {
+      const control = form.get(path);
+      return control?.invalid ? [{ label, target }] : [];
+    });
+  }
+
+  private getInvalidCoAuthorSectionsFromState(state: Record<string, unknown>): MissingField[] {
+    const sections: Array<[string, string, string, string[]]> = [
+      ['testSubsections', 'APU Staff Co-Author Details', 'apuStaffCoAuthors', ['staffName', 'schoolDepartment']],
+      ['studentCoAuthors', 'APU Student Co-Authors', 'studentCoAuthors', ['tpNumber', 'fullName', 'schoolDepartment']],
+      ['nonApuCoAuthors', 'External Co-Authors', 'nonApuCoAuthors', ['fullName', 'country', 'email', 'organisationType', 'schoolDepartment', 'institutionName']],
+    ];
+    return sections.flatMap(([path, label, target, requiredFields]) => {
+      const rows = state[path];
+      const hasIncompleteRow = Array.isArray(rows) && rows.some((row) => {
+        const value = (row ?? {}) as Record<string, unknown>;
+        return requiredFields.some((field) => this.isEmptyRequiredValue(value[field])) ||
+          (path === 'nonApuCoAuthors' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value['email'] ?? '')));
+      });
+      return hasIncompleteRow ? [{ label, target }] : [];
+    });
   }
 
   private getSupportingDocumentsMissingFields(): MissingField[] {

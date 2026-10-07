@@ -239,6 +239,11 @@ export class RdigApiService {
   getMyAccess(): Observable<ApiResponse<{ can_apply: boolean }>> {
     return this.http.get<ApiResponse<{ can_apply: boolean }>>(`${this.base}/my-access`);
   }
+
+  sendReminder(id: number): Observable<ApiResponse<{ sent_count: number; failed_count: number }>> {
+    return this.http.post<ApiResponse<{ sent_count: number; failed_count: number }>>(
+      `${this.base}/${id}/reminder`, {}, this.skipSuccessToastOptions());
+  }
   createDraft(payload: Partial<RdigRequestDto>): Observable<ApiResponse<RdigFormData>> {
     return this.http.post<ApiResponse<RdigFormData>>(
       `${this.base}/drafts`,

@@ -156,6 +156,35 @@ export class RdigDetailsComponent implements OnInit {
   private readonly rdigReviewerService = inject(RdigReviewerService);
 
   private requestId: number | null = null;
+  readonly reminderSending = signal(false);
+  readonly reminderMessage = signal('');
+  readonly confirmReminder = signal(false);
+
+  canSendReminder(): boolean {
+    const user = this.authService.currentUser();
+    return (user?.role?.code === 'RMC_ADMIN' || this.isSystemAdminViewer()) &&
+      ['pending_hos', 'pending_hos_review', 'pending_rmc', 'pending_reviewers',
+       'pending_rmc_review', 'pending_rdig_chair', 'pending_vc', 'pending_cfo',
+       'pending_applicant_resubmission_hos', 'pending_applicant_resubmission_rmc',
+       'pending_applicant_resubmission_reviewers'].includes(this.status());
+  }
+
+  sendReminder(): void {
+    if (this.requestId == null || this.reminderSending()) return;
+    this.confirmReminder.set(false);
+    this.reminderSending.set(true);
+    this.reminderMessage.set('');
+    this.rdigApi.sendReminder(this.requestId).subscribe({
+      next: (res) => {
+        this.reminderSending.set(false);
+        this.reminderMessage.set(`${res.data.sent_count} reminder email(s) sent. ${res.data.failed_count} failed.`);
+      },
+      error: (err) => {
+        this.reminderSending.set(false);
+        this.reminderMessage.set(err.error?.message ?? 'Unable to send reminder. Please try again.');
+      },
+    });
+  }
   private returnTo: string | null = null;
   downloadingAttachmentId = signal<number | null>(null);
 

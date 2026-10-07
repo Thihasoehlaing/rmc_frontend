@@ -1749,3 +1749,15 @@
     animation: none;
   }
 }
+.approval-reminder {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--space-3);
+  padding-block: var(--space-4);
+  margin-bottom: var(--space-4);
+  border-bottom: 1px solid var(--color-border-default);
+
+  .form-hint { margin: 0; }
+  .btn { width: 100%; }
+}

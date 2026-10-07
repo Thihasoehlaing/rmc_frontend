@@ -1374,6 +1374,24 @@
               <p>Latest workflow activity.</p>
             </div>
           </div>
+            @if (canSendReminder()) {
+              <div class="approval-reminder">
+                <p class="form-hint">Send an email reminder for the current pending action.</p>
+                <button type="button" class="btn btn-secondary btn-sm" [disabled]="reminderSending()"
+                  (click)="confirmReminder.set(true)">
+                  <span class="material-icons" aria-hidden="true">notifications_active</span>
+                  {{ reminderSending() ? 'Sending…' : 'Send Reminder' }}
+                </button>
+              </div>
+            }
+            @if (reminderMessage()) { <p class="form-hint" role="status">{{ reminderMessage() }}</p> }
+            <app-dialog [isOpen]="confirmReminder()" title="Send RDIG Reminder" size="small" (close)="confirmReminder.set(false)">
+              <p>Send a reminder to the person awaiting action in the current batch stage? During Applicant Resubmission, this goes to the applicant. Reviewers who already acted will not receive it.</p>
+              <div dialog-footer>
+                <button type="button" class="btn btn-secondary" (click)="confirmReminder.set(false)">Cancel</button>
+                <button type="button" class="btn btn-primary" (click)="sendReminder()">Send Reminder</button>
+              </div>
+            </app-dialog>
 
           @if (sortedApprovals().length) {
             <ol class="review-timeline">

@@ -1,4 +1,12 @@
 <app-form-page-container>
+  @if (accessDenied()) {
+    <app-dialog [isOpen]="true" title="RDIG Access Unavailable" size="small" (close)="returnToDashboard()">
+      <p>You don’t have access to apply for RDIG. Please contact RMC for assistance.</p>
+      <div dialog-footer><button type="button" class="btn btn-primary" (click)="returnToDashboard()">OK — Go to Dashboard</button></div>
+    </app-dialog>
+  } @else if (accessChecking()) {
+    <app-form-page-skeleton [showBatchCard]="true"></app-form-page-skeleton>
+  } @else {
   <div class="rdig-app">
     <!-- �"?�"? CLOSED-WINDOW MODAL (Req 6) �"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"? -->
     @if (showClosedWindowModal()) {
@@ -429,4 +437,5 @@
       </div>
     }
   </div>
+  }
 </app-form-page-container>

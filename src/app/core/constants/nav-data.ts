@@ -206,7 +206,7 @@ export const NAVIGATION_DATA: NavGroup[] = [
           {
             label: 'RDIG Blocked List',
             icon: 'person_add',
-            route: '/admin-settings/staff-access',
+            route: '/admin-settings/rdig-blocked-list',
             permission: adminOnlySettingsChildPermission,
           },
           {

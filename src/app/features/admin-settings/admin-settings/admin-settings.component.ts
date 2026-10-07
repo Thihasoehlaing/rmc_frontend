@@ -90,7 +90,7 @@ export class AdminSettingsComponent {
       description: 'Review staff eligibility and manage application access restrictions.',
       icon: 'manage_accounts',
       category: 'Access Control',
-      route: '/admin-settings/staff-access',
+      route: '/admin-settings/rdig-blocked-list',
       tone: 'teal',
     },
     {

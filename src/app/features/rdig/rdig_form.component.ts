@@ -134,6 +134,12 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
   private toastSvc = inject(ToastService);
   private rdigApi = inject(RdigApiService);
   private readonly requestsApi = inject(WorkflowRequestsService);
+  readonly accessDenied = signal(false);
+  readonly accessChecking = signal(true);
+
+  returnToDashboard(): void {
+    this.router.navigate(['/dashboard']);
+  }
   readonly savedFeedback = signal<Array<{ id: number; actor: string; section: string; text: string }>>([]);
   private readonly inlineFeedbackIds = signal<Set<number>>(new Set());
   readonly feedbackSources = computed(() => [...new Set(this.savedFeedback().map((comment) => comment.actor))]);
@@ -991,6 +997,20 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
 
   // ── Sync ABAC attributes to workflow ───────────────────────────
   ngOnInit(): void {
+    this.rdigApi.getMyAccess().subscribe({
+      next: (res) => {
+        this.accessDenied.set(!res.data.can_apply);
+        this.accessChecking.set(false);
+        if (res.data.can_apply) this.initializeApplication();
+      },
+      error: () => {
+        this.accessDenied.set(true);
+        this.accessChecking.set(false);
+      },
+    });
+  }
+
+  private initializeApplication(): void {
     // Applicant-safe facade over the same batch data used by the original green card.
     this.rdigApi.getActiveBatch().subscribe({
       next: (res) => {

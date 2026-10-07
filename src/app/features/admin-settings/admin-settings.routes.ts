@@ -77,9 +77,14 @@ export const adminSettingsRoutes: Routes = [
       import('./batch-sitting/batch-sitting.component').then((m) => m.BatchSittingComponent),
   },
   {
-    path: 'staff-access',
+    path: 'rdig-blocked-list',
     loadComponent: () =>
       import('./staff-access/staff-access.component').then((m) => m.StaffAccessComponent),
+  },
+  {
+    path: 'staff-access',
+    redirectTo: 'rdig-blocked-list',
+    pathMatch: 'full',
   },
   {
     path: 'manage-rdig-reviewer',

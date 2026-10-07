@@ -236,6 +236,9 @@ export class RdigApiService {
   private readonly base = `${this.apiUrl}/rdig`;
 
   // ── Lifecycle ────────────────────────────────────────────────────
+  getMyAccess(): Observable<ApiResponse<{ can_apply: boolean }>> {
+    return this.http.get<ApiResponse<{ can_apply: boolean }>>(`${this.base}/my-access`);
+  }
   createDraft(payload: Partial<RdigRequestDto>): Observable<ApiResponse<RdigFormData>> {
     return this.http.post<ApiResponse<RdigFormData>>(
       `${this.base}/drafts`,

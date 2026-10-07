@@ -1,4 +1,5 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, effect } from '@angular/core';
+import { RdigApiService } from '../../features/rdig/services/rdig-api.service';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { Router } from '@angular/router';
 import { SidebarService } from '../../core/services/sidebar.service';
@@ -23,6 +24,18 @@ export class SidebarComponent implements OnInit {
   private permService   = inject(PermissionService);
   private router        = inject(Router);
   private formCache     = inject(FormCacheService);
+  private rdigApi = inject(RdigApiService);
+  private rdigAccess = signal(false);
+  private readonly refreshRdigAccess = effect(() => {
+    const username = this.currentUser()?.username;
+    this.rdigAccess.set(false);
+    if (username) this.rdigApi.getMyAccess().subscribe({
+      next: (res) => {
+        if (this.currentUser()?.username === username) this.rdigAccess.set(res.data.can_apply);
+      },
+      error: () => undefined,
+    });
+  });
 
   isExpanded = this.sidebarService.isExpanded;
   pinned     = this.sidebarService.pinned;
@@ -52,6 +65,7 @@ export class SidebarComponent implements OnInit {
       elements
         .filter(el => this.permService.canAccess(el.permission))
         .filter(el => this.isConfiguredFormActive(el, activeFormCodes))
+        .filter(el => this.isFolder(el) || el.route !== '/rdig/application' || this.rdigAccess())
         .filter(el => !restrictToWorkflowSidebar || this.isAllowedRestrictedSidebarElement(el))
         .map(el =>
           this.isFolder(el)

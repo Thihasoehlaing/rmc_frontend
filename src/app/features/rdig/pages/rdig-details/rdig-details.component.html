@@ -45,9 +45,9 @@
         </div>
       </div>
 
-      <button type="button" class="review-print" (click)="printRequest()">
+      <button type="button" class="review-print" (click)="printRequest()" [disabled]="printing()" [attr.aria-busy]="printing()">
         <span class="material-icons">print</span>
-        Print
+        {{ printing() ? 'Generating PDF...' : 'Print' }}
       </button>
     </header>
 

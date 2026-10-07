@@ -2216,7 +2216,10 @@ export class RdigDetailsComponent implements OnInit {
     void this.router.navigateByUrl('/submissions/inbox');
   }
 
+  readonly printing = signal(false);
+
   printRequest(): void {
+    if (this.printing()) return;
     if (this.requestId == null) {
       this.feedback.set({
         type: 'error',
@@ -2225,7 +2228,24 @@ export class RdigDetailsComponent implements OnInit {
       return;
     }
 
-    window.open(this.requests.getPrintUrl(this.requestId), '_blank', 'noopener,noreferrer');
+    this.printing.set(true);
+    this.requests.downloadPrint(this.requestId)
+      .pipe(finalize(() => this.printing.set(false)))
+      .subscribe({
+        next: (response) => {
+          if (!response.body) {
+            this.feedback.set({ type: 'error', text: 'The print PDF is unavailable. Please try again.' });
+            return;
+          }
+          const url = URL.createObjectURL(response.body);
+          const anchor = document.createElement('a');
+          anchor.href = url;
+          anchor.download = `${this.request()?.request_code || 'rdig-application'}.pdf`;
+          anchor.click();
+          URL.revokeObjectURL(url);
+        },
+        error: () => this.feedback.set({ type: 'error', text: 'Could not download the print PDF. Please try again.' }),
+      });
   }
 
   private configureBackTarget(): void {

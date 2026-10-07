@@ -1,6 +1,7 @@
 import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, defer, finalize } from 'rxjs';
+import { ActionLoadingService } from './action-loading.service';
 
 import { environment } from '../../../environments/environment';
 
@@ -322,6 +323,7 @@ export interface RequestContextDto {
 @Injectable({ providedIn: 'root' })
 export class WorkflowRequestsService {
   private readonly http = inject(HttpClient);
+  private readonly printLoading = inject(ActionLoadingService);
   private readonly base = environment.apiUrl;
 
   private toParams(query: ListQuery | undefined): HttpParams {
@@ -533,9 +535,15 @@ export class WorkflowRequestsService {
   }
 
   downloadPrint(requestId: number): Observable<HttpResponse<Blob>> {
-    return this.http.get(this.getPrintUrl(requestId), {
-      observe: 'response',
-      responseType: 'blob',
+    return defer(() => {
+      const loadingId = this.printLoading.begin(
+        'Generating print PDF',
+        'Please wait while your application PDF is generated. The download will start automatically.',
+      );
+      return this.http.get(this.getPrintUrl(requestId), {
+        observe: 'response',
+        responseType: 'blob',
+      }).pipe(finalize(() => this.printLoading.end(loadingId)));
     });
   }
 }

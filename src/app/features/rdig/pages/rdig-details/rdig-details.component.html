@@ -80,7 +80,7 @@
           <strong>{{ totalTeamSize() }}</strong>
         </div>
       </article>
-      @if (canViewReviewerScores() && (isSystemAdminViewer() || isCurrentActorRmcPublic()) && (hasReviewerScored('reviewer1') || hasReviewerScored('reviewer2'))) {
+      @if (canViewAllReviewDetails() && (hasReviewerScored('reviewer1') || hasReviewerScored('reviewer2'))) {
         <article class="summary-card">
           <span class="material-icons">military_tech</span>
           <div>

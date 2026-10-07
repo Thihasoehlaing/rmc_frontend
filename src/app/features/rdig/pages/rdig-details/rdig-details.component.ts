@@ -177,7 +177,10 @@ export class RdigDetailsComponent implements OnInit {
     this.rdigApi.sendReminder(this.requestId).subscribe({
       next: (res) => {
         this.reminderSending.set(false);
-        this.reminderMessage.set(`${res.data.sent_count} reminder email(s) sent. ${res.data.failed_count} failed.`);
+        const outcome = res.data;
+        this.reminderMessage.set(outcome.email_enabled === false
+          ? 'Reminder notification created. Email sending is disabled. You can view the reminder template on the Notifications page.'
+          : `Reminder notification created. ${outcome.sent_count} email(s) sent. ${outcome.failed_count} failed. ${outcome.skipped_count ?? 0} skipped.`);
       },
       error: (err) => {
         this.reminderSending.set(false);
@@ -378,7 +381,7 @@ export class RdigDetailsComponent implements OnInit {
   ];
 
   labelForSource(source: CommentSource): string {
-    if (!this.isRestrictedReviewerViewer() && (this.isSystemAdminViewer() || this.isCurrentActorRmc()) && (source === 'reviewer1' || source === 'reviewer2')) {
+    if (this.canViewAllReviewDetails() && (source === 'reviewer1' || source === 'reviewer2')) {
       const number = source === 'reviewer1' ? 1 : 2;
       const reviewer = this.request()?.rdig_reviewers?.find(
         (item) => item.reviewer_no === number && item.is_active,
@@ -419,7 +422,7 @@ export class RdigDetailsComponent implements OnInit {
    * page (right-panel toggle, inline comment, counter). Authors always see their own.
    */
   canViewSource(source: CommentSource): boolean {
-    if (this.isSystemAdminViewer()) return true;
+    if (this.canViewAllReviewDetails()) return true;
     if (source === this.currentUserSource()) return true;
     if (this.currentActorRole() === 'applicant') return true;
 
@@ -1030,7 +1033,9 @@ export class RdigDetailsComponent implements OnInit {
     return (
       this.request()?.batch?.stage_windows?.find(
         (stage) => stage.stage_name.trim().toLowerCase() === stageLabel.trim().toLowerCase(),
-      ) ?? null
+      ) ?? (stageLabel.startsWith('Applicant Resubmission — ')
+        ? this.request()?.batch?.stage_windows?.find((stage) => stage.stage_name === 'Applicant Resubmission')
+        : null) ?? null
     );
   }
 
@@ -1100,6 +1105,14 @@ export class RdigDetailsComponent implements OnInit {
       this.isCurrentActorVc() || this.isCurrentActorCfo();
   }
 
+  /** Full review visibility is shared by RMC and all subsequent decision makers. */
+  canViewAllReviewDetails(): boolean {
+    if (this.isSystemAdminViewer()) return true;
+    if (this.isRestrictedReviewerViewer()) return false;
+    return this.isCurrentActorRmc() || this.isCurrentActorRdigChair() ||
+      this.isCurrentActorVc() || this.isCurrentActorCfo();
+  }
+
   reviewAuthorLabel(item: {
     staff_name?: string | null;
     staff_username?: string | null;
@@ -1110,13 +1123,13 @@ export class RdigDetailsComponent implements OnInit {
     for (const number of [1, 2] as const) {
       if (actor.includes(`reviewer${number}`) || actor.includes(`reviewer_${number}`) ||
           (username && username === this.reviewerUsernameByNo(number))) {
-        return !this.isRestrictedReviewerViewer() && (this.isSystemAdminViewer() || this.isCurrentActorRmc())
+        return this.canViewAllReviewDetails()
           ? `Reviewer ${number} — ${this.val(item.staff_name || item.staff_username)}`
           : `Reviewer ${number}`;
       }
     }
     return actor.includes('reviewer')
-      ? (!this.isRestrictedReviewerViewer() && (this.isSystemAdminViewer() || this.isCurrentActorRmc()) ? `Reviewer — ${this.val(item.staff_name || item.staff_username)}` : 'Reviewer')
+      ? (this.canViewAllReviewDetails() ? `Reviewer — ${this.val(item.staff_name || item.staff_username)}` : 'Reviewer')
       : this.val(item.staff_name || item.staff_username);
   }
 

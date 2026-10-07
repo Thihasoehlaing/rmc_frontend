@@ -8,6 +8,7 @@ import { AuthService } from '../../../core/services/auth.service';
 export type RdigStatus =
   | 'draft'
   | 'pending_applicant_resubmission_hos'
+  | 'pending_applicant_resubmission_rmc'
   | 'pending_applicant_resubmission_reviewers'
   | 'pending_hos'
   | 'pending_hos_review'
@@ -28,6 +29,7 @@ export type RdigStatus =
 const APPLICANT_EDITABLE: RdigStatus[] = [
   'draft',
   'pending_applicant_resubmission_hos',
+  'pending_applicant_resubmission_rmc',
   'pending_applicant_resubmission_reviewers',
 ];
 
@@ -86,6 +88,11 @@ export const RDIG_WORKFLOW_CONFIG: Record<RdigStatus, WorkflowStageConfig> = {
   pending_applicant_resubmission_hos: {
     actorRole: 'Applicant',
     transitions: [{ action: 'resubmit', nextStatus: 'pending_hos_review', incrementVersion: true }],
+  },
+
+  pending_applicant_resubmission_rmc: {
+    actorRole: 'Applicant',
+    transitions: [{ action: 'resubmit', nextStatus: 'pending_rmc', incrementVersion: true }],
   },
 
   pending_applicant_resubmission_reviewers: {
@@ -268,6 +275,7 @@ export function getNextRoles(status: RdigStatus): string[] {
     case 'pending_hos_review':
       return ['HOS'];
     case 'pending_applicant_resubmission_hos':
+    case 'pending_applicant_resubmission_rmc':
     case 'pending_applicant_resubmission_reviewers':
     case 'draft':
       return ['Applicant'];
@@ -404,6 +412,7 @@ export class RdigWorkflowService {
       [
         'draft',
         'pending_applicant_resubmission_hos',
+        'pending_applicant_resubmission_rmc',
         'pending_applicant_resubmission_reviewers',
         'pending_hos',
         'pending_hos_review',
@@ -618,6 +627,7 @@ export class RdigWorkflowService {
     const applicantStatuses: RdigStatus[] = [
       'draft',
       'pending_applicant_resubmission_hos',
+      'pending_applicant_resubmission_rmc',
       'pending_applicant_resubmission_reviewers',
     ];
     if (applicantStatuses.includes(currentStatus)) {

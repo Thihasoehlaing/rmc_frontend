@@ -229,6 +229,12 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
     applicantEnd: string | null,
   ): Record<WorkflowStageKey, WorkflowStageWindow> {
     const stages = this.emptyStageWindows();
+    const legacyResubmission = batch.stage_windows?.find((stage) => stage.stage_name === 'Applicant Resubmission');
+    if (legacyResubmission) {
+      for (const key of ['applicant_resubmission_hos', 'applicant_resubmission_rmc', 'applicant_resubmission_reviewers'] as const) {
+        stages[key] = { startDate: legacyResubmission.stage_start_date, endDate: legacyResubmission.stage_end_date };
+      }
+    }
     const keyByLabel = new Map(
       WORKFLOW_STAGE_META.map((stage) => [stage.label.trim().toLowerCase(), stage.key]),
     );
@@ -2205,6 +2211,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
           if (currentStatus === 'draft') return this.rdigApi.submit(id).pipe(map(() => id));
           if (
             currentStatus === 'pending_applicant_resubmission_hos' ||
+            currentStatus === 'pending_applicant_resubmission_rmc' ||
             currentStatus === 'pending_applicant_resubmission_reviewers'
           ) {
             return this.rdigApi.resubmit(id).pipe(map(() => id));

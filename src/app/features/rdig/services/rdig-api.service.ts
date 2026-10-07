@@ -240,8 +240,8 @@ export class RdigApiService {
     return this.http.get<ApiResponse<{ can_apply: boolean }>>(`${this.base}/my-access`);
   }
 
-  sendReminder(id: number): Observable<ApiResponse<{ sent_count: number; failed_count: number }>> {
-    return this.http.post<ApiResponse<{ sent_count: number; failed_count: number }>>(
+  sendReminder(id: number): Observable<ApiResponse<{ notification_id: number; notification_count: number; sent_count: number; failed_count: number; skipped_count: number; email_enabled: boolean }>> {
+    return this.http.post<ApiResponse<{ notification_id: number; notification_count: number; sent_count: number; failed_count: number; skipped_count: number; email_enabled: boolean }>>(
       `${this.base}/${id}/reminder`, {}, this.skipSuccessToastOptions());
   }
   createDraft(payload: Partial<RdigRequestDto>): Observable<ApiResponse<RdigFormData>> {

@@ -299,6 +299,10 @@
           [ngModel]="draftSelectedForms()"
           (ngModelChange)="onFormSelectionChange($event)"
         />
+        <app-validation-message
+          class="form-validation-note--error"
+          [message]="formSelectionError() ?? ''"
+        />
 
         <div class="form-field dashboard-filter__date">
           <label class="form-label" for="dashboard-start-date">From</label>

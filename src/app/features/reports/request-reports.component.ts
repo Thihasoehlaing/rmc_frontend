@@ -14,6 +14,7 @@ import {
   DataTableComponent,
 } from '../../shared/components/data-table/data-table.component';
 import { NoteComponent } from '../../shared/components/note/note.component';
+import { DatePickerComponent } from '../../shared/components/date-picker/date-picker.component';
 import { SearchableDropdownComponent } from '../../shared/components/searchable-dropdown/searchable-dropdown.component';
 import { TableSkeletonComponent } from '../../shared/components/table-skeleton/table-skeleton.component';import {
   ExternalReportFieldOption,
@@ -28,6 +29,7 @@ import { TableSkeletonComponent } from '../../shared/components/table-skeleton/t
   imports: [
     CommonModule,
     FormsModule,
+    DatePickerComponent,
     DataTableComponent,
     NoteComponent,
     SearchableDropdownComponent,

@@ -191,26 +191,24 @@
 
         <div class="form-field reports-filter__field">
           <label class="form-label" for="reports-date-from">Submission Date From</label>
-          <input
+          <app-date-picker
             id="reports-date-from"
-            class="input--text"
-            type="date"
+            ariaLabel="Submission date from"
             [ngModel]="dateFrom()"
-            [max]="dateTo()"
+            [maxDate]="dateTo() || null"
             (ngModelChange)="dateFrom.set($event ?? '')"
-          />
+          ></app-date-picker>
         </div>
 
         <div class="form-field reports-filter__field">
           <label class="form-label" for="reports-date-to">Submission Date To</label>
-          <input
+          <app-date-picker
             id="reports-date-to"
-            class="input--text"
-            type="date"
+            ariaLabel="Submission date to"
             [ngModel]="dateTo()"
-            [min]="dateFrom()"
+            [minDate]="dateFrom() || null"
             (ngModelChange)="dateTo.set($event ?? '')"
-          />
+          ></app-date-picker>
         </div>
       </div>
 

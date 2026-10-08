@@ -60,9 +60,9 @@ thead th {
   font-size: 12px;
   letter-spacing: 0;
   text-transform: none;
-  color: var(--color-label);
+  color: var(--color-table-head-text);
   font-weight: var(--fw-semibold);
-  background: var(--color-table-header);
+  background: var(--color-table-head-bg);
   border-bottom: 1px solid #edf0f3;
 
   &:first-child {
@@ -83,15 +83,16 @@ thead th {
 .sort-indicator,
 :host ::ng-deep .sort-indicator {
   margin-left: var(--space-2);
-  color: var(--color-text-muted);
+  color: var(--color-table-head-text);
   font-size: var(--icon-sm);
   font-weight: var(--fw-normal);
   line-height: 1;
   vertical-align: middle;
-  transition: color var(--transition-fast);
+  opacity: 0.7;
+  transition: opacity var(--transition-fast);
 
   &.is-active {
-    color: var(--color-primary);
+    opacity: 1;
   }
 }
 

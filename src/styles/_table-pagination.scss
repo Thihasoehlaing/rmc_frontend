@@ -1,0 +1,50 @@
+// ─── Table + pagination join ─────────────────────────────────────────────────
+// Any table card immediately followed by its pagination card is rendered as one
+// card: the gap is removed and a single divider line separates the two.
+// New list pages get this automatically by using these class names.
+//
+// Selectors are prefixed with `body` so they outrank the component-scoped
+// panel styles (which carry an extra [_ngcontent] attribute selector).
+
+$table-cards: '.dropdown-table-panel, .form-setting-table-panel, .guidelines-table-wrapper';
+$pagination-cards: '.dropdown-pagination-panel, .form-setting-pagination-panel, .guidelines-pagination-wrapper';
+
+// Parent flex gaps that sit between the two cards and must be cancelled.
+body .dropdown-options-panel {
+  --table-pagination-gap: var(--space-4);
+}
+
+body .guidelines-shell {
+  --table-pagination-gap: var(--space-6);
+}
+
+body :is(#{$table-cards}):has(+ :is(#{$pagination-cards})) {
+  margin-bottom: 0;
+  border-bottom: 0;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+// Shared <app-data-table> followed directly by a bare <app-pagination>:
+// the pagination becomes the table card's footer (the table's bottom border is the divider).
+body app-data-table:has(+ app-pagination) .data-table {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+body app-data-table + app-pagination {
+  display: block;
+  padding: 0 var(--space-4);
+  background: var(--color-surface);
+  border: 1px solid var(--border-subtle);
+  border-top: 0;
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  box-shadow: var(--shadow-xs);
+}
+
+body :is(#{$table-cards}) + :is(#{$pagination-cards}) {
+  margin-top: calc(-1 * var(--table-pagination-gap, 0px));
+  border-top: 1px solid var(--border-default); // divider line
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}

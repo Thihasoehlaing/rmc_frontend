@@ -224,9 +224,9 @@ thead th {
   text-align: left;
   font-size: 12px;
   letter-spacing: 0;
-  color: var(--color-label);
+  color: var(--color-table-head-text);
   font-weight: var(--fw-semibold);
-  background: var(--color-table-header);
+  background: var(--color-table-head-bg);
   border-bottom: 1px solid #edf0f3;
 
   &:first-child {

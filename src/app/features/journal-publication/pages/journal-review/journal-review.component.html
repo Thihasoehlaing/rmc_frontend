@@ -386,7 +386,12 @@
                     type="button"
                     class="download-button"
                     [disabled]="downloadingAttachmentId() === file.id"
-                    (click)="downloadAttachment(file)"
+                    (click)="downloadAttachment(file, true)"
+                    title="View file in a new tab"
+                  >
+                    <span class="material-icons" aria-hidden="true">visibility</span> View
+                  </button>
+                  <button type="button" class="download-button" [disabled]="downloadingAttachmentId() === file.id" (click)="downloadAttachment(file)"
                   >
                     <span class="material-icons">download</span>
                     {{ downloadingAttachmentId() === file.id ? 'Preparing…' : 'Download' }}
@@ -654,7 +659,12 @@
                       type="button"
                       class="download-button"
                       [disabled]="downloadingAttachmentId() === file.id"
-                      (click)="downloadAttachment(file)"
+                      (click)="downloadAttachment(file, true)"
+                      title="View file in a new tab"
+                    >
+                      <span class="material-icons" aria-hidden="true">visibility</span> View
+                    </button>
+                    <button type="button" class="download-button" [disabled]="downloadingAttachmentId() === file.id" (click)="downloadAttachment(file)"
                     >
                       <span class="material-icons">download</span>
                       {{ downloadingAttachmentId() === file.id ? 'Preparing…' : 'Download' }}

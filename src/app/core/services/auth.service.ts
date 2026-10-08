@@ -1,7 +1,7 @@
 import { HttpClient, HttpContext, HttpErrorResponse } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { Observable, catchError, map, switchMap, tap, throwError } from 'rxjs';
+import { Observable, catchError, map, switchMap, tap, throwError, finalize, timeout } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
 import { SHOW_API_SUCCESS } from '../interceptors/api-message.interceptor';
@@ -236,13 +236,17 @@ export class AuthService {
     const isTestingSession = this.isTestingAccessToken(this.getAccessToken());
     this.clearStoredSession();
 
-    if (isTestingSession) {
-      window.location.replace('/login');
-      return;
-    }
-
-    const query = new URLSearchParams({ redirect_url: this.getRedirectUrl() });
-    window.location.replace(`${environment.authUrl}/logout?${query.toString()}`);
+    const redirect = () => {
+      if (isTestingSession) {
+        window.location.replace('/login');
+        return;
+      }
+      const query = new URLSearchParams({ redirect_url: this.getRedirectUrl() });
+      window.location.replace(`${environment.authUrl}/logout?${query.toString()}`);
+    };
+    this.http.delete(`${environment.apiUrl}/auth/attachment-view-session`, { withCredentials: true })
+      .pipe(timeout(5000), finalize(redirect))
+      .subscribe({ error: () => {} });
   }
 
   /** Returns true if the current user belongs to the given group. */

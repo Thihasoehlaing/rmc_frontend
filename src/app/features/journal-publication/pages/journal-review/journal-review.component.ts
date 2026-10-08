@@ -1,5 +1,6 @@
 import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { Location } from '@angular/common';
+import { AttachmentDownloadService } from '../../../../core/services/attachment-download.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -80,6 +81,7 @@ const COMMENT_MAX_LENGTH = 1000;
   styleUrl: './journal-review.component.scss',
 })
 export class JournalReviewComponent implements OnInit {
+  private readonly attachmentDownload = inject(AttachmentDownloadService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly location = inject(Location);
@@ -713,12 +715,12 @@ export class JournalReviewComponent implements OnInit {
       });
   }
 
-  downloadAttachment(file: any): void {
+  downloadAttachment(file: any, preview = false): void {
     if (this.requestId == null || !file?.id || this.downloadingAttachmentId()) return;
 
     const directUrl = file.download_url || file.file_url || file.url;
     if (directUrl) {
-      this.openDownload({ ...file, download_url: directUrl });
+      this.openDownload({ ...file, download_url: directUrl }, preview);
       return;
     }
 
@@ -730,7 +732,7 @@ export class JournalReviewComponent implements OnInit {
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe({
-        next: (response) => this.openDownload(response.data),
+        next: (response) => this.openDownload(response.data, preview),
         error: (err) => {
           const msg = err?.error?.message || 'Could not prepare this attachment download.';
           this.feedback.set({ type: 'error', text: msg });
@@ -943,18 +945,13 @@ export class JournalReviewComponent implements OnInit {
     return filename.toLowerCase().endsWith('.pdf') ? filename : `${filename}.pdf`;
   }
 
-  private openDownload(file: JournalAttachmentDownload): void {
+  private openDownload(file: JournalAttachmentDownload, preview = false): void {
     const url = file.download_url || file.file_url || file.url;
     if (!url) {
       this.feedback.set({ type: 'error', text: 'Attachment download URL is unavailable.' });
       return;
     }
 
-    const anchor = document.createElement('a');
-    anchor.href = url;
-    anchor.target = '_blank';
-    anchor.rel = 'noopener';
-    anchor.download = file.file_name || 'journal-attachment';
-    anchor.click();
+    this.attachmentDownload.open(url, file.file_name || 'journal-attachment', preview);
   }
 }

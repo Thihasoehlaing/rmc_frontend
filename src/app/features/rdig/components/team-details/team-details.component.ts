@@ -1,5 +1,6 @@
 import { Component, Input, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
+import { AttachmentDownloadService } from '../../../../core/services/attachment-download.service';
 import { ToastService } from '../../../../core/services/toast.service';
 import {
   ReactiveFormsModule,
@@ -58,6 +59,7 @@ import { TableActionIconComponent } from '../../../../shared/components/table-ac
   styleUrl: './team-details.component.scss',
 })
 export class TeamDetailsComponent implements OnInit, OnDestroy {
+  private readonly attachmentDownload = inject(AttachmentDownloadService);
   private readonly masterData = inject(MasterDataService);
   private readonly rdigApi = inject(RdigApiService);
   private readonly router = inject(Router);
@@ -425,7 +427,7 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
   openSupportLetter(value: unknown, attachmentId?: number | null): void {
     const url = this.supportLetterUrl(value);
     if (url) {
-      window.open(url, '_blank', 'noopener');
+      this.attachmentDownload.open(url, 'support-letter', true);
       return;
     }
     if (value instanceof File) {
@@ -442,7 +444,7 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
         .subscribe({
           next: (response) => {
             const downloadUrl = response.data?.download_url || response.data?.file_url;
-            if (downloadUrl) window.open(downloadUrl, '_blank', 'noopener');
+            if (downloadUrl) this.attachmentDownload.open(downloadUrl, response.data?.file_name || 'support-letter', true);
             else this.toast.error('Support letter download URL is unavailable.');
           },
           error: () => this.toast.error('Unable to open the support letter.'),

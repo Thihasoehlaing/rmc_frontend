@@ -1,4 +1,5 @@
-import { Component, EventEmitter, Input, OnDestroy, Output, signal } from '@angular/core';
+import { Component, EventEmitter, Input, OnDestroy, Output, signal, inject } from '@angular/core';
+import { AttachmentDownloadService } from '../../../core/services/attachment-download.service';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -9,6 +10,7 @@ import { CommonModule } from '@angular/common';
   styleUrl: './file-upload.component.scss',
 })
 export class FileUploadComponent implements OnDestroy {
+  private readonly attachmentDownload = inject(AttachmentDownloadService);
   /** Label shown above the upload zone. */
   @Input() label = '';
 
@@ -60,7 +62,7 @@ export class FileUploadComponent implements OnDestroy {
     event?.stopPropagation();
     const url = this.previewUrl();
     if (!url) return;
-    globalThis.open?.(url, '_blank', 'noopener,noreferrer');
+    this.attachmentDownload.open(url, this.displayFileName() || 'attachment', true);
   }
 
   removeSelectedFile(event?: Event): void {

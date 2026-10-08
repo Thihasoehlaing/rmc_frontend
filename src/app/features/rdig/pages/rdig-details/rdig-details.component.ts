@@ -1,5 +1,6 @@
 import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { Location, NgTemplateOutlet } from '@angular/common';
+import { AttachmentDownloadService } from '../../../../core/services/attachment-download.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -145,6 +146,7 @@ const RESUBMISSION_STATUS_PREFIX = 'pending_applicant_resubmission';
   styleUrl: './rdig-details.component.scss',
 })
 export class RdigDetailsComponent implements OnInit {
+  private readonly attachmentDownload = inject(AttachmentDownloadService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly location = inject(Location);
@@ -2090,20 +2092,20 @@ export class RdigDetailsComponent implements OnInit {
     return Number.isFinite(time) ? time : null;
   }
 
-  downloadAttachment(file: RdigAttachmentDto): void {
-    if (!file?.id) return;
+  downloadAttachment(file: RdigAttachmentDto, preview = false): void {
+    if (!file?.id || this.requestId == null || this.downloadingAttachmentId()) return;
     const url = file.file_url;
-    if (!url) {
-      this.feedback.set({ type: 'error', text: 'Attachment download URL is unavailable.' });
+    if (url) {
+      this.attachmentDownload.open(url, file.file_name || 'rdig-attachment', preview);
       return;
     }
-
-    const anchor = document.createElement('a');
-    anchor.href = url;
-    anchor.target = '_blank';
-    anchor.rel = 'noopener';
-    anchor.download = file.file_name || 'rdig-attachment';
-    anchor.click();
+    this.downloadingAttachmentId.set(file.id);
+    this.rdigApi.getAttachmentDownloadUrl(this.requestId, file.id)
+      .pipe(finalize(() => this.downloadingAttachmentId.set(null)), takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: ({ data }) => this.attachmentDownload.open(data.download_url, file.file_name || 'rdig-attachment', preview),
+        error: () => this.feedback.set({ type: 'error', text: 'Unable to prepare the attachment download.' }),
+      });
   }
 
   // ── Perform an action ───────────────────────────────────────────────────────

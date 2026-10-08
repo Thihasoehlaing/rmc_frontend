@@ -74,7 +74,7 @@ export class LoginComponent implements OnInit {
     this.authService.startApuLogin(this.authService.getCurrentRoute());
   }
 
-  loginForTesting(username = 'dr_john'): void {
+  loginForTesting(username = 'irene.wong'): void {
     this.loginError.set('');
     this.isLoading.set(true);
 

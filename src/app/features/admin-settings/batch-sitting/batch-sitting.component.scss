@@ -404,12 +404,12 @@
   font-size: var(--fs-sm);
 
   th {
-    background: var(--color-table-header);
+    background: var(--color-table-head-bg);
     padding: var(--space-2) var(--space-3);
     text-align: left;
     font-size: var(--fs-xs);
     font-weight: var(--fw-semibold);
-    color: var(--color-text-muted);
+    color: var(--color-table-head-text);
     text-transform: uppercase;
     letter-spacing: 0.04em;
   }
@@ -434,12 +434,12 @@
   font-size: var(--fs-sm);
 
   th {
-    background: var(--color-table-header);
+    background: var(--color-table-head-bg);
     padding: var(--space-2) var(--space-4);
     text-align: left;
     font-size: var(--fs-xs);
     font-weight: var(--fw-semibold);
-    color: var(--color-text-muted);
+    color: var(--color-table-head-text);
     text-transform: uppercase;
     letter-spacing: 0.04em;
     white-space: nowrap;
@@ -667,12 +667,12 @@
   font-size: var(--fs-sm);
 
   th {
-    background: var(--color-table-header);
+    background: var(--color-table-head-bg);
     padding: var(--space-2) var(--space-3);
     text-align: left;
     font-size: var(--fs-xs);
     font-weight: var(--fw-semibold);
-    color: var(--color-text-muted);
+    color: var(--color-table-head-text);
     text-transform: uppercase;
     letter-spacing: 0.04em;
     white-space: nowrap;

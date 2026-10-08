@@ -139,7 +139,8 @@ td {
 }
 
 th {
-  background: color-mix(in srgb, var(--color-background-secondary) 92%, var(--color-label) 8%);
+  background: var(--color-table-head-bg);
+  color: var(--color-table-head-text);
   font-size: var(--fs-sm);
   font-weight: var(--fw-semibold);
   white-space: nowrap;
@@ -200,7 +201,7 @@ td:first-child {
 
   .material-icons {
     font-size: var(--icon-sm);
-    color: var(--color-text-muted);
+    color: var(--color-table-head-text);
   }
 }
 

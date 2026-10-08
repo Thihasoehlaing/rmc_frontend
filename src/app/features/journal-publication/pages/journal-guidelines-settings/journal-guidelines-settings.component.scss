@@ -135,14 +135,14 @@
         border-collapse: collapse;
 
         thead {
-          background: var(--color-table-header);
+          background: var(--color-table-head-bg);
           border-bottom: 1px solid var(--border-default);
 
           th {
             padding: var(--space-3) var(--space-4);
             text-align: left;
             font-weight: 600;
-            color: var(--color-label);
+            color: var(--color-table-head-text);
             font-size: var(--fs-sm);
 
             &.th-checkbox {

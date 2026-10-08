@@ -2,313 +2,335 @@
 
   <!-- ── Student Details Card ──────────────────────────────────── -->
   <div class="card">
-    <app-custom-subheader icon="person" title="Student Details"></app-custom-subheader>
+    <div class="card__header">
+      <h2 class="card__title">Student Details</h2>
+    </div>
     <div class="card__content section-fields">
       <div class="row row--2">
 
-        <!-- ── Left Column ──────────────────────────────────────── -->
-        <div class="form-column">
+        <!-- LEFT COLUMN -->
 
-          <!-- Asia Pacific University of Technology & Innovation Student ID -->
-          <div class="form-field">
-            <label class="form-label is-required">Asia Pacific University of Technology & Innovation Student ID</label>
-            <input
-              type="text"
-              class="input--text"
-              formControlName="studentId"
-              [class.is-invalid]="form.get('studentId')?.invalid && form.get('studentId')?.touched">
-            <app-validation-message [control]="form.get('studentId')"></app-validation-message>
-          </div>
-
-          <!-- Program Title (GRA only) -->
-          <div class="form-field" *ngIf="positionRequested === 'GRA'">
-            <label class="form-label is-required">Program Title (only for GRA)</label>
-            <select
-              class="input--select"
-              formControlName="programTitle"
-              [class.is-invalid]="form.get('programTitle')?.invalid && form.get('programTitle')?.touched">
-              <option *ngFor="let opt of programOptions" [value]="opt.value">{{ opt.label }}</option>
-            </select>
-            <app-validation-message [control]="form.get('programTitle')"></app-validation-message>
-          </div>
-
-          <!-- Student Name -->
-          <div class="form-field">
-            <label class="form-label is-required">Student Name (As per IC/Passport)</label>
-            <input
-              type="text"
-              class="input--text"
-              formControlName="studentName"
-              [class.is-invalid]="form.get('studentName')?.invalid && form.get('studentName')?.touched">
-            <app-validation-message [control]="form.get('studentName')"></app-validation-message>
-          </div>
-
-          <!-- Student Personal Email -->
-          <div class="form-field">
-            <label class="form-label is-required">Student Personal Email Address</label>
-            <input
-              type="email"
-              class="input--text"
-              formControlName="personalEmail"
-              [class.is-invalid]="form.get('personalEmail')?.invalid && form.get('personalEmail')?.touched">
-            <app-validation-message [control]="form.get('personalEmail')"></app-validation-message>
-          </div>
-
-          <!-- Student Residential Address -->
-          <div class="form-field">
-            <label class="form-label is-required">Student Residential Address</label>
-            <input
-              type="text"
-              class="input--text"
-              formControlName="residentialAddress"
-              [class.is-invalid]="form.get('residentialAddress')?.invalid && form.get('residentialAddress')?.touched">
-            <app-validation-message [control]="form.get('residentialAddress')"></app-validation-message>
-          </div>
-
-          <!-- Job Duties -->
-          <div class="form-field">
-            <label class="form-label is-required">Job Duties</label>
-            <textarea
-              class="input--textarea"
-              formControlName="jobDuties"
-              rows="8"
-              maxlength="1000"
-              [class.is-invalid]="form.get('jobDuties')?.invalid && form.get('jobDuties')?.touched">
-            </textarea>
-            <app-character-counter
-              [current]="form.get('jobDuties')?.value?.length || 0"
-              [max]="1000">
-            </app-character-counter>
-            <app-validation-message [control]="form.get('jobDuties')"></app-validation-message>
-          </div>
-
-          <!-- Appointment Commencement Date -->
-          <div class="form-field">
-            <label class="form-label is-required">Appointment Commencement Date</label>
-            <input
-              type="date"
-              class="input--text"
-              formControlName="commencementDate"
-              [class.is-invalid]="form.get('commencementDate')?.invalid && form.get('commencementDate')?.touched">
-            <app-note
-              text="Appointment Commencement Date must be after the Project Start Date."
-              [isTooltip]="false">
-            </app-note>
-            <app-validation-message [control]="form.get('commencementDate')"></app-validation-message>
-          </div>
-
-          <!-- Appointment Duration (Days) -->
-          <div class="form-field">
-            <label class="form-label is-required">Appointment Duration (Days)</label>
-            <input
-              type="number"
-              class="input--text"
-              formControlName="durationDays"
-              min="1"
-              [class.is-invalid]="form.get('durationDays')?.invalid && form.get('durationDays')?.touched">
-            <app-note
-              text="Please specify the job duties of RA/GRA. This will be included in the offer letter by HR."
-              [isTooltip]="false">
-            </app-note>
-            <app-validation-message [control]="form.get('durationDays')"></app-validation-message>
-          </div>
-
+        <!-- Asia Pacific University of Technology & Innovation Student ID -->
+        <div class="form-field">
+          <label class="form-label is-required">Asia Pacific University of Technology & Innovation Student ID</label>
+          <input
+            type="text"
+            class="input--text"
+            formControlName="studentId"
+            placeholder="Enter APU student ID"
+            [class.is-invalid]="form.get('studentId')?.invalid && form.get('studentId')?.touched">
+          <app-validation-message 
+            class="form-validation-note--error"
+            [control]="form.get('studentId')"
+            fieldName="Student ID">
+          </app-validation-message>
         </div>
-        <!-- /Left Column -->
 
-        <!-- ── Right Column ─────────────────────────────────────── -->
-        <div class="form-column">
-
-          <!-- Nationality -->
-          <div class="form-field">
-            <label class="form-label is-required">Nationality</label>
-            <select
-              class="input--select"
-              formControlName="nationality"
-              [class.is-invalid]="form.get('nationality')?.invalid && form.get('nationality')?.touched">
-              <option *ngFor="let opt of nationalityOptions" [value]="opt.value">{{ opt.label }}</option>
-            </select>
-            <app-validation-message [control]="form.get('nationality')"></app-validation-message>
-          </div>
-
-          <!-- NRIC / Passport -->
-          <div class="form-field">
-            <label class="form-label is-required">NRIC / Passport</label>
-            <input
-              type="text"
-              class="input--text"
-              formControlName="nricPassport"
-              [class.is-invalid]="form.get('nricPassport')?.invalid && form.get('nricPassport')?.touched">
-            <app-validation-message [control]="form.get('nricPassport')"></app-validation-message>
-          </div>
-
-          <!-- Student Asia Pacific University of Technology & Innovation Email -->
-          <div class="form-field">
-            <label class="form-label is-required">Student Asia Pacific University of Technology & Innovation Email Address</label>
-            <input
-              type="email"
-              class="input--text"
-              formControlName="apuEmail"
-              [class.is-invalid]="form.get('apuEmail')?.invalid && form.get('apuEmail')?.touched">
-            <app-validation-message [control]="form.get('apuEmail')"></app-validation-message>
-          </div>
-
-          <!-- Student Phone Number -->
-          <div class="form-field">
-            <label class="form-label is-required">Student Phone Number</label>
-            <input
-              type="text"
-              inputmode="numeric"
-              pattern="[0-9]*"
-              class="input--text"
-              formControlName="phoneNumber"
-              [class.is-invalid]="form.get('phoneNumber')?.invalid && form.get('phoneNumber')?.touched">
-            <app-validation-message [control]="form.get('phoneNumber')"></app-validation-message>
-          </div>
-
-          <!-- Student Visa Expiry Date (optional) -->
-          <div class="form-field">
-            <label class="form-label">Student Visa Expiry Date (if international student)</label>
-            <input
-              type="date"
-              class="input--text"
-              formControlName="visaExpiryDate">
-          </div>
-
-          <!-- Second Reporting Person -->
-          <div class="form-field">
-            <label class="form-label is-required">Second Reporting Person</label>
-            <select
-              class="input--select"
-              formControlName="secondReportingPerson"
-              [class.is-invalid]="form.get('secondReportingPerson')?.invalid && form.get('secondReportingPerson')?.touched">
-              <option *ngFor="let opt of secondReportingOptions" [value]="opt.value">{{ opt.label }}</option>
-            </select>
-            <app-note
-              text="Please select the co-supervisor/FUM (if any)."
-              [isTooltip]="false">
-            </app-note>
-            <app-validation-message [control]="form.get('secondReportingPerson')"></app-validation-message>
-          </div>
-
-          <!-- Monthly Allowance -->
-          <div class="form-field">
-            <label class="form-label is-required">Monthly Allowance (RM)</label>
-            <input
-              type="text"
-              inputmode="decimal"
-              appDecimalAmount
-              class="input--text"
-              formControlName="monthlyAllowance"
-              min="500"
-              max="2800"
-              [class.is-invalid]="form.get('monthlyAllowance')?.invalid && form.get('monthlyAllowance')?.touched">
-            <app-note
-              text="Monthly Allowance must be between RM 500.00 and RM 2,800.00. Ensure you input a valid amount."
-              [isTooltip]="false">
-            </app-note>
-            <app-validation-message [control]="form.get('monthlyAllowance')"></app-validation-message>
-          </div>
-
-          <!-- Fee Reduction Percentage (only for PG) -->
-          <div class="form-field" *ngIf="positionRequested === 'GRA'">
-            <label class="form-label is-required">Fee Reduction Percentage (only for PG)</label>
-            <select
-              class="input--select"
-              formControlName="feeReductionPercentage"
-              [class.is-invalid]="form.get('feeReductionPercentage')?.invalid && form.get('feeReductionPercentage')?.touched">
-              <option value="0">0%</option>
-              <option value="50">50%</option>
-              <option value="60">60%</option>
-              <option value="70">70%</option>
-              <option value="80">80%</option>
-              <option value="90">90%</option>
-              <option value="100">100%</option>
-            </select>
-            <app-note
-              text="Fee reduction is only applicable for Postgraduate Renewal applications."
-              [isTooltip]="false">
-            </app-note>
-            <app-validation-message [control]="form.get('feeReductionPercentage')"></app-validation-message>
-          </div>
-
-          <!-- Appointment End Date -->
-          <div class="form-field">
-            <label class="form-label is-required">Appointment End Date</label>
-            <input
-              type="date"
-              class="input--text"
-              formControlName="appointmentEndDate"
-              [class.is-invalid]="form.get('appointmentEndDate')?.invalid && form.get('appointmentEndDate')?.touched">
-            <app-note
-              text="Appointment End Date cannot be later than the Visa End Date or Project End Date."
-              [isTooltip]="false">
-            </app-note>
-            <app-validation-message [control]="form.get('appointmentEndDate')"></app-validation-message>
-          </div>
-
+        <!-- Program Title (GRA only) -->
+        <div class="form-field" *ngIf="positionRequested === 'GRA'">
+          <label class="form-label is-required">Program Title</label>
+          <select
+            class="input--select"
+            formControlName="programTitle"
+            [class.is-invalid]="form.get('programTitle')?.invalid && form.get('programTitle')?.touched">
+            <option *ngFor="let opt of programOptions" [value]="opt.value">{{ opt.label }}</option>
+          </select>
+          <app-note text="For GRA (PG Student) only" [isTooltip]="false"></app-note>
+          <app-validation-message 
+            class="form-validation-note--error"
+            [control]="form.get('programTitle')"
+            fieldName="Program Title">
+          </app-validation-message>
         </div>
-        <!-- /Right Column -->
 
+        <!-- Student Name -->
+        <div class="form-field">
+          <label class="form-label is-required">Student Name (As per IC/Passport)</label>
+          <input
+            type="text"
+            class="input--text"
+            formControlName="studentName"
+            placeholder="As per IC/Passport"
+            [class.is-invalid]="form.get('studentName')?.invalid && form.get('studentName')?.touched">
+          <app-validation-message 
+            class="form-validation-note--error"
+            [control]="form.get('studentName')"
+            fieldName="Student Name">
+          </app-validation-message>
+        </div>
+
+        <!-- Nationality -->
+        <div class="form-field">
+          <label class="form-label is-required">Nationality</label>
+          <select
+            class="input--select"
+            formControlName="nationality"
+            [class.is-invalid]="form.get('nationality')?.invalid && form.get('nationality')?.touched">
+            <option *ngFor="let opt of nationalityOptions" [value]="opt.value">{{ opt.label }}</option>
+          </select>
+          <app-validation-message 
+            class="form-validation-note--error"
+            [control]="form.get('nationality')"
+            fieldName="Nationality">
+          </app-validation-message>
+        </div>
+
+        <!-- Student Personal Email -->
+        <div class="form-field">
+          <label class="form-label is-required">Student Personal Email Address</label>
+          <input
+            type="email"
+            class="input--text"
+            formControlName="personalEmail"
+            placeholder="personal@example.com"
+            [class.is-invalid]="form.get('personalEmail')?.invalid && form.get('personalEmail')?.touched">
+          <app-validation-message 
+            class="form-validation-note--error"
+            [control]="form.get('personalEmail')"
+            fieldName="Personal Email">
+          </app-validation-message>
+        </div>
+
+        <!-- NRIC / Passport -->
+        <div class="form-field">
+          <label class="form-label is-required">NRIC / Passport</label>
+          <input
+            type="text"
+            class="input--text"
+            formControlName="nricPassport"
+            placeholder="Enter NRIC or Passport number"
+            [class.is-invalid]="form.get('nricPassport')?.invalid && form.get('nricPassport')?.touched">
+          <app-validation-message 
+            class="form-validation-note--error"
+            [control]="form.get('nricPassport')"
+            fieldName="NRIC / Passport">
+          </app-validation-message>
+        </div>
+
+        <!-- Student Residential Address -->
+        <div class="form-field">
+          <label class="form-label is-required">Student Residential Address</label>
+          <input
+            type="text"
+            class="input--text"
+            formControlName="residentialAddress"
+            placeholder="Enter full residential address"
+            [class.is-invalid]="form.get('residentialAddress')?.invalid && form.get('residentialAddress')?.touched">
+          <app-validation-message 
+            class="form-validation-note--error"
+            [control]="form.get('residentialAddress')"
+            fieldName="Residential Address">
+          </app-validation-message>
+        </div>
+
+        <!-- Student APU Email -->
+        <div class="form-field">
+          <label class="form-label is-required">Student APU Email Address</label>
+          <input
+            type="email"
+            class="input--text"
+            formControlName="apuEmail"
+            placeholder="student@apu.edu.my"
+            [class.is-invalid]="form.get('apuEmail')?.invalid && form.get('apuEmail')?.touched">
+          <app-validation-message 
+            class="form-validation-note--error"
+            [control]="form.get('apuEmail')"
+            fieldName="APU Email">
+          </app-validation-message>
+        </div>
+
+        <!-- RIGHT COLUMN (continues naturally in the grid) -->
+
+        <!-- Student Phone Number -->
+        <div class="form-field">
+          <label class="form-label is-required">Student Phone Number</label>
+          <input
+            type="text"
+            inputmode="numeric"
+            pattern="[0-9]*"
+            class="input--text"
+            formControlName="phoneNumber"
+            placeholder="Enter phone number"
+            [class.is-invalid]="form.get('phoneNumber')?.invalid && form.get('phoneNumber')?.touched">
+          <app-validation-message 
+            class="form-validation-note--error"
+            [control]="form.get('phoneNumber')"
+            fieldName="Phone Number">
+          </app-validation-message>
+        </div>
+
+        <!-- Student Visa Expiry Date -->
+        <div class="form-field">
+          <label class="form-label">Student Visa Expiry Date (if international student)</label>
+          <input
+            type="date"
+            class="input--text"
+            formControlName="visaExpiryDate">
+          <app-note text="For international students only" [isTooltip]="false"></app-note>
+        </div>
+
+      </div>
+
+      <!-- Job Duties (Full Width) -->
+      <div class="form-field">
+        <label class="form-label is-required">Job Duties</label>
+        <textarea
+          class="input--textarea"
+          formControlName="jobDuties"
+          rows="6"
+          maxlength="1000"
+          placeholder="Describe the RA/GRA responsibilities for inclusion in the HR offer letter..."
+          [class.is-invalid]="form.get('jobDuties')?.invalid && form.get('jobDuties')?.touched"></textarea>
+        <app-character-counter
+          [current]="form.get('jobDuties')?.value?.length || 0"
+          [max]="1000">
+        </app-character-counter>
+        <app-validation-message 
+          class="form-validation-note--error"
+          [control]="form.get('jobDuties')"
+          fieldName="Job Duties">
+        </app-validation-message>
       </div>
     </div>
   </div>
   <!-- /Student Details Card -->
 
-  <!-- ── Upload Supporting Documents Card ──────────────────────── -->
+  <!-- ── Appointment & Compensation Card ──────────────────────────────────── -->
   <div class="card">
-    <app-custom-subheader icon="upload_file" title="Upload Supporting Documents"></app-custom-subheader>
-    <div class="card__content">
-      <div class="section-fields upload-grid">
+    <div class="card__header">
+      <h2 class="card__title">Appointment & Compensation</h2>
+    </div>
+    <div class="card__content section-fields">
+      <div class="row row--2">
 
-        @for (doc of paginatedUploadDocuments; track doc.id) {
-          <div class="form-field">
-            <h3 class="upload-field-title" [class.is-required]="doc.required">{{ doc.title }}</h3>
-            <p class="upload-field-subtitle">{{ doc.subtitle }}</p>
-            <div class="download-link-wrapper">
-              @if (doc.downloadLabel) {
-                <a href="javascript:void(0)" class="download-link" (click)="onUploadDocumentAction(doc.downloadAction)">
-                  <span class="material-icons">download</span>
-                  {{ doc.downloadLabel }}
-                </a>
-              }
-            </div>
-            <app-file-upload
-              [accept]="PDF_ACCEPT"
-              [maxSizeMB]="MAX_FILE_SIZE_MB"
-              [placeholder]="doc.placeholder"
-              (fileSelected)="onDocumentSelected(doc.controlName, $any($event))">
-            </app-file-upload>
-            @if (doc.note) {
-              <app-note
-                [text]="doc.note"
-                [isTooltip]="false">
-              </app-note>
-            }
-            @if (doc.required && form.get(doc.controlName)?.invalid && form.get(doc.controlName)?.touched) {
-              <span class="form-error-msg">{{ doc.title }} is required</span>
-            }
-          </div>
-        }
+        <!-- Appointment Commencement Date -->
+        <div class="form-field">
+          <label class="form-label is-required">Appointment Commencement Date</label>
+          <input
+            type="date"
+            class="input--text"
+            formControlName="commencementDate"
+            [class.is-invalid]="form.get('commencementDate')?.invalid && form.get('commencementDate')?.touched">
+          <app-note
+            text="Appointment Commencement Date must be after the Project Start Date."
+            [isTooltip]="false">
+          </app-note>
+          <app-validation-message 
+            class="form-validation-note--error"
+            [control]="form.get('commencementDate')"
+            fieldName="Commencement Date">
+          </app-validation-message>
+        </div>
+
+        <!-- Appointment End Date -->
+        <div class="form-field">
+          <label class="form-label is-required">Appointment End Date</label>
+          <input
+            type="date"
+            class="input--text"
+            formControlName="appointmentEndDate"
+            [class.is-invalid]="form.get('appointmentEndDate')?.invalid && form.get('appointmentEndDate')?.touched">
+          <app-note
+            text="Appointment End Date cannot be later than the Visa End Date or Project End Date."
+            [isTooltip]="false">
+          </app-note>
+          <app-validation-message 
+            class="form-validation-note--error"
+            [control]="form.get('appointmentEndDate')"
+            fieldName="Appointment End Date">
+          </app-validation-message>
+        </div>
+
+        <!-- Appointment Duration (Days) -->
+        <div class="form-field">
+          <label class="form-label is-required">Appointment Duration (Days)</label>
+          <input
+            type="number"
+            class="input--text"
+            formControlName="durationDays"
+            min="1"
+            placeholder="Enter duration in days"
+            [class.is-invalid]="form.get('durationDays')?.invalid && form.get('durationDays')?.touched">
+          <app-validation-message 
+            class="form-validation-note--error"
+            [control]="form.get('durationDays')"
+            fieldName="Duration">
+          </app-validation-message>
+        </div>
+
+        <!-- Second Reporting Person -->
+        <div class="form-field">
+          <label class="form-label is-required">Second Reporting Person</label>
+          <select
+            class="input--select"
+            formControlName="secondReportingPerson"
+            [class.is-invalid]="form.get('secondReportingPerson')?.invalid && form.get('secondReportingPerson')?.touched">
+            <option *ngFor="let opt of secondReportingOptions" [value]="opt.value">{{ opt.label }}</option>
+          </select>
+          <app-note
+            text="Please select the co-supervisor/FUM (if any)."
+            [isTooltip]="false">
+          </app-note>
+          <app-validation-message 
+            class="form-validation-note--error"
+            [control]="form.get('secondReportingPerson')"
+            fieldName="Second Reporting Person">
+          </app-validation-message>
+        </div>
+
+        <!-- Monthly Allowance -->
+        <div class="form-field">
+          <label class="form-label is-required">Monthly Allowance (RM)</label>
+          <input
+            type="text"
+            inputmode="decimal"
+            appDecimalAmount
+            class="input--text"
+            formControlName="monthlyAllowance"
+            placeholder="500.00 - 2800.00"
+            min="500"
+            max="2800"
+            [class.is-invalid]="form.get('monthlyAllowance')?.invalid && form.get('monthlyAllowance')?.touched">
+          <app-note
+            text="Monthly Allowance must be between RM 500.00 and RM 2,800.00."
+            [isTooltip]="false">
+          </app-note>
+          <app-validation-message 
+            class="form-validation-note--error"
+            [control]="form.get('monthlyAllowance')"
+            fieldName="Monthly Allowance">
+          </app-validation-message>
+        </div>
+
+        <!-- Fee Reduction Percentage (GRA only) -->
+        <div class="form-field" *ngIf="positionRequested === 'GRA'">
+          <label class="form-label is-required">Fee Reduction Percentage</label>
+          <select
+            class="input--select"
+            formControlName="feeReductionPercentage"
+            [class.is-invalid]="form.get('feeReductionPercentage')?.invalid && form.get('feeReductionPercentage')?.touched">
+            <option value="0">0%</option>
+            <option value="50">50%</option>
+            <option value="60">60%</option>
+            <option value="70">70%</option>
+            <option value="80">80%</option>
+            <option value="90">90%</option>
+            <option value="100">100%</option>
+          </select>
+          <app-note
+            text="Fee reduction is only applicable for Postgraduate (GRA) applications."
+            [isTooltip]="false">
+          </app-note>
+          <app-validation-message 
+            class="form-validation-note--error"
+            [control]="form.get('feeReductionPercentage')"
+            fieldName="Fee Reduction Percentage">
+          </app-validation-message>
+        </div>
 
       </div>
-
-      <div class="table-footer">
-        <app-pagination
-          [currentPage]="uploadDocumentsCurrentPage"
-          [totalPages]="getUploadTotalPages()"
-          [pageSize]="uploadDocumentsPageSize"
-          [pageSizeOptions]="uploadPageSizeOptions"
-          [totalItems]="uploadDocuments.length"
-          [itemCount]="paginatedUploadDocuments.length"
-          itemLabel="documents"
-          (pageChange)="onUploadDocumentsPageChange($event)"
-          (pageSizeChange)="onUploadDocumentsPageSizeChange($event)">
-        </app-pagination>
-      </div>
-
     </div>
   </div>
-  <!-- /Upload Supporting Documents Card -->
+  <!-- /Appointment & Compensation Card -->
 
 </form>

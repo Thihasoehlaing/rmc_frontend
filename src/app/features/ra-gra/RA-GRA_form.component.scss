@@ -1,31 +1,61 @@
 @use '../../../styles/index' as *;
 
 .ragra-app {
+  --ragra-design-card-radius: 12px;
+  --ragra-design-side-column: clamp(300px, 28vw, 420px);
+  --ragra-design-column-gap: 20px;
+  --ragra-design-ink: #172033;
+  --ragra-design-muted: #667085;
+
   max-width: var(--page-max-width);
   margin: 0 auto;
   width: 100%;
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--space-6);
+  gap: 24px;
   padding: var(--space-4) 0;
   box-sizing: border-box;
 
   &__content {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) var(--ragra-design-side-column);
+    align-items: start;
+    gap: var(--ragra-design-column-gap);
     min-width: 0;
     animation: stepFadeIn var(--transition-base) ease;
+
+    > app-ragra-project-details,
+    > app-ragra-student-details,
+    > .step-2-container,
+    > .supporting-documents-section,
+    > app-ragra-declaration {
+      grid-column: 1;
+      grid-row: 1;
+      min-width: 0;
+    }
+  }
+
+  &__sidebar {
+    display: flex;
+    flex-direction: column;
+    grid-column: 2;
+    grid-row: 1;
+    gap: var(--space-4);
+    align-self: start;
+    min-width: 0;
+    position: sticky;
+    top: var(--space-4);
   }
 }
 
 .form-container {
-  background: var(--color-surface);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-sm);
-  padding: var(--space-7) var(--space-6);
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  padding: 0;
   width: 100%;
   box-sizing: border-box;
-
   margin: 0;
   min-width: 0;
 
@@ -35,6 +65,652 @@
     input, select, textarea, button, .input--text, .input--select, .input--textarea {
       cursor: not-allowed;
     }
+  }
+}
+
+// ── Sidebar Card Styles ──────────────────────────────────────
+.sidebar-card {
+  padding: var(--space-5);
+  border: 1px solid var(--border-light);
+  border-radius: var(--ragra-design-card-radius);
+  background: var(--color-surface);
+  box-sizing: border-box;
+
+  &__title {
+    margin: 0 0 var(--space-4) 0;
+    color: var(--ragra-design-ink);
+    font-size: var(--fs-md);
+    font-weight: var(--fw-bold);
+  }
+
+  &__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-md);
+    margin-bottom: var(--space-3);
+    
+    .material-icons {
+      font-size: 20px;
+    }
+  }
+
+  &--info {
+    background: color-mix(in srgb, var(--color-primary) 5%, var(--color-surface));
+    border-color: color-mix(in srgb, var(--color-primary) 20%, var(--border-light));
+
+    .sidebar-card__icon {
+      background: color-mix(in srgb, var(--color-primary) 15%, var(--color-surface));
+      color: var(--color-primary);
+    }
+  }
+
+  &--warning {
+    background: color-mix(in srgb, var(--color-warning) 5%, var(--color-surface));
+    border-color: color-mix(in srgb, var(--color-warning) 20%, var(--border-light));
+
+    .sidebar-card__icon {
+      background: color-mix(in srgb, var(--color-warning) 15%, var(--color-surface));
+      color: var(--color-warning);
+    }
+  }
+}
+
+// ── Progress Summary ──────────────────────────────────────────
+.progress-summary {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+
+  &__percentage {
+    color: var(--ragra-design-ink);
+    font-size: 28px;
+    font-weight: var(--fw-bold);
+    line-height: 1;
+  }
+
+  &__text {
+    color: var(--ragra-design-muted);
+    font-size: var(--fs-xs);
+    text-align: right;
+    line-height: var(--lh-snug);
+  }
+}
+
+.progress-bar {
+  height: 6px;
+  overflow: hidden;
+  border-radius: var(--radius-full);
+  background: #e5edf7;
+
+  &__fill {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--color-primary);
+    transition: width var(--transition-base) var(--ease-default);
+  }
+}
+
+.progress-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+
+  &__item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: var(--fs-sm);
+    color: var(--ragra-design-muted);
+
+    &--complete {
+      color: var(--color-success);
+      
+      .progress-steps__number {
+        background: var(--color-success);
+        color: white;
+      }
+    }
+
+    &--current {
+      color: var(--color-primary);
+      font-weight: var(--fw-semibold);
+      
+      .progress-steps__number {
+        background: var(--color-primary);
+        color: white;
+      }
+    }
+  }
+
+  &__number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--color-surface-nested);
+    color: var(--ragra-design-muted);
+    font-size: var(--fs-xs);
+    font-weight: var(--fw-bold);
+    flex-shrink: 0;
+  }
+
+  &__label {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+// ── Snapshot Grid ──────────────────────────────────────────────
+.snapshot-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.snapshot-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+
+  &__label {
+    color: var(--ragra-design-muted);
+    font-size: var(--fs-xs);
+    font-weight: var(--fw-semibold);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  &__value {
+    color: var(--ragra-design-ink);
+    font-size: var(--fs-sm);
+    font-weight: var(--fw-medium);
+  }
+}
+
+// ── Info Content ─────────────────────────────────────────────
+.info-content {
+  &__rule {
+    margin: 0 0 var(--space-3) 0;
+    color: var(--ragra-design-ink);
+    font-size: var(--fs-sm);
+    line-height: var(--lh-relaxed);
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    strong {
+      font-weight: var(--fw-semibold);
+    }
+  }
+}
+
+// ── Approval Route ─────────────────────────────────────────────
+.approval-route {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+
+  &__step {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3);
+    padding: var(--space-3) 0;
+    border-left: 2px solid var(--border-light);
+    padding-left: var(--space-4);
+    position: relative;
+
+    &:first-child {
+      padding-top: 0;
+    }
+
+    &:last-child {
+      border-left-color: transparent;
+      padding-bottom: 0;
+    }
+  }
+
+  &__number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--color-primary-light);
+    color: var(--color-primary);
+    font-size: var(--fs-sm);
+    font-weight: var(--fw-bold);
+    flex-shrink: 0;
+    position: absolute;
+    left: -15px;
+  }
+
+  &__content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    padding-left: var(--space-5);
+
+    strong {
+      color: var(--ragra-design-ink);
+      font-size: var(--fs-sm);
+      font-weight: var(--fw-semibold);
+    }
+
+    span {
+      color: var(--ragra-design-muted);
+      font-size: var(--fs-xs);
+      line-height: var(--lh-snug);
+    }
+  }
+}
+
+// ── Document Checklist ─────────────────────────────────────────
+.document-checklist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+
+  &__item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2);
+    border-radius: var(--radius-md);
+    background: var(--color-surface-nested);
+    color: var(--ragra-design-ink);
+    font-size: var(--fs-sm);
+  }
+
+  &__icon {
+    font-size: 18px;
+    flex-shrink: 0;
+
+    &--pending {
+      color: var(--ragra-design-muted);
+    }
+
+    &--complete {
+      color: var(--color-success);
+    }
+  }
+}
+
+// ── Supporting Documents Section ───────────────────────────────
+.step-2-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.supporting-documents-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  padding: 0;
+}
+
+.section-main-title {
+  margin: 0;
+  color: var(--ragra-design-ink);
+  font-size: var(--fs-xl);
+  font-weight: var(--fw-bold);
+}
+
+.section-description {
+  margin: 0;
+  color: var(--ragra-design-muted);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-relaxed);
+}
+
+.documents-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-5);
+  margin-bottom: var(--space-4);
+}
+
+.document-card {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-5);
+  border: 1px solid var(--border-light);
+  border-radius: var(--ragra-design-card-radius);
+  background: var(--color-surface);
+  box-sizing: border-box;
+  min-height: 240px;
+
+  &__title {
+    margin: 0 0 var(--space-2) 0;
+    color: var(--ragra-design-ink);
+    font-size: var(--fs-md);
+    font-weight: var(--fw-semibold);
+    line-height: var(--lh-tight);
+
+    .required-asterisk {
+      color: var(--color-danger);
+      margin-left: 2px;
+    }
+  }
+
+  &__description {
+    margin: 0 0 var(--space-4) 0;
+    color: var(--ragra-design-muted);
+    font-size: var(--fs-sm);
+    line-height: var(--lh-relaxed);
+    flex-grow: 1;
+  }
+
+  &__upload {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    padding: var(--space-5);
+    border: 2px dashed var(--color-primary);
+    border-radius: var(--radius-md);
+    background: color-mix(in srgb, var(--color-primary) 3%, var(--color-surface));
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    margin-bottom: var(--space-3);
+
+    &:hover {
+      background: color-mix(in srgb, var(--color-primary) 8%, var(--color-surface));
+      border-color: var(--color-primary-hover);
+    }
+
+    .material-icons {
+      font-size: 36px;
+      color: var(--color-primary);
+    }
+
+    p {
+      margin: 0;
+      color: var(--ragra-design-ink);
+      font-size: var(--fs-sm);
+      font-weight: var(--fw-medium);
+    }
+  }
+
+  &__meta {
+    display: block;
+    color: var(--ragra-design-muted);
+    font-size: var(--fs-xs);
+    margin-bottom: var(--space-1);
+  }
+
+  &__requirement {
+    color: var(--ragra-design-muted);
+    font-size: var(--fs-xs);
+    font-weight: var(--fw-semibold);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+}
+
+// ── Document Pagination ────────────────────────────────────────
+
+.documents-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border-light);
+  gap: var(--space-4);
+}
+
+.pagination-info {
+  color: var(--ragra-design-muted);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.pagination-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 36px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--border-base);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--ragra-design-ink);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+
+  &:hover:not(&--active) {
+    background: var(--color-surface-secondary);
+    border-color: var(--color-primary);
+  }
+
+  &--active {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: white;
+    cursor: default;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+}
+
+::ng-deep .ragra-app {
+  app-ragra-project-details .form-section,
+  app-ragra-student-details .form-section,
+  app-ragra-declaration .declaration-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+    padding: 0;
+  }
+
+  app-ragra-project-details .form-section > .card,
+  app-ragra-student-details .form-section > .card,
+  app-ragra-declaration .declaration-section > .card {
+    border: 1px solid var(--border-light);
+    border-radius: var(--ragra-design-card-radius);
+    background: var(--color-surface);
+    box-shadow: none;
+  }
+
+  app-ragra-project-details .card__header,
+  app-ragra-student-details .card__header {
+    padding: var(--space-5) var(--space-5) 0;
+    border: 0;
+    background: transparent;
+  }
+
+  app-ragra-project-details .card__content,
+  app-ragra-student-details .card__content,
+  app-ragra-declaration .card__content {
+    padding: var(--space-5);
+  }
+
+  // Validation message and character counter spacing
+  app-ragra-project-details .form-field app-validation-message,
+  app-ragra-project-details .form-field app-character-counter,
+  app-ragra-student-details .form-field app-validation-message,
+  app-ragra-student-details .form-field app-character-counter,
+  app-ragra-declaration .form-field app-validation-message,
+  app-ragra-declaration .form-field app-character-counter {
+    display: block;
+    min-width: 0;
+  }
+
+  // Journal-style header styling
+  .form-main-title-wrapper--wide .form-main-title-text,
+  .card__title,
+  .form-label,
+  .upload-field-title {
+    color: var(--ragra-design-ink);
+  }
+
+  .form-main-title-wrapper--wide .form-main-title-eyebrow {
+    color: var(--color-primary);
+  }
+
+  .form-main-title-wrapper--wide .form-main-title-description {
+    color: var(--ragra-design-muted);
+  }
+
+  // Journal-style radio options (pill style)
+  app-ragra-project-details .radio-group,
+  app-ragra-student-details .radio-group {
+    gap: var(--space-2);
+  }
+
+  app-ragra-project-details .radio-option,
+  app-ragra-student-details .radio-option {
+    min-height: 34px;
+    padding: var(--space-2) var(--space-3);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-full);
+    background: var(--color-surface);
+  }
+
+  app-ragra-project-details .radio-option:has(input:checked),
+  app-ragra-student-details .radio-option:has(input:checked) {
+    border-color: var(--color-primary);
+    background: var(--color-primary-light);
+    color: var(--color-primary-dark);
+  }
+
+  app-ragra-declaration .declaration-box {
+    border: 1px solid var(--border-light);
+    border-radius: var(--ragra-design-card-radius);
+    padding: var(--space-6);
+    border-left: 1px solid var(--border-light);
+  }
+
+  app-ragra-declaration .agreement-trigger {
+    border: 1px solid var(--border-light);
+    background: var(--color-surface);
+  }
+
+  .ragra-app__step-indicator .step-indicator {
+    counter-reset: ragra-step;
+    justify-content: stretch;
+    min-height: 64px;
+    padding: 12px 20px;
+    border-color: var(--border-light);
+    border-radius: var(--ragra-design-card-radius);
+    box-shadow: none;
+  }
+
+  .ragra-app__step-indicator .step {
+    counter-increment: ragra-step;
+    flex: 0 1 auto;
+    min-width: 0;
+    flex-direction: row;
+    justify-content: center;
+    gap: var(--space-3);
+    padding: 4px 10px;
+  }
+
+  .ragra-app__step-indicator .step__bubble {
+    width: 32px;
+    height: 32px;
+    flex: 0 0 32px;
+    border-width: 1px;
+    background: var(--color-surface);
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    box-shadow: none;
+  }
+
+  .ragra-app__step-indicator .step__bubble .material-icons {
+    display: none;
+  }
+
+  .ragra-app__step-indicator .step__bubble::before {
+    content: counter(ragra-step);
+    font-size: var(--fs-sm);
+    font-weight: var(--fw-bold);
+  }
+
+  .ragra-app__step-indicator .step__label {
+    max-width: 190px;
+    color: var(--ragra-design-ink);
+    font-size: var(--fs-xs);
+    font-weight: var(--fw-semibold);
+    text-align: left;
+  }
+
+  .ragra-app__step-indicator .step--active .step__bubble,
+  .ragra-app__step-indicator .step--complete .step__bubble {
+    border-color: var(--color-primary);
+    background: var(--color-primary);
+    color: var(--color-text-inverse);
+    box-shadow: none;
+  }
+
+  .ragra-app__step-indicator .step--active .step__label,
+  .ragra-app__step-indicator .step--complete .step__label {
+    color: var(--ragra-design-ink);
+  }
+
+  .ragra-app__step-indicator .step--warning .step__bubble,
+  .ragra-app__step-indicator .step--error .step__bubble {
+    color: var(--color-text-inverse);
+    box-shadow: none;
+  }
+
+  .ragra-app__step-indicator .step-connector {
+    min-width: 44px;
+    margin-top: 20px;
+    height: 1px;
+  }
+
+  .ragra-app__wizard-nav {
+    position: static;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .ragra-app__wizard-nav .form-wizard-nav {
+    position: static;
+    width: 100%;
+    margin: 0;
+    padding: var(--space-4) var(--space-8);
+    border: 1px solid var(--border-light);
+    border-radius: var(--ragra-design-card-radius);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .ragra-app__wizard-nav .btn {
+    min-width: 126px;
   }
 }
 
@@ -49,9 +725,52 @@
   }
 }
 
-@media (max-width: 1024px) {
-  .form-container {
-    padding: var(--space-6) var(--space-5);
+// Responsive breakpoints matching Journal
+@media (max-width: 1200px) {
+  .ragra-app {
+    &__content {
+      grid-template-columns: 1fr;
+
+      > app-ragra-project-details,
+      > app-ragra-student-details,
+      > .step-2-container,
+      > .supporting-documents-section,
+      > app-ragra-declaration {
+        grid-column: 1;
+        grid-row: 2;
+      }
+    }
+
+    &__sidebar {
+      grid-column: 1;
+      grid-row: 1;
+      position: static;
+    }
+  }
+
+  ::ng-deep .ragra-app {
+    .ragra-app__step-indicator .step {
+      min-width: 112px;
+    }
+
+    .ragra-app__step-indicator .step__label {
+      max-width: 128px;
+    }
+  }
+
+  .documents-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .documents-pagination {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3);
+  }
+
+  .pagination-controls {
+    width: 100%;
+    justify-content: center;
   }
 }
 
@@ -60,8 +779,38 @@
     padding: var(--space-3) 0;
   }
 
-  .form-container {
-    padding: var(--space-5) var(--space-4);
+  .document-card {
+    &__upload {
+      padding: var(--space-5);
+
+      .material-icons {
+        font-size: 32px;
+      }
+    }
+  }
+}
+
+@media (max-width: 720px) {
+  ::ng-deep .ragra-app {
+    .ragra-app__step-indicator .step-indicator {
+      flex-wrap: nowrap;
+      justify-content: flex-start;
+      overflow-x: auto;
+    }
+
+    .ragra-app__step-indicator .step {
+      min-width: 144px;
+    }
+
+    .ragra-app__step-indicator .step-connector {
+      flex: 0 0 var(--space-6);
+    }
+
+    .ragra-app__wizard-nav .form-wizard-nav {
+      margin: var(--space-5) 0 0;
+      padding: var(--space-4);
+      border-radius: var(--ragra-design-card-radius);
+    }
   }
 }
 

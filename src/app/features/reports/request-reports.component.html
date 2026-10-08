@@ -7,54 +7,6 @@
     </div>
   </header>
 
-  <section class="reports-toolbar" aria-label="Report filters">
-    <h2 class="reports-toolbar__title">Search &amp; Filters</h2>
-
-    <app-searchable-dropdown
-      label="Form"
-      placeholder="Select form"
-      [options]="formOptions()"
-      [ngModel]="selectedFormCode()"
-      (ngModelChange)="selectedFormCode.set($event ?? '')"
-      [loading]="formOptions().length === 0"
-    ></app-searchable-dropdown>
-
-    <label class="form-field reports-filter--request-code">
-      <span class="form-label">Request Code</span>
-      <span class="reports-search-input">
-        <span class="material-icons" aria-hidden="true">search</span>
-        <input
-          class="input--text"
-          type="search"
-          placeholder="Search request code"
-          [ngModel]="requestCode()"
-          (ngModelChange)="requestCode.set($event)"
-          (keydown.enter)="applyFilters()"
-          [disabled]="isLoading()"
-        />
-      </span>
-    </label>
-
-    <app-report-date-range-picker
-      [dateFrom]="dateFrom()"
-      [dateTo]="dateTo()"
-      [disabled]="isLoading()"
-      (dateFromChange)="dateFrom.set($event)"
-      (dateToChange)="dateTo.set($event)"
-    ></app-report-date-range-picker>
-
-    <div class="reports-toolbar__actions">
-      <button class="btn btn-primary" type="button" (click)="applyFilters()" [disabled]="isLoading()">
-        <span class="material-icons">search</span>
-        Search
-      </button>
-      <button class="btn btn-secondary" type="button" (click)="resetFilters()" [disabled]="isLoading()">
-        <span class="material-icons">restart_alt</span>
-        Reset
-      </button>
-    </div>
-  </section>
-
   @if (isExternalFormSelected()) {
     <section class="reports-external-fields" aria-label="External Excel columns">
       <div class="reports-external-fields__header">
@@ -106,6 +58,16 @@
     <button class="btn btn-primary" type="button" (click)="exportExcel()" [disabled]="isLoading() || isExporting()">
       <span class="material-icons">download</span>
       {{ isExporting() ? 'Downloading...' : 'Download Excel' }}
+    </button>
+    <button
+      type="button"
+      class="btn btn-secondary reports-filter-trigger"
+      aria-controls="reports-filter-panel"
+      [attr.aria-expanded]="filtersOpen()"
+      (click)="openFilters()"
+    >
+      <span class="material-icons">filter_list</span>
+      Filters
     </button>
   </div>
 
@@ -168,4 +130,98 @@
       </app-data-table>
     }
   </section>
+
+  @if (filtersOpen()) {
+    <button
+      type="button"
+      class="reports-filter-backdrop"
+      aria-label="Close filters"
+      (click)="closeFilters()"
+    ></button>
+    <aside
+      id="reports-filter-panel"
+      class="reports-filter-panel"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="reports-filter-heading"
+    >
+      <header class="reports-filter-panel__header">
+        <div>
+          <span class="reports-page__eyebrow">Search &amp; Filters</span>
+          <h2 id="reports-filter-heading">Filters</h2>
+        </div>
+        <button
+          type="button"
+          class="btn btn-icon btn-secondary"
+          aria-label="Close filters"
+          (click)="closeFilters()"
+        >
+          <span class="material-icons">close</span>
+        </button>
+      </header>
+
+      <div class="reports-filter__controls">
+        <app-note
+          text="The report table and Excel download are based on the selected form, request code and submission date range."
+        />
+
+        <app-searchable-dropdown
+          label="Form"
+          placeholder="Select form"
+          [options]="formOptions()"
+          [ngModel]="selectedFormCode()"
+          (ngModelChange)="selectedFormCode.set($event ?? '')"
+          [loading]="formOptions().length === 0"
+        ></app-searchable-dropdown>
+
+        <label class="form-field reports-filter__field">
+          <span class="form-label">Request Code</span>
+          <span class="reports-search-input">
+            <span class="material-icons" aria-hidden="true">search</span>
+            <input
+              class="input--text"
+              type="search"
+              placeholder="Search request code"
+              [ngModel]="requestCode()"
+              (ngModelChange)="requestCode.set($event)"
+              (keydown.enter)="applyFilters()"
+            />
+          </span>
+        </label>
+
+        <div class="form-field reports-filter__field">
+          <label class="form-label" for="reports-date-from">Submission Date From</label>
+          <input
+            id="reports-date-from"
+            class="input--text"
+            type="date"
+            [ngModel]="dateFrom()"
+            [max]="dateTo()"
+            (ngModelChange)="dateFrom.set($event ?? '')"
+          />
+        </div>
+
+        <div class="form-field reports-filter__field">
+          <label class="form-label" for="reports-date-to">Submission Date To</label>
+          <input
+            id="reports-date-to"
+            class="input--text"
+            type="date"
+            [ngModel]="dateTo()"
+            [min]="dateFrom()"
+            (ngModelChange)="dateTo.set($event ?? '')"
+          />
+        </div>
+      </div>
+
+      <footer class="reports-filter-panel__footer">
+        <button type="button" class="btn btn-primary" (click)="applyFilters()">
+          Apply Filters
+        </button>
+        <button type="button" class="btn btn-secondary" (click)="resetFilters()">
+          Reset
+        </button>
+      </footer>
+    </aside>
+  }
 </main>

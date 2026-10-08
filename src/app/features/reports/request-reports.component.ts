@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, TrackByFunction, inject, signal } from '@angular/core';
+import { Component, HostListener, OnInit, TrackByFunction, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
 
@@ -13,10 +13,9 @@ import {
   DataTableColumn,
   DataTableComponent,
 } from '../../shared/components/data-table/data-table.component';
+import { NoteComponent } from '../../shared/components/note/note.component';
 import { SearchableDropdownComponent } from '../../shared/components/searchable-dropdown/searchable-dropdown.component';
-import { TableSkeletonComponent } from '../../shared/components/table-skeleton/table-skeleton.component';
-import { ReportDateRangePickerComponent } from './date-range-picker.component';
-import {
+import { TableSkeletonComponent } from '../../shared/components/table-skeleton/table-skeleton.component';import {
   ExternalReportFieldOption,
   RequestReportQuery,
   RequestReportRow,
@@ -30,9 +29,9 @@ import {
     CommonModule,
     FormsModule,
     DataTableComponent,
+    NoteComponent,
     SearchableDropdownComponent,
     TableSkeletonComponent,
-    ReportDateRangePickerComponent,
   ],
   templateUrl: './request-reports.component.html',
   styleUrl: './request-reports.component.scss',
@@ -56,6 +55,7 @@ export class RequestReportsComponent implements OnInit {
   readonly appliedRequestCode = signal('');
   readonly appliedDateFrom = signal('');
   readonly appliedDateTo = signal('');
+  readonly filtersOpen = signal(false);
 
   readonly totalItems = signal(0);
   readonly isLoading = signal(true);
@@ -98,26 +98,34 @@ export class RequestReportsComponent implements OnInit {
       });
   }
 
+  openFilters(): void {
+    this.resetDraftFilters();
+    this.filtersOpen.set(true);
+  }
+
+  closeFilters(): void {
+    this.resetDraftFilters();
+    this.filtersOpen.set(false);
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    if (this.filtersOpen()) this.closeFilters();
+  }
+
   applyFilters(): void {
     if (!this.isDateRangeValid()) return;
 
     this.syncAppliedFilters();
+    this.filtersOpen.set(false);
     this.loadReports();
   }
 
+  /** Clears the draft request code and dates only; the form stays selected until Apply. */
   resetFilters(): void {
-    const firstFormCode = this.forms()[0]?.form_code ?? '';
-    this.selectedFormCode.set(firstFormCode);
-    this.selectedExternalFields.set([]);
     this.requestCode.set('');
     this.dateFrom.set('');
     this.dateTo.set('');
-    this.appliedFormCode.set(firstFormCode);
-    this.appliedExternalFields.set([]);
-    this.appliedRequestCode.set('');
-    this.appliedDateFrom.set('');
-    this.appliedDateTo.set('');
-    this.loadReports();
   }
 
   exportExcel(): void {
@@ -147,7 +155,7 @@ export class RequestReportsComponent implements OnInit {
   }
 
   isExternalFormSelected(): boolean {
-    return this.selectedFormCode().toUpperCase() === 'EXTERNAL';
+    return this.appliedFormCode().toUpperCase() === 'EXTERNAL';
   }
 
   isExternalFieldSelected(value: string): boolean {
@@ -240,6 +248,13 @@ export class RequestReportsComponent implements OnInit {
     this.appliedFormCode.set(firstFormCode);
     this.appliedExternalFields.set([]);
     this.loadReports();
+  }
+
+  private resetDraftFilters(): void {
+    this.selectedFormCode.set(this.appliedFormCode());
+    this.requestCode.set(this.appliedRequestCode());
+    this.dateFrom.set(this.appliedDateFrom());
+    this.dateTo.set(this.appliedDateTo());
   }
 
   private syncAppliedFilters(): void {

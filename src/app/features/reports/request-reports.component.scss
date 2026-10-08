@@ -32,46 +32,95 @@
   text-transform: uppercase;
 }
 
-.reports-toolbar__actions {
-  display: flex;
-  gap: var(--space-2);
-
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--space-2);
-  }
+// Filter drawer mirrors the analysis dashboard filter panel (rmc-admin-dashboard.component.scss).
+.reports-filter-trigger {
+  flex: 0 0 auto;
+  min-height: calc(var(--input-height-sm) + var(--space-2));
+  padding-inline: var(--space-6);
+  font-size: var(--fs-sm);
 
   .material-icons {
-    font-size: 19px;
+    font-size: var(--icon-sm);
   }
 }
 
-.reports-toolbar {
+.reports-filter-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-overlay);
+  padding: 0;
+  border: 0;
+  background: var(--color-overlay);
+  cursor: default;
+}
+
+.reports-filter-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: var(--z-modal);
   display: grid;
-  grid-template-columns: minmax(220px, 1fr) minmax(220px, 1fr) minmax(320px, 1.2fr) minmax(220px, auto);
-  align-items: end;
-  gap: var(--space-4) var(--space-5);
-  margin-bottom: var(--space-5);
-  padding: var(--space-5);
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  width: min(100%, 420px);
+  height: 100dvh;
+  border-left: 1px solid var(--border-default);
   background: var(--color-surface);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-xs);
+  box-shadow: var(--shadow-xl);
+  animation: reports-filter-enter var(--transition-normal) ease-out;
+
+  .reports-filter__controls {
+    overflow-y: auto;
+  }
 }
 
-.reports-toolbar__title {
-  grid-column: 1 / -1;
-  margin: 0;
-  color: var(--color-heading);
-  font-size: var(--fs-base);
-  font-weight: var(--fw-bold);
+.reports-filter-panel__header,
+.reports-filter-panel__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-5) var(--space-6);
+  border-bottom: 1px solid var(--border-subtle);
 }
 
-.reports-toolbar__actions {
-  justify-content: flex-end;
-  align-items: end;
+.reports-filter-panel__header {
+  > div {
+    display: grid;
+    gap: var(--space-1);
+  }
+
+  h2 {
+    margin: 0;
+    color: var(--color-text);
+  }
+}
+
+.reports-filter-panel__footer {
+  justify-content: flex-start;
+  border-top: 1px solid var(--border-subtle);
+  border-bottom: 0;
+}
+
+.reports-filter__controls {
+  display: grid;
+  grid-template-columns: 1fr;
+  align-content: start;
+  gap: var(--space-5);
+  padding: var(--space-5) var(--space-6);
+}
+
+.reports-filter__field {
+  padding-bottom: 0;
+}
+
+@keyframes reports-filter-enter {
+  from {
+    transform: translateX(100%);
+  }
+
+  to {
+    transform: translateX(0);
+  }
 }
 
 .reports-search-input {
@@ -96,6 +145,7 @@
 .reports-export-row {
   display: flex;
   justify-content: flex-end;
+  gap: var(--space-4);
   margin-bottom: var(--space-4);
 
   .btn {
@@ -391,16 +441,6 @@
   border-radius: var(--radius-lg);
 }
 
-@media (max-width: 1100px) {
-  .reports-toolbar {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .reports-toolbar__actions {
-    grid-column: 1 / -1;
-  }
-}
-
 @media (max-width: 720px) {
   .reports-page__header,
   .reports-table-card__header {
@@ -408,16 +448,8 @@
     flex-direction: column;
   }
 
-  .reports-toolbar,
-  .reports-toolbar__actions {
-    grid-template-columns: 1fr;
-  }
-
-  .reports-toolbar__actions .btn {
-    flex: 1;
-  }
-
   .reports-export-row {
+    flex-direction: column;
     justify-content: stretch;
 
     .btn {
@@ -442,14 +474,29 @@
   }
 }
 
+@media (max-width: 520px) {
+  .reports-filter-panel__header,
+  .reports-filter-panel__footer,
+  .reports-filter__controls {
+    padding-inline: var(--space-4);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reports-filter-panel {
+    animation: none;
+  }
+}
+
 @media print {
   .reports-page {
     max-width: none;
   }
 
   .reports-page__actions,
-  .reports-toolbar,
   .reports-export-row,
+  .reports-filter-backdrop,
+  .reports-filter-panel,
   .reports-table-card__refresh,
   .reports-table-card__footer {
     display: none;

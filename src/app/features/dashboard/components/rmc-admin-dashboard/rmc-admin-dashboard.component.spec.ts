@@ -87,6 +87,29 @@ describe('RmcAdminAnalyticsDashboardComponent filters', () => {
     expect(component.showMultiFormCharts()).toBe(false);
   });
 
+  it('blocks Apply Filters when no application form is selected', () => {
+    const { component, loadPortfolio } = createComponent();
+    component.selectedForms.set(['CONFERENCE']);
+    component.openFilters();
+
+    component.onFormSelectionChange([]);
+    expect(component.formSelectionError()).toBeNull();
+
+    component.applyFilters();
+
+    expect(component.formSelectionError()).toBe('Select at least one application form.');
+    expect(component.filtersOpen()).toBe(true);
+    expect(component.selectedForms()).toEqual(['CONFERENCE']);
+    expect(loadPortfolio).not.toHaveBeenCalled();
+
+    component.onFormSelectionChange(['JOURNAL']);
+    expect(component.formSelectionError()).toBeNull();
+
+    component.applyFilters();
+    expect(component.filtersOpen()).toBe(false);
+    expect(component.selectedForms()).toEqual(['JOURNAL']);
+  });
+
   it('counts only approved Journal records in the Scopus Quartile chart', () => {
     const { component } = createComponent();
     component.selectedForms.set(['JOURNAL']);

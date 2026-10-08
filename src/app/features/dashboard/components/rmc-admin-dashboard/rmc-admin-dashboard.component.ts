@@ -18,6 +18,7 @@ import {
 } from '../../../../core/services/workflow-requests.service';
 import { NoteComponent } from '../../../../shared/components/note/note.component';
 import { SearchableDropdownComponent } from '../../../../shared/components/searchable-dropdown/searchable-dropdown.component';
+import { ValidationMessageComponent } from '../../../../shared/components/validation-message/validation-message.component';
 import { DropdownOption } from '../../../../core/interfaces/components.interface';
 import { DashboardViewConfig } from '../../dashboard.config';
 import {
@@ -58,6 +59,7 @@ interface FormFilterOption {
     FormsModule,
     NoteComponent,
     SearchableDropdownComponent,
+    ValidationMessageComponent,
     DashboardBarChartComponent,
     DashboardLineChartComponent,
     DashboardHorizontalBarComponent,
@@ -94,6 +96,7 @@ export class RmcAdminAnalyticsDashboardComponent implements OnInit {
   readonly draftStartDate = signal(this.startDate());
   readonly draftEndDate = signal(this.endDate());
   readonly dateRangeNotice = signal<string | null>(null);
+  readonly formSelectionError = signal<string | null>(null);
   readonly maxEndDate = computed(() => dashboardMaxEndDate(this.draftStartDate()));
   private readonly trendBuckets = computed(() =>
     buildDashboardTimeBuckets(this.startDate(), this.endDate()),
@@ -432,6 +435,7 @@ export class RmcAdminAnalyticsDashboardComponent implements OnInit {
 
   onFormSelectionChange(values: string[] | null): void {
     const next = values ?? [];
+    if (next.length) this.formSelectionError.set(null);
     const codes = this.formOptions().map((form) => form.code);
     const selectedCodes = next.filter((value) => codes.includes(value));
 
@@ -501,6 +505,12 @@ export class RmcAdminAnalyticsDashboardComponent implements OnInit {
   }
 
   applyFilters(): void {
+    if (!this.draftSelectedForms().length) {
+      this.formSelectionError.set('Select at least one application form.');
+      return;
+    }
+
+    this.formSelectionError.set(null);
     const nextForms = [...this.draftSelectedForms()];
     const nextStartDate = this.draftStartDate();
     const nextEndDate = this.draftEndDate();
@@ -528,6 +538,7 @@ export class RmcAdminAnalyticsDashboardComponent implements OnInit {
     this.draftStartDate.set(this.startDate());
     this.draftEndDate.set(this.endDate());
     this.dateRangeNotice.set(null);
+    this.formSelectionError.set(null);
   }
 
   private sameFormSelection(left: string[], right: string[]): boolean {

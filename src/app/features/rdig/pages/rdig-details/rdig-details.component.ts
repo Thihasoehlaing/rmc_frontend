@@ -4,7 +4,7 @@ import { AttachmentDownloadService } from '../../../../core/services/attachment-
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { finalize, forkJoin, of, switchMap, tap, type Observable } from 'rxjs';
+import { finalize, forkJoin, interval, of, switchMap, tap, type Observable } from 'rxjs';
 
 import {
   RdigApiService,
@@ -40,6 +40,7 @@ import { CustomSubheaderComponent } from '../../../../shared/components/custom-s
 import { DialogComponent } from '../../../../shared/components/dialog/dialog.component';
 import { SearchableDropdownComponent } from '../../../../shared/components/searchable-dropdown/searchable-dropdown.component';
 import { formatMyrCurrency } from '../../../../shared/utils/currency.util';
+import { formatDisplayDateTime, getApiDateTimeMs } from '../../../../shared/utils/date-time.util';
 import { WORKFLOW_STAGE_META } from '../../../../core/interfaces/batch-sitting.interface';
 import { DropdownOption } from '../../../../core/interfaces/components.interface';
 import {
@@ -998,19 +999,78 @@ export class RdigDetailsComponent implements OnInit {
 
   readonly currentStageWindowTitle = computed(() => {
     const stage = this.currentWorkflowStageMeta();
-    return stage?.label ?? 'Current Stage';
+    if (stage) return stage.label;
+    if (this.status() === 'approved') return 'Application approved — review complete';
+    if (this.status().startsWith('rejected')) return 'Application rejected — review ended';
+    return 'No current review stage';
   });
 
   readonly currentBatchName = computed(() => this.val(this.request()?.batch?.batch_name));
+  readonly hasCurrentWorkflowStage = computed(() => this.currentWorkflowStageMeta() !== null);
+  readonly applicationBatchStatus = computed(() => {
+    switch (this.request()?.batch?.status?.trim().toLowerCase()) {
+      case 'active': return 'Active batch';
+      case 'completed': return 'Historical batch';
+      case 'planned': return 'Upcoming batch';
+      default: return 'Batch status unavailable';
+    }
+  });
+  readonly scheduleNow = signal(Date.now());
+  readonly currentStageWindowState = computed(() => {
+    const stage = this.currentWorkflowStageMeta();
+    if (!stage) return null;
+    if (this.request()?.batch?.status?.trim().toLowerCase() === 'completed') return 'closed';
+    const window = this.stageWindowForLabel(stage.label);
+    const start = getApiDateTimeMs(window?.stage_start_date);
+    const end = getApiDateTimeMs(window?.stage_end_date);
+    if (start === null || end === null || end < start) return 'unscheduled';
+    if (this.scheduleNow() < start) return 'upcoming';
+    if (this.scheduleNow() > end) return 'closed';
+    return 'open';
+  });
+  readonly currentStageWindowStateLabel = computed(() => {
+    switch (this.currentStageWindowState()) {
+      case 'open': return 'Open now';
+      case 'upcoming': return 'Not started';
+      case 'closed': return 'Window closed';
+      default: return 'Schedule unavailable';
+    }
+  });
+  readonly currentStageViewerMessage = computed(() => {
+    const stage = this.currentWorkflowStageMeta();
+    if (!stage) return '';
+    switch (this.currentStageWindowState()) {
+      case 'upcoming': return `This stage starts on ${this.currentStageWindowOpensLabel()}.`;
+      case 'closed': return 'The stage window has ended. No action is currently available in this window.';
+      case 'unscheduled': return 'A valid stage start and end time must be configured. Contact RMC for the schedule.';
+    }
+    const role = this.currentActorRole();
+    const isViewerStage = stage.key.startsWith('applicant') ? role === 'applicant'
+      : stage.key.startsWith('hos') ? this.isCurrentActorHos()
+      : stage.key === 'rmc' || stage.key === 'rmc_again' ? this.isCurrentActorRmc()
+      : stage.key === 'reviewers' ? this.isCurrentUserReviewer(1) || this.isCurrentUserReviewer(2)
+      : stage.key === 'rdig_chair' ? this.isCurrentActorRdigChair()
+      : stage.key === 'vc' ? this.isCurrentActorVc()
+      : this.isCurrentActorCfo();
+    if (!isViewerStage) return `Waiting for ${stage.label}. No action is required from you at this stage.`;
+    // The API remains authoritative for assignment and workflow permissions.
+    return this.canAct()
+      ? 'It is your turn. Complete the required steps in Workflow Actions before the stage ends.'
+      : 'This stage is open, but no action is currently available for your account.';
+  });
+
+  fmtBatchDateTime(value: string | null | undefined): string {
+    return formatDisplayDateTime(value, 'Not scheduled');
+  }
 
   readonly currentStageWindowOpensLabel = computed(() => {
     const stage = this.currentWorkflowStageMeta();
-    return this.fmtDate(this.stageWindowForLabel(stage?.label)?.stage_start_date);
+    return this.fmtBatchDateTime(this.stageWindowForLabel(stage?.label)?.stage_start_date);
   });
 
   readonly currentStageWindowClosesLabel = computed(() => {
     const stage = this.currentWorkflowStageMeta();
-    return this.fmtDate(this.stageWindowForLabel(stage?.label)?.stage_end_date);
+    return this.fmtBatchDateTime(this.stageWindowForLabel(stage?.label)?.stage_end_date);
   });
 
   private currentWorkflowStageMeta() {
@@ -1253,6 +1313,8 @@ export class RdigDetailsComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    interval(30_000).pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.scheduleNow.set(Date.now()));
     this.configureBackTarget();
 
     const requestCode = this.route.snapshot.paramMap.get('requestCode')?.trim();

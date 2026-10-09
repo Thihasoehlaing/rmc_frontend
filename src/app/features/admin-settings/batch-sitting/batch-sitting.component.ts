@@ -29,7 +29,7 @@ import {
   ElementRef,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { formatDisplayDate, formatDisplayDateTime } from '../../../shared/utils/date-time.util';
+import { formatDisplayDateTime } from '../../../shared/utils/date-time.util';
 import {
   AbstractControl,
   FormBuilder,
@@ -216,8 +216,8 @@ export class BatchSittingComponent implements OnInit, OnDestroy {
 
   readonly stageColumns: DataTableColumn[] = [
     { key: 'stage', label: 'Stage' },
-    { key: 'start', label: 'Opens', width: '24%' },
-    { key: 'end', label: 'Closes', width: '24%' },
+    { key: 'start', label: 'Stage start date & time', width: '24%' },
+    { key: 'end', label: 'Stage end date & time', width: '24%' },
   ];
   readonly stageMeta = WORKFLOW_STAGE_META;
   /** Live "now", read fresh on every access — used for display/gating checks in the template and a couple of helpers. */
@@ -1083,7 +1083,7 @@ export class BatchSittingComponent implements OnInit, OnDestroy {
   }
 
   fmtTableDate(d: string | null | undefined): string {
-    return formatDisplayDate(d, '—');
+    return formatDisplayDateTime(d, 'Not scheduled');
   }
 
   /**

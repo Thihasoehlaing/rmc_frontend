@@ -1,5 +1,18 @@
 // ── Page Layout ───────────────────────────────────────────────────────────────
 
+.batch-schedule-heading {
+  margin-top: var(--space-4);
+  margin-bottom: var(--space-3);
+
+  h4 {
+    margin: 0 0 var(--space-1);
+    color: var(--color-text-primary);
+    font-size: var(--fs-md);
+  }
+
+  p { margin: 0; }
+}
+
 .batch-container {
   display: flex;
   flex-direction: column;

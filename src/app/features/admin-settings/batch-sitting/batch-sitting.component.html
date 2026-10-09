@@ -119,13 +119,13 @@
               <div class="batch-summary__dates">
                 <div class="batch-summary__chip">
                   <span class="material-icons">calendar_today</span>
-                  <span class="batch-summary__label">Opens</span>
+                  <span class="batch-summary__label">Batch start</span>
                   <strong>{{ fmt(activeBatch()!.startDate) }}</strong>
                 </div>
                 <span class="material-icons batch-summary__arrow">arrow_forward</span>
                 <div class="batch-summary__chip">
                   <span class="material-icons">event_busy</span>
-                  <span class="batch-summary__label">Closes</span>
+                  <span class="batch-summary__label">Batch end</span>
                   <strong>{{ fmt(activeBatch()!.endDate) }}</strong>
                 </div>
                 <span class="material-icons batch-summary__arrow">arrow_forward</span>
@@ -289,13 +289,13 @@
                     <div class="batch-summary__dates">
                       <div class="batch-summary__chip">
                         <span class="material-icons">calendar_today</span>
-                        <span class="batch-summary__label">Opens</span>
+                        <span class="batch-summary__label">Batch start</span>
                         <strong>{{ fmt(batch.startDate) }}</strong>
                       </div>
                       <span class="material-icons batch-summary__arrow">arrow_forward</span>
                       <div class="batch-summary__chip">
                         <span class="material-icons">event_busy</span>
-                        <span class="batch-summary__label">Closes</span>
+                        <span class="batch-summary__label">Batch end</span>
                         <strong>{{ fmt(batch.endDate) }}</strong>
                       </div>
                     </div>
@@ -379,7 +379,7 @@
                       <span class="status-badge status-badge--history">Closed</span>
                       <strong class="planned-item__name">{{ batch.batchName }}</strong>
                       <span class="planned-item__dates">
-                        {{ fmt(batch.startDate) }} ? {{ fmt(batch.endDate) }}
+                        {{ fmt(batch.startDate) }} → {{ fmt(batch.endDate) }}
                       </span>
                     </div>
                     <div class="planned-item__actions">
@@ -410,13 +410,13 @@
                       <div class="batch-summary__dates">
                         <div class="batch-summary__chip">
                           <span class="material-icons">calendar_today</span>
-                          <span class="batch-summary__label">Start</span>
+                          <span class="batch-summary__label">Batch start</span>
                           <strong>{{ fmt(batch.startDate) }}</strong>
                         </div>
                         <span class="material-icons batch-summary__arrow">arrow_forward</span>
                         <div class="batch-summary__chip">
                           <span class="material-icons">event_busy</span>
-                          <span class="batch-summary__label">End</span>
+                          <span class="batch-summary__label">Batch end</span>
                           <strong>{{ fmt(batch.endDate) }}</strong>
                         </div>
                         <span class="material-icons batch-summary__arrow">arrow_forward</span>
@@ -517,12 +517,12 @@
       <div class="view-dialog__meta">
         <div class="view-dialog__meta-item">
           <span class="material-icons">calendar_today</span>
-          <span>Start</span><strong>{{ fmt(vb.startDate) }}</strong>
+          <span>Batch start</span><strong>{{ fmt(vb.startDate) }}</strong>
         </div>
         <span class="material-icons view-dialog__sep">arrow_forward</span>
         <div class="view-dialog__meta-item">
           <span class="material-icons">event_busy</span>
-          <span>End</span><strong>{{ fmt(vb.endDate) }}</strong>
+          <span>Batch end</span><strong>{{ fmt(vb.endDate) }}</strong>
         </div>
         <div class="view-dialog__meta-item">
           <span class="material-icons">cancel_schedule_send</span>
@@ -542,6 +542,10 @@
 <!-- Shared template: read-only stage table                                     -->
 <!-- ══════════════════════════════════════════════════════════════════════════ -->
 <ng-template #stageReadTable let-batch="batch">
+  <div class="batch-schedule-heading">
+    <h4>Stage schedule</h4>
+    <p class="form-hint">All dates and times are in Malaysia time (MYT, UTC+8). Stage windows may overlap.</p>
+  </div>
   <app-data-table [columns]="stageColumns" [rows]="stageMeta">
     <ng-template #rowTemplate let-stage
       ><tr>

@@ -470,6 +470,23 @@
     overflow-wrap: anywhere;
   }
 }
+.batch-stage-card__hint {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--fs-sm);
+}
+.batch-stage-card__current {
+  display: grid;
+  gap: var(--space-3);
+  border-top: 1px solid var(--border-default);
+  padding-top: var(--space-4);
+
+  h3, p { margin: 0; }
+  h3 { font-size: var(--fs-sm); color: var(--color-text-secondary); }
+  p { font-weight: var(--fw-semibold); color: var(--color-text-primary); }
+  .badge { justify-self: start; }
+  .form-hint { font-weight: var(--fw-normal); color: var(--color-text-secondary); }
+}
 .review-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 380px;

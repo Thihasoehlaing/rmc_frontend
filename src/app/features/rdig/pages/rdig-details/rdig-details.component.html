@@ -110,27 +110,54 @@
 
     <div class="review-layout">
       <main class="review-main">
-        <section class="batch-stage-card" aria-label="Current RDIG batch stage window">
+        <section class="batch-stage-card" aria-label="Application batch and stage schedule">
           <div class="batch-stage-card__top">
             <div class="batch-stage-card__heading">
               <span class="material-icons">event_available</span>
               <div>
-                <p>Current Batch</p>
-                <h2>{{ currentBatchName() }}</h2>
+                <p>Application batch</p>
+                <h2>{{ request()?.batch ? currentBatchName() : 'No batch assigned' }}</h2>
               </div>
             </div>
-            <p class="batch-stage-card__stage">{{ currentStageWindowTitle() }}</p>
+            @if (request()?.batch) {
+              <span class="badge" [class.badge-success]="request()?.batch?.status?.toLowerCase() === 'active'"
+                [class.badge-info]="request()?.batch?.status?.toLowerCase() !== 'active'">
+                {{ applicationBatchStatus() }}
+              </span>
+            }
           </div>
+          @if (request()?.batch; as batch) {
+          <p class="batch-stage-card__hint">This application belongs to this batch. Batch status and application review stage are separate.</p>
           <dl class="batch-stage-card__dates">
             <div>
-              <dt>Opens</dt>
-              <dd>{{ currentStageWindowOpensLabel() }}</dd>
+              <dt>Batch start date &amp; time</dt>
+              <dd>{{ fmtBatchDateTime(batch.start_date) }}</dd>
             </div>
             <div>
-              <dt>Closes</dt>
-              <dd>{{ currentStageWindowClosesLabel() }}</dd>
+              <dt>Batch end date &amp; time</dt>
+              <dd>{{ fmtBatchDateTime(batch.end_date) }}</dd>
             </div>
           </dl>
+          <div class="batch-stage-card__current">
+            <h3>{{ hasCurrentWorkflowStage() ? 'Application review stage' : 'Application review' }}</h3>
+            <p>{{ currentStageWindowTitle() }}</p>
+            @if (hasCurrentWorkflowStage()) {
+              <span class="badge" [class.badge-success]="currentStageWindowState() === 'open'"
+                [class.badge-warning]="currentStageWindowState() === 'upcoming'"
+                [class.badge-info]="currentStageWindowState() === 'closed' || currentStageWindowState() === 'unscheduled'">
+                {{ currentStageWindowStateLabel() }}
+              </span>
+              <dl class="batch-stage-card__dates">
+                <div><dt>Stage start date &amp; time</dt><dd>{{ currentStageWindowOpensLabel() }}</dd></div>
+                <div><dt>Stage end date &amp; time</dt><dd>{{ currentStageWindowClosesLabel() }}</dd></div>
+              </dl>
+              <p class="form-hint">{{ currentStageViewerMessage() }}</p>
+            }
+          </div>
+          <p class="batch-stage-card__hint">All dates and times are in Malaysia time (MYT, UTC+8).</p>
+          } @else {
+            <p class="batch-stage-card__hint">Batch dates and stage windows are unavailable until a batch is assigned.</p>
+          }
         </section>
 
         <!-- ══════════════════════════════════════════════════════════ -->

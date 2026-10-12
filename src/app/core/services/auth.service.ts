@@ -244,7 +244,7 @@ export class AuthService {
       const query = new URLSearchParams({ redirect_url: this.getRedirectUrl() });
       window.location.replace(`${environment.authUrl}/logout?${query.toString()}`);
     };
-    this.http.delete(`${environment.apiUrl}/auth/attachment-view-session`, { withCredentials: true })
+    this.http.delete(`${environment.attachmentBaseUrl}/auth/attachment-view-session`, { withCredentials: true })
       .pipe(timeout(5000), finalize(redirect))
       .subscribe({ error: () => {} });
   }

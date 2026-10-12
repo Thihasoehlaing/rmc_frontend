@@ -34,7 +34,7 @@ export class AttachmentDownloadService {
     if (preview) {
       const viewUrl = new URL(url, window.location.origin);
       viewUrl.pathname = viewUrl.pathname.replace(/\/(?:files|uploads)\//, '/view-files/');
-      this.http.post(`${environment.apiUrl}/auth/attachment-view-session`, {}, { withCredentials: true }).subscribe({
+      this.http.post(`${environment.attachmentBaseUrl}/auth/attachment-view-session`, {}, { withCredentials: true }).subscribe({
         next: () => {
           if (viewer && !viewer.closed) viewer.location.href = viewUrl.href;
           else globalThis.open?.(viewUrl.href, '_blank', 'noopener,noreferrer');

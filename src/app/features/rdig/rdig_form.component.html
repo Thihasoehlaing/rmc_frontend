@@ -1,31 +1,32 @@
 <app-form-page-container>
+  @if (accessDenied()) {
+    <app-dialog [isOpen]="true" title="RDIG Access Unavailable" size="small" (close)="returnToDashboard()">
+      <p>You don’t have access to apply for RDIG. Please contact RMC for assistance.</p>
+      <div dialog-footer><button type="button" class="btn btn-primary" (click)="returnToDashboard()">OK — Go to Dashboard</button></div>
+    </app-dialog>
+  } @else if (accessChecking()) {
+    <app-form-page-skeleton [showBatchCard]="true"></app-form-page-skeleton>
+  } @else {
   <div class="rdig-app">
     <!-- �"?�"? CLOSED-WINDOW MODAL (Req 6) �"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"? -->
     @if (showClosedWindowModal()) {
-      <div class="modal-backdrop" (click)="showClosedWindowModal.set(false)">
-        <div class="modal-card" (click)="$event.stopPropagation()">
-          <div class="modal-card__header">
-            <span class="material-icons modal-card__icon">event_busy</span>
-            <h3 class="modal-card__title">Submission Window Closed</h3>
-          </div>
-          <div class="modal-card__body">
-            <p>There is no active batch at the moment. Submission is not available right now.</p>
-            <p>
-              Please <strong>Save as Draft</strong> to keep your progress, then submit once a batch
-              is opened.
-            </p>
-          </div>
-          <div class="modal-card__footer">
-            <button
-              type="button"
-              class="btn btn-secondary"
-              (click)="showClosedWindowModal.set(false)"
-            >
-              Return to Form
-            </button>
-          </div>
+      <app-dialog
+        [isOpen]="showClosedWindowModal()"
+        title="Submission Window Closed"
+        size="small"
+        (close)="showClosedWindowModal.set(false)"
+      >
+        <p>There is no active batch at the moment. Submission is not available right now.</p>
+        <p>
+          Please <strong>Save as Draft</strong> to keep your progress, then submit once a batch
+          is opened.
+        </p>
+        <div dialog-footer>
+          <button type="button" class="btn btn-secondary" (click)="showClosedWindowModal.set(false)">
+            Return to Form
+          </button>
         </div>
-      </div>
+      </app-dialog>
     }
 
     <!-- �"?�"? FULLSCREEN SUBMISSION OVERLAY �"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"? -->
@@ -50,7 +51,7 @@
             </div>
             <h2 class="submission-msg">Success!</h2>
             <p class="submission-submsg">
-              Your application was submitted successfully. Redirecting to dashboard...
+              Your application was submitted successfully. Redirecting to pending applications...
             </p>
           }
           @if (submissionState() === 'ERROR') {
@@ -74,10 +75,13 @@
     <!-- �"?�"? 1. Page Title �"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"? -->
     <app-form-main-title
       title="RDIG Application"
-      helpText="Click to view guidelines"
+      eyebrow="RDIG Application"
+      helpText=""
+      helpLabel="RDIG Application Guidelines"
       modalTitle="RDIG Applicant Guidelines"
       [guidelineContext]="guidelineContext"
       [endpoint]="guidelinesEndpoint"
+      presentation="wide"
     >
     </app-form-main-title>
 
@@ -85,6 +89,7 @@
       <app-form-page-skeleton [showBatchCard]="true"></app-form-page-skeleton>
     } @else {
       <app-step-indicator
+        class="rdig-step-indicator"
         [currentStep]="currentStep()"
         [steps]="steps"
         [stepStatuses]="getStepStatuses()"
@@ -101,7 +106,6 @@
       }
 
       <div class="main-section application-form-content">
-      @if (currentStep() === 1) {
         @if (hasActiveApplicantWindow()) {
           @if (activeBatch(); as ab) {
             <section class="active-batch-card" aria-label="Active Applicant submission window">
@@ -157,8 +161,8 @@
             </div>
           </section>
         }
-      }
       @if (!isBatchLoading() && canShowForm()) {
+        <div class="rdig-form-layout">
         <div class="rdig-step-panel application-form-surface">
           @switch (currentStep()) {
             @case (1) {
@@ -199,100 +203,35 @@
         </app-validation-summary>
 
         <!-- �"?�"? 3. Comment Toggle Buttons (shown per ABAC status) �"?�"?�"?�"?�"?�"?�"?�"? -->
-        @if (
-          workflow.showHosToggle() ||
-          workflow.showRmcToggle() ||
-          workflow.showReviewerToggles() ||
-          workflow.showRdigChairToggle() ||
-          workflow.showVcToggle() ||
-          workflow.showCeoToggle()
-        ) {
-          <div class="comment-toggle-bar">
-            @if (workflow.showHosToggle()) {
-              <button
-                type="button"
-                class="btn btn--comment-toggle"
-                [class.btn--comment-toggle-active]="showHosComments()"
-                (click)="toggleHosComments()"
-              >
-                <span class="material-icons">supervisor_account</span>
-                {{ showHosComments() ? 'Hide HOS Comments' : 'HOS Comments' }}
-              </button>
-            }
-
-            @if (workflow.showRmcToggle()) {
-              <button
-                type="button"
-                class="btn btn--comment-toggle"
-                [class.btn--comment-toggle-active]="showRmcComments()"
-                (click)="toggleRmcComments()"
-              >
-                <span class="material-icons">verified</span>
-                {{ showRmcComments() ? 'Hide RMC Comments' : 'RMC Comments' }}
-              </button>
-            }
-
-            @if (workflow.showReviewerToggles()) {
-              @if (workflow.showR1Toggle()) {
-                <button
-                  type="button"
-                  class="btn btn--comment-toggle"
-                  [class.btn--comment-toggle-active]="showR1Comments()"
-                  (click)="toggleR1Comments()"
-                >
-                  <span class="material-icons">rate_review</span>
-                  {{ showR1Comments() ? 'Hide Reviewer 1' : 'Reviewer 1 Comments' }}
-                </button>
+        @if (savedFeedback().length) {
+          <section class="card feedback-controls" aria-label="Comment visibility">
+            <div class="card__content">
+              <h2 class="card__title">Review feedback</h2>
+              <p class="form-hint">Select a source to show its comments beside the related fields. Comments are read-only.</p>
+              <div class="feedback-controls__toggles">
+                @for (source of feedbackSources(); track source) {
+                  <button type="button" class="btn btn-secondary btn-sm"
+                    [class.btn-primary]="feedbackSourceVisible(source)"
+                    [attr.aria-pressed]="feedbackSourceVisible(source)"
+                    (click)="toggleFeedbackSource(source)">
+                    <span class="material-icons" aria-hidden="true">{{ feedbackSourceVisible(source) ? 'visibility' : 'visibility_off' }}</span>
+                    {{ source }} <span class="badge badge-info">{{ feedbackCount(source) }}</span>
+                  </button>
+                }
+              </div>
+              @if (visibleAdditionalFeedback().length) {
+                <div class="saved-feedback__content">
+                  <h3>Overall and additional feedback</h3>
+                  @for (comment of visibleAdditionalFeedback(); track comment.id) {
+                    <article class="saved-feedback__comment">
+                      <div class="saved-feedback__meta"><span class="badge badge-info">{{ comment.actor }}</span><h3>{{ comment.section }}</h3></div>
+                      <p>{{ comment.text }}</p>
+                    </article>
+                  }
+                </div>
               }
-              @if (workflow.showR2Toggle()) {
-                <button
-                  type="button"
-                  class="btn btn--comment-toggle"
-                  [class.btn--comment-toggle-active]="showR2Comments()"
-                  (click)="toggleR2Comments()"
-                >
-                  <span class="material-icons">rate_review</span>
-                  {{ showR2Comments() ? 'Hide Reviewer 2' : 'Reviewer 2 Comments' }}
-                </button>
-              }
-            }
-
-            @if (workflow.showRdigChairToggle()) {
-              <button
-                type="button"
-                class="btn btn--comment-toggle"
-                [class.btn--comment-toggle-active]="showRdigChairComments()"
-                (click)="toggleRdigChairComments()"
-              >
-                <span class="material-icons">admin_panel_settings</span>
-                {{ showRdigChairComments() ? 'Hide RDIG Chair Comments' : 'RDIG Chair Comments' }}
-              </button>
-            }
-
-            @if (workflow.showVcToggle()) {
-              <button
-                type="button"
-                class="btn btn--comment-toggle"
-                [class.btn--comment-toggle-active]="showVcComments()"
-                (click)="toggleVcComments()"
-              >
-                <span class="material-icons">account_balance</span>
-                {{ showVcComments() ? 'Hide VC Comments' : 'VC Comments' }}
-              </button>
-            }
-
-            @if (workflow.showCeoToggle()) {
-              <button
-                type="button"
-                class="btn btn--comment-toggle"
-                [class.btn--comment-toggle-active]="showCeoComments()"
-                (click)="toggleCeoComments()"
-              >
-                <span class="material-icons">business</span>
-                {{ showCeoComments() ? 'Hide CEO Comments' : 'CEO Comments' }}
-              </button>
-            }
-          </div>
+            </div>
+          </section>
         }
 
         <!-- �"?�"? 4. Main Form �"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"? -->
@@ -317,7 +256,7 @@
                   [showR2Comments]="showR2Comments()"
                   [showRdigChairComments]="showRdigChairComments()"
                   [showVcComments]="showVcComments()"
-                  [showCeoComments]="showCeoComments()"
+                  [showCfoComments]="showCfoComments()"
                   [workflow]="workflow"
                 >
                 </app-team-details>
@@ -331,7 +270,7 @@
                   [showR2Comments]="showR2Comments()"
                   [showRdigChairComments]="showRdigChairComments()"
                   [showVcComments]="showVcComments()"
-                  [showCeoComments]="showCeoComments()"
+                  [showCfoComments]="showCfoComments()"
                   [workflow]="workflow"
                 >
                 </app-project-details>
@@ -343,7 +282,7 @@
                   [showR2Comments]="showR2Comments()"
                   [showRdigChairComments]="showRdigChairComments()"
                   [showVcComments]="showVcComments()"
-                  [showCeoComments]="showCeoComments()"
+                  [showCfoComments]="showCfoComments()"
                   [workflow]="workflow"
                 >
                 </app-research-activities>
@@ -383,7 +322,7 @@
                   [showR2Comments]="showR2Comments()"
                   [showRdigChairComments]="showRdigChairComments()"
                   [showVcComments]="showVcComments()"
-                  [showCeoComments]="showCeoComments()"
+                  [showCfoComments]="showCfoComments()"
                   [workflow]="workflow"
                 >
                 </app-output-details>
@@ -396,7 +335,7 @@
                   [showR2Comments]="showR2Comments()"
                   [showRdigChairComments]="showRdigChairComments()"
                   [showVcComments]="showVcComments()"
-                  [showCeoComments]="showCeoComments()"
+                  [showCfoComments]="showCfoComments()"
                   [workflow]="workflow"
                 >
                 </app-budget-summary>
@@ -410,7 +349,7 @@
                   [showR2Comments]="showR2Comments()"
                   [showRdigChairComments]="showRdigChairComments()"
                   [showVcComments]="showVcComments()"
-                  [showCeoComments]="showCeoComments()"
+                  [showCfoComments]="showCfoComments()"
                   [workflow]="workflow"
                   [reviewer1Total]="reviewer1Total"
                   [reviewer2Total]="reviewer2Total"
@@ -421,6 +360,55 @@
           </div>
 
         </form>
+        </div>
+        <aside class="rdig-progress-panel" aria-label="Application progress and guidance">
+          <section class="rdig-progress-card" aria-labelledby="rdig-progress-title">
+            <h2 id="rdig-progress-title">Application progress</h2>
+            <div class="rdig-progress-summary">
+              <strong>{{ applicationProgress() }}%</strong>
+              <span>Step {{ currentStep() }} of {{ totalSteps }} in progress</span>
+            </div>
+            <div class="rdig-progress-track" role="progressbar"
+              aria-label="RDIG application completion" aria-valuemin="0" aria-valuemax="100"
+              [attr.aria-valuenow]="applicationProgress()">
+              <span [style.width.%]="applicationProgress()"></span>
+            </div>
+          </section>
+          <section class="rdig-checklist-card" aria-labelledby="rdig-checklist-title">
+            <h2 id="rdig-checklist-title">Completion checklist</h2>
+            @for (step of steps; track step.label; let index = $index) {
+              <div class="rdig-checklist-item"
+                [class.rdig-checklist-item--complete]="isStepComplete(index + 1)"
+                [class.rdig-checklist-item--current]="index + 1 === currentStep()">
+                <span class="material-icons" aria-hidden="true">
+                  @if (isStepComplete(index + 1)) { check_circle }
+                  @else if (index + 1 === currentStep()) { radio_button_checked }
+                  @else { radio_button_unchecked }
+                </span>
+                <span>{{ step.label }}</span>
+              </div>
+            }
+          </section>
+          <section class="rdig-deadline-card" aria-labelledby="rdig-deadline-title">
+            <h2 id="rdig-deadline-title">Submission deadline</h2>
+            @if (hasActiveApplicantWindow() && submissionCloseIso(); as closeDate) {
+              <strong>{{ fmtWindow(closeDate) }}</strong>
+              <p>Complete and submit the application before the portal closes.</p>
+            } @else if (nextApplicantWindow(); as nextWindow) {
+              <strong>{{ fmtWindow(nextWindow.endDate) }}</strong>
+              <p>Next applicant submission window.</p>
+            } @else {
+              <strong>No active deadline</strong>
+              <p>You can save your application as a draft while the applicant window is closed.</p>
+            }
+          </section>
+          @if (currentStep() === 1) {
+            <section class="rdig-guidance-card" aria-labelledby="rdig-guidance-title">
+              <h2 id="rdig-guidance-title">Team eligibility</h2>
+              <p>Add eligible internal co-researchers and at least two external collaborators. Restricted roles and assigned RDIG reviewers are excluded from the eligible list.</p>
+            </section>
+          }
+        </aside>
         </div>
 
           <!-- �"?�"? Shared wizard navigation footer �"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"? -->
@@ -449,4 +437,5 @@
       </div>
     }
   </div>
+  }
 </app-form-page-container>

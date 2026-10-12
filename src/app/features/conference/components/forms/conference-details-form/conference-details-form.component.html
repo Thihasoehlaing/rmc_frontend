@@ -1,5 +1,5 @@
 ﻿<form [formGroup]="form" class="form-section">
-  <app-custom-header icon="description" title="Conference Details"></app-custom-header>
+  <app-custom-header presentation="plain" title="Conference Details"></app-custom-header>
   <div class="section-fields">
     @if (applicantDetailsForm) {
       <section class="card" [formGroup]="applicantDetailsForm">
@@ -311,24 +311,24 @@
       <app-custom-subheader title="Research Classification"></app-custom-subheader>
       <div class="card__content section-fields">
         <div class="form-field">
-          <label class="form-label is-required">Select Research or Non-Research Project</label>
+          <label class="form-label is-required">Select Funded or Non-Funded Project</label>
           <div class="radio-field">
             <label class="radio-field__option">
               <input type="radio" value="external-research" formControlName="researchType" />
-              <span>External Research Project</span>
+              <span>Funded by Research Grant</span>
             </label>
             <label class="radio-field__option">
               <input type="radio" value="non-research" formControlName="researchType" />
-              <span>Non-Research Project</span>
+              <span>Non-Funded by Research Grant</span>
             </label>
           </div>
           <app-note
-            text="If External Research Project is selected, all required funding will be fully subsidised from External Sources."
+            text="If Funded by Research Grant is selected, all required funding will be fully subsidised from External Sources."
           ></app-note>
           <app-validation-message
             class="form-validation-note--error"
             [control]="form.get('researchType')"
-            fieldName="Select Research or Non-Research Project"
+            fieldName="Select Funded or Non-Funded Project"
           ></app-validation-message>
         </div>
 
@@ -379,12 +379,12 @@
         <div class="row row--2 conference-field-grid">
           <div class="form-field">
             <label class="form-label is-required">Conference Start Date</label>
-            <input
-              type="date"
-              class="input--text"
-              [attr.min]="getMinimumConferenceStartDate()"
+            <app-date-picker
               formControlName="conferenceStartDate"
-            />
+              [minDate]="getMinimumConferenceStartDate()"
+              placeholder="Select start date"
+              ariaLabel="Conference Start Date"
+            ></app-date-picker>
             <app-validation-message
               class="form-validation-note--error"
               [control]="form.get('conferenceStartDate')"
@@ -393,12 +393,12 @@
           </div>
           <div class="form-field">
             <label class="form-label is-required">Conference End Date</label>
-            <input
-              type="date"
-              class="input--text"
-              [attr.min]="form.get('conferenceStartDate')?.value || getMinimumConferenceStartDate()"
+            <app-date-picker
               formControlName="conferenceEndDate"
-            />
+              [minDate]="form.get('conferenceStartDate')?.value || getMinimumConferenceStartDate()"
+              placeholder="Select end date"
+              ariaLabel="Conference End Date"
+            ></app-date-picker>
             <app-validation-message
               class="form-validation-note--error"
               [control]="form.get('conferenceEndDate')"
@@ -826,6 +826,7 @@
                           <td>
                             <div class="data-table__multiline">{{ row.description || '-' }}</div>
                           </td>
+                          <td>{{ row.currency || 'MYR' }}</td>
                           <td>{{ row.cost | number: '1.2-2' }}</td>
                           <td>{{ row.exchangeRate | number: '1.2-2' }}</td>
                           <td>{{ row.costInRM | myrCurrency }}</td>
@@ -857,6 +858,13 @@
                   </div>
                   <div class="table-summary">
                     {{ getExternalBreakdownTableData().length }} item(s)
+                  </div>
+                  <div class="table-summary">
+                    <app-table-row-counter
+                      class="co-author-counter"
+                      [current]="externalBreakdowns.length"
+                      [max]="10"
+                    ></app-table-row-counter>
                   </div>
                 } @else {
                   <div class="empty-state">
@@ -1026,6 +1034,7 @@
                             <div class="data-table__multiline">{{ row.description || '-' }}</div>
                           </td>
                           <td>{{ row.supportingDocument || '-' }}</td>
+                          <td>{{ row.currency || 'MYR' }}</td>
                           <td>{{ row.cost | number: '1.2-2' }}</td>
                           <td>{{ row.exchangeRate | number: '1.2-2' }}</td>
                           <td>{{ row.costInRM | myrCurrency }}</td>
@@ -1056,6 +1065,13 @@
                     </app-data-table>
                   </div>
                   <div class="table-summary">{{ getLocalBreakdownTableData().length }} item(s)</div>
+                  <div class="table-summary">
+                    <app-table-row-counter
+                      class="co-author-counter"
+                      [current]="localBreakdowns.length"
+                      [max]="10"
+                    ></app-table-row-counter>
+                  </div>
                 } @else {
                   <div class="empty-state">
                     <span class="material-icons">receipt</span>
@@ -1275,6 +1291,22 @@
             ></app-validation-message>
           </div>
 
+          <div class="form-group">
+            <app-searchable-dropdown
+              label="Currency"
+              [required]="true"
+              [options]="currencyOptions()"
+              placeholder="Select currency"
+              formControlName="currency"
+              valueMode="single"
+            ></app-searchable-dropdown>
+            <app-validation-message
+              class="form-validation-note--error"
+              [control]="breakdownForm.get('currency')"
+              fieldName="Currency"
+            ></app-validation-message>
+          </div>
+
           <!-- Cost in Foreign Currency / MYR -->
           <div class="form-group">
             <label for="cost">
@@ -1441,14 +1473,14 @@
         >
           <div class="form-group">
             <label for="activityDate">Date <span class="asterisk">*</span></label>
-            <input
+            <app-date-picker
               id="activityDate"
-              type="date"
-              class="form-control"
               formControlName="date"
-              [attr.min]="getMinimumActivityDate()"
-              [attr.max]="getMaximumActivityDate()"
-            />
+              [minDate]="getMinimumActivityDate()"
+              [maxDate]="getMaximumActivityDate()"
+              placeholder="Select activity date"
+              ariaLabel="Activity Date"
+            ></app-date-picker>
             @if (activityForm.get('date')?.hasError('required')) {
               <app-validation-message
                 class="form-validation-note--error"

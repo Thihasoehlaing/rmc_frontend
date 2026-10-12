@@ -12,11 +12,30 @@
             <span>A New Application with Matching Grant (This is a project with an external international collaboration/funding)</span>
           </label>
           <label class="radio-field__option">
+            <input type="radio" value="NewWithoutMatchingGrant" formControlName="applicationType">
+            <span>A New Application without Matching Grant</span>
+          </label>
+          <label class="radio-field__option">
             <input type="radio" value="Resubmission" formControlName="applicationType">
             <span>This application is an improved proposal of a previously rejected application</span>
           </label>
         </div>
-        <app-validation-message [control]="projectDetails.get('applicationType')"></app-validation-message>
+        <app-validation-message class="form-validation-note--error" [control]="projectDetails.get('applicationType')" fieldName="Application Type"></app-validation-message>
+      </div>
+
+      <div class="form-field">
+        <label class="form-label is-required">Track</label>
+        <div class="radio-field">
+          <label class="radio-field__option">
+            <input type="radio" value="social-innovation" formControlName="track">
+            <span>Social Innovation</span>
+          </label>
+          <label class="radio-field__option">
+            <input type="radio" value="fundamental-research" formControlName="track">
+            <span>Fundamental Research</span>
+          </label>
+        </div>
+        <app-validation-message [control]="projectDetails.get('track')"></app-validation-message>
       </div>
 
       <div class="form-field" formGroupName="declarations" data-missing-field-target="projectDetails.declarations.ethics">
@@ -32,6 +51,8 @@
           </label>
         </div>
         <app-note text="You must click both checkboxes."></app-note>
+        <app-validation-message class="form-validation-note--error" [control]="projectDetails.get('declarations.ethics')" fieldName="Ethics Declaration"></app-validation-message>
+        <app-validation-message class="form-validation-note--error" [control]="projectDetails.get('declarations.conflict')" fieldName="Co-researchers Declaration"></app-validation-message>
       </div>
 
     </div>
@@ -54,6 +75,7 @@
               <span>Non Science &amp; Technology (Non S&amp;T)</span>
             </label>
           </div>
+          <app-validation-message class="form-validation-note--error" [control]="projectDetails.get('category')" fieldName="Project Category"></app-validation-message>
         </div>
         <div class="form-field">
           <label class="form-label is-required">Project Duration</label>
@@ -65,7 +87,7 @@
             <label class="radio-field__option"><input type="radio" value="24" formControlName="duration"><span>24
                 Months</span></label>
           </div>
-          <app-validation-message [control]="projectDetails.get('duration')"></app-validation-message>
+          <app-validation-message class="form-validation-note--error" [control]="projectDetails.get('duration')" fieldName="Project Duration"></app-validation-message>
         </div>
       </div>
 
@@ -86,7 +108,7 @@
         <textarea class="input--textarea input--autosize" appTextareaAutosize [minRows]="3" formControlName="title" [maxlength]="200"></textarea>
         <app-character-counter [current]="projectDetails.get('title')?.value?.length ?? 0"
           [max]="200"></app-character-counter>
-        <app-validation-message [control]="projectDetails.get('title')"></app-validation-message>
+        <app-validation-message class="form-validation-note--error" [control]="projectDetails.get('title')" fieldName="Project Title"></app-validation-message>
       </div>
 
       <!-- Reviewer comments on Project Title -->
@@ -106,7 +128,7 @@
         <textarea class="input--textarea input--autosize" appTextareaAutosize [minRows]="3" formControlName="researchArea" [maxlength]="100"></textarea>
         <app-character-counter [current]="projectDetails.get('researchArea')?.value?.length ?? 0"
           [max]="100"></app-character-counter>
-        <app-validation-message [control]="projectDetails.get('researchArea')"></app-validation-message>
+        <app-validation-message class="form-validation-note--error" [control]="projectDetails.get('researchArea')" fieldName="Research Area"></app-validation-message>
       </div>
 
       <!-- Reviewer comments on Research Area -->
@@ -132,15 +154,15 @@
           <div class="label-with-manage">
             <label class="form-label is-required">Select Research Domain</label>
           </div>
-          <app-searchable-dropdown [options]="domains" formControlName="domain"></app-searchable-dropdown>
-          <app-validation-message [control]="projectDetails.get('domain')"></app-validation-message>
+          <app-searchable-dropdown [options]="domains()" [compareWith]="compareOptionValues" formControlName="domain"></app-searchable-dropdown>
+          <app-validation-message class="form-validation-note--error" [control]="projectDetails.get('domain')" fieldName="Research Domain"></app-validation-message>
         </div>
         <div class="form-field">
           <div class="label-with-manage">
             <label class="form-label is-required">Select Sub-Research Domain</label>
           </div>
-          <app-searchable-dropdown [options]="filteredSubDomains" formControlName="subDomain"></app-searchable-dropdown>
-          <app-validation-message [control]="projectDetails.get('subDomain')"></app-validation-message>
+          <app-searchable-dropdown [options]="filteredSubDomains()" [compareWith]="compareOptionValues" formControlName="subDomain"></app-searchable-dropdown>
+          <app-validation-message class="form-validation-note--error" [control]="projectDetails.get('subDomain')" fieldName="Sub-Research Domain"></app-validation-message>
         </div>
       </div>
     </div>
@@ -153,15 +175,15 @@
       <div class="row row--2">
         <div class="form-field">
           <label class="form-label is-required">Select the Appropriate ESG(s)</label>
-          <app-searchable-dropdown [options]="esgs" [isMulti]="true" [maxSelections]="3" formControlName="esgs"></app-searchable-dropdown>
+          <app-searchable-dropdown [options]="esgs()" [compareWith]="compareOptionValues" [isMulti]="true" [maxSelections]="3" formControlName="esgs"></app-searchable-dropdown>
           <app-note text="Min 1, Max 3"></app-note>
-          <app-validation-message [control]="projectDetails.get('esgs')"></app-validation-message>
+          <app-validation-message class="form-validation-note--error" [control]="projectDetails.get('esgs')" fieldName="ESG"></app-validation-message>
         </div>
         <div class="form-field">
           <label class="form-label is-required">Select the Appropriate SDG(s)</label>
-          <app-searchable-dropdown [options]="sdgs" [isMulti]="true" [maxSelections]="3" formControlName="sdgs"></app-searchable-dropdown>
+          <app-searchable-dropdown [options]="sdgs()" [compareWith]="compareOptionValues" [isMulti]="true" [maxSelections]="3" formControlName="sdgs"></app-searchable-dropdown>
           <app-note text="Min 1, Max 3"></app-note>
-          <app-validation-message [control]="projectDetails.get('sdgs')"></app-validation-message>
+          <app-validation-message class="form-validation-note--error" [control]="projectDetails.get('sdgs')" fieldName="SDG"></app-validation-message>
         </div>
       </div>
 
@@ -202,15 +224,29 @@
           <textarea class="input--textarea input--autosize" appTextareaAutosize [minRows]="3" formControlName="executiveSummary" [maxlength]="1500"></textarea>
           <app-character-counter [current]="projectDetails.get('executiveSummary')?.value?.length ?? 0"
             [max]="1500"></app-character-counter>
-          <app-validation-message [control]="projectDetails.get('executiveSummary')"></app-validation-message>
+          <app-validation-message class="form-validation-note--error" [control]="projectDetails.get('executiveSummary')" fieldName="Executive Summary"></app-validation-message>
         </div>
         <div class="form-field">
           <label class="form-label is-required">Keywords</label>
-          <textarea class="input--textarea input--autosize" appTextareaAutosize [minRows]="3" formControlName="keywords" [maxlength]="200"></textarea>
-          <app-note text="Maximum 5 keywords, separated by commas"></app-note>
-          <div class="keyword-counter" [class.keyword-counter--over]="keywordCount > 5">{{ keywordCount }} / 5 keywords
+          <div
+            class="keywords-container"
+            [class.keywords-container--readonly]="workflow.isFormReadOnly()"
+            data-missing-field-target="projectDetails.keywords"
+            role="button"
+            [attr.tabindex]="workflow.isFormReadOnly() ? -1 : 0"
+            aria-label="Edit five project keywords"
+            (click)="openKeywordsModal()"
+            (keydown.enter)="openKeywordsModal()"
+            (keydown.space)="openKeywordsModal()"
+          >
+            @for (keyword of displayedKeywords; track $index) {
+              <span class="keyword-chip">{{ keyword }}</span>
+            } @empty {
+              <span class="keywords-placeholder">Click to enter five keywords</span>
+            }
           </div>
-          <app-validation-message [control]="projectDetails.get('keywords')"></app-validation-message>
+          <app-note text="Enter 1 to 5 keywords. Each keyword can contain up to 100 characters."></app-note>
+          <app-validation-message class="form-validation-note--error" [control]="projectDetails.get('keywords')" fieldName="Keywords"></app-validation-message>
         </div>
       </div>
 
@@ -246,14 +282,14 @@
           <textarea class="input--textarea input--autosize" appTextareaAutosize [minRows]="3" formControlName="introduction" [maxlength]="3000"></textarea>
           <app-character-counter [current]="projectDetails.get('introduction')?.value?.length ?? 0"
             [max]="3000"></app-character-counter>
-          <app-validation-message [control]="projectDetails.get('introduction')"></app-validation-message>
+          <app-validation-message class="form-validation-note--error" [control]="projectDetails.get('introduction')" fieldName="Introduction"></app-validation-message>
         </div>
         <div class="form-field">
           <label class="form-label is-required">Problem Statement</label>
           <textarea class="input--textarea input--autosize" appTextareaAutosize [minRows]="3" formControlName="problemStatement" [maxlength]="3000"></textarea>
           <app-character-counter [current]="projectDetails.get('problemStatement')?.value?.length ?? 0"
             [max]="3000"></app-character-counter>
-          <app-validation-message [control]="projectDetails.get('problemStatement')"></app-validation-message>
+          <app-validation-message class="form-validation-note--error" [control]="projectDetails.get('problemStatement')" fieldName="Problem Statement"></app-validation-message>
         </div>
       </div>
 
@@ -291,14 +327,14 @@
           <textarea class="input--textarea input--autosize" appTextareaAutosize [minRows]="3" formControlName="researchAim" [maxlength]="1000"></textarea>
           <app-character-counter [current]="projectDetails.get('researchAim')?.value?.length ?? 0"
             [max]="1000"></app-character-counter>
-          <app-validation-message [control]="projectDetails.get('researchAim')"></app-validation-message>
+          <app-validation-message class="form-validation-note--error" [control]="projectDetails.get('researchAim')" fieldName="Research Aim and Objectives"></app-validation-message>
         </div>
         <div class="form-field">
           <label class="form-label is-required">Research Questions</label>
           <textarea class="input--textarea input--autosize" appTextareaAutosize [minRows]="3" formControlName="researchQuestions" [maxlength]="1000"></textarea>
           <app-character-counter [current]="projectDetails.get('researchQuestions')?.value?.length ?? 0"
             [max]="1000"></app-character-counter>
-          <app-validation-message [control]="projectDetails.get('researchQuestions')"></app-validation-message>
+          <app-validation-message class="form-validation-note--error" [control]="projectDetails.get('researchQuestions')" fieldName="Research Questions"></app-validation-message>
         </div>
       </div>
 
@@ -337,7 +373,7 @@
         <textarea class="input--textarea input--autosize" appTextareaAutosize [minRows]="3" formControlName="hypothesis" [maxlength]="1000"></textarea>
         <app-character-counter [current]="projectDetails.get('hypothesis')?.value?.length ?? 0"
           [max]="1000"></app-character-counter>
-        <app-validation-message [control]="projectDetails.get('hypothesis')"></app-validation-message>
+        <app-validation-message class="form-validation-note--error" [control]="projectDetails.get('hypothesis')" fieldName="Hypothesis/Propositions"></app-validation-message>
       </div>
 
       <!-- Reviewer comment + score on Hypothesis (0-10) -->
@@ -360,14 +396,14 @@
           <textarea class="input--textarea input--autosize" appTextareaAutosize [minRows]="3" formControlName="literatureReview" [maxlength]="5000"></textarea>
           <app-character-counter [current]="projectDetails.get('literatureReview')?.value?.length ?? 0"
             [max]="5000"></app-character-counter>
-          <app-validation-message [control]="projectDetails.get('literatureReview')"></app-validation-message>
+          <app-validation-message class="form-validation-note--error" [control]="projectDetails.get('literatureReview')" fieldName="Literature Review"></app-validation-message>
         </div>
         <div class="form-field">
           <label class="form-label is-required">Research Methodology</label>
           <textarea class="input--textarea input--autosize" appTextareaAutosize [minRows]="3" formControlName="methodology" [maxlength]="3000"></textarea>
           <app-character-counter [current]="projectDetails.get('methodology')?.value?.length ?? 0"
             [max]="3000"></app-character-counter>
-          <app-validation-message [control]="projectDetails.get('methodology')"></app-validation-message>
+          <app-validation-message class="form-validation-note--error" [control]="projectDetails.get('methodology')" fieldName="Research Methodology"></app-validation-message>
         </div>
       </div>
 
@@ -404,7 +440,7 @@
         <textarea class="input--textarea input--autosize" appTextareaAutosize [minRows]="3" formControlName="references" [maxlength]="3000"></textarea>
         <app-character-counter [current]="projectDetails.get('references')?.value?.length ?? 0"
           [max]="3000"></app-character-counter>
-        <app-validation-message [control]="projectDetails.get('references')"></app-validation-message>
+        <app-validation-message class="form-validation-note--error" [control]="projectDetails.get('references')" fieldName="References"></app-validation-message>
       </div>
 
       <!-- Reviewer comments on References -->
@@ -433,21 +469,21 @@
           <textarea class="input--textarea input--textarea-benefits input--autosize" appTextareaAutosize [minRows]="3" formControlName="apu" [maxlength]="300"></textarea>
           <app-character-counter [current]="projectDetails.get('benefits.apu')?.value?.length ?? 0"
             [max]="300"></app-character-counter>
-          <app-validation-message [control]="projectDetails.get('benefits.apu')"></app-validation-message>
+          <app-validation-message class="form-validation-note--error" [control]="projectDetails.get('benefits.apu')" fieldName="APU Benefit"></app-validation-message>
         </div>
         <div class="form-field">
           <label class="form-label is-required">Students Benefit</label>
           <textarea class="input--textarea input--textarea-benefits input--autosize" appTextareaAutosize [minRows]="3" formControlName="students" [maxlength]="300"></textarea>
           <app-character-counter [current]="projectDetails.get('benefits.students')?.value?.length ?? 0"
             [max]="300"></app-character-counter>
-          <app-validation-message [control]="projectDetails.get('benefits.students')"></app-validation-message>
+          <app-validation-message class="form-validation-note--error" [control]="projectDetails.get('benefits.students')" fieldName="Students Benefit"></app-validation-message>
         </div>
         <div class="form-field">
           <label class="form-label is-required">Stakeholders Benefit</label>
           <textarea class="input--textarea input--textarea-benefits input--autosize" appTextareaAutosize [minRows]="3" formControlName="stakeholders" [maxlength]="300"></textarea>
           <app-character-counter [current]="projectDetails.get('benefits.stakeholders')?.value?.length ?? 0"
             [max]="300"></app-character-counter>
-          <app-validation-message [control]="projectDetails.get('benefits.stakeholders')"></app-validation-message>
+          <app-validation-message class="form-validation-note--error" [control]="projectDetails.get('benefits.stakeholders')" fieldName="Stakeholders Benefit"></app-validation-message>
         </div>
       </div>
 
@@ -477,7 +513,7 @@
           placeholder="Describe the alignment..."></textarea>
         <app-character-counter [current]="projectDetails.get('visionMission')?.value?.length ?? 0"
           [max]="300"></app-character-counter>
-        <app-validation-message [control]="projectDetails.get('visionMission')"></app-validation-message>
+        <app-validation-message class="form-validation-note--error" [control]="projectDetails.get('visionMission')" fieldName="APU Vision & Mission Alignment"></app-validation-message>
       </div>
 
       <!-- Reviewer comments on Vision & Mission -->
@@ -497,3 +533,56 @@
   <!-- HOS page-level comment moved to after Research Activities -->
 
 </section>
+
+<app-dialog
+  title="Enter Project Keywords"
+  [isOpen]="isKeywordsModalOpen"
+  width="600px"
+  (close)="closeKeywordsModal()"
+>
+  <form class="keywords-form" [formGroup]="keywordsForm">
+    @for (slot of keywordSlots; track slot.controlName) {
+      <div class="form-field keyword-field">
+        <label class="form-label" [for]="'rdig-' + slot.controlName">
+          {{ slot.label }}
+          @if ($first) {
+            <span class="asterisk">*</span>
+          }
+        </label>
+        <input
+          [id]="'rdig-' + slot.controlName"
+          type="text"
+          class="input--text"
+          [formControlName]="slot.controlName"
+          [maxlength]="keywordMaxLength"
+          [placeholder]="'Enter ' + slot.label.toLowerCase()"
+        />
+        <div class="keyword-feedback">
+          <app-validation-message
+            class="form-validation-note--error"
+            [control]="keywordsForm.get(slot.controlName)"
+            [fieldName]="slot.label"
+          ></app-validation-message>
+          <app-character-counter
+            [current]="keywordsForm.get(slot.controlName)?.value?.length || 0"
+            [max]="keywordMaxLength"
+          ></app-character-counter>
+        </div>
+      </div>
+    }
+  </form>
+
+  <div dialog-footer class="keywords-modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="closeKeywordsModal()">
+      Cancel
+    </button>
+    <button
+      type="button"
+      class="btn btn-primary"
+      [disabled]="keywordsForm.invalid"
+      (click)="confirmKeywords()"
+    >
+      Confirm
+    </button>
+  </div>
+</app-dialog>

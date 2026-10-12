@@ -76,6 +76,8 @@ export class SearchableDropdownComponent<T = number> implements ControlValueAcce
   @Input() isMulti = false;
   @Input() searchable = true;
   @Input() maxSelections: number | null = null;
+  @Input() optionListTitle = '';
+  @Input() optionListCount: number | null = null;
 
   /** Show a spinner and disable interaction while options are loading asynchronously. */
   @Input() loading = false;
@@ -95,6 +97,7 @@ export class SearchableDropdownComponent<T = number> implements ControlValueAcce
    */
   @Input() compareWith: (a: T, b: T) => boolean = (a, b) => a === b;
   @Output() searchChange = new EventEmitter<string>();
+  @Output() openChange = new EventEmitter<boolean>();
 
   // ── Options (signal-backed so computed can react to changes) ─────
 
@@ -128,6 +131,17 @@ export class SearchableDropdownComponent<T = number> implements ControlValueAcce
     const map = new Map<T, string>();
     for (const opt of this._options()) {
       map.set(opt.value, opt.label);
+    }
+    return map;
+  });
+
+  readonly stringLabelMap = computed<Map<string, string>>(() => {
+    const map = new Map<string, string>();
+    for (const opt of this._options()) {
+      const key = String(opt.value);
+      if (!map.has(key)) {
+        map.set(key, opt.label);
+      }
     }
     return map;
   });
@@ -224,7 +238,7 @@ export class SearchableDropdownComponent<T = number> implements ControlValueAcce
     disabled
       ? this.searchCtrl.disable({ emitEvent: false })
       : this.searchCtrl.enable({ emitEvent: false });
-    if (disabled) this.isOpen.set(false);
+    if (disabled) this.setOpenState(false);
   }
 
   // ── Dropdown open / close ────────────────────────────────────────
@@ -235,7 +249,7 @@ export class SearchableDropdownComponent<T = number> implements ControlValueAcce
   }
 
   open(): void {
-    this.isOpen.set(true);
+    this.setOpenState(true);
     this.focusedIndex.set(-1);
     this._resetSearch();
     this._onTouched();
@@ -250,8 +264,14 @@ export class SearchableDropdownComponent<T = number> implements ControlValueAcce
   }
 
   close(): void {
-    this.isOpen.set(false);
+    this.setOpenState(false);
     this._resetSearch();
+  }
+
+  private setOpenState(open: boolean): void {
+    if (this.isOpen() === open) return;
+    this.isOpen.set(open);
+    this.openChange.emit(open);
   }
 
   private _resetSearch(): void {
@@ -303,7 +323,7 @@ export class SearchableDropdownComponent<T = number> implements ControlValueAcce
     this._onChange(this.isMulti || this.valueMode === 'array' ? [] : null);
     this._resetSearch();
     this.searchChange.emit('');
-    this.isOpen.set(false);
+    this.setOpenState(false);
   }
 
   isSelected(value: T): boolean {
@@ -322,11 +342,21 @@ export class SearchableDropdownComponent<T = number> implements ControlValueAcce
   get displayValue(): string {
     const sel = this.selectedValues();
     if (sel.length === 0) return '';
-    return this.selectedOption(sel[0])?.displayLabel ?? this.labelMap().get(sel[0]) ?? String(sel[0]);
+    return (
+      this.selectedOption(sel[0])?.displayLabel ??
+      this.labelMap().get(sel[0]) ??
+      this.stringLabelMap().get(String(sel[0])) ??
+      String(sel[0])
+    );
   }
 
   getChipLabel(value: T): string {
-    return this.selectedOption(value)?.displayLabel ?? this.labelMap().get(value) ?? String(value);
+    return (
+      this.selectedOption(value)?.displayLabel ??
+      this.labelMap().get(value) ??
+      this.stringLabelMap().get(String(value)) ??
+      String(value)
+    );
   }
 
   private selectedOption(value: T): DropdownOption<T> | undefined {

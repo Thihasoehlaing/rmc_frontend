@@ -22,7 +22,7 @@ export class FinalDeclarationComponent implements OnInit, OnDestroy {
     @Input() showR2Comments = false;
     @Input() showRdigChairComments = false;
     @Input() showVcComments = false;
-    @Input() showCeoComments = false;
+    @Input() showCfoComments = false;
     @Input() workflow!: RdigWorkflowService;
     @Input() reviewer1Total = 0;
     @Input() reviewer2Total = 0;
@@ -30,7 +30,7 @@ export class FinalDeclarationComponent implements OnInit, OnDestroy {
     get showAnyComments(): boolean {
       return this.showHosComments || this.showRmcComments ||
              this.showR1Comments || this.showR2Comments ||
-             this.showRdigChairComments || this.showVcComments || this.showCeoComments;
+             this.showRdigChairComments || this.showVcComments || this.showCfoComments;
     }
 
     /** Potential reviewers are no longer sourced from frontend dummy auth users. */

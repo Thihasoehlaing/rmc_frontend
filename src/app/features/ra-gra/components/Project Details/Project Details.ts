@@ -4,13 +4,12 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { Subject, takeUntil } from 'rxjs';
 import { AuthService } from '../../../../core/services/auth.service';
 import { ValidationMessageComponent } from '../../../../shared/components/validation-message/validation-message.component';
-import { CustomSubheaderComponent } from '../../../../shared/components/custom-subheader/custom-subheader.component';
 import { NoteComponent } from '../../../../shared/components/note/note.component';
 
 @Component({
   selector: 'app-ragra-project-details',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ValidationMessageComponent, CustomSubheaderComponent, NoteComponent],
+  imports: [CommonModule, ReactiveFormsModule, ValidationMessageComponent, NoteComponent],
   templateUrl: './Project Details.html',
   styleUrls: ['./Project Details.scss']
 })

@@ -60,7 +60,7 @@ const COLUMNS: readonly DataTableColumn[] = [
     TableSkeletonComponent,
   ],
   templateUrl: './request-statuses.component.html',
-  styleUrls: ['../forms/forms.component.scss', '../workflow/workflow.component.scss', './request-statuses.component.scss'],
+  styleUrls: ['../forms/forms.component.scss', '../settings-tables.scss', './request-statuses.component.scss'],
 })
 export class RequestStatusesComponent implements OnInit {
   private readonly requestStatusesService = inject(RequestStatusesService);

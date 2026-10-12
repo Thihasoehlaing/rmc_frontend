@@ -15,15 +15,22 @@ export interface CatalogPagination {
 
 export type CatalogStatus = 'all' | 'active' | 'inactive';
 
-export type AdminCatalogKind = 'project-account-code' | 'external-grant-category';
+export type AdminCatalogKind =
+  | 'project-account-code'
+  | 'external-grant-category'
+  | 'country'
+  | 'currency';
 export type AdminCatalogStatus = 'Active' | 'Inactive';
 
 export interface AdminCatalogItem {
   id: number;
   kind: AdminCatalogKind;
   code?: string;
+  symbol?: string;
   name: string;
   status: AdminCatalogStatus;
   appliesTo: string[];
   updatedAt: string;
+  countryId?: number | null;
+  countryName?: string | null;
 }

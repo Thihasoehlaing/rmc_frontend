@@ -7,6 +7,7 @@ import { environment } from '../../../../environments/environment';
 export interface TestingLoginAccount {
   username: string;
   label: string;
+  roleName: string;
   groups: string;
 }
 
@@ -46,6 +47,7 @@ export class TestingLoginService {
         response.data.users.map(user => ({
           username: user.username,
           label: user.name || user.username,
+          roleName: user.role?.name || 'No role assigned',
           groups: [
             user.role?.name || 'No role assigned',
             user.department,

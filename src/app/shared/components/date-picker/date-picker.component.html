@@ -1,0 +1,95 @@
+<div class="date-picker" [class.date-picker--open]="isOpen">
+  <div
+    class="date-picker__control"
+    cdkOverlayOrigin
+    #pickerOrigin="cdkOverlayOrigin"
+    (click)="openCalendar()"
+  >
+    <input
+      type="text"
+      class="date-picker__input"
+      [id]="id || null"
+      [value]="displayValue"
+      [placeholder]="placeholder"
+      [attr.aria-label]="ariaLabel"
+      [attr.aria-expanded]="isOpen"
+      [attr.aria-haspopup]="'dialog'"
+      [disabled]="disabled"
+      readonly
+      (focus)="openCalendar()"
+      (click)="openCalendar()"
+    />
+    <button
+      type="button"
+      class="date-picker__trigger"
+      aria-label="Open calendar"
+      [disabled]="disabled"
+      (click)="openCalendar()"
+    >
+      <span class="material-icons" aria-hidden="true">calendar_month</span>
+    </button>
+  </div>
+
+  <ng-template
+    cdk-connected-overlay
+    [cdkConnectedOverlayOrigin]="pickerOrigin"
+    [cdkConnectedOverlayOpen]="isOpen"
+    [cdkConnectedOverlayPositions]="overlayPositions"
+    [cdkConnectedOverlayPush]="true"
+    [cdkConnectedOverlayViewportMargin]="8"
+    (overlayOutsideClick)="closeCalendar()"
+  >
+    <section class="date-picker__calendar" role="dialog" aria-label="Choose a date">
+      <header class="date-picker__header">
+        <div class="date-picker__month-title">{{ monthTitle }}</div>
+        <div class="date-picker__month-actions">
+          <button type="button" aria-label="Previous month" (click)="moveMonth(-1)">
+            <span class="material-icons" aria-hidden="true">chevron_left</span>
+          </button>
+          <button type="button" aria-label="Next month" (click)="moveMonth(1)">
+            <span class="material-icons" aria-hidden="true">chevron_right</span>
+          </button>
+        </div>
+      </header>
+
+      <div class="date-picker__grid" role="grid">
+        @for (weekday of weekdays; track weekday) {
+          <span class="date-picker__weekday" role="columnheader">{{ weekday }}</span>
+        }
+        @for (day of calendarDays; track day.iso) {
+          <button
+            type="button"
+            class="date-picker__day"
+            [class.date-picker__day--outside]="!day.inCurrentMonth"
+            [class.date-picker__day--today]="day.today"
+            [class.date-picker__day--selected]="day.selected"
+            [disabled]="day.disabled"
+            [attr.aria-label]="day.date | date: 'EEEE, MMMM d, y'"
+            [attr.aria-pressed]="day.selected"
+            (click)="selectDate(day)"
+          >
+            {{ day.day }}
+          </button>
+        }
+      </div>
+
+      @if (includeTime) {
+        <label class="date-picker__time">
+          <span>Time</span>
+          <input type="time" [value]="timeValue" (change)="updateTime($any($event.target).value)" />
+        </label>
+      }
+
+      <footer class="date-picker__footer">
+        <button type="button" class="date-picker__text-action" (click)="clearDate()">Clear</button>
+        @if (includeTime) {
+          <button type="button" class="date-picker__text-action" (click)="done()">Done</button>
+        } @else {
+          <button type="button" class="date-picker__text-action" (click)="selectToday()">
+            Today
+          </button>
+        }
+      </footer>
+    </section>
+  </ng-template>
+</div>

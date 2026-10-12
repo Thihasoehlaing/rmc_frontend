@@ -42,18 +42,20 @@
       <div class="form-field">
         <label class="form-label is-required">Select Research Cluster</label>
         <app-searchable-dropdown
-          [options]="clusters"
+          [options]="clusters()"
+          [compareWith]="compareOptionValues"
           [isMulti]="false"
           formControlName="researchCluster"
         >
         </app-searchable-dropdown>
-        <app-validation-message
+        <app-validation-message class="form-validation-note--error"
           [control]="teamDetails.get('researchCluster')"
+          fieldName="Research Cluster"
         ></app-validation-message>
       </div>
 
       <div class="form-field">
-        <label class="form-label is-required">Select Roles of Project Leader</label>
+        <label class="form-label is-required">Roles of Project Leader</label>
         <textarea class="input--textarea" formControlName="leaderRoles" [maxlength]="600">
         </textarea>
         <app-character-counter
@@ -61,7 +63,7 @@
           [max]="600"
         >
         </app-character-counter>
-        <app-validation-message [control]="teamDetails.get('leaderRoles')"></app-validation-message>
+        <app-validation-message class="form-validation-note--error" [control]="teamDetails.get('leaderRoles')" fieldName="Roles of Project Leader"></app-validation-message>
       </div>
     </div>
   </section>
@@ -146,6 +148,7 @@
             </tr>
           </ng-template>
         </app-data-table>
+        <app-table-row-counter [current]="internalResearchers.length" [max]="2"></app-table-row-counter>
       }
     </div>
   </section>
@@ -223,12 +226,12 @@
                 <div class="data-table__multiline">{{ row.value.roles }}</div>
               </td>
               <td>
-                @if (hasSupportLetter(row.value.supportLetter)) {
+                @if (hasSupportLetter(row.value.supportLetter, row.value.supportLetterAttachmentId)) {
                   <button
                     type="button"
                     class="btn-icon btn-icon--view"
                     title="View / download support letter"
-                    (click)="openSupportLetter(row.value.supportLetter)"
+                    (click)="openSupportLetter(row.value.supportLetter, row.value.supportLetterAttachmentId)"
                   >
                     <app-table-action-icon action="view"></app-table-action-icon>
                   </button>
@@ -261,6 +264,7 @@
             </tr>
           </ng-template>
         </app-data-table>
+        <app-table-row-counter [current]="externalResearchers.length" [max]="10"></app-table-row-counter>
       }
     </div>
   </section>
@@ -339,7 +343,7 @@
             valueMode="single"
           >
           </app-searchable-dropdown>
-          <app-validation-message [control]="internalForm.get('staffId')"></app-validation-message>
+          <app-validation-message class="form-validation-note--error" [control]="internalForm.get('staffId')" fieldName="Staff Name"></app-validation-message>
         </div>
         <div class="form-field">
           <label class="form-label">School / Department</label>
@@ -355,7 +359,7 @@
           [max]="200"
         >
         </app-character-counter>
-        <app-validation-message [control]="internalForm.get('expertise')"></app-validation-message>
+        <app-validation-message class="form-validation-note--error" [control]="internalForm.get('expertise')" fieldName="Area of Expertise"></app-validation-message>
       </div>
 
       <div class="form-field">
@@ -366,7 +370,7 @@
           [max]="600"
         >
         </app-character-counter>
-        <app-validation-message [control]="internalForm.get('roles')"></app-validation-message>
+        <app-validation-message class="form-validation-note--error" [control]="internalForm.get('roles')" fieldName="Roles in Project"></app-validation-message>
       </div>
     </div>
 
@@ -409,7 +413,7 @@
               <option [value]="t.value">{{ t.label }}</option>
             }
           </select>
-          <app-validation-message [control]="externalForm.get('title')"></app-validation-message>
+          <app-validation-message class="form-validation-note--error" [control]="externalForm.get('title')" fieldName="Title"></app-validation-message>
         </div>
         <div class="form-field">
           <label class="form-label is-required">Full Name</label>
@@ -429,7 +433,7 @@
             External collaborators must be staff, researchers, or industry partners. Students are
             not eligible for this role.
           </app-field-note>
-          <app-validation-message [control]="externalForm.get('fullName')"></app-validation-message>
+          <app-validation-message class="form-validation-note--error" [control]="externalForm.get('fullName')" fieldName="Full Name"></app-validation-message>
         </div>
       </div>
 
@@ -438,7 +442,7 @@
         <div class="form-field">
           <label class="form-label is-required">Email Address</label>
           <input type="email" class="input--text" formControlName="email" />
-          <app-validation-message [control]="externalForm.get('email')"></app-validation-message>
+          <app-validation-message class="form-validation-note--error" [control]="externalForm.get('email')" fieldName="Email Address"></app-validation-message>
         </div>
         <div class="form-field">
           <label class="form-label is-required">Institution / Company</label>
@@ -448,8 +452,9 @@
             [max]="100"
           >
           </app-character-counter>
-          <app-validation-message
+          <app-validation-message class="form-validation-note--error"
             [control]="externalForm.get('institution')"
+            fieldName="Institution / Company"
           ></app-validation-message>
         </div>
       </div>
@@ -464,7 +469,7 @@
               <option [value]="o.value">{{ o.label }}</option>
             }
           </select>
-          <app-validation-message [control]="externalForm.get('orgType')"></app-validation-message>
+          <app-validation-message class="form-validation-note--error" [control]="externalForm.get('orgType')" fieldName="Type of Organisation"></app-validation-message>
         </div>
         <div class="form-field">
           <label class="form-label is-required">Position / Designation</label>
@@ -474,7 +479,7 @@
             [max]="100"
           >
           </app-character-counter>
-          <app-validation-message [control]="externalForm.get('position')"></app-validation-message>
+          <app-validation-message class="form-validation-note--error" [control]="externalForm.get('position')" fieldName="Position / Designation"></app-validation-message>
         </div>
       </div>
 
@@ -488,8 +493,9 @@
             [max]="100"
           >
           </app-character-counter>
-          <app-validation-message
+          <app-validation-message class="form-validation-note--error"
             [control]="externalForm.get('department')"
+            fieldName="School / Department / Faculty"
           ></app-validation-message>
         </div>
         <div class="form-field">
@@ -502,7 +508,7 @@
             formControlName="country"
           >
           </app-searchable-dropdown>
-          <app-validation-message [control]="externalForm.get('country')"></app-validation-message>
+          <app-validation-message class="form-validation-note--error" [control]="externalForm.get('country')" fieldName="Country"></app-validation-message>
         </div>
       </div>
 
@@ -516,7 +522,7 @@
           class="input--text"
           formControlName="funding"
         />
-        <app-validation-message [control]="externalForm.get('funding')"></app-validation-message>
+        <app-validation-message class="form-validation-note--error" [control]="externalForm.get('funding')" fieldName="Matched Funding"></app-validation-message>
       </div>
 
       <!-- Full width: Roles -->
@@ -528,20 +534,22 @@
           [max]="600"
         >
         </app-character-counter>
-        <app-validation-message [control]="externalForm.get('roles')"></app-validation-message>
+        <app-validation-message class="form-validation-note--error" [control]="externalForm.get('roles')" fieldName="Roles of Collaborator"></app-validation-message>
       </div>
 
       <!-- Full width: Support Letter -->
       <div class="form-field">
         <app-file-upload
-          label="Support Letter"
+          label="Support Letter (Required)"
           accept=".pdf"
           [maxSizeMB]="4"
+          [uploadedFileName]="externalForm.get('supportLetterAttachmentId')?.value ? 'Existing support letter attached' : null"
           (fileSelected)="onFileSelected($event)"
         >
         </app-file-upload>
-        <app-validation-message
+        <app-validation-message class="form-validation-note--error"
           [control]="externalForm.get('supportLetter')"
+          fieldName="Support Letter"
         ></app-validation-message>
       </div>
     </div>

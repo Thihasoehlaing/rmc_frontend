@@ -75,6 +75,22 @@ export class RdigReviewerService {
     });
   }
 
+  /** Lists active RDIG reviewers for workflow assignment dropdowns. */
+  listOptions(
+    params: { search?: string; departmentId?: number | null } = {},
+  ): Observable<ApiResponse<RdigReviewerRecord[]>> {
+    let httpParams = new HttpParams();
+    if (params.search?.trim()) {
+      httpParams = httpParams.set('search', params.search.trim());
+    }
+    if (params.departmentId !== null && params.departmentId !== undefined) {
+      httpParams = httpParams.set('department_id', params.departmentId);
+    }
+    return this.http.get<ApiResponse<RdigReviewerRecord[]>>(`${this.baseUrl}/options`, {
+      params: httpParams,
+    });
+  }
+
   /** Adds an academic staff member to the RDIG reviewer pool. */
   add(academicStaffId: number, isActive = true): Observable<ApiResponse<RdigReviewerRecord>> {
     return this.http.post<ApiResponse<RdigReviewerRecord>>(this.baseUrl, {

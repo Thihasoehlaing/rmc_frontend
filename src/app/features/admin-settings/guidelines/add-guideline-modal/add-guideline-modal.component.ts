@@ -15,7 +15,7 @@ import { FormsModule } from '@angular/forms';
 import { TextEditorComponent } from '../../../../shared/components/text-editor/text-editor.component';
 import { GuidelinesModalComponent } from '../../../../shared/components/guidelines-modal/guidelines-modal.component';
 import { DialogComponent } from '../../../../shared/components/dialog/dialog.component';
-import { FormOption, WorkflowService } from '../../../settings/workflow/workflow.service';
+import { CachedFormOption, FormCacheService } from '../../../../core/services/form-cache.service';
 
 export interface GuidelineConfig {
   title: string;
@@ -37,7 +37,7 @@ export interface GuidelineConfig {
   styleUrls: ['./add-guideline-modal.component.scss'],
 })
 export class AddGuidelineModalComponent implements OnChanges, OnInit {
-  private readonly workflowService = inject(WorkflowService);
+  private readonly formCache = inject(FormCacheService);
 
   @Output() close = new EventEmitter<void>();
   @Output() save = new EventEmitter<GuidelineConfig>();
@@ -47,13 +47,13 @@ export class AddGuidelineModalComponent implements OnChanges, OnInit {
 
   @ViewChild('previewModal') previewModal?: GuidelinesModalComponent;
 
-  readonly forms = signal<FormOption[]>([]);
+  readonly forms = signal<CachedFormOption[]>([]);
 
   guidelineContent = signal('');
   guidelineConfig = signal<GuidelineConfig>(this.getDefaultConfig());
 
   ngOnInit(): void {
-    this.workflowService.listForms().subscribe({
+    this.formCache.getForms().subscribe({
       next: (res) => {
         if (res.success) {
           this.forms.set((res.data ?? []).filter((f) => f.is_active));

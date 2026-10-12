@@ -1,5 +1,6 @@
 import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { Location } from '@angular/common';
+import { AttachmentDownloadService } from '../../../../core/services/attachment-download.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -28,14 +29,8 @@ import { TextareaAutosizeDirective } from '../../../../shared/directives/textare
 import { TableActionIconComponent } from '../../../../shared/components/table-action-icon/table-action-icon.component';
 import { DialogComponent } from '../../../../shared/components/dialog/dialog.component';
 import { formatCountryForDisplay } from '../../../../shared/utils/country.util';
-import {
-  formatCurrencyAmount,
-  formatMyrCurrency,
-} from '../../../../shared/utils/currency.util';
-import {
-  formatMalaysiaDateTime,
-  getApiDateTimeMs,
-} from '../../../../shared/utils/date-time.util';
+import { formatCurrencyAmount, formatMyrCurrency } from '../../../../shared/utils/currency.util';
+import { formatMalaysiaDateTime, getApiDateTimeMs } from '../../../../shared/utils/date-time.util';
 
 const SCOPUS_QUARTILE_LABELS: Readonly<Record<string, string>> = {
   Q1: 'Q1: 75th - 100th percentile',
@@ -86,6 +81,7 @@ const COMMENT_MAX_LENGTH = 1000;
   styleUrl: './journal-review.component.scss',
 })
 export class JournalReviewComponent implements OnInit {
+  private readonly attachmentDownload = inject(AttachmentDownloadService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly location = inject(Location);
@@ -123,7 +119,9 @@ export class JournalReviewComponent implements OnInit {
     authors: new FormControl('', [Validators.maxLength(COMMENT_MAX_LENGTH)]),
     costing_sponsorship: new FormControl('', [Validators.maxLength(COMMENT_MAX_LENGTH)]),
   };
-  readonly sectionEditCommentControl = new FormControl('', [Validators.maxLength(COMMENT_MAX_LENGTH)]);
+  readonly sectionEditCommentControl = new FormControl('', [
+    Validators.maxLength(COMMENT_MAX_LENGTH),
+  ]);
   readonly actionCommentControl = new FormControl('', [Validators.maxLength(COMMENT_MAX_LENGTH)]);
   readonly rollbackReasonControl = new FormControl('', [Validators.maxLength(COMMENT_MAX_LENGTH)]);
   readonly commentMaxLength = COMMENT_MAX_LENGTH;
@@ -163,7 +161,9 @@ export class JournalReviewComponent implements OnInit {
   });
   readonly projectTypeLabel = computed(() => {
     const projectType = this.journal()?.project_type?.trim().toLowerCase();
-    return projectType ? (PROJECT_TYPE_LABELS[projectType] ?? this.val(projectType)) : this.val(null);
+    return projectType
+      ? (PROJECT_TYPE_LABELS[projectType] ?? this.val(projectType))
+      : this.val(null);
   });
   readonly staffAuthors = computed(() => this.data()?.apu_staff_co_authors ?? []);
   readonly studentAuthors = computed(() => this.data()?.apu_student_co_authors ?? []);
@@ -191,6 +191,7 @@ export class JournalReviewComponent implements OnInit {
   readonly costingColumns: readonly DataTableColumn[] = [
     { key: 'voteNumber', label: 'Vote Number', width: '190px' },
     { key: 'accountCode', label: 'Account Code', width: '190px' },
+    { key: 'currency', label: 'Currency', width: '120px' },
     { key: 'foreignCost', label: 'Foreign Cost', width: '160px' },
     { key: 'exchangeRate', label: 'Exchange Rate', width: '170px' },
     { key: 'costInRm', label: 'Cost in RM', width: '150px' },
@@ -225,6 +226,7 @@ export class JournalReviewComponent implements OnInit {
     this.costingItems().map((item) => ({
       voteNumber: this.val(item.vote_number_snapshot || item.vote_number_description_snapshot),
       accountCode: this.val(item.account_code_snapshot || item.account_code_description_snapshot),
+      currency: this.val(item.currency),
       foreignCost: this.fmtAmount(item.cost_in_foreign_currency),
       exchangeRate: this.val(item.exchange_rate),
       costInRm: this.fmtMoney(item.cost_in_rm),
@@ -500,8 +502,9 @@ export class JournalReviewComponent implements OnInit {
 
   currentActorSectionComment(sectionCode: string): RequestCommentDto | null {
     return (
-      this.commentsForSection(sectionCode).find((comment) => this.canChangeSectionComment(comment)) ??
-      null
+      this.commentsForSection(sectionCode).find((comment) =>
+        this.canChangeSectionComment(comment),
+      ) ?? null
     );
   }
 
@@ -568,7 +571,9 @@ export class JournalReviewComponent implements OnInit {
       .filter((time): time is number => time !== null)
       .sort((a, b) => b - a)[0];
     if (statusStart !== undefined) return statusStart;
-    return this.parseTime(this.request()?.submitted_at) ?? this.parseTime(this.request()?.created_at);
+    return (
+      this.parseTime(this.request()?.submitted_at) ?? this.parseTime(this.request()?.created_at)
+    );
   }
 
   private parseTime(value: string | null | undefined): number | null {
@@ -695,7 +700,9 @@ export class JournalReviewComponent implements OnInit {
       )
       .subscribe({
         next: () => {
-          this.sectionComments.update((comments) => comments.filter((item) => item.id !== comment.id));
+          this.sectionComments.update((comments) =>
+            comments.filter((item) => item.id !== comment.id),
+          );
           if (this.editingSectionCommentId() === comment.id) {
             this.cancelEditSectionComment(comment.section_code);
           }
@@ -708,12 +715,12 @@ export class JournalReviewComponent implements OnInit {
       });
   }
 
-  downloadAttachment(file: any): void {
+  downloadAttachment(file: any, preview = false): void {
     if (this.requestId == null || !file?.id || this.downloadingAttachmentId()) return;
 
     const directUrl = file.download_url || file.file_url || file.url;
     if (directUrl) {
-      this.openDownload({ ...file, download_url: directUrl });
+      this.openDownload({ ...file, download_url: directUrl }, preview);
       return;
     }
 
@@ -725,7 +732,7 @@ export class JournalReviewComponent implements OnInit {
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe({
-        next: (response) => this.openDownload(response.data),
+        next: (response) => this.openDownload(response.data, preview),
         error: (err) => {
           const msg = err?.error?.message || 'Could not prepare this attachment download.';
           this.feedback.set({ type: 'error', text: msg });
@@ -938,18 +945,13 @@ export class JournalReviewComponent implements OnInit {
     return filename.toLowerCase().endsWith('.pdf') ? filename : `${filename}.pdf`;
   }
 
-  private openDownload(file: JournalAttachmentDownload): void {
+  private openDownload(file: JournalAttachmentDownload, preview = false): void {
     const url = file.download_url || file.file_url || file.url;
     if (!url) {
       this.feedback.set({ type: 'error', text: 'Attachment download URL is unavailable.' });
       return;
     }
 
-    const anchor = document.createElement('a');
-    anchor.href = url;
-    anchor.target = '_blank';
-    anchor.rel = 'noopener';
-    anchor.download = file.file_name || 'journal-attachment';
-    anchor.click();
+    this.attachmentDownload.open(url, file.file_name || 'journal-attachment', preview);
   }
 }

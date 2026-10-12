@@ -118,7 +118,7 @@ const TABS: readonly MonitoringTabConfig[] = [
     TextEditorComponent,
   ],
   templateUrl: './monitoring.component.html',
-  styleUrls: ['../forms/forms.component.scss', '../workflow/workflow.component.scss', './monitoring.component.scss'],
+  styleUrls: ['../forms/forms.component.scss', '../settings-tables.scss', './monitoring.component.scss'],
 })
 export class MonitoringComponent implements OnInit {
   private readonly monitoringService = inject(MonitoringService);

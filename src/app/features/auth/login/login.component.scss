@@ -289,6 +289,13 @@ $error: #b42318;
     }
   }
 
+  &__description {
+    margin: -0.35rem 0 0;
+    color: $muted;
+    font-size: 0.76rem;
+    line-height: 1.4;
+  }
+
   &__accounts {
     display: grid;
     grid-template-columns: 1fr;
@@ -297,6 +304,49 @@ $error: #b42318;
     overflow-y: auto;
     padding-right: 0.15rem;
   }
+}
+
+.demo-user-filters {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.8fr);
+  gap: 0.55rem;
+
+  label {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    color: $muted;
+    font-size: 0.68rem;
+    font-weight: 700;
+  }
+
+  input,
+  select {
+    width: 100%;
+    min-width: 0;
+    height: 36px;
+    padding: 0.45rem 0.55rem;
+    border: 1px solid #d6dfec;
+    border-radius: 7px;
+    color: #27364b;
+    background: $white;
+    font: inherit;
+    font-size: 0.76rem;
+
+    &:focus-visible {
+      outline: 2px solid rgba($primary, 0.3);
+      border-color: $primary;
+    }
+  }
+}
+
+.demo-user-empty {
+  margin: 0;
+  padding: 0.75rem;
+  color: $muted;
+  font-size: 0.78rem;
+  text-align: center;
 }
 
 .testing-account-button {
@@ -426,6 +476,10 @@ $error: #b42318;
     &__logo {
       width: 92px;
     }
+  }
+
+  .demo-user-filters {
+    grid-template-columns: 1fr;
   }
 
   .login-footer {

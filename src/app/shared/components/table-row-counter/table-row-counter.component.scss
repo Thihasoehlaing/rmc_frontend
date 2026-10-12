@@ -1,0 +1,17 @@
+@use '../../../../styles/index' as *;
+
+:host {
+  display: block;
+  width: 100%;
+  margin-top: var(--space-2);
+  padding-right: 3px;
+  text-align: right;
+  color: var(--color-letter-counter);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-medium);
+}
+
+:host(.table-row-counter--full) {
+  color: var(--color-error);
+  font-weight: var(--fw-bold);
+}

@@ -4,14 +4,17 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { JournalWorkflowService } from '../../services/journal-workflow.service';
 import { ValidationMessageComponent } from '../../../../shared/components/validation-message/validation-message.component';
-import { JournalFormData, JournalRequestPayload } from '../../services/journal-application-api.service';
+import {
+  JournalFormData,
+  JournalRequestPayload,
+} from '../../services/journal-application-api.service';
 
 @Component({
   selector: 'app-declaration',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, CustomHeaderComponent, ValidationMessageComponent],
   templateUrl: './declaration.html',
-  styleUrl: './declaration.scss'
+  styleUrl: './declaration.scss',
 })
 export class DeclarationComponent implements OnInit {
   declarationForm!: FormGroup;
@@ -39,7 +42,7 @@ export class DeclarationComponent implements OnInit {
   initializeDeclarationForm() {
     this.declarationForm = this.fb.group({
       agreeToTerms: [false, [Validators.requiredTrue]],
-      acknowledgeGrantFunder: [false, [Validators.requiredTrue]]
+      acknowledgeGrantFunder: [false, [Validators.requiredTrue]],
     });
 
     this.declarationForm.valueChanges.subscribe(() => {

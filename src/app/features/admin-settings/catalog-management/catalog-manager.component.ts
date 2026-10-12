@@ -13,11 +13,10 @@ import { SubmissionsSearchComponent } from '../../../shared/components/submissio
 import { TableActionIconComponent } from '../../../shared/components/table-action-icon/table-action-icon.component';
 import { ToastService } from '../../../core/services/toast.service';
 import { DropdownOption } from '../../../core/interfaces/components.interface';
-import {
-  CachedFormOption,
-  FormCacheService,
-} from '../../../core/services/form-cache.service';
+import { CachedFormOption, FormCacheService } from '../../../core/services/form-cache.service';
 import { AdminCatalogItem, AdminCatalogKind } from './catalog-api.types';
+import { CountryApi, CountryService } from './country.service';
+import { CurrencyApi, CurrencyService } from './currency.service';
 import {
   ExternalGrantCategoryApi,
   ExternalGrantCategoryService,
@@ -59,6 +58,8 @@ export class CatalogManagerComponent implements OnInit {
 
   private readonly externalGrantCategories = inject(ExternalGrantCategoryService);
   private readonly projectAccountCodes = inject(ProjectAccountCodeService);
+  private readonly countries = inject(CountryService);
+  private readonly currencies = inject(CurrencyService);
   private readonly formCache = inject(FormCacheService);
   private readonly toast = inject(ToastService);
 
@@ -67,6 +68,7 @@ export class CatalogManagerComponent implements OnInit {
     { id: 0, form_code: 'JOURNAL', form_name: 'Journal Publication', is_active: true },
   ];
   readonly formOptionsData = signal<CachedFormOption[]>([]);
+  readonly countryOptionsData = signal<CountryApi[]>([]);
   readonly availableFormNames = computed(() =>
     this.activeFormOptionsData().map((form) => form.form_name),
   );
@@ -83,6 +85,16 @@ export class CatalogManagerComponent implements OnInit {
     { value: 'CONFERENCE', label: 'Conference Application' },
     { value: 'JOURNAL', label: 'Journal Publication' },
   ];
+  readonly countryOptions = computed<DropdownOption<string>[]>(() =>
+    this.countryOptionsData()
+      .filter((country) => country.is_active)
+      .map((country) => ({
+        value: String(country.id),
+        label: country.name,
+        description: country.code,
+        searchText: `${country.name} ${country.code}`,
+      })),
+  );
   readonly searchQuery = signal('');
   readonly statusFilter = signal<'all' | 'active' | 'inactive'>('all');
   readonly formFilter = signal<string>('all');
@@ -105,28 +117,46 @@ export class CatalogManagerComponent implements OnInit {
     return row
       ? {
           code: row.code,
+          symbol: row.symbol,
           name: row.name,
           status: row.status,
           appliesTo: [...row.appliesTo],
+          countryId: row.countryId ?? null,
         }
       : null;
   });
 
   readonly usesExternalGrantCategoryApi = computed(() => this.kind === 'external-grant-category');
   readonly usesProjectAccountCodeApi = computed(() => this.kind === 'project-account-code');
-  readonly filteredRows = computed(() =>
-    this.apiRows().filter((item) => item.kind === this.kind),
-  );
+  readonly usesCountryApi = computed(() => this.kind === 'country');
+  readonly usesCurrencyApi = computed(() => this.kind === 'currency');
+  readonly filteredRows = computed(() => this.apiRows().filter((item) => item.kind === this.kind));
 
   readonly totalPages = this.apiTotalPages.asReadonly();
   readonly pagedRows = this.filteredRows;
   readonly totalItems = this.apiTotalItems.asReadonly();
 
-  ngOnInit(): void {
-    this.loadActiveForms();
-    this.loadCatalogItems();
+  get searchPlaceholder(): string {
+    if (this.usesCountryApi()) {
+      return 'Search code or country name';
+    }
+    if (this.usesCurrencyApi()) {
+      return 'Search currency code, currency name or country name';
+    }
+    return this.showCode ? 'Search code or description' : `Search ${this.nameLabel.toLowerCase()}`;
   }
 
+  get tableColumnCount(): number {
+    return (
+      5 + (this.showCode ? 1 : 0) + (this.usesCurrencyApi() ? 2 : 0) + (this.showSharedWith ? 1 : 0)
+    );
+  }
+
+  ngOnInit(): void {
+    this.loadActiveForms();
+    this.loadCountryOptions();
+    this.loadCatalogItems();
+  }
 
   openAddModal(): void {
     if (!this.allowAdd) return;
@@ -152,6 +182,14 @@ export class CatalogManagerComponent implements OnInit {
     }
     if (this.usesExternalGrantCategoryApi()) {
       this.saveExternalGrantCategory(row, payload);
+      return;
+    }
+    if (this.usesCountryApi()) {
+      this.saveCountry(row, payload);
+      return;
+    }
+    if (this.usesCurrencyApi()) {
+      this.saveCurrency(row, payload);
     }
   }
 
@@ -183,7 +221,15 @@ export class CatalogManagerComponent implements OnInit {
             this.busyRowId.set(null);
             this.toast.error('Unable to update the category status. Please try again.');
           },
-      });
+        });
+      return;
+    }
+    if (this.usesCountryApi()) {
+      this.updateCountryStatus(row);
+      return;
+    }
+    if (this.usesCurrencyApi()) {
+      this.updateCurrencyStatus(row);
       return;
     }
   }
@@ -223,6 +269,14 @@ export class CatalogManagerComponent implements OnInit {
           this.toast.error('Unable to delete the category. Please try again.');
         },
       });
+      return;
+    }
+    if (this.usesCountryApi()) {
+      this.deleteCountry(row);
+      return;
+    }
+    if (this.usesCurrencyApi()) {
+      this.deleteCurrency(row);
       return;
     }
   }
@@ -277,6 +331,13 @@ export class CatalogManagerComponent implements OnInit {
     return `${row.name.slice(0, 100)}…`;
   }
 
+  deleteDialogNote(): string {
+    if (this.showSharedWith) {
+      return 'This removes the option from every form where it is currently available.';
+    }
+    return 'This removes the option from future selections.';
+  }
+
   private activeFormOptionsData(): CachedFormOption[] {
     const activeForms = this.formOptionsData().filter((form) => form.is_active !== false);
     return activeForms.length ? activeForms : this.fallbackForms;
@@ -291,9 +352,26 @@ export class CatalogManagerComponent implements OnInit {
     });
   }
 
+  private loadCountryOptions(): void {
+    if (!this.usesCurrencyApi()) return;
+
+    this.countries.options().subscribe({
+      next: (response) => this.countryOptionsData.set(response.data ?? []),
+      error: () => this.countryOptionsData.set([]),
+    });
+  }
+
   loadCatalogItems(): void {
     if (this.usesProjectAccountCodeApi()) {
       this.loadProjectAccountCodes();
+      return;
+    }
+    if (this.usesCountryApi()) {
+      this.loadCountries();
+      return;
+    }
+    if (this.usesCurrencyApi()) {
+      this.loadCurrencies();
       return;
     }
     this.loadExternalGrantCategories();
@@ -377,6 +455,251 @@ export class CatalogManagerComponent implements OnInit {
       .toUpperCase()
       .replace(/[^A-Z0-9]+/g, '_')
       .replace(/^_+|_+$/g, '');
+  }
+
+  private loadCountries(): void {
+    this.isLoading.set(true);
+    this.loadFailed.set(false);
+    this.countries
+      .list({
+        page: this.page(),
+        perPage: this.pageSize(),
+        status: this.statusFilter(),
+        search: this.searchQuery(),
+      })
+      .subscribe({
+        next: (response) => {
+          if (!response.success || !response.data) {
+            this.handleCatalogLoadFailure(
+              response.message,
+              'Unable to load countries. Please try again.',
+            );
+            return;
+          }
+          const data = response.data;
+          this.apiRows.set((data.items ?? []).map((item) => this.toCountryItem(item)));
+          this.apiTotalItems.set(data.pagination?.total_items ?? data.items?.length ?? 0);
+          this.apiTotalPages.set(Math.max(1, data.pagination?.total_pages ?? 1));
+          this.page.set(data.pagination?.current_page ?? this.page());
+          this.isLoading.set(false);
+          this.busyRowId.set(null);
+        },
+        error: () =>
+          this.handleCatalogLoadFailure(undefined, 'Unable to load countries. Please try again.'),
+      });
+  }
+
+  private saveCountry(row: AdminCatalogItem | null, payload: AddOptionPayload): void {
+    if (this.isSaving()) return;
+
+    this.isSaving.set(true);
+    const request = {
+      name: payload.name.trim(),
+      code: payload.code?.trim().toUpperCase() ?? '',
+      is_active: payload.status === 'Active',
+    };
+    const operation = row ? this.countries.update(row.id, request) : this.countries.create(request);
+
+    operation.subscribe({
+      next: (response) => {
+        if (!response.success) {
+          this.isSaving.set(false);
+          this.toast.error(response.message || `Unable to ${row ? 'update' : 'add'} the country.`);
+          return;
+        }
+        this.isSaving.set(false);
+        this.toast.success(response.message || (row ? 'Country updated.' : 'Country added.'));
+        this.closeModal();
+        this.loadCatalogItems();
+      },
+      error: () => {
+        this.isSaving.set(false);
+        this.toast.error(`Unable to ${row ? 'update' : 'add'} the country. Please try again.`);
+      },
+    });
+  }
+
+  private updateCountryStatus(row: AdminCatalogItem): void {
+    this.busyRowId.set(row.id);
+    this.countries.update(row.id, { is_active: row.status !== 'Active' }).subscribe({
+      next: (response) => {
+        if (!response.success) {
+          this.busyRowId.set(null);
+          this.toast.error(response.message || 'Unable to update the country status.');
+          return;
+        }
+        this.toast.success(
+          response.message ||
+            `${row.name} ${row.status === 'Active' ? 'deactivated' : 'activated'}.`,
+        );
+        this.loadCatalogItems();
+      },
+      error: () => {
+        this.busyRowId.set(null);
+        this.toast.error('Unable to update the country status. Please try again.');
+      },
+    });
+  }
+
+  private deleteCountry(row: AdminCatalogItem): void {
+    this.busyRowId.set(row.id);
+    this.countries.delete(row.id).subscribe({
+      next: (response) => {
+        if (!response.success) {
+          this.busyRowId.set(null);
+          this.toast.error(response.message || 'Unable to delete the country.');
+          return;
+        }
+        this.rowToDelete.set(null);
+        this.toast.success(response.message || 'Country deleted.');
+        if (this.pagedRows().length === 1 && this.page() > 1) {
+          this.page.update((currentPage) => currentPage - 1);
+        }
+        this.loadCatalogItems();
+      },
+      error: () => {
+        this.busyRowId.set(null);
+        this.toast.error('Unable to delete the country. Please try again.');
+      },
+    });
+  }
+
+  private toCountryItem(item: CountryApi): AdminCatalogItem {
+    return {
+      id: item.id,
+      kind: 'country',
+      code: item.code,
+      name: item.name,
+      status: item.is_active ? 'Active' : 'Inactive',
+      appliesTo: [],
+      updatedAt: item.updated_at ?? item.created_at ?? '',
+    };
+  }
+
+  private loadCurrencies(): void {
+    this.isLoading.set(true);
+    this.loadFailed.set(false);
+    this.currencies
+      .list({
+        page: this.page(),
+        perPage: this.pageSize(),
+        status: this.statusFilter(),
+        search: this.searchQuery(),
+      })
+      .subscribe({
+        next: (response) => {
+          if (!response.success || !response.data) {
+            this.handleCatalogLoadFailure(
+              response.message,
+              'Unable to load currencies. Please try again.',
+            );
+            return;
+          }
+          const data = response.data;
+          this.apiRows.set((data.items ?? []).map((item) => this.toCurrencyItem(item)));
+          this.apiTotalItems.set(data.pagination?.total_items ?? data.items?.length ?? 0);
+          this.apiTotalPages.set(Math.max(1, data.pagination?.total_pages ?? 1));
+          this.page.set(data.pagination?.current_page ?? this.page());
+          this.isLoading.set(false);
+          this.busyRowId.set(null);
+        },
+        error: () =>
+          this.handleCatalogLoadFailure(undefined, 'Unable to load currencies. Please try again.'),
+      });
+  }
+
+  private saveCurrency(row: AdminCatalogItem | null, payload: AddOptionPayload): void {
+    if (this.isSaving()) return;
+
+    this.isSaving.set(true);
+    const request = {
+      name: payload.name.trim(),
+      symbol: payload.symbol?.trim() ?? '',
+      code: payload.code?.trim().toUpperCase() ?? '',
+      country_id: payload.countryId ?? 0,
+      is_active: payload.status === 'Active',
+    };
+    const operation = row
+      ? this.currencies.update(row.id, request)
+      : this.currencies.create(request);
+
+    operation.subscribe({
+      next: (response) => {
+        if (!response.success) {
+          this.isSaving.set(false);
+          this.toast.error(response.message || `Unable to ${row ? 'update' : 'add'} the currency.`);
+          return;
+        }
+        this.isSaving.set(false);
+        this.toast.success(response.message || (row ? 'Currency updated.' : 'Currency added.'));
+        this.closeModal();
+        this.loadCatalogItems();
+      },
+      error: () => {
+        this.isSaving.set(false);
+        this.toast.error(`Unable to ${row ? 'update' : 'add'} the currency. Please try again.`);
+      },
+    });
+  }
+
+  private updateCurrencyStatus(row: AdminCatalogItem): void {
+    this.busyRowId.set(row.id);
+    this.currencies.update(row.id, { is_active: row.status !== 'Active' }).subscribe({
+      next: (response) => {
+        if (!response.success) {
+          this.busyRowId.set(null);
+          this.toast.error(response.message || 'Unable to update the currency status.');
+          return;
+        }
+        this.toast.success(
+          response.message ||
+            `${row.name} ${row.status === 'Active' ? 'deactivated' : 'activated'}.`,
+        );
+        this.loadCatalogItems();
+      },
+      error: () => {
+        this.busyRowId.set(null);
+        this.toast.error('Unable to update the currency status. Please try again.');
+      },
+    });
+  }
+
+  private deleteCurrency(row: AdminCatalogItem): void {
+    this.busyRowId.set(row.id);
+    this.currencies.delete(row.id).subscribe({
+      next: (response) => {
+        if (!response.success) {
+          this.busyRowId.set(null);
+          this.toast.error(response.message || 'Unable to delete the currency.');
+          return;
+        }
+        this.rowToDelete.set(null);
+        this.toast.success(response.message || 'Currency deleted.');
+        if (this.pagedRows().length === 1 && this.page() > 1) {
+          this.page.update((currentPage) => currentPage - 1);
+        }
+        this.loadCatalogItems();
+      },
+      error: () => {
+        this.busyRowId.set(null);
+        this.toast.error('Unable to delete the currency. Please try again.');
+      },
+    });
+  }
+
+  private toCurrencyItem(item: CurrencyApi): AdminCatalogItem {
+    return {
+      id: item.id,
+      kind: 'currency',
+      code: item.code,
+      symbol: item.symbol,
+      name: item.name,
+      status: item.is_active ? 'Active' : 'Inactive',
+      appliesTo: [],
+      updatedAt: item.updated_at ?? item.created_at ?? '',
+      countryId: item.country_id,
+      countryName: item.country_name,
+    };
   }
 
   private loadProjectAccountCodes(): void {

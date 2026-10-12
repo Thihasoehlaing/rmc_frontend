@@ -1,0 +1,125 @@
+@if (chartPoints().length) {
+  <div class="external-department-chart">
+    <div class="external-department-chart__titles" aria-hidden="true">
+      <strong>External Grant Applications</strong>
+      <strong>Total Budget (RM)</strong>
+    </div>
+
+    <div class="external-department-chart__scroll">
+      <div class="external-department-chart__canvas" [style.min-width.px]="chartMinimumWidth()">
+        <div class="external-department-chart__axis external-department-chart__axis--applications">
+          @for (tick of applicationTicks(); track tick) {
+            <span>{{ formatApplicationTick(tick) }}</span>
+          }
+        </div>
+
+        <div
+          class="external-department-chart__plot"
+          role="img"
+          aria-label="External grant categories and total budget by department"
+        >
+          <div class="external-department-chart__grid" aria-hidden="true">
+            @for (tick of applicationTicks(); track tick) {
+              <i></i>
+            }
+          </div>
+
+          <div
+            class="external-department-chart__categories"
+            [style.grid-template-columns]="
+              'repeat(' + chartPoints().length + ', minmax(108px, 1fr))'
+            "
+          >
+            @for (point of chartPoints(); track point.departmentCode) {
+              <div class="external-department-chart__category">
+                <div class="external-department-chart__bars">
+                  <div class="external-department-chart__metric">
+                    <span
+                      class="external-department-chart__value external-department-chart__value--applications"
+                      [style.bottom]="'calc(' + point.applicationHeight + '% + 5px)'"
+                    >
+                      {{ point.formattedApplications }}
+                    </span>
+                    <div class="external-department-chart__stack">
+                      @for (segment of point.categorySegments; track segment.key) {
+                        @if (segment.value > 0) {
+                          <button
+                            type="button"
+                            class="external-department-chart__segment"
+                            [style.height.%]="segment.height"
+                            [style.background]="segment.color"
+                            [attr.aria-label]="
+                              point.departmentCode +
+                              ', ' +
+                              segment.label +
+                              ': ' +
+                              segment.formattedValue
+                            "
+                            (mouseenter)="showCategory(point, segment)"
+                            (mouseleave)="activeMetric.set(null)"
+                            (focus)="showCategory(point, segment)"
+                            (blur)="activeMetric.set(null)"
+                          ></button>
+                        }
+                      }
+                    </div>
+                  </div>
+
+                  <div class="external-department-chart__metric">
+                    <span
+                      class="external-department-chart__value external-department-chart__value--budget"
+                      [style.bottom]="'calc(' + point.budgetHeight + '% + 5px)'"
+                    >
+                      {{ point.formattedBudget }}
+                    </span>
+                    <button
+                      type="button"
+                      class="external-department-chart__budget"
+                      [style.height.%]="point.budgetHeight"
+                      [attr.aria-label]="
+                        point.departmentCode + ', total budget: ' + point.formattedBudget
+                      "
+                      (mouseenter)="showBudget(point)"
+                      (mouseleave)="activeMetric.set(null)"
+                      (focus)="showBudget(point)"
+                      (blur)="activeMetric.set(null)"
+                    ></button>
+                  </div>
+                </div>
+                <strong>{{ point.departmentCode }}</strong>
+              </div>
+            }
+          </div>
+
+          @if (activeMetric(); as active) {
+            <app-chart-tooltip
+              [visible]="true"
+              [animate]="false"
+              [color]="active.color"
+              [label]="active.label"
+              [value]="active.value"
+              [detail]="active.departmentCode"
+            />
+          }
+        </div>
+
+        <div class="external-department-chart__axis external-department-chart__axis--budget">
+          @for (tick of budgetTicks(); track tick) {
+            <span>{{ formatBudget(tick) }}</span>
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="external-department-chart__legend" aria-label="External grant category legend">
+      @for (category of categoryLegend(); track category.key) {
+        <span><i [style.background]="category.color"></i>{{ category.label }}</span>
+      }
+      <span class="external-department-chart__legend-budget">
+        <i [style.background]="budgetColor"></i>Total Budget
+      </span>
+    </div>
+  </div>
+} @else {
+  <div class="external-department-chart__empty">No External department data in this range</div>
+}

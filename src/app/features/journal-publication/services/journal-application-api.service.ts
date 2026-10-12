@@ -19,7 +19,11 @@ export interface JournalRequestPayload {
   project_account_code?: string | null;
   is_restricted_publisher?: boolean;
   cited_apu_jati_ejbm?: boolean;
+  cited_apu_jati_ejbm_doi?: string | null;
   cited_apu_jati_ejbm_explanation?: string | null;
+  cited_other_apu_affiliated_paper?: boolean | null;
+  cited_other_apu_affiliated_paper_doi?: string | null;
+  cited_other_apu_affiliated_paper_reason?: string | null;
   paper_title?: string | null;
   sdg_keyword_1?: string | null;
   sdg_keyword_2?: string | null;
@@ -42,6 +46,7 @@ export interface JournalCostingPayload {
   vote_number_id?: number | null;
   account_code_id?: number | null;
   supporting_document_attachment_id?: number | null;
+  currency?: string | null;
   cost_in_foreign_currency?: string | null;
   exchange_rate?: string | null;
   cost_in_rm?: string | null;
@@ -137,10 +142,7 @@ export class JournalApplicationApiService {
     return this.http.get<ApiResponse<JournalFormData>>(`${this.journalUrl}/${requestId}`);
   }
 
-  updateDraft(
-    requestId: number,
-    payload: JournalRequestPayload,
-  ): Observable<ApiResponse<any>> {
+  updateDraft(requestId: number, payload: JournalRequestPayload): Observable<ApiResponse<any>> {
     return this.http.put<ApiResponse<any>>(
       `${this.journalUrl}/${requestId}/draft`,
       payload,
@@ -261,17 +263,15 @@ export class JournalApplicationApiService {
   }
 
   listVoteNumbers(): Observable<ApiResponse<FinanceOption[]>> {
-    return this.http.get<ApiResponse<FinanceOption[]>>(
-      `${this.masterDataUrl}/vote-numbers`,
-      { params: new HttpParams().set('form_code', 'JOURNAL') },
-    );
+    return this.http.get<ApiResponse<FinanceOption[]>>(`${this.masterDataUrl}/vote-numbers`, {
+      params: new HttpParams().set('form_code', 'JOURNAL'),
+    });
   }
 
   listAccountCodes(): Observable<ApiResponse<FinanceOption[]>> {
-    return this.http.get<ApiResponse<FinanceOption[]>>(
-      `${this.masterDataUrl}/account-codes`,
-      { params: new HttpParams().set('form_code', 'JOURNAL') },
-    );
+    return this.http.get<ApiResponse<FinanceOption[]>>(`${this.masterDataUrl}/account-codes`, {
+      params: new HttpParams().set('form_code', 'JOURNAL'),
+    });
   }
 
   private skipSuccessToastOptions(): { context: HttpContext } {

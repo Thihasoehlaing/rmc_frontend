@@ -105,6 +105,15 @@ export class BatchSittingService {
 
   private toBatchSitting(api: ApiBatch): BatchSitting {
     const stages = emptyStages();
+    const legacyResubmission = api.stage_windows?.find((sw) => sw.stage_name === 'Applicant Resubmission');
+    if (legacyResubmission) {
+      for (const key of ['applicant_resubmission_hos', 'applicant_resubmission_rmc', 'applicant_resubmission_reviewers'] as const) {
+        stages[key] = {
+          startDate: this.fromApiDateTime(legacyResubmission.stage_start_date),
+          endDate: this.fromApiDateTime(legacyResubmission.stage_end_date),
+        };
+      }
+    }
     for (const sw of api.stage_windows ?? []) {
       const key = STAGE_LABEL_TO_KEY[sw.stage_name];
       if (key) {

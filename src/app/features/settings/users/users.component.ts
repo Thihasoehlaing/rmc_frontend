@@ -15,7 +15,7 @@ import { SearchableDropdownComponent } from '../../../shared/components/searchab
 import { TableSkeletonComponent } from '../../../shared/components/table-skeleton/table-skeleton.component';
 import {
   DepartmentRecord,
-  RoleRecord,
+  RoleOption,
   UserListFilters,
   UserRecord,
   UsersService,
@@ -50,7 +50,7 @@ export class UsersComponent implements OnInit {
   private readonly toastService = inject(ToastService);
 
   readonly users = signal<UserRecord[]>([]);
-  readonly roles = signal<RoleRecord[]>([]);
+  readonly roles = signal<RoleOption[]>([]);
   readonly departments = signal<DepartmentRecord[]>([]);
 
   readonly nameSearch = signal('');
@@ -120,12 +120,12 @@ export class UsersComponent implements OnInit {
     this.loadFailed.set(false);
 
     forkJoin({
-      roles: this.usersService.listRoles(),
+      roles: this.usersService.listRoleOptions(),
       departments: this.usersService.listDepartments(),
     })
       .pipe(
         tap(({ roles, departments }) => {
-          this.roles.set(roles.data.items);
+          this.roles.set(roles.data);
           this.departments.set(this.uniqueDepartments(departments.data));
         }),
         switchMap(() =>

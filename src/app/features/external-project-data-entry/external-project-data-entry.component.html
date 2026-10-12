@@ -140,16 +140,20 @@
             <div class="row row--3">
               <div class="form-field">
                 <label class="form-label is-required">Start Date</label>
-                <input type="date" class="input--text" formControlName="startDate" />
+                <app-date-picker
+                  formControlName="startDate"
+                  placeholder="Select start date"
+                  ariaLabel="Start Date"
+                ></app-date-picker>
               </div>
               <div class="form-field">
                 <label class="form-label is-required">End Date</label>
-                <input
-                  type="date"
-                  class="input--text"
+                <app-date-picker
                   formControlName="endDate"
-                  [min]="minimumEndDate()"
-                />
+                  [minDate]="minimumEndDate()"
+                  placeholder="Select end date"
+                  ariaLabel="End Date"
+                ></app-date-picker>
               </div>
               <div class="form-field">
                 <label class="form-label">Duration of Project (Month)</label>
@@ -564,7 +568,11 @@
             <div class="row row--2">
               <div class="form-field">
                 <label class="form-label is-required">Start Date</label>
-                <input type="date" class="input--text" formControlName="startDate" />
+                <app-date-picker
+                  formControlName="startDate"
+                  placeholder="Select start date"
+                  ariaLabel="Start Date"
+                ></app-date-picker>
               </div>
               <div class="form-field">
                 <label class="form-label is-required">Client/Stakeholder</label>
@@ -575,12 +583,12 @@
             <div class="row row--2">
               <div class="form-field">
                 <label class="form-label is-required">End Date</label>
-                <input
-                  type="date"
-                  class="input--text"
+                <app-date-picker
                   formControlName="endDate"
-                  [min]="minimumEndDate()"
-                />
+                  [minDate]="minimumEndDate()"
+                  placeholder="Select end date"
+                  ariaLabel="End Date"
+                ></app-date-picker>
               </div>
               <div class="form-field">
                 <label class="form-label">Duration of Project (Month)</label>
@@ -899,13 +907,12 @@
             [for]="section.key + '-' + idSuffix + '-billing-date'"
             >Billing Date</label
           >
-          <input
-            type="date"
-            class="input--text"
-            [class.is-invalid]="isBillingFieldInvalid(section, 'date')"
+          <app-date-picker
             [id]="section.key + '-' + idSuffix + '-billing-date'"
-            [value]="section.billingDate"
-            (input)="updateBillingDate(section.key, $any($event.target).value)"
+            [dateValue]="section.billingDate"
+            (dateValueChange)="updateBillingDate(section.key, $event)"
+            placeholder="Select billing date"
+            ariaLabel="Billing Date"
           />
           @if (isBillingFieldInvalid(section, 'date')) {
             <span class="form-error-msg">Select a billing date.</span>

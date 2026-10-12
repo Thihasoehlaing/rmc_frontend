@@ -2,11 +2,23 @@
   <!-- Page Header -->
   <app-form-main-title
     title="Travel Authorization"
+    description="Provide travel, programme, costing, participant, and declaration details for approval."
+    status="Draft"
+    statusIntent="warning"
     modalTitle="Travel Authorization Guidelines"
     [guidelineContext]="guidelineContext"
     endpoint="guidelines/travel-authorization"
   >
   </app-form-main-title>
+
+  <nav class="travel-section-nav" aria-label="Travel authorization sections">
+    <span class="travel-section-nav__label">Sections</span>
+    <button type="button" [class.is-active]="activeSection() === 'travel-information'" (click)="scrollToSection($event, 'travel-information')">Travel information</button>
+    <button type="button" [class.is-active]="activeSection() === 'programme-details'" (click)="scrollToSection($event, 'programme-details')">Programme</button>
+    <button type="button" [class.is-active]="activeSection() === 'costing'" (click)="scrollToSection($event, 'costing')">Cost &amp; itinerary</button>
+    <button type="button" [class.is-active]="activeSection() === 'travel-details'" (click)="scrollToSection($event, 'travel-details')">People</button>
+    <button type="button" [class.is-active]="activeSection() === 'declaration'" (click)="scrollToSection($event, 'declaration')">Declaration</button>
+  </nav>
 
   <div class="main-section application-form-content">
   <!-- Comment Toggle Buttons -->
@@ -106,10 +118,11 @@
     </div>
   }
 
+  <div class="travel-content-grid">
   <!-- Form Container -->
   <form [formGroup]="travelAuthForm" class="form-container application-form-surface">
     <!-- Personal Information Section -->
-    <section class="card travel-section">
+    <section id="personal-information" class="card travel-section">
       <app-custom-subheader title="Personal Information"></app-custom-subheader>
       <div class="card__content section-fields">
 
@@ -159,7 +172,7 @@
     </section>
 
     <!-- Travel Information Section -->
-    <section class="card travel-section">
+    <section id="travel-information" class="card travel-section">
       <app-custom-subheader title="Travel Information"></app-custom-subheader>
       <div class="card__content section-fields">
         <!-- Departure and Return Dates -->
@@ -308,7 +321,7 @@
     </section>
 
     <!-- Programme Details Section -->
-    <section class="card travel-section">
+    <section id="programme-details" class="card travel-section">
       <app-custom-subheader title="Programme Details"></app-custom-subheader>
       <div class="card__content section-fields">
         <!-- Location -->
@@ -361,7 +374,7 @@
     </section>
 
     <!-- Costing Section -->
-    <section class="card travel-section">
+    <section id="costing" class="card travel-section">
       <app-custom-subheader title="Costing"></app-custom-subheader>
       <div class="card__content section-fields">
 
@@ -435,7 +448,7 @@
     </section>
 
     <!-- Travel Details Section -->
-    <section class="card travel-section">
+    <section id="travel-details" class="card travel-section">
       <app-custom-subheader title="Travel Details"></app-custom-subheader>
       <div class="card__content section-fields">
       <div class="form-field">
@@ -557,7 +570,7 @@
     </section>
 
     <!-- Advance Section -->
-    <section class="card travel-section">
+    <section id="advance-colleagues" class="card travel-section">
       <app-custom-subheader title="Advance"></app-custom-subheader>
       <div class="card__content section-fields">
       <div class="form-field">
@@ -606,7 +619,7 @@
     </section>
 
     <!-- Colleague Information Section -->
-    <section class="card travel-section">
+    <section id="declaration" class="card travel-section">
       <app-custom-subheader title="Colleague Information"></app-custom-subheader>
       <div class="card__content section-fields">
       <div class="form-field">
@@ -846,6 +859,57 @@
       </div>
     </section>
   </form>
+
+  <aside class="travel-summary-rail" aria-label="Application summary">
+    <section class="summary-card summary-card--progress">
+      <div class="summary-card__heading">
+        <h2>Application progress</h2>
+        <strong>{{ getCompletionPercentage() }}%</strong>
+      </div>
+      <div
+        class="progress-track"
+        role="progressbar"
+        [attr.aria-valuenow]="getCompletionPercentage()"
+        aria-valuemin="0"
+        aria-valuemax="100"
+      >
+        <span [style.width.%]="getCompletionPercentage()"></span>
+      </div>
+      <ol class="progress-list">
+        <li class="is-complete">Personal information</li>
+        <li class="is-current">Travel information</li>
+        <li>Programme details</li>
+        <li>Costs, itinerary &amp; declaration</li>
+      </ol>
+    </section>
+
+    <section class="summary-card summary-card--snapshot">
+      <h2>Trip snapshot</h2>
+      <dl>
+        <div><dt>Travel window</dt><dd>{{ travelAuthForm.get('departureDate')?.value || 'Not selected yet' }}</dd></div>
+        <div><dt>Location</dt><dd>{{ travelAuthForm.get('location')?.value || 'Not selected yet' }}</dd></div>
+        <div><dt>Estimated total</dt><dd class="summary-total">RM {{ getEstimatedTotal() | number: '1.2-2' }}</dd></div>
+      </dl>
+    </section>
+
+    <section class="summary-card summary-card--notice">
+      <h2>Before you submit</h2>
+      <p>• Add supporting documents for cost items.</p>
+      <p>• Confirm itinerary dates match the trip.</p>
+      <p>• Complete every declaration checkbox.</p>
+      <small>Drafts can be saved at any time.</small>
+    </section>
+
+    <section class="summary-card summary-card--route">
+      <h2>Review route</h2>
+      <ol>
+        <li><strong>Head of School</strong><small>Academic approval</small></li>
+        <li><strong>RMC review</strong><small>Research and budget check</small></li>
+        <li><strong>Management &amp; finance</strong><small>Role-based final approvals</small></li>
+      </ol>
+    </section>
+  </aside>
+  </div>
 
   <!-- Form Navigation Footer -->
   <app-form-wizard-nav

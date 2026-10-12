@@ -12,8 +12,14 @@ import {
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
-import { BatchSitting } from '../../core/interfaces/batch-sitting.interface';
+import {
+  BatchSitting,
+  WORKFLOW_STAGE_META,
+  WorkflowStageKey,
+  WorkflowStageWindow,
+} from '../../core/interfaces/batch-sitting.interface';
 import { NotificationService } from '../../core/services/notification.service';
+import { ToastService } from '../../core/services/toast.service';
 import { formatDisplayDateTime } from '../../shared/utils/date-time.util';
 
 // Shared layout components
@@ -54,10 +60,18 @@ import {
   WorkflowHistoryEntry,
 } from '../../core/interfaces/rdig-application.interface';
 import { FormPageSkeletonComponent } from '../../shared/components/form-page-skeleton/form-page-skeleton.component';
+import { DialogComponent } from '../../shared/components/dialog/dialog.component';
 import { Observable, catchError, finalize, forkJoin, map, of, switchMap, tap } from 'rxjs';
 import { SvgIconComponent } from '../../shared/components/svg-icon/svg-icon.component';
 import { SVG_ICON_LOADING_SPINNER, SVG_ICON_SUCCESS_CHECK } from '../../shared/icons/svg-icons';
-import { RdigApiService, RdigRequestDto } from './services/rdig-api.service';
+import {
+  RdigActiveBatchResponse,
+  RdigApiService,
+  RdigFormData,
+  RdigRequestDto,
+} from './services/rdig-api.service';
+import { rdigKeywordsValidator } from './utils/rdig-keywords.util';
+import { WorkflowRequestsService, RequestCommentDto, RequestSummaryDto } from '../../core/services/workflow-requests.service';
 
 export function isApplicantSubmissionWindowOpen(
   hasActiveBatch: boolean,
@@ -99,6 +113,7 @@ export function isApplicantSubmissionWindowOpen(
     ScoreSummaryComponent,
     ReviewBlockComponent,
     FormPageSkeletonComponent,
+    DialogComponent,
     SvgIconComponent,
   ],
   templateUrl: './rdig_form.component.html',
@@ -116,7 +131,48 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private notifSvc = inject(NotificationService);
+  private toastSvc = inject(ToastService);
   private rdigApi = inject(RdigApiService);
+  private readonly requestsApi = inject(WorkflowRequestsService);
+  readonly accessDenied = signal(false);
+  readonly accessChecking = signal(true);
+
+  returnToDashboard(): void {
+    this.router.navigate(['/dashboard']);
+  }
+  readonly savedFeedback = signal<Array<{ id: number; actor: string; section: string; text: string }>>([]);
+  private readonly inlineFeedbackIds = signal<Set<number>>(new Set());
+  readonly feedbackSources = computed(() => [...new Set(this.savedFeedback().map((comment) => comment.actor))]);
+  readonly visibleAdditionalFeedback = computed(() => this.savedFeedback().filter((comment) =>
+    !this.inlineFeedbackIds().has(comment.id) && this.feedbackSourceVisible(comment.actor)));
+  private readonly additionalFeedbackSources = signal<Set<string>>(new Set());
+
+  private feedbackToggle(source: string) {
+    const toggles: Record<string, typeof this.showHosComments> = {
+      'HOS / HOD': this.showHosComments, HOS: this.showHosComments, RMC: this.showRmcComments,
+      'Reviewer 1': this.showR1Comments, 'Reviewer 2': this.showR2Comments,
+      'RDIG Chair': this.showRdigChairComments, 'Vice Chancellor': this.showVcComments, CFO: this.showCfoComments,
+    };
+    return toggles[source];
+  }
+
+  feedbackSourceVisible(source: string): boolean {
+    return this.feedbackToggle(source)?.() ?? this.additionalFeedbackSources().has(source);
+  }
+
+  feedbackCount(source: string): number {
+    return this.savedFeedback().filter((comment) => comment.actor === source).length;
+  }
+
+  toggleFeedbackSource(source: string): void {
+    const toggle = this.feedbackToggle(source);
+    if (toggle) toggle.update((visible) => !visible);
+    else this.additionalFeedbackSources.update((sources) => {
+      const next = new Set(sources);
+      if (next.has(source)) next.delete(source); else next.add(source);
+      return next;
+    });
+  }
   readonly guidelineContext: GuidelineContext = this.route.snapshot.queryParamMap.has('request_id') || this.route.snapshot.queryParamMap.has('id')
     ? 'existing-application'
     : 'new-application';
@@ -161,6 +217,44 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
     return formatDisplayDateTime(iso, iso || '\u2014');
   }
 
+  private emptyStageWindows(): Record<WorkflowStageKey, WorkflowStageWindow> {
+    return Object.fromEntries(
+      WORKFLOW_STAGE_META.map((stage) => [stage.key, { startDate: null, endDate: null }]),
+    ) as Record<WorkflowStageKey, WorkflowStageWindow>;
+  }
+
+  private batchStagesFromApi(
+    batch: NonNullable<RdigActiveBatchResponse['batch']>,
+    applicantStart: string | null,
+    applicantEnd: string | null,
+  ): Record<WorkflowStageKey, WorkflowStageWindow> {
+    const stages = this.emptyStageWindows();
+    const legacyResubmission = batch.stage_windows?.find((stage) => stage.stage_name === 'Applicant Resubmission');
+    if (legacyResubmission) {
+      for (const key of ['applicant_resubmission_hos', 'applicant_resubmission_rmc', 'applicant_resubmission_reviewers'] as const) {
+        stages[key] = { startDate: legacyResubmission.stage_start_date, endDate: legacyResubmission.stage_end_date };
+      }
+    }
+    const keyByLabel = new Map(
+      WORKFLOW_STAGE_META.map((stage) => [stage.label.trim().toLowerCase(), stage.key]),
+    );
+
+    for (const stageWindow of batch.stage_windows ?? []) {
+      const key = keyByLabel.get(stageWindow.stage_name.trim().toLowerCase());
+      if (!key) continue;
+      stages[key] = {
+        startDate: stageWindow.stage_start_date,
+        endDate: stageWindow.stage_end_date,
+      };
+    }
+
+    stages.applicant = {
+      startDate: applicantStart,
+      endDate: applicantEnd,
+    };
+    return stages;
+  }
+
   // ── Wizard state ───────────────────────────────────────────────
   currentStep = signal<number>(1);
   readonly totalSteps = 4;
@@ -202,7 +296,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
   showR2Comments = signal(false);
   showRdigChairComments = signal(false);
   showVcComments = signal(false);
-  showCeoComments = signal(false);
+  showCfoComments = signal(false);
 
   /** True when any comment panel is visible */
   showAnyComments = computed(
@@ -213,7 +307,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
       this.showR2Comments() ||
       this.showRdigChairComments() ||
       this.showVcComments() ||
-      this.showCeoComments(),
+      this.showCfoComments(),
   );
 
   /** Tracks steps the user has left, making them eligible for warning/complete state */
@@ -235,7 +329,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
       { path: 'teamDetails.leaderEmail', label: "Project Leader's Email" },
       { path: 'teamDetails.department', label: 'School / Department' },
       { path: 'teamDetails.researchCluster', label: 'Select Research Cluster' },
-      { path: 'teamDetails.leaderRoles', label: 'Select Roles of Project Leader' },
+      { path: 'teamDetails.leaderRoles', label: 'Roles of Project Leader' },
       {
         path: 'teamDetails.internalResearchers',
         label: 'Asia Pacific University of Technology & Innovation Co-Researchers (min 1)',
@@ -247,6 +341,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
       { path: 'projectDetails.applicationType', label: 'Application Type' },
       { path: 'projectDetails.declarations.ethics', label: 'RDIG Project Declaration' },
       { path: 'projectDetails.declarations.conflict', label: 'Co-Researcher Declaration' },
+      { path: 'projectDetails.track', label: 'Track' },
       { path: 'projectDetails.duration', label: 'Project Duration' },
       { path: 'projectDetails.title', label: 'Project Title' },
       { path: 'projectDetails.researchArea', label: 'Research Area' },
@@ -329,7 +424,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
       .replace(/\bRmc\b/g, 'RMC')
       .replace(/\bRdig\b/g, 'RDIG')
       .replace(/\bVc\b/g, 'VC')
-      .replace(/\bCeo\b/g, 'CEO')
+      .replace(/\bCfo\b/g, 'CFO')
       .replace(/\bSdg\b/g, 'SDG')
       .replace(/\bEsg\b/g, 'ESG');
   }
@@ -422,6 +517,51 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
 
       return { visited, valid: missingFields.length === 0, missingFields };
     });
+  }
+
+  applicationProgress(): number {
+    const criteria = this.stepFieldChecks.flat();
+    if (!criteria.length) return 0;
+
+    let completed = criteria.filter((check) => this.isProgressFieldComplete(check.path)).length;
+    let total = criteria.length;
+
+    // Research Activities are a required part of Project Details even though their
+    // rows are managed in a separate form array.
+    if (this.workflow.isApplicantEditable()) {
+      const activities = this.rdigForm.get('activities') as FormArray | null;
+      total += 1;
+      if (activities?.length && activities.valid) completed += 1;
+    }
+
+    // Include cross-field validation that is not represented by a single field path.
+    const budget = this.rdigForm.get('budget');
+    if (budget) {
+      total += 1;
+      if (budget.valid && !budget.hasError('budgetRange')) completed += 1;
+    }
+
+    return Math.round((completed / total) * 100);
+  }
+
+  isStepComplete(stepNumber: number): boolean {
+    const checks = this.stepFieldChecks[stepNumber - 1] ?? [];
+    if (!checks.length) return false;
+    const fieldsComplete = checks.every((check) => this.isProgressFieldComplete(check.path));
+    const status = this.getStepStatuses()[stepNumber - 1];
+    return fieldsComplete && !!status?.valid;
+  }
+
+  private isProgressFieldComplete(path: string): boolean {
+    const control = this.rdigForm.get(path);
+    if (!control) return false;
+    if (!control.disabled) return control.valid;
+    // Prefilled identity controls are disabled for editing, but still count
+    // when populated. Other disabled controls are excluded by conditional rules.
+    if (['teamDetails.leaderName', 'teamDetails.leaderEmail', 'teamDetails.department'].includes(path)) {
+      return !!String(control.value ?? '').trim();
+    }
+    return true;
   }
 
   get validationSummaryItems(): ValidationSummaryItem[] {
@@ -549,6 +689,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
           conflict: [false, Validators.requiredTrue],
         }),
         category: ['S&T'],
+        track: ['', Validators.required],
         duration: ['', Validators.required],
         title: ['', [Validators.required, Validators.maxLength(200)]],
         researchArea: ['', [Validators.required, Validators.maxLength(100)]],
@@ -557,7 +698,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
         esgs: [[], [Validators.required, Validators.minLength(1), Validators.maxLength(3)]],
         sdgs: [[], [Validators.required, Validators.minLength(1), Validators.maxLength(3)]],
         executiveSummary: ['', [Validators.required, Validators.maxLength(1500)]],
-        keywords: ['', [Validators.required, Validators.maxLength(200)]],
+        keywords: ['', [Validators.required, rdigKeywordsValidator]],
         introduction: ['', [Validators.required, Validators.maxLength(3000)]],
         problemStatement: ['', [Validators.required, Validators.maxLength(3000)]],
         researchAim: ['', [Validators.required, Validators.maxLength(1000)]],
@@ -735,7 +876,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
         reviewer2Decision: [''],
         rdigChairStatus: [''],
         vcStatus: [''],
-        ceoStatus: [''],
+        cfoStatus: [''],
         reviewer1Assignment: ['4'],
         reviewer2Assignment: ['4'],
       }),
@@ -853,8 +994,8 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
   toggleVcComments(): void {
     this.showVcComments.update((v) => !v);
   }
-  toggleCeoComments(): void {
-    this.showCeoComments.update((v) => !v);
+  toggleCfoComments(): void {
+    this.showCfoComments.update((v) => !v);
   }
 
   // ── Loading indicator for when fetching an existing application ──
@@ -862,6 +1003,20 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
 
   // ── Sync ABAC attributes to workflow ───────────────────────────
   ngOnInit(): void {
+    this.rdigApi.getMyAccess().subscribe({
+      next: (res) => {
+        this.accessDenied.set(!res.data.can_apply);
+        this.accessChecking.set(false);
+        if (res.data.can_apply) this.initializeApplication();
+      },
+      error: () => {
+        this.accessDenied.set(true);
+        this.accessChecking.set(false);
+      },
+    });
+  }
+
+  private initializeApplication(): void {
     // Applicant-safe facade over the same batch data used by the original green card.
     this.rdigApi.getActiveBatch().subscribe({
       next: (res) => {
@@ -901,12 +1056,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
                 status: batch.status,
                 startDate: batch.start_date,
                 endDate: batch.end_date,
-                stages: {
-                  applicant: {
-                    startDate: applicantStart,
-                    endDate: applicantEnd,
-                  },
-                },
+                stages: this.batchStagesFromApi(batch, applicantStart, applicantEnd),
               } as unknown as BatchSitting)
             : null,
         );
@@ -1016,12 +1166,16 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
       return;
     }
     this.isLoadingApplication.set(true);
-    this.rdigApi
-      .getForm(requestId)
+    forkJoin({
+      form: this.rdigApi.getForm(requestId),
+      request: this.requestsApi.getRequest(requestId),
+      comments: this.requestsApi.getComments(requestId),
+    })
       .pipe(finalize(() => this.isLoadingApplication.set(false)))
       .subscribe({
         next: (res) => {
-          this.patchFormFromBackend(res.data as any);
+          this.patchFormFromBackend(res.form.data);
+          this.patchSavedFeedback(res.comments.data, res.request.data);
         },
         error: (err) => {
           console.error('Failed to load application:', err);
@@ -1030,8 +1184,81 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
       });
   }
 
-  private patchFormFromBackend(data: any): void {
-    const requestRow = data.request ?? {};
+  private patchSavedFeedback(comments: RequestCommentDto[], request: RequestSummaryDto): void {
+    // Include overall/action feedback as well as section feedback; never expose
+    // reviewer identities through the resubmission feedback heading.
+    this.savedFeedback.set(comments.filter((comment) => comment.comment_text?.trim()).map((comment) => {
+      const code = (comment.actor_type_code ?? '').toLowerCase();
+      const reviewer = request.rdig_reviewers?.find((item) =>
+        !!item.username && item.username.toLowerCase() === comment.staff_username?.toLowerCase());
+      const number = code.match(/reviewer_?([12])/)?.[1] ?? reviewer?.reviewer_no;
+      const labels: Record<string, string> = {
+        hos_hod: 'HOS / HOD', hos: 'HOS', rmc: 'RMC', rdig_chair: 'RDIG Chair',
+        vc: 'Vice Chancellor', cfo: 'CFO', applicant: 'Applicant',
+      };
+      return {
+        id: comment.id,
+        actor: number ? `Reviewer ${number}` : code.includes('reviewer') ? 'Reviewer' : labels[code] ?? 'Workflow Comment',
+        section: comment.comment_type === 'workflow_action'
+          ? 'Overall Comment' : comment.section_name ?? 'Section Comment',
+        text: comment.comment_text,
+      };
+    }));
+    const fields: Record<string, string> = {
+      team_members_group: 'reviewTeam.{actor}Comment',
+      project_classification: 'reviewProject.{actor}ClassificationComment',
+      project_title: 'reviewProject.{actor}TitleComment',
+      project_research_area: 'reviewProject.{actor}ResearchAreaComment',
+      project_research_alignment: 'reviewProject.{actor}EsgComment',
+      project_esg: 'reviewProject.{actor}EsgComment',
+      project_sdg: 'reviewProject.{actor}SdgComment',
+      project_summary: 'reviewProject.{actor}SummaryComment',
+      project_keywords: 'reviewProject.{actor}KeywordsComment',
+      project_intro: 'reviewProject.{actor}IntroComment',
+      project_problem: 'reviewProject.{actor}ProblemComment',
+      project_aim: 'reviewProject.{actor}AimComment',
+      project_questions: 'reviewProject.{actor}QuestionsComment',
+      project_hypothesis: 'reviewProject.{actor}HypothesisComment',
+      project_lit_review: 'reviewProject.{actor}LitReviewComment',
+      project_methodology: 'reviewProject.{actor}MethodComment',
+      project_references: 'reviewProject.{actor}ReferencesComment',
+      project_benefits: 'reviewProject.{actor}StakeholdersComment',
+      project_vision_activities: 'reviewProject.{actor}VisionComment',
+      project_vision: 'reviewProject.{actor}VisionComment',
+      project_activities: 'reviewProject.{actor}ActivitiesComment',
+      output_overall: 'reviewOutput.{actor}Comment',
+      budget_breakdown: 'reviewBudget.{actor}StudentComment',
+      budget_summary: 'reviewBudget.{actor}Comment',
+    };
+    const values = new Map<string, string[]>();
+    const inlineIds = new Set<number>();
+    for (const comment of comments) {
+      if (comment.comment_type !== 'section_review' || !comment.comment_text?.trim()) continue;
+      const code = (comment.actor_type_code ?? '').toLowerCase();
+      const reviewer = request.rdig_reviewers?.find((item) =>
+        item.username?.toLowerCase() === comment.staff_username?.toLowerCase());
+      const number = code.match(/reviewer_?([12])/)?.[1] ?? reviewer?.reviewer_no;
+      let path = number ? fields[comment.section_code ?? '']?.replace('{actor}', `reviewer${number}`) : undefined;
+      if (!number && (code === 'hos_hod' || code === 'rmc')) {
+        const actor = code === 'rmc' ? 'rmc' : 'hos';
+        const groups: Record<string, string> = {
+          group_team_members: `reviewTeam.${actor}Comment`,
+          group_project_details: actor === 'hos' ? 'reviewProject.hosPageComment' : 'reviewProject.rmcAimComment',
+          group_output_budget: `reviewBudget.${actor}Comment`,
+        };
+        path = groups[comment.section_code ?? ''];
+      }
+      if (!path || !this.rdigForm.get(path)) continue;
+      inlineIds.add(comment.id);
+      values.set(path, [...(values.get(path) ?? []), comment.comment_text]);
+    }
+    // Feedback is read-only and never hydrates reviewer identity or score controls.
+    for (const [path, texts] of values) this.rdigForm.get(path)?.setValue(texts.join('\n\n'), { emitEvent: false });
+    this.inlineFeedbackIds.set(inlineIds);
+  }
+
+  private patchFormFromBackend(data: RdigFormData): void {
+    const requestRow = data.request;
     const rdig = data.rdig ?? {};
     const requestId = requestRow.id ?? rdig.request_id;
     this.loadedAppId.set(requestId != null ? String(requestId) : null);
@@ -1041,11 +1268,16 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
       projectDetails: {
         applicationType: rdig.application_type ?? null,
         category: rdig.project_category ?? null,
-        duration: rdig.project_duration_months ?? null,
+        track: rdig.track ?? null,
+        duration: this.toRadioValue(rdig.project_duration_months),
+        declarations: {
+          ethics: !!rdig.declaration_no_ongoing_rdig_self,
+          conflict: !!rdig.declaration_no_ongoing_rdig_coresearchers,
+        },
         title: rdig.project_title ?? '',
         researchArea: rdig.research_area ?? '',
-        domain: rdig.research_domain_id ?? null,
-        subDomain: rdig.sub_research_domain_id ?? null,
+        domain: this.toDropdownId(rdig.research_domain_id),
+        subDomain: this.toDropdownId(rdig.sub_research_domain_id),
         executiveSummary: rdig.executive_summary ?? '',
         keywords: rdig.keywords ?? '',
         introduction: rdig.introduction ?? '',
@@ -1062,8 +1294,8 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
           stakeholders: rdig.benefit_to_stakeholders ?? '',
         },
         visionMission: rdig.vision_mission_alignment ?? '',
-        esgs: (data.esg_selections ?? []).map((item: any) => String(item.esg_id)),
-        sdgs: (data.sdg_selections ?? []).map((item: any) => String(item.sdg_id)),
+        esgs: (data.esg_selections ?? []).map((item) => String(item.esg_id)),
+        sdgs: (data.sdg_selections ?? []).map((item) => String(item.sdg_id)),
       },
       outputs: {
         journal: {
@@ -1071,8 +1303,14 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
           quantity: rdig.indexed_journal_quantity ?? 0,
         },
         conceptualDesign: !!rdig.conceptual_design_selected,
-        knowledgeTransfer: { checked: !!rdig.knowledge_transfer_programme_selected },
-        externalGrant: { checked: !!rdig.application_external_grant_selected },
+        knowledgeTransfer: {
+          checked: !!rdig.knowledge_transfer_programme_selected,
+          community: rdig.knowledge_transfer_community ?? '',
+        },
+        externalGrant: {
+          checked: !!rdig.application_external_grant_selected,
+          scheme: rdig.external_grant_scheme ?? '',
+        },
         others: {
           checked: !!rdig.other_output_selected,
           details: rdig.other_output_specification ?? '',
@@ -1089,13 +1327,13 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
       leaderName: rdig.project_leader_name ?? requestRow.applicant_name ?? '',
       leaderEmail: rdig.project_leader_email ?? requestRow.applicant_email ?? '',
       department: rdig.project_leader_department ?? requestRow.applicant_department ?? '',
-      researchCluster: rdig.research_cluster_id ?? null,
+      researchCluster: this.toDropdownId(rdig.research_cluster_id),
       leaderRoles: rdig.project_leader_role_in_project ?? '',
     });
 
     this.rebuildArray(
       this.rdigForm.get('teamDetails.internalResearchers') as FormArray,
-      (data.apu_co_researchers ?? []).map((item: any) => ({
+      (data.apu_co_researchers ?? []).map((item) => ({
         backendId: item.id,
         staffId: item.staff_id,
         staffName: item.staff_name,
@@ -1111,7 +1349,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
 
     this.rebuildArray(
       this.rdigForm.get('teamDetails.externalResearchers') as FormArray,
-      (data.collaborators ?? []).map((item: any) => ({
+      (data.collaborators ?? []).map((item) => ({
         backendId: item.id,
         title: item.title,
         fullName: item.full_name,
@@ -1124,6 +1362,9 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
         funding: item.matched_funding_amount,
         roles: item.role_in_project,
         supportLetterAttachmentId: item.support_letter_attachment_id,
+        supportLetter: (data.attachments ?? []).find(
+          (attachment) => attachment.id === item.support_letter_attachment_id,
+        ) ?? null,
       })),
     );
     this.captureLoadedBackendIds(
@@ -1133,7 +1374,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
 
     this.rebuildArray(
       this.rdigForm.get('activities') as FormArray,
-      (data.research_activities ?? []).map((item: any) => ({
+      (data.research_activities ?? []).map((item) => ({
         backendId: item.id,
         name: item.activity_name,
         startMonth: item.start_month,
@@ -1143,8 +1384,14 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
     );
     this.captureLoadedBackendIds('activities', this.rdigForm.get('activities') as FormArray);
 
-    const sectionById = new Map((data.budget_sections ?? []).map((item: any) => [item.id, item.section_code]));
-    const itemsByKey: Record<string, any[]> = {
+    const sectionById = new Map<number, string>();
+    for (const section of data.budget_sections ?? []) {
+      const sectionId = section.id ?? section.budget_section_id;
+      if (sectionId != null && section.section_code) {
+        sectionById.set(sectionId, section.section_code);
+      }
+    }
+    const itemsByKey: Record<string, Array<Record<string, unknown>>> = {
       studentAllowances: [],
       travelAccommodation: [],
       materialsSupplies: [],
@@ -1164,6 +1411,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
           description: item.description,
           amount: item.amount_rm,
           remarks: item.remarks,
+          quotationAttachmentId: item.quotation_attachment_id ?? null,
         });
       }
     }
@@ -1196,7 +1444,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
     // ── Simple groups (patchValue handles nested objects) ────────
     this.rdigForm.patchValue({
       metadata: data.metadata ?? {},
-      projectDetails: data.projectDetails ?? {},
+      projectDetails: this.normalizeSavedProjectDetails(data.projectDetails),
       outputs: data.outputs ?? {},
       finalDeclaration: data.finalDeclaration ?? {},
       reviewTeam: data.reviewTeam ?? {},
@@ -1212,7 +1460,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
       leaderName: data.teamDetails?.leaderName ?? '',
       leaderEmail: data.teamDetails?.leaderEmail ?? '',
       department: data.teamDetails?.department ?? '',
-      researchCluster: data.teamDetails?.researchCluster ?? null,
+      researchCluster: this.toDropdownId(data.teamDetails?.researchCluster),
       leaderRoles: data.teamDetails?.leaderRoles ?? '',
     });
 
@@ -1291,6 +1539,66 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
     this.workflow.reviewer2UserId.set(r2);
   }
 
+  private normalizeSavedProjectDetails(projectDetails: any): any {
+    if (!projectDetails) return {};
+    return {
+      ...projectDetails,
+      duration: this.toRadioValue(projectDetails.duration),
+      domain: this.toDropdownId(projectDetails.domain),
+      subDomain: this.toDropdownId(projectDetails.subDomain),
+      esgs: this.toDropdownIds(projectDetails.esgs),
+      sdgs: this.toDropdownIds(projectDetails.sdgs),
+    };
+  }
+
+  private toDropdownId(value: unknown): string | null {
+    if (value === null || value === undefined || value === '') return null;
+    return String(value);
+  }
+
+  private toDropdownIds(values: unknown): string[] {
+    if (!Array.isArray(values)) return [];
+    return values
+      .filter((value) => value !== null && value !== undefined && value !== '')
+      .map((value) => String(value));
+  }
+
+  private toRadioValue(value: unknown): string | null {
+    if (value === null || value === undefined || value === '') return null;
+    return String(value);
+  }
+
+  private toDecimalNumber(value: unknown): number {
+    return this.parseDecimalAmount(value) ?? 0;
+  }
+
+  private toDecimalPayload(value: unknown): string | null {
+    const amount = this.parseDecimalAmount(value);
+    return amount === null ? null : amount.toFixed(2);
+  }
+
+  private parseDecimalAmount(value: unknown): number | null {
+    if (value === null || value === undefined || value === '') return null;
+    const normalized = String(value).replace(/,/g, '').trim();
+    if (!normalized) return null;
+    const amount = Number(normalized);
+    return Number.isFinite(amount) ? amount : null;
+  }
+
+  private calculateBudgetTotalForPayload(budget: any): number {
+    const categoryKeys = [
+      'studentAllowances',
+      'travelAccommodation',
+      'materialsSupplies',
+      'specialServices',
+    ];
+
+    return categoryKeys.reduce((total, key) => {
+      const rows = Array.isArray(budget?.[key]) ? budget[key] : [];
+      return total + rows.reduce((sum: number, row: any) => sum + this.toDecimalNumber(row?.amount), 0);
+    }, 0);
+  }
+
   /** Clear a FormArray and rebuild it from a plain-object array. */
   private rebuildArray(arr: FormArray, items: any[]): void {
     arr.clear({ emitEvent: false });
@@ -1299,7 +1607,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
 
   // ── Real RDIG backend integration ───────────────────────────────
   // Applicant-facing lifecycle (create/save/load/submit) writes through to the
-  // real backend. The HOS/RMC/Reviewer/RDIG Chair/VC/CEO review workflow keeps
+  // real backend. The HOS/RMC/Reviewer/RDIG Chair/VC/CFO review workflow keeps
   // running against the local json-server store for now — that part of the
   // backend's generic workflow engine is a separate, later integration pass.
 
@@ -1335,10 +1643,12 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
     const outputs = raw.outputs ?? {};
     const budget = raw.budget ?? {};
     const finalDecl = raw.finalDeclaration ?? {};
+    const totalBudgetRequest = this.calculateBudgetTotalForPayload(budget);
 
     return {
       application_type: pd.applicationType || null,
       project_category: pd.category || null,
+      track: pd.track || null,
       project_duration_months: pd.duration ? Number(pd.duration) || null : null,
       project_title: pd.title || null,
       research_area: pd.researchArea || null,
@@ -1363,15 +1673,19 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
       project_leader_email: team.leaderEmail || null,
       project_leader_department: team.department || null,
       project_leader_role_in_project: team.leaderRoles || null,
+      declaration_no_ongoing_rdig_self: !!pd.declarations?.ethics,
+      declaration_no_ongoing_rdig_coresearchers: !!pd.declarations?.conflict,
       declaration_agreement_accepted: !!finalDecl.agreed,
       novelty_justification: finalDecl.noveltyJustification || null,
       budget_remarks: budget.otherRemarks || null,
-      total_budget_request: budget.totalRequest != null ? String(budget.totalRequest) : null,
+      total_budget_request: this.toDecimalPayload(totalBudgetRequest),
       indexed_journal_selected: !!outputs.journal?.checked,
       indexed_journal_quantity: outputs.journal?.quantity ?? null,
       conceptual_design_selected: !!outputs.conceptualDesign,
       knowledge_transfer_programme_selected: !!outputs.knowledgeTransfer?.checked,
+      knowledge_transfer_community: outputs.knowledgeTransfer?.community || null,
       application_external_grant_selected: !!outputs.externalGrant?.checked,
+      external_grant_scheme: outputs.externalGrant?.scheme || null,
       other_output_selected: !!outputs.others?.checked,
       other_output_specification: outputs.others?.details || null,
     };
@@ -1446,8 +1760,44 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
                 new FormControl(attachmentId),
                 { emitEvent: false },
               );
-              // Clear the raw File so it isn't re-uploaded on the next save in this session.
-              group.get('supportLetter')?.setValue(null, { emitEvent: false });
+              // Keep persisted metadata for display without uploading the File again.
+              group.get('supportLetter')?.setValue(res.data, { emitEvent: false });
+            }),
+          ),
+        );
+      }
+    }
+
+    return uploads.length ? forkJoin(uploads) : of(null);
+  }
+
+  /** Uploads newly selected quotations/supporting documents after budget rows have backend IDs. */
+  private uploadPendingBudgetAttachments(id: number): Observable<unknown> {
+    const budget = this.rdigForm.get('budget') as FormGroup;
+    const attachmentCategories = ['travelAccommodation', 'materialsSupplies', 'specialServices'];
+    const uploads: Observable<unknown>[] = [];
+
+    for (const category of attachmentCategories) {
+      const array = budget.get(category) as FormArray;
+      for (let index = 0; index < array.length; index++) {
+        const group = array.at(index) as FormGroup;
+        const file = group.get('attachmentFile')?.value;
+        const backendId = Number(group.get('backendId')?.value);
+        if (!(file instanceof File) || !backendId) continue;
+
+        uploads.push(
+          this.rdigApi.uploadAttachment(id, file, 'rdig_budget_item', backendId).pipe(
+            switchMap((res) => {
+              const attachmentId = res?.data?.id;
+              if (!attachmentId) throw new Error('Backend did not return the uploaded budget attachment id.');
+              return this.rdigApi.updateBudgetItem(id, backendId, {
+                quotation_attachment_id: attachmentId,
+              }).pipe(
+                tap(() => {
+                  group.get('quotationAttachmentId')?.setValue(attachmentId, { emitEvent: false });
+                  group.get('attachmentFile')?.setValue(null, { emitEvent: false });
+                }),
+              );
             }),
           ),
         );
@@ -1463,8 +1813,8 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
     return this.rdigApi.listBudgetSections(id).pipe(
       map((res) => {
         const sectionMap: Record<string, number> = {};
-        for (const section of res.data ?? []) {
-          const sectionId = (section as any).id ?? section.budget_section_id;
+        for (const section of res.data?.items ?? []) {
+          const sectionId = section.id ?? section.budget_section_id;
           if (section.section_code && sectionId) sectionMap[section.section_code] = sectionId;
         }
         this.budgetSectionIdByCode = sectionMap;
@@ -1553,8 +1903,9 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
               (raw) => ({
                 rdig_budget_section_id: sectionIds[code],
                 description: raw.description || null,
-                amount_rm: raw.amount != null ? String(raw.amount) : null,
+                amount_rm: this.toDecimalPayload(raw.amount),
                 remarks: raw.remarks || null,
+                quotation_attachment_id: raw.quotationAttachmentId ?? null,
               }),
               (payload) => this.rdigApi.createBudgetItem(id, payload),
               (backendId, payload) => this.rdigApi.updateBudgetItem(id, backendId, payload),
@@ -1562,7 +1913,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
             ),
           ),
           this.syncEsgSdgSelections(id),
-        ]),
+        ]).pipe(switchMap(() => this.uploadPendingBudgetAttachments(id))),
       ),
     );
   }
@@ -1577,14 +1928,24 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
       ? this.rdigApi.updateDraft(existingId, dto).pipe(map(() => existingId))
       : this.rdigApi.createDraft(dto).pipe(
           map((res) => {
-            const newId = (res.data as any)?.request?.id ?? (res.data as any)?.id ?? res.data?.request_id;
+            const newId = res.data.request?.id ?? res.data.request?.request_id ?? res.data.rdig?.request_id;
             if (!newId) throw new Error('Backend did not return a new RDIG request id.');
             this.rdigForm.get('metadata.rdigRequestId')?.setValue(newId, { emitEvent: false });
+            this.budgetSectionIdByCode = this.toBudgetSectionIdMap(res.data.budget_sections);
             return newId;
           }),
         );
 
     return ensureDraft$.pipe(switchMap((id) => this.syncChildArrays(id).pipe(map(() => id))));
+  }
+
+  private toBudgetSectionIdMap(sections: RdigFormData['budget_sections']): Record<string, number> | null {
+    const sectionMap: Record<string, number> = {};
+    for (const section of sections ?? []) {
+      const sectionId = section.id ?? section.budget_section_id;
+      if (section.section_code && sectionId) sectionMap[section.section_code] = sectionId;
+    }
+    return Object.keys(sectionMap).length ? sectionMap : null;
   }
 
   // ── Wizard navigation ──────────────────────────────────────────
@@ -1640,6 +2001,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
         this.isSaving.set(false);
         clearTimeout(this.draftSaveTimer);
         this.draftSaveSuccess.set(true);
+        this.toastSvc.success('RDIG draft saved.');
         this.draftSaveTimer = setTimeout(() => this.draftSaveSuccess.set(false), 3000);
       },
       error: (err) => {
@@ -1849,6 +2211,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
           if (currentStatus === 'draft') return this.rdigApi.submit(id).pipe(map(() => id));
           if (
             currentStatus === 'pending_applicant_resubmission_hos' ||
+            currentStatus === 'pending_applicant_resubmission_rmc' ||
             currentStatus === 'pending_applicant_resubmission_reviewers'
           ) {
             return this.rdigApi.resubmit(id).pipe(map(() => id));
@@ -1857,32 +2220,21 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
         }),
       )
       .subscribe({
-        next: (id) => this.onSubmitSuccess(Number(id), currentStatus, transition),
+        next: (id) => this.onSubmitSuccess(Number(id)),
         error: (err) => this.onSubmitError(err),
       });
   }
 
   /** Applicant submit/resubmit succeeded on the backend — confirm and redirect. */
-  private onSubmitSuccess(savedId: number, currentStatus: RdigStatus, transition: any): void {
+  private onSubmitSuccess(savedId: number): void {
     if (savedId != null) {
       this.loadedAppId.set(String(savedId));
       // Clear any stale "action needed" notification for the current user.
       this.notifSvc.resolveAction(savedId, 'RDIG Application');
     }
 
-    // Best-effort workflow notifications (fire-and-forget; never block the UI).
-    if (transition && savedId != null) {
-      this.fireWorkflowNotifications(
-        transition.nextStatus,
-        transition.actorRole,
-        savedId,
-        this.rdigForm.getRawValue(),
-        currentStatus,
-      );
-    }
-
     this.submissionState.set('SUCCESS');
-    setTimeout(() => this.router.navigate(['/dashboard']), 2200);
+    setTimeout(() => this.router.navigateByUrl('/submissions/pending?tab=all'), 2200);
   }
 
   /** Applicant submit/resubmit failed — surface the backend's message. */
@@ -1898,129 +2250,12 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
     this.submissionState.set('ERROR');
   }
 
-  private isSystemAdminReadOnlyRequest(request: Record<string, unknown>): boolean {
+  private isSystemAdminReadOnlyRequest(request: { applicant_staff_username?: string | null }): boolean {
     if (!this.auth.inGroup('SystemAdmin')) return false;
     const adminView = this.route.snapshot.queryParamMap.get('admin_view')?.toLowerCase() === 'true';
-    const applicantUsername = String(request['applicant_staff_username'] ?? '').trim().toLowerCase();
+    const applicantUsername = String(request.applicant_staff_username ?? '').trim().toLowerCase();
     const currentUsername = this.auth.currentUser()?.username?.trim().toLowerCase();
     return adminView || Boolean(applicantUsername && currentUsername && applicantUsername !== currentUsername);
   }
 
-  // ── Notification dispatch ──────────────────────────────────────────────────
-
-  /**
-   * Fires the correct notification(s) after each workflow transition.
-   * Determines recipient(s) from the next status and the saved formData.
-   */
-  private fireWorkflowNotifications(
-    nextStatus: RdigStatus,
-    actorRole: string,
-    savedId: number,
-    formData: any,
-    currentStatus: RdigStatus,
-  ): void {
-    const actorName = this.auth.currentUser()?.name ?? 'Unknown';
-    const entityType = 'RDIG Application';
-    const entityModule = 'rdig';
-    const route = `/rdig?id=${savedId}`;
-    const applicantUserId = formData.metadata?.applicantUserId as string | null;
-    const appDepartment = (formData.teamDetails?.department as string) ?? '';
-    const nextUsers: string[] = formData.workflow?.nextUsers ?? [];
-
-    const fire = (key: string, ctx: Record<string, unknown>) => {
-      this.notifSvc
-        .create(
-          this.notifSvc.build(key, {
-            entityType,
-            entityId: savedId,
-            actorName,
-            stage: nextStatus,
-            ...ctx,
-            data: {
-              entityId: savedId,
-              entityType,
-              entityModule,
-              stage: nextStatus,
-              actorName,
-              route,
-              ...((ctx['data'] as object) ?? {}),
-            },
-          }),
-        )
-        .subscribe();
-    };
-
-    switch (nextStatus) {
-      case 'pending_hos':
-        // Notify HOS (department-scoped)
-        fire('REVIEW_ASSIGNED_TO_YOU', {
-          stage: 'HOS Review',
-          recipientRole: 'HOS',
-          recipientDepartment: appDepartment,
-        });
-        // Confirm submission to applicant on first submit only
-        if (currentStatus === 'draft') {
-          fire('APPLICATION_SUBMITTED_CONFIRMED', {
-            recipientUserId: this.auth.currentUser()?.id,
-            data: { route: null }, // This is strictly an FYI; strip the link
-          });
-        }
-        break;
-
-      case 'pending_hos_review':
-        // Applicant resubmitted → notify HOS again (department-scoped)
-        fire('APPLICATION_RESUBMITTED_BY', {
-          stage: 'HOS Re-Review',
-          recipientRole: 'HOS',
-          recipientDepartment: appDepartment,
-        });
-        break;
-
-      case 'pending_rmc':
-        fire('REVIEW_ASSIGNED_TO_YOU', { stage: 'RMC Review', recipientRole: 'RMC' });
-        break;
-
-      case 'pending_rmc_review':
-        // Applicant resubmitted after reviewers → notify RMC
-        fire('APPLICATION_RESUBMITTED_BY', { stage: 'RMC Final Review', recipientRole: 'RMC' });
-        break;
-
-      case 'pending_reviewers':
-        // Notify both assigned reviewers by their userId
-        nextUsers.forEach((uid) =>
-          fire('REVIEWER_ASSIGNED_TO_APPLICATION', { recipientUserId: uid }),
-        );
-        break;
-
-      case 'pending_rdig_chair':
-        fire('REVIEW_ASSIGNED_TO_YOU', { stage: 'RDIG Chair Review', recipientRole: 'RDIG_Chair' });
-        break;
-
-      case 'pending_vc':
-        fire('REVIEW_ASSIGNED_TO_YOU', { stage: 'VC Review', recipientRole: 'VC' });
-        break;
-
-      case 'pending_ceo':
-        fire('REVIEW_ASSIGNED_TO_YOU', { stage: 'CEO Review', recipientRole: 'CEO' });
-        break;
-
-      case 'pending_applicant_resubmission_hos':
-      case 'pending_applicant_resubmission_reviewers':
-        if (applicantUserId) {
-          fire('APPLICATION_RETURNED_FOR_REVISION', { recipientUserId: applicantUserId });
-        }
-        break;
-
-      case 'rejected_hos':
-      case 'rejected_rmc':
-      case 'rejected_rdig_chair':
-      case 'rejected_vc':
-      case 'rejected_ceo':
-        if (applicantUserId) {
-          fire('APPLICATION_REJECTED_BY', { stage: actorRole, recipientUserId: applicantUserId });
-        }
-        break;
-    }
-  }
 }
-

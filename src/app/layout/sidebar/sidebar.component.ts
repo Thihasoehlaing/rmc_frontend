@@ -1,10 +1,12 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, effect } from '@angular/core';
+import { RdigApiService } from '../../features/rdig/services/rdig-api.service';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { Router } from '@angular/router';
 import { SidebarService } from '../../core/services/sidebar.service';
 import { AuthService } from '../../core/services/auth.service';
 import { PermissionService } from '../../core/services/permission.service';
 import { NAVIGATION_DATA } from '../../core/constants/nav-data';
+import { RESTRICTED_WORKFLOW_SIDEBAR_ROUTES } from '../../core/constants/restricted-sidebar-routes';
 import { NavElement, NavFolder } from '../../core/interfaces/nav.interface';
 import { FormCacheService } from '../../core/services/form-cache.service';
 import { UserGroup } from '../../core/interfaces/user.interface';
@@ -22,6 +24,18 @@ export class SidebarComponent implements OnInit {
   private permService   = inject(PermissionService);
   private router        = inject(Router);
   private formCache     = inject(FormCacheService);
+  private rdigApi = inject(RdigApiService);
+  private rdigAccess = signal(false);
+  private readonly refreshRdigAccess = effect(() => {
+    const username = this.currentUser()?.username;
+    this.rdigAccess.set(false);
+    if (username) this.rdigApi.getMyAccess().subscribe({
+      next: (res) => {
+        if (this.currentUser()?.username === username) this.rdigAccess.set(res.data.can_apply);
+      },
+      error: () => undefined,
+    });
+  });
 
   isExpanded = this.sidebarService.isExpanded;
   pinned     = this.sidebarService.pinned;
@@ -33,13 +47,8 @@ export class SidebarComponent implements OnInit {
     this.formCache.getActiveForms(true).subscribe({ error: () => undefined });
   }
 
-  private readonly restrictedWorkflowGroups: UserGroup[] = ['VC', 'HR', 'CEO', 'Finance'];
-  private readonly restrictedSidebarRoutes = new Set([
-    '/dashboard',
-    '/submissions/inbox',
-    '/submissions/history',
-    '/notifications',
-  ]);
+  private readonly restrictedWorkflowGroups: UserGroup[] = ['VC', 'HR', 'CEO', 'CFO', 'Finance'];
+  private readonly restrictedSidebarRoutes = new Set<string>(RESTRICTED_WORKFLOW_SIDEBAR_ROUTES);
 
   /**
    * Computed: navigation groups and their elements are filtered through
@@ -56,6 +65,7 @@ export class SidebarComponent implements OnInit {
       elements
         .filter(el => this.permService.canAccess(el.permission))
         .filter(el => this.isConfiguredFormActive(el, activeFormCodes))
+        .filter(el => this.isFolder(el) || el.route !== '/rdig/application' || this.rdigAccess())
         .filter(el => !restrictToWorkflowSidebar || this.isAllowedRestrictedSidebarElement(el))
         .map(el =>
           this.isFolder(el)

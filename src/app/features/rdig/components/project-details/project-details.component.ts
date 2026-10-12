@@ -1,5 +1,11 @@
-import { Component, Input, OnInit, OnDestroy, inject } from '@angular/core';
-import { ReactiveFormsModule, FormGroup, FormControl } from '@angular/forms';
+import { Component, Input, OnInit, OnDestroy, inject, signal } from '@angular/core';
+import {
+    ReactiveFormsModule,
+    FormBuilder,
+    FormGroup,
+    FormControl,
+    Validators,
+} from '@angular/forms';
 import { Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -12,6 +18,14 @@ import { ReviewBlockComponent } from '../review-block/review-block.component';
 import { RdigWorkflowService } from '../../services/rdig-workflow.service';
 import { MasterDataService } from '../../../../core/services/master-data.service';
 import { TextareaAutosizeDirective } from '../../../../shared/directives/textarea-autosize.directive';
+import { DialogComponent } from '../../../../shared/components/dialog/dialog.component';
+import {
+    RDIG_KEYWORD_COUNT,
+    RDIG_KEYWORD_MAX_LENGTH,
+    parseRdigKeywords,
+    rdigKeywordInputValidator,
+    serializeRdigKeywords,
+} from '../../utils/rdig-keywords.util';
 
 @Component({
     selector: 'app-project-details',
@@ -23,6 +37,7 @@ import { TextareaAutosizeDirective } from '../../../../shared/directives/textare
         CharacterCounterComponent,
         ValidationMessageComponent,
         NoteComponent,
+        DialogComponent,
         ReviewBlockComponent,
         TextareaAutosizeDirective
     ],
@@ -37,18 +52,38 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy {
     @Input() showR2Comments = false;
     @Input() showRdigChairComments = false;
     @Input() showVcComments = false;
-    @Input() showCeoComments = false;
+    @Input() showCfoComments = false;
 
     get showAnyComments(): boolean {
       return this.showHosComments || this.showRmcComments ||
              this.showR1Comments || this.showR2Comments ||
-             this.showRdigChairComments || this.showVcComments || this.showCeoComments;
+             this.showRdigChairComments || this.showVcComments || this.showCfoComments;
     }
     @Input() workflow!: RdigWorkflowService;
 
     private readonly masterData = inject(MasterDataService);
     private readonly router = inject(Router);
+    private readonly fb = inject(FormBuilder);
     private readonly destroy$ = new Subject<void>();
+
+    readonly keywordMaxLength = RDIG_KEYWORD_MAX_LENGTH;
+    readonly keywordSlots = Array.from({ length: RDIG_KEYWORD_COUNT }, (_, index) => ({
+        controlName: `keyword${index + 1}`,
+        label: `Keyword ${index + 1}`,
+    }));
+    readonly keywordsForm = this.fb.group(
+        Object.fromEntries(
+            this.keywordSlots.map(({ controlName }, index) => [
+                controlName,
+                this.fb.nonNullable.control('', [
+                    ...(index === 0 ? [Validators.required] : []),
+                    Validators.maxLength(RDIG_KEYWORD_MAX_LENGTH),
+                    rdigKeywordInputValidator,
+                ]),
+            ]),
+        ),
+    );
+    isKeywordsModalOpen = false;
 
     get projectDetails() {
         return this.parentForm.get('projectDetails') as FormGroup;
@@ -57,35 +92,39 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy {
     get reviewProject() { return this.parentForm.get('reviewProject') as FormGroup; }
     fc(name: string): FormControl { return this.reviewProject.get(name) as FormControl; }
 
-    domains: { label: string; value: string }[] = [];
-    filteredSubDomains: { label: string; value: string }[] = [];
-    esgs: { label: string; value: string }[] = [];
-    sdgs: { label: string; value: string }[] = [];
+    domains = signal<{ label: string; value: string }[]>([]);
+    filteredSubDomains = signal<{ label: string; value: string }[]>([]);
+    esgs = signal<{ label: string; value: string }[]>([]);
+    sdgs = signal<{ label: string; value: string }[]>([]);
+    compareOptionValues = (left: unknown, right: unknown): boolean => String(left) === String(right);
 
     ngOnInit(): void {
         // Domains, ESGs and SDGs come from the real backend master-data lists.
         this.masterData.getResearchDomains()
             .pipe(takeUntil(this.destroy$))
             .subscribe(res => {
-                this.domains = (res.data ?? [])
+                const domains = (res.data ?? [])
                     .filter(o => o.is_active)
                     .map(o => ({ label: o.domain_name, value: o.id.toString() }));
+                setTimeout(() => this.domains.set(domains));
             });
 
         this.masterData.getEsgs()
             .pipe(takeUntil(this.destroy$))
             .subscribe(res => {
-                this.esgs = (res.data ?? [])
+                const esgs = (res.data ?? [])
                     .filter(o => o.is_active)
                     .map(o => ({ label: o.esg_name, value: o.id.toString() }));
+                setTimeout(() => this.esgs.set(esgs));
             });
 
         this.masterData.getSdgs()
             .pipe(takeUntil(this.destroy$))
             .subscribe(res => {
-                this.sdgs = (res.data ?? [])
+                const sdgs = (res.data ?? [])
                     .filter(o => o.is_active)
                     .map(o => ({ label: o.sdg_name, value: o.id.toString() }));
+                setTimeout(() => this.sdgs.set(sdgs));
             });
 
         // React to domain selection changes → fetch that domain's sub-domains
@@ -105,16 +144,17 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy {
 
     private filterSubDomains(domainIdStr: string): void {
         if (!domainIdStr) {
-            this.filteredSubDomains = [];
+            this.filteredSubDomains.set([]);
             return;
         }
         const domainId = parseInt(domainIdStr, 10);
         this.masterData.getSubResearchDomains(domainId)
             .pipe(takeUntil(this.destroy$))
             .subscribe(res => {
-                this.filteredSubDomains = (res.data ?? [])
+                const subDomains = (res.data ?? [])
                     .filter(o => o.is_active)
                     .map(o => ({ label: o.sub_domain_name, value: o.id.toString() }));
+                setTimeout(() => this.filteredSubDomains.set(subDomains));
             });
     }
 
@@ -123,10 +163,43 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy {
         this.destroy$.complete();
     }
 
-    get keywordCount(): number {
-        const val: string = this.projectDetails.get('keywords')?.value ?? '';
-        if (!val.trim()) return 0;
-        return val.split(',').map((k: string) => k.trim()).filter((k: string) => k.length > 0).length;
+    get displayedKeywords(): string[] {
+        return parseRdigKeywords(this.projectDetails.get('keywords')?.value).slice(
+            0,
+            RDIG_KEYWORD_COUNT,
+        );
+    }
+
+    openKeywordsModal(): void {
+        if (this.workflow?.isFormReadOnly()) return;
+
+        const keywords = this.displayedKeywords;
+        const formValue = Object.fromEntries(
+            this.keywordSlots.map(({ controlName }, index) => [controlName, keywords[index] ?? '']),
+        );
+        this.keywordsForm.reset(formValue);
+        this.isKeywordsModalOpen = true;
+    }
+
+    closeKeywordsModal(): void {
+        this.isKeywordsModalOpen = false;
+    }
+
+    confirmKeywords(): void {
+        if (this.keywordsForm.invalid) {
+            this.keywordsForm.markAllAsTouched();
+            return;
+        }
+
+        const keywords = this.keywordSlots.map(({ controlName }) =>
+            String(this.keywordsForm.get(controlName)?.value ?? '').trim(),
+        );
+        const keywordsControl = this.projectDetails.get('keywords');
+        keywordsControl?.setValue(serializeRdigKeywords(keywords));
+        keywordsControl?.markAsDirty();
+        keywordsControl?.markAsTouched();
+        keywordsControl?.updateValueAndValidity();
+        this.closeKeywordsModal();
     }
 
     manageResearchDomains(): void {

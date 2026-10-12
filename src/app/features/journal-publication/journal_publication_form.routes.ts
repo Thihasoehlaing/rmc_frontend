@@ -11,7 +11,7 @@ export const journalPublicationFormRoutes: Routes = [
   {
     path: 'application',
     loadComponent: () =>
-      import('./journal-publication-form.component').then(m => m.JournalPublicationFormComponent),
+      import('./journal-publication-form.component').then((m) => m.JournalPublicationFormComponent),
     canActivate: [permissionGuard],
     data: {
       permission: fundingApplicationPermission,
@@ -20,7 +20,9 @@ export const journalPublicationFormRoutes: Routes = [
   {
     path: 'detail/:requestCode',
     loadComponent: () =>
-      import('./pages/journal-review/journal-review.component').then(m => m.JournalReviewComponent),
+      import('./pages/journal-review/journal-review.component').then(
+        (m) => m.JournalReviewComponent,
+      ),
     canActivate: [permissionGuard],
     data: {
       permission: fundingDetailPermission,
@@ -29,7 +31,9 @@ export const journalPublicationFormRoutes: Routes = [
   {
     path: 'settings',
     loadComponent: () =>
-      import('./pages/journal-settings/journal-settings.component').then(m => m.JournalSettingsComponent),
+      import('./pages/journal-settings/journal-settings.component').then(
+        (m) => m.JournalSettingsComponent,
+      ),
     canActivate: [permissionGuard],
     data: {
       permission: disabledFeaturePermission satisfies NavPermission,
@@ -39,7 +43,7 @@ export const journalPublicationFormRoutes: Routes = [
     path: 'guidelines-settings',
     loadComponent: () =>
       import('./pages/journal-guidelines-settings/journal-guidelines-settings.component').then(
-        m => m.JournalGuidelinesSettingsComponent,
+        (m) => m.JournalGuidelinesSettingsComponent,
       ),
     canActivate: [permissionGuard],
     data: {

@@ -1,6 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Location } from '@angular/common';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { AuthService } from '../../../core/services/auth.service';
@@ -24,6 +24,26 @@ export class LoginComponent implements OnInit {
   readonly currentYear = new Date().getFullYear();
   readonly showTestingLogin = this.testingLoginService.enabled;
   readonly testingAccounts = signal<TestingLoginAccount[]>([]);
+  readonly demoNameFilter = signal('');
+  readonly demoRoleFilter = signal('');
+  readonly demoRoles = computed(() =>
+    [...new Set(this.testingAccounts().map(account => account.roleName))].sort((a, b) =>
+      a.localeCompare(b),
+    ),
+  );
+  readonly filteredDemoUsers = computed(() => {
+    const nameQuery = this.demoNameFilter().trim().toLocaleLowerCase();
+    const roleQuery = this.demoRoleFilter();
+
+    return this.testingAccounts().filter(account => {
+      const matchesName =
+        !nameQuery ||
+        account.label.toLocaleLowerCase().includes(nameQuery) ||
+        account.username.toLocaleLowerCase().includes(nameQuery);
+      const matchesRole = !roleQuery || account.roleName === roleQuery;
+      return matchesName && matchesRole;
+    });
+  });
   readonly isLoading = signal(false);
   readonly loginError = signal('');
 
@@ -74,7 +94,7 @@ export class LoginComponent implements OnInit {
     this.authService.startApuLogin(this.authService.getCurrentRoute());
   }
 
-  loginForTesting(username = 'dr_john'): void {
+  loginForTesting(username = 'irene.wong'): void {
     this.loginError.set('');
     this.isLoading.set(true);
 

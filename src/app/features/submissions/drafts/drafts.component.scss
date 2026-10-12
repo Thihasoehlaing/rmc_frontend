@@ -170,7 +170,8 @@ td {
 }
 
 th {
-  background: var(--color-background-secondary);
+  background: var(--color-table-head-bg);
+  color: var(--color-table-head-text);
   font-size: var(--fs-sm);
   font-weight: var(--fw-semibold);
   white-space: nowrap;
@@ -214,7 +215,7 @@ td:first-child {
 
   .material-icons {
     font-size: var(--icon-sm);
-    color: var(--color-text-muted);
+    color: var(--color-table-head-text);
   }
 }
 

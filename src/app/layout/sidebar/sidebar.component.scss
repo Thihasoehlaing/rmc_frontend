@@ -262,6 +262,7 @@
 
 .nav-item,
 .nav-folder__trigger {
+  position: relative;
   display: flex;
   align-items: center;
   /*
@@ -281,12 +282,32 @@
   border-radius: var(--radius-md);
   color: var(--color-text-secondary);
   text-decoration: none;
-  transition: background var(--transition-fast), color var(--transition-fast);
   cursor: pointer;
   background: transparent;
   border: none;
   font-family: inherit;
   font-size: var(--fs-sm);
+
+  // Smooth transitions for all interactive states
+  transition:
+    background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    color 0.15s ease-out,
+    transform 0.15s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.2s ease-out;
+
+  // Active indicator bar (left accent)
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%) scaleY(0);
+    width: 3px;
+    height: 60%;
+    background: var(--color-primary);
+    border-radius: 0 2px 2px 0;
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
 
   .nav-icon {
     display: flex;
@@ -294,11 +315,13 @@
     justify-content: center;
     font-size: var(--sidebar-icon-size);
     color: var(--color-text-muted);
-    transition: color var(--transition-fast);
     width: var(--sidebar-icon-size);
     height: var(--sidebar-icon-size);
     flex-shrink: 0;
     overflow: hidden;
+    transition:
+      color 0.15s ease-out,
+      transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   // Label sits between the icon and the chevron; flex:1 pushes chevron to far right
@@ -310,25 +333,54 @@
     font-weight: var(--fw-medium);
     margin-left: var(--space-3);
     line-height: var(--lh-tight);
+    transition: transform 0.15s ease-out;
   }
 
+  // Hover state with subtle lift effect
   &:hover {
     background: var(--color-surface-hover);
     color: var(--color-primary);
-    /* border-radius already set in base — no need to repeat */
 
     .nav-icon {
       color: var(--color-primary);
+      transform: scale(1.1);
+    }
+
+    .nav-label {
+      transform: translateX(2px);
     }
   }
 
+  // Active state with accent indicator and stronger visual treatment
   &.active {
     background: var(--color-primary-light);
     color: var(--color-primary);
+    font-weight: var(--fw-semibold);
+
+    // Show the left accent bar
+    &::before {
+      transform: translateY(-50%) scaleY(1);
+    }
 
     .nav-icon {
       color: var(--color-primary);
+      transform: scale(1.05);
     }
+
+    // Subtle hover enhancement on active items
+    &:hover {
+      background: color-mix(in srgb, var(--color-primary) 18%, transparent);
+
+      .nav-icon {
+        transform: scale(1.12);
+      }
+    }
+  }
+
+  // Click/tap feedback
+  &:active {
+    transform: scale(0.98);
+    transition-duration: 0.05s;
   }
 }
 
@@ -338,10 +390,16 @@
 
   .chevron {
     font-size: var(--fs-lg);
-    transition: transform var(--transition-fast);
     color: var(--color-text-muted);
     flex-shrink: 0;
     margin-left: auto; // extra safety — pushes chevron to far right
+    transition:
+      transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+      color 0.15s ease-out;
+  }
+
+  &__trigger:hover .chevron {
+    color: var(--color-primary);
   }
 
   &--open {
@@ -357,6 +415,20 @@
   border-left: 1px solid var(--border-subtle);
   margin-top: var(--space-1);
   margin-bottom: var(--space-1);
+
+  // Animate folder children appearing
+  animation: folder-expand 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes folder-expand {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .nav-item--child {
@@ -377,6 +449,32 @@
   // Tighter gap after the smaller icon
   .nav-label {
     margin-left: var(--space-2);
+  }
+
+  // Adjusted active indicator for child items
+  &::before {
+    height: 50%;
+    width: 2px;
+  }
+
+  // Staggered animation for child items
+  @for $i from 1 through 10 {
+    &:nth-child(#{$i}) {
+      animation-delay: #{($i - 1) * 0.03}s;
+    }
+  }
+
+  animation: child-item-enter 0.2s cubic-bezier(0.4, 0, 0.2, 1) backwards;
+}
+
+@keyframes child-item-enter {
+  from {
+    opacity: 0;
+    transform: translateX(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
   }
 }
 
@@ -412,5 +510,32 @@
 @include reduced-motion {
   .sidebar {
     transition: none;
+  }
+
+  .nav-item,
+  .nav-folder__trigger {
+    transition: none;
+
+    &::before {
+      transition: none;
+    }
+
+    .nav-icon,
+    .nav-label {
+      transition: none;
+      transform: none !important;
+    }
+  }
+
+  .nav-folder .chevron {
+    transition: none;
+  }
+
+  .nav-folder__children {
+    animation: none;
+  }
+
+  .nav-item--child {
+    animation: none;
   }
 }

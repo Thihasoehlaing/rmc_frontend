@@ -1,6 +1,6 @@
 // ─── Page shell ──────────────────────────────────────────────────────────────
 :host {
-  --rdig-page-width: 1080px;
+  --rdig-page-width: var(--page-max-width);
 }
 
 .dropdowns-container {
@@ -545,8 +545,8 @@
 :host ::ng-deep .dropdown-table-panel .dropdown-options-table thead th {
   padding: var(--space-4);
   border-bottom: 1px solid var(--border-subtle);
-  background: white;
-  color: var(--color-label);
+  background: var(--color-table-head-bg);
+  color: var(--color-table-head-text);
   font-size: var(--fs-sm);
   font-weight: var(--fw-semibold);
 

@@ -1,4 +1,5 @@
 import { Location } from '@angular/common';
+import { AttachmentDownloadService } from '../../../../core/services/attachment-download.service';
 import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -59,6 +60,7 @@ const CONFERENCE_VENUE_LABELS: Readonly<Record<string, string>> = {
   styleUrl: '../../../journal-publication/pages/journal-review/journal-review.component.scss',
 })
 export class ConferenceReviewComponent implements OnInit {
+  private readonly attachmentDownload = inject(AttachmentDownloadService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly location = inject(Location);
@@ -605,11 +607,11 @@ export class ConferenceReviewComponent implements OnInit {
     return value === 'costing_supporting_document';
   }
 
-  downloadAttachment(file: ConferenceAttachmentDto): void {
+  downloadAttachment(file: ConferenceAttachmentDto, preview = false): void {
     if (this.requestId == null || !file.id || this.downloadingAttachmentId()) return;
     const directUrl = file.download_url || file.file_url || file.url;
     if (directUrl) {
-      this.openDownload(file);
+      this.openDownload(file, preview);
       return;
     }
     this.downloadingAttachmentId.set(file.id);
@@ -620,7 +622,7 @@ export class ConferenceReviewComponent implements OnInit {
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe({
-        next: ({ data }) => this.openDownload(data),
+        next: ({ data }) => this.openDownload(data, preview),
         error: (err) =>
           this.feedback.set({
             type: 'error',
@@ -844,17 +846,12 @@ export class ConferenceReviewComponent implements OnInit {
     return filename.toLowerCase().endsWith('.pdf') ? filename : `${filename}.pdf`;
   }
 
-  private openDownload(file: ConferenceAttachmentDto): void {
+  private openDownload(file: ConferenceAttachmentDto, preview = false): void {
     const url = file.download_url || file.file_url || file.url;
     if (!url) {
       this.feedback.set({ type: 'error', text: 'Attachment download URL is unavailable.' });
       return;
     }
-    const anchor = document.createElement('a');
-    anchor.href = url;
-    anchor.target = '_blank';
-    anchor.rel = 'noopener';
-    anchor.download = file.file_name || 'conference-attachment';
-    anchor.click();
+    this.attachmentDownload.open(url, file.file_name || 'conference-attachment', preview);
   }
 }

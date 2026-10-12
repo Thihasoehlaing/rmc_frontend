@@ -1,5 +1,5 @@
 ﻿<form [formGroup]="form" class="form-section">
-  <app-custom-header icon="group" title="Author Details"></app-custom-header>
+  <app-custom-header presentation="plain" title="Author Details"></app-custom-header>
   <div class="section-fields">
     <section class="card" data-missing-field-target="apuStaffCoAuthors">
       <app-custom-subheader
@@ -57,10 +57,20 @@
               </ng-template>
             </app-data-table>
           </div>
+          <div class="table-summary">
+            <app-table-row-counter
+              class="co-author-counter"
+              [current]="testSubsections.length"
+              [max]="tableRecordLimit"
+            ></app-table-row-counter>
+          </div>
         } @else {
-          <div class="empty-state">
-            <span class="material-icons">receipt</span>
-            <p>No entries added yet. Click <strong>Add Entry</strong> to start adding items.</p>
+          <div class="table-scroll">
+            <app-data-table class="co-author-table" [columns]="apuStaffColumns" [rows]="[]" [hoverable]="true" [striped]="true">
+              <ng-template #emptyTemplate>
+                <p class="co-author-empty-message">No entries added yet. Click <strong>Add Entry</strong> to start adding items.</p>
+              </ng-template>
+            </app-data-table>
           </div>
         }
       </div>
@@ -123,10 +133,20 @@
               </ng-template>
             </app-data-table>
           </div>
+          <div class="table-summary">
+            <app-table-row-counter
+              class="co-author-counter"
+              [current]="studentCoAuthors.length"
+              [max]="tableRecordLimit"
+            ></app-table-row-counter>
+          </div>
         } @else {
-          <div class="empty-state">
-            <span class="material-icons">receipt</span>
-            <p>No entries added yet. Click <strong>Add Entry</strong> to start adding items.</p>
+          <div class="table-scroll">
+            <app-data-table class="co-author-table" [columns]="studentCoAuthorColumns" [rows]="[]" [hoverable]="true" [striped]="true">
+              <ng-template #emptyTemplate>
+                <p class="co-author-empty-message">No entries added yet. Click <strong>Add Entry</strong> to start adding items.</p>
+              </ng-template>
+            </app-data-table>
           </div>
         }
       </div>
@@ -191,10 +211,20 @@
               </ng-template>
             </app-data-table>
           </div>
+          <div class="table-summary">
+            <app-table-row-counter
+              class="co-author-counter"
+              [current]="nonApuCoAuthors.length"
+              [max]="tableRecordLimit"
+            ></app-table-row-counter>
+          </div>
         } @else {
-          <div class="empty-state">
-            <span class="material-icons">receipt</span>
-            <p>No entries added yet. Click <strong>Add Entry</strong> to start adding items.</p>
+          <div class="table-scroll">
+            <app-data-table class="co-author-table" [columns]="nonApuCoAuthorColumns" [rows]="[]" [hoverable]="true" [striped]="true">
+              <ng-template #emptyTemplate>
+                <p class="co-author-empty-message">No entries added yet. Click <strong>Add Entry</strong> to start adding items.</p>
+              </ng-template>
+            </app-data-table>
           </div>
         }
       </div>
@@ -203,7 +233,12 @@
 </form>
 
 @if (isModalOpen) {
-  <app-dialog [title]="getModalTitle()" [isOpen]="true" (close)="closeModal()">
+  <app-dialog
+    [title]="getModalTitle()"
+    [isOpen]="true"
+    [size]="modalType === 'non-apu' ? 'large' : 'medium'"
+    (close)="closeModal()"
+  >
     <form
       id="author-entry-form"
       [formGroup]="editForm"
@@ -216,6 +251,8 @@
           <app-searchable-dropdown
             [options]="staffOptions"
             [searchable]="true"
+            optionListTitle="AVAILABLE APU ACADEMIC STAFF"
+            [optionListCount]="staffOptions.length"
             placeholder="Search staff..."
             formControlName="staffName"
             (searchChange)="loadAcademicStaffOptions($event)"
@@ -361,15 +398,20 @@
         </div>
 
         <div class="form-group">
-          <label for="countryNonApu" class="is-required">Country</label>
-          <input
-            type="text"
+          <label for="countryNonApu" class="form-label is-required">Country</label>
+          <app-searchable-dropdown
             id="countryNonApu"
-            class="form-control"
+            [options]="countryOptions()"
+            [searchable]="true"
+            [loading]="countryOptionsLoading()"
+            optionListTitle="AVAILABLE COUNTRIES"
+            [optionListCount]="countryOptions().length"
             formControlName="country"
-            placeholder="Ex. Malaysia"
-            [attr.maxlength]="coAuthorTextMaxLength"
-          />
+            placeholder="Search and select country..."
+          ></app-searchable-dropdown>
+          @if (countryOptionsLoadFailed()) {
+            <small class="text-danger">Unable to load country options. Please try again.</small>
+          }
           <app-note
             text="Please check with the SRI regarding prioritised IRN countries before submitting the form"
           ></app-note>
@@ -378,10 +420,6 @@
             [control]="editForm.get('country')"
             fieldName="Country"
           ></app-validation-message>
-          <app-character-counter
-            [current]="editForm.get('country')?.value?.length || 0"
-            [max]="coAuthorTextMaxLength"
-          ></app-character-counter>
         </div>
 
         <div class="form-group">

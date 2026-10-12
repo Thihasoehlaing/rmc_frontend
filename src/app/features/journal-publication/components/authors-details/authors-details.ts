@@ -29,6 +29,7 @@ import {
 } from '../../services/journal-application-api.service';
 
 import { TableActionIconComponent } from '../../../../shared/components/table-action-icon/table-action-icon.component';
+import { TableRowCounterComponent } from '../../../../shared/components/table-row-counter/table-row-counter.component';
 import {
   formatCountryForDisplay,
   normalizeCountryForStorage,
@@ -41,6 +42,7 @@ import {
   standalone: true,
   imports: [
     TableActionIconComponent,
+    TableRowCounterComponent,
     CommonModule,
     ReactiveFormsModule,
     SearchableDropdownComponent,
@@ -115,6 +117,9 @@ export class AuthorsDetails implements OnInit {
   readonly organisationTypeOptions = signal<DropdownOption<string>[]>([]);
   readonly organisationTypeOptionsLoading = signal(false);
   readonly organisationTypeOptionsLoadFailed = signal(false);
+  readonly countryOptions = signal<DropdownOption<string>[]>([]);
+  readonly countryOptionsLoading = signal(false);
+  readonly countryOptionsLoadFailed = signal(false);
   private academicStaffByName = new Map<string, AcademicStaffOption>();
   private staffSelectionSubscription?: Subscription;
 
@@ -142,6 +147,7 @@ export class AuthorsDetails implements OnInit {
     this.loadAcademicStaffOptions();
     this.loadDepartmentOptions();
     this.loadOrganisationTypeOptions();
+    this.loadCountryOptions();
   }
 
   initializeForm() {
@@ -326,6 +332,7 @@ export class AuthorsDetails implements OnInit {
 
   deleteTestSubsection(index: number) {
     this.testSubsections.removeAt(index);
+    this.updateStaffOptionStates();
     this.emitFormValidity();
   }
 
@@ -353,8 +360,7 @@ export class AuthorsDetails implements OnInit {
 
   canCreateCoAuthor(type: 'apu-staff' | 'student' | 'non-apu'): boolean {
     return (
-      !this.workflow.isFormReadOnly() &&
-      this.getCoAuthorArray(type).length < this.tableRecordLimit
+      !this.workflow.isFormReadOnly() && this.getCoAuthorArray(type).length < this.tableRecordLimit
     );
   }
 
@@ -399,7 +405,10 @@ export class AuthorsDetails implements OnInit {
         data = this.nonApuCoAuthors.at(index).value;
         this.editForm = this.fb.group({
           fullName: [data.fullName, [Validators.required]],
-          country: [data.country, [Validators.required, Validators.maxLength(this.authorTextMaxLength)]],
+          country: [
+            data.country,
+            [Validators.required, Validators.maxLength(this.authorTextMaxLength)],
+          ],
           email: [data.email, [Validators.required, Validators.email]],
           schoolDepartment: [data.schoolDepartment, [Validators.required]],
           typeOfOrganisation: [data.typeOfOrganisation, [Validators.required]],
@@ -467,11 +476,7 @@ export class AuthorsDetails implements OnInit {
       return;
     }
 
-    if (
-      this.editingIndex === null &&
-      this.modalType &&
-      !this.canCreateCoAuthor(this.modalType)
-    ) {
+    if (this.editingIndex === null && this.modalType && !this.canCreateCoAuthor(this.modalType)) {
       return;
     }
 
@@ -481,6 +486,12 @@ export class AuthorsDetails implements OnInit {
         ? { affiliation: this.apuAffiliation }
         : {}),
     };
+
+    if (this.modalType === 'apu-staff' && this.isStaffAlreadySelected(formData.staffName)) {
+      this.editForm.get('staffName')?.setErrors({ duplicateStaff: true });
+      this.editForm.get('staffName')?.markAsTouched();
+      return;
+    }
 
     // Prepend "TP" prefix to the student TP number before saving
     if (this.modalType === 'student' && formData.tpNumber) {
@@ -512,6 +523,7 @@ export class AuthorsDetails implements OnInit {
     }
 
     this.closeModal();
+    this.updateStaffOptionStates();
     this.emitFormValidity();
   }
 
@@ -531,7 +543,9 @@ export class AuthorsDetails implements OnInit {
           this.applyAcademicStaffOptions(staff, selectedStaffName);
         },
         error: () => {
-          this.staffOptions.set(this.createSelectedStaffFallbackOption(selectedStaffName));
+          this.staffOptions.set(
+            selectedStaffName ? [this.createStaffFallbackOption(selectedStaffName)] : [],
+          );
           this.academicStaffByName.clear();
           this.staffOptionsLoadFailed.set(true);
         },
@@ -557,6 +571,34 @@ export class AuthorsDetails implements OnInit {
         error: () => {
           this.organisationTypeOptions.set([]);
           this.organisationTypeOptionsLoadFailed.set(true);
+        },
+      });
+  }
+
+  private loadCountryOptions(): void {
+    this.countryOptionsLoading.set(true);
+    this.countryOptionsLoadFailed.set(false);
+
+    this.masterData
+      .getCountries()
+      .pipe(finalize(() => this.countryOptionsLoading.set(false)))
+      .subscribe({
+        next: (response) => {
+          this.countryOptions.set(
+            (response.success ? (response.data ?? []) : [])
+              .filter((country) => country.is_active)
+              .map((country) => ({
+                value: country.name,
+                label: country.name,
+                description: country.code,
+                searchText: `${country.name} ${country.code}`,
+              })),
+          );
+          this.countryOptionsLoadFailed.set(!response.success);
+        },
+        error: () => {
+          this.countryOptions.set([]);
+          this.countryOptionsLoadFailed.set(true);
         },
       });
   }
@@ -589,13 +631,17 @@ export class AuthorsDetails implements OnInit {
   }
 
   private isStudentSchoolDepartment(departmentName: string | null | undefined): boolean {
-    const name = String(departmentName ?? '').trim().toLowerCase();
+    const name = String(departmentName ?? '')
+      .trim()
+      .toLowerCase();
     return name.startsWith('graduate school') || name.startsWith('school of');
   }
 
   private setupStaffSelection(selectedStaffName = ''): void {
     this.staffSelectionSubscription?.unsubscribe();
-    const selectedFallback = this.createSelectedStaffFallbackOption(selectedStaffName);
+    const selectedFallback = selectedStaffName
+      ? [this.createStaffFallbackOption(selectedStaffName)]
+      : [];
     if (
       selectedFallback.length &&
       !this.staffOptions().some((option) => option.value === selectedFallback[0].value)
@@ -603,6 +649,7 @@ export class AuthorsDetails implements OnInit {
       this.staffOptions.update((options) => [...selectedFallback, ...options]);
     }
 
+    this.updateStaffOptionStates();
     const staffNameControl = this.editForm.get('staffName');
     this.staffSelectionSubscription = staffNameControl?.valueChanges.subscribe((staffName) => {
       const staff = this.academicStaffByName.get(String(staffName ?? ''));
@@ -629,7 +676,9 @@ export class AuthorsDetails implements OnInit {
     const options = staff
       .filter((item) => !this.isCurrentUserStaff(item))
       .map((item) => this.toAcademicStaffDropdownOption(item));
-    const selectedFallback = this.createSelectedStaffFallbackOption(selectedStaffName);
+    const selectedFallback = selectedStaffName
+      ? [this.createStaffFallbackOption(selectedStaffName)]
+      : [];
     const selectedValue = selectedStaffName?.trim();
 
     if (selectedValue && !options.some((option) => option.value === selectedValue)) {
@@ -640,22 +689,91 @@ export class AuthorsDetails implements OnInit {
   }
 
   private toAcademicStaffDropdownOption(staff: AcademicStaffOption): DropdownOption<string> {
-    const value = staff.fullname || staff.username || staff.email || `Staff ${staff.id}`;
+    const value = this.getStaffOptionValue(staff);
+    const alreadySelected = this.isStaffAlreadySelected(value);
     this.academicStaffByName.set(value, staff);
 
     return {
       value,
-      label: value,
-      description: [staff.email, staff.department].filter(Boolean).join(' • '),
+      label: `${value} (${staff.username || staff.id})`,
       displayLabel: value,
+      description: staff.department,
       searchText: [staff.username, staff.fullname, staff.email, staff.department]
         .filter(Boolean)
         .join(' '),
+      disabled: alreadySelected,
+      actionLabel: alreadySelected ? 'Already Added' : undefined,
+      actionIcon: alreadySelected ? 'warning' : undefined,
+      warning: alreadySelected,
     };
   }
 
+  private createStaffFallbackOption(value: string): DropdownOption<string> {
+    const alreadySelected = this.isStaffAlreadySelected(value);
+    return {
+      value,
+      label: value,
+      displayLabel: value,
+      disabled: alreadySelected,
+      actionLabel: alreadySelected ? 'Already Added' : undefined,
+      actionIcon: alreadySelected ? 'warning' : undefined,
+      warning: alreadySelected,
+    };
+  }
+
+  private getStaffOptionValue(staff: AcademicStaffOption): string {
+    return staff.fullname || staff.username || staff.email || `Staff ${staff.id}`;
+  }
+
+  private getUnavailableStaffNames(): Set<string> {
+    return new Set(
+      this.testSubsections.controls
+        .map((control, index) =>
+          index === this.editingIndex ? '' : control.get('staffName')?.value,
+        )
+        .filter((staffName): staffName is string => !!staffName)
+        .map((staffName) => this.normalizeStaffName(staffName)),
+    );
+  }
+
+  private isStaffAlreadySelected(staffName: string): boolean {
+    const normalizedName = this.normalizeStaffName(staffName);
+    if (!normalizedName) return false;
+
+    return this.testSubsections.controls.some(
+      (control, index) =>
+        index !== this.editingIndex &&
+        this.normalizeStaffName(control.get('staffName')?.value) === normalizedName,
+    );
+  }
+
+  private normalizeStaffName(staffName: unknown): string {
+    return String(staffName ?? '')
+      .trim()
+      .toLowerCase();
+  }
+
+  private updateStaffOptionStates(): void {
+    this.staffOptions.update((options) =>
+      options.map((option) => {
+        const alreadySelected = this.isStaffAlreadySelected(String(option.value));
+        return {
+          ...option,
+          disabled: alreadySelected,
+          actionLabel: alreadySelected ? 'Already Added' : undefined,
+          actionIcon: alreadySelected ? 'warning' : undefined,
+          warning: alreadySelected,
+        };
+      }),
+    );
+  }
+
   private isCurrentUserStaff(staff: AcademicStaffOption): boolean {
-    const currentUsername = this.auth.currentUser()?.username?.split('@', 1)[0]?.trim().toLowerCase();
+    const currentUsername = this.auth
+      .currentUser()
+      ?.username?.split('@', 1)[0]
+      ?.trim()
+      .toLowerCase();
     if (!currentUsername) {
       return false;
     }
@@ -663,11 +781,6 @@ export class AuthorsDetails implements OnInit {
     const staffUsername = staff.username?.trim().toLowerCase();
     const staffEmailUsername = staff.email?.split('@', 1)[0]?.trim().toLowerCase();
     return staffUsername === currentUsername || staffEmailUsername === currentUsername;
-  }
-
-  private createSelectedStaffFallbackOption(staffName?: string | null): DropdownOption<string>[] {
-    const value = staffName?.trim();
-    return value ? [{ value, label: value, displayLabel: value }] : [];
   }
 
   private emitFormValidity(): void {
@@ -735,5 +848,4 @@ export class AuthorsDetails implements OnInit {
   private parseTPNumber(stored: string): string {
     return stored.replace(/^TP/i, '');
   }
-
 }

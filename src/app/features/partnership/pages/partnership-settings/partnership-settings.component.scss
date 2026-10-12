@@ -3,7 +3,7 @@
 }
 
 .settings-card {
-    max-width: 1200px;
+    max-width: var(--page-max-width);
 }
 
 .settings-card__header {

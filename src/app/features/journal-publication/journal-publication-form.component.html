@@ -1,6 +1,11 @@
 <div class="journal-app application-form-page">
   <app-form-main-title
+    class="journal-app__main-title"
     title="Journal Publication"
+    eyebrow="Journal Publication"
+    description="Journal Publication Guidelines"
+    helpLabel="Journal Publication Guidelines"
+    presentation="wide"
     [guidelineContext]="guidelineContext"
     modalTitle="Journal Publication Guidelines"
     [endpoint]="guidelinesEndpoint"
@@ -8,6 +13,7 @@
   </app-form-main-title>
 
   <app-step-indicator
+    class="journal-app__step-indicator"
     [currentStep]="currentStep"
     [steps]="steps"
     [stepStatuses]="stepStatuses"
@@ -26,10 +32,14 @@
         <p class="form-error-msg journal-app__message">{{ message }}</p>
       }
       @if (saveSuccess()) {
-        <p class="form-hint journal-app__message journal-app__message--success">Journal draft saved.</p>
+        <p class="form-hint journal-app__message journal-app__message--success">
+          Journal draft saved.
+        </p>
       }
       @if (submitSuccess()) {
-        <p class="form-hint journal-app__message journal-app__message--success">Journal application submitted.</p>
+        <p class="form-hint journal-app__message journal-app__message--success">
+          Journal application submitted.
+        </p>
       }
       @if (isAdminReadOnlyDraft()) {
         <p class="form-hint journal-app__message journal-app__message--warning">
@@ -41,7 +51,10 @@
 
   <!-- ── External Review Comment Buttons ───────────────────────── -->
   @if (hasExistingRequestParam) {
-    <section class="applicant-section-comments application-form-surface" aria-label="Reviewer section comments">
+    <section
+      class="applicant-section-comments application-form-surface"
+      aria-label="Reviewer section comments"
+    >
       <div class="applicant-section-comments__header">
         <div class="applicant-section-comments__icon">
           <span class="material-icons" aria-hidden="true">reviews</span>
@@ -53,45 +66,61 @@
         </div>
       </div>
       <div class="applicant-section-comments__actors" aria-label="Reviewer feedback actors">
-          @for (actor of actorTabsWithComments(); track actor.code) {
-            <button
-              type="button"
-              class="applicant-comment-actor"
-              [class.applicant-comment-actor--active]="selectedFeedbackActorCode === actor.code"
-              (click)="toggleFeedbackActor(actor.code)"
-            >
-              <span class="material-icons" aria-hidden="true">{{ actor.icon }}</span>
-              <span>{{ actor.label }}</span>
-              <small>{{ actorCommentCount(actor.code) }}</small>
-            </button>
-          }
-        </div>
+        @for (actor of actorTabsWithComments(); track actor.code) {
+          <button
+            type="button"
+            class="applicant-comment-actor"
+            [class.applicant-comment-actor--active]="selectedFeedbackActorCode === actor.code"
+            (click)="toggleFeedbackActor(actor.code)"
+          >
+            <span class="material-icons" aria-hidden="true">{{ actor.icon }}</span>
+            <span>{{ actor.label }}</span>
+            <small>{{ actorCommentCount(actor.code) }}</small>
+          </button>
+        }
+      </div>
 
-        <div class="applicant-section-comments__grid">
-            @for (section of sectionsWithCommentsForActor(selectedFeedbackActorCode); track section.code) {
-              <article class="applicant-comment-section">
-                <header>
-                  <span class="material-icons" aria-hidden="true">{{ section.icon }}</span>
-                  <div>
-                    <h3>{{ section.label }}</h3>
-                    <small>{{ commentsForActorSection(selectedFeedbackActorCode, section.code).length }} comment(s)</small>
+      <div class="applicant-section-comments__grid">
+        @for (
+          section of sectionsWithCommentsForActor(selectedFeedbackActorCode);
+          track section.code
+        ) {
+          <article class="applicant-comment-section">
+            <header>
+              <span class="material-icons" aria-hidden="true">{{ section.icon }}</span>
+              <div>
+                <h3>{{ section.label }}</h3>
+                <small
+                  >{{
+                    commentsForActorSection(selectedFeedbackActorCode, section.code).length
+                  }}
+                  comment(s)</small
+                >
+              </div>
+            </header>
+
+            <div class="applicant-comment-section__list">
+              @for (
+                comment of commentsForActorSection(selectedFeedbackActorCode, section.code);
+                track comment.id
+              ) {
+                <div class="applicant-comment">
+                  <div class="applicant-comment__meta">
+                    <strong>{{
+                      comment.staff_name || comment.staff_username || 'Reviewer'
+                    }}</strong>
+                    <span
+                      >{{ prettyActor(comment.actor_type_code) }} ·
+                      {{ formatCommentDate(comment.created_at) }}</span
+                    >
                   </div>
-                </header>
-
-                <div class="applicant-comment-section__list">
-                  @for (comment of commentsForActorSection(selectedFeedbackActorCode, section.code); track comment.id) {
-                    <div class="applicant-comment">
-                      <div class="applicant-comment__meta">
-                        <strong>{{ comment.staff_name || comment.staff_username || 'Reviewer' }}</strong>
-                        <span>{{ prettyActor(comment.actor_type_code) }} · {{ formatCommentDate(comment.created_at) }}</span>
-                      </div>
-                      <p>{{ comment.comment_text }}</p>
-                    </div>
-                  }
+                  <p>{{ comment.comment_text }}</p>
                 </div>
-              </article>
-            }
-          </div>
+              }
+            </div>
+          </article>
+        }
+      </div>
     </section>
   }
 
@@ -103,32 +132,74 @@
     @if (isOptionsLoading) {
       <div class="journal-app__loading" aria-live="polite">Loading journal options...</div>
     } @else {
-    <div class="journal-app__content">
-      <app-journal-details
-        [hidden]="currentStep !== 1"
-        (formValidityChange)="updateFormValidity(1, $event)"
-      ></app-journal-details>
-      <app-authors-details
-        [hidden]="currentStep !== 2"
-        (formValidityChange)="updateFormValidity(2, $event)"
-      ></app-authors-details>
-      <app-documents
-        [hidden]="currentStep !== 3"
-        (formValidityChange)="updateFormValidity(3, $event)"
-      ></app-documents>
-      <app-declaration
-        [hidden]="currentStep !== 4"
-        (formValidityChange)="updateFormValidity(4, $event)"
-      >
-      </app-declaration>
-    </div>
+      <div class="journal-app__content">
+        <app-journal-details
+          [hidden]="currentStep !== 1"
+          (formValidityChange)="updateFormValidity(1, $event)"
+        ></app-journal-details>
+        <app-authors-details
+          [hidden]="currentStep !== 2"
+          (formValidityChange)="updateFormValidity(2, $event)"
+        ></app-authors-details>
+        <app-documents
+          [hidden]="currentStep !== 3"
+          (formValidityChange)="updateFormValidity(3, $event)"
+        ></app-documents>
+        <app-declaration
+          [hidden]="currentStep !== 4"
+          (formValidityChange)="updateFormValidity(4, $event)"
+        >
+        </app-declaration>
+
+        <aside class="journal-app__progress-panel" aria-label="Application progress">
+          <section class="journal-app__progress-card">
+            <h2>Application progress</h2>
+            <div class="journal-app__progress-summary">
+              <strong>{{ applicationProgress }}%</strong>
+              <span>{{ completedStepCount }} of {{ totalSteps }} steps complete</span>
+            </div>
+            <div
+              class="journal-app__progress-track"
+              role="progressbar"
+              aria-label="Journal application completion"
+              aria-valuemin="0"
+              aria-valuemax="100"
+              [attr.aria-valuenow]="applicationProgress"
+            >
+              <span [style.width.%]="applicationProgress"></span>
+            </div>
+          </section>
+
+          @if (currentStep === totalSteps) {
+            <section class="journal-app__checklist-card">
+              <h2>Completion checklist</h2>
+              @for (step of steps; track step.label; let index = $index) {
+                <div
+                  class="journal-app__checklist-item"
+                  [class.journal-app__checklist-item--complete]="isStepComplete(index + 1)"
+                  [class.journal-app__checklist-item--current]="index + 1 === currentStep"
+                >
+                  <span class="material-icons" aria-hidden="true">
+                    @if (isStepComplete(index + 1)) {
+                      check_circle
+                    } @else if (index + 1 === currentStep) {
+                      radio_button_checked
+                    } @else {
+                      radio_button_unchecked
+                    }
+                  </span>
+                  <span>{{ step.label }}</span>
+                </div>
+              }
+            </section>
+          }
+        </aside>
+      </div>
     }
   </fieldset>
 
   <!-- ── External Review Comment Panels (outside form disabling) ─────── -->
-  <ng-container
-    *ngIf="false"
-  >
+  <ng-container *ngIf="false">
     <!-- Active Comment Panels -->
     <div class="card review-comments-section" *ngIf="selectedCommentSection">
       <div class="card__content section-fields">
@@ -193,6 +264,7 @@
   ></app-form-validation-warning-dialog>
 
   <app-form-wizard-nav
+    class="journal-app__wizard-nav"
     [currentStep]="currentStep"
     [totalSteps]="totalSteps"
     [isSaving]="isSaving() || isOptionsLoading"

@@ -1,6 +1,6 @@
 // ─── Page shell ─────────────────────────────────────────────────────────────
 :host {
-  --mgr-page-width: 1080px;
+  --mgr-page-width: var(--page-max-width);
 }
 
 .dropdowns-container {
@@ -339,7 +339,8 @@ td {
 }
 
 th {
-  background: var(--color-background-secondary);
+  background: var(--color-table-head-bg);
+  color: var(--color-table-head-text);
   font-size: var(--fs-sm);
   font-weight: var(--fw-semibold);
   white-space: nowrap;

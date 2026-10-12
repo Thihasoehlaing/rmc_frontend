@@ -9,6 +9,8 @@
          [class.modal-dialog--small]="size === 'small'"
          [class.modal-dialog--large]="size === 'large'"
          [style.max-width]="width ?? null"
+         [style.max-height]="maxHeight ?? null"
+         [style.height]="height ?? null"
          (click)="$event.stopPropagation()">
 
       <!-- Header ─────────────────────────────────────────────── -->

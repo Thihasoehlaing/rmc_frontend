@@ -6,7 +6,6 @@ import {
   Output,
   EventEmitter,
   SimpleChanges,
-  ViewChild,
   inject
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -17,23 +16,8 @@ import {
   Validators
 } from '@angular/forms';
 import { ValidationMessageComponent } from '../../../../shared/components/validation-message/validation-message.component';
-import { CustomSubheaderComponent } from '../../../../shared/components/custom-subheader/custom-subheader.component';
 import { NoteComponent } from '../../../../shared/components/note/note.component';
-import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
-
-interface UploadDocumentConfig {
-  id: string;
-  title: string;
-  controlName: string;
-  placeholder: string;
-  required: boolean;
-  subtitle?: string;
-  note?: string;
-  downloadLabel?: string;
-  downloadAction?: 'employment' | 'recruitment' | 'confidentiality';
-}
 import { CharacterCounterComponent } from '../../../../shared/components/character-counter/character-counter.component';
-import { FileUploadComponent } from '../../../../shared/components/file-upload/file-upload.component';
 import { DecimalAmountDirective } from '../../../../shared/directives/decimal-amount.directive';
 
 @Component({
@@ -43,11 +27,8 @@ import { DecimalAmountDirective } from '../../../../shared/directives/decimal-am
     CommonModule,
     ReactiveFormsModule,
     ValidationMessageComponent,
-    CustomSubheaderComponent,
     NoteComponent,
     CharacterCounterComponent,
-    FileUploadComponent,
-    PaginationComponent,
     DecimalAmountDirective
   ],
   templateUrl: './Student Details.html',
@@ -64,24 +45,6 @@ export class StudentDetailsComponent implements OnInit, OnChanges {
 
   /** Exposed publicly so the shell can call form.markAllAsTouched() via @ViewChild. */
   form!: FormGroup;
-
-  // File upload component references
-  @ViewChild('employmentFormUpload') employmentFormUpload?: FileUploadComponent;
-  @ViewChild('transcriptsUpload') transcriptsUpload?: FileUploadComponent;
-  @ViewChild('cvUpload') cvUpload?: FileUploadComponent;
-  @ViewChild('bankStatementUpload') bankStatementUpload?: FileUploadComponent;
-  @ViewChild('recruitmentFormUpload') recruitmentFormUpload?: FileUploadComponent;
-  @ViewChild('confidentialityFormUpload') confidentialityFormUpload?: FileUploadComponent;
-  @ViewChild('otherDocumentsUpload') otherDocumentsUpload?: FileUploadComponent;
-  @ViewChild('nricPassportUpload') nricPassportUpload?: FileUploadComponent;
-  @ViewChild('visaUpload') visaUpload?: FileUploadComponent;
-
-  // File constants
-  readonly PDF_ACCEPT = '.pdf';
-  readonly MAX_FILE_SIZE_MB = 4;
-  readonly uploadPageSizeOptions = [4, 8, 12];
-  uploadDocumentsCurrentPage = 1;
-  uploadDocumentsPageSize = 4;
 
   // Select option placeholders
   programOptions: { label: string; value: string }[] = [
@@ -285,94 +248,6 @@ export class StudentDetailsComponent implements OnInit, OnChanges {
     { label: 'Prof. John Smith', value: 'report3' }
   ];
 
-  readonly uploadDocuments: UploadDocumentConfig[] = [
-    {
-      id: 'employmentApplicationForm',
-      title: 'Employment Application Form',
-      controlName: 'employmentApplicationForm',
-      placeholder: 'Upload employment application form PDF',
-      required: true,
-      subtitle: 'Max file size: 4 MB. PDF ONLY',
-      note: 'Please ensure all sections are completed, and the form is signed by the applicant.',
-      downloadLabel: 'Download Employment Application Form (PDF)',
-      downloadAction: 'employment'
-    },
-    {
-      id: 'academicTranscripts',
-      title: 'Copy of Academic Transcripts (E.g. Diploma, Degree, Master)',
-      controlName: 'academicTranscripts',
-      placeholder: 'Upload academic transcripts PDF',
-      required: true,
-      subtitle: 'Max file size: 4 MB. PDF ONLY',
-      note: 'Please combine all pages into one PDF file for submission.'
-    },
-    {
-      id: 'ragraCv',
-      title: "RA/GRA's CV",
-      controlName: 'ragraCv',
-      placeholder: 'Upload CV PDF',
-      required: true,
-      subtitle: 'Max file size: 4 MB. PDF ONLY',
-      note: 'Please ensure the Curriculum Vitae (CV) is updated and included relevant academic and research experiences.'
-    },
-    {
-      id: 'bankStatement',
-      title: 'Print Screen of Bank Statement',
-      controlName: 'bankStatement',
-      placeholder: 'Upload bank statement PDF',
-      required: true,
-      subtitle: 'Max file size: 4 MB. PDF ONLY',
-      note: "Please upload a screenshot of the first page of student's bank statement showing account holder name and account number."
-    },
-    {
-      id: 'recruitmentSubmissionForm',
-      title: 'Recruitment Submission Form',
-      controlName: 'recruitmentSubmissionForm',
-      placeholder: 'Upload recruitment submission form PDF',
-      required: true,
-      subtitle: 'Max file size: 4 MB. PDF ONLY',
-      note: 'Please ensure all sections are completed, and the form is signed by the applicant.',
-      downloadLabel: 'Download Recruitment Submission Form (PDF)',
-      downloadAction: 'recruitment'
-    },
-    {
-      id: 'confidentialityAgreementForm',
-      title: 'Non-Employee Confidentiality Agreement Form (For Student)',
-      controlName: 'confidentialityAgreementForm',
-      placeholder: 'Upload confidentiality agreement form PDF',
-      required: true,
-      subtitle: 'Max file size: 4 MB. PDF ONLY',
-      note: 'Please ensure all pages are completed, and signed by the student.',
-      downloadLabel: 'Download Confidentiality Agreement Form (PDF)',
-      downloadAction: 'confidentiality'
-    },
-    {
-      id: 'otherSupportingDocuments',
-      title: 'Other Supporting Documents (If any)',
-      controlName: 'otherSupportingDocuments',
-      placeholder: 'Upload other supporting documents PDF',
-      required: false,
-      subtitle: 'Max file size: 4 MB. PDF ONLY',
-      note: 'Please upload any other relevant supporting documents e.g. Research Agreement, Research Proposal etc. (if any).'
-    },
-    {
-      id: 'nricPassportUpload',
-      title: 'NRIC/Passport',
-      controlName: 'nricPassportUpload',
-      placeholder: 'Upload NRIC/Passport PDF',
-      required: true,
-      subtitle: 'Max file size: 4 MB. PDF ONLY'
-    },
-    {
-      id: 'visa',
-      title: 'VISA',
-      controlName: 'visa',
-      placeholder: 'Upload VISA PDF',
-      required: false,
-      subtitle: 'Max file size: 4 MB. PDF ONLY'
-    }
-  ];
-
   ngOnInit(): void {
     this.form = this.fb.group({
       // Left column
@@ -394,18 +269,7 @@ export class StudentDetailsComponent implements OnInit, OnChanges {
       secondReportingPerson:    ['', [Validators.required]],
       monthlyAllowance:         ['', [Validators.required, Validators.min(500), Validators.max(2800)]],
       feeReductionPercentage:   ['0'],  // validators applied conditionally; default 0%
-      appointmentEndDate:       ['', [Validators.required]],
-
-      // Upload documents
-      employmentApplicationForm:      ['', [Validators.required]],
-      academicTranscripts:            ['', [Validators.required]],
-      ragraCv:                        ['', [Validators.required]],
-      bankStatement:                  ['', [Validators.required]],
-      recruitmentSubmissionForm:      ['', [Validators.required]],
-      confidentialityAgreementForm:   ['', [Validators.required]],
-      otherSupportingDocuments:       [''],
-      nricPassportUpload:             ['', [Validators.required]],
-      visa:                           ['']
+      appointmentEndDate:       ['', [Validators.required]]
     });
 
     // Apply conditional validators based on the initial positionRequested value
@@ -423,49 +287,6 @@ export class StudentDetailsComponent implements OnInit, OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['positionRequested'] && this.form) {
       this.applyConditionalValidators();
-    }
-  }
-
-  get paginatedUploadDocuments(): UploadDocumentConfig[] {
-    const currentPage = Math.min(this.uploadDocumentsCurrentPage, this.getUploadTotalPages());
-    const startIndex = (currentPage - 1) * this.uploadDocumentsPageSize;
-    return this.uploadDocuments.slice(startIndex, startIndex + this.uploadDocumentsPageSize);
-  }
-
-  getUploadTotalPages(): number {
-    return Math.max(1, Math.ceil(this.uploadDocuments.length / this.uploadDocumentsPageSize));
-  }
-
-  getUploadPageStart(): number {
-    if (this.uploadDocuments.length === 0) {
-      return 0;
-    }
-    return ((Math.min(this.uploadDocumentsCurrentPage, this.getUploadTotalPages()) - 1) * this.uploadDocumentsPageSize) + 1;
-  }
-
-  getUploadPageEnd(): number {
-    if (this.uploadDocuments.length === 0) {
-      return 0;
-    }
-    return Math.min(this.getUploadPageStart() + this.uploadDocumentsPageSize - 1, this.uploadDocuments.length);
-  }
-
-  onUploadDocumentsPageChange(page: number) {
-    this.uploadDocumentsCurrentPage = page;
-  }
-
-  onUploadDocumentsPageSizeChange(pageSize: number) {
-    this.uploadDocumentsPageSize = pageSize;
-    this.uploadDocumentsCurrentPage = 1;
-  }
-
-  onUploadDocumentAction(action?: UploadDocumentConfig['downloadAction']) {
-    if (action === 'employment') {
-      this.downloadEmploymentForm();
-    } else if (action === 'recruitment') {
-      this.downloadRecruitmentForm();
-    } else if (action === 'confidentiality') {
-      this.downloadConfidentialityForm();
     }
   }
 
@@ -489,31 +310,5 @@ export class StudentDetailsComponent implements OnInit, OnChanges {
 
     programTitle.updateValueAndValidity();
     feeReduction.updateValueAndValidity();
-  }
-
-  onDocumentSelected(controlName: string, file: File | null) {
-    if (file) {
-      this.form.patchValue({
-        [controlName]: file.name
-      });
-    } else {
-      this.form.patchValue({
-        [controlName]: null
-      });
-    }
-    this.form.get(controlName)?.markAsTouched();
-  }
-
-  // Download links - these would typically point to actual document URLs
-  downloadEmploymentForm() {
-    // Implement download logic
-  }
-
-  downloadRecruitmentForm() {
-    // Implement download logic
-  }
-
-  downloadConfidentialityForm() {
-    // Implement download logic
   }
 }

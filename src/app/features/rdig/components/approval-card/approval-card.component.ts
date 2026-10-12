@@ -1,5 +1,6 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { ReactiveFormsModule, FormControl } from '@angular/forms';
+import { ValidationMessageComponent } from '../../../../shared/components/validation-message/validation-message.component';
 import { syncRequiredValidator } from '../../../../shared/utils/form.utils';
 
 export interface ApprovalOption {
@@ -21,13 +22,13 @@ const OPTION_META: Record<string, OptionMeta> = {
 const DEFAULT_META: OptionMeta = { icon: 'radio_button_unchecked', type: 'default' };
 
 /**
- * Reusable approval card for HOS, RMC, Reviewer 2, RDIG Chair, VC, CEO.
+ * Reusable approval card for HOS, RMC, Reviewer 2, RDIG Chair, VC, CFO.
  * Shown on the last page during the appropriate workflow stage.
  */
 @Component({
   selector: 'app-approval-card',
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, ValidationMessageComponent],
   template: `
     @if (visible) {
       <div class="approval-card" [class.approval-card--readonly]="readonly">
@@ -54,6 +55,7 @@ const DEFAULT_META: OptionMeta = { icon: 'radio_button_unchecked', type: 'defaul
               </button>
             }
           </div>
+          <app-validation-message class="form-validation-note--error" [control]="control" [fieldName]="title"></app-validation-message>
         </div>
       </div>
     }

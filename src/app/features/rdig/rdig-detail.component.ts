@@ -10,6 +10,7 @@ import {
   RdigBudgetSectionDto,
   RdigCoResearcherDto,
   RdigCollaboratorDto,
+  RdigFormData,
   RdigResearchActivityDto,
   RdigRequestDto,
 } from './services/rdig-api.service';
@@ -28,18 +29,6 @@ interface DetailField {
   type?: 'date' | 'money' | 'boolean';
 }
 
-interface RdigDetailData {
-  request?: RequestSummaryDto;
-  rdig?: RdigRequestDto;
-  apu_co_researchers?: RdigCoResearcherDto[];
-  collaborators?: RdigCollaboratorDto[];
-  research_activities?: RdigResearchActivityDto[];
-  budget_sections?: RdigBudgetSectionDto[];
-  budget_items?: RdigBudgetItemDto[];
-  attachments?: RdigAttachmentDto[];
-  [key: string]: unknown;
-}
-
 @Component({
   selector: 'app-rdig-detail',
   standalone: true,
@@ -55,7 +44,7 @@ export class RdigDetailComponent implements OnInit {
   loading = signal(true);
   error = signal<string | null>(null);
   request = signal<RequestSummaryDto | null>(null);
-  form = signal<RdigDetailData | null>(null);
+  form = signal<RdigFormData | null>(null);
   actions = signal<WorkflowActionDto[]>([]);
 
   readonly rdig = computed(() => this.form()?.rdig ?? null);
@@ -80,6 +69,7 @@ export class RdigDetailComponent implements OnInit {
     return [
       { label: 'Application Type', value: rdig?.application_type },
       { label: 'Project Category', value: rdig?.project_category },
+      { label: 'Track', value: this.formatTrack(rdig?.track) },
       { label: 'Duration', value: rdig?.project_duration_months ? `${rdig.project_duration_months} months` : null },
       { label: 'Research Area', value: rdig?.research_area },
       { label: 'Research Cluster', value: rdig?.research_cluster_id },
@@ -99,6 +89,12 @@ export class RdigDetailComponent implements OnInit {
       { label: 'Role in Project', value: rdig?.project_leader_role_in_project },
     ];
   });
+
+  private formatTrack(track: unknown): string | null {
+    if (track === 'social-innovation') return 'Social Innovation';
+    if (track === 'fundamental-research') return 'Fundamental Research';
+    return typeof track === 'string' && track.trim() ? track : null;
+  }
 
   readonly narrativeFields = computed<DetailField[]>(() => {
     const rdig = this.rdig();

@@ -1,7 +1,7 @@
-<div class="custom-header">
-  @if (icon) {
+<div class="custom-header" [class.custom-header--plain]="presentation === 'plain'">
+  @if (presentation !== 'plain' && icon) {
     <span class="material-icons header-icon--material">{{ icon }}</span>
-  } @else if (svgIcon) {
+  } @else if (presentation !== 'plain' && svgIcon) {
     <app-svg-icon class="header-icon" [icon]="svgIcon"></app-svg-icon>
   }
   <h2 class="header-text">{{ title }}</h2>

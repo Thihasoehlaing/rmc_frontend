@@ -1,4 +1,4 @@
-import { Component, DestroyRef, inject, OnInit, signal, computed } from '@angular/core';
+import { Component, DestroyRef, HostListener, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   AbstractControl,
@@ -74,9 +74,16 @@ export class TravelAuthorizationApplicationComponent implements OnInit {
   private readonly staffDirectoryService = inject(StaffDirectoryService, { optional: true });
   private readonly destroyRef = inject(DestroyRef);
   private readonly actionLoading = inject(ActionLoadingService);
-  readonly guidelineContext: GuidelineContext = this.route.snapshot.queryParamMap.has('id')
-    ? 'existing-application'
-    : 'new-application';
+  readonly guidelineContext: GuidelineContext = 'existing-application';
+  readonly activeSection = signal('personal-information');
+  private readonly sectionIds = [
+    'personal-information',
+    'travel-information',
+    'programme-details',
+    'costing',
+    'travel-details',
+    'declaration',
+  ];
 
   travelAuthForm!: FormGroup;
   expenseForm!: FormGroup;
@@ -203,6 +210,16 @@ export class TravelAuthorizationApplicationComponent implements OnInit {
     this.updateFormDisabledState();
   }
 
+  @HostListener('window:scroll')
+  updateActiveSection(): void {
+    const sections = this.sectionIds
+      .map((sectionId) => document.getElementById(sectionId))
+      .filter((section): section is HTMLElement => section !== null);
+    const sectionAtTop = sections.filter((section) => section.getBoundingClientRect().top <= 140).at(-1);
+
+    this.activeSection.set(sectionAtTop?.id ?? sections[0]?.id ?? 'personal-information');
+  }
+
   /**
    * DEV TEST: Live override for travel status (ABAC testing)
    * Change this value to test different application workflows
@@ -254,6 +271,14 @@ export class TravelAuthorizationApplicationComponent implements OnInit {
       this.travelAuthForm.enable({ emitEvent: false });
       this.syncConditionalFieldStates();
     }
+
+    this.setPersonalInformationReadOnly();
+  }
+
+  private setPersonalInformationReadOnly(): void {
+    ['applicantName', 'staffId', 'functionalArea', 'staffEmail'].forEach((controlName) => {
+      this.travelAuthForm.get(controlName)?.disable({ emitEvent: false });
+    });
   }
 
   // Toggle methods for comment visibility
@@ -768,6 +793,62 @@ export class TravelAuthorizationApplicationComponent implements OnInit {
       exchangeRate: Number(expense.exchangeRate || 0),
       costInRM: Number(expense.amountMYR || 0),
     }));
+  }
+
+  getEstimatedTotal(): number {
+    return this.expenses.reduce((total, expense) => total + Number(expense.amountMYR || 0), 0);
+  }
+
+  scrollToSection(event: Event, sectionId: string): void {
+    event.preventDefault();
+    this.activeSection.set(sectionId);
+    document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  getCompletionPercentage(): number {
+    if (!this.travelAuthForm) {
+      return 0;
+    }
+
+    const requiredFields = [
+      'applicantName',
+      'staffId',
+      'functionalArea',
+      'staffEmail',
+      'travelType',
+      'location',
+      'departureDate',
+      'returnDate',
+      'reasonForRequest',
+      'staffParticipation',
+      'programmeLocation',
+      'bookingDoneBy',
+      'isAdvanceRequired',
+      'hasColleagues',
+      'declarationInformationTrue',
+      'declarationDisciplinaryAction',
+      'declarationTermsUnderstood',
+      'declarationInformationCorrect',
+    ];
+
+    if (this.travelAuthForm.get('bookingDoneBy')?.value === 'other') {
+      requiredFields.push('bookingDoneByOther');
+    }
+
+    if (this.travelAuthForm.get('isAdvanceRequired')?.value === 'yes') {
+      requiredFields.push('advanceReason');
+    }
+
+    if (this.travelAuthForm.get('hasColleagues')?.value === 'yes') {
+      requiredFields.push('colleagues');
+    }
+
+    const completedFields = requiredFields.filter((fieldName) => {
+      const value = this.travelAuthForm.get(fieldName)?.value;
+      return Array.isArray(value) ? value.length > 0 : value !== null && value !== undefined && value !== '' && value !== false;
+    }).length;
+
+    return Math.round((completedFields / requiredFields.length) * 100);
   }
 
   calculateMYR() {

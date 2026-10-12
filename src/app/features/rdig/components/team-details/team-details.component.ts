@@ -1,5 +1,7 @@
 import { Component, Input, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
+import { AttachmentDownloadService } from '../../../../core/services/attachment-download.service';
+import { ToastService } from '../../../../core/services/toast.service';
 import {
   ReactiveFormsModule,
   FormGroup,
@@ -10,7 +12,6 @@ import {
 } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { COUNTRY_LIST } from '../../../../core/constants/countries.constant';
 import { SearchableDropdownComponent } from '../../../../shared/components/searchable-dropdown/searchable-dropdown.component';
 import { CharacterCounterComponent } from '../../../../shared/components/character-counter/character-counter.component';
 import { ValidationMessageComponent } from '../../../../shared/components/validation-message/validation-message.component';
@@ -19,13 +20,18 @@ import { FileUploadComponent } from '../../../../shared/components/file-upload/f
 import { DialogComponent } from '../../../../shared/components/dialog/dialog.component';
 import { ReviewBlockComponent } from '../review-block/review-block.component';
 import { RdigWorkflowService } from '../../services/rdig-workflow.service';
-import { MasterDataService, AcademicStaffOption } from '../../../../core/services/master-data.service';
+import { MasterDataService } from '../../../../core/services/master-data.service';
+import {
+  RdigApiService,
+  RdigCoResearcherOption,
+} from '../../services/rdig-api.service';
 import { DataTableComponent } from '../../../../shared/components/data-table/data-table.component';
 import type { DataTableColumn } from '../../../../shared/components/data-table/data-table.component';
 import { ActionButtonComponent } from '../../../../shared/components/action-button/action-button.component';
 import { FieldNoteComponent } from '../../../../shared/components/field-note/field-note.component';
 import { DecimalAmountDirective } from '../../../../shared/directives/decimal-amount.directive';
 import { MyrCurrencyPipe } from '../../../../shared/pipes/myr-currency.pipe';
+import { TableRowCounterComponent } from '../../../../shared/components/table-row-counter/table-row-counter.component';
 
 import { TableActionIconComponent } from '../../../../shared/components/table-action-icon/table-action-icon.component';
 
@@ -47,18 +53,23 @@ import { TableActionIconComponent } from '../../../../shared/components/table-ac
     FieldNoteComponent,
     DecimalAmountDirective,
     MyrCurrencyPipe,
+    TableRowCounterComponent,
   ],
   templateUrl: './team-details.component.html',
   styleUrl: './team-details.component.scss',
 })
 export class TeamDetailsComponent implements OnInit, OnDestroy {
+  private readonly attachmentDownload = inject(AttachmentDownloadService);
   private readonly masterData = inject(MasterDataService);
+  private readonly rdigApi = inject(RdigApiService);
   private readonly router = inject(Router);
+  private readonly toast = inject(ToastService);
   private readonly destroy$ = new Subject<void>();
 
-  /** Academic staff list loaded from the real backend — used for the internal co-researcher dropdown. */
-  private academicStaffList: AcademicStaffOption[] = [];
-  staffOptions: { label: string; value: string }[] = [];
+  /** RDIG-eligible academic staff used only by the internal co-researcher dropdown. */
+  private academicStaffList: RdigCoResearcherOption[] = [];
+  staffOptions: { label: string; value: string; description?: string }[] = [];
+  compareOptionValues = (left: unknown, right: unknown): boolean => String(left) === String(right);
 
   @Input({ required: true }) parentForm!: FormGroup;
   @Input() showHosComments = false;
@@ -67,7 +78,7 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
   @Input() showR2Comments = false;
   @Input() showRdigChairComments = false;
   @Input() showVcComments = false;
-  @Input() showCeoComments = false;
+  @Input() showCfoComments = false;
 
   get showAnyComments(): boolean {
     return (
@@ -77,7 +88,7 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
       this.showR2Comments ||
       this.showRdigChairComments ||
       this.showVcComments ||
-      this.showCeoComments
+      this.showCfoComments
     );
   }
   @Input() workflow!: RdigWorkflowService;
@@ -169,7 +180,7 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
   internalForm: FormGroup;
   externalForm: FormGroup;
 
-  clusters: { label: string; value: string }[] = [];
+  clusters = signal<{ label: string; value: string }[]>([]);
   orgTypes: { label: string; value: string }[] = [];
   countryOptions: { label: string; value: string }[] = [];
   countriesLoading = false;
@@ -206,6 +217,7 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
       funding: ['', [Validators.required, Validators.pattern('^[0-9]+(\\.[0-9]{1,2})?$')]],
       roles: ['', [Validators.required, Validators.maxLength(600)]],
       supportLetter: [null, Validators.required],
+      supportLetterAttachmentId: [null],
     });
   }
 
@@ -214,22 +226,24 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
       .getResearchClusters()
       .pipe(takeUntil(this.destroy$))
       .subscribe((res) => {
-        this.clusters = (res.data ?? [])
+        const clusters = (res.data ?? [])
           .filter((o) => o.is_active)
           .map((o) => ({ label: o.cluster_name, value: o.id.toString() }));
+        setTimeout(() => this.clusters.set(clusters));
       });
 
     this.loadOrganisationTypes();
 
-    // Load academic staff list from the real backend for the internal co-researcher dropdown
-    this.masterData
-      .searchAcademicStaff()
+    // Use the RDIG-specific option API so restricted roles and reviewers never reach this form.
+    this.rdigApi
+      .listCoResearcherOptions()
       .pipe(takeUntil(this.destroy$))
       .subscribe((res) => {
         this.academicStaffList = res.data ?? [];
         this.staffOptions = this.academicStaffList.map((s) => ({
           label: s.fullname,
           value: s.id.toString(),
+          description: [s.department, s.email].filter(Boolean).join(' · '),
         }));
       });
 
@@ -291,8 +305,25 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
   }
 
   private loadCountryOptions(): void {
-    this.countryOptions = COUNTRY_LIST;
-    this.countriesLoading = false;
+    this.countriesLoading = true;
+    this.masterData
+      .getCountries()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res) => {
+          this.countryOptions = (res.data ?? [])
+            .filter((country) => country.is_active)
+            .map((country) => ({
+              label: country.name,
+              value: country.name,
+            }));
+          this.countriesLoading = false;
+        },
+        error: () => {
+          this.countryOptions = [];
+          this.countriesLoading = false;
+        },
+      });
   }
 
   openInternalModal(): void {
@@ -333,6 +364,8 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
     if (this.externalResearchers.length >= 10) return;
     this.editingExternalIdx.set(null);
     this.externalForm.reset();
+    this.externalForm.get('supportLetter')?.setValidators(Validators.required);
+    this.externalForm.get('supportLetter')?.updateValueAndValidity({ emitEvent: false });
     this.showExternalModal.set(true);
   }
 
@@ -340,8 +373,13 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
     const row = this.externalResearchers.at(index).getRawValue();
     this.editingExternalIdx.set(index);
     this.externalForm.patchValue(row);
-    this.externalForm.get('supportLetter')?.clearValidators();
-    this.externalForm.get('supportLetter')?.updateValueAndValidity();
+    const supportLetter = this.externalForm.get('supportLetter');
+    if (row.supportLetterAttachmentId) {
+      supportLetter?.clearValidators();
+    } else {
+      supportLetter?.setValidators(Validators.required);
+    }
+    supportLetter?.updateValueAndValidity({ emitEvent: false });
     this.showExternalModal.set(true);
   }
 
@@ -365,13 +403,14 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
     this.externalResearchers.removeAt(index);
   }
 
-  onFileSelected(file: File): void {
+  onFileSelected(file: File | null): void {
     this.externalForm.get('supportLetter')?.setValue(file);
+    this.externalForm.get('supportLetter')?.markAsTouched();
   }
 
   /** True when a support letter is attached (a freshly-picked File or a persisted URL/attachment). */
-  hasSupportLetter(value: unknown): boolean {
-    return !!this.supportLetterUrl(value) || value instanceof File;
+  hasSupportLetter(value: unknown, attachmentId?: number | null): boolean {
+    return !!attachmentId || !!this.supportLetterUrl(value) || value instanceof File;
   }
 
   /** Resolve a persisted support letter to an openable URL, if any. */
@@ -385,10 +424,10 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
   }
 
   /** Opens the support letter in a new tab — a persisted URL directly, or a freshly-picked File via a blob URL. */
-  openSupportLetter(value: unknown): void {
+  openSupportLetter(value: unknown, attachmentId?: number | null): void {
     const url = this.supportLetterUrl(value);
     if (url) {
-      window.open(url, '_blank', 'noopener');
+      this.attachmentDownload.open(url, 'support-letter', true);
       return;
     }
     if (value instanceof File) {
@@ -396,6 +435,20 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
       window.open(blobUrl, '_blank', 'noopener');
       // Revoke shortly after so the new tab has time to load it.
       setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000);
+      return;
+    }
+    const requestId = Number(this.parentForm.get('metadata.rdigRequestId')?.value);
+    if (requestId && attachmentId) {
+      this.rdigApi.getAttachmentDownloadUrl(requestId, attachmentId)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (response) => {
+            const downloadUrl = response.data?.download_url || response.data?.file_url;
+            if (downloadUrl) this.attachmentDownload.open(downloadUrl, response.data?.file_name || 'support-letter', true);
+            else this.toast.error('Support letter download URL is unavailable.');
+          },
+          error: () => this.toast.error('Unable to open the support letter.'),
+        });
     }
   }
 

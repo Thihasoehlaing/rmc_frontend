@@ -158,7 +158,7 @@ export function dashboardAudienceFor(user: User | null, serverView?: string | nu
   if (groups.includes('SystemAdmin')) return 'system_admin';
   if (groups.includes('Admin') || groups.includes('RMC')) return 'rmc_admin';
   if (groups.includes('Finance')) return 'finance';
-  if (groups.some((group) => ['HOS', 'VC', 'HR', 'CEO', 'RDIG_Chair', 'Reviewer'].includes(group))) {
+  if (groups.some((group) => ['HOS', 'VC', 'HR', 'CEO', 'CFO', 'RDIG_Chair', 'Reviewer'].includes(group))) {
     return 'workflow_actor';
   }
   return 'applicant';

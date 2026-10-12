@@ -106,7 +106,7 @@ export class RequestStatusesService {
   listActorTypes(): Observable<ApiResponse<ActorTypeOption[]>> {
     const params = new HttpParams().set('status', 'Active');
     return this.http.get<ApiResponse<ActorTypeOption[]>>(
-      `${this.settingsUrl}/workflow-actor-types/options`,
+      `${this.url}/actor-options`,
       { params },
     );
   }

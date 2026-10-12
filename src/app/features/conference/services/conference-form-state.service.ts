@@ -64,12 +64,6 @@ export interface ConferenceFormState {
     [key: string]: any;
   };
   declaration?: {
-    confirmPresenter?: boolean;
-    confirmScopusIndexed?: boolean;
-    confirmNotResignedStaff?: boolean;
-    confirmJointAuthorship?: boolean;
-    confirmCompliance?: boolean;
-    confirmPostReturn?: boolean;
     agreeToTerms?: boolean;
     acknowledgeGrantFunder?: boolean;
     [key: string]: any;

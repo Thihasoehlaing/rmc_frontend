@@ -1,7 +1,9 @@
 ﻿import { Component, OnInit, OnDestroy, Input, effect, inject } from '@angular/core';
+import { signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
 import { Subscription } from 'rxjs';
+import { finalize } from 'rxjs/operators';
 import { SearchableDropdownComponent } from '../../../../../shared/components/searchable-dropdown/searchable-dropdown.component';
 import { ActionButtonComponent } from '../../../../../shared/components/action-button/action-button.component';
 import {
@@ -16,6 +18,7 @@ import { ConferenceWorkflowService } from '../../../services/conference-workflow
 import { ConferenceFormStateService } from '../../../services/conference-form-state.service';
 import {
   AcademicStaffOption,
+  CountryOption,
   MasterDataService,
 } from '../../../../../core/services/master-data.service';
 import { AuthService } from '../../../../../core/services/auth.service';
@@ -25,6 +28,7 @@ import { ValidationMessageComponent } from '../../../../../shared/components/val
 import { CharacterCounterComponent } from '../../../../../shared/components/character-counter/character-counter.component';
 import { NoteComponent } from '../../../../../shared/components/note/note.component';
 import { formatCountryForDisplay } from '../../../../../shared/utils/country.util';
+import { TableRowCounterComponent } from '../../../../../shared/components/table-row-counter/table-row-counter.component';
 
 @Component({
   selector: 'app-author-details-form',
@@ -33,6 +37,7 @@ import { formatCountryForDisplay } from '../../../../../shared/utils/country.uti
     TableActionIconComponent,
     ValidationMessageComponent,
     CharacterCounterComponent,
+    TableRowCounterComponent,
     CommonModule,
     ReactiveFormsModule,
     SearchableDropdownComponent,
@@ -65,6 +70,9 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
   staffOptions: DropdownOption[] = [];
   departmentOptions: DropdownOption<string>[] = [];
   organisationTypeOptions: DropdownOption[] = [];
+  readonly countryOptions = signal<DropdownOption<string>[]>([]);
+  readonly countryOptionsLoading = signal(false);
+  readonly countryOptionsLoadFailed = signal(false);
   private academicStaffByName = new Map<string, AcademicStaffOption>();
   private staffSelectionSubscription?: Subscription;
 
@@ -118,6 +126,7 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
 
     this.loadAcademicStaffOptions();
     this.loadDepartmentOptions();
+    this.loadCountryOptions();
     this.masterData.getDropdownOptions('TYPE_OF_ORGANISATION').subscribe((res) => {
       this.organisationTypeOptions = (res.data ?? [])
         .filter((o) => o.status === 'ACTIVE')
@@ -266,6 +275,7 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
 
   deleteTestSubsection(index: number) {
     this.testSubsections.removeAt(index);
+    this.updateStaffOptionStates();
   }
 
   deleteStudentCoAuthor(index: number) {
@@ -396,6 +406,12 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
         : {}),
     };
 
+    if (this.modalType === 'apu-staff' && this.isStaffAlreadySelected(formData.staffName)) {
+      this.editForm.get('staffName')?.setErrors({ duplicateStaff: true });
+      this.editForm.get('staffName')?.markAsTouched();
+      return;
+    }
+
     if (this.modalType === 'student' && formData.tpNumber) {
       formData.tpNumber = this.formatTPNumber(formData.tpNumber);
     }
@@ -425,6 +441,7 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
     }
 
     this.closeModal();
+    this.updateStaffOptionStates();
   }
 
   getModalTitle(): string {
@@ -466,11 +483,16 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
       this.academicStaffByName.clear();
       const options = staff
         .filter((item) => !this.isCurrentUserStaff(item))
-        .map((item) => this.toAcademicStaffDropdownOption(item));
+        .map((item) =>
+          this.toAcademicStaffDropdownOption(
+            item,
+            this.isStaffAlreadySelected(this.getStaffOptionValue(item)),
+          ),
+        );
       const selectedValue = String(selectedStaffName ?? '').trim();
 
       if (selectedValue && !options.some((option) => option.value === selectedValue)) {
-        options.unshift({ value: selectedValue, label: selectedValue, displayLabel: selectedValue });
+        options.unshift(this.createStaffFallbackOption(selectedValue));
       }
 
       this.staffOptions = options;
@@ -502,19 +524,108 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
     return name.startsWith('graduate school') || name.startsWith('school of');
   }
 
-  private toAcademicStaffDropdownOption(staff: AcademicStaffOption): DropdownOption<string> {
-    const value = staff.fullname || staff.username || staff.email || `Staff ${staff.id}`;
+  private loadCountryOptions(): void {
+    this.countryOptionsLoading.set(true);
+    this.countryOptionsLoadFailed.set(false);
+
+    this.masterData
+      .getCountries()
+      .pipe(finalize(() => this.countryOptionsLoading.set(false)))
+      .subscribe({
+        next: (response) => {
+          this.countryOptions.set(
+            (response.success ? response.data ?? [] : [])
+              .filter((country: CountryOption) => country.is_active)
+              .map((country: CountryOption) => ({
+                value: country.name,
+                label: country.name,
+                description: country.code,
+                searchText: `${country.name} ${country.code}`,
+              })),
+          );
+          this.countryOptionsLoadFailed.set(!response.success);
+        },
+        error: () => {
+          this.countryOptions.set([]);
+          this.countryOptionsLoadFailed.set(true);
+        },
+      });
+  }
+
+  private toAcademicStaffDropdownOption(
+    staff: AcademicStaffOption,
+    alreadySelected: boolean,
+  ): DropdownOption<string> {
+    const value = this.getStaffOptionValue(staff);
     this.academicStaffByName.set(value, staff);
 
     return {
       value,
-      label: value,
-      description: [staff.email, staff.department].filter(Boolean).join(' • '),
+      label: `${value} (${staff.username || staff.id})`,
       displayLabel: value,
+      description: staff.department,
       searchText: [staff.username, staff.fullname, staff.email, staff.department]
         .filter(Boolean)
         .join(' '),
+      disabled: alreadySelected,
+      actionLabel: alreadySelected ? 'Already Added' : undefined,
+      actionIcon: alreadySelected ? 'warning' : undefined,
+      warning: alreadySelected,
     };
+  }
+
+  private createStaffFallbackOption(value: string): DropdownOption<string> {
+    const alreadySelected = this.isStaffAlreadySelected(value);
+    return {
+      value,
+      label: value,
+      displayLabel: value,
+      disabled: alreadySelected,
+      actionLabel: alreadySelected ? 'Already Added' : undefined,
+      actionIcon: alreadySelected ? 'warning' : undefined,
+      warning: alreadySelected,
+    };
+  }
+
+  private getStaffOptionValue(staff: AcademicStaffOption): string {
+    return staff.fullname || staff.username || staff.email || `Staff ${staff.id}`;
+  }
+
+  private getUnavailableStaffNames(): Set<string> {
+    return new Set(
+      this.testSubsections.controls
+        .map((control, index) => (index === this.editingIndex ? '' : control.get('staffName')?.value))
+        .filter((staffName): staffName is string => !!staffName)
+        .map((staffName) => this.normalizeStaffName(staffName)),
+    );
+  }
+
+  private isStaffAlreadySelected(staffName: string): boolean {
+    const normalizedName = this.normalizeStaffName(staffName);
+    if (!normalizedName) return false;
+
+    return this.testSubsections.controls.some(
+      (control, index) =>
+        index !== this.editingIndex &&
+        this.normalizeStaffName(control.get('staffName')?.value) === normalizedName,
+    );
+  }
+
+  private normalizeStaffName(staffName: unknown): string {
+    return String(staffName ?? '').trim().toLowerCase();
+  }
+
+  private updateStaffOptionStates(): void {
+    this.staffOptions = this.staffOptions.map((option) => {
+      const alreadySelected = this.isStaffAlreadySelected(String(option.value));
+      return {
+        ...option,
+        disabled: alreadySelected,
+        actionLabel: alreadySelected ? 'Already Added' : undefined,
+        actionIcon: alreadySelected ? 'warning' : undefined,
+        warning: alreadySelected,
+      };
+    });
   }
 
   private isCurrentUserStaff(staff: AcademicStaffOption): boolean {
@@ -533,11 +644,12 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
     const selectedValue = selectedStaffName.trim();
     if (selectedValue && !this.staffOptions.some((option) => option.value === selectedValue)) {
       this.staffOptions = [
-        { value: selectedValue, label: selectedValue, displayLabel: selectedValue },
+        this.createStaffFallbackOption(selectedValue),
         ...this.staffOptions,
       ];
     }
 
+    this.updateStaffOptionStates();
     this.patchDepartmentFromSelectedStaff(selectedValue);
     this.staffSelectionSubscription = this.editForm.get('staffName')?.valueChanges.subscribe((staffName) => {
       this.patchDepartmentFromSelectedStaff(String(staffName ?? ''));

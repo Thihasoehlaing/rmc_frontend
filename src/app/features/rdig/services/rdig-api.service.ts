@@ -1,8 +1,13 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpContext } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { environment } from '../../../../environments/environment';
+import { SKIP_API_SUCCESS_TOAST } from '../../../core/interceptors/api-message.interceptor';
+import {
+  PaginatedData,
+  RequestSummaryDto,
+} from '../../../core/services/workflow-requests.service';
 
 export interface ApiResponse<T> {
   success: boolean;
@@ -10,18 +15,24 @@ export interface ApiResponse<T> {
   data: T;
 }
 
+export type RdigTrack = 'social-innovation' | 'fundamental-research';
+
 /** Payload/response shape for the RDIG request's own fields (snake_case — mirrors schemas/rdig.py). */
 export interface RdigRequestDto {
   id?: number;
   request_id?: number;
   application_type?: string | null;
   project_category?: string | null;
+  track?: RdigTrack | null;
   project_duration_months?: number | null;
   project_title?: string | null;
   research_area?: string | null;
   research_cluster_id?: number | null;
   research_domain_id?: number | null;
   sub_research_domain_id?: number | null;
+  research_cluster_name_snapshot?: string | null;
+  research_domain_name_snapshot?: string | null;
+  sub_research_domain_name_snapshot?: string | null;
   executive_summary?: string | null;
   keywords?: string | null;
   introduction?: string | null;
@@ -48,18 +59,35 @@ export interface RdigRequestDto {
   novelty_justification?: string | null;
   budget_remarks?: string | null;
   total_budget_request?: string | null;
+  approved_amount_by_cfo?: string | null;
   indexed_journal_selected?: boolean;
   indexed_journal_quantity?: number | null;
   conceptual_design_selected?: boolean;
   knowledge_transfer_programme_selected?: boolean;
+  knowledge_transfer_community?: string | null;
   application_external_grant_selected?: boolean;
+  external_grant_scheme?: string | null;
   other_output_selected?: boolean;
   other_output_specification?: string | null;
+  research_cluster_name?: string | null;
+  research_domain_name?: string | null;
+  sub_research_domain_name?: string | null;
+  esg_names?: string | null;
+  esgs?: string | null;
+  sdg_names?: string | null;
+  sdgs?: string | null;
+  ethics_declaration?: boolean | null;
+  ethics_approval_required?: boolean;
+  ethics_approval_attachment_id?: number | null;
+  coresearchers_declaration?: boolean | null;
+  justification?: string | null;
+  novelty_statement?: string | null;
   [key: string]: unknown;
 }
 
 export interface RdigCoResearcherDto {
   id?: number;
+  rdig_request_id?: number;
   staff_id?: string | null;
   staff_name?: string | null;
   staff_email?: string | null;
@@ -69,8 +97,17 @@ export interface RdigCoResearcherDto {
   display_order?: number | null;
 }
 
+export interface RdigCoResearcherOption {
+  id: number;
+  username: string;
+  fullname: string;
+  email: string | null;
+  department: string | null;
+}
+
 export interface RdigCollaboratorDto {
   id?: number;
+  rdig_request_id?: number;
   staff_id?: string | null;
   full_name?: string | null;
   title?: string | null;
@@ -86,8 +123,23 @@ export interface RdigCollaboratorDto {
   support_letter_attachment_id?: number | null;
 }
 
+export interface RdigEsgSelectionDto {
+  id?: number;
+  rdig_request_id?: number;
+  esg_id: number;
+  esg_name_snapshot?: string | null;
+}
+
+export interface RdigSdgSelectionDto {
+  id?: number;
+  rdig_request_id?: number;
+  sdg_id: number;
+  sdg_name_snapshot?: string | null;
+}
+
 export interface RdigResearchActivityDto {
   id?: number;
+  rdig_request_id?: number;
   activity_name?: string | null;
   start_month?: number | null;
   end_month?: number | null;
@@ -97,10 +149,13 @@ export interface RdigResearchActivityDto {
 
 export interface RdigBudgetSectionDto {
   id?: number;
+  rdig_request_id?: number;
   budget_section_id?: number;
   section_code: string;
   section_name?: string;
   display_order?: number;
+  created_at?: string | null;
+  updated_at?: string | null;
 }
 
 export interface RdigBudgetItemDto {
@@ -111,6 +166,8 @@ export interface RdigBudgetItemDto {
   remarks?: string | null;
   display_order?: number | null;
   quotation_attachment_id?: number | null;
+  created_at?: string | null;
+  updated_at?: string | null;
 }
 
 export interface RdigAttachmentDto {
@@ -158,6 +215,19 @@ export interface RdigActiveBatchResponse {
   } | null;
 }
 
+export interface RdigFormData {
+  request: RequestSummaryDto;
+  rdig: RdigRequestDto | null;
+  apu_co_researchers: RdigCoResearcherDto[];
+  collaborators: RdigCollaboratorDto[];
+  esg_selections: RdigEsgSelectionDto[];
+  sdg_selections: RdigSdgSelectionDto[];
+  research_activities: RdigResearchActivityDto[];
+  budget_sections: RdigBudgetSectionDto[];
+  budget_items: RdigBudgetItemDto[];
+  attachments: RdigAttachmentDto[];
+}
+
 /** Thin wrapper over the real RDIG backend API (routes/rdig.py) — mirrors the wire contract 1:1. */
 @Injectable({ providedIn: 'root' })
 export class RdigApiService {
@@ -166,24 +236,40 @@ export class RdigApiService {
   private readonly base = `${this.apiUrl}/rdig`;
 
   // ── Lifecycle ────────────────────────────────────────────────────
-  createDraft(payload: Partial<RdigRequestDto>): Observable<ApiResponse<any>> {
-    return this.http.post<ApiResponse<any>>(`${this.base}/drafts`, payload);
+  getMyAccess(): Observable<ApiResponse<{ can_apply: boolean }>> {
+    return this.http.get<ApiResponse<{ can_apply: boolean }>>(`${this.base}/my-access`);
   }
 
-  getForm(id: number): Observable<ApiResponse<any>> {
-    return this.http.get<ApiResponse<any>>(`${this.base}/${id}`);
+  sendReminder(id: number): Observable<ApiResponse<{ notification_id: number; notification_count: number; sent_count: number; failed_count: number; skipped_count: number; email_enabled: boolean }>> {
+    return this.http.post<ApiResponse<{ notification_id: number; notification_count: number; sent_count: number; failed_count: number; skipped_count: number; email_enabled: boolean }>>(
+      `${this.base}/${id}/reminder`, {}, this.skipSuccessToastOptions());
+  }
+  createDraft(payload: Partial<RdigRequestDto>): Observable<ApiResponse<RdigFormData>> {
+    return this.http.post<ApiResponse<RdigFormData>>(
+      `${this.base}/drafts`,
+      payload,
+      this.skipSuccessToastOptions(),
+    );
   }
 
-  updateDraft(id: number, payload: Partial<RdigRequestDto>): Observable<ApiResponse<any>> {
-    return this.http.put<ApiResponse<any>>(`${this.base}/${id}/draft`, payload);
+  getForm(id: number): Observable<ApiResponse<RdigFormData>> {
+    return this.http.get<ApiResponse<RdigFormData>>(`${this.base}/${id}`);
   }
 
-  submit(id: number): Observable<ApiResponse<any>> {
-    return this.http.post<ApiResponse<any>>(`${this.base}/${id}/submit`, {});
+  updateDraft(id: number, payload: Partial<RdigRequestDto>): Observable<ApiResponse<RdigFormData>> {
+    return this.http.put<ApiResponse<RdigFormData>>(
+      `${this.base}/${id}/draft`,
+      payload,
+      this.skipSuccessToastOptions(),
+    );
   }
 
-  resubmit(id: number): Observable<ApiResponse<any>> {
-    return this.http.post<ApiResponse<any>>(`${this.base}/${id}/resubmit`, {});
+  submit(id: number): Observable<ApiResponse<RequestSummaryDto>> {
+    return this.http.post<ApiResponse<RequestSummaryDto>>(`${this.base}/${id}/submit`, {});
+  }
+
+  resubmit(id: number): Observable<ApiResponse<RequestSummaryDto>> {
+    return this.http.post<ApiResponse<RequestSummaryDto>>(`${this.base}/${id}/resubmit`, {});
   }
 
   getActiveBatch(): Observable<ApiResponse<RdigActiveBatchResponse>> {
@@ -191,8 +277,20 @@ export class RdigApiService {
   }
 
   // ── APU Co-Researchers ──────────────────────────────────────────
-  listCoResearchers(id: number): Observable<ApiResponse<RdigCoResearcherDto[]>> {
-    return this.http.get<ApiResponse<RdigCoResearcherDto[]>>(`${this.base}/${id}/apu-co-researchers`);
+  listCoResearcherOptions(search?: string): Observable<ApiResponse<RdigCoResearcherOption[]>> {
+    const options = search?.trim()
+      ? { params: { search: search.trim() } }
+      : undefined;
+    return this.http.get<ApiResponse<RdigCoResearcherOption[]>>(
+      `${this.base}/co-researcher-options`,
+      options,
+    );
+  }
+
+  listCoResearchers(id: number): Observable<ApiResponse<PaginatedData<RdigCoResearcherDto>>> {
+    return this.http.get<ApiResponse<PaginatedData<RdigCoResearcherDto>>>(
+      `${this.base}/${id}/apu-co-researchers`,
+    );
   }
 
   createCoResearcher(
@@ -202,6 +300,7 @@ export class RdigApiService {
     return this.http.post<ApiResponse<RdigCoResearcherDto>>(
       `${this.base}/${id}/apu-co-researchers`,
       payload,
+      this.skipSuccessToastOptions(),
     );
   }
 
@@ -213,23 +312,33 @@ export class RdigApiService {
     return this.http.put<ApiResponse<RdigCoResearcherDto>>(
       `${this.base}/${id}/apu-co-researchers/${itemId}`,
       payload,
+      this.skipSuccessToastOptions(),
     );
   }
 
   deleteCoResearcher(id: number, itemId: number): Observable<ApiResponse<unknown>> {
-    return this.http.delete<ApiResponse<unknown>>(`${this.base}/${id}/apu-co-researchers/${itemId}`);
+    return this.http.delete<ApiResponse<unknown>>(
+      `${this.base}/${id}/apu-co-researchers/${itemId}`,
+      this.skipSuccessToastOptions(),
+    );
   }
 
   // ── Collaborators ────────────────────────────────────────────────
-  listCollaborators(id: number): Observable<ApiResponse<RdigCollaboratorDto[]>> {
-    return this.http.get<ApiResponse<RdigCollaboratorDto[]>>(`${this.base}/${id}/collaborators`);
+  listCollaborators(id: number): Observable<ApiResponse<PaginatedData<RdigCollaboratorDto>>> {
+    return this.http.get<ApiResponse<PaginatedData<RdigCollaboratorDto>>>(
+      `${this.base}/${id}/collaborators`,
+    );
   }
 
   createCollaborator(
     id: number,
     payload: RdigCollaboratorDto,
   ): Observable<ApiResponse<RdigCollaboratorDto>> {
-    return this.http.post<ApiResponse<RdigCollaboratorDto>>(`${this.base}/${id}/collaborators`, payload);
+    return this.http.post<ApiResponse<RdigCollaboratorDto>>(
+      `${this.base}/${id}/collaborators`,
+      payload,
+      this.skipSuccessToastOptions(),
+    );
   }
 
   updateCollaborator(
@@ -240,37 +349,49 @@ export class RdigApiService {
     return this.http.put<ApiResponse<RdigCollaboratorDto>>(
       `${this.base}/${id}/collaborators/${itemId}`,
       payload,
+      this.skipSuccessToastOptions(),
     );
   }
 
   deleteCollaborator(id: number, itemId: number): Observable<ApiResponse<unknown>> {
-    return this.http.delete<ApiResponse<unknown>>(`${this.base}/${id}/collaborators/${itemId}`);
+    return this.http.delete<ApiResponse<unknown>>(
+      `${this.base}/${id}/collaborators/${itemId}`,
+      this.skipSuccessToastOptions(),
+    );
   }
 
   // ── ESG / SDG selections (bulk replace) ─────────────────────────
-  listEsgSelections(id: number): Observable<ApiResponse<{ esg_ids: number[] }>> {
-    return this.http.get<ApiResponse<{ esg_ids: number[] }>>(`${this.base}/${id}/esg-selections`);
+  listEsgSelections(id: number): Observable<ApiResponse<PaginatedData<RdigEsgSelectionDto>>> {
+    return this.http.get<ApiResponse<PaginatedData<RdigEsgSelectionDto>>>(
+      `${this.base}/${id}/esg-selections`,
+    );
   }
 
-  replaceEsgSelections(id: number, esgIds: number[]): Observable<ApiResponse<unknown>> {
-    return this.http.put<ApiResponse<unknown>>(`${this.base}/${id}/esg-selections`, {
-      esg_ids: esgIds,
-    });
+  replaceEsgSelections(id: number, esgIds: number[]): Observable<ApiResponse<RdigEsgSelectionDto[]>> {
+    return this.http.put<ApiResponse<RdigEsgSelectionDto[]>>(
+      `${this.base}/${id}/esg-selections`,
+      { esg_ids: esgIds },
+      this.skipSuccessToastOptions(),
+    );
   }
 
-  listSdgSelections(id: number): Observable<ApiResponse<{ sdg_ids: number[] }>> {
-    return this.http.get<ApiResponse<{ sdg_ids: number[] }>>(`${this.base}/${id}/sdg-selections`);
+  listSdgSelections(id: number): Observable<ApiResponse<PaginatedData<RdigSdgSelectionDto>>> {
+    return this.http.get<ApiResponse<PaginatedData<RdigSdgSelectionDto>>>(
+      `${this.base}/${id}/sdg-selections`,
+    );
   }
 
-  replaceSdgSelections(id: number, sdgIds: number[]): Observable<ApiResponse<unknown>> {
-    return this.http.put<ApiResponse<unknown>>(`${this.base}/${id}/sdg-selections`, {
-      sdg_ids: sdgIds,
-    });
+  replaceSdgSelections(id: number, sdgIds: number[]): Observable<ApiResponse<RdigSdgSelectionDto[]>> {
+    return this.http.put<ApiResponse<RdigSdgSelectionDto[]>>(
+      `${this.base}/${id}/sdg-selections`,
+      { sdg_ids: sdgIds },
+      this.skipSuccessToastOptions(),
+    );
   }
 
   // ── Research Activities ─────────────────────────────────────────
-  listResearchActivities(id: number): Observable<ApiResponse<RdigResearchActivityDto[]>> {
-    return this.http.get<ApiResponse<RdigResearchActivityDto[]>>(
+  listResearchActivities(id: number): Observable<ApiResponse<PaginatedData<RdigResearchActivityDto>>> {
+    return this.http.get<ApiResponse<PaginatedData<RdigResearchActivityDto>>>(
       `${this.base}/${id}/research-activities`,
     );
   }
@@ -282,6 +403,7 @@ export class RdigApiService {
     return this.http.post<ApiResponse<RdigResearchActivityDto>>(
       `${this.base}/${id}/research-activities`,
       payload,
+      this.skipSuccessToastOptions(),
     );
   }
 
@@ -293,28 +415,70 @@ export class RdigApiService {
     return this.http.put<ApiResponse<RdigResearchActivityDto>>(
       `${this.base}/${id}/research-activities/${itemId}`,
       payload,
+      this.skipSuccessToastOptions(),
     );
   }
 
   deleteResearchActivity(id: number, itemId: number): Observable<ApiResponse<unknown>> {
-    return this.http.delete<ApiResponse<unknown>>(`${this.base}/${id}/research-activities/${itemId}`);
+    return this.http.delete<ApiResponse<unknown>>(
+      `${this.base}/${id}/research-activities/${itemId}`,
+      this.skipSuccessToastOptions(),
+    );
   }
 
   // ── Budget Sections (auto-created on draft creation) ────────────
-  listBudgetSections(id: number): Observable<ApiResponse<RdigBudgetSectionDto[]>> {
-    return this.http.get<ApiResponse<RdigBudgetSectionDto[]>>(`${this.base}/${id}/budget-sections`);
+  listBudgetSections(id: number): Observable<ApiResponse<{ items: RdigBudgetSectionDto[] }>> {
+    return this.http.get<ApiResponse<{ items: RdigBudgetSectionDto[] }>>(
+      `${this.base}/${id}/budget-sections`,
+    );
+  }
+
+  createBudgetSection(
+    id: number,
+    payload: RdigBudgetSectionDto,
+  ): Observable<ApiResponse<RdigBudgetSectionDto>> {
+    return this.http.post<ApiResponse<RdigBudgetSectionDto>>(
+      `${this.base}/${id}/budget-sections`,
+      payload,
+      this.skipSuccessToastOptions(),
+    );
+  }
+
+  updateBudgetSection(
+    id: number,
+    sectionId: number,
+    payload: Partial<RdigBudgetSectionDto>,
+  ): Observable<ApiResponse<RdigBudgetSectionDto>> {
+    return this.http.put<ApiResponse<RdigBudgetSectionDto>>(
+      `${this.base}/${id}/budget-sections/${sectionId}`,
+      payload,
+      this.skipSuccessToastOptions(),
+    );
+  }
+
+  deleteBudgetSection(id: number, sectionId: number): Observable<ApiResponse<unknown>> {
+    return this.http.delete<ApiResponse<unknown>>(
+      `${this.base}/${id}/budget-sections/${sectionId}`,
+      this.skipSuccessToastOptions(),
+    );
   }
 
   // ── Budget Items ─────────────────────────────────────────────────
-  listBudgetItems(id: number): Observable<ApiResponse<RdigBudgetItemDto[]>> {
-    return this.http.get<ApiResponse<RdigBudgetItemDto[]>>(`${this.base}/${id}/budget-items`);
+  listBudgetItems(id: number): Observable<ApiResponse<PaginatedData<RdigBudgetItemDto>>> {
+    return this.http.get<ApiResponse<PaginatedData<RdigBudgetItemDto>>>(
+      `${this.base}/${id}/budget-items`,
+    );
   }
 
   createBudgetItem(
     id: number,
     payload: RdigBudgetItemDto,
   ): Observable<ApiResponse<RdigBudgetItemDto>> {
-    return this.http.post<ApiResponse<RdigBudgetItemDto>>(`${this.base}/${id}/budget-items`, payload);
+    return this.http.post<ApiResponse<RdigBudgetItemDto>>(
+      `${this.base}/${id}/budget-items`,
+      payload,
+      this.skipSuccessToastOptions(),
+    );
   }
 
   updateBudgetItem(
@@ -325,16 +489,22 @@ export class RdigApiService {
     return this.http.put<ApiResponse<RdigBudgetItemDto>>(
       `${this.base}/${id}/budget-items/${itemId}`,
       payload,
+      this.skipSuccessToastOptions(),
     );
   }
 
   deleteBudgetItem(id: number, itemId: number): Observable<ApiResponse<unknown>> {
-    return this.http.delete<ApiResponse<unknown>>(`${this.base}/${id}/budget-items/${itemId}`);
+    return this.http.delete<ApiResponse<unknown>>(
+      `${this.base}/${id}/budget-items/${itemId}`,
+      this.skipSuccessToastOptions(),
+    );
   }
 
   // ── Attachments ──────────────────────────────────────────────────
-  listAttachments(id: number): Observable<ApiResponse<RdigAttachmentDto[]>> {
-    return this.http.get<ApiResponse<RdigAttachmentDto[]>>(`${this.base}/${id}/attachments`);
+  listAttachments(id: number): Observable<ApiResponse<PaginatedData<RdigAttachmentDto>>> {
+    return this.http.get<ApiResponse<PaginatedData<RdigAttachmentDto>>>(
+      `${this.base}/${id}/attachments`,
+    );
   }
 
   uploadAttachment(
@@ -349,7 +519,11 @@ export class RdigApiService {
     if (entityType) formData.append('entity_type', entityType);
     if (entityId !== undefined) formData.append('entity_id', String(entityId));
     if (uploadGroupId) formData.append('upload_group_id', uploadGroupId);
-    return this.http.post<ApiResponse<RdigAttachmentDto>>(`${this.base}/${id}/attachments`, formData);
+    return this.http.post<ApiResponse<RdigAttachmentDto>>(
+      `${this.base}/${id}/attachments`,
+      formData,
+      this.skipSuccessToastOptions(),
+    );
   }
 
   getAttachmentDownloadUrl(
@@ -362,6 +536,15 @@ export class RdigApiService {
   }
 
   deleteAttachment(id: number, attachmentId: number): Observable<ApiResponse<unknown>> {
-    return this.http.delete<ApiResponse<unknown>>(`${this.base}/${id}/attachments/${attachmentId}`);
+    return this.http.delete<ApiResponse<unknown>>(
+      `${this.base}/${id}/attachments/${attachmentId}`,
+      this.skipSuccessToastOptions(),
+    );
+  }
+
+  private skipSuccessToastOptions(): { context: HttpContext } {
+    return {
+      context: new HttpContext().set(SKIP_API_SUCCESS_TOAST, true),
+    };
   }
 }

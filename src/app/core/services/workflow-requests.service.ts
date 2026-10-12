@@ -1,6 +1,7 @@
 import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, defer, finalize } from 'rxjs';
+import { ActionLoadingService } from './action-loading.service';
 
 import { environment } from '../../../environments/environment';
 
@@ -83,6 +84,13 @@ export interface RequestSummaryDto {
     batch_name: string;
     start_date: string | null;
     end_date: string | null;
+    status?: string | null;
+    stage_windows?: Array<{
+      id?: number;
+      stage_name: string;
+      stage_start_date: string | null;
+      stage_end_date: string | null;
+    }>;
   } | null;
   applicant_staff_username: string | null;
   applicant_name: string | null;
@@ -179,8 +187,48 @@ export interface UpdateSectionCommentPayload {
   comment_text: string;
 }
 
+export interface RdigReviewerScoreDto {
+  id: number | null;
+  criterion_code: string;
+  criterion_name: string;
+  score: number | null;
+  maximum_score: number;
+}
+
+export interface RdigReviewerReviewDto {
+  rdig_request_reviewer_id: number;
+  reviewer_no: number;
+  username: string;
+  name: string;
+  review_cycle: number;
+  scores: RdigReviewerScoreDto[];
+  total_score: number;
+  maximum_score: number;
+  is_complete: boolean;
+  can_approve: boolean;
+}
+
+export interface RdigReviewerScoreSheetDto {
+  request_id: number;
+  rdig_request_id: number;
+  review_cycle: number;
+  approval_threshold: number;
+  maximum_score: number;
+  criteria: Array<{
+    criterion_code: string;
+    criterion_name: string;
+    maximum_score: number;
+  }>;
+  reviews: RdigReviewerReviewDto[];
+}
+
+export interface SaveRdigReviewerScoresPayload {
+  scores: Array<{ criterion_code: string; score: number }>;
+}
+
 /** Body for POST /requests/{id}/actions (schemas/requests.py::RequestActionSchema). */
 export interface ActOnRequestPayload {
+  approved_amount_by_cfo?: number;
   action_code: string;
   comment_text?: string | null;
   /** RMC reviewer selection — usernames chosen when a step requires it. */
@@ -275,6 +323,7 @@ export interface RequestContextDto {
 @Injectable({ providedIn: 'root' })
 export class WorkflowRequestsService {
   private readonly http = inject(HttpClient);
+  private readonly printLoading = inject(ActionLoadingService);
   private readonly base = environment.apiUrl;
 
   private toParams(query: ListQuery | undefined): HttpParams {
@@ -465,14 +514,36 @@ export class WorkflowRequestsService {
     );
   }
 
+  getRdigReviewerScores(requestId: number): Observable<ApiResponse<RdigReviewerScoreSheetDto>> {
+    return this.http.get<ApiResponse<RdigReviewerScoreSheetDto>>(
+      `${this.base}/requests/${requestId}/rdig-reviewer-scores`,
+    );
+  }
+
+  saveRdigReviewerScores(
+    requestId: number,
+    payload: SaveRdigReviewerScoresPayload,
+  ): Observable<ApiResponse<RdigReviewerScoreSheetDto>> {
+    return this.http.put<ApiResponse<RdigReviewerScoreSheetDto>>(
+      `${this.base}/requests/${requestId}/rdig-reviewer-scores`,
+      payload,
+    );
+  }
+
   getPrintUrl(requestId: number): string {
     return `${this.base}/requests/${requestId}/print`;
   }
 
   downloadPrint(requestId: number): Observable<HttpResponse<Blob>> {
-    return this.http.get(this.getPrintUrl(requestId), {
-      observe: 'response',
-      responseType: 'blob',
+    return defer(() => {
+      const loadingId = this.printLoading.begin(
+        'Generating print PDF',
+        'Please wait while your application PDF is generated. The download will start automatically.',
+      );
+      return this.http.get(this.getPrintUrl(requestId), {
+        observe: 'response',
+        responseType: 'blob',
+      }).pipe(finalize(() => this.printLoading.end(loadingId)));
     });
   }
 }

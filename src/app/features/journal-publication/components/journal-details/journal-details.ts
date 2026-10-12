@@ -9,7 +9,14 @@
   ChangeDetectorRef,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  AbstractControl,
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  ValidationErrors,
+  Validators,
+} from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../../core/services/auth.service';
 import { JournalWorkflowService } from '../../services/journal-workflow.service';
@@ -27,11 +34,8 @@ import {
 } from '../../../../shared/components/data-table/data-table.component';
 import { JournalOptionType, JournalOptionsService } from '../../services/journal-options.service';
 import { DropdownOption } from '../../../../core/interfaces/components.interface';
+import { CurrencyOption, MasterDataService } from '../../../../core/services/master-data.service';
 import { COSTING_ITEM_ROW_LIMIT } from '../../../../core/constants/form-limits.constant';
-import {
-  SDG_KEYWORD_MAX_LENGTH,
-  SDG_KEYWORD_PLACEHOLDERS,
-} from '../../../../shared/validators/sdg-keyword.validator';
 import {
   JournalCostingPayload,
   JournalFormData,
@@ -43,6 +47,7 @@ import { TableScrollHintComponent } from '../../../../shared/components/table-sc
 import { ActionButtonComponent } from '../../../../shared/components/action-button/action-button.component';
 import { DecimalAmountDirective } from '../../../../shared/directives/decimal-amount.directive';
 import { MyrCurrencyPipe } from '../../../../shared/pipes/myr-currency.pipe';
+import { TableRowCounterComponent } from '../../../../shared/components/table-row-counter/table-row-counter.component';
 import { formatMyrCurrency } from '../../../../shared/utils/currency.util';
 
 export interface JournalCostingSaveItem {
@@ -59,6 +64,7 @@ export interface JournalCostingSaveItem {
     ActionButtonComponent,
     CommonModule,
     ReactiveFormsModule,
+    TableRowCounterComponent,
     CharacterCounterComponent,
     CustomHeaderComponent,
     CustomSubheaderComponent,
@@ -79,18 +85,16 @@ export class JournalDetails implements OnInit, OnDestroy {
   readonly nonResearchAccountCode = '6203/100';
   readonly breakdownDescriptionMaxLength = 400;
   readonly tableRecordLimit = COSTING_ITEM_ROW_LIMIT;
+  readonly projectCostMax = 5;
   auth = inject(AuthService);
   workflow = inject(JournalWorkflowService);
   private journalOptionsService = inject(JournalOptionsService);
+  private masterData = inject(MasterDataService);
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
   form!: FormGroup;
   breakdownForm!: FormGroup;
-  sdgKeywordsForm!: FormGroup;
-  readonly sdgKeywordMaxLength = SDG_KEYWORD_MAX_LENGTH;
-  readonly sdgKeywordPlaceholders = SDG_KEYWORD_PLACEHOLDERS;
   isBreakdownModalOpen = false;
-  isSDGKeywordsModalOpen = false;
   breakdownType: 'internal-research' | 'external-research' | 'non-research' | null = null;
   breakdownEditingIndex: number | null = null;
 
@@ -111,6 +115,7 @@ export class JournalDetails implements OnInit, OnDestroy {
   voteNumberOptions: { value: string; label: string }[] = [];
   accountCodeDescriptionOptions: { value: string; label: string }[] = [];
   accountCodeOptions: { value: string; label: string }[] = [];
+  currencyOptions: DropdownOption<string>[] = [];
 
   readonly breakdownColumns: DataTableColumn[] = [
     {
@@ -122,6 +127,7 @@ export class JournalDetails implements OnInit, OnDestroy {
     },
     { key: 'itemDescription', label: 'Vote Number Description', width: '220px' },
     { key: 'voteNumber', label: 'Vote Number', width: '120px' },
+    { key: 'currency', label: 'Currency', width: '120px' },
     { key: 'cost', label: 'Cost (Foreign/MYR)', width: '180px' },
     { key: 'exchangeRate', label: 'Exchange Rate', width: '140px' },
     { key: 'costInRM', label: 'Cost in RM', width: '140px' },
@@ -141,6 +147,7 @@ export class JournalDetails implements OnInit, OnDestroy {
     { key: 'accountCode', label: 'Account Code', width: '140px' },
     { key: 'voteNumber', label: 'Vote Number', width: '120px' },
     { key: 'costInRM', label: 'Cost in RM (Approximate)', width: '180px' },
+    { key: 'currency', label: 'Currency', width: '120px' },
     { key: 'cost', label: 'Cost in Foreign Currency', width: '180px' },
     { key: 'exchangeRate', label: 'Exchange Rate', width: '140px' },
     { key: 'description', label: 'Description', width: '260px' },
@@ -156,6 +163,7 @@ export class JournalDetails implements OnInit, OnDestroy {
   readonly nonResearchBreakdownColumns: DataTableColumn[] = [
     { key: 'accountCodeDescription', label: 'Account Code Description', width: '220px' },
     { key: 'accountCode', label: 'Account Code', width: '140px' },
+    { key: 'currency', label: 'Currency', width: '120px' },
     { key: 'cost', label: 'Cost in Foreign Currency', width: '180px' },
     { key: 'exchangeRate', label: 'Exchange Rate', width: '140px' },
     { key: 'costInRM', label: 'Cost in RM (Approximate)', width: '180px' },
@@ -220,11 +228,11 @@ export class JournalDetails implements OnInit, OnDestroy {
       restrictedPublisher: ['', Validators.required],
       journalName: ['', [Validators.required, Validators.maxLength(150)]],
       paperTitle: ['', [Validators.required, Validators.maxLength(200)]],
-      sdgKeyword1: ['', [Validators.required, Validators.maxLength(SDG_KEYWORD_MAX_LENGTH)]],
-      sdgKeyword2: ['', [Validators.required, Validators.maxLength(SDG_KEYWORD_MAX_LENGTH)]],
-      sdgKeyword3: ['', [Validators.required, Validators.maxLength(SDG_KEYWORD_MAX_LENGTH)]],
       citedApuPaper: ['', Validators.required],
-      citedApuPaperExplanation: ['', [Validators.maxLength(255)]],
+      citedApuPaperDoi: ['', [Validators.maxLength(255)]],
+      citedOtherApuPaper: [''],
+      citedOtherApuPaperDoi: ['', [Validators.maxLength(255)]],
+      citedOtherApuPaperReason: ['', [Validators.maxLength(255)]],
       projectAccountCode: [''],
       externalProjectAccountCode: [''],
       totalRM: [{ value: 0, disabled: true }],
@@ -271,12 +279,11 @@ export class JournalDetails implements OnInit, OnDestroy {
     });
 
     this.form.get('citedApuPaper')?.valueChanges.subscribe((value) => {
-      if (value === 'No') {
-        this.form.get('citedApuPaperExplanation')?.setValidators([Validators.required]);
-      } else {
-        this.form.get('citedApuPaperExplanation')?.clearValidators();
-      }
-      this.form.get('citedApuPaperExplanation')?.updateValueAndValidity();
+      this.updateCitationValidation(value);
+    });
+
+    this.form.get('citedOtherApuPaper')?.valueChanges.subscribe((value) => {
+      this.updateOtherApuCitationValidation(value);
     });
 
     const decimalPattern = '^[0-9]+(\\.[0-9]{1,2})?$';
@@ -287,6 +294,7 @@ export class JournalDetails implements OnInit, OnDestroy {
       voteNumber: { value: '', disabled: true },
       accountCodeDescription: [''],
       accountCode: { value: '', disabled: true },
+      currency: ['MYR', [Validators.required]],
       cost: ['', [Validators.required, Validators.pattern(decimalPattern)]],
       costForeign: [''],
       exchangeRate: ['', [Validators.required, Validators.pattern(exchangeRatePattern)]],
@@ -312,14 +320,31 @@ export class JournalDetails implements OnInit, OnDestroy {
         ?.setValue(selected?.voteNumber || '', { emitEvent: false });
     });
 
-    this.sdgKeywordsForm = this.fb.group({
-      keyword1: ['', [Validators.required, Validators.maxLength(SDG_KEYWORD_MAX_LENGTH)]],
-      keyword2: ['', [Validators.required, Validators.maxLength(SDG_KEYWORD_MAX_LENGTH)]],
-      keyword3: ['', [Validators.required, Validators.maxLength(SDG_KEYWORD_MAX_LENGTH)]],
-    });
-
     this.refreshDropdownOptions();
+    this.loadCurrencyOptions();
     window.addEventListener('rmc-dropdowns-updated', this.onJournalDropdownsUpdated);
+  }
+
+  private loadCurrencyOptions(): void {
+    this.masterData.getCurrencies().subscribe((response) => {
+      this.currencyOptions = this.toCurrencyOptions(response.data ?? []);
+      this.cdr.detectChanges();
+    });
+  }
+
+  private toCurrencyOptions(currencies: CurrencyOption[]): DropdownOption<string>[] {
+    const unique = new Map<string, CurrencyOption>();
+    for (const currency of currencies) {
+      if (currency.code && !unique.has(currency.code)) {
+        unique.set(currency.code, currency);
+      }
+    }
+    return [...unique.values()].map((currency) => ({
+      value: currency.code,
+      label: `${currency.code} - ${currency.name}`,
+      description: currency.symbol,
+      searchText: `${currency.code} ${currency.name} ${currency.symbol}`,
+    }));
   }
 
   ngOnDestroy(): void {
@@ -344,11 +369,25 @@ export class JournalDetails implements OnInit, OnDestroy {
       project_account_code: value.projectAccountCode || null,
       is_restricted_publisher: this.toBoolean(value.restrictedPublisher),
       cited_apu_jati_ejbm: value.citedApuPaper === 'Yes',
-      cited_apu_jati_ejbm_explanation: value.citedApuPaperExplanation || null,
+      cited_apu_jati_ejbm_doi:
+        value.citedApuPaper === 'Yes' ? value.citedApuPaperDoi || null : null,
+      cited_other_apu_affiliated_paper:
+        value.citedApuPaper === 'No'
+          ? value.citedOtherApuPaper === 'Yes'
+            ? true
+            : value.citedOtherApuPaper === 'No'
+              ? false
+              : null
+          : null,
+      cited_other_apu_affiliated_paper_doi:
+        value.citedApuPaper === 'No' && value.citedOtherApuPaper === 'Yes'
+          ? value.citedOtherApuPaperDoi || null
+          : null,
+      cited_other_apu_affiliated_paper_reason:
+        value.citedApuPaper === 'No' && value.citedOtherApuPaper === 'No'
+          ? value.citedOtherApuPaperReason || null
+          : null,
       paper_title: value.paperTitle || null,
-      sdg_keyword_1: value.sdgKeyword1 || null,
-      sdg_keyword_2: value.sdgKeyword2 || null,
-      sdg_keyword_3: value.sdgKeyword3 || null,
       external_sponsorship_amount: this.toMoneyString(value.sponsoredAmountExternal),
       external_sponsored_by: value.sponsoredBy || null,
       apu_sponsorship_percentage: this.toMoneyString(value.sponsorshipPercentage),
@@ -386,11 +425,19 @@ export class JournalDetails implements OnInit, OnDestroy {
         restrictedPublisher: journal.is_restricted_publisher ? 'yes' : 'no',
         journalName: journal.journal_name || '',
         paperTitle: journal.paper_title || '',
-        sdgKeyword1: journal.sdg_keyword_1 || '',
-        sdgKeyword2: journal.sdg_keyword_2 || '',
-        sdgKeyword3: journal.sdg_keyword_3 || '',
         citedApuPaper: journal.cited_apu_jati_ejbm ? 'Yes' : 'No',
-        citedApuPaperExplanation: journal.cited_apu_jati_ejbm_explanation || '',
+        citedApuPaperDoi: journal.cited_apu_jati_ejbm_doi || '',
+        citedOtherApuPaper:
+          journal.cited_other_apu_affiliated_paper === true
+            ? 'Yes'
+            : journal.cited_other_apu_affiliated_paper === false
+              ? 'No'
+              : '',
+        citedOtherApuPaperDoi: journal.cited_other_apu_affiliated_paper_doi || '',
+        citedOtherApuPaperReason:
+          journal.cited_other_apu_affiliated_paper_reason ||
+          journal.cited_apu_jati_ejbm_explanation ||
+          '',
         projectAccountCode: journal.project_account_code || '',
         sponsoredAmountExternal: journal.external_sponsorship_amount || '',
         sponsoredBy: journal.external_sponsored_by || '',
@@ -401,6 +448,7 @@ export class JournalDetails implements OnInit, OnDestroy {
       },
       { emitEvent: false },
     );
+    this.updateCitationValidation(this.form.get('citedApuPaper')?.value, false);
     this.syncScopusQuartileForResearchType(journal.project_type || '');
 
     this.researchBreakdowns = [];
@@ -418,6 +466,7 @@ export class JournalDetails implements OnInit, OnDestroy {
         voteNumber: item.vote_number_snapshot || '',
         accountCodeDescription: item.account_code_description_snapshot || '',
         accountCode: item.account_code_snapshot || '',
+        currency: item.currency || 'MYR',
         cost: item.cost_in_foreign_currency || item.cost_in_rm || '',
         exchangeRate: this.toDecimalString(item.exchange_rate, 6),
         costInRM: item.cost_in_rm || '',
@@ -432,6 +481,92 @@ export class JournalDetails implements OnInit, OnDestroy {
     this.cdr.detectChanges();
   }
 
+  private updateCitationValidation(value: unknown, clearWhenNotRequired = true): void {
+    const doiControl = this.form.get('citedApuPaperDoi');
+    const otherCitationControl = this.form.get('citedOtherApuPaper');
+    if (!doiControl || !otherCitationControl) return;
+
+    if (value === 'Yes') {
+      doiControl.setValidators([
+        Validators.required,
+        Validators.maxLength(255),
+        this.validLinkValidator,
+      ]);
+      otherCitationControl.clearValidators();
+      if (clearWhenNotRequired) {
+        otherCitationControl.setValue('', { emitEvent: false });
+      }
+      this.updateOtherApuCitationValidation('', clearWhenNotRequired);
+    } else if (value === 'No') {
+      doiControl.clearValidators();
+      if (clearWhenNotRequired) this.clearControl('citedApuPaperDoi');
+      otherCitationControl.setValidators([Validators.required]);
+      this.updateOtherApuCitationValidation(otherCitationControl.value, clearWhenNotRequired);
+    } else {
+      doiControl.clearValidators();
+      otherCitationControl.clearValidators();
+      if (clearWhenNotRequired) {
+        this.clearControl('citedApuPaperDoi');
+        otherCitationControl.setValue('', { emitEvent: false });
+      }
+      this.updateOtherApuCitationValidation('', clearWhenNotRequired);
+    }
+    doiControl.updateValueAndValidity({ emitEvent: false });
+    otherCitationControl.updateValueAndValidity({ emitEvent: false });
+  }
+
+  private updateOtherApuCitationValidation(value: unknown, clearWhenNotRequired = true): void {
+    const doiControl = this.form.get('citedOtherApuPaperDoi');
+    const reasonControl = this.form.get('citedOtherApuPaperReason');
+    if (!doiControl || !reasonControl) return;
+
+    if (value === 'Yes') {
+      doiControl.setValidators([
+        Validators.required,
+        Validators.maxLength(255),
+        this.validLinkValidator,
+      ]);
+      reasonControl.clearValidators();
+      if (clearWhenNotRequired) this.clearControl('citedOtherApuPaperReason');
+    } else if (value === 'No') {
+      doiControl.clearValidators();
+      reasonControl.setValidators([Validators.required, Validators.maxLength(255)]);
+      if (clearWhenNotRequired) this.clearControl('citedOtherApuPaperDoi');
+    } else {
+      doiControl.clearValidators();
+      reasonControl.clearValidators();
+      if (clearWhenNotRequired) {
+        this.clearControl('citedOtherApuPaperDoi');
+        this.clearControl('citedOtherApuPaperReason');
+      }
+    }
+
+    doiControl.updateValueAndValidity({ emitEvent: false });
+    reasonControl.updateValueAndValidity({ emitEvent: false });
+  }
+
+  private clearControl(controlName: string): void {
+    const control = this.form.get(controlName);
+    control?.setValue('', { emitEvent: false });
+    control?.markAsUntouched();
+    control?.markAsPristine();
+  }
+
+  private validLinkValidator(control: AbstractControl): ValidationErrors | null {
+    const value = String(control.value || '').trim();
+    if (!value) return null;
+
+    try {
+      const url = new URL(value);
+      if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+        return { pattern: { message: 'Please enter a valid link.' } };
+      }
+      return null;
+    } catch {
+      return { pattern: { message: 'Please enter a valid link.' } };
+    }
+  }
+
   getBreakdownArray(type: string): any[] {
     if (type === 'internal-research') return this.researchBreakdowns;
     if (type === 'external-research') return this.externalBreakdowns;
@@ -443,7 +578,8 @@ export class JournalDetails implements OnInit, OnDestroy {
     return (
       !!type &&
       !this.workflow.isFormReadOnly() &&
-      this.getBreakdownArray(type).length < this.tableRecordLimit
+      this.getBreakdownArray(type).length <
+        (type === 'non-research' ? this.projectCostMax : this.tableRecordLimit)
     );
   }
 
@@ -466,6 +602,7 @@ export class JournalDetails implements OnInit, OnDestroy {
       }
 
       this.breakdownForm.reset({}, { emitEvent: false });
+      this.breakdownForm.patchValue({ currency: 'MYR' }, { emitEvent: false });
       this.selectedFile = null;
       this.selectedFileName = null;
 
@@ -741,6 +878,7 @@ export class JournalDetails implements OnInit, OnDestroy {
           ? null
           : this.journalOptionsService.getAccountCodeId(accountCode),
       cost_in_foreign_currency: this.toMoneyString(entry.cost),
+      currency: String(entry.currency || 'MYR').toUpperCase(),
       exchange_rate: this.toDecimalString(entry.exchangeRate, 6),
       cost_in_rm: this.toMoneyString(entry.costInRM),
       description: entry.description || null,
@@ -1033,7 +1171,10 @@ export class JournalDetails implements OnInit, OnDestroy {
     const firstDotIndex = cleaned.indexOf('.');
     if (firstDotIndex !== -1) {
       const whole = cleaned.slice(0, firstDotIndex) || '0';
-      const decimals = cleaned.slice(firstDotIndex + 1).replace(/\./g, '').slice(0, 6);
+      const decimals = cleaned
+        .slice(firstDotIndex + 1)
+        .replace(/\./g, '')
+        .slice(0, 6);
       cleaned = `${whole}.${decimals}`;
     }
     if (cleaned !== input.value) {
@@ -1041,49 +1182,6 @@ export class JournalDetails implements OnInit, OnDestroy {
       this.breakdownForm.get('exchangeRate')?.setValue(cleaned, { emitEvent: false });
     }
     this.recalcCostInRM();
-  }
-
-  openSDGKeywordsModal() {
-    const keyword1 = this.form.get('sdgKeyword1')?.value || '';
-    const keyword2 = this.form.get('sdgKeyword2')?.value || '';
-    const keyword3 = this.form.get('sdgKeyword3')?.value || '';
-
-    this.sdgKeywordsForm.patchValue({ keyword1, keyword2, keyword3 }, { emitEvent: false });
-    this.isSDGKeywordsModalOpen = true;
-  }
-
-  closeSDGKeywordsModal() {
-    this.isSDGKeywordsModalOpen = false;
-  }
-
-  confirmSDGKeywords() {
-    if (this.sdgKeywordsForm.invalid) {
-      this.sdgKeywordsForm.markAllAsTouched();
-      return;
-    }
-    const { keyword1, keyword2, keyword3 } = this.sdgKeywordsForm.value;
-    this.form.patchValue(
-      { sdgKeyword1: keyword1, sdgKeyword2: keyword2, sdgKeyword3: keyword3 },
-      { emitEvent: false },
-    );
-    this.closeSDGKeywordsModal();
-  }
-
-  getDisplayedKeywordsArray(): string[] {
-    const keyword1 = this.form.get('sdgKeyword1')?.value || '';
-    const keyword2 = this.form.get('sdgKeyword2')?.value || '';
-    const keyword3 = this.form.get('sdgKeyword3')?.value || '';
-    return [keyword1, keyword2, keyword3].filter((k) => k);
-  }
-
-  removeKeyword(keyword: string) {
-    const controls = ['sdgKeyword1', 'sdgKeyword2', 'sdgKeyword3'];
-    for (const controlName of controls) {
-      if (this.form.get(controlName)?.value === keyword) {
-        this.form.get(controlName)?.patchValue('', { emitEvent: false });
-        break;
-      }
-    }
   }
 
   manageVoteNumbers(): void {
@@ -1111,5 +1209,4 @@ export class JournalDetails implements OnInit, OnDestroy {
     const option = this.getDropdownOptions(type).find((opt) => opt.value === value);
     return option?.label || value || '-';
   }
-
 }

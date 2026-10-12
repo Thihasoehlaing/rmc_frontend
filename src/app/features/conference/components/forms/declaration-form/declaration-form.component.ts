@@ -53,12 +53,6 @@ export class DeclarationFormComponent implements OnInit, OnDestroy {
 
   initializeForm() {
     this.form = this.fb.group({
-      confirmPresenter: [false, [Validators.requiredTrue]],
-      confirmScopusIndexed: [false, [Validators.requiredTrue]],
-      confirmNotResignedStaff: [false, [Validators.requiredTrue]],
-      confirmJointAuthorship: [false],
-      confirmCompliance: [false, [Validators.requiredTrue]],
-      confirmPostReturn: [false, [Validators.requiredTrue]],
       agreeToTerms: [false, [Validators.requiredTrue]],
       acknowledgeGrantFunder: [false, [Validators.requiredTrue]],
     });

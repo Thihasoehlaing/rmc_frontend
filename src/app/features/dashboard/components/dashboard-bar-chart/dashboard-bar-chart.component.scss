@@ -1,0 +1,101 @@
+.bar-chart {
+  width: 100%;
+  padding: var(--space-4) var(--space-5) var(--space-5);
+  overflow: hidden;
+}
+
+.bar-chart__body {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(120px, 0.45fr) minmax(180px, 1fr) minmax(64px, auto);
+  align-items: center;
+  gap: var(--space-3) var(--space-4);
+  min-width: 0;
+}
+
+.bar-chart__axis {
+  display: flex;
+  justify-content: space-between;
+  color: var(--color-text-muted);
+  font-size: var(--fs-xs);
+}
+
+.bar-chart__item {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  align-items: center;
+  min-width: 0;
+
+  small {
+    overflow: hidden;
+    color: var(--color-text-muted);
+    font-size: var(--fs-xs);
+    font-weight: var(--fw-semibold);
+    text-overflow: ellipsis;
+  }
+
+  > strong {
+    color: var(--color-text);
+    font-size: var(--fs-xs);
+    white-space: nowrap;
+  }
+}
+
+.bar-chart__track {
+  height: var(--space-5);
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+  background:
+    repeating-linear-gradient(
+      to right,
+      transparent 0,
+      transparent calc(25% - 1px),
+      var(--border-subtle) 25%
+    ),
+    var(--color-surface-nested);
+}
+
+.bar-chart__segment {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  cursor: url('/cursors/chart-point.svg') 8 8, pointer;
+
+  &:hover,
+  &:focus {
+    opacity: 0.75;
+    outline: none;
+  }
+}
+
+app-chart-tooltip {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.bar-chart-empty {
+  display: grid;
+  place-items: center;
+  gap: var(--space-2);
+  min-height: 326px;
+  color: var(--color-text-muted);
+  font-size: var(--fs-sm);
+
+  .material-icons {
+    color: var(--color-primary);
+    font-size: var(--size-icon-empty);
+  }
+}
+
+@media (max-width: 620px) {
+  .bar-chart__body {
+    grid-template-columns: minmax(88px, 0.5fr) minmax(120px, 1fr);
+  }
+
+  .bar-chart__value-spacer,
+  .bar-chart__item > strong {
+    display: none;
+  }
+}

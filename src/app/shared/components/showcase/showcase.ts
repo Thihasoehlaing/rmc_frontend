@@ -24,6 +24,7 @@ import { PaginationComponent } from '../pagination/pagination.component';
 import { TextEditorComponent } from '../text-editor/text-editor.component';
 import { DropdownOption } from '../../../core/interfaces/components.interface';
 import { SvgIconComponent } from '../svg-icon/svg-icon.component';
+import { ChartTooltipComponent } from '../chart-tooltip/chart-tooltip.component';
 import { SVG_ICONS, SVG_ICON_BEAKER } from '../../icons/svg-icons';
 
 @Component({
@@ -48,6 +49,7 @@ import { SVG_ICONS, SVG_ICON_BEAKER } from '../../icons/svg-icons';
     PaginationComponent,
     TextEditorComponent,
     SvgIconComponent,
+    ChartTooltipComponent,
   ],
   templateUrl: './showcase.html',
   styleUrl: './showcase.scss',
@@ -415,6 +417,11 @@ export class ShowcaseComponent {
       name: 'ActionButton',
       selector: '<app-action-button>',
       purpose: 'Pill action button wrapper for primary/secondary/danger variants.',
+    },
+    {
+      name: 'ChartTooltip',
+      selector: '<app-chart-tooltip>',
+      purpose: 'Accessible colour, label, value, and context tooltip for data visualisations.',
     },
     {
       name: 'CharacterCounter',

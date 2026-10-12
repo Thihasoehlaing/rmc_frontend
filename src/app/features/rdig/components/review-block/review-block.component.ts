@@ -1,6 +1,7 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { ReactiveFormsModule, FormControl } from '@angular/forms';
 import { CharacterCounterComponent } from '../../../../shared/components/character-counter/character-counter.component';
+import { ValidationMessageComponent } from '../../../../shared/components/validation-message/validation-message.component';
 import { syncRequiredValidator } from '../../../../shared/utils/form.utils';
 
 /**
@@ -15,9 +16,9 @@ import { syncRequiredValidator } from '../../../../shared/utils/form.utils';
 @Component({
   selector: 'app-review-block',
   standalone: true,
-  imports: [ReactiveFormsModule, CharacterCounterComponent],
+  imports: [ReactiveFormsModule, CharacterCounterComponent, ValidationMessageComponent],
   template: `
-    @if (visible) {
+    @if (visible && (!readonly || commentControl.value?.trim())) {
       <div class="review-block" [class.review-block--readonly]="readonly">
         <div class="review-block__header">
           <span class="material-icons review-block__icon">{{ icon }}</span>
@@ -27,6 +28,9 @@ import { syncRequiredValidator } from '../../../../shared/utils/form.utils';
         <div class="review-block__body" [class.review-block__body--with-score]="showScore">
           <!-- Comment textarea -->
           <div class="review-block__comment">
+            @if (readonly) {
+              <p class="review-block__text">{{ commentControl.value }}</p>
+            } @else {
             <textarea
               class="input--textarea"
               [class.input--disabled]="readonly"
@@ -38,6 +42,8 @@ import { syncRequiredValidator } from '../../../../shared/utils/form.utils';
               [current]="commentControl.value?.length ?? 0"
               [max]="maxChars">
             </app-character-counter>
+            <app-validation-message class="form-validation-note--error" [control]="commentControl" [fieldName]="label"></app-validation-message>
+            }
           </div>
 
           <!-- Optional score dropdown -->
@@ -53,6 +59,7 @@ import { syncRequiredValidator } from '../../../../shared/utils/form.utils';
                   <option [value]="s">{{ s }}</option>
                 }
               </select>
+              <app-validation-message class="form-validation-note--error" [control]="scoreControl" [fieldName]="label + ' Score'"></app-validation-message>
             </div>
           }
         </div>
@@ -85,6 +92,14 @@ import { syncRequiredValidator } from '../../../../shared/utils/form.utils';
       text-transform: uppercase;
       letter-spacing: var(--letter-spacing-label);
       color: var(--color-text-secondary);
+    }
+
+    // The detail-page comment section already supplies the surface and border.
+    :host-context(.section-comments) .review-block {
+      padding: 0;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
     }
 
     .review-block__icon {
@@ -121,6 +136,14 @@ import { syncRequiredValidator } from '../../../../shared/utils/form.utils';
     .review-block__comment {
       flex: 1;
       min-width: 0;
+    }
+
+    .review-block__text {
+      margin: 0;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      line-height: 1.6;
+      color: var(--color-text-primary);
     }
 
     .review-block__score {

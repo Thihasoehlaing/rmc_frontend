@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { environment } from '../../../environments/environment';
 
 import { JournalPublicationFormComponent } from './journal-publication-form.component';
+import { journalPublicationFormRoutes } from './journal_publication_form.routes';
 
 describe('JournalPublicationFormComponent', () => {
   let component: JournalPublicationFormComponent;
@@ -27,6 +28,15 @@ describe('JournalPublicationFormComponent', () => {
     );
   });
 
+  it('exposes the current design on the primary application route', () => {
+    const route = journalPublicationFormRoutes.find(
+      (candidate) => candidate.path === 'application',
+    );
+
+    expect(route).toBeTruthy();
+    expect(route?.data?.['permission']).toBeTruthy();
+  });
+
   it('lists each missing Journal Details field after the step is checked', () => {
     component.onStepClick(2);
 
@@ -38,10 +48,10 @@ describe('JournalPublicationFormComponent', () => {
     expect(labels).toContain('Scopus Quartile');
     expect(labels).toContain('Research Type');
     expect(labels).toContain('Restricted Publisher');
-    expect(labels).toContain('APU/JATI/EJBM Citation');
+    expect(labels).toContain('APU Journal (JATI/EJBM) Citation');
     expect(labels).toContain('Journal Name');
     expect(labels).toContain('Paper Title');
-    expect(labels).toContain('Please key in 3 SDG keywords');
+    expect(labels).not.toContain('Please key in 3 SDG keywords');
     expect(labels).not.toContain('Complete Journal Details');
   });
 });

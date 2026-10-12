@@ -57,14 +57,41 @@
           <span></span>
         </div>
 
-        <section class="testing-login-panel" aria-label="Testing login accounts">
+        <section class="testing-login-panel" aria-label="Demo users">
           <div class="testing-login-panel__header">
-            <span class="material-icons-outlined" aria-hidden="true">science</span>
-            <span>Testing Login</span>
+            <span class="material-icons-outlined" aria-hidden="true">groups</span>
+            <span>Demo Users</span>
+          </div>
+          <p class="testing-login-panel__description">Choose a demo account to explore the system.</p>
+
+          <div class="demo-user-filters">
+            <label>
+              <span>Filter by name</span>
+              <input
+                type="search"
+                aria-label="Filter demo users by name"
+                placeholder="Search name or username"
+                [value]="demoNameFilter()"
+                (input)="demoNameFilter.set($any($event.target).value)"
+              />
+            </label>
+            <label>
+              <span>Filter by role</span>
+              <select
+                aria-label="Filter demo users by role"
+                [value]="demoRoleFilter()"
+                (change)="demoRoleFilter.set($any($event.target).value)"
+              >
+                <option value="">All roles</option>
+                @for (role of demoRoles(); track role) {
+                  <option [value]="role">{{ role }}</option>
+                }
+              </select>
+            </label>
           </div>
 
           <div class="testing-login-panel__accounts">
-            @for (account of testingAccounts(); track account.username) {
+            @for (account of filteredDemoUsers(); track account.username) {
               <button
                 class="testing-account-button"
                 type="button"
@@ -74,6 +101,8 @@
                 <span>{{ account.label }}</span>
                 <small>{{ account.groups }}</small>
               </button>
+            } @empty {
+              <p class="demo-user-empty">No demo users match these filters.</p>
             }
           </div>
         </section>

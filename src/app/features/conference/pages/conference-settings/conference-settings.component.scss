@@ -141,8 +141,8 @@
         text-align: left;
         font-size: var(--fs-sm);
         font-weight: var(--fw-semibold);
-        color: var(--color-label);
-        background: var(--color-table-header);
+        color: var(--color-table-head-text);
+        background: var(--color-table-head-bg);
         border: 1px solid var(--border-default);
 
         &.col-no {

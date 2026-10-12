@@ -1,6 +1,13 @@
 import { Component, inject, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import {
+  AbstractControl,
+  FormArray,
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
 import { JournalDetails } from './components/journal-details/journal-details';
 import { AuthorsDetails } from './components/authors-details/authors-details';
@@ -128,13 +135,13 @@ export class JournalPublicationFormComponent {
     { path: 'scopusQuartile', label: 'Scopus Quartile' },
     { path: 'researchType', label: 'Research Type' },
     { path: 'restrictedPublisher', label: 'Restricted Publisher' },
-    { path: 'citedApuPaper', label: 'APU/JATI/EJBM Citation' },
-    { path: 'citedApuPaperExplanation', label: 'Citation Explanation' },
+    { path: 'citedApuPaper', label: 'APU Journal (JATI/EJBM) Citation' },
+    { path: 'citedApuPaperDoi', label: 'APU Journal DOI Link' },
+    { path: 'citedOtherApuPaper', label: 'Other APU-Affiliated Journal Citation' },
+    { path: 'citedOtherApuPaperDoi', label: 'Other APU-Affiliated Journal DOI Link' },
+    { path: 'citedOtherApuPaperReason', label: 'Other APU-Affiliated Journal Reason' },
     { path: 'journalName', label: 'Journal Name' },
     { path: 'paperTitle', label: 'Paper Title' },
-    { path: 'sdgKeyword1', label: 'Please key in 3 SDG keywords', target: 'sdgKeywords' },
-    { path: 'sdgKeyword2', label: 'Please key in 3 SDG keywords', target: 'sdgKeywords' },
-    { path: 'sdgKeyword3', label: 'Please key in 3 SDG keywords', target: 'sdgKeywords' },
     { path: 'projectAccountCode', label: 'Project Account Code' },
     { path: 'sponsoredBy', label: 'Sponsored By' },
     { path: 'costingRemarks', label: 'Costing Remarks' },
@@ -145,7 +152,6 @@ export class JournalPublicationFormComponent {
     { path: 'reviewersFeedback', label: "Reviewers' Feedback" },
     { path: 'scopusEvidencePublication', label: 'Screenshot of SCOPUS CiteScore' },
     { path: 'sriApproval', label: 'SRI Approval' },
-    { path: 'turnitinReport', label: 'Turnitin Report' },
     { path: 'finalPaperDraft', label: 'Final Paper Draft' },
     { path: 'journalInvoice', label: 'Journal Invoice' },
     { path: 'reviewerName', label: 'Name of Reviewer' },
@@ -235,9 +241,7 @@ export class JournalPublicationFormComponent {
     }
 
     const target =
-      typeof event.field === 'string'
-        ? event.field
-        : event.field.target ?? event.field.label;
+      typeof event.field === 'string' ? event.field : (event.field.target ?? event.field.label);
 
     window.setTimeout(() => {
       const escapedTarget = target.replace(/"/g, '\\"');
@@ -300,10 +304,7 @@ export class JournalPublicationFormComponent {
     const component = this.journalDetailsComponent;
     if (!component?.form) return this.getFallbackMissingFields(1);
 
-    const missing = this.getInvalidLabelsFromForm(
-      component.form,
-      this.journalDetailsFieldChecks,
-    );
+    const missing = this.getInvalidLabelsFromForm(component.form, this.journalDetailsFieldChecks);
     const projectType = component.researchType ?? '';
     const requiresBreakdown = ['external-research', 'non-research'].includes(projectType);
     if (requiresBreakdown && component.getBreakdownArray(projectType).length === 0) {
@@ -361,17 +362,14 @@ export class JournalPublicationFormComponent {
   private uniqueMissingFields(fields: MissingField[]): MissingField[] {
     const seen = new Set<string>();
     return fields.filter((field) => {
-      const key =
-        typeof field === 'string' ? field : `${field.label}:${field.target ?? ''}`;
+      const key = typeof field === 'string' ? field : `${field.label}:${field.target ?? ''}`;
       if (seen.has(key)) return false;
       seen.add(key);
       return true;
     });
   }
 
-  private getSafeMissingFieldFocusTarget(
-    element?: HTMLElement | null,
-  ): HTMLElement | undefined {
+  private getSafeMissingFieldFocusTarget(element?: HTMLElement | null): HTMLElement | undefined {
     if (!element) return undefined;
     const target = element.matches('input, textarea, select, button, [tabindex]')
       ? element
@@ -438,6 +436,129 @@ export class JournalPublicationFormComponent {
     return this.steps.length;
   }
 
+  get applicationProgress(): number {
+    if (!this.totalSteps) return 0;
+
+    const totalProgress = this.steps.reduce(
+      (sum, _, index) => sum + this.getStepProgressRatio(index + 1),
+      0,
+    );
+    return Math.round((totalProgress / this.totalSteps) * 100);
+  }
+
+  get completedStepCount(): number {
+    return this.steps.filter((_, index) => this.isStepComplete(index + 1)).length;
+  }
+
+  isStepComplete(stepNumber: number): boolean {
+    const progress = this.getStepProgress(stepNumber);
+    return progress.total > 0 && progress.completed === progress.total;
+  }
+
+  private getStepProgressRatio(stepNumber: number): number {
+    const progress = this.getStepProgress(stepNumber);
+    return progress.total > 0 ? progress.completed / progress.total : 0;
+  }
+
+  private getStepProgress(stepNumber: number): { completed: number; total: number } {
+    switch (stepNumber) {
+      case 1: {
+        const component = this.journalDetailsComponent;
+        if (!component?.form) return { completed: 0, total: 1 };
+
+        const progress = this.getRequiredControlProgress(component.form);
+        this.addProgressCriterion(progress, component.form.valid);
+
+        const requiresBreakdown = ['external-research', 'non-research'].includes(
+          component.researchType ?? '',
+        );
+        if (requiresBreakdown) {
+          this.addProgressCriterion(
+            progress,
+            component.getBreakdownArray(component.researchType).length > 0,
+          );
+        }
+        return progress;
+      }
+      case 2: {
+        const component = this.authorsDetailsComponent;
+        if (!component?.form) return { completed: 0, total: 1 };
+
+        const progress = this.getRequiredControlProgress(component.form);
+        if (progress.total > 0) {
+          this.addProgressCriterion(progress, component.form.valid);
+        } else {
+          // Co-authors are optional for most project types. Treat the empty step as
+          // complete only after the applicant has actually reviewed and left it.
+          this.addProgressCriterion(progress, this.checkedSteps.has(stepNumber));
+        }
+
+        if (component.isNonApuRequired) {
+          this.addProgressCriterion(progress, component.hasRequiredNonApuCoAuthor);
+        }
+        return progress;
+      }
+      case 3: {
+        const form = this.documentsComponent?.documentsForm;
+        if (!form) return { completed: 0, total: 1 };
+        const progress = this.getRequiredControlProgress(form);
+        this.addProgressCriterion(progress, form.valid);
+        return progress;
+      }
+      case 4: {
+        const form = this.declarationComponent?.declarationForm;
+        if (!form) return { completed: 0, total: 1 };
+        const progress = this.getRequiredControlProgress(form);
+        this.addProgressCriterion(progress, form.valid);
+        return progress;
+      }
+      default:
+        return { completed: 0, total: 1 };
+    }
+  }
+
+  private getRequiredControlProgress(control: AbstractControl): {
+    completed: number;
+    total: number;
+  } {
+    if (control instanceof FormGroup || control instanceof FormArray) {
+      return Object.values(control.controls).reduce(
+        (progress, childControl) => {
+          const childProgress = this.getRequiredControlProgress(childControl);
+          progress.completed += childProgress.completed;
+          progress.total += childProgress.total;
+          return progress;
+        },
+        { completed: 0, total: 0 },
+      );
+    }
+
+    const requiresValue =
+      control.hasValidator(Validators.required) || control.hasValidator(Validators.requiredTrue);
+    if (!requiresValue) return { completed: 0, total: 0 };
+
+    return {
+      completed: this.isRequiredControlComplete(control) ? 1 : 0,
+      total: 1,
+    };
+  }
+
+  private isRequiredControlComplete(control: AbstractControl): boolean {
+    if (control.enabled) return control.valid;
+    if (control.hasValidator(Validators.requiredTrue)) return control.value === true;
+
+    const value = control.value;
+    return value !== null && value !== undefined && String(value).trim().length > 0;
+  }
+
+  private addProgressCriterion(
+    progress: { completed: number; total: number },
+    complete: boolean,
+  ): void {
+    progress.total += 1;
+    if (complete) progress.completed += 1;
+  }
+
   readonly isSaving = signal(false);
   readonly isSubmitting = signal(false);
   readonly saveSuccess = signal(false);
@@ -489,7 +610,9 @@ export class JournalPublicationFormComponent {
         void this.router.navigateByUrl(this.journalDetailPath(response.data, requestId));
         return;
       }
-      this.isAdminReadOnlyDraft.set(this.isSystemAdminReadOnlyRequest(response.data?.request ?? {}));
+      this.isAdminReadOnlyDraft.set(
+        this.isSystemAdminReadOnlyRequest(response.data?.request ?? {}),
+      );
       this.hydrateFromApi(response.data);
       await this.loadSectionComments(requestId);
     } catch {
@@ -874,8 +997,13 @@ export class JournalPublicationFormComponent {
   private isSystemAdminReadOnlyRequest(request: Record<string, unknown>): boolean {
     if (!this.auth.inGroup('SystemAdmin')) return false;
     const adminView = this.route.snapshot.queryParamMap.get('admin_view')?.toLowerCase() === 'true';
-    const applicantUsername = String(request['applicant_staff_username'] ?? '').trim().toLowerCase();
+    const applicantUsername = String(request['applicant_staff_username'] ?? '')
+      .trim()
+      .toLowerCase();
     const currentUsername = this.auth.currentUser()?.username?.trim().toLowerCase();
-    return adminView || Boolean(applicantUsername && currentUsername && applicantUsername !== currentUsername);
+    return (
+      adminView ||
+      Boolean(applicantUsername && currentUsername && applicantUsername !== currentUsername)
+    );
   }
 }

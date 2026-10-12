@@ -36,7 +36,7 @@
           type="primary"
           label="Add Item"
           icon="add"
-          [disabled]="workflow.isFormReadOnly()"
+          [disabled]="workflow.isFormReadOnly() || isBudgetCategoryFull('studentAllowances')"
           (clicked)="openAddItemModal('studentAllowances')"
         >
         </app-action-button>
@@ -83,6 +83,7 @@
             </tr>
           </ng-template>
         </app-data-table>
+        <app-table-row-counter [current]="studentAllowances.length" [max]="maxRowsByCategory.studentAllowances"></app-table-row-counter>
       } @else {
         <p class="empty-state">No items added. Click <strong>Add Item</strong> to begin.</p>
       }
@@ -119,14 +120,14 @@
           type="primary"
           label="Add Item"
           icon="add"
-          [disabled]="workflow.isFormReadOnly()"
+          [disabled]="workflow.isFormReadOnly() || isBudgetCategoryFull('travelAccommodation')"
           (clicked)="openAddItemModal('travelAccommodation')"
         >
         </app-action-button>
       </div>
       @if (travelAccommodation.length > 0) {
         <app-data-table
-          [columns]="budgetColumns"
+          [columns]="budgetColumnsFor('travelAccommodation')"
           [rows]="travelAccommodation.controls"
           [rowTrackFn]="trackByIndex"
           [dense]="true"
@@ -143,6 +144,7 @@
               <td>
                 <div class="data-table__multiline">{{ row.value.remarks }}</div>
               </td>
+              <td>{{ budgetAttachmentLabel(row.value) }}</td>
               <td class="action-cell">
                 <div class="data-table__actions">
                   <button
@@ -166,6 +168,7 @@
             </tr>
           </ng-template>
         </app-data-table>
+        <app-table-row-counter [current]="travelAccommodation.length" [max]="maxRowsByCategory.travelAccommodation"></app-table-row-counter>
       } @else {
         <p class="empty-state">No items added.</p>
       }
@@ -202,14 +205,14 @@
           type="primary"
           label="Add Item"
           icon="add"
-          [disabled]="workflow.isFormReadOnly()"
+          [disabled]="workflow.isFormReadOnly() || isBudgetCategoryFull('materialsSupplies')"
           (clicked)="openAddItemModal('materialsSupplies')"
         >
         </app-action-button>
       </div>
       @if (materialsSupplies.length > 0) {
         <app-data-table
-          [columns]="budgetColumns"
+          [columns]="budgetColumnsFor('materialsSupplies')"
           [rows]="materialsSupplies.controls"
           [rowTrackFn]="trackByIndex"
           [dense]="true"
@@ -226,6 +229,7 @@
               <td>
                 <div class="data-table__multiline">{{ row.value.remarks }}</div>
               </td>
+              <td>{{ budgetAttachmentLabel(row.value) }}</td>
               <td class="action-cell">
                 <div class="data-table__actions">
                   <button
@@ -249,6 +253,7 @@
             </tr>
           </ng-template>
         </app-data-table>
+        <app-table-row-counter [current]="materialsSupplies.length" [max]="maxRowsByCategory.materialsSupplies"></app-table-row-counter>
       } @else {
         <p class="empty-state">No items added.</p>
       }
@@ -285,14 +290,14 @@
           type="primary"
           label="Add Item"
           icon="add"
-          [disabled]="workflow.isFormReadOnly()"
+          [disabled]="workflow.isFormReadOnly() || isBudgetCategoryFull('specialServices')"
           (clicked)="openAddItemModal('specialServices')"
         >
         </app-action-button>
       </div>
       @if (specialServices.length > 0) {
         <app-data-table
-          [columns]="budgetColumns"
+          [columns]="budgetColumnsFor('specialServices')"
           [rows]="specialServices.controls"
           [rowTrackFn]="trackByIndex"
           [dense]="true"
@@ -309,6 +314,7 @@
               <td>
                 <div class="data-table__multiline">{{ row.value.remarks }}</div>
               </td>
+              <td>{{ budgetAttachmentLabel(row.value) }}</td>
               <td class="action-cell">
                 <div class="data-table__actions">
                   <button
@@ -332,6 +338,7 @@
             </tr>
           </ng-template>
         </app-data-table>
+        <app-table-row-counter [current]="specialServices.length" [max]="maxRowsByCategory.specialServices"></app-table-row-counter>
       } @else {
         <p class="empty-state">No items added.</p>
       }
@@ -426,7 +433,7 @@
           [current]="otherRemarksControl.value?.length ?? 0"
           [max]="300"
         ></app-character-counter>
-        <app-validation-message [control]="otherRemarksControl"></app-validation-message>
+        <app-validation-message class="form-validation-note--error" [control]="otherRemarksControl" fieldName="Remarks"></app-validation-message>
       </div>
     </div>
   </div>
@@ -451,13 +458,36 @@
           class="input--textarea"
           formControlName="description"
           [maxlength]="200"
+          (input)="updateAttachmentRequirement()"
         ></textarea>
         <app-character-counter
           [current]="descriptionControl.value?.length ?? 0"
           [max]="200"
         ></app-character-counter>
-        <app-validation-message [control]="descriptionControl"></app-validation-message>
+        <app-validation-message class="form-validation-note--error" [control]="descriptionControl" fieldName="Description of Expense"></app-validation-message>
       </div>
+
+      @if (activeBudgetCategory !== 'studentAllowances') {
+        <div class="form-field">
+          <app-file-upload
+            [label]="attachmentLabel"
+            accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+            [maxSizeMB]="4"
+            [uploadedFileName]="uploadedBudgetAttachmentName"
+            (fileSelected)="onBudgetAttachmentSelected($event)"
+          ></app-file-upload>
+          <app-validation-message
+            class="form-validation-note--error"
+            [control]="attachmentFileControl"
+            fieldName="Attachment"
+          ></app-validation-message>
+          @if (activeBudgetCategory === 'materialsSupplies') {
+            <p class="form-hint">Attach a quotation for every item. For software, also provide evidence that it is not available in APU.</p>
+          } @else if (activeBudgetCategory === 'specialServices') {
+            <p class="form-hint">Editing Service requires a quotation. Publication Fees requires an APC Page.</p>
+          }
+        </div>
+      }
 
       <div class="row row--2 textarea-row">
         <div class="form-field">
@@ -469,7 +499,7 @@
             class="input--text"
             formControlName="amount"
           />
-          <app-validation-message [control]="amountControl"></app-validation-message>
+          <app-validation-message class="form-validation-note--error" [control]="amountControl" fieldName="Amount"></app-validation-message>
         </div>
         <div class="form-field">
           <label class="form-label is-required">Remarks</label>
@@ -478,7 +508,7 @@
             [current]="remarksControl.value?.length ?? 0"
             [max]="300"
           ></app-character-counter>
-          <app-validation-message [control]="remarksControl"></app-validation-message>
+          <app-validation-message class="form-validation-note--error" [control]="remarksControl" fieldName="Remarks"></app-validation-message>
         </div>
       </div>
     </div>

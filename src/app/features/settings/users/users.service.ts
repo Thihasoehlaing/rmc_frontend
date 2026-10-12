@@ -46,6 +46,12 @@ export interface RoleRecord {
   is_active: boolean;
 }
 
+export interface RoleOption {
+  id: number;
+  role_code: string;
+  role_name: string;
+}
+
 export interface DepartmentRecord {
   id: number;
   department_name: string;
@@ -71,7 +77,7 @@ export class UsersService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = environment.apiUrl;
   private readonly usersUrl = `${this.apiUrl}/settings/users`;
-  private readonly rolesUrl = `${this.apiUrl}/settings/roles`;
+  private readonly roleOptionsUrl = `${this.apiUrl}/settings/roles/options`;
   private readonly departmentsUrl = `${this.apiUrl}/master-data/departments`;
 
   list(
@@ -105,15 +111,8 @@ export class UsersService {
     );
   }
 
-  listRoles(): Observable<ApiResponse<PaginatedData<RoleRecord>>> {
-    const params = new HttpParams()
-      .set('page', 1)
-      .set('per_page', 100)
-      .set('status', 'Active');
-
-    return this.http.get<ApiResponse<PaginatedData<RoleRecord>>>(this.rolesUrl, {
-      params,
-    });
+  listRoleOptions(): Observable<ApiResponse<RoleOption[]>> {
+    return this.http.get<ApiResponse<RoleOption[]>>(this.roleOptionsUrl);
   }
 
   listDepartments(): Observable<ApiResponse<DepartmentRecord[]>> {

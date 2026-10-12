@@ -93,8 +93,6 @@
 }
 
 // Keep the journal detail questions in a predictable two-column sequence.
-// The optional citation explanation follows the four core rows without
-// displacing their requested positions.
 .journal-details-research-type-field {
   order: 1;
 }
@@ -113,11 +111,6 @@
 
 .journal-details-scopus-field {
   order: 5;
-}
-
-.journal-details-citation-explanation {
-  order: 6;
-  grid-column: 1 / -1;
 }
 
 .section-fields .row {

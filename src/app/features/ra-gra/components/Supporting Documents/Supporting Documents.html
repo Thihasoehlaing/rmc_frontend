@@ -1,0 +1,19 @@
+<div class="supporting-documents-section">
+  <h2 class="section-main-title">Supporting Documents</h2>
+  <p class="section-description">Upload all required documents in PDF format. Maximum 4 MB per file.</p>
+  
+  <div class="documents-grid">
+    @for (doc of documents; track doc.id) {
+      <div class="document-card">
+        <h3 class="document-card__title">{{ doc.title }} @if (doc.required) {<span class="required-asterisk">*</span>}</h3>
+        <p class="document-card__description">{{ doc.description }}</p>
+        <div class="document-card__upload">
+          <span class="material-icons">cloud_upload</span>
+          <p>Drop PDF here or browse</p>
+        </div>
+        <span class="document-card__meta">Maximum 4 MB</span>
+        <span class="document-card__requirement">{{ doc.required ? 'Required' : 'Optional' }} · PDF ONLY</span>
+      </div>
+    }
+  </div>
+</div>

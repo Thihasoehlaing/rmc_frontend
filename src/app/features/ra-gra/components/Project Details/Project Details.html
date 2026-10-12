@@ -31,7 +31,7 @@
         <div class="radio-group">
           <label class="radio-option">
             <input type="radio" formControlName="positionRequested" value="RA">
-            <span>Research Assistant (UG Student)</span>
+            <span>Research Assistant UG / Diploma / Foundation Student</span>
           </label>
           <label class="radio-option">
             <input type="radio" formControlName="positionRequested" value="GRA">
@@ -89,26 +89,6 @@
         </app-validation-message>
       </div>
 
-      <!-- Year -->
-      <div class="form-field">
-        <label class="form-label is-required">Year</label>
-        <div class="radio-group">
-          <label class="radio-option">
-            <input type="radio" formControlName="year" value="Second Year">
-            <span>Second Year</span>
-          </label>
-          <label class="radio-option">
-            <input type="radio" formControlName="year" value="Third Year">
-            <span>Third Year</span>
-          </label>
-        </div>
-        <app-validation-message 
-          class="form-validation-note--error"
-          [control]="form.get('year')"
-          fieldName="Year">
-        </app-validation-message>
-      </div>
-
       <app-note 
         text="Research Assistants (UG Students) can only be placed under Research Projects." 
         [isTooltip]="false">
@@ -126,13 +106,14 @@
       <!-- Row 1: Account Code, Select Vote, Category of Grant -->
       <div class="row row--3">
         <div class="form-field">
-          <label class="form-label is-required">Account Code</label>
-          <select 
-            formControlName="accountCode" 
-            class="input--select"
-            [class.is-invalid]="form.get('accountCode')?.invalid && form.get('accountCode')?.touched">
-            <option *ngFor="let opt of accountCodeOptions" [value]="opt.value">{{ opt.label }}</option>
-          </select>
+          <app-searchable-dropdown
+            label="Account Code"
+            [required]="true"
+            [options]="accountCodeOptions"
+            formControlName="accountCode"
+            placeholder="Search and select account code..."
+            [searchable]="true">
+          </app-searchable-dropdown>
           <app-validation-message 
             class="form-validation-note--error"
             [control]="form.get('accountCode')"
@@ -141,13 +122,14 @@
         </div>
 
         <div class="form-field">
-          <label class="form-label is-required">Select Vote</label>
-          <select 
-            formControlName="selectVote" 
-            class="input--select"
-            [class.is-invalid]="form.get('selectVote')?.invalid && form.get('selectVote')?.touched">
-            <option *ngFor="let opt of voteOptions" [value]="opt.value">{{ opt.label }}</option>
-          </select>
+          <app-searchable-dropdown
+            label="Select Vote"
+            [required]="true"
+            [options]="voteOptions"
+            formControlName="selectVote"
+            placeholder="Search and select vote..."
+            [searchable]="true">
+          </app-searchable-dropdown>
           <app-validation-message 
             class="form-validation-note--error"
             [control]="form.get('selectVote')"
@@ -251,13 +233,14 @@
       <div class="row row--2">
         <!-- Select Research Cluster/Research Centre -->
         <div class="form-field">
-          <label class="form-label is-required">Select Research Cluster/Research Centre</label>
-          <select 
-            formControlName="researchCluster" 
-            class="input--select"
-            [class.is-invalid]="form.get('researchCluster')?.invalid && form.get('researchCluster')?.touched">
-            <option *ngFor="let opt of researchClusterOptions" [value]="opt.value">{{ opt.label }}</option>
-          </select>
+          <app-searchable-dropdown
+            label="Select Research Cluster/Research Centre"
+            [required]="true"
+            [options]="researchClusterOptions"
+            formControlName="researchCluster"
+            placeholder="Search and select research cluster/centre..."
+            [searchable]="true">
+          </app-searchable-dropdown>
           <app-validation-message 
             class="form-validation-note--error"
             [control]="form.get('researchCluster')"

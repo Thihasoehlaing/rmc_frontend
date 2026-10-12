@@ -27,8 +27,7 @@
 
     > app-ragra-project-details,
     > app-ragra-student-details,
-    > .step-2-container,
-    > .supporting-documents-section,
+    > app-ragra-supporting-documents,
     > app-ragra-declaration {
       grid-column: 1;
       grid-row: 1;
@@ -256,70 +255,6 @@
   }
 }
 
-// ── Approval Route ─────────────────────────────────────────────
-.approval-route {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-
-  &__step {
-    display: flex;
-    align-items: flex-start;
-    gap: var(--space-3);
-    padding: var(--space-3) 0;
-    border-left: 2px solid var(--border-light);
-    padding-left: var(--space-4);
-    position: relative;
-
-    &:first-child {
-      padding-top: 0;
-    }
-
-    &:last-child {
-      border-left-color: transparent;
-      padding-bottom: 0;
-    }
-  }
-
-  &__number {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    background: var(--color-primary-light);
-    color: var(--color-primary);
-    font-size: var(--fs-sm);
-    font-weight: var(--fw-bold);
-    flex-shrink: 0;
-    position: absolute;
-    left: -15px;
-  }
-
-  &__content {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-1);
-    padding-left: var(--space-5);
-
-    strong {
-      color: var(--ragra-design-ink);
-      font-size: var(--fs-sm);
-      font-weight: var(--fw-semibold);
-    }
-
-    span {
-      color: var(--ragra-design-muted);
-      font-size: var(--fs-xs);
-      line-height: var(--lh-snug);
-    }
-  }
-}
-
 // ── Document Checklist ─────────────────────────────────────────
 .document-checklist {
   list-style: none;
@@ -386,7 +321,6 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--space-5);
-  margin-bottom: var(--space-4);
 }
 
 .document-card {
@@ -465,63 +399,6 @@
     font-weight: var(--fw-semibold);
     text-transform: uppercase;
     letter-spacing: 0.05em;
-  }
-}
-
-// ── Document Pagination ────────────────────────────────────────
-
-.documents-pagination {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding-top: var(--space-4);
-  border-top: 1px solid var(--border-light);
-  gap: var(--space-4);
-}
-
-.pagination-info {
-  color: var(--ragra-design-muted);
-  font-size: var(--fs-sm);
-  font-weight: var(--fw-medium);
-}
-
-.pagination-controls {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-}
-
-.pagination-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 36px;
-  height: 36px;
-  padding: 0 var(--space-3);
-  border: 1px solid var(--border-base);
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
-  color: var(--ragra-design-ink);
-  font-size: var(--fs-sm);
-  font-weight: var(--fw-medium);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-
-  &:hover:not(&--active) {
-    background: var(--color-surface-secondary);
-    border-color: var(--color-primary);
-  }
-
-  &--active {
-    background: var(--color-primary);
-    border-color: var(--color-primary);
-    color: white;
-    cursor: default;
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--color-primary);
-    outline-offset: 2px;
   }
 }
 
@@ -621,8 +498,8 @@
   .ragra-app__step-indicator .step-indicator {
     counter-reset: ragra-step;
     justify-content: stretch;
-    min-height: 64px;
-    padding: 12px 20px;
+    min-height: 90px;
+    padding: var(--space-4) var(--space-5);
     border-color: var(--border-light);
     border-radius: var(--ragra-design-card-radius);
     box-shadow: none;
@@ -632,10 +509,11 @@
     counter-increment: ragra-step;
     flex: 0 1 auto;
     min-width: 0;
-    flex-direction: row;
+    flex-direction: column;
     justify-content: center;
-    gap: var(--space-3);
-    padding: 4px 10px;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-2);
   }
 
   .ragra-app__step-indicator .step__bubble {
@@ -660,11 +538,12 @@
   }
 
   .ragra-app__step-indicator .step__label {
-    max-width: 190px;
+    max-width: 160px;
     color: var(--ragra-design-ink);
     font-size: var(--fs-xs);
     font-weight: var(--fw-semibold);
-    text-align: left;
+    text-align: center;
+    line-height: var(--lh-tight);
   }
 
   .ragra-app__step-indicator .step--active .step__bubble,
@@ -688,7 +567,7 @@
 
   .ragra-app__step-indicator .step-connector {
     min-width: 44px;
-    margin-top: 20px;
+    margin-top: 28px;
     height: 1px;
   }
 
@@ -733,8 +612,7 @@
 
       > app-ragra-project-details,
       > app-ragra-student-details,
-      > .step-2-container,
-      > .supporting-documents-section,
+      > app-ragra-supporting-documents,
       > app-ragra-declaration {
         grid-column: 1;
         grid-row: 2;
@@ -750,43 +628,20 @@
 
   ::ng-deep .ragra-app {
     .ragra-app__step-indicator .step {
-      min-width: 112px;
+      min-width: 100px;
+      padding: var(--space-2) var(--space-2);
     }
 
     .ragra-app__step-indicator .step__label {
-      max-width: 128px;
+      max-width: 140px;
+      font-size: var(--fs-2xs);
     }
-  }
-
-  .documents-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .documents-pagination {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--space-3);
-  }
-
-  .pagination-controls {
-    width: 100%;
-    justify-content: center;
   }
 }
 
 @media (max-width: 768px) {
   .ragra-app {
     padding: var(--space-3) 0;
-  }
-
-  .document-card {
-    &__upload {
-      padding: var(--space-5);
-
-      .material-icons {
-        font-size: 32px;
-      }
-    }
   }
 }
 
@@ -796,14 +651,22 @@
       flex-wrap: nowrap;
       justify-content: flex-start;
       overflow-x: auto;
+      padding: var(--space-3) var(--space-4);
     }
 
     .ragra-app__step-indicator .step {
-      min-width: 144px;
+      min-width: 90px;
+      flex: 0 0 auto;
+    }
+
+    .ragra-app__step-indicator .step__label {
+      font-size: var(--fs-2xs);
+      max-width: 100px;
     }
 
     .ragra-app__step-indicator .step-connector {
-      flex: 0 0 var(--space-6);
+      flex: 0 0 var(--space-5);
+      min-width: var(--space-5);
     }
 
     .ragra-app__wizard-nav .form-wizard-nav {

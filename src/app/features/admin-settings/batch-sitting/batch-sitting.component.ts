@@ -399,7 +399,7 @@ export class BatchSittingComponent implements OnInit, OnDestroy {
           );
           this.feedback.set({
             type: 'error',
-            text: 'Could not connect to server. Start json-server and refresh.',
+            text: 'Could not connect to the backend. Check the API connection and refresh.',
           });
         },
       });

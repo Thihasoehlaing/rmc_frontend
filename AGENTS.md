@@ -194,21 +194,15 @@ Do not use clickable `div`s when a button or anchor is appropriate.
 
 ## Backend and API Boundaries
 
-The local mock backend is part of development.
-
-Important files:
-- `server.mjs`
-- `db.json`
-
-Do not remove or bypass the mock backend unless the task explicitly replaces it.
-
-Some current frontend code uses local endpoints such as `http://localhost:3000`. Keep that behavior unless the task is specifically about API integration.
+The frontend uses the real backend APIs, including during local development.
+The obsolete JSON mock backend (`server.mjs` and `db.json`) has been removed.
+Do not reintroduce dependencies on `http://localhost:3000`.
 
 For future APU integration:
 - keep integration work separate from UI cleanup;
 - use environment configuration instead of hardcoded production URLs;
 - put API calls in services;
-- preserve local mock support unless explicitly removed;
+- preserve local backend support;
 - preserve existing authentication and redirect behavior unless the task changes it.
 
 ## Generated and Local Files

@@ -1,10 +1,11 @@
 import { HttpClient, HttpContext, HttpErrorResponse } from '@angular/common/http';
+import { DOCUMENT } from '@angular/common';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable, catchError, map, switchMap, tap, throwError, finalize, timeout } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
-import { SHOW_API_SUCCESS } from '../interceptors/api-message.interceptor';
+import { SHOW_API_SUCCESS, SKIP_API_TOAST } from '../interceptors/api-message.interceptor';
 import { User, UserGroup } from '../interfaces/user.interface';
 import { FormCacheService } from './form-cache.service';
 import { ToastService } from './toast.service';
@@ -47,6 +48,8 @@ export class AuthService {
   private readonly router = inject(Router);
   private readonly toastService = inject(ToastService);
   private readonly formCache = inject(FormCacheService);
+  private readonly document = inject(DOCUMENT);
+  private logoutInProgress = false;
   private readonly TOKEN_KEY = 'token';
   private readonly USER_KEY = 'user';
   private readonly LEGACY_SESSION_KEY = 'rmc_session_user';
@@ -233,18 +236,25 @@ export class AuthService {
 
   /** Clear the current session. */
   logout(): void {
+    if (this.logoutInProgress) return;
+    this.logoutInProgress = true;
     const isTestingSession = this.isTestingAccessToken(this.getAccessToken());
     this.clearStoredSession();
 
     const redirect = () => {
+      this.logoutInProgress = false;
       if (isTestingSession) {
-        window.location.replace('/login');
+        this.document.location.replace('/login');
         return;
       }
       const query = new URLSearchParams({ redirect_url: this.getRedirectUrl() });
-      window.location.replace(`${environment.authUrl}/logout?${query.toString()}`);
+      this.document.location.replace(`${environment.authUrl}/logout?${query.toString()}`);
     };
-    this.http.delete(`${environment.attachmentBaseUrl}/auth/attachment-view-session`, { withCredentials: true })
+    // Cookie cleanup is best effort: failures must not interrupt logout or show API toasts.
+    this.http.delete(`${environment.attachmentBaseUrl}/auth/attachment-view-session`, {
+      withCredentials: true,
+      context: new HttpContext().set(SKIP_API_TOAST, true),
+    })
       .pipe(timeout(5000), finalize(redirect))
       .subscribe({ error: () => {} });
   }

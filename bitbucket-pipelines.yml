@@ -13,8 +13,7 @@
 # Required Repository Variables:
 #   AWS_ACCESS_KEY_ID                 — IAM deployer access key
 #   AWS_SECRET_ACCESS_KEY             — IAM deployer secret key
-#   AWS_DEFAULT_REGION                — AWS region for staging/prod (ap-southeast-5)
-#   AWS_DEFAULT_REGION_DEV            — AWS region for dev (ap-southeast-5)
+#   AWS_DEFAULT_REGION                — AWS region for dev/staging/prod (ap-southeast-5)
 #   CLOUDFRONT_DISTRIBUTION_ID_DEV    — CloudFront distribution ID for dev (E3SXS96TJQ9W62)
 #   CLOUDFRONT_DISTRIBUTION_ID_PROD   — CloudFront distribution ID for prod
 # =============================================================================
@@ -59,15 +58,15 @@ pipelines:
               variables:
                 AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
                 AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
-                AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION_DEV
-                S3_BUCKET: 'frontend-rmc-dev'
+                AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION
+                S3_BUCKET: 'frontend-rmc-dev-my'
                 LOCAL_PATH: 'dist/RMC_project/browser'
                 DELETE_FLAG: 'true'
             - pipe: atlassian/aws-cloudfront-invalidate:0.6.0
               variables:
                 AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
                 AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
-                AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION_DEV
+                AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION
                 DISTRIBUTION_ID: $CLOUDFRONT_DISTRIBUTION_ID_DEV
           artifacts:
             - dist/**

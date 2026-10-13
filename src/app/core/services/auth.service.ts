@@ -125,7 +125,6 @@ export class AuthService {
             this.USER_KEY,
             JSON.stringify(response.data.user),
           );
-          this.formCache.refresh().subscribe({ error: () => undefined });
           if (!response.data.user.role) {
             this.toastService.info(
               'Your APU account is authenticated, but no RMC role has been assigned yet.',
@@ -164,7 +163,6 @@ export class AuthService {
             this.USER_KEY,
             JSON.stringify(response.data.user),
           );
-          this.formCache.refresh().subscribe({ error: () => undefined });
         }),
         map(response => this.mapCheckedUser(response.data.user)),
         tap(user => this._currentUser.set(user)),
@@ -222,7 +220,6 @@ export class AuthService {
           this.USER_KEY,
           JSON.stringify(response.data.user),
         );
-        this.formCache.refresh().subscribe({ error: () => undefined });
       }),
       map(response => this.mapCheckedUser(response.data.user)),
       tap(user => this._currentUser.set(user)),

@@ -89,4 +89,16 @@ describe('AuthService logout', () => {
     expect(replace).toHaveBeenCalledOnce();
     expect(toast.error).not.toHaveBeenCalled();
   });
+
+  it('does not make a forms request during testing login', () => {
+    const loggedIn = vi.fn();
+    service.loginAsTestingUser('test').subscribe(loggedIn);
+    http.expectOne(`${environment.apiUrl}/auth/check`).flush({
+      success: true,
+      data: { user: { id: 1, username: 'test', name: 'Test User', role: null } },
+    });
+    expect(loggedIn).toHaveBeenCalledOnce();
+    expect(service.isAuthenticated()).toBe(true);
+    http.expectNone(`${environment.apiUrl}/forms?include_inactive=true`);
+  });
 });

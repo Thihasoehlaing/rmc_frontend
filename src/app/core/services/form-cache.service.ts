@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { Observable, map, of, tap } from 'rxjs';
+import { Observable, Subject, finalize, map, of, shareReplay, takeUntil, tap } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
 
@@ -29,7 +29,14 @@ export class FormCacheService {
   private readonly storageKey = 'rmc.forms.cache.v2';
   private readonly cacheTtlMs = 5 * 60 * 1000;
   private readonly apiUrl = `${environment.apiUrl}/forms?include_inactive=true`;
-  private readonly formsSignal = signal<CachedFormOption[]>(this.readCache({ allowStale: true })?.forms ?? []);
+  private inFlight: Observable<ApiResponse<CachedFormOption[]>> | null = null;
+  private readonly cacheReset = new Subject<void>();
+  private cacheGeneration = 0;
+  private readonly formsSignal = signal<CachedFormOption[]>([]);
+
+  constructor() {
+    this.formsSignal.set(this.readCache({ allowStale: true })?.forms ?? []);
+  }
 
   readonly forms = this.formsSignal.asReadonly();
   readonly activeFormCodes = computed(
@@ -67,12 +74,29 @@ export class FormCacheService {
   }
 
   refresh(): Observable<ApiResponse<CachedFormOption[]>> {
-    return this.http
+    if (this.inFlight) return this.inFlight;
+
+    const generation = this.cacheGeneration;
+    const request = this.http
       .get<ApiResponse<CachedFormOption[]>>(this.apiUrl)
-      .pipe(tap((response) => this.writeCache(response.data ?? [])));
+      .pipe(
+        tap((response) => {
+          if (generation === this.cacheGeneration) this.writeCache(response.data ?? []);
+        }),
+        takeUntil(this.cacheReset),
+        finalize(() => {
+          if (this.inFlight === request) this.inFlight = null;
+        }),
+        shareReplay({ bufferSize: 1, refCount: true }),
+      );
+    this.inFlight = request;
+    return request;
   }
 
   clear(): void {
+    this.cacheGeneration++;
+    this.cacheReset.next();
+    this.inFlight = null;
     localStorage.removeItem(this.storageKey);
     localStorage.removeItem(this.legacyStorageKey);
     this.formsSignal.set([]);

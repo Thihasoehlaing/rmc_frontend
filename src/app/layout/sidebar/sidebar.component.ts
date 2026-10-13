@@ -44,7 +44,7 @@ export class SidebarComponent implements OnInit {
   currentUser = this.authService.currentUser;
 
   ngOnInit(): void {
-    this.formCache.getActiveForms(true).subscribe({ error: () => undefined });
+    this.formCache.getActiveForms().subscribe({ error: () => undefined });
   }
 
   private readonly restrictedWorkflowGroups: UserGroup[] = ['VC', 'HR', 'CEO', 'CFO', 'Finance'];

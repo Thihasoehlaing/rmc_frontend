@@ -260,7 +260,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
   readonly totalSteps = 4;
 
   isSaving = signal(false);
-  submissionState = signal<'IDLE' | 'LOADING' | 'SUCCESS' | 'ERROR'>('IDLE');
+  submissionState = signal<'IDLE' | 'LOADING' | 'SUCCESS'>('IDLE');
   submissionErrorMessage = signal('');
   isSubmitting = computed(() => this.submissionState() !== 'IDLE');
   submitAttempted = signal(false);
@@ -1984,13 +1984,16 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
       this.submissionErrorMessage.set(
         'This application is open in history view only and cannot be edited.',
       );
-      this.submissionState.set('ERROR');
+      this.submissionState.set('IDLE');
+      this.toastSvc.error(this.submissionErrorMessage());
       return;
     }
 
+    if (this.isSaving() || this.isSubmitting()) return;
+    this.submissionErrorMessage.set('');
     this.isSaving.set(true);
 
-    this.syncToRealBackend().subscribe({
+    this.syncToRealBackend().pipe(finalize(() => this.isSaving.set(false))).subscribe({
       next: (id) => {
         this.loadedAppId.set(String(id));
         this.router.navigate([], {
@@ -2007,20 +2010,26 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
       error: (err) => {
         console.error('Save draft failed:', err);
         this.isSaving.set(false);
-        this.submissionErrorMessage.set(err?.error?.message || 'Failed to save draft.');
-        this.submissionState.set('ERROR');
+        this.submissionErrorMessage.set(err?.status === 0
+          ? 'We couldn’t reach the server. Check your connection and try again.'
+          : 'We couldn’t save your draft. Your entries are still here. Please try again.');
+        this.submissionState.set('IDLE');
+        this.toastSvc.error(this.submissionErrorMessage());
       },
     });
   }
 
   onSubmit(): void {
+    if (this.isSaving() || this.isSubmitting()) return;
+    this.submissionErrorMessage.set('');
     this.submitAttempted.set(true);
     this.showValidationSummary.set(false);
     if (this.isViewOnly()) {
       this.submissionErrorMessage.set(
         'This application is open in history view only and cannot be submitted.',
       );
-      this.submissionState.set('ERROR');
+      this.submissionState.set('IDLE');
+      this.toastSvc.error(this.submissionErrorMessage());
       return;
     }
 
@@ -2170,12 +2179,14 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
     console.error('RDIG submit failed:', err);
     const e = err as { status?: number; error?: { message?: string } };
     const msg =
-      e?.error?.message ||
       (e?.status === 0
-        ? 'Could not connect to the server. Please try again.'
-        : 'Failed to submit your application. Please try again.');
+        ? 'We couldn’t reach the server. Check your connection and try again.'
+        : e?.status === 422
+          ? 'Please check the required fields before submitting.'
+          : 'We couldn’t submit your application. Please try again.');
     this.submissionErrorMessage.set(msg);
-    this.submissionState.set('ERROR');
+    this.submissionState.set('IDLE');
+    this.toastSvc.error(msg);
   }
 
   private isSystemAdminReadOnlyRequest(request: { applicant_staff_username?: string | null }): boolean {

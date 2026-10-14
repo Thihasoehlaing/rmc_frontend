@@ -63,6 +63,9 @@ function getMessage(body: unknown): string | null {
 
 function getErrorMessage(error: unknown): string {
   if (error instanceof HttpErrorResponse) {
+    if (error.status >= 500) {
+      return 'We couldn’t complete your request. Please try again.';
+    }
     const apiMessage = getMessage(error.error);
     if (apiMessage) return apiMessage;
 

@@ -3,7 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { environment } from '../../../../environments/environment';
-import { SKIP_API_SUCCESS_TOAST } from '../../../core/interceptors/api-message.interceptor';
+import { SKIP_API_SUCCESS_TOAST, SKIP_API_TOAST } from '../../../core/interceptors/api-message.interceptor';
 import {
   PaginatedData,
   RequestSummaryDto,
@@ -248,7 +248,7 @@ export class RdigApiService {
     return this.http.post<ApiResponse<RdigFormData>>(
       `${this.base}/drafts`,
       payload,
-      this.skipSuccessToastOptions(),
+      { context: new HttpContext().set(SKIP_API_TOAST, true) },
     );
   }
 
@@ -260,16 +260,18 @@ export class RdigApiService {
     return this.http.put<ApiResponse<RdigFormData>>(
       `${this.base}/${id}/draft`,
       payload,
-      this.skipSuccessToastOptions(),
+      { context: new HttpContext().set(SKIP_API_TOAST, true) },
     );
   }
 
   submit(id: number): Observable<ApiResponse<RequestSummaryDto>> {
-    return this.http.post<ApiResponse<RequestSummaryDto>>(`${this.base}/${id}/submit`, {});
+    return this.http.post<ApiResponse<RequestSummaryDto>>(`${this.base}/${id}/submit`, {},
+      { context: new HttpContext().set(SKIP_API_TOAST, true) });
   }
 
   resubmit(id: number): Observable<ApiResponse<RequestSummaryDto>> {
-    return this.http.post<ApiResponse<RequestSummaryDto>>(`${this.base}/${id}/resubmit`, {});
+    return this.http.post<ApiResponse<RequestSummaryDto>>(`${this.base}/${id}/resubmit`, {},
+      { context: new HttpContext().set(SKIP_API_TOAST, true) });
   }
 
   getActiveBatch(): Observable<ApiResponse<RdigActiveBatchResponse>> {

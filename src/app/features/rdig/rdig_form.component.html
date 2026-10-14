@@ -54,20 +54,7 @@
               Your application was submitted successfully. Redirecting to pending applications...
             </p>
           }
-          @if (submissionState() === 'ERROR') {
-            <div class="loader-circle loader-circle--error">
-              <span class="material-icons error-icon">priority_high</span>
-            </div>
-            <h2 class="submission-msg">Something went wrong</h2>
-            <p class="submission-submsg">{{ submissionErrorMessage() }}</p>
-            <button
-              type="button"
-              class="btn btn-primary submission-back-button"
-              (click)="submissionState.set('IDLE')"
-            >
-              Go Back
-            </button>
-          }
+
         </div>
       </div>
     }

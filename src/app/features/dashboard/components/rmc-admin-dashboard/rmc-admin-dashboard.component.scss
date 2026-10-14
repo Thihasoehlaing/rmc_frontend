@@ -592,3 +592,14 @@
 
 .analysis-chart-grid .performance-toolbar { flex-direction: column; align-items: stretch; }
 .analysis-chart-grid .performance-toolbar app-searchable-dropdown { width: 100%; }
+
+.analysis-application-title {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  white-space: normal;
+  max-width: 100%;
+  margin-top: var(--space-1);
+}

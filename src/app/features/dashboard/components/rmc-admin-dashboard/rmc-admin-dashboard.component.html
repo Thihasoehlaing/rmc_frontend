@@ -326,7 +326,7 @@
                 @if (record.request.request_code) {
                   <a [routerLink]="detailLink(record)">{{ record.request.request_code }}</a>
                 }
-                <div>{{ record.request.title }}</div>
+                <div class="analysis-application-title" [attr.title]="record.request.title">{{ record.request.title }}</div>
               </td>
               <td>{{ record.formCode }}</td>
               <td>

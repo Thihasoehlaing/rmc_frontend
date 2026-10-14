@@ -9,6 +9,7 @@ import {
 import { FormWizardNavComponent } from '../../shared/components/form-wizard-nav/form-wizard-nav.component';
 import { ProjectDetailsComponent } from './components/Project Details/Project Details';
 import { StudentDetailsComponent } from './components/Student Details/Student Details';
+import { SupportingDocumentsComponent } from './components/Supporting Documents/Supporting Documents';
 import { DeclarationComponent } from './components/Declaration/Declaration';
 import { ActivatedRoute } from '@angular/router';
 import { ActionLoadingService } from '../../core/services/action-loading.service';
@@ -31,6 +32,7 @@ interface DocumentConfig {
     FormWizardNavComponent,
     ProjectDetailsComponent,
     StudentDetailsComponent,
+    SupportingDocumentsComponent,
     DeclarationComponent
   ],
   templateUrl: './RA-GRA_form.component.html',
@@ -45,6 +47,7 @@ export class RagraFormComponent {
   @ViewChild(ProjectDetailsComponent) projectDetailsComponent?: ProjectDetailsComponent;
   @ViewChild(StepIndicatorComponent) stepIndicator?: StepIndicatorComponent;
   @ViewChild(StudentDetailsComponent) studentDetailsComponent?: StudentDetailsComponent;
+  @ViewChild(SupportingDocumentsComponent) supportingDocumentsComponent?: SupportingDocumentsComponent;
   @ViewChild(DeclarationComponent) declarationComponent?: DeclarationComponent;
 
   currentStep = 1;
@@ -52,17 +55,19 @@ export class RagraFormComponent {
   steps: WizardStep[] = [
     { label: 'Applicant & Project', icon: 'article' },
     { label: 'Student Details', icon: 'person' },
+    { label: 'Supporting Documents', icon: 'upload_file' },
     { label: 'Declaration', icon: 'verified' }
   ];
 
   stepStatuses: StepStatus[] = [
     { visited: true, valid: false, missingFields: [] },
     { visited: false, valid: false, missingFields: [] },
+    { visited: false, valid: false, missingFields: [] },
     { visited: false, valid: false, missingFields: [] }
   ];
 
   /** Tracks validity per step (1-based keys). */
-  formValid: { [key: number]: boolean} = { 1: false, 2: false, 3: false };
+  formValid: { [key: number]: boolean} = { 1: false, 2: false, 3: false, 4: false };
   private readonly checkedSteps = new Set<number>();
 
   submitAttempted = false;
@@ -73,101 +78,6 @@ export class RagraFormComponent {
 
   /** Cached positionRequested value — set when leaving Step 1 so it survives component destruction. */
   private _positionRequested: 'RA' | 'GRA' | '' = '';
-
-  // ── Document Pagination ────────────────────────────────────────
-
-  currentDocPage = 1;
-  documentsPerPage = 4;
-
-  documents: DocumentConfig[] = [
-    {
-      id: 1,
-      title: 'Employment Application Form',
-      description: 'Official RA/GRA employment application form',
-      required: true
-    },
-    {
-      id: 2,
-      title: 'Copy of Academic Transcripts',
-      description: 'Official academic transcripts from your institution',
-      required: true
-    },
-    {
-      id: 3,
-      title: "RA/GRA's CV",
-      description: 'Current curriculum vitae or resume',
-      required: true
-    },
-    {
-      id: 4,
-      title: 'Print Screen of Bank Statement',
-      description: 'Recent bank account statement for salary processing',
-      required: true
-    },
-    {
-      id: 5,
-      title: 'Recruitment Submission Form',
-      description: 'HR recruitment and approval form',
-      required: true
-    },
-    {
-      id: 6,
-      title: 'Confidentiality Agreement',
-      description: 'Signed confidentiality and data protection agreement',
-      required: true
-    },
-    {
-      id: 7,
-      title: 'NRIC/Passport',
-      description: 'Copy of identification document',
-      required: true
-    },
-    {
-      id: 8,
-      title: 'VISA',
-      description: 'Student visa (for international students)',
-      required: false
-    },
-    {
-      id: 9,
-      title: 'Other Supporting Documents',
-      description: 'Any additional relevant documents (optional)',
-      required: false
-    }
-  ];
-
-  get totalDocuments(): number {
-    return this.documents.length;
-  }
-
-  get totalPages(): number {
-    return Math.ceil(this.totalDocuments / this.documentsPerPage);
-  }
-
-  get pageNumbers(): number[] {
-    return Array.from({ length: this.totalPages }, (_, i) => i + 1);
-  }
-
-  get paginatedDocuments(): DocumentConfig[] {
-    const startIndex = (this.currentDocPage - 1) * this.documentsPerPage;
-    const endIndex = startIndex + this.documentsPerPage;
-    return this.documents.slice(startIndex, endIndex);
-  }
-
-  get paginationStart(): number {
-    return (this.currentDocPage - 1) * this.documentsPerPage + 1;
-  }
-
-  get paginationEnd(): number {
-    const end = this.currentDocPage * this.documentsPerPage;
-    return Math.min(end, this.totalDocuments);
-  }
-
-  goToDocumentPage(pageNumber: number): void {
-    if (pageNumber >= 1 && pageNumber <= this.totalPages) {
-      this.currentDocPage = pageNumber;
-    }
-  }
 
   get totalSteps(): number {
     return this.steps.length;
@@ -295,6 +205,14 @@ export class RagraFormComponent {
         return progress;
       }
       case 3: {
+        const component = this.supportingDocumentsComponent;
+        if (!component?.form) return { completed: 0, total: 1 };
+
+        const progress = this.getRequiredControlProgress(component.form);
+        this.addProgressCriterion(progress, component.form.valid);
+        return progress;
+      }
+      case 4: {
         const form = this.declarationComponent?.declarationForm;
         if (!form) return { completed: 0, total: 1 };
         const progress = this.getRequiredControlProgress(form);
@@ -401,6 +319,12 @@ export class RagraFormComponent {
         }
         break;
       case 3:
+        if (this.supportingDocumentsComponent?.form?.invalid) {
+          if (markAsTouched) this.supportingDocumentsComponent.form.markAllAsTouched();
+          isValid = false;
+        }
+        break;
+      case 4:
         if (this.declarationComponent?.declarationForm?.invalid) {
           if (markAsTouched) this.declarationComponent.declarationForm.markAllAsTouched();
           isValid = false;

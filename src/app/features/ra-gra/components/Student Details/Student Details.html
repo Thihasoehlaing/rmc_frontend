@@ -28,13 +28,14 @@
 
         <!-- Program Title (GRA only) -->
         <div class="form-field" *ngIf="positionRequested === 'GRA'">
-          <label class="form-label is-required">Program Title</label>
-          <select
-            class="input--select"
+          <app-searchable-dropdown
+            label="Program Title"
+            [required]="true"
+            [options]="programOptions"
             formControlName="programTitle"
-            [class.is-invalid]="form.get('programTitle')?.invalid && form.get('programTitle')?.touched">
-            <option *ngFor="let opt of programOptions" [value]="opt.value">{{ opt.label }}</option>
-          </select>
+            placeholder="Search and select program..."
+            [searchable]="true">
+          </app-searchable-dropdown>
           <app-note text="For GRA (PG Student) only" [isTooltip]="false"></app-note>
           <app-validation-message 
             class="form-validation-note--error"
@@ -61,13 +62,14 @@
 
         <!-- Nationality -->
         <div class="form-field">
-          <label class="form-label is-required">Nationality</label>
-          <select
-            class="input--select"
+          <app-searchable-dropdown
+            label="Nationality"
+            [required]="true"
+            [options]="nationalityOptions"
             formControlName="nationality"
-            [class.is-invalid]="form.get('nationality')?.invalid && form.get('nationality')?.touched">
-            <option *ngFor="let opt of nationalityOptions" [value]="opt.value">{{ opt.label }}</option>
-          </select>
+            placeholder="Search and select nationality..."
+            [searchable]="true">
+          </app-searchable-dropdown>
           <app-validation-message 
             class="form-validation-note--error"
             [control]="form.get('nationality')"
@@ -231,7 +233,7 @@
             formControlName="appointmentEndDate"
             [class.is-invalid]="form.get('appointmentEndDate')?.invalid && form.get('appointmentEndDate')?.touched">
           <app-note
-            text="Appointment End Date cannot be later than the Visa End Date or Project End Date."
+            text="Appointment End Date cannot be later than the Visa End Date or Project End Date, whichever comes first."
             [isTooltip]="false">
           </app-note>
           <app-validation-message 
@@ -246,11 +248,15 @@
           <label class="form-label is-required">Appointment Duration (Days)</label>
           <input
             type="number"
-            class="input--text"
+            class="input--text input--soft-readonly"
             formControlName="durationDays"
-            min="1"
-            placeholder="Enter duration in days"
+            readonly
+            placeholder="Auto-calculated"
             [class.is-invalid]="form.get('durationDays')?.invalid && form.get('durationDays')?.touched">
+          <app-note
+            text="Duration is calculated automatically based on Commencement and End dates."
+            [isTooltip]="false">
+          </app-note>
           <app-validation-message 
             class="form-validation-note--error"
             [control]="form.get('durationDays')"
@@ -260,13 +266,14 @@
 
         <!-- Second Reporting Person -->
         <div class="form-field">
-          <label class="form-label is-required">Second Reporting Person</label>
-          <select
-            class="input--select"
+          <app-searchable-dropdown
+            label="Second Reporting Person"
+            [required]="true"
+            [options]="secondReportingOptions"
             formControlName="secondReportingPerson"
-            [class.is-invalid]="form.get('secondReportingPerson')?.invalid && form.get('secondReportingPerson')?.touched">
-            <option *ngFor="let opt of secondReportingOptions" [value]="opt.value">{{ opt.label }}</option>
-          </select>
+            placeholder="Search and select reporting person..."
+            [searchable]="true">
+          </app-searchable-dropdown>
           <app-note
             text="Please select the co-supervisor/FUM (if any)."
             [isTooltip]="false">
@@ -304,19 +311,14 @@
 
         <!-- Fee Reduction Percentage (GRA only) -->
         <div class="form-field" *ngIf="positionRequested === 'GRA'">
-          <label class="form-label is-required">Fee Reduction Percentage</label>
-          <select
-            class="input--select"
+          <app-searchable-dropdown
+            label="Fee Reduction Percentage"
+            [required]="true"
+            [options]="feeReductionOptions"
             formControlName="feeReductionPercentage"
-            [class.is-invalid]="form.get('feeReductionPercentage')?.invalid && form.get('feeReductionPercentage')?.touched">
-            <option value="0">0%</option>
-            <option value="50">50%</option>
-            <option value="60">60%</option>
-            <option value="70">70%</option>
-            <option value="80">80%</option>
-            <option value="90">90%</option>
-            <option value="100">100%</option>
-          </select>
+            placeholder="Select fee reduction percentage..."
+            [searchable]="true">
+          </app-searchable-dropdown>
           <app-note
             text="Fee reduction is only applicable for Postgraduate (GRA) applications."
             [isTooltip]="false">

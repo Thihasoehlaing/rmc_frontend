@@ -138,6 +138,7 @@ tbody tr:last-child td,
 :host ::ng-deep .data-table__empty-row td {
   padding: 28px 24px;
   border-bottom: none;
+  text-align: center;
 }
 
 .data-table__empty-state,

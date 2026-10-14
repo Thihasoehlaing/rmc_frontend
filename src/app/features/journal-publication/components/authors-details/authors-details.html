@@ -26,6 +26,7 @@
         @if (testSubsections.length > 0) {
           <div class="table-scroll">
             <app-data-table
+              class="co-author-table"
               [columns]="apuStaffColumns"
               [rows]="testSubsections.controls"
               [hoverable]="true"
@@ -68,9 +69,18 @@
             ></app-table-row-counter>
           </div>
         } @else {
-          <div class="empty-state">
-            <span class="material-icons">group</span>
-            <p>No entries added yet. Click Add Entry to start adding items.</p>
+          <div class="table-scroll">
+            <app-data-table
+              class="co-author-table"
+              [columns]="apuStaffColumns"
+              [rows]="[]"
+              [hoverable]="true"
+              [striped]="true"
+            >
+              <ng-template #emptyTemplate>
+                <p class="co-author-empty-message">No entries added yet. Click <strong>Add Entry</strong> to start adding items.</p>
+              </ng-template>
+            </app-data-table>
           </div>
         }
       </div>
@@ -141,9 +151,18 @@
             ></app-table-row-counter>
           </div>
         } @else {
-          <div class="empty-state">
-            <span class="material-icons">school</span>
-            <p>No entries added yet. Click Add Entry to start adding items.</p>
+          <div class="table-scroll">
+            <app-data-table
+              class="co-author-table"
+              [columns]="studentColumns"
+              [rows]="[]"
+              [hoverable]="true"
+              [striped]="true"
+            >
+              <ng-template #emptyTemplate>
+                <p class="co-author-empty-message">No entries added yet. Click <strong>Add Entry</strong> to start adding items.</p>
+              </ng-template>
+            </app-data-table>
           </div>
         }
       </div>
@@ -226,9 +245,18 @@
             ></app-table-row-counter>
           </div>
         } @else {
-          <div class="empty-state">
-            <span class="material-icons">public</span>
-            <p>No entries added yet. Click Add Entry to start adding items.</p>
+          <div class="table-scroll">
+            <app-data-table
+              class="co-author-table"
+              [columns]="nonApuColumns"
+              [rows]="[]"
+              [hoverable]="true"
+              [striped]="true"
+            >
+              <ng-template #emptyTemplate>
+                <p class="co-author-empty-message">No entries added yet. Click <strong>Add Entry</strong> to start adding items.</p>
+              </ng-template>
+            </app-data-table>
           </div>
         }
       </div>

@@ -82,7 +82,7 @@
 
     // Table
     --color-table-header: #E1E1E1; // Table header cell background
-    --color-table-head-bg: var(--color-primary); // Data table header row background (shared + list tables)
+    --color-table-head-bg: #245A91; // Muted dark blue distinguishes table headers from primary actions
     --color-table-head-text: white; // Data table header text and sort arrow color
     --color-table-row-bg: #{colors.$surface-hover}; // Alternating table row background
     --color-table-cell: #{colors.$white}; // Default table cell background

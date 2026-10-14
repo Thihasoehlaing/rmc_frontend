@@ -29,4 +29,23 @@ describe('ActionLoadingService', () => {
     service.end(secondId);
     expect(service.state()).toBeNull();
   });
+
+  it('waits for every concurrent request regardless of completion order', () => {
+    const first = service.beginRequest('GET');
+    const second = service.beginRequest('PUT');
+    service.end(second);
+    expect(service.state()?.id).toBe(first);
+    service.end(first);
+    expect(service.state()).toBeNull();
+  });
+
+  it('keeps an action-specific title while its HTTP requests finish', () => {
+    const action = service.begin('Submitting application');
+    const request = service.beginRequest('POST');
+    expect(service.state()?.title).toBe('Submitting application');
+    service.end(request);
+    expect(service.state()?.title).toBe('Submitting application');
+    service.end(action);
+    expect(service.state()).toBeNull();
+  });
 });

@@ -57,7 +57,7 @@ export class ResearchActivitiesComponent implements OnInit, OnDestroy {
     { key: 'duration', label: 'Duration', width: 'var(--size-table-column-duration)' },
     {
       key: 'timeline',
-      label: 'Timeline (Month 0 - 12)',
+      label: 'Timeline (Month 1 - 12)',
       width: 'var(--size-table-column-timeline)',
     },
     {
@@ -93,10 +93,10 @@ export class ResearchActivitiesComponent implements OnInit, OnDestroy {
   /** Project duration (months) — driven by projectDetails.duration; 0 = not set */
   projectDuration = signal<number>(0);
 
-  private readonly activityMinMonth = 0;
+  private readonly activityMinMonth = 1;
   private readonly activityMaxMonth = 12;
 
-  /** Research activity planning uses a fixed M0-M12 range. */
+  /** Research activity planning uses a fixed M1-M12 range. */
   months = computed(() =>
     Array.from(
       { length: this.activityMaxMonth - this.activityMinMonth + 1 },
@@ -162,7 +162,7 @@ export class ResearchActivitiesComponent implements OnInit, OnDestroy {
       name: ['', Validators.required],
       startMonth: [startMonth, Validators.required],
       endMonth: [startMonth, Validators.required],
-      duration: [{ value: 0, disabled: true }],
+      duration: [{ value: 1, disabled: true }],
     });
 
     this.ensureValidActivityMonths(activityGroup);
@@ -259,7 +259,7 @@ export class ResearchActivitiesComponent implements OnInit, OnDestroy {
   private setDuration(activityGroup: FormGroup): void {
     const start = this.monthValue(activityGroup.get('startMonth')?.value);
     const end = this.monthValue(activityGroup.get('endMonth')?.value);
-    activityGroup.get('duration')?.setValue(Math.max(0, end - start), { emitEvent: false });
+    activityGroup.get('duration')?.setValue(Math.max(1, end - start + 1), { emitEvent: false });
   }
 
   private monthValue(value: unknown): number {

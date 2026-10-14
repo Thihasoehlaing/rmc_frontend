@@ -445,7 +445,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
 
   private activitiesTimelineValidator = (control: AbstractControl): ValidationErrors | null => {
     const activities = control as FormArray;
-    const minMonth = 0;
+    const minMonth = 1;
     const maxMonth = 12;
 
     if (!activities || activities.length === 0) return { activitiesTimeline: true };

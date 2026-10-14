@@ -912,12 +912,13 @@ export class RdigDetailsComponent implements OnInit {
       0,
     );
     const span = Math.max(durationMonths, furthestEnd, 1);
-    return Array.from({ length: span + 1 }, (_, i) => i);
+    return Array.from({ length: span }, (_, i) => i + 1);
   });
 
   ganttTimeline(startMonth: unknown, endMonth: unknown): boolean[] {
-    const start = this.toNumber(startMonth);
-    const end = this.toNumber(endMonth);
+    if (startMonth == null || endMonth == null) return this.ganttMonths().map(() => false);
+    const start = Math.max(1, this.toNumber(startMonth));
+    const end = Math.max(1, this.toNumber(endMonth));
     return this.ganttMonths().map((month) => month >= start && month <= end && end >= start);
   }
   readonly budgetSectionsWithItems = computed(() =>

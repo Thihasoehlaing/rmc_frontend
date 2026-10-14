@@ -7,6 +7,7 @@ import { routes } from './app.routes';
 import { apiMessageInterceptor } from './core/interceptors/api-message.interceptor';
 import { authTokenInterceptor } from './core/interceptors/auth-token.interceptor';
 import { sessionExpiryInterceptor } from './core/interceptors/session-expiry.interceptor';
+import { documentLoadingInterceptor } from './core/interceptors/document-loading.interceptor';
 import {
   DISPLAY_DATE_FORMAT,
   MALAYSIA_TIME_ZONE_OFFSET,
@@ -22,6 +23,7 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes, withComponentInputBinding()),
     provideHttpClient(
       withInterceptors([
+        documentLoadingInterceptor,
         authTokenInterceptor,
         sessionExpiryInterceptor,
         apiMessageInterceptor,

@@ -43,9 +43,16 @@ Do not duplicate shared component behavior locally inside a feature page.
 
 ## Skeleton Loading
 
-Use the shared skeleton loading system for every loading placeholder.
+Use the shared APU document loading overlay for all API reads and writes. The
+document-loading interceptor handles HTTP requests centrally, including concurrent
+requests and errors. Reuse ActionLoadingService for multi-request user actions.
+Do not add new skeleton or feature-specific API loading overlays. Keep button busy
+guards to prevent duplicate submissions; the shared overlay is the visible loader.
 
-Required:
+Existing skeleton components remain internal placeholders beneath the opaque
+document loader and should not be used for new API loading UI.
+
+For existing non-API skeleton placeholders:
 - Use the global `--skeleton-*` tokens for skeleton colors, animation, borders, shadow, radius, and sizing.
 - Use exactly the shared container and placeholder fill colors; do not introduce feature-specific skeleton colors.
 - Use the global `skeleton-shimmer` animation and reduced-motion behavior.

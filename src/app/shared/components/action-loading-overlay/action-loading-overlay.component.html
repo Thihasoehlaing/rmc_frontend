@@ -2,16 +2,20 @@
   <div
     class="action-loading-overlay"
     role="status"
-    aria-live="assertive"
+    aria-live="polite"
+    aria-atomic="true"
     aria-busy="true"
     [attr.aria-label]="action.title"
   >
     <section class="action-loading-card">
-      <div class="action-loading-card__spinner" aria-hidden="true">
-        <app-svg-icon [icon]="loadingSpinnerIcon" size="var(--size-loader-spinner)" />
+      <div class="document-loading-emblem">
+        <span class="document-loading-orbit" aria-hidden="true"></span>
+        <img src="assets/images/apu.png" alt="APU" width="84" height="78" />
       </div>
+      <span class="document-loading-brand">APU RMC</span>
       <h2>{{ action.title }}</h2>
       <p>{{ action.message }}</p>
+      <div class="document-loading-track" aria-hidden="true"><span></span></div>
     </section>
   </div>
 }

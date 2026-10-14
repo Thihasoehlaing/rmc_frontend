@@ -11,8 +11,8 @@
   display: grid;
   place-items: center;
   padding: var(--space-6);
-  background: var(--color-overlay);
-  backdrop-filter: blur(var(--blur-overlay));
+  background: var(--color-background-page);
+  cursor: wait;
 }
 
 .action-loading-card {
@@ -39,18 +39,69 @@
   }
 }
 
-.action-loading-card__spinner {
+.document-loading-emblem {
+  position: relative;
   display: grid;
   place-items: center;
   width: var(--size-loader-circle);
   height: var(--size-loader-circle);
   color: var(--color-primary);
   border-radius: var(--radius-full);
+  background: white;
+  margin-bottom: var(--space-5);
+
+  img {
+    max-width: 80%;
+    max-height: 80%;
+    object-fit: contain;
+  }
+}
+
+.document-loading-orbit {
+  position: absolute;
+  inset: calc(-1 * var(--space-1));
+  border: 2px solid var(--color-primary-light); // Thin animated orbit around the logo.
+  border-top-color: var(--color-primary);
+  border-right-color: var(--color-warning);
+  border-radius: var(--radius-full);
+  animation: document-loading-orbit 1.6s linear infinite;
+}
+
+.document-loading-brand {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: var(--space-1);
+}
+
+.document-loading-track {
+  width: 100%;
+  height: var(--space-1);
+  margin-top: var(--space-6);
+  overflow: hidden;
+  border-radius: var(--radius-full);
   background: var(--color-primary-light);
+
+  span {
+    display: block;
+    width: 40%;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--color-primary);
+    animation: document-loading-progress 1.4s ease-in-out infinite;
+  }
+}
+
+@keyframes document-loading-orbit { to { transform: rotate(360deg); } }
+@keyframes document-loading-progress {
+  from { transform: translateX(-110%); }
+  to { transform: translateX(360%); }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .action-loading-overlay {
-    backdrop-filter: none;
+  .document-loading-orbit,
+  .document-loading-track span {
+    animation: none;
   }
+  .document-loading-track span { width: 100%; }
 }

@@ -98,7 +98,6 @@ export class JournalDetails implements OnInit, OnDestroy {
   breakdownType: 'internal-research' | 'external-research' | 'non-research' | null = null;
   breakdownEditingIndex: number | null = null;
 
-  researchBreakdowns: any[] = [];
   externalBreakdowns: any[] = [];
   NonResearchBreakdowns: any[] = [];
   currentBreakdownOptions: {
@@ -254,7 +253,7 @@ export class JournalDetails implements OnInit, OnDestroy {
       if (type === 'non-research') {
         projectAccountCodeCtrl?.clearValidators();
         projectAccountCodeCtrl?.setValue('', { emitEvent: false });
-      } else if (type === 'external-research') {
+      } else if (this.isResearchProject(type)) {
         projectAccountCodeCtrl?.setValidators([Validators.required]);
         this.syncExternalBreakdownAccountCode(projectAccountCodeCtrl?.value || '');
       } else {
@@ -269,7 +268,7 @@ export class JournalDetails implements OnInit, OnDestroy {
     });
 
     this.form.get('projectAccountCode')?.valueChanges.subscribe((value) => {
-      if (this.researchType === 'external-research') {
+      if (this.isResearchProject(this.researchType)) {
         this.syncExternalBreakdownAccountCode(value || '');
       }
     });
@@ -451,7 +450,6 @@ export class JournalDetails implements OnInit, OnDestroy {
     this.updateCitationValidation(this.form.get('citedApuPaper')?.value, false);
     this.syncScopusQuartileForResearchType(journal.project_type || '');
 
-    this.researchBreakdowns = [];
     this.externalBreakdowns = [];
     this.NonResearchBreakdowns = [];
     const targetType = journal.project_type || '';
@@ -567,9 +565,12 @@ export class JournalDetails implements OnInit, OnDestroy {
     }
   }
 
+  isResearchProject(type: string | null): boolean {
+    return type === 'external-research' || type === 'internal-research';
+  }
+
   getBreakdownArray(type: string): any[] {
-    if (type === 'internal-research') return this.researchBreakdowns;
-    if (type === 'external-research') return this.externalBreakdowns;
+    if (this.isResearchProject(type)) return this.externalBreakdowns;
     if (type === 'non-research') return this.NonResearchBreakdowns;
     return [];
   }
@@ -622,7 +623,7 @@ export class JournalDetails implements OnInit, OnDestroy {
         voteNumberCtrl?.setValidators([Validators.required]);
         voteNumberCtrl?.disable({ emitEvent: false });
         voteNumberCtrl?.updateValueAndValidity({ emitEvent: false });
-        if (type === 'external-research') {
+        if (this.isResearchProject(type)) {
           accountCodeCtrl?.setValidators([Validators.required]);
         } else {
           accountCodeCtrl?.clearValidators();
@@ -656,7 +657,7 @@ export class JournalDetails implements OnInit, OnDestroy {
                 entry.voteNumber ||
                 this.journalOptionsService.getConfiguredVoteNumber(entry.itemDescription),
               accountCode:
-                type === 'external-research'
+                this.isResearchProject(type)
                   ? entry.accountCode ||
                     entry.voteNumber ||
                     this.form.get('projectAccountCode')?.value ||
@@ -677,7 +678,7 @@ export class JournalDetails implements OnInit, OnDestroy {
             },
             { emitEvent: false },
           );
-        } else if (type === 'external-research') {
+        } else if (this.isResearchProject(type)) {
           // For External, auto-fill with Project Account Code
           const projectAccountCode = this.form.get('projectAccountCode')?.value || '';
           this.breakdownForm.patchValue(
@@ -752,7 +753,7 @@ export class JournalDetails implements OnInit, OnDestroy {
       resolvedAccountCodeDescription = this.nonResearchAccountCodeDescription;
     }
 
-    if (this.breakdownType === 'external-research') {
+    if (this.isResearchProject(this.breakdownType)) {
       const projectAccountCode = this.form.get('projectAccountCode')?.value || '';
       resolvedAccountCode = projectAccountCode;
     }
@@ -825,7 +826,7 @@ export class JournalDetails implements OnInit, OnDestroy {
 
   private syncScopusQuartileForResearchType(projectType: string | null): void {
     const scopusQuartileControl = this.form.get('scopusQuartile');
-    if (projectType === 'non-research' && scopusQuartileControl?.value === 'Q3') {
+    if (projectType !== 'external-research' && scopusQuartileControl?.value === 'Q3') {
       scopusQuartileControl.setValue('', { emitEvent: false });
       scopusQuartileControl.updateValueAndValidity({ emitEvent: false });
     }
@@ -874,7 +875,7 @@ export class JournalDetails implements OnInit, OnDestroy {
           ? null
           : this.journalOptionsService.getVoteNumberId(entry.itemDescription),
       account_code_id:
-        projectType === 'external-research' || projectType === 'non-research'
+        this.isResearchProject(projectType) || projectType === 'non-research'
           ? null
           : this.journalOptionsService.getAccountCodeId(accountCode),
       cost_in_foreign_currency: this.toMoneyString(entry.cost),
@@ -974,7 +975,7 @@ export class JournalDetails implements OnInit, OnDestroy {
     // ──────────────────────────────────────────────────────────────
     // A) External Research Project
     // ──────────────────────────────────────────────────────────────
-    if (pType === 'external-research') {
+    if (this.isResearchProject(pType)) {
       if (manualExternal > 0) {
         this.form.get('sponsoredBy')?.setValidators([Validators.required]);
       } else {
@@ -1040,7 +1041,7 @@ export class JournalDetails implements OnInit, OnDestroy {
 
     // Validate breakdown entries exist for certain project types
     const isBreakdownValid =
-      pType === 'external-research' || pType === 'non-research' ? breakdownArray.length > 0 : true;
+      this.isResearchProject(pType) || pType === 'non-research' ? breakdownArray.length > 0 : true;
     this.formValidityChange.emit(this.form.valid && isBreakdownValid);
   }
 
@@ -1050,7 +1051,7 @@ export class JournalDetails implements OnInit, OnDestroy {
       accountCode: projectAccountCode,
     }));
 
-    if (this.breakdownType === 'external-research') {
+    if (this.isResearchProject(this.breakdownType)) {
       this.breakdownForm.patchValue(
         {
           accountCode: projectAccountCode,
@@ -1061,7 +1062,9 @@ export class JournalDetails implements OnInit, OnDestroy {
   }
 
   getBreakdownModalTitle(): string {
-    if (this.breakdownType === 'external-research')
+    if (this.breakdownType === 'internal-research')
+      return 'Detailed Breakdown for Internal Research Project';
+    if (this.isResearchProject(this.breakdownType))
       return 'Detailed Breakdown for External Research Project';
     if (this.breakdownType === 'non-research') return 'Detailed Breakdown for Non-Research Project';
     return 'Breakdown';

@@ -35,7 +35,7 @@ export interface DashboardExternalDepartmentPoint {
   budgetRequested: number;
 }
 
-export type DashboardProjectType = 'External' | 'Non-Research';
+export type DashboardProjectType = 'External' | 'Internal' | 'Non-Research';
 export type DashboardConferenceType = 'International' | 'National';
 export type DashboardScopusQuartile = 'Q1' | 'Q2' | 'Q3';
 

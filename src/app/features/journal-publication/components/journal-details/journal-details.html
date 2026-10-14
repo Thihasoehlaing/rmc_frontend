@@ -109,25 +109,29 @@
             </div>
 
             <div class="form-field journal-details-research-type-field">
-              <label class="form-label is-required">Select Funded or Non-Funded Project</label>
+              <label class="form-label is-required">Select Research Project Type</label>
               <div class="radio-group">
                 <label class="radio-option">
                   <input
                     type="radio"
                     formControlName="researchType"
                     value="external-research"
-                  /><span>Funded by Research Grant</span>
+                  /><span>External Research Project</span>
+                </label>
+                <label class="radio-option">
+                  <input type="radio" formControlName="researchType" value="internal-research" />
+                  <span>Internal Research Project</span>
                 </label>
                 <label class="radio-option">
                   <input type="radio" formControlName="researchType" value="non-research" /><span
-                    >Non-Funded by Research Grant</span
+                    >Non-Research Project</span
                   >
                 </label>
               </div>
               <app-validation-message
                 class="form-validation-note--error"
                 [control]="form.get('researchType')"
-                fieldName="Select Funded or Non-Funded Project"
+                fieldName="Select Research Project Type"
               ></app-validation-message>
             </div>
 
@@ -142,30 +146,12 @@
                   <input type="radio" formControlName="scopusQuartile" value="Q2" />
                   <span><strong>Q2:</strong> 50th - 74th percentile</span>
                 </label>
-                <label
-                  class="radio-option"
-                  [class.radio-option--disabled]="researchType === 'non-research'"
-                  [attr.tabindex]="researchType === 'non-research' ? 0 : null"
-                  [attr.aria-describedby]="
-                    researchType === 'non-research' ? 'q3-unavailable-reason' : null
-                  "
-                >
-                  @if (researchType === 'non-research') {
-                    <input type="radio" value="Q3" disabled />
-                  } @else {
+                @if (researchType === 'external-research') {
+                  <label class="radio-option">
                     <input type="radio" formControlName="scopusQuartile" value="Q3" />
-                  }
-                  <span><strong>Q3:</strong> 25th - 49th percentile</span>
-                  @if (researchType === 'non-research') {
-                    <span
-                      id="q3-unavailable-reason"
-                      class="quartile-unavailable-tooltip"
-                      role="tooltip"
-                    >
-                      Q3 is only available for External Research Projects.
-                    </span>
-                  }
-                </label>
+                    <span><strong>Q3:</strong> 25th - 49th percentile</span>
+                  </label>
+                }
               </div>
               <app-validation-message
                 class="form-validation-note--error"
@@ -447,11 +433,11 @@
                         [max]="5"
                       ></app-table-row-counter>
                     </div>
-                  } @else if (researchType === 'external-research') {
+                  } @else if (isResearchProject(researchType)) {
                     <div class="table-scroll research-table">
                       <app-data-table
                         [columns]="externalResearchBreakdownColumns"
-                        [rows]="getBreakdownArray('external-research')"
+                        [rows]="getBreakdownArray(researchType)"
                         [hoverable]="true"
                         [striped]="true"
                       >
@@ -474,7 +460,7 @@
                                 <button
                                   type="button"
                                   class="btn-icon btn-icon--edit"
-                                  (click)="openBreakdownModal('external-research', index)"
+                                  (click)="openBreakdownModal(researchType, index)"
                                   aria-label="Edit entry"
                                 >
                                   <app-table-action-icon action="edit"></app-table-action-icon>
@@ -482,7 +468,7 @@
                                 <button
                                   type="button"
                                   class="btn-icon btn-icon--delete"
-                                  (click)="deleteBreakdown('external-research', index)"
+                                  (click)="deleteBreakdown(researchType, index)"
                                   aria-label="Remove entry"
                                 >
                                   <app-table-action-icon action="delete"></app-table-action-icon>
@@ -494,11 +480,11 @@
                       </app-data-table>
                     </div>
                     <div class="table-summary">
-                      {{ getBreakdownArray('external-research').length }} item(s)
+                      {{ getBreakdownArray(researchType).length }} item(s)
                     </div>
                     <div class="table-summary">
                       <app-table-row-counter
-                        [current]="getBreakdownArray('external-research').length"
+                        [current]="getBreakdownArray(researchType).length"
                         [max]="5"
                       ></app-table-row-counter>
                     </div>
@@ -834,7 +820,7 @@
     <div class="breakdown-field" [class.breakdown-field--full]="breakdownType !== 'non-research'">
       <label for="itemDescription" class="form-label">
         {{
-          breakdownType === 'external-research'
+          isResearchProject(breakdownType)
             ? 'Vote Number Description'
             : breakdownType === 'non-research'
               ? 'Account Code Description'
@@ -854,7 +840,7 @@
         <app-searchable-dropdown
           [options]="currentBreakdownOptions"
           [placeholder]="
-            breakdownType === 'external-research'
+            isResearchProject(breakdownType)
               ? 'Search and select vote number description'
               : 'Search and select item'
           "
@@ -866,7 +852,7 @@
         class="form-validation-note--error"
         [control]="breakdownForm.get('itemDescription')"
         [fieldName]="
-          breakdownType === 'external-research'
+          isResearchProject(breakdownType)
             ? 'Vote Number Description'
             : breakdownType === 'non-research'
               ? 'Account Code Description'
@@ -875,7 +861,7 @@
       ></app-validation-message>
     </div>
 
-    @if (breakdownType === 'external-research') {
+    @if (isResearchProject(breakdownType)) {
       <div class="breakdown-field">
         <label for="externalAccountCode" class="form-label"> Account Code </label>
         <input
@@ -942,11 +928,7 @@
     <!-- Cost in Foreign Currency / MYR -->
     <div class="breakdown-field">
       <label for="cost" class="form-label">
-        {{
-          breakdownType === 'internal-research'
-            ? 'Cost in Foreign Currency / MYR (RM)'
-            : 'Cost in Foreign Currency / MYR'
-        }}
+        Cost in Foreign Currency / MYR
         <span class="asterisk">*</span>
       </label>
       <input

@@ -46,6 +46,7 @@ const AUTHOR_ROLE_LABELS: Readonly<Record<string, string>> = {
 
 const PROJECT_TYPE_LABELS: Readonly<Record<string, string>> = {
   'external-research': 'External Research Project',
+  'internal-research': 'Internal Research Project',
   'non-research': 'Non-Research Project',
 };
 

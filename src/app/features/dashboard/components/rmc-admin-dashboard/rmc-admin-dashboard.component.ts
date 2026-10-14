@@ -299,7 +299,9 @@ export class RmcAdminAnalyticsDashboardComponent implements OnInit {
 
   readonly projectTypeSeries = computed(() =>
     this.dimensionSeries(
-      ['External', 'Non-Research'],
+      this.customDashboardForm() === 'JOURNAL'
+        ? ['External', 'Internal', 'Non-Research']
+        : ['External', 'Non-Research'],
       (record) => record.analytics?.projectType,
       this.completedRecords(),
     ),

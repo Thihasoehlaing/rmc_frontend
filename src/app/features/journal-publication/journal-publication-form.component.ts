@@ -306,7 +306,7 @@ export class JournalPublicationFormComponent {
 
     const missing = this.getInvalidLabelsFromForm(component.form, this.journalDetailsFieldChecks);
     const projectType = component.researchType ?? '';
-    const requiresBreakdown = ['external-research', 'non-research'].includes(projectType);
+    const requiresBreakdown = ['external-research', 'internal-research', 'non-research'].includes(projectType);
     if (requiresBreakdown && component.getBreakdownArray(projectType).length === 0) {
       missing.push({ label: 'Detailed Costing Breakdown', target: 'costingBreakdown' });
     }
@@ -469,7 +469,7 @@ export class JournalPublicationFormComponent {
         const progress = this.getRequiredControlProgress(component.form);
         this.addProgressCriterion(progress, component.form.valid);
 
-        const requiresBreakdown = ['external-research', 'non-research'].includes(
+        const requiresBreakdown = ['external-research', 'internal-research', 'non-research'].includes(
           component.researchType ?? '',
         );
         if (requiresBreakdown) {

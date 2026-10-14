@@ -7,6 +7,45 @@
     </div>
   </header>
 
+  <section class="card reports-controls" aria-label="Report filters">
+    <nav class="reports-form-tabs" aria-label="Report form">
+      @for (form of forms(); track form.form_code) {
+        <button type="button" class="btn" [class.btn-primary]="selectedFormCode() === form.form_code"
+          [class.btn-ghost]="selectedFormCode() !== form.form_code" [attr.aria-pressed]="selectedFormCode() === form.form_code"
+          (click)="selectForm(form.form_code)">{{ formLabel(form.form_code) }}</button>
+      }
+    </nav>
+    <div class="reports-periods" role="group" aria-label="Submission period">
+      <span class="form-label">Submission period</span>
+      @for (option of [{value:'all', label:'All Time'}, {value:'month', label:'This Month'}, {value:'year', label:'This Year'}, {value:'custom', label:'Custom Range'}]; track option.value) {
+        <button type="button" class="btn btn-sm" [class.btn-secondary]="period() === option.value"
+          [class.btn-ghost]="period() !== option.value" [attr.aria-pressed]="period() === option.value"
+          (click)="setPeriod(option.value)">{{ option.label }}</button>
+      }
+    </div>
+    <div class="reports-inline-filters">
+      <label class="form-field">
+        <span class="form-label">Request Code</span>
+        <input class="input--text" type="search" placeholder="Search request code" [ngModel]="requestCode()"
+          (ngModelChange)="search($event)" (keydown.enter)="applyFilters()" />
+      </label>
+      @if (period() === 'custom') {
+        <div class="form-field">
+          <label class="form-label" for="reports-date-from">Submission Date From</label>
+          <app-date-picker id="reports-date-from" ariaLabel="Submission date from" [ngModel]="dateFrom()"
+            [maxDate]="dateTo() || null" (ngModelChange)="changeDate($event, 'from')" />
+        </div>
+        <div class="form-field">
+          <label class="form-label" for="reports-date-to">Submission Date To</label>
+          <app-date-picker id="reports-date-to" ariaLabel="Submission date to" [ngModel]="dateTo()"
+            [minDate]="dateFrom() || null" (ngModelChange)="changeDate($event, 'to')" />
+        </div>
+      }
+      <button type="button" class="btn btn-ghost" (click)="resetFilters()">Reset</button>
+    </div>
+    @if (pendingFilters()) { <p class="form-hint">{{ period() === 'custom' && (!dateFrom() || !dateTo()) ? 'Select both dates to update the report.' : 'Updating filters...' }}</p> }
+  </section>
+
   @if (isExternalFormSelected()) {
     <section class="reports-external-fields" aria-label="External Excel columns">
       <div class="reports-external-fields__header">
@@ -54,57 +93,37 @@
     </section>
   }
 
-  <div class="reports-export-row">
-    <button class="btn btn-primary" type="button" (click)="exportExcel()" [disabled]="isLoading() || isExporting()">
-      <span class="material-icons">download</span>
-      {{ isExporting() ? 'Downloading...' : 'Download Excel' }}
-    </button>
-    <button
-      type="button"
-      class="btn btn-secondary reports-filter-trigger"
-      aria-controls="reports-filter-panel"
-      [attr.aria-expanded]="filtersOpen()"
-      (click)="openFilters()"
-    >
-      <span class="material-icons">filter_list</span>
-      Filters
-    </button>
-  </div>
-
   <section class="reports-table-card">
     <header class="reports-table-card__header">
       <div>
         <div class="reports-table-card__title-row">
-          <h2>Approved Requests</h2>
+          <h2>Report Results</h2>
           <span class="reports-table-card__count">{{ totalItems() }}</span>
         </div>
-        <p>Showing all final-step submitted requests.</p>
+        <p>{{ formLabel(appliedFormCode()) }} &middot; {{ appliedDateFrom() ? (appliedDateFrom() | date:'dd MMM yyyy') : 'All dates' }}@if (appliedDateTo()) { &ndash; {{ appliedDateTo() | date:'dd MMM yyyy' }} }@if (appliedRequestCode()) { &middot; {{ appliedRequestCode() }} }</p>
+        <p>{{ scopeDescription() }}</p>
       </div>
-      <button
-        class="btn btn-secondary reports-table-card__refresh"
-        type="button"
-        (click)="loadReports()"
-        [disabled]="isLoading()"
-      >
-        <span class="material-icons">refresh</span>
-        Refresh
-      </button>
+      <div class="reports-result-actions">
+        <button class="btn btn-ghost" type="button" (click)="loadReports()" [disabled]="isLoading() || pendingFilters()" aria-label="Refresh report">
+          <span class="material-icons" aria-hidden="true">refresh</span>
+        </button>
+        <button class="btn btn-primary" type="button" (click)="exportExcel()" [disabled]="isLoading() || isExporting() || pendingFilters() || loadFailed() || !appliedFormCode()">
+          <span class="material-icons" aria-hidden="true">download</span>{{ isExporting() ? 'Downloading...' : 'Download Excel' }}
+        </button>
+      </div>
     </header>
 
-    @if (isLoading()) {
-      <app-table-skeleton [columns]="columns" [showSearch]="false" loadingLabel="Loading reports">
-      </app-table-skeleton>
-    } @else if (loadFailed()) {
+    @if (loadFailed()) {
       <div class="reports-state">
         <span class="material-icons">cloud_off</span>
         <h2>Unable to load reports</h2>
-        <p>Check the API connection and try again.</p>
+        <p>Please try again in a moment.</p>
         <button class="btn btn-primary" type="button" (click)="loadReports()">Try Again</button>
       </div>
     } @else if (rows().length === 0) {
       <div class="reports-state">
         <span class="material-icons">assessment</span>
-        <h2>No submitted requests found</h2>
+        <h2>No report results found</h2>
         <p>Adjust the form type, request code, or submission date range.</p>
       </div>
     } @else {
@@ -124,6 +143,7 @@
                 <span>{{ row.applicant_staff_username || row.applicant_email || '-' }}</span>
               </div>
             </td>
+            <td>{{ row.status_name || row.status_code }}</td>
             <td>{{ row.submitted_at ? (row.submitted_at | date: 'dd MMM yyyy, h:mm a') : '-' }}</td>
           </tr>
         </ng-template>
@@ -131,95 +151,4 @@
     }
   </section>
 
-  @if (filtersOpen()) {
-    <button
-      type="button"
-      class="reports-filter-backdrop"
-      aria-label="Close filters"
-      (click)="closeFilters()"
-    ></button>
-    <aside
-      id="reports-filter-panel"
-      class="reports-filter-panel"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="reports-filter-heading"
-    >
-      <header class="reports-filter-panel__header">
-        <div>
-          <span class="reports-page__eyebrow">Search &amp; Filters</span>
-          <h2 id="reports-filter-heading">Filters</h2>
-        </div>
-        <button
-          type="button"
-          class="btn btn-icon btn-secondary"
-          aria-label="Close filters"
-          (click)="closeFilters()"
-        >
-          <span class="material-icons">close</span>
-        </button>
-      </header>
-
-      <div class="reports-filter__controls">
-        <app-note
-          text="The report table and Excel download are based on the selected form, request code and submission date range."
-        />
-
-        <app-searchable-dropdown
-          label="Form"
-          placeholder="Select form"
-          [options]="formOptions()"
-          [ngModel]="selectedFormCode()"
-          (ngModelChange)="selectedFormCode.set($event ?? '')"
-          [loading]="formOptions().length === 0"
-        ></app-searchable-dropdown>
-
-        <label class="form-field reports-filter__field">
-          <span class="form-label">Request Code</span>
-          <span class="reports-search-input">
-            <span class="material-icons" aria-hidden="true">search</span>
-            <input
-              class="input--text"
-              type="search"
-              placeholder="Search request code"
-              [ngModel]="requestCode()"
-              (ngModelChange)="requestCode.set($event)"
-              (keydown.enter)="applyFilters()"
-            />
-          </span>
-        </label>
-
-        <div class="form-field reports-filter__field">
-          <label class="form-label" for="reports-date-from">Submission Date From</label>
-          <app-date-picker
-            id="reports-date-from"
-            ariaLabel="Submission date from"
-            [ngModel]="dateFrom()"
-            [maxDate]="dateTo() || null"
-            (ngModelChange)="dateFrom.set($event ?? '')"
-          ></app-date-picker>
-        </div>
-
-        <div class="form-field reports-filter__field">
-          <label class="form-label" for="reports-date-to">Submission Date To</label>
-          <app-date-picker
-            id="reports-date-to"
-            ariaLabel="Submission date to"
-            [ngModel]="dateTo()"
-            [minDate]="dateFrom() || null"
-            (ngModelChange)="dateTo.set($event ?? '')"
-          ></app-date-picker>
-        </div>
-      </div>
-
-      <footer class="reports-filter-panel__footer">
-        <button type="button" class="btn btn-primary" (click)="applyFilters()">
-          Apply Filters
-        </button>
-        <button type="button" class="btn btn-secondary" (click)="resetFilters()">
-          Reset
-        </button>
-      </footer>
-    </aside>
-  }
 </main>

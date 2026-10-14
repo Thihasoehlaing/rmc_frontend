@@ -27,7 +27,10 @@ export class DashboardHorizontalBarComponent {
   }
 
   @Input() currency = true;
+  @Input() compact = true;
+  @Input() wrapLabels = false;
   @Input() emptyLabel = 'No cost data';
+  @Input() detailLabel = 'Recorded amount';
 
   readonly total = computed(() => this.seriesValue().reduce((sum, item) => sum + item.value, 0));
   readonly max = computed(() => Math.max(1, ...this.seriesValue().map((item) => item.value)));
@@ -35,7 +38,7 @@ export class DashboardHorizontalBarComponent {
     this.seriesValue().map((item) => ({
       ...item,
       width: item.value ? Math.max(3, (item.value / this.max()) * 100) : 0,
-      formattedValue: this.formatValue(item.value, true),
+      formattedValue: this.formatValue(item.value, this.compact),
       exactValue: this.formatValue(item.value),
     })),
   );
@@ -45,7 +48,8 @@ export class DashboardHorizontalBarComponent {
       ? new Intl.NumberFormat('en-MY', {
           style: 'currency',
           currency: 'MYR',
-          maximumFractionDigits: 0,
+          maximumFractionDigits: compact ? 1 : 2,
+          minimumFractionDigits: compact ? 0 : 2,
           ...(compact ? { notation: 'compact' as const, maximumFractionDigits: 1 } : {}),
         }).format(value)
       : new Intl.NumberFormat('en-MY').format(value);

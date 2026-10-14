@@ -47,6 +47,7 @@ export interface DashboardCostBreakdown {
 
 export interface RmcDashboardDimensions {
   departmentCode?: string | null;
+  departmentName?: string | null;
   externalGrantCategory?: string | null;
   fundApproved?: number | null;
   budgetRequested?: number | null;
@@ -54,6 +55,15 @@ export interface RmcDashboardDimensions {
   conferenceType?: DashboardConferenceType | null;
   scopusQuartile?: DashboardScopusQuartile | null;
   costBreakdown?: DashboardCostBreakdown | null;
+  fundingRecorded?: boolean;
+  decisionDateEstimated?: boolean;
+  waitingSince?: Date | null;
+  stageName?: string | null;
+  batchName?: string | null;
+  researchCategory?: string | null;
+  applicationType?: string | null;
+  track?: string | null;
+  researchCluster?: string | null;
 }
 
 export interface RmcDashboardRecord {
@@ -88,6 +98,7 @@ export interface RmcDashboardCostBreakdownDto {
 
 export interface RmcDashboardDimensionsDto {
   department_code?: string | null;
+  department_name?: string | null;
   external_grant_category?: string | null;
   fund_approved?: number | string | null;
   budget_requested?: number | string | null;
@@ -95,6 +106,15 @@ export interface RmcDashboardDimensionsDto {
   conference_type?: DashboardConferenceType | null;
   scopus_quartile?: DashboardScopusQuartile | null;
   cost_breakdown?: RmcDashboardCostBreakdownDto | null;
+  funding_recorded?: boolean;
+  decision_date_estimated?: boolean;
+  waiting_since?: string | null;
+  stage_name?: string | null;
+  batch_name?: string | null;
+  research_category?: string | null;
+  application_type?: string | null;
+  track?: string | null;
+  research_cluster?: string | null;
 }
 
 export interface RmcDashboardRecordDto {

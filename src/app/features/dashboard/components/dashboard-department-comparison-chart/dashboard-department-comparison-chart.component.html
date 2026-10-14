@@ -1,7 +1,7 @@
 @if (chartPoints().length) {
   <div class="department-chart">
     <div class="department-chart__titles" aria-hidden="true">
-      <strong>Number of Completed Applications</strong>
+      <strong>Number of Approved Applications</strong>
       <strong>Fund Approved by APU (RM)</strong>
     </div>
 
@@ -16,7 +16,7 @@
         <div
           class="department-chart__plot"
           role="img"
-          aria-label="Completed applications and approved funding by department code"
+          aria-label="Completed applications and approved funding by department"
         >
           <div class="department-chart__grid" aria-hidden="true">
             @for (tick of applicationTicks(); track tick) {
@@ -27,7 +27,7 @@
           <div
             class="department-chart__categories"
             [style.grid-template-columns]="
-              'repeat(' + chartPoints().length + ', minmax(92px, 1fr))'
+              'repeat(' + chartPoints().length + ', minmax(180px, 1fr))'
             "
           >
             @for (point of chartPoints(); track point.departmentCode) {
@@ -103,7 +103,7 @@
     </div>
 
     <div class="department-chart__legend" aria-label="Chart legend">
-      <span><i [style.background]="applicationColor"></i>Apporved Applications</span>
+      <span><i [style.background]="applicationColor"></i>Approved Applications</span>
       <span><i [style.background]="fundColor"></i>Fund Approved by APU</span>
     </div>
   </div>

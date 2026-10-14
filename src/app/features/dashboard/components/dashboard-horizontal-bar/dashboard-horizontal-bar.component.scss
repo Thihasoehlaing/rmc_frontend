@@ -64,3 +64,10 @@
   color: var(--color-text-muted);
   font-size: var(--fs-sm);
 }
+
+.horizontal-bar__label span.horizontal-bar__name--wrap {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  overflow: visible;
+  text-overflow: clip;
+}

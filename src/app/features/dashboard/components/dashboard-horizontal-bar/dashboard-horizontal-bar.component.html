@@ -11,7 +11,7 @@
           (blur)="activeKey.set(null)"
         >
           <div class="horizontal-bar__label">
-            <span>{{ bar.label }}</span>
+            <span [class.horizontal-bar__name--wrap]="wrapLabels">{{ bar.label }}</span>
             <strong [attr.title]="bar.exactValue">{{ bar.formattedValue }}</strong>
           </div>
           <div class="horizontal-bar__track">
@@ -23,7 +23,7 @@
               [color]="bar.color"
               [label]="bar.label"
               [value]="bar.exactValue"
-              detail="Total requested amount"
+              [detail]="detailLabel"
             />
           }
         </div>

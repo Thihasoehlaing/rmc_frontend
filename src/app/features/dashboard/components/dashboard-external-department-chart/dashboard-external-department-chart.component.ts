@@ -53,7 +53,7 @@ export class DashboardExternalDepartmentChartComponent {
   );
   readonly applicationTicks = computed(() => this.ticks(this.applicationMaximum()));
   readonly budgetTicks = computed(() => this.ticks(this.budgetMaximum()));
-  readonly chartMinimumWidth = computed(() => Math.max(880, this.pointsValue().length * 120));
+  readonly chartMinimumWidth = computed(() => Math.max(880, this.pointsValue().length * 200));
   readonly categoryLegend = computed(() => this.pointsValue()[0]?.categories ?? []);
   readonly chartPoints = computed<ExternalDepartmentViewPoint[]>(() =>
     this.pointsValue().map((point) => ({

@@ -62,12 +62,12 @@
 .department-chart__plot {
   position: relative;
   min-width: 0;
-  height: 364px;
+  height: calc(320px + var(--space-8) * 3);
 }
 
 .department-chart__grid {
   position: absolute;
-  inset: 0 0 44px;
+  inset: 0 0 calc(var(--space-8) * 3);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -82,12 +82,12 @@
 .department-chart__categories {
   position: relative;
   display: grid;
-  height: 364px;
+  height: calc(320px + var(--space-8) * 3);
 }
 
 .department-chart__category {
   display: grid;
-  grid-template-rows: 320px 44px;
+  grid-template-rows: 320px calc(var(--space-8) * 3);
   min-width: 0;
 
   > strong {
@@ -206,4 +206,12 @@ app-chart-tooltip {
     flex-direction: column;
     gap: var(--space-1);
   }
+}
+
+// Full department names must remain readable below each chart category.
+.department-chart__category > strong {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  overflow: visible;
+  text-overflow: clip;
 }

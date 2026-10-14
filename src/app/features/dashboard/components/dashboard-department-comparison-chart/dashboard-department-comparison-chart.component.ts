@@ -45,7 +45,7 @@ export class DashboardDepartmentComparisonChartComponent {
   );
   readonly applicationTicks = computed(() => this.ticks(this.applicationMaximum()));
   readonly fundTicks = computed(() => this.ticks(this.fundMaximum()));
-  readonly chartMinimumWidth = computed(() => Math.max(860, this.pointsValue().length * 104));
+  readonly chartMinimumWidth = computed(() => Math.max(860, this.pointsValue().length * 200));
   readonly chartPoints = computed<DepartmentChartPoint[]>(() =>
     this.pointsValue().map((point) => ({
       ...point,

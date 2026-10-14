@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component, HostListener, OnInit, TrackByFunction, inject, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, TrackByFunction, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { finalize } from 'rxjs';
+import { finalize, Subscription } from 'rxjs';
 
 import {
   CachedFormOption,
@@ -13,10 +13,8 @@ import {
   DataTableColumn,
   DataTableComponent,
 } from '../../shared/components/data-table/data-table.component';
-import { NoteComponent } from '../../shared/components/note/note.component';
 import { DatePickerComponent } from '../../shared/components/date-picker/date-picker.component';
-import { SearchableDropdownComponent } from '../../shared/components/searchable-dropdown/searchable-dropdown.component';
-import { TableSkeletonComponent } from '../../shared/components/table-skeleton/table-skeleton.component';import {
+import {
   ExternalReportFieldOption,
   RequestReportQuery,
   RequestReportRow,
@@ -31,21 +29,17 @@ import { TableSkeletonComponent } from '../../shared/components/table-skeleton/t
     FormsModule,
     DatePickerComponent,
     DataTableComponent,
-    NoteComponent,
-    SearchableDropdownComponent,
-    TableSkeletonComponent,
   ],
   templateUrl: './request-reports.component.html',
   styleUrl: './request-reports.component.scss',
 })
-export class RequestReportsComponent implements OnInit {
+export class RequestReportsComponent implements OnInit, OnDestroy {
   private readonly reportsService = inject(RequestReportsService);
   private readonly formCache = inject(FormCacheService);
   private readonly toastService = inject(ToastService);
 
   readonly rows = signal<RequestReportRow[]>([]);
   readonly forms = signal<CachedFormOption[]>([]);
-  readonly formOptions = signal<DropdownOption<string>[]>([]);
   readonly externalFieldOptions = signal<DropdownOption<string>[]>([]);
   readonly selectedFormCode = signal('');
   readonly selectedExternalFields = signal<string[]>([]);
@@ -57,7 +51,9 @@ export class RequestReportsComponent implements OnInit {
   readonly appliedRequestCode = signal('');
   readonly appliedDateFrom = signal('');
   readonly appliedDateTo = signal('');
-  readonly filtersOpen = signal(false);
+  readonly period = signal('all');
+  private searchTimer?: ReturnType<typeof setTimeout>;
+  private reportSubscription?: Subscription;
 
   readonly totalItems = signal(0);
   readonly isLoading = signal(true);
@@ -69,6 +65,7 @@ export class RequestReportsComponent implements OnInit {
     { key: 'request_code', label: 'Request Code', width: '180px' },
     { key: 'form_name', label: 'Form', width: '260px' },
     { key: 'applicant_name', label: 'Applicant', width: '220px' },
+    { key: 'status_name', label: 'Status', width: '180px' },
     { key: 'submitted_at', label: 'Submitted Date', width: '180px' },
   ];
 
@@ -81,10 +78,11 @@ export class RequestReportsComponent implements OnInit {
   }
 
   loadReports(): void {
+    this.reportSubscription?.unsubscribe();
     this.isLoading.set(true);
     this.loadFailed.set(false);
 
-    this.reportsService
+    this.reportSubscription = this.reportsService
       .list(this.currentQuery())
       .pipe(finalize(() => this.isLoading.set(false)))
       .subscribe({
@@ -100,38 +98,70 @@ export class RequestReportsComponent implements OnInit {
       });
   }
 
-  openFilters(): void {
-    this.resetDraftFilters();
-    this.filtersOpen.set(true);
+  ngOnDestroy(): void {
+    clearTimeout(this.searchTimer);
+    this.reportSubscription?.unsubscribe();
   }
 
-  closeFilters(): void {
-    this.resetDraftFilters();
-    this.filtersOpen.set(false);
+  selectForm(code: string): void {
+    this.selectedFormCode.set(code);
+    this.applyFilters();
   }
 
-  @HostListener('document:keydown.escape')
-  onEscape(): void {
-    if (this.filtersOpen()) this.closeFilters();
+  search(value: string): void {
+    this.requestCode.set(value);
+    clearTimeout(this.searchTimer);
+    this.searchTimer = setTimeout(() => this.applyFilters(), 450);
+  }
+
+  changeDate(value: string, side: 'from' | 'to'): void {
+    this.period.set('custom');
+    (side === 'from' ? this.dateFrom : this.dateTo).set(value || '');
+    if (this.dateFrom() && this.dateTo() && this.dateFrom() <= this.dateTo()) this.applyFilters();
+  }
+
+  setPeriod(value: string): void {
+    this.period.set(value);
+    if (value === 'custom') return;
+    const today = new Date();
+    const iso = (date: Date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    this.dateFrom.set(value === 'all' ? '' : iso(new Date(today.getFullYear(), value === 'month' ? today.getMonth() : 0, 1)));
+    this.dateTo.set(value === 'all' ? '' : iso(today));
+    this.applyFilters();
   }
 
   applyFilters(): void {
-    if (!this.isDateRangeValid()) return;
-
+    clearTimeout(this.searchTimer);
+    if (!this.isDateRangeValid() || (this.period() === 'custom' && (!this.dateFrom() || !this.dateTo()))) return;
     this.syncAppliedFilters();
-    this.filtersOpen.set(false);
     this.loadReports();
   }
 
-  /** Clears the draft request code and dates only; the form stays selected until Apply. */
   resetFilters(): void {
     this.requestCode.set('');
-    this.dateFrom.set('');
-    this.dateTo.set('');
+    this.setPeriod('all');
+  }
+
+  pendingFilters(): boolean {
+    return this.requestCode().trim() !== this.appliedRequestCode() ||
+      this.dateFrom() !== this.appliedDateFrom() || this.dateTo() !== this.appliedDateTo() ||
+      (this.period() === 'custom' && (!this.dateFrom() || !this.dateTo()));
+  }
+
+  scopeDescription(): string {
+    switch (this.appliedFormCode()) {
+      case 'RDIG': return 'Approved RDIG applications only.';
+      case 'EXTERNAL': return 'Submitted external project records.';
+      default: return 'Applications awaiting final CEO approval or already approved.';
+    }
+  }
+
+  formLabel(code: string): string {
+    return ({ CONFERENCE: 'Conference', JOURNAL: 'Journal', EXTERNAL: 'External', RDIG: 'RDIG' } as Record<string, string>)[code] || code;
   }
 
   exportExcel(): void {
-    if (!this.isDateRangeValid() || this.isExporting()) return;
+    if (this.pendingFilters() || this.isLoading() || this.loadFailed() || this.isExporting()) return;
 
     this.syncAppliedFilters();
     this.isExporting.set(true);
@@ -195,21 +225,13 @@ export class RequestReportsComponent implements OnInit {
   private loadForms(): void {
     this.formCache.getActiveForms().subscribe({
       next: (response) => {
-        const forms = response.data ?? [];
+        const order = ['CONFERENCE', 'JOURNAL', 'EXTERNAL', 'RDIG'];
+        const forms = (response.data ?? []).filter(form => order.includes(form.form_code)).sort((a, b) => order.indexOf(a.form_code) - order.indexOf(b.form_code));
         this.forms.set(forms);
-        this.formOptions.set(
-          forms.map((form) => ({
-            value: form.form_code,
-            label: form.form_name,
-            description: form.form_code,
-            searchText: `${form.form_name} ${form.form_code}`,
-          })),
-        );
         this.selectInitialForm(forms);
       },
       error: () => {
         this.forms.set([]);
-        this.formOptions.set([]);
         this.rows.set([]);
         this.totalItems.set(0);
         this.isLoading.set(false);
@@ -252,17 +274,10 @@ export class RequestReportsComponent implements OnInit {
     this.loadReports();
   }
 
-  private resetDraftFilters(): void {
-    this.selectedFormCode.set(this.appliedFormCode());
-    this.requestCode.set(this.appliedRequestCode());
-    this.dateFrom.set(this.appliedDateFrom());
-    this.dateTo.set(this.appliedDateTo());
-  }
-
   private syncAppliedFilters(): void {
     this.appliedFormCode.set(this.selectedFormCode());
     this.appliedExternalFields.set(
-      this.isExternalFormSelected() ? this.selectedExternalFields() : [],
+      this.selectedFormCode() === 'EXTERNAL' ? this.selectedExternalFields() : [],
     );
     this.appliedRequestCode.set(this.requestCode().trim());
     this.appliedDateFrom.set(this.dateFrom());

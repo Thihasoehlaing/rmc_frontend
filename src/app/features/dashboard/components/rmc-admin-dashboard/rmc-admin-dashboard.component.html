@@ -2,8 +2,12 @@
   <header class="dashboard-header admin-dashboard__header">
     <div>
       <h1>Analysis Dashboard</h1>
+      <p class="analysis-description">
+        Applications, research funding and workflow statistics for each form.
+      </p>
     </div>
     <div class="admin-dashboard__actions">
+      <button type="button" class="btn btn-ghost" (click)="resetFilters()">Reset</button>
       <button
         type="button"
         class="btn btn-secondary dashboard-filter-trigger"
@@ -11,251 +15,345 @@
         [attr.aria-expanded]="filtersOpen()"
         (click)="openFilters()"
       >
-        <span class="material-icons">filter_list</span>
-        Filters
+        <span class="material-icons" aria-hidden="true">filter_list</span> Filters
       </button>
     </div>
   </header>
-
+  <nav class="analysis-form-tabs" aria-label="Analyse a form">
+    <button
+      type="button"
+      class="btn"
+      [class.btn-primary]="selectedForms().length > 1"
+      [class.btn-secondary]="selectedForms().length <= 1"
+      (click)="selectForm('ALL')"
+    >
+      Overview
+    </button>
+    @for (form of formOptions(); track form.code) {
+      <button
+        type="button"
+        class="btn"
+        [class.btn-primary]="selectedForms().length === 1 && selectedForms()[0] === form.code"
+        [class.btn-secondary]="selectedForms().length !== 1 || selectedForms()[0] !== form.code"
+        [attr.aria-pressed]="selectedForms().length === 1 && selectedForms()[0] === form.code"
+        (click)="selectForm(form.code)"
+      >
+        {{ form.name }}
+      </button>
+    }
+  </nav>
+  <section class="card form-color-legend" aria-label="Applied filters">
+    <div class="form-color-legend__forms">
+      <strong>Selected forms</strong>
+      <ul>
+        @for (form of visibleFormLegend(); track form.code) {
+          <li><i [style.background]="form.color"></i>{{ form.code }}</li>
+        }
+      </ul>
+    </div>
+    <span class="form-color-legend__range"
+      >{{ startDate() | date: 'dd MMM yyyy' }} – {{ endDate() | date: 'dd MMM yyyy' }}</span
+    >
+  </section>
   @if (error()) {
-    <div class="dashboard-data-note" role="status">
-      <span class="material-icons">info</span>
-      <span>{{ error() }}</span>
-      <button type="button" class="btn btn-secondary btn-sm" (click)="loadAnalytics()">
+    <div class="dashboard-data-note" role="alert">
+      <span>{{ error() }}</span
+      ><button type="button" class="btn btn-secondary btn-sm" (click)="loadAnalytics()">
         Retry
       </button>
     </div>
+  } @else if (!loading() && !records().length) {
+    <div class="dashboard-data-note" role="status">
+      No applications match the selected forms and period. Adjust the filters to explore another
+      range.
+    </div>
   }
-
   <div class="analysis-layout">
-    <section class="card form-color-legend" aria-label="Form colour legend">
-      <div class="form-color-legend__forms">
-        <strong>Form colours</strong>
-        <ul>
-          @for (form of visibleFormLegend(); track form.code) {
-            <li><i [style.background]="form.color"></i>{{ form.code }}</li>
-          }
-        </ul>
-      </div>
-      <span class="form-color-legend__range">
-        {{ startDate() | date: 'dd MMM yyyy' }} – {{ endDate() | date: 'dd MMM yyyy' }}
-      </span>
+    <section class="summary-cards analysis-metrics" aria-label="Application statistics">
+      <article class="card summary-card">
+        <header class="summary-card__heading">
+          <span>Submitted in Period</span><strong>{{ applicationsTotal() | number }}</strong
+          ><small>By submission date</small>
+        </header>
+      </article>
+      @if (!isExternalDashboard()) {
+        <article class="card summary-card">
+          <header class="summary-card__heading">
+            <span>Approved</span><strong>{{ completedTotal() | number }}</strong
+            ><small>Of submissions in this period</small>
+          </header>
+        </article>
+        <article class="card summary-card">
+          <header class="summary-card__heading">
+            <span>Rejected</span><strong>{{ rejectedTotal() | number }}</strong
+            ><small>Of submissions in this period</small>
+          </header>
+        </article>
+        <article class="card summary-card">
+          <header class="summary-card__heading">
+            <span>In Progress</span><strong>{{ inProgressTotal() | number }}</strong
+            ><small>Current status of period submissions</small>
+          </header>
+        </article>
+      } @else {
+        <article class="card summary-card">
+          <header class="summary-card__heading">
+            <span>Grant Categories</span><strong>{{ externalCategoryTotal() | number }}</strong>
+          </header>
+        </article>
+        <article class="card summary-card">
+          <header class="summary-card__heading">
+            <span>Schools / Departments</span
+            ><strong>{{ externalDepartmentTotal() | number }}</strong>
+          </header>
+        </article>
+      }
+      <article class="card summary-card">
+        <header class="summary-card__heading">
+          <span>{{
+            isExternalDashboard()
+              ? 'Recorded Grant Budget'
+              : selectedForms().length === 1 && selectedForms()[0] === 'RDIG'
+                ? 'Requested Budget'
+                : 'Application Budgets / Costs'
+          }}</span
+          ><strong class="analysis-money">RM {{ requestedAmount() | number: '1.2-2' }}</strong
+          ><small>Submissions in this period</small>
+        </header>
+      </article>
+      @if (!isExternalDashboard()) {
+        <article class="card summary-card">
+          <header class="summary-card__heading">
+            <span>APU Funding Approved</span
+            ><strong class="analysis-money">RM {{ totalCostAmount() | number: '1.2-2' }}</strong
+            ><small>Final approvals dated in this period</small>
+          </header>
+        </article>
+      }
     </section>
-
-    @if (isExternalDashboard()) {
-      <section
-        class="summary-cards summary-cards--external"
-        aria-label="External application totals"
-      >
-        <article class="card summary-card">
-          <header class="summary-card__heading">
-            <div class="summary-card__topline">
-              <span>Total Submissions</span>
-              <span class="material-icons" aria-hidden="true">description</span>
-            </div>
-            <strong>{{ applicationsTotal() | number }}</strong>
-          </header>
-        </article>
-
-        <article class="card summary-card">
-          <header class="summary-card__heading">
-            <div class="summary-card__topline">
-              <span>Number of Categories</span>
-              <span class="material-icons" aria-hidden="true">category</span>
-            </div>
-            <strong>{{ externalCategoryTotal() | number }}</strong>
-          </header>
-        </article>
-
-        <article class="card summary-card">
-          <header class="summary-card__heading">
-            <div class="summary-card__topline">
-              <span>Number of Departments</span>
-              <span class="material-icons" aria-hidden="true">apartment</span>
-            </div>
-            <strong>{{ externalDepartmentTotal() | number }}</strong>
-          </header>
-        </article>
-      </section>
-    } @else {
-      <section class="summary-cards" aria-label="Application status totals">
-        <article class="card summary-card">
-          <header class="summary-card__heading">
-            <div class="summary-card__topline">
-              <span>Total Submissions</span>
-              <span class="material-icons" aria-hidden="true">description</span>
-            </div>
-            <strong>{{ applicationsTotal() | number }}</strong>
-          </header>
-        </article>
-
-        <article class="card summary-card">
-          <header class="summary-card__heading">
-            <div class="summary-card__topline">
-              <span>Approved Forms</span>
-              <span class="material-icons" aria-hidden="true">task_alt</span>
-            </div>
-            <strong>{{ completedTotal() | number }}</strong>
-          </header>
-        </article>
-
-        <article class="card summary-card">
-          <header class="summary-card__heading">
-            <div class="summary-card__topline">
-              <span>Rejected Forms</span>
-              <span class="material-icons" aria-hidden="true">cancel</span>
-            </div>
-            <strong>{{ rejectedTotal() | number }}</strong>
-          </header>
-        </article>
-
-        <article class="card summary-card">
-          <header class="summary-card__heading">
-            <div class="summary-card__topline">
-              <span>In Progress Forms</span>
-              <span class="material-icons" aria-hidden="true">pending_actions</span>
-            </div>
-            <strong>{{ inProgressTotal() | number }}</strong>
-          </header>
-        </article>
-      </section>
+    <p class="analysis-description">
+      Submission statistics show the current status of applications submitted in the selected
+      period. Approval and rejection trends use final decision dates. These totals can differ when
+      applications are decided in a later period.
+    </p>
+    @if (fundingMissing() || estimatedDecisions()) {
+      <div class="dashboard-data-note" role="status">
+        @if (fundingMissing()) {
+          <span
+            >{{ fundingMissing() }} approved application(s) have no recorded APU funding amount.
+            Missing values are excluded from funding totals.</span
+          >
+        }
+        @if (estimatedDecisions()) {
+          <span
+            >{{ estimatedDecisions() }} application(s) use the last updated date because a final
+            decision date was not recorded.</span
+          >
+        }
+      </div>
     }
-
-    @if (isExternalDashboard()) {
-      <section class="card performance-workspace" aria-label="Funding breakdown by Schools">
-        <div class="performance-toolbar">
+    <section class="analysis-chart-grid" aria-label="Trends">
+      <article class="card performance-workspace">
+        <header class="performance-toolbar">
           <div class="performance-toolbar__context">
-            <strong>Funding breakdown by Schools</strong>
+            <h2>Applications by Form</h2>
+            <span>{{ trendBasis(barTrendMode()) }}</span>
           </div>
-        </div>
-        <app-dashboard-external-department-chart [points]="externalDepartmentPoints()" />
-      </section>
-    }
-
-    @if (customDashboardForm(); as formCode) {
-      <section class="custom-analytics-row" [attr.aria-label]="formCode + ' analytics'">
-        <article class="card custom-analytics-card">
-          <header class="custom-analytics-card__header">
-            <h2>Cost</h2>
-          </header>
-          <app-dashboard-donut-chart
-            variant="pie"
-            [series]="customCostSeries()"
-            [currency]="true"
-            [compact]="true"
-            [showCenterTotal]="false"
-            [showLegend]="true"
-            centerLabel="Cost"
-          />
-        </article>
-
-        <article class="card custom-analytics-card">
-          <header class="custom-analytics-card__header">
-            <h2>Project Type</h2>
-          </header>
-          <app-dashboard-donut-chart
-            variant="pie"
-            [series]="projectTypeSeries()"
-            [compact]="true"
-            [showCenterTotal]="false"
-            [showLegend]="true"
-            centerLabel="Forms"
-          />
-        </article>
-
-        <article class="card custom-analytics-card">
-          <header class="custom-analytics-card__header">
-            <h2>{{ formCode === 'CONFERENCE' ? 'Conference Type' : 'Scopus Quartile' }}</h2>
-          </header>
-          <app-dashboard-donut-chart
-            variant="pie"
-            [series]="formCode === 'CONFERENCE' ? conferenceTypeSeries() : scopusQuartileSeries()"
-            [compact]="true"
-            [showCenterTotal]="false"
-            [showLegend]="true"
-            [centerLabel]="formCode === 'CONFERENCE' ? 'Forms' : 'Quartiles'"
-          />
-        </article>
-      </section>
-
-      <section
-        class="card performance-workspace department-performance"
-        aria-label="Funding breakdown by Schools"
-      >
-        <div class="performance-toolbar">
-          <div class="performance-toolbar__context">
-            <strong>Funding breakdown by Schools</strong>
-          </div>
-        </div>
-        <app-dashboard-department-comparison-chart [points]="departmentComparisonPoints()" />
-      </section>
-    }
-
-    <div
-      class="analysis-layout__middle-row"
-      [class.analysis-layout__middle-row--summary-only]="!showMultiFormCharts()"
-    >
-      @if (showMultiFormCharts()) {
-        <section class="card performance-workspace" aria-label="Vertical performance bar chart">
-          <div class="performance-toolbar">
-            <div class="performance-toolbar__context">
-              <strong>{{ barMetricLabel() }}</strong>
-              <span>
-                {{ startDate() | date: 'dd MMM yyyy' }} – {{ endDate() | date: 'dd MMM yyyy' }}
-              </span>
-            </div>
+          @if (!isExternalDashboard()) {
             <app-searchable-dropdown
-              class="performance-toolbar__select"
-              placeholder="Select bar chart metric"
+              placeholder="Select metric"
               [searchable]="false"
               [options]="barMetricOptions"
               [ngModel]="barTrendMode()"
               (ngModelChange)="setBarTrendMode($event)"
             />
-          </div>
-          <app-dashboard-bar-chart
-            [points]="barTrendFormPoints()"
-            [currency]="barTrendMode() === 'spend'"
-            [totalLabel]="barMetricLabel()"
-          />
-        </section>
-      }
-
-      <aside class="card analysis-summary" aria-label="Amount summary">
-        <section class="analysis-summary__section">
-          <div class="analysis-summary__total">
-            <h2>Fund Approved by APU</h2>
-            <strong>{{ totalCostAmount() | currency: 'MYR' : 'symbol' : '1.0-0' }}</strong>
-          </div>
-          <app-dashboard-horizontal-bar [series]="totalCostSeries()" />
-        </section>
-      </aside>
-    </div>
-
-    @if (showMultiFormCharts()) {
-      <section class="card line-workspace" aria-label="Performance line chart">
-        <div class="performance-toolbar">
+          }
+        </header>
+        <app-dashboard-bar-chart [points]="barTrendFormPoints()" [totalLabel]="barMetricLabel()" />
+      </article>
+      <article class="card line-workspace">
+        <header class="performance-toolbar">
           <div class="performance-toolbar__context">
-            <strong>{{ lineMetricLabel() }}</strong>
+            <h2>{{ lineMetricLabel() }} — Trend</h2>
+            <span>{{ trendBasis(lineTrendMode()) }}</span>
           </div>
-          <app-searchable-dropdown
-            class="performance-toolbar__select"
-            placeholder="Select line chart metric"
-            [searchable]="false"
-            [options]="trendMetricOptions"
-            [ngModel]="lineTrendMode()"
-            (ngModelChange)="setLineTrendMode($event)"
-          />
-        </div>
+          @if (!isExternalDashboard()) {
+            <app-searchable-dropdown
+              placeholder="Select trend"
+              [searchable]="false"
+              [options]="trendMetricOptions"
+              [ngModel]="lineTrendMode()"
+              (ngModelChange)="setLineTrendMode($event)"
+            />
+          }
+        </header>
         <app-dashboard-line-chart
           [points]="lineTrendPoints()"
           [currency]="lineTrendMode() === 'spend'"
           [totalLabel]="lineMetricLabel()"
         />
+      </article>
+    </section>
+    @if (!isExternalDashboard()) {
+      <section class="analysis-chart-grid" aria-label="Workflow and funding">
+        <article class="card analysis-panel">
+          <header>
+            <h2>Awaiting Action by Stage</h2>
+            <p class="analysis-description">
+              In-progress applications submitted in the selected period.
+            </p>
+          </header>
+          <app-dashboard-horizontal-bar [wrapLabels]="true"
+            [compact]="false"
+            [series]="pendingSeries()"
+            [currency]="false"
+            emptyLabel="No applications awaiting action"
+            detailLabel="Applications awaiting action"
+          />
+        </article>
+        <article class="card analysis-panel">
+          <header>
+            <h2>Time Since Last Workflow Action</h2>
+            <p class="analysis-description">
+              Elapsed calendar days as of today; submission date is used until the first action.
+            </p>
+          </header>
+          <app-dashboard-horizontal-bar [wrapLabels]="true"
+            [compact]="false"
+            [series]="pendingAgeSeries()"
+            [currency]="false"
+            emptyLabel="No applications awaiting action"
+            detailLabel="Applications awaiting action"
+          />
+        </article>
+        <article class="card analysis-panel">
+          <header>
+            <h2>Approval Rate</h2>
+            <p class="analysis-description">
+              Approved ÷ (approved + rejected), for submissions in this period.
+            </p>
+          </header>
+          <strong class="analysis-stat">{{
+            approvalRate() === null ? '—' : (approvalRate() | number: '1.1-1') + '%'
+          }}</strong>
+          <p>
+            {{ completedTotal() }} approved · {{ rejectedTotal() }} rejected ·
+            {{ inProgressTotal() }} still in progress
+          </p>
+        </article>
+        <article class="card analysis-panel">
+          <header>
+            <h2>Approved APU Funding by Form</h2>
+            <p class="analysis-description">
+              Final approvals dated in the selected period. RDIG uses the CFO-approved amount.
+            </p>
+          </header>
+          <app-dashboard-horizontal-bar [wrapLabels]="true"
+            [compact]="false"
+            [series]="totalCostSeries()"
+            detailLabel="Recorded APU funding approved"
+          />
+        </article>
       </section>
     }
+    <section class="analysis-chart-grid" aria-label="Form-specific statistics">
+      @for (panel of chartPanels(); track panel.title) {
+        <article class="card analysis-panel">
+          <header>
+            <h2>{{ panel.title }}</h2>
+            <p class="analysis-description">
+              {{
+                panel.currency
+                  ? 'Recorded contributions for approved submissions in this period; these are not payment records.'
+                  : 'Applications submitted in the selected period.'
+              }}
+            </p>
+          </header>
+          <app-dashboard-horizontal-bar [wrapLabels]="true"
+            [compact]="false"
+            [series]="panel.series"
+            [currency]="panel.currency"
+            [detailLabel]="panel.currency ? 'Recorded contribution' : 'Applications submitted'"
+            emptyLabel="No data in this period"
+          />
+        </article>
+      }
+    </section>
+    <section class="card performance-workspace" aria-label="Funding by School">
+      <header class="performance-toolbar">
+        <div class="performance-toolbar__context">
+          <h2>
+            {{
+              isExternalDashboard()
+                ? 'External Grant Budget by School'
+                : 'Approved Applications and APU Funding by School'
+            }}
+          </h2>
+          <span>Applications submitted in the selected period.</span>
+        </div>
+      </header>
+      @if (isExternalDashboard()) {
+        <app-dashboard-external-department-chart [points]="externalDepartmentPoints()" />
+      } @else {
+        <app-dashboard-department-comparison-chart [points]="departmentComparisonPoints()" />
+      }
+    </section>
+    <section class="card analysis-panel" aria-label="Applications behind the statistics">
+      <header>
+        <h2>Applications Behind the Statistics</h2>
+        <p class="analysis-description">
+          Select a statistic to see its applications. Open an application to verify its details.
+        </p>
+      </header>
+      <app-searchable-dropdown
+        label="Applications to inspect"
+        [searchable]="false"
+        [options]="applicationListOptions()"
+        [ngModel]="applicationListScope()"
+        (ngModelChange)="setApplicationListScope($event)"
+      />
+      @if (!loading()) {
+        <app-data-table
+          class="analysis-applications-table"
+          [columns]="applicationColumns()"
+          [rows]="listedApplications()"
+          [pageSize]="listedApplications().length > 10 ? 10 : null"
+          [striped]="true"
+        >
+          <ng-template #rowTemplate let-record
+            ><tr>
+              <td>
+                @if (record.request.request_code) {
+                  <a [routerLink]="detailLink(record)">{{ record.request.request_code }}</a>
+                }
+                <div>{{ record.request.title }}</div>
+              </td>
+              <td>{{ record.formCode }}</td>
+              <td>
+                {{
+                  departmentName(record)
+                }}
+              </td>
+              <td>{{ record.submittedAt | date: 'dd MMM yyyy' }}</td>
+              <td>{{ record.request.status_name }}</td>
+              <td>
+                {{
+                  isExternalDashboard()
+                    ? 'RM ' + (record.analytics?.budgetRequested || 0 | number: '1.2-2')
+                    : record.analytics?.fundingRecorded === false
+                      ? 'Not recorded'
+                      : 'RM ' + (record.analytics?.fundApproved || 0 | number: '1.2-2')
+                }}
+              </td>
+            </tr></ng-template
+          >
+          <ng-template #emptyTemplate
+            ><p>No applications match this statistic in the selected period.</p></ng-template
+          >
+        </app-data-table>
+      }
+    </section>
   </div>
-
   @if (filtersOpen()) {
     <button
       type="button"
@@ -284,12 +382,10 @@
           <span class="material-icons">close</span>
         </button>
       </header>
-
       <div class="dashboard-filter__controls">
         <app-note
-          text="All dashboard analytics are based on the selected application form and date range."
+          text="Choose forms and a period. Submission statistics use submission dates; approval trends and approved funding use final decision dates."
         />
-
         <app-searchable-dropdown
           class="dashboard-filter__form"
           label="Application forms"
@@ -303,7 +399,6 @@
           class="form-validation-note--error"
           [message]="formSelectionError() ?? ''"
         />
-
         <div class="form-field dashboard-filter__date">
           <label class="form-label" for="dashboard-start-date">From</label>
           <input
@@ -315,7 +410,6 @@
             (ngModelChange)="onStartDateChange($event)"
           />
         </div>
-
         <div class="form-field dashboard-filter__date">
           <label class="form-label" for="dashboard-end-date">To</label>
           <input
@@ -328,25 +422,21 @@
             (ngModelChange)="onEndDateChange($event)"
           />
         </div>
-
         <p class="dashboard-filter__range-help">
           <span class="material-icons">date_range</span>
           Maximum range: 10 years. Chart intervals adapt to the selected range.
         </p>
-
         @if (dateRangeNotice()) {
           <p class="dashboard-filter__range-notice" role="status">
             {{ dateRangeNotice() }}
           </p>
         }
-
         @if (loading()) {
           <span class="filter-loading" role="status">
             <span class="material-icons">sync</span> Loading detailed costs
           </span>
         }
       </div>
-
       <footer class="dashboard-filter-panel__footer">
         <button type="button" class="btn btn-primary" (click)="applyFilters()">
           Apply Filters

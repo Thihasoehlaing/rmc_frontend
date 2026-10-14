@@ -45,6 +45,7 @@
         <app-data-table
           [columns]="budgetColumns"
           [rows]="studentAllowances.controls"
+          [wrapContent]="true"
           [rowTrackFn]="trackByIndex"
           [dense]="true"
         >
@@ -129,6 +130,7 @@
         <app-data-table
           [columns]="budgetColumnsFor('travelAccommodation')"
           [rows]="travelAccommodation.controls"
+          [wrapContent]="true"
           [rowTrackFn]="trackByIndex"
           [dense]="true"
         >
@@ -214,6 +216,7 @@
         <app-data-table
           [columns]="budgetColumnsFor('materialsSupplies')"
           [rows]="materialsSupplies.controls"
+          [wrapContent]="true"
           [rowTrackFn]="trackByIndex"
           [dense]="true"
         >
@@ -299,6 +302,7 @@
         <app-data-table
           [columns]="budgetColumnsFor('specialServices')"
           [rows]="specialServices.controls"
+          [wrapContent]="true"
           [rowTrackFn]="trackByIndex"
           [dense]="true"
         >

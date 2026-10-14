@@ -22,7 +22,7 @@ import { CommonModule } from '@angular/common';
       transition: color var(--transition-fast);
 
       &.max-reached {
-        color: var(--color-error);
+        color: var(--color-warning);
         font-weight: var(--fw-bold);
       }
     }

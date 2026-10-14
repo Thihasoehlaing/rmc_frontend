@@ -53,7 +53,8 @@
           <div class="item-content">
             <div class="form-field" data-missing-field-target="outputs.knowledgeTransfer.community">
               <label class="form-label is-required">Community to be impacted:</label>
-              <input type="text" class="input--text" formControlName="community">
+              <input type="text" class="input--text" formControlName="community" maxlength="100">
+              <app-character-counter [current]="outputForm.get('knowledgeTransfer.community')?.value?.length ?? 0" [max]="100"></app-character-counter>
               <app-validation-message class="form-validation-note--error" [control]="outputForm.get('knowledgeTransfer.community')" fieldName="Community to be impacted"></app-validation-message>
             </div>
           </div>
@@ -71,7 +72,8 @@
           <div class="item-content">
             <div class="form-field" data-missing-field-target="outputs.externalGrant.scheme">
               <label class="form-label is-required">Grant scheme:</label>
-              <input type="text" class="input--text" formControlName="scheme">
+              <input type="text" class="input--text" formControlName="scheme" maxlength="100">
+              <app-character-counter [current]="outputForm.get('externalGrant.scheme')?.value?.length ?? 0" [max]="100"></app-character-counter>
               <app-validation-message class="form-validation-note--error" [control]="outputForm.get('externalGrant.scheme')" fieldName="Grant scheme"></app-validation-message>
             </div>
           </div>
@@ -89,7 +91,8 @@
           <div class="item-content">
             <div class="form-field" data-missing-field-target="outputs.others.details">
               <label class="form-label is-required">Describe other outputs:</label>
-              <textarea class="input--textarea" formControlName="details"></textarea>
+              <textarea class="input--textarea" formControlName="details" maxlength="100"></textarea>
+              <app-character-counter [current]="outputForm.get('others.details')?.value?.length ?? 0" [max]="100"></app-character-counter>
               <app-note text="Please state matching grant amount and name of university/organisation and any other description."></app-note>
               <app-validation-message class="form-validation-note--error" [control]="outputForm.get('others.details')" fieldName="Describe other outputs"></app-validation-message>
             </div>

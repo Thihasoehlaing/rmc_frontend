@@ -510,7 +510,7 @@
       <div class="form-field">
         <label class="form-label is-required">Please state how the proposed project meets the Vision and Mission of APU</label>
         <textarea class="input--textarea input--autosize" appTextareaAutosize [minRows]="3" formControlName="visionMission"
-          placeholder="Describe the alignment..."></textarea>
+          [maxlength]="300" placeholder="Describe the alignment..."></textarea>
         <app-character-counter [current]="projectDetails.get('visionMission')?.value?.length ?? 0"
           [max]="300"></app-character-counter>
         <app-validation-message class="form-validation-note--error" [control]="projectDetails.get('visionMission')" fieldName="APU Vision & Mission Alignment"></app-validation-message>

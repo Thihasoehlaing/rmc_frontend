@@ -3,6 +3,7 @@ import {
   Input,
   OnInit,
   OnChanges,
+  OnDestroy,
   Output,
   EventEmitter,
   SimpleChanges,
@@ -15,10 +16,13 @@ import {
   ReactiveFormsModule,
   Validators
 } from '@angular/forms';
+import { combineLatest, Subject, takeUntil } from 'rxjs';
 import { ValidationMessageComponent } from '../../../../shared/components/validation-message/validation-message.component';
 import { NoteComponent } from '../../../../shared/components/note/note.component';
 import { CharacterCounterComponent } from '../../../../shared/components/character-counter/character-counter.component';
 import { DecimalAmountDirective } from '../../../../shared/directives/decimal-amount.directive';
+import { SearchableDropdownComponent } from '../../../../shared/components/searchable-dropdown/searchable-dropdown.component';
+import { DropdownOption } from '../../../../core/interfaces/components.interface';
 
 @Component({
   selector: 'app-ragra-student-details',
@@ -29,13 +33,15 @@ import { DecimalAmountDirective } from '../../../../shared/directives/decimal-am
     ValidationMessageComponent,
     NoteComponent,
     CharacterCounterComponent,
-    DecimalAmountDirective
+    DecimalAmountDirective,
+    SearchableDropdownComponent
   ],
   templateUrl: './Student Details.html',
   styleUrls: ['./Student Details.scss']
 })
-export class StudentDetailsComponent implements OnInit, OnChanges {
+export class StudentDetailsComponent implements OnInit, OnChanges, OnDestroy {
   private fb = inject(FormBuilder);
+  private destroy$ = new Subject<void>();
 
   /** Passed from the shell — drives conditional field visibility and validators. */
   @Input() positionRequested: 'RA' | 'GRA' | '' = '';
@@ -46,16 +52,14 @@ export class StudentDetailsComponent implements OnInit, OnChanges {
   /** Exposed publicly so the shell can call form.markAllAsTouched() via @ViewChild. */
   form!: FormGroup;
 
-  // Select option placeholders
-  programOptions: { label: string; value: string }[] = [
-    { label: 'N/A', value: '' },
+  // Select option data (DropdownOption<string> format for searchable-dropdown)
+  programOptions: DropdownOption<string>[] = [
     { label: 'Bachelor of Science', value: 'BSc' },
     { label: 'Master of Science', value: 'MSc' },
     { label: 'Doctor of Philosophy', value: 'PhD' }
   ];
 
-  nationalityOptions: { label: string; value: string }[] = [
-    { label: 'Please select', value: '' },
+  nationalityOptions: DropdownOption<string>[] = [
     { label: 'Afghan', value: 'Afghan' },
     { label: 'Albanian', value: 'Albanian' },
     { label: 'Algerian', value: 'Algerian' },
@@ -241,11 +245,20 @@ export class StudentDetailsComponent implements OnInit, OnChanges {
     { label: 'Zimbabwean', value: 'Zimbabwean' }
   ];
 
-  secondReportingOptions: { label: string; value: string }[] = [
-    { label: 'Please select', value: '' },
+  secondReportingOptions: DropdownOption<string>[] = [
     { label: 'Dr. Ahmad bin Abdullah', value: 'report1' },
     { label: 'Dr. Sarah Lee', value: 'report2' },
     { label: 'Prof. John Smith', value: 'report3' }
+  ];
+
+  feeReductionOptions: DropdownOption<string>[] = [
+    { label: '0%', value: '0' },
+    { label: '50%', value: '50' },
+    { label: '60%', value: '60' },
+    { label: '70%', value: '70' },
+    { label: '80%', value: '80' },
+    { label: '90%', value: '90' },
+    { label: '100%', value: '100' }
   ];
 
   ngOnInit(): void {
@@ -258,7 +271,7 @@ export class StudentDetailsComponent implements OnInit, OnChanges {
       residentialAddress:  ['', [Validators.required]],
       jobDuties:           ['', [Validators.required, Validators.maxLength(1000)]],
       commencementDate:    ['', [Validators.required]],
-      durationDays:        ['', [Validators.required, Validators.min(1)]],
+      durationDays:        [{ value: '', disabled: true }, [Validators.required, Validators.min(1)]],
 
       // Right column
       nationality:              ['', [Validators.required]],
@@ -275,6 +288,9 @@ export class StudentDetailsComponent implements OnInit, OnChanges {
     // Apply conditional validators based on the initial positionRequested value
     this.applyConditionalValidators();
 
+    // Set up automatic duration calculation
+    this.setupDurationCalculation();
+
     // Emit validity on every change
     this.form.statusChanges.subscribe(() => {
       this.formValidityChange.emit(this.form.valid);
@@ -288,6 +304,72 @@ export class StudentDetailsComponent implements OnInit, OnChanges {
     if (changes['positionRequested'] && this.form) {
       this.applyConditionalValidators();
     }
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  /**
+   * Set up automatic calculation of appointment duration based on start and end dates.
+   * The duration field is disabled (read-only) and calculated inclusively:
+   * if start = Jan 1 and end = Jan 10, duration = 10 days.
+   */
+  private setupDurationCalculation(): void {
+    const commencementControl = this.form.get('commencementDate')!;
+    const endDateControl = this.form.get('appointmentEndDate')!;
+    const durationControl = this.form.get('durationDays')!;
+
+    combineLatest([
+      commencementControl.valueChanges,
+      endDateControl.valueChanges
+    ])
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(([startDate, endDate]) => {
+        const duration = this.calculateDuration(startDate, endDate);
+        // Update the disabled control's value
+        durationControl.setValue(duration, { emitEvent: false });
+      });
+
+    // Calculate initial duration if both dates are already set
+    const initialDuration = this.calculateDuration(
+      commencementControl.value,
+      endDateControl.value
+    );
+    if (initialDuration !== null) {
+      durationControl.setValue(initialDuration, { emitEvent: false });
+    }
+  }
+
+  /**
+   * Calculate the number of days between two dates inclusively.
+   * Returns null if either date is missing or invalid, or if end < start.
+   */
+  private calculateDuration(startDate: string, endDate: string): number | null {
+    if (!startDate || !endDate) {
+      return null;
+    }
+
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    // Check if dates are valid
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+      return null;
+    }
+
+    // Check if end date is before start date
+    if (end < start) {
+      return null;
+    }
+
+    // Calculate difference in milliseconds
+    const diffMs = end.getTime() - start.getTime();
+    // Convert to days and add 1 for inclusive count
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24)) + 1;
+
+    return diffDays;
   }
 
   /**

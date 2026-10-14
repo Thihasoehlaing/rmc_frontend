@@ -25,66 +25,32 @@
   <fieldset class="form-container application-form-surface">
     <div class="ragra-app__content">
 
-      <!-- Step 1: Applicant and Project Details ONLY -->
+      <!-- Step 1: Applicant and Project Details -->
       @if (currentStep === 1) {
         <app-ragra-project-details
           (formValidityChange)="updateFormValidity(1, $event)">
         </app-ragra-project-details>
       }
 
-      <!-- Step 2: Student Details + Appointment & Compensation + Supporting Documents -->
+      <!-- Step 2: Student Details -->
       @if (currentStep === 2) {
-        <div class="step-2-container">
-          <app-ragra-student-details
-            [positionRequested]="positionRequested"
-            (formValidityChange)="updateFormValidity(2, $event)">
-          </app-ragra-student-details>
-
-          <!-- Supporting Documents Section (Part of Step 2) -->
-          <div class="supporting-documents-section">
-            <h2 class="section-main-title">Supporting Documents</h2>
-            <p class="section-description">Upload all required documents in PDF format. Maximum 4 MB per file.</p>
-            
-            <div class="documents-grid">
-              @for (doc of paginatedDocuments; track doc.id) {
-                <div class="document-card">
-                  <h3 class="document-card__title">{{ doc.title }} @if (doc.required) {<span class="required-asterisk">*</span>}</h3>
-                  <p class="document-card__description">{{ doc.description }}</p>
-                  <div class="document-card__upload">
-                    <span class="material-icons">cloud_upload</span>
-                    <p>Drop PDF here or browse</p>
-                  </div>
-                  <span class="document-card__meta">Maximum 4 MB</span>
-                  <span class="document-card__requirement">{{ doc.required ? 'Required' : 'Optional' }} · PDF ONLY</span>
-                </div>
-              }
-            </div>
-
-            <!-- Pagination -->
-            <div class="documents-pagination">
-              <div class="pagination-info">
-                Showing {{ paginationStart }}–{{ paginationEnd }} of {{ totalDocuments }} documents
-              </div>
-              <div class="pagination-controls">
-                @for (pageNum of pageNumbers; track pageNum) {
-                  <button 
-                    type="button"
-                    class="pagination-btn"
-                    [class.pagination-btn--active]="currentDocPage === pageNum"
-                    (click)="goToDocumentPage(pageNum)">
-                    {{ pageNum }}
-                  </button>
-                }
-              </div>
-            </div>
-          </div>
-        </div>
+        <app-ragra-student-details
+          [positionRequested]="positionRequested"
+          (formValidityChange)="updateFormValidity(2, $event)">
+        </app-ragra-student-details>
       }
 
-      <!-- Step 3: Declaration ONLY -->
+      <!-- Step 3: Supporting Documents -->
       @if (currentStep === 3) {
-        <app-ragra-declaration
+        <app-ragra-supporting-documents
           (formValidityChange)="updateFormValidity(3, $event)">
+        </app-ragra-supporting-documents>
+      }
+
+      <!-- Step 4: Declaration -->
+      @if (currentStep === 4) {
+        <app-ragra-declaration
+          (formValidityChange)="updateFormValidity(4, $event)">
         </app-ragra-declaration>
       }
 
@@ -151,34 +117,6 @@
           </div>
         </section>
 
-        <!-- Approval Route (Step 1) -->
-        <section class="sidebar-card" *ngIf="currentStep === 1">
-          <h2 class="sidebar-card__title">Approval Route</h2>
-          <ul class="approval-route">
-            <li class="approval-route__step">
-              <span class="approval-route__number">1</span>
-              <div class="approval-route__content">
-                <strong>Head of School</strong>
-                <span>Academic and workload review</span>
-              </div>
-            </li>
-            <li class="approval-route__step">
-              <span class="approval-route__number">2</span>
-              <div class="approval-route__content">
-                <strong>RMC review</strong>
-                <span>Project, grant, and appointment checks</span>
-              </div>
-            </li>
-            <li class="approval-route__step">
-              <span class="approval-route__number">3</span>
-              <div class="approval-route__content">
-                <strong>HR & management</strong>
-                <span>Employment and final approvals</span>
-              </div>
-            </li>
-          </ul>
-        </section>
-
         <!-- Student Snapshot (Step 2) -->
         <section class="sidebar-card" *ngIf="currentStep === 2">
           <h2 class="sidebar-card__title">Student Snapshot</h2>
@@ -200,8 +138,27 @@
           </div>
         </section>
 
-        <!-- Required Documents (Step 2) -->
-        <section class="sidebar-card" *ngIf="currentStep === 2">
+        <!-- Validation Rules (Step 2) -->
+        <section class="sidebar-card sidebar-card--warning" *ngIf="currentStep === 2">
+          <div class="sidebar-card__icon">
+            <span class="material-icons">rule</span>
+          </div>
+          <h2 class="sidebar-card__title">Validation Rules</h2>
+          <div class="info-content">
+            <p class="info-content__rule" *ngIf="isGRA">
+              <strong>GRA fields are active</strong><br>
+              Programme and PG fee reduction are required.
+            </p>
+            <p class="info-content__rule">
+              <strong>Appointment dates</strong><br>
+              Commencement follows project start.<br>
+              End date respects project/visa limits.
+            </p>
+          </div>
+        </section>
+
+        <!-- Required Documents (Step 3) -->
+        <section class="sidebar-card" *ngIf="currentStep === 3">
           <h2 class="sidebar-card__title">Required Documents</h2>
           <ul class="document-checklist">
             <li class="document-checklist__item">
@@ -228,24 +185,28 @@
               <span class="material-icons document-checklist__icon document-checklist__icon--pending">radio_button_unchecked</span>
               <span>Confidentiality Agreement</span>
             </li>
+            <li class="document-checklist__item">
+              <span class="material-icons document-checklist__icon document-checklist__icon--pending">radio_button_unchecked</span>
+              <span>NRIC/Passport</span>
+            </li>
           </ul>
         </section>
 
-        <!-- Validation Rules (Step 2) -->
-        <section class="sidebar-card sidebar-card--warning" *ngIf="currentStep === 2">
+        <!-- Document Upload Info (Step 3) -->
+        <section class="sidebar-card sidebar-card--info" *ngIf="currentStep === 3">
           <div class="sidebar-card__icon">
-            <span class="material-icons">rule</span>
+            <span class="material-icons">info</span>
           </div>
-          <h2 class="sidebar-card__title">Validation Rules</h2>
+          <h2 class="sidebar-card__title">Upload Requirements</h2>
           <div class="info-content">
-            <p class="info-content__rule" *ngIf="isGRA">
-              <strong>GRA fields are active</strong><br>
-              Programme and PG fee reduction are required.
+            <p class="info-content__rule">
+              <strong>File Format</strong><br>
+              PDF files only. Maximum 4 MB per document.
             </p>
             <p class="info-content__rule">
-              <strong>Appointment dates</strong><br>
-              Commencement follows project start.<br>
-              End date respects project/visa limits.
+              <strong>Required Documents</strong><br>
+              7 required documents must be uploaded.<br>
+              VISA and other documents are optional.
             </p>
           </div>
         </section>

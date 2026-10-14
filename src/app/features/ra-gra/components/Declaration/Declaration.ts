@@ -2,6 +2,7 @@ import { Component, OnInit, Output, EventEmitter, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ValidationMessageComponent } from '../../../../shared/components/validation-message/validation-message.component';
+import { NoteComponent } from '../../../../shared/components/note/note.component';
 
 @Component({
   selector: 'app-ragra-declaration',
@@ -9,7 +10,8 @@ import { ValidationMessageComponent } from '../../../../shared/components/valida
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    ValidationMessageComponent
+    ValidationMessageComponent,
+    NoteComponent
   ],
   templateUrl: './Declaration.html',
   styleUrls: ['./Declaration.scss']

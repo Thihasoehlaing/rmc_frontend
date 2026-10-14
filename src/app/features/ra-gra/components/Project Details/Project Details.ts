@@ -5,11 +5,13 @@ import { Subject, takeUntil } from 'rxjs';
 import { AuthService } from '../../../../core/services/auth.service';
 import { ValidationMessageComponent } from '../../../../shared/components/validation-message/validation-message.component';
 import { NoteComponent } from '../../../../shared/components/note/note.component';
+import { SearchableDropdownComponent } from '../../../../shared/components/searchable-dropdown/searchable-dropdown.component';
+import { DropdownOption } from '../../../../core/interfaces/components.interface';
 
 @Component({
   selector: 'app-ragra-project-details',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ValidationMessageComponent, NoteComponent],
+  imports: [CommonModule, ReactiveFormsModule, ValidationMessageComponent, NoteComponent, SearchableDropdownComponent],
   templateUrl: './Project Details.html',
   styleUrls: ['./Project Details.scss']
 })
@@ -21,23 +23,20 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy {
   form!: FormGroup;
   @Output() formValidityChange = new EventEmitter<boolean>();
 
-  // Dropdown options
-  accountCodeOptions = [
-    { label: 'Select Account Code', value: '' },
+  // Dropdown options (DropdownOption<string> format for searchable-dropdown)
+  accountCodeOptions: DropdownOption<string>[] = [
     { label: 'ACC001 - Research Fund A', value: 'ACC001' },
     { label: 'ACC002 - Research Fund B', value: 'ACC002' },
     { label: 'ACC003 - Research Fund C', value: 'ACC003' }
   ];
 
-  voteOptions = [
-    { label: 'Select Vote', value: '' },
+  voteOptions: DropdownOption<string>[] = [
     { label: 'V11000 (Student Allowance)', value: 'V11000' },
     { label: 'V12000 (Equipment)', value: 'V12000' },
     { label: 'V13000 (Travel)', value: 'V13000' }
   ];
 
-  researchClusterOptions = [
-    { label: 'Select Research Cluster/Research Centre', value: '' },
+  researchClusterOptions: DropdownOption<string>[] = [
     { label: 'Artificial Intelligence Research Cluster', value: 'AI' },
     { label: 'Cybersecurity Research Centre', value: 'Cybersecurity' },
     { label: 'Data Science Research Cluster', value: 'DataScience' },
@@ -51,7 +50,6 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy {
       positionRequested: ['', Validators.required],
       applicationType: ['', Validators.required],
       placement: ['', Validators.required],
-      year: ['', Validators.required],
       
       // Research Project Details fields
       accountCode: [''],

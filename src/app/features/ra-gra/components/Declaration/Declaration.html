@@ -25,9 +25,13 @@
           class="input--textarea"
           formControlName="familyMemberDetails"
           rows="4"
-          placeholder="Provide details of family members or relatives studying at APIIT"
+          placeholder="Enter name, TP number, and programme"
           [class.is-invalid]="declarationForm.get('familyMemberDetails')?.invalid && declarationForm.get('familyMemberDetails')?.touched">
         </textarea>
+        <app-note
+          text="Please provide the full name, TP number, and programme for each family member or relative studying at APIIT Education Group."
+          [isTooltip]="false">
+        </app-note>
         <app-validation-message 
           class="form-validation-note--error"
           [control]="declarationForm.get('familyMemberDetails')"

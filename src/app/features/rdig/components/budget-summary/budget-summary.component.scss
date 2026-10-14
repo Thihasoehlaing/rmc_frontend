@@ -161,3 +161,14 @@ app-table-row-counter {
 }
 
 // Action buttons styled via shared data-table component
+
+// Preserve readable columns and let the shared table scroll on narrow screens.
+:host ::ng-deep .budget-items-table table {
+  width: 100%;
+  min-width: var(--size-table-min-wide);
+}
+
+:host ::ng-deep .budget-items-table .header-content {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}

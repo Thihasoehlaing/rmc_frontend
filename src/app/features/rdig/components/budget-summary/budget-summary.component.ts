@@ -142,9 +142,9 @@ export class BudgetSummaryComponent implements OnInit {
       align: 'center',
       headerAlign: 'center',
     },
-    { key: 'description', label: 'Description of Expense', width: '40%' },
+    { key: 'description', label: 'Description of Expense' },
     { key: 'amount', label: 'Amount (RM)', width: 'var(--size-table-column-amount)' },
-    { key: 'remarks', label: 'Remarks' },
+    { key: 'remarks', label: 'Remarks', width: '25%' },
     {
       key: 'actions',
       label: '',
@@ -157,7 +157,7 @@ export class BudgetSummaryComponent implements OnInit {
   private readonly attachmentColumn: DataTableColumn = {
     key: 'attachment',
     label: 'Attachment',
-    width: '180px',
+    width: '25%',
   };
 
   readonly trackByIndex = (index: number) => index;
@@ -182,7 +182,7 @@ export class BudgetSummaryComponent implements OnInit {
     this.budgetItemForm = this.fb.group({
       description: ['', [Validators.required, Validators.maxLength(200)]],
       amount: [null as number | null, [Validators.required, Validators.min(0.01)]],
-      remarks: ['', [Validators.required, Validators.maxLength(300)]],
+      remarks: ['', [Validators.maxLength(300)]],
       quotationAttachmentId: [null as number | null],
       attachmentFile: [null as File | null],
     });
@@ -198,7 +198,7 @@ export class BudgetSummaryComponent implements OnInit {
     const row = this.fb.group({
       description: ['', Validators.required],
       amount: [null, [Validators.required, Validators.min(0.01)]],
-      remarks: ['', [Validators.required, Validators.maxLength(300)]],
+      remarks: ['', [Validators.maxLength(300)]],
     });
     array.push(row);
   }
@@ -267,7 +267,7 @@ export class BudgetSummaryComponent implements OnInit {
         this.fb.group({
           description: [payload.description, Validators.required],
           amount: [payload.amount, [Validators.required, Validators.min(0.01)]],
-          remarks: [payload.remarks, [Validators.required, Validators.maxLength(300)]],
+          remarks: [payload.remarks, [Validators.maxLength(300)]],
           quotationAttachmentId: [payload.quotationAttachmentId],
           attachmentFile: [payload.attachmentFile],
         }),

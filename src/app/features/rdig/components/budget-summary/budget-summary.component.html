@@ -45,7 +45,7 @@
         <app-data-table
           [columns]="budgetColumns"
           [rows]="studentAllowances.controls"
-          [wrapContent]="true"
+          class="budget-items-table"
           [rowTrackFn]="trackByIndex"
           [dense]="true"
         >
@@ -130,7 +130,7 @@
         <app-data-table
           [columns]="budgetColumnsFor('travelAccommodation')"
           [rows]="travelAccommodation.controls"
-          [wrapContent]="true"
+          class="budget-items-table"
           [rowTrackFn]="trackByIndex"
           [dense]="true"
         >
@@ -216,7 +216,7 @@
         <app-data-table
           [columns]="budgetColumnsFor('materialsSupplies')"
           [rows]="materialsSupplies.controls"
-          [wrapContent]="true"
+          class="budget-items-table"
           [rowTrackFn]="trackByIndex"
           [dense]="true"
         >
@@ -302,7 +302,7 @@
         <app-data-table
           [columns]="budgetColumnsFor('specialServices')"
           [rows]="specialServices.controls"
-          [wrapContent]="true"
+          class="budget-items-table"
           [rowTrackFn]="trackByIndex"
           [dense]="true"
         >
@@ -506,7 +506,7 @@
           <app-validation-message class="form-validation-note--error" [control]="amountControl" fieldName="Amount"></app-validation-message>
         </div>
         <div class="form-field">
-          <label class="form-label is-required">Remarks</label>
+          <label class="form-label">Remarks (Optional)</label>
           <textarea class="input--textarea" formControlName="remarks" [maxlength]="300"></textarea>
           <app-character-counter
             [current]="remarksControl.value?.length ?? 0"

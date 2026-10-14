@@ -382,13 +382,11 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
       { path: 'outputs.knowledgeTransfer.community', label: 'Knowledge Transfer Community' },
       {
         path: 'outputs.externalGrant.scheme',
-        label: 'Application to external grant scheme',
-        target: 'outputs.externalGrant.checked',
+        label: 'Grant scheme',
       },
       {
         path: 'outputs.others.details',
         label: 'Describe other outputs',
-        target: 'outputs.others.checked',
       },
     ],
     // Step 4: Declaration
@@ -589,9 +587,13 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
           escapedTarget +
           '"], [data-missing-field-score-target="' +
           escapedTarget +
-          '"], [formControlName="' +
+          '"]',
+      ) ?? root?.querySelector<HTMLElement>(
+        '[formControlName="' +
           escapedTarget +
-          '"], [formControlName="' +
+          '"]',
+      ) ?? root?.querySelector<HTMLElement>(
+        '[formControlName="' +
           escapedControlName +
           '"]',
       );
@@ -727,15 +729,15 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
         conceptualDesign: [false, Validators.requiredTrue],
         knowledgeTransfer: this.fb.group({
           checked: [false, Validators.requiredTrue],
-          community: ['', Validators.required],
+          community: ['', [Validators.required, Validators.maxLength(100)]],
         }),
         externalGrant: this.fb.group({
           checked: [false],
-          scheme: [''],
+          scheme: ['', Validators.maxLength(100)],
         }),
         others: this.fb.group({
           checked: [false],
-          details: ['', Validators.maxLength(200)],
+          details: ['', Validators.maxLength(100)],
         }),
       }),
 

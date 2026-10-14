@@ -4,13 +4,14 @@ import { Subject, takeUntil } from 'rxjs';
 import { CustomSubheaderComponent } from '../../../../shared/components/custom-subheader/custom-subheader.component';
 import { ValidationMessageComponent } from '../../../../shared/components/validation-message/validation-message.component';
 import { NoteComponent } from '../../../../shared/components/note/note.component';
+import { CharacterCounterComponent } from '../../../../shared/components/character-counter/character-counter.component';
 import { ReviewBlockComponent } from '../review-block/review-block.component';
 import { RdigWorkflowService } from '../../services/rdig-workflow.service';
 
 @Component({
     selector: 'app-output-details',
     standalone: true,
-    imports: [ReactiveFormsModule, CustomSubheaderComponent, ValidationMessageComponent, NoteComponent, ReviewBlockComponent],
+    imports: [ReactiveFormsModule, CustomSubheaderComponent, ValidationMessageComponent, NoteComponent, CharacterCounterComponent, ReviewBlockComponent],
     templateUrl: './output-details.component.html',
     styleUrls: ['./output-details.component.scss']
 })
@@ -73,17 +74,17 @@ export class OutputDetailsComponent implements OnInit, OnDestroy {
         this.setupConditionalValidator(
             'knowledgeTransfer.checked',
             'knowledgeTransfer.community',
-            [Validators.required],
+            [Validators.required, Validators.maxLength(100)],
         );
         this.setupConditionalValidator(
             'externalGrant.checked',
             'externalGrant.scheme',
-            [Validators.required],
+            [Validators.required, Validators.maxLength(100)],
         );
         this.setupConditionalValidator(
             'others.checked',
             'others.details',
-            [Validators.required, Validators.maxLength(200)],
+            [Validators.required, Validators.maxLength(100)],
         );
         this.updateJournalQuantity();
     }

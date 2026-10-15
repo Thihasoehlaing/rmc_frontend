@@ -35,18 +35,18 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 var(--space-4) 0 var(--space-3);
+  padding-inline: var(--space-3);
   border-bottom: 1px solid var(--border-subtle);
   flex-shrink: 0;
   overflow: hidden;
-  // Keep header layout stable by reversing order: pin left, logo right
-  flex-direction: row-reverse;
+  gap: var(--space-3);
 }
 
 .sidebar__logo {
   display: flex;
   align-items: center;
   gap: var(--space-3);
+  min-width: 0;
   height: 100%;
   overflow: hidden;
   text-decoration: none;
@@ -59,7 +59,7 @@
   }
 
   .logo-img {
-    height: 36px;
+    height: calc(var(--header-height) - var(--space-5));
     width: auto;
     object-fit: contain;
     flex-shrink: 0;
@@ -80,17 +80,20 @@
   }
 }
 
-.sidebar__pin-btn {
+.sidebar__toggle-btn {
   background: transparent;
   border: none;
   color: var(--color-text-muted);
   cursor: pointer;
+  width: var(--space-9);
+  height: var(--space-9);
+  justify-content: center;
   padding: var(--space-1);
   border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
   flex-shrink: 0;
-  // Always keep pin at its fixed position — no opacity hidden
+  // Keep the menu control visible in both desktop states.
   transition: color var(--transition-fast), background var(--transition-fast);
 
   &:hover {
@@ -103,7 +106,7 @@
   }
 
   .material-icons {
-    font-size: var(--icon-size);
+    font-size: var(--sidebar-icon-size);
   }
 }
 
@@ -502,7 +505,7 @@
     }
   }
 
-  .sidebar__pin-btn {
+  .sidebar__toggle-btn {
     display: none;
   }
 }
@@ -538,4 +541,12 @@
   .nav-item--child {
     animation: none;
   }
+}
+
+.sidebar--collapsed .sidebar__header {
+  justify-content: center;
+  padding-inline: var(--space-2);
+}
+.sidebar--collapsed .sidebar__logo {
+  display: none;
 }

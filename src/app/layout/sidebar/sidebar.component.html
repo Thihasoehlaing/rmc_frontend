@@ -1,22 +1,21 @@
 <aside class="sidebar" [class.sidebar--collapsed]="!isExpanded()" [class.sidebar--expanded]="isExpanded()"
   [class.sidebar--mobile-open]="sidebarService.mobileOpen()"
-  [class.sidebar--fixed]="sidebarService.mode() === 'fixed'" (mouseenter)="onMouseEnter()"
-  (mouseleave)="onMouseLeave()">
+  [class.sidebar--fixed]="sidebarService.mode() === 'fixed'"
+  (mouseenter)="sidebarService.setHover(true)" (mouseleave)="sidebarService.setHover(false)">
 
   <!-- Sidebar Header -->
   <div class="sidebar__header">
-    @if (isExpanded()) {
-    <button class="sidebar__pin-btn" (click)="togglePin()" [class.active]="pinned()"
-      [title]="pinned() ? 'Unpin sidebar' : 'Pin sidebar'">
-      <span class="material-icons">{{ pinned() ? 'push_pin' : 'push_pin' }}</span>
-    </button>
-    }
     <a routerLink="/dashboard" class="sidebar__logo" (click)="closeMobileSidebar()">
       <img src="assets/images/apu.png" alt="APU Logo" class="logo-img">
       @if (isExpanded()) {
       <span class="logo-text">RMC</span>
       }
     </a>
+    <button type="button" class="sidebar__toggle-btn" (click)="togglePin()" [class.active]="pinned()"
+      [title]="pinned() ? 'Collapse sidebar' : 'Expand sidebar'"
+      [attr.aria-label]="pinned() ? 'Collapse sidebar' : 'Expand sidebar'" [attr.aria-expanded]="pinned()">
+      <span class="material-icons" aria-hidden="true">menu</span>
+    </button>
   </div>
 
   <!-- User Profile Section -->

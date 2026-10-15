@@ -6,8 +6,8 @@ export type SidebarMode = 'collapsed' | 'expanded' | 'fixed';
     providedIn: 'root'
 })
 export class SidebarService {
-    // Primary state: is the sidebar permanently pinned?
-    private isPinned = signal<boolean>(false);
+    // Desktop navigation starts open; the menu button explicitly collapses it.
+    private isPinned = signal<boolean>(true);
 
     // Temporary state: is the user hovering over the collapsed sidebar?
     private isHovered = signal<boolean>(false);
@@ -25,6 +25,7 @@ export class SidebarService {
     });
 
     togglePin() {
+        this.isHovered.set(false);
         this.isPinned.update(v => !v);
     }
 

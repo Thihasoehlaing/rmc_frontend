@@ -98,10 +98,14 @@ export class SidebarComponent implements OnInit {
   }
 
   toggleFolder(folder: NavFolder) {
+    // Reveal child links when an icon is activated in the collapsed rail.
+    const wasCollapsed = !this.isExpanded();
+    if (wasCollapsed) this.sidebarService.setHover(true);
     const label = folder.label;
     this.expandedFolders.update((set: Set<string>) => {
       const newSet = new Set(set);
-      newSet.has(label) ? newSet.delete(label) : newSet.add(label);
+      if (wasCollapsed) newSet.add(label);
+      else newSet.has(label) ? newSet.delete(label) : newSet.add(label);
       return newSet;
     });
 
@@ -142,12 +146,6 @@ export class SidebarComponent implements OnInit {
 
   asItem(element: NavElement) {
     return element as any;
-  }
-
-  onMouseEnter() { this.sidebarService.setHover(true); }
-
-  onMouseLeave() {
-    this.sidebarService.setHover(false);
   }
 
   togglePin() { this.sidebarService.togglePin(); }

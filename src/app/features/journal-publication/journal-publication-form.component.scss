@@ -878,6 +878,10 @@
       margin-top: 0;
     }
 
+    app-documents .card + .card {
+      margin-top: var(--space-6);
+    }
+
     app-documents .upload-grid {
       gap: var(--space-5);
     }

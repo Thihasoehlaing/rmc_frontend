@@ -11,6 +11,7 @@ import { FieldNoteComponent } from '../field-note/field-note.component';
 })
 export class NoteComponent {
   @Input() text = '';
+  @Input() tone: 'warning' | 'error' = 'warning';
   /** Deprecated: retained only so existing app-note usages keep compiling. */
   @Input() isTooltip = true;
 }

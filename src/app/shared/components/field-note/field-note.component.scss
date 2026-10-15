@@ -16,3 +16,9 @@
   line-height: var(--lh-normal);
   white-space: pre-line;
 }
+
+.field-note--error {
+  border-left-color: var(--color-error);
+  background: var(--color-error-light);
+  color: var(--color-error-dark);
+}

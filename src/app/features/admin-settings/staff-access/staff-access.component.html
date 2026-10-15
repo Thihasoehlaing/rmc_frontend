@@ -113,13 +113,21 @@
           <tr [class.staff-access-row--blocked]="staff.status === 'blocked'">
             <td>{{ rowNumber(index) }}</td>
             <td>
-              <div class="data-table__stacked">
-                <span class="data-table__avatar">{{ staff.initials }}</span>
-                <span class="data-table__title">{{ staff.name }}</span>
+              <div class="staff-identity">
+                <span class="staff-identity__avatar">
+                  {{ staff.initials }}
+                  @if (staff.photoUrl) {
+                    <img [src]="staff.photoUrl" [alt]="staff.name + ' profile photo'" loading="lazy" (error)="onAvatarError($event)" />
+                  }
+                </span>
+                <div class="staff-identity__details">
+                  <strong [title]="staff.name">{{ staff.name }}</strong>
+                  <small [title]="staff.email">{{ staff.email || 'No email' }}</small>
+                </div>
               </div>
             </td>
             <td><span class="staff-access-text" [title]="staff.department">{{ staff.department }}</span></td>
-            <td><span class="staff-access-email" [title]="staff.email">{{ staff.email }}</span></td>
+            <td><span class="staff-access-text" [title]="staff.role">{{ staff.role || 'Not specified' }}</span></td>
             <td>
               <span
                 class="status-badge"
@@ -138,12 +146,13 @@
             <td class="is-align-center">
               @if (staff.reason) {
                 <button
-                  class="btn btn-sm btn-secondary"
+                  class="table-action"
                   type="button"
+                  aria-label="View block reason"
                   title="View block reason"
                   (click)="openReasonView(staff)"
                 >
-                  View
+                  <app-table-action-icon action="view"></app-table-action-icon>
                 </button>
               } @else {
                 <span class="staff-access-muted-badge">-</span>

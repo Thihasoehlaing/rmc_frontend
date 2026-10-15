@@ -24,6 +24,7 @@ export interface StaffAccessRecordApi {
   staff_username: string;
   staff_name: string | null;
   staff_email: string | null;
+  photo_url?: string | null;
   department: string | null;
   job_title: string | null;
   status: 'ACTIVE' | 'BLOCKED';
@@ -34,6 +35,7 @@ export interface StaffAccessRecordApi {
 }
 
 export interface StaffAccessListData {
+  blocked_count?: number;
   items: StaffAccessRecordApi[];
   pagination: ApiPagination;
 }
@@ -98,10 +100,10 @@ export class StaffAccessService {
     );
   }
 
-  bulkBlock(usernames: string[], reason?: string): Observable<ApiResponse<StaffAccessBulkBlockData>> {
+  bulkBlock(staffIds: number[], reason?: string): Observable<ApiResponse<StaffAccessBulkBlockData>> {
     return this.http.post<ApiResponse<StaffAccessBulkBlockData>>(
       `${this.baseUrl}/block`,
-      reason ? { usernames, reason } : { usernames },
+      reason ? { staff_ids: staffIds, reason } : { staff_ids: staffIds },
     );
   }
 

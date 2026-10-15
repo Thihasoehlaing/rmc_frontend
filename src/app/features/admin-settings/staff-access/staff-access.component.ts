@@ -37,6 +37,7 @@ interface StaffAccessRecord {
   blockedDate: string;
   reason: string;
   initials: string;
+  photoUrl: string | null;
 }
 
 @Component({
@@ -64,9 +65,9 @@ export class StaffAccessComponent implements OnInit {
 
   readonly columns: DataTableColumn[] = [
     { key: 'no', label: 'No.', width: '5rem' },
-    { key: 'name', label: 'Staff Name', width: '22rem' },
+    { key: 'name', label: 'Staff', width: '22rem' },
     { key: 'department', label: 'Department', width: '13rem' },
-    { key: 'email', label: 'Email', width: '17rem' },
+    { key: 'role', label: 'Job Title', width: '17rem' },
     { key: 'status', label: 'Status', width: '9rem' },
     { key: 'blockedDate', label: 'Blocked Date', sortable: true, width: '11rem' },
     { key: 'reason', label: 'Reason', width: '8rem', align: 'center', headerAlign: 'center' },
@@ -117,6 +118,7 @@ export class StaffAccessComponent implements OnInit {
   readonly blockStaffDialogOpen = signal(false);
   readonly blockStaffSaving = signal(false);
   readonly staffOptions = signal<StaffOption[]>([]);
+  private readonly staffIdsByUsername = new Map<string, number>();
   readonly staffOptionsLoading = signal(false);
   readonly staffDropdownOpen = signal(false);
   readonly staffSearchTerm = signal('');
@@ -131,25 +133,14 @@ export class StaffAccessComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadDepartments();
-    this.loadBlockedCount();
-    this.loadStaff();
   }
 
   private loadDepartments(): void {
-    this.academicStaffService.listDepartments().subscribe({
+    this.academicStaffService.listDepartments().pipe(finalize(() => this.loadStaff())).subscribe({
       next: (res) => {
         if (res.success) this.departments.set(res.data ?? []);
       },
       error: () => this.departments.set([]),
-    });
-  }
-
-  protected loadBlockedCount(): void {
-    this.staffAccessService.list({ page: 1, perPage: 1, status: 'blocked' }).subscribe({
-      next: (res) => {
-        if (res.success) this.blockedCount.set(res.data.pagination.total_items);
-      },
-      error: () => this.blockedCount.set(0),
     });
   }
 
@@ -176,6 +167,7 @@ export class StaffAccessComponent implements OnInit {
           }
           this.staffRecords.set((res.data.items ?? []).map((item) => this.toRow(item)));
           this.totalItems.set(res.data.pagination.total_items);
+          this.blockedCount.set(res.data.blocked_count ?? res.data.pagination.total_items);
           this.totalPages.set(Math.max(1, res.data.pagination.total_pages));
         },
         error: () => {
@@ -191,7 +183,6 @@ export class StaffAccessComponent implements OnInit {
 
   refreshStaffAccess(): void {
     this.loadStaff();
-    this.loadBlockedCount();
   }
 
   private toRow(item: StaffAccessRecordApi): StaffAccessRecord {
@@ -207,7 +198,12 @@ export class StaffAccessComponent implements OnInit {
       blockedDate: this.formatDisplayDate(item.blocked_date),
       reason: item.reason || '',
       initials: this.getInitials(name),
+      photoUrl: item.photo_url || null,
     };
+  }
+
+  onAvatarError(event: Event): void {
+    (event.target as HTMLImageElement).style.display = 'none';
   }
 
   private getInitials(value: string): string {
@@ -341,9 +337,14 @@ export class StaffAccessComponent implements OnInit {
     const usernames = this.selectedBlockUsernames();
     if (!usernames.length || this.blockStaffSaving()) return;
 
+    const staffIds = usernames.map(username => this.staffIdsByUsername.get(username));
+    if (staffIds.some(id => id == null)) {
+      this.toast.error('Please refresh the staff list and select the staff again.');
+      return;
+    }
     this.blockStaffSaving.set(true);
     this.staffAccessService
-      .bulkBlock(usernames, this.blockReason().trim() || undefined)
+      .bulkBlock(staffIds as number[], this.blockReason().trim() || undefined)
       .pipe(finalize(() => this.blockStaffSaving.set(false)))
       .subscribe({
         next: (res) => {
@@ -355,8 +356,7 @@ export class StaffAccessComponent implements OnInit {
           this.toast.success(`${count} staff ${count === 1 ? 'member has' : 'members have'} been blocked.`);
           this.closeBlockStaffDialog(true);
           this.loadStaff();
-          this.loadBlockedCount();
-        },
+              },
         error: (err) => this.showError(err, 'Could not block selected staff.'),
       });
   }
@@ -376,8 +376,7 @@ export class StaffAccessComponent implements OnInit {
         this.toast.success(`${staff.name}'s access has been blocked.`);
         this.closeBlockDialog();
         this.loadStaff();
-        this.loadBlockedCount();
-      },
+          },
       error: (err) => {
         this.loadingId.set(null);
         this.showError(err, 'Could not block staff access.');
@@ -399,8 +398,7 @@ export class StaffAccessComponent implements OnInit {
         this.toast.success(`${staff.name}'s access has been restored.`);
         this.closeUnblockDialog();
         this.loadStaff();
-        this.loadBlockedCount();
-      },
+          },
       error: (err) => {
         this.loadingId.set(null);
         this.showError(err, 'Could not restore staff access.');
@@ -445,7 +443,9 @@ export class StaffAccessComponent implements OnInit {
       .pipe(finalize(() => this.staffOptionsLoading.set(false)))
       .subscribe({
         next: (res) => {
-          this.staffOptions.set(res.success ? res.data ?? [] : []);
+          const options = res.success ? res.data ?? [] : [];
+          for (const staff of options) this.staffIdsByUsername.set(staff.username, staff.staff_id ?? staff.id);
+          this.staffOptions.set(options);
         },
         error: () => {
           this.staffOptions.set([]);

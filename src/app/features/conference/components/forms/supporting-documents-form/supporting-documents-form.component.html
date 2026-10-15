@@ -43,8 +43,8 @@
           [uploadedFileName]="form.get('conferenceInvoice')?.value || null"
           placeholder="Upload conference invoice PDF"
           (fileSelected)="onFileSelected('conferenceInvoice', $any($event))">
+          <app-note uploadNote tone="error" text="Please ensure billing name is: Asia Pacific University Sdn. Bhd."></app-note>
         </app-file-upload>
-        <app-note text="Please ensure billing name is: Asia Pacific University Sdn. Bhd."></app-note>
         <app-validation-message
           class="form-validation-note--error"
           [control]="form.get('conferenceInvoice')"
@@ -117,8 +117,8 @@
           [uploadedFileName]="form.get('sriApproval')?.value || null"
           placeholder="Upload SRI approval PDF"
           (fileSelected)="onFileSelected('sriApproval', $any($event))">
+          <app-note uploadNote tone="error" text="Please upload SRI approval on IRN country and SDG Keywords."></app-note>
         </app-file-upload>
-        <app-note text="Please upload SRI approval on IRN country and SDG Keywords."></app-note>
         <app-validation-message
           class="form-validation-note--error"
           [control]="form.get('sriApproval')"

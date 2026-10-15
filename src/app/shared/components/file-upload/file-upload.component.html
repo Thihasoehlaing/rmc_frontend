@@ -4,6 +4,8 @@
     <label class="form-label">{{ label }}</label>
   }
 
+  <ng-content select="[uploadNote]"></ng-content>
+
   @if (disabled && displayFileName()) {
     <!-- Read-only display when disabled and file is selected -->
     <div class="file-upload-zone file-upload-zone--disabled">

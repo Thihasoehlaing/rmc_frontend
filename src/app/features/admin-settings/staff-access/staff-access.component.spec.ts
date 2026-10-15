@@ -1,3 +1,4 @@
+import { provideRouter } from '@angular/router';
 import { provideHttpClient } from '@angular/common/http';
 import {
   HttpTestingController,
@@ -21,6 +22,7 @@ describe('StaffAccessComponent', () => {
     success: true,
     message: 'Staff access retrieved successfully',
     data: {
+      blocked_count: 1,
       items: [
         {
           id: 1,
@@ -61,14 +63,8 @@ describe('StaffAccessComponent', () => {
   };
 
   function flushInitialRequests(): void {
+    http.expectNone((req) => req.url === staffAccessUrl);
     http.expectOne((req) => req.url === departmentsUrl).flush({ success: true, message: 'ok', data: [] });
-    http
-      .expectOne((req) => req.url === staffAccessUrl && req.params.get('status') === 'blocked')
-      .flush({
-        success: true,
-        message: 'ok',
-        data: { items: [], pagination: { ...listResponse.data.pagination, total_items: 1 } },
-      });
     http
       .expectOne((req) => req.url === staffAccessUrl && req.params.get('status') === 'blocked' && req.params.get('per_page') === '10')
       .flush(listResponse);
@@ -77,7 +73,7 @@ describe('StaffAccessComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [StaffAccessComponent],
-      providers: [provideHttpClient(), provideHttpClientTesting()],
+      providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(StaffAccessComponent);
@@ -88,7 +84,7 @@ describe('StaffAccessComponent', () => {
   });
 
   afterEach(() => {
-    http.verify();
+    try { http.verify(); } finally { TestBed.resetTestingModule(); }
   });
 
   it('loads staff access records with real pagination params', () => {
@@ -105,6 +101,7 @@ describe('StaffAccessComponent', () => {
 
     component.toggleAccess(active);
 
+    component.confirmBlock();
     const blockReq = http.expectOne(`${staffAccessUrl}/1/block`);
     expect(blockReq.request.method).toBe('POST');
     blockReq.flush({
@@ -116,13 +113,6 @@ describe('StaffAccessComponent', () => {
     http
       .expectOne((req) => req.url === staffAccessUrl && req.params.get('status') === 'blocked' && req.params.get('per_page') === '10')
       .flush(listResponse);
-    http
-      .expectOne((req) => req.url === staffAccessUrl && req.params.get('status') === 'blocked')
-      .flush({
-        success: true,
-        message: 'ok',
-        data: { items: [], pagination: { ...listResponse.data.pagination, total_items: 2 } },
-      });
   });
 
   it('unblocks a blocked staff member', () => {
@@ -144,13 +134,6 @@ describe('StaffAccessComponent', () => {
     http
       .expectOne((req) => req.url === staffAccessUrl && req.params.get('status') === 'blocked' && req.params.get('per_page') === '10')
       .flush(listResponse);
-    http
-      .expectOne((req) => req.url === staffAccessUrl && req.params.get('status') === 'blocked')
-      .flush({
-        success: true,
-        message: 'ok',
-        data: { items: [], pagination: { ...listResponse.data.pagination, total_items: 0 } },
-      });
   });
 
   it('paginates using the requested page size', () => {

@@ -266,7 +266,10 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
   submitAttempted = signal(false);
   showValidationSummary = signal(false);
   isAdminReadOnlyDraft = signal(false);
-  isViewOnly = computed(() => this.isAdminReadOnlyDraft() || !this.workflow.currentUserCanAct());
+  isApplicantOwner = signal(true);
+  isViewOnly = computed(
+    () => this.isAdminReadOnlyDraft() || !this.isApplicantOwner() || !this.workflow.currentUserCanAct(),
+  );
 
   /**
    * The json-server record ID for the currently loaded application.
@@ -446,8 +449,10 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
   private activitiesTimelineValidator = (control: AbstractControl): ValidationErrors | null => {
     const activities = control as FormArray;
     const minMonth = 1;
-    const maxMonth = 12;
-
+    const configuredDuration = Number(control.parent?.get('projectDetails.duration')?.value ?? 0);
+    const maxMonth = Number.isFinite(configuredDuration) && configuredDuration > 0
+      ? configuredDuration
+      : 24;
     if (!activities || activities.length === 0) return { activitiesTimeline: true };
 
     for (let i = 0; i < activities.length; i++) {
@@ -1122,6 +1127,20 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
     });
   }
 
+  private isCurrentUserApplicant(app: any): boolean {
+    const user = this.auth.currentUser();
+    if (!user) return false;
+
+    const ownerById =
+      app.metadata?.applicantUserId && String(app.metadata.applicantUserId) === String(user.id);
+    const ownerByName = app.teamDetails?.leaderName && app.teamDetails.leaderName === user.name;
+    const ownerByUsername =
+      app.applicant_staff_username &&
+      user.username &&
+      String(app.applicant_staff_username).trim().toLowerCase() === user.username.trim().toLowerCase();
+    return !!(ownerById || ownerByName || ownerByUsername);
+  }
+
   private canCurrentUserActOnApplication(app: any): boolean {
     const user = this.auth.currentUser();
     if (!user) return false;
@@ -1129,10 +1148,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
     const wf = app.workflow ?? {};
     const nextRoles: string[] = Array.isArray(wf.nextRoles) ? wf.nextRoles : [];
     const nextUsers = Array.isArray(wf.nextUsers) ? wf.nextUsers.map(String) : [];
-    const ownerById =
-      app.metadata?.applicantUserId && String(app.metadata.applicantUserId) === String(user.id);
-    const ownerByName = app.teamDetails?.leaderName && app.teamDetails.leaderName === user.name;
-    const isOwner = !!(ownerById || ownerByName);
+    const isOwner = this.isCurrentUserApplicant(app);
 
     if ((wf.currentStatus === 'draft' || app.isDraft === true) && isOwner) return true;
 
@@ -1374,16 +1390,27 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
       this.rdigForm.get('teamDetails.externalResearchers') as FormArray,
     );
 
-    this.rebuildArray(
-      this.rdigForm.get('activities') as FormArray,
-      (data.research_activities ?? []).map((item) => ({
+    const projectDuration = Number(rdig.project_duration_months ?? 24);
+    const activities = (data.research_activities ?? []).map((item) => {
+      // Older saved applications can still contain month 0 from the previous
+      // zero-based timeline. Normalize those values during hydration because
+      // rebuildArray suppresses valueChanges, so the activities component's
+      // normalizer does not run for backend-loaded rows.
+      const startMonth = this.clampActivityMonth(item.start_month, projectDuration, 1);
+      const endMonth = Math.max(
+        startMonth,
+        this.clampActivityMonth(item.end_month, projectDuration, startMonth),
+      );
+      return {
         backendId: item.id,
         name: item.activity_name,
-        startMonth: item.start_month,
-        endMonth: item.end_month,
-        duration: item.duration_months,
-      })),
-    );
+        startMonth,
+        endMonth,
+        duration: endMonth - startMonth + 1,
+      };
+    });
+    this.rebuildArray(this.rdigForm.get('activities') as FormArray, activities);
+    this.rdigForm.get('activities')?.updateValueAndValidity({ emitEvent: false });
     this.captureLoadedBackendIds('activities', this.rdigForm.get('activities') as FormArray);
 
     const sectionById = new Map<number, string>();
@@ -1431,7 +1458,13 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
     });
     const adminReadOnly = this.isSystemAdminReadOnlyRequest(requestRow);
     this.isAdminReadOnlyDraft.set(adminReadOnly);
-    this.workflow.currentUserCanAct.set(!adminReadOnly && (!!requestRow.can_act || status === 'draft'));
+    const applicantUsername = String(requestRow.applicant_staff_username ?? '').trim().toLowerCase();
+    const currentUsername = this.auth.currentUser()?.username?.trim().toLowerCase();
+    const applicantOwner = !!applicantUsername && applicantUsername === currentUsername;
+    this.isApplicantOwner.set(applicantOwner);
+    this.workflow.currentUserCanAct.set(
+      !adminReadOnly && applicantOwner && (!!requestRow.can_act || status === 'draft'),
+    );
     this.syncWorkflowFromForm();
   }
 
@@ -1529,7 +1562,11 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
     if (data.workflow) {
       this.workflowState.set(data.workflow);
     }
-    this.workflow.currentUserCanAct.set(this.canCurrentUserActOnApplication(data));
+    const applicantOwner = this.isCurrentUserApplicant(data);
+    this.isApplicantOwner.set(applicantOwner);
+    this.workflow.currentUserCanAct.set(
+      applicantOwner && this.canCurrentUserActOnApplication(data),
+    );
 
     // ── Sync ABAC signals ────────────────────────────────────────
     this.syncWorkflowFromForm();
@@ -1551,6 +1588,13 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
       esgs: this.toDropdownIds(projectDetails.esgs),
       sdgs: this.toDropdownIds(projectDetails.sdgs),
     };
+  }
+
+  private clampActivityMonth(value: unknown, projectDuration: number, fallback: number): number {
+    const maxMonth = Number.isFinite(projectDuration) && projectDuration > 0 ? projectDuration : 24;
+    const parsedMonth = Number(value);
+    const month = Number.isFinite(parsedMonth) ? Math.trunc(parsedMonth) : fallback;
+    return Math.min(maxMonth, Math.max(1, month));
   }
 
   private toDropdownId(value: unknown): string | null {
@@ -1984,7 +2028,9 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
   onSaveDraft(): void {
     if (this.isViewOnly()) {
       this.submissionErrorMessage.set(
-        'This application is open in history view only and cannot be edited.',
+        this.isApplicantOwner()
+          ? 'This application is open in history view only and cannot be edited.'
+          : 'Only the applicant can edit this application.',
       );
       this.submissionState.set('IDLE');
       this.toastSvc.error(this.submissionErrorMessage());
@@ -2028,7 +2074,9 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
     this.showValidationSummary.set(false);
     if (this.isViewOnly()) {
       this.submissionErrorMessage.set(
-        'This application is open in history view only and cannot be submitted.',
+        this.isApplicantOwner()
+          ? 'This application is open in history view only and cannot be submitted.'
+          : 'Only the applicant can submit this application. Please ask the applicant to resubmit it.',
       );
       this.submissionState.set('IDLE');
       this.toastSvc.error(this.submissionErrorMessage());
@@ -2058,7 +2106,19 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
     }
     // ── End batch constraint check ───────────────────────────────────────────
 
-    if (!this.validationDisabled() && this.rdigForm.invalid) {
+    const applicantSections = [
+      'teamDetails',
+      'projectDetails',
+      'activities',
+      'outputs',
+      'budget',
+      'finalDeclaration',
+    ];
+    const formIsInvalid = this.workflow.isApplicantEditable()
+      ? applicantSections.some((path) => this.rdigForm.get(path)?.invalid)
+      : this.rdigForm.invalid;
+
+    if (!this.validationDisabled() && formIsInvalid) {
       this.rdigForm.markAllAsTouched();
       this.submissionErrorMessage.set(
         'Your form has missing or invalid fields. Please review all steps.',

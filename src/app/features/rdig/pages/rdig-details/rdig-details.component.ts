@@ -18,6 +18,7 @@ import {
   RdigRequestDto,
 } from '../../services/rdig-api.service';
 import {
+  ApiResponse,
   ApprovalDto,
   RdigReviewerReviewDto,
   RdigReviewerScoreSheetDto,
@@ -2173,8 +2174,8 @@ export class RdigDetailsComponent implements OnInit {
 
   // ── Perform an action ───────────────────────────────────────────────────────
   /** Builds whole-form comments that are saved together with executive workflow actions. */
-  private pendingCommentSaves$(): Observable<unknown>[] {
-    const saves: Observable<unknown>[] = [];
+  private pendingCommentSaves$(): Observable<ApiResponse<RequestCommentDto>>[] {
+    const saves: Observable<ApiResponse<RequestCommentDto>>[] = [];
     if (this.requestId == null) return saves;
     const requestId = this.requestId;
 
@@ -2239,11 +2240,19 @@ export class RdigDetailsComponent implements OnInit {
 
     const commentSaves = this.pendingCommentSaves$();
     const requestId = this.requestId;
-    const saveComments$: Observable<unknown> = commentSaves.length
+    const saveComments$: Observable<ApiResponse<RequestCommentDto>[] | null> = commentSaves.length
       ? forkJoin(commentSaves)
       : of(null);
     saveComments$
       .pipe(
+        tap((responses) => {
+          if (!responses?.length) return;
+          this.sectionComments.update((comments) => {
+            const commentsById = new Map(comments.map((comment) => [comment.id, comment]));
+            responses.forEach(({ data }) => commentsById.set(data.id, data));
+            return [...commentsById.values()];
+          });
+        }),
         switchMap(() => this.saveReviewerScores$()),
         switchMap(() =>
           this.requests.actOnRequest(requestId, {

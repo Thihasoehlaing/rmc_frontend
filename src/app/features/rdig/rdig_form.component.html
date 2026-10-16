@@ -170,7 +170,11 @@
           }
 
 
-        @if (isViewOnly()) {
+        @if (!isApplicantOwner()) {
+          <app-form-alert intent="info" icon="person" title="Applicant action required">
+            Only the applicant can edit and resubmit this application. Please ask the applicant to submit it.
+          </app-form-alert>
+        } @else if (isViewOnly()) {
           <app-form-alert intent="info" icon="visibility" title="History view only">
             This application is not waiting for your action, so editing and submission are disabled.
           </app-form-alert>

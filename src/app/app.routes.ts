@@ -26,6 +26,10 @@ export const routes: Routes = [
     canActivate: [authGuard],
     children: [
       {
+        path: 'attachments/view',
+        loadComponent: () => import('./features/attachments/attachment-viewer.component').then(m => m.AttachmentViewerComponent),
+      },
+      {
         path: 'dashboard',
         loadChildren: () =>
           import('./features/dashboard/dashboard.routes').then((m) => m.dashboardRoutes),

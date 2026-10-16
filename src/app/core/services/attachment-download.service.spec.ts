@@ -37,18 +37,16 @@ describe('Bearer attachment viewing', () => {
     vi.clearAllTimers(); vi.useRealTimers(); vi.restoreAllMocks(); vi.unstubAllGlobals();
     URL.createObjectURL = create; URL.revokeObjectURL = revoke; toast.error.mockClear();
   });
-  it('GETs a preview with the existing bearer, opens a Blob and frees it on close', () => {
+  it('opens a shareable frontend page without a token or fetching in the original tab', () => {
     service.open(`${base}/files/folder/paper.pdf`,'paper.pdf',true);
-    const req = http.expectOne(`${base}/view-files/folder/paper.pdf`);
-    expect(req.request.method).toBe('GET');
-    expect(req.request.headers.get('Authorization')).toBe('Bearer existing-token');
-    expect(req.request.withCredentials).toBe(false);
-    expect(req.request.responseType).toBe('blob');
-    req.flush(new Blob(['%PDF-test'],{type:'application/pdf'}));
-    expect(viewer.location.href).toBe('blob:protected-preview');
-    expect(viewer.opener).toBeNull();
-    viewer.closed=true; vi.advanceTimersByTime(30000);
-    expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:protected-preview');
+    http.expectNone(() => true);
+    const opened = new URL(open.mock.calls[0][0]);
+    expect(opened.origin).toBe(window.location.origin);
+    expect(opened.pathname).toBe('/attachments/view');
+    expect(opened.searchParams.get('path')).toBe('/view-files/folder/paper.pdf');
+    expect(opened.searchParams.get('name')).toBe('paper.pdf');
+    expect(opened.href).not.toContain('existing-token');
+    expect(opened.href).not.toContain('blob:');
   });
   it('downloads through the same bearer flow without opening a viewer', () => {
     vi.spyOn(HTMLAnchorElement.prototype,'click').mockImplementation(() => {});
@@ -59,20 +57,8 @@ describe('Bearer attachment viewing', () => {
     expect(open).not.toHaveBeenCalled();
     expect(URL.createObjectURL).toHaveBeenCalledOnce();
   });
-  it('closes the blank viewer when access fails', () => {
-    service.open(`${base}/files/paper.pdf`,'paper.pdf',true);
-    http.expectOne(`${base}/view-files/paper.pdf`).flush(new Blob(),{status:403,statusText:'Forbidden'});
-    expect(viewer.close).toHaveBeenCalledOnce();
-    expect(toast.error).toHaveBeenCalledOnce();
-    expect(URL.createObjectURL).not.toHaveBeenCalled();
-  });
   it('does not send the bearer to an untrusted attachment URL', () => {
     service.open('https://untrusted.example/files/paper.pdf','paper.pdf',true);
     http.expectNone(() => true); expect(open).not.toHaveBeenCalled();
-  });
-  it('does not fetch when the preview popup is blocked', () => {
-    open.mockReturnValue(null);
-    service.open(`${base}/files/paper.pdf`,'paper.pdf',true);
-    http.expectNone(() => true); expect(toast.error).toHaveBeenCalledOnce();
   });
 });

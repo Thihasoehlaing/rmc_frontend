@@ -57,3 +57,12 @@ Angular CLI does not come with an end-to-end testing framework by default. You c
 ## Additional Resources
 
 For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+
+### Shareable attachment viewer
+
+Attachment previews open `/attachments/view?path=...&name=...`. Share this page
+using Copy Link. Each recipient signs in with their existing account; HttpClient
+sends their bearer token to the protected attachment API, which checks file access.
+PDF.js renders PDFs locally with page navigation and zoom. The worker, fonts,
+CMaps and WASM assets are bundled under `assets/pdfjs`; no external CDN is used.
+No new cookie, signing secret or database migration is required.

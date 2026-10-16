@@ -1,0 +1,26 @@
+<section class="attachment-viewer" aria-label="Attachment viewer">
+  <header class="card viewer-toolbar">
+    <div class="viewer-heading"><h1 [title]="name()">{{ name() }}</h1><p>Access is checked for your signed-in account.</p></div>
+    <div class="viewer-actions">
+      <button class="btn btn-secondary" type="button" (click)="copyLink()"><span class="material-icons" aria-hidden="true">link</span>Copy Link</button>
+      <button class="btn btn-primary" type="button" (click)="download()"><span class="material-icons" aria-hidden="true">download</span>Download</button>
+    </div>
+  </header>
+  @if (isPdf() && !error()) {
+    <nav class="viewer-navigation" aria-label="PDF controls">
+      <button class="btn btn-secondary btn-sm" type="button" aria-label="Previous page" [disabled]="page() <= 1 || rendering()" (click)="turnPage(-1)">Previous</button>
+      <span aria-live="polite">Page {{ page() }} of {{ pages() }}</span>
+      <button class="btn btn-secondary btn-sm" type="button" aria-label="Next page" [disabled]="page() >= pages() || rendering()" (click)="turnPage(1)">Next</button>
+      <button class="btn btn-ghost btn-sm" type="button" aria-label="Zoom out" [disabled]="zoom() <= 50 || rendering()" (click)="changeZoom(-25)">−</button>
+      <span>{{ zoom() }}%</span>
+      <button class="btn btn-ghost btn-sm" type="button" aria-label="Zoom in" [disabled]="zoom() >= 200 || rendering()" (click)="changeZoom(25)">+</button>
+    </nav>
+  }
+  @if (error()) {
+    <div class="card viewer-error" role="alert"><h2>Unable to preview attachment</h2><p>{{ error() }}</p><button class="btn btn-secondary" type="button" (click)="load()">Try Again</button></div>
+  }
+  <div #viewport class="viewer-viewport" [hidden]="!!error()">
+    <canvas #canvas [hidden]="text() !== null" role="img" [attr.aria-label]="name() + (isPdf() ? ', page ' + page() : '')"></canvas>
+    @if (text() !== null) { <pre>{{ text() }}</pre> }
+  </div>
+</section>

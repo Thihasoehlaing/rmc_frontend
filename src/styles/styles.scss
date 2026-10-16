@@ -5,6 +5,8 @@
 @use 'forms';
 @use 'table-pagination';
 
+@include index.container-utilities;
+
 @keyframes skeleton-shimmer {
   from {
     background-position: 200% 0;

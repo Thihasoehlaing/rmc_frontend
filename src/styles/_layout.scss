@@ -49,12 +49,14 @@
   }
 }
 
-// Global container class
-.container {
-  width: 100%;
-  max-width: var(--page-max-width);
-  margin-right: auto;
-  margin-left: auto;
-  padding-right: var(--space-4);
-  padding-left: var(--space-4);
+// Emit once from the global entry point, never from component Sass imports.
+@mixin container-utilities {
+  .container {
+    width: 100%;
+    max-width: var(--page-max-width);
+    margin-right: auto;
+    margin-left: auto;
+    padding-right: var(--space-4);
+    padding-left: var(--space-4);
+  }
 }

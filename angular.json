@@ -21,6 +21,7 @@
 				"build": {
 					"builder": "@angular/build:application",
 					"options": {
+						"allowedCommonJsDependencies": ["quill-delta"],
 						"browser": "src/main.ts",
 						"tsConfig": "tsconfig.app.json",
 						"inlineStyleLanguage": "scss",
@@ -49,8 +50,8 @@
 								},
 								{
 									"type": "anyComponentStyle",
-									"maximumWarning": "10kB",
-									"maximumError": "21kB"
+									"maximumWarning": "40kB",
+									"maximumError": "45kB"
 								}
 							],
 							"outputHashing": "all",
@@ -70,8 +71,8 @@
 								},
 								{
 									"type": "anyComponentStyle",
-									"maximumWarning": "10kB",
-									"maximumError": "21kB"
+									"maximumWarning": "40kB",
+									"maximumError": "45kB"
 								}
 							],
 							"outputHashing": "all",

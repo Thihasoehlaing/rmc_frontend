@@ -18,7 +18,7 @@ export function attachmentViewPath(url: string): string | null {
 export function attachmentViewerUrl(url: string, filename: string): string | null {
   const path = attachmentViewPath(url);
   if (!path) return null;
-  const viewer = new URL('/attachments/view', window.location.origin);
+  const viewer = new URL(environment.attachmentBaseUrl.replace(/\/$/, '') + '/attachments/view', window.location.origin);
   viewer.searchParams.set('path', path);
   viewer.searchParams.set('name', filename);
   return viewer.href;
@@ -30,4 +30,9 @@ export function attachmentViewApiUrl(path: string): string | null {
   const base = environment.attachmentBaseUrl.replace(/\/$/, '');
   const target = base + path;
   return attachmentViewPath(target) === path ? target : null;
+}
+
+/** The resources API serves the standalone HTML viewer, including in local development. */
+export function attachmentViewerOrigin(): string {
+  return new URL(environment.attachmentBaseUrl, window.location.origin).origin;
 }

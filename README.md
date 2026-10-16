@@ -60,9 +60,13 @@ For more information on using the Angular CLI, including detailed command refere
 
 ### Shareable attachment viewer
 
-Attachment previews open `/attachments/view?path=...&name=...`. Share this page
-using Copy Link. Each recipient signs in with their existing account; HttpClient
-sends their bearer token to the protected attachment API, which checks file access.
-PDF.js renders PDFs locally with page navigation and zoom. The worker, fonts,
-CMaps and WASM assets are bundled under `assets/pdfjs`; no external CDN is used.
-No new cookie, signing secret or database migration is required.
+Attachment previews open `/attachments/view?path=...&name=...` on the configured
+`attachmentBaseUrl`. The backend serves this standalone page and its PDF.js assets
+through the existing API Gateway/Lambda, including locally at localhost:8000.
+The viewer reads the current browser's existing RMC bearer through an origin-checked
+frontend session bridge; the backend checks access for every file request. No portal layout, CloudFront or new cookie is needed.
+
+Deploy this frontend session bridge before publishing the backend viewer change. The backend
+repository's `docs/attachment-viewer.md` describes PDF.js packaging and allowed frontend
+framing. Old portal `/attachments/view` bookmarks redirect to the resources
+viewer. The portal's existing authentication remains unchanged.

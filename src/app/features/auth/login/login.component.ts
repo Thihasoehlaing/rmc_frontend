@@ -77,7 +77,7 @@ export class LoginComponent implements OnInit {
           !sessionStorage.getItem(this.APU_RETRY_KEY)
         ) {
           sessionStorage.setItem(this.APU_RETRY_KEY, '1');
-          this.authService.startApuLogin('/login');
+          this.authService.startApuLogin(this.returnRoute);
           return;
         }
 
@@ -91,7 +91,7 @@ export class LoginComponent implements OnInit {
     sessionStorage.removeItem(this.APU_RETRY_KEY);
     this.loginError.set('');
     this.isLoading.set(true);
-    this.authService.startApuLogin(this.authService.getCurrentRoute());
+    this.authService.startApuLogin(this.returnRoute);
   }
 
   loginForTesting(username = 'irene.wong'): void {
@@ -112,6 +112,7 @@ export class LoginComponent implements OnInit {
   private async navigateAfterLogin(): Promise<void> {
     try {
       const navigated = await this.router.navigateByUrl(this.returnRoute);
+      if (navigated) this.authService.clearLoginReturnRoute();
       if (!navigated) {
         this.loginError.set('We could not open the requested page. Please try again.');
       }
@@ -137,8 +138,9 @@ export class LoginComponent implements OnInit {
   }
 
   private getReturnRoute(): string {
+    const requested = this.route.snapshot.queryParamMap.get('returnTo');
     return this.authService.getSafeReturnRoute(
-      this.route.snapshot.queryParamMap.get('returnTo'),
+      requested && requested !== '/login' ? requested : this.authService.pendingLoginReturnRoute(),
     );
   }
 

@@ -53,6 +53,7 @@ export class AuthService {
   private readonly TOKEN_KEY = 'token';
   private readonly USER_KEY = 'user';
   private readonly LEGACY_SESSION_KEY = 'rmc_session_user';
+  private readonly LOGIN_RETURN_KEY = 'rmc_login_return';
 
   /** Internal writable signal — only this service may write to it. */
   private _currentUser = signal<User | null>(null);
@@ -84,6 +85,7 @@ export class AuthService {
     localStorage.removeItem(this.USER_KEY);
     this.formCache.clear();
 
+    sessionStorage.setItem(this.LOGIN_RETURN_KEY, this.getSafeReturnRoute(returnTo));
     const query = new URLSearchParams({
       endpoint: this.getSafeLoginEndpoint(returnTo),
       redirect_url: this.getRedirectUrl(),
@@ -194,6 +196,14 @@ export class AuthService {
     }
 
     return value;
+  }
+
+  pendingLoginReturnRoute(): string | null {
+    return sessionStorage.getItem(this.LOGIN_RETURN_KEY);
+  }
+
+  clearLoginReturnRoute(): void {
+    sessionStorage.removeItem(this.LOGIN_RETURN_KEY);
   }
 
   login(usernameOrEmail: string, password: string): boolean {

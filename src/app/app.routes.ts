@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { LayoutComponent } from './layout/layout.component';
+import { attachmentViewerRedirectGuard } from './core/guards/attachment-viewer-redirect.guard';
 import { authGuard } from './core/guards/auth.guard';
 import { permissionGuard } from './core/guards/permission.guard';
 import {
@@ -15,6 +16,8 @@ import {
 } from './core/routing/app-route-permissions';
 
 export const routes: Routes = [
+  { path: 'attachments/session', loadComponent: () => import('./features/attachments/attachment-session.component').then(m => m.AttachmentSessionComponent) },
+  { path: 'attachments/view', canActivate: [attachmentViewerRedirectGuard], children: [] },
   {
     path: 'login',
     loadComponent: () =>
@@ -25,10 +28,6 @@ export const routes: Routes = [
     component: LayoutComponent,
     canActivate: [authGuard],
     children: [
-      {
-        path: 'attachments/view',
-        loadComponent: () => import('./features/attachments/attachment-viewer.component').then(m => m.AttachmentViewerComponent),
-      },
       {
         path: 'dashboard',
         loadChildren: () =>

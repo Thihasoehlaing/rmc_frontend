@@ -41,8 +41,7 @@ export function isRmcApiRequest(url: string): boolean {
     const isAttachmentRequest = requestUrl.origin === attachmentBase.origin &&
       requestUrl.pathname.startsWith(`${attachmentPath}/`) &&
       (/^\/(?:files|view-files|uploads)\//.test(relativePath) ||
-        /^\/requests\/\d+\/attachments\/\d+\/view$/.test(relativePath) ||
-        relativePath === '/auth/attachment-view-session');
+        /^\/requests\/\d+\/attachments\/\d+\/view$/.test(relativePath));
 
     return (
       isAttachmentRequest || (requestUrl.origin === configuredApiUrl.origin &&

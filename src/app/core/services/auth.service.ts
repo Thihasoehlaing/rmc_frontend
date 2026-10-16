@@ -2,10 +2,10 @@ import { HttpClient, HttpContext, HttpErrorResponse } from '@angular/common/http
 import { DOCUMENT } from '@angular/common';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { Observable, catchError, map, switchMap, tap, throwError, finalize, timeout } from 'rxjs';
+import { Observable, catchError, map, switchMap, tap, throwError } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
-import { SHOW_API_SUCCESS, SKIP_API_TOAST } from '../interceptors/api-message.interceptor';
+import { SHOW_API_SUCCESS } from '../interceptors/api-message.interceptor';
 import { User, UserGroup } from '../interfaces/user.interface';
 import { FormCacheService } from './form-cache.service';
 import { ToastService } from './toast.service';
@@ -238,22 +238,12 @@ export class AuthService {
     const isTestingSession = this.isTestingAccessToken(this.getAccessToken());
     this.clearStoredSession();
 
-    const redirect = () => {
-      this.logoutInProgress = false;
-      if (isTestingSession) {
-        this.document.location.replace('/login');
-        return;
-      }
-      const query = new URLSearchParams({ redirect_url: this.getRedirectUrl() });
-      this.document.location.replace(`${environment.authUrl}/logout?${query.toString()}`);
-    };
-    // Cookie cleanup is best effort: failures must not interrupt logout or show API toasts.
-    this.http.delete(`${environment.attachmentBaseUrl}/auth/attachment-view-session`, {
-      withCredentials: true,
-      context: new HttpContext().set(SKIP_API_TOAST, true),
-    })
-      .pipe(timeout(5000), finalize(redirect))
-      .subscribe({ error: () => {} });
+    if (isTestingSession) {
+      this.document.location.replace('/login');
+      return;
+    }
+    const query = new URLSearchParams({ redirect_url: this.getRedirectUrl() });
+    this.document.location.replace(`${environment.authUrl}/logout?${query.toString()}`);
   }
 
   /** Returns true if the current user belongs to the given group. */

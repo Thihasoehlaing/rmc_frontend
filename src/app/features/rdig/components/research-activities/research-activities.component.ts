@@ -43,7 +43,7 @@ import { TableRowCounterComponent } from '../../../../shared/components/table-ro
 export class ResearchActivitiesComponent implements OnInit, OnDestroy {
   readonly maxActivities = 24;
 
-  readonly activityColumns: DataTableColumn[] = [
+  private readonly baseActivityColumns: DataTableColumn[] = [
     {
       key: 'index',
       label: '#',
@@ -57,7 +57,7 @@ export class ResearchActivitiesComponent implements OnInit, OnDestroy {
     { key: 'duration', label: 'Duration', width: 'var(--size-table-column-duration)' },
     {
       key: 'timeline',
-      label: 'Timeline (Month 1 - 12)',
+      label: 'Timeline (Month 1 - 24)',
       width: 'var(--size-table-column-timeline)',
     },
     {
@@ -68,7 +68,22 @@ export class ResearchActivitiesComponent implements OnInit, OnDestroy {
       headerAlign: 'center',
     },
   ];
+  activityColumns = this.baseActivityColumns;
   @Input({ required: true }) parentForm!: FormGroup;
+  @Input() set selectedProjectDuration(value: unknown) {
+    const duration = Number.parseInt(String(value ?? ''), 10);
+    const selectedDuration = Number.isFinite(duration) && duration > 0 ? duration : 0;
+    this.projectDuration.set(selectedDuration);
+    this.activityColumns = this.baseActivityColumns.map((column) =>
+      column.key === 'timeline'
+        ? {
+            ...column,
+            label: `Timeline (Month 1 - ${selectedDuration || this.maximumProjectDuration})`,
+          }
+        : column,
+    );
+    if (selectedDuration > 0 && this.parentForm) this.clampActivityMonths();
+  }
   @Input() showHosComments = false;
   @Input() showRmcComments = false;
   @Input() showR1Comments = false;
@@ -94,9 +109,13 @@ export class ResearchActivitiesComponent implements OnInit, OnDestroy {
   projectDuration = signal<number>(0);
 
   private readonly activityMinMonth = 1;
-  private readonly activityMaxMonth = 12;
+  private readonly maximumProjectDuration = 24;
 
-  /** Research activity planning uses a fixed M1-M12 range. */
+  private get activityMaxMonth(): number {
+    return this.projectDuration() || this.maximumProjectDuration;
+  }
+
+  /** Until a duration is selected, show the full supported planning range. */
   months = computed(() =>
     Array.from(
       { length: this.activityMaxMonth - this.activityMinMonth + 1 },
@@ -121,26 +140,6 @@ export class ResearchActivitiesComponent implements OnInit, OnDestroy {
   constructor(private fb: FormBuilder) {}
 
   ngOnInit() {
-    // Watch project duration from parent form
-    const durationCtrl = this.parentForm.get('projectDetails.duration');
-    if (durationCtrl) {
-      // Set initial — keep 0 if not selected yet
-      const initial = parseInt(durationCtrl.value, 10);
-      if (initial > 0) {
-        this.projectDuration.set(initial);
-      }
-
-      this.subs.push(
-        durationCtrl.valueChanges.subscribe((val) => {
-          const dur = parseInt(val, 10);
-          if (dur > 0) {
-            this.projectDuration.set(dur);
-            this.clampActivityMonths(dur);
-          }
-        }),
-      );
-    }
-
     // Watch activities changes for validation and duration updates
     this.subs.push(
       this.activities.valueChanges.subscribe(() => {
@@ -189,11 +188,16 @@ export class ResearchActivitiesComponent implements OnInit, OnDestroy {
   }
 
   canAddActivity(): boolean {
-    return !this.workflow?.isFormReadOnly() && this.activities.length < this.maxActivities;
+    return (
+      this.projectDuration() > 0 &&
+      !this.workflow?.isFormReadOnly() &&
+      this.activities.length < this.maxActivities
+    );
   }
 
   getAddActivityTitle(): string {
     if (this.activities.length >= this.maxActivities) return `Maximum ${this.maxActivities} activities reached`;
+    if (this.projectDuration() === 0) return 'Select project duration before adding activities';
     if (!this.canAddActivity()) return 'This form is read-only';
     return '';
   }
@@ -216,7 +220,7 @@ export class ResearchActivitiesComponent implements OnInit, OnDestroy {
   }
 
   /** Clamp all activity months to the allowed activity planning range. */
-  private clampActivityMonths(_maxMonth?: number): void {
+  private clampActivityMonths(): void {
     for (let i = 0; i < this.activities.length; i++) {
       this.ensureValidActivityMonths(this.activities.at(i) as FormGroup);
     }

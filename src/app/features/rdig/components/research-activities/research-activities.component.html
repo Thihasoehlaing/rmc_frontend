@@ -8,7 +8,7 @@
       <div class="list-section-header">
         <span class="list-count"
           >{{ activities.length }} {{ activities.length === 1 ? 'Activity' : 'Activities' }} ·
-          Duration: {{ projectDuration() }} Months</span
+          Duration: {{ projectDuration() > 0 ? projectDuration() + ' Months' : 'Not selected' }}</span
         >
         <app-action-button
           type="primary"

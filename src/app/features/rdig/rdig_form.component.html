@@ -263,6 +263,7 @@
                 </app-project-details>
                 <app-research-activities
                   [parentForm]="rdigForm"
+                  [selectedProjectDuration]="rdigForm.get('projectDetails.duration')?.value"
                   [showHosComments]="showHosComments()"
                   [showRmcComments]="showRmcComments()"
                   [showR1Comments]="showR1Comments()"

@@ -1,3 +1,4 @@
+import { DatePickerComponent } from '../../../shared/components/date-picker/date-picker.component';
 import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { NgClass } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -32,6 +33,7 @@ import { formatDisplayDate } from '../../../shared/utils/date-time.util';
   selector: 'app-history',
   standalone: true,
   imports: [
+    DatePickerComponent,
     NgClass,
     PaginationComponent,
     RouterLink,
@@ -175,8 +177,8 @@ export class HistoryComponent implements OnInit {
     this.page.set(1);
   }
 
-  onCreatedDateChange(event: Event): void {
-    this.createdDate.set((event.target as HTMLInputElement).value);
+  onCreatedDateChange(value: string): void {
+    this.createdDate.set(value);
     this.page.set(1);
   }
 

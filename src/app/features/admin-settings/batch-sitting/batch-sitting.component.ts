@@ -29,7 +29,10 @@ import {
   ElementRef,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { formatDisplayDateTime } from '../../../shared/utils/date-time.util';
+import {
+  formatDisplayDateTime,
+  formatMalaysiaScheduleDateTime,
+} from '../../../shared/utils/date-time.util';
 import {
   AbstractControl,
   FormBuilder,
@@ -1079,11 +1082,15 @@ export class BatchSittingComponent implements OnInit, OnDestroy {
   }
 
   fmt(d: string | null | undefined): string {
+    return formatMalaysiaScheduleDateTime(d, '—');
+  }
+
+  fmtAuditDate(d: string | null | undefined): string {
     return formatDisplayDateTime(d, '—');
   }
 
   fmtTableDate(d: string | null | undefined): string {
-    return formatDisplayDateTime(d, 'Not scheduled');
+    return formatMalaysiaScheduleDateTime(d, 'Not scheduled');
   }
 
   /**

@@ -1,3 +1,4 @@
+import { DatePickerComponent } from '../../../shared/components/date-picker/date-picker.component';
 import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -27,6 +28,7 @@ const DRAFT_STATUSES = new Set(['draft', 'fill_application', 'normal_application
   selector: 'app-drafts',
   standalone: true,
   imports: [
+    DatePickerComponent,
     PaginationComponent,
     TableActionIconComponent,
     SubmissionsSearchComponent,
@@ -157,8 +159,8 @@ export class DraftsComponent implements OnInit {
     this.page.set(1);
   }
 
-  onCreatedDateChange(event: Event): void {
-    this.createdDate.set((event.target as HTMLInputElement).value);
+  onCreatedDateChange(value: string): void {
+    this.createdDate.set(value);
     this.page.set(1);
   }
 

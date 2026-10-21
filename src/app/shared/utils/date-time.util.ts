@@ -38,6 +38,18 @@ export function formatDisplayDateTime(
   return date ? formatDateTimeParts(MALAYSIA_DATE_TIME_FORMATTER, date) : fallback;
 }
 
+/** Format a Malaysia wall-clock schedule, whose API value has no timezone. */
+export function formatMalaysiaScheduleDateTime(
+  value: string | null | undefined,
+  fallback = '-',
+): string {
+  const trimmed = value?.trim();
+  if (!trimmed) return fallback;
+  // Batch schedules use timezone-free local values; audit timestamps use UTC.
+  const zoned = ISO_TIME_ZONE_PATTERN.test(trimmed) ? trimmed : `${trimmed}+08:00`;
+  return formatDisplayDateTime(zoned, fallback);
+}
+
 export function formatMalaysiaDateTime(
   value: string | Date | null | undefined,
   fallback = '-',

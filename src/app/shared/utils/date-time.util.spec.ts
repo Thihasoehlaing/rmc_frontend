@@ -4,6 +4,7 @@ import {
   formatDisplayDate,
   formatDisplayDateTime,
   formatMalaysiaDateTime,
+  formatMalaysiaScheduleDateTime,
 } from './date-time.util';
 
 describe('date-time display formatting', () => {
@@ -23,5 +24,27 @@ describe('date-time display formatting', () => {
   it('returns the requested fallback for missing or invalid values', () => {
     expect(formatDisplayDate(null, '—')).toBe('—');
     expect(formatDisplayDateTime('not-a-date', 'Not set')).toBe('Not set');
+  });
+});
+
+describe('Malaysia batch schedule formatting', () => {
+  it('preserves the form time without shifting schedules into the next day', () => {
+    expect(formatMalaysiaScheduleDateTime('2026-10-21T17:30')).toBe('21-10-2026 05:30 PM');
+    expect(formatMalaysiaScheduleDateTime('2026-10-26T23:59:00')).toBe('26-10-2026 11:59 PM');
+    expect(formatMalaysiaScheduleDateTime('2026-10-21 17:30:00')).toBe('21-10-2026 05:30 PM');
+  });
+
+  it('honours explicit timezone offsets', () => {
+    expect(formatMalaysiaScheduleDateTime('2026-10-21T09:30:00Z')).toBe('21-10-2026 05:30 PM');
+    expect(formatMalaysiaScheduleDateTime('2026-10-21T17:30:00+08:00')).toBe('21-10-2026 05:30 PM');
+  });
+
+  it('preserves UTC interpretation for audit timestamps', () => {
+    expect(formatDisplayDateTime('2026-10-21T17:30:00')).toBe('22-10-2026 01:30 AM');
+  });
+
+  it('uses the supplied fallback for missing or invalid schedules', () => {
+    expect(formatMalaysiaScheduleDateTime(null, 'Not scheduled')).toBe('Not scheduled');
+    expect(formatMalaysiaScheduleDateTime('invalid', '—')).toBe('—');
   });
 });

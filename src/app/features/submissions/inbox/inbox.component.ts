@@ -1,3 +1,4 @@
+import { DatePickerComponent } from '../../../shared/components/date-picker/date-picker.component';
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { finalize, forkJoin } from 'rxjs';
@@ -28,6 +29,7 @@ import { formatDisplayDate } from '../../../shared/utils/date-time.util';
   selector: 'app-inbox',
   standalone: true,
   imports: [
+    DatePickerComponent,
     PaginationComponent,
     TableActionIconComponent,
     RouterLink,
@@ -147,8 +149,8 @@ export class InboxComponent implements OnInit {
     this.applicantDraft.set((event.target as HTMLInputElement).value);
   }
 
-  onSubmissionDateDraftChange(event: Event): void {
-    this.submissionDateDraft.set((event.target as HTMLInputElement).value);
+  onSubmissionDateDraftChange(value: string): void {
+    this.submissionDateDraft.set(value);
   }
 
   applyFilters(): void {

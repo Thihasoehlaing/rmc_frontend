@@ -44,12 +44,10 @@
       >
         <label search-filters class="mgr-date-filter">
           <span class="sr-only">Created date</span>
-          <input
-            class="input--text"
-            type="date"
-            [value]="createdDate()"
-            (input)="onCreatedDateChange($event)"
-            aria-label="Filter by created date"
+          <app-date-picker
+            [dateValue]="createdDate()"
+            (dateValueChange)="onCreatedDateChange($event)"
+            ariaLabel="Filter by created date"
           />
         </label>
       </app-submissions-search>

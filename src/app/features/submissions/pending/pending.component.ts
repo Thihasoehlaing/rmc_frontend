@@ -1,3 +1,4 @@
+import { DatePickerComponent } from '../../../shared/components/date-picker/date-picker.component';
 import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -29,6 +30,7 @@ import { formatDisplayDate } from '../../../shared/utils/date-time.util';
   selector: 'app-pending',
   standalone: true,
   imports: [
+    DatePickerComponent,
     PaginationComponent,
     RouterLink,
     SubmissionsSearchComponent,
@@ -139,8 +141,8 @@ export class PendingComponent implements OnInit {
     this.page.set(1);
   }
 
-  onCreatedDateChange(event: Event): void {
-    this.createdDate.set((event.target as HTMLInputElement).value);
+  onCreatedDateChange(value: string): void {
+    this.createdDate.set(value);
     this.page.set(1);
   }
 

@@ -606,13 +606,8 @@
             ariaLabel="Start date and time"
           ></app-date-picker>
           <app-validation-message [control]="form.get('startDate')"></app-validation-message>
-          @if (type === 'active' && hasActiveStartTooSoon(form)) {
-            <span class="field-error"
-              >If scheduling this batch for later, it must start at least 1 hour from now.</span
-            >
-          }
           @if (type === 'planned' && hasPlannedStartTooSoon(form)) {
-            <span class="field-error">Must start at least 1 hour from now.</span>
+            <span class="field-error">Start date and time cannot be in the past.</span>
           }
         </div>
 

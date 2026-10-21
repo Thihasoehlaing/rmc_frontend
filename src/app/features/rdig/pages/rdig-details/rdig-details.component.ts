@@ -41,7 +41,7 @@ import { CustomSubheaderComponent } from '../../../../shared/components/custom-s
 import { DialogComponent } from '../../../../shared/components/dialog/dialog.component';
 import { SearchableDropdownComponent } from '../../../../shared/components/searchable-dropdown/searchable-dropdown.component';
 import { formatMyrCurrency } from '../../../../shared/utils/currency.util';
-import { formatDisplayDateTime, getApiDateTimeMs } from '../../../../shared/utils/date-time.util';
+import { formatMalaysiaScheduleDateTime, getMalaysiaScheduleDateTimeMs } from '../../../../shared/utils/date-time.util';
 import { WORKFLOW_STAGE_META } from '../../../../core/interfaces/batch-sitting.interface';
 import { DropdownOption } from '../../../../core/interfaces/components.interface';
 import {
@@ -1023,8 +1023,8 @@ export class RdigDetailsComponent implements OnInit {
     if (!stage) return null;
     if (this.request()?.batch?.status?.trim().toLowerCase() === 'completed') return 'closed';
     const window = this.stageWindowForLabel(stage.label);
-    const start = getApiDateTimeMs(window?.stage_start_date);
-    const end = getApiDateTimeMs(window?.stage_end_date);
+    const start = getMalaysiaScheduleDateTimeMs(window?.stage_start_date);
+    const end = getMalaysiaScheduleDateTimeMs(window?.stage_end_date);
     if (start === null || end === null || end < start) return 'unscheduled';
     if (this.scheduleNow() < start) return 'upcoming';
     if (this.scheduleNow() > end) return 'closed';
@@ -1062,7 +1062,7 @@ export class RdigDetailsComponent implements OnInit {
   });
 
   fmtBatchDateTime(value: string | null | undefined): string {
-    return formatDisplayDateTime(value, 'Not scheduled');
+    return formatMalaysiaScheduleDateTime(value, 'Not scheduled');
   }
 
   readonly currentStageWindowOpensLabel = computed(() => {
@@ -1086,8 +1086,8 @@ export class RdigDetailsComponent implements OnInit {
 
   private stageWindowLabel(stageLabel: string): string {
     const window = this.stageWindowForLabel(stageLabel);
-    const start = this.fmtDate(window?.stage_start_date);
-    const end = this.fmtDate(window?.stage_end_date);
+    const start = this.fmtBatchDateTime(window?.stage_start_date);
+    const end = this.fmtBatchDateTime(window?.stage_end_date);
     if (start === '—' && end === '—') return '—';
     return `${start} – ${end}`;
   }

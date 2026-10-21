@@ -20,7 +20,7 @@ import {
 } from '../../core/interfaces/batch-sitting.interface';
 import { NotificationService } from '../../core/services/notification.service';
 import { ToastService } from '../../core/services/toast.service';
-import { formatDisplayDateTime } from '../../shared/utils/date-time.util';
+import { formatMalaysiaScheduleDateTime, getMalaysiaScheduleDateTimeMs } from '../../shared/utils/date-time.util';
 
 // Shared layout components
 import {
@@ -82,8 +82,8 @@ export function isApplicantSubmissionWindowOpen(
 ): boolean {
   if (!hasActiveBatch || batchStatus?.trim().toLowerCase() !== 'active') return false;
 
-  const startTime = applicantStart ? new Date(applicantStart).getTime() : NaN;
-  const endTime = applicantEnd ? new Date(applicantEnd).getTime() : NaN;
+  const startTime = getMalaysiaScheduleDateTimeMs(applicantStart) ?? NaN;
+  const endTime = getMalaysiaScheduleDateTimeMs(applicantEnd) ?? NaN;
   return (
     Number.isFinite(startTime) &&
     Number.isFinite(endTime) &&
@@ -214,7 +214,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
 
   /** Formats an ISO date/datetime for display in the batch banner. */
   fmtWindow(iso: string | null): string {
-    return formatDisplayDateTime(iso, iso || '\u2014');
+    return formatMalaysiaScheduleDateTime(iso, iso || '\u2014');
   }
 
   private emptyStageWindows(): Record<WorkflowStageKey, WorkflowStageWindow> {
@@ -2091,14 +2091,16 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
       return;
     }
     if (this.hasActiveApplicantWindow() && batch && !bypassBatchValidation) {
-      const now = new Date();
+      const now = Date.now();
       // Applicant users are gated on the "Applicant" stage window — its start is
       // when submissions open for them — not the overall batch window (see
       // submissionOpenIso/submissionCloseIso, sourced only from the Applicant stage).
       const openIso = this.submissionOpenIso();
       const closeIso = this.submissionCloseIso();
-      const beforeOpen = !!openIso && now < new Date(openIso);
-      const afterClose = !!closeIso && now > new Date(closeIso);
+      const openTime = getMalaysiaScheduleDateTimeMs(openIso);
+      const beforeOpen = openTime !== null && now < openTime;
+      const closeTime = getMalaysiaScheduleDateTimeMs(closeIso);
+      const afterClose = closeTime !== null && now > closeTime;
       if (beforeOpen || afterClose) {
         this.showClosedWindowModal.set(true);
         return;

@@ -93,6 +93,18 @@ describe('RDIG application batch presentation', () => {
     expect(component.currentStageWindowState()).toBe('closed');
   });
 
+  it('opens Malaysia local schedules immediately without an eight-hour delay', () => {
+    setRequest('pending_hos', { ...batch, status: 'active', stage_windows: [{
+      stage_name: 'HOS First Review',
+      stage_start_date: '2026-10-21T17:30:00', stage_end_date: '2026-10-26T23:59:00',
+    }] });
+    component.scheduleNow.set(Date.parse('2026-10-21T09:30:00Z'));
+    expect(component.currentStageWindowState()).toBe('open');
+    expect(component.currentStageWindowStateLabel()).toBe('Open now');
+    expect(component.currentStageWindowOpensLabel()).toBe('21-10-2026 05:30 PM');
+    expect(component.currentStageWindowClosesLabel()).toBe('26-10-2026 11:59 PM');
+  });
+
   it('shows whose turn it is using viewer role and API permissions', () => {
     setRequest('pending_hos', { ...batch, status: 'active' });
     component.scheduleNow.set(Date.parse('2026-09-11T00:00:00Z'));

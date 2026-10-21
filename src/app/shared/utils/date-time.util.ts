@@ -43,11 +43,25 @@ export function formatMalaysiaScheduleDateTime(
   value: string | null | undefined,
   fallback = '-',
 ): string {
+  const ms = getMalaysiaScheduleDateTimeMs(value);
+  return ms === null ? fallback : formatDisplayDateTime(new Date(ms), fallback);
+}
+
+/** Schedule strings without an offset represent Malaysia time, independent of browser timezone. */
+export function getMalaysiaScheduleDateTimeMs(value: string | null | undefined): number | null {
   const trimmed = value?.trim();
-  if (!trimmed) return fallback;
-  // Batch schedules use timezone-free local values; audit timestamps use UTC.
+  if (!trimmed) return null;
   const zoned = ISO_TIME_ZONE_PATTERN.test(trimmed) ? trimmed : `${trimmed}+08:00`;
-  return formatDisplayDateTime(zoned, fallback);
+  return getApiDateTimeMs(zoned);
+}
+
+/** Current Malaysia wall time in the format used by batch form controls. */
+export function malaysiaNowInputValue(): string {
+  const parts = dateParts(new Intl.DateTimeFormat('en-GB', {
+    timeZone: MALAYSIA_TIME_ZONE, year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
+  }), new Date());
+  return `${parts['year']}-${parts['month']}-${parts['day']}T${parts['hour']}:${parts['minute']}`;
 }
 
 export function formatMalaysiaDateTime(

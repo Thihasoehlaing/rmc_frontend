@@ -32,6 +32,7 @@ import { CommonModule } from '@angular/common';
 import {
   formatDisplayDateTime,
   formatMalaysiaScheduleDateTime,
+  malaysiaNowInputValue,
 } from '../../../shared/utils/date-time.util';
 import {
   AbstractControl,
@@ -80,17 +81,7 @@ function toLocalInputValue(d: Date): string {
 }
 
 function nowInputValue(): string {
-  return toLocalInputValue(new Date());
-}
-
-function addMinutesToValue(value: string, minutes: number): string {
-  if (!value) return '';
-  const [datePart, timePart] = value.split('T');
-  const [y, mo, da] = datePart.split('-').map(Number);
-  const [h, mi] = (timePart ?? '00:00').split(':').map(Number);
-  const dt = new Date(y, mo - 1, da, h, mi);
-  dt.setMinutes(dt.getMinutes() + minutes);
-  return toLocalInputValue(dt);
+  return malaysiaNowInputValue();
 }
 
 /** Midnight at the start of the calendar day after `value` — used to enforce a full 1-day gap between consecutive batches. */
@@ -113,21 +104,6 @@ function endAfterStartValidator(group: AbstractControl): ValidationErrors | null
 }
 
 /**
- * An active batch's start date is allowed to move into the future — saveActive()
- * auto-demotes it to "planned" via the /plan route when that happens — but
- * only if the new date clears the same >=1hr-from-now buffer required of any
- * planned batch. A future date less than 1hr away is neither a valid "starts
- * now" edit nor a valid "planned" schedule, so it's rejected outright.
- */
-function activeStartBufferValidator(control: AbstractControl): ValidationErrors | null {
-  const v = control.value as string | null;
-  if (!v) return null;
-  const now = nowInputValue();
-  if (v <= now) return null;
-  return v < addMinutesToValue(now, 60) ? { activeStartTooSoon: true } : null;
-}
-
-/**
  * Batch names are unique per form in the DB (uq_batches on form_id+batch_name),
  * across every status — including completed batches still sitting in history.
  * Caught here so the admin gets an inline message instead of a 500 from the
@@ -142,11 +118,11 @@ function batchNameUniqueValidator(takenNamesFn: () => Set<string>) {
   };
 }
 
-/** A planned batch can't be scheduled in the past — it must start at least 1hr from now. */
+/** Planned batches may start now, but cannot be scheduled in the past. */
 function plannedStartNotPastValidator(control: AbstractControl): ValidationErrors | null {
   const v = control.value as string | null;
   if (!v) return null;
-  return v < addMinutesToValue(nowInputValue(), 60) ? { plannedStartTooSoon: true } : null;
+  return v < nowInputValue() ? { plannedStartTooSoon: true } : null;
 }
 
 /**
@@ -326,12 +302,12 @@ export class BatchSittingComponent implements OnInit, OnDestroy {
   /**
    * Min startDate for a brand-new planned batch: whichever is later of (a) the
    * start of the day *after* the last planned/active batch ends — batches
-   * can't share a calendar day — and (b) at least 1 hour from now.
+   * can't share a calendar day — and (b) the current time.
    */
   get newPlannedMinStart(): string {
     const prevEnd = this.prevBatchEndFor(null);
     const chained = prevEnd ? startOfNextDay(prevEnd) : '';
-    const floor = addMinutesToValue(nowInputValue(), 60);
+    const floor = nowInputValue();
     return chained && chained > floor ? chained : floor;
   }
 
@@ -339,7 +315,7 @@ export class BatchSittingComponent implements OnInit, OnDestroy {
   minStartFor(batch: BatchSitting): string {
     const prevEnd = this.prevBatchEndFor(batch);
     const chained = prevEnd ? startOfNextDay(prevEnd) : '';
-    const floor = addMinutesToValue(nowInputValue(), 60);
+    const floor = nowInputValue();
     return chained && chained > floor ? chained : floor;
   }
 
@@ -567,7 +543,7 @@ export class BatchSittingComponent implements OnInit, OnDestroy {
       );
     }
     const startDateValidators = isActive
-      ? [Validators.required, activeStartBufferValidator]
+      ? [Validators.required]
       : [Validators.required, plannedStartNotPastValidator];
     return this.fb.group(
       {
@@ -697,8 +673,7 @@ export class BatchSittingComponent implements OnInit, OnDestroy {
     const existing = this.activeBatch();
     if (existing) {
       // Editing an active batch's start date into the future auto-demotes it
-      // to "planned" via the /plan route — the validator above already
-      // guarantees this is either <= now, or safely >= 1hr from now.
+      // to "planned" via the /plan route. No lead-time buffer is required.
       const movesToPlanned = typeof fv.startDate === 'string' && fv.startDate > nowInputValue();
       const payload: BatchSitting = {
         ...existing,
@@ -1043,11 +1018,6 @@ export class BatchSittingComponent implements OnInit, OnDestroy {
   hasBatchNameTaken(form: FormGroup): boolean {
     const c = form.get('batchName');
     return !!c?.errors?.['batchNameTaken'] && !!c?.touched;
-  }
-
-  hasActiveStartTooSoon(form: FormGroup): boolean {
-    const c = form.get('startDate');
-    return !!c?.errors?.['activeStartTooSoon'] && !!c?.touched;
   }
 
   hasPlannedStartTooSoon(form: FormGroup): boolean {

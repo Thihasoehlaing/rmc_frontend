@@ -5,6 +5,7 @@ import {
   formatDisplayDateTime,
   formatMalaysiaDateTime,
   formatMalaysiaScheduleDateTime,
+  getMalaysiaScheduleDateTimeMs,
 } from './date-time.util';
 
 describe('date-time display formatting', () => {
@@ -46,5 +47,15 @@ describe('Malaysia batch schedule formatting', () => {
   it('uses the supplied fallback for missing or invalid schedules', () => {
     expect(formatMalaysiaScheduleDateTime(null, 'Not scheduled')).toBe('Not scheduled');
     expect(formatMalaysiaScheduleDateTime('invalid', '—')).toBe('—');
+  });
+});
+
+describe('Malaysia schedule comparisons', () => {
+  it('treats local schedules and equivalent UTC instants as the same moment', () => {
+    expect(getMalaysiaScheduleDateTimeMs('2026-10-21T17:30:00')).toBe(Date.parse('2026-10-21T09:30:00Z'));
+    expect(getMalaysiaScheduleDateTimeMs('2026-10-26T23:59:00')).toBe(Date.parse('2026-10-26T15:59:00Z'));
+    expect(getMalaysiaScheduleDateTimeMs('2026-10-21T09:30:00Z')).toBe(Date.parse('2026-10-21T09:30:00Z'));
+    expect(getMalaysiaScheduleDateTimeMs('invalid')).toBeNull();
+    expect(getMalaysiaScheduleDateTimeMs(null)).toBeNull();
   });
 });

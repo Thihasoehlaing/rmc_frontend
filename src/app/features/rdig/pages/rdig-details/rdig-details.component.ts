@@ -347,7 +347,7 @@ export class RdigDetailsComponent implements OnInit {
     const name = reviewer.staff_fullname?.trim() || username;
     const details = [username, reviewer.department, reviewer.job_title].filter(Boolean).join(' · ');
     return {
-      value: username,
+      value: String(reviewer.staff_id),
       label: name,
       description: details,
       searchText: `${name} ${details}`,
@@ -2259,8 +2259,8 @@ export class RdigDetailsComponent implements OnInit {
             action_code: action.action_code,
             approved_amount_by_cfo: this.canEditWholeFormComment('cfo') ? this.approvedAmountControl.value! : undefined,
             comment_text: actionComment,
-            selected_reviewer_usernames: action.requires_reviewer_selection
-              ? [...this.selectedReviewerUsernames()]
+            selected_reviewer_staff_ids: action.requires_reviewer_selection
+              ? this.selectedReviewerUsernames().map(Number)
               : undefined,
           }),
         ),

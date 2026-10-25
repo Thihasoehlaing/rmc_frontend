@@ -28,6 +28,7 @@ export interface CorrectionRequestSummary {
 
 export interface ApuStaffCoAuthorCorrectionRow {
   id: number;
+  staff_id?: number | null;
   staff_name: string | null;
   staff_department: string | null;
   affiliation: string | null;
@@ -41,6 +42,7 @@ export interface FormCorrectionLookupData {
 }
 
 export interface ApuStaffCoAuthorCorrectionPayload {
+  staff_id?: number | null;
   staff_name: string;
   staff_department: string | null;
   affiliation: string | null;

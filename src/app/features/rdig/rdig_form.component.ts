@@ -1354,6 +1354,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
       (data.apu_co_researchers ?? []).map((item) => ({
         backendId: item.id,
         staffId: item.staff_id,
+        directoryStaffId: item.directory_staff_id != null ? String(item.directory_staff_id) : null,
         staffName: item.staff_name,
         department: item.staff_department,
         expertise: item.area_of_expertise,
@@ -1900,6 +1901,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
             this.rdigForm.get('teamDetails.internalResearchers') as FormArray,
             (raw) => ({
               staff_id: raw.staffId || null,
+              directory_staff_id: raw.directoryStaffId ? Number(raw.directoryStaffId) : null,
               staff_name: raw.staffName || null,
               staff_department: raw.department || null,
               area_of_expertise: raw.expertise || null,

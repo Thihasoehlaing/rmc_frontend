@@ -62,7 +62,10 @@ export interface ApprovalDto {
 export interface RdigRequestReviewerDto {
   id: number;
   rdig_request_id: number;
-  academic_staff_id: number;
+  /** Deprecated compatibility reference. */
+  academic_staff_id?: number;
+  staff_id?: number | null;
+  staff_username?: string | null;
   reviewer_no: number | null;
   username: string | null;
   name: string | null;
@@ -232,6 +235,7 @@ export interface ActOnRequestPayload {
   action_code: string;
   comment_text?: string | null;
   /** RMC reviewer selection — usernames chosen when a step requires it. */
+  selected_reviewer_staff_ids?: number[];
   selected_reviewer_usernames?: string[];
   reviewers?: Array<Record<string, unknown>>;
   metadata?: Record<string, unknown>;

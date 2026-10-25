@@ -58,11 +58,13 @@ import {
 type TableEntryType = 'internal' | 'external' | 'outcome' | 'budget' | 'billing';
 
 interface InternalCoResearcherRow {
+  staffId?: string | null;
   staffName: string;
   schoolDepartment: string;
 }
 
 interface StaffMember {
+  staffId: string;
   name: string;
   schoolDepartment: string;
   username: string;
@@ -152,6 +154,7 @@ export class ExternalProjectDataEntryComponent {
     }),
     referenceCode: [''],
     description: [''],
+    staffId: [''],
     staffName: [''],
     schoolDepartment: [''],
     sponsorName: [''],
@@ -166,6 +169,7 @@ export class ExternalProjectDataEntryComponent {
   });
 
   readonly tableEntryForm = this.fb.group({
+    staffId: [''],
     staffName: [''],
     schoolDepartment: [''],
     name: [''],
@@ -307,22 +311,13 @@ export class ExternalProjectDataEntryComponent {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => this.updateProjectDuration());
 
-    this.externalProjectForm.controls.staffName.valueChanges
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((staffName) => {
-        this.externalProjectForm.controls.schoolDepartment.setValue(
-          this.getStaffDepartment(staffName),
-          { emitEvent: false },
-        );
+    for (const form of [this.externalProjectForm, this.tableEntryForm]) {
+      form.controls.staffId.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((staffId) => {
+        const staff = this.staffDirectory.find(item => item.staffId === staffId);
+        if (staff) form.patchValue({ staffName: staff.name, schoolDepartment: staff.schoolDepartment }, { emitEvent: false });
       });
+    }
 
-    this.tableEntryForm.controls.staffName.valueChanges
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((staffName) => {
-        this.tableEntryForm.controls.schoolDepartment.setValue(this.getStaffDepartment(staffName), {
-          emitEvent: false,
-        });
-      });
   }
 
   private loadOptionsAndInitialForm(): void {
@@ -408,6 +403,7 @@ export class ExternalProjectDataEntryComponent {
 
         return {
           name,
+          staffId: String(staff.staff_id),
           username: staff.username?.trim() || '',
           email: staff.email?.trim() || '',
           schoolDepartment: staff.department?.trim() || '',
@@ -421,8 +417,8 @@ export class ExternalProjectDataEntryComponent {
         .join(' • ');
 
       return {
-        value: staff.name,
-        label: staff.name,
+        value: staff.staffId,
+        label: `${staff.name} (${staff.username})`,
         description,
         searchText: [staff.name, staff.username, staff.email, staff.schoolDepartment]
           .filter(Boolean)
@@ -555,7 +551,7 @@ export class ExternalProjectDataEntryComponent {
       case 'internal':
         this.internalCoResearchers = this.upsertRow(
           this.internalCoResearchers,
-          { staffName: value.staffName ?? '', schoolDepartment: value.schoolDepartment ?? '' },
+          { staffId: value.staffId ?? null, staffName: value.staffName ?? '', schoolDepartment: value.schoolDepartment ?? '' },
           index,
         );
         break;
@@ -827,6 +823,7 @@ export class ExternalProjectDataEntryComponent {
       project_account_code: this.clean(value.projectAccountCode),
       reference_code: this.clean(value.referenceCode),
       description: this.clean(value.description),
+      staff_id: value.staffId ? Number(value.staffId) : null,
       staff_name: this.clean(value.staffName),
       school_department: this.clean(value.schoolDepartment),
       sponsor_name: this.clean(value.sponsorName),
@@ -908,6 +905,7 @@ export class ExternalProjectDataEntryComponent {
     for (const [index, row] of this.internalCoResearchers.entries()) {
       await firstValueFrom(
         this.externalProjectApi.createInternalCoResearcher(requestId, {
+          staff_id: row.staffId ? Number(row.staffId) : null,
           staff_name: row.staffName,
           school_department: this.clean(row.schoolDepartment),
           display_order: index + 1,
@@ -1014,6 +1012,7 @@ export class ExternalProjectDataEntryComponent {
         projectAccountCode: project.project_account_code ?? project.project_code ?? '',
         referenceCode: project.reference_code ?? project.account_code ?? '',
         description: project.description ?? '',
+        staffId: project.staff_id != null ? String(project.staff_id) : null,
         staffName: project.staff_name ?? '',
         schoolDepartment: project.school_department ?? '',
         sponsorName: project.sponsor_name ?? '',
@@ -1030,6 +1029,7 @@ export class ExternalProjectDataEntryComponent {
     );
 
     this.internalCoResearchers = (data.internal_co_researchers || []).map((row) => ({
+      staffId: row.staff_id != null ? String(row.staff_id) : null,
       staffName: row.staff_name ?? '',
       schoolDepartment: row.school_department ?? '',
     }));
@@ -1121,9 +1121,6 @@ export class ExternalProjectDataEntryComponent {
     return fallback;
   }
 
-  private getStaffDepartment(staffName: string | null | undefined): string {
-    return this.staffDirectory.find((staff) => staff.name === staffName)?.schoolDepartment ?? '';
-  }
 
   private createBudgetSection(
     key: string,

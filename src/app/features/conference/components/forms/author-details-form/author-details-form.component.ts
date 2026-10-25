@@ -17,7 +17,7 @@ import { DropdownOption } from '../../../../../core/interfaces/components.interf
 import { ConferenceWorkflowService } from '../../../services/conference-workflow.service';
 import { ConferenceFormStateService } from '../../../services/conference-form-state.service';
 import {
-  AcademicStaffOption,
+  StaffSelectionOption,
   CountryOption,
   MasterDataService,
 } from '../../../../../core/services/master-data.service';
@@ -73,7 +73,7 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
   readonly countryOptions = signal<DropdownOption<string>[]>([]);
   readonly countryOptionsLoading = signal(false);
   readonly countryOptionsLoadFailed = signal(false);
-  private academicStaffByName = new Map<string, AcademicStaffOption>();
+  private staffById = new Map<string, StaffSelectionOption>();
   private staffSelectionSubscription?: Subscription;
 
   constructor(
@@ -167,6 +167,7 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
         testSubsections: (data: any) =>
           this.fb.group({
             backendId: [data?.backendId ?? null],
+            staffId: [data?.staffId ?? null],
             staffName: [data?.staffName || '', [Validators.required]],
             schoolDepartment: [data?.schoolDepartment || '', [Validators.required]],
             affiliation: [data?.affiliation || ''],
@@ -212,6 +213,7 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
 
   createTestSubsection(): FormGroup {
     return this.fb.group({
+      staffId: [null],
       staffName: ['', [Validators.required]],
       schoolDepartment: ['', [Validators.required]],
       affiliation: [''],
@@ -311,6 +313,7 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
       if (type === 'apu-staff') {
         data = this.testSubsections.at(index).value;
         this.editForm = this.fb.group({
+          staffId: [data.staffId ?? null],
           staffName: [data.staffName, [Validators.required]],
           schoolDepartment: [data.schoolDepartment, [Validators.required]],
           affiliation: [data.affiliation || ''],
@@ -343,6 +346,7 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
       this.editingIndex = null;
       if (type === 'apu-staff') {
         this.editForm = this.fb.group({
+          staffId: [null, Validators.required],
           staffName: ['', [Validators.required]],
           schoolDepartment: ['', [Validators.required]],
           affiliation: [''],
@@ -406,7 +410,7 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
         : {}),
     };
 
-    if (this.modalType === 'apu-staff' && this.isStaffAlreadySelected(formData.staffName)) {
+    if (this.modalType === 'apu-staff' && this.isStaffAlreadySelected(formData.staffId)) {
       this.editForm.get('staffName')?.setErrors({ duplicateStaff: true });
       this.editForm.get('staffName')?.markAsTouched();
       return;
@@ -477,12 +481,12 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
   }
 
   loadAcademicStaffOptions(search = ''): void {
-    const selectedStaffName = this.editForm?.get('staffName')?.value;
-    this.masterData.searchAcademicStaff(search).subscribe((res) => {
+    this.masterData.getStaffOptions('academic_coauthor', search).subscribe((res) => {
+      const selectedStaffName = this.editForm?.get('staffId')?.value;
       const staff = res.data ?? [];
-      this.academicStaffByName.clear();
+      this.staffById.clear();
       const options = staff
-        .filter((item) => !this.isCurrentUserStaff(item))
+        .filter((item) => !!item.username?.trim() && !this.isCurrentUserStaff(item))
         .map((item) =>
           this.toAcademicStaffDropdownOption(
             item,
@@ -553,16 +557,16 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
   }
 
   private toAcademicStaffDropdownOption(
-    staff: AcademicStaffOption,
+    staff: StaffSelectionOption,
     alreadySelected: boolean,
   ): DropdownOption<string> {
     const value = this.getStaffOptionValue(staff);
-    this.academicStaffByName.set(value, staff);
+    this.staffById.set(value, staff);
 
     return {
       value,
-      label: `${value} (${staff.username || staff.id})`,
-      displayLabel: value,
+      label: `${staff.fullname || staff.username} (${staff.username})`,
+      displayLabel: staff.fullname || value,
       description: staff.department,
       searchText: [staff.username, staff.fullname, staff.email, staff.department]
         .filter(Boolean)
@@ -578,8 +582,8 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
     const alreadySelected = this.isStaffAlreadySelected(value);
     return {
       value,
-      label: value,
-      displayLabel: value,
+      label: this.editForm?.get('staffName')?.value || value,
+      displayLabel: this.editForm?.get('staffName')?.value || value,
       disabled: alreadySelected,
       actionLabel: alreadySelected ? 'Already Added' : undefined,
       actionIcon: alreadySelected ? 'warning' : undefined,
@@ -587,14 +591,14 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
     };
   }
 
-  private getStaffOptionValue(staff: AcademicStaffOption): string {
-    return staff.fullname || staff.username || staff.email || `Staff ${staff.id}`;
+  private getStaffOptionValue(staff: StaffSelectionOption): string {
+    return String(staff.staff_id);
   }
 
   private getUnavailableStaffNames(): Set<string> {
     return new Set(
       this.testSubsections.controls
-        .map((control, index) => (index === this.editingIndex ? '' : control.get('staffName')?.value))
+        .map((control, index) => (index === this.editingIndex ? '' : control.get('staffId')?.value))
         .filter((staffName): staffName is string => !!staffName)
         .map((staffName) => this.normalizeStaffName(staffName)),
     );
@@ -607,7 +611,7 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
     return this.testSubsections.controls.some(
       (control, index) =>
         index !== this.editingIndex &&
-        this.normalizeStaffName(control.get('staffName')?.value) === normalizedName,
+        this.normalizeStaffName(control.get('staffId')?.value) === normalizedName,
     );
   }
 
@@ -628,45 +632,33 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
     });
   }
 
-  private isCurrentUserStaff(staff: AcademicStaffOption): boolean {
+  private isCurrentUserStaff(staff: StaffSelectionOption): boolean {
     const currentUsername = this.auth.currentUser()?.username?.split('@', 1)[0]?.trim().toLowerCase();
     if (!currentUsername) {
       return false;
     }
 
-    const staffUsername = staff.username?.trim().toLowerCase();
+    const staffId = staff.username?.trim().toLowerCase();
     const staffEmailUsername = staff.email?.split('@', 1)[0]?.trim().toLowerCase();
-    return staffUsername === currentUsername || staffEmailUsername === currentUsername;
+    return staffId === currentUsername || staffEmailUsername === currentUsername;
   }
 
-  private setupStaffSelection(selectedStaffName = ''): void {
+  private setupStaffSelection(_historicalName = ''): void {
     this.staffSelectionSubscription?.unsubscribe();
-    const selectedValue = selectedStaffName.trim();
-    if (selectedValue && !this.staffOptions.some((option) => option.value === selectedValue)) {
-      this.staffOptions = [
-        this.createStaffFallbackOption(selectedValue),
-        ...this.staffOptions,
-      ];
+    const username = this.editForm.get('staffId')?.value;
+    if (username && !this.staffOptions.some(option => option.value === username)) {
+      this.staffOptions = [this.createStaffFallbackOption(username), ...this.staffOptions];
     }
-
     this.updateStaffOptionStates();
-    this.patchDepartmentFromSelectedStaff(selectedValue);
-    this.staffSelectionSubscription = this.editForm.get('staffName')?.valueChanges.subscribe((staffName) => {
-      this.patchDepartmentFromSelectedStaff(String(staffName ?? ''));
-    });
-  }
-
-  private patchDepartmentFromSelectedStaff(staffName: string): void {
-    const staff = this.academicStaffByName.get(staffName);
-    if (!staff) return;
-
-    this.editForm.patchValue(
-      {
+    this.staffSelectionSubscription = this.editForm.get('staffId')?.valueChanges.subscribe(username => {
+      const staff = this.staffById.get(String(username ?? ''));
+      if (!staff) return;
+      this.editForm.patchValue({
+        staffName: staff.fullname || staff.username,
         schoolDepartment: staff.department || '',
         affiliation: this.apuAffiliation,
-      },
-      { emitEvent: false },
-    );
+      }, { emitEvent: false });
+    });
   }
 
   private applyModalControlLocks(): void {

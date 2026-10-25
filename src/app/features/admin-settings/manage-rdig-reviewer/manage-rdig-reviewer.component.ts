@@ -1,3 +1,4 @@
+import { MasterDataService, StaffSelectionOption } from '../../../core/services/master-data.service';
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -14,7 +15,6 @@ import { SubmissionsSearchComponent } from '../../../shared/components/submissio
 import { TableActionIconComponent } from '../../../shared/components/table-action-icon/table-action-icon.component';
 import { SkeletonColumn, TableSkeletonComponent } from '../../../shared/components/table-skeleton/table-skeleton.component';
 import {
-  AcademicStaffOptionRecord,
   AcademicStaffService,
   DepartmentRecord,
 } from '../../settings/academic-staff/academic-staff.service';
@@ -46,12 +46,13 @@ type StatusFilter = 'all' | 'active' | 'inactive';
 })
 export class ManageRdigReviewerComponent implements OnInit {
   private readonly academicStaffService = inject(AcademicStaffService);
+  private readonly masterData = inject(MasterDataService);
   private readonly rdigReviewerService = inject(RdigReviewerService);
   private readonly toast = inject(ToastService);
 
   readonly reviewers = signal<RdigReviewerRecord[]>([]);
-  readonly academicOptions = signal<AcademicStaffOptionRecord[]>([]);
-  readonly staffOptions = signal<DropdownOption<number>[]>([]);
+  readonly academicOptions = signal<StaffSelectionOption[]>([]);
+  readonly staffOptions = signal<DropdownOption<string>[]>([]);
   readonly departments = signal<DepartmentRecord[]>([]);
   readonly departmentOptions = signal<DropdownOption<number>[]>([]);
 
@@ -79,20 +80,17 @@ export class ManageRdigReviewerComponent implements OnInit {
   readonly showAddModal = signal(false);
   readonly rowToRemove = signal<RdigReviewerRecord | null>(null);
 
-  readonly selectedStaffControl = new FormControl<number[]>([], { nonNullable: true });
+  readonly selectedStaffControl = new FormControl<string[]>([], { nonNullable: true });
   readonly modalActiveControl = new FormControl<boolean>(true, { nonNullable: true });
 
-  readonly existingAcademicStaffIds = computed(
-    () =>
-      new Set(
-        this.reviewers()
-          .map((reviewer) => reviewer.academic_staff_id)
-          .filter((id): id is number => id !== null && id !== undefined),
-      ),
+  readonly existingStaffIds = computed(
+    () => new Set(this.reviewers()
+      .map(reviewer => reviewer.staff_id != null ? String(reviewer.staff_id) : null)
+      .filter((username): username is string => !!username)),
   );
 
   readonly modalStaffOptions = computed(() => {
-    const existing = this.existingAcademicStaffIds();
+    const existing = this.existingStaffIds();
     const selected = new Set(this.selectedStaffControl.value);
     return this.staffOptions().map((option) => ({
       ...option,
@@ -114,13 +112,13 @@ export class ManageRdigReviewerComponent implements OnInit {
     this.loadFailed.set(false);
 
     forkJoin({
-      academic: this.academicStaffService.listAcademicStaffOptions(),
+      academic: this.masterData.getStaffOptions('rdig_reviewer_candidate'),
       departments: this.academicStaffService.listDepartments(),
     }).subscribe({
       next: ({ academic, departments }) => {
         if (academic.success) {
           this.academicOptions.set(academic.data ?? []);
-          this.staffOptions.set((academic.data ?? []).map((staff) => this.toStaffOption(staff)));
+          this.staffOptions.set((academic.data ?? []).filter(staff => !!staff.username?.trim()).map((staff) => this.toStaffOption(staff)));
         }
         if (departments.success) {
           this.departments.set(departments.data ?? []);
@@ -221,13 +219,13 @@ export class ManageRdigReviewerComponent implements OnInit {
   }
 
   saveReviewers(): void {
-    const selectedIds = this.selectedStaffControl.value;
-    if (selectedIds.length === 0 || this.isSaving()) return;
+    const selectedStaffIds = this.selectedStaffControl.value;
+    if (selectedStaffIds.length === 0 || this.isSaving()) return;
 
     this.isSaving.set(true);
     forkJoin(
-      selectedIds.map((academicStaffId) =>
-        this.rdigReviewerService.add(academicStaffId, this.modalActiveControl.value),
+      selectedStaffIds.map((username) =>
+        this.rdigReviewerService.add(username, this.modalActiveControl.value),
       ),
     ).subscribe({
       next: (responses) => {
@@ -238,9 +236,9 @@ export class ManageRdigReviewerComponent implements OnInit {
           return;
         }
         this.toast.success(
-          selectedIds.length === 1
+          selectedStaffIds.length === 1
             ? 'Reviewer added successfully.'
-            : `${selectedIds.length} reviewers added successfully.`,
+            : `${selectedStaffIds.length} reviewers added successfully.`,
         );
         this.closeAddModal();
         this.loadReviewers();
@@ -311,11 +309,11 @@ export class ManageRdigReviewerComponent implements OnInit {
       .join('') || '--';
   }
 
-  private toStaffOption(staff: AcademicStaffOptionRecord): DropdownOption<number> {
-    const name = staff.fullname || staff.username || `Academic Staff #${staff.id}`;
+  private toStaffOption(staff: StaffSelectionOption): DropdownOption<string> {
+    const name = staff.fullname || staff.username || String(staff.staff_id);
     const details = [staff.username, staff.email, staff.department].filter(Boolean).join(' · ');
     return {
-      value: staff.id,
+      value: String(staff.staff_id),
       label: name,
       description: details,
       searchText: `${name} ${details}`,

@@ -114,9 +114,12 @@
                   [options]="projectLeaderOptions"
                   [searchable]="true"
                   placeholder="Search project leader..."
-                  formControlName="staffName"
+                  formControlName="staffId"
                 >
                 </app-searchable-dropdown>
+                @if (!externalProjectForm.controls.staffId.value && externalProjectForm.controls.staffName.value) {
+                  <p class="form-hint">Saved person: {{ externalProjectForm.controls.staffName.value }}. Select an account only to link it.</p>
+                }
               </div>
               <div class="form-field">
                 <label class="form-label is-required">Grant Name</label>
@@ -550,9 +553,12 @@
                   [options]="projectLeaderOptions"
                   [searchable]="true"
                   placeholder="Search project leader..."
-                  formControlName="staffName"
+                  formControlName="staffId"
                 >
                 </app-searchable-dropdown>
+                @if (!externalProjectForm.controls.staffId.value && externalProjectForm.controls.staffName.value) {
+                  <p class="form-hint">Saved person: {{ externalProjectForm.controls.staffName.value }}. Select an account only to link it.</p>
+                }
               </div>
               <div class="form-field">
                 <label class="form-label is-required">School/Department</label>
@@ -1000,9 +1006,12 @@
           [options]="projectLeaderOptions"
           [searchable]="true"
           placeholder="Search staff..."
-          formControlName="staffName"
+          formControlName="staffId"
         >
         </app-searchable-dropdown>
+        @if (!tableEntryForm.controls.staffId.value && tableEntryForm.controls.staffName.value) {
+          <p class="form-hint">Saved person: {{ tableEntryForm.controls.staffName.value }}. Select an account only to link it.</p>
+        }
         @if (
           tableEntryForm.controls.staffName.invalid && tableEntryForm.controls.staffName.touched
         ) {

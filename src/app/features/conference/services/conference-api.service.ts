@@ -61,6 +61,7 @@ export interface ConferenceRequestDto {
 
 export interface ConferenceStaffCoAuthorDto {
   id?: number;
+  staff_id?: number | null;
   staff_name?: string | null;
   staff_department?: string | null;
   affiliation?: string | null;
@@ -135,8 +136,9 @@ export interface ConferenceTravelEventDto {
 }
 
 export interface ConferenceTravellingColleagueDto {
-  id?: number;
   staff_username?: string | null;
+  id?: number;
+  staff_id?: number | null;
   staff_name_snapshot?: string | null;
   department_name_snapshot?: string | null;
   display_order?: number | null;

@@ -1249,7 +1249,7 @@ export class ConferenceApplication implements OnInit {
       advanceReason: conference.cash_advance_reason ?? '',
       hasColleagues: toYesNo(conference.has_travelling_colleagues),
       selectedColleagues: data.travelling_colleagues
-        .map((item) => item.staff_username)
+        .map((item) => item.staff_id != null ? `staff:${item.staff_id}` : item.staff_username ? `legacy:${item.staff_username}` : null)
         .filter((value): value is string => !!value),
       authorshipType: conference.author_role ?? '',
       scopusPublicationGuaranteed: toYesNo(conference.is_scopus_indexed),
@@ -1319,6 +1319,7 @@ export class ConferenceApplication implements OnInit {
       isPresenter: true,
       testSubsections: data.apu_staff_co_authors.map((item) => ({
         backendId: item.id,
+        staffId: item.staff_id != null ? String(item.staff_id) : null,
         staffName: item.staff_name ?? '',
         schoolDepartment: item.staff_department ?? '',
         affiliation: item.affiliation ?? '',
@@ -1952,7 +1953,7 @@ export class ConferenceApplication implements OnInit {
       })),
       travelling_colleagues: (cd.selectedColleagues ?? []).map(
         (staffUsername: string, index: number) => ({
-          staff_username: staffUsername,
+          ...(staffUsername.startsWith('staff:') ? { staff_id: Number(staffUsername.slice(6)) } : { staff_username: staffUsername.replace(/^legacy:/, '') }),
           display_order: index + 1,
         }),
       ),
@@ -2017,6 +2018,7 @@ export class ConferenceApplication implements OnInit {
       this.syncPlainArray(
         staff,
         (raw) => ({
+          staff_id: raw.staffId ? Number(raw.staffId) : null,
           staff_name: raw.staffName || null,
           staff_department: raw.schoolDepartment || null,
           affiliation: raw.affiliation || null,

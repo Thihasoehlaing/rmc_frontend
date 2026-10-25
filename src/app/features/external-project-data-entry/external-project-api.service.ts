@@ -22,7 +22,8 @@ export interface ExternalGrantCategory {
 }
 
 export interface StaffOption {
-  id: number;
+  staff_id: number;
+  id?: number;
   username: string | null;
   fullname: string | null;
   email: string | null;
@@ -31,6 +32,7 @@ export interface StaffOption {
 }
 
 export interface ExternalProjectPayload {
+  staff_id?: number | null;
   external_grant_category_id?: number | null;
   project_account_code?: string | null;
   reference_code?: string | null;
@@ -70,6 +72,7 @@ export interface ProjectAccountCodeAvailability {
 }
 
 export interface InternalCoResearcherPayload {
+  staff_id?: number | null;
   staff_name: string;
   school_department?: string | null;
   display_order?: number;
@@ -126,19 +129,19 @@ export class ExternalProjectApiService {
   listGrantCategories(): Observable<ApiResponse<ExternalGrantCategory[]>> {
     return this.http.get<ApiResponse<ExternalGrantCategory[]>>(
       `${this.masterDataUrl}/external-grant-categories`,
-      { params: new HttpParams().set('include_inactive', false) },
+      { params: new HttpParams().set('purpose', 'staff') },
     );
   }
 
   listStaffOptions(search?: string): Observable<ApiResponse<StaffOption[]>> {
-    let params = new HttpParams().set('include_inactive', false);
+    let params = new HttpParams().set('purpose', 'staff');
     const normalizedSearch = search?.trim();
 
     if (normalizedSearch) {
       params = params.set('search', normalizedSearch);
     }
 
-    return this.http.get<ApiResponse<StaffOption[]>>(`${this.masterDataUrl}/staff`, { params });
+    return this.http.get<ApiResponse<StaffOption[]>>(`${this.masterDataUrl}/staff-options`, { params });
   }
 
   checkProjectAccountCodeAvailability(

@@ -10,7 +10,7 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } fr
 import { SearchableDropdownComponent } from '../../../../shared/components/searchable-dropdown/searchable-dropdown.component';
 import { DropdownOption } from '../../../../core/interfaces/components.interface';
 import {
-  AcademicStaffOption,
+  StaffSelectionOption,
   MasterDataService,
 } from '../../../../core/services/master-data.service';
 import { JournalWorkflowService } from '../../services/journal-workflow.service';
@@ -120,7 +120,7 @@ export class AuthorsDetails implements OnInit {
   readonly countryOptions = signal<DropdownOption<string>[]>([]);
   readonly countryOptionsLoading = signal(false);
   readonly countryOptionsLoadFailed = signal(false);
-  private academicStaffByName = new Map<string, AcademicStaffOption>();
+  private staffById = new Map<string, StaffSelectionOption>();
   private staffSelectionSubscription?: Subscription;
 
   workflow = inject(JournalWorkflowService);
@@ -169,6 +169,7 @@ export class AuthorsDetails implements OnInit {
       .map((control, index) => {
         const value = control.value;
         return {
+          staff_id: value.staffId ? Number(value.staffId) : null,
           staff_name: value.staffName || null,
           staff_department: value.schoolDepartment || null,
           affiliation: value.affiliation || this.apuAffiliation,
@@ -223,6 +224,7 @@ export class AuthorsDetails implements OnInit {
       const group = this.createTestSubsection();
       group.patchValue(
         {
+          staffId: item.staff_id != null ? String(item.staff_id) : null,
           staffName: item.staff_name || '',
           schoolDepartment: item.staff_department || '',
           affiliation: item.affiliation || this.apuAffiliation,
@@ -264,6 +266,7 @@ export class AuthorsDetails implements OnInit {
 
   createTestSubsection(): FormGroup {
     return this.fb.group({
+      staffId: [null],
       staffName: [''],
       schoolDepartment: [''],
       affiliation: [this.apuAffiliation],
@@ -385,6 +388,7 @@ export class AuthorsDetails implements OnInit {
       if (type === 'apu-staff') {
         data = this.testSubsections.at(index).value;
         this.editForm = this.fb.group({
+          staffId: [data.staffId ?? null],
           staffName: [data.staffName, [Validators.required]],
           schoolDepartment: [data.schoolDepartment, [Validators.required]],
           affiliation: [this.apuAffiliation],
@@ -420,6 +424,7 @@ export class AuthorsDetails implements OnInit {
       this.editingIndex = null;
       if (type === 'apu-staff') {
         this.editForm = this.fb.group({
+          staffId: [null, Validators.required],
           staffName: ['', [Validators.required]],
           schoolDepartment: ['', [Validators.required]],
           affiliation: [this.apuAffiliation],
@@ -487,7 +492,7 @@ export class AuthorsDetails implements OnInit {
         : {}),
     };
 
-    if (this.modalType === 'apu-staff' && this.isStaffAlreadySelected(formData.staffName)) {
+    if (this.modalType === 'apu-staff' && this.isStaffAlreadySelected(formData.staffId)) {
       this.editForm.get('staffName')?.setErrors({ duplicateStaff: true });
       this.editForm.get('staffName')?.markAsTouched();
       return;
@@ -527,26 +532,24 @@ export class AuthorsDetails implements OnInit {
     this.emitFormValidity();
   }
 
-  loadAcademicStaffOptions(
-    search = '',
-    selectedStaffName = this.editForm?.get('staffName')?.value,
-  ): void {
+  loadAcademicStaffOptions(search = ''): void {
     this.staffOptionsLoading.set(true);
     this.staffOptionsLoadFailed.set(false);
 
     this.masterData
-      .searchAcademicStaff(search)
+      .getStaffOptions('academic_coauthor', search)
       .pipe(finalize(() => this.staffOptionsLoading.set(false)))
       .subscribe({
         next: (response) => {
           const staff = response.success ? (response.data ?? []) : [];
-          this.applyAcademicStaffOptions(staff, selectedStaffName);
+          this.applyAcademicStaffOptions(staff, this.editForm?.get('staffId')?.value);
         },
         error: () => {
+          const selectedStaffName = this.editForm?.get('staffId')?.value;
           this.staffOptions.set(
             selectedStaffName ? [this.createStaffFallbackOption(selectedStaffName)] : [],
           );
-          this.academicStaffByName.clear();
+          this.staffById.clear();
           this.staffOptionsLoadFailed.set(true);
         },
       });
@@ -637,44 +640,32 @@ export class AuthorsDetails implements OnInit {
     return name.startsWith('graduate school') || name.startsWith('school of');
   }
 
-  private setupStaffSelection(selectedStaffName = ''): void {
+  private setupStaffSelection(_historicalName = ''): void {
     this.staffSelectionSubscription?.unsubscribe();
-    const selectedFallback = selectedStaffName
-      ? [this.createStaffFallbackOption(selectedStaffName)]
-      : [];
-    if (
-      selectedFallback.length &&
-      !this.staffOptions().some((option) => option.value === selectedFallback[0].value)
-    ) {
-      this.staffOptions.update((options) => [...selectedFallback, ...options]);
+    const username = this.editForm.get('staffId')?.value;
+    if (username && !this.staffOptions().some(option => option.value === username)) {
+      this.staffOptions.update(options => [this.createStaffFallbackOption(username), ...options]);
     }
-
     this.updateStaffOptionStates();
-    const staffNameControl = this.editForm.get('staffName');
-    this.staffSelectionSubscription = staffNameControl?.valueChanges.subscribe((staffName) => {
-      const staff = this.academicStaffByName.get(String(staffName ?? ''));
-      if (!staff) {
-        return;
-      }
-
-      this.editForm.patchValue(
-        {
-          schoolDepartment: staff.department || '',
-          affiliation: this.apuAffiliation,
-        },
-        { emitEvent: false },
-      );
+    this.staffSelectionSubscription = this.editForm.get('staffId')?.valueChanges.subscribe(username => {
+      const staff = this.staffById.get(String(username ?? ''));
+      if (!staff) return;
+      this.editForm.patchValue({
+        staffName: staff.fullname || staff.username,
+        schoolDepartment: staff.department || '',
+        affiliation: this.apuAffiliation,
+      }, { emitEvent: false });
     });
   }
 
   private applyAcademicStaffOptions(
-    staff: AcademicStaffOption[],
+    staff: StaffSelectionOption[],
     selectedStaffName?: string | null,
   ): void {
-    this.academicStaffByName.clear();
+    this.staffById.clear();
 
     const options = staff
-      .filter((item) => !this.isCurrentUserStaff(item))
+      .filter((item) => !!item.username?.trim() && !this.isCurrentUserStaff(item))
       .map((item) => this.toAcademicStaffDropdownOption(item));
     const selectedFallback = selectedStaffName
       ? [this.createStaffFallbackOption(selectedStaffName)]
@@ -688,15 +679,15 @@ export class AuthorsDetails implements OnInit {
     this.staffOptions.set(options);
   }
 
-  private toAcademicStaffDropdownOption(staff: AcademicStaffOption): DropdownOption<string> {
+  private toAcademicStaffDropdownOption(staff: StaffSelectionOption): DropdownOption<string> {
     const value = this.getStaffOptionValue(staff);
     const alreadySelected = this.isStaffAlreadySelected(value);
-    this.academicStaffByName.set(value, staff);
+    this.staffById.set(value, staff);
 
     return {
       value,
-      label: `${value} (${staff.username || staff.id})`,
-      displayLabel: value,
+      label: `${staff.fullname || staff.username} (${staff.username})`,
+      displayLabel: staff.fullname || value,
       description: staff.department,
       searchText: [staff.username, staff.fullname, staff.email, staff.department]
         .filter(Boolean)
@@ -712,8 +703,8 @@ export class AuthorsDetails implements OnInit {
     const alreadySelected = this.isStaffAlreadySelected(value);
     return {
       value,
-      label: value,
-      displayLabel: value,
+      label: this.editForm?.get('staffName')?.value || value,
+      displayLabel: this.editForm?.get('staffName')?.value || value,
       disabled: alreadySelected,
       actionLabel: alreadySelected ? 'Already Added' : undefined,
       actionIcon: alreadySelected ? 'warning' : undefined,
@@ -721,15 +712,15 @@ export class AuthorsDetails implements OnInit {
     };
   }
 
-  private getStaffOptionValue(staff: AcademicStaffOption): string {
-    return staff.fullname || staff.username || staff.email || `Staff ${staff.id}`;
+  private getStaffOptionValue(staff: StaffSelectionOption): string {
+    return String(staff.staff_id);
   }
 
   private getUnavailableStaffNames(): Set<string> {
     return new Set(
       this.testSubsections.controls
         .map((control, index) =>
-          index === this.editingIndex ? '' : control.get('staffName')?.value,
+          index === this.editingIndex ? '' : control.get('staffId')?.value,
         )
         .filter((staffName): staffName is string => !!staffName)
         .map((staffName) => this.normalizeStaffName(staffName)),
@@ -743,7 +734,7 @@ export class AuthorsDetails implements OnInit {
     return this.testSubsections.controls.some(
       (control, index) =>
         index !== this.editingIndex &&
-        this.normalizeStaffName(control.get('staffName')?.value) === normalizedName,
+        this.normalizeStaffName(control.get('staffId')?.value) === normalizedName,
     );
   }
 
@@ -768,7 +759,7 @@ export class AuthorsDetails implements OnInit {
     );
   }
 
-  private isCurrentUserStaff(staff: AcademicStaffOption): boolean {
+  private isCurrentUserStaff(staff: StaffSelectionOption): boolean {
     const currentUsername = this.auth
       .currentUser()
       ?.username?.split('@', 1)[0]
@@ -778,9 +769,9 @@ export class AuthorsDetails implements OnInit {
       return false;
     }
 
-    const staffUsername = staff.username?.trim().toLowerCase();
+    const staffId = staff.username?.trim().toLowerCase();
     const staffEmailUsername = staff.email?.split('@', 1)[0]?.trim().toLowerCase();
-    return staffUsername === currentUsername || staffEmailUsername === currentUsername;
+    return staffId === currentUsername || staffEmailUsername === currentUsername;
   }
 
   private emitFormValidity(): void {

@@ -27,8 +27,10 @@ interface PaginatedData<T> {
 /** Compact shape returned by the list endpoint. */
 export interface RdigReviewerRecord {
   id: number;
-  academic_staff_id: number | null;
+  /** Legacy academic-registry ID; staff_id is the person reference. */
+  academic_staff_id?: number | null;
   is_active: boolean;
+  staff_id: number | null;
   staff_username: string | null;
   staff_fullname: string | null;
   staff_email: string | null;
@@ -92,9 +94,9 @@ export class RdigReviewerService {
   }
 
   /** Adds an academic staff member to the RDIG reviewer pool. */
-  add(academicStaffId: number, isActive = true): Observable<ApiResponse<RdigReviewerRecord>> {
+  add(staffId: string, isActive = true): Observable<ApiResponse<RdigReviewerRecord>> {
     return this.http.post<ApiResponse<RdigReviewerRecord>>(this.baseUrl, {
-      academic_staff_id: academicStaffId,
+      staff_id: Number(staffId),
       is_active: isActive,
     });
   }

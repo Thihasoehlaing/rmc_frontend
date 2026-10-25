@@ -95,10 +95,11 @@ export interface RdigCoResearcherDto {
   area_of_expertise?: string | null;
   role_in_project?: string | null;
   display_order?: number | null;
+  directory_staff_id?: number | null;
 }
 
 export interface RdigCoResearcherOption {
-  id: number;
+  staff_id: number;
   username: string;
   fullname: string;
   email: string | null;
@@ -280,12 +281,11 @@ export class RdigApiService {
 
   // ── APU Co-Researchers ──────────────────────────────────────────
   listCoResearcherOptions(search?: string): Observable<ApiResponse<RdigCoResearcherOption[]>> {
-    const options = search?.trim()
-      ? { params: { search: search.trim() } }
-      : undefined;
+    const params: Record<string, string> = { purpose: 'rdig_co_researcher' };
+    if (search?.trim()) params['search'] = search.trim();
     return this.http.get<ApiResponse<RdigCoResearcherOption[]>>(
-      `${this.base}/co-researcher-options`,
-      options,
+      `${environment.apiUrl}/master-data/staff-options`,
+      { params },
     );
   }
 

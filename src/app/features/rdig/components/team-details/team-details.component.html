@@ -339,11 +339,11 @@
           <label class="form-label is-required">Staff Name</label>
           <app-searchable-dropdown
             [options]="staffOptions"
-            formControlName="staffId"
+            formControlName="directoryStaffId"
             valueMode="single"
           >
           </app-searchable-dropdown>
-          <app-validation-message class="form-validation-note--error" [control]="internalForm.get('staffId')" fieldName="Staff Name"></app-validation-message>
+          <app-validation-message class="form-validation-note--error" [control]="internalForm.get('directoryStaffId')" fieldName="Staff Name"></app-validation-message>
         </div>
         <div class="form-field">
           <label class="form-label">School / Department</label>

@@ -198,7 +198,8 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
 
   constructor(private fb: FormBuilder) {
     this.internalForm = this.fb.group({
-      staffId: ['', Validators.required],
+      directoryStaffId: ['', Validators.required],
+      staffId: [''],
       staffName: [''],
       department: [''],
       expertise: ['', [Validators.required, Validators.maxLength(200)]],
@@ -234,7 +235,7 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
 
     this.loadOrganisationTypes();
 
-    // Use the RDIG-specific option API so restricted roles and reviewers never reach this form.
+    // The shared options API applies the existing RDIG co-researcher policy.
     this.rdigApi
       .listCoResearcherOptions()
       .pipe(takeUntil(this.destroy$))
@@ -242,14 +243,15 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
         this.academicStaffList = res.data ?? [];
         this.staffOptions = this.academicStaffList.map((s) => ({
           label: s.fullname,
-          value: s.id.toString(),
+          value: String(s.staff_id),
           description: [s.department, s.email].filter(Boolean).join(' · '),
         }));
+        if (this.editingInternalIdx() !== null) this.preserveInternalOption();
       });
 
     // Auto-populate name + department when a researcher is selected from the dropdown
     this.internalForm
-      .get('staffId')!
+      .get('directoryStaffId')!
       .valueChanges.pipe(takeUntil(this.destroy$))
       .subscribe((id) => this.onResearcherSelected(id));
 
@@ -278,8 +280,8 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
   }
 
   /** Called when the user picks a researcher from the dropdown. */
-  onResearcherSelected(staffId: string): void {
-    const staff = this.academicStaffList.find((s) => s.id.toString() === staffId);
+  onResearcherSelected(directoryStaffId: string): void {
+    const staff = this.academicStaffList.find((s) => String(s.staff_id) === directoryStaffId);
     if (staff) {
       this.internalForm.patchValue({
         staffName: staff.fullname,
@@ -329,15 +331,37 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
   openInternalModal(): void {
     if (this.internalResearchers.length >= 2) return;
     this.editingInternalIdx.set(null);
-    this.internalForm.reset({ staffId: '', staffName: '', department: '' });
+    this.removeHistoricalInternalOptions();
+    this.internalForm.reset({ directoryStaffId: '', staffId: '', staffName: '', department: '' });
+    this.internalForm.get('directoryStaffId')?.setValidators(Validators.required);
+    this.internalForm.get('directoryStaffId')?.updateValueAndValidity();
     this.showInternalModal.set(true);
   }
 
   openEditInternalModal(index: number): void {
     const row = this.internalResearchers.at(index).getRawValue();
     this.editingInternalIdx.set(index);
-    this.internalForm.patchValue(row);
+    this.removeHistoricalInternalOptions();
+    this.internalForm.patchValue(row, { emitEvent: false });
+    this.internalForm.get('directoryStaffId')?.clearValidators();
+    this.internalForm.get('directoryStaffId')?.updateValueAndValidity({ emitEvent: false });
+    this.preserveInternalOption();
     this.showInternalModal.set(true);
+  }
+
+  private removeHistoricalInternalOptions(): void {
+    this.staffOptions = this.staffOptions.filter(option =>
+      this.academicStaffList.some(staff => String(staff.staff_id) === option.value));
+  }
+
+  private preserveInternalOption(): void {
+    const row = this.internalForm.getRawValue();
+    const value = String(row.directoryStaffId ?? '');
+    // Historical numeric/unavailable references remain snapshots, never name matches.
+    if (value && !this.staffOptions.some(option => option.value === value)) {
+      this.staffOptions = [{ label: row.staffName || value, value,
+        description: row.department || '' }, ...this.staffOptions];
+    }
   }
 
   saveInternal(): void {

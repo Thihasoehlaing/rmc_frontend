@@ -5,7 +5,7 @@ import { finalize } from 'rxjs';
 
 import { DropdownOption } from '../../../core/interfaces/components.interface';
 import {
-  AcademicStaffOption,
+  StaffSelectionOption,
   MasterDataService,
 } from '../../../core/services/master-data.service';
 import { ToastService } from '../../../core/services/toast.service';
@@ -55,14 +55,14 @@ export class FormCorrectionComponent {
 
   readonly dialogMode = signal<DialogMode | null>(null);
   readonly editingAuthor = signal<ApuStaffCoAuthorCorrectionRow | null>(null);
-  readonly selectedStaffUsername = signal<string | null>(null);
+  readonly selectedStaffId = signal<string | null>(null);
   readonly staffName = signal('');
   readonly staffDepartment = signal('');
   readonly affiliation = signal('Asia Pacific University');
   readonly displayOrder = signal<number | null>(null);
   readonly correctionReason = signal('');
   readonly staffOptions = signal<DropdownOption<string>[]>([]);
-  readonly academicStaffByUsername = new Map<string, AcademicStaffOption>();
+  readonly staffById = new Map<string, StaffSelectionOption>();
   readonly staffOptionsLoading = signal(false);
   readonly staffOptionsLoadFailed = signal(false);
   readonly isSaving = signal(false);
@@ -114,7 +114,7 @@ export class FormCorrectionComponent {
   openEditDialog(author: ApuStaffCoAuthorCorrectionRow): void {
     this.dialogMode.set('edit');
     this.editingAuthor.set(author);
-    this.selectedStaffUsername.set(null);
+    this.selectedStaffId.set(author.staff_id != null ? String(author.staff_id) : null);
     this.staffName.set(author.staff_name || '');
     this.staffDepartment.set(author.staff_department || '');
     this.affiliation.set(author.affiliation || 'Asia Pacific University');
@@ -135,9 +135,9 @@ export class FormCorrectionComponent {
   }
 
   onStaffSelected(username: string | null): void {
-    this.selectedStaffUsername.set(username);
+    this.selectedStaffId.set(username);
     if (!username) return;
-    const staff = this.academicStaffByUsername.get(username);
+    const staff = this.staffById.get(username);
     if (!staff) return;
     this.staffName.set(staff.fullname || staff.username || staff.email || username);
     this.staffDepartment.set(staff.department || '');
@@ -149,8 +149,10 @@ export class FormCorrectionComponent {
     const mode = this.dialogMode();
     const reason = this.correctionReason().trim();
     if (!data || !mode || this.isSaving() || !this.staffName().trim() || !reason) return;
+    if (mode === 'create' && !this.selectedStaffId()) return;
 
     const payload: ApuStaffCoAuthorCorrectionPayload = {
+      staff_id: this.selectedStaffId() ? Number(this.selectedStaffId()) : null,
       staff_name: this.staffName().trim(),
       staff_department: this.staffDepartment().trim() || null,
       affiliation: this.affiliation().trim() || null,
@@ -216,7 +218,7 @@ export class FormCorrectionComponent {
   }
 
   private resetEditor(): void {
-    this.selectedStaffUsername.set(null);
+    this.selectedStaffId.set(null);
     this.staffName.set('');
     this.staffDepartment.set('');
     this.affiliation.set('Asia Pacific University');
@@ -228,30 +230,30 @@ export class FormCorrectionComponent {
     this.staffOptionsLoading.set(true);
     this.staffOptionsLoadFailed.set(false);
     this.masterData
-      .searchAcademicStaff(search)
+      .getStaffOptions('academic_coauthor', search)
       .pipe(finalize(() => this.staffOptionsLoading.set(false)))
       .subscribe({
         next: (response) => {
           const options = response.success ? (response.data ?? []) : [];
-          this.academicStaffByUsername.clear();
+          this.staffById.clear();
           for (const staff of options) {
             if (staff.username) {
-              this.academicStaffByUsername.set(staff.username, staff);
+              this.staffById.set(String(staff.staff_id), staff);
             }
           }
-          this.staffOptions.set(options.map((staff) => this.toStaffOption(staff)));
+          this.staffOptions.set(options.filter(staff => !!staff.username?.trim()).map((staff) => this.toStaffOption(staff)));
         },
         error: () => {
           this.staffOptions.set([]);
-          this.academicStaffByUsername.clear();
+          this.staffById.clear();
           this.staffOptionsLoadFailed.set(true);
         },
       });
   }
 
-  private toStaffOption(staff: AcademicStaffOption): DropdownOption<string> {
-    const username = staff.username || staff.email || String(staff.id);
-    const label = staff.fullname || staff.username || staff.email || `Staff ${staff.id}`;
+  private toStaffOption(staff: StaffSelectionOption): DropdownOption<string> {
+    const username = String(staff.staff_id);
+    const label = staff.fullname || staff.username || staff.email || `Staff ${staff.staff_id}`;
     return {
       value: username,
       label,

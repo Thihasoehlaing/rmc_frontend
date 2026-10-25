@@ -70,6 +70,16 @@ export interface CurrencyOption {
   is_active: boolean;
 }
 
+export type StaffOptionPurpose = 'staff' | 'academic_coauthor' | 'rdig_co_researcher' | 'rdig_reviewer_candidate';
+
+export interface StaffSelectionOption {
+  staff_id: number;
+  username: string;
+  fullname: string;
+  email: string;
+  department: string;
+}
+
 export interface AcademicStaffOption {
   id: number;
   username: string;
@@ -184,6 +194,12 @@ export class MasterDataService {
       `${this.base}/master-data/account-codes`,
       { params: this.toFormCodeParams(formCode) },
     );
+  }
+
+  getStaffOptions(purpose: StaffOptionPurpose, search?: string): Observable<ApiResponse<StaffSelectionOption[]>> {
+    let params = new HttpParams().set('purpose', purpose);
+    if (search?.trim()) params = params.set('search', search.trim());
+    return this.http.get<ApiResponse<StaffSelectionOption[]>>(`${this.base}/master-data/staff-options`, { params });
   }
 
   searchAcademicStaff(search?: string): Observable<ApiResponse<AcademicStaffOption[]>> {

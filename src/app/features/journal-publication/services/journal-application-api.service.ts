@@ -75,6 +75,7 @@ export interface JournalAttachmentDownload {
 }
 
 export interface JournalStaffAuthorPayload {
+  staff_id?: number | null;
   staff_name?: string | null;
   staff_department?: string | null;
   affiliation?: string | null;

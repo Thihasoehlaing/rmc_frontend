@@ -254,10 +254,13 @@
             optionListTitle="AVAILABLE APU ACADEMIC STAFF"
             [optionListCount]="staffOptions.length"
             placeholder="Search staff..."
-            formControlName="staffName"
+            formControlName="staffId"
             (searchChange)="loadAcademicStaffOptions($event)"
           >
           </app-searchable-dropdown>
+          @if (editingIndex !== null && !editForm.get('staffId')?.value) {
+            <small>Saved author: {{ editForm.get('staffName')?.value }}. Select an account only to link this author.</small>
+          }
           <app-validation-message
             class="form-validation-note--error"
             [control]="editForm.get('staffName')"

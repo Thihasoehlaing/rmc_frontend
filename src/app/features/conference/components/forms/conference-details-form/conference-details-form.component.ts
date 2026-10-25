@@ -30,7 +30,7 @@ import {
   CurrencyOption,
   MasterDataService,
   RegionOption,
-  StaffOption,
+  StaffSelectionOption,
 } from '../../../../../core/services/master-data.service';
 import {
   SDG_KEYWORD_MAX_LENGTH,
@@ -876,7 +876,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
 
   private loadColleagueOptions(search = ''): void {
     this.colleaguesLoading.set(true);
-    this.masterData.searchStaff(search).subscribe({
+    this.masterData.getStaffOptions('staff', search).subscribe({
       next: (res) => {
         const staff = res.data ?? [];
         this.colleagueOptions.set(staff.map((member) => this.toColleagueOption(member)));
@@ -889,9 +889,9 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     });
   }
 
-  private toColleagueOption(member: StaffOption): DropdownOption<string> {
+  private toColleagueOption(member: StaffSelectionOption): DropdownOption<string> {
     return {
-      value: member.username || member.id.toString(),
+      value: `staff:${member.staff_id}`,
       label: member.fullname || member.username,
       description: [member.email, member.department].filter(Boolean).join(' • '),
     };

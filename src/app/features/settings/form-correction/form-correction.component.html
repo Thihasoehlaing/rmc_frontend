@@ -103,7 +103,9 @@
           <ng-template #rowTemplate let-row let-index="index">
             <tr>
               <td class="is-align-center">{{ rowNumber(index) }}</td>
-              <td>{{ row.staff_name || '-' }}</td>
+              <td>{{ row.staff_name || '-' }}
+                @if (row.staff_id) { <small>{{ row.staff_id }}</small> }
+              </td>
               <td>{{ row.staff_department || '-' }}</td>
               <td>{{ row.affiliation || '-' }}</td>
               <td class="is-align-center">
@@ -148,7 +150,7 @@
           [options]="staffOptions()"
           [searchable]="true"
           placeholder="Search Academic Staff"
-          [ngModel]="selectedStaffUsername()"
+          [ngModel]="selectedStaffId()"
           (ngModelChange)="onStaffSelected($event)"
           (searchChange)="onStaffSearch($event)"
           [loading]="staffOptionsLoading()"
@@ -195,7 +197,7 @@
       <button
         class="btn btn-primary"
         type="button"
-        [disabled]="isSaving() || !staffName().trim() || !correctionReason().trim()"
+        [disabled]="isSaving() || !staffName().trim() || !correctionReason().trim() || (dialogMode() === 'create' && !selectedStaffId())"
         (click)="saveCorrection()"
       >
         {{ isSaving() ? 'Saving...' : 'Save Correction' }}

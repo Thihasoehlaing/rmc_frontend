@@ -51,11 +51,6 @@ export const settingsRoutes: Routes = [
       import('./academic-staff/academic-staff.component').then(m => m.AcademicStaffComponent),
   },
   {
-    path: 'form-correction',
-    loadComponent: () =>
-      import('./form-correction/form-correction.component').then(m => m.FormCorrectionComponent),
-  },
-  {
     path: 'users',
     loadComponent: () =>
       import('./users/users.component').then(m => m.UsersComponent),

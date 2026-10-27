@@ -13,6 +13,7 @@ const EXPIRED_LOGIN_SESSION_ERROR_CODE = 40143;
 
 interface ApiErrorResponse {
   error_code?: unknown;
+  reason?: unknown;
 }
 
 export const sessionExpiryInterceptor: HttpInterceptorFn = (
@@ -27,12 +28,27 @@ export const sessionExpiryInterceptor: HttpInterceptorFn = (
 
   return next(request).pipe(
     catchError((error: unknown) => {
-      handleExpiredLoginSession(error, () => authService.logout());
+      if (authService.isAuthenticated() && isInactiveAccountError(error)) {
+        authService.logout();
+      } else {
+        handleExpiredLoginSession(error, () => authService.logout());
+      }
 
       return throwError(() => error);
     }),
   );
 };
+
+function isInactiveAccountError(error: unknown): boolean {
+  if (!(error instanceof HttpErrorResponse) || error.status !== 403) {
+    return false;
+  }
+  if (!error.error || typeof error.error !== 'object') {
+    return false;
+  }
+  const reason = (error.error as ApiErrorResponse).reason;
+  return reason === 'STAFF_INACTIVE' || reason === 'USER_INACTIVE';
+}
 
 export function handleExpiredLoginSession(
   error: unknown,

@@ -407,7 +407,7 @@ export class ConferenceReviewComponent implements OnInit {
   }
 
   private isCurrentUserComment(comment: RequestCommentDto): boolean {
-    const currentUsername = this.authService.currentUser()?.username?.trim().toLowerCase();
+    const currentUsername = this.authService.workspaceUser()?.username?.trim().toLowerCase();
     const commentUsername = comment.staff_username?.trim().toLowerCase();
     return Boolean(currentUsername && commentUsername && commentUsername === currentUsername);
   }

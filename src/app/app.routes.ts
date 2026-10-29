@@ -1,3 +1,4 @@
+import { workspaceGuard } from './core/guards/workspace.guard';
 import { Routes } from '@angular/router';
 import { LayoutComponent } from './layout/layout.component';
 import { attachmentViewerRedirectGuard } from './core/guards/attachment-viewer-redirect.guard';
@@ -24,9 +25,20 @@ export const routes: Routes = [
       import('./features/auth/login/login.component').then((m) => m.LoginComponent),
   },
   {
+    path: 'workspaces', canActivate: [authGuard],
+    loadComponent: () => import('./features/workspaces/workspaces.component').then(m => m.WorkspacesComponent),
+  },
+  {
+    path: 'main-settings', canActivate: [authGuard, permissionGuard],
+    data: { permission: systemSettingsPermission },
+    loadComponent: () => import('./features/settings/platform-settings-layout.component').then(m => m.PlatformSettingsLayoutComponent),
+    loadChildren: () => import('./features/settings/settings.routes').then(m => m.settingsRoutes),
+  },
+  {
     path: '',
     component: LayoutComponent,
     canActivate: [authGuard],
+    canActivateChild: [workspaceGuard],
     children: [
       {
         path: 'dashboard',
@@ -151,6 +163,11 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'settings', canActivate: [permissionGuard],
+        data: { permission: systemSettingsPermission },
+        loadChildren: () => import('./features/settings/rmc-settings.routes').then(m => m.rmcSettingsRoutes),
+      },
+      {
         path: 'admin-settings',
         canActivate: [permissionGuard],
         data: {
@@ -160,15 +177,6 @@ export const routes: Routes = [
           import('./features/admin-settings/admin-settings.routes').then(
             (m) => m.adminSettingsRoutes,
           ),
-      },
-      {
-        path: 'settings',
-        canActivate: [permissionGuard],
-        data: {
-          permission: systemSettingsPermission,
-        },
-        loadChildren: () =>
-          import('./features/settings/settings.routes').then((m) => m.settingsRoutes),
       },
       {
         path: 'no-access',

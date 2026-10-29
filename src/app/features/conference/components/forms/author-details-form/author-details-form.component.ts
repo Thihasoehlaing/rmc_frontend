@@ -633,7 +633,7 @@ export class AuthorDetailsFormComponent implements OnInit, OnDestroy {
   }
 
   private isCurrentUserStaff(staff: StaffSelectionOption): boolean {
-    const currentUsername = this.auth.currentUser()?.username?.split('@', 1)[0]?.trim().toLowerCase();
+    const currentUsername = this.auth.workspaceUser()?.username?.split('@', 1)[0]?.trim().toLowerCase();
     if (!currentUsername) {
       return false;
     }

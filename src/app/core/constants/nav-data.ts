@@ -41,6 +41,7 @@ export const NAVIGATION_DATA: NavGroup[] = [
   {
     groupName: '',
     elements: [
+      { label: 'Workspaces', icon: 'workspaces', route: '/workspaces' },
       { label: 'Dashboard', icon: 'dashboard', route: '/dashboard' },
       {
         label: 'Analysis Dashboard',
@@ -223,84 +224,8 @@ export const NAVIGATION_DATA: NavGroup[] = [
         route: '/settings',
         permission: systemSettingsPermission,
         children: [
-          {
-            label: 'Forms',
-            icon: 'description',
-            route: '/settings/forms',
-            permission: systemSettingsPermission,
-          },
-          {
-            label: 'Dropdown Categories',
-            icon: 'list_alt',
-            route: '/settings/dropdown-categories',
-            permission: systemSettingsPermission,
-          },
-          {
-            label: 'Account Code Categories',
-            icon: 'category',
-            route: '/settings/account-code-categories',
-            permission: systemSettingsPermission,
-          },
-          {
-            label: 'Account Codes',
-            icon: 'account_balance_wallet',
-            route: '/settings/account-codes',
-            permission: systemSettingsPermission,
-          },
-          {
-            label: 'Vote Numbers',
-            icon: 'pin',
-            route: '/settings/vote-numbers',
-            permission: systemSettingsPermission,
-          },
-          {
-            label: 'Staff Directory',
-            icon: 'badge',
-            route: '/settings/staff-directory',
-            permission: systemSettingsPermission,
-          },
-          {
-            label: 'Academic Staff',
-            icon: 'school',
-            route: '/settings/academic-staff',
-            permission: systemSettingsPermission,
-          },
-          {
-            label: 'Users',
-            icon: 'manage_accounts',
-            route: '/settings/users',
-            permission: systemSettingsPermission,
-          },
-          {
-            label: 'Roles',
-            icon: 'verified_user',
-            route: '/settings/roles',
-            permission: systemSettingsPermission,
-          },
-          {
-            label: 'System Access',
-            icon: 'admin_panel_settings',
-            route: '/settings/system-access',
-            permission: systemSettingsPermission,
-          },
-          {
-            label: 'Applicant Rules',
-            icon: 'rule',
-            route: '/settings/applicant-rules',
-            permission: systemSettingsPermission,
-          },
-          {
-            label: 'Monitoring Logs',
-            icon: 'monitor_heart',
-            route: '/settings/monitoring',
-            permission: systemSettingsPermission,
-          },
-          {
-            label: 'Request Statuses',
-            icon: 'published_with_changes',
-            route: '/settings/request-statuses',
-            permission: systemSettingsPermission,
-          },
+          { label: 'Applicant Rules', icon: 'rule', route: '/settings/applicant-rules', permission: systemSettingsPermission },
+          { label: 'Request Statuses', icon: 'published_with_changes', route: '/settings/request-statuses', permission: systemSettingsPermission },
         ],
       },
     ],

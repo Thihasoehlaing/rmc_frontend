@@ -7,6 +7,7 @@ import { Observable, catchError, map, switchMap, tap, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { SHOW_API_SUCCESS } from '../interceptors/api-message.interceptor';
 import { User, UserGroup } from '../interfaces/user.interface';
+import { WorkspaceService } from './workspace.service';
 import { FormCacheService } from './form-cache.service';
 import { ToastService } from './toast.service';
 
@@ -48,6 +49,7 @@ export class AuthService {
   private readonly router = inject(Router);
   private readonly toastService = inject(ToastService);
   private readonly formCache = inject(FormCacheService);
+  private readonly workspaces = inject(WorkspaceService);
   private readonly document = inject(DOCUMENT);
   private logoutInProgress = false;
   private readonly TOKEN_KEY = 'token';
@@ -69,6 +71,16 @@ export class AuthService {
 
   /** Read-only view of the currently authenticated user. */
   currentUser = this._currentUser.asReadonly();
+
+  /** Effective role in RMC; the stored platform identity remains unchanged. */
+  workspaceUser = computed<User | null>(() => {
+    const user = this._currentUser();
+    const workspace = this.workspaces.current();
+    if (!user || !workspace || user.groups.includes('SystemAdmin')) return user;
+    const role = workspace.role;
+    return { ...user, role: role ? { id: role.id ?? user.role?.id ?? 0, code: role.code, name: role.name } : undefined,
+      groups: this.mapRoleToGroups(role?.code) };
+  });
 
   /** Reactive flag — true when a user session is active. */
   isAuthenticated = computed(() => this._currentUser() !== null);
@@ -301,7 +313,7 @@ export class AuthService {
     };
   }
 
-  private mapRoleToGroups(roleCode: string | null | undefined): UserGroup[] {
+  mapRoleToGroups(roleCode: string | null | undefined): UserGroup[] {
     if (!roleCode) return [];
 
     const roleGroups: Record<string, UserGroup[]> = {

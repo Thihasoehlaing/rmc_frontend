@@ -165,7 +165,7 @@ export class RdigDetailsComponent implements OnInit {
   readonly confirmReminder = signal(false);
 
   canSendReminder(): boolean {
-    const user = this.authService.currentUser();
+    const user = this.authService.workspaceUser();
     return (user?.role?.code === 'RMC_ADMIN' || this.isSystemAdminViewer()) &&
       ['pending_hos', 'pending_hos_review', 'pending_rmc', 'pending_reviewers',
        'pending_rmc_review', 'pending_rdig_chair', 'pending_vc', 'pending_cfo',
@@ -1127,7 +1127,7 @@ export class RdigDetailsComponent implements OnInit {
   }
 
   private isCurrentUserReviewer(reviewerNo: 1 | 2): boolean {
-    const currentUsername = this.authService.currentUser()?.username?.trim().toLowerCase();
+    const currentUsername = this.authService.workspaceUser()?.username?.trim().toLowerCase();
     if (!currentUsername) return false;
     const reviewerUsername = reviewerNo === 1 ? this.reviewer1Username() : this.reviewer2Username();
     return Boolean(reviewerUsername && reviewerUsername === currentUsername);
@@ -1146,7 +1146,7 @@ export class RdigDetailsComponent implements OnInit {
 
   private currentActorRole(): string {
     // Resolve the viewer, not the next actor awaiting action on the application.
-    const user = this.authService.currentUser();
+    const user = this.authService.workspaceUser();
     const username = user?.username?.trim().toLowerCase();
     if (username && username === this.request()?.applicant_staff_username?.trim().toLowerCase()) return 'applicant';
     if (user?.groups.includes('HOS')) return 'hos';
@@ -1205,7 +1205,7 @@ export class RdigDetailsComponent implements OnInit {
   /** Viewer identity takes precedence over the request's current workflow actor. */
   private isRestrictedReviewerViewer(): boolean {
     if (this.isSystemAdminViewer()) return false;
-    const user = this.authService.currentUser();
+    const user = this.authService.workspaceUser();
     if (!user) return true;
     const username = user.username?.trim().toLowerCase();
     const applicant = this.request()?.applicant_staff_username?.trim().toLowerCase();
@@ -1215,7 +1215,7 @@ export class RdigDetailsComponent implements OnInit {
       ['HEAD_OF_SCHOOL', 'HEAD_OF_DEPARTMENT', 'HOS', 'HOD', 'APPLICANT'].includes(role ?? '');
   }
   isSystemAdminViewer(): boolean {
-    const user = this.authService.currentUser();
+    const user = this.authService.workspaceUser();
     return user?.role?.code?.toUpperCase() === 'SYSTEM_ADMIN' || Boolean(user?.groups.includes('SystemAdmin'));
   }
 
@@ -2145,7 +2145,7 @@ export class RdigDetailsComponent implements OnInit {
   }
 
   isCurrentUserComment(comment: RequestCommentDto): boolean {
-    const currentUsername = this.authService.currentUser()?.username?.trim().toLowerCase();
+    const currentUsername = this.authService.workspaceUser()?.username?.trim().toLowerCase();
     const commentUsername = comment.staff_username?.trim().toLowerCase();
     return Boolean(currentUsername && commentUsername && commentUsername === currentUsername);
   }

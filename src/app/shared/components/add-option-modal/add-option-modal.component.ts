@@ -17,6 +17,7 @@ export interface AddOptionPayload {
   description?: string;
   parentDomainId?: number | null;
   countryId?: number | null;
+  countryRef?: string;
 }
 
 @Component({
@@ -103,7 +104,7 @@ export class AddOptionModalComponent implements OnChanges {
       this.limit = init.limit ?? null;
       this.description = init.description || '';
       this.parentDomainId = init.parentDomainId != null ? String(init.parentDomainId) : '';
-      this.countryId = init.countryId != null ? String(init.countryId) : '';
+      this.countryId = init.countryRef ?? (init.countryId != null ? String(init.countryId) : '');
     } else {
       this.code = '';
       this.symbol = '';
@@ -196,7 +197,7 @@ export class AddOptionModalComponent implements OnChanges {
       limit: this.showRegionMetadata ? this.limit : undefined,
       description: this.showRegionMetadata ? this.description.trim() : undefined,
       parentDomainId: this.showParentDomain ? Number(this.parentDomainId) : undefined,
-      countryId: this.showCountry ? Number(this.countryId) : undefined,
+      countryRef: this.showCountry ? this.countryId : undefined,
     });
   }
 

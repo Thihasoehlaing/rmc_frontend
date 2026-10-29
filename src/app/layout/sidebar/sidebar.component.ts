@@ -1,7 +1,10 @@
 import { Component, OnInit, inject, signal, computed, effect } from '@angular/core';
+import { WorkspaceService } from '../../core/services/workspace.service';
 import { RdigApiService } from '../../features/rdig/services/rdig-api.service';
 import { RouterLink, RouterLinkActive } from '@angular/router';
-import { Router } from '@angular/router';
+import { NavigationEnd, Router } from '@angular/router';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { filter, map, startWith } from 'rxjs';
 import { SidebarService } from '../../core/services/sidebar.service';
 import { AuthService } from '../../core/services/auth.service';
 import { PermissionService } from '../../core/services/permission.service';
@@ -23,13 +26,19 @@ export class SidebarComponent implements OnInit {
   private authService   = inject(AuthService);
   private permService   = inject(PermissionService);
   private router        = inject(Router);
+  readonly sharedPage = toSignal(this.router.events.pipe(
+    filter(event => event instanceof NavigationEnd),
+    map(() => this.router.url === '/workspaces' || this.router.url.startsWith('/main-settings')),
+    startWith(this.router.url === '/workspaces' || this.router.url.startsWith('/main-settings')),
+  ), { initialValue: false });
   private formCache     = inject(FormCacheService);
+  readonly workspaces = inject(WorkspaceService);
   private rdigApi = inject(RdigApiService);
   private rdigAccess = signal(false);
   private readonly refreshRdigAccess = effect(() => {
     const username = this.currentUser()?.username;
     this.rdigAccess.set(false);
-    if (username) this.rdigApi.getMyAccess().subscribe({
+    if (username && this.workspaces.code() === 'RMC') this.rdigApi.getMyAccess().subscribe({
       next: (res) => {
         if (this.currentUser()?.username === username) this.rdigAccess.set(res.data.can_apply);
       },
@@ -44,6 +53,7 @@ export class SidebarComponent implements OnInit {
   currentUser = this.authService.currentUser;
 
   ngOnInit(): void {
+    this.workspaces.load().subscribe({ error: () => undefined });
     this.formCache.getActiveForms().subscribe({ error: () => undefined });
   }
 
@@ -64,6 +74,9 @@ export class SidebarComponent implements OnInit {
     const filterElements = (elements: NavElement[]): NavElement[] =>
       elements
         .filter(el => this.permService.canAccess(el.permission))
+        .filter(el => !this.sharedPage() || el.route === '/workspaces' || el.route === '/notifications' || !!el.route?.startsWith('/main-settings'))
+        .filter(el => !el.route?.startsWith('/settings/') || ['/settings/applicant-rules', '/settings/request-statuses'].includes(el.route))
+        .filter(el => this.workspaces.code() === 'RMC' || !['/analysis-dashboard', '/reports', '/admin-settings'].some(path => el.route === path || el.route?.startsWith(path + '/')))
         .filter(el => this.isConfiguredFormActive(el, activeFormCodes))
         .filter(el => this.isFolder(el) || el.route !== '/rdig/application' || this.rdigAccess())
         .filter(el => !restrictToWorkflowSidebar || this.isAllowedRestrictedSidebarElement(el))
@@ -128,12 +141,11 @@ export class SidebarComponent implements OnInit {
     activeFormCodes: Set<string>,
   ): boolean {
     const formCode = element.formCode?.toUpperCase();
-    return !formCode || activeFormCodes.has(formCode);
+    return !formCode || (activeFormCodes.has(formCode) && this.formCache.forms().some(form => form.form_code === formCode && form.workspace_code === this.workspaces.code()));
   }
 
   private shouldUseRestrictedWorkflowSidebar(): boolean {
-    const groups = this.currentUser()?.groups ?? [];
-    return this.restrictedWorkflowGroups.some(group => groups.includes(group));
+    return this.permService.inAnyGroup(this.restrictedWorkflowGroups);
   }
 
   private isAllowedRestrictedSidebarElement(element: NavElement): boolean {

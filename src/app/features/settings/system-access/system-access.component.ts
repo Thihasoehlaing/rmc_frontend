@@ -91,14 +91,7 @@ const TABS: readonly AccessTabConfig[] = [
     emptyIcon: 'apartment',
     columns: RULE_COLUMNS,
   },
-  {
-    key: 'audit',
-    label: 'Audit Logs',
-    title: 'Audit Logs',
-    description: 'Read-only access decisions written during authentication checks.',
-    emptyIcon: 'fact_check',
-    columns: AUDIT_COLUMNS,
-  },
+
 ];
 
 @Component({

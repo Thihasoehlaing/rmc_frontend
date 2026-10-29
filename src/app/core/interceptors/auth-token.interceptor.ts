@@ -9,16 +9,20 @@ export const authTokenInterceptor: HttpInterceptorFn = (request, next) => {
 
   if (
     !token ||
-    request.headers.has('Authorization') ||
     !isRmcApiRequest(request.url)
   ) {
     return next(request);
   }
 
+  const username = JSON.parse(localStorage.getItem('user') || '{}').username || '';
+  const workspace = sessionStorage.getItem(`rmc.workspace.${username}`);
+  const path = new URL(request.url, window.location.origin).pathname;
+  const shared = /\/(?:auth|settings|workspaces|master-data)(?:\/|$)/.test(path) || /\/forms$/.test(path);
   return next(
     request.clone({
       setHeaders: {
-        Authorization: `Bearer ${token}`,
+        ...(!request.headers.has('Authorization') ? { Authorization: `Bearer ${token}` } : {}),
+        ...(workspace && !shared && !request.headers.has('X-Workspace-Code') ? { 'X-Workspace-Code': workspace } : {}),
       },
     }),
   );

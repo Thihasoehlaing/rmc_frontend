@@ -1000,7 +1000,7 @@ export class JournalPublicationFormComponent {
     const applicantUsername = String(request['applicant_staff_username'] ?? '')
       .trim()
       .toLowerCase();
-    const currentUsername = this.auth.currentUser()?.username?.trim().toLowerCase();
+    const currentUsername = this.auth.workspaceUser()?.username?.trim().toLowerCase();
     return (
       adminView ||
       Boolean(applicantUsername && currentUsername && applicantUsername !== currentUsername)

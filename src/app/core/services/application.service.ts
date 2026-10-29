@@ -75,7 +75,7 @@ export class ApplicationService {
 
   /** Builds the common identity params used by all application endpoints. */
   private identityParams(): HttpParams | null {
-    const user = this.auth.currentUser();
+    const user = this.auth.workspaceUser();
     if (!user) return null;
     return new HttpParams()
       .set('userId',     user.id)

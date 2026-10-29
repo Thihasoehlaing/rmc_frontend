@@ -1,3 +1,4 @@
+import { WorkspaceService } from '../../../core/services/workspace.service';
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, TrackByFunction, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -36,6 +37,10 @@ type FormStatusFilter = '' | 'Active' | 'Inactive';
   styleUrl: './forms.component.scss',
 })
 export class FormsComponent implements OnInit {
+  readonly workspaces = inject(WorkspaceService);
+  readonly selectedWorkspace = signal<number | null>(null);
+  readonly appliedWorkspace = signal<number | null>(null);
+  readonly formWorkspace = signal<number | null>(null);
   private readonly formsService = inject(FormsService);
   private readonly toastService = inject(ToastService);
 
@@ -67,6 +72,7 @@ export class FormsComponent implements OnInit {
     { key: 'number', label: 'No.', width: '72px', align: 'center' },
     { key: 'code', label: 'Form Code', width: '150px' },
     { key: 'name', label: 'Form Name', width: '280px' },
+    { key: 'workspace', label: 'Workspace', width: '180px' },
     { key: 'status', label: 'Status', width: '120px', align: 'center' },
     {
       key: 'actions',
@@ -81,6 +87,7 @@ export class FormsComponent implements OnInit {
     (row as ManagedForm).id;
 
   ngOnInit(): void {
+    this.workspaces.load().subscribe({ error: () => undefined });
     this.loadForms();
   }
 
@@ -90,6 +97,7 @@ export class FormsComponent implements OnInit {
 
     this.formsService
       .list({
+        workspaceId: this.appliedWorkspace(),
         page: this.page(),
         perPage: this.pageSize(),
         search: this.appliedSearch(),
@@ -120,6 +128,7 @@ export class FormsComponent implements OnInit {
   }
 
   search(): void {
+    this.appliedWorkspace.set(this.selectedWorkspace());
     this.appliedSearch.set(this.searchTerm().trim());
     this.appliedStatus.set(this.selectedStatus());
     this.page.set(1);
@@ -127,6 +136,8 @@ export class FormsComponent implements OnInit {
   }
 
   resetFilters(): void {
+    this.selectedWorkspace.set(null);
+    this.appliedWorkspace.set(null);
     this.searchTerm.set('');
     this.selectedStatus.set('');
     this.appliedSearch.set('');
@@ -149,6 +160,7 @@ export class FormsComponent implements OnInit {
 
   openCreateDialog(): void {
     this.selectedForm.set(null);
+    this.formWorkspace.set(this.workspaces.items().find(item => item.code === 'RMC')?.id ?? null);
     this.formCode.set('');
     this.formName.set('');
     this.formActive.set(true);
@@ -178,11 +190,12 @@ export class FormsComponent implements OnInit {
     const mode = this.dialogMode();
     const code = this.formCode().trim().toUpperCase();
     const name = this.formName().trim();
-    if ((mode !== 'create' && mode !== 'edit') || !code || !name || this.isSaving()) {
+    if ((mode !== 'create' && mode !== 'edit') || !code || !name || !this.formWorkspace() || this.isSaving()) {
       return;
     }
 
     const payload: ManagedFormPayload = {
+      workspace_id: this.formWorkspace()!,
       form_code: code,
       form_name: name,
       is_active: this.formActive(),
@@ -274,6 +287,7 @@ export class FormsComponent implements OnInit {
           this.selectedForm.set(response.data);
           this.formCode.set(response.data.form_code);
           this.formName.set(response.data.form_name);
+          this.formWorkspace.set(response.data.workspace_id);
           this.formActive.set(response.data.is_active);
           this.toastService.success(response.message);
         },

@@ -23,6 +23,8 @@ export interface ApiPagination {
 
 export interface ManagedForm {
   id: number;
+  workspace_id: number;
+  workspace_name?: string;
   form_code: string;
   form_name: string;
   is_active: boolean;
@@ -31,6 +33,8 @@ export interface ManagedForm {
 }
 
 export interface ManagedFormPayload {
+  workspace_id: number;
+  workspace_name?: string;
   form_code: string;
   form_name: string;
   is_active: boolean;
@@ -39,6 +43,7 @@ export interface ManagedFormPayload {
 export interface ManagedFormListParams {
   page: number;
   perPage: number;
+  workspaceId?: number | null;
   search?: string;
   status?: '' | 'Active' | 'Inactive';
 }
@@ -62,6 +67,7 @@ export class FormsService {
       .set('page', params.page)
       .set('per_page', params.perPage);
 
+    if (params.workspaceId) httpParams = httpParams.set('workspace_id', params.workspaceId);
     if (params.search?.trim()) {
       httpParams = httpParams.set('search', params.search.trim());
     }

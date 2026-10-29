@@ -6,18 +6,16 @@ import { environment } from '../../../../environments/environment';
 import { CatalogApiResponse, CatalogPagination, CatalogStatus } from './catalog-api.types';
 
 export interface CountryApi {
-  id: number;
+  id: string;
+  country_ref: string | null;
+  currency_selectable: boolean;
+  region: string | null;
+  source_status: string | null;
   name: string;
   code: string;
   is_active: boolean;
   created_at?: string | null;
   updated_at?: string | null;
-}
-
-export interface CountryPayload {
-  name: string;
-  code: string;
-  is_active: boolean;
 }
 
 export interface CountryListData {
@@ -48,18 +46,6 @@ export class CountryService {
     return this.http.get<CatalogApiResponse<CountryListData>>(this.baseUrl, {
       params: httpParams,
     });
-  }
-
-  create(payload: CountryPayload): Observable<CatalogApiResponse<CountryApi>> {
-    return this.http.post<CatalogApiResponse<CountryApi>>(this.baseUrl, payload);
-  }
-
-  update(id: number, payload: Partial<CountryPayload>): Observable<CatalogApiResponse<CountryApi>> {
-    return this.http.put<CatalogApiResponse<CountryApi>>(`${this.baseUrl}/${id}`, payload);
-  }
-
-  delete(id: number): Observable<CatalogApiResponse<CountryApi>> {
-    return this.http.delete<CatalogApiResponse<CountryApi>>(`${this.baseUrl}/${id}`);
   }
 
   options(includeInactive = false): Observable<CatalogApiResponse<CountryApi[]>> {

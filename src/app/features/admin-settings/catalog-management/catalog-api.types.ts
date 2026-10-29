@@ -18,7 +18,6 @@ export type CatalogStatus = 'all' | 'active' | 'inactive';
 export type AdminCatalogKind =
   | 'project-account-code'
   | 'external-grant-category'
-  | 'country'
   | 'currency';
 export type AdminCatalogStatus = 'Active' | 'Inactive';
 
@@ -32,5 +31,6 @@ export interface AdminCatalogItem {
   appliesTo: string[];
   updatedAt: string;
   countryId?: number | null;
+  countryRef?: string | null;
   countryName?: string | null;
 }

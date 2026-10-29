@@ -1,3 +1,5 @@
+import { firstValueFrom } from 'rxjs';
+import { WorkspaceService } from '../../../core/services/workspace.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Location } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
@@ -18,6 +20,7 @@ export class LoginComponent implements OnInit {
   private readonly location = inject(Location);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly workspaces = inject(WorkspaceService);
   private readonly testingLoginService = inject(TestingLoginService);
   private returnRoute = '/dashboard';
 
@@ -111,7 +114,14 @@ export class LoginComponent implements OnInit {
 
   private async navigateAfterLogin(): Promise<void> {
     try {
-      const navigated = await this.router.navigateByUrl(this.returnRoute);
+      const response = await firstValueFrom(this.workspaces.load(true));
+      const choices = response.data.items;
+      this.workspaces.rememberRmcRoute(this.returnRoute);
+      if (!response.data.can_manage_settings && choices.length === 1) {
+        const opened = await this.workspaces.open(choices[0]);
+        if (opened) { this.authService.clearLoginReturnRoute(); return; }
+      }
+      const navigated = await this.router.navigateByUrl('/workspaces');
       if (navigated) this.authService.clearLoginReturnRoute();
       if (!navigated) {
         this.loginError.set('We could not open the requested page. Please try again.');

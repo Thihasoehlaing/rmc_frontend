@@ -53,7 +53,9 @@ export interface RegionOption {
 }
 
 export interface CountryOption {
-  id: number;
+  id: string;
+  country_ref: string | null;
+  currency_selectable: boolean;
   name: string;
   code: string;
   is_active: boolean;
@@ -61,7 +63,8 @@ export interface CountryOption {
 
 export interface CurrencyOption {
   id: number;
-  country_id: number;
+  country_id: number | null;
+  country_ref: string | null;
   name: string;
   symbol: string;
   code: string;

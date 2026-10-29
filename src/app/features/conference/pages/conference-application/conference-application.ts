@@ -1054,7 +1054,7 @@ export class ConferenceApplication implements OnInit {
       this.loadApplication(Number(requestId));
     } else {
       this.formStateService.clearFormState();
-      const user = this.auth.currentUser();
+      const user = this.auth.workspaceUser();
       if (user) {
         this.applicantDetailsForm.patchValue({
           applicantName: user.name,
@@ -1202,9 +1202,9 @@ export class ConferenceApplication implements OnInit {
     const status = (request.status_code || 'draft') as ConferenceStatus;
 
     this.applicantDetailsForm.patchValue({
-      applicantName: request.applicant_name ?? this.auth.currentUser()?.name ?? '',
-      email: request.applicant_email ?? this.auth.currentUser()?.email ?? '',
-      schoolName: request.applicant_department ?? this.auth.currentUser()?.department ?? '',
+      applicantName: request.applicant_name ?? this.auth.workspaceUser()?.name ?? '',
+      email: request.applicant_email ?? this.auth.workspaceUser()?.email ?? '',
+      schoolName: request.applicant_department ?? this.auth.workspaceUser()?.department ?? '',
       metadata: {
         applicationStatus: status,
         conferenceRequestId: requestId ?? null,
@@ -2333,7 +2333,7 @@ export class ConferenceApplication implements OnInit {
     const applicantUsername = String(request.applicant_staff_username ?? '')
       .trim()
       .toLowerCase();
-    const currentUsername = this.auth.currentUser()?.username?.trim().toLowerCase();
+    const currentUsername = this.auth.workspaceUser()?.username?.trim().toLowerCase();
     return (
       adminView ||
       Boolean(applicantUsername && currentUsername && applicantUsername !== currentUsername)

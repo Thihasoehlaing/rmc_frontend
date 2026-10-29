@@ -7,7 +7,8 @@ import { CatalogApiResponse, CatalogPagination, CatalogStatus } from './catalog-
 
 export interface CurrencyApi {
   id: number;
-  country_id: number;
+  country_id: number | null;
+  country_ref: string | null;
   name: string;
   symbol: string;
   code: string;
@@ -22,7 +23,8 @@ export interface CurrencyPayload {
   name: string;
   symbol: string;
   code: string;
-  country_id: number;
+  country_id?: number;
+  country_ref?: string;
   is_active: boolean;
 }
 
@@ -42,6 +44,7 @@ export class CurrencyService {
     status: CatalogStatus;
     search?: string;
     countryId?: number;
+    countryRef?: string;
   }): Observable<CatalogApiResponse<CurrencyListData>> {
     let httpParams = new HttpParams()
       .set('page', params.page)
@@ -54,6 +57,8 @@ export class CurrencyService {
     if (params.countryId) {
       httpParams = httpParams.set('country_id', params.countryId);
     }
+
+    if (params.countryRef) httpParams = httpParams.set('country_ref', params.countryRef);
 
     return this.http.get<CatalogApiResponse<CurrencyListData>>(this.baseUrl, {
       params: httpParams,

@@ -276,7 +276,7 @@ export class RequestStatusesComponent implements OnInit {
 
   private loadForms(): void {
     this.formCache.getForms().subscribe({
-      next: response => this.forms.set(response.data ?? []),
+      next: response => this.forms.set((response.data ?? []).filter(form => form.workspace_code === 'RMC')),
       error: () => this.forms.set([]),
     });
   }

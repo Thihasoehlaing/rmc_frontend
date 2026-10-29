@@ -1,3 +1,4 @@
+import { WorkspaceService } from './workspace.service';
 import { Injectable, inject } from '@angular/core';
 import { AuthService } from './auth.service';
 import { NavPermission, PermissionCondition } from '../interfaces/permission.interface';
@@ -22,12 +23,16 @@ import { UserGroup } from '../interfaces/user.interface';
 })
 export class PermissionService {
   private authService = inject(AuthService);
+  private workspaces = inject(WorkspaceService);
 
   // ─── Internal helpers ──────────────────────────────────────────────────────
 
   /** Returns the current user's group list, or [] if not authenticated. */
   private userGroups(): UserGroup[] {
-    return this.authService.currentUser()?.groups ?? [];
+    const user = this.authService.currentUser();
+    if (user?.groups.includes('SystemAdmin')) return user.groups;
+    const workspace = this.workspaces.current();
+    return workspace ? this.authService.mapRoleToGroups(workspace.role?.code) : user?.groups ?? [];
   }
 
   // ─── Core evaluation ───────────────────────────────────────────────────────

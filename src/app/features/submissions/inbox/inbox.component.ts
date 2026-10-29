@@ -61,7 +61,7 @@ export class InboxComponent implements OnInit {
   readonly pageSizeOptions = [10, 15, 30, 50];
 
   readonly showApplicantInfo = computed(() =>
-    showInboxApplicantInfo(this.auth.currentUser()?.role?.code),
+    showInboxApplicantInfo(this.auth.workspaceUser()?.role?.code),
   );
 
   readonly skeletonColumns = computed<SkeletonColumn[]>(() => [

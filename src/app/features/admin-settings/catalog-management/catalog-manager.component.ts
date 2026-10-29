@@ -64,8 +64,8 @@ export class CatalogManagerComponent implements OnInit {
   private readonly toast = inject(ToastService);
 
   private readonly fallbackForms: CachedFormOption[] = [
-    { id: 0, form_code: 'CONFERENCE', form_name: 'Conference Application', is_active: true },
-    { id: 0, form_code: 'JOURNAL', form_name: 'Journal Publication', is_active: true },
+    { id: 0, workspace_id: 0, workspace_code: 'RMC', workspace_name: 'RMC', form_code: 'CONFERENCE', form_name: 'Conference Application', is_active: true },
+    { id: 0, workspace_id: 0, workspace_code: 'RMC', workspace_name: 'RMC', form_code: 'JOURNAL', form_name: 'Journal Publication', is_active: true },
   ];
   readonly formOptionsData = signal<CachedFormOption[]>([]);
   readonly countryOptionsData = signal<CountryApi[]>([]);
@@ -85,16 +85,18 @@ export class CatalogManagerComponent implements OnInit {
     { value: 'CONFERENCE', label: 'Conference Application' },
     { value: 'JOURNAL', label: 'Journal Publication' },
   ];
-  readonly countryOptions = computed<DropdownOption<string>[]>(() =>
-    this.countryOptionsData()
-      .filter((country) => country.is_active)
-      .map((country) => ({
-        value: String(country.id),
-        label: country.name,
-        description: country.code,
-        searchText: `${country.name} ${country.code}`,
-      })),
-  );
+  readonly countryOptions = computed<DropdownOption<string>[]>(() => {
+    const options = this.countryOptionsData()
+      .filter(country => country.is_active && country.currency_selectable && !!country.country_ref)
+      .map(country => ({value: country.country_ref!, label: country.name, description: country.code,
+        searchText: `${country.name} ${country.code}`}));
+    const row = this.editingRow();
+    const value = row?.countryRef ?? (row?.countryId ? `legacy:${row.countryId}` : null);
+    if (value && !options.some(option => option.value === value)) {
+      options.unshift({value, label: row?.countryName || value, description: 'Historical country', searchText: row?.countryName || value});
+    }
+    return options;
+  });
   readonly searchQuery = signal('');
   readonly statusFilter = signal<'all' | 'active' | 'inactive'>('all');
   readonly formFilter = signal<string>('all');
@@ -122,13 +124,13 @@ export class CatalogManagerComponent implements OnInit {
           status: row.status,
           appliesTo: [...row.appliesTo],
           countryId: row.countryId ?? null,
+          countryRef: row.countryRef ?? (row.countryId ? `legacy:${row.countryId}` : undefined),
         }
       : null;
   });
 
   readonly usesExternalGrantCategoryApi = computed(() => this.kind === 'external-grant-category');
   readonly usesProjectAccountCodeApi = computed(() => this.kind === 'project-account-code');
-  readonly usesCountryApi = computed(() => this.kind === 'country');
   readonly usesCurrencyApi = computed(() => this.kind === 'currency');
   readonly filteredRows = computed(() => this.apiRows().filter((item) => item.kind === this.kind));
 
@@ -137,9 +139,6 @@ export class CatalogManagerComponent implements OnInit {
   readonly totalItems = this.apiTotalItems.asReadonly();
 
   get searchPlaceholder(): string {
-    if (this.usesCountryApi()) {
-      return 'Search code or country name';
-    }
     if (this.usesCurrencyApi()) {
       return 'Search currency code, currency name or country name';
     }
@@ -184,10 +183,6 @@ export class CatalogManagerComponent implements OnInit {
       this.saveExternalGrantCategory(row, payload);
       return;
     }
-    if (this.usesCountryApi()) {
-      this.saveCountry(row, payload);
-      return;
-    }
     if (this.usesCurrencyApi()) {
       this.saveCurrency(row, payload);
     }
@@ -222,10 +217,6 @@ export class CatalogManagerComponent implements OnInit {
             this.toast.error('Unable to update the category status. Please try again.');
           },
         });
-      return;
-    }
-    if (this.usesCountryApi()) {
-      this.updateCountryStatus(row);
       return;
     }
     if (this.usesCurrencyApi()) {
@@ -269,10 +260,6 @@ export class CatalogManagerComponent implements OnInit {
           this.toast.error('Unable to delete the category. Please try again.');
         },
       });
-      return;
-    }
-    if (this.usesCountryApi()) {
-      this.deleteCountry(row);
       return;
     }
     if (this.usesCurrencyApi()) {
@@ -366,10 +353,6 @@ export class CatalogManagerComponent implements OnInit {
       this.loadProjectAccountCodes();
       return;
     }
-    if (this.usesCountryApi()) {
-      this.loadCountries();
-      return;
-    }
     if (this.usesCurrencyApi()) {
       this.loadCurrencies();
       return;
@@ -457,125 +440,6 @@ export class CatalogManagerComponent implements OnInit {
       .replace(/^_+|_+$/g, '');
   }
 
-  private loadCountries(): void {
-    this.isLoading.set(true);
-    this.loadFailed.set(false);
-    this.countries
-      .list({
-        page: this.page(),
-        perPage: this.pageSize(),
-        status: this.statusFilter(),
-        search: this.searchQuery(),
-      })
-      .subscribe({
-        next: (response) => {
-          if (!response.success || !response.data) {
-            this.handleCatalogLoadFailure(
-              response.message,
-              'Unable to load countries. Please try again.',
-            );
-            return;
-          }
-          const data = response.data;
-          this.apiRows.set((data.items ?? []).map((item) => this.toCountryItem(item)));
-          this.apiTotalItems.set(data.pagination?.total_items ?? data.items?.length ?? 0);
-          this.apiTotalPages.set(Math.max(1, data.pagination?.total_pages ?? 1));
-          this.page.set(data.pagination?.current_page ?? this.page());
-          this.isLoading.set(false);
-          this.busyRowId.set(null);
-        },
-        error: () =>
-          this.handleCatalogLoadFailure(undefined, 'Unable to load countries. Please try again.'),
-      });
-  }
-
-  private saveCountry(row: AdminCatalogItem | null, payload: AddOptionPayload): void {
-    if (this.isSaving()) return;
-
-    this.isSaving.set(true);
-    const request = {
-      name: payload.name.trim(),
-      code: payload.code?.trim().toUpperCase() ?? '',
-      is_active: payload.status === 'Active',
-    };
-    const operation = row ? this.countries.update(row.id, request) : this.countries.create(request);
-
-    operation.subscribe({
-      next: (response) => {
-        if (!response.success) {
-          this.isSaving.set(false);
-          this.toast.error(response.message || `Unable to ${row ? 'update' : 'add'} the country.`);
-          return;
-        }
-        this.isSaving.set(false);
-        this.toast.success(response.message || (row ? 'Country updated.' : 'Country added.'));
-        this.closeModal();
-        this.loadCatalogItems();
-      },
-      error: () => {
-        this.isSaving.set(false);
-        this.toast.error(`Unable to ${row ? 'update' : 'add'} the country. Please try again.`);
-      },
-    });
-  }
-
-  private updateCountryStatus(row: AdminCatalogItem): void {
-    this.busyRowId.set(row.id);
-    this.countries.update(row.id, { is_active: row.status !== 'Active' }).subscribe({
-      next: (response) => {
-        if (!response.success) {
-          this.busyRowId.set(null);
-          this.toast.error(response.message || 'Unable to update the country status.');
-          return;
-        }
-        this.toast.success(
-          response.message ||
-            `${row.name} ${row.status === 'Active' ? 'deactivated' : 'activated'}.`,
-        );
-        this.loadCatalogItems();
-      },
-      error: () => {
-        this.busyRowId.set(null);
-        this.toast.error('Unable to update the country status. Please try again.');
-      },
-    });
-  }
-
-  private deleteCountry(row: AdminCatalogItem): void {
-    this.busyRowId.set(row.id);
-    this.countries.delete(row.id).subscribe({
-      next: (response) => {
-        if (!response.success) {
-          this.busyRowId.set(null);
-          this.toast.error(response.message || 'Unable to delete the country.');
-          return;
-        }
-        this.rowToDelete.set(null);
-        this.toast.success(response.message || 'Country deleted.');
-        if (this.pagedRows().length === 1 && this.page() > 1) {
-          this.page.update((currentPage) => currentPage - 1);
-        }
-        this.loadCatalogItems();
-      },
-      error: () => {
-        this.busyRowId.set(null);
-        this.toast.error('Unable to delete the country. Please try again.');
-      },
-    });
-  }
-
-  private toCountryItem(item: CountryApi): AdminCatalogItem {
-    return {
-      id: item.id,
-      kind: 'country',
-      code: item.code,
-      name: item.name,
-      status: item.is_active ? 'Active' : 'Inactive',
-      appliesTo: [],
-      updatedAt: item.updated_at ?? item.created_at ?? '',
-    };
-  }
-
   private loadCurrencies(): void {
     this.isLoading.set(true);
     this.loadFailed.set(false);
@@ -616,7 +480,9 @@ export class CatalogManagerComponent implements OnInit {
       name: payload.name.trim(),
       symbol: payload.symbol?.trim() ?? '',
       code: payload.code?.trim().toUpperCase() ?? '',
-      country_id: payload.countryId ?? 0,
+      ...(payload.countryRef?.startsWith('legacy:')
+        ? { country_id: Number(payload.countryRef.slice(7)) }
+        : { country_ref: payload.countryRef ?? '' }),
       is_active: payload.status === 'Active',
     };
     const operation = row
@@ -698,6 +564,7 @@ export class CatalogManagerComponent implements OnInit {
       appliesTo: [],
       updatedAt: item.updated_at ?? item.created_at ?? '',
       countryId: item.country_id,
+      countryRef: item.country_ref,
       countryName: item.country_name,
     };
   }

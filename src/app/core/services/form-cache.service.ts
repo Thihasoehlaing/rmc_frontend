@@ -8,6 +8,9 @@ export interface CachedFormOption {
   id: number;
   form_code: string;
   form_name: string;
+  workspace_id: number;
+  workspace_code: string;
+  workspace_name: string;
   is_active: boolean;
 }
 
@@ -26,7 +29,7 @@ interface FormCacheEntry {
 export class FormCacheService {
   private readonly http = inject(HttpClient);
   private readonly legacyStorageKey = 'rmc.forms.cache';
-  private readonly storageKey = 'rmc.forms.cache.v2';
+  private readonly storageKey = 'rmc.forms.cache.v3';
   private readonly cacheTtlMs = 5 * 60 * 1000;
   private readonly apiUrl = `${environment.apiUrl}/forms?include_inactive=true`;
   private inFlight: Observable<ApiResponse<CachedFormOption[]>> | null = null;

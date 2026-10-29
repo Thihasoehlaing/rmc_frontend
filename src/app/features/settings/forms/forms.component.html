@@ -49,6 +49,12 @@
       </select>
     </label>
 
+    <label class="forms-filter"><span>Workspace</span>
+      <select class="input--select" [ngModel]="selectedWorkspace()" (ngModelChange)="selectedWorkspace.set($event)">
+        <option [ngValue]="null">All workspaces</option>
+        @for (workspace of workspaces.items(); track workspace.id) { <option [ngValue]="workspace.id">{{ workspace.name }}</option> }
+      </select>
+    </label>
     <div class="forms-toolbar__actions">
       <button class="btn btn-primary" type="button" (click)="search()" [disabled]="isLoading()">
         <span class="material-icons">search</span>
@@ -110,6 +116,7 @@
                 <strong>{{ row.form_name }}</strong>
               </div>
             </td>
+            <td>{{ row.workspace_name }}</td>
             <td class="is-align-center">
               <span class="status-badge" [class.status-badge--inactive]="!row.is_active">
                 {{ row.is_active ? 'Active' : 'Inactive' }}
@@ -211,6 +218,13 @@
           />
         </label>
 
+        <label class="forms-filter"><span>Workspace</span>
+          <select class="input--select" [ngModel]="formWorkspace()" (ngModelChange)="formWorkspace.set($event)">
+            <option [ngValue]="null" disabled>Select a workspace</option>
+            @for (workspace of workspaces.items(); track workspace.id) { <option [ngValue]="workspace.id">{{ workspace.name }}</option> }
+          </select>
+          <small>Forms with existing applications retain their original workspace.</small>
+        </label>
         <label class="active-switch">
           <input
             type="checkbox"
@@ -239,7 +253,7 @@
         <button
           class="btn btn-primary"
           type="button"
-          [disabled]="isSaving() || !formCode().trim() || !formName().trim()"
+          [disabled]="isSaving() || !formCode().trim() || !formName().trim() || !formWorkspace()"
           (click)="saveForm()"
         >
           {{

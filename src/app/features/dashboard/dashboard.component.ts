@@ -41,7 +41,7 @@ export class DashboardComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
 
   readonly analysisMode = this.route.snapshot.data['analysis'] === true;
-  readonly user = computed(() => this.auth.currentUser());
+  readonly user = computed(() => this.auth.workspaceUser());
   readonly username = computed(() => this.user()?.name ?? 'Guest');
   readonly summary = signal<DashboardSummaryDto | null>(null);
   readonly view = computed(() =>

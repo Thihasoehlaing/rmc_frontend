@@ -60,7 +60,7 @@ export class DraftsComponent implements OnInit {
   readonly pageSizeOptions = [10, 15, 30, 50];
   readonly isSystemAdmin = computed(() => this.auth.inGroup('SystemAdmin'));
   readonly canDeleteDrafts = computed(() => {
-    const username = this.auth.currentUser()?.username?.trim().toLowerCase();
+    const username = this.auth.workspaceUser()?.username?.trim().toLowerCase();
     return this.isSystemAdmin() && username === 'thiha.hlaing';
   });
 

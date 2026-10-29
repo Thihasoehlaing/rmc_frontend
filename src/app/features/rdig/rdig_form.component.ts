@@ -665,15 +665,15 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
       // 2. Subpage 1 — Team Members (pre-filled from the logged-in user)
       teamDetails: this.fb.group({
         leaderName: [
-          { value: this.auth.currentUser()?.name ?? '', disabled: true },
+          { value: this.auth.workspaceUser()?.name ?? '', disabled: true },
           Validators.required,
         ],
         leaderEmail: [
-          { value: this.auth.currentUser()?.email ?? '', disabled: true },
+          { value: this.auth.workspaceUser()?.email ?? '', disabled: true },
           [Validators.required, Validators.email],
         ],
         department: [
-          { value: this.auth.currentUser()?.department ?? '', disabled: true },
+          { value: this.auth.workspaceUser()?.department ?? '', disabled: true },
           Validators.required,
         ],
         researchCluster: [null, Validators.required],
@@ -1128,7 +1128,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
   }
 
   private isCurrentUserApplicant(app: any): boolean {
-    const user = this.auth.currentUser();
+    const user = this.auth.workspaceUser();
     if (!user) return false;
 
     const ownerById =
@@ -1142,7 +1142,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
   }
 
   private canCurrentUserActOnApplication(app: any): boolean {
-    const user = this.auth.currentUser();
+    const user = this.auth.workspaceUser();
     if (!user) return false;
 
     const wf = app.workflow ?? {};
@@ -1460,7 +1460,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
     const adminReadOnly = this.isSystemAdminReadOnlyRequest(requestRow);
     this.isAdminReadOnlyDraft.set(adminReadOnly);
     const applicantUsername = String(requestRow.applicant_staff_username ?? '').trim().toLowerCase();
-    const currentUsername = this.auth.currentUser()?.username?.trim().toLowerCase();
+    const currentUsername = this.auth.workspaceUser()?.username?.trim().toLowerCase();
     const applicantOwner = !!applicantUsername && applicantUsername === currentUsername;
     this.isApplicantOwner.set(applicantOwner);
     this.workflow.currentUserCanAct.set(
@@ -2145,7 +2145,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
     if (!this.rdigForm.get('metadata.applicantUserId')?.value) {
       this.rdigForm
         .get('metadata.applicantUserId')
-        ?.setValue(this.auth.currentUser()?.id ?? null, { emitEvent: false });
+        ?.setValue(this.auth.workspaceUser()?.id ?? null, { emitEvent: false });
     }
 
     // ── Workflow transition ──────────────────────────────────────
@@ -2170,7 +2170,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
       }
 
       // Build history entry
-      const currentUser = this.auth.currentUser();
+      const currentUser = this.auth.workspaceUser();
       const historyEntry: WorkflowHistoryEntry = {
         action: transition.action,
         fromStatus: currentStatus,
@@ -2259,7 +2259,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
     if (!this.auth.inGroup('SystemAdmin')) return false;
     const adminView = this.route.snapshot.queryParamMap.get('admin_view')?.toLowerCase() === 'true';
     const applicantUsername = String(request.applicant_staff_username ?? '').trim().toLowerCase();
-    const currentUsername = this.auth.currentUser()?.username?.trim().toLowerCase();
+    const currentUsername = this.auth.workspaceUser()?.username?.trim().toLowerCase();
     return adminView || Boolean(applicantUsername && currentUsername && applicantUsername !== currentUsername);
   }
 

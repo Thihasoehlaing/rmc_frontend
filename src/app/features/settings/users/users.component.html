@@ -176,6 +176,9 @@
             <td>{{ formatDate(row.last_login_at) }}</td>
             <td class="is-align-center">
               <div class="table-actions">
+                <button type="button" class="table-action" title="Workspace access" aria-label="Workspace access" (click)="openWorkspaces(row)">
+                  <span class="material-icons">workspaces</span>
+                </button>
                 <button
                   class="table-action"
                   type="button"
@@ -222,7 +225,7 @@
     (close)="closePairDialog()"
   >
     <div class="role-pairing">
-      <p>Pair a Microsoft username with an RMC role. The user does not need to have logged in before.</p>
+      <p>Pair a Microsoft username with a platform System Admin or default RMC role. Manage other workspace roles through Workspace Access.</p>
 
       <label class="forms-filter">
         <span>Microsoft Username</span>
@@ -273,7 +276,7 @@
   >
     @if (userForRoleAssignment(); as user) {
       <div class="role-pairing">
-        <p>Assign a system role for <strong>{{ user.fullname || user.username }}</strong>.</p>
+        <p>Assign a platform or default RMC role for <strong>{{ user.fullname || user.username }}</strong>.</p>
 
         <label class="forms-filter">
           <span>Role</span>
@@ -307,5 +310,28 @@
         {{ isSaving() ? 'Assigning...' : 'Assign Role' }}
       </button>
     </div>
+  </app-dialog>
+  <app-dialog [isOpen]="workspaceUser() !== null" title="Workspace Access" (close)="!isSaving() && workspaceUser.set(null)">
+    @if (workspaceUser(); as user) {
+      <p>Manage workspace access for {{ user.fullname || user.username }}. Platform System Admins retain access to every active workspace.</p>
+      @if (workspaceLoading()) { <p>Loading workspace access...</p> }
+      @for (row of workspaceRows(); track row.workspace_id) {
+        <section class="card"><div class="card__content">
+          <h3>{{ row.name }}</h3>
+          <label class="form-label"><input type="checkbox" [(ngModel)]="row.is_active" [disabled]="isSaving()"> Allow workspace access</label>
+          <label class="form-field"><span class="form-label">Workspace role</span>
+            <select class="input--select" [(ngModel)]="row.role_id" [disabled]="isSaving()">
+              <option [ngValue]="null">{{ row.code === 'RMC' ? 'Use existing RMC role' : 'No approval or admin role' }}</option>
+              @for (role of roles(); track role.id) {
+                @if (role.role_code !== 'SYSTEM_ADMIN' && (row.code === 'RMC' || role.role_code !== 'RMC_ADMIN')) {
+                  <option [ngValue]="role.id">{{ role.role_name }}</option>
+                }
+              }
+            </select>
+          </label>
+          <button class="btn btn-primary" type="button" [disabled]="isSaving()" (click)="saveWorkspace(row)">Save {{ row.name }} access</button>
+        </div></section>
+      }
+    }
   </app-dialog>
 </main>

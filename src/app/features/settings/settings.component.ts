@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
-import { SETTINGS_MODULES } from './settings.config';
+import { SHARED_SETTINGS_MODULES } from './settings.config';
 
 @Component({
   selector: 'app-settings',
@@ -14,5 +14,5 @@ import { SETTINGS_MODULES } from './settings.config';
   ],
 })
 export class SettingsComponent {
-  readonly cards = SETTINGS_MODULES;
+  readonly cards = SHARED_SETTINGS_MODULES;
 }

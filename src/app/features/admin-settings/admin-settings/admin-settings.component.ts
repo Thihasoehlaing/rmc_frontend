@@ -63,7 +63,7 @@ export class AdminSettingsComponent {
     },
     {
       title: 'Manage Countries',
-      description: 'Maintain country options used by RDIG external collaborator forms.',
+      description: 'View centrally managed country reference data.',
       icon: 'public',
       category: 'Master Data',
       route: '/admin-settings/manage-countries',

@@ -82,8 +82,8 @@ interface PaginatedData<T> {
 export class ApplicantRulesService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = environment.apiUrl;
-  private readonly baseUrl = `${this.apiUrl}/settings/applicant-rules`;
-  private readonly formsUrl = `${this.apiUrl}/forms`;
+  private readonly baseUrl = `${this.apiUrl}/rmc-settings/applicant-rules`;
+  private readonly formsUrl = `${this.apiUrl}/rmc-settings/forms`;
   private readonly departmentsUrl = `${this.apiUrl}/master-data/departments`;
   private readonly staffUrl = `${this.apiUrl}/master-data/staff`;
 

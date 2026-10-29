@@ -1,3 +1,4 @@
+import { WorkspaceService, WorkspaceAccess } from '../../../core/services/workspace.service';
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, TrackByFunction, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -46,6 +47,10 @@ const EMPTY_FILTERS: UserListFilters = {
   styleUrls: ['../forms/forms.component.scss', './users.component.scss'],
 })
 export class UsersComponent implements OnInit {
+  readonly workspaces = inject(WorkspaceService);
+  readonly workspaceUser = signal<UserRecord | null>(null);
+  readonly workspaceRows = signal<WorkspaceAccess[]>([]);
+  readonly workspaceLoading = signal(false);
   private readonly usersService = inject(UsersService);
   private readonly toastService = inject(ToastService);
 
@@ -79,7 +84,7 @@ export class UsersComponent implements OnInit {
     { key: 'number', label: 'No.', width: '72px', align: 'center' },
     { key: 'user', label: 'User', width: '250px' },
     { key: 'jobTitle', label: 'Job Title', width: '190px' },
-    { key: 'role', label: 'Role', width: '170px' },
+    { key: 'role', label: 'Platform / RMC Role', width: '170px' },
     { key: 'type', label: 'Account Type', width: '130px', align: 'center' },
     { key: 'department', label: 'Department', width: '250px' },
     { key: 'lastLogin', label: 'Last Login', width: '150px' },
@@ -259,6 +264,29 @@ export class UsersComponent implements OnInit {
           this.loadUsers();
         },
       });
+  }
+
+  openWorkspaces(user: UserRecord): void {
+    this.workspaceUser.set(user);
+    this.workspaceRows.set([]);
+    this.workspaceLoading.set(true);
+    this.workspaces.userAccess(user.id).pipe(finalize(() => this.workspaceLoading.set(false))).subscribe({
+      next: response => this.workspaceRows.set(response.data),
+      error: () => this.workspaceUser.set(null),
+    });
+  }
+
+  saveWorkspace(row: WorkspaceAccess): void {
+    const user = this.workspaceUser();
+    if (!user || this.isSaving()) return;
+    this.isSaving.set(true);
+    this.workspaces.saveAccess(user.id, row).pipe(finalize(() => this.isSaving.set(false))).subscribe({
+      next: response => {
+        this.workspaceRows.set(response.data);
+        this.toastService.success('Workspace access updated');
+        this.workspaces.load(true).subscribe({ error: () => undefined });
+      },
+    });
   }
 
   rowNumber(index: number): number {

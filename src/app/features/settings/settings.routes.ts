@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 
 export const settingsRoutes: Routes = [
+  { path: 'workspaces', loadComponent: () => import('./workspace-management/workspace-management.component').then(m => m.WorkspaceManagementComponent) },
   {
     path: '',
     loadComponent: () =>
@@ -75,19 +76,11 @@ export const settingsRoutes: Routes = [
     redirectTo: 'system-access',
     pathMatch: 'full',
   },
-  {
-    path: 'applicant-rules',
-    loadComponent: () =>
-      import('./applicant-rules/applicant-rules.component').then(m => m.ApplicantRulesComponent),
-  },
+
   {
     path: 'monitoring',
     loadComponent: () =>
       import('./monitoring/monitoring.component').then(m => m.MonitoringComponent),
   },
-  {
-    path: 'request-statuses',
-    loadComponent: () =>
-      import('./request-statuses/request-statuses.component').then(m => m.RequestStatusesComponent),
-  },
+
 ];

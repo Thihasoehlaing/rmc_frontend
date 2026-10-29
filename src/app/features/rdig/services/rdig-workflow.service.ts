@@ -333,12 +333,12 @@ export class RdigWorkflowService {
 
   /** True when the current logged-in user is the assigned Reviewer 1 */
   isCurrentUserReviewer1 = computed(
-    () => !!this.reviewer1UserId() && this.auth.currentUser()?.id === this.reviewer1UserId(),
+    () => !!this.reviewer1UserId() && this.auth.workspaceUser()?.id === this.reviewer1UserId(),
   );
 
   /** True when the current logged-in user is the assigned Reviewer 2 */
   isCurrentUserReviewer2 = computed(
-    () => !!this.reviewer2UserId() && this.auth.currentUser()?.id === this.reviewer2UserId(),
+    () => !!this.reviewer2UserId() && this.auth.workspaceUser()?.id === this.reviewer2UserId(),
   );
 
   // ── Per-stage comment/approval editability (ABAC — status only) ─

@@ -236,7 +236,7 @@
   [showSymbol]="usesCurrencyApi()"
   symbolLabel="Currency Symbol"
   [optionNameLabel]="nameLabel"
-  [optionNameMaxLength]="usesProjectAccountCodeApi() || usesCountryApi() ? 100 : null"
+  [optionNameMaxLength]="usesProjectAccountCodeApi() ? 100 : null"
   [showOptionNameCounter]="usesProjectAccountCodeApi()"
   [showCountry]="usesCurrencyApi()"
   [countryOptions]="countryOptions()"

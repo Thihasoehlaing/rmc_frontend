@@ -1,0 +1,20 @@
+<header class="platform-header">
+  <div class="platform-header__brand"><img src="assets/images/apu.png" alt="Asia Pacific University"><div><strong>Main Settings</strong><small>RMC Platform</small></div></div>
+  <div class="platform-header__actions">
+    <a class="btn btn-secondary" routerLink="/workspaces"><span class="material-icons" aria-hidden="true">apps</span>Workspaces</a>
+    <button class="btn btn-ghost platform-header__logout" type="button" (click)="auth.logout()"><span class="material-icons" aria-hidden="true">logout</span>Sign out</button>
+  </div>
+</header>
+<div class="platform-settings" [class.platform-settings--collapsed]="collapsed()">
+  <aside class="platform-settings__sidebar">
+    <div class="platform-settings__sidebar-heading"><strong>Navigation</strong><button class="btn btn-ghost" type="button" (click)="toggleSidebar()" [attr.aria-label]="collapsed() ? 'Expand settings sidebar' : 'Collapse settings sidebar'" [attr.aria-expanded]="!collapsed()" aria-controls="settings-navigation"><span class="material-icons" aria-hidden="true">{{ collapsed() ? 'keyboard_double_arrow_right' : 'keyboard_double_arrow_left' }}</span></button></div>
+    <a class="platform-settings__overview" routerLink="/main-settings" title="Settings overview" aria-label="Settings overview" routerLinkActive="is-active" [routerLinkActiveOptions]="{exact:true}"><span class="material-icons" aria-hidden="true">settings</span><span class="platform-settings__link-label">Settings overview</span></a>
+    <span class="platform-settings__label">Administration</span>
+    <nav id="settings-navigation" aria-label="Main Settings">
+      @for (module of modules; track module.key) {
+        <a [routerLink]="module.route" routerLinkActive="is-active" ariaCurrentWhenActive="page" [title]="module.title" [attr.aria-label]="module.title"><span class="material-icons" aria-hidden="true">{{ module.icon }}</span><span class="platform-settings__link-label">{{ module.title }}</span></a>
+      }
+    </nav>
+  </aside>
+  <div class="platform-settings__content"><router-outlet /></div>
+</div>

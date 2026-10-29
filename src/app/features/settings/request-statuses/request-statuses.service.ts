@@ -72,8 +72,7 @@ export interface RequestStatusPayload {
 @Injectable({ providedIn: 'root' })
 export class RequestStatusesService {
   private readonly http = inject(HttpClient);
-  private readonly url = `${environment.apiUrl}/settings/request-statuses`;
-  private readonly settingsUrl = `${environment.apiUrl}/settings`;
+  private readonly url = `${environment.apiUrl}/rmc-settings/request-statuses`;
 
   list(query: RequestStatusQuery): Observable<ApiResponse<PaginatedData<RequestStatusSetting>>> {
     let params = new HttpParams()

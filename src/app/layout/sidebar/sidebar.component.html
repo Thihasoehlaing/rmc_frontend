@@ -8,7 +8,7 @@
     <a routerLink="/dashboard" class="sidebar__logo" (click)="closeMobileSidebar()">
       <img src="assets/images/apu.png" alt="APU Logo" class="logo-img">
       @if (isExpanded()) {
-      <span class="logo-text">RMC</span>
+      <span class="logo-text">{{ sharedPage() ? 'RMC' : workspaces.current()?.name || 'RMC' }}</span>
       }
     </a>
     <button type="button" class="sidebar__toggle-btn" (click)="togglePin()" [class.active]="pinned()"

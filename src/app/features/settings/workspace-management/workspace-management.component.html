@@ -1,0 +1,46 @@
+<main class="forms-page forms-page--settings">
+  <header class="forms-page__header"><div><span class="forms-page__eyebrow">System Settings</span><h1>Workspaces</h1><p>Manage workspace names, destination URLs, availability and display order.</p></div><button class="btn btn-primary forms-page__create-button" type="button" [disabled]="loading()" (click)="create()"><span class="material-icons" aria-hidden="true">add</span>New Workspace</button></header>
+  <section class="forms-toolbar" aria-label="Workspace filters">
+    <h2 class="forms-toolbar__title">Search &amp; Filters</h2>
+    <label class="forms-filter forms-filter--search"><span class="forms-search-input"><span class="material-icons" aria-hidden="true">search</span><input class="input--text" type="search" aria-label="Search workspaces by code, name or URL" placeholder="Search workspaces by code, name or URL..." [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event)" (keydown.enter)="search()" [disabled]="loading()"></span></label>
+    <label class="forms-filter"><span>Status</span><select class="input--select" [ngModel]="selectedStatus()" (ngModelChange)="selectedStatus.set($event)" [disabled]="loading()"><option value="">All</option><option value="Active">Active</option><option value="Inactive">Inactive</option></select></label>
+    <div class="forms-toolbar__actions"><button class="btn btn-primary" type="button" (click)="search()" [disabled]="loading()"><span class="material-icons">search</span>Search</button><button class="btn btn-secondary" type="button" (click)="resetFilters()" [disabled]="loading()"><span class="material-icons">restart_alt</span>Reset</button></div>
+  </section>
+  <section class="forms-table-card">
+    <header class="forms-table-card__header"><div><div class="forms-table-card__title-row"><h2>Workspaces</h2><span class="forms-table-card__count">{{ filtered().length }}</span></div><p>Manage workspace destinations and availability across the platform.</p></div><button class="btn btn-secondary forms-table-card__refresh" type="button" (click)="load()" [disabled]="loading()"><span class="material-icons">refresh</span>Refresh</button></header>
+    @if (failed()) {
+      <div class="forms-state"><p>Unable to load workspaces.</p><button class="btn btn-primary" type="button" (click)="load()">Try again</button></div>
+    } @else if (!loading() && !filtered().length) {
+      <div class="forms-state"><span class="material-icons">workspaces</span><h2>No workspaces found</h2><p>Adjust the filters to find a workspace.</p></div>
+    } @else if (!loading()) {
+      <app-data-table [columns]="columns" [rows]="visible()" [rowTrackFn]="track">
+        <ng-template #rowTemplate let-row let-index="index">
+          <tr>
+            <td class="is-align-center">{{ (page() - 1) * pageSize() + index + 1 }}</td>
+            <td><span class="form-code">{{ row.code }}</span></td>
+            <td><div class="form-name"><span class="material-icons" aria-hidden="true">workspaces</span><strong>{{ row.name }}</strong></div></td>
+            <td class="workspace-url">{{ row.domain_url || (row.code === 'RMC' ? 'Current application' : 'Not configured') }}</td>
+            <td class="is-align-center">{{ row.display_order }}</td>
+            <td class="is-align-center"><span class="status-badge" [class.status-badge--inactive]="!row.is_active">{{ row.is_active ? 'Active' : 'Inactive' }}</span></td>
+            <td class="is-align-center"><div class="table-actions"><button class="table-action" type="button" title="Edit workspace" (click)="edit(row)" [attr.aria-label]="'Edit ' + row.name"><app-table-action-icon action="edit" /></button></div></td>
+          </tr>
+        </ng-template>
+      </app-data-table>
+    }
+    @if (!loading() && !failed()) {
+      <footer class="forms-table-card__footer"><app-pagination [currentPage]="page()" [totalPages]="totalPages()" [pageSize]="pageSize()" [pageSizeOptions]="pageSizeOptions" [totalItems]="filtered().length" [itemCount]="visible().length" itemLabel="workspaces" (pageChange)="page.set($event)" (pageSizeChange)="onPageSizeChange($event)" /></footer>
+    }
+  </section>
+  <app-dialog [isOpen]="editing() !== null" [title]="creating() ? 'New Workspace' : 'Edit Workspace'" size="small" (close)="close()">
+    @if (editing(); as row) {
+      <div class="form-editor">
+        <div class="forms-filter"><label class="form-label" for="workspace-code">Code</label><input id="workspace-code" class="input--text" [(ngModel)]="row.code" [readonly]="!creating()" maxlength="50" [disabled]="saving()" aria-describedby="workspace-code-hint"><small id="workspace-code-hint" class="form-hint">{{ creating() ? 'Use a unique code with letters, numbers and underscores. The code is fixed after creation.' : 'The code stays fixed to preserve workspace links and permissions.' }}</small></div>
+        <label class="forms-filter"><span class="form-label">Name</span><input class="input--text" [(ngModel)]="row.name" maxlength="100" required [disabled]="saving()"></label>
+        <div class="forms-filter"><label class="form-label" for="workspace-domain">Domain URL</label><input id="workspace-domain" class="input--text" type="url" [(ngModel)]="row.domain_url" maxlength="2048" placeholder="https://..." [disabled]="saving()" aria-describedby="workspace-domain-hint"><small id="workspace-domain-hint" class="form-hint">Use HTTPS, or HTTP for localhost. Leave RMC blank to use the current application.</small></div>
+        <label class="forms-filter"><span class="form-label">Display order</span><input class="input--text" type="number" min="0" step="1" [(ngModel)]="row.display_order" [disabled]="saving()"></label>
+        <label class="active-switch"><input type="checkbox" [(ngModel)]="row.is_active" [disabled]="saving()"><span class="active-switch__control"></span><span><strong>Active workspace</strong><small>Available to users with workspace access.</small></span></label>
+      </div>
+    }
+    <div dialog-footer class="form-dialog__footer"><button class="btn btn-secondary" type="button" [disabled]="saving()" (click)="close()">Cancel</button><button class="btn btn-primary" type="button" [disabled]="saving() || !isValid(editing())" (click)="save()">{{ saving() ? 'Saving...' : creating() ? 'Create Workspace' : 'Save Changes' }}</button></div>
+  </app-dialog>
+</main>

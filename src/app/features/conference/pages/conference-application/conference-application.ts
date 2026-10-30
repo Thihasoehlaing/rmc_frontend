@@ -1619,7 +1619,7 @@ export class ConferenceApplication implements OnInit {
         this.conferenceDetailsStep.externalBreakdowns.length === 0
       ) {
         missing.push({
-          label: 'External Research Project Costing - Add Entry',
+          label: 'Funded by Research Grant — Costing - Add Entry',
           target: 'externalResearchCostingEntries',
         });
       }
@@ -1765,7 +1765,7 @@ export class ConferenceApplication implements OnInit {
       (!Array.isArray(entries) || entries.length === 0)
       ? [
           {
-            label: 'External Research Project Costing - Add Entry',
+            label: 'Funded by Research Grant — Costing - Add Entry',
             target: 'externalResearchCostingEntries',
           },
         ]

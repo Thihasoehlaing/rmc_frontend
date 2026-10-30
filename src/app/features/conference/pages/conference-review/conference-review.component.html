@@ -160,8 +160,8 @@
               <dd>{{ val(conference()?.paper_title) }}</dd>
             </div>
             <div>
-              <dt>Research Project Type</dt>
-              <dd>{{ researchProjectTypeLabel(conference()?.project_type) }}</dd>
+              <dt>Research Grant Type</dt>
+              <dd>{{ researchGrantTypeLabel(conference()?.project_type) }}</dd>
             </div>
             <div>
               <dt>Project Account Code</dt>
@@ -856,39 +856,41 @@
               <p>Cost breakdown and sponsorship declaration.</p>
             </div>
           </div>
+          <h3>{{ researchGrantTypeLabel(conference()?.project_type) + ' — Costing' }}</h3>
+          @if (!isNonResearchCosting()) {
+            <dl class="detail-grid detail-grid--compact">
+              <div><dt>Project Account Code</dt><dd>{{ val(conference()?.project_account_code) }}</dd></div>
+            </dl>
+          }
           @if (costingItems().length) {
             <app-table-scroll-hint></app-table-scroll-hint>
             <div class="modern-table">
               <table>
                 <thead>
                   <tr>
-                    <th>Vote Number</th>
+                    <th>#</th>
+                    <th>{{ isNonResearchCosting() ? 'Account Code Description' : 'Vote Number Description' }}</th>
                     <th>Account Code</th>
+                    @if (!isNonResearchCosting()) { <th>Vote Number</th> }
+                    <th>Description</th>
                     <th>Currency</th>
-                    <th>Foreign Cost</th>
+                    <th>Cost (Foreign/MYR)</th>
                     <th>Exchange Rate</th>
                     <th>Cost in RM</th>
-                    <th>Description</th>
                   </tr>
                 </thead>
                 <tbody>
                   @for (item of costingItems(); track item.id ?? $index) {
                     <tr>
-                      <td>
-                        {{
-                          val(item.vote_number_snapshot || item.vote_number_description_snapshot)
-                        }}
-                      </td>
-                      <td>
-                        {{
-                          val(item.account_code_snapshot || item.account_code_description_snapshot)
-                        }}
-                      </td>
+                      <td>{{ $index + 1 }}</td>
+                      <td class="table-cell--wrap">{{ costingDescription(item) }}</td>
+                      <td>{{ val(isNonResearchCosting() ? item.account_code_snapshot ?? item.vote_number_snapshot : item.project_account_code_snapshot || conference()?.project_account_code || item.account_code_snapshot) }}</td>
+                      @if (!isNonResearchCosting()) { <td>{{ val(item.vote_number_snapshot) }}</td> }
+                      <td class="table-cell--wrap">{{ val(item.description) }}</td>
                       <td>{{ val(item.currency) }}</td>
                       <td>{{ fmtAmount(item.cost_in_foreign_currency) }}</td>
                       <td>{{ val(item.exchange_rate) }}</td>
                       <td>{{ fmtMoney(item.cost_in_rm) }}</td>
-                      <td class="table-cell--wrap">{{ val(item.description) }}</td>
                     </tr>
                   }
                 </tbody>
@@ -897,6 +899,9 @@
           } @else {
             <p class="review-empty">No costing items.</p>
           }
+          <dl class="detail-grid detail-grid--compact">
+            <div><dt>Total BEFORE SUBSIDY (RM)</dt><dd>{{ fmtMoney(totalCostInRm()) }}</dd></div>
+          </dl>
 
           <div class="costing-documents">
             <h3>Costing Supporting Documents</h3>
@@ -941,7 +946,7 @@
 
           <dl class="detail-grid detail-grid--compact">
             <div>
-              <dt>External Sponsorship Amount</dt>
+              <dt>Sponsored Amount by External (RM)</dt>
               <dd>{{ fmtMoney(conference()?.external_sponsorship_amount) }}</dd>
             </div>
             <div>
@@ -949,15 +954,21 @@
               <dd>{{ val(conference()?.external_sponsored_by) }}</dd>
             </div>
             <div>
-              <dt>APU Sponsorship</dt>
+              <dt>Sponsorship Amount by APU (RM)</dt>
               <dd>{{ fmtMoney(conference()?.apu_sponsorship_amount) }}</dd>
             </div>
             <div>
-              <dt>APU Sponsorship Percentage</dt>
-              <dd>{{ val(conference()?.apu_sponsorship_percentage) }}%</dd>
+              <dt>Sponsorship Percentage by APU (%)</dt>
+              <dd>{{ fmtPercentage(sponsorshipPercentage()) }}</dd>
             </div>
+            @if (showEffectiveSponsorshipPercentage()) {
+              <div>
+                <dt>Effective APU Sponsorship Percentage</dt>
+                <dd>{{ fmtPercentage(conference()?.apu_sponsorship_percentage) }}</dd>
+              </div>
+            }
             <div>
-              <dt>Cost Borne by Applicant</dt>
+              <dt>Cost to be borne by Applicant (RM)</dt>
               <dd>{{ fmtMoney(conference()?.cost_to_be_borne_by_applicant) }}</dd>
             </div>
             <div class="detail-grid__wide">

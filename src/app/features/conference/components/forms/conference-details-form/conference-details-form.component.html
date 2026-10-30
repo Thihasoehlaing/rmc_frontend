@@ -311,7 +311,7 @@
       <app-custom-subheader title="Research Classification"></app-custom-subheader>
       <div class="card__content section-fields">
         <div class="form-field">
-          <label class="form-label is-required">Select Funded or Non-Funded Project</label>
+          <label class="form-label is-required">Research Grant Type</label>
           <div class="radio-field">
             <label class="radio-field__option">
               <input type="radio" value="external-research" formControlName="researchType" />
@@ -319,16 +319,13 @@
             </label>
             <label class="radio-field__option">
               <input type="radio" value="non-research" formControlName="researchType" />
-              <span>Non-Funded by Research Grant</span>
+              <span>Non-funded by Research Grant</span>
             </label>
           </div>
-          <app-note
-            text="If Funded by Research Grant is selected, all required funding will be fully subsidised from External Sources."
-          ></app-note>
           <app-validation-message
             class="form-validation-note--error"
             [control]="form.get('researchType')"
-            fieldName="Select Funded or Non-Funded Project"
+            fieldName="Research Grant Type"
           ></app-validation-message>
         </div>
 
@@ -767,7 +764,7 @@
 
       @if (selectedLocalOrOverseas && researchType === 'external-research') {
         <section class="card">
-          <app-custom-subheader title="External Research Project Costing"></app-custom-subheader>
+          <app-custom-subheader title="Funded by Research Grant — Costing"></app-custom-subheader>
           <div class="card__content section-fields">
             <!-- Project Account Code -->
             <div class="form-field">
@@ -786,10 +783,10 @@
               ></app-validation-message>
             </div>
 
-            <!-- Detailed Breakdown for External Research Project -->
+            <!-- Detailed Breakdown for Funded by Research Grant -->
             <div class="form-field" data-missing-field-target="externalResearchCostingEntries">
               <label class="form-label is-required"
-                >Detailed Breakdown for External Research Project</label
+                >Detailed Breakdown for Funded by Research Grant</label
               >
               <div class="costing-breakdown">
                 <div class="list-section-header">
@@ -994,11 +991,11 @@
 
       @if (selectedLocalOrOverseas && researchType === 'non-research') {
         <section class="card">
-          <app-custom-subheader title="Non-Research Project Costing"></app-custom-subheader>
+          <app-custom-subheader title="Non-funded by Research Grant — Costing"></app-custom-subheader>
           <div class="card__content section-fields">
-            <!-- Detailed Breakdown for Non-Research -->
+            <!-- Detailed Breakdown for Non-funded by Research Grant -->
             <div class="form-field">
-              <label class="form-label">Detailed Breakdown for Non-Research</label>
+              <label class="form-label">Detailed Breakdown for Non-funded by Research Grant</label>
               <div class="costing-breakdown">
                 <div class="list-section-header">
                   <button

@@ -1566,7 +1566,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     const isEditing = this.breakdownEditingIndex !== null ? 'Edit' : 'Add';
     const titles = {
       research: `${isEditing} Research Breakdown Entry`,
-      'external-research': `${isEditing} External Research Project Breakdown Entry`,
+      'external-research': `${isEditing} Funded by Research Grant Breakdown Entry`,
       local: `${isEditing} Local Breakdown Entry`,
     };
     return titles[this.breakdownType];

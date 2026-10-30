@@ -18,6 +18,7 @@ import { TableScrollHintComponent } from '../../../../shared/components/table-sc
 import {
   ConferenceApiService,
   ConferenceAttachmentDto,
+  ConferenceCostingItemDto,
   ConferenceFormData,
 } from '../../services/conference-api.service';
 import { CONFERENCE_REVIEW_PREVIEW } from './conference-review.preview-data';
@@ -133,6 +134,20 @@ export class ConferenceReviewComponent implements OnInit {
   readonly studentAuthors = computed(() => this.data()?.apu_student_co_authors ?? []);
   readonly nonApuAuthors = computed(() => this.data()?.non_apu_co_authors ?? []);
   readonly costingItems = computed(() => this.data()?.costing_items ?? []);
+  readonly isNonResearchCosting = computed(() =>
+    this.conference()?.project_type?.trim().toLowerCase() === 'non-research',
+  );
+  readonly sponsorshipPercentage = computed(() => {
+    const conference = this.conference();
+    return this.isNonResearchCosting()
+      ? conference?.region_percentage_snapshot ?? conference?.apu_sponsorship_percentage
+      : conference?.apu_sponsorship_percentage;
+  });
+  readonly showEffectiveSponsorshipPercentage = computed(() => {
+    const effective = this.conference()?.apu_sponsorship_percentage;
+    const displayed = this.sponsorshipPercentage();
+    return effective != null && displayed != null && this.toNumber(effective) !== this.toNumber(displayed);
+  });
   readonly travelEvents = computed(() => this.data()?.travel_events ?? []);
   readonly travellingColleagues = computed(() => this.data()?.travelling_colleagues ?? []);
   readonly attachments = computed(() => this.data()?.attachments ?? []);
@@ -262,11 +277,21 @@ export class ConferenceReviewComponent implements OnInit {
     return venue ? (CONFERENCE_VENUE_LABELS[venue] ?? this.capitalCaseLabel(venue)) : this.val(null);
   }
 
-  researchProjectTypeLabel(value: string | null | undefined): string {
-    if (!value) return this.val(null);
-    return value.trim().toLowerCase() === 'non-research'
-      ? 'Non-Research Project'
-      : 'External Research Project';
+  researchGrantTypeLabel(value: string | null | undefined): string {
+    const code = value?.trim().toLowerCase();
+    if (code === 'research' || code === 'external-research') return 'Funded by Research Grant';
+    if (code === 'non-research') return 'Non-funded by Research Grant';
+    return this.val(value);
+  }
+
+  costingDescription(item: ConferenceCostingItemDto): string {
+    return this.val(this.isNonResearchCosting()
+      ? item.account_code_description_snapshot ?? item.vote_number_description_snapshot
+      : item.vote_number_description_snapshot ?? item.account_code_description_snapshot);
+  }
+
+  fmtPercentage(value: unknown): string {
+    return value == null || value === '' ? '—' : `${this.fmtAmount(value)}%`;
   }
 
   fmtDate(value: string | null | undefined): string {

@@ -1150,7 +1150,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
 
   /**
    * Get Sponsorship Amount by APU for External Research project
-   * Formula: A = T - E
+   * Formula: A = min(T × P / 100, region limit, T - E)
    */
   get externalSponsorshipAmountByAPU(): number {
     return this.calculateSponsorshipAmountByAPU('externalSponsoredAmountExternal');
@@ -1164,20 +1164,18 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     return this.calculateSponsorshipAmountByAPU('localSponsoredAmountExternal');
   }
 
-  /** The selected region's configured limit applies only to non-grant funding. */
+  /** All Conference funding uses the selected region's configured limit. */
   private get regionSponsorshipLimit(): number {
     const limit = Number(this.form.get('limit')?.value);
     return Number.isFinite(limit) ? Math.max(limit, 0) : 0;
   }
 
   isAPUSponsorshipExceededLimit(sponsorshipAmount: number): boolean {
-    return !this.isExternalResearchProject && sponsorshipAmount > this.regionSponsorshipLimit;
+    return sponsorshipAmount > this.regionSponsorshipLimit;
   }
 
   getCappedSponsorshipAmount(sponsorshipAmount: number): number {
-    const amount = this.isExternalResearchProject
-      ? sponsorshipAmount
-      : Math.min(sponsorshipAmount, this.regionSponsorshipLimit);
+    const amount = Math.min(sponsorshipAmount, this.regionSponsorshipLimit);
     return Math.round((Math.max(amount, 0) + Number.EPSILON) * 100) / 100;
   }
 
@@ -1217,13 +1215,9 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
 
   /**
    * Get Cost to be borne by Applicant for External Research project
-   * When External Research is selected: Cost = 0 (Total is always fully sponsored)
-   * Otherwise: Formula: Total - Sponsored Amount by External - Sponsored Amount by APU
+   * Formula: Total - Sponsored Amount by External - Capped Sponsorship Amount by APU
    */
   get externalCostBorneByApplicant(): number {
-    if (this.isExternalResearchProject) {
-      return 0; // External research project covers all costs
-    }
     return this.calculateCostBorneByApplicant(
       'externalSponsoredAmountExternal',
       'external-research',
@@ -1253,14 +1247,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
   }
 
   get externalResearchPercentage(): number {
-    if (!this.isExternalResearchProject) {
-      return parseFloat(this.percentage.toString()) || 0;
-    }
-
-    return this.calculateEffectiveSponsorshipPercentage(
-      this.externalResearchTotalCost,
-      this.externalResearchSponsorshipByAPU,
-    );
+    return parseFloat(this.percentage.toString()) || 0;
   }
 
   get externalResearchSponsorshipByAPU(): number {
@@ -1269,9 +1256,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
 
   /**
    * Calculate Sponsorship Amount by APU using the formula:
-   * A = T - E for external research.
-   * A = min(T × P / 100, region limit, T - E) for non-research local costing.
-   * A = min(T × P / 100, region limit, T - E) for other non-grant paths.
+   * A = min(T × P / 100, region limit, T - E) for all Conference funding types.
    * where T = Total Amount, P = Percentage, E = Sponsored Amount by External
    */
   calculateSponsorshipAmountByAPU(sponsorshipFieldName: string): number {
@@ -1288,15 +1273,6 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
 
     const totalAmount = this.calculateBreakdownTotal(breakdownType);
     const remainingAmount = Math.max(totalAmount - sponsoredAmountExternal, 0);
-
-    if (breakdownType === 'external-research') {
-      return remainingAmount;
-    }
-
-    if (this.isNonResearchCostingBreakdown(breakdownType)) {
-      const regionSponsorshipAmount = (totalAmount * percentage) / 100;
-      return this.getCappedSponsorshipAmount(Math.min(regionSponsorshipAmount, remainingAmount));
-    }
 
     // Formula: A = min(T × P / 100, region limit, T - E), with minimum value of 0
     const percentageAmount = (totalAmount * percentage) / 100;
@@ -1321,23 +1297,6 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     const costBorneByApplicant = totalAmount - sponsoredAmountExternal - cappedSponsorshipAmount;
 
     return Math.round((Math.max(0, costBorneByApplicant) + Number.EPSILON) * 100) / 100;
-  }
-
-  private isNonResearchCostingBreakdown(
-    breakdownType: 'research' | 'external-research' | 'local',
-  ): boolean {
-    return this.researchType === 'non-research' && breakdownType === 'local';
-  }
-
-  private calculateEffectiveSponsorshipPercentage(
-    totalAmount: number,
-    sponsorshipAmount: number,
-  ): number {
-    if (totalAmount <= 0) {
-      return 0;
-    }
-
-    return Math.round((sponsorshipAmount / totalAmount) * 10000) / 100;
   }
 
   private getNonNegativeFormAmount(controlName: string): number {

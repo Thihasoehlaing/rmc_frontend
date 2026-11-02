@@ -137,17 +137,6 @@ export class ConferenceReviewComponent implements OnInit {
   readonly isNonResearchCosting = computed(() =>
     this.conference()?.project_type?.trim().toLowerCase() === 'non-research',
   );
-  readonly sponsorshipPercentage = computed(() => {
-    const conference = this.conference();
-    return this.isNonResearchCosting()
-      ? conference?.region_percentage_snapshot ?? conference?.apu_sponsorship_percentage
-      : conference?.apu_sponsorship_percentage;
-  });
-  readonly showEffectiveSponsorshipPercentage = computed(() => {
-    const effective = this.conference()?.apu_sponsorship_percentage;
-    const displayed = this.sponsorshipPercentage();
-    return effective != null && displayed != null && this.toNumber(effective) !== this.toNumber(displayed);
-  });
   readonly travelEvents = computed(() => this.data()?.travel_events ?? []);
   readonly travellingColleagues = computed(() => this.data()?.travelling_colleagues ?? []);
   readonly attachments = computed(() => this.data()?.attachments ?? []);
@@ -300,6 +289,10 @@ export class ConferenceReviewComponent implements OnInit {
 
   fmtDateOnly(value: string | null | undefined): string {
     return formatDisplayDate(value, '—');
+  }
+
+  fmtSavedMoney(value: unknown): string {
+    return value == null || value === '' ? '—' : this.fmtMoney(value);
   }
 
   fmtMoney(value: unknown): string {

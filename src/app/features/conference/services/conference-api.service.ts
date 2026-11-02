@@ -36,7 +36,10 @@ export interface ConferenceRequestDto {
   project_account_code?: string | null;
   paper_title?: string | null;
   region_id?: number | null;
+  region_name_snapshot?: string | null;
   region_percentage_snapshot?: string | null;
+  region_limit_snapshot?: string | null;
+  region_description_snapshot?: string | null;
   is_manuscript_internally_reviewed?: boolean;
   reviewer_name?: string | null;
   is_published_elsewhere?: boolean;

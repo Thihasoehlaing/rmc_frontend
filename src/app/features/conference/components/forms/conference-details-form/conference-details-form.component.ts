@@ -43,6 +43,7 @@ import { DecimalAmountDirective } from '../../../../../shared/directives/decimal
 import { MyrCurrencyPipe } from '../../../../../shared/pipes/myr-currency.pipe';
 import { TableRowCounterComponent } from '../../../../../shared/components/table-row-counter/table-row-counter.component';
 import { formatDisplayDate } from '../../../../../shared/utils/date-time.util';
+import { minimumConferenceStartDate, CONFERENCE_LEAD_TIME_MESSAGE } from '../../../utils/conference-schedule.util';
 @Component({
   selector: 'app-conference-details-form',
   standalone: true,
@@ -431,11 +432,11 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
    * Validator: Conference Start Date must be at least 3 weeks from today.
    */
   private minDateValidator(control: AbstractControl): ValidationErrors | null {
-    if (!control.value) {
+    if (!control.value || this.workflow?.isApplicantResubmission()) {
       return null;
     }
     const selectedDate = this.parseLocalDate(control.value);
-    const minimumStartDate = this.getMinimumConferenceStartDateValue();
+    const minimumStartDate = this.parseLocalDate(minimumConferenceStartDate())!;
 
     if (!selectedDate || selectedDate < minimumStartDate) {
       return { minDate: { value: control.value } };
@@ -443,15 +444,10 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     return null;
   }
 
-  getMinimumConferenceStartDate(): string {
-    return this.formatLocalDate(this.getMinimumConferenceStartDateValue());
-  }
+  readonly conferenceLeadTimeMessage = CONFERENCE_LEAD_TIME_MESSAGE;
 
-  private getMinimumConferenceStartDateValue(): Date {
-    const minimumStartDate = new Date();
-    minimumStartDate.setHours(0, 0, 0, 0);
-    minimumStartDate.setDate(minimumStartDate.getDate() + 21);
-    return minimumStartDate;
+  getMinimumConferenceStartDate(): string {
+    return this.workflow?.isApplicantResubmission() ? '' : minimumConferenceStartDate();
   }
 
   private parseLocalDate(value: unknown): Date | null {

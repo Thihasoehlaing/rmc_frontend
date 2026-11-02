@@ -47,6 +47,7 @@ import {
   normalizeCountryForStorage,
 } from '../../../../shared/utils/country.util';
 import { formatDisplayDateTime } from '../../../../shared/utils/date-time.util';
+import { conferenceScheduleError } from '../../utils/conference-schedule.util';
 
 @Component({
   selector: 'app-conference-application',
@@ -2234,6 +2235,21 @@ export class ConferenceApplication implements OnInit {
     this.flushActiveStepFormState();
 
     const conferenceDetails = this.formStateService.getFormSection('conferenceDetails');
+    const scheduleError = conferenceScheduleError(
+      conferenceDetails?.['conferenceStartDate'],
+      conferenceDetails?.['conferenceEndDate'],
+      !this.workflow.isApplicantResubmission(),
+    );
+    if (scheduleError) {
+      this.checkedSteps.add(1);
+      this.currentStep.set(1);
+      this.submissionErrorMessage.set(scheduleError);
+      window.requestAnimationFrame(() => {
+        this.markCurrentStepFormTouched();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+      return;
+    }
     if (conferenceDetails?.['restrictedPublisher'] === 'yes') {
       this.checkedSteps.add(1);
       this.currentStep.set(1);

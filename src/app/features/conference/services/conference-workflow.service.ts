@@ -53,6 +53,11 @@ export class ConferenceWorkflowService {
   /** Current application status - driven purely by form metadata (ABAC) */
   status = signal<ConferenceStatus>('draft');
 
+  readonly isApplicantResubmission = computed(() => [
+    'hos_request_resubmission', 'rmc_request_resubmission',
+    'pending_applicant_resubmission_hos', 'pending_applicant_resubmission_rmc',
+  ].includes(this.status()));
+
   // Applicant editing
 
   /** True when the applicant can edit all form fields */

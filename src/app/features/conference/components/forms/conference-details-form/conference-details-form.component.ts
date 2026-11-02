@@ -1146,7 +1146,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
 
   /**
    * Get Sponsorship Amount by APU for Research project
-   * Formula: A = min((T × P / 100), T - E)
+   * Formula: A = min(T × P / 100, region limit, T - E)
    */
   get sponsorshipAmountByAPU(): number {
     return this.calculateSponsorshipAmountByAPU('sponsoredAmountExternal');
@@ -1162,38 +1162,39 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
 
   /**
    * Get Sponsorship Amount by APU for Local Conference
-   * Formula for non-research: A = (T - E) × P / 100
+   * Formula for non-research: A = min(T × P / 100, region limit, T - E)
    */
   get localSponsorshipAmountByAPU(): number {
     return this.calculateSponsorshipAmountByAPU('localSponsoredAmountExternal');
   }
 
-  /**
-   * Non-research sponsorship is now percentage based, without the previous RM 5,000 cap.
-   */
-  isAPUSponsorshipExceededLimit(_sponsorshipAmount: number): boolean {
-    return false;
+  /** The selected region's configured limit applies only to non-grant funding. */
+  private get regionSponsorshipLimit(): number {
+    const limit = Number(this.form.get('limit')?.value);
+    return Number.isFinite(limit) ? Math.max(limit, 0) : 0;
   }
 
-  /**
-   * Kept for existing template bindings; the current rule does not cap APU sponsorship.
-   */
+  isAPUSponsorshipExceededLimit(sponsorshipAmount: number): boolean {
+    return !this.isExternalResearchProject && sponsorshipAmount > this.regionSponsorshipLimit;
+  }
+
   getCappedSponsorshipAmount(sponsorshipAmount: number): number {
-    return sponsorshipAmount;
+    const amount = this.isExternalResearchProject
+      ? sponsorshipAmount
+      : Math.min(sponsorshipAmount, this.regionSponsorshipLimit);
+    return Math.round((Math.max(amount, 0) + Number.EPSILON) * 100) / 100;
   }
 
-  /**
-   * Kept for existing template bindings; no cap tooltip is needed under current rules.
-   */
-  getCapLimitTooltip(_sponsorshipAmount: number): string | null {
-    return null;
+  getCapLimitTooltip(sponsorshipAmount: number): string | null {
+    return this.isAPUSponsorshipExceededLimit(sponsorshipAmount)
+      ? `APU sponsorship is limited to RM ${this.regionSponsorshipLimit.toFixed(2)} for the selected region.`
+      : null;
   }
 
-  /**
-   * Get tooltip for reduction message - shows when calculated amount is more than displayed amount
-   */
-  getReductionTooltip(_sponsorshipAmount: number, _cappedAmount: number): string | null {
-    return null;
+  getReductionTooltip(sponsorshipAmount: number, cappedAmount: number): string | null {
+    return sponsorshipAmount > cappedAmount
+      ? 'APU sponsorship is reduced to the configured region limit or the remaining cost after external sponsorship, whichever is lower.'
+      : null;
   }
 
   /**
@@ -1273,8 +1274,8 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
   /**
    * Calculate Sponsorship Amount by APU using the formula:
    * A = T - E for external research.
-   * A = min(T × P / 100, T - E) for non-research local costing.
-   * A = min((T × P / 100), T - E) for other paths.
+   * A = min(T × P / 100, region limit, T - E) for non-research local costing.
+   * A = min(T × P / 100, region limit, T - E) for other non-grant paths.
    * where T = Total Amount, P = Percentage, E = Sponsored Amount by External
    */
   calculateSponsorshipAmountByAPU(sponsorshipFieldName: string): number {
@@ -1302,12 +1303,12 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
 
     if (this.isNonResearchCostingBreakdown(breakdownType)) {
       const regionSponsorshipAmount = (totalAmount * percentage) / 100;
-      return Math.max(0, Math.min(regionSponsorshipAmount, remainingAmount));
+      return this.getCappedSponsorshipAmount(Math.min(regionSponsorshipAmount, remainingAmount));
     }
 
-    // Formula: A = min((T × P / 100), T - E), with minimum value of 0
+    // Formula: A = min(T × P / 100, region limit, T - E), with minimum value of 0
     const percentageAmount = (totalAmount * percentage) / 100;
-    return Math.max(0, Math.min(percentageAmount, remainingAmount));
+    return this.getCappedSponsorshipAmount(Math.min(percentageAmount, remainingAmount));
   }
 
   /**
@@ -1327,7 +1328,7 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     // Formula: Cost = Total BEFORE SUBSIDY - Sponsored Amount by External - Sponsorship Amount by APU (capped), with minimum value of 0
     const costBorneByApplicant = totalAmount - sponsoredAmountExternal - cappedSponsorshipAmount;
 
-    return Math.max(0, costBorneByApplicant);
+    return Math.round((Math.max(0, costBorneByApplicant) + Number.EPSILON) * 100) / 100;
   }
 
   private isNonResearchCostingBreakdown(

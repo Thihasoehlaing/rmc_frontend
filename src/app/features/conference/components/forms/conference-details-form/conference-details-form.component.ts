@@ -1290,10 +1290,6 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     const remainingAmount = Math.max(totalAmount - sponsoredAmountExternal, 0);
 
     if (breakdownType === 'external-research') {
-      if (!this.hasFormAmountInput(sponsorshipFieldName)) {
-        return 0;
-      }
-
       return remainingAmount;
     }
 
@@ -1347,11 +1343,6 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
   private getNonNegativeFormAmount(controlName: string): number {
     const amount = parseFloat(this.form.get(controlName)?.value) || 0;
     return Math.max(amount, 0);
-  }
-
-  private hasFormAmountInput(controlName: string): boolean {
-    const value = this.form.get(controlName)?.value;
-    return value !== null && value !== undefined && String(value).trim() !== '';
   }
 
   openBreakdownModal(type: 'research' | 'external-research' | 'local', index?: number) {

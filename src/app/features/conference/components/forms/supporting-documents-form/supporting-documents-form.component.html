@@ -73,6 +73,7 @@
           [uploadedFileName]="form.get('reviewersFeedback')?.value || null"
           placeholder="Upload reviewers' feedback PDF"
           (fileSelected)="onFileSelected('reviewersFeedback', $any($event))">
+          <app-note uploadNote text="Please upload the reviewer’s comments together with the author’s feedback."></app-note>
         </app-file-upload>
         <app-validation-message
           class="form-validation-note--error"

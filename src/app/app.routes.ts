@@ -103,6 +103,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'finance-claim-list',
+        loadChildren: () =>
+          import('./features/finance-claim-list/finance-claim-list.routes').then(
+            m => m.financeClaimListRoutes,
+          ),
+      },
+      {
         path: 'journal',
         loadChildren: () =>
           import('./features/journal-publication/journal_publication_form.routes').then(

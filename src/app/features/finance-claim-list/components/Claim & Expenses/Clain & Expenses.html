@@ -1,0 +1,548 @@
+<form class="form-section" [formGroup]="claimExpensesForm">
+
+	<!-- Applicant Information -->
+	<section class="card">
+		<div class="card__header">
+			<div class="section-number">1</div>
+			<h2 class="card__title">Applicant Information</h2>
+		</div>
+		<div class="card__content section-fields">
+			<div class="row row--3">
+				<div class="form-field">
+					<label class="form-label">
+						<span class="material-icons form-label__icon">person</span>
+						Applicant Name
+					</label>
+					<input 
+						type="text" 
+						class="input--text input--disabled-readonly" 
+						formControlName="applicantName" 
+						readonly
+					/>
+				</div>
+
+				<div class="form-field">
+					<label class="form-label">
+						<span class="material-icons form-label__icon">email</span>
+						Applicant Email
+					</label>
+					<input 
+						type="email" 
+						class="input--text input--disabled-readonly" 
+						formControlName="applicantEmail" 
+						readonly
+					/>
+				</div>
+
+				<div class="form-field">
+					<label class="form-label">
+						<span class="material-icons form-label__icon">business</span>
+						School / Department
+					</label>
+					<input 
+						type="text" 
+						class="input--text input--disabled-readonly" 
+						formControlName="schoolDepartment" 
+						readonly
+					/>
+				</div>
+			</div>
+		</div>
+	</section>
+
+	<!-- Payment Method -->
+	<section class="card">
+		<div class="card__header">
+			<div class="section-number">2</div>
+			<h2 class="card__title">Payment Method</h2>
+		</div>
+		<div class="card__content section-fields">
+
+			<div class="form-field">
+				<label class="form-label is-required">Select Payment Method</label>
+				<div class="payment-method-cards">
+					<label class="payment-card" [class.payment-card--selected]="!isBankTransfer">
+						<input 
+							type="radio" 
+							formControlName="paymentMethod" 
+							value="cash"
+							class="payment-card__radio"
+						>
+						<div class="payment-card__content">
+							<span class="material-icons payment-card__icon">payments</span>
+							<span class="payment-card__label">Cash</span>
+						</div>
+					</label>
+
+					<label class="payment-card" [class.payment-card--selected]="isBankTransfer">
+						<input 
+							type="radio" 
+							formControlName="paymentMethod" 
+							value="bank"
+							class="payment-card__radio"
+						>
+						<div class="payment-card__content">
+							<span class="material-icons payment-card__icon">account_balance</span>
+							<span class="payment-card__label">Bank Transfer</span>
+						</div>
+					</label>
+				</div>
+			</div>
+
+			@if (!isBankTransfer) {
+				<div class="cash-info-message">
+					<span class="material-icons">info</span>
+					<span>Cash payments are only applicable in USD.</span>
+				</div>
+			}
+
+			@if (isBankTransfer) {
+				<div class="bank-transfer-fields">
+					<div class="form-field">
+						<label class="form-label is-required">Bank Name</label>
+						<select 
+							class="input--select" 
+							formControlName="bankName"
+							[class.is-invalid]="claimExpensesForm.get('bankName')?.invalid && claimExpensesForm.get('bankName')?.touched"
+						>
+							<option value="" disabled>Select a bank</option>
+							<option value="maybank">Maybank</option>
+							<option value="cimb">CIMB Bank</option>
+							<option value="public">Public Bank</option>
+							<option value="rhb">RHB Bank</option>
+							<option value="hongleong">Hong Leong Bank</option>
+							<option value="ambank">AmBank</option>
+							<option value="bsn">BSN</option>
+							<option value="alliance">Alliance Bank</option>
+							<option value="other">Other</option>
+						</select>
+						<app-validation-message 
+							[control]="claimExpensesForm.get('bankName')"
+							fieldName="Bank Name"
+						></app-validation-message>
+					</div>
+
+					<div class="form-field">
+						<label class="form-label is-required">Account Number</label>
+						<input 
+							type="text" 
+							inputmode="numeric"
+							class="input--text" 
+							formControlName="accountNumber"
+							placeholder="1234567890"
+							maxlength="20"
+							[class.is-invalid]="claimExpensesForm.get('accountNumber')?.invalid && claimExpensesForm.get('accountNumber')?.touched"
+							(input)="onAccountNumberInput($event)"
+						/>
+						<app-validation-message 
+							[control]="claimExpensesForm.get('accountNumber')"
+							fieldName="Account Number"
+						></app-validation-message>
+					</div>
+
+					<div class="form-field">
+						<label class="form-label is-required">Account Holder Name</label>
+						<input 
+							type="text" 
+							class="input--text" 
+							formControlName="accountHolderName"
+							placeholder="DARVEEN A/L SELVARAJAH"
+							maxlength="100"
+							[class.is-invalid]="claimExpensesForm.get('accountHolderName')?.invalid && claimExpensesForm.get('accountHolderName')?.touched"
+							(input)="onAccountHolderInput($event)"
+						/>
+						<app-validation-message 
+							[control]="claimExpensesForm.get('accountHolderName')"
+							fieldName="Account Holder Name"
+						></app-validation-message>
+					</div>
+				</div>
+			}
+
+		</div>
+	</section>
+
+	<!-- Expense Details (Section 3) -->
+	<section class="card">
+		<div class="card__header">
+			<div class="section-number">3</div>
+			<h2 class="card__title">Expense Details</h2>
+		</div>
+		<div class="card__content">
+			
+			<!-- Sub-card 1: Expenses from Conference Application -->
+			<div class="expense-sub-card">
+				<div class="expense-sub-card__header">
+					<h3 class="expense-sub-card__title expense-sub-card__title--blue">Expenses from Conference Application</h3>
+					<p class="expense-sub-card__subtitle">Recorded when you submitted the original application.</p>
+				</div>
+				
+				<div class="expense-sub-card__body">
+					<app-table-scroll-hint></app-table-scroll-hint>
+					
+					<div class="table-scroll">
+						<app-data-table
+							[columns]="originalExpenseColumns"
+							[rows]="originalExpenses"
+							[hoverable]="true"
+							[striped]="true"
+						>
+							<ng-template #rowTemplate let-row let-i="index">
+								<tr>
+									<td class="is-align-center">{{ i + 1 }}</td>
+									<td class="is-align-center">{{ row.category }}</td>
+									<td class="is-align-center">{{ row.description }}</td>
+									<td class="is-align-center">{{ formatDate(row.date) }}</td>
+									<td class="is-align-center">{{ formatCurrency(row.amount) }}</td>
+									<td class="is-align-center">
+										@if (row.document) {
+											<button class="btn-icon" type="button" title="View document" (click)="viewOriginalExpenseDocument(row.document)">
+												<span class="material-icons">visibility</span>
+											</button>
+										} @else {
+											<span class="text-muted">-</span>
+										}
+									</td>
+								</tr>
+							</ng-template>
+						</app-data-table>
+					</div>
+
+					<div class="expense-sub-card__footer">
+						<span class="subtotal-badge subtotal-badge--blue">
+							Subtotal: {{ formatCurrency(originalExpensesTotal) }}
+						</span>
+					</div>
+				</div>
+			</div>
+
+			<!-- Sub-card 2: Additional Expenses (Post-Event) -->
+			<div class="expense-sub-card">
+				<div class="expense-sub-card__header expense-sub-card__header--with-button">
+					<div>
+						<h3 class="expense-sub-card__title expense-sub-card__title--blue">Additional Expenses (Post-Event)</h3>
+						<p class="expense-sub-card__subtitle">New expenses incurred after the event, not in the original application.</p>
+					</div>
+					<button class="btn btn-primary btn-sm" type="button" (click)="onAddExpense()">
+						<span class="material-icons">add</span>
+						Add Expense
+					</button>
+				</div>
+
+				<div class="expense-sub-card__body">
+					<app-table-scroll-hint></app-table-scroll-hint>
+
+					<div class="table-scroll">
+						<app-data-table
+							[columns]="additionalExpenseColumns"
+							[rows]="additionalExpenses()"
+							[hoverable]="true"
+							[striped]="true"
+						>
+							<ng-template #emptyTemplate>
+								<div class="empty-state">
+									<span class="material-icons">receipt</span>
+									<p class="empty-state__title">No expenses added yet.</p>
+								</div>
+							</ng-template>
+
+							<ng-template #rowTemplate let-row let-i="index">
+								<tr>
+									<td class="is-align-center">{{ i + 1 }}</td>
+									<td class="is-align-center">{{ row.category }}</td>
+									<td class="is-align-center">{{ row.description }}</td>
+									<td class="is-align-center">{{ formatDate(row.date) }}</td>
+									<td class="is-align-center">{{ formatCurrency(row.amount) }}</td>
+									<td class="is-align-center">
+										@if (row.document) {
+											<button class="btn-icon" type="button" title="View document" (click)="viewDocument(row.document)">
+												<span class="material-icons">visibility</span>
+											</button>
+										} @else {
+											<span class="text-muted">-</span>
+										}
+									</td>
+									<td class="is-align-center">
+										<div class="action-buttons">
+											<button class="btn-icon btn-icon--edit" type="button" title="Edit expense" (click)="onEditExpense(i)">
+												<span class="material-icons">edit</span>
+											</button>
+											<button class="btn-icon btn-icon--delete" type="button" title="Delete expense" (click)="onDeleteExpense(i)">
+												<span class="material-icons">delete</span>
+											</button>
+										</div>
+									</td>
+								</tr>
+							</ng-template>
+						</app-data-table>
+					</div>
+
+					<div class="expense-sub-card__footer">
+						<span class="subtotal-badge subtotal-badge--blue">
+							Subtotal: {{ formatCurrency(additionalExpensesTotal) }}
+						</span>
+					</div>
+				</div>
+			</div>
+
+			<!-- Sub-card 3: Advance Received (RM) - Premium Finance Card -->
+			<div class="finance-card premium-card">
+				<!-- Blue Accent Line -->
+				<div class="finance-card__accent"></div>
+				
+				<div class="finance-card__content">
+					<!-- Card Header with Icon -->
+					<div class="finance-card__header">
+						<span class="material-icons finance-card__icon">account_balance_wallet</span>
+						<h3 class="finance-card__title">ADVANCE RECEIVED (RM)</h3>
+					</div>
+
+					<!-- Amount Display Box -->
+					<div class="finance-amount-box">
+						<span class="finance-amount-box__value">{{ formatCurrency(claimInfo.advanceReceived) }}</span>
+					</div>
+
+					<!-- Information Panel -->
+					<div class="finance-info-panel">
+						<span class="material-icons finance-info-panel__icon">info</span>
+						<div class="finance-info-panel__content">
+							<p class="finance-info-panel__text">
+								This amount was automatically fetched from your approved conference application.
+							</p>
+							<p class="finance-info-panel__reference">
+								<strong>Reference:</strong> {{ claimInfo.reference }}
+							</p>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Sub-card 4: Summary of Expenses - Premium Finance Card -->
+			<div class="finance-card premium-card">
+				<!-- Blue Accent Line -->
+				<div class="finance-card__accent"></div>
+				
+				<div class="finance-card__content">
+					<!-- Card Header with Claim ID -->
+					<div class="finance-card__header finance-card__header--with-meta">
+						<div class="finance-card__header-left">
+							<span class="material-icons finance-card__icon">description</span>
+							<h3 class="finance-card__title">SUMMARY OF EXPENSES</h3>
+						</div>
+						<span class="finance-card__meta">Claim ID: {{ claimInfo.reference }}</span>
+					</div>
+
+					<div class="finance-card__divider"></div>
+
+					<!-- Financial Statement Rows -->
+					<div class="finance-statement">
+						<div class="finance-statement__row">
+							<span class="finance-statement__label">Expenses from Conference Application</span>
+							<span class="finance-statement__dots"></span>
+							<span class="finance-statement__value">{{ formatCurrency(originalExpensesTotal) }}</span>
+						</div>
+						<div class="finance-statement__row">
+							<span class="finance-statement__label">Additional Expenses</span>
+							<span class="finance-statement__dots"></span>
+							<span class="finance-statement__value">{{ formatCurrency(additionalExpensesTotal) }}</span>
+						</div>
+						
+						<div class="finance-statement__divider"></div>
+						
+						<div class="finance-statement__row finance-statement__row--total">
+							<span class="finance-statement__label">Total Expenses</span>
+							<span class="finance-statement__dots"></span>
+							<span class="finance-statement__value">{{ formatCurrency(totalExpenses) }}</span>
+						</div>
+						<div class="finance-statement__row finance-statement__row--deduction">
+							<span class="finance-statement__label">Less: Advance Received</span>
+							<span class="finance-statement__dots"></span>
+							<span class="finance-statement__value">-{{ formatCurrency(claimInfo.advanceReceived) }}</span>
+						</div>
+					</div>
+
+					<!-- Final Balance Panel -->
+					<div class="finance-balance-panel">
+						<div class="finance-balance-panel__left">
+							<div class="finance-balance-panel__icon-box">
+								<span class="material-icons">receipt_long</span>
+							</div>
+							<div class="finance-balance-panel__labels">
+								<span class="finance-balance-panel__tag">FINAL OUTCOME</span>
+								<span class="finance-balance-panel__title">Balance Payable to Applicant</span>
+							</div>
+						</div>
+						<div class="finance-balance-panel__right">
+							<span class="finance-balance-panel__amount">{{ formatCurrency(balancePayable >= 0 ? balancePayable : 0) }}</span>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			</div>
+	</section>
+
+	<!-- Add Expense Modal -->
+	<app-dialog
+		[isOpen]="isExpenseModalOpen()"
+		[title]="expenseModalTitle"
+		[size]="'medium'"
+		(close)="closeExpenseModal()"
+	>
+		<form [formGroup]="expenseForm" (ngSubmit)="saveExpense()">
+			<div class="expense-modal-body">
+				
+				<!-- Category -->
+				<div class="form-field">
+					<label class="form-label is-required">Category</label>
+					<select 
+						class="input--select" 
+						formControlName="category"
+						[class.is-invalid]="expenseForm.get('category')?.invalid && expenseForm.get('category')?.touched"
+					>
+						<option value="" disabled>Select category</option>
+						@for (category of expenseCategories; track category) {
+							<option [value]="category">{{ category }}</option>
+						}
+					</select>
+					<app-validation-message 
+						[control]="expenseForm.get('category')"
+						fieldName="Category"
+					></app-validation-message>
+				</div>
+
+				<!-- Description -->
+				<div class="form-field">
+					<label class="form-label">Description</label>
+					<input 
+						type="text" 
+						class="input--text" 
+						formControlName="description"
+						placeholder="e.g. Hotel for 2 nights in Singapore"
+					/>
+				</div>
+
+				<!-- Date -->
+				<div class="form-field">
+					<label class="form-label is-required">Date</label>
+					<input 
+						type="date" 
+						class="input--text" 
+						formControlName="date"
+						[class.is-invalid]="expenseForm.get('date')?.invalid && expenseForm.get('date')?.touched"
+					/>
+					<app-validation-message 
+						[control]="expenseForm.get('date')"
+						fieldName="Date"
+					></app-validation-message>
+				</div>
+
+				<!-- Amount -->
+				<div class="form-field">
+					<label class="form-label is-required">Amount (RM)</label>
+					<input 
+						type="text" 
+						inputmode="decimal"
+						class="input--text" 
+						formControlName="amount"
+						placeholder="0.00"
+						[class.is-invalid]="expenseForm.get('amount')?.invalid && expenseForm.get('amount')?.touched"
+						(input)="onAmountInput($event)"
+					/>
+					<app-validation-message 
+						[control]="expenseForm.get('amount')"
+						fieldName="Amount"
+					></app-validation-message>
+				</div>
+
+				<!-- Supporting Documents -->
+				<div class="form-field">
+					<label class="form-label">Supporting Documents</label>
+					
+					@if (!selectedFileName()) {
+						<div class="file-upload-area" (click)="fileInput.click()">
+							<span class="material-icons file-upload-area__icon">upload</span>
+							<p class="file-upload-area__text">
+								<strong>Click to upload receipt / invoice</strong><br>
+								or drag & drop files here
+							</p>
+							<p class="file-upload-area__hint">Accepted: PDF, JPG, JPEG, PNG</p>
+							<input 
+								#fileInput
+								type="file" 
+								class="file-upload-area__input"
+								accept=".pdf,.jpg,.jpeg,.png"
+								(change)="onFileSelected($event)"
+							/>
+						</div>
+					} @else {
+						<div class="file-selected">
+							<div class="file-selected__info">
+								<span class="material-icons file-selected__icon">description</span>
+								<span class="file-selected__name">{{ selectedFileName() }}</span>
+							</div>
+							<button 
+								type="button" 
+								class="file-selected__remove" 
+								(click)="removeFile()"
+								title="Remove file"
+							>
+								<span class="material-icons">close</span>
+							</button>
+						</div>
+					}
+				</div>
+
+			</div>
+
+			<!-- Footer -->
+			<div dialog-footer class="expense-modal-footer">
+				<button 
+					type="button" 
+					class="btn btn-secondary" 
+					(click)="closeExpenseModal()"
+				>
+					Cancel
+				</button>
+				<button 
+					type="submit" 
+					class="btn btn-primary" 
+					[disabled]="expenseForm.invalid"
+				>
+					Save Expense
+				</button>
+			</div>
+		</form>
+	</app-dialog>
+
+	<!-- Delete Confirmation Dialog -->
+	<app-dialog
+		[isOpen]="isDeleteConfirmOpen()"
+		[title]="'Delete Expense'"
+		[size]="'small'"
+		(close)="closeDeleteConfirm()"
+	>
+		<div class="delete-confirm-body">
+			<p>Are you sure you want to delete this expense?</p>
+			<p class="delete-confirm-body__warning">This action cannot be undone.</p>
+		</div>
+
+		<div dialog-footer class="delete-confirm-footer">
+			<button 
+				type="button" 
+				class="btn btn-secondary" 
+				(click)="closeDeleteConfirm()"
+			>
+				Cancel
+			</button>
+			<button 
+				type="button" 
+				class="btn btn-danger" 
+				(click)="confirmDelete()"
+			>
+				Delete
+			</button>
+		</div>
+	</app-dialog>
+
+</form>

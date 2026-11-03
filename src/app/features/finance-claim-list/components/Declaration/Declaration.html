@@ -1,0 +1,63 @@
+<section class="declaration-section" [formGroup]="declarationForm">
+
+	<section class="card">
+		<app-custom-subheader title="Declaration"></app-custom-subheader>
+		<div class="card__content">
+			<div class="declaration-box">
+				<h4 class="declaration-box__title">
+					<span class="material-icons">gavel</span>
+					Declaration and Agreement
+				</h4>
+				<p>
+					I hereby declare that all information provided in this Finance Claim is true, complete, and accurate 
+					to the best of my knowledge. I confirm that all expenses claimed were incurred solely for the purpose 
+					of the approved activity as stated in my original application.
+				</p>
+				<p>
+					I understand that any false, misleading, or incomplete information may result in the rejection of this 
+					claim and may lead to disciplinary action in accordance with the University's policies and procedures.
+				</p>
+				<p>
+					I agree to provide supporting documentation (receipts, invoices, travel tickets, etc.) upon request 
+					and acknowledge that the University reserves the right to verify all expenses claimed.
+				</p>
+				<p>
+					I further acknowledge that any overpayment discovered after the claim has been processed must be 
+					refunded to the University immediately upon notification.
+				</p>
+			</div>
+		</div>
+	</section>
+
+	<section class="card">
+		<app-custom-subheader title="Required Agreements"></app-custom-subheader>
+		<div class="card__content section-fields">
+			<label class="agreement-trigger">
+				<input
+					type="checkbox"
+					formControlName="agreeToDeclaration"
+					required>
+				<span class="is-required">I have read and agree to the terms and conditions outlined in the Declaration and Agreement for Finance Claim.</span>
+			</label>
+			<app-validation-message
+				class="form-validation-note--error"
+				[control]="declarationForm.get('agreeToDeclaration')"
+				fieldName="Declaration and Agreement Confirmation"
+			></app-validation-message>
+
+			<label class="agreement-trigger">
+				<input
+					type="checkbox"
+					formControlName="acknowledgeAccuracy"
+					required>
+				<span class="is-required">I acknowledge that all expenses claimed are accurate and supported by valid receipts or documentation.</span>
+			</label>
+			<app-validation-message
+				class="form-validation-note--error"
+				[control]="declarationForm.get('acknowledgeAccuracy')"
+				fieldName="Expense Accuracy Acknowledgement"
+			></app-validation-message>
+		</div>
+	</section>
+
+</section>

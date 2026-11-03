@@ -107,6 +107,12 @@ export const NAVIGATION_DATA: NavGroup[] = [
             permission: fundingApplicationPermission,
           },
           {
+            label: 'Finance Claim List',
+            icon: 'request_page',
+            route: '/finance-claim-list',
+            permission: fundingApplicationPermission,
+          },
+          {
             label: 'Journal Publication',
             icon: 'menu_book',
             route: '/journal/application',

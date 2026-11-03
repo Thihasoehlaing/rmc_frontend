@@ -385,6 +385,7 @@
             <app-validation-message
               class="form-validation-note--error"
               [control]="form.get('conferenceStartDate')"
+              [message]="form.get('conferenceStartDate')?.touched && form.get('conferenceStartDate')?.hasError('minDate') ? conferenceLeadTimeMessage : ''"
               fieldName="Conference Start Date"
             ></app-validation-message>
           </div>
@@ -399,6 +400,7 @@
             <app-validation-message
               class="form-validation-note--error"
               [control]="form.get('conferenceEndDate')"
+              [message]="form.get('conferenceEndDate')?.touched && form.get('conferenceEndDate')?.hasError('endDateBeforeStart') ? 'Conference End Date must be on or after Conference Start Date. Please change the Conference Start Date and Conference End Date, or contact RMC Admin for assistance.' : ''"
               fieldName="Conference End Date"
             ></app-validation-message>
           </div>
@@ -925,7 +927,7 @@
                       <input
                         type="text"
                         class="input--text"
-                        [value]="externalResearchPercentage | number: '1.0-0'"
+                        [value]="externalResearchPercentage | number: '1.2-2'"
                         readonly
                         aria-label="Sponsorship Percentage by APU (Read Only)"
                       />

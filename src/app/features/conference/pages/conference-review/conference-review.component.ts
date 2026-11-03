@@ -139,9 +139,7 @@ export class ConferenceReviewComponent implements OnInit {
   );
   readonly sponsorshipPercentage = computed(() => {
     const conference = this.conference();
-    return this.isNonResearchCosting()
-      ? conference?.region_percentage_snapshot ?? conference?.apu_sponsorship_percentage
-      : conference?.apu_sponsorship_percentage;
+    return conference?.region_percentage_snapshot ?? conference?.apu_sponsorship_percentage;
   });
   readonly travelEvents = computed(() => this.data()?.travel_events ?? []);
   readonly travellingColleagues = computed(() => this.data()?.travelling_colleagues ?? []);

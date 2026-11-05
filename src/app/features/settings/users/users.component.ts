@@ -77,6 +77,7 @@ export class UsersComponent implements OnInit {
   readonly pairUsername = signal('');
   readonly pairRoleId = signal<number | null>(null);
   readonly userForRoleAssignment = signal<UserRecord | null>(null);
+  readonly chancelloryMember = signal(false);
   readonly assignRoleId = signal<number | null>(null);
   readonly isSaving = signal(false);
 
@@ -240,6 +241,7 @@ export class UsersComponent implements OnInit {
   openAssignRoleDialog(user: UserRecord): void {
     this.userForRoleAssignment.set(user);
     this.assignRoleId.set(user.role_id);
+    this.chancelloryMember.set(user.workflow_groups?.includes('CHANCELLORY') ?? false);
   }
 
   closeAssignRoleDialog(): void {
@@ -251,11 +253,11 @@ export class UsersComponent implements OnInit {
   assignUserRole(): void {
     const user = this.userForRoleAssignment();
     const roleId = this.assignRoleId();
-    if (!user || roleId === null || this.isSaving()) return;
+    if (!user || this.isSaving()) return;
 
     this.isSaving.set(true);
     this.usersService
-      .assignUserRole(user.id, roleId)
+      .assignUserRole(user.id, roleId, this.chancelloryMember())
       .pipe(finalize(() => this.isSaving.set(false)))
       .subscribe({
         next: () => {

@@ -29,6 +29,7 @@ export interface UserRecord {
   role_id: number | null;
   role_code: string | null;
   role_name: string | null;
+  workflow_groups?: string[];
   job_title: string | null;
   photo_url: string | null;
   is_student: boolean;
@@ -129,10 +130,10 @@ export class UsersService {
     );
   }
 
-  assignUserRole(userId: number, roleId: number): Observable<ApiResponse<UserRecord>> {
+  assignUserRole(userId: number, roleId: number | null, chancelloryMember: boolean): Observable<ApiResponse<UserRecord>> {
     return this.http.patch<ApiResponse<UserRecord>>(
       `${this.usersUrl}/${userId}/role`,
-      { role_id: roleId },
+      { ...(roleId === null ? {} : { role_id: roleId }), chancellory_member: chancelloryMember },
     );
   }
 }

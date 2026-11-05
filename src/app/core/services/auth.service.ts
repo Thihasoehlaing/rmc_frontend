@@ -35,6 +35,7 @@ interface AuthCheckResponse {
         name: string;
       } | null;
       username: string;
+      workflow_groups?: string[];
     };
   };
   message: string;
@@ -79,7 +80,8 @@ export class AuthService {
     if (!user || !workspace || user.groups.includes('SystemAdmin')) return user;
     const role = workspace.role;
     return { ...user, role: role ? { id: role.id ?? user.role?.id ?? 0, code: role.code, name: role.name } : undefined,
-      groups: this.mapRoleToGroups(role?.code) };
+      groups: [...new Set([...this.mapRoleToGroups(role?.code),
+        ...user.groups.filter(group => group === 'Chancellory')])] };
   });
 
   /** Reactive flag — true when a user session is active. */
@@ -139,7 +141,7 @@ export class AuthService {
             this.USER_KEY,
             JSON.stringify(response.data.user),
           );
-          if (!response.data.user.role) {
+          if (!response.data.user.role && !response.data.user.workflow_groups?.length) {
             this.toastService.info(
               'Your APU account is authenticated, but no RMC role has been assigned yet.',
             );
@@ -309,7 +311,8 @@ export class AuthService {
       distinguishedName: checkedUser.distinguished_name,
       photoUrl: checkedUser.photo_url ?? undefined,
       role,
-      groups: this.mapRoleToGroups(role?.code),
+      groups: [...new Set([...this.mapRoleToGroups(role?.code),
+        ...(checkedUser.workflow_groups?.includes('CHANCELLORY') ? ['Chancellory' as const] : [])])],
     };
   }
 
@@ -334,7 +337,6 @@ export class AuthService {
       CEO: ['CEO'],
       CFO: ['CFO'],
       FINANCE: ['Finance'],
-      CHANCELLORY: ['Chancellory'],
       RDIG_CHAIR: ['RDIG_Chair'],
     };
 

@@ -276,7 +276,7 @@
   >
     @if (userForRoleAssignment(); as user) {
       <div class="role-pairing">
-        <p>Assign a platform or default RMC role for <strong>{{ user.fullname || user.username }}</strong>.</p>
+        <p>Manage role and Chancellory membership for <strong>{{ user.fullname || user.username }}</strong>.</p>
 
         <label class="forms-filter">
           <span>Role</span>
@@ -288,6 +288,11 @@
             (ngModelChange)="assignRoleId.set($event)"
           >
           </app-searchable-dropdown>
+        </label>
+        <label>
+          <input type="checkbox" [ngModel]="chancelloryMember()"
+            (ngModelChange)="chancelloryMember.set($event)" />
+          Chancellory group
         </label>
       </div>
     }
@@ -304,10 +309,10 @@
       <button
         class="btn btn-primary"
         type="button"
-        [disabled]="isSaving() || assignRoleId() === null"
+        [disabled]="isSaving()"
         (click)="assignUserRole()"
       >
-        {{ isSaving() ? 'Assigning...' : 'Assign Role' }}
+        {{ isSaving() ? 'Saving...' : 'Save access' }}
       </button>
     </div>
   </app-dialog>

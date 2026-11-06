@@ -1,3 +1,7 @@
+import { SearchToolbarComponent } from '../../../../shared/components/settings-ui/settings-ui.components';
+import { InputDirective } from '../../../../shared/components/settings-ui/settings-ui.components';
+import { FormsModule } from '@angular/forms';
+import { DropdownComponent } from '../../../../shared/components/dropdown/dropdown.component';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -11,14 +15,12 @@ import { ValidationMessageComponent } from '../../../../shared/components/valida
 import { DataTableComponent } from '../../../../shared/components/data-table/data-table.component';
 import { nextTableSortState, SortDirection } from '../../../../shared/services/table-sort.service';
 import { DialogComponent } from '../../../../shared/components/dialog/dialog.component';
-import { TableActionIconComponent } from '../../../../shared/components/table-action-icon/table-action-icon.component';
 import { formatDisplayDate as sharedFormatDisplayDate } from '../../../../shared/utils/date-time.util';
 
 @Component({
   selector: 'app-partnership-settings',
   standalone: true,
-  imports: [
-    TableActionIconComponent,
+  imports: [SearchToolbarComponent,InputDirective,FormsModule,DropdownComponent,
     CommonModule,
     ReactiveFormsModule,
     ActionButtonComponent,
@@ -30,6 +32,9 @@ import { formatDisplayDate as sharedFormatDisplayDate } from '../../../../shared
   styleUrls: ['./partnership-settings.component.scss'],
 })
 export class PartnershipSettingsComponent implements OnInit {
+  standardOptions0() { return [{value: 'Active', label: 'Active'}, {value: 'Inactive', label: 'Deactivated'}]; }
+  standardOptions1() { return [{value: 'All', label: 'All'}, {value: 'Active', label: 'Active'}, {value: 'Inactive', label: 'Deactivated'}]; }
+  standardOptions2() { return [...this.breakdownTypeOptions.map(type => ({value: String(type.value), label: (type.label)}))]; }
   private optionsService = inject(PartnershipOptionsService);
   private fb = inject(FormBuilder);
 
@@ -71,8 +76,8 @@ export class PartnershipSettingsComponent implements OnInit {
 
   ngOnInit() {}
 
-  onBreakdownTypeChange(event: Event) {
-    const type = (event.target as HTMLSelectElement).value;
+  onBreakdownTypeChange(event: Event | string) {
+    const type = (typeof event === 'string' ? event : (event.target as HTMLSelectElement).value);
     this.selectedBreakdownType.set(type);
     this.clearSelection();
     this.searchQuery.set('');
@@ -201,13 +206,13 @@ export class PartnershipSettingsComponent implements OnInit {
     }
   }
 
-  onFilterChange(event: Event) {
-    const select = event.target as HTMLSelectElement;
+  onFilterChange(event: Event | string) {
+    const select = typeof event === 'string' ? { value: event } : event.target as HTMLInputElement;
     this.filterStatus.set(select.value);
   }
 
-  onSearchInput(event: Event): void {
-    const target = event.target as HTMLInputElement;
+  onSearchInput(event: Event | string): void {
+    const target = typeof event === 'string' ? {value: event} : event.target as HTMLInputElement;
     this.searchQuery.set(target.value);
   }
 

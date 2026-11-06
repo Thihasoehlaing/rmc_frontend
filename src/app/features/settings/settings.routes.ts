@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 
 export const settingsRoutes: Routes = [
+  { path: 'groups', loadComponent: () => import('./groups/groups.component').then(m => m.GroupsComponent) },
   { path: 'workspaces', loadComponent: () => import('./workspace-management/workspace-management.component').then(m => m.WorkspaceManagementComponent) },
   {
     path: '',

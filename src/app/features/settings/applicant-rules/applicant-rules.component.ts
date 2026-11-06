@@ -1,3 +1,15 @@
+import {
+  SettingsPageHeaderComponent,
+  SettingsPanelComponent,
+  SearchToolbarComponent,
+  FieldComponent,
+  InputDirective,
+  StateComponent,
+  ToggleComponent,
+} from '../../../shared/components/settings-ui/settings-ui.components';
+import { DropdownComponent } from '../../../shared/components/dropdown/dropdown.component';
+import { StatusBadgeComponent } from '../../../shared/components/form-standard/form-standard.components';
+import { ActionButtonComponent } from '../../../shared/components/action-button/action-button.component';
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, TrackByFunction, inject, signal } from '@angular/core';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -9,12 +21,9 @@ import {
   DataTableColumn,
   DataTableComponent,
 } from '../../../shared/components/data-table/data-table.component';
-import { DetailPanelSkeletonComponent } from '../../../shared/components/detail-panel-skeleton/detail-panel-skeleton.component';
 import { DialogComponent } from '../../../shared/components/dialog/dialog.component';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
 import { SearchableDropdownComponent } from '../../../shared/components/searchable-dropdown/searchable-dropdown.component';
-import { TableActionIconComponent } from '../../../shared/components/table-action-icon/table-action-icon.component';
-import { TableSkeletonComponent } from '../../../shared/components/table-skeleton/table-skeleton.component';
 import { formatDisplayDate } from '../../../shared/utils/date-time.util';
 import {
   ApplicantRule,
@@ -44,6 +53,16 @@ const EMPTY_FILTERS: ApplicantRuleListParams = {
   selector: 'app-applicant-rules',
   standalone: true,
   imports: [
+    ActionButtonComponent,
+    StatusBadgeComponent,
+    DropdownComponent,
+    SettingsPageHeaderComponent,
+    SettingsPanelComponent,
+    SearchToolbarComponent,
+    FieldComponent,
+    InputDirective,
+    StateComponent,
+    ToggleComponent,
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
@@ -51,12 +70,9 @@ const EMPTY_FILTERS: ApplicantRuleListParams = {
     DialogComponent,
     PaginationComponent,
     SearchableDropdownComponent,
-    DetailPanelSkeletonComponent,
-    TableActionIconComponent,
-    TableSkeletonComponent,
   ],
   templateUrl: './applicant-rules.component.html',
-  styleUrls: ['../forms/forms.component.scss', './applicant-rules.component.scss'],
+  styleUrl: './applicant-rules.component.scss',
 })
 export class ApplicantRulesComponent implements OnInit {
   private readonly applicantRulesService = inject(ApplicantRulesService);
@@ -151,8 +167,16 @@ export class ApplicantRulesComponent implements OnInit {
       .map((staff) => ({
         value: staff.username!,
         label: staff.fullname || staff.username!,
-        description: [staff.username, staff.email, staff.staff_type, staff.department].filter(Boolean).join(' | '),
-        searchText: [staff.username, staff.fullname, staff.email, staff.staff_type, staff.department]
+        description: [staff.username, staff.email, staff.staff_type, staff.department]
+          .filter(Boolean)
+          .join(' | '),
+        searchText: [
+          staff.username,
+          staff.fullname,
+          staff.email,
+          staff.staff_type,
+          staff.department,
+        ]
           .filter(Boolean)
           .join(' '),
       }));
@@ -285,14 +309,16 @@ export class ApplicantRulesComponent implements OnInit {
         : this.buildEditRequests(ruleValues, buildPayload);
 
     this.isSaving.set(true);
-    forkJoin(requests).pipe(finalize(() => this.isSaving.set(false))).subscribe({
-      next: () => {
-        this.dialogMode.set(null);
-        this.selectedRule.set(null);
-        this.page.set(1);
-        this.loadApplicantRules();
-      },
-    });
+    forkJoin(requests)
+      .pipe(finalize(() => this.isSaving.set(false)))
+      .subscribe({
+        next: () => {
+          this.dialogMode.set(null);
+          this.selectedRule.set(null);
+          this.page.set(1);
+          this.loadApplicantRules();
+        },
+      });
   }
 
   openDeleteDialog(rule: ApplicantRule): void {
@@ -407,11 +433,7 @@ export class ApplicantRulesComponent implements OnInit {
 
   private normalizedRuleValues(): string[] {
     return Array.from(
-      new Set(
-        this.ruleValuesControl.value
-          .map((value) => value.trim())
-          .filter(Boolean),
-      ),
+      new Set(this.ruleValuesControl.value.map((value) => value.trim()).filter(Boolean)),
     );
   }
 
@@ -424,14 +446,14 @@ export class ApplicantRulesComponent implements OnInit {
 
     const currentRuleValue = selectedRule.rule_value?.trim();
     const updateValue =
-      currentRuleValue && ruleValues.includes(currentRuleValue)
-        ? currentRuleValue
-        : ruleValues[0];
+      currentRuleValue && ruleValues.includes(currentRuleValue) ? currentRuleValue : ruleValues[0];
     const createValues = ruleValues.filter((ruleValue) => ruleValue !== updateValue);
 
     return [
       this.applicantRulesService.update(selectedRule.id, buildPayload(updateValue)),
-      ...createValues.map((ruleValue) => this.applicantRulesService.create(buildPayload(ruleValue))),
+      ...createValues.map((ruleValue) =>
+        this.applicantRulesService.create(buildPayload(ruleValue)),
+      ),
     ];
   }
 }

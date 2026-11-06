@@ -8,11 +8,11 @@
       <div class="row row--2">
         <div class="form-field">
           <label class="form-label">Applicant Name</label>
-          <input type="text" class="input--text input--soft-readonly" [value]="auth.currentUser()?.name || ''" readonly>
+          <input appInput type="text" class="input--text input--soft-readonly" [value]="auth.currentUser()?.name || ''" readonly>
         </div>
         <div class="form-field">
           <label class="form-label is-required">School Name</label>
-          <input type="text" class="input--text input--soft-readonly" [value]="auth.currentUser()?.department || ''" readonly>
+          <input appInput type="text" class="input--text input--soft-readonly" [value]="auth.currentUser()?.department || ''" readonly>
         </div>
       </div>
     </div>
@@ -30,11 +30,11 @@
         <label class="form-label is-required">Position Requested</label>
         <div class="radio-group">
           <label class="radio-option">
-            <input type="radio" formControlName="positionRequested" value="RA">
+            <input class="input--radio" type="radio" formControlName="positionRequested" value="RA">
             <span>Research Assistant UG / Diploma / Foundation Student</span>
           </label>
           <label class="radio-option">
-            <input type="radio" formControlName="positionRequested" value="GRA">
+            <input class="input--radio" type="radio" formControlName="positionRequested" value="GRA">
             <span>Graduate Research Assistant (PG Student)</span>
           </label>
         </div>
@@ -50,11 +50,11 @@
         <label class="form-label is-required">Is this RA/GRA to be placed at</label>
         <div class="radio-group">
           <label class="radio-option">
-            <input type="radio" formControlName="placement" value="Research Project">
+            <input class="input--radio" type="radio" formControlName="placement" value="Research Project">
             <span>Research Project</span>
           </label>
           <label class="radio-option" [class.radio-option--disabled]="isResearchClusterDisabled">
-            <input 
+            <input class="input--radio" 
               type="radio" 
               formControlName="placement" 
               value="Research Cluster"
@@ -74,11 +74,11 @@
         <label class="form-label is-required">RA/GRA Application Type</label>
         <div class="radio-group">
           <label class="radio-option">
-            <input type="radio" formControlName="applicationType" value="New">
+            <input class="input--radio" type="radio" formControlName="applicationType" value="New">
             <span>New</span>
           </label>
           <label class="radio-option">
-            <input type="radio" formControlName="applicationType" value="Renewal">
+            <input class="input--radio" type="radio" formControlName="applicationType" value="Renewal">
             <span>Renewal</span>
           </label>
         </div>
@@ -106,14 +106,13 @@
       <!-- Row 1: Account Code, Select Vote, Category of Grant -->
       <div class="row row--3">
         <div class="form-field">
-          <app-searchable-dropdown
+          <app-dropdown
             label="Account Code"
             [required]="true"
             [options]="accountCodeOptions"
             formControlName="accountCode"
-            placeholder="Search and select account code..."
-            [searchable]="true">
-          </app-searchable-dropdown>
+            placeholder="Search and select account code...">
+          </app-dropdown>
           <app-validation-message 
             class="form-validation-note--error"
             [control]="form.get('accountCode')"
@@ -122,14 +121,13 @@
         </div>
 
         <div class="form-field">
-          <app-searchable-dropdown
+          <app-dropdown
             label="Select Vote"
             [required]="true"
             [options]="voteOptions"
             formControlName="selectVote"
-            placeholder="Search and select vote..."
-            [searchable]="true">
-          </app-searchable-dropdown>
+            placeholder="Search and select vote...">
+          </app-dropdown>
           <app-validation-message 
             class="form-validation-note--error"
             [control]="form.get('selectVote')"
@@ -141,11 +139,11 @@
           <label class="form-label is-required">Category of Grant</label>
           <div class="radio-group">
             <label class="radio-option">
-              <input type="radio" formControlName="categoryOfGrant" value="Internal Grant">
+              <input class="input--radio" type="radio" formControlName="categoryOfGrant" value="Internal Grant">
               <span>Internal Grant</span>
             </label>
             <label class="radio-option">
-              <input type="radio" formControlName="categoryOfGrant" value="External Grant">
+              <input class="input--radio" type="radio" formControlName="categoryOfGrant" value="External Grant">
               <span>External Grant</span>
             </label>
           </div>
@@ -160,7 +158,7 @@
       <!-- Row 2: Research Title -->
       <div class="form-field">
         <label class="form-label is-required">Research Title</label>
-        <input 
+        <input appInput 
           type="text" 
           class="input--text" 
           formControlName="researchTitle"
@@ -177,11 +175,7 @@
       <div class="row row--3">
         <div class="form-field">
           <label class="form-label is-required">Project Start Date</label>
-          <input 
-            type="date" 
-            class="input--text" 
-            formControlName="projectStartDate"
-            [class.is-invalid]="form.get('projectStartDate')?.invalid && form.get('projectStartDate')?.touched">
+          <app-date-picker formControlName="projectStartDate" ariaLabel="Project start date" />
           <app-validation-message 
             class="form-validation-note--error"
             [control]="form.get('projectStartDate')"
@@ -191,11 +185,7 @@
 
         <div class="form-field">
           <label class="form-label is-required">Project End Date</label>
-          <input 
-            type="date" 
-            class="input--text" 
-            formControlName="projectEndDate"
-            [class.is-invalid]="form.get('projectEndDate')?.invalid && form.get('projectEndDate')?.touched">
+          <app-date-picker formControlName="projectEndDate" ariaLabel="Project end date" />
           <app-validation-message 
             class="form-validation-note--error"
             [control]="form.get('projectEndDate')"
@@ -205,7 +195,7 @@
 
         <div class="form-field">
           <label class="form-label is-required">Research Grant/Project Funder</label>
-          <input 
+          <input appInput 
             type="text" 
             class="input--text" 
             formControlName="researchGrantFunder"
@@ -233,14 +223,13 @@
       <div class="row row--2">
         <!-- Select Research Cluster/Research Centre -->
         <div class="form-field">
-          <app-searchable-dropdown
+          <app-dropdown
             label="Select Research Cluster/Research Centre"
             [required]="true"
             [options]="researchClusterOptions"
             formControlName="researchCluster"
-            placeholder="Search and select research cluster/centre..."
-            [searchable]="true">
-          </app-searchable-dropdown>
+            placeholder="Search and select research cluster/centre...">
+          </app-dropdown>
           <app-validation-message 
             class="form-validation-note--error"
             [control]="form.get('researchCluster')"
@@ -253,15 +242,15 @@
           <label class="form-label is-required">How many current active RA/GRA in the research cluster?</label>
           <div class="radio-group">
             <label class="radio-option">
-              <input type="radio" formControlName="activeRaGraCount" value="1">
+              <input class="input--radio" type="radio" formControlName="activeRaGraCount" value="1">
               <span>1</span>
             </label>
             <label class="radio-option">
-              <input type="radio" formControlName="activeRaGraCount" value="2">
+              <input class="input--radio" type="radio" formControlName="activeRaGraCount" value="2">
               <span>2</span>
             </label>
             <label class="radio-option">
-              <input type="radio" formControlName="activeRaGraCount" value="3">
+              <input class="input--radio" type="radio" formControlName="activeRaGraCount" value="3">
               <span>3</span>
             </label>
           </div>

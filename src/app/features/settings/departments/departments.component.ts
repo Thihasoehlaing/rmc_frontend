@@ -1,3 +1,11 @@
+import { StatusBadgeComponent } from '../../../shared/components/form-standard/form-standard.components';
+import {
+  SettingsPageHeaderComponent,
+  SettingsPanelComponent,
+  SearchToolbarComponent,
+  StateComponent,
+} from '../../../shared/components/settings-ui/settings-ui.components';
+import { ActionButtonComponent } from '../../../shared/components/action-button/action-button.component';
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, TrackByFunction, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -10,15 +18,25 @@ import {
   DataTableComponent,
 } from '../../../shared/components/data-table/data-table.component';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
-import { TableSkeletonComponent } from '../../../shared/components/table-skeleton/table-skeleton.component';
 import { DepartmentListRecord, DepartmentsService } from './departments.service';
 
 @Component({
   selector: 'app-departments',
   standalone: true,
-  imports: [CommonModule, FormsModule, DataTableComponent, PaginationComponent, TableSkeletonComponent],
+  imports: [
+    StatusBadgeComponent,
+    ActionButtonComponent,
+    SettingsPageHeaderComponent,
+    SettingsPanelComponent,
+    SearchToolbarComponent,
+    StateComponent,
+    CommonModule,
+    FormsModule,
+    DataTableComponent,
+    PaginationComponent,
+  ],
   templateUrl: './departments.component.html',
-  styleUrls: ['../forms/forms.component.scss', './departments.component.scss'],
+  styleUrl: './departments.component.scss',
 })
 export class DepartmentsComponent implements OnInit {
   private readonly departmentsService = inject(DepartmentsService);

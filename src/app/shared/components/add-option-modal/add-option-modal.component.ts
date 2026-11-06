@@ -1,7 +1,13 @@
 import { Component, EventEmitter, Input, Output, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { SearchableDropdownComponent } from '../searchable-dropdown/searchable-dropdown.component';
+import { DropdownComponent } from '../dropdown/dropdown.component';
+import { DialogComponent } from '../dialog/dialog.component';
+import { ActionButtonComponent } from '../action-button/action-button.component';
+import { FieldComponent, InputDirective } from '../settings-ui/settings-ui.components';
+import { StatusBadgeComponent } from '../form-standard/form-standard.components';
+import { CharacterCounterComponent } from '../character-counter/character-counter.component';
+import { ValidationMessageComponent } from '../validation-message/validation-message.component';
 import { DropdownOption } from '../../../core/interfaces/components.interface';
 import { DecimalAmountDirective } from '../../directives/decimal-amount.directive';
 
@@ -29,12 +35,23 @@ export interface AddOptionPayload {
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
-    SearchableDropdownComponent,
+    DropdownComponent,
+    DialogComponent,
+    ActionButtonComponent,
+    FieldComponent,
+    InputDirective,
+    StatusBadgeComponent,
+    CharacterCounterComponent,
+    ValidationMessageComponent,
     DecimalAmountDirective,
   ],
 })
 export class AddOptionModalComponent implements OnChanges {
   @Input() isOpen = false;
+  @Input() isSaving = false;
+  fallbackFormOptions() {
+    return this.availableForms.map((value) => ({ value, label: value }));
+  }
   @Input() title = 'Add Dropdown Option';
   @Input() showCategory = true;
   @Input() categoryLabel = '';
@@ -178,11 +195,12 @@ export class AddOptionModalComponent implements OnChanges {
   }
 
   onCancel() {
+    if (this.isSaving) return;
     this.close.emit();
   }
 
   onSave() {
-    if (!this.isValid) return;
+    if (!this.isValid || this.isSaving) return;
     const appliesTo = this.allowFormSharing
       ? [...this.selectedAppliesTo]
       : [...this.defaultSelectedForms];

@@ -20,3 +20,5 @@ describe('BatchesComponent', () => {
     expect(component).toBeTruthy();
   });
 });
+
+afterEach(() => TestBed.resetTestingModule());

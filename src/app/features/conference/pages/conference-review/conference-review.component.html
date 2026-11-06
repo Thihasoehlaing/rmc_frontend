@@ -222,33 +222,16 @@
                       canChangeSectionComment(comment) && editingSectionCommentId() !== comment.id
                     ) {
                       <div class="section-comment__actions table-actions">
-                        <button
-                          type="button"
-                          class="table-action"
-                          title="Edit comment"
-                          aria-label="Edit comment"
-                          (click)="startEditSectionComment(comment)"
-                        >
-                          <app-table-action-icon action="edit"></app-table-action-icon>
-                        </button>
-                        <button
-                          type="button"
-                          class="table-action table-action--danger"
-                          [title]="
+                        <app-action-button [label]="'Edit comment'" type="ghost" size="small" [icon]="'edit'" [iconOnly]="true" [ariaLabel]="'Edit comment'" [title]="'Edit comment'" (clicked)="startEditSectionComment(comment)" buttonType="button" />
+                        <app-action-button [label]="'delete_outline'" type="danger" size="small" [icon]="'delete_outline'" [iconOnly]="true" [disabled]="deletingSectionCommentId() === comment.id" [ariaLabel]="
                             deletingSectionCommentId() === comment.id
                               ? 'Deleting comment'
                               : 'Delete comment'
-                          "
-                          [attr.aria-label]="
+                          " [title]="
                             deletingSectionCommentId() === comment.id
                               ? 'Deleting comment'
                               : 'Delete comment'
-                          "
-                          [disabled]="deletingSectionCommentId() === comment.id"
-                          (click)="deleteSectionComment(comment)"
-                        >
-                          <app-table-action-icon action="delete"></app-table-action-icon>
-                        </button>
+                          " (clicked)="deleteSectionComment(comment)" buttonType="button" />
                       </div>
                     }
                   </article>
@@ -262,7 +245,7 @@
               (!currentActorSectionComment('conference_details') ||
                 isEditingSectionComment('conference_details'))
             ) {
-              <textarea
+              <textarea appInput
                 class="section-comment-input"
                 appTextareaAutosize
                 [minRows]="3"
@@ -416,33 +399,16 @@
                       canChangeSectionComment(comment) && editingSectionCommentId() !== comment.id
                     ) {
                       <div class="section-comment__actions table-actions">
-                        <button
-                          type="button"
-                          class="table-action"
-                          title="Edit comment"
-                          aria-label="Edit comment"
-                          (click)="startEditSectionComment(comment)"
-                        >
-                          <app-table-action-icon action="edit"></app-table-action-icon>
-                        </button>
-                        <button
-                          type="button"
-                          class="table-action table-action--danger"
-                          [title]="
+                        <app-action-button [label]="'Edit comment'" type="ghost" size="small" [icon]="'edit'" [iconOnly]="true" [ariaLabel]="'Edit comment'" [title]="'Edit comment'" (clicked)="startEditSectionComment(comment)" buttonType="button" />
+                        <app-action-button [label]="'delete_outline'" type="danger" size="small" [icon]="'delete_outline'" [iconOnly]="true" [disabled]="deletingSectionCommentId() === comment.id" [ariaLabel]="
                             deletingSectionCommentId() === comment.id
                               ? 'Deleting comment'
                               : 'Delete comment'
-                          "
-                          [attr.aria-label]="
+                          " [title]="
                             deletingSectionCommentId() === comment.id
                               ? 'Deleting comment'
                               : 'Delete comment'
-                          "
-                          [disabled]="deletingSectionCommentId() === comment.id"
-                          (click)="deleteSectionComment(comment)"
-                        >
-                          <app-table-action-icon action="delete"></app-table-action-icon>
-                        </button>
+                          " (clicked)="deleteSectionComment(comment)" buttonType="button" />
                       </div>
                     }
                   </article>
@@ -456,7 +422,7 @@
               (!currentActorSectionComment('travel_details') ||
                 isEditingSectionComment('travel_details'))
             ) {
-              <textarea
+              <textarea appInput
                 class="section-comment-input"
                 appTextareaAutosize
                 [minRows]="3"
@@ -618,33 +584,16 @@
                       canChangeSectionComment(comment) && editingSectionCommentId() !== comment.id
                     ) {
                       <div class="section-comment__actions table-actions">
-                        <button
-                          type="button"
-                          class="table-action"
-                          title="Edit comment"
-                          aria-label="Edit comment"
-                          (click)="startEditSectionComment(comment)"
-                        >
-                          <app-table-action-icon action="edit"></app-table-action-icon>
-                        </button>
-                        <button
-                          type="button"
-                          class="table-action table-action--danger"
-                          [title]="
+                        <app-action-button [label]="'Edit comment'" type="ghost" size="small" [icon]="'edit'" [iconOnly]="true" [ariaLabel]="'Edit comment'" [title]="'Edit comment'" (clicked)="startEditSectionComment(comment)" buttonType="button" />
+                        <app-action-button [label]="'delete_outline'" type="danger" size="small" [icon]="'delete_outline'" [iconOnly]="true" [disabled]="deletingSectionCommentId() === comment.id" [ariaLabel]="
                             deletingSectionCommentId() === comment.id
                               ? 'Deleting comment'
                               : 'Delete comment'
-                          "
-                          [attr.aria-label]="
+                          " [title]="
                             deletingSectionCommentId() === comment.id
                               ? 'Deleting comment'
                               : 'Delete comment'
-                          "
-                          [disabled]="deletingSectionCommentId() === comment.id"
-                          (click)="deleteSectionComment(comment)"
-                        >
-                          <app-table-action-icon action="delete"></app-table-action-icon>
-                        </button>
+                          " (clicked)="deleteSectionComment(comment)" buttonType="button" />
                       </div>
                     }
                   </article>
@@ -657,7 +606,7 @@
               canWriteSectionComments() &&
               (!currentActorSectionComment('authors') || isEditingSectionComment('authors'))
             ) {
-              <textarea
+              <textarea appInput
                 class="section-comment-input"
                 appTextareaAutosize
                 [minRows]="3"
@@ -758,33 +707,16 @@
                       canChangeSectionComment(comment) && editingSectionCommentId() !== comment.id
                     ) {
                       <div class="section-comment__actions table-actions">
-                        <button
-                          type="button"
-                          class="table-action"
-                          title="Edit comment"
-                          aria-label="Edit comment"
-                          (click)="startEditSectionComment(comment)"
-                        >
-                          <app-table-action-icon action="edit"></app-table-action-icon>
-                        </button>
-                        <button
-                          type="button"
-                          class="table-action table-action--danger"
-                          [title]="
+                        <app-action-button [label]="'Edit comment'" type="ghost" size="small" [icon]="'edit'" [iconOnly]="true" [ariaLabel]="'Edit comment'" [title]="'Edit comment'" (clicked)="startEditSectionComment(comment)" buttonType="button" />
+                        <app-action-button [label]="'delete_outline'" type="danger" size="small" [icon]="'delete_outline'" [iconOnly]="true" [disabled]="deletingSectionCommentId() === comment.id" [ariaLabel]="
                             deletingSectionCommentId() === comment.id
                               ? 'Deleting comment'
                               : 'Delete comment'
-                          "
-                          [attr.aria-label]="
+                          " [title]="
                             deletingSectionCommentId() === comment.id
                               ? 'Deleting comment'
                               : 'Delete comment'
-                          "
-                          [disabled]="deletingSectionCommentId() === comment.id"
-                          (click)="deleteSectionComment(comment)"
-                        >
-                          <app-table-action-icon action="delete"></app-table-action-icon>
-                        </button>
+                          " (clicked)="deleteSectionComment(comment)" buttonType="button" />
                       </div>
                     }
                   </article>
@@ -798,7 +730,7 @@
               (!currentActorSectionComment('supporting_documents') ||
                 isEditingSectionComment('supporting_documents'))
             ) {
-              <textarea
+              <textarea appInput
                 class="section-comment-input"
                 appTextareaAutosize
                 [minRows]="3"
@@ -1004,33 +936,16 @@
                       canChangeSectionComment(comment) && editingSectionCommentId() !== comment.id
                     ) {
                       <div class="section-comment__actions table-actions">
-                        <button
-                          type="button"
-                          class="table-action"
-                          title="Edit comment"
-                          aria-label="Edit comment"
-                          (click)="startEditSectionComment(comment)"
-                        >
-                          <app-table-action-icon action="edit"></app-table-action-icon>
-                        </button>
-                        <button
-                          type="button"
-                          class="table-action table-action--danger"
-                          [title]="
+                        <app-action-button [label]="'Edit comment'" type="ghost" size="small" [icon]="'edit'" [iconOnly]="true" [ariaLabel]="'Edit comment'" [title]="'Edit comment'" (clicked)="startEditSectionComment(comment)" buttonType="button" />
+                        <app-action-button [label]="'delete_outline'" type="danger" size="small" [icon]="'delete_outline'" [iconOnly]="true" [disabled]="deletingSectionCommentId() === comment.id" [ariaLabel]="
                             deletingSectionCommentId() === comment.id
                               ? 'Deleting comment'
                               : 'Delete comment'
-                          "
-                          [attr.aria-label]="
+                          " [title]="
                             deletingSectionCommentId() === comment.id
                               ? 'Deleting comment'
                               : 'Delete comment'
-                          "
-                          [disabled]="deletingSectionCommentId() === comment.id"
-                          (click)="deleteSectionComment(comment)"
-                        >
-                          <app-table-action-icon action="delete"></app-table-action-icon>
-                        </button>
+                          " (clicked)="deleteSectionComment(comment)" buttonType="button" />
                       </div>
                     }
                   </article>
@@ -1044,7 +959,7 @@
               (!currentActorSectionComment('costing_sponsorship') ||
                 isEditingSectionComment('costing_sponsorship'))
             ) {
-              <textarea
+              <textarea appInput
                 class="section-comment-input"
                 appTextareaAutosize
                 [minRows]="3"
@@ -1127,7 +1042,7 @@
             } @else {
               <div class="action-comment-box">
                 <label for="conference-decision-comment">Decision Comment <span>*</span></label>
-                <textarea
+                <textarea appInput
                   id="conference-decision-comment"
                   class="section-comment-input"
                   appTextareaAutosize
@@ -1198,7 +1113,7 @@
       </aside>
     </div>
 
-    <app-dialog
+    <app-dialog density="compact"
       [isOpen]="rollbackDialogOpen()"
       title="Rollback Last Action"
       size="small"
@@ -1216,7 +1131,7 @@
 
         <label class="form-field">
           <span class="form-label">Reason</span>
-          <textarea
+          <textarea appInput
             class="input--textarea"
             rows="4"
             maxlength="1000"
@@ -1225,24 +1140,8 @@
         </label>
       }
 
-      <button
-        dialog-footer
-        type="button"
-        class="btn btn-secondary"
-        [disabled]="rollbacking()"
-        (click)="closeRollbackDialog()"
-      >
-        Cancel
-      </button>
-      <button
-        dialog-footer
-        type="button"
-        class="btn btn-danger"
-        [disabled]="rollbacking() || !rollbackReasonControl.value?.trim()"
-        (click)="rollbackLatestAction()"
-      >
-        {{ rollbacking() ? 'Rolling back...' : 'Rollback' }}
-      </button>
+      <app-action-button [label]="'Cancel'" type="secondary" size="small" [disabled]="rollbacking()" (clicked)="closeRollbackDialog()" buttonType="button" />
+      <app-action-button [label]="(rollbacking() ? 'Rolling back...' : 'Rollback')" type="danger" size="small" [disabled]="rollbacking() || !rollbackReasonControl.value?.trim()" (clicked)="rollbackLatestAction()" buttonType="button" />
     </app-dialog>
   }
 </section>

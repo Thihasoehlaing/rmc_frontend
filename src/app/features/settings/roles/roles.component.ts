@@ -1,3 +1,15 @@
+import {
+  SettingsPageHeaderComponent,
+  SettingsPanelComponent,
+  SearchToolbarComponent,
+  FieldComponent,
+  InputDirective,
+  StateComponent,
+  ToggleComponent,
+} from '../../../shared/components/settings-ui/settings-ui.components';
+import { DropdownComponent } from '../../../shared/components/dropdown/dropdown.component';
+import { StatusBadgeComponent } from '../../../shared/components/form-standard/form-standard.components';
+import { ActionButtonComponent } from '../../../shared/components/action-button/action-button.component';
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, TrackByFunction, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -10,8 +22,6 @@ import {
 } from '../../../shared/components/data-table/data-table.component';
 import { DialogComponent } from '../../../shared/components/dialog/dialog.component';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
-import { DetailPanelSkeletonComponent } from '../../../shared/components/detail-panel-skeleton/detail-panel-skeleton.component';
-import { TableSkeletonComponent } from '../../../shared/components/table-skeleton/table-skeleton.component';
 import { Role, RolePayload, RolesService } from './roles.service';
 
 import { TableActionIconComponent } from '../../../shared/components/table-action-icon/table-action-icon.component';
@@ -23,17 +33,25 @@ type StatusFilter = '' | 'Active' | 'Inactive';
   selector: 'app-roles',
   standalone: true,
   imports: [
+    ActionButtonComponent,
+    StatusBadgeComponent,
+    DropdownComponent,
+    SettingsPageHeaderComponent,
+    SettingsPanelComponent,
+    SearchToolbarComponent,
+    FieldComponent,
+    InputDirective,
+    StateComponent,
+    ToggleComponent,
     TableActionIconComponent,
     CommonModule,
     FormsModule,
     DataTableComponent,
     DialogComponent,
     PaginationComponent,
-    DetailPanelSkeletonComponent,
-    TableSkeletonComponent,
   ],
   templateUrl: './roles.component.html',
-  styleUrls: ['../forms/forms.component.scss', './roles.component.scss'],
+  styleUrl: './roles.component.scss',
 })
 export class RolesComponent implements OnInit {
   private readonly rolesService = inject(RolesService);
@@ -68,7 +86,7 @@ export class RolesComponent implements OnInit {
     { key: 'code', label: 'Role Code', width: '190px' },
     { key: 'name', label: 'Role Name', width: '230px' },
     { key: 'userCount', label: 'Users', width: '110px', align: 'center' },
-    { key: 'description', label: 'Description', width: '360px' },
+    { key: 'description', label: 'Description', width: '240px' },
     { key: 'status', label: 'Status', width: '120px', align: 'center' },
     {
       key: 'actions',

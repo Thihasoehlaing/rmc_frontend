@@ -1,3 +1,6 @@
+import { ActionButtonComponent } from '../../../../../shared/components/action-button/action-button.component';
+import { InputDirective } from '../../../../../shared/components/settings-ui/settings-ui.components';
+import { DropdownComponent } from '../../../../../shared/components/dropdown/dropdown.component';
 ﻿import { Component, OnInit, OnDestroy, Input, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
@@ -38,7 +41,6 @@ import {
 } from '../../../../../shared/validators/sdg-keyword.validator';
 import { COSTING_ITEM_ROW_LIMIT } from '../../../../../core/constants/form-limits.constant';
 
-import { TableActionIconComponent } from '../../../../../shared/components/table-action-icon/table-action-icon.component';
 import { DecimalAmountDirective } from '../../../../../shared/directives/decimal-amount.directive';
 import { MyrCurrencyPipe } from '../../../../../shared/pipes/myr-currency.pipe';
 import { TableRowCounterComponent } from '../../../../../shared/components/table-row-counter/table-row-counter.component';
@@ -47,8 +49,7 @@ import { minimumConferenceStartDate, CONFERENCE_LEAD_TIME_MESSAGE } from '../../
 @Component({
   selector: 'app-conference-details-form',
   standalone: true,
-  imports: [
-    TableActionIconComponent,
+  imports: [ActionButtonComponent,InputDirective,DropdownComponent,
     CommonModule,
     ReactiveFormsModule,
     TableRowCounterComponent,

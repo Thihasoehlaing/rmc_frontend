@@ -1,3 +1,4 @@
+import { ActionButtonComponent } from '../../../../shared/components/action-button/action-button.component';
 import { Component, EventEmitter, Output, signal, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { JournalGuidelinesService } from '../../services/journal-guidelines.service';
@@ -5,7 +6,7 @@ import { JournalGuidelinesService } from '../../services/journal-guidelines.serv
 @Component({
   selector: 'app-journal-guidelines-modal',
   standalone: true,
-  imports: [CommonModule],
+  imports: [ActionButtonComponent,CommonModule],
   templateUrl: './journal-guidelines-modal.component.html',
   styleUrl: './journal-guidelines-modal.component.scss'
 })

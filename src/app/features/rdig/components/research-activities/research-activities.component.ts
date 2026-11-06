@@ -1,3 +1,6 @@
+import { InputDirective } from '../../../../shared/components/settings-ui/settings-ui.components';
+import { DropdownComponent } from '../../../../shared/components/dropdown/dropdown.component';
+import { AbstractControl } from '@angular/forms';
 import { Component, Input, OnInit, OnDestroy, signal, computed } from '@angular/core';
 import {
   ReactiveFormsModule,
@@ -19,14 +22,12 @@ import {
   DataTableColumn,
   DataTableComponent,
 } from '../../../../shared/components/data-table/data-table.component';
-import { TableActionIconComponent } from '../../../../shared/components/table-action-icon/table-action-icon.component';
 import { TableRowCounterComponent } from '../../../../shared/components/table-row-counter/table-row-counter.component';
 
 @Component({
   selector: 'app-research-activities',
   standalone: true,
-  imports: [
-    TableActionIconComponent,
+  imports: [InputDirective,DropdownComponent,
     ReactiveFormsModule,
     ActionButtonComponent,
     CustomHeaderComponent,
@@ -41,6 +42,8 @@ import { TableRowCounterComponent } from '../../../../shared/components/table-ro
   styleUrls: ['./research-activities.component.scss'],
 })
 export class ResearchActivitiesComponent implements OnInit, OnDestroy {
+  standardOptions0(activity: AbstractControl) { return [...this.months().map(m => ({value: m, label: String(m), disabled: this.isEndMonthDisabled(activity, m)}))]; }
+  standardOptions1(index: number) { return [...this.months().map(m => ({value: m, label: String(m), disabled: this.isStartMonthDisabled(index, m)}))]; }
   readonly maxActivities = 24;
 
   private readonly baseActivityColumns: DataTableColumn[] = [

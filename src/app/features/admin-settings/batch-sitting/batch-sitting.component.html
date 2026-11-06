@@ -1,11 +1,10 @@
 <section class="batch-container fade-in">
-  <div class="card batch-card elevation-1">
+  <div class="settings-page">
     <app-admin-settings-page-header
       title="Batch Sitting Management"
       description="Manage RDIG application cycle windows. One active batch runs at a time. Completed batches are preserved in history and can be retrieved."
     ></app-admin-settings-page-header>
 
-    <!-- ── Feedback ───────────────────────────────────────────────────────── -->
     @if (feedback(); as note) {
       <div
         #feedbackBanner
@@ -22,17 +21,16 @@
       </div>
     }
 
-    <!-- ── Loading ────────────────────────────────────────────────────────── -->
     @if (isLoading()) {
-      <app-batch-management-skeleton></app-batch-management-skeleton>
+      <app-state title="Loading settings" icon="hourglass_empty" />
     }
 
     @if (!isLoading()) {
       <div class="batch-sections">
-        <section class="batch-section-switcher" role="tablist" aria-label="Batch section selector">
+        <section class="settings-tabs" role="tablist" aria-label="Batch section selector">
           <button
-            class="batch-section-switcher__item"
-            [class.is-active]="selectedSection() === 'active'"
+            class="settings-tab"
+            [class.settings-tab--active]="selectedSection() === 'active'"
             type="button"
             role="tab"
             [attr.aria-selected]="selectedSection() === 'active'"
@@ -45,8 +43,8 @@
             }
           </button>
           <button
-            class="batch-section-switcher__item"
-            [class.is-active]="selectedSection() === 'upcoming'"
+            class="settings-tab"
+            [class.settings-tab--active]="selectedSection() === 'upcoming'"
             type="button"
             role="tab"
             [attr.aria-selected]="selectedSection() === 'upcoming'"
@@ -57,8 +55,8 @@
             <span class="batch-section-switcher__meta">{{ plannedBatches().length }}</span>
           </button>
           <button
-            class="batch-section-switcher__item"
-            [class.is-active]="selectedSection() === 'history'"
+            class="settings-tab"
+            [class.settings-tab--active]="selectedSection() === 'history'"
             type="button"
             role="tab"
             [attr.aria-selected]="selectedSection() === 'history'"
@@ -69,50 +67,41 @@
             <span class="batch-section-switcher__meta">{{ historyBatches().length }}</span>
           </button>
         </section>
-        <!-- ════════════════════════════════════════════════════════════════ -->
-        <!--  SECTION 1 — Current Active Batch                               -->
-        <!-- ════════════════════════════════════════════════════════════════ -->
-        <div class="batch-section" [class.batch-section--hidden]="selectedSection() !== 'active'">
-          <div class="section-head">
-            <div class="section-head__left">
-              <span class="material-icons section-head__icon icon--active">play_circle</span>
-              <h3 class="section-head__title">Current Active Batch</h3>
+
+        <app-settings-panel
+          title="Current Active Batch"
+          class="batch-section"
+          [class.batch-section--hidden]="selectedSection() !== 'active'"
+          ><div panelActions class="settings-actions">
+            @if (!isEditingActive()) {
               @if (activeBatch()) {
-                <span class="status-badge status-badge--active">Active</span>
+                <app-action-button
+                  type="primary"
+                  label="Edit"
+                  icon="edit"
+                  (clicked)="startEditActive()"
+                >
+                </app-action-button>
+                <app-action-button
+                  type="danger"
+                  label="End Batch"
+                  icon="stop_circle"
+                  [title]="endBatchTooltip()"
+                  (clicked)="openEndConfirm()"
+                >
+                </app-action-button>
+              } @else {
+                <app-action-button
+                  type="primary"
+                  label="Create Active Batch"
+                  icon="add"
+                  (clicked)="startEditActive()"
+                >
+                </app-action-button>
               }
-            </div>
-            <div class="section-head__actions">
-              @if (!isEditingActive()) {
-                @if (activeBatch()) {
-                  <app-action-button
-                    type="primary"
-                    label="Edit"
-                    icon="edit"
-                    (clicked)="startEditActive()"
-                  >
-                  </app-action-button>
-                  <app-action-button
-                    type="danger"
-                    label="End Batch"
-                    icon="stop_circle"
-                    [title]="endBatchTooltip()"
-                    (clicked)="openEndConfirm()"
-                  >
-                  </app-action-button>
-                } @else {
-                  <app-action-button
-                    type="primary"
-                    label="Create Active Batch"
-                    icon="add"
-                    (clicked)="startEditActive()"
-                  >
-                  </app-action-button>
-                }
-              }
-            </div>
+            }
           </div>
 
-          <!-- Read-only view -->
           @if (activeBatch() && !isEditingActive()) {
             <div class="batch-summary">
               <strong class="planned-item__name">{{ activeBatch()!.batchName }}</strong>
@@ -143,13 +132,13 @@
           }
 
           @if (!activeBatch() && !isEditingActive()) {
-            <div class="empty-state">
-              <span class="material-icons empty-state__icon">event_note</span>
-              <p>No active batch. Create one to open the RDIG review cycle.</p>
-            </div>
+            <app-state
+              [title]="'No active batch. Create one to open the RDIG review cycle.'"
+              [description]="''"
+              icon="inbox"
+            ></app-state>
           }
 
-          <!-- Edit / Create form -->
           @if (isEditingActive()) {
             <ng-container
               *ngTemplateOutlet="
@@ -163,62 +152,53 @@
               "
             ></ng-container>
           }
-        </div>
-        <!-- /section active -->
+        </app-settings-panel>
 
-        <!-- ════════════════════════════════════════════════════════════════ -->
-        <!--  SECTION 2 — Upcoming (Planned) Batches                         -->
-        <!-- ════════════════════════════════════════════════════════════════ -->
-        <div class="batch-section" [class.batch-section--hidden]="selectedSection() !== 'upcoming'">
-          <div class="section-head">
-            <div class="section-head__left">
-              <span class="material-icons section-head__icon icon--planned">schedule</span>
-              <h3 class="section-head__title">Upcoming Batches</h3>
-              @if (plannedBatches().length > 0) {
-                <span class="count-chip">{{ plannedBatches().length }}</span>
-              }
-            </div>
-            <div class="section-head__actions">
-              @if (!isAddingPlanned() && editingPlannedId() === null) {
-                <app-action-button
-                  type="secondary"
-                  label="Add Planned Batch"
-                  icon="add_circle"
-                  (clicked)="startAddPlanned()"
-                >
-                </app-action-button>
-              }
-            </div>
+        <app-settings-panel
+          title="Upcoming Batches"
+          class="batch-section"
+          [class.batch-section--hidden]="selectedSection() !== 'upcoming'"
+          ><div panelActions class="settings-actions">
+            @if (!isAddingPlanned() && editingPlannedId() === null) {
+              <app-action-button
+                type="secondary"
+                label="Add Planned Batch"
+                icon="add_circle"
+                (clicked)="startAddPlanned()"
+              >
+              </app-action-button>
+            }
           </div>
 
           @if (plannedBatches().length === 0 && !isAddingPlanned()) {
-            <div class="empty-state">
-              <span class="material-icons empty-state__icon">pending_actions</span>
-              <p>No upcoming batches. Click <strong>Add Planned Batch</strong> to schedule one.</p>
-            </div>
+            <app-state
+              [title]="'Add Planned Batch'"
+              [description]="'No upcoming batches. Click Add Planned Batch to schedule one.'"
+              icon="inbox"
+            ></app-state>
           }
 
-          <!-- Planned list -->
           <div class="planned-list">
             @for (batch of plannedBatches(); track batch.id) {
               <div
                 class="planned-item"
                 [class.planned-item--editing]="editingPlannedId() === batch.id"
               >
-                <!-- Row summary -->
                 <div class="planned-item__row">
                   <div class="planned-item__info">
-                    <button
-                      class="icon-btn icon-btn--muted"
-                      type="button"
+                    <app-action-button
+                      [label]="isUpcomingExpanded(batch.id) ? 'expand_less' : 'expand_more'"
+                      type="primary"
+                      size="small"
+                      [icon]="isUpcomingExpanded(batch.id) ? 'expand_less' : 'expand_more'"
+                      [iconOnly]="true"
                       [title]="isUpcomingExpanded(batch.id) ? 'Collapse details' : 'Expand details'"
-                      (click)="toggleUpcoming(batch.id)"
-                    >
-                      <span class="material-icons">
-                        {{ isUpcomingExpanded(batch.id) ? 'expand_less' : 'expand_more' }}
-                      </span>
-                    </button>
-                    <span class="status-badge status-badge--planned">Planned</span>
+                      (clicked)="toggleUpcoming(batch.id)"
+                      [ariaLabel]="
+                        isUpcomingExpanded(batch.id) ? 'Collapse details' : 'Expand details'
+                      "
+                    />
+                    <app-status-badge [intent]="'info'">Planned</app-status-badge>
                     <strong class="planned-item__name">{{ batch.batchName }}</strong>
                     <span class="planned-item__dates">
                       {{ fmt(batch.startDate) }} → {{ fmt(batch.endDate) }}
@@ -235,44 +215,51 @@
                         (clicked)="canStartPlanned() && startPlanned(batch)"
                       >
                       </app-action-button>
-                      <button
-                        class="icon-btn icon-btn--edit"
-                        type="button"
-                        title="Edit this planned batch"
-                        (click)="startEditPlanned(batch)"
-                      >
-                        <app-table-action-icon action="edit"></app-table-action-icon>
-                      </button>
-                      <button
-                        class="icon-btn"
-                        [class.icon-btn--danger]="canDeletePlanned(batch)"
-                        [class.icon-btn--muted]="!canDeletePlanned(batch)"
-                        type="button"
+                      <app-action-button
+                        [label]="'Edit this planned batch'"
+                        type="primary"
+                        size="small"
+                        [icon]="'edit'"
+                        [iconOnly]="true"
+                        [title]="'Edit this planned batch'"
+                        (clicked)="startEditPlanned(batch)"
+                        [ariaLabel]="'Edit this planned batch'"
+                      />
+                      <app-action-button
+                        [label]="'delete_outline'"
+                        type="primary"
+                        size="small"
+                        [icon]="'delete_outline'"
+                        [iconOnly]="true"
                         [disabled]="!canDeletePlanned(batch)"
                         [title]="
                           canDeletePlanned(batch)
                             ? 'Delete planned batch'
                             : 'Cannot delete: batch has already started'
                         "
-                        (click)="canDeletePlanned(batch) && deletePlanned(batch)"
-                      >
-                        <app-table-action-icon action="delete"></app-table-action-icon>
-                      </button>
+                        (clicked)="canDeletePlanned(batch) && deletePlanned(batch)"
+                        [ariaLabel]="
+                          canDeletePlanned(batch)
+                            ? 'Delete planned batch'
+                            : 'Cannot delete: batch has already started'
+                        "
+                      />
                     }
                     @if (editingPlannedId() === batch.id) {
-                      <button
-                        class="icon-btn icon-btn--muted"
-                        type="button"
-                        title="Cancel editing"
-                        (click)="cancelPlannedEdit()"
-                      >
-                        <span class="material-icons">close</span>
-                      </button>
+                      <app-action-button
+                        [label]="'Cancel editing'"
+                        type="primary"
+                        size="small"
+                        [icon]="'close'"
+                        [iconOnly]="true"
+                        [title]="'Cancel editing'"
+                        (clicked)="cancelPlannedEdit()"
+                        [ariaLabel]="'Cancel editing'"
+                      />
                     }
                   </div>
                 </div>
 
-                <!-- Inline edit form for this batch -->
                 @if (editingPlannedId() === batch.id) {
                   <ng-container
                     *ngTemplateOutlet="
@@ -307,20 +294,21 @@
               </div>
             }
 
-            <!-- New planned batch form (at bottom of list) -->
             @if (isAddingPlanned()) {
               <div class="planned-item planned-item--new">
                 <div class="planned-item__new-header">
                   <span class="material-icons">add_circle_outline</span>
                   <strong>New Planned Batch</strong>
-                  <button
-                    class="icon-btn icon-btn--muted"
-                    type="button"
-                    title="Cancel"
-                    (click)="cancelPlannedEdit()"
-                  >
-                    <span class="material-icons">close</span>
-                  </button>
+                  <app-action-button
+                    [label]="'Cancel'"
+                    type="primary"
+                    size="small"
+                    [icon]="'close'"
+                    [iconOnly]="true"
+                    [title]="'Cancel'"
+                    (clicked)="cancelPlannedEdit()"
+                    [ariaLabel]="'Cancel'"
+                  />
                 </div>
                 <ng-container
                   *ngTemplateOutlet="
@@ -335,27 +323,19 @@
               </div>
             }
           </div>
-        </div>
-        <!-- /section planned -->
+        </app-settings-panel>
 
-        <!-- ════════════════════════════════════════════════════════════════ -->
-        <!--  SECTION 3 � Batch History                                      -->
-        <div class="batch-section" [class.batch-section--hidden]="selectedSection() !== 'history'">
-          <div class="section-head">
-            <div class="section-head__left">
-              <span class="material-icons section-head__icon icon--history">history</span>
-              <h3 class="section-head__title">Batch History</h3>
-              @if (historyBatches().length > 0) {
-                <span class="count-chip">{{ historyBatches().length }}</span>
-              }
-            </div>
-          </div>
-
+        <app-settings-panel
+          title="Batch History"
+          class="batch-section"
+          [class.batch-section--hidden]="selectedSection() !== 'history'"
+        >
           @if (historyBatches().length === 0) {
-            <div class="empty-state">
-              <span class="material-icons empty-state__icon">history_toggle_off</span>
-              <p>No completed batches yet.</p>
-            </div>
+            <app-state
+              [title]="'No completed batches yet.'"
+              [description]="''"
+              icon="inbox"
+            ></app-state>
           }
 
           @if (historyBatches().length > 0) {
@@ -364,44 +344,48 @@
                 <div class="planned-item">
                   <div class="planned-item__row">
                     <div class="planned-item__info">
-                      <button
-                        class="icon-btn icon-btn--muted"
-                        type="button"
+                      <app-action-button
+                        [label]="isHistoryExpanded(batch.id) ? 'expand_less' : 'expand_more'"
+                        type="primary"
+                        size="small"
+                        [icon]="isHistoryExpanded(batch.id) ? 'expand_less' : 'expand_more'"
+                        [iconOnly]="true"
                         [title]="
                           isHistoryExpanded(batch.id) ? 'Collapse details' : 'Expand details'
                         "
-                        (click)="toggleHistory(batch.id)"
-                      >
-                        <span class="material-icons">
-                          {{ isHistoryExpanded(batch.id) ? 'expand_less' : 'expand_more' }}
-                        </span>
-                      </button>
-                      <span class="status-badge status-badge--history">Closed</span>
+                        (clicked)="toggleHistory(batch.id)"
+                        [ariaLabel]="
+                          isHistoryExpanded(batch.id) ? 'Collapse details' : 'Expand details'
+                        "
+                      />
+                      <app-status-badge [intent]="'info'">Closed</app-status-badge>
                       <strong class="planned-item__name">{{ batch.batchName }}</strong>
                       <span class="planned-item__dates">
                         {{ fmt(batch.startDate) }} → {{ fmt(batch.endDate) }}
                       </span>
                     </div>
                     <div class="planned-item__actions">
-                      <button
-                        class="icon-btn icon-btn--view"
-                        type="button"
-                        title="View batch details"
-                        (click)="openView(batch)"
-                      >
-                        <app-table-action-icon action="view"></app-table-action-icon>
-                      </button>
-                      <button
-                        class="icon-btn"
-                        [class.icon-btn--retrieve]="canRetrieve()"
-                        [class.icon-btn--muted]="!canRetrieve()"
-                        type="button"
+                      <app-action-button
+                        [label]="'View batch details'"
+                        type="primary"
+                        size="small"
+                        [icon]="'visibility'"
+                        [iconOnly]="true"
+                        [title]="'View batch details'"
+                        (clicked)="openView(batch)"
+                        [ariaLabel]="'View batch details'"
+                      />
+                      <app-action-button
+                        [label]="'restore'"
+                        type="primary"
+                        size="small"
+                        [icon]="'restore'"
+                        [iconOnly]="true"
                         [disabled]="!canRetrieve()"
                         [title]="retrieveTooltip()"
-                        (click)="canRetrieve() && retrieveBatch(batch)"
-                      >
-                        <span class="material-icons">restore</span>
-                      </button>
+                        (clicked)="canRetrieve() && retrieveBatch(batch)"
+                        [ariaLabel]="retrieveTooltip()"
+                      />
                     </div>
                   </div>
 
@@ -451,20 +435,19 @@
               ></app-pagination>
             </div>
           }
-        </div>
-        <!-- /section history -->
+        </app-settings-panel>
       </div>
-      <!-- /batch-sections -->
     }
   </div>
-  <!-- /batch-card -->
 </section>
 
-<!-- ══════════════════════════════════════════════════════════════════════════ -->
-<!-- Dialog: End Batch Confirmation                                             -->
-<!-- ══════════════════════════════════════════════════════════════════════════ -->
 @if (showEndConfirm()) {
-  <app-dialog [isOpen]="true" title="End Active Batch" (close)="cancelEndConfirm()">
+  <app-dialog
+    density="compact"
+    [isOpen]="true"
+    title="End Active Batch"
+    (close)="cancelEndConfirm()"
+  >
     <div class="confirm-dialog">
       <div class="confirm-dialog__icon-wrap">
         <span class="material-icons confirm-dialog__icon">stop_circle</span>
@@ -508,11 +491,14 @@
   </app-dialog>
 }
 
-<!-- ══════════════════════════════════════════════════════════════════════════ -->
-<!-- Dialog: View History Batch (read-only)                                     -->
-<!-- ══════════════════════════════════════════════════════════════════════════ -->
 @if (viewingBatch(); as vb) {
-  <app-dialog [isOpen]="true" [title]="vb.batchName" width="860px" (close)="closeView()">
+  <app-dialog
+    density="compact"
+    [isOpen]="true"
+    [title]="vb.batchName"
+    width="860px"
+    (close)="closeView()"
+  >
     <div class="view-dialog">
       <div class="view-dialog__meta">
         <div class="view-dialog__meta-item">
@@ -538,15 +524,14 @@
   </app-dialog>
 }
 
-<!-- ══════════════════════════════════════════════════════════════════════════ -->
-<!-- Shared template: read-only stage table                                     -->
-<!-- ══════════════════════════════════════════════════════════════════════════ -->
 <ng-template #stageReadTable let-batch="batch">
   <div class="batch-schedule-heading">
     <h4>Stage schedule</h4>
-    <p class="form-hint">All dates and times are in Malaysia time (MYT, UTC+8). Stage windows may overlap.</p>
+    <p class="form-hint">
+      All dates and times are in Malaysia time (MYT, UTC+8). Stage windows may overlap.
+    </p>
   </div>
-  <app-data-table [columns]="stageColumns" [rows]="stageMeta">
+  <app-data-table [dense]="true" [embedded]="true" [columns]="stageColumns" [rows]="stageMeta">
     <ng-template #rowTemplate let-stage
       ><tr>
         <td>
@@ -560,13 +545,8 @@
   </app-data-table>
 </ng-template>
 
-<!-- ══════════════════════════════════════════════════════════════════════════ -->
-<!-- Shared template: reactive edit form                                         -->
-<!--   Context: { form: FormGroup, minStart: string, type: 'active'|'planned' } -->
-<!-- ══════════════════════════════════════════════════════════════════════════ -->
 <ng-template #editFormTpl let-form="form" let-minStart="minStart" let-type="type" let-isNew="isNew">
   <div class="batch-form" [formGroup]="form">
-    <!-- ── Global Batch Window ───────────────────────────────────────────── -->
     <div class="form-section">
       <h4 class="form-section__title">
         <span class="material-icons">date_range</span>
@@ -577,10 +557,10 @@
       </p>
 
       <div class="global-grid">
-        <!-- Batch Name -->
-        <div class="form-field">
-          <label class="form-label is-required">Batch Name</label>
+        <app-field [label]="'Batch Name'" [controlId]="'batch-' + type + '-name'">
           <input
+            appInput
+            [id]="'batch-' + type + '-name'"
             type="text"
             class="input--text"
             formControlName="batchName"
@@ -593,12 +573,15 @@
               >A batch with this name already exists. Choose a different name.</span
             >
           }
-        </div>
+        </app-field>
 
-        <!-- Start Date -->
-        <div class="form-field">
-          <label class="form-label is-required">Start Date &amp; Time</label>
+        <app-field
+          label="Start Date & Time"
+          [controlId]="'batch-' + type + '-start'"
+          [required]="true"
+        >
           <app-date-picker
+            [id]="'batch-' + type + '-start'"
             formControlName="startDate"
             [includeTime]="true"
             placeholder="Select date and time"
@@ -609,12 +592,11 @@
           @if (type === 'planned' && hasPlannedStartTooSoon(form)) {
             <span class="field-error">Start date and time cannot be in the past.</span>
           }
-        </div>
+        </app-field>
 
-        <!-- End Date -->
-        <div class="form-field">
-          <label class="form-label is-required">End Date &amp; Time</label>
+        <app-field label="End Date & Time" [controlId]="'batch-' + type + '-end'" [required]="true">
           <app-date-picker
+            [id]="'batch-' + type + '-end'"
             formControlName="endDate"
             [includeTime]="true"
             placeholder="Select date and time"
@@ -635,11 +617,10 @@
               >Leave at least a 1-day gap between this batch and the next/previous one.</span
             >
           }
-        </div>
+        </app-field>
       </div>
     </div>
 
-    <!-- ── Workflow Stage Windows ────────────────────────────────────────── -->
     <div class="form-section">
       <h4 class="form-section__title">
         <span class="material-icons">account_tree</span>
@@ -666,7 +647,12 @@
       }
 
       <div formGroupName="stages">
-        <app-data-table [columns]="stageColumns" [rows]="stageMeta">
+        <app-data-table
+          [dense]="true"
+          [embedded]="true"
+          [columns]="stageColumns"
+          [rows]="stageMeta"
+        >
           <ng-template #rowTemplate let-stage
             ><tr [formGroupName]="stage.key" [class.row--disabled]="!stagesEnabled(form)">
               <td>
@@ -713,7 +699,6 @@
       </div>
     </div>
 
-    <!-- ── Form Actions ───────────────────────────────────────────────────── -->
     <div class="form-actions">
       <app-action-button
         type="secondary"

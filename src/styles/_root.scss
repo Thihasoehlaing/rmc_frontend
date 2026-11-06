@@ -148,6 +148,7 @@
     --color-surface-nested: #{colors.$surface-nested}; // Inner nested section background (inside a card)
 
     // Overlay
+    --color-dialog-backdrop: rgba(15, 23, 42, 0.42); // Shared dialog backdrop
     --color-overlay: rgba(0, 0, 0, 0.6); // Modal backdrop overlay
 
     // Inputs
@@ -284,6 +285,7 @@
     --size-review-score-width: 6.25rem;
     --size-approval-option-min-width: 6.875rem;
     --size-score-summary-min-width: 13.75rem;
+    --size-dialog-small: 32rem;
     --size-dialog-medium: 47.5rem;
     --size-dialog-large: 56.25rem;
     --size-overlay-card: 27.5rem;

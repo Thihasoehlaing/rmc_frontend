@@ -1,18 +1,17 @@
-<main class="forms-page forms-page--settings workflow-page monitoring-page">
-  <header class="forms-page__header">
-    <div>
-      <span class="forms-page__eyebrow">System Settings</span>
-      <h1>Monitoring Logs</h1>
-      <p>Review production-safe operational logs without direct database access.</p>
-    </div>
-  </header>
+<main class="settings-page workflow-page monitoring-page">
+  <app-settings-page-header
+    [title]="'Monitoring Logs'"
+    [description]="'Review production-safe operational logs without direct database access.'"
+    icon="monitor_heart"
+  >
+  </app-settings-page-header>
 
-  <nav class="workflow-tabs" aria-label="Monitoring tabs">
+  <nav class="settings-tabs" aria-label="Monitoring tabs">
     @for (tab of tabs; track tab.key) {
       <button
         type="button"
-        class="workflow-tab"
-        [class.workflow-tab--active]="tab.key === activeTab()"
+        class="settings-tab"
+        [class.settings-tab--active]="tab.key === activeTab()"
         (click)="setTab(tab.key)"
       >
         {{ tab.label }}
@@ -21,16 +20,7 @@
   </nav>
 
   @if (activeTab() === 'dingdong') {
-    <section class="forms-table-card dingdong-test-card">
-      <header class="forms-table-card__header">
-        <div>
-          <div class="forms-table-card__title-row">
-            <h2>DingDong Test Mail</h2>
-          </div>
-          <p>Test production DingDong mail delivery. Recipient is fixed by backend.</p>
-        </div>
-      </header>
-
+    <app-settings-panel [title]="'DingDong Test Mail'" [flush]="false">
       <div class="dingdong-test-recipient">
         <span class="material-icons" aria-hidden="true">lock</span>
         <div>
@@ -40,10 +30,10 @@
       </div>
 
       <div class="dingdong-test-form">
-        <label class="forms-filter dingdong-title-field">
-          <span>Title</span>
+        <app-field [label]="'Title'" controlId="monitoring-field-4">
           <input
-            class="input--text"
+            appInput
+            id="monitoring-field-4"
             type="text"
             placeholder="DingDong test title"
             maxlength="500"
@@ -51,7 +41,7 @@
             (ngModelChange)="dingDongTitle.set($event)"
             [disabled]="isSendingDingDong()"
           />
-        </label>
+        </app-field>
 
         <app-text-editor
           label="Message"
@@ -65,33 +55,33 @@
         ></app-text-editor>
 
         <div class="dingdong-test-actions">
-          <button
-            class="btn btn-primary"
-            type="button"
-            (click)="sendDingDongTestMail()"
+          <app-action-button
+            [label]="isSendingDingDong() ? 'Sending...' : 'Send Test Mail'"
+            type="primary"
+            size="small"
+            [icon]="'outgoing_mail'"
             [disabled]="isSendingDingDong()"
-          >
-            <span class="material-icons">outgoing_mail</span>
-            {{ isSendingDingDong() ? 'Sending...' : 'Send Test Mail' }}
-          </button>
-          <button
-            class="btn btn-secondary"
-            type="button"
-            (click)="resetDingDongTest()"
+            (clicked)="sendDingDongTestMail()"
+            [loading]="isSendingDingDong()"
+            loadingLabel="Sending…"
+          />
+          <app-action-button
+            [label]="'Reset'"
+            type="secondary"
+            size="small"
+            [icon]="'restart_alt'"
             [disabled]="isSendingDingDong()"
-          >
-            <span class="material-icons">restart_alt</span>
-            Reset
-          </button>
+            (clicked)="resetDingDongTest()"
+          />
         </div>
       </div>
 
       @if (dingDongResult()) {
         <div class="dingdong-result-card">
           <div>
-            <span [class]="statusBadgeClass(dingDongResult()?.mail_status)">
+            <app-status-badge [intent]="statusIntent(dingDongResult()?.mail_status)">
               {{ dingDongResult()?.mail_status }}
-            </span>
+            </app-status-badge>
             <h3>Latest test result</h3>
             <p>Recipient: {{ dingDongResult()?.recipient }}</p>
           </div>
@@ -116,275 +106,298 @@
           </dl>
         </div>
       }
-    </section>
+    </app-settings-panel>
   } @else {
-  <section class="forms-toolbar workflow-toolbar monitoring-toolbar" aria-label="Monitoring filters">
-    <h2 class="forms-toolbar__title">Search &amp; Filters</h2>
-
-    <label class="forms-filter forms-filter--search">
-      <span class="forms-search-input">
-        <span class="material-icons" aria-hidden="true">search</span>
-        <input
-          class="input--text"
-          type="search"
-          placeholder="Search {{ activeTabConfig.label.toLowerCase() }}"
-          [ngModel]="searchTerm()"
-          (ngModelChange)="searchTerm.set($event)"
-          (keydown.enter)="search()"
+    <app-search-toolbar
+      [query]="searchTerm()"
+      (queryChange)="searchTerm.set($event)"
+      [disabled]="isLoading()"
+      [placeholder]="'Search ' + activeTabConfig.label.toLowerCase()"
+      [label]="'Search ' + activeTabConfig.label.toLowerCase()"
+      (search)="search()"
+      (reset)="resetFilters()"
+    >
+      <div class="settings-filter">
+        <app-dropdown
+          [label]="'Status'"
+          [options]="monitoringStatusOptions()"
+          [ngModel]="selectedStatus()"
+          (ngModelChange)="selectedStatus.set($event)"
           [disabled]="isLoading()"
         />
-      </span>
-    </label>
+      </div>
 
-    <label class="forms-filter">
-      <span>Status</span>
-      <select
-        class="input--select"
-        [ngModel]="selectedStatus()"
-        (ngModelChange)="selectedStatus.set($event)"
-        [disabled]="isLoading()"
-      >
-        <option value="">All</option>
-        @if (activeTab() === 'mail-logs' || activeTab() === 'notification-logs') {
-          <option value="PENDING">Pending</option>
-          <option value="SENT">Sent</option>
-          <option value="FAILED">Failed</option>
-          <option value="SKIPPED">Skipped</option>
-        } @else {
-          <option value="SUCCESS">Success</option>
-          <option value="FAILED">Failed</option>
-          <option value="RUNNING">Running</option>
-        }
-      </select>
-    </label>
+      @if (activeTab() === 'mail-logs' || activeTab() === 'notification-logs') {
+        <app-field [label]="'Request Code'" controlId="monitoring-field-3">
+          <input
+            appInput
+            id="monitoring-field-3"
+            type="search"
+            placeholder="e.g. JOUR-260001"
+            [ngModel]="requestCode()"
+            (ngModelChange)="requestCode.set($event)"
+            [disabled]="isLoading()"
+          />
+        </app-field>
+      } @else {
+        <app-field [label]="'Sync Source'" controlId="monitoring-field-2">
+          <input
+            appInput
+            id="monitoring-field-2"
+            type="search"
+            placeholder="e.g. APSPACE"
+            [ngModel]="syncSource()"
+            (ngModelChange)="syncSource.set($event)"
+            [disabled]="isLoading()"
+          />
+        </app-field>
 
-    @if (activeTab() === 'mail-logs' || activeTab() === 'notification-logs') {
-      <label class="forms-filter">
-        <span>Request Code</span>
-        <input
-          class="input--text"
-          type="search"
-          placeholder="e.g. JOUR-260001"
-          [ngModel]="requestCode()"
-          (ngModelChange)="requestCode.set($event)"
-          (keydown.enter)="search()"
-          [disabled]="isLoading()"
-        />
-      </label>
-    } @else {
-      <label class="forms-filter">
-        <span>Sync Source</span>
-        <input
-          class="input--text"
-          type="search"
-          placeholder="e.g. APSPACE"
-          [ngModel]="syncSource()"
-          (ngModelChange)="syncSource.set($event)"
-          (keydown.enter)="search()"
-          [disabled]="isLoading()"
-        />
-      </label>
-
-      <label class="forms-filter">
-        <span>Triggered By</span>
-        <input
-          class="input--text"
-          type="search"
-          placeholder="Username"
-          [ngModel]="triggeredBy()"
-          (ngModelChange)="triggeredBy.set($event)"
-          (keydown.enter)="search()"
-          [disabled]="isLoading()"
-        />
-      </label>
-    }
-
-    <label class="forms-filter">
-      <span>Date From</span>
-      <input
-        class="input--text"
-        type="date"
-        [ngModel]="dateFrom()"
-        (ngModelChange)="dateFrom.set($event)"
-        [disabled]="isLoading()"
-      />
-    </label>
-
-    <label class="forms-filter">
-      <span>Date To</span>
-      <input
-        class="input--text"
-        type="date"
-        [ngModel]="dateTo()"
-        (ngModelChange)="dateTo.set($event)"
-        [disabled]="isLoading()"
-      />
-    </label>
-
-    <div class="forms-toolbar__actions">
-      <button class="btn btn-primary" type="button" (click)="search()" [disabled]="isLoading()">
-        <span class="material-icons">search</span>
-        Search
-      </button>
-      <button class="btn btn-secondary" type="button" (click)="resetFilters()" [disabled]="isLoading()">
-        <span class="material-icons">restart_alt</span>
-        Reset
-      </button>
-      @if (activeTab() === 'notification-logs') {
-        <button
-          class="btn btn-secondary"
-          type="button"
-          (click)="checkAndCreateNotifications()"
-          [disabled]="isLoading() || isCheckingNotifications()"
-        >
-          <span class="material-icons">notification_add</span>
-          {{ isCheckingNotifications() ? 'Checking...' : 'Check & Create Notification' }}
-        </button>
+        <app-field [label]="'Triggered By'" controlId="monitoring-field-1">
+          <input
+            appInput
+            id="monitoring-field-1"
+            type="search"
+            placeholder="Username"
+            [ngModel]="triggeredBy()"
+            (ngModelChange)="triggeredBy.set($event)"
+            [disabled]="isLoading()"
+          />
+        </app-field>
       }
-    </div>
-  </section>
 
-  <section class="forms-table-card">
-    <header class="forms-table-card__header">
-      <div>
-        <div class="forms-table-card__title-row">
-          <h2>{{ activeTabConfig.title }}</h2>
-          <span class="forms-table-card__count">{{ totalItems() }}</span>
+      <app-field label="Date From" controlId="monitoring-date-from">
+        <app-date-picker
+          id="monitoring-date-from"
+          ariaLabel="Date From"
+          placeholder="Select date"
+          [ngModel]="dateFrom()"
+          (ngModelChange)="dateFrom.set($event || '')"
+          [disabled]="isLoading()"
+        />
+      </app-field>
+
+      <app-field label="Date To" controlId="monitoring-date-to">
+        <app-date-picker
+          id="monitoring-date-to"
+          ariaLabel="Date To"
+          placeholder="Select date"
+          [ngModel]="dateTo()"
+          (ngModelChange)="dateTo.set($event || '')"
+          [disabled]="isLoading()"
+        />
+      </app-field>
+
+      <div toolbarActions class="settings-actions">
+        @if (activeTab() === 'notification-logs') {
+          <app-action-button
+            [label]="isCheckingNotifications() ? 'Checking...' : 'Check &amp; Create Notification'"
+            type="secondary"
+            size="small"
+            [icon]="'notification_add'"
+            [disabled]="isLoading() || isCheckingNotifications()"
+            (clicked)="checkAndCreateNotifications()"
+            [loading]="isCheckingNotifications()"
+            loadingLabel="Saving…"
+          />
+        }</div
+    ></app-search-toolbar>
+
+    <app-settings-panel [title]="activeTabConfig.title" [count]="totalItems()" [flush]="true"
+      ><app-action-button
+        panelActions
+        panelActions
+        [label]="'Refresh'"
+        type="secondary"
+        size="small"
+        [icon]="'refresh'"
+        [disabled]="isLoading()"
+        (clicked)="loadRows()"
+      />
+
+      @if (isLoading()) {
+        <app-state title="Loading monitoring logs" icon="hourglass_empty" />
+      } @else if (loadFailed()) {
+        <app-state
+          [title]="'Unable to load ' + activeTabConfig.label.toLowerCase()"
+          [description]="'Check the API connection and try again.'"
+          [icon]="'cloud_off'"
+          [error]="true"
+          ><app-action-button
+            [label]="'Try Again'"
+            type="primary"
+            size="small"
+            (clicked)="loadRows()"
+        /></app-state>
+      } @else if (rows().length === 0) {
+        <app-state
+          [title]="'No ' + activeTabConfig.label.toLowerCase() + ' found'"
+          [description]="'Adjust the filters.'"
+          [icon]="activeTabConfig.emptyIcon"
+        ></app-state>
+      } @else {
+        <app-data-table
+          [dense]="true"
+          [embedded]="true"
+          [columns]="activeColumns()"
+          [rows]="rows()"
+          [rowTrackFn]="rowTrackFn"
+        >
+          <ng-template #rowTemplate let-row let-index="index">
+            @if (activeTab() === 'mail-logs') {
+              <tr>
+                <td class="is-align-center">{{ rowNumber(index) }}</td>
+                <td>
+                  <app-status-badge [intent]="'info'">{{
+                    mailRow(row).request_code || '-'
+                  }}</app-status-badge>
+                  <small class="monitoring-subtext">{{ mailRow(row).form_code || '-' }}</small>
+                </td>
+                <td>
+                  <span class="settings-cell">{{
+                    mailRow(row).recipient_name || mailRow(row).recipient_username || '-'
+                  }}</span>
+                  <small class="monitoring-subtext">{{
+                    mailRow(row).recipient_email || '-'
+                  }}</small>
+                </td>
+                <td class="is-align-center">
+                  <app-status-badge [intent]="statusIntent(mailRow(row).mail_status)">{{
+                    mailRow(row).mail_status
+                  }}</app-status-badge>
+                </td>
+                <td class="is-align-center">{{ mailRow(row).dingdong_status_code || '-' }}</td>
+                <td>{{ formatTableDate(mailRow(row).created_at) }}</td>
+                <td>{{ formatTableDate(mailRow(row).sent_at) }}</td>
+                <td>
+                  <span class="settings-cell">{{ mailRow(row).error_message || '-' }}</span>
+                </td>
+                <td class="is-align-center">
+                  <app-action-button
+                    [label]="resendButtonLabel(mailRow(row))"
+                    type="secondary"
+                    size="small"
+                    [icon]="'outgoing_mail'"
+                    [disabled]="!canResendMail(mailRow(row)) || !!resendingRecipientId()"
+                    (clicked)="resendMail(mailRow(row))"
+                  />
+                </td>
+              </tr>
+            } @else if (activeTab() === 'notification-logs') {
+              <tr>
+                <td class="is-align-center">{{ rowNumber(index) }}</td>
+                <td>
+                  <app-status-badge [intent]="'info'">{{
+                    notificationRow(row).request_code || '-'
+                  }}</app-status-badge>
+                  <small class="monitoring-subtext">{{
+                    notificationRow(row).form_code || '-'
+                  }}</small>
+                </td>
+                <td>
+                  <span class="settings-cell">{{ notificationRow(row).event_type || '-' }}</span>
+                  <small class="monitoring-subtext">{{
+                    notificationRow(row).template_code || '-'
+                  }}</small>
+                </td>
+                <td>
+                  <span class="settings-cell">{{
+                    notificationRow(row).recipient_name ||
+                      notificationRow(row).recipient_username ||
+                      '-'
+                  }}</span>
+                  <small class="monitoring-subtext">{{
+                    notificationRow(row).recipient_email ||
+                      notificationRow(row).recipient_type ||
+                      '-'
+                  }}</small>
+                </td>
+                <td class="is-align-center">
+                  <app-status-badge [intent]="statusIntent(notificationRow(row).mail_status)">{{
+                    notificationRow(row).mail_status || '-'
+                  }}</app-status-badge>
+                </td>
+                <td>
+                  <span class="settings-cell">
+                    {{ notificationRow(row).from_status_code || '-' }} →
+                    {{ notificationRow(row).to_status_code || '-' }}
+                  </span>
+                  <small class="monitoring-subtext">{{
+                    notificationRow(row).action_code || '-'
+                  }}</small>
+                </td>
+                <td>
+                  <span class="settings-cell">{{
+                    notificationRow(row).created_by_name ||
+                      notificationRow(row).created_by_username ||
+                      '-'
+                  }}</span>
+                </td>
+                <td>{{ formatTableDate(notificationRow(row).created_at) }}</td>
+                <td>
+                  <span class="settings-cell">{{
+                    notificationRow(row).message || notificationRow(row).title || '-'
+                  }}</span>
+                </td>
+                <td class="is-align-center">
+                  <app-action-button
+                    [label]="resendButtonLabel(notificationRow(row))"
+                    type="secondary"
+                    size="small"
+                    [icon]="'outgoing_mail'"
+                    [disabled]="!canResendMail(notificationRow(row)) || !!resendingRecipientId()"
+                    (clicked)="resendMail(notificationRow(row))"
+                  />
+                </td>
+              </tr>
+            } @else {
+              <tr>
+                <td class="is-align-center">{{ rowNumber(index) }}</td>
+                <td>
+                  <app-status-badge [intent]="'info'">{{
+                    staffRow(row).sync_source
+                  }}</app-status-badge>
+                </td>
+                <td class="is-align-center">
+                  <app-status-badge [intent]="statusIntent(staffRow(row).sync_status)">{{
+                    staffRow(row).sync_status
+                  }}</app-status-badge>
+                </td>
+                <td>
+                  <span class="monitoring-counts">
+                    Total {{ staffRow(row).total_records }} · Created
+                    {{ staffRow(row).created_count }} · Updated {{ staffRow(row).updated_count }} ·
+                    Failed {{ staffRow(row).failed_count }}
+                  </span>
+                </td>
+                <td>
+                  <span class="settings-cell">{{ staffRow(row).triggered_by || '-' }}</span>
+                </td>
+                <td>{{ formatTableDate(staffRow(row).started_at) }}</td>
+                <td>{{ formatTableDate(staffRow(row).completed_at) }}</td>
+                <td>
+                  <span class="settings-cell">{{ staffRow(row).error_message || '-' }}</span>
+                </td>
+              </tr>
+            }
+          </ng-template>
+        </app-data-table>
+      }
+
+      @if (!isLoading() && !loadFailed()) {
+        <div panelFooter>
+          <app-pagination
+            [currentPage]="page()"
+            [totalPages]="totalPages()"
+            [pageSize]="pageSize()"
+            [pageSizeOptions]="pageSizeOptions"
+            [totalItems]="totalItems()"
+            [itemCount]="rows().length"
+            itemLabel="logs"
+            (pageChange)="onPageChange($event)"
+            (pageSizeChange)="onPageSizeChange($event)"
+          ></app-pagination>
         </div>
-        <p>{{ activeTabConfig.description }}</p>
-      </div>
-      <button class="btn btn-secondary forms-table-card__refresh" type="button" (click)="loadRows()" [disabled]="isLoading()">
-        <span class="material-icons">refresh</span>
-        Refresh
-      </button>
-    </header>
-
-    @if (isLoading()) {
-      <app-table-skeleton [columns]="activeColumns()" [showSearch]="false" loadingLabel="Loading monitoring logs"></app-table-skeleton>
-    } @else if (loadFailed()) {
-      <div class="forms-state">
-        <span class="material-icons">cloud_off</span>
-        <h2>Unable to load {{ activeTabConfig.label.toLowerCase() }}</h2>
-        <p>Check the API connection and try again.</p>
-        <button class="btn btn-primary" type="button" (click)="loadRows()">Try Again</button>
-      </div>
-    } @else if (rows().length === 0) {
-      <div class="forms-state">
-        <span class="material-icons">{{ activeTabConfig.emptyIcon }}</span>
-        <h2>No {{ activeTabConfig.label.toLowerCase() }} found</h2>
-        <p>Adjust the filters.</p>
-      </div>
-    } @else {
-      <app-data-table [columns]="activeColumns()" [rows]="rows()" [rowTrackFn]="rowTrackFn">
-        <ng-template #rowTemplate let-row let-index="index">
-          @if (activeTab() === 'mail-logs') {
-            <tr>
-              <td class="is-align-center">{{ rowNumber(index) }}</td>
-              <td>
-                <span class="form-code">{{ mailRow(row).request_code || '-' }}</span>
-                <small class="monitoring-subtext">{{ mailRow(row).form_code || '-' }}</small>
-              </td>
-              <td>
-                <span class="workflow-cell">{{ mailRow(row).recipient_name || mailRow(row).recipient_username || '-' }}</span>
-                <small class="monitoring-subtext">{{ mailRow(row).recipient_email || '-' }}</small>
-              </td>
-              <td class="is-align-center">
-                <span [class]="statusBadgeClass(mailRow(row).mail_status)">{{ mailRow(row).mail_status }}</span>
-              </td>
-              <td class="is-align-center">{{ mailRow(row).dingdong_status_code || '-' }}</td>
-              <td>{{ formatTableDate(mailRow(row).created_at) }}</td>
-              <td>{{ formatTableDate(mailRow(row).sent_at) }}</td>
-              <td><span class="workflow-cell">{{ mailRow(row).error_message || '-' }}</span></td>
-              <td class="is-align-center">
-                <button
-                  class="btn btn-secondary monitoring-action-btn"
-                  type="button"
-                  (click)="resendMail(mailRow(row))"
-                  [disabled]="!canResendMail(mailRow(row)) || !!resendingRecipientId()"
-                >
-                  <span class="material-icons">outgoing_mail</span>
-                  {{ resendButtonLabel(mailRow(row)) }}
-                </button>
-              </td>
-            </tr>
-          } @else if (activeTab() === 'notification-logs') {
-            <tr>
-              <td class="is-align-center">{{ rowNumber(index) }}</td>
-              <td>
-                <span class="form-code">{{ notificationRow(row).request_code || '-' }}</span>
-                <small class="monitoring-subtext">{{ notificationRow(row).form_code || '-' }}</small>
-              </td>
-              <td>
-                <span class="workflow-cell">{{ notificationRow(row).event_type || '-' }}</span>
-                <small class="monitoring-subtext">{{ notificationRow(row).template_code || '-' }}</small>
-              </td>
-              <td>
-                <span class="workflow-cell">{{ notificationRow(row).recipient_name || notificationRow(row).recipient_username || '-' }}</span>
-                <small class="monitoring-subtext">{{ notificationRow(row).recipient_email || notificationRow(row).recipient_type || '-' }}</small>
-              </td>
-              <td class="is-align-center">
-                <span [class]="statusBadgeClass(notificationRow(row).mail_status)">{{ notificationRow(row).mail_status || '-' }}</span>
-              </td>
-              <td>
-                <span class="workflow-cell">
-                  {{ notificationRow(row).from_status_code || '-' }} → {{ notificationRow(row).to_status_code || '-' }}
-                </span>
-                <small class="monitoring-subtext">{{ notificationRow(row).action_code || '-' }}</small>
-              </td>
-              <td>
-                <span class="workflow-cell">{{ notificationRow(row).created_by_name || notificationRow(row).created_by_username || '-' }}</span>
-              </td>
-              <td>{{ formatTableDate(notificationRow(row).created_at) }}</td>
-              <td><span class="workflow-cell">{{ notificationRow(row).message || notificationRow(row).title || '-' }}</span></td>
-              <td class="is-align-center">
-                <button
-                  class="btn btn-secondary monitoring-action-btn"
-                  type="button"
-                  (click)="resendMail(notificationRow(row))"
-                  [disabled]="!canResendMail(notificationRow(row)) || !!resendingRecipientId()"
-                >
-                  <span class="material-icons">outgoing_mail</span>
-                  {{ resendButtonLabel(notificationRow(row)) }}
-                </button>
-              </td>
-            </tr>
-          } @else {
-            <tr>
-              <td class="is-align-center">{{ rowNumber(index) }}</td>
-              <td><span class="form-code">{{ staffRow(row).sync_source }}</span></td>
-              <td class="is-align-center">
-                <span [class]="statusBadgeClass(staffRow(row).sync_status)">{{ staffRow(row).sync_status }}</span>
-              </td>
-              <td>
-                <span class="monitoring-counts">
-                  Total {{ staffRow(row).total_records }} · Created {{ staffRow(row).created_count }} · Updated {{ staffRow(row).updated_count }} · Failed {{ staffRow(row).failed_count }}
-                </span>
-              </td>
-              <td><span class="workflow-cell">{{ staffRow(row).triggered_by || '-' }}</span></td>
-              <td>{{ formatTableDate(staffRow(row).started_at) }}</td>
-              <td>{{ formatTableDate(staffRow(row).completed_at) }}</td>
-              <td><span class="workflow-cell">{{ staffRow(row).error_message || '-' }}</span></td>
-            </tr>
-          }
-        </ng-template>
-      </app-data-table>
-    }
-
-    @if (!isLoading() && !loadFailed()) {
-      <footer class="forms-table-card__footer">
-        <app-pagination
-          [currentPage]="page()"
-          [totalPages]="totalPages()"
-          [pageSize]="pageSize()"
-          [pageSizeOptions]="pageSizeOptions"
-          [totalItems]="totalItems()"
-          [itemCount]="rows().length"
-          itemLabel="logs"
-          (pageChange)="onPageChange($event)"
-          (pageSizeChange)="onPageSizeChange($event)"
-        ></app-pagination>
-      </footer>
-    }
-  </section>
+      }
+    </app-settings-panel>
   }
 </main>

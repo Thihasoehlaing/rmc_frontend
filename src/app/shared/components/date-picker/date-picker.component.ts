@@ -24,6 +24,7 @@ interface CalendarDay {
 
 @Component({
   selector: 'app-date-picker',
+  host: { '[attr.id]': 'null' },
   standalone: true,
   imports: [CommonModule, OverlayModule],
   templateUrl: './date-picker.component.html',

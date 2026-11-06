@@ -1,0 +1,294 @@
+<main class="groups-page">
+  <app-settings-page-header
+    title="Groups"
+    icon="groups"
+    description="Manage the people behind workflow approvals and notifications."
+  >
+    <app-action-button
+      label="Create group"
+      icon="add"
+      size="small"
+      [disabled]="isLoading()"
+      (clicked)="openCreateDialog()"
+    />
+  </app-settings-page-header>
+
+  <app-search-toolbar
+    label="Search groups by code or name"
+    placeholder="Search groups by code or name…"
+    [query]="searchTerm()"
+    (queryChange)="searchTerm.set($event)"
+    [disabled]="isLoading()"
+    (search)="search()"
+    (reset)="resetFilters()"
+  />
+
+  <app-settings-panel title="Group directory" [count]="totalItems()" [flush]="true">
+    <app-action-button
+      panelActions
+      label="Refresh"
+      icon="refresh"
+      type="ghost"
+      size="small"
+      [disabled]="isLoading()"
+      (clicked)="loadGroups()"
+    />
+    @if (isLoading()) {
+      <app-state title="Loading groups…" icon="groups" />
+    } @else if (loadFailed()) {
+      <app-state
+        title="Unable to load groups"
+        description="Check the connection and try again."
+        icon="cloud_off"
+        [error]="true"
+      >
+        <app-action-button label="Try again" size="small" (clicked)="loadGroups()" />
+      </app-state>
+    } @else if (groups().length === 0) {
+      <app-state
+        title="No groups found"
+        description="Try another search or create a group to get started."
+        icon="group_add"
+      >
+        <app-action-button
+          label="Create group"
+          icon="add"
+          size="small"
+          (clicked)="openCreateDialog()"
+        />
+      </app-state>
+    } @else {
+      <app-data-table
+        [columns]="columns"
+        [rows]="groups()"
+        [rowTrackFn]="rowTrackFn"
+        [dense]="true"
+        [embedded]="true"
+      >
+        <ng-template #rowTemplate let-row let-index="index">
+          <tr>
+            <td class="is-align-center">{{ rowNumber(index) }}</td>
+            <td>
+              <app-status-badge>{{ row.group_code }}</app-status-badge>
+            </td>
+            <td>
+              <strong>{{ row.group_name }}</strong>
+            </td>
+            <td class="is-align-center">
+              <app-status-badge>{{ row.user_count || 0 }}</app-status-badge>
+            </td>
+            <td class="is-align-center">
+              <div class="group-actions">
+                <app-action-button
+                  label="Edit group"
+                  icon="edit"
+                  type="ghost"
+                  size="small"
+                  [iconOnly]="true"
+                  (clicked)="openEditDialog(row)"
+                />
+                <app-action-button
+                  label="Delete group"
+                  icon="delete_outline"
+                  type="ghost"
+                  size="small"
+                  [iconOnly]="true"
+                  [title]="row.restriction_reason || 'Delete group'"
+                  [disabled]="!row.can_delete"
+                  (clicked)="openDeleteDialog(row)"
+                />
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+      </app-data-table>
+    }
+    @if (!isLoading() && !loadFailed()) {
+      <app-pagination
+        panelFooter
+        [currentPage]="page()"
+        [totalPages]="totalPages()"
+        [pageSize]="pageSize()"
+        [pageSizeOptions]="pageSizeOptions"
+        [totalItems]="totalItems()"
+        [itemCount]="groups().length"
+        itemLabel="groups"
+        (pageChange)="onPageChange($event)"
+        (pageSizeChange)="onPageSizeChange($event)"
+      />
+    }
+  </app-settings-panel>
+
+  <app-dialog
+    [isOpen]="dialogMode() !== null"
+    [title]="dialogTitle()"
+    description="Set the group identity and choose its staff members."
+    size="small"
+    density="compact"
+    [closeDisabled]="isSaving()"
+    (close)="closeEditor()"
+  >
+    @if (isDetailLoading()) {
+      <p class="form-hint" role="status">Loading group details…</p>
+    } @else if (detailFailed()) {
+      <app-state title="Unable to load this group" icon="error_outline" [error]="true">
+        <app-action-button
+          label="Try again"
+          type="secondary"
+          size="small"
+          (clicked)="retryDetail()"
+        />
+      </app-state>
+    } @else {
+      <form id="group-editor-form" class="group-editor" (ngSubmit)="saveGroup()">
+        <app-field
+          label="Group code"
+          controlId="group-code"
+          [required]="true"
+          [error]="
+            codeTouched() && !validCode()
+              ? 'Start with a letter; use only letters, numbers and underscores.'
+              : ''
+          "
+          [hint]="
+            selectedGroup()?.restriction_reason || 'A unique code, for example RESEARCH_COMMITTEE.'
+          "
+        >
+          <input
+            appInput
+            id="group-code"
+            name="groupCode"
+            type="text"
+            maxlength="100"
+            required
+            autocomplete="off"
+            placeholder="RESEARCH_COMMITTEE"
+            aria-describedby="group-code-hint group-code-error"
+            [invalid]="codeTouched() && !validCode()"
+            [disabled]="selectedGroup()?.code_locked || isSaving()"
+            [ngModel]="groupCode()"
+            (ngModelChange)="groupCode.set($event)"
+            (blur)="codeTouched.set(true)"
+          />
+        </app-field>
+        <app-field
+          label="Group name"
+          controlId="group-name"
+          [required]="true"
+          [error]="nameTouched() && !groupName().trim() ? 'Enter a group name.' : ''"
+        >
+          <input
+            appInput
+            id="group-name"
+            name="groupName"
+            type="text"
+            maxlength="255"
+            required
+            placeholder="Enter group name"
+            autocomplete="off"
+            aria-describedby="group-name-error"
+            [invalid]="nameTouched() && !groupName().trim()"
+            [disabled]="isSaving()"
+            [ngModel]="groupName()"
+            (ngModelChange)="onNameChange($event)"
+            (blur)="nameTouched.set(true)"
+          />
+        </app-field>
+        <div class="group-members">
+          <app-searchable-dropdown
+            label="Staff members"
+            name="staffIds"
+            placeholder="Search and select staff…"
+            [options]="staffDropdownOptions()"
+            [isMulti]="true"
+            [loading]="staffOptionsLoading()"
+            [disabled]="isSaving()"
+            [ngModel]="selectedStaffIds()"
+            (ngModelChange)="selectedStaffIds.set($event || [])"
+          />
+          <p class="form-hint">
+            Select staff members. Remove a selection to remove its membership.
+          </p>
+          <app-selection-summary [items]="selectedStaff()" />
+          @if (staffLoadFailed()) {
+            <p class="form-error-msg" role="alert">Unable to load staff options.</p>
+            <app-action-button
+              label="Retry staff options"
+              type="secondary"
+              size="small"
+              (clicked)="loadStaffOptions()"
+            />
+          }
+          @if (historicalMembers().length) {
+            <p class="form-hint">Accounts without a directory staff link are retained:</p>
+            <ul>
+              @for (member of historicalMembers(); track member.user_id) {
+                <li>{{ member.fullname }} ({{ member.username }})</li>
+              }
+            </ul>
+          }
+        </div>
+      </form>
+    }
+    <div dialog-footer class="group-dialog-actions">
+      <app-action-button
+        label="Cancel"
+        type="secondary"
+        size="small"
+        [disabled]="isSaving()"
+        (clicked)="closeEditor()"
+      />
+      @if (!isDetailLoading() && !detailFailed()) {
+        <app-action-button
+          [label]="dialogMode() === 'create' ? 'Create group' : 'Save changes'"
+          buttonType="submit"
+          formId="group-editor-form"
+          size="small"
+          [loading]="isSaving()"
+          loadingLabel="Saving…"
+          [disabled]="
+            staffOptionsLoading() || staffLoadFailed() || !validCode() || !groupName().trim()
+          "
+        />
+      }
+    </div>
+  </app-dialog>
+
+  <app-dialog
+    [isOpen]="groupToDelete() !== null"
+    title="Delete group"
+    density="compact"
+    size="small"
+    [closeDisabled]="isSaving()"
+    (close)="closeDeleteDialog()"
+  >
+    @if (groupToDelete(); as group) {
+      <p>
+        <strong>{{ group.group_name }}</strong> ({{ group.group_code }}) will be permanently
+        deleted.
+      </p>
+      <p class="form-hint">
+        Groups with members or workflow assignments cannot be deleted. Built-in groups are
+        protected.
+      </p>
+    }
+    <div dialog-footer class="group-dialog-actions">
+      <app-action-button
+        label="Cancel"
+        type="secondary"
+        size="small"
+        [disabled]="isSaving()"
+        (clicked)="closeDeleteDialog()"
+      />
+      <app-action-button
+        label="Delete group"
+        icon="delete_outline"
+        type="danger"
+        size="small"
+        [loading]="isSaving()"
+        loadingLabel="Deleting…"
+        (clicked)="confirmDelete()"
+      />
+    </div>
+  </app-dialog>
+</main>

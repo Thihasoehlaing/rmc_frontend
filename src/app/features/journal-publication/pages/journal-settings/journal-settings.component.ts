@@ -1,3 +1,9 @@
+import { ActionButtonComponent } from '../../../../shared/components/action-button/action-button.component';
+import { SearchToolbarComponent } from '../../../../shared/components/settings-ui/settings-ui.components';
+import { SettingsPageHeaderComponent } from '../../../../shared/components/settings-ui/settings-ui.components';
+import { InputDirective } from '../../../../shared/components/settings-ui/settings-ui.components';
+import { FormsModule } from '@angular/forms';
+import { DropdownComponent } from '../../../../shared/components/dropdown/dropdown.component';
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -9,7 +15,6 @@ import {
   DataTableColumn,
   DataTableComponent,
 } from '../../../../shared/components/data-table/data-table.component';
-import { TableActionIconComponent } from '../../../../shared/components/table-action-icon/table-action-icon.component';
 import { formatDisplayDate } from '../../../../shared/utils/date-time.util';
 
 type BreakdownTypeKey = JournalOptionType;
@@ -28,8 +33,7 @@ interface ExtendedOption extends DropdownOption {
 @Component({
   selector: 'app-journal-settings',
   standalone: true,
-  imports: [
-    TableActionIconComponent,
+  imports: [ActionButtonComponent,SearchToolbarComponent,SettingsPageHeaderComponent,InputDirective,FormsModule,DropdownComponent,
     CommonModule,
     ReactiveFormsModule,
     PaginationComponent,
@@ -40,6 +44,10 @@ interface ExtendedOption extends DropdownOption {
   providers: [TableSortService],
 })
 export class JournalSettingsComponent implements OnInit {
+  standardOptions0() { return [{value: 'Active', label: 'Active'}, {value: 'Inactive', label: 'Inactive'}]; }
+  standardOptions1() { return [{value: 'date', label: 'Newest First'}, {value: 'name', label: 'Name (A-Z)'}]; }
+  standardOptions2() { return [{value: 'All', label: 'All Status'}, {value: 'Active', label: 'Active'}, {value: 'Inactive', label: 'Inactive'}]; }
+  standardOptions3() { return [{value: '', label: '--Select--', disabled: true}, ...this.breakdownTypeOptions.map(type => ({value: String(type.value), label: (type.label)}))]; }
   private JournalOptionsService = inject(JournalOptionsService);
   private fb = inject(FormBuilder);
   private tableSortService = inject(TableSortService);
@@ -180,8 +188,8 @@ export class JournalSettingsComponent implements OnInit {
   /**
    * Handle search input change
    */
-  onSearchInput(event: Event): void {
-    const target = event.target as HTMLInputElement;
+  onSearchInput(event: Event | string): void {
+    const target = typeof event === 'string' ? {value: event} : event.target as HTMLInputElement;
     this.searchQuery.set(target.value);
     this.optionsPage.set(1);
   }
@@ -189,8 +197,8 @@ export class JournalSettingsComponent implements OnInit {
   /**
    * Handle filter status change
    */
-  onFilterChange(event: Event): void {
-    const target = event.target as HTMLSelectElement;
+  onFilterChange(event: Event | string): void {
+    const target = typeof event === 'string' ? { value: event } : event.target as HTMLInputElement;
     this.filterStatus.set(target.value as 'All' | 'Active' | 'Inactive');
     this.optionsPage.set(1);
   }
@@ -198,8 +206,8 @@ export class JournalSettingsComponent implements OnInit {
   /**
    * Handle sort change
    */
-  onSortChange(event: Event): void {
-    const target = event.target as HTMLSelectElement;
+  onSortChange(event: Event | string): void {
+    const target = typeof event === 'string' ? { value: event } : event.target as HTMLInputElement;
     this.sortBy.set(target.value as 'name' | 'date');
     // Reset header sorting when using dropdown
     this.headerSortColumn.set(null);

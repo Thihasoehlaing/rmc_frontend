@@ -1,3 +1,9 @@
+import { ActionButtonComponent } from '../../../../shared/components/action-button/action-button.component';
+import { SearchToolbarComponent } from '../../../../shared/components/settings-ui/settings-ui.components';
+import { SettingsPageHeaderComponent } from '../../../../shared/components/settings-ui/settings-ui.components';
+import { InputDirective } from '../../../../shared/components/settings-ui/settings-ui.components';
+import { FormsModule } from '@angular/forms';
+import { DropdownComponent } from '../../../../shared/components/dropdown/dropdown.component';
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -11,13 +17,11 @@ import {
   DataTableComponent,
 } from '../../../../shared/components/data-table/data-table.component';
 import { nextTableSortState, SortDirection } from '../../../../shared/services/table-sort.service';
-import { TableActionIconComponent } from '../../../../shared/components/table-action-icon/table-action-icon.component';
 
 @Component({
   selector: 'app-journal-guidelines-settings',
   standalone: true,
-  imports: [
-    TableActionIconComponent,
+  imports: [ActionButtonComponent,SearchToolbarComponent,SettingsPageHeaderComponent,InputDirective,FormsModule,DropdownComponent,
     CommonModule,
     ReactiveFormsModule,
     PaginationComponent,
@@ -27,6 +31,8 @@ import { TableActionIconComponent } from '../../../../shared/components/table-ac
   styleUrl: './journal-guidelines-settings.component.scss',
 })
 export class JournalGuidelinesSettingsComponent implements OnInit {
+  standardOptions0() { return [{value: 'Active', label: 'Active'}, {value: 'Inactive', label: 'Inactive'}]; }
+  standardOptions1() { return [{value: 'All', label: 'All Statuses'}, {value: 'Active', label: 'Active'}, {value: 'Inactive', label: 'Inactive'}]; }
   private guidelinesService = inject(JournalGuidelinesService);
   private fb = inject(FormBuilder);
 
@@ -135,14 +141,14 @@ export class JournalGuidelinesSettingsComponent implements OnInit {
     return this.selectedCheckboxes().size > 0;
   }
 
-  onSearchInput(event: Event) {
-    const input = event.target as HTMLInputElement;
+  onSearchInput(event: Event | string) {
+    const input = typeof event === 'string' ? {value: event} : event.target as HTMLInputElement;
     this.searchQuery.set(input.value);
     this.guidelinePage.set(1);
   }
 
-  onFilterChange(event: Event) {
-    const select = event.target as HTMLSelectElement;
+  onFilterChange(event: Event | string) {
+    const select = typeof event === 'string' ? { value: event } : event.target as HTMLInputElement;
     this.filterStatus.set(select.value as 'All' | 'Active' | 'Inactive');
     this.guidelinePage.set(1);
   }

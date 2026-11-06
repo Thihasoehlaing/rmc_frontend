@@ -149,6 +149,16 @@ When adding a new token:
 
 Do not create new local design systems inside feature folders.
 
+## Selection and Date Controls
+
+- Use `app-dropdown` for normal single or multiple selections without a search input.
+- Keep staff pickers searchable with `app-searchable-dropdown`; use local filtering of fetched options.
+- Use `app-date-picker` for date and date/time inputs.
+- Use the shared radio/checkbox styling with native inputs (`input--radio`, `input--checkbox`); preserve Angular bindings, grouping and disabled states.
+- Reuse `app-toggle` for existing boolean settings; it uses the same shared checkbox styling.
+- Do not introduce native `<select>` or native date/datetime picker inputs.
+- Fetch dropdown options once and filter the loaded array locally unless the API explicitly requires remote search.
+
 ## Form UI Rules
 
 Forms must look and behave consistently across RDIG, Conference, Journal, Partnership, RA/GRA, Travel Authorization, and future application types.

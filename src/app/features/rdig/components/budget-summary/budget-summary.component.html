@@ -63,22 +63,8 @@
               </td>
               <td class="action-cell">
                 <div class="data-table__actions">
-                  <button
-                    type="button"
-                    class="btn-icon btn-icon--edit"
-                    [disabled]="workflow.isFormReadOnly()"
-                    (click)="openEditItemModal('studentAllowances', index)"
-                  >
-                    <app-table-action-icon action="edit"></app-table-action-icon>
-                  </button>
-                  <button
-                    type="button"
-                    class="btn-icon btn-icon--delete"
-                    [disabled]="workflow.isFormReadOnly()"
-                    (click)="removeBudgetRow(studentAllowances, index)"
-                  >
-                    <app-table-action-icon action="delete"></app-table-action-icon>
-                  </button>
+                  <app-action-button [label]="'edit'" type="primary" size="small" [icon]="'edit'" [iconOnly]="true" [disabled]="workflow.isFormReadOnly()" (clicked)="openEditItemModal('studentAllowances', index)" buttonType="button" />
+                  <app-action-button [label]="'delete_outline'" type="primary" size="small" [icon]="'delete_outline'" [iconOnly]="true" [disabled]="workflow.isFormReadOnly()" (clicked)="removeBudgetRow(studentAllowances, index)" buttonType="button" />
                 </div>
               </td>
             </tr>
@@ -149,22 +135,8 @@
               <td>{{ budgetAttachmentLabel(row.value) }}</td>
               <td class="action-cell">
                 <div class="data-table__actions">
-                  <button
-                    type="button"
-                    class="btn-icon btn-icon--edit"
-                    [disabled]="workflow.isFormReadOnly()"
-                    (click)="openEditItemModal('travelAccommodation', index)"
-                  >
-                    <app-table-action-icon action="edit"></app-table-action-icon>
-                  </button>
-                  <button
-                    type="button"
-                    class="btn-icon btn-icon--delete"
-                    [disabled]="workflow.isFormReadOnly()"
-                    (click)="removeBudgetRow(travelAccommodation, index)"
-                  >
-                    <app-table-action-icon action="delete"></app-table-action-icon>
-                  </button>
+                  <app-action-button [label]="'edit'" type="primary" size="small" [icon]="'edit'" [iconOnly]="true" [disabled]="workflow.isFormReadOnly()" (clicked)="openEditItemModal('travelAccommodation', index)" buttonType="button" />
+                  <app-action-button [label]="'delete_outline'" type="primary" size="small" [icon]="'delete_outline'" [iconOnly]="true" [disabled]="workflow.isFormReadOnly()" (clicked)="removeBudgetRow(travelAccommodation, index)" buttonType="button" />
                 </div>
               </td>
             </tr>
@@ -235,22 +207,8 @@
               <td>{{ budgetAttachmentLabel(row.value) }}</td>
               <td class="action-cell">
                 <div class="data-table__actions">
-                  <button
-                    type="button"
-                    class="btn-icon btn-icon--edit"
-                    [disabled]="workflow.isFormReadOnly()"
-                    (click)="openEditItemModal('materialsSupplies', index)"
-                  >
-                    <app-table-action-icon action="edit"></app-table-action-icon>
-                  </button>
-                  <button
-                    type="button"
-                    class="btn-icon btn-icon--delete"
-                    [disabled]="workflow.isFormReadOnly()"
-                    (click)="removeBudgetRow(materialsSupplies, index)"
-                  >
-                    <app-table-action-icon action="delete"></app-table-action-icon>
-                  </button>
+                  <app-action-button [label]="'edit'" type="primary" size="small" [icon]="'edit'" [iconOnly]="true" [disabled]="workflow.isFormReadOnly()" (clicked)="openEditItemModal('materialsSupplies', index)" buttonType="button" />
+                  <app-action-button [label]="'delete_outline'" type="primary" size="small" [icon]="'delete_outline'" [iconOnly]="true" [disabled]="workflow.isFormReadOnly()" (clicked)="removeBudgetRow(materialsSupplies, index)" buttonType="button" />
                 </div>
               </td>
             </tr>
@@ -321,22 +279,8 @@
               <td>{{ budgetAttachmentLabel(row.value) }}</td>
               <td class="action-cell">
                 <div class="data-table__actions">
-                  <button
-                    type="button"
-                    class="btn-icon btn-icon--edit"
-                    [disabled]="workflow.isFormReadOnly()"
-                    (click)="openEditItemModal('specialServices', index)"
-                  >
-                    <app-table-action-icon action="edit"></app-table-action-icon>
-                  </button>
-                  <button
-                    type="button"
-                    class="btn-icon btn-icon--delete"
-                    [disabled]="workflow.isFormReadOnly()"
-                    (click)="removeBudgetRow(specialServices, index)"
-                  >
-                    <app-table-action-icon action="delete"></app-table-action-icon>
-                  </button>
+                  <app-action-button [label]="'edit'" type="primary" size="small" [icon]="'edit'" [iconOnly]="true" [disabled]="workflow.isFormReadOnly()" (clicked)="openEditItemModal('specialServices', index)" buttonType="button" />
+                  <app-action-button [label]="'delete_outline'" type="primary" size="small" [icon]="'delete_outline'" [iconOnly]="true" [disabled]="workflow.isFormReadOnly()" (clicked)="removeBudgetRow(specialServices, index)" buttonType="button" />
                 </div>
               </td>
             </tr>
@@ -424,7 +368,7 @@
     <div class="card__content section-fields">
       <div class="form-field">
         <label class="form-label">Any other remarks for budget requested (Optional)</label>
-        <textarea
+        <textarea appInput
           class="input--textarea"
           formControlName="otherRemarks"
           [maxlength]="300"
@@ -444,7 +388,7 @@
 </section>
 
 @if (addItemModalOpen) {
-  <app-dialog
+  <app-dialog density="compact"
     [title]="
       (editingRowIndex === null ? 'Add Budget Item - ' : 'Edit Budget Item - ') +
       activeCategoryLabel
@@ -458,7 +402,7 @@
 
       <div class="form-field">
         <label class="form-label is-required">Description of Expense</label>
-        <textarea
+        <textarea appInput
           class="input--textarea"
           formControlName="description"
           [maxlength]="200"
@@ -496,7 +440,7 @@
       <div class="row row--2 textarea-row">
         <div class="form-field">
           <label class="form-label is-required">Amount (RM)</label>
-          <input
+          <input appInput
             appDecimalAmount
             type="text"
             inputmode="decimal"
@@ -507,7 +451,7 @@
         </div>
         <div class="form-field">
           <label class="form-label">Remarks (Optional)</label>
-          <textarea class="input--textarea" formControlName="remarks" [maxlength]="300"></textarea>
+          <textarea appInput class="input--textarea" formControlName="remarks" [maxlength]="300"></textarea>
           <app-character-counter
             [current]="remarksControl.value?.length ?? 0"
             [max]="300"

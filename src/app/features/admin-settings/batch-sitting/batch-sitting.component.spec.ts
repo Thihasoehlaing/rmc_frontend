@@ -12,11 +12,13 @@ describe('Immediate Malaysia batch scheduling', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2026-10-21T09:30:00Z'));
-    TestBed.configureTestingModule({ providers: [
-      FormBuilder,
-      { provide: BatchSittingService, useValue: {} },
-      { provide: AuthService, useValue: {} },
-    ] });
+    TestBed.configureTestingModule({
+      providers: [
+        FormBuilder,
+        { provide: BatchSittingService, useValue: {} },
+        { provide: AuthService, useValue: {} },
+      ],
+    });
     component = TestBed.runInInjectionContext(() => new BatchSittingComponent());
   });
 
@@ -49,6 +51,16 @@ describe('Immediate Malaysia batch scheduling', () => {
     const now = Date.parse('2026-10-21T09:30:00Z');
     expect(isApplicantSubmissionWindowOpen(true, 'active', start, end, now - 1)).toBe(false);
     expect(isApplicantSubmissionWindowOpen(true, 'active', start, end, now)).toBe(true);
-    expect(isApplicantSubmissionWindowOpen(true, 'active', start, end, Date.parse('2026-10-26T15:59:00Z') + 1)).toBe(false);
+    expect(
+      isApplicantSubmissionWindowOpen(
+        true,
+        'active',
+        start,
+        end,
+        Date.parse('2026-10-26T15:59:00Z') + 1,
+      ),
+    ).toBe(false);
   });
 });
+
+afterEach(() => TestBed.resetTestingModule());

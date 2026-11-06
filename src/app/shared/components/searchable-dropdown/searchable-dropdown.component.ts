@@ -71,10 +71,12 @@ export class SearchableDropdownComponent<T = number> implements ControlValueAcce
   // ── Inputs ───────────────────────────────────────────────────────
 
   @Input() label = '';
+  @Input() ariaLabel = '';
   @Input() required = false;
   @Input() placeholder = 'Select an option...';
   @Input() isMulti = false;
   @Input() searchable = true;
+  @Input() allowClear = true;
   @Input() maxSelections: number | null = null;
   @Input() optionListTitle = '';
   @Input() optionListCount: number | null = null;
@@ -208,9 +210,7 @@ export class SearchableDropdownComponent<T = number> implements ControlValueAcce
       return;
     }
 
-    const next = this.normalizeIncomingMultiValue(
-      this.isEmptySelectionValue(value) ? [] : [value],
-    );
+    const next = this.normalizeIncomingMultiValue(this.isEmptySelectionValue(value) ? [] : [value]);
     if (this.shouldIgnoreStaleMultiWrite(next)) return;
     this.selectedValues.set(next);
     if (this.isMulti) this.multiSelectionCache = next;
@@ -403,12 +403,7 @@ export class SearchableDropdownComponent<T = number> implements ControlValueAcce
   }
 
   private optionSearchText(option: DropdownOption<T>): string {
-    return [
-      option.label,
-      option.description,
-      option.displayLabel,
-      option.searchText,
-    ]
+    return [option.label, option.description, option.displayLabel, option.searchText]
       .filter(Boolean)
       .join(' ')
       .toLowerCase();
@@ -428,10 +423,11 @@ export class SearchableDropdownComponent<T = number> implements ControlValueAcce
 
   @HostListener('keydown', ['$event'])
   onKeyDown(event: KeyboardEvent): void {
-    if (this.isDisabled() || this.loading) return;
+    if (this.isDisabled() || this.loading || event.target instanceof HTMLButtonElement) return;
 
     switch (event.key) {
       case 'Enter':
+        event.preventDefault();
         if (!this.isOpen()) {
           this.open();
           event.preventDefault();
@@ -456,6 +452,10 @@ export class SearchableDropdownComponent<T = number> implements ControlValueAcce
         if (this.isOpen()) {
           this.close();
           event.preventDefault();
+          event.stopPropagation();
+          (this.elementRef.nativeElement as HTMLElement)
+            .querySelector<HTMLElement>('.dropdown-trigger')
+            ?.focus();
         }
         break;
 

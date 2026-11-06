@@ -1,3 +1,7 @@
+import { ActionButtonComponent } from '../../shared/components/action-button/action-button.component';
+import { SearchToolbarComponent } from '../../shared/components/settings-ui/settings-ui.components';
+import { SettingsPanelComponent } from '../../shared/components/settings-ui/settings-ui.components';
+import { SettingsPageHeaderComponent } from '../../shared/components/settings-ui/settings-ui.components';
 import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit, TrackByFunction, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -24,8 +28,7 @@ import {
 @Component({
   selector: 'app-request-reports',
   standalone: true,
-  imports: [
-    CommonModule,
+  imports: [ActionButtonComponent,SearchToolbarComponent,SettingsPanelComponent,SettingsPageHeaderComponent,CommonModule,
     FormsModule,
     DatePickerComponent,
     DataTableComponent,

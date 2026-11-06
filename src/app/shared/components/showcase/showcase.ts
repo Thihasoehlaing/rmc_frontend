@@ -1,5 +1,21 @@
-import { Component, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { DropdownComponent } from '../dropdown/dropdown.component';
+import { DatePickerComponent } from '../date-picker/date-picker.component';
+import { ActionButtonComponent } from '../action-button/action-button.component';
+import { StatusBadgeComponent } from '../form-standard/form-standard.components';
+import { DataTableComponent, DataTableColumn } from '../data-table/data-table.component';
+import {
+  SettingsPageHeaderComponent,
+  SettingsPanelComponent,
+  SearchToolbarComponent,
+  FieldComponent,
+  InputDirective,
+  StateComponent,
+  SelectionSummaryComponent,
+  ToggleComponent,
+  PersonIdentityComponent,
+} from '../settings-ui/settings-ui.components';
+import { Component, computed, inject, signal } from '@angular/core';
+import { CommonModule, DOCUMENT, Location } from '@angular/common';
 import { FormControl, ReactiveFormsModule, FormGroup, FormsModule } from '@angular/forms';
 import { SearchableDropdownComponent } from '../searchable-dropdown/searchable-dropdown.component';
 import { FormMainTitleComponent } from '../form-main-title/form-main-title.component';
@@ -31,6 +47,20 @@ import { SVG_ICONS, SVG_ICON_BEAKER } from '../../icons/svg-icons';
   selector: 'app-showcase',
   standalone: true,
   imports: [
+    ActionButtonComponent,
+    StatusBadgeComponent,
+    DataTableComponent,
+    SettingsPageHeaderComponent,
+    SettingsPanelComponent,
+    SearchToolbarComponent,
+    FieldComponent,
+    InputDirective,
+    StateComponent,
+    SelectionSummaryComponent,
+    ToggleComponent,
+    PersonIdentityComponent,
+    DropdownComponent,
+    DatePickerComponent,
     CommonModule,
     ReactiveFormsModule,
     FormsModule,
@@ -55,6 +85,67 @@ import { SVG_ICONS, SVG_ICON_BEAKER } from '../../icons/svg-icons';
   styleUrl: './showcase.scss',
 })
 export class ShowcaseComponent {
+  standardWorkspaces: string[] = [];
+  private readonly document = inject(DOCUMENT);
+  private readonly location = inject(Location);
+  sectionLink(id: string): string {
+    return `${this.location.path().split('#')[0]}#${id}`;
+  }
+  scrollToSection(event: MouseEvent, id: string): void {
+    if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey)
+      return;
+    event.preventDefault();
+    const section = this.document.getElementById(id);
+    if (!section) return;
+    if (section instanceof HTMLDetailsElement) section.open = true;
+    const reduced = this.document.defaultView?.matchMedia(
+      '(prefers-reduced-motion: reduce)',
+    ).matches;
+    section.scrollIntoView({ behavior: reduced ? 'instant' : 'smooth', block: 'start' });
+    this.location.replaceState(this.sectionLink(id));
+  }
+
+  readonly workspaceOptions = [
+    { value: 'RMC', label: 'RMC' },
+    { value: 'HR_SERVICES', label: 'HR Services' },
+    { value: 'FINANCE', label: 'Finance' },
+  ];
+  standardWorkspace = 'RMC';
+  standardDate = '';
+  readonly standardEnabled = signal(true);
+  readonly standardDialogOpen = signal(false);
+  readonly standardRetried = signal(false);
+  readonly standardStaffIds = signal<number[]>([1, 2]);
+  standardSingleStaff: number | null = 1;
+  readonly standardStaffOptions: DropdownOption<number>[] = [
+    { value: 1, label: 'Aisha Rahman (aisha)', description: 'aisha@example.test' },
+    { value: 2, label: 'Daniel Tan (daniel)', description: 'daniel@example.test' },
+    { value: 3, label: 'Mei Ling (mei)', description: 'mei@example.test' },
+  ];
+  readonly standardSelectedStaff = computed(() =>
+    this.standardStaffOptions.filter((option) => this.standardStaffIds().includes(option.value)),
+  );
+  readonly standardSearch = signal('');
+  readonly standardAppliedSearch = signal('');
+  readonly standardGroups = [
+    { code: 'CHANCELLORY', name: 'Chancellory', members: 4 },
+    { code: 'FINANCE_1', name: 'Finance 1', members: 3 },
+    { code: 'RESEARCH_COMMITTEE', name: 'Research committee', members: 8 },
+  ];
+  readonly standardFilteredGroups = computed(() => {
+    const query = this.standardAppliedSearch().trim().toLowerCase();
+    return this.standardGroups.filter((group) =>
+      `${group.code} ${group.name}`.toLowerCase().includes(query),
+    );
+  });
+  readonly standardColumns: readonly DataTableColumn[] = [
+    { key: 'code', label: 'Group code', width: '220px' },
+    { key: 'name', label: 'Group name' },
+    { key: 'members', label: 'Members', width: '110px', align: 'center' },
+    { key: 'status', label: 'Status', width: '120px' },
+    { key: 'actions', label: 'Actions', width: '85px' },
+  ];
+
   // Centralized SVG icon catalog
   readonly svgIcons = SVG_ICONS;
   readonly beakerIcon = SVG_ICON_BEAKER;
@@ -263,7 +354,7 @@ export class ShowcaseComponent {
     {
       cls: '.input--select',
       purpose: 'Styled native select with arrow icon',
-      usage: '<select class="input--select">',
+      usage: '<app-dropdown [options]="options" />',
     },
     {
       cls: '.input--textarea',

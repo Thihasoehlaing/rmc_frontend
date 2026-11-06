@@ -1,3 +1,4 @@
+import { ActionButtonComponent } from '../../shared/components/action-button/action-button.component';
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
@@ -22,7 +23,7 @@ import { dashboardConfigFor } from './dashboard.config';
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [
+  imports: [ActionButtonComponent,
     CommonModule,
     DashboardSkeletonComponent,
     ApplicantDashboardComponent,

@@ -1,3 +1,4 @@
+import { InputDirective } from '../../../../shared/components/settings-ui/settings-ui.components';
 import { Component, OnInit, Output, EventEmitter, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -7,7 +8,7 @@ import { NoteComponent } from '../../../../shared/components/note/note.component
 @Component({
   selector: 'app-ragra-declaration',
   standalone: true,
-  imports: [
+  imports: [InputDirective,
     CommonModule,
     ReactiveFormsModule,
     ValidationMessageComponent,

@@ -1,3 +1,5 @@
+import { InputDirective } from '../../../../../shared/components/settings-ui/settings-ui.components';
+import { DropdownComponent } from '../../../../../shared/components/dropdown/dropdown.component';
 ﻿import { Component, OnInit, OnDestroy, Input, effect, inject } from '@angular/core';
 import { signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -23,7 +25,6 @@ import {
 } from '../../../../../core/services/master-data.service';
 import { AuthService } from '../../../../../core/services/auth.service';
 
-import { TableActionIconComponent } from '../../../../../shared/components/table-action-icon/table-action-icon.component';
 import { ValidationMessageComponent } from '../../../../../shared/components/validation-message/validation-message.component';
 import { CharacterCounterComponent } from '../../../../../shared/components/character-counter/character-counter.component';
 import { NoteComponent } from '../../../../../shared/components/note/note.component';
@@ -33,8 +34,7 @@ import { TableRowCounterComponent } from '../../../../../shared/components/table
 @Component({
   selector: 'app-author-details-form',
   standalone: true,
-  imports: [
-    TableActionIconComponent,
+  imports: [InputDirective,DropdownComponent,
     ValidationMessageComponent,
     CharacterCounterComponent,
     TableRowCounterComponent,

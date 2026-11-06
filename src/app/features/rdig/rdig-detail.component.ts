@@ -1,3 +1,4 @@
+import { ActionButtonComponent } from '../../shared/components/action-button/action-button.component';
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -32,7 +33,7 @@ interface DetailField {
 @Component({
   selector: 'app-rdig-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [ActionButtonComponent,CommonModule, RouterLink],
   templateUrl: './rdig-detail.component.html',
   styleUrl: './rdig-detail.component.scss',
 })

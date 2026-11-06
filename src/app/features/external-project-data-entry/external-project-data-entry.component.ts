@@ -1,3 +1,5 @@
+import { SettingsPageHeaderComponent } from '../../shared/components/settings-ui/settings-ui.components';
+import { InputDirective } from '../../shared/components/settings-ui/settings-ui.components';
 import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
@@ -44,7 +46,6 @@ import { DecimalAmountDirective } from '../../shared/directives/decimal-amount.d
 import { MyrCurrencyPipe } from '../../shared/pipes/myr-currency.pipe';
 import { ValidationMessageComponent } from '../../shared/components/validation-message/validation-message.component';
 
-import { TableActionIconComponent } from '../../shared/components/table-action-icon/table-action-icon.component';
 import {
   BudgetItemPayload,
   BudgetSectionPayload,
@@ -107,8 +108,7 @@ interface ExpectedOutcomeRow {
 @Component({
   selector: 'app-external-project-data-entry',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    TableActionIconComponent,
+  imports: [SettingsPageHeaderComponent,InputDirective,
     CommonModule,
     ReactiveFormsModule,
     CustomSubheaderComponent,

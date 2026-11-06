@@ -1,3 +1,4 @@
+import { InputDirective } from '../../../../shared/components/settings-ui/settings-ui.components';
 import { Component, signal, computed, inject, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormsModule } from '@angular/forms';
@@ -13,7 +14,7 @@ interface ABACProfile {
 @Component({
   selector: 'app-abac-override',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule],
+  imports: [InputDirective,CommonModule, ReactiveFormsModule, FormsModule],
   templateUrl: './abac-override.component.html',
   styleUrl: './abac-override.component.scss'
 })

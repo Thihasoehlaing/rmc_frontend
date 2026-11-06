@@ -1,3 +1,5 @@
+import { ActionButtonComponent } from '../../shared/components/action-button/action-button.component';
+import { InputDirective } from '../../shared/components/settings-ui/settings-ui.components';
 import { Component, signal, computed, inject, OnInit, OnDestroy, effect, ViewChild } from '@angular/core';
 import {
   ReactiveFormsModule,
@@ -95,7 +97,7 @@ export function isApplicantSubmissionWindowOpen(
 @Component({
   selector: 'app-rdig-application',
   standalone: true,
-  imports: [
+  imports: [ActionButtonComponent,InputDirective,
     ReactiveFormsModule,
     FormMainTitleComponent,
     StepIndicatorComponent,

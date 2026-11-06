@@ -1,6 +1,6 @@
 <section class="dropdowns-container">
   <div class="dropdowns-shell">
-    <div class="details-view settings-container fade-in">
+    <div class="settings-page">
       <app-admin-settings-page-header
         title="RDIG Reviewers"
         description="Manage academic staff who can be assigned as RDIG reviewers."
@@ -14,155 +14,106 @@
         ></app-action-button>
       </app-admin-settings-page-header>
 
-      <div class="dropdown-options-panel">
-        <div class="dropdown-search-panel">
-          <app-submissions-search
+      <ng-container>
+        <ng-container>
+          <app-search-toolbar
+            [query]="searchQuery()"
+            (queryChange)="searchQuery.set($event)"
+            (search)="onSearch(searchQuery())"
+            (reset)="onReset()"
             placeholder="Search by name or username"
-            [value]="searchQuery()"
-            (search)="onSearch($event)"
-            (refresh)="onReset()"
           >
-            <label search-filters class="mgr-department-filter">
-              <span class="sr-only">Department</span>
-              <app-searchable-dropdown
+            <div class="settings-filter">
+              <app-dropdown
+                [label]="'Department'"
                 [options]="departmentOptions()"
                 [ngModel]="departmentFilter()"
                 (ngModelChange)="onDepartmentChange($event)"
-                valueMode="single"
                 placeholder="All departments"
-              ></app-searchable-dropdown>
-            </label>
+                emptyOptionLabel="All departments"
+              ></app-dropdown>
+            </div>
 
-            <label search-filters class="mgr-status-filter">
-              <span class="sr-only">Status</span>
-              <select
-                class="input--select"
+            <div class="settings-filter">
+              <app-dropdown
+                [label]="'Status'"
+                [options]="[
+                  { value: 'all', label: 'All' },
+                  { value: 'active', label: 'Active' },
+                  { value: 'inactive', label: 'Inactive' },
+                ]"
                 [ngModel]="statusFilter()"
                 (ngModelChange)="onStatusChange($event)"
-                aria-label="Filter by status"
-              >
-                <option value="all">All</option>
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
-              </select>
-            </label>
-          </app-submissions-search>
-        </div>
+              />
+            </div>
+          </app-search-toolbar>
+        </ng-container>
 
-        <div class="dropdown-table-panel">
-          <div class="shared-options-table">
+        <app-settings-panel title="Reviewers" [flush]="true">
+          <ng-container>
             @if (isLoading()) {
-              <app-table-skeleton
-                class="reviewer-table-skeleton"
-                [columns]="skeletonColumns"
-                [rows]="pageSize()"
-                [showSearch]="false"
-                minWidth="760px"
-                loadingLabel="Loading reviewers"
-              ></app-table-skeleton>
+              <app-state title="Loading settings" icon="hourglass_empty" />
             } @else {
-              <table>
-                <thead>
-                <tr>
-                  <th>No.</th>
-                  <th>Staff</th>
-                  <th>Department</th>
-                  <th>Job Title</th>
-                  <th>Status</th>
-                  <th class="actions-heading">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                @if (loadFailed()) {
-                  <tr>
-                    <td class="reviewer-empty-state" colspan="6">
-                      <span class="material-icons">cloud_off</span>
-                      <strong>Unable to load reviewers</strong>
-                      <button
-                        class="btn btn-primary reviewer-retry-button"
-                        type="button"
-                        (click)="loadInitialOptions()"
-                      >
-                        Try Again
-                      </button>
+              <app-data-table
+                [dense]="true"
+                [embedded]="true"
+                [columns]="standardColumns()"
+                [rows]="reviewers()"
+                ><ng-template #rowTemplate let-row let-rowIndex="index"
+                  ><tr [class.row--inactive]="!row.is_active">
+                    <td>{{ (page() - 1) * pageSize() + rowIndex + 1 }}</td>
+                    <td>
+                      <app-person-identity
+                        [name]="displayStaffName(row)"
+                        [detail]="row.staff_username || '-'"
+                        [initials]="getInitials(row)"
+                        [photoUrl]="row.photo_url"
+                      />
                     </td>
-                  </tr>
-                } @else {
-                  @for (row of reviewers(); track row.id; let rowIndex = $index) {
-                    <tr [class.row--inactive]="!row.is_active">
-                      <td>{{ (page() - 1) * pageSize() + rowIndex + 1 }}</td>
-                      <td>
-                        <div class="reviewer-staff">
-                          @if (row.photo_url) {
-                            <img
-                              class="reviewer-staff__photo"
-                              [src]="row.photo_url"
-                              [alt]="displayStaffName(row)"
-                            />
-                          } @else {
-                            <span class="reviewer-staff__avatar">{{ getInitials(row) }}</span>
-                          }
-                          <span class="reviewer-staff__identity">
-                            <strong>{{ displayStaffName(row) }}</strong>
-                            <span>{{ row.staff_username || '-' }}</span>
-                          </span>
-                        </div>
-                      </td>
-                      <td>{{ row.department || '-' }}</td>
-                      <td>{{ row.job_title || '-' }}</td>
-                      <td>
-                        <span
-                          class="status-chip"
-                          [class.status-chip--active]="row.is_active"
-                          [class.status-chip--inactive]="!row.is_active"
-                        >
-                          {{ row.is_active ? 'Active' : 'Inactive' }}
-                        </span>
-                      </td>
-                      <td class="actions-cell">
-                        <div class="table-actions">
-                          <button
-                            class="table-action"
-                            [class.table-action--success]="!row.is_active"
-                            [class.table-action--warning]="row.is_active"
-                            type="button"
-                            [disabled]="busyRowId() !== null || isSaving()"
-                            [title]="row.is_active ? 'Set inactive' : 'Set active'"
-                            (click)="toggleStatus(row)"
-                          >
-                            <app-table-action-icon
-                              [action]="row.is_active ? 'deactivate' : 'activate'"
-                            ></app-table-action-icon>
-                          </button>
-                          <button
-                            class="table-action table-action--danger"
-                            type="button"
-                            [disabled]="busyRowId() !== null || isSaving()"
-                            title="Remove reviewer"
-                            (click)="rowToRemove.set(row)"
-                          >
-                            <app-table-action-icon action="delete"></app-table-action-icon>
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  } @empty {
-                    <tr>
-                      <td class="reviewer-empty-state" colspan="6">
-                        <span class="material-icons">inbox</span>
-                        <strong>No reviewers found</strong>
-                        <span>Try changing the search, department, or status filter.</span>
-                      </td>
-                    </tr>
-                  }
-                }
-              </tbody>
-              </table>
+                    <td>{{ row.department || '-' }}</td>
+                    <td>{{ row.job_title || '-' }}</td>
+                    <td>
+                      <app-status-badge [intent]="row.is_active ? 'success' : 'warning'">
+                        {{ row.is_active ? 'Active' : 'Inactive' }}
+                      </app-status-badge>
+                    </td>
+                    <td class="actions-cell">
+                      <div class="settings-actions">
+                        <app-action-button
+                          [label]="row.is_active ? 'block' : 'check_circle'"
+                          type="ghost"
+                          size="small"
+                          [icon]="row.is_active ? 'block' : 'check_circle'"
+                          [iconOnly]="true"
+                          [disabled]="busyRowId() !== null || isSaving()"
+                          [title]="row.is_active ? 'Set inactive' : 'Set active'"
+                          (clicked)="toggleStatus(row)"
+                          [ariaLabel]="row.is_active ? 'Set inactive' : 'Set active'"
+                        />
+                        <app-action-button
+                          [label]="'Remove reviewer'"
+                          type="danger"
+                          size="small"
+                          [icon]="'delete_outline'"
+                          [iconOnly]="true"
+                          [disabled]="busyRowId() !== null || isSaving()"
+                          [title]="'Remove reviewer'"
+                          (clicked)="rowToRemove.set(row)"
+                          [ariaLabel]="'Remove reviewer'"
+                        />
+                      </div>
+                    </td></tr></ng-template
+                ><ng-template #emptyTemplate
+                  ><app-state
+                    [title]="loadFailed() ? 'Unable to load options' : 'No options found'"
+                    description="Adjust the filters or try refreshing."
+                    [error]="loadFailed()" /></ng-template
+              ></app-data-table>
             }
-          </div>
-        </div>
+          </ng-container>
+        </app-settings-panel>
 
-        <div class="dropdown-pagination-panel">
+        <div class="settings-pagination">
           <app-pagination
             [currentPage]="page()"
             [totalPages]="totalPages()"
@@ -175,57 +126,58 @@
             (pageSizeChange)="onPageSizeChange($event)"
           ></app-pagination>
         </div>
-      </div>
+      </ng-container>
     </div>
   </div>
 </section>
 
 <app-dialog
+  density="compact"
   [isOpen]="showAddModal()"
   title="Add RDIG Reviewer"
   size="medium"
   (close)="closeAddModal()"
 >
   <div class="reviewer-modal">
-    <div class="form-field">
-      <label class="form-label">Academic Staff <span class="required">*</span></label>
+    <div class="settings-filter">
       <app-searchable-dropdown
+        [label]="'Academic Staff *'"
         [options]="modalStaffOptions()"
         [formControl]="selectedStaffControl"
         [isMulti]="true"
         placeholder="Search and select academic staff"
       ></app-searchable-dropdown>
-      <p class="field-help">
-        Select one or more academic staff from the academic option list.
-      </p>
+      <p class="field-help">Select one or more academic staff from the academic option list.</p>
     </div>
 
-    <label class="status-switch-row">
-      <span class="switch-control">
-        <input type="checkbox" [formControl]="modalActiveControl" />
-        <span class="switch-slider"></span>
-      </span>
-      <span>
-        <strong>Active reviewer</strong>
-        <small>New reviewers will be available for RDIG reviewer assignment.</small>
-      </span>
-    </label>
+    <label class="checkbox-field__option"
+      ><input class="input--checkbox" type="checkbox" [formControl]="modalActiveControl" /><span
+        >Active reviewer<small class="form-hint"
+          >Available for RDIG reviewer assignment.</small
+        ></span
+      ></label
+    >
   </div>
 
-  <div dialog-footer>
-    <button type="button" class="btn btn-secondary" (click)="closeAddModal()">Cancel</button>
-    <button
-      type="button"
-      class="btn btn-primary"
+  <div dialog-footer class="settings-actions">
+    <app-action-button
+      [label]="'Cancel'"
+      type="secondary"
+      size="small"
+      (clicked)="closeAddModal()"
+    />
+    <app-action-button
+      [label]="isSaving() ? 'Adding...' : 'Add Reviewer'"
+      type="primary"
+      size="small"
       [disabled]="selectedStaffCount() === 0 || isSaving()"
-      (click)="saveReviewers()"
-    >
-      {{ isSaving() ? 'Adding...' : 'Add Reviewer' }}
-    </button>
+      (clicked)="saveReviewers()"
+    />
   </div>
 </app-dialog>
 
 <app-dialog
+  density="compact"
   [isOpen]="rowToRemove() !== null"
   title="Remove Reviewer"
   size="small"
@@ -235,19 +187,21 @@
     <p>
       Remove <strong>{{ displayStaffName(row) }}</strong> from the RDIG reviewer list?
     </p>
-    <p class="remove-dialog-note">
-      This removes the reviewer from future assignment selection.
-    </p>
+    <p class="remove-dialog-note">This removes the reviewer from future assignment selection.</p>
   }
-  <div dialog-footer>
-    <button type="button" class="btn btn-secondary" (click)="rowToRemove.set(null)">Cancel</button>
-    <button
-      type="button"
-      class="btn btn-danger"
+  <div dialog-footer class="settings-actions">
+    <app-action-button
+      [label]="'Cancel'"
+      type="secondary"
+      size="small"
+      (clicked)="rowToRemove.set(null)"
+    />
+    <app-action-button
+      [label]="busyRowId() !== null ? 'Removing...' : 'Remove'"
+      type="danger"
+      size="small"
       [disabled]="busyRowId() !== null"
-      (click)="confirmRemove()"
-    >
-      {{ busyRowId() !== null ? 'Removing...' : 'Remove' }}
-    </button>
+      (clicked)="confirmRemove()"
+    />
   </div>
 </app-dialog>

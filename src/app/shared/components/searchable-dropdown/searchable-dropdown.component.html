@@ -12,7 +12,8 @@
   <!-- ── Trigger ────────────────────────────────────────────────── -->
   <div
     class="dropdown-trigger input--text"
-    tabindex="0"
+    [attr.tabindex]="isDisabled() || loading ? -1 : 0"
+    [attr.aria-label]="ariaLabel || label || placeholder"
     role="combobox"
     [attr.aria-expanded]="isOpen()"
     [attr.aria-haspopup]="'listbox'"
@@ -55,7 +56,7 @@
     <div class="trigger-actions">
       @if (loading) {
         <span class="spinner" aria-hidden="true"></span>
-      } @else if (hasSelection() && !isDisabled() && !isMulti) {
+      } @else if (hasSelection() && !isDisabled() && !isMulti && allowClear) {
         <button
           type="button"
           class="clear-btn"
@@ -64,7 +65,7 @@
         >
           &times;
         </button>
-      } @else if (!hasSelection()) {
+      } @else if (!hasSelection() || !allowClear) {
         <app-svg-icon class="arrow-icon" [icon]="chevronDownIcon" size="10px"></app-svg-icon>
       }
     </div>
@@ -77,7 +78,7 @@
       [id]="listboxId"
       role="listbox"
       [attr.aria-multiselectable]="isMulti"
-      [attr.aria-label]="label || placeholder"
+      [attr.aria-label]="ariaLabel || label || placeholder"
     >
       @if (optionListTitle) {
         <div class="options-header">
@@ -96,6 +97,7 @@
             type="text"
             [formControl]="searchCtrl"
             placeholder="Search…"
+            [attr.aria-label]="'Search ' + (label || 'options')"
             autocomplete="off"
             aria-autocomplete="list"
             (click)="$event.stopPropagation()"

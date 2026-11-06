@@ -13,7 +13,7 @@
         <!-- Asia Pacific University of Technology & Innovation Student ID -->
         <div class="form-field">
           <label class="form-label is-required">Asia Pacific University of Technology & Innovation Student ID</label>
-          <input
+          <input appInput
             type="text"
             class="input--text"
             formControlName="studentId"
@@ -28,14 +28,13 @@
 
         <!-- Program Title (GRA only) -->
         <div class="form-field" *ngIf="positionRequested === 'GRA'">
-          <app-searchable-dropdown
+          <app-dropdown
             label="Program Title"
             [required]="true"
             [options]="programOptions"
             formControlName="programTitle"
-            placeholder="Search and select program..."
-            [searchable]="true">
-          </app-searchable-dropdown>
+            placeholder="Search and select program...">
+          </app-dropdown>
           <app-note text="For GRA (PG Student) only" [isTooltip]="false"></app-note>
           <app-validation-message 
             class="form-validation-note--error"
@@ -47,7 +46,7 @@
         <!-- Student Name -->
         <div class="form-field">
           <label class="form-label is-required">Student Name (As per IC/Passport)</label>
-          <input
+          <input appInput
             type="text"
             class="input--text"
             formControlName="studentName"
@@ -62,14 +61,13 @@
 
         <!-- Nationality -->
         <div class="form-field">
-          <app-searchable-dropdown
+          <app-dropdown
             label="Nationality"
             [required]="true"
             [options]="nationalityOptions"
             formControlName="nationality"
-            placeholder="Search and select nationality..."
-            [searchable]="true">
-          </app-searchable-dropdown>
+            placeholder="Search and select nationality...">
+          </app-dropdown>
           <app-validation-message 
             class="form-validation-note--error"
             [control]="form.get('nationality')"
@@ -80,7 +78,7 @@
         <!-- Student Personal Email -->
         <div class="form-field">
           <label class="form-label is-required">Student Personal Email Address</label>
-          <input
+          <input appInput
             type="email"
             class="input--text"
             formControlName="personalEmail"
@@ -96,7 +94,7 @@
         <!-- NRIC / Passport -->
         <div class="form-field">
           <label class="form-label is-required">NRIC / Passport</label>
-          <input
+          <input appInput
             type="text"
             class="input--text"
             formControlName="nricPassport"
@@ -112,7 +110,7 @@
         <!-- Student Residential Address -->
         <div class="form-field">
           <label class="form-label is-required">Student Residential Address</label>
-          <input
+          <input appInput
             type="text"
             class="input--text"
             formControlName="residentialAddress"
@@ -128,7 +126,7 @@
         <!-- Student APU Email -->
         <div class="form-field">
           <label class="form-label is-required">Student APU Email Address</label>
-          <input
+          <input appInput
             type="email"
             class="input--text"
             formControlName="apuEmail"
@@ -146,7 +144,7 @@
         <!-- Student Phone Number -->
         <div class="form-field">
           <label class="form-label is-required">Student Phone Number</label>
-          <input
+          <input appInput
             type="text"
             inputmode="numeric"
             pattern="[0-9]*"
@@ -164,10 +162,7 @@
         <!-- Student Visa Expiry Date -->
         <div class="form-field">
           <label class="form-label">Student Visa Expiry Date (if international student)</label>
-          <input
-            type="date"
-            class="input--text"
-            formControlName="visaExpiryDate">
+          <app-date-picker formControlName="visaExpiryDate" ariaLabel="Visa expiry date" />
           <app-note text="For international students only" [isTooltip]="false"></app-note>
         </div>
 
@@ -176,7 +171,7 @@
       <!-- Job Duties (Full Width) -->
       <div class="form-field">
         <label class="form-label is-required">Job Duties</label>
-        <textarea
+        <textarea appInput
           class="input--textarea"
           formControlName="jobDuties"
           rows="6"
@@ -208,11 +203,7 @@
         <!-- Appointment Commencement Date -->
         <div class="form-field">
           <label class="form-label is-required">Appointment Commencement Date</label>
-          <input
-            type="date"
-            class="input--text"
-            formControlName="commencementDate"
-            [class.is-invalid]="form.get('commencementDate')?.invalid && form.get('commencementDate')?.touched">
+          <app-date-picker formControlName="commencementDate" ariaLabel="Commencement date" />
           <app-note
             text="Appointment Commencement Date must be after the Project Start Date."
             [isTooltip]="false">
@@ -227,11 +218,7 @@
         <!-- Appointment End Date -->
         <div class="form-field">
           <label class="form-label is-required">Appointment End Date</label>
-          <input
-            type="date"
-            class="input--text"
-            formControlName="appointmentEndDate"
-            [class.is-invalid]="form.get('appointmentEndDate')?.invalid && form.get('appointmentEndDate')?.touched">
+          <app-date-picker formControlName="appointmentEndDate" ariaLabel="Appointment end date" />
           <app-note
             text="Appointment End Date cannot be later than the Visa End Date or Project End Date, whichever comes first."
             [isTooltip]="false">
@@ -246,7 +233,7 @@
         <!-- Appointment Duration (Days) -->
         <div class="form-field">
           <label class="form-label is-required">Appointment Duration (Days)</label>
-          <input
+          <input appInput
             type="number"
             class="input--text input--soft-readonly"
             formControlName="durationDays"
@@ -288,7 +275,7 @@
         <!-- Monthly Allowance -->
         <div class="form-field">
           <label class="form-label is-required">Monthly Allowance (RM)</label>
-          <input
+          <input appInput
             type="text"
             inputmode="decimal"
             appDecimalAmount
@@ -311,14 +298,13 @@
 
         <!-- Fee Reduction Percentage (GRA only) -->
         <div class="form-field" *ngIf="positionRequested === 'GRA'">
-          <app-searchable-dropdown
+          <app-dropdown
             label="Fee Reduction Percentage"
             [required]="true"
             [options]="feeReductionOptions"
             formControlName="feeReductionPercentage"
-            placeholder="Select fee reduction percentage..."
-            [searchable]="true">
-          </app-searchable-dropdown>
+            placeholder="Select fee reduction percentage...">
+          </app-dropdown>
           <app-note
             text="Fee reduction is only applicable for Postgraduate (GRA) applications."
             [isTooltip]="false">

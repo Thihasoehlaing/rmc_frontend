@@ -1,3 +1,15 @@
+import {
+  SettingsPageHeaderComponent,
+  SettingsPanelComponent,
+  SearchToolbarComponent,
+  FieldComponent,
+  InputDirective,
+  StateComponent,
+  ToggleComponent,
+} from '../../../shared/components/settings-ui/settings-ui.components';
+import { DropdownComponent } from '../../../shared/components/dropdown/dropdown.component';
+import { StatusBadgeComponent } from '../../../shared/components/form-standard/form-standard.components';
+import { ActionButtonComponent } from '../../../shared/components/action-button/action-button.component';
 import { WorkspaceService } from '../../../core/services/workspace.service';
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, TrackByFunction, inject, signal } from '@angular/core';
@@ -11,11 +23,7 @@ import {
 } from '../../../shared/components/data-table/data-table.component';
 import { DialogComponent } from '../../../shared/components/dialog/dialog.component';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
-import { DetailPanelSkeletonComponent } from '../../../shared/components/detail-panel-skeleton/detail-panel-skeleton.component';
-import { TableSkeletonComponent } from '../../../shared/components/table-skeleton/table-skeleton.component';
 import { ManagedForm, ManagedFormPayload, FormsService } from './forms.service';
-
-import { TableActionIconComponent } from '../../../shared/components/table-action-icon/table-action-icon.component';
 
 type FormDialogMode = 'create' | 'edit';
 type FormStatusFilter = '' | 'Active' | 'Inactive';
@@ -24,17 +32,24 @@ type FormStatusFilter = '' | 'Active' | 'Inactive';
   selector: 'app-forms-settings',
   standalone: true,
   imports: [
-    TableActionIconComponent,
+    ActionButtonComponent,
+    StatusBadgeComponent,
+    DropdownComponent,
+    SettingsPageHeaderComponent,
+    SettingsPanelComponent,
+    SearchToolbarComponent,
+    FieldComponent,
+    InputDirective,
+    StateComponent,
+    ToggleComponent,
     CommonModule,
     FormsModule,
     DataTableComponent,
     DialogComponent,
     PaginationComponent,
-    DetailPanelSkeletonComponent,
-    TableSkeletonComponent,
   ],
   templateUrl: './forms.component.html',
-  styleUrl: './forms.component.scss',
+  styles: [':host { display: block; min-width: 0; }'],
 })
 export class FormsComponent implements OnInit {
   readonly workspaces = inject(WorkspaceService);
@@ -85,6 +100,19 @@ export class FormsComponent implements OnInit {
 
   readonly rowTrackFn: TrackByFunction<unknown> = (_index: number, row: unknown) =>
     (row as ManagedForm).id;
+
+  workspacePickerOptions(includeAll: boolean) {
+    return [
+      {
+        value: null as number | null,
+        label: includeAll ? 'All workspaces' : 'Select a workspace',
+        disabled: !includeAll,
+      },
+      ...this.workspaces
+        .items()
+        .map((workspace) => ({ value: workspace.id as number | null, label: workspace.name })),
+    ];
+  }
 
   ngOnInit(): void {
     this.workspaces.load().subscribe({ error: () => undefined });
@@ -160,7 +188,7 @@ export class FormsComponent implements OnInit {
 
   openCreateDialog(): void {
     this.selectedForm.set(null);
-    this.formWorkspace.set(this.workspaces.items().find(item => item.code === 'RMC')?.id ?? null);
+    this.formWorkspace.set(this.workspaces.items().find((item) => item.code === 'RMC')?.id ?? null);
     this.formCode.set('');
     this.formName.set('');
     this.formActive.set(true);
@@ -190,7 +218,13 @@ export class FormsComponent implements OnInit {
     const mode = this.dialogMode();
     const code = this.formCode().trim().toUpperCase();
     const name = this.formName().trim();
-    if ((mode !== 'create' && mode !== 'edit') || !code || !name || !this.formWorkspace() || this.isSaving()) {
+    if (
+      (mode !== 'create' && mode !== 'edit') ||
+      !code ||
+      !name ||
+      !this.formWorkspace() ||
+      this.isSaving()
+    ) {
       return;
     }
 

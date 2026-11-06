@@ -85,12 +85,4 @@
 .radio-option--disabled {
   opacity: 0.5;
   cursor: not-allowed;
-  
-  input[type='radio'] {
-    cursor: not-allowed;
-  }
-  
-  span {
-    color: var(--color-text-muted);
-  }
 }

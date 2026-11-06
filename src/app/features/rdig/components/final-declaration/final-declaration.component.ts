@@ -1,3 +1,5 @@
+import { InputDirective } from '../../../../shared/components/settings-ui/settings-ui.components';
+import { SearchableDropdownComponent } from '../../../../shared/components/searchable-dropdown/searchable-dropdown.component';
 import { Component, Input, OnInit, OnDestroy } from '@angular/core';
 import { ReactiveFormsModule, FormGroup, FormControl } from '@angular/forms';
 import { Subscription } from 'rxjs';
@@ -10,11 +12,13 @@ import { RdigWorkflowService } from '../../services/rdig-workflow.service';
 @Component({
     selector: 'app-final-declaration',
     standalone: true,
-    imports: [ReactiveFormsModule, ValidationMessageComponent, CharacterCounterComponent, ReviewBlockComponent, ApprovalCardComponent],
+    imports: [InputDirective,SearchableDropdownComponent,ReactiveFormsModule, ValidationMessageComponent, CharacterCounterComponent, ReviewBlockComponent, ApprovalCardComponent],
     templateUrl: './final-declaration.component.html',
     styleUrl: './final-declaration.component.scss'
 })
 export class FinalDeclarationComponent implements OnInit, OnDestroy {
+  standardOptions0() { return [{value: '', label: '-- Select Reviewer --'}, ...this.reviewers.map(r => ({value: String(r.id), label: (r.name)}))]; }
+  standardOptions1() { return [{value: '', label: '-- Select Reviewer --'}, ...this.reviewers.map(r => ({value: String(r.id), label: (r.name)}))]; }
     @Input({ required: true }) parentForm!: FormGroup;
     @Input() showHosComments = false;
     @Input() showRmcComments = false;

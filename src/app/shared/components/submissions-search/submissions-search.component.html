@@ -1,29 +1,4 @@
-<div class="submissions-search-top-row">
-  <ng-content select="[search-top-row]"></ng-content>
-</div>
-<div class="submissions-search-controls">
-  <div class="submissions-search" [class.submissions-search--focused]="focused()">
-    <span class="material-icons submissions-search__icon">search</span>
-    <input
-      class="submissions-search__input"
-      type="search"
-      [placeholder]="placeholder()"
-      [value]="draftValue()"
-      (input)="onInput($event)"
-      (keydown.enter)="submitSearch()"
-      (focus)="focused.set(true)"
-      (blur)="focused.set(false)"
-    />
-  </div>
-  <div class="submissions-search-filters">
-    <ng-content select="[search-filters]"></ng-content>
-  </div>
-  <div class="submissions-search-actions">
-    <button type="button" class="btn btn-primary" (click)="submitSearch()">
-      <span class="material-icons">search</span>Search
-    </button>
-    <button type="button" class="btn btn-secondary" (click)="refreshSearch()">
-      <span class="material-icons">refresh</span>Reset
-    </button>
-  </div>
-</div>
+<div class="submissions-search-top-row"><ng-content select="[search-top-row]" /></div>
+<app-search-toolbar [placeholder]="placeholder()" [query]="draftValue()" (queryChange)="draftValue.set($event)" (search)="submitSearch()" (reset)="refreshSearch()">
+  <ng-content select="[search-filters]" />
+</app-search-toolbar>

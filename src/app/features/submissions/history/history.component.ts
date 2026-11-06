@@ -1,3 +1,6 @@
+import { ActionButtonComponent } from '../../../shared/components/action-button/action-button.component';
+import { SettingsPageHeaderComponent } from '../../../shared/components/settings-ui/settings-ui.components';
+import { InputDirective } from '../../../shared/components/settings-ui/settings-ui.components';
 import { DatePickerComponent } from '../../../shared/components/date-picker/date-picker.component';
 import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { NgClass } from '@angular/common';
@@ -32,7 +35,7 @@ import { formatDisplayDate } from '../../../shared/utils/date-time.util';
 @Component({
   selector: 'app-history',
   standalone: true,
-  imports: [
+  imports: [ActionButtonComponent,SettingsPageHeaderComponent,InputDirective,
     DatePickerComponent,
     NgClass,
     PaginationComponent,

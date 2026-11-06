@@ -3,6 +3,8 @@
 @use 'index';
 @use 'flexbox';
 @use 'forms';
+@use 'settings-ui';
+@use 'selection-controls';
 @use 'table-pagination';
 
 @include index.container-utilities;

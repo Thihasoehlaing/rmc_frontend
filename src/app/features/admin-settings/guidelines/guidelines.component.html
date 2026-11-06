@@ -1,111 +1,61 @@
 <div class="guidelines-container">
-  <div class="guidelines-shell">
+  <div class="settings-page">
     <app-admin-settings-page-header
       title="Guidelines"
       description="Build and manage instruction content shown to applicants in each form."
     >
-      <button
+      <app-action-button
         header-action
-        class="btn btn-primary guidelines-add-btn"
-        type="button"
-        (click)="addGuideline()"
+        [label]="'Add Guideline'"
+        type="primary"
+        size="small"
+        [icon]="'add'"
         [disabled]="isLoading()"
-      >
-        <span class="material-icons" aria-hidden="true">add</span>
-        Add Guideline
-      </button>
+        (clicked)="addGuideline()"
+      />
     </app-admin-settings-page-header>
 
-    <section class="guidelines-filter-wrapper" aria-label="Guideline filters">
-      @if (isLoading()) {
-        <div class="guidelines-filter-skeleton" role="status" aria-busy="true" aria-label="Loading guideline filters">
-          <span class="sr-only">Loading guideline filters</span>
-          <div class="guidelines-filter-skeleton__search">
-            <span class="skeleton-block guidelines-filter-skeleton__icon"></span>
-            <span class="skeleton-block guidelines-filter-skeleton__text"></span>
-          </div>
-          <div class="guidelines-filter-skeleton__filter">
-            <span class="skeleton-block guidelines-filter-skeleton__filter-text"></span>
-            <span class="skeleton-block guidelines-filter-skeleton__chevron"></span>
-          </div>
-          <div class="guidelines-filter-skeleton__actions">
-            <div class="guidelines-filter-skeleton__button">
-              <span class="skeleton-block guidelines-filter-skeleton__button-icon"></span>
-              <span class="skeleton-block guidelines-filter-skeleton__button-text"></span>
-            </div>
-            <div class="guidelines-filter-skeleton__button">
-              <span class="skeleton-block guidelines-filter-skeleton__button-icon"></span>
-              <span class="skeleton-block guidelines-filter-skeleton__button-text"></span>
-            </div>
-          </div>
-        </div>
-      } @else {
-        <app-submissions-search
-          placeholder="Search by title or creator..."
-          [value]="searchTerm()"
-          (search)="onGuidelineSearchChange($event)"
-          (refresh)="resetGuidelineFilters()"
-        >
-          <label search-filters class="guidelines-status-filter">
-            <span>Status</span>
-            <select
-              id="status-filter"
-              class="input--select"
-              [ngModel]="selectedStatus()"
-              (ngModelChange)="onGuidelineStatusChange($event)"
-            >
-              <option value="">All Status</option>
-              <option value="Active">Active</option>
-              <option value="Inactive">Inactive</option>
-            </select>
-          </label>
-        </app-submissions-search>
-      }
-    </section>
+    <app-search-toolbar
+      [disabled]="isLoading()"
+      [query]="searchTerm()"
+      (queryChange)="searchTerm.set($event)"
+      (search)="onGuidelineSearchChange(searchTerm())"
+      (reset)="resetGuidelineFilters()"
+      placeholder="Search by title or creator..."
+    >
+      <div class="settings-filter">
+        <app-dropdown
+          [label]="'Status'"
+          [options]="[
+            { value: '', label: 'All Status' },
+            { value: 'Active', label: 'Active' },
+            { value: 'Inactive', label: 'Inactive' },
+          ]"
+          [ngModel]="selectedStatus()"
+          (ngModelChange)="onGuidelineStatusChange($event)"
+        />
+      </div>
+    </app-search-toolbar>
 
-    <div class="guidelines-table-wrapper">
+    <app-settings-panel title="Guidelines" [count]="totalGuidelines()" [flush]="true">
       @if (isLoading()) {
-        <div class="guidelines-loading-table" role="status" aria-busy="true" aria-label="Loading guidelines">
-          <span class="sr-only">Loading guidelines</span>
-          <div class="guidelines-loading-table__frame">
-            <div class="guidelines-loading-table__scroll">
-              <table aria-hidden="true">
-                <colgroup>
-                  @for (column of skeletonColumns; track $index) {
-                    <col [style.width]="column.width" />
-                  }
-                </colgroup>
-                <thead>
-                  <tr>
-                    @for (column of skeletonColumns; track $index) {
-                      <th><span class="skeleton-block guidelines-loading-table__header-line"></span></th>
-                    }
-                  </tr>
-                </thead>
-                <tbody>
-                  @for (row of skeletonRows; track row) {
-                    <tr>
-                      @for (column of skeletonColumns; track $index) {
-                        <td><span class="skeleton-block guidelines-loading-table__cell-line"></span></td>
-                      }
-                    </tr>
-                  }
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
+        <app-state title="Loading settings" icon="hourglass_empty" />
       } @else if (loadFailed()) {
-        <div class="guidelines-state">
-          <span class="material-icons">cloud_off</span>
-          <h2>Unable to load guidelines</h2>
-          <p>Check the API connection and try again.</p>
-          <button class="btn btn-primary" type="button" (click)="loadGuidelines()">
-            Try Again
-          </button>
-        </div>
+        <app-state
+          [title]="'Unable to load guidelines'"
+          [description]="'Check the API connection and try again.'"
+          icon="inbox"
+          [error]="true"
+          ><app-action-button
+            [label]="'Try Again'"
+            type="primary"
+            size="small"
+            (clicked)="loadGuidelines()"
+        /></app-state>
       } @else {
         <app-data-table
+          [dense]="true"
+          [embedded]="true"
           class="guidelines-options-table"
           [columns]="columns"
           [rows]="displayedGuidelines()"
@@ -131,59 +81,51 @@
               <td>{{ row.lastUpdated }}</td>
               <td>{{ row.createdBy }}</td>
               <td class="actions-cell">
-                <button
-                  class="icon-btn icon-btn--view"
-                  type="button"
-                  title="View guideline"
+                <app-action-button
+                  [label]="'View guideline'"
+                  type="primary"
+                  size="small"
+                  [icon]="'visibility'"
+                  [iconOnly]="true"
                   [disabled]="loadingGuidelineId() !== null"
-                  (click)="viewGuideline(row)"
-                >
-                  <app-table-action-icon action="view"></app-table-action-icon>
-                </button>
+                  [title]="'View guideline'"
+                  (clicked)="viewGuideline(row)"
+                  [ariaLabel]="'View guideline'"
+                />
 
-                <button
-                  class="icon-btn icon-btn--edit"
-                  type="button"
-                  title="Edit guideline"
+                <app-action-button
+                  [label]="'Edit guideline'"
+                  type="primary"
+                  size="small"
+                  [icon]="'edit'"
+                  [iconOnly]="true"
                   [disabled]="loadingGuidelineId() !== null"
-                  (click)="editGuideline(row.id)"
-                >
-                  <app-table-action-icon action="edit"></app-table-action-icon>
-                </button>
+                  [title]="'Edit guideline'"
+                  (clicked)="editGuideline(row.id)"
+                  [ariaLabel]="'Edit guideline'"
+                />
 
-                <button
-                  class="icon-btn icon-btn--delete"
-                  type="button"
-                  title="Delete guideline"
+                <app-action-button
+                  [label]="'Delete guideline'"
+                  type="primary"
+                  size="small"
+                  [icon]="'delete_outline'"
+                  [iconOnly]="true"
                   [disabled]="loadingGuidelineId() !== null"
-                  (click)="openDeleteDialog(row)"
-                >
-                  <app-table-action-icon action="delete"></app-table-action-icon>
-                </button>
+                  [title]="'Delete guideline'"
+                  (clicked)="openDeleteDialog(row)"
+                  [ariaLabel]="'Delete guideline'"
+                />
               </td>
             </tr>
           </ng-template>
         </app-data-table>
       }
-    </div>
+    </app-settings-panel>
 
     @if (!loadFailed()) {
-      <div class="guidelines-pagination-wrapper">
-        @if (isLoading()) {
-          <div class="guidelines-pagination-skeleton" role="status" aria-busy="true" aria-label="Loading guideline pagination">
-            <span class="sr-only">Loading guideline pagination</span>
-            <div class="guidelines-pagination-skeleton__summary">
-              <span class="skeleton-block guidelines-pagination-skeleton__summary-line"></span>
-            </div>
-            <div class="guidelines-pagination-skeleton__pages">
-          <div class="skeleton-block guidelines-pagination-skeleton__page"></div>
-            </div>
-            <div class="guidelines-pagination-skeleton__size">
-              <span class="skeleton-block guidelines-pagination-skeleton__size-text"></span>
-              <span class="skeleton-block guidelines-pagination-skeleton__size-chevron"></span>
-            </div>
-          </div>
-        } @else {
+      <div class="settings-pagination">
+        @if (!isLoading()) {
           <app-pagination
             [currentPage]="guidelinePage()"
             [totalPages]="guidelineTotalPages()"
@@ -213,6 +155,7 @@
   ></app-add-guideline-modal>
 
   <app-dialog
+    density="compact"
     [isOpen]="guidelineToDelete() !== null"
     title="Delete Guideline"
     size="small"
@@ -231,31 +174,21 @@
       </div>
     }
 
-    <div dialog-footer class="dialog-actions">
-      <button
-        class="btn btn-secondary"
-        type="button"
+    <div dialog-footer class="settings-actions">
+      <app-action-button
+        [label]="'Cancel'"
+        type="secondary"
+        size="small"
         [disabled]="loadingGuidelineId() !== null"
-        (click)="closeDeleteDialog()"
-      >
-        Cancel
-      </button>
-      <button
-        class="btn btn-danger"
-        type="button"
+        (clicked)="closeDeleteDialog()"
+      />
+      <app-action-button
+        [label]="loadingGuidelineId() !== null ? 'Deleting...' : 'Delete'"
+        type="danger"
+        size="small"
         [disabled]="loadingGuidelineId() !== null"
-        (click)="confirmDelete()"
-      >
-        {{ loadingGuidelineId() !== null ? 'Deleting...' : 'Delete' }}
-      </button>
+        (clicked)="confirmDelete()"
+      />
     </div>
   </app-dialog>
 </div>
-
-
-
-
-
-
-
-

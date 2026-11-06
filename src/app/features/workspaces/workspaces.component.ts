@@ -1,3 +1,4 @@
+import { ActionButtonComponent } from '../../shared/components/action-button/action-button.component';
 import { Component, HostListener, OnInit, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
@@ -6,7 +7,7 @@ import { SHARED_SETTINGS_MODULES } from '../settings/settings.config';
 
 @Component({
   standalone: true,
-  imports: [RouterLink],
+  imports: [ActionButtonComponent,RouterLink],
   templateUrl: './workspaces.component.html',
   styleUrl: './workspaces.component.scss',
 })
@@ -41,8 +42,6 @@ export class WorkspacesComponent implements OnInit {
       error: () => this.failed.set(true),
     });
   }
-
-  initial(name: string): string { return Array.from(name.trim())[0]?.toLocaleUpperCase() || '?'; }
 
   destination(workspace: Workspace): string | null {
     return this.workspaces.destination(workspace)?.href ?? null;

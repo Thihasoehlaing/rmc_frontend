@@ -29,10 +29,7 @@
 
         <div class="detail-actions">
           @if (canPrint()) {
-            <button type="button" class="btn btn-secondary" (click)="print()">
-              <span class="material-icons" aria-hidden="true">print</span>
-              Print
-            </button>
+            <app-action-button [label]="'Print'" type="secondary" size="small" [icon]="'print'" (clicked)="print()" buttonType="button" />
           }
           @for (action of actions(); track action.action_code) {
             <a

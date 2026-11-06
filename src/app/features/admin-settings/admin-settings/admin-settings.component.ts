@@ -1,3 +1,8 @@
+import {
+  SettingsPageHeaderComponent,
+  SettingsPanelComponent,
+} from '../../../shared/components/settings-ui/settings-ui.components';
+import { StatusBadgeComponent } from '../../../shared/components/form-standard/form-standard.components';
 import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
@@ -13,7 +18,7 @@ interface AdminCard {
 @Component({
   selector: 'app-admin-settings',
   standalone: true,
-  imports: [RouterLink],
+  imports: [SettingsPageHeaderComponent, SettingsPanelComponent, StatusBadgeComponent, RouterLink],
   templateUrl: './admin-settings.component.html',
   styleUrls: ['./admin-settings.component.scss'],
 })

@@ -1,4 +1,6 @@
 <app-dialog
+  density="compact"
+  [closeDisabled]="isSaving"
   [isOpen]="true"
   [title]="editId ? 'Edit Guideline' : 'Add Guideline'"
   size="large"
@@ -15,9 +17,9 @@
       </div>
 
       <div class="section-fields row--2 guideline-meta-grid">
-        <div class="form-field">
-          <label for="guideline-title" class="form-label">Guideline Title</label>
+        <app-field [label]="'Guideline Title'" controlId="guideline-title">
           <input
+            appInput
             id="guideline-title"
             type="text"
             class="input--text"
@@ -25,22 +27,16 @@
             (ngModelChange)="onTitleChange($event)"
             [disabled]="isSaving"
           />
-        </div>
+        </app-field>
 
-        <div class="form-field">
-          <label for="guideline-form" class="form-label">Form</label>
-          <select
-            id="guideline-form"
-            class="input--select"
+        <div class="settings-filter">
+          <app-dropdown
+            [label]="'Form'"
+            [options]="standardOptions0()"
             [ngModel]="guidelineConfig().formId?.toString() ?? ''"
             (ngModelChange)="onFormChange($event)"
             [disabled]="isSaving"
-          >
-            <option value="">Select a form</option>
-            @for (form of forms(); track form.id) {
-              <option [value]="form.id.toString()">{{ form.form_name }}</option>
-            }
-          </select>
+          />
         </div>
       </div>
     </section>
@@ -81,30 +77,32 @@
           </div>
         </div>
 
-        <button
-          type="button"
-          class="btn btn-secondary"
-          (click)="openPreview()"
+        <app-action-button
+          [label]="'Preview'"
+          type="secondary"
+          size="small"
           [disabled]="isContentEmpty()"
-        >
-          Preview
-        </button>
+          (clicked)="openPreview()"
+        />
       </div>
     </section>
   </div>
 
-  <div dialog-footer class="guideline-dialog-actions">
-    <button type="button" (click)="onClose()" class="btn btn-secondary" [disabled]="isSaving">
-      Cancel
-    </button>
-    <button
-      type="button"
-      (click)="onSave()"
-      class="btn btn-primary"
+  <div dialog-footer class="settings-actions">
+    <app-action-button
+      [label]="'Cancel'"
+      type="secondary"
+      size="small"
+      [disabled]="isSaving"
+      (clicked)="onClose()"
+    />
+    <app-action-button
+      [label]="isSaving ? 'Saving...' : 'Save Guideline'"
+      type="primary"
+      size="small"
       [disabled]="isSaving || isSaveDisabled()"
-    >
-      {{ isSaving ? 'Saving...' : 'Save Guideline' }}
-    </button>
+      (clicked)="onSave()"
+    />
   </div>
 </app-dialog>
 <app-guidelines-modal

@@ -67,7 +67,7 @@
           <div class="demo-user-filters">
             <label>
               <span>Filter by name</span>
-              <input
+              <input appInput
                 type="search"
                 aria-label="Filter demo users by name"
                 placeholder="Search name or username"
@@ -77,16 +77,7 @@
             </label>
             <label>
               <span>Filter by role</span>
-              <select
-                aria-label="Filter demo users by role"
-                [value]="demoRoleFilter()"
-                (change)="demoRoleFilter.set($any($event.target).value)"
-              >
-                <option value="">All roles</option>
-                @for (role of demoRoles(); track role) {
-                  <option [value]="role">{{ role }}</option>
-                }
-              </select>
+              <app-dropdown [options]="standardOptions0()" [ngModel]="demoRoleFilter()" (ngModelChange)="demoRoleFilter.set($event)" ariaLabel="Filter demo users by role" />
             </label>
           </div>
 

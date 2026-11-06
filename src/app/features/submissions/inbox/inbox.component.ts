@@ -1,3 +1,6 @@
+import { ActionButtonComponent } from '../../../shared/components/action-button/action-button.component';
+import { SettingsPageHeaderComponent } from '../../../shared/components/settings-ui/settings-ui.components';
+import { InputDirective } from '../../../shared/components/settings-ui/settings-ui.components';
 import { DatePickerComponent } from '../../../shared/components/date-picker/date-picker.component';
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
@@ -28,7 +31,7 @@ import { formatDisplayDate } from '../../../shared/utils/date-time.util';
 @Component({
   selector: 'app-inbox',
   standalone: true,
-  imports: [
+  imports: [ActionButtonComponent,SettingsPageHeaderComponent,InputDirective,
     DatePickerComponent,
     PaginationComponent,
     TableActionIconComponent,

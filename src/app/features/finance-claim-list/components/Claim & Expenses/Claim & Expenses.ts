@@ -1,3 +1,7 @@
+import { ActionButtonComponent } from '../../../../shared/components/action-button/action-button.component';
+import { InputDirective } from '../../../../shared/components/settings-ui/settings-ui.components';
+import { DatePickerComponent } from '../../../../shared/components/date-picker/date-picker.component';
+import { DropdownComponent } from '../../../../shared/components/dropdown/dropdown.component';
 import { Component, OnInit, Output, EventEmitter, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -18,7 +22,7 @@ interface ExpenseRow {
 @Component({
 	selector: 'app-claim-expenses',
 	standalone: true,
-	imports: [
+	imports: [ActionButtonComponent,InputDirective,DatePickerComponent,DropdownComponent,
 		CommonModule,
 		ReactiveFormsModule,
 		ValidationMessageComponent,
@@ -30,6 +34,8 @@ interface ExpenseRow {
 	styleUrls: ['./Claim & Expenses.scss']
 })
 export class ClaimExpensesComponent implements OnInit {
+  standardOptions0() { return [{value: '', label: 'Select category', disabled: true}, ...this.expenseCategories.map(category => ({value: String(category), label: (category)}))]; }
+  standardOptions1() { return [{value: '', label: 'Select a bank', disabled: true}, {value: 'maybank', label: 'Maybank'}, {value: 'cimb', label: 'CIMB Bank'}, {value: 'public', label: 'Public Bank'}, {value: 'rhb', label: 'RHB Bank'}, {value: 'hongleong', label: 'Hong Leong Bank'}, {value: 'ambank', label: 'AmBank'}, {value: 'bsn', label: 'BSN'}, {value: 'alliance', label: 'Alliance Bank'}, {value: 'other', label: 'Other'}]; }
 	private fb = inject(FormBuilder);
 
 	@Output() formValidityChange = new EventEmitter<boolean>();

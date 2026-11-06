@@ -1,3 +1,4 @@
+import { provideRouter } from '@angular/router';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { AdminSettingsComponent } from './admin-settings.component';
@@ -9,6 +10,7 @@ describe('AdminSettingsComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [AdminSettingsComponent],
+      providers: [provideRouter([])],
     }).compileComponents();
 
     fixture = TestBed.createComponent(AdminSettingsComponent);
@@ -20,3 +22,5 @@ describe('AdminSettingsComponent', () => {
     expect(component).toBeTruthy();
   });
 });
+
+afterEach(() => TestBed.resetTestingModule());

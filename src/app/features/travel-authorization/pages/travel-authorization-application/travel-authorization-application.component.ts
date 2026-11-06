@@ -1,3 +1,7 @@
+import { ActionButtonComponent } from '../../../../shared/components/action-button/action-button.component';
+import { InputDirective } from '../../../../shared/components/settings-ui/settings-ui.components';
+import { DatePickerComponent } from '../../../../shared/components/date-picker/date-picker.component';
+import { DropdownComponent } from '../../../../shared/components/dropdown/dropdown.component';
 import { Component, DestroyRef, HostListener, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
@@ -36,7 +40,6 @@ import { ActionLoadingService } from '../../../../core/services/action-loading.s
 import { DecimalAmountDirective } from '../../../../shared/directives/decimal-amount.directive';
 import { MyrCurrencyPipe } from '../../../../shared/pipes/myr-currency.pipe';
 
-import { TableActionIconComponent } from '../../../../shared/components/table-action-icon/table-action-icon.component';
 
 interface FunctionalAreaOption {
   label: string;
@@ -46,8 +49,7 @@ interface FunctionalAreaOption {
 @Component({
   selector: 'app-travel-authorization-application',
   standalone: true,
-  imports: [
-    TableActionIconComponent,
+  imports: [ActionButtonComponent,InputDirective,DatePickerComponent,DropdownComponent,
     CommonModule,
     SearchableDropdownComponent,
     ReactiveFormsModule,

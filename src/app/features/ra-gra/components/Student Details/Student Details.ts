@@ -1,3 +1,6 @@
+import { InputDirective } from '../../../../shared/components/settings-ui/settings-ui.components';
+import { DatePickerComponent } from '../../../../shared/components/date-picker/date-picker.component';
+import { DropdownComponent } from '../../../../shared/components/dropdown/dropdown.component';
 import {
   Component,
   Input,
@@ -27,7 +30,7 @@ import { DropdownOption } from '../../../../core/interfaces/components.interface
 @Component({
   selector: 'app-ragra-student-details',
   standalone: true,
-  imports: [
+  imports: [InputDirective,DatePickerComponent,DropdownComponent,
     CommonModule,
     ReactiveFormsModule,
     ValidationMessageComponent,

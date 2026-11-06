@@ -1,3 +1,15 @@
+import {
+  SettingsPageHeaderComponent,
+  SettingsPanelComponent,
+  SearchToolbarComponent,
+  FieldComponent,
+  InputDirective,
+  StateComponent,
+  ToggleComponent,
+} from '../../../shared/components/settings-ui/settings-ui.components';
+import { DropdownComponent } from '../../../shared/components/dropdown/dropdown.component';
+import { StatusBadgeComponent } from '../../../shared/components/form-standard/form-standard.components';
+import { ActionButtonComponent } from '../../../shared/components/action-button/action-button.component';
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, TrackByFunction, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -11,9 +23,6 @@ import {
 } from '../../../shared/components/data-table/data-table.component';
 import { DialogComponent } from '../../../shared/components/dialog/dialog.component';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
-import { SearchableDropdownComponent } from '../../../shared/components/searchable-dropdown/searchable-dropdown.component';
-import { TableActionIconComponent } from '../../../shared/components/table-action-icon/table-action-icon.component';
-import { TableSkeletonComponent } from '../../../shared/components/table-skeleton/table-skeleton.component';
 import {
   ActorTypeOption,
   RequestStatusPayload,
@@ -50,17 +59,24 @@ const COLUMNS: readonly DataTableColumn[] = [
   selector: 'app-request-statuses',
   standalone: true,
   imports: [
+    ActionButtonComponent,
+    StatusBadgeComponent,
+    DropdownComponent,
+    SettingsPageHeaderComponent,
+    SettingsPanelComponent,
+    SearchToolbarComponent,
+    FieldComponent,
+    InputDirective,
+    StateComponent,
+    ToggleComponent,
     CommonModule,
     FormsModule,
     DataTableComponent,
     DialogComponent,
     PaginationComponent,
-    SearchableDropdownComponent,
-    TableActionIconComponent,
-    TableSkeletonComponent,
   ],
   templateUrl: './request-statuses.component.html',
-  styleUrls: ['../forms/forms.component.scss', '../settings-tables.scss', './request-statuses.component.scss'],
+  styleUrl: './request-statuses.component.scss',
 })
 export class RequestStatusesComponent implements OnInit {
   private readonly requestStatusesService = inject(RequestStatusesService);
@@ -89,6 +105,13 @@ export class RequestStatusesComponent implements OnInit {
   readonly formModel = signal<RequestStatusEditorModel>(this.defaultModel());
 
   readonly rowTrackFn: TrackByFunction<RequestStatusSetting> = (_index, row) => row.id;
+
+  formFilterOptions() {
+    return [
+      { value: '', label: 'All forms' },
+      ...this.forms().map((form) => ({ value: form.form_code, label: form.form_name })),
+    ];
+  }
 
   ngOnInit(): void {
     this.loadForms();
@@ -134,7 +157,7 @@ export class RequestStatusesComponent implements OnInit {
       })
       .pipe(finalize(() => this.isLoading.set(false)))
       .subscribe({
-        next: response => {
+        next: (response) => {
           this.rows.set(response.data.items ?? []);
           this.totalItems.set(response.data.pagination?.total_items ?? 0);
           this.totalPages.set(Math.max(1, response.data.pagination?.total_pages ?? 1));
@@ -177,7 +200,7 @@ export class RequestStatusesComponent implements OnInit {
       .get(row.id)
       .pipe(finalize(() => this.isDetailLoading.set(false)))
       .subscribe({
-        next: response => {
+        next: (response) => {
           this.selectedRow.set(response.data);
           this.formModel.set(this.modelFromRow(response.data));
         },
@@ -243,12 +266,15 @@ export class RequestStatusesComponent implements OnInit {
       });
   }
 
-  setField<K extends keyof RequestStatusEditorModel>(key: K, value: RequestStatusEditorModel[K]): void {
-    this.formModel.update(model => ({ ...model, [key]: value }));
+  setField<K extends keyof RequestStatusEditorModel>(
+    key: K,
+    value: RequestStatusEditorModel[K],
+  ): void {
+    this.formModel.update((model) => ({ ...model, [key]: value }));
   }
 
   formOptions(): DropdownOption<number>[] {
-    return this.forms().map(form => ({
+    return this.forms().map((form) => ({
       value: form.id,
       label: form.form_name,
       description: form.form_code,
@@ -257,7 +283,7 @@ export class RequestStatusesComponent implements OnInit {
   }
 
   actorTypeOptions(): DropdownOption<number>[] {
-    return this.actorTypes().map(actor => ({
+    return this.actorTypes().map((actor) => ({
       value: actor.id,
       label: actor.actor_name,
       description: actor.actor_code,
@@ -276,14 +302,15 @@ export class RequestStatusesComponent implements OnInit {
 
   private loadForms(): void {
     this.formCache.getForms().subscribe({
-      next: response => this.forms.set((response.data ?? []).filter(form => form.workspace_code === 'RMC')),
+      next: (response) =>
+        this.forms.set((response.data ?? []).filter((form) => form.workspace_code === 'RMC')),
       error: () => this.forms.set([]),
     });
   }
 
   private loadActorTypes(): void {
     this.requestStatusesService.listActorTypes().subscribe({
-      next: response => this.actorTypes.set(response.data ?? []),
+      next: (response) => this.actorTypes.set(response.data ?? []),
       error: () => this.actorTypes.set([]),
     });
   }

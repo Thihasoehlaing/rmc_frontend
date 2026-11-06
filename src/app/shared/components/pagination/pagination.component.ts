@@ -1,3 +1,4 @@
+import { DropdownComponent } from '../dropdown/dropdown.component';
 import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -12,9 +13,9 @@ export interface PaginationConfig {
 @Component({
   selector: 'app-pagination',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, DropdownComponent],
   templateUrl: './pagination.component.html',
-  styleUrl: './pagination.component.scss'
+  styleUrl: './pagination.component.scss',
 })
 export class PaginationComponent implements OnChanges {
   @Input() currentPage: number = 1;
@@ -40,6 +41,10 @@ export class PaginationComponent implements OnChanges {
     const nextPage = this.clampPage(page);
     this.pageInput = nextPage;
     if (nextPage !== this.currentPage) this.pageChange.emit(nextPage);
+  }
+
+  get pageSizeDropdownOptions() {
+    return this.pageSizeOptions.map((value) => ({ value, label: `${value} per page` }));
   }
 
   onPageSizeChange(newSize: number) {

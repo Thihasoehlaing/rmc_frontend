@@ -1,3 +1,5 @@
+import { ActionButtonComponent } from '../../../../shared/components/action-button/action-button.component';
+import { InputDirective } from '../../../../shared/components/settings-ui/settings-ui.components';
 import { Component, OnInit, ViewChild, inject, effect, Output, EventEmitter } from '@angular/core';
 import { CustomHeaderComponent } from '../../../../shared/components/custom-header/custom-header.component';
 import { CommonModule } from '@angular/common';
@@ -30,7 +32,7 @@ interface PendingDocumentUpload {
 @Component({
   selector: 'app-documents',
   standalone: true,
-  imports: [
+  imports: [ActionButtonComponent,InputDirective,
     CommonModule,
     ReactiveFormsModule,
     FileUploadComponent,

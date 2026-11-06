@@ -1,3 +1,15 @@
+import {
+  SettingsPageHeaderComponent,
+  SettingsPanelComponent,
+  SearchToolbarComponent,
+  FieldComponent,
+  InputDirective,
+  StateComponent,
+} from '../../../shared/components/settings-ui/settings-ui.components';
+import { DropdownComponent } from '../../../shared/components/dropdown/dropdown.component';
+import { StatusBadgeComponent } from '../../../shared/components/form-standard/form-standard.components';
+import { ActionButtonComponent } from '../../../shared/components/action-button/action-button.component';
+import { DatePickerComponent } from '../../../shared/components/date-picker/date-picker.component';
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, TrackByFunction, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -10,12 +22,8 @@ import {
 } from '../../../shared/components/data-table/data-table.component';
 import { ToastService } from '../../../core/services/toast.service';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
-import { TableSkeletonComponent } from '../../../shared/components/table-skeleton/table-skeleton.component';
 import { TextEditorComponent } from '../../../shared/components/text-editor/text-editor.component';
-import {
-  formatDisplayDate,
-  formatDisplayDateTime,
-} from '../../../shared/utils/date-time.util';
+import { formatDisplayDate, formatDisplayDateTime } from '../../../shared/utils/date-time.util';
 import {
   DingDongTestMailResult,
   MailLog,
@@ -76,7 +84,8 @@ const TABS: readonly MonitoringTabConfig[] = [
     key: 'mail-logs',
     label: 'Mail Logs',
     title: 'Notification Mail Logs',
-    description: 'DingDong delivery attempts for request notifications. Resend creates a new attempt log.',
+    description:
+      'DingDong delivery attempts for request notifications. Resend creates a new attempt log.',
     emptyIcon: 'mark_email_read',
     columns: MAIL_LOG_COLUMNS,
   },
@@ -110,15 +119,24 @@ const TABS: readonly MonitoringTabConfig[] = [
   selector: 'app-monitoring',
   standalone: true,
   imports: [
+    ActionButtonComponent,
+    StatusBadgeComponent,
+    DropdownComponent,
+    SettingsPageHeaderComponent,
+    SettingsPanelComponent,
+    SearchToolbarComponent,
+    FieldComponent,
+    InputDirective,
+    StateComponent,
+    DatePickerComponent,
     CommonModule,
     FormsModule,
     DataTableComponent,
     PaginationComponent,
-    TableSkeletonComponent,
     TextEditorComponent,
   ],
   templateUrl: './monitoring.component.html',
-  styleUrls: ['../forms/forms.component.scss', '../settings-tables.scss', './monitoring.component.scss'],
+  styleUrl: './monitoring.component.scss',
 })
 export class MonitoringComponent implements OnInit {
   private readonly monitoringService = inject(MonitoringService);
@@ -159,7 +177,27 @@ export class MonitoringComponent implements OnInit {
     (row as { id?: number })?.id ?? index;
 
   get activeTabConfig(): MonitoringTabConfig {
-    return this.tabs.find(tab => tab.key === this.activeTab()) ?? this.tabs[0];
+    return this.tabs.find((tab) => tab.key === this.activeTab()) ?? this.tabs[0];
+  }
+
+  monitoringStatusOptions() {
+    const mail = this.activeTab() === 'mail-logs' || this.activeTab() === 'notification-logs';
+    return [
+      { value: '', label: 'All' },
+      ...(mail ? ['PENDING', 'SENT', 'FAILED', 'SKIPPED'] : ['SUCCESS', 'FAILED', 'RUNNING']).map(
+        (value) => ({ value, label: value.charAt(0) + value.slice(1).toLowerCase() }),
+      ),
+    ];
+  }
+
+  statusIntent(status: string | null | undefined): 'info' | 'success' | 'warning' | 'error' {
+    return ['SENT', 'SUCCESS'].includes(status || '')
+      ? 'success'
+      : status === 'FAILED'
+        ? 'error'
+        : status === 'PENDING' || status === 'RUNNING'
+          ? 'warning'
+          : 'info';
   }
 
   ngOnInit(): void {
@@ -168,7 +206,7 @@ export class MonitoringComponent implements OnInit {
       this.updateUrlTab(initialTab, true);
     }
 
-    this.route.queryParamMap.subscribe(params => {
+    this.route.queryParamMap.subscribe((params) => {
       const tab = this.tabFromQueryParam(params.get('tab'));
       if (tab !== this.activeTab()) {
         this.activeTab.set(tab);
@@ -256,7 +294,7 @@ export class MonitoringComponent implements OnInit {
         .listMailLogs(query)
         .pipe(finalize(() => this.isLoading.set(false)))
         .subscribe({
-          next: response => {
+          next: (response) => {
             this.mailLogs.set(response.data.items ?? []);
             this.totalItems.set(response.data.pagination?.total_items ?? 0);
             this.totalPages.set(Math.max(1, response.data.pagination?.total_pages ?? 1));
@@ -271,7 +309,7 @@ export class MonitoringComponent implements OnInit {
         .listNotificationLogs(query)
         .pipe(finalize(() => this.isLoading.set(false)))
         .subscribe({
-          next: response => {
+          next: (response) => {
             this.notificationLogs.set(response.data.items ?? []);
             this.totalItems.set(response.data.pagination?.total_items ?? 0);
             this.totalPages.set(Math.max(1, response.data.pagination?.total_pages ?? 1));
@@ -285,7 +323,7 @@ export class MonitoringComponent implements OnInit {
       .listStaffSyncLogs(query)
       .pipe(finalize(() => this.isLoading.set(false)))
       .subscribe({
-        next: response => {
+        next: (response) => {
           this.staffSyncLogs.set(response.data.items ?? []);
           this.totalItems.set(response.data.pagination?.total_items ?? 0);
           this.totalPages.set(Math.max(1, response.data.pagination?.total_pages ?? 1));
@@ -297,7 +335,8 @@ export class MonitoringComponent implements OnInit {
   statusBadgeClass(status: string | null | undefined): string {
     const normalized = (status || '').toUpperCase();
     if (['FAILED', 'ERROR'].includes(normalized)) return 'status-badge status-badge--danger';
-    if (['PENDING', 'RUNNING', 'SKIPPED'].includes(normalized)) return 'status-badge status-badge--warning';
+    if (['PENDING', 'RUNNING', 'SKIPPED'].includes(normalized))
+      return 'status-badge status-badge--warning';
     return 'status-badge';
   }
 
@@ -326,7 +365,7 @@ export class MonitoringComponent implements OnInit {
       })
       .pipe(finalize(() => this.isSendingDingDong.set(false)))
       .subscribe({
-        next: response => {
+        next: (response) => {
           this.dingDongResult.set(response.data);
           const status = response.data?.mail_status || 'UNKNOWN';
           if (status === 'SENT') {
@@ -335,7 +374,7 @@ export class MonitoringComponent implements OnInit {
             this.toastService.info(`DingDong test completed. Status: ${status}.`);
           }
         },
-        error: error => {
+        error: (error) => {
           const message = error?.error?.message || 'Unable to send DingDong test mail.';
           this.toastService.error(message);
         },
@@ -365,12 +404,12 @@ export class MonitoringComponent implements OnInit {
       .resendNotificationMail(recipientId)
       .pipe(finalize(() => this.resendingRecipientId.set(null)))
       .subscribe({
-        next: response => {
+        next: (response) => {
           const status = response.data?.mail_status || 'UNKNOWN';
           this.toastService.success(`Resend attempted. Mail status: ${status}.`);
           this.loadRows();
         },
-        error: error => {
+        error: (error) => {
           const message = error?.error?.message || 'Unable to resend notification mail.';
           this.toastService.error(message);
         },
@@ -394,18 +433,20 @@ export class MonitoringComponent implements OnInit {
       .checkAndCreateNotifications()
       .pipe(finalize(() => this.isCheckingNotifications.set(false)))
       .subscribe({
-        next: response => {
+        next: (response) => {
           const result = response.data;
           const created = result?.created_notification_count ?? 0;
           const failed = result?.failed_count ?? 0;
           if (failed > 0) {
-            this.toastService.info(`Created ${created} notification(s). ${failed} approval(s) failed.`);
+            this.toastService.info(
+              `Created ${created} notification(s). ${failed} approval(s) failed.`,
+            );
           } else {
             this.toastService.success(`Created ${created} missing notification(s).`);
           }
           this.loadRows();
         },
-        error: error => {
+        error: (error) => {
           const message = error?.error?.message || 'Unable to check and create notifications.';
           this.toastService.error(message);
         },
@@ -433,11 +474,16 @@ export class MonitoringComponent implements OnInit {
   }
 
   private hasPlainText(html: string): boolean {
-    return html.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim().length > 0;
+    return (
+      html
+        .replace(/<[^>]*>/g, '')
+        .replace(/&nbsp;/g, ' ')
+        .trim().length > 0
+    );
   }
 
   private tabFromQueryParam(value: string | null): MonitoringTab {
-    return this.tabs.find(tab => tab.key === value)?.key ?? 'mail-logs';
+    return this.tabs.find((tab) => tab.key === value)?.key ?? 'mail-logs';
   }
 
   private updateUrlTab(tab: MonitoringTab, replaceUrl = false): void {

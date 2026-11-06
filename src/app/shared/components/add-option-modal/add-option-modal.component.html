@@ -1,206 +1,174 @@
-@if (isOpen) {
-  <div class="modal-overlay">
-    <div class="modal-dialog" (click)="$event.stopPropagation()">
-      <header class="modal-dialog__header">
-        <h4>{{ title }}</h4>
-        <button
-          type="button"
-          class="modal-dialog__close"
-          (click)="onCancel()"
-          aria-label="Close dialog"
+<app-dialog
+  [isOpen]="isOpen"
+  [title]="title"
+  density="compact"
+  [closeDisabled]="isSaving"
+  (close)="onCancel()"
+>
+  <div class="settings-editor">
+    @if (showCategory) {
+      <div class="settings-muted">
+        Category <app-status-badge>{{ categoryLabel || 'Fixed' }}</app-status-badge>
+      </div>
+    }
+    @if (showCode) {
+      <app-field [label]="codeLabel" controlId="option-code" [required]="true"
+        ><input
+          appInput
+          id="option-code"
+          [(ngModel)]="code"
+          [placeholder]="'Enter ' + codeLabel.toLowerCase()"
+          [disabled]="isSaving"
+      /></app-field>
+    }
+    @if (showSymbol) {
+      <app-field [label]="symbolLabel" controlId="option-symbol" [required]="true"
+        ><input
+          appInput
+          id="option-symbol"
+          [(ngModel)]="symbol"
+          maxlength="10"
+          [disabled]="isSaving"
+      /></app-field>
+    }
+    <app-field [label]="optionNameLabel" controlId="option-name" [required]="true"
+      ><input
+        appInput
+        id="option-name"
+        [(ngModel)]="name"
+        [readonly]="nameReadonly"
+        [attr.maxlength]="optionNameMaxLength"
+        [disabled]="isSaving"
+      />
+      @if (showOptionNameCounter && optionNameMaxLength !== null) {
+        <app-character-counter [current]="name.length" [max]="optionNameMaxLength" />
+      }
+    </app-field>
+    @if (showCountry) {
+      <app-dropdown
+        [label]="countryLabel"
+        [options]="countryOptions"
+        [(ngModel)]="countryId"
+        [disabled]="isSaving"
+      />
+    }
+    @if (showParentDomain) {
+      <app-dropdown
+        [label]="parentDomainLabel"
+        [options]="parentDomainOptions"
+        [(ngModel)]="parentDomainId"
+        [disabled]="isSaving"
+      />
+    }
+    @if (showAccountNumberMetadata) {
+      <app-field [label]="accountNumberLabel" controlId="option-account" [required]="true"
+        ><input appInput id="option-account" [(ngModel)]="accountNumber" [disabled]="isSaving"
+      /></app-field>
+    }
+    @if (showRegionMetadata) {
+      <div class="row--2">
+        <app-field label="Percentage" controlId="option-percentage" [required]="true"
+          ><input
+            appInput
+            id="option-percentage"
+            type="number"
+            [(ngModel)]="percentage"
+            [disabled]="isSaving"
+        /></app-field>
+        <app-field label="Limit (RM)" controlId="option-limit" [required]="true"
+          ><input
+            appInput
+            appDecimalAmount
+            id="option-limit"
+            inputmode="decimal"
+            [(ngModel)]="limit"
+            [disabled]="isSaving"
+        /></app-field>
+      </div>
+      <app-field label="Description" controlId="option-description" [required]="true">
+        <textarea
+          appInput
+          id="option-description"
+          [(ngModel)]="description"
+          [readonly]="descriptionReadonly"
+          rows="3"
+          [disabled]="isSaving"
+        ></textarea>
+      </app-field>
+    }
+    @if (allowFormSharing) {
+      @if (categoryLabel) {
+        <p class="form-hint">
+          Only forms that already have the {{ categoryLabel }} category are shown.
+        </p>
+      }
+      @if (usesSearchableFormSharing) {
+        <app-dropdown
+          label="Forms"
+          [options]="availableFormOptions"
+          [isMulti]="true"
+          [formControl]="appliesToControl"
+          [disabled]="isSaving"
+        />
+      } @else {
+        <app-dropdown
+          label="Forms"
+          [options]="fallbackFormOptions()"
+          [isMulti]="true"
+          [(ngModel)]="appliesTo"
+          [disabled]="isSaving"
+        />
+      }
+      @if (showAppliesToError) {
+        <app-validation-message message="Select at least one form." />
+      }
+      @if (selectedAppliesTo.length) {
+        <p class="form-hint">
+          Shared across {{ selectedAppliesTo.length }} form{{
+            selectedAppliesTo.length > 1 ? 's' : ''
+          }}.
+        </p>
+      }
+    }
+    <fieldset class="settings-choice-field">
+      <legend>Status</legend>
+      <div class="selection-options">
+        <label class="radio-field__option"
+          ><input
+            class="input--radio"
+            type="radio"
+            name="option-status"
+            value="Active"
+            [(ngModel)]="status"
+            [disabled]="isSaving"
+          />Active</label
         >
-          <span class="material-icons">close</span>
-        </button>
-      </header>
-
-      <section class="modal-dialog__body modal-dialog__body--scrollable">
-        <ng-container *ngIf="showCategory">
-          <label class="form-label">Category</label>
-          <div class="category-locked">
-            {{ categoryLabel || 'Fixed' }} <span class="pill">Locked</span>
-          </div>
-        </ng-container>
-
-        <div class="form-field" *ngIf="showCode">
-          <label class="form-label">{{ codeLabel }} *</label>
-          <input
-            type="text"
-            class="input--text"
-            [(ngModel)]="code"
-            [placeholder]="'Enter ' + codeLabel.toLowerCase()"
-          />
-        </div>
-
-        <div class="form-field" *ngIf="showSymbol">
-          <label class="form-label">{{ symbolLabel }} *</label>
-          <input
-            type="text"
-            class="input--text"
-            [(ngModel)]="symbol"
-            maxlength="10"
-            [placeholder]="'Enter ' + symbolLabel.toLowerCase()"
-          />
-        </div>
-
-        <div class="form-field">
-          <label class="form-label">{{ optionNameLabel }} *</label>
-          <input
-            type="text"
-            class="input--text"
-            [(ngModel)]="name"
-            [readonly]="nameReadonly"
-            [attr.maxlength]="optionNameMaxLength"
-            placeholder="e.g. Applied Research"
-          />
-          <div
-            *ngIf="showOptionNameCounter && optionNameMaxLength !== null"
-            class="character-counter"
-            [class.character-counter--limit]="name.length >= optionNameMaxLength"
-            aria-live="polite"
-          >
-            {{ name.length }}/{{ optionNameMaxLength }}
-          </div>
-        </div>
-
-        <div class="form-field" *ngIf="showCountry">
-          <label class="form-label">{{ countryLabel }} *</label>
-          <app-searchable-dropdown
-            [options]="countryOptions"
-            [isMulti]="false"
-            valueMode="single"
-            placeholder="Select country"
-            [(ngModel)]="countryId"
-          ></app-searchable-dropdown>
-        </div>
-
-        <div class="form-field" *ngIf="showParentDomain">
-          <label class="form-label">{{ parentDomainLabel }} *</label>
-          <app-searchable-dropdown
-            [options]="parentDomainOptions"
-            [isMulti]="false"
-            valueMode="single"
-            placeholder="Select a research domain"
-            [(ngModel)]="parentDomainId"
-          ></app-searchable-dropdown>
-        </div>
-
-        <div class="form-field metadata-field" *ngIf="showAccountNumberMetadata">
-          <label class="form-label">{{ accountNumberLabel }} *</label>
-          <input
-            type="text"
-            class="input--text"
-            [(ngModel)]="accountNumber"
-            [placeholder]="'Enter ' + accountNumberLabel.toLowerCase()"
-          />
-        </div>
-
-        <div class="region-metadata-grid" *ngIf="showRegionMetadata">
-          <div class="form-field">
-            <label class="form-label">Percentage *</label>
-            <input
-              type="number"
-              class="input--text"
-              [(ngModel)]="percentage"
-              placeholder="Enter percentage"
-            />
-          </div>
-
-          <div class="form-field">
-            <label class="form-label">Limit (RM) *</label>
-            <input
-              appDecimalAmount
-              type="text"
-              inputmode="decimal"
-              class="input--text"
-              [(ngModel)]="limit"
-              placeholder="Enter limit amount"
-            />
-          </div>
-
-          <div class="form-field form-field--full">
-            <label class="form-label">Description *</label>
-            <textarea
-              class="input--textarea"
-              [(ngModel)]="description"
-              [readonly]="descriptionReadonly"
-              placeholder="Enter description"
-              rows="3"
-            ></textarea>
-          </div>
-        </div>
-
-        <ng-container *ngIf="allowFormSharing">
-          <label class="form-label">Forms *</label>
-          <p class="helper-text" *ngIf="categoryLabel">
-            Only forms that already have the {{ categoryLabel }} category are shown.
-          </p>
-          <app-searchable-dropdown
-            *ngIf="usesSearchableFormSharing; else formChipSharing"
-            [options]="availableFormOptions"
-            [isMulti]="true"
-            valueMode="array"
-            placeholder="Select forms"
-            [formControl]="appliesToControl"
-          ></app-searchable-dropdown>
-
-          <ng-template #formChipSharing>
-            <div class="forms-list">
-              <ng-container *ngIf="availableForms.length > 0; else noAvailableForms">
-                <button
-                  *ngFor="let f of availableForms"
-                  type="button"
-                  class="form-chip"
-                  [class.selected]="appliesTo.includes(f)"
-                  (click)="onToggleForm(f)"
-                >
-                  {{ f }}
-                </button>
-              </ng-container>
-              <ng-template #noAvailableForms>
-                <div class="empty-share-targets">No forms are available for this category.</div>
-              </ng-template>
-            </div>
-          </ng-template>
-
-          <p class="selection-error" *ngIf="showAppliesToError">
-            At least one Dropdown should be selected
-          </p>
-
-          <div *ngIf="selectedAppliesTo.length" class="shared-note">
-            <span class="icon">🔗</span>
-            This option will be shared across {{ selectedAppliesTo.length }} form{{
-              selectedAppliesTo.length > 1 ? 's' : ''
-            }}.
-          </div>
-        </ng-container>
-
-        <label class="form-label">Status</label>
-        <div class="status-toggle">
-          <button
-            type="button"
-            class="btn-pill"
-            [class.active]="status === 'Active'"
-            (click)="status = 'Active'"
-          >
-            Active
-          </button>
-          <button
-            type="button"
-            class="btn-pill"
-            [class.active]="status === 'Inactive'"
-            (click)="status = 'Inactive'"
-          >
-            Inactive
-          </button>
-        </div>
-      </section>
-
-      <footer class="modal-dialog__footer">
-        <button class="btn btn-secondary" type="button" (click)="onCancel()">Cancel</button>
-        <button class="btn btn-primary" type="button" [disabled]="!isValid" (click)="onSave()">
-          {{ primaryActionLabel }}
-        </button>
-      </footer>
-    </div>
+        <label class="radio-field__option"
+          ><input
+            class="input--radio"
+            type="radio"
+            name="option-status"
+            value="Inactive"
+            [(ngModel)]="status"
+            [disabled]="isSaving"
+          />Inactive</label
+        >
+      </div>
+    </fieldset>
   </div>
-}
+  <div dialog-footer class="settings-actions">
+    <app-action-button
+      label="Cancel"
+      type="secondary"
+      size="small"
+      [disabled]="isSaving"
+      (clicked)="onCancel()"
+    /><app-action-button
+      [label]="primaryActionLabel"
+      size="small"
+      [disabled]="!isValid || isSaving"
+      [loading]="isSaving"
+      (clicked)="onSave()"
+    />
+  </div>
+</app-dialog>

@@ -406,3 +406,19 @@ tbody tr:hover,
 :host ::ng-deep .table-action--success:hover:not(:disabled) {
   background: var(--color-success-light);
 }
+
+.data-table--dense thead th {
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-surface-nested);
+  color: var(--color-text-secondary);
+  font-size: var(--fs-xs);
+  border-color: var(--border-subtle);
+}
+:host ::ng-deep .data-table--dense tbody td {
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--fs-sm);
+  border-color: var(--border-subtle);
+  color: var(--color-text-primary);
+}
+.data-table--embedded { border: 0; border-radius: 0; box-shadow: none; }
+.data-table--embedded thead th:first-child, .data-table--embedded thead th:last-child { border-radius: 0; }

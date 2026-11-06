@@ -176,7 +176,7 @@
       <div class="section-fields">
         <div class="form-field">
           <label class="form-label is-required">Name of Reviewer</label>
-          <input
+          <input appInput
             type="text"
             class="input--text"
             formControlName="reviewerName"
@@ -203,11 +203,11 @@
             >
             <div class="radio-group">
               <label class="radio-option">
-                <input type="radio" value="yes" formControlName="manuscriptInternallyReviewed" />
+                <input class="input--radio" type="radio" value="yes" formControlName="manuscriptInternallyReviewed" />
                 <span>Yes</span>
               </label>
               <label class="radio-option">
-                <input type="radio" value="no" formControlName="manuscriptInternallyReviewed" />
+                <input class="input--radio" type="radio" value="no" formControlName="manuscriptInternallyReviewed" />
                 <span>No</span>
               </label>
             </div>
@@ -225,7 +225,7 @@
             >
             <div class="radio-group">
               <label class="radio-option">
-                <input
+                <input class="input--radio"
                   type="radio"
                   value="yes"
                   formControlName="manuscriptPreviouslyPublished"
@@ -234,7 +234,7 @@
                 <span>Yes</span>
               </label>
               <label class="radio-option">
-                <input type="radio" value="no" formControlName="manuscriptPreviouslyPublished" />
+                <input class="input--radio" type="radio" value="no" formControlName="manuscriptPreviouslyPublished" />
                 <span>No</span>
               </label>
             </div>
@@ -266,7 +266,7 @@
   </section>
 </form>
 @if (isPreviouslyPublishedWarningOpen) {
-  <app-dialog
+  <app-dialog density="compact"
     title="Previously Published Manuscript Not Allowed"
     [isOpen]="true"
     size="small"
@@ -277,13 +277,6 @@
       have been published previously in another journal or conference.
     </p>
 
-    <button
-      dialog-footer
-      type="button"
-      class="btn btn-primary"
-      (click)="closePreviouslyPublishedWarning()"
-    >
-      OK
-    </button>
+    <app-action-button [label]="'OK'" type="primary" size="small" (clicked)="closePreviouslyPublishedWarning()" buttonType="button" />
   </app-dialog>
 }

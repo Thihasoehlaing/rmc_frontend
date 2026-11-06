@@ -1,3 +1,6 @@
+import { StateComponent } from '../../../shared/components/settings-ui/settings-ui.components';
+import { DatePickerComponent } from '../../../shared/components/date-picker/date-picker.component';
+import { StatusBadgeComponent } from '../../../shared/components/form-standard/form-standard.components';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -34,7 +37,6 @@ import {
   DataTableColumn,
   DataTableComponent,
 } from '../../../shared/components/data-table/data-table.component';
-import { TableActionIconComponent } from '../../../shared/components/table-action-icon/table-action-icon.component';
 
 // ── Validators ────────────────────────────────────────────────────────────────
 
@@ -63,7 +65,10 @@ function stageWithinBatchValidator(startFn: () => string, endFn: () => string) {
   selector: 'app-batches',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    TableActionIconComponent,
+    StateComponent,
+    DatePickerComponent,
+    StatusBadgeComponent,
+
     CommonModule,
     ReactiveFormsModule,
     ActionButtonComponent,

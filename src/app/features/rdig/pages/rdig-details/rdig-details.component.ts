@@ -1,3 +1,5 @@
+import { InputDirective } from '../../../../shared/components/settings-ui/settings-ui.components';
+import { DropdownComponent } from '../../../../shared/components/dropdown/dropdown.component';
 import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { Location, NgTemplateOutlet } from '@angular/common';
 import { AttachmentDownloadService } from '../../../../core/services/attachment-download.service';
@@ -35,7 +37,6 @@ import {
 } from '../../../../shared/components/data-table/data-table.component';
 import { TableScrollHintComponent } from '../../../../shared/components/table-scroll-hint/table-scroll-hint.component';
 import { ActionLoadingService } from '../../../../core/services/action-loading.service';
-import { TableActionIconComponent } from '../../../../shared/components/table-action-icon/table-action-icon.component';
 import { ReviewBlockComponent } from '../../components/review-block/review-block.component';
 import { CustomSubheaderComponent } from '../../../../shared/components/custom-subheader/custom-subheader.component';
 import { DialogComponent } from '../../../../shared/components/dialog/dialog.component';
@@ -132,13 +133,12 @@ const RESUBMISSION_STATUS_PREFIX = 'pending_applicant_resubmission';
 @Component({
   selector: 'app-rdig-details',
   standalone: true,
-  imports: [
+  imports: [InputDirective,DropdownComponent,
     NgTemplateOutlet,
     ReactiveFormsModule,
     ActionButtonComponent,
     DataTableComponent,
     TableScrollHintComponent,
-    TableActionIconComponent,
     ReviewBlockComponent,
     CustomSubheaderComponent,
     DialogComponent,
@@ -148,6 +148,7 @@ const RESUBMISSION_STATUS_PREFIX = 'pending_applicant_resubmission';
   styleUrl: './rdig-details.component.scss',
 })
 export class RdigDetailsComponent implements OnInit {
+  standardOptions0(maxScore: number) { return [{value: '', label: 'Select score'}, ...this.scoreOptions(maxScore).map(score => ({value: String(score), label: (score) + ' / ' + (maxScore)}))]; }
   private readonly attachmentDownload = inject(AttachmentDownloadService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);

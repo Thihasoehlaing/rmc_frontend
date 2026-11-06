@@ -309,7 +309,9 @@
   font-size: var(--fs-sm);
   background: white;
   color: var(--color-text-primary);
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
 
   &:focus {
     outline: none;
@@ -392,7 +394,9 @@
   color: var(--color-primary);
   cursor: pointer;
   border-radius: var(--radius-sm);
-  transition: background-color 0.2s, color 0.2s;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
 
   &:hover:not(:disabled) {
     background: color-mix(in srgb, var(--color-primary) 10%, white);

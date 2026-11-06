@@ -1,3 +1,5 @@
+import { InputDirective } from '../../../../shared/components/settings-ui/settings-ui.components';
+import { DropdownComponent } from '../../../../shared/components/dropdown/dropdown.component';
 import { Component, Input, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { AttachmentDownloadService } from '../../../../core/services/attachment-download.service';
@@ -33,13 +35,11 @@ import { DecimalAmountDirective } from '../../../../shared/directives/decimal-am
 import { MyrCurrencyPipe } from '../../../../shared/pipes/myr-currency.pipe';
 import { TableRowCounterComponent } from '../../../../shared/components/table-row-counter/table-row-counter.component';
 
-import { TableActionIconComponent } from '../../../../shared/components/table-action-icon/table-action-icon.component';
 
 @Component({
   selector: 'app-team-details',
   standalone: true,
-  imports: [
-    TableActionIconComponent,
+  imports: [InputDirective,DropdownComponent,
     ReactiveFormsModule,
     SearchableDropdownComponent,
     CharacterCounterComponent,
@@ -59,6 +59,8 @@ import { TableActionIconComponent } from '../../../../shared/components/table-ac
   styleUrl: './team-details.component.scss',
 })
 export class TeamDetailsComponent implements OnInit, OnDestroy {
+  standardOptions0() { return [{value: '', label: 'Select organisation type...', disabled: true}, ...this.orgTypes.map(o => ({value: String(o.value), label: (o.label)}))]; }
+  standardOptions1() { return [{value: '', label: 'Select collaborator title...', disabled: true}, ...this.titles.map(t => ({value: String(t.value), label: (t.label)}))]; }
   private readonly attachmentDownload = inject(AttachmentDownloadService);
   private readonly masterData = inject(MasterDataService);
   private readonly rdigApi = inject(RdigApiService);

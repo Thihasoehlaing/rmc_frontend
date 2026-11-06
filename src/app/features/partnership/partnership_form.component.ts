@@ -1,3 +1,5 @@
+import { InputDirective } from '../../shared/components/settings-ui/settings-ui.components';
+import { DropdownComponent } from '../../shared/components/dropdown/dropdown.component';
 import { Component, signal, computed, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
@@ -31,11 +33,12 @@ export type PartnershipStatus =
 @Component({
   selector: 'app-partnership-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, FormMainTitleComponent, StepIndicatorComponent, FormWizardNavComponent, FormCommentPanelComponent, ProposalDetails, RiskAssessment],
+  imports: [InputDirective,DropdownComponent,CommonModule, ReactiveFormsModule, FormsModule, FormMainTitleComponent, StepIndicatorComponent, FormWizardNavComponent, FormCommentPanelComponent, ProposalDetails, RiskAssessment],
   templateUrl: './partnership_form.component.html',
   styleUrls: ['./partnership_form.component.scss']
 })
 export class PartnershipFormComponent {
+  standardOptions0() { return [{value: 'draft', label: 'draft'}, {value: 'submitted', label: 'submitted'}, {value: 'pending_rmc_review', label: 'pending_rmc_review'}, {value: 'pending_proposer_resubmission_rmc', label: 'pending_proposer_resubmission_rmc'}, {value: 'pending_legal_review', label: 'pending_legal_review'}, {value: 'pending_proposer_resubmission_legal', label: 'pending_proposer_resubmission_legal'}, {value: 'pending_sr_director_review', label: 'pending_sr_director_review'}, {value: 'pending_proposer_resubmission_sr_director', label: 'pending_proposer_resubmission_sr_director'}, {value: 'pending_vc_review', label: 'pending_vc_review'}, {value: 'rejected_vc', label: 'rejected_vc'}, {value: 'pending_senior_executive_signing', label: 'pending_senior_executive_signing'}, {value: 'completed', label: 'completed'}]; }
   private fb = inject(FormBuilder);
   private route = inject(ActivatedRoute);
   private actionLoading = inject(ActionLoadingService);

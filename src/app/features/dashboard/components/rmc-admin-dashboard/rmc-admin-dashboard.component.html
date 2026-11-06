@@ -1,14 +1,5 @@
 <main class="dashboard dashboard--rmc_admin admin-dashboard">
-  <header class="dashboard-header admin-dashboard__header">
-    <div>
-      <h1>Analysis Dashboard</h1>
-      <p class="analysis-description">
-        Applications, research funding and workflow statistics for each form.
-      </p>
-    </div>
-    <div class="admin-dashboard__actions">
-      <button type="button" class="btn btn-ghost" (click)="resetFilters()">Reset</button>
-      <button
+  <app-settings-page-header [title]="'Analysis Dashboard'" [description]="'Applications, research funding and workflow statistics for each form.'" eyebrow="Workspace"><div class="settings-actions"><app-action-button [label]="'Reset'" type="primary" size="small" (clicked)="resetFilters()" buttonType="button" /><button
         type="button"
         class="btn btn-secondary dashboard-filter-trigger"
         aria-controls="dashboard-filter-panel"
@@ -16,9 +7,7 @@
         (click)="openFilters()"
       >
         <span class="material-icons" aria-hidden="true">filter_list</span> Filters
-      </button>
-    </div>
-  </header>
+      </button></div></app-settings-page-header>
   <nav class="analysis-form-tabs" aria-label="Analyse a form">
     <button
       type="button"
@@ -58,9 +47,7 @@
   @if (error()) {
     <div class="dashboard-data-note" role="alert">
       <span>{{ error() }}</span
-      ><button type="button" class="btn btn-secondary btn-sm" (click)="loadAnalytics()">
-        Retry
-      </button>
+      ><app-action-button [label]="'Retry'" type="secondary" size="small" (clicked)="loadAnalytics()" buttonType="button" />
     </div>
   } @else if (!loading() && !records().length) {
     <div class="dashboard-data-note" role="status">
@@ -160,9 +147,8 @@
             <span>{{ trendBasis(barTrendMode()) }}</span>
           </div>
           @if (!isExternalDashboard()) {
-            <app-searchable-dropdown
+            <app-dropdown
               placeholder="Select metric"
-              [searchable]="false"
               [options]="barMetricOptions"
               [ngModel]="barTrendMode()"
               (ngModelChange)="setBarTrendMode($event)"
@@ -178,9 +164,8 @@
             <span>{{ trendBasis(lineTrendMode()) }}</span>
           </div>
           @if (!isExternalDashboard()) {
-            <app-searchable-dropdown
+            <app-dropdown
               placeholder="Select trend"
-              [searchable]="false"
               [options]="trendMetricOptions"
               [ngModel]="lineTrendMode()"
               (ngModelChange)="setLineTrendMode($event)"
@@ -305,15 +290,14 @@
           Select a statistic to see its applications. Open an application to verify its details.
         </p>
       </header>
-      <app-searchable-dropdown
+      <app-dropdown
         label="Applications to inspect"
-        [searchable]="false"
         [options]="applicationListOptions()"
         [ngModel]="applicationListScope()"
         (ngModelChange)="setApplicationListScope($event)"
       />
       @if (!loading()) {
-        <app-data-table
+        <app-data-table [dense]="true"
           class="analysis-applications-table"
           [columns]="applicationColumns()"
           [rows]="listedApplications()"
@@ -373,20 +357,13 @@
           <span class="dashboard-eyebrow">Analysis controls</span>
           <h2 id="dashboard-filter-heading">Filters</h2>
         </div>
-        <button
-          type="button"
-          class="btn btn-icon btn-secondary"
-          aria-label="Close filters"
-          (click)="closeFilters()"
-        >
-          <span class="material-icons">close</span>
-        </button>
+        <app-action-button [label]="'Close filters'" type="secondary" size="small" [icon]="'close'" [iconOnly]="true" [ariaLabel]="'Close filters'" (clicked)="closeFilters()" buttonType="button" />
       </header>
       <div class="dashboard-filter__controls">
         <app-note
           text="Choose forms and a period. Submission statistics use submission dates; approval trends and approved funding use final decision dates."
         />
-        <app-searchable-dropdown
+        <app-dropdown
           class="dashboard-filter__form"
           label="Application forms"
           placeholder="Select one or more forms"
@@ -401,26 +378,11 @@
         />
         <div class="form-field dashboard-filter__date">
           <label class="form-label" for="dashboard-start-date">From</label>
-          <input
-            id="dashboard-start-date"
-            class="input--text"
-            type="date"
-            [ngModel]="draftStartDate()"
-            [max]="draftEndDate()"
-            (ngModelChange)="onStartDateChange($event)"
-          />
+          <app-date-picker id="dashboard-start-date" [ngModel]="draftStartDate()" (ngModelChange)="onStartDateChange($event)" [maxDate]="draftEndDate()" ariaLabel="Dashboard start date" />
         </div>
         <div class="form-field dashboard-filter__date">
           <label class="form-label" for="dashboard-end-date">To</label>
-          <input
-            id="dashboard-end-date"
-            class="input--text"
-            type="date"
-            [ngModel]="draftEndDate()"
-            [min]="draftStartDate()"
-            [max]="maxEndDate()"
-            (ngModelChange)="onEndDateChange($event)"
-          />
+          <app-date-picker id="dashboard-end-date" [ngModel]="draftEndDate()" (ngModelChange)="onEndDateChange($event)" [minDate]="draftStartDate()" [maxDate]="maxEndDate()" ariaLabel="Dashboard end date" />
         </div>
         <p class="dashboard-filter__range-help">
           <span class="material-icons">date_range</span>
@@ -438,9 +400,7 @@
         }
       </div>
       <footer class="dashboard-filter-panel__footer">
-        <button type="button" class="btn btn-primary" (click)="applyFilters()">
-          Apply Filters
-        </button>
+        <app-action-button [label]="'Apply Filters'" type="primary" size="small" (clicked)="applyFilters()" buttonType="button" />
       </footer>
     </aside>
   }

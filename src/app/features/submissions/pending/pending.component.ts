@@ -1,3 +1,4 @@
+import { SettingsPageHeaderComponent } from '../../../shared/components/settings-ui/settings-ui.components';
 import { DatePickerComponent } from '../../../shared/components/date-picker/date-picker.component';
 import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -29,7 +30,7 @@ import { formatDisplayDate } from '../../../shared/utils/date-time.util';
 @Component({
   selector: 'app-pending',
   standalone: true,
-  imports: [
+  imports: [SettingsPageHeaderComponent,
     DatePickerComponent,
     PaginationComponent,
     RouterLink,

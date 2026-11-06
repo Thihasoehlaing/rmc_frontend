@@ -1,3 +1,11 @@
+import { ActionButtonComponent } from '../../shared/components/action-button/action-button.component';
+import { DataTableComponent } from '../../shared/components/data-table/data-table.component';
+import { FieldComponent } from '../../shared/components/settings-ui/settings-ui.components';
+import { SearchToolbarComponent } from '../../shared/components/settings-ui/settings-ui.components';
+import { SettingsPanelComponent } from '../../shared/components/settings-ui/settings-ui.components';
+import { SettingsPageHeaderComponent } from '../../shared/components/settings-ui/settings-ui.components';
+import { DatePickerComponent } from '../../shared/components/date-picker/date-picker.component';
+import { DropdownComponent } from '../../shared/components/dropdown/dropdown.component';
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, TrackByFunction, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -12,12 +20,10 @@ import {
   NotificationService,
 } from '../../core/services/notification.service';
 import { PaginationComponent } from '../../shared/components/pagination/pagination.component';
-import { SearchableDropdownComponent } from '../../shared/components/searchable-dropdown/searchable-dropdown.component';
 import {
   SkeletonColumn,
   TableSkeletonComponent,
 } from '../../shared/components/table-skeleton/table-skeleton.component';
-import { TableActionIconComponent } from '../../shared/components/table-action-icon/table-action-icon.component';
 import { formatDisplayDate } from '../../shared/utils/date-time.util';
 
 interface NotificationRow {
@@ -38,18 +44,17 @@ interface NotificationRow {
 @Component({
   selector: 'app-notifications-page',
   standalone: true,
-  imports: [
+  imports: [ActionButtonComponent,DataTableComponent,FieldComponent,SearchToolbarComponent,SettingsPanelComponent,SettingsPageHeaderComponent,DatePickerComponent,DropdownComponent,
     CommonModule,
     FormsModule,
-    SearchableDropdownComponent,
     TableSkeletonComponent,
     PaginationComponent,
-    TableActionIconComponent,
-  ],
+    ],
   templateUrl: './notifications.component.html',
   styleUrl: './notifications.component.scss',
 })
 export class NotificationsComponent implements OnInit {
+ readonly standardColumns = ['No.','Code','Form','Notification','Status','Received Date','Actions'].map((label,index)=>({key:String(index),label}));
   private readonly notificationService = inject(NotificationService);
   private readonly formCache = inject(FormCacheService);
   private readonly router = inject(Router);
@@ -157,8 +162,8 @@ export class NotificationsComponent implements OnInit {
     this.formDraft.set(typeof value === 'string' ? value : '');
   }
 
-  onReceivedDateDraftChange(event: Event): void {
-    this.receivedDateDraft.set((event.target as HTMLInputElement).value);
+  onReceivedDateDraftChange(event: Event | string): void {
+    this.receivedDateDraft.set((typeof event === 'string' ? event : (event.target as HTMLInputElement).value));
   }
 
   applyFilters(): void {

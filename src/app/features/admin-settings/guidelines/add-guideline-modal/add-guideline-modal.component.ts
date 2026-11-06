@@ -1,3 +1,7 @@
+import { DropdownComponent } from '../../../../shared/components/dropdown/dropdown.component';
+import { InputDirective } from '../../../../shared/components/settings-ui/settings-ui.components';
+import { FieldComponent } from '../../../../shared/components/settings-ui/settings-ui.components';
+import { ActionButtonComponent } from '../../../../shared/components/action-button/action-button.component';
 import {
   Component,
   EventEmitter,
@@ -27,6 +31,10 @@ export interface GuidelineConfig {
   selector: 'app-add-guideline-modal',
   standalone: true,
   imports: [
+    ActionButtonComponent,
+    FieldComponent,
+    InputDirective,
+    DropdownComponent,
     CommonModule,
     FormsModule,
     TextEditorComponent,
@@ -37,6 +45,12 @@ export interface GuidelineConfig {
   styleUrls: ['./add-guideline-modal.component.scss'],
 })
 export class AddGuidelineModalComponent implements OnChanges, OnInit {
+  standardOptions0() {
+    return [
+      { value: '', label: 'Select a form' },
+      ...this.forms().map((form) => ({ value: String(form.id.toString()), label: form.form_name })),
+    ];
+  }
   private readonly formCache = inject(FormCacheService);
 
   @Output() close = new EventEmitter<void>();
@@ -92,6 +106,7 @@ export class AddGuidelineModalComponent implements OnChanges, OnInit {
   }
 
   onClose(): void {
+    if (this.isSaving) return;
     this.close.emit();
   }
 

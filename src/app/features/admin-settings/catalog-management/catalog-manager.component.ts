@@ -1,3 +1,9 @@
+import { StateComponent } from '../../../shared/components/settings-ui/settings-ui.components';
+import { SettingsPanelComponent } from '../../../shared/components/settings-ui/settings-ui.components';
+import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
+import { DropdownComponent } from '../../../shared/components/dropdown/dropdown.component';
+import { StatusBadgeComponent } from '../../../shared/components/form-standard/form-standard.components';
+import { SearchToolbarComponent } from '../../../shared/components/settings-ui/settings-ui.components';
 import { CommonModule } from '@angular/common';
 import { Component, Input, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -8,9 +14,6 @@ import {
 import { ActionButtonComponent } from '../../../shared/components/action-button/action-button.component';
 import { DialogComponent } from '../../../shared/components/dialog/dialog.component';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
-import { SearchableDropdownComponent } from '../../../shared/components/searchable-dropdown/searchable-dropdown.component';
-import { SubmissionsSearchComponent } from '../../../shared/components/submissions-search/submissions-search.component';
-import { TableActionIconComponent } from '../../../shared/components/table-action-icon/table-action-icon.component';
 import { ToastService } from '../../../core/services/toast.service';
 import { DropdownOption } from '../../../core/interfaces/components.interface';
 import { CachedFormOption, FormCacheService } from '../../../core/services/form-cache.service';
@@ -29,6 +32,12 @@ import { formatDisplayDate } from '../../../shared/utils/date-time.util';
   selector: 'app-catalog-manager',
   standalone: true,
   imports: [
+    StateComponent,
+    SettingsPanelComponent,
+    DataTableComponent,
+    SearchToolbarComponent,
+    StatusBadgeComponent,
+    DropdownComponent,
     AdminSettingsPageHeaderComponent,
     CommonModule,
     FormsModule,
@@ -36,17 +45,24 @@ import { formatDisplayDate } from '../../../shared/utils/date-time.util';
     AddOptionModalComponent,
     DialogComponent,
     PaginationComponent,
-    SearchableDropdownComponent,
-    SubmissionsSearchComponent,
-    TableActionIconComponent,
   ],
   templateUrl: './catalog-manager.component.html',
-  styleUrls: [
-    '../dropdowns/shared/form-dropdown-options-manager.component.scss',
-    './catalog-manager.component.scss',
-  ],
+  styleUrl: './catalog-manager.component.scss',
 })
 export class CatalogManagerComponent implements OnInit {
+  standardColumns() {
+    return [
+      { key: 'column0', label: 'No.' },
+      ...(this.showCode ? [{ key: 'column1', label: this.codeLabel }] : []),
+      ...(this.usesCurrencyApi() ? [{ key: 'column2', label: 'Symbol' }] : []),
+      { key: 'column3', label: this.nameLabel },
+      ...(this.usesCurrencyApi() ? [{ key: 'column4', label: 'Country' }] : []),
+      ...(this.showSharedWith ? [{ key: 'column5', label: 'Shared With' }] : []),
+      { key: 'column6', label: 'Status' },
+      { key: 'column7', label: 'Last Updated' },
+      { key: 'column8', label: 'Actions' },
+    ];
+  }
   @Input({ required: true }) kind!: AdminCatalogKind;
   @Input({ required: true }) title = '';
   @Input({ required: true }) subtitle = '';
@@ -64,8 +80,24 @@ export class CatalogManagerComponent implements OnInit {
   private readonly toast = inject(ToastService);
 
   private readonly fallbackForms: CachedFormOption[] = [
-    { id: 0, workspace_id: 0, workspace_code: 'RMC', workspace_name: 'RMC', form_code: 'CONFERENCE', form_name: 'Conference Application', is_active: true },
-    { id: 0, workspace_id: 0, workspace_code: 'RMC', workspace_name: 'RMC', form_code: 'JOURNAL', form_name: 'Journal Publication', is_active: true },
+    {
+      id: 0,
+      workspace_id: 0,
+      workspace_code: 'RMC',
+      workspace_name: 'RMC',
+      form_code: 'CONFERENCE',
+      form_name: 'Conference Application',
+      is_active: true,
+    },
+    {
+      id: 0,
+      workspace_id: 0,
+      workspace_code: 'RMC',
+      workspace_name: 'RMC',
+      form_code: 'JOURNAL',
+      form_name: 'Journal Publication',
+      is_active: true,
+    },
   ];
   readonly formOptionsData = signal<CachedFormOption[]>([]);
   readonly countryOptionsData = signal<CountryApi[]>([]);
@@ -87,13 +119,24 @@ export class CatalogManagerComponent implements OnInit {
   ];
   readonly countryOptions = computed<DropdownOption<string>[]>(() => {
     const options = this.countryOptionsData()
-      .filter(country => country.is_active && country.currency_selectable && !!country.country_ref)
-      .map(country => ({value: country.country_ref!, label: country.name, description: country.code,
-        searchText: `${country.name} ${country.code}`}));
+      .filter(
+        (country) => country.is_active && country.currency_selectable && !!country.country_ref,
+      )
+      .map((country) => ({
+        value: country.country_ref!,
+        label: country.name,
+        description: country.code,
+        searchText: `${country.name} ${country.code}`,
+      }));
     const row = this.editingRow();
     const value = row?.countryRef ?? (row?.countryId ? `legacy:${row.countryId}` : null);
-    if (value && !options.some(option => option.value === value)) {
-      options.unshift({value, label: row?.countryName || value, description: 'Historical country', searchText: row?.countryName || value});
+    if (value && !options.some((option) => option.value === value)) {
+      options.unshift({
+        value,
+        label: row?.countryName || value,
+        description: 'Historical country',
+        searchText: row?.countryName || value,
+      });
     }
     return options;
   });

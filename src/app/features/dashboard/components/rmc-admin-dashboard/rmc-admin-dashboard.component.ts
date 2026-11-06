@@ -1,3 +1,7 @@
+import { ActionButtonComponent } from '../../../../shared/components/action-button/action-button.component';
+import { SettingsPageHeaderComponent } from '../../../../shared/components/settings-ui/settings-ui.components';
+import { DatePickerComponent } from '../../../../shared/components/date-picker/date-picker.component';
+import { DropdownComponent } from '../../../../shared/components/dropdown/dropdown.component';
 import { CommonModule } from '@angular/common';
 import {
   Component,
@@ -17,7 +21,6 @@ import {
 import { finalize } from 'rxjs';
 import { DashboardSummaryDto } from '../../../../core/services/workflow-requests.service';
 import { NoteComponent } from '../../../../shared/components/note/note.component';
-import { SearchableDropdownComponent } from '../../../../shared/components/searchable-dropdown/searchable-dropdown.component';
 import { ValidationMessageComponent } from '../../../../shared/components/validation-message/validation-message.component';
 import { DropdownOption } from '../../../../core/interfaces/components.interface';
 import { DashboardViewConfig } from '../../dashboard.config';
@@ -50,13 +53,12 @@ interface FormFilterOption {
 @Component({
   selector: 'app-rmc-admin-analytics-dashboard',
   standalone: true,
-  imports: [
+  imports: [ActionButtonComponent,SettingsPageHeaderComponent,DatePickerComponent,DropdownComponent,
     CommonModule,
     FormsModule,
     RouterLink,
     DataTableComponent,
     NoteComponent,
-    SearchableDropdownComponent,
     ValidationMessageComponent,
     DashboardBarChartComponent,
     DashboardLineChartComponent,

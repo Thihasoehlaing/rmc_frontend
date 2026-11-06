@@ -1,13 +1,5 @@
 <div class="submissions-page notifications-page">
-  <div class="submissions-header">
-    <div class="submissions-header__text">
-      <h1 class="submissions-title">
-        <span class="material-icons" aria-hidden="true">notifications</span>
-        Notifications
-      </h1>
-      <p class="submissions-subtitle">Review system and application notifications assigned to you.</p>
-    </div>
-  </div>
+  <app-settings-page-header [title]="'Notifications'" [description]="'Review system and application notifications assigned to you.'" eyebrow="Workspace"></app-settings-page-header>
 
   @if (isLoading()) {
     <app-table-skeleton [columns]="skeletonColumns" loadingLabel="Loading notifications"></app-table-skeleton>
@@ -21,72 +13,14 @@
   }
 
   @if (!isLoading() && !loadFailed()) {
-    <section class="dropdown-search-panel" aria-label="Notification search">
-      <div class="notifications-filters">
-        <label class="notifications-filter col-3">
-          <span>Form</span>
-          <app-searchable-dropdown
-            placeholder="All forms"
-            [options]="formOptions()"
-            [loading]="formOptionsLoading()"
-            [ngModel]="formDraft()"
-            (ngModelChange)="onFormDraftChange($event)"
-          ></app-searchable-dropdown>
-        </label>
+<app-search-toolbar [query]="codeDraft()" (queryChange)="codeDraft.set($event)" placeholder="Search request code" (search)="applyFilters()" (reset)="resetFilters()">
+    <div class="settings-filter"><app-dropdown label="Form" [options]="formOptions()" emptyOptionLabel="All forms" [ngModel]="formDraft()" (ngModelChange)="onFormDraftChange($event)" [loading]="formOptionsLoading()" /></div>
+    <app-field label="Received date" controlId="notification-date"><app-date-picker id="notification-date" ariaLabel="Received date" [ngModel]="receivedDateDraft()" (ngModelChange)="onReceivedDateDraftChange($event)" /></app-field>
+  </app-search-toolbar>
 
-        <label class="notifications-filter col-3">
-          <span>Search by code</span>
-          <input
-            class="input--text"
-            type="search"
-            placeholder="e.g. JOUR-260002"
-            [value]="codeDraft()"
-            (input)="onCodeDraftChange($event)"
-            (keydown.enter)="applyFilters()"
-          />
-        </label>
-
-        <label class="notifications-filter col-3">
-          <span>Received date</span>
-          <input
-            class="input--text"
-            type="date"
-            [value]="receivedDateDraft()"
-            (input)="onReceivedDateDraftChange($event)"
-            (keydown.enter)="applyFilters()"
-          />
-        </label>
-
-        <div class="notifications-filter-actions col-3">
-          <button type="button" class="btn btn-primary" (click)="applyFilters()">
-            <span class="material-icons" aria-hidden="true">search</span>
-            Search
-          </button>
-          <button type="button" class="btn btn-secondary" (click)="resetFilters()">
-            <span class="material-icons" aria-hidden="true">refresh</span>
-            Reset
-          </button>
-        </div>
-      </div>
-    </section>
-
-    <section class="dropdown-table-panel" aria-label="Notifications table">
+    <app-settings-panel title="Notifications" [count]="totalItems()" [flush]="true">
       <div class="shared-options-table">
-        <table>
-          <thead>
-            <tr>
-              <th>No.</th>
-              <th>Code</th>
-              <th>Form</th>
-              <th>Notification</th>
-              <th>Status</th>
-              <th>Received Date</th>
-              <th class="actions-heading">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (row of notifications(); track rowTrackFn($index, row); let index = $index) {
-              <tr>
+        <app-data-table [dense]="true" [embedded]="true" [columns]="standardColumns" [rows]="notifications()" [rowTrackFn]="rowTrackFn"><ng-template #rowTemplate let-row let-index="index"><tr>
                 <td>{{ getRowNumber(index) }}</td>
                 <td class="notification-code-cell">{{ row.requestCode }}</td>
                 <td>{{ row.application }}</td>
@@ -104,21 +38,10 @@
                 <td>{{ row.createdAt }}</td>
                 <td class="actions-cell">
                   <div class="table-actions">
-                    <button
-                      class="table-action table-action--open"
-                      type="button"
-                      title="Open application detail"
-                      [disabled]="row.isExpired || !row.route"
-                      (click)="openNotification(row)"
-                    >
-                      <app-table-action-icon action="view"></app-table-action-icon>
-                    </button>
+                    <app-action-button [label]="'Open application detail'" type="ghost" size="small" [icon]="'visibility'" [iconOnly]="true" [disabled]="row.isExpired || !row.route" [title]="'Open application detail'" (clicked)="openNotification(row)" buttonType="button" />
                   </div>
                 </td>
-              </tr>
-            }
-          </tbody>
-        </table>
+              </tr></ng-template></app-data-table>
 
         @if (notifications().length === 0) {
           <div class="empty-state">
@@ -130,7 +53,7 @@
           </div>
         }
       </div>
-    </section>
+    </app-settings-panel>
 
     <section class="dropdown-pagination-panel" aria-label="Notifications pagination">
       <app-pagination

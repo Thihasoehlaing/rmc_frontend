@@ -1,19 +1,17 @@
-<header class="admin-settings-page-header">
-  <a
-    class="admin-settings-page-header__back"
-    [routerLink]="backRoute"
-    [attr.aria-label]="backLabel"
-    [title]="backLabel"
-  >
-    <span class="material-icons" aria-hidden="true">arrow_back</span>
-  </a>
-
-  <div class="admin-settings-page-header__content">
-    <h1>{{ title }}</h1>
-    <p>{{ description }}</p>
+<app-settings-page-header
+  [title]="title"
+  [description]="description"
+  eyebrow="Admin Settings"
+  icon="tune"
+>
+  <div class="settings-actions">
+    <a
+      class="btn btn-ghost btn-sm"
+      [routerLink]="backRoute"
+      [attr.aria-label]="backLabel"
+      [title]="backLabel"
+      ><span class="material-icons" aria-hidden="true">arrow_back</span> Back</a
+    >
+    <ng-content select="[header-action]" />
   </div>
-
-  <div class="admin-settings-page-header__action">
-    <ng-content select="[header-action]"></ng-content>
-  </div>
-</header>
+</app-settings-page-header>

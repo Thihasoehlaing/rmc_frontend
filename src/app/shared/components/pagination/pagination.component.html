@@ -22,7 +22,8 @@
       [disabled]="currentPage === 1"
       (click)="goToPage(currentPage - 1)"
       title="Previous page"
-      aria-label="Previous page">
+      aria-label="Previous page"
+    >
       <span class="material-icons">chevron_left</span>
     </button>
 
@@ -35,7 +36,8 @@
           [class.pagination-btn--active]="page === currentPage"
           (click)="goToPage(page)"
           [attr.aria-label]="'Go to page ' + page"
-          [attr.aria-current]="page === currentPage ? 'page' : null">
+          [attr.aria-current]="page === currentPage ? 'page' : null"
+        >
           {{ page }}
         </button>
       }
@@ -46,19 +48,18 @@
       [disabled]="currentPage === totalPages"
       (click)="goToPage(currentPage + 1)"
       title="Next page"
-      aria-label="Next page">
+      aria-label="Next page"
+    >
       <span class="material-icons">chevron_right</span>
     </button>
   </div>
 
-  <label class="pagination-page-size" aria-label="Items per page">
-    <select
+  <div class="pagination-page-size">
+    <app-dropdown
+      [options]="pageSizeDropdownOptions"
+      placeholder="Items per page"
       [ngModel]="pageSize"
       (ngModelChange)="onPageSizeChange($event)"
-    >
-      @for (option of pageSizeOptions; track option) {
-        <option [ngValue]="option">{{ option }} per page</option>
-      }
-    </select>
-  </label>
+    />
+  </div>
 </div>

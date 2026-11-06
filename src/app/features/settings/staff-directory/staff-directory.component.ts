@@ -1,3 +1,15 @@
+import { PersonIdentityComponent } from '../../../shared/components/settings-ui/settings-ui.components';
+import {
+  SettingsPageHeaderComponent,
+  SettingsPanelComponent,
+  SearchToolbarComponent,
+  FieldComponent,
+  InputDirective,
+  StateComponent,
+} from '../../../shared/components/settings-ui/settings-ui.components';
+import { DropdownComponent } from '../../../shared/components/dropdown/dropdown.component';
+import { StatusBadgeComponent } from '../../../shared/components/form-standard/form-standard.components';
+import { ActionButtonComponent } from '../../../shared/components/action-button/action-button.component';
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, TrackByFunction, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -12,8 +24,6 @@ import {
 } from '../../../shared/components/data-table/data-table.component';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
 import { DialogComponent } from '../../../shared/components/dialog/dialog.component';
-import { SearchableDropdownComponent } from '../../../shared/components/searchable-dropdown/searchable-dropdown.component';
-import { TableSkeletonComponent } from '../../../shared/components/table-skeleton/table-skeleton.component';
 import { formatDisplayDate } from '../../../shared/utils/date-time.util';
 import {
   DepartmentRecord,
@@ -26,20 +36,24 @@ import {
   selector: 'app-staff-directory',
   standalone: true,
   imports: [
+    PersonIdentityComponent,
+    ActionButtonComponent,
+    StatusBadgeComponent,
+    DropdownComponent,
+    SettingsPageHeaderComponent,
+    SettingsPanelComponent,
+    SearchToolbarComponent,
+    FieldComponent,
+    InputDirective,
+    StateComponent,
     CommonModule,
     FormsModule,
     DataTableComponent,
     DialogComponent,
     PaginationComponent,
-    SearchableDropdownComponent,
-    TableSkeletonComponent,
   ],
   templateUrl: './staff-directory.component.html',
-  styleUrls: [
-    '../forms/forms.component.scss',
-    '../academic-staff/academic-staff.component.scss',
-    './staff-directory.component.scss',
-  ],
+  styleUrl: './staff-directory.component.scss',
 })
 export class StaffDirectoryComponent implements OnInit {
   private readonly staffService = inject(StaffDirectoryService);

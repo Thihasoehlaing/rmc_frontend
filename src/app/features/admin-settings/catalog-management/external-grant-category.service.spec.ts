@@ -81,3 +81,5 @@ describe('ExternalGrantCategoryService', () => {
     });
   });
 });
+
+afterEach(() => TestBed.resetTestingModule());

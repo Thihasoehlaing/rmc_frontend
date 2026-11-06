@@ -1,3 +1,4 @@
+import { InputDirective } from '../../../../shared/components/settings-ui/settings-ui.components';
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { ReactiveFormsModule, FormGroup, FormControl, Validators, ValidatorFn } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
@@ -11,7 +12,7 @@ import { RdigWorkflowService } from '../../services/rdig-workflow.service';
 @Component({
     selector: 'app-output-details',
     standalone: true,
-    imports: [ReactiveFormsModule, CustomSubheaderComponent, ValidationMessageComponent, NoteComponent, CharacterCounterComponent, ReviewBlockComponent],
+    imports: [InputDirective,ReactiveFormsModule, CustomSubheaderComponent, ValidationMessageComponent, NoteComponent, CharacterCounterComponent, ReviewBlockComponent],
     templateUrl: './output-details.component.html',
     styleUrls: ['./output-details.component.scss']
 })

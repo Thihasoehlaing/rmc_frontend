@@ -1,3 +1,6 @@
+import { InputDirective } from '../../../shared/components/settings-ui/settings-ui.components';
+import { FormsModule } from '@angular/forms';
+import { DropdownComponent } from '../../../shared/components/dropdown/dropdown.component';
 import { firstValueFrom } from 'rxjs';
 import { WorkspaceService } from '../../../core/services/workspace.service';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -11,10 +14,12 @@ import { TestingLoginAccount, TestingLoginService } from './testing-login.servic
 @Component({
   selector: 'app-login',
   standalone: true,
+  imports: [InputDirective,FormsModule, DropdownComponent],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
 })
 export class LoginComponent implements OnInit {
+  standardOptions0() { return [{value: '', label: 'All roles'}, ...this.demoRoles().map(role => ({value: String(role), label: (role)}))]; }
   private readonly APU_RETRY_KEY = 'rmc_apu_login_retry';
   private readonly authService = inject(AuthService);
   private readonly location = inject(Location);

@@ -1,3 +1,4 @@
+import { ActionButtonComponent } from '../../../../shared/components/action-button/action-button.component';
 import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ConferenceGuidelinesModalComponent } from '../conference-guidelines-modal/conference-guidelines-modal.component';
@@ -15,7 +16,7 @@ interface FormSection {
 @Component({
   selector: 'app-conference-form-accordion',
   standalone: true,
-  imports: [
+  imports: [ActionButtonComponent,
     CommonModule,
     ConferenceGuidelinesModalComponent,
     ConferenceDetailsFormComponent,

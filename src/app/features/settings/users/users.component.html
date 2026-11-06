@@ -1,142 +1,121 @@
-<main class="forms-page forms-page--settings">
-  <header class="forms-page__header">
-    <div>
-      <span class="forms-page__eyebrow">System Settings</span>
-      <h1>Users</h1>
-      <p>Find authenticated users and manage RMC role pairing.</p>
-    </div>
-    <button
-      class="btn btn-primary forms-page__create-button"
-      type="button"
-      (click)="openPairDialog()"
+<main class="settings-page">
+  <app-settings-page-header
+    [title]="'Users'"
+    [description]="'Find authenticated users and manage RMC role pairing.'"
+    icon="manage_accounts"
+  >
+    <app-action-button
+      [label]="'Pair User Role'"
+      type="primary"
+      size="small"
+      [icon]="'person_add'"
       [disabled]="isLoading()"
-    >
-      <span class="material-icons">person_add</span>
-      Pair User Role
-    </button>
-  </header>
+      (clicked)="openPairDialog()"
+    />
+  </app-settings-page-header>
 
-  <section class="forms-toolbar users-toolbar" aria-label="User filters">
-    <h2 class="forms-toolbar__title">Search &amp; Filters</h2>
-
-    <label class="forms-filter users-filter-name">
-      <span>Name</span>
+  <app-search-toolbar
+    [query]="nameSearch()"
+    (queryChange)="nameSearch.set($event)"
+    [disabled]="isLoading()"
+    [placeholder]="'Search by name'"
+    [label]="'Search users by name'"
+    (search)="search()"
+    (reset)="resetFilters()"
+  >
+    <app-field [label]="'Email'" controlId="users-field-2">
       <input
-        class="input--text"
-        type="search"
-        aria-label="Search users by name"
-        placeholder="Search by name"
-        [ngModel]="nameSearch()"
-        (ngModelChange)="nameSearch.set($event)"
-        (keydown.enter)="search()"
-        [disabled]="isLoading()"
-      />
-    </label>
-
-    <label class="forms-filter users-filter-email">
-      <span>Email</span>
-      <input
-        class="input--text"
+        appInput
+        id="users-field-2"
         type="search"
         aria-label="Search users by email"
         placeholder="Search by email"
         [ngModel]="emailSearch()"
         (ngModelChange)="emailSearch.set($event)"
-        (keydown.enter)="search()"
         [disabled]="isLoading()"
       />
-    </label>
+    </app-field>
 
-    <label class="forms-filter users-filter-account-type">
-      <span>Account Type</span>
-      <select
-        class="input--select"
+    <div class="settings-filter">
+      <app-dropdown
+        [label]="'Account Type'"
+        [options]="[
+          { value: '', label: 'All' },
+          { value: 'Staff', label: 'Staff' },
+          { value: 'Student', label: 'Student' },
+        ]"
         [ngModel]="selectedAccountType()"
         (ngModelChange)="selectedAccountType.set($event)"
         [disabled]="isLoading()"
-      >
-        <option value="">All</option>
-        <option value="Staff">Staff</option>
-        <option value="Student">Student</option>
-      </select>
-    </label>
+      />
+    </div>
 
-    <label class="forms-filter users-filter-department">
-      <span>Department</span>
-      <app-searchable-dropdown
+    <div class="settings-filter">
+      <app-dropdown
+        [label]="'Department'"
         [options]="departmentOptions()"
-        [searchable]="true"
-        placeholder="Search department..."
+        placeholder="All departments"
+        emptyOptionLabel="All departments"
         [ngModel]="selectedDepartmentId()"
         (ngModelChange)="selectedDepartmentId.set($event)"
         [loading]="isLoading()"
       >
-      </app-searchable-dropdown>
-    </label>
+      </app-dropdown>
+    </div>
 
-    <label class="forms-filter users-filter-role">
-      <span>Role</span>
-      <app-searchable-dropdown
+    <div class="settings-filter">
+      <app-dropdown
+        [label]="'Role'"
         [options]="roleOptions()"
-        [searchable]="true"
-        placeholder="Search role..."
+        placeholder="Select role"
+        emptyOptionLabel="All roles"
         [ngModel]="selectedRoleId()"
         (ngModelChange)="selectedRoleId.set($event)"
         [loading]="isLoading()"
       >
-      </app-searchable-dropdown>
-    </label>
-
-    <div class="forms-toolbar__actions">
-      <button class="btn btn-primary" type="button" (click)="search()" [disabled]="isLoading()">
-        <span class="material-icons">search</span>
-        Search
-      </button>
-      <button class="btn btn-secondary" type="button" (click)="resetFilters()" [disabled]="isLoading()">
-        <span class="material-icons">restart_alt</span>
-        Reset
-      </button>
+      </app-dropdown>
     </div>
-  </section>
+  </app-search-toolbar>
 
-  <section class="forms-table-card">
-    <header class="forms-table-card__header">
-      <div>
-        <div class="forms-table-card__title-row">
-          <h2>Users</h2>
-          <span class="forms-table-card__count">{{ totalItems() }}</span>
-        </div>
-        <p>Review users and assign system roles.</p>
-      </div>
-      <button
-        class="btn btn-secondary forms-table-card__refresh"
-        type="button"
-        (click)="loadInitialData()"
-        [disabled]="isLoading()"
-      >
-        <span class="material-icons">refresh</span>
-        Refresh
-      </button>
-    </header>
+  <app-settings-panel [title]="'Users'" [count]="totalItems()" [flush]="true"
+    ><app-action-button
+      panelActions
+      [label]="'Refresh'"
+      type="secondary"
+      size="small"
+      [icon]="'refresh'"
+      [disabled]="isLoading()"
+      (clicked)="loadInitialData()"
+    />
 
     @if (isLoading()) {
-      <app-table-skeleton [columns]="columns" [showSearch]="false" loadingLabel="Loading users">
-      </app-table-skeleton>
+      <app-state title="Loading users" icon="hourglass_empty" />
     } @else if (loadFailed()) {
-      <div class="forms-state">
-        <span class="material-icons">cloud_off</span>
-        <h2>Unable to load users</h2>
-        <p>Check the API connection and try again.</p>
-        <button class="btn btn-primary" type="button" (click)="loadInitialData()">Try Again</button>
-      </div>
+      <app-state
+        [title]="'Unable to load users'"
+        [description]="'Check the API connection and try again.'"
+        [icon]="'cloud_off'"
+        [error]="true"
+        ><app-action-button
+          [label]="'Try Again'"
+          type="primary"
+          size="small"
+          (clicked)="loadInitialData()"
+      /></app-state>
     } @else if (users().length === 0) {
-      <div class="forms-state">
-        <span class="material-icons">manage_accounts</span>
-        <h2>No users found</h2>
-        <p>Adjust the filters or pair a new user role.</p>
-      </div>
+      <app-state
+        [title]="'No users found'"
+        [description]="'Adjust the filters or pair a new user role.'"
+        [icon]="'manage_accounts'"
+      ></app-state>
     } @else {
-      <app-data-table [columns]="columns" [rows]="users()" [rowTrackFn]="rowTrackFn">
+      <app-data-table
+        [dense]="true"
+        [embedded]="true"
+        [columns]="columns"
+        [rows]="users()"
+        [rowTrackFn]="rowTrackFn"
+      >
         <ng-template #rowTemplate let-row let-index="index">
           <tr>
             <td class="is-align-center">{{ rowNumber(index) }}</td>
@@ -155,40 +134,47 @@
                 </span>
                 <div>
                   <strong>{{ row.fullname || 'Name unavailable' }}</strong>
-                  <small>{{ row.email || 'No email' }}</small>
+                  <small class="form-hint">{{ row.email || 'No email' }}</small>
                 </div>
               </div>
             </td>
             <td>{{ row.job_title || 'Not specified' }}</td>
             <td>
               @if (row.role_name) {
-                <span class="role-badge">{{ row.role_name }}</span>
+                <app-status-badge [intent]="'info'">{{ row.role_name }}</app-status-badge>
               } @else {
-                <span class="muted-value">Unassigned</span>
+                <span class="settings-muted">Unassigned</span>
               }
             </td>
             <td class="is-align-center">
-              <span class="account-type" [class.account-type--student]="row.is_student">
+              <app-status-badge [intent]="'info'">
                 {{ row.is_student ? 'Student' : 'Staff' }}
-              </span>
+              </app-status-badge>
             </td>
             <td>{{ row.department || 'Not available' }}</td>
             <td>{{ formatDate(row.last_login_at) }}</td>
             <td class="is-align-center">
-              <div class="table-actions">
-                <button type="button" class="table-action" title="Workspace access" aria-label="Workspace access" (click)="openWorkspaces(row)">
-                  <span class="material-icons">workspaces</span>
-                </button>
-                <button
-                  class="table-action"
-                  type="button"
-                  title="Assign user role"
-                  data-tooltip="Assign user role"
-                  aria-label="Assign user role"
-                  (click)="openAssignRoleDialog(row)"
-                >
-                  <span class="material-icons">manage_accounts</span>
-                </button>
+              <div class="settings-actions">
+                <app-action-button
+                  [label]="'Workspace access'"
+                  type="ghost"
+                  size="small"
+                  [icon]="'workspaces'"
+                  [iconOnly]="true"
+                  [ariaLabel]="'Workspace access'"
+                  [title]="'Workspace access'"
+                  (clicked)="openWorkspaces(row)"
+                />
+                <app-action-button
+                  [label]="'Assign user role'"
+                  type="ghost"
+                  size="small"
+                  [icon]="'manage_accounts'"
+                  [iconOnly]="true"
+                  [ariaLabel]="'Assign user role'"
+                  [title]="'Assign user role'"
+                  (clicked)="openAssignRoleDialog(row)"
+                />
               </div>
             </td>
           </tr>
@@ -197,9 +183,7 @@
     }
 
     @if (!isLoading() && !loadFailed()) {
-      <footer class="forms-table-card__footer">
-        
-
+      <div panelFooter>
         <app-pagination
           [currentPage]="page()"
           [totalPages]="totalPages()"
@@ -212,25 +196,28 @@
           (pageSizeChange)="onPageSizeChange($event)"
         >
         </app-pagination>
-
-        
-      </footer>
+      </div>
     }
-  </section>
+  </app-settings-panel>
 
   <app-dialog
+    density="compact"
+    [closeDisabled]="isSaving()"
     [isOpen]="isPairDialogOpen()"
     title="Pair User Role"
     size="small"
     (close)="closePairDialog()"
   >
     <div class="role-pairing">
-      <p>Pair a Microsoft username with a platform System Admin or default RMC role. Manage other workspace roles through Workspace Access.</p>
+      <p>
+        Pair a Microsoft username with a platform System Admin or default RMC role. Manage other
+        workspace roles through Workspace Access.
+      </p>
 
-      <label class="forms-filter">
-        <span>Microsoft Username</span>
+      <app-field [label]="'Microsoft Username'" controlId="users-field-1">
         <input
-          class="input--text"
+          appInput
+          id="users-field-1"
           type="text"
           placeholder="e.g. thiha.hlaing"
           autocomplete="off"
@@ -238,37 +225,43 @@
           (ngModelChange)="pairUsername.set($event)"
           (keydown.enter)="pairUserRole()"
         />
-      </label>
+      </app-field>
 
-      <label class="forms-filter">
-        <span>Role</span>
-        <app-searchable-dropdown
+      <div class="settings-filter">
+        <app-dropdown
+          [label]="'Role'"
           [options]="roleOptions()"
-          [searchable]="true"
-          placeholder="Search role..."
+          placeholder="Select role"
           [ngModel]="pairRoleId()"
           (ngModelChange)="pairRoleId.set($event)"
         >
-        </app-searchable-dropdown>
-      </label>
+        </app-dropdown>
+      </div>
     </div>
 
-    <div dialog-footer class="role-pairing__footer">
-      <button class="btn btn-secondary" type="button" [disabled]="isSaving()" (click)="closePairDialog()">
-        Cancel
-      </button>
-      <button
-        class="btn btn-primary"
-        type="button"
+    <div dialog-footer class="settings-actions">
+      <app-action-button
+        [label]="'Cancel'"
+        type="secondary"
+        size="small"
+        [disabled]="isSaving()"
+        (clicked)="closePairDialog()"
+      />
+      <app-action-button
+        [label]="isSaving() ? 'Pairing...' : 'Pair User Role'"
+        type="primary"
+        size="small"
         [disabled]="isSaving() || !pairUsername().trim() || pairRoleId() === null"
-        (click)="pairUserRole()"
-      >
-        {{ isSaving() ? 'Pairing...' : 'Pair User Role' }}
-      </button>
+        (clicked)="pairUserRole()"
+        [loading]="isSaving()"
+        loadingLabel="Saving…"
+      />
     </div>
   </app-dialog>
 
   <app-dialog
+    density="compact"
+    [closeDisabled]="isSaving()"
     [isOpen]="userForRoleAssignment() !== null"
     title="Assign User Role"
     size="small"
@@ -276,67 +269,91 @@
   >
     @if (userForRoleAssignment(); as user) {
       <div class="role-pairing">
-        <p>Manage role and Chancellory membership for <strong>{{ user.fullname || user.username }}</strong>.</p>
+        <p>
+          Manage role and Chancellory membership for
+          <strong>{{ user.fullname || user.username }}</strong
+          >.
+        </p>
 
-        <label class="forms-filter">
-          <span>Role</span>
-          <app-searchable-dropdown
+        <div class="settings-filter">
+          <app-dropdown
+            [label]="'Role'"
             [options]="roleOptions()"
-            [searchable]="true"
-            placeholder="Search role..."
+            placeholder="Select role"
             [ngModel]="assignRoleId()"
             (ngModelChange)="assignRoleId.set($event)"
           >
-          </app-searchable-dropdown>
-        </label>
-        <label>
-          <input type="checkbox" [ngModel]="chancelloryMember()"
-            (ngModelChange)="chancelloryMember.set($event)" />
-          Chancellory group
-        </label>
+          </app-dropdown>
+        </div>
+        <app-toggle
+          label="Chancellory group"
+          [checked]="chancelloryMember()"
+          (checkedChange)="chancelloryMember.set($event)"
+          [disabled]="isSaving()"
+        />
       </div>
     }
 
-    <div dialog-footer class="role-pairing__footer">
-      <button
-        class="btn btn-secondary"
-        type="button"
+    <div dialog-footer class="settings-actions">
+      <app-action-button
+        [label]="'Cancel'"
+        type="secondary"
+        size="small"
         [disabled]="isSaving()"
-        (click)="closeAssignRoleDialog()"
-      >
-        Cancel
-      </button>
-      <button
-        class="btn btn-primary"
-        type="button"
+        (clicked)="closeAssignRoleDialog()"
+      />
+      <app-action-button
+        [label]="isSaving() ? 'Saving...' : 'Save access'"
+        type="primary"
+        size="small"
         [disabled]="isSaving()"
-        (click)="assignUserRole()"
-      >
-        {{ isSaving() ? 'Saving...' : 'Save access' }}
-      </button>
+        (clicked)="assignUserRole()"
+        [loading]="isSaving()"
+        loadingLabel="Saving…"
+      />
     </div>
   </app-dialog>
-  <app-dialog [isOpen]="workspaceUser() !== null" title="Workspace Access" (close)="!isSaving() && workspaceUser.set(null)">
+  <app-dialog
+    density="compact"
+    [closeDisabled]="isSaving()"
+    [isOpen]="workspaceUser() !== null"
+    title="Workspace Access"
+    (close)="!isSaving() && workspaceUser.set(null)"
+  >
     @if (workspaceUser(); as user) {
-      <p>Manage workspace access for {{ user.fullname || user.username }}. Platform System Admins retain access to every active workspace.</p>
-      @if (workspaceLoading()) { <p>Loading workspace access...</p> }
-      @for (row of workspaceRows(); track row.workspace_id) {
-        <section class="card"><div class="card__content">
-          <h3>{{ row.name }}</h3>
-          <label class="form-label"><input type="checkbox" [(ngModel)]="row.is_active" [disabled]="isSaving()"> Allow workspace access</label>
-          <label class="form-field"><span class="form-label">Workspace role</span>
-            <select class="input--select" [(ngModel)]="row.role_id" [disabled]="isSaving()">
-              <option [ngValue]="null">{{ row.code === 'RMC' ? 'Use existing RMC role' : 'No approval or admin role' }}</option>
-              @for (role of roles(); track role.id) {
-                @if (role.role_code !== 'SYSTEM_ADMIN' && (row.code === 'RMC' || role.role_code !== 'RMC_ADMIN')) {
-                  <option [ngValue]="role.id">{{ role.role_name }}</option>
-                }
-              }
-            </select>
-          </label>
-          <button class="btn btn-primary" type="button" [disabled]="isSaving()" (click)="saveWorkspace(row)">Save {{ row.name }} access</button>
-        </div></section>
+      <p>
+        Manage workspace access for {{ user.fullname || user.username }}. Platform System Admins
+        retain access to every active workspace.
+      </p>
+      @if (workspaceLoading()) {
+        <p>Loading workspace access...</p>
       }
+      <div class="settings-editor">
+        @for (row of workspaceRows(); track row.workspace_id) {
+          <app-settings-panel [title]="row.name">
+            <div class="settings-editor">
+              <app-toggle
+                label="Allow workspace access"
+                [checked]="row.is_active"
+                (checkedChange)="row.is_active = $event"
+                [disabled]="isSaving()"
+              />
+              <app-dropdown
+                label="Workspace role"
+                [options]="workspaceRoleOptions(row)"
+                [(ngModel)]="row.role_id"
+                [disabled]="isSaving()"
+              />
+              <app-action-button
+                [label]="'Save ' + row.name + ' access'"
+                size="small"
+                [loading]="isSaving()"
+                (clicked)="saveWorkspace(row)"
+              />
+            </div>
+          </app-settings-panel>
+        }
+      </div>
     }
   </app-dialog>
 </main>

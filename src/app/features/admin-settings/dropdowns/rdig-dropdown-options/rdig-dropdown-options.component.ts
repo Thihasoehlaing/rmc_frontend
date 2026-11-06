@@ -1,3 +1,8 @@
+import { SettingsPanelComponent } from '../../../../shared/components/settings-ui/settings-ui.components';
+import { DropdownComponent } from '../../../../shared/components/dropdown/dropdown.component';
+import { StatusBadgeComponent } from '../../../../shared/components/form-standard/form-standard.components';
+import { StateComponent } from '../../../../shared/components/settings-ui/settings-ui.components';
+import { SearchToolbarComponent } from '../../../../shared/components/settings-ui/settings-ui.components';
 import { Component, TrackByFunction, signal, inject, OnInit, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router, ActivatedRoute } from '@angular/router';
@@ -23,15 +28,10 @@ import { DialogComponent } from '../../../../shared/components/dialog/dialog.com
 import type { DataTableColumn } from '../../../../shared/components/data-table/data-table.component';
 import { SvgIconComponent } from '../../../../shared/components/svg-icon/svg-icon.component';
 import { SVG_ICON_TRASH } from '../../../../shared/icons/svg-icons';
-import { TableActionIconComponent } from '../../../../shared/components/table-action-icon/table-action-icon.component';
-import { SubmissionsSearchComponent } from '../../../../shared/components/submissions-search/submissions-search.component';
-import { SearchableDropdownComponent } from '../../../../shared/components/searchable-dropdown/searchable-dropdown.component';
 import { DropdownOption as SelectOption } from '../../../../core/interfaces/components.interface';
 import { AdminSettingsPageHeaderComponent } from '../../../../shared/components/admin-settings-page-header/admin-settings-page-header.component';
 import { MyrCurrencyPipe } from '../../../../shared/pipes/myr-currency.pipe';
-import {
-  formatDisplayDate as sharedFormatDisplayDate,
-} from '../../../../shared/utils/date-time.util';
+import { formatDisplayDate as sharedFormatDisplayDate } from '../../../../shared/utils/date-time.util';
 
 interface DropdownOption {
   id: number;
@@ -105,10 +105,14 @@ interface CategorySharingConfig {
   selector: 'app-rdig-dropdown-options',
   standalone: true,
   imports: [
+    SettingsPanelComponent,
+    SearchToolbarComponent,
+    StateComponent,
+    StatusBadgeComponent,
+    DropdownComponent,
     AdminSettingsPageHeaderComponent,
     MyrCurrencyPipe,
-    TableActionIconComponent,
-    SubmissionsSearchComponent,
+
     CommonModule,
     FormsModule,
     RouterModule,
@@ -118,7 +122,6 @@ interface CategorySharingConfig {
     PaginationComponent,
     DialogComponent,
     SvgIconComponent,
-    SearchableDropdownComponent,
   ],
   templateUrl: './rdig-dropdown-options.component.html',
   styleUrls: ['./rdig-dropdown-options.component.scss'],
@@ -144,10 +147,30 @@ export class RdigDropdownOptionsComponent implements OnInit {
   ];
 
   readonly rdigTabs = [
-    { key: 'RESEARCH_CLUSTER', category: 'Research Cluster', label: 'Research Cluster', icon: 'hub' },
-    { key: 'TYPE_OF_ORGANISATION', category: 'Type of Organisation', label: 'Type of Organization', icon: 'corporate_fare' },
-    { key: 'RESEARCH_DOMAIN', category: 'Research Domain', label: 'Research Domain', icon: 'public' },
-    { key: 'SUB_RESEARCH_DOMAIN', category: 'Sub-Research Domain', label: 'Sub Research Domain', icon: 'account_tree' },
+    {
+      key: 'RESEARCH_CLUSTER',
+      category: 'Research Cluster',
+      label: 'Research Cluster',
+      icon: 'hub',
+    },
+    {
+      key: 'TYPE_OF_ORGANISATION',
+      category: 'Type of Organisation',
+      label: 'Type of Organization',
+      icon: 'corporate_fare',
+    },
+    {
+      key: 'RESEARCH_DOMAIN',
+      category: 'Research Domain',
+      label: 'Research Domain',
+      icon: 'public',
+    },
+    {
+      key: 'SUB_RESEARCH_DOMAIN',
+      category: 'Sub-Research Domain',
+      label: 'Sub Research Domain',
+      icon: 'account_tree',
+    },
     { key: 'ESGS', category: 'ESG', label: 'ESGs', icon: 'eco' },
     { key: 'SDGS', category: 'SDG', label: 'SDGs', icon: 'flag' },
   ] as const;
@@ -316,22 +339,14 @@ export class RdigDropdownOptionsComponent implements OnInit {
     {
       id: 3,
       title: 'Conference Application',
-      categories: [
-        'Select Region',
-        'Vote Number Description',
-        'Type of Organisation',
-      ],
+      categories: ['Select Region', 'Vote Number Description', 'Type of Organisation'],
       items: 18,
       shared: 9,
     },
     {
       id: 4,
       title: 'Journal Application',
-      categories: [
-        'Vote Number Description',
-        'Account Code Description',
-        'Type of Organisation',
-      ],
+      categories: ['Vote Number Description', 'Account Code Description', 'Type of Organisation'],
       items: 22,
       shared: 9,
     },
@@ -566,8 +581,10 @@ export class RdigDropdownOptionsComponent implements OnInit {
   });
 
   usesTypeOfOrganisationFormSelect(): boolean {
-    return this.selectedGroup()?.title === 'RDIG Application' &&
-      this.selectedCategory() === 'Type of Organisation';
+    return (
+      this.selectedGroup()?.title === 'RDIG Application' &&
+      this.selectedCategory() === 'Type of Organisation'
+    );
   }
 
   getModalFormOptions(): SelectOption<string>[] {
@@ -575,13 +592,17 @@ export class RdigDropdownOptionsComponent implements OnInit {
   }
 
   isRdigResearchClusterCategory(): boolean {
-    return this.selectedGroup()?.title === 'RDIG Application' &&
-      this.selectedCategory() === 'Research Cluster';
+    return (
+      this.selectedGroup()?.title === 'RDIG Application' &&
+      this.selectedCategory() === 'Research Cluster'
+    );
   }
 
   isRdigResearchDomainCategory(): boolean {
-    return this.selectedGroup()?.title === 'RDIG Application' &&
-      this.selectedCategory() === 'Research Domain';
+    return (
+      this.selectedGroup()?.title === 'RDIG Application' &&
+      this.selectedCategory() === 'Research Domain'
+    );
   }
 
   isRdigSimpleNameStatusCategory(): boolean {
@@ -593,13 +614,17 @@ export class RdigDropdownOptionsComponent implements OnInit {
   }
 
   isRdigCodeNameStatusCategory(): boolean {
-    return this.selectedGroup()?.title === 'RDIG Application' &&
-      ['ESG', 'SDG'].includes(this.selectedCategory());
+    return (
+      this.selectedGroup()?.title === 'RDIG Application' &&
+      ['ESG', 'SDG'].includes(this.selectedCategory())
+    );
   }
 
   isRdigSubResearchDomainCategory(): boolean {
-    return this.selectedGroup()?.title === 'RDIG Application' &&
-      this.selectedCategory() === 'Sub-Research Domain';
+    return (
+      this.selectedGroup()?.title === 'RDIG Application' &&
+      this.selectedCategory() === 'Sub-Research Domain'
+    );
   }
 
   getCodeInputLabel(): string {
@@ -687,7 +712,10 @@ export class RdigDropdownOptionsComponent implements OnInit {
       return null;
     }
 
-    const normalized = tabKey.trim().toUpperCase().replace(/[\s-]+/g, '_');
+    const normalized = tabKey
+      .trim()
+      .toUpperCase()
+      .replace(/[\s-]+/g, '_');
     const aliases: Record<string, string> = {
       ESG: 'ESGS',
       SDG: 'SDGS',
@@ -903,7 +931,6 @@ export class RdigDropdownOptionsComponent implements OnInit {
     }
   }
 
-
   addOption(): void {
     this.editingOptionId.set(null);
     this.editingInitialPayload.set(null);
@@ -974,13 +1001,12 @@ export class RdigDropdownOptionsComponent implements OnInit {
     this.rdigService.listForms().subscribe({
       next: (res) => {
         this.rdigFormOptions.set(
-          (res.data ?? [])
-            .map((form) => ({
-              label: form.form_name,
-              value: form.form_code,
-              description: form.form_code,
-              searchText: `${form.form_name} ${form.form_code}`.toLowerCase(),
-            })),
+          (res.data ?? []).map((form) => ({
+            label: form.form_name,
+            value: form.form_code,
+            description: form.form_code,
+            searchText: `${form.form_name} ${form.form_code}`.toLowerCase(),
+          })),
         );
       },
       error: () => {
@@ -1040,7 +1066,11 @@ export class RdigDropdownOptionsComponent implements OnInit {
       next: ({ rows, pagination }) => {
         // If a mutation removed the last row on a page beyond page 1, step back
         // to the new last page instead of showing an empty table.
-        if (pagination && pagination.total_pages > 0 && this.optionsPage() > pagination.total_pages) {
+        if (
+          pagination &&
+          pagination.total_pages > 0 &&
+          this.optionsPage() > pagination.total_pages
+        ) {
           this.optionsPage.set(pagination.total_pages);
           this.apiLoading.set(false);
           this.loadApiCategory();
@@ -1088,9 +1118,10 @@ export class RdigDropdownOptionsComponent implements OnInit {
             rows: (r.data?.items ?? []).map((o) => ({
               id: o.id,
               value: o.name ?? o.option_name ?? '',
-              status: (o.status ?? '').toLowerCase() === 'inactive'
-                ? ('Inactive' as const)
-                : ('Active' as const),
+              status:
+                (o.status ?? '').toLowerCase() === 'inactive'
+                  ? ('Inactive' as const)
+                  : ('Active' as const),
               categoryId: o.dropdown_category_id,
               sharedWith: (o.shared_with ?? []).map((form) => form.form_name),
               sharedFormIds: (o.shared_with ?? []).map((form) => form.form_code),
@@ -1355,7 +1386,7 @@ export class RdigDropdownOptionsComponent implements OnInit {
     const editId = this.editingOptionId();
     const parentDomainId = editId
       ? this.apiRows().find((r) => r.id === editId)?.parentDomainId
-      : payload.parentDomainId ?? undefined;
+      : (payload.parentDomainId ?? undefined);
 
     // Reassigning a sub-domain to a different Research Domain: the backend has
     // no "move" endpoint, so this is handled separately as delete + recreate.
@@ -1375,7 +1406,10 @@ export class RdigDropdownOptionsComponent implements OnInit {
     if (editId) {
       switch (category) {
         case 'Research Cluster':
-          req = this.rdigService.adminUpdateCluster(editId, { cluster_name: name, is_active: isActive });
+          req = this.rdigService.adminUpdateCluster(editId, {
+            cluster_name: name,
+            is_active: isActive,
+          });
           break;
         case 'Type of Organisation':
           req = this.rdigService.adminUpdateTypeOfOrg(editId, {
@@ -1385,7 +1419,10 @@ export class RdigDropdownOptionsComponent implements OnInit {
           });
           break;
         case 'Research Domain':
-          req = this.rdigService.adminUpdateDomain(editId, { domain_name: name, is_active: isActive });
+          req = this.rdigService.adminUpdateDomain(editId, {
+            domain_name: name,
+            is_active: isActive,
+          });
           break;
         case 'Sub-Research Domain': {
           req = this.rdigService.adminUpdateSubDomain(editId, {
@@ -1486,9 +1523,7 @@ export class RdigDropdownOptionsComponent implements OnInit {
   }
 
   private getSelectedFormCodes(payload: AddOptionPayload): string[] {
-    return payload.appliesTo
-      .map((value) => value.trim())
-      .filter((value) => value.length > 0);
+    return payload.appliesTo.map((value) => value.trim()).filter((value) => value.length > 0);
   }
 
   /**
@@ -2235,9 +2270,7 @@ export class RdigDropdownOptionsComponent implements OnInit {
       return new Date(Number(year), Number(month) - 1, Number(day)).getTime();
     }
 
-    const dateTimeMatch = dateValue.match(
-      /^(\d{2})-(\d{2})-(\d{4})\s+(\d{2}):(\d{2})\s+(AM|PM)$/i,
-    );
+    const dateTimeMatch = dateValue.match(/^(\d{2})-(\d{2})-(\d{4})\s+(\d{2}):(\d{2})\s+(AM|PM)$/i);
     if (dateTimeMatch) {
       const [, day, month, year, hourValue, minute, period] = dateTimeMatch;
       let hour = Number(hourValue) % 12;

@@ -1,3 +1,5 @@
+import { ActionButtonComponent } from '../../../../../shared/components/action-button/action-button.component';
+import { InputDirective } from '../../../../../shared/components/settings-ui/settings-ui.components';
 import { Component, OnInit, OnDestroy, ViewChild, Input, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
@@ -27,7 +29,7 @@ const manuscriptNotPreviouslyPublishedValidator: ValidatorFn = (
 @Component({
   selector: 'app-supporting-documents-form',
   standalone: true,
-  imports: [
+  imports: [ActionButtonComponent,InputDirective,
     CommonModule,
     ReactiveFormsModule,
     FileUploadComponent,

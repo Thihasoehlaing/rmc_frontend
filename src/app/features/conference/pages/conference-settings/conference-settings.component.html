@@ -1,79 +1,26 @@
 <main class="conference-settings">
-  <header class="settings-header">
-    <h1>Conference Settings</h1>
-  </header>
+  <app-settings-page-header [title]="'Conference Settings'" [description]="''" eyebrow="Workspace"></app-settings-page-header>
 
   <section class="settings-container card">
     <div class="card__content">
       <div class="top-section">
         <div class="selector-group">
           <label class="form-label">Dropdown Category</label>
-          <select
-            class="input--select category-select"
-            #breakdownSelect
-            (change)="onBreakdownTypeChange(breakdownSelect.value)"
-            [value]="selectedBreakdownType() || ''"
-          >
-            <option value="" disabled>--Select--</option>
-            @for (type of breakdownTypeOptions; track type.value) {
-              <option [value]="type.value">{{ type.label }}</option>
-            }
-          </select>
+          <app-dropdown [options]="standardOptions4()" [ngModel]="selectedBreakdownType() || ''" (ngModelChange)="onBreakdownTypeChange($event)" class="category-select" />
         </div>
       </div>
 
       @if (selectedBreakdownType()) {
         <!-- Action Buttons -->
         <div class="action-buttons">
-          <button
-            type="button"
-            class="btn btn-primary"
-            (click)="openAddModal()"
-            aria-label="Add option"
-          >
-            + Add Option
-          </button>
+          <app-action-button [label]="'+ Add Option'" type="primary" size="small" [ariaLabel]="'Add option'" (clicked)="openAddModal()" buttonType="button" />
         </div>
 
         <!-- Search, Filter, and Sort Controls -->
-        <div class="controls-section">
-          <div class="search-box">
-            <input
-              type="text"
-              class="input--text search-input"
-              placeholder="Search options..."
-              [value]="searchQuery()"
-              (input)="onSearchInput($event)"
-              aria-label="Search options"
-            />
-          </div>
-
-          <div class="filter-sort-group">
-            <select
-              class="input--select filter-select"
-              [value]="filterStatus()"
-              (change)="onFilterChange($event)"
-              aria-label="Filter by status"
-            >
-              <option value="All">All Status</option>
-              <option value="Active">Active</option>
-              <option value="Inactive">Inactive</option>
-            </select>
-
-            <select
-              class="input--select sort-select"
-              [value]="sortBy()"
-              (change)="onSortChange($event)"
-              aria-label="Sort options"
-            >
-              <option value="date">Newest First</option>
-              <option value="name">Name (A-Z)</option>
-            </select>
-          </div>
-        </div>
+        <app-search-toolbar [query]="searchQuery()" (queryChange)="onSearchInput($event)" (search)="onSearchInput(searchQuery())" (reset)="onSearchInput('')" placeholder="Search options"><app-dropdown [options]="standardOptions3()" [ngModel]="filterStatus()" (ngModelChange)="onFilterChange($event)" ariaLabel="Filter by status" class="filter-select" /><app-dropdown [options]="standardOptions2()" [ngModel]="sortBy()" (ngModelChange)="onSortChange($event)" ariaLabel="Sort options" class="sort-select" /></app-search-toolbar>
         <!-- Options Table -->
         @if (getFilteredAndSortedOptions().length > 0) {
-          <app-data-table
+          <app-data-table [dense]="true"
             [columns]="getTableColumns()"
             [rows]="getFilteredAndSortedOptions()"
             [sortColumn]="headerSortColumn()"
@@ -109,32 +56,11 @@
                 <td>{{ formatRowDate(row.createdDate) }}</td>
                 <td>
                   <div class="data-table__actions">
-                    <button
-                      type="button"
-                      class="btn-icon btn-icon--edit"
-                      (click)="editOption(row, getFilteredAndSortedOptions().indexOf(row))"
-                      aria-label="Edit option"
-                    >
-                      <app-table-action-icon action="edit"></app-table-action-icon>
-                    </button>
+                    <app-action-button [label]="'Edit option'" type="primary" size="small" [icon]="'edit'" [iconOnly]="true" [ariaLabel]="'Edit option'" (clicked)="editOption(row, getFilteredAndSortedOptions().indexOf(row))" buttonType="button" />
                     @if (row.status === 'Active') {
-                      <button
-                        type="button"
-                        class="btn-icon"
-                        (click)="toggleOptionStatus(row)"
-                        aria-label="Deactivate option"
-                      >
-                        <span class="material-icons">block</span>
-                      </button>
+                      <app-action-button [label]="'Deactivate option'" type="primary" size="small" [icon]="'block'" [iconOnly]="true" [ariaLabel]="'Deactivate option'" (clicked)="toggleOptionStatus(row)" buttonType="button" />
                     } @else {
-                      <button
-                        type="button"
-                        class="btn-icon"
-                        (click)="toggleOptionStatus(row)"
-                        aria-label="Activate option"
-                      >
-                        <span class="material-icons">check</span>
-                      </button>
+                      <app-action-button [label]="'Activate option'" type="primary" size="small" [icon]="'check'" [iconOnly]="true" [ariaLabel]="'Activate option'" (clicked)="toggleOptionStatus(row)" buttonType="button" />
                     }
                   </div>
                 </td>
@@ -180,7 +106,7 @@
               isRegionType() ? 'Region Name' : isLocalType() ? 'Item Description' : 'Vote Number'
             }}
           </label>
-          <input
+          <input appInput
             type="text"
             class="input--text"
             formControlName="label"
@@ -205,7 +131,7 @@
         @if (isResearchType()) {
           <div class="form-field">
             <label class="form-label">Item Description</label>
-            <textarea
+            <textarea appInput
               class="input--textarea"
               formControlName="description"
               placeholder="Enter item description"
@@ -217,7 +143,7 @@
         @if (isLocalType()) {
           <div class="form-field">
             <label class="form-label">Account Code</label>
-            <input
+            <input appInput
               type="text"
               class="input--text"
               formControlName="accountCode"
@@ -229,7 +155,7 @@
         @if (isRegionType()) {
           <div class="form-field">
             <label class="form-label">Percentage (%)</label>
-            <input
+            <input appInput
               type="number"
               class="input--text"
               formControlName="percentage"
@@ -242,7 +168,7 @@
 
           <div class="form-field">
             <label class="form-label">Limit (RM)</label>
-            <input
+            <input appInput
               appDecimalAmount
               type="text"
               inputmode="decimal"
@@ -256,7 +182,7 @@
 
           <div class="form-field">
             <label class="form-label">Description (Warning)</label>
-            <textarea
+            <textarea appInput
               class="input--textarea"
               formControlName="description"
               placeholder="Enter region description/warning"
@@ -268,32 +194,18 @@
         @if (!isRegionType()) {
           <div class="form-field">
             <label class="form-label">Foreign / Local</label>
-            <select class="input--select" formControlName="foreignLocal">
-              <option value="">--Select--</option>
-              <option value="foreign">Foreign</option>
-              <option value="local">Local</option>
-            </select>
+            <app-dropdown [options]="standardOptions1()" formControlName="foreignLocal" ariaLabel="Foreign local" class="" />
           </div>
         }
 
         <div class="form-field">
           <label class="form-label">Status</label>
-          <select class="input--select" formControlName="status">
-            <option value="Active">Active</option>
-            <option value="Inactive">Inactive</option>
-          </select>
+          <app-dropdown [options]="standardOptions0()" formControlName="status" ariaLabel="Status" class="" />
         </div>
 
         <div class="modal-actions">
-          <button
-            type="button"
-            class="btn btn-primary"
-            (click)="saveOption()"
-            [disabled]="optionForm.invalid"
-          >
-            Save
-          </button>
-          <button type="button" class="btn btn-ghost" (click)="closeModal()">Cancel</button>
+          <app-action-button [label]="'Save'" type="primary" size="small" [disabled]="optionForm.invalid" (clicked)="saveOption()" buttonType="button" />
+          <app-action-button [label]="'Cancel'" type="primary" size="small" (clicked)="closeModal()" buttonType="button" />
         </div>
       </form>
     </div>

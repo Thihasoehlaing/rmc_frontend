@@ -40,7 +40,7 @@
           <div class="groups-grid">
             @for (group of availableGroups; track group) {
               <label class="group-checkbox">
-                <input
+                <input class="input--checkbox"
                   type="checkbox"
                   [checked]="selectedGroupsArray().includes(group)"
                   (change)="toggleGroup(group)">
@@ -116,14 +116,14 @@
         <form [formGroup]="newProfileForm" class="profile-form">
           <div class="form-group">
             <label>Profile Name *</label>
-            <input
+            <input appInput
               type="text"
               formControlName="profileName"
               placeholder="e.g., Deputy VC">
           </div>
           <div class="form-group">
             <label>Description</label>
-            <textarea
+            <textarea appInput
               formControlName="profileDescription"
               placeholder="Optional description for this profile"></textarea>
           </div>

@@ -2,8 +2,12 @@
 
 // ── Entrance animations ──────────────────────────────────────────────
 @keyframes overlay-in {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes dialog-in {
@@ -21,7 +25,7 @@
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.42);
+  background: var(--color-dialog-backdrop);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -35,7 +39,7 @@
 .modal-dialog {
   background: var(--color-surface);
   width: 100%;
-  max-width: 680px;       // default; overridden by [style.max-width] binding
+  max-width: 680px; // default; overridden by [style.max-width] binding
   border: 1px solid var(--border-default);
   border-radius: 10px;
   box-shadow: 0 20px 50px rgba(15, 23, 42, 0.2);
@@ -132,8 +136,12 @@
   scrollbar-width: thin;
   scrollbar-color: var(--border-hover) transparent;
 
-  &::-webkit-scrollbar       { width: 6px; }
-  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
   &::-webkit-scrollbar-thumb {
     background: var(--border-hover);
     border-radius: var(--radius-full);
@@ -155,5 +163,44 @@
   // Hide footer bar entirely when no content is projected into it
   &:empty {
     display: none;
+  }
+}
+
+.modal-dialog__heading {
+  flex: 1;
+  min-width: 0;
+  p {
+    margin: var(--space-1) 0 0;
+    font-size: var(--fs-sm);
+    color: var(--color-text-secondary);
+  }
+}
+.modal-dialog__close:disabled {
+  opacity: var(--disabled-opacity);
+  cursor: not-allowed;
+}
+.modal-dialog--compact {
+  &.modal-dialog--small {
+    max-width: var(--size-dialog-small);
+  }
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  .modal-dialog__header,
+  .modal-dialog__body {
+    padding: var(--space-4) var(--space-5);
+  }
+  .modal-dialog__header h4 {
+    font-size: var(--fs-lg);
+    color: var(--color-text-primary);
+  }
+  .modal-dialog__footer {
+    padding: var(--space-3) var(--space-5);
+    background: var(--color-surface-nested);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .modal-overlay,
+  .modal-dialog {
+    animation: none;
   }
 }

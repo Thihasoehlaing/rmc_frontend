@@ -7,7 +7,7 @@
       <div class="output-item" [class.output-item--active]="outputForm.get('journal.checked')?.value"
         formGroupName="journal" data-missing-field-target="outputs.journal.checked">
         <label class="item-trigger">
-          <input type="checkbox" formControlName="checked">
+          <input class="input--checkbox" type="checkbox" formControlName="checked">
           <span class="item-label is-required">Indexed Journal Publication (SCOPUS-Indexed Q1 and Q2)</span>
         </label>
         <app-validation-message class="form-validation-note--error" [control]="outputForm.get('journal.checked')" fieldName="Indexed Journal Publication"></app-validation-message>
@@ -18,7 +18,7 @@
               <div class="radio-field">
                 @for (q of journalQuantityOptions; track q) {
                   <label class="radio-field__option">
-                    <input type="radio" [value]="q" formControlName="quantity">
+                    <input class="input--radio" type="radio" [value]="q" formControlName="quantity">
                     <span>{{ q }} {{ q === 1 ? 'Publication' : 'Publications' }}</span>
                   </label>
                 }
@@ -35,7 +35,7 @@
       <!-- ── Conceptual Design ─────────────────────────────────── -->
       <div class="output-item" data-missing-field-target="outputs.conceptualDesign" [class.output-item--active]="outputForm.get('conceptualDesign')?.value">
         <label class="item-trigger">
-          <input type="checkbox" formControlName="conceptualDesign">
+          <input class="input--checkbox" type="checkbox" formControlName="conceptualDesign">
           <span class="item-label is-required">Conceptual Design or Theoretical Framework</span>
         </label>
         <app-validation-message class="form-validation-note--error" [control]="outputForm.get('conceptualDesign')" fieldName="Conceptual Design or Theoretical Framework"></app-validation-message>
@@ -45,7 +45,7 @@
       <div class="output-item" [class.output-item--active]="outputForm.get('knowledgeTransfer.checked')?.value"
         formGroupName="knowledgeTransfer" data-missing-field-target="outputs.knowledgeTransfer.checked">
         <label class="item-trigger">
-          <input type="checkbox" formControlName="checked">
+          <input class="input--checkbox" type="checkbox" formControlName="checked">
           <span class="item-label is-required">Knowledge Transfer Programme - is a structured program which has documented programs approval, objectives, methodology, and financial arrangement.</span>
         </label>
         <app-validation-message class="form-validation-note--error" [control]="outputForm.get('knowledgeTransfer.checked')" fieldName="Knowledge Transfer Programme"></app-validation-message>
@@ -53,7 +53,7 @@
           <div class="item-content">
             <div class="form-field" data-missing-field-target="outputs.knowledgeTransfer.community">
               <label class="form-label is-required">Community to be impacted:</label>
-              <input type="text" class="input--text" formControlName="community" maxlength="100">
+              <input appInput type="text" class="input--text" formControlName="community" maxlength="100">
               <app-character-counter [current]="outputForm.get('knowledgeTransfer.community')?.value?.length ?? 0" [max]="100"></app-character-counter>
               <app-validation-message class="form-validation-note--error" [control]="outputForm.get('knowledgeTransfer.community')" fieldName="Community to be impacted"></app-validation-message>
             </div>
@@ -65,14 +65,14 @@
       <div class="output-item" [class.output-item--active]="outputForm.get('externalGrant.checked')?.value"
         formGroupName="externalGrant" data-missing-field-target="outputs.externalGrant.checked">
         <label class="item-trigger">
-          <input type="checkbox" formControlName="checked">
+          <input class="input--checkbox" type="checkbox" formControlName="checked">
           <span class="item-label">Application to external grant scheme</span>
         </label>
         @if (outputForm.get('externalGrant.checked')?.value) {
           <div class="item-content">
             <div class="form-field" data-missing-field-target="outputs.externalGrant.scheme">
               <label class="form-label is-required">Grant scheme:</label>
-              <input type="text" class="input--text" formControlName="scheme" maxlength="100">
+              <input appInput type="text" class="input--text" formControlName="scheme" maxlength="100">
               <app-character-counter [current]="outputForm.get('externalGrant.scheme')?.value?.length ?? 0" [max]="100"></app-character-counter>
               <app-validation-message class="form-validation-note--error" [control]="outputForm.get('externalGrant.scheme')" fieldName="Grant scheme"></app-validation-message>
             </div>
@@ -84,14 +84,14 @@
       <div class="output-item" [class.output-item--active]="outputForm.get('others.checked')?.value"
         formGroupName="others" data-missing-field-target="outputs.others.checked">
         <label class="item-trigger">
-          <input type="checkbox" formControlName="checked">
+          <input class="input--checkbox" type="checkbox" formControlName="checked">
           <span class="item-label">Others</span>
         </label>
         @if (outputForm.get('others.checked')?.value) {
           <div class="item-content">
             <div class="form-field" data-missing-field-target="outputs.others.details">
               <label class="form-label is-required">Describe other outputs:</label>
-              <textarea class="input--textarea" formControlName="details" maxlength="100"></textarea>
+              <textarea appInput class="input--textarea" formControlName="details" maxlength="100"></textarea>
               <app-character-counter [current]="outputForm.get('others.details')?.value?.length ?? 0" [max]="100"></app-character-counter>
               <app-note text="Please state matching grant amount and name of university/organisation and any other description."></app-note>
               <app-validation-message class="form-validation-note--error" [control]="outputForm.get('others.details')" fieldName="Describe other outputs"></app-validation-message>

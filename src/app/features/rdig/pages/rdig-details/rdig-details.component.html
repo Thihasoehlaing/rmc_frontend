@@ -201,7 +201,7 @@
             <app-custom-subheader icon="badge" title="Internal Co-Researchers"></app-custom-subheader>
             @if (coResearchers().length) {
               <app-table-scroll-hint></app-table-scroll-hint>
-              <app-data-table [columns]="coResearcherColumns" [rows]="coResearcherRows()" [hoverable]="false" [striped]="false"></app-data-table>
+              <app-data-table [dense]="true" [columns]="coResearcherColumns" [rows]="coResearcherRows()" [hoverable]="false" [striped]="false"></app-data-table>
             } @else {
               <p class="review-empty">None.</p>
             }
@@ -211,7 +211,7 @@
             <app-custom-subheader icon="public" title="External Co-Researchers"></app-custom-subheader>
             @if (collaborators().length) {
               <app-table-scroll-hint></app-table-scroll-hint>
-              <app-data-table [columns]="collaboratorColumns" [rows]="collaboratorRows()" [hoverable]="false" [striped]="false"></app-data-table>
+              <app-data-table [dense]="true" [columns]="collaboratorColumns" [rows]="collaboratorRows()" [hoverable]="false" [striped]="false"></app-data-table>
             } @else {
               <p class="review-empty">None.</p>
             }
@@ -1004,7 +1004,7 @@
                 <app-custom-subheader icon="receipt_long" [title]="budgetSectionTitle(entry.section)"></app-custom-subheader>
                 @if (entry.rows.length) {
                   <app-table-scroll-hint></app-table-scroll-hint>
-                  <app-data-table [columns]="budgetColumns" [rows]="entry.rows" [hoverable]="false" [striped]="false"></app-data-table>
+                  <app-data-table [dense]="true" [columns]="budgetColumns" [rows]="entry.rows" [hoverable]="false" [striped]="false"></app-data-table>
                 } @else {
                   <p class="review-empty">No items in this section.</p>
                 }
@@ -1197,7 +1197,7 @@
               @if (canEditWholeFormComment('cfo')) {
                 <div class="form-field">
                   <label class="form-label" for="cfo-approved-amount">Approved Amount (RM) <span class="required-marker">*</span></label>
-                  <input id="cfo-approved-amount" class="input--text" type="number" min="0" step="0.01" [formControl]="approvedAmountControl" />
+                  <input appInput id="cfo-approved-amount" class="input--text" type="number" min="0" step="0.01" [formControl]="approvedAmountControl" />
                   <p class="form-hint">Defaults to the proposed amount. Adjust before approving or rejecting.</p>
                 </div>
                 <app-review-block label="CFO — Comment" icon="business" [visible]="true" [readonly]="false" [commentControl]="cfoCommentControl"></app-review-block>
@@ -1270,7 +1270,7 @@
             } @else if (!requiresWholeFormComment()) {
               <div class="action-comment-box">
                 <label for="rdig-decision-comment">Overall Comment <span>*</span></label>
-                <textarea id="rdig-decision-comment" class="section-comment-input" rows="4" placeholder="Write your comment before taking action..." [formControl]="actionCommentControl" [attr.maxlength]="commentMaxLength"></textarea>
+                <textarea appInput id="rdig-decision-comment" class="section-comment-input" rows="4" placeholder="Write your comment before taking action..." [formControl]="actionCommentControl" [attr.maxlength]="commentMaxLength"></textarea>
                 <div class="comment-meta" [class.comment-meta--error]="actionCommentControl.hasError('maxlength')">
                   <span>{{ actionRequirementMessage() }}</span>
                   <span>{{ actionCommentLength() }}/{{ commentMaxLength }}</span>
@@ -1407,19 +1407,15 @@
             @if (canSendReminder()) {
               <div class="approval-reminder">
                 <p class="form-hint">Send an email reminder for the current pending action.</p>
-                <button type="button" class="btn btn-secondary btn-sm" [disabled]="reminderSending()"
-                  (click)="confirmReminder.set(true)">
-                  <span class="material-icons" aria-hidden="true">notifications_active</span>
-                  {{ reminderSending() ? 'Sending…' : 'Send Reminder' }}
-                </button>
+                <app-action-button [label]="(reminderSending() ? 'Sending…' : 'Send Reminder')" type="secondary" size="small" [icon]="'notifications_active'" [disabled]="reminderSending()" (clicked)="confirmReminder.set(true)" buttonType="button" />
               </div>
             }
             @if (reminderMessage()) { <p class="form-hint" role="status">{{ reminderMessage() }}</p> }
-            <app-dialog [isOpen]="confirmReminder()" title="Send RDIG Reminder" size="small" (close)="confirmReminder.set(false)">
+            <app-dialog density="compact" [isOpen]="confirmReminder()" title="Send RDIG Reminder" size="small" (close)="confirmReminder.set(false)">
               <p>Send a reminder to the person awaiting action in the current batch stage? During Applicant Resubmission, this goes to the applicant. Reviewers who already acted will not receive it.</p>
               <div dialog-footer>
-                <button type="button" class="btn btn-secondary" (click)="confirmReminder.set(false)">Cancel</button>
-                <button type="button" class="btn btn-primary" (click)="sendReminder()">Send Reminder</button>
+                <app-action-button [label]="'Cancel'" type="secondary" size="small" (clicked)="confirmReminder.set(false)" buttonType="button" />
+                <app-action-button [label]="'Send Reminder'" type="primary" size="small" (clicked)="sendReminder()" buttonType="button" />
               </div>
             </app-dialog>
 
@@ -1445,7 +1441,7 @@
   }
 </section>
 
-<app-dialog [isOpen]="reviewerSelectionOpen()" title="Choose RDIG Reviewers" size="medium" [height]="reviewerDropdownOpen() ? 'min(640px, calc(100dvh - var(--space-8)))' : null" maxHeight="calc(100dvh - var(--space-8))" (close)="closeReviewerSelection()">
+<app-dialog density="compact" [isOpen]="reviewerSelectionOpen()" title="Choose RDIG Reviewers" size="medium" [height]="reviewerDropdownOpen() ? 'min(640px, calc(100dvh - var(--space-8)))' : null" maxHeight="calc(100dvh - var(--space-8))" (close)="closeReviewerSelection()">
   <div class="reviewer-selection-dialog">
     <div class="reviewer-selection-dialog__intro">
       <span class="material-icons" aria-hidden="true">info</span>
@@ -1475,8 +1471,8 @@
   </div>
 
   <div dialog-footer class="reviewer-selection-dialog__actions">
-    <button type="button" class="btn btn-secondary" (click)="closeReviewerSelection()">Cancel</button>
-    <button type="button" class="btn btn-primary" [disabled]="selectedReviewerCount() !== reviewerSelectionCount() || reviewerOptionsLoading()" (click)="confirmReviewerSelection()">Confirm Reviewers</button>
+    <app-action-button [label]="'Cancel'" type="secondary" size="small" (clicked)="closeReviewerSelection()" buttonType="button" />
+    <app-action-button [label]="'Confirm Reviewers'" type="primary" size="small" [disabled]="selectedReviewerCount() !== reviewerSelectionCount() || reviewerOptionsLoading()" (clicked)="confirmReviewerSelection()" buttonType="button" />
   </div>
 </app-dialog>
 
@@ -1502,12 +1498,8 @@
             <p>{{ comment.comment_text }}</p>
             @if (canChangeGroupComment(group, actor, comment) && !isEditingGroupComment(group, actor)) {
               <div class="section-comment__actions table-actions">
-                <button type="button" class="table-action" title="Edit comment" aria-label="Edit comment" (click)="startEditGroupComment(group, actor, comment)">
-                  <app-table-action-icon action="edit"></app-table-action-icon>
-                </button>
-                <button type="button" class="table-action table-action--danger" [title]="deletingCommentId() === comment.id ? 'Deleting comment' : 'Delete comment'" [attr.aria-label]="deletingCommentId() === comment.id ? 'Deleting comment' : 'Delete comment'" [disabled]="deletingCommentId() === comment.id" (click)="deleteGroupComment(group, actor, comment)">
-                  <app-table-action-icon action="delete"></app-table-action-icon>
-                </button>
+                <app-action-button [label]="'Edit comment'" type="ghost" size="small" [icon]="'edit'" [iconOnly]="true" [ariaLabel]="'Edit comment'" [title]="'Edit comment'" (clicked)="startEditGroupComment(group, actor, comment)" buttonType="button" />
+                <app-action-button [label]="'delete_outline'" type="danger" size="small" [icon]="'delete_outline'" [iconOnly]="true" [disabled]="deletingCommentId() === comment.id" [ariaLabel]="deletingCommentId() === comment.id ? 'Deleting comment' : 'Delete comment'" [title]="deletingCommentId() === comment.id ? 'Deleting comment' : 'Delete comment'" (clicked)="deleteGroupComment(group, actor, comment)" buttonType="button" />
               </div>
             }
           </article>
@@ -1555,12 +1547,7 @@
         @if (canEditFieldScore(actor)) {
           <label class="reviewer-score-entry__control">
             <span class="sr-only">{{ field.label }} score</span>
-            <select [formControl]="fieldScoreControl(field.fieldCode, actor)">
-              <option value="">Select score</option>
-              @for (score of scoreOptions(field.maxScore); track score) {
-                <option [value]="score">{{ score }} / {{ field.maxScore }}</option>
-              }
-            </select>
+            <app-dropdown [options]="standardOptions0(field.maxScore)" [formControl]="fieldScoreControl(field.fieldCode, actor)" />
           </label>
         } @else if (scoreForField(field.fieldCode, actor) !== null) {
           <strong class="reviewer-score-entry__value">{{ scoreForField(field.fieldCode, actor) }} / {{ field.maxScore }}</strong>
@@ -1585,12 +1572,8 @@
               <p>{{ comment.comment_text }}</p>
               @if (canChangeFieldComment(field.fieldCode, actor, comment) && !isEditingFieldComment(field.fieldCode, actor)) {
                 <div class="section-comment__actions table-actions">
-                  <button type="button" class="table-action" title="Edit comment" aria-label="Edit comment" (click)="startEditFieldComment(field.fieldCode, actor, comment)">
-                    <app-table-action-icon action="edit"></app-table-action-icon>
-                  </button>
-                  <button type="button" class="table-action table-action--danger" [title]="deletingCommentId() === comment.id ? 'Deleting comment' : 'Delete comment'" [attr.aria-label]="deletingCommentId() === comment.id ? 'Deleting comment' : 'Delete comment'" [disabled]="deletingCommentId() === comment.id" (click)="deleteFieldComment(field.fieldCode, actor, comment)">
-                    <app-table-action-icon action="delete"></app-table-action-icon>
-                  </button>
+                  <app-action-button [label]="'Edit comment'" type="ghost" size="small" [icon]="'edit'" [iconOnly]="true" [ariaLabel]="'Edit comment'" [title]="'Edit comment'" (clicked)="startEditFieldComment(field.fieldCode, actor, comment)" buttonType="button" />
+                  <app-action-button [label]="'delete_outline'" type="danger" size="small" [icon]="'delete_outline'" [iconOnly]="true" [disabled]="deletingCommentId() === comment.id" [ariaLabel]="deletingCommentId() === comment.id ? 'Deleting comment' : 'Delete comment'" [title]="deletingCommentId() === comment.id ? 'Deleting comment' : 'Delete comment'" (clicked)="deleteFieldComment(field.fieldCode, actor, comment)" buttonType="button" />
                 </div>
               }
             </article>

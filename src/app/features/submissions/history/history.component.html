@@ -1,19 +1,5 @@
 <div class="submissions-page">
-  <div class="submissions-header">
-    <div class="submissions-header__text">
-      <h1 class="submissions-title">
-        <span class="material-icons" aria-hidden="true">history</span>
-        {{ isAdminHistory() ? 'Admin History' : 'History' }}
-      </h1>
-      <p class="submissions-subtitle">
-        {{
-          isAdminHistory()
-            ? 'Submitted applications across every form, plus External Project drafts.'
-            : 'Applications you submitted or already acted on.'
-        }}
-      </p>
-    </div>
-  </div>
+  <app-settings-page-header [title]="(isAdminHistory() ? 'Admin History' : 'History')" [description]="(isAdminHistory() ? 'Submitted applications across every form, plus External Project drafts.' : 'Applications you submitted or already acted on.')" eyebrow="Workspace"></app-settings-page-header>
 
   @if (loading()) {
     <app-table-skeleton [columns]="skeletonColumns()" loadingLabel="Loading application history">
@@ -131,27 +117,10 @@
                       </a>
                     }
                     @if (canPrint(app)) {
-                      <button
-                        type="button"
-                        class="btn-icon btn-icon--view"
-                        title="Print PDF"
-                        aria-label="Print PDF"
-                        (click)="openPrint(app)"
-                      >
-                        <span class="material-icons" aria-hidden="true">print</span>
-                      </button>
+                      <app-action-button [label]="'Print PDF'" type="primary" size="small" [icon]="'print'" [iconOnly]="true" [ariaLabel]="'Print PDF'" [title]="'Print PDF'" (clicked)="openPrint(app)" buttonType="button" />
                     }
                     @if (canRollback(app)) {
-                      <button
-                        type="button"
-                        class="btn-icon btn-icon--rollback"
-                        title="Rollback last action"
-                        aria-label="Rollback last action"
-                        [disabled]="rollbackRequestId() === (app.id ?? app.request_id)"
-                        (click)="openRollbackDialog(app)"
-                      >
-                        <span class="material-icons" aria-hidden="true">undo</span>
-                      </button>
+                      <app-action-button [label]="'Rollback last action'" type="primary" size="small" [icon]="'undo'" [iconOnly]="true" [disabled]="rollbackRequestId() === (app.id ?? app.request_id)" [ariaLabel]="'Rollback last action'" [title]="'Rollback last action'" (clicked)="openRollbackDialog(app)" buttonType="button" />
                     }
                   </div>
                 </td>
@@ -187,7 +156,7 @@
     </section>
   }
 
-  <app-dialog
+  <app-dialog density="compact"
     [isOpen]="rollbackTarget() !== null"
     title="Rollback Last Action"
     size="small"
@@ -202,7 +171,7 @@
         </p>
         <label class="form-field">
           <span class="form-label">Reason</span>
-          <textarea
+          <textarea appInput
             class="input--textarea"
             rows="4"
             maxlength="1000"
@@ -214,22 +183,8 @@
     }
 
     <div dialog-footer class="form-dialog__footer">
-      <button
-        type="button"
-        class="btn btn-secondary"
-        [disabled]="rollbackRequestId() !== null"
-        (click)="closeRollbackDialog()"
-      >
-        Cancel
-      </button>
-      <button
-        type="button"
-        class="btn btn-danger"
-        [disabled]="rollbackRequestId() !== null || !rollbackReason().trim()"
-        (click)="confirmRollback()"
-      >
-        {{ rollbackRequestId() !== null ? 'Rolling back...' : 'Rollback' }}
-      </button>
+      <app-action-button [label]="'Cancel'" type="secondary" size="small" [disabled]="rollbackRequestId() !== null" (clicked)="closeRollbackDialog()" buttonType="button" />
+      <app-action-button [label]="(rollbackRequestId() !== null ? 'Rolling back...' : 'Rollback')" type="danger" size="small" [disabled]="rollbackRequestId() !== null || !rollbackReason().trim()" (clicked)="confirmRollback()" buttonType="button" />
     </div>
   </app-dialog>
 </div>

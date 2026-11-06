@@ -1,3 +1,15 @@
+import {
+  SettingsPageHeaderComponent,
+  SettingsPanelComponent,
+  SearchToolbarComponent,
+  FieldComponent,
+  InputDirective,
+  StateComponent,
+  ToggleComponent,
+} from '../../../shared/components/settings-ui/settings-ui.components';
+import { DropdownComponent } from '../../../shared/components/dropdown/dropdown.component';
+import { StatusBadgeComponent } from '../../../shared/components/form-standard/form-standard.components';
+import { ActionButtonComponent } from '../../../shared/components/action-button/action-button.component';
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, TrackByFunction, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -9,11 +21,9 @@ import {
   DataTableColumn,
   DataTableComponent,
 } from '../../../shared/components/data-table/data-table.component';
-import { DetailPanelSkeletonComponent } from '../../../shared/components/detail-panel-skeleton/detail-panel-skeleton.component';
 import { DialogComponent } from '../../../shared/components/dialog/dialog.component';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
 import { TableActionIconComponent } from '../../../shared/components/table-action-icon/table-action-icon.component';
-import { TableSkeletonComponent } from '../../../shared/components/table-skeleton/table-skeleton.component';
 import {
   AccountCodeCategory,
   AccountCodeCategoryPayload,
@@ -27,17 +37,25 @@ type DialogMode = 'create' | 'edit';
   selector: 'app-account-code-categories',
   standalone: true,
   imports: [
+    ActionButtonComponent,
+    StatusBadgeComponent,
+    DropdownComponent,
+    SettingsPageHeaderComponent,
+    SettingsPanelComponent,
+    SearchToolbarComponent,
+    FieldComponent,
+    InputDirective,
+    StateComponent,
+    ToggleComponent,
     CommonModule,
     FormsModule,
     DataTableComponent,
-    DetailPanelSkeletonComponent,
     DialogComponent,
     PaginationComponent,
     TableActionIconComponent,
-    TableSkeletonComponent,
   ],
   templateUrl: './account-code-categories.component.html',
-  styleUrls: ['../forms/forms.component.scss', './account-codes.component.scss'],
+  styles: [':host { display: block; min-width: 0; }'],
 })
 export class AccountCodeCategoriesComponent implements OnInit {
   private readonly accountCodesService = inject(AccountCodesService);
@@ -80,8 +98,7 @@ export class AccountCodeCategoriesComponent implements OnInit {
     },
   ];
 
-  readonly rowTrackFn: TrackByFunction<unknown> = (_index, row) =>
-    (row as AccountCodeCategory).id;
+  readonly rowTrackFn: TrackByFunction<unknown> = (_index, row) => (row as AccountCodeCategory).id;
 
   ngOnInit(): void {
     this.loadCategories();

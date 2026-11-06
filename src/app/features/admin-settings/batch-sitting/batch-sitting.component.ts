@@ -1,3 +1,8 @@
+import { SettingsPanelComponent } from '../../../shared/components/settings-ui/settings-ui.components';
+import { StatusBadgeComponent } from '../../../shared/components/form-standard/form-standard.components';
+import { StateComponent } from '../../../shared/components/settings-ui/settings-ui.components';
+import { InputDirective } from '../../../shared/components/settings-ui/settings-ui.components';
+import { FieldComponent } from '../../../shared/components/settings-ui/settings-ui.components';
 /**
  * batch-sitting.component.ts
  *
@@ -54,12 +59,10 @@ import { AuthService } from '../../../core/services/auth.service';
 import { ActionButtonComponent } from '../../../shared/components/action-button/action-button.component';
 import { ValidationMessageComponent } from '../../../shared/components/validation-message/validation-message.component';
 import { DialogComponent } from '../../../shared/components/dialog/dialog.component';
-import { BatchManagementSkeletonComponent } from '../../../shared/components/batch-management-skeleton/batch-management-skeleton.component';
 import {
   DataTableColumn,
   DataTableComponent,
 } from '../../../shared/components/data-table/data-table.component';
-import { TableActionIconComponent } from '../../../shared/components/table-action-icon/table-action-icon.component';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
 import { AdminSettingsPageHeaderComponent } from '../../../shared/components/admin-settings-page-header/admin-settings-page-header.component';
 import { DatePickerComponent } from '../../../shared/components/date-picker/date-picker.component';
@@ -170,15 +173,20 @@ function stageWithinBatchValidator(startFn: () => string, endFn: () => string) {
   selector: 'app-batch-sitting',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    SettingsPanelComponent,
+    FieldComponent,
+    InputDirective,
+    StateComponent,
+    StatusBadgeComponent,
     AdminSettingsPageHeaderComponent,
     DatePickerComponent,
-    TableActionIconComponent,
+
     CommonModule,
     ReactiveFormsModule,
     ActionButtonComponent,
     ValidationMessageComponent,
     DialogComponent,
-    BatchManagementSkeletonComponent,
+
     DataTableComponent,
     PaginationComponent,
   ],

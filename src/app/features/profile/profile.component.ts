@@ -1,3 +1,4 @@
+import { SettingsPageHeaderComponent } from '../../shared/components/settings-ui/settings-ui.components';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 
 import { User } from '../../core/interfaces/user.interface';
@@ -6,6 +7,7 @@ import { AuthService } from '../../core/services/auth.service';
 @Component({
   selector: 'app-profile',
   standalone: true,
+  imports: [SettingsPageHeaderComponent],
   templateUrl: './profile.component.html',
   styleUrls: ['./profile.component.scss'],
 })

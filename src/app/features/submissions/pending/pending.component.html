@@ -1,13 +1,5 @@
 <div class="submissions-page">
-  <div class="submissions-header">
-    <div class="submissions-header__text">
-      <h1 class="submissions-title">
-        <span class="material-icons" aria-hidden="true">schedule</span>
-        Pending Applications
-      </h1>
-      <p class="submissions-subtitle">Submitted applications waiting for review outcome.</p>
-    </div>
-  </div>
+  <app-settings-page-header [title]="'Pending Applications'" [description]="'Submitted applications waiting for review outcome.'" eyebrow="Workspace"></app-settings-page-header>
 
   @if (loading()) {
     <app-table-skeleton [columns]="skeletonColumns" loadingLabel="Loading pending applications">

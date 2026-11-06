@@ -1,3 +1,15 @@
+import {
+  SettingsPageHeaderComponent,
+  SettingsPanelComponent,
+  SearchToolbarComponent,
+  FieldComponent,
+  InputDirective,
+  StateComponent,
+  ToggleComponent,
+} from '../../../shared/components/settings-ui/settings-ui.components';
+import { DropdownComponent } from '../../../shared/components/dropdown/dropdown.component';
+import { StatusBadgeComponent } from '../../../shared/components/form-standard/form-standard.components';
+import { ActionButtonComponent } from '../../../shared/components/action-button/action-button.component';
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, TrackByFunction, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -14,7 +26,6 @@ import { DialogComponent } from '../../../shared/components/dialog/dialog.compon
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
 import { SearchableDropdownComponent } from '../../../shared/components/searchable-dropdown/searchable-dropdown.component';
 import { TableActionIconComponent } from '../../../shared/components/table-action-icon/table-action-icon.component';
-import { TableSkeletonComponent } from '../../../shared/components/table-skeleton/table-skeleton.component';
 import { formatDisplayDate } from '../../../shared/utils/date-time.util';
 import {
   AccessStatus,
@@ -91,13 +102,22 @@ const TABS: readonly AccessTabConfig[] = [
     emptyIcon: 'apartment',
     columns: RULE_COLUMNS,
   },
-
 ];
 
 @Component({
   selector: 'app-system-access',
   standalone: true,
   imports: [
+    ActionButtonComponent,
+    StatusBadgeComponent,
+    DropdownComponent,
+    SettingsPageHeaderComponent,
+    SettingsPanelComponent,
+    SearchToolbarComponent,
+    FieldComponent,
+    InputDirective,
+    StateComponent,
+    ToggleComponent,
     CommonModule,
     FormsModule,
     DataTableComponent,
@@ -105,10 +125,9 @@ const TABS: readonly AccessTabConfig[] = [
     PaginationComponent,
     SearchableDropdownComponent,
     TableActionIconComponent,
-    TableSkeletonComponent,
   ],
   templateUrl: './system-access.component.html',
-  styleUrls: ['../forms/forms.component.scss', './system-access.component.scss'],
+  styleUrl: './system-access.component.scss',
 })
 export class SystemAccessComponent implements OnInit {
   private readonly systemAccessService = inject(SystemAccessService);
@@ -178,7 +197,7 @@ export class SystemAccessComponent implements OnInit {
   readonly auditTrackFn: TrackByFunction<SystemAccessAuditLog> = (_index, row) => row.id;
 
   get activeTabConfig(): AccessTabConfig {
-    return this.tabs.find(tab => tab.key === this.activeTab()) ?? this.tabs[0];
+    return this.tabs.find((tab) => tab.key === this.activeTab()) ?? this.tabs[0];
   }
 
   ngOnInit(): void {
@@ -187,7 +206,7 @@ export class SystemAccessComponent implements OnInit {
       this.updateUrlTab(initialTab, true);
     }
 
-    this.route.queryParamMap.subscribe(params => {
+    this.route.queryParamMap.subscribe((params) => {
       const tab = this.tabFromQueryParam(params.get('tab'));
       if (tab !== this.activeTab()) {
         this.activeTab.set(tab);
@@ -203,7 +222,7 @@ export class SystemAccessComponent implements OnInit {
   }
 
   private tabFromQueryParam(value: string | null): AccessTab {
-    return this.tabs.find(tab => tab.key === value)?.key ?? 'users';
+    return this.tabs.find((tab) => tab.key === value)?.key ?? 'users';
   }
 
   private updateUrlTab(tab: AccessTab, replaceUrl = false): void {
@@ -272,7 +291,7 @@ export class SystemAccessComponent implements OnInit {
       })
       .pipe(finalize(() => this.usersLoading.set(false)))
       .subscribe({
-        next: response => {
+        next: (response) => {
           this.users.set(response.data.items);
           this.userTotalItems.set(response.data.pagination.total_items);
           this.userTotalPages.set(Math.max(1, response.data.pagination.total_pages));
@@ -297,7 +316,7 @@ export class SystemAccessComponent implements OnInit {
       })
       .pipe(finalize(() => this.rulesLoading.set(false)))
       .subscribe({
-        next: response => {
+        next: (response) => {
           this.departmentRules.set(response.data.items);
           this.ruleTotalItems.set(response.data.pagination.total_items);
           this.ruleTotalPages.set(Math.max(1, response.data.pagination.total_pages));
@@ -322,7 +341,7 @@ export class SystemAccessComponent implements OnInit {
       })
       .pipe(finalize(() => this.auditLoading.set(false)))
       .subscribe({
-        next: response => {
+        next: (response) => {
           this.auditLogs.set(response.data.items);
           this.auditTotalItems.set(response.data.pagination.total_items);
           this.auditTotalPages.set(Math.max(1, response.data.pagination.total_pages));
@@ -390,13 +409,14 @@ export class SystemAccessComponent implements OnInit {
       is_active: this.userActive(),
     };
 
-    const request = mode === 'create'
-      ? this.systemAccessService.createUser(payload)
-      : this.systemAccessService.updateUser(this.selectedUser()!.id, payload);
+    const request =
+      mode === 'create'
+        ? this.systemAccessService.createUser(payload)
+        : this.systemAccessService.updateUser(this.selectedUser()!.id, payload);
 
     this.isSaving.set(true);
     request.pipe(finalize(() => this.isSaving.set(false))).subscribe({
-      next: response => {
+      next: (response) => {
         this.toastService.success(response.message);
         this.userDialogMode.set(null);
         this.loadUsers();
@@ -424,7 +444,8 @@ export class SystemAccessComponent implements OnInit {
 
   saveRule(): void {
     const mode = this.ruleDialogMode();
-    if (!mode || !this.ruleName().trim() || !this.departmentValue().trim() || this.isSaving()) return;
+    if (!mode || !this.ruleName().trim() || !this.departmentValue().trim() || this.isSaving())
+      return;
 
     const payload: SystemAccessDepartmentRulePayload = {
       rule_name: this.ruleName().trim(),
@@ -432,13 +453,14 @@ export class SystemAccessComponent implements OnInit {
       department_value: this.departmentValue().trim(),
       is_active: this.ruleActive(),
     };
-    const request = mode === 'create'
-      ? this.systemAccessService.createDepartmentRule(payload)
-      : this.systemAccessService.updateDepartmentRule(this.selectedRule()!.id, payload);
+    const request =
+      mode === 'create'
+        ? this.systemAccessService.createDepartmentRule(payload)
+        : this.systemAccessService.updateDepartmentRule(this.selectedRule()!.id, payload);
 
     this.isSaving.set(true);
     request.pipe(finalize(() => this.isSaving.set(false))).subscribe({
-      next: response => {
+      next: (response) => {
         this.toastService.success(response.message);
         this.ruleDialogMode.set(null);
         this.loadDepartmentRules();
@@ -450,26 +472,32 @@ export class SystemAccessComponent implements OnInit {
     const user = this.userToDelete();
     if (!user || this.isSaving()) return;
     this.isSaving.set(true);
-    this.systemAccessService.deleteUser(user.id).pipe(finalize(() => this.isSaving.set(false))).subscribe({
-      next: response => {
-        this.toastService.success(response.message);
-        this.userToDelete.set(null);
-        this.loadUsers();
-      },
-    });
+    this.systemAccessService
+      .deleteUser(user.id)
+      .pipe(finalize(() => this.isSaving.set(false)))
+      .subscribe({
+        next: (response) => {
+          this.toastService.success(response.message);
+          this.userToDelete.set(null);
+          this.loadUsers();
+        },
+      });
   }
 
   deleteRule(): void {
     const rule = this.ruleToDelete();
     if (!rule || this.isSaving()) return;
     this.isSaving.set(true);
-    this.systemAccessService.deleteDepartmentRule(rule.id).pipe(finalize(() => this.isSaving.set(false))).subscribe({
-      next: response => {
-        this.toastService.success(response.message);
-        this.ruleToDelete.set(null);
-        this.loadDepartmentRules();
-      },
-    });
+    this.systemAccessService
+      .deleteDepartmentRule(rule.id)
+      .pipe(finalize(() => this.isSaving.set(false)))
+      .subscribe({
+        next: (response) => {
+          this.toastService.success(response.message);
+          this.ruleToDelete.set(null);
+          this.loadDepartmentRules();
+        },
+      });
   }
 
   formatDate(value: string | null): string {
@@ -501,7 +529,7 @@ export class SystemAccessComponent implements OnInit {
       .listStaff(search)
       .pipe(finalize(() => this.staffOptionsLoading.set(false)))
       .subscribe({
-        next: response => {
+        next: (response) => {
           this.staffOptions.set(response.data);
           if (selectedUsername) {
             this.userUsername.set(selectedUsername);
@@ -520,10 +548,16 @@ export class SystemAccessComponent implements OnInit {
       description: [staff.username, staff.email || staff.staff_email, staff.department]
         .filter(Boolean)
         .join(' | '),
-      searchText: [staff.username, staff.fullname, staff.email, staff.staff_email, staff.department, staff.job_title]
+      searchText: [
+        staff.username,
+        staff.fullname,
+        staff.email,
+        staff.staff_email,
+        staff.department,
+        staff.job_title,
+      ]
         .filter(Boolean)
         .join(' '),
     };
   }
-
 }

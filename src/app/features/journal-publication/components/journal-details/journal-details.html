@@ -11,7 +11,7 @@
         <div class="row row--2">
           <div class="form-field">
             <label class="form-label">Applicant Name</label>
-            <input
+            <input appInput
               type="text"
               class="input--text input--soft-readonly"
               [value]="auth.currentUser()?.name || ''"
@@ -20,7 +20,7 @@
           </div>
           <div class="form-field">
             <label class="form-label">Email</label>
-            <input
+            <input appInput
               type="text"
               class="input--text input--soft-readonly"
               [value]="auth.currentUser()?.email || ''"
@@ -29,7 +29,7 @@
           </div>
           <div class="form-field">
             <label class="form-label">School / Functional Unit</label>
-            <input
+            <input appInput
               type="text"
               class="input--text input--soft-readonly"
               [value]="auth.currentUser()?.department || ''"
@@ -56,15 +56,15 @@
 
               <div class="radio-group">
                 <label class="radio-option">
-                  <input type="radio" formControlName="authorshipType" value="first-author" />
+                  <input class="input--radio" type="radio" formControlName="authorshipType" value="first-author" />
                   <span>First Author</span>
                 </label>
                 <label class="radio-option">
-                  <input type="radio" formControlName="authorshipType" value="co-author" />
+                  <input class="input--radio" type="radio" formControlName="authorshipType" value="co-author" />
                   <span>Corresponding Author</span>
                 </label>
                 <label class="radio-option">
-                  <input
+                  <input class="input--radio"
                     type="radio"
                     formControlName="authorshipType"
                     value="corresponding-author"
@@ -90,12 +90,12 @@
               >
               <div class="radio-group">
                 <label class="radio-option">
-                  <input type="radio" formControlName="restrictedPublisher" value="yes" /><span
+                  <input class="input--radio" type="radio" formControlName="restrictedPublisher" value="yes" /><span
                     >Yes</span
                   >
                 </label>
                 <label class="radio-option">
-                  <input type="radio" formControlName="restrictedPublisher" value="no" /><span
+                  <input class="input--radio" type="radio" formControlName="restrictedPublisher" value="no" /><span
                     >No</span
                   >
                 </label>
@@ -112,18 +112,18 @@
               <label class="form-label is-required">Select Research Project Type</label>
               <div class="radio-group">
                 <label class="radio-option">
-                  <input
+                  <input class="input--radio"
                     type="radio"
                     formControlName="researchType"
                     value="external-research"
                   /><span>External Research Project</span>
                 </label>
                 <label class="radio-option">
-                  <input type="radio" formControlName="researchType" value="internal-research" />
+                  <input class="input--radio" type="radio" formControlName="researchType" value="internal-research" />
                   <span>Internal Research Project</span>
                 </label>
                 <label class="radio-option">
-                  <input type="radio" formControlName="researchType" value="non-research" /><span
+                  <input class="input--radio" type="radio" formControlName="researchType" value="non-research" /><span
                     >Non-Research Project</span
                   >
                 </label>
@@ -139,16 +139,16 @@
               <label class="form-label is-required">Please select Scopus Quartile</label>
               <div class="radio-group">
                 <label class="radio-option">
-                  <input type="radio" formControlName="scopusQuartile" value="Q1" />
+                  <input class="input--radio" type="radio" formControlName="scopusQuartile" value="Q1" />
                   <span><strong>Q1:</strong> 75th - 100th percentile</span>
                 </label>
                 <label class="radio-option">
-                  <input type="radio" formControlName="scopusQuartile" value="Q2" />
+                  <input class="input--radio" type="radio" formControlName="scopusQuartile" value="Q2" />
                   <span><strong>Q2:</strong> 50th - 74th percentile</span>
                 </label>
                 @if (researchType === 'external-research') {
                   <label class="radio-option">
-                    <input type="radio" formControlName="scopusQuartile" value="Q3" />
+                    <input class="input--radio" type="radio" formControlName="scopusQuartile" value="Q3" />
                     <span><strong>Q3:</strong> 25th - 49th percentile</span>
                   </label>
                 }
@@ -166,11 +166,11 @@
               </label>
               <div class="radio-group">
                 <label class="radio-option">
-                  <input type="radio" formControlName="citedApuPaper" value="Yes" />
+                  <input class="input--radio" type="radio" formControlName="citedApuPaper" value="Yes" />
                   <span>Yes</span>
                 </label>
                 <label class="radio-option">
-                  <input type="radio" formControlName="citedApuPaper" value="No" />
+                  <input class="input--radio" type="radio" formControlName="citedApuPaper" value="No" />
                   <span>No</span>
                 </label>
               </div>
@@ -182,7 +182,7 @@
               @if (form.get('citedApuPaper')?.value === 'Yes') {
                 <div class="form-field">
                   <label class="form-label is-required">DOI link</label>
-                  <input
+                  <input appInput
                     type="text"
                     class="input--text"
                     formControlName="citedApuPaperDoi"
@@ -210,11 +210,11 @@
                   </label>
                   <div class="radio-group">
                     <label class="radio-option">
-                      <input type="radio" formControlName="citedOtherApuPaper" value="Yes" />
+                      <input class="input--radio" type="radio" formControlName="citedOtherApuPaper" value="Yes" />
                       <span>Yes</span>
                     </label>
                     <label class="radio-option">
-                      <input type="radio" formControlName="citedOtherApuPaper" value="No" />
+                      <input class="input--radio" type="radio" formControlName="citedOtherApuPaper" value="No" />
                       <span>No</span>
                     </label>
                   </div>
@@ -227,7 +227,7 @@
                   @if (form.get('citedOtherApuPaper')?.value === 'Yes') {
                     <div class="form-field">
                       <label class="form-label is-required">DOI link</label>
-                      <input
+                      <input appInput
                         type="text"
                         class="input--text"
                         formControlName="citedOtherApuPaperDoi"
@@ -253,7 +253,7 @@
                   @if (form.get('citedOtherApuPaper')?.value === 'No') {
                     <div class="form-field">
                       <label class="form-label is-required">Reason</label>
-                      <textarea
+                      <textarea appInput
                         class="input--textarea"
                         formControlName="citedOtherApuPaperReason"
                         placeholder="Enter reason"
@@ -285,7 +285,7 @@
           <div class="form-column">
             <div class="form-field journal-details-primary-field">
               <label class="form-label is-required">Paper Title</label>
-              <textarea
+              <textarea appInput
                 class="input--textarea input--textarea-compact"
                 formControlName="paperTitle"
                 maxlength="200"
@@ -308,7 +308,7 @@
 
             <div class="form-field journal-details-primary-field">
               <label class="form-label is-required">Journal Name</label>
-              <textarea
+              <textarea appInput
                 class="input--textarea input--textarea-compact"
                 formControlName="journalName"
                 maxlength="150"
@@ -345,14 +345,14 @@
           <div class="card__content section-fields">
             @if (researchType !== 'non-research') {
               <div class="form-field">
-                <app-searchable-dropdown
+                <app-dropdown
                   label="Project Account Code"
                   [required]="true"
                   [options]="projectAccountCodeOptions"
                   placeholder="[--SELECT PROJECT ACCOUNT CODE--]"
                   formControlName="projectAccountCode"
                 >
-                </app-searchable-dropdown>
+                </app-dropdown>
               </div>
             }
 
@@ -379,7 +379,7 @@
                   <app-table-scroll-hint></app-table-scroll-hint>
                   @if (researchType === 'non-research') {
                     <div class="table-scroll non-research-table">
-                      <app-data-table
+                      <app-data-table [dense]="true"
                         [columns]="nonResearchBreakdownColumns"
                         [rows]="getBreakdownArray('non-research')"
                         [hoverable]="true"
@@ -402,22 +402,8 @@
                             </td>
                             <td class="col-actions is-align-center">
                               <div class="data-table__actions">
-                                <button
-                                  type="button"
-                                  class="btn-icon btn-icon--edit"
-                                  (click)="openBreakdownModal('non-research', index)"
-                                  aria-label="Edit entry"
-                                >
-                                  <app-table-action-icon action="edit"></app-table-action-icon>
-                                </button>
-                                <button
-                                  type="button"
-                                  class="btn-icon btn-icon--delete"
-                                  (click)="deleteBreakdown('non-research', index)"
-                                  aria-label="Remove entry"
-                                >
-                                  <app-table-action-icon action="delete"></app-table-action-icon>
-                                </button>
+                                <app-action-button [label]="'Edit entry'" type="primary" size="small" [icon]="'edit'" [iconOnly]="true" [ariaLabel]="'Edit entry'" (clicked)="openBreakdownModal('non-research', index)" buttonType="button" />
+                                <app-action-button [label]="'Remove entry'" type="primary" size="small" [icon]="'delete_outline'" [iconOnly]="true" [ariaLabel]="'Remove entry'" (clicked)="deleteBreakdown('non-research', index)" buttonType="button" />
                               </div>
                             </td>
                           </tr>
@@ -435,7 +421,7 @@
                     </div>
                   } @else if (isResearchProject(researchType)) {
                     <div class="table-scroll research-table">
-                      <app-data-table
+                      <app-data-table [dense]="true"
                         [columns]="externalResearchBreakdownColumns"
                         [rows]="getBreakdownArray(researchType)"
                         [hoverable]="true"
@@ -457,22 +443,8 @@
                             </td>
                             <td class="col-actions is-align-center">
                               <div class="data-table__actions">
-                                <button
-                                  type="button"
-                                  class="btn-icon btn-icon--edit"
-                                  (click)="openBreakdownModal(researchType, index)"
-                                  aria-label="Edit entry"
-                                >
-                                  <app-table-action-icon action="edit"></app-table-action-icon>
-                                </button>
-                                <button
-                                  type="button"
-                                  class="btn-icon btn-icon--delete"
-                                  (click)="deleteBreakdown(researchType, index)"
-                                  aria-label="Remove entry"
-                                >
-                                  <app-table-action-icon action="delete"></app-table-action-icon>
-                                </button>
+                                <app-action-button [label]="'Edit entry'" type="primary" size="small" [icon]="'edit'" [iconOnly]="true" [ariaLabel]="'Edit entry'" (clicked)="openBreakdownModal(researchType, index)" buttonType="button" />
+                                <app-action-button [label]="'Remove entry'" type="primary" size="small" [icon]="'delete_outline'" [iconOnly]="true" [ariaLabel]="'Remove entry'" (clicked)="deleteBreakdown(researchType, index)" buttonType="button" />
                               </div>
                             </td>
                           </tr>
@@ -490,7 +462,7 @@
                     </div>
                   } @else {
                     <div class="table-scroll research-table">
-                      <app-data-table
+                      <app-data-table [dense]="true"
                         [columns]="breakdownColumns"
                         [rows]="getBreakdownArray(researchType || '')"
                         [hoverable]="true"
@@ -522,22 +494,8 @@
                             </td>
                             <td class="col-actions is-align-center">
                               <div class="data-table__actions">
-                                <button
-                                  type="button"
-                                  class="btn-icon btn-icon--edit"
-                                  (click)="openBreakdownModal(researchType || '', index)"
-                                  aria-label="Edit entry"
-                                >
-                                  <app-table-action-icon action="edit"></app-table-action-icon>
-                                </button>
-                                <button
-                                  type="button"
-                                  class="btn-icon btn-icon--delete"
-                                  (click)="deleteBreakdown(researchType || '', index)"
-                                  aria-label="Remove entry"
-                                >
-                                  <app-table-action-icon action="delete"></app-table-action-icon>
-                                </button>
+                                <app-action-button [label]="'Edit entry'" type="primary" size="small" [icon]="'edit'" [iconOnly]="true" [ariaLabel]="'Edit entry'" (clicked)="openBreakdownModal(researchType || '', index)" buttonType="button" />
+                                <app-action-button [label]="'Remove entry'" type="primary" size="small" [icon]="'delete_outline'" [iconOnly]="true" [ariaLabel]="'Remove entry'" (clicked)="deleteBreakdown(researchType || '', index)" buttonType="button" />
                               </div>
                             </td>
                           </tr>
@@ -586,7 +544,7 @@
                 <div class="row row--2">
                   <div class="form-field">
                     <label class="form-label">Sponsorship Amount by External (RM)</label>
-                    <input
+                    <input appInput
                       appDecimalAmount
                       type="text"
                       inputmode="decimal"
@@ -605,7 +563,7 @@
                   </div>
                   <div class="form-field">
                     <label class="form-label">Sponsored By</label>
-                    <input
+                    <input appInput
                       type="text"
                       class="input--text"
                       formControlName="sponsoredBy"
@@ -626,7 +584,7 @@
                 <div class="row row--2">
                   <div class="form-field">
                     <label class="form-label">Sponsorship Percentage Requested APU (%)</label>
-                    <input
+                    <input appInput
                       type="number"
                       class="input--text input--readonly"
                       formControlName="sponsorshipPercentage"
@@ -635,7 +593,7 @@
                   </div>
                   <div class="form-field">
                     <label class="form-label">Sponsorship Amount by APU </label>
-                    <input
+                    <input appInput
                       appDecimalAmount
                       type="text"
                       inputmode="decimal"
@@ -652,7 +610,7 @@
           <div class="costing-summary-grid">
             <div class="form-field total-field">
               <label class="form-label">Cost to be Borne by Applicant (RM)</label>
-              <input
+              <input appInput
                 appDecimalAmount
                 type="text"
                 inputmode="decimal"
@@ -664,7 +622,7 @@
 
             <div class="form-field costing-remarks">
               <label class="form-label">Remarks (Optional)</label>
-              <textarea
+              <textarea appInput
                 class="input--textarea"
                 formControlName="costingRemarks"
                 placeholder="Additional remarks"
@@ -701,7 +659,7 @@
                 <div class="row row--2">
                   <div class="form-field">
                     <label class="form-label">Sponsorship Amount by External (RM)</label>
-                    <input
+                    <input appInput
                       appDecimalAmount
                       type="text"
                       inputmode="decimal"
@@ -720,7 +678,7 @@
                   </div>
                   <div class="form-field">
                     <label class="form-label">Sponsored By</label>
-                    <input
+                    <input appInput
                       type="text"
                       class="input--text"
                       formControlName="sponsoredBy"
@@ -741,7 +699,7 @@
                 <div class="row row--2">
                   <div class="form-field">
                     <label class="form-label">Sponsorship Percentage Requested APU (%)</label>
-                    <input
+                    <input appInput
                       type="number"
                       class="input--text input--readonly"
                       formControlName="sponsorshipPercentage"
@@ -750,7 +708,7 @@
                   </div>
                   <div class="form-field">
                     <label class="form-label">Sponsorship Amount by APU (RM)</label>
-                    <input
+                    <input appInput
                       appDecimalAmount
                       type="text"
                       inputmode="decimal"
@@ -767,7 +725,7 @@
           <div class="costing-summary-grid">
             <div class="form-field total-field">
               <label class="form-label">Cost to be Borne by Applicant (RM)</label>
-              <input
+              <input appInput
                 appDecimalAmount
                 type="text"
                 inputmode="decimal"
@@ -779,7 +737,7 @@
 
             <div class="form-field costing-remarks">
               <label class="form-label">Remarks (Optional)</label>
-              <textarea
+              <textarea appInput
                 class="input--textarea"
                 formControlName="costingRemarks"
                 placeholder="Additional remarks"
@@ -805,7 +763,7 @@
 </form>
 
 <!-- Breakdown Modal Overlays -->
-<app-dialog
+<app-dialog density="compact"
   [isOpen]="isBreakdownModalOpen"
   [title]="getBreakdownModalTitle()"
   (close)="closeBreakdownModal()"
@@ -829,7 +787,7 @@
         <span class="asterisk">*</span>
       </label>
       @if (breakdownType === 'non-research') {
-        <input
+        <input appInput
           id="itemDescription"
           type="text"
           class="input--text input--readonly"
@@ -837,7 +795,7 @@
           readonly
         />
       } @else {
-        <app-searchable-dropdown
+        <app-dropdown
           [options]="currentBreakdownOptions"
           [placeholder]="
             isResearchProject(breakdownType)
@@ -846,7 +804,7 @@
           "
           formControlName="itemDescription"
         >
-        </app-searchable-dropdown>
+        </app-dropdown>
       }
       <app-validation-message
         class="form-validation-note--error"
@@ -864,7 +822,7 @@
     @if (isResearchProject(breakdownType)) {
       <div class="breakdown-field">
         <label for="externalAccountCode" class="form-label"> Account Code </label>
-        <input
+        <input appInput
           id="externalAccountCode"
           type="text"
           class="input--text input--readonly"
@@ -879,7 +837,7 @@
     @if (breakdownType === 'non-research') {
       <div class="breakdown-field">
         <label for="accountCode" class="form-label">Account Code</label>
-        <input
+        <input appInput
           id="accountCode"
           type="text"
           class="input--text input--readonly"
@@ -893,7 +851,7 @@
         <label for="voteNumber" class="form-label">
           Vote Number <span class="asterisk">*</span>
         </label>
-        <input
+        <input appInput
           id="voteNumber"
           type="text"
           class="input--text input--readonly"
@@ -910,14 +868,13 @@
     }
 
     <div class="breakdown-field">
-      <app-searchable-dropdown
+      <app-dropdown
         label="Currency"
         [required]="true"
         [options]="currencyOptions"
         placeholder="Select currency"
         formControlName="currency"
-        valueMode="single"
-      ></app-searchable-dropdown>
+      ></app-dropdown>
       <app-validation-message
         class="form-validation-note--error"
         [control]="breakdownForm.get('currency')"
@@ -931,7 +888,7 @@
         Cost in Foreign Currency / MYR
         <span class="asterisk">*</span>
       </label>
-      <input
+      <input appInput
         id="cost"
         appDecimalAmount
         type="text"
@@ -953,7 +910,7 @@
       <label for="exchangeRate" class="form-label"
         >Exchange Rate <span class="asterisk">*</span></label
       >
-      <input
+      <input appInput
         id="exchangeRate"
         type="text"
         inputmode="decimal"
@@ -973,7 +930,7 @@
     <!-- Cost in RM (Read-only calculated field) -->
     <div class="breakdown-field">
       <label for="costInRM" class="form-label">Cost in RM (approximate)</label>
-      <input
+      <input appInput
         id="costInRM"
         appDecimalAmount
         type="text"
@@ -989,7 +946,7 @@
     <!-- Description -->
     <div class="breakdown-field breakdown-field--full">
       <label for="description" class="form-label">Description</label>
-      <textarea
+      <textarea appInput
         id="description"
         class="input--textarea"
         formControlName="description"
@@ -1022,23 +979,14 @@
         <div class="breakdown-file-summary">
           <span class="material-icons">description</span>
           <span class="breakdown-file-name">{{ selectedFileName }}</span>
-          <button
-            type="button"
-            class="btn-icon btn-icon--delete"
-            (click)="removeFile()"
-            aria-label="Remove file"
-          >
-            <span class="material-icons">close</span>
-          </button>
+          <app-action-button [label]="'Remove file'" type="primary" size="small" [icon]="'close'" [iconOnly]="true" [ariaLabel]="'Remove file'" (clicked)="removeFile()" buttonType="button" />
         </div>
       }
     </div>
 
     <div class="breakdown-actions breakdown-field--full">
-      <button type="button" class="btn btn-secondary" (click)="closeBreakdownModal()">
-        Cancel
-      </button>
-      <button type="submit" class="btn btn-primary">Save</button>
+      <app-action-button [label]="'Cancel'" type="secondary" size="small" (clicked)="closeBreakdownModal()" buttonType="button" />
+      <app-action-button [label]="'Save'" type="primary" size="small" buttonType="submit" />
     </div>
   </form>
 </app-dialog>

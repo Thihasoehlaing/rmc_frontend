@@ -137,6 +137,12 @@ export const SETTINGS_MODULES: SettingsModuleConfig[] = [
     endpoints: [apiEndpoint('settings/roles')],
   },
   {
+    key: 'groups', title: 'Groups',
+    description: 'Manage groups used by workflow approvals and notifications.',
+    icon: 'groups', category: 'Authorization', route: '/main-settings/groups', tone: 'violet',
+    endpoints: [apiEndpoint('settings/groups')],
+  },
+  {
     key: 'system-access',
     title: 'System Access',
     description: 'Control system-wide entry through user overrides and department rules.',
@@ -201,6 +207,6 @@ export const SETTINGS_MODULES: SettingsModuleConfig[] = [
 
 
 export const SHARED_SETTINGS_MODULES = [
-  'users', 'roles', 'system-access', 'workspaces', 'staff-directory',
+  'users', 'roles', 'groups', 'system-access', 'workspaces', 'staff-directory',
   'departments', 'monitoring', 'forms', 'dropdown-categories',
 ].map(key => SETTINGS_MODULES.find(module => module.key === key)!);

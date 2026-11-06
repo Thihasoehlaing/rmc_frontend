@@ -1,9 +1,5 @@
 <section class="external-project-page">
-  <header class="external-project-page__header">
-    <h1 class="external-project-page__page-title">
-      External Project Data Entry Process - Fill Application Form
-    </h1>
-  </header>
+  <app-settings-page-header [title]="'External Project Data Entry Process - Fill Application Form'" [description]="''" eyebrow="Workspace"></app-settings-page-header>
 
   <form [formGroup]="externalProjectForm" class="form-container external-project-form">
     <div class="external-project-form__title-block">
@@ -50,7 +46,7 @@
             >
               <input
                 type="radio"
-                class="grant-category-option__input"
+                class="grant-category-option__input input--radio"
                 formControlName="externalGrantCategory"
                 [value]="category"
                 [disabled]="isSaving || isSubmitting"
@@ -75,7 +71,7 @@
                 <label class="form-label is-required" for="project-account-code">
                   Project Account Code
                 </label>
-                <input
+                <input appInput
                   id="project-account-code"
                   type="text"
                   class="input--text"
@@ -99,11 +95,11 @@
               </div>
               <div class="form-field">
                 <label class="form-label">Reference Code</label>
-                <input type="text" class="input--text" formControlName="referenceCode" />
+                <input appInput type="text" class="input--text" formControlName="referenceCode" />
               </div>
               <div class="form-field">
                 <label class="form-label">Description</label>
-                <input type="text" class="input--text" formControlName="description" />
+                <input appInput type="text" class="input--text" formControlName="description" />
               </div>
             </div>
 
@@ -123,15 +119,15 @@
               </div>
               <div class="form-field">
                 <label class="form-label is-required">Grant Name</label>
-                <input type="text" class="input--text" formControlName="grantName" />
+                <input appInput type="text" class="input--text" formControlName="grantName" />
               </div>
               <div class="form-field">
                 <label class="form-label is-required">Sponsor Name</label>
-                <input type="text" class="input--text" formControlName="sponsorName" />
+                <input appInput type="text" class="input--text" formControlName="sponsorName" />
               </div>
               <div class="form-field">
                 <label class="form-label is-required">School/Department</label>
-                <input
+                <input appInput
                   type="text"
                   class="input--text input--readonly"
                   formControlName="schoolDepartment"
@@ -160,7 +156,7 @@
               </div>
               <div class="form-field">
                 <label class="form-label">Duration of Project (Month)</label>
-                <input
+                <input appInput
                   type="text"
                   class="input--text input--readonly"
                   formControlName="durationMonths"
@@ -171,7 +167,7 @@
 
             <div class="form-field">
               <label class="form-label is-required">Research Title</label>
-              <textarea
+              <textarea appInput
                 class="input--textarea"
                 formControlName="researchTitle"
                 [maxlength]="titleMaxLength"
@@ -216,22 +212,8 @@
                     <td>{{ row.schoolDepartment }}</td>
                     <td class="is-align-center">
                       <div class="data-table__actions">
-                        <button
-                          type="button"
-                          class="btn-icon btn-icon--edit"
-                          (click)="openTableEntryDialog('internal', null, index)"
-                          aria-label="Edit internal co-researcher"
-                        >
-                          <app-table-action-icon action="edit"></app-table-action-icon>
-                        </button>
-                        <button
-                          type="button"
-                          class="btn-icon btn-icon--delete"
-                          (click)="removeInternalCoResearcherRow(index)"
-                          aria-label="Remove internal co-researcher"
-                        >
-                          <app-table-action-icon action="delete"></app-table-action-icon>
-                        </button>
+                        <app-action-button [label]="'Edit internal co-researcher'" type="primary" size="small" [icon]="'edit'" [iconOnly]="true" [ariaLabel]="'Edit internal co-researcher'" (clicked)="openTableEntryDialog('internal', null, index)" buttonType="button" />
+                        <app-action-button [label]="'Remove internal co-researcher'" type="primary" size="small" [icon]="'delete_outline'" [iconOnly]="true" [ariaLabel]="'Remove internal co-researcher'" (clicked)="removeInternalCoResearcherRow(index)" buttonType="button" />
                       </div>
                     </td>
                   </tr>
@@ -268,22 +250,8 @@
                     <td>{{ row.affiliation }}</td>
                     <td class="is-align-center">
                       <div class="data-table__actions">
-                        <button
-                          type="button"
-                          class="btn-icon btn-icon--edit"
-                          (click)="openTableEntryDialog('external', null, index)"
-                          aria-label="Edit external collaborator"
-                        >
-                          <app-table-action-icon action="edit"></app-table-action-icon>
-                        </button>
-                        <button
-                          type="button"
-                          class="btn-icon btn-icon--delete"
-                          (click)="removeExternalCollaboratorRow(index)"
-                          aria-label="Remove external collaborator"
-                        >
-                          <app-table-action-icon action="delete"></app-table-action-icon>
-                        </button>
+                        <app-action-button [label]="'Edit external collaborator'" type="primary" size="small" [icon]="'edit'" [iconOnly]="true" [ariaLabel]="'Edit external collaborator'" (clicked)="openTableEntryDialog('external', null, index)" buttonType="button" />
+                        <app-action-button [label]="'Remove external collaborator'" type="primary" size="small" [icon]="'delete_outline'" [iconOnly]="true" [ariaLabel]="'Remove external collaborator'" (clicked)="removeExternalCollaboratorRow(index)" buttonType="button" />
                       </div>
                     </td>
                   </tr>
@@ -319,22 +287,8 @@
                     </td>
                     <td class="is-align-center">
                       <div class="data-table__actions">
-                        <button
-                          type="button"
-                          class="btn-icon btn-icon--edit"
-                          (click)="openTableEntryDialog('outcome', null, index)"
-                          aria-label="Edit expected outcome"
-                        >
-                          <app-table-action-icon action="edit"></app-table-action-icon>
-                        </button>
-                        <button
-                          type="button"
-                          class="btn-icon btn-icon--delete"
-                          (click)="removeExpectedOutcomeRow(index)"
-                          aria-label="Remove expected outcome"
-                        >
-                          <app-table-action-icon action="delete"></app-table-action-icon>
-                        </button>
+                        <app-action-button [label]="'Edit expected outcome'" type="primary" size="small" [icon]="'edit'" [iconOnly]="true" [ariaLabel]="'Edit expected outcome'" (clicked)="openTableEntryDialog('outcome', null, index)" buttonType="button" />
+                        <app-action-button [label]="'Remove expected outcome'" type="primary" size="small" [icon]="'delete_outline'" [iconOnly]="true" [ariaLabel]="'Remove expected outcome'" (clicked)="removeExpectedOutcomeRow(index)" buttonType="button" />
                       </div>
                     </td>
                   </tr>
@@ -353,7 +307,7 @@
           <div class="card__content section-fields budget-summary-card__content">
             <div class="form-field budget-summary-card__total-field">
               <label class="form-label">Total Budget Request (RM)</label>
-              <input
+              <input appInput
                 type="text"
                 class="input--text input--disabled-readonly"
                 [value]="budgetSummaryTotal() | myrCurrency"
@@ -372,7 +326,7 @@
                   <div class="row row--2 budget-item-card__summary-row">
                     <div class="form-field">
                       <label class="form-label is-required">Item</label>
-                      <input
+                      <input appInput
                         type="text"
                         class="input--text input--readonly"
                         readonly
@@ -383,7 +337,7 @@
 
                     <div class="form-field">
                       <label class="form-label is-required">Total Amount (RM)</label>
-                      <input
+                      <input appInput
                         type="text"
                         class="input--text input--readonly"
                         readonly
@@ -423,22 +377,8 @@
                           <td class="amount-cell">{{ row.amount | myrCurrency }}</td>
                           <td class="is-align-center">
                             <div class="data-table__actions">
-                              <button
-                                type="button"
-                                class="btn-icon btn-icon--edit"
-                                (click)="openTableEntryDialog('budget', section.key, index)"
-                                aria-label="Edit budget entry"
-                              >
-                                <app-table-action-icon action="edit"></app-table-action-icon>
-                              </button>
-                              <button
-                                type="button"
-                                class="btn-icon btn-icon--delete"
-                                (click)="removeBudgetRow(section.key, index)"
-                                aria-label="Remove budget entry"
-                              >
-                                <app-table-action-icon action="delete"></app-table-action-icon>
-                              </button>
+                              <app-action-button [label]="'Edit budget entry'" type="primary" size="small" [icon]="'edit'" [iconOnly]="true" [ariaLabel]="'Edit budget entry'" (clicked)="openTableEntryDialog('budget', section.key, index)" buttonType="button" />
+                              <app-action-button [label]="'Remove budget entry'" type="primary" size="small" [icon]="'delete_outline'" [iconOnly]="true" [ariaLabel]="'Remove budget entry'" (clicked)="removeBudgetRow(section.key, index)" buttonType="button" />
                             </div>
                           </td>
                         </tr>
@@ -449,7 +389,7 @@
                   @if (section.key === 'management-fee') {
                     <div class="form-field">
                       <label class="form-label">Remark</label>
-                      <textarea
+                      <textarea appInput
                         class="input--textarea"
                         [value]="section.remark"
                         maxlength="600"
@@ -468,7 +408,7 @@
                         <label class="radio-option">
                           <input
                             type="radio"
-                            class="radio-input"
+                            class="radio-input input--radio"
                             [name]="section.key + '-billing'"
                             [checked]="section.billingRequired === 'Yes'"
                             (change)="updateBillingRequired(section.key, 'Yes')"
@@ -478,7 +418,7 @@
                         <label class="radio-option">
                           <input
                             type="radio"
-                            class="radio-input"
+                            class="radio-input input--radio"
                             [name]="section.key + '-billing'"
                             [checked]="section.billingRequired === 'No'"
                             (change)="updateBillingRequired(section.key, 'No')"
@@ -514,7 +454,7 @@
                 <label class="form-label is-required" for="consultancy-project-account-code">
                   Project Account Code
                 </label>
-                <input
+                <input appInput
                   id="consultancy-project-account-code"
                   type="text"
                   class="input--text"
@@ -538,11 +478,11 @@
               </div>
               <div class="form-field">
                 <label class="form-label">Reference Code</label>
-                <input type="text" class="input--text" formControlName="referenceCode" />
+                <input appInput type="text" class="input--text" formControlName="referenceCode" />
               </div>
               <div class="form-field">
                 <label class="form-label">Description</label>
-                <input type="text" class="input--text" formControlName="description" />
+                <input appInput type="text" class="input--text" formControlName="description" />
               </div>
             </div>
 
@@ -562,7 +502,7 @@
               </div>
               <div class="form-field">
                 <label class="form-label is-required">School/Department</label>
-                <input
+                <input appInput
                   type="text"
                   class="input--text input--readonly"
                   formControlName="schoolDepartment"
@@ -582,7 +522,7 @@
               </div>
               <div class="form-field">
                 <label class="form-label is-required">Client/Stakeholder</label>
-                <input type="text" class="input--text" formControlName="clientStakeholder" />
+                <input appInput type="text" class="input--text" formControlName="clientStakeholder" />
               </div>
             </div>
 
@@ -598,7 +538,7 @@
               </div>
               <div class="form-field">
                 <label class="form-label">Duration of Project (Month)</label>
-                <input
+                <input appInput
                   type="text"
                   class="input--text input--readonly"
                   formControlName="durationMonths"
@@ -609,7 +549,7 @@
 
             <div class="form-field">
               <label class="form-label is-required">Consultancy Title</label>
-              <textarea
+              <textarea appInput
                 class="input--textarea"
                 formControlName="consultancyTitle"
                 [maxlength]="titleMaxLength"
@@ -654,22 +594,8 @@
                     <td>{{ row.schoolDepartment }}</td>
                     <td class="is-align-center">
                       <div class="data-table__actions">
-                        <button
-                          type="button"
-                          class="btn-icon btn-icon--edit"
-                          (click)="openTableEntryDialog('internal', null, index)"
-                          aria-label="Edit internal co-researcher"
-                        >
-                          <app-table-action-icon action="edit"></app-table-action-icon>
-                        </button>
-                        <button
-                          type="button"
-                          class="btn-icon btn-icon--delete"
-                          (click)="removeInternalCoResearcherRow(index)"
-                          aria-label="Remove internal co-researcher"
-                        >
-                          <app-table-action-icon action="delete"></app-table-action-icon>
-                        </button>
+                        <app-action-button [label]="'Edit internal co-researcher'" type="primary" size="small" [icon]="'edit'" [iconOnly]="true" [ariaLabel]="'Edit internal co-researcher'" (clicked)="openTableEntryDialog('internal', null, index)" buttonType="button" />
+                        <app-action-button [label]="'Remove internal co-researcher'" type="primary" size="small" [icon]="'delete_outline'" [iconOnly]="true" [ariaLabel]="'Remove internal co-researcher'" (clicked)="removeInternalCoResearcherRow(index)" buttonType="button" />
                       </div>
                     </td>
                   </tr>
@@ -688,7 +614,7 @@
           <div class="card__content section-fields budget-summary-card__content">
             <div class="form-field budget-summary-card__total-field">
               <label class="form-label">Total Budget Request (RM)</label>
-              <input
+              <input appInput
                 type="text"
                 class="input--text input--disabled-readonly"
                 [value]="budgetSummaryTotal() | myrCurrency"
@@ -707,7 +633,7 @@
                   <div class="row row--2 budget-item-card__summary-row">
                     <div class="form-field">
                       <label class="form-label is-required">Item</label>
-                      <input
+                      <input appInput
                         type="text"
                         class="input--text input--readonly"
                         readonly
@@ -718,7 +644,7 @@
 
                     <div class="form-field">
                       <label class="form-label is-required">Total Amount (RM)</label>
-                      <input
+                      <input appInput
                         type="text"
                         class="input--text input--readonly"
                         readonly
@@ -758,22 +684,8 @@
                           <td class="amount-cell">{{ row.amount | myrCurrency }}</td>
                           <td class="is-align-center">
                             <div class="data-table__actions">
-                              <button
-                                type="button"
-                                class="btn-icon btn-icon--edit"
-                                (click)="openTableEntryDialog('budget', section.key, index)"
-                                aria-label="Edit budget entry"
-                              >
-                                <app-table-action-icon action="edit"></app-table-action-icon>
-                              </button>
-                              <button
-                                type="button"
-                                class="btn-icon btn-icon--delete"
-                                (click)="removeBudgetRow(section.key, index)"
-                                aria-label="Remove budget entry"
-                              >
-                                <app-table-action-icon action="delete"></app-table-action-icon>
-                              </button>
+                              <app-action-button [label]="'Edit budget entry'" type="primary" size="small" [icon]="'edit'" [iconOnly]="true" [ariaLabel]="'Edit budget entry'" (clicked)="openTableEntryDialog('budget', section.key, index)" buttonType="button" />
+                              <app-action-button [label]="'Remove budget entry'" type="primary" size="small" [icon]="'delete_outline'" [iconOnly]="true" [ariaLabel]="'Remove budget entry'" (clicked)="removeBudgetRow(section.key, index)" buttonType="button" />
                             </div>
                           </td>
                         </tr>
@@ -784,7 +696,7 @@
                   @if (section.key === 'management-fee') {
                     <div class="form-field">
                       <label class="form-label">Remark</label>
-                      <textarea
+                      <textarea appInput
                         class="input--textarea"
                         [value]="section.remark"
                         maxlength="600"
@@ -803,7 +715,7 @@
                         <label class="radio-option">
                           <input
                             type="radio"
-                            class="radio-input"
+                            class="radio-input input--radio"
                             [name]="section.key + '-billing'"
                             [checked]="section.billingRequired === 'Yes'"
                             (change)="updateBillingRequired(section.key, 'Yes')"
@@ -813,7 +725,7 @@
                         <label class="radio-option">
                           <input
                             type="radio"
-                            class="radio-input"
+                            class="radio-input input--radio"
                             [name]="section.key + '-billing'"
                             [checked]="section.billingRequired === 'No'"
                             (change)="updateBillingRequired(section.key, 'No')"
@@ -840,41 +752,21 @@
     </div>
 
     <footer class="external-project-form__actions">
-      <button
-        type="button"
-        class="btn btn-secondary"
-        [disabled]="
+      <app-action-button [label]="(isSaving || isOptionsLoading ? 'Saving...' : isAdminEditMode ? 'Save Changes' : 'Save As Draft')" type="secondary" size="small" [disabled]="
           isOptionsLoading ||
           isSaving ||
           isSubmitting ||
           isProjectAccountCodeValidationPending() ||
           hasProjectAccountCodeConflict()
-        "
-        (click)="saveDraft()"
-      >
-        {{
-          isSaving || isOptionsLoading
-            ? 'Saving...'
-            : isAdminEditMode
-              ? 'Save Changes'
-              : 'Save As Draft'
-        }}
-      </button>
+        " (clicked)="saveDraft()" buttonType="button" />
       @if (!isAdminEditMode) {
-        <button
-          type="button"
-          class="btn btn-primary"
-          [disabled]="
+        <app-action-button [label]="(isSubmitting ? 'Submitting...' : 'Complete')" type="primary" size="small" [disabled]="
             isOptionsLoading ||
             isSaving ||
             isSubmitting ||
             isProjectAccountCodeValidationPending() ||
             hasProjectAccountCodeConflict()
-          "
-          (click)="complete()"
-        >
-          {{ isSubmitting ? 'Submitting...' : 'Complete' }}
-        </button>
+          " (clicked)="complete()" buttonType="button" />
       }
     </footer>
   </form>
@@ -892,7 +784,7 @@
             [for]="section.key + '-' + idSuffix + '-billing-amount'"
             >Billing Amount (RM)</label
           >
-          <input
+          <input appInput
             appDecimalAmount
             type="text"
             inputmode="decimal"
@@ -956,22 +848,8 @@
               <td class="amount-cell">{{ row.amount | myrCurrency }}</td>
               <td class="is-align-center">
                 <div class="data-table__actions">
-                  <button
-                    type="button"
-                    class="btn-icon btn-icon--edit"
-                    (click)="openTableEntryDialog('billing', section.key, index)"
-                    aria-label="Edit billing entry"
-                  >
-                    <app-table-action-icon action="edit"></app-table-action-icon>
-                  </button>
-                  <button
-                    type="button"
-                    class="btn-icon btn-icon--delete"
-                    (click)="removeBillingRow(section.key, index)"
-                    aria-label="Remove billing entry"
-                  >
-                    <app-table-action-icon action="delete"></app-table-action-icon>
-                  </button>
+                  <app-action-button [label]="'Edit billing entry'" type="primary" size="small" [icon]="'edit'" [iconOnly]="true" [ariaLabel]="'Edit billing entry'" (clicked)="openTableEntryDialog('billing', section.key, index)" buttonType="button" />
+                  <app-action-button [label]="'Remove billing entry'" type="primary" size="small" [icon]="'delete_outline'" [iconOnly]="true" [ariaLabel]="'Remove billing entry'" (clicked)="removeBillingRow(section.key, index)" buttonType="button" />
                 </div>
               </td>
             </tr>
@@ -988,7 +866,7 @@
   </section>
 </ng-template>
 
-<app-dialog
+<app-dialog density="compact"
   [title]="tableEntryDialogTitle()"
   [isOpen]="tableEntryDialogOpen"
   (close)="closeTableEntryDialog()"
@@ -1021,7 +899,7 @@
 
       <div class="form-field">
         <label class="form-label">School/Department</label>
-        <input
+        <input appInput
           type="text"
           class="input--text input--readonly"
           formControlName="schoolDepartment"
@@ -1033,7 +911,7 @@
     @if (activeTableEntryType === 'external') {
       <div class="form-field">
         <label for="external-collaborator-name" class="form-label is-required">Name</label>
-        <input
+        <input appInput
           id="external-collaborator-name"
           type="text"
           class="input--text"
@@ -1048,7 +926,7 @@
         <label for="external-collaborator-affiliation" class="form-label is-required"
           >Affiliation</label
         >
-        <input
+        <input appInput
           id="external-collaborator-affiliation"
           type="text"
           class="input--text"
@@ -1065,7 +943,7 @@
     @if (activeTableEntryType === 'outcome') {
       <div class="form-field">
         <label for="expected-outcome-description" class="form-label is-required">Description</label>
-        <textarea
+        <textarea appInput
           id="expected-outcome-description"
           class="input--textarea"
           formControlName="description"
@@ -1083,7 +961,7 @@
     @if (activeTableEntryType === 'budget' || activeTableEntryType === 'billing') {
       <div class="form-field">
         <label for="table-entry-description" class="form-label is-required">Description</label>
-        <textarea
+        <textarea appInput
           id="table-entry-description"
           class="input--textarea"
           formControlName="description"
@@ -1099,7 +977,7 @@
 
       <div class="form-field">
         <label for="table-entry-amount" class="form-label is-required">Amount (RM)</label>
-        <input
+        <input appInput
           id="table-entry-amount"
           appDecimalAmount
           type="text"

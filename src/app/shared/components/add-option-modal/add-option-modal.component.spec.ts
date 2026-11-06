@@ -55,4 +55,21 @@ describe('AddOptionModalComponent form sharing', () => {
 
     expect(saved?.appliesTo).toEqual(['CONFERENCE', 'JOURNAL']);
   });
+  it('preserves the chosen inactive status and prevents duplicate saves while busy', () => {
+    const component = new AddOptionModalComponent();
+    component.name = 'External Research';
+    component.allowFormSharing = false;
+    component.status = 'Inactive';
+    const saved: AddOptionPayload[] = [];
+    component.save.subscribe((payload) => saved.push(payload));
+    component.onSave();
+    component.isSaving = true;
+    component.onSave();
+    expect(saved).toHaveLength(1);
+    expect(saved[0].status).toBe('Inactive');
+    let closed = false;
+    component.close.subscribe(() => (closed = true));
+    component.onCancel();
+    expect(closed).toBe(false);
+  });
 });

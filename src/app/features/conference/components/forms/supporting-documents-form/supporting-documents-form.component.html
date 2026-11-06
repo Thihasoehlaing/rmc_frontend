@@ -183,7 +183,7 @@
       <!-- Name of Reviewer -->
       <div class="form-field manuscript-reviewer" data-missing-field-target="reviewerName">
         <label class="form-label is-required">Name of Reviewer</label>
-        <input
+        <input appInput
           type="text"
           class="input--text"
           formControlName="reviewerName"
@@ -205,11 +205,11 @@
         <label class="form-label is-required">The manuscript has been internally reviewed for the quality of content and English?</label>
         <div class="radio-field">
           <label class="radio-field__option">
-            <input type="radio" value="yes" formControlName="manuscriptInternallyReviewed">
+            <input class="input--radio" type="radio" value="yes" formControlName="manuscriptInternallyReviewed">
             <span>Yes</span>
           </label>
           <label class="radio-field__option">
-            <input type="radio" value="no" formControlName="manuscriptInternallyReviewed">
+            <input class="input--radio" type="radio" value="no" formControlName="manuscriptInternallyReviewed">
             <span>No</span>
           </label>
         </div>
@@ -224,7 +224,7 @@
         <label class="form-label is-required">Has the manuscript and content been published in another journal or conference etc.?</label>
         <div class="radio-field">
           <label class="radio-field__option">
-            <input
+            <input class="input--radio"
               type="radio"
               value="yes"
               formControlName="manuscriptPreviouslyPublished"
@@ -233,7 +233,7 @@
             <span>Yes</span>
           </label>
           <label class="radio-field__option">
-            <input type="radio" value="no" formControlName="manuscriptPreviouslyPublished">
+            <input class="input--radio" type="radio" value="no" formControlName="manuscriptPreviouslyPublished">
             <span>No</span>
           </label>
         </div>
@@ -258,7 +258,7 @@
 </form>
 
 @if (isPreviouslyPublishedWarningOpen) {
-  <app-dialog
+  <app-dialog density="compact"
     title="Previously Published Manuscript Not Allowed"
     [isOpen]="true"
     size="small"
@@ -269,14 +269,7 @@
       have been published before.
     </p>
 
-    <button
-      dialog-footer
-      type="button"
-      class="btn btn-primary"
-      (click)="closePreviouslyPublishedWarning()"
-    >
-      OK
-    </button>
+    <app-action-button [label]="'OK'" type="primary" size="small" (clicked)="closePreviouslyPublishedWarning()" buttonType="button" />
   </app-dialog>
 }
 

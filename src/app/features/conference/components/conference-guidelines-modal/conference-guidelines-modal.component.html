@@ -3,7 +3,7 @@
   <div class="modal-container" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h2>Guidelines for Applicants</h2>
-      <button class="btn-close" (click)="close()">&times;</button>
+      <app-action-button [label]="'×'" type="primary" size="small" (clicked)="close()" buttonType="submit" />
     </div>
 
     <div class="modal-body">

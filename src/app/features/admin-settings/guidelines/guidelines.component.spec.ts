@@ -1,8 +1,6 @@
+import { provideRouter } from '@angular/router';
 import { provideHttpClient } from '@angular/common/http';
-import {
-  HttpTestingController,
-  provideHttpClientTesting,
-} from '@angular/common/http/testing';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { environment } from '../../../../environments/environment';
@@ -14,8 +12,7 @@ describe('GuidelinesComponent', () => {
   let fixture: ComponentFixture<GuidelinesComponent>;
   let http: HttpTestingController;
 
-  const baseUrl =
-    `${environment.apiUrl}/admin-settings/guidelines`;
+  const baseUrl = `${environment.apiUrl}/admin-settings/guidelines`;
 
   const listResponse = {
     success: true,
@@ -49,7 +46,7 @@ describe('GuidelinesComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [GuidelinesComponent],
-      providers: [provideHttpClient(), provideHttpClientTesting()],
+      providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(GuidelinesComponent);
@@ -63,9 +60,7 @@ describe('GuidelinesComponent', () => {
   });
 
   it('loads guidelines using server pagination', () => {
-    const request = http.expectOne(
-      `${baseUrl}?page=1&per_page=5`,
-    );
+    const request = http.expectOne(`${baseUrl}?page=1&per_page=5`);
     request.flush(listResponse);
 
     expect(component.guidelines()).toHaveLength(1);
@@ -121,7 +116,13 @@ describe('GuidelinesComponent', () => {
     expect(component.guidelineToDelete()).toBeNull();
     http.expectOne(`${baseUrl}?page=1&per_page=5`).flush({
       ...listResponse,
-      data: { ...listResponse.data, items: [], pagination: { ...listResponse.data.pagination, total_items: 0 } },
+      data: {
+        ...listResponse.data,
+        items: [],
+        pagination: { ...listResponse.data.pagination, total_items: 0 },
+      },
     });
   });
 });
+
+afterEach(() => TestBed.resetTestingModule());

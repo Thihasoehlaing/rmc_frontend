@@ -1,14 +1,6 @@
 <!-- Submission inbox -->
 <div class="submissions-page">
-  <div class="submissions-header">
-    <div class="submissions-header__text">
-      <h1 class="submissions-title">
-        <span class="material-icons" aria-hidden="true">inbox</span>
-        Inbox
-      </h1>
-      <p class="submissions-subtitle">Applications awaiting your action</p>
-    </div>
-  </div>
+  <app-settings-page-header [title]="'Inbox'" [description]="'Applications awaiting your action'" eyebrow="Workspace"></app-settings-page-header>
 
   <!-- Loading -->
   @if (loading()) {
@@ -36,7 +28,7 @@
       <div class="inbox-filters">
         <label class="inbox-filter col-3">
           <span>Search by code</span>
-          <input
+          <input appInput
             class="input--text"
             type="search"
             placeholder="e.g. JOUR-260001"
@@ -48,7 +40,7 @@
 
         <label class="inbox-filter col-3">
           <span>Search by applicant</span>
-          <input
+          <input appInput
             class="input--text"
             type="search"
             placeholder="Name, username, or email"
@@ -69,14 +61,8 @@
         </label>
 
         <div class="inbox-filter-actions col-3">
-          <button type="button" class="btn btn-primary" (click)="applyFilters()">
-            <span class="material-icons" aria-hidden="true">search</span>
-            Search
-          </button>
-          <button type="button" class="btn btn-secondary" (click)="resetFilters()">
-            <span class="material-icons" aria-hidden="true">refresh</span>
-            Reset
-          </button>
+          <app-action-button [label]="'Search'" type="primary" size="small" [icon]="'search'" (clicked)="applyFilters()" buttonType="button" />
+          <app-action-button [label]="'Reset'" type="secondary" size="small" [icon]="'refresh'" (clicked)="resetFilters()" buttonType="button" />
         </div>
       </div>
     </section>
@@ -151,15 +137,7 @@
                       <app-table-action-icon action="view"></app-table-action-icon>
                     </a>
                     @if (canPrint(app)) {
-                      <button
-                        type="button"
-                        class="table-action table-action--open"
-                        aria-label="Print PDF for {{ getCode(app) }}"
-                        title="Print PDF"
-                        (click)="openPrint(app)"
-                      >
-                        <app-table-action-icon action="print"></app-table-action-icon>
-                      </button>
+                      <app-action-button [label]="'Print PDF for ' + (getCode(app))" type="ghost" size="small" [icon]="'print'" [iconOnly]="true" [ariaLabel]="'Print PDF for ' + (getCode(app))" [title]="'Print PDF'" (clicked)="openPrint(app)" buttonType="button" />
                     }
                   </div>
                 </td>

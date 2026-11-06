@@ -1,3 +1,4 @@
+import { InputDirective } from '../../../../shared/components/settings-ui/settings-ui.components';
 import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { Location } from '@angular/common';
 import { AttachmentDownloadService } from '../../../../core/services/attachment-download.service';
@@ -26,7 +27,6 @@ import {
 import { TableScrollHintComponent } from '../../../../shared/components/table-scroll-hint/table-scroll-hint.component';
 import { ActionLoadingService } from '../../../../core/services/action-loading.service';
 import { TextareaAutosizeDirective } from '../../../../shared/directives/textarea-autosize.directive';
-import { TableActionIconComponent } from '../../../../shared/components/table-action-icon/table-action-icon.component';
 import { DialogComponent } from '../../../../shared/components/dialog/dialog.component';
 import { formatCountryForDisplay } from '../../../../shared/utils/country.util';
 import { formatCurrencyAmount, formatMyrCurrency } from '../../../../shared/utils/currency.util';
@@ -69,13 +69,12 @@ const COMMENT_MAX_LENGTH = 1000;
 @Component({
   selector: 'app-journal-review',
   standalone: true,
-  imports: [
+  imports: [InputDirective,
     ReactiveFormsModule,
     ActionButtonComponent,
     DataTableComponent,
     TableScrollHintComponent,
     TextareaAutosizeDirective,
-    TableActionIconComponent,
     DialogComponent,
   ],
   templateUrl: './journal-review.component.html',

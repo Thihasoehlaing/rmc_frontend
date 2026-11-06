@@ -11,7 +11,7 @@
         <!-- Title -->
         <div class="form-field">
           <label for="title" class="form-label">Modal Title</label>
-          <input
+          <input appInput
             id="title"
             type="text"
             class="input--text"
@@ -23,37 +23,37 @@
         <!-- Modal Colors - Token Selection Only -->
         <div class="form-field">
           <label for="bgToken" class="form-label">Background Token</label>
-          <app-searchable-dropdown
+          <app-dropdown
             id="bgToken"
             [options]="backgroundTokens"
             [isMulti]="false"
             formControlName="backgroundToken"
-          ></app-searchable-dropdown>
+          ></app-dropdown>
         </div>
 
         <div class="form-field">
           <label for="textToken" class="form-label">Text Color Token</label>
-          <app-searchable-dropdown
+          <app-dropdown
             id="textToken"
             [options]="colorTokens"
             [isMulti]="false"
             formControlName="textToken"
-          ></app-searchable-dropdown>
+          ></app-dropdown>
         </div>
 
         <div class="form-field">
           <label for="btnToken" class="form-label">Button Color Token</label>
-          <app-searchable-dropdown
+          <app-dropdown
             id="btnToken"
             [options]="buttonTokens"
             [isMulti]="false"
             formControlName="buttonToken"
-          ></app-searchable-dropdown>
+          ></app-dropdown>
         </div>
 
         <div class="form-field">
           <label for="btnText" class="form-label">Button Text</label>
-          <input
+          <input appInput
             id="btnText"
             type="text"
             class="input--text"
@@ -70,21 +70,11 @@
       <div class="add-block-section">
         <p class="add-block-label">Add a new block:</p>
         <div class="block-buttons">
-          <button class="btn btn-secondary btn-sm" (click)="addBlock('text')">
-            + Text
-          </button>
-          <button class="btn btn-secondary btn-sm" (click)="addBlock('highlight')">
-            + Highlight
-          </button>
-          <button class="btn btn-secondary btn-sm" (click)="addBlock('heading')">
-            + Heading
-          </button>
-          <button class="btn btn-secondary btn-sm" (click)="addBlock('warning')">
-            ⚠ Warning
-          </button>
-          <button class="btn btn-secondary btn-sm" (click)="addBlock('info')">
-            ℹ Info
-          </button>
+          <app-action-button [label]="'+ Text'" type="secondary" size="small" (clicked)="addBlock('text')" buttonType="submit" />
+          <app-action-button [label]="'+ Highlight'" type="secondary" size="small" (clicked)="addBlock('highlight')" buttonType="submit" />
+          <app-action-button [label]="'+ Heading'" type="secondary" size="small" (clicked)="addBlock('heading')" buttonType="submit" />
+          <app-action-button [label]="'⚠ Warning'" type="secondary" size="small" (clicked)="addBlock('warning')" buttonType="submit" />
+          <app-action-button [label]="'ℹ Info'" type="secondary" size="small" (clicked)="addBlock('info')" buttonType="submit" />
         </div>
       </div>
 
@@ -96,14 +86,7 @@
         >
           <div class="block-header">
             <span class="block-type">{{ block.type | titlecase }}</span>
-            <button
-              class="btn-remove"
-              (click)="removeBlock(block.id)"
-              type="button"
-              title="Remove block"
-            >
-              ✕
-            </button>
+            <app-action-button [label]="'✕'" type="primary" size="small" [title]="'Remove block'" (clicked)="removeBlock(block.id)" buttonType="button" />
           </div>
 
           <form [formGroup]="blockForms.get(block.id)!" class="block-form">
@@ -112,7 +95,7 @@
               <label [for]="'content-' + block.id" class="form-label">
                 Content
               </label>
-              <textarea
+              <textarea appInput
                 [id]="'content-' + block.id"
                 class="input--textarea"
                 formControlName="content"
@@ -126,36 +109,36 @@
               <label [for]="'fontSize-' + block.id" class="form-label">
                 Font Size
               </label>
-              <app-searchable-dropdown
+              <app-dropdown
                 [id]="'fontSize-' + block.id"
                 [options]="fontSizeTokens"
                 [isMulti]="false"
                 formControlName="fontSizeToken"
-              ></app-searchable-dropdown>
+              ></app-dropdown>
             </div>
 
             <div class="form-field">
               <label [for]="'fontWeight-' + block.id" class="form-label">
                 Font Weight
               </label>
-              <app-searchable-dropdown
+              <app-dropdown
                 [id]="'fontWeight-' + block.id"
                 [options]="fontWeightTokens"
                 [isMulti]="false"
                 formControlName="fontWeightToken"
-              ></app-searchable-dropdown>
+              ></app-dropdown>
             </div>
 
             <div class="form-field">
               <label [for]="'textColor-' + block.id" class="form-label">
                 Text Color
               </label>
-              <app-searchable-dropdown
+              <app-dropdown
                 [id]="'textColor-' + block.id"
                 [options]="colorTokens"
                 [isMulti]="false"
                 formControlName="textToken"
-              ></app-searchable-dropdown>
+              ></app-dropdown>
             </div>
 
             <ng-container *ngIf="block.type === 'highlight'">
@@ -163,12 +146,12 @@
                 <label [for]="'bg-' + block.id" class="form-label">
                   Background Token (Highlight Box)
                 </label>
-                <app-searchable-dropdown
+                <app-dropdown
                   [id]="'bg-' + block.id"
                   [options]="backgroundTokens"
                   [isMulti]="false"
                   formControlName="bgToken"
-                ></app-searchable-dropdown>
+                ></app-dropdown>
               </div>
             </ng-container>
 
@@ -178,12 +161,12 @@
                 <label [for]="'bg-' + block.id" class="form-label">
                   Background Token (Warning)
                 </label>
-                <app-searchable-dropdown
+                <app-dropdown
                   [id]="'bg-' + block.id"
                   [options]="warningBoxTokens"
                   [isMulti]="false"
                   formControlName="bgToken"
-                ></app-searchable-dropdown>
+                ></app-dropdown>
               </div>
             </ng-container>
 
@@ -192,12 +175,12 @@
                 <label [for]="'bg-' + block.id" class="form-label">
                   Background Token (Info)
                 </label>
-                <app-searchable-dropdown
+                <app-dropdown
                   [id]="'bg-' + block.id"
                   [options]="infoBoxTokens"
                   [isMulti]="false"
                   formControlName="bgToken"
-                ></app-searchable-dropdown>
+                ></app-dropdown>
               </div>
             </ng-container>
           </form>
@@ -209,28 +192,14 @@
       </div>
 
       <!-- Export Button -->
-      <button
-        type="button"
-        class="btn btn-primary"
-        (click)="exportConfig()"
-        style="width: 100%"
-      >
-        Export Configuration
-      </button>
+      <app-action-button [label]="'Export Configuration'" type="primary" size="small" (clicked)="exportConfig()" buttonType="button" />
     </section>
 
     <!-- Right Panel: Live Preview -->
     <section class="preview-panel">
       <div class="preview-header">
         <app-custom-header title="Live Preview"></app-custom-header>
-        <button
-          class="btn-fullscreen"
-          (click)="togglePreviewFullscreen()"
-          type="button"
-          [title]="isPreviewFullscreen() ? 'Exit Fullscreen' : 'Fullscreen'"
-        >
-          {{ isPreviewFullscreen() ? '⛶' : '⛶' }}
-        </button>
+        <app-action-button [label]="(isPreviewFullscreen() ? '⛶' : '⛶')" type="primary" size="small" [title]="isPreviewFullscreen() ? 'Exit Fullscreen' : 'Fullscreen'" (clicked)="togglePreviewFullscreen()" buttonType="button" />
       </div>
 
       <div class="preview-container">
@@ -244,7 +213,7 @@
             <!-- Modal Header -->
             <div class="preview-modal-header">
               <h2 class="preview-modal-title">{{ modalConfig().title }}</h2>
-              <button class="btn-close">&times;</button>
+              <app-action-button [label]="'×'" type="primary" size="small" buttonType="submit" />
             </div>
 
             <!-- Modal Body - Rendered Blocks -->

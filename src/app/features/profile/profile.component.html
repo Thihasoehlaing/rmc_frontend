@@ -1,7 +1,5 @@
 <div class="profile-page">
-  <header class="profile-header">
-    <h1>My Profile</h1>
-  </header>
+  <app-settings-page-header [title]="'My Profile'" [description]="''" eyebrow="Workspace"></app-settings-page-header>
 
   @if (isLoading()) {
     <div class="profile-skeleton" aria-label="Loading profile" aria-busy="true">

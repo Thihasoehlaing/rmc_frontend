@@ -20,10 +20,7 @@
           </span>
         </div>
       </div>
-      <button type="button" class="btn btn-primary" (click)="openPrint()">
-        <span class="material-icons">print</span>
-        Print
-      </button>
+      <app-action-button [label]="'Print'" type="primary" size="small" [icon]="'print'" (clicked)="openPrint()" buttonType="button" />
     </header>
 
     <section class="detail-grid">

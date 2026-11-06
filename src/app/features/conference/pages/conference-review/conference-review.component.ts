@@ -1,3 +1,4 @@
+import { InputDirective } from '../../../../shared/components/settings-ui/settings-ui.components';
 import { Location } from '@angular/common';
 import { AttachmentDownloadService } from '../../../../core/services/attachment-download.service';
 import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
@@ -24,7 +25,6 @@ import {
 import { CONFERENCE_REVIEW_PREVIEW } from './conference-review.preview-data';
 import { ActionLoadingService } from '../../../../core/services/action-loading.service';
 import { TextareaAutosizeDirective } from '../../../../shared/directives/textarea-autosize.directive';
-import { TableActionIconComponent } from '../../../../shared/components/table-action-icon/table-action-icon.component';
 import { DialogComponent } from '../../../../shared/components/dialog/dialog.component';
 import { formatCountryForDisplay } from '../../../../shared/utils/country.util';
 import {
@@ -48,12 +48,11 @@ const CONFERENCE_VENUE_LABELS: Readonly<Record<string, string>> = {
 @Component({
   selector: 'app-conference-review',
   standalone: true,
-  imports: [
+  imports: [InputDirective,
     ReactiveFormsModule,
     ActionButtonComponent,
     TableScrollHintComponent,
     TextareaAutosizeDirective,
-    TableActionIconComponent,
     DialogComponent,
   ],
   templateUrl: './conference-review.component.html',

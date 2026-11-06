@@ -1,8 +1,9 @@
+import { SearchToolbarComponent } from '../settings-ui/settings-ui.components';
 import { Component, effect, input, output, signal } from '@angular/core';
 
 @Component({
   selector: 'app-submissions-search',
-  imports: [],
+  imports: [SearchToolbarComponent],
   templateUrl: './submissions-search.component.html',
   styleUrl: './submissions-search.component.scss',
 })

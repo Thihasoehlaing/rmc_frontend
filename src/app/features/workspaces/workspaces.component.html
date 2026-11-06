@@ -6,7 +6,7 @@
   <div class="workspace-topbar__account">
     <span class="workspace-topbar__avatar" aria-hidden="true">{{ auth.currentUser()?.name?.charAt(0) }}</span>
     <span class="workspace-topbar__name">{{ auth.currentUser()?.name }}</span>
-    <button type="button" class="btn btn-ghost workspace-topbar__signout" (click)="auth.logout()" aria-label="Sign out"><span class="material-icons" aria-hidden="true">logout</span><span>Sign out</span></button>
+    <app-action-button [label]="'Sign out'" type="primary" size="small" [icon]="'logout'" [ariaLabel]="'Sign out'" (clicked)="auth.logout()" buttonType="button" />
   </div>
 </header>
 <main class="workspace-entry">
@@ -20,39 +20,37 @@
   </header>
   @if (failed()) {
     <section class="card"><div class="card__content"><p>Unable to load workspaces. Please try again.</p>
-      <button class="btn btn-primary" type="button" (click)="load()">Try again</button></div></section>
+      <app-action-button [label]="'Try again'" type="primary" size="small" (clicked)="load()" buttonType="button" /></div></section>
   } @else {
-    <section class="workspace-entry__grid" aria-label="Available workspaces">
+    <section class="workspace-entry__list" aria-label="Available workspaces">
       @for (workspace of workspaces.items(); track workspace.id; let index = $index) {
-        <article class="card workspace-entry__card" [attr.aria-labelledby]="'workspace-title-' + workspace.id">
-          <div class="workspace-entry__visual">
-            <div class="workspace-entry__visual-top">
-              <span class="workspace-entry__number" aria-hidden="true">{{ (index + 1).toString().padStart(2, '0') }}</span>
-              <span class="workspace-entry__kind">Workspace</span>
-              @if (destination(workspace)) {
-                <span class="workspace-entry__available"><span aria-hidden="true"></span>Available</span>
-              }
+        <article class="workspace-entry__row" [attr.data-workspace]="workspace.code" [attr.aria-labelledby]="'workspace-title-' + workspace.id">
+          <header class="workspace-entry__identity">
+            <span class="workspace-entry__mark" aria-hidden="true">
+              <span class="material-icons">{{ workspace.code === 'RMC' ? 'science' : workspace.code === 'HR_SERVICES' ? 'groups' : workspace.code === 'FINANCE' ? 'account_balance' : 'workspaces' }}</span>
+            </span>
+            <div>
+              <span class="workspace-entry__label">Workspace / {{ (index + 1).toString().padStart(2, '0') }}</span>
+              <h2 [id]="'workspace-title-' + workspace.id">{{ workspace.name }}</h2>
             </div>
-            <span class="workspace-entry__initial" aria-hidden="true">{{ initial(workspace.name) }}</span>
-            <h2 [id]="'workspace-title-' + workspace.id">{{ workspace.name }}</h2>
-          </div>
+          </header>
           <section class="workspace-entry__forms" [attr.aria-label]="workspace.name + ' forms'">
-            <h3>Included forms <span>{{ workspace.forms?.length || 0 }}</span></h3>
+            <h3>Included forms <span class="workspace-entry__form-count">{{ workspace.forms?.length || 0 }}</span></h3>
             <ul>
               @for (form of workspace.forms || []; track form.id) {
-                <li><span class="material-icons" aria-hidden="true">description</span>{{ form.name }}</li>
+                <li>{{ form.name }}</li>
               } @empty {
                 <li class="workspace-entry__forms-empty">No active forms configured yet.</li>
               }
             </ul>
           </section>
-          <div class="workspace-entry__card-footer">
+          <div class="workspace-entry__actions">
             @if (destination(workspace); as url) {
-              <button type="button" class="btn btn-primary" (click)="enter(workspace)">Open workspace <span class="material-icons" aria-hidden="true">arrow_forward</span></button>
-              <a class="btn btn-ghost workspace-entry__new-tab" [href]="url" target="_blank" rel="noopener noreferrer" [attr.aria-label]="'Open ' + workspace.name + ' in a new tab'" title="Open in a new tab"><span class="material-icons" aria-hidden="true">open_in_new</span></a>
+              <app-action-button [label]="'Open workspace'" type="primary" size="small" [icon]="'arrow_forward'" (clicked)="enter(workspace)" buttonType="button" />
+              <a class="btn btn-ghost btn-sm workspace-entry__new-tab" [href]="url" target="_blank" rel="noopener noreferrer" [attr.aria-label]="'Open ' + workspace.name + ' in a new tab'" title="Open in a new tab">New tab <span class="material-icons" aria-hidden="true">open_in_new</span></a>
             } @else {
-              <span class="workspace-entry__unavailable"><span class="material-icons" aria-hidden="true">lock_outline</span>Not configured</span>
-              <span class="material-icons workspace-entry__pending" aria-hidden="true">east</span>
+              <app-action-button [label]="'Open workspace'" type="primary" size="small" [icon]="'arrow_forward'" [title]="'Workspace destination is not configured'" buttonType="button" />
+              <app-action-button [label]="'New tab'" type="primary" size="small" [icon]="'open_in_new'" [title]="'Workspace destination is not configured'" buttonType="button" />
             }
           </div>
         </article>

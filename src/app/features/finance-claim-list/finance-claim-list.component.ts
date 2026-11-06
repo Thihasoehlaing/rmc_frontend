@@ -1,3 +1,5 @@
+import { ActionButtonComponent } from '../../shared/components/action-button/action-button.component';
+import { SettingsPageHeaderComponent } from '../../shared/components/settings-ui/settings-ui.components';
 import {
 	ChangeDetectionStrategy,
 	Component,
@@ -38,7 +40,7 @@ interface FinanceClaimRow {
 
 @Component({
 	selector: 'app-finance-claim-list',
-	imports: [
+	imports: [ActionButtonComponent,SettingsPageHeaderComponent,
 		DataTableComponent,
 		PaginationComponent,
 		SubmissionFormTabsComponent,

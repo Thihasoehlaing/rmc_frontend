@@ -1,3 +1,16 @@
+import { PersonIdentityComponent } from '../../../shared/components/settings-ui/settings-ui.components';
+import {
+  SettingsPageHeaderComponent,
+  SettingsPanelComponent,
+  SearchToolbarComponent,
+  FieldComponent,
+  InputDirective,
+  StateComponent,
+  ToggleComponent,
+} from '../../../shared/components/settings-ui/settings-ui.components';
+import { DropdownComponent } from '../../../shared/components/dropdown/dropdown.component';
+import { StatusBadgeComponent } from '../../../shared/components/form-standard/form-standard.components';
+import { ActionButtonComponent } from '../../../shared/components/action-button/action-button.component';
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, TrackByFunction, inject, signal } from '@angular/core';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -10,8 +23,6 @@ import {
 } from '../../../shared/components/data-table/data-table.component';
 import { DialogComponent } from '../../../shared/components/dialog/dialog.component';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
-import { DetailPanelSkeletonComponent } from '../../../shared/components/detail-panel-skeleton/detail-panel-skeleton.component';
-import { TableSkeletonComponent } from '../../../shared/components/table-skeleton/table-skeleton.component';
 import { SearchableDropdownComponent } from '../../../shared/components/searchable-dropdown/searchable-dropdown.component';
 import { DropdownOption } from '../../../core/interfaces/components.interface';
 import {
@@ -23,8 +34,6 @@ import {
   StaffRecord,
 } from './academic-staff.service';
 
-import { TableActionIconComponent } from '../../../shared/components/table-action-icon/table-action-icon.component';
-
 type DialogMode = 'create' | 'edit';
 type StatusFilter = '' | 'Active' | 'Inactive';
 
@@ -32,19 +41,27 @@ type StatusFilter = '' | 'Active' | 'Inactive';
   selector: 'app-academic-staff',
   standalone: true,
   imports: [
-    TableActionIconComponent,
+    PersonIdentityComponent,
+    ActionButtonComponent,
+    StatusBadgeComponent,
+    DropdownComponent,
+    SettingsPageHeaderComponent,
+    SettingsPanelComponent,
+    SearchToolbarComponent,
+    FieldComponent,
+    InputDirective,
+    StateComponent,
+    ToggleComponent,
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
     DataTableComponent,
     DialogComponent,
     PaginationComponent,
-    DetailPanelSkeletonComponent,
-    TableSkeletonComponent,
     SearchableDropdownComponent,
   ],
   templateUrl: './academic-staff.component.html',
-  styleUrls: ['../forms/forms.component.scss', './academic-staff.component.scss'],
+  styleUrl: './academic-staff.component.scss',
 })
 export class AcademicStaffComponent implements OnInit {
   private readonly academicStaffService = inject(AcademicStaffService);
@@ -410,7 +427,13 @@ export class AcademicStaffComponent implements OnInit {
   }
 
   staffName(item: AcademicStaffRecord): string {
-    return item.fullname || item.staff?.fullname || item.username || item.staff?.username || 'Unknown staff';
+    return (
+      item.fullname ||
+      item.staff?.fullname ||
+      item.username ||
+      item.staff?.username ||
+      'Unknown staff'
+    );
   }
 
   staffEmail(item: AcademicStaffRecord): string | null {
@@ -558,11 +581,7 @@ export class AcademicStaffComponent implements OnInit {
   }
 
   private staffOptionDescription(staff: StaffRecord): string {
-    return [
-      staff.email || staff.staff_email,
-      staff.job_title,
-      staff.department,
-    ]
+    return [staff.email || staff.staff_email, staff.job_title, staff.department]
       .filter((value): value is string => Boolean(value))
       .join(' - ');
   }

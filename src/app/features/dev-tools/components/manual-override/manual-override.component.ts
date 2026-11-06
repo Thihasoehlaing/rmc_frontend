@@ -1,3 +1,6 @@
+import { ActionButtonComponent } from '../../../../shared/components/action-button/action-button.component';
+import { InputDirective } from '../../../../shared/components/settings-ui/settings-ui.components';
+import { DropdownComponent } from '../../../../shared/components/dropdown/dropdown.component';
 import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormsModule } from '@angular/forms';
@@ -21,11 +24,12 @@ interface OverrideProfile {
 @Component({
   selector: 'app-manual-override',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, KeyValuePipe],
+  imports: [ActionButtonComponent,InputDirective,DropdownComponent,CommonModule, ReactiveFormsModule, FormsModule, KeyValuePipe],
   templateUrl: './manual-override.component.html',
   styleUrl: './manual-override.component.scss'
 })
 export class ManualOverrideComponent {
+  standardOptions0() { return [{value: 'string', label: 'String'}, {value: 'number', label: 'Number'}, {value: 'boolean', label: 'Boolean'}, {value: 'json', label: 'JSON'}, {value: 'date', label: 'Date'}]; }
   private fb = inject(FormBuilder);
 
   // Override states

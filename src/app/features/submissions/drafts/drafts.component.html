@@ -1,13 +1,5 @@
 <div class="submissions-page">
-  <div class="submissions-header">
-    <div class="submissions-header__text">
-      <h1 class="submissions-title">
-        <span class="material-icons" aria-hidden="true">edit_note</span>
-        Drafts
-      </h1>
-      <p class="submissions-subtitle">Saved applications that are not submitted yet.</p>
-    </div>
-  </div>
+  <app-settings-page-header [title]="'Drafts'" [description]="'Saved applications that are not submitted yet.'" eyebrow="Workspace"></app-settings-page-header>
 
   @if (loading()) {
     <app-table-skeleton [columns]="skeletonColumns" loadingLabel="Loading drafts">
@@ -79,26 +71,9 @@
                 <td>{{ formatDate(app) }}</td>
                 <td class="actions-cell">
                   <div class="table-actions">
-                    <button
-                      type="button"
-                      class="table-action table-action--continue"
-                      [title]="getOpenActionLabel()"
-                      [attr.aria-label]="getOpenActionLabel()"
-                      (click)="openDraft(app)"
-                    >
-                      <app-table-action-icon [action]="isSystemAdmin() ? 'view' : 'edit'"></app-table-action-icon>
-                    </button>
+                    <app-action-button [label]="'Action'" type="ghost" size="small" [iconOnly]="true" [ariaLabel]="getOpenActionLabel()" [title]="getOpenActionLabel()" (clicked)="openDraft(app)" buttonType="button" />
                     @if (canDeleteDrafts()) {
-                      <button
-                        type="button"
-                        class="table-action table-action--delete"
-                        title="Delete draft"
-                        aria-label="Delete draft"
-                        [disabled]="deletingRequestId() === (app.request_id ?? app.id)"
-                        (click)="deleteDraft(app)"
-                      >
-                        <app-table-action-icon action="delete"></app-table-action-icon>
-                      </button>
+                      <app-action-button [label]="'Delete draft'" type="ghost" size="small" [icon]="'delete_outline'" [iconOnly]="true" [disabled]="deletingRequestId() === (app.request_id ?? app.id)" [ariaLabel]="'Delete draft'" [title]="'Delete draft'" (clicked)="deleteDraft(app)" buttonType="button" />
                     }
                   </div>
                 </td>

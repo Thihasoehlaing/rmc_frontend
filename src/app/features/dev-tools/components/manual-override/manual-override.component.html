@@ -7,7 +7,7 @@
   <!-- Master Enable Toggle -->
   <div class="override-master-control">
     <label class="toggle-switch">
-      <input
+      <input class="input--checkbox"
         type="checkbox"
         [checked]="isOverrideEnabled()"
         (change)="isOverrideEnabled.set($event.target.checked)">
@@ -33,7 +33,7 @@
         <div class="form-row">
           <div class="form-field">
             <label for="overrideKey">Override Key *</label>
-            <input
+            <input appInput
               id="overrideKey"
               type="text"
               class="input--text"
@@ -43,19 +43,13 @@
 
           <div class="form-field">
             <label for="overrideType">Type *</label>
-            <select class="input--select" id="overrideType" formControlName="overrideType">
-              <option value="string">String</option>
-              <option value="number">Number</option>
-              <option value="boolean">Boolean</option>
-              <option value="json">JSON</option>
-              <option value="date">Date</option>
-            </select>
+            <app-dropdown [options]="standardOptions0()" id="overrideType" formControlName="overrideType" ariaLabel="Override type" class="" />
           </div>
         </div>
 
         <div class="form-field">
           <label for="overrideValue">Value *</label>
-          <textarea
+          <textarea appInput
             id="overrideValue"
             class="input--textarea"
             formControlName="overrideValue"
@@ -65,7 +59,7 @@
 
         <div class="form-field">
           <label for="overrideDescription">Description</label>
-          <input
+          <input appInput
             id="overrideDescription"
             type="text"
             class="input--text"
@@ -73,13 +67,7 @@
             placeholder="Optional description of this override">
         </div>
 
-        <button
-          type="button"
-          class="btn btn-primary"
-          (click)="addOverride()"
-          [disabled]="overrideForm.invalid">
-          + Add Override
-        </button>
+        <app-action-button [label]="'+ Add Override'" type="primary" size="small" [disabled]="overrideForm.invalid" (clicked)="addOverride()" buttonType="button" />
       </form>
     </section>
 
@@ -88,15 +76,9 @@
       <div class="section-header">
         <h3 class="section-title">Active Overrides ({{ activeOverridesCount() }})</h3>
         <div class="section-actions">
-          <button class="btn btn-secondary btn-sm" (click)="openJSONEditor()">
-            📝 JSON Edit
-          </button>
-          <button class="btn btn-secondary btn-sm" (click)="exportOverrides()">
-            ⬇️ Export
-          </button>
-          <button class="btn btn-secondary btn-sm" (click)="importOverrides()">
-            ⬆️ Import
-          </button>
+          <app-action-button [label]="'📝 JSON Edit'" type="secondary" size="small" (clicked)="openJSONEditor()" buttonType="submit" />
+          <app-action-button [label]="'⬇️ Export'" type="secondary" size="small" (clicked)="exportOverrides()" buttonType="submit" />
+          <app-action-button [label]="'⬆️ Import'" type="secondary" size="small" (clicked)="importOverrides()" buttonType="submit" />
         </div>
       </div>
 
@@ -115,24 +97,13 @@
               </div>
               <div class="override-meta">
                 <span class="type-badge">{{ item.value.type }}</span>
-                <button
-                  type="button"
-                  class="btn-remove"
-                  (click)="removeOverride(item.key)"
-                  title="Remove override">
-                  ✕
-                </button>
+                <app-action-button [label]="'✕'" type="primary" size="small" [title]="'Remove override'" (clicked)="removeOverride(item.key)" buttonType="button" />
               </div>
             </div>
           }
         </div>
 
-        <button
-          type="button"
-          class="btn btn-danger btn-sm"
-          (click)="clearAllOverrides()">
-          🗑️ Clear All Overrides
-        </button>
+        <app-action-button [label]="'🗑️ Clear All Overrides'" type="danger" size="small" (clicked)="clearAllOverrides()" buttonType="button" />
       } @else {
         <div class="empty-state">
           <p>No active overrides. Add one above to get started.</p>
@@ -144,13 +115,7 @@
     <section class="override-section">
       <div class="section-header">
         <h3 class="section-title">Test Profiles</h3>
-        <button
-          type="button"
-          class="btn btn-secondary btn-sm"
-          (click)="saveAsProfile()"
-          [disabled]="activeOverridesCount() === 0">
-          💾 Save as Profile
-        </button>
+        <app-action-button [label]="'💾 Save as Profile'" type="secondary" size="small" [disabled]="activeOverridesCount() === 0" (clicked)="saveAsProfile()" buttonType="button" />
       </div>
 
       <div class="profiles-grid">
@@ -164,12 +129,7 @@
             <div class="profile-details">
               <small>{{ profile.overrides.length }} overrides</small>
             </div>
-            <button
-              type="button"
-              class="btn btn-secondary btn-xs"
-              (click)="applyProfile(profile)">
-              Apply
-            </button>
+            <app-action-button [label]="'Apply'" type="secondary" size="small" (clicked)="applyProfile(profile)" buttonType="button" />
           </div>
         }
 
@@ -187,18 +147,8 @@
               </small>
             </div>
             <div class="profile-actions">
-              <button
-                type="button"
-                class="btn btn-secondary btn-xs"
-                (click)="applyProfile(profile)">
-                Apply
-              </button>
-              <button
-                type="button"
-                class="btn btn-danger btn-xs"
-                (click)="deleteProfile(profile.name)">
-                Delete
-              </button>
+              <app-action-button [label]="'Apply'" type="secondary" size="small" (clicked)="applyProfile(profile)" buttonType="button" />
+              <app-action-button [label]="'Delete'" type="danger" size="small" (clicked)="deleteProfile(profile.name)" buttonType="button" />
             </div>
           </div>
         }
@@ -220,7 +170,7 @@
         </div>
 
         <div class="modal-body">
-          <textarea
+          <textarea appInput
             class="json-editor"
             [value]="jsonEditorContent()"
             (input)="jsonEditorContent.set($any($event.target).value)"></textarea>
@@ -233,18 +183,8 @@
         </div>
 
         <div class="modal-footer">
-          <button
-            type="button"
-            class="btn btn-ghost"
-            (click)="showJSONEditor.set(false)">
-            Cancel
-          </button>
-          <button
-            type="button"
-            class="btn btn-primary"
-            (click)="saveJSONChanges()">
-            Save Changes
-          </button>
+          <app-action-button [label]="'Cancel'" type="primary" size="small" (clicked)="showJSONEditor.set(false)" buttonType="button" />
+          <app-action-button [label]="'Save Changes'" type="primary" size="small" (clicked)="saveJSONChanges()" buttonType="button" />
         </div>
       </div>
     }

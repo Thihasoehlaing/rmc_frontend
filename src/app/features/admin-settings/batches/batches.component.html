@@ -53,10 +53,7 @@
 
   <!-- ── Loading ────────────────────────────────────────────────────────── -->
   @if (isLoading()) {
-    <div class="loading-state">
-      <span class="material-icons loading-state__icon">hourglass_top</span>
-      <p>Loading batches…</p>
-    </div>
+    <app-state [title]="'Loading batches…'" [description]="''" icon="inbox"></app-state>
   }
 
   @if (!isLoading()) {
@@ -69,7 +66,7 @@
           <span class="material-icons section-head__icon icon--active">check_circle</span>
           <h2 class="section-head__title">Current Active Batch</h2>
           @if (activeBatch()) {
-            <span class="status-badge status-badge--active">Active</span>
+            <app-status-badge [intent]="'info'">Active</app-status-badge>
           }
         </div>
       </div>
@@ -113,6 +110,8 @@
             </p>
 
             <app-data-table
+              [dense]="true"
+              [embedded]="true"
               [columns]="stageColumns"
               [rows]="paginatedStagesForBatch(activeBatch()!)"
             >
@@ -133,19 +132,18 @@
 
       <!-- Empty state -->
       @if (!activeBatch() && !isEditingActive()) {
-        <div class="empty-state">
-          <span class="material-icons empty-state__icon">event_note</span>
-          <p class="empty-state__text">
-            No active batch. Create one to begin managing RDIG applications.
-          </p>
-          <app-action-button
+        <app-state
+          [title]="'No active batch. Create one to begin managing RDIG applications.'"
+          [description]="''"
+          icon="inbox"
+          ><app-action-button
             type="primary"
             label="Create Active Batch"
             icon="add"
             (clicked)="startEditActive()"
           >
-          </app-action-button>
-        </div>
+          </app-action-button
+        ></app-state>
       }
 
       <!-- Edit form -->
@@ -180,12 +178,7 @@
                 <label for="batch-start" class="form-label"
                   >Start Date <span class="required">*</span></label
                 >
-                <input
-                  id="batch-start"
-                  type="date"
-                  formControlName="startDate"
-                  class="input input--text"
-                />
+                <app-date-picker id="batch-start" formControlName="startDate" />
                 @if (activeForm.get('startDate')?.errors?.['required']) {
                   <app-validation-message message="Start date is required"></app-validation-message>
                 }
@@ -195,12 +188,7 @@
                 <label for="batch-end" class="form-label"
                   >End Date <span class="required">*</span></label
                 >
-                <input
-                  id="batch-end"
-                  type="date"
-                  formControlName="endDate"
-                  class="input input--text"
-                />
+                <app-date-picker id="batch-end" formControlName="endDate" />
                 @if (activeForm.get('endDate')?.errors?.['required']) {
                   <app-validation-message message="End date is required"></app-validation-message>
                 }
@@ -243,40 +231,52 @@
 
       <div class="batch-content">
         @if (historyBatches().length > 0) {
-          <app-data-table [columns]="historyColumns" [rows]="paginatedHistoryBatches()">
+          <app-data-table
+            [dense]="true"
+            [embedded]="true"
+            [columns]="historyColumns"
+            [rows]="paginatedHistoryBatches()"
+          >
             <ng-template #rowTemplate let-batch
               ><tr>
                 <td>{{ batch.batchName }}</td>
                 <td>{{ fmt(batch.startDate) }}</td>
                 <td>{{ fmt(batch.endDate) }}</td>
                 <td>{{ batch.applicationIds?.length ?? 0 }}</td>
-                <td><span class="status-badge status-badge--completed">Closed</span></td>
+                <td><app-status-badge [intent]="'info'">Closed</app-status-badge></td>
                 <td>
                   <div class="data-table__actions">
-                    <button
-                      type="button"
-                      class="btn-icon"
-                      (click)="viewBatch(batch)"
-                      title="View batch details"
-                    >
-                      <app-table-action-icon action="view"></app-table-action-icon></button
-                    ><button
-                      type="button"
-                      class="btn-icon"
+                    <app-action-button
+                      [label]="'View batch details'"
+                      type="primary"
+                      size="small"
+                      [icon]="'visibility'"
+                      [iconOnly]="true"
+                      [title]="'View batch details'"
+                      (clicked)="viewBatch(batch)"
+                      [ariaLabel]="'View batch details'"
+                    /><app-action-button
+                      [label]="'redo'"
+                      type="primary"
+                      size="small"
+                      [icon]="'redo'"
+                      [iconOnly]="true"
                       [disabled]="activeBatch() !== null"
-                      (click)="retrieveCompleted(batch.id)"
                       [title]="
                         activeBatch()
                           ? 'Cannot retrieve while active batch exists'
                           : 'Retrieve this batch'
                       "
-                    >
-                      <span class="material-icons">redo</span>
-                    </button>
+                      (clicked)="retrieveCompleted(batch.id)"
+                      [ariaLabel]="
+                        activeBatch()
+                          ? 'Cannot retrieve while active batch exists'
+                          : 'Retrieve this batch'
+                      "
+                    />
                   </div>
-                </td>
-              </tr></ng-template
-            >
+                </td></tr
+            ></ng-template>
           </app-data-table>
           <app-pagination
             [currentPage]="historyPage()"
@@ -291,10 +291,11 @@
           >
           </app-pagination>
         } @else {
-          <div class="empty-state">
-            <span class="material-icons empty-state__icon">inbox</span>
-            <p class="empty-state__text">No completed batches yet.</p>
-          </div>
+          <app-state
+            [title]="'No completed batches yet.'"
+            [description]="''"
+            icon="inbox"
+          ></app-state>
         }
       </div>
     </div>
@@ -303,7 +304,7 @@
 
 <!-- ── View Batch Dialog ────────────────────────────────────────────────────── -->
 @if (viewingBatch(); as batch) {
-  <app-dialog [title]="'Viewing: ' + batch.batchName" (close)="closeViewBatch()">
+  <app-dialog density="compact" [title]="'Viewing: ' + batch.batchName" (close)="closeViewBatch()">
     <div class="dialog-content">
       <div class="batch-summary">
         <div class="summary-field">
@@ -325,7 +326,12 @@
       </div>
 
       <h3 class="dialog-subtitle">Workflow Stages</h3>
-      <app-data-table [columns]="stageColumns" [rows]="paginatedStagesForBatch(batch)">
+      <app-data-table
+        [dense]="true"
+        [embedded]="true"
+        [columns]="stageColumns"
+        [rows]="paginatedStagesForBatch(batch)"
+      >
         <ng-template #rowTemplate let-stage
           ><tr>
             <td>
@@ -354,7 +360,7 @@
 
 <!-- ── End Batch Confirmation Dialog ───────────────────────────────────────── -->
 @if (showEndConfirm()) {
-  <app-dialog title="Close Batch" (close)="showEndConfirm.set(false)">
+  <app-dialog density="compact" title="Close Batch" (close)="showEndConfirm.set(false)">
     <div class="dialog-content">
       <p>Are you sure you want to close this batch? This action cannot be undone.</p>
       <div class="dialog-actions">

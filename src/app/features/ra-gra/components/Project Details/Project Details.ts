@@ -1,3 +1,6 @@
+import { InputDirective } from '../../../../shared/components/settings-ui/settings-ui.components';
+import { DatePickerComponent } from '../../../../shared/components/date-picker/date-picker.component';
+import { DropdownComponent } from '../../../../shared/components/dropdown/dropdown.component';
 import { Component, OnInit, inject, Output, EventEmitter, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -5,13 +8,12 @@ import { Subject, takeUntil } from 'rxjs';
 import { AuthService } from '../../../../core/services/auth.service';
 import { ValidationMessageComponent } from '../../../../shared/components/validation-message/validation-message.component';
 import { NoteComponent } from '../../../../shared/components/note/note.component';
-import { SearchableDropdownComponent } from '../../../../shared/components/searchable-dropdown/searchable-dropdown.component';
 import { DropdownOption } from '../../../../core/interfaces/components.interface';
 
 @Component({
   selector: 'app-ragra-project-details',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ValidationMessageComponent, NoteComponent, SearchableDropdownComponent],
+  imports: [InputDirective,DatePickerComponent,DropdownComponent,CommonModule, ReactiveFormsModule, ValidationMessageComponent, NoteComponent],
   templateUrl: './Project Details.html',
   styleUrls: ['./Project Details.scss']
 })

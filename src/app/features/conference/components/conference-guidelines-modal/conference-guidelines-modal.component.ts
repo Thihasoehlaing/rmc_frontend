@@ -1,10 +1,11 @@
+import { ActionButtonComponent } from '../../../../shared/components/action-button/action-button.component';
 import { Component, EventEmitter, Output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-conference-guidelines-modal',
   standalone: true,
-  imports: [CommonModule],
+  imports: [ActionButtonComponent,CommonModule],
   templateUrl: './conference-guidelines-modal.component.html',
   styleUrl: './conference-guidelines-modal.component.scss'
 })

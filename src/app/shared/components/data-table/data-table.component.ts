@@ -50,6 +50,7 @@ export class DataTableComponent {
   @Input() showHeader = true;
   @Input() showSortIndicator = true;
   @Input() dense = false;
+  @Input() embedded = false;
   @Input() hoverable = true;
   @Input() striped = true;
   @Input() wrapContent = false;

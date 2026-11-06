@@ -24,12 +24,12 @@
       @if (activities.length > 0) {
         <div [formGroup]="parentForm">
           <ng-container formArrayName="activities">
-            <app-data-table [columns]="activityColumns" [rows]="activities.controls">
+            <app-data-table [dense]="true" [columns]="activityColumns" [rows]="activities.controls">
               <ng-template #rowTemplate let-activity let-i="index"
                 ><tr [formGroupName]="i">
                   <td class="text-muted">{{ i + 1 }}</td>
                   <td>
-                    <input
+                    <input appInput
                       type="text"
                       class="input--text"
                       formControlName="name"
@@ -39,30 +39,10 @@
                     ></app-validation-message>
                   </td>
                   <td>
-                    <select
-                      class="input--select activity-month-select"
-                      formControlName="startMonth"
-                      [compareWith]="compareMonth"
-                      [attr.aria-label]="'Start month for activity ' + (i + 1)"
-                    >
-                      @for (m of months(); track m) {
-                        <option [ngValue]="m" [disabled]="isStartMonthDisabled(i, m)">{{ m }}</option>
-                      }
-                    </select>
+                    <app-dropdown [compareWith]="compareMonth" [options]="standardOptions1(i)" formControlName="startMonth" [ariaLabel]="'Start month for activity ' + (i + 1)" class="activity-month-select" />
                   </td>
                   <td>
-                    <select
-                      class="input--select activity-month-select"
-                      formControlName="endMonth"
-                      [compareWith]="compareMonth"
-                      [attr.aria-label]="'End month for activity ' + (i + 1)"
-                    >
-                      @for (m of months(); track m) {
-                        <option [ngValue]="m" [disabled]="isEndMonthDisabled(activity, m)">
-                          {{ m }}
-                        </option>
-                      }
-                    </select>
+                    <app-dropdown [compareWith]="compareMonth" [options]="standardOptions0(activity)" formControlName="endMonth" [ariaLabel]="'End month for activity ' + (i + 1)" class="activity-month-select" />
                   </td>
                   <td>
                     <span class="duration-badge">{{ activity.get('duration')?.value }} Mo</span>
@@ -83,15 +63,7 @@
                   <td>
                     <div class="data-table__actions">
                       @if (activities.length > 1) {
-                        <button
-                          type="button"
-                          class="btn-icon btn-icon--delete"
-                          [disabled]="workflow.isFormReadOnly()"
-                          (click)="removeActivity(i)"
-                          aria-label="Remove activity"
-                        >
-                          <app-table-action-icon action="delete"></app-table-action-icon>
-                        </button>
+                        <app-action-button [label]="'Remove activity'" type="primary" size="small" [icon]="'delete_outline'" [iconOnly]="true" [disabled]="workflow.isFormReadOnly()" [ariaLabel]="'Remove activity'" (clicked)="removeActivity(i)" buttonType="button" />
                       }
                     </div>
                   </td></tr

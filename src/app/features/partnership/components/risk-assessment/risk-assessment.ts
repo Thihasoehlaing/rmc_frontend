@@ -1,3 +1,5 @@
+import { InputDirective } from '../../../../shared/components/settings-ui/settings-ui.components';
+import { DatePickerComponent } from '../../../../shared/components/date-picker/date-picker.component';
 import { Component, inject, Input, SimpleChanges, OnChanges, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormArray, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -10,13 +12,11 @@ import { ActionButtonComponent } from '../../../../shared/components/action-butt
 import { FileUploadComponent } from '../../../../shared/components/file-upload/file-upload.component';
 import { TextareaAutosizeDirective } from '../../../../shared/directives/textarea-autosize.directive';
 
-import { TableActionIconComponent } from '../../../../shared/components/table-action-icon/table-action-icon.component';
 
 @Component({
   selector: 'app-risk-assessment',
   standalone: true,
-  imports: [
-    TableActionIconComponent,
+  imports: [InputDirective,DatePickerComponent,
     CommonModule,
     ReactiveFormsModule,
     CustomSubheaderComponent,

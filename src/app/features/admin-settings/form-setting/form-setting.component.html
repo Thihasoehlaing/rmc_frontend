@@ -1,51 +1,56 @@
-<main class="form-setting-page">
+<main class="settings-page">
   <app-admin-settings-page-header
     title="Form Setting"
     description="View all application forms currently registered in the system."
   ></app-admin-settings-page-header>
 
-  <section class="form-setting-toolbar" aria-label="Form filters">
-    <app-submissions-search
-      placeholder="Search form code or name"
-      [value]="searchDraft()"
-      (search)="onSearch($event)"
-      (refresh)="resetFilters()"
-    >
-      <label search-filters class="form-setting-status-filter">
-        <span class="sr-only">Status</span>
-        <select
-          class="input--select"
-          [ngModel]="statusDraft()"
-          (ngModelChange)="statusDraft.set($event)"
-          [disabled]="loading()"
-          aria-label="Filter by status"
-        >
-          <option value="all">All</option>
-          <option value="active">Active</option>
-          <option value="inactive">Inactive</option>
-        </select>
-      </label>
-    </app-submissions-search>
-  </section>
-  <section class="form-setting-table-panel" aria-label="Forms">
+  <app-search-toolbar
+    [query]="searchDraft()"
+    (queryChange)="searchDraft.set($event)"
+    (search)="onSearch(searchDraft())"
+    (reset)="resetFilters()"
+    placeholder="Search form code or name"
+  >
+    <div class="settings-filter">
+      <app-dropdown
+        [label]="'Status'"
+        [options]="[
+          { value: 'all', label: 'All' },
+          { value: 'active', label: 'Active' },
+          { value: 'inactive', label: 'Inactive' },
+        ]"
+        [ngModel]="statusDraft()"
+        (ngModelChange)="statusDraft.set($event)"
+        [disabled]="loading()"
+      />
+    </div>
+  </app-search-toolbar>
+
+  <app-settings-panel title="Forms" [count]="filteredForms().length" [flush]="true">
     @if (loading()) {
-      <app-table-skeleton [columns]="columns" [showSearch]="false" loadingLabel="Loading forms">
-      </app-table-skeleton>
+      <app-state title="Loading settings" icon="hourglass_empty" />
     } @else if (loadFailed()) {
-      <div class="form-setting-state">
-        <span class="material-icons" aria-hidden="true">cloud_off</span>
-        <h2>Unable to load forms</h2>
-        <p>Check the API connection and try again.</p>
-        <button class="btn btn-primary" type="button" (click)="loadForms()">Try Again</button>
-      </div>
+      <app-state
+        [title]="'Unable to load forms'"
+        [description]="'Check the API connection and try again.'"
+        icon="inbox"
+        [error]="true"
+        ><app-action-button
+          [label]="'Try Again'"
+          type="primary"
+          size="small"
+          (clicked)="loadForms()"
+      /></app-state>
     } @else if (pagedForms().length === 0) {
-      <div class="form-setting-state">
-        <span class="material-icons" aria-hidden="true">description</span>
-        <h2>No forms found</h2>
-        <p>There are no forms matching the selected filters.</p>
-      </div>
+      <app-state
+        [title]="'No forms found'"
+        [description]="'There are no forms matching the selected filters.'"
+        icon="inbox"
+      ></app-state>
     } @else {
       <app-data-table
+        [dense]="true"
+        [embedded]="true"
         class="form-setting-options-table"
         [columns]="columns"
         [rows]="pagedForms()"
@@ -58,16 +63,15 @@
               <strong class="form-name">{{ row.form_name }}</strong>
             </td>
             <td>
-              <span class="status-badge" [class.status-badge--inactive]="!row.is_active">
+              <app-status-badge [intent]="row.is_active ? 'success' : 'warning'">
                 {{ row.is_active ? 'Active' : 'Inactive' }}
-              </span>
+              </app-status-badge>
             </td>
           </tr>
         </ng-template>
       </app-data-table>
     }
-
-  </section>
+  </app-settings-panel>
 
   @if (!loading() && !loadFailed()) {
     <footer class="form-setting-pagination-panel">

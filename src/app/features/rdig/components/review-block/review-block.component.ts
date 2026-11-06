@@ -1,3 +1,4 @@
+import { DropdownComponent } from '../../../../shared/components/dropdown/dropdown.component';
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { ReactiveFormsModule, FormControl } from '@angular/forms';
 import { CharacterCounterComponent } from '../../../../shared/components/character-counter/character-counter.component';
@@ -16,7 +17,7 @@ import { syncRequiredValidator } from '../../../../shared/utils/form.utils';
 @Component({
   selector: 'app-review-block',
   standalone: true,
-  imports: [ReactiveFormsModule, CharacterCounterComponent, ValidationMessageComponent],
+  imports: [DropdownComponent, ReactiveFormsModule, CharacterCounterComponent, ValidationMessageComponent],
   template: `
     @if (visible && (!readonly || commentControl.value?.trim())) {
       <div class="review-block" [class.review-block--readonly]="readonly">
@@ -50,15 +51,7 @@ import { syncRequiredValidator } from '../../../../shared/utils/form.utils';
           @if (showScore) {
             <div class="review-block__score">
               <label class="form-label">Score</label>
-              <select
-                class="input--select"
-                [class.input--disabled]="scoreDisabled || readonly"
-                [formControl]="scoreControl">
-                <option value="" disabled>—</option>
-                @for (s of scoreRange; track s) {
-                  <option [value]="s">{{ s }}</option>
-                }
-              </select>
+              <app-dropdown ariaLabel="Score" [options]="standardScoreOptions()" [disabled]="readonly" [formControl]="scoreControl" />
               <app-validation-message class="form-validation-note--error" [control]="scoreControl" [fieldName]="label + ' Score'"></app-validation-message>
             </div>
           }
@@ -159,6 +152,7 @@ import { syncRequiredValidator } from '../../../../shared/utils/form.utils';
   `]
 })
 export class ReviewBlockComponent implements OnChanges {
+  standardScoreOptions() { return [{ value: '', label: 'Select score', disabled: true }, ...this.scoreRange.map(value => ({ value: String(value), label: String(value) }))]; }
   /** Label shown in the header (e.g. "HOS Comment", "Reviewer 1") */
   @Input() label = 'Comment';
   /** Material icon name */

@@ -1,3 +1,5 @@
+import { ActionButtonComponent } from '../../../shared/components/action-button/action-button.component';
+import { SettingsPageHeaderComponent } from '../../../shared/components/settings-ui/settings-ui.components';
 import { DatePickerComponent } from '../../../shared/components/date-picker/date-picker.component';
 import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -14,7 +16,6 @@ import {
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
 import { SubmissionsSearchComponent } from '../../../shared/components/submissions-search/submissions-search.component';
 import { SubmissionFormTabsComponent } from '../../../shared/components/submission-form-tabs/submission-form-tabs.component';
-import { TableActionIconComponent } from '../../../shared/components/table-action-icon/table-action-icon.component';
 import {
   SkeletonColumn,
   TableSkeletonComponent,
@@ -27,10 +28,9 @@ const DRAFT_STATUSES = new Set(['draft', 'fill_application', 'normal_application
 @Component({
   selector: 'app-drafts',
   standalone: true,
-  imports: [
+  imports: [ActionButtonComponent,SettingsPageHeaderComponent,
     DatePickerComponent,
     PaginationComponent,
-    TableActionIconComponent,
     SubmissionsSearchComponent,
     SubmissionFormTabsComponent,
     TableSkeletonComponent,

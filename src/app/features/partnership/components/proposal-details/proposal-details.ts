@@ -1,8 +1,9 @@
+import { InputDirective } from '../../../../shared/components/settings-ui/settings-ui.components';
+import { DropdownComponent } from '../../../../shared/components/dropdown/dropdown.component';
 import { Component, inject, Input, SimpleChanges, OnChanges, OnInit, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CustomSubheaderComponent } from '../../../../shared/components/custom-subheader/custom-subheader.component';
-import { SearchableDropdownComponent } from '../../../../shared/components/searchable-dropdown/searchable-dropdown.component';
 import { DropdownOption } from '../../../../core/interfaces/components.interface';
 import { CharacterCounterComponent } from '../../../../shared/components/character-counter/character-counter.component';
 import { PartnershipOptionsService } from '../../services/partnership-options.service';
@@ -11,11 +12,10 @@ import { TextareaAutosizeDirective } from '../../../../shared/directives/textare
 @Component({
   selector: 'app-proposal-details',
   standalone: true,
-  imports: [
+  imports: [InputDirective,DropdownComponent,
     CommonModule,
     ReactiveFormsModule,
     CustomSubheaderComponent,
-    SearchableDropdownComponent,
     CharacterCounterComponent,
     TextareaAutosizeDirective
   ],

@@ -1,3 +1,7 @@
+import {
+  SettingsPanelComponent,
+  StateComponent,
+} from '../../../shared/components/settings-ui/settings-ui.components';
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, TrackByFunction, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
@@ -19,7 +23,7 @@ interface DropdownSection {
 @Component({
   selector: 'app-dropdowns',
   standalone: true,
-  imports: [CommonModule, AdminSettingsPageHeaderComponent],
+  imports: [SettingsPanelComponent, StateComponent, CommonModule, AdminSettingsPageHeaderComponent],
   templateUrl: './dropdowns.component.html',
   styleUrls: ['./dropdowns.component.scss'],
 })

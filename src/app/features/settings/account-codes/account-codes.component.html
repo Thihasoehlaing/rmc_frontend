@@ -1,144 +1,143 @@
-<main class="forms-page forms-page--settings">
-  <header class="forms-page__header">
-    <div>
-      <span class="forms-page__eyebrow">System Settings</span>
-      <h1>Account Codes</h1>
-      <p>Manage finance account codes, categories, location types, and form sharing.</p>
+<main class="settings-page">
+  <app-settings-page-header
+    [title]="'Account Codes'"
+    [description]="'Manage finance account codes, categories, location types, and form sharing.'"
+    icon="account_balance_wallet"
+  >
+    <div class="settings-actions">
+      <app-action-button
+        [label]="'Categories'"
+        type="secondary"
+        size="small"
+        [icon]="'category'"
+        [disabled]="isLoading()"
+        (clicked)="goToCategories()"
+      />
+      <app-action-button
+        [label]="'Create Account Code'"
+        type="primary"
+        size="small"
+        [icon]="'add'"
+        [disabled]="isLoading()"
+        (clicked)="openCreateDialog()"
+      />
     </div>
-    <div class="account-header-actions">
-      <button class="btn btn-secondary" type="button" (click)="goToCategories()" [disabled]="isLoading()">
-        <span class="material-icons">category</span>
-        Categories
-      </button>
-      <button class="btn btn-primary forms-page__create-button" type="button" (click)="openCreateDialog()" [disabled]="isLoading()">
-        <span class="material-icons">add</span>
-        Create Account Code
-      </button>
-    </div>
-  </header>
+  </app-settings-page-header>
 
-  <section class="forms-toolbar account-codes-toolbar" aria-label="Account code filters">
-    <h2 class="forms-toolbar__title">Search &amp; Filters</h2>
-
-    <label class="forms-filter forms-filter--search">
-      <span class="forms-search-input">
-        <span class="material-icons" aria-hidden="true">search</span>
-        <input
-          class="input--text"
-          type="search"
-          aria-label="Search account codes"
-          placeholder="Search by code or description..."
-          [ngModel]="searchTerm()"
-          (ngModelChange)="searchTerm.set($event)"
-          (keydown.enter)="search()"
-          [disabled]="isLoading()"
-        />
-      </span>
-    </label>
-
-    <label class="forms-filter">
-      <span>Category</span>
-      <app-searchable-dropdown
+  <app-search-toolbar
+    [query]="searchTerm()"
+    (queryChange)="searchTerm.set($event)"
+    [disabled]="isLoading()"
+    [placeholder]="'Search by code or description...'"
+    [label]="'Search account codes'"
+    (search)="search()"
+    (reset)="resetFilters()"
+  >
+    <div class="settings-filter">
+      <app-dropdown
+        emptyOptionLabel="All"
+        [label]="'Category'"
         placeholder="Search category..."
         [options]="categoryOptions()"
         [loading]="optionsLoading()"
         [ngModel]="selectedCategoryId()"
         (ngModelChange)="selectedCategoryId.set($event)"
-      ></app-searchable-dropdown>
-    </label>
+      ></app-dropdown>
+    </div>
 
-    <label class="forms-filter">
-      <span>Form</span>
-      <app-searchable-dropdown
+    <div class="settings-filter">
+      <app-dropdown
+        emptyOptionLabel="All"
+        [label]="'Form'"
         placeholder="Search form..."
         [options]="formOptions()"
         [loading]="optionsLoading()"
         [ngModel]="selectedFormCode()"
         (ngModelChange)="selectedFormCode.set($event)"
-      ></app-searchable-dropdown>
-    </label>
+      ></app-dropdown>
+    </div>
 
-    <label class="forms-filter">
-      <span>Location Type</span>
-      <select
-        class="input--select"
+    <div class="settings-filter">
+      <app-dropdown
+        [label]="'Location Type'"
+        [options]="[
+          { value: '', label: 'All' },
+          { value: 'LOCAL', label: 'Local' },
+          { value: 'FOREIGN', label: 'Foreign' },
+        ]"
         [ngModel]="selectedLocationType()"
         (ngModelChange)="selectedLocationType.set($event)"
         [disabled]="isLoading()"
-      >
-        <option value="">All</option>
-        <option value="LOCAL">Local</option>
-        <option value="FOREIGN">Foreign</option>
-      </select>
-    </label>
+      />
+    </div>
 
-    <label class="forms-filter">
-      <span>Status</span>
-      <select
-        class="input--select"
+    <div class="settings-filter">
+      <app-dropdown
+        [label]="'Status'"
+        [options]="[
+          { value: '', label: 'All' },
+          { value: 'Active', label: 'Active' },
+          { value: 'Inactive', label: 'Inactive' },
+        ]"
         [ngModel]="selectedStatus()"
         (ngModelChange)="selectedStatus.set($event)"
         [disabled]="isLoading()"
-      >
-        <option value="">All</option>
-        <option value="Active">Active</option>
-        <option value="Inactive">Inactive</option>
-      </select>
-    </label>
-
-    <div class="forms-toolbar__actions">
-      <button class="btn btn-primary" type="button" (click)="search()" [disabled]="isLoading()">
-        <span class="material-icons">search</span>
-        Search
-      </button>
-      <button class="btn btn-secondary" type="button" (click)="resetFilters()" [disabled]="isLoading()">
-        <span class="material-icons">restart_alt</span>
-        Reset
-      </button>
+      />
     </div>
-  </section>
+  </app-search-toolbar>
 
-  <section class="forms-table-card">
-    <header class="forms-table-card__header">
-      <div>
-        <div class="forms-table-card__title-row">
-          <h2>Account Codes</h2>
-          <span class="forms-table-card__count">{{ totalItems() }}</span>
-        </div>
-        <p>Maintain account code values used by conference, journal, and other finance workflows.</p>
-      </div>
-      <button class="btn btn-secondary forms-table-card__refresh" type="button" (click)="loadAccountCodes()" [disabled]="isLoading()">
-        <span class="material-icons">refresh</span>
-        Refresh
-      </button>
-    </header>
+  <app-settings-panel [title]="'Account Codes'" [count]="totalItems()" [flush]="true"
+    ><app-action-button
+      panelActions
+      panelActions
+      [label]="'Refresh'"
+      type="secondary"
+      size="small"
+      [icon]="'refresh'"
+      [disabled]="isLoading()"
+      (clicked)="loadAccountCodes()"
+    />
 
     @if (isLoading()) {
-      <app-table-skeleton [columns]="columns" [showSearch]="false" loadingLabel="Loading account codes">
-      </app-table-skeleton>
+      <app-state title="Loading account codes" icon="hourglass_empty" />
     } @else if (loadFailed()) {
-      <div class="forms-state">
-        <span class="material-icons">cloud_off</span>
-        <h2>Unable to load account codes</h2>
-        <p>Check the API connection and try again.</p>
-        <button class="btn btn-primary" type="button" (click)="loadAccountCodes()">Try Again</button>
-      </div>
+      <app-state
+        [title]="'Unable to load account codes'"
+        [description]="'Check the API connection and try again.'"
+        [icon]="'cloud_off'"
+        [error]="true"
+        ><app-action-button
+          [label]="'Try Again'"
+          type="primary"
+          size="small"
+          (clicked)="loadAccountCodes()"
+      /></app-state>
     } @else if (accountCodes().length === 0) {
-      <div class="forms-state">
-        <span class="material-icons">account_balance_wallet</span>
-        <h2>No account codes found</h2>
-        <p>Adjust the filters or create a new account code.</p>
-      </div>
+      <app-state
+        [title]="'No account codes found'"
+        [description]="'Adjust the filters or create a new account code.'"
+        [icon]="'account_balance_wallet'"
+      ></app-state>
     } @else {
-      <app-data-table [columns]="columns" [rows]="accountCodes()" [rowTrackFn]="rowTrackFn">
+      <app-data-table
+        [dense]="true"
+        [embedded]="true"
+        [columns]="columns"
+        [rows]="accountCodes()"
+        [rowTrackFn]="rowTrackFn"
+      >
         <ng-template #rowTemplate let-row let-index="index">
           <tr>
             <td class="is-align-center">{{ rowNumber(index) }}</td>
-            <td><span class="form-code">{{ row.code }}</span></td>
-            <td><span class="account-description">{{ row.description }}</span></td>
+            <td>
+              <app-status-badge [intent]="'info'">{{ row.code }}</app-status-badge>
+            </td>
+            <td>
+              <span class="account-description">{{ row.description }}</span>
+            </td>
             <td>{{ row.category_name || '-' }}</td>
             <td class="is-align-center">
-              <span class="account-chip">{{ row.location_type }}</span>
+              <app-status-badge>{{ row.location_type }}</app-status-badge>
             </td>
             <td>
               <span class="account-forms" [title]="formSummary(row)">
@@ -146,19 +145,33 @@
               </span>
             </td>
             <td class="is-align-center">
-              <span class="status-badge" [class.status-badge--inactive]="!row.is_active">
+              <app-status-badge [intent]="!row.is_active ? 'warning' : 'success'">
                 {{ row.is_active ? 'Active' : 'Inactive' }}
-              </span>
+              </app-status-badge>
             </td>
             <td>{{ row.updated_at ? (row.updated_at | date: 'dd-MM-yyyy') : '-' }}</td>
             <td class="is-align-center">
-              <div class="table-actions">
-                <button class="table-action" type="button" title="Edit account code" aria-label="Edit account code" (click)="openEditDialog(row)">
-                  <app-table-action-icon action="edit"></app-table-action-icon>
-                </button>
-                <button class="table-action table-action--danger" type="button" title="Delete account code" aria-label="Delete account code" (click)="openDeleteDialog(row)">
-                  <app-table-action-icon action="delete"></app-table-action-icon>
-                </button>
+              <div class="settings-actions">
+                <app-action-button
+                  [label]="'Edit account code'"
+                  type="ghost"
+                  size="small"
+                  [icon]="'edit'"
+                  [iconOnly]="true"
+                  [ariaLabel]="'Edit account code'"
+                  [title]="'Edit account code'"
+                  (clicked)="openEditDialog(row)"
+                />
+                <app-action-button
+                  [label]="'Delete account code'"
+                  type="danger"
+                  size="small"
+                  [icon]="'delete_outline'"
+                  [iconOnly]="true"
+                  [ariaLabel]="'Delete account code'"
+                  [title]="'Delete account code'"
+                  (clicked)="openDeleteDialog(row)"
+                />
               </div>
             </td>
           </tr>
@@ -167,7 +180,7 @@
     }
 
     @if (!isLoading() && !loadFailed()) {
-      <footer class="forms-table-card__footer">
+      <div panelFooter>
         <app-pagination
           [currentPage]="page()"
           [totalPages]="totalPages()"
@@ -180,36 +193,49 @@
           (pageSizeChange)="onPageSizeChange($event)"
         >
         </app-pagination>
-      </footer>
-    }
-  </section>
-
-  <app-dialog [isOpen]="dialogMode() !== null" [title]="dialogTitle()" size="medium" (close)="closeEditor()">
-    @if (isDetailLoading()) {
-      <app-detail-panel-skeleton loadingLabel="Loading account code details"></app-detail-panel-skeleton>
-    } @else if (detailFailed()) {
-      <div class="dialog-state">
-        <span class="material-icons">error_outline</span>
-        <p>Unable to retrieve this account code.</p>
-        <button class="btn btn-secondary" type="button" (click)="retryDetail()">Try Again</button>
       </div>
+    }
+  </app-settings-panel>
+
+  <app-dialog
+    density="compact"
+    [closeDisabled]="isSaving()"
+    [isOpen]="dialogMode() !== null"
+    [title]="dialogTitle()"
+    size="medium"
+    (close)="closeEditor()"
+  >
+    @if (isDetailLoading()) {
+      <app-state title="Loading account code details" icon="hourglass_empty" />
+    } @else if (detailFailed()) {
+      <app-state
+        [title]="'Unable to retrieve this account code.'"
+        [description]="''"
+        [icon]="'error_outline'"
+        [error]="true"
+        ><app-action-button
+          [label]="'Try Again'"
+          type="secondary"
+          size="small"
+          (clicked)="retryDetail()"
+      /></app-state>
     } @else {
-      <div class="form-editor account-code-editor">
-        <label class="forms-filter">
-          <span>Category</span>
-          <app-searchable-dropdown
+      <div class="settings-editor account-code-editor">
+        <div class="settings-filter">
+          <app-dropdown
+            [label]="'Category'"
             placeholder="Select category..."
             [options]="categoryOptions()"
             [loading]="optionsLoading()"
             [ngModel]="categoryId()"
             (ngModelChange)="categoryId.set($event)"
-          ></app-searchable-dropdown>
-        </label>
+          ></app-dropdown>
+        </div>
 
-        <label class="forms-filter">
-          <span>Account Code</span>
+        <app-field [label]="'Account Code'" controlId="account-codes-field-2">
           <input
-            class="input--text"
+            appInput
+            id="account-codes-field-2"
             type="text"
             maxlength="100"
             placeholder="Enter account code"
@@ -217,75 +243,92 @@
             [ngModel]="code()"
             (ngModelChange)="code.set($event)"
           />
-        </label>
+        </app-field>
 
-        <label class="forms-filter">
-          <span>Location Type</span>
-          <select
-            class="input--select"
+        <div class="settings-filter">
+          <app-dropdown
+            [label]="'Location Type'"
+            [options]="[
+              { value: 'LOCAL', label: 'Local' },
+              { value: 'FOREIGN', label: 'Foreign' },
+            ]"
             [ngModel]="locationType()"
             (ngModelChange)="locationType.set($event)"
-          >
-            <option value="LOCAL">Local</option>
-            <option value="FOREIGN">Foreign</option>
-          </select>
-        </label>
+          />
+        </div>
 
-        <div class="forms-filter account-code-shared-forms-field">
-          <app-searchable-dropdown
+        <div class="settings-field account-code-shared-forms-field">
+          <app-dropdown
             label="Shared Forms"
             placeholder="Select forms..."
             [isMulti]="true"
-            [searchable]="true"
-            valueMode="array"
             [options]="formOptions()"
             [loading]="optionsLoading()"
             [formControl]="formCodesControl"
-          ></app-searchable-dropdown>
+          ></app-dropdown>
         </div>
 
-        <label class="forms-filter account-code-description-field">
-          <span>Description</span>
+        <app-field [label]="'Description'" controlId="account-codes-field-1">
           <textarea
-            class="input--text account-description-input"
+            appInput
+            id="account-codes-field-1"
+            class="account-description-input"
             rows="4"
             maxlength="500"
             placeholder="Enter account code description"
             [ngModel]="description()"
             (ngModelChange)="description.set($event)"
           ></textarea>
-          <small>{{ description().length }}/500 characters</small>
-        </label>
+          <small class="form-hint">{{ description().length }}/500 characters</small>
+        </app-field>
 
-        <label class="active-switch">
-          <input type="checkbox" [ngModel]="accountCodeActive()" (ngModelChange)="accountCodeActive.set($event)" />
-          <span class="active-switch__control"></span>
-          <span>
-            <strong>Active account code</strong>
-            <small>Available for finance-related dropdown selections.</small>
-          </span>
-        </label>
+        <app-toggle
+          [label]="'Active account code'"
+          [description]="'Available for finance-related dropdown selections.'"
+          [checked]="accountCodeActive()"
+          (checkedChange)="accountCodeActive.set($event)"
+        />
       </div>
     }
 
-    <div dialog-footer class="form-dialog__footer">
-      <button class="btn btn-secondary" type="button" [disabled]="isSaving()" (click)="closeEditor()">Cancel</button>
+    <div dialog-footer class="settings-actions">
+      <app-action-button
+        [label]="'Cancel'"
+        type="secondary"
+        size="small"
+        [disabled]="isSaving()"
+        (clicked)="closeEditor()"
+      />
       @if (!isDetailLoading() && !detailFailed()) {
-        <button
-          class="btn btn-primary"
-          type="button"
+        <app-action-button
+          [label]="
+            isSaving()
+              ? 'Saving...'
+              : dialogMode() === 'create'
+                ? 'Create Account Code'
+                : 'Save Changes'
+          "
+          type="primary"
+          size="small"
           [disabled]="isSaving() || !categoryId() || !code().trim() || !description().trim()"
-          (click)="saveAccountCode()"
-        >
-          {{ isSaving() ? 'Saving...' : dialogMode() === 'create' ? 'Create Account Code' : 'Save Changes' }}
-        </button>
+          (clicked)="saveAccountCode()"
+          [loading]="isSaving()"
+          loadingLabel="Saving…"
+        />
       }
     </div>
   </app-dialog>
 
-  <app-dialog [isOpen]="accountCodeToDelete() !== null" title="Delete Account Code" size="small" (close)="closeDeleteDialog()">
+  <app-dialog
+    density="compact"
+    [closeDisabled]="isSaving()"
+    [isOpen]="accountCodeToDelete() !== null"
+    title="Delete Account Code"
+    size="small"
+    (close)="closeDeleteDialog()"
+  >
     @if (accountCodeToDelete(); as accountCode) {
-      <div class="deactivate-confirmation">
+      <div class="settings-confirmation">
         <app-table-action-icon action="delete"></app-table-action-icon>
         <div>
           <h3>Delete {{ accountCode.code }}?</h3>
@@ -295,11 +338,23 @@
         </div>
       </div>
     }
-    <div dialog-footer class="form-dialog__footer">
-      <button class="btn btn-secondary" type="button" [disabled]="isSaving()" (click)="closeDeleteDialog()">Cancel</button>
-      <button class="btn btn-danger" type="button" [disabled]="isSaving()" (click)="confirmDelete()">
-        {{ isSaving() ? 'Deleting...' : 'Delete Account Code' }}
-      </button>
+    <div dialog-footer class="settings-actions">
+      <app-action-button
+        [label]="'Cancel'"
+        type="secondary"
+        size="small"
+        [disabled]="isSaving()"
+        (clicked)="closeDeleteDialog()"
+      />
+      <app-action-button
+        [label]="isSaving() ? 'Deleting...' : 'Delete Account Code'"
+        type="danger"
+        size="small"
+        [disabled]="isSaving()"
+        (clicked)="confirmDelete()"
+        [loading]="isSaving()"
+        loadingLabel="Saving…"
+      />
     </div>
   </app-dialog>
 </main>

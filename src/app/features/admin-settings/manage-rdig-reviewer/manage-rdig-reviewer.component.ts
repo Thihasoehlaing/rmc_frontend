@@ -1,4 +1,14 @@
-import { MasterDataService, StaffSelectionOption } from '../../../core/services/master-data.service';
+import { PersonIdentityComponent } from '../../../shared/components/settings-ui/settings-ui.components';
+import { SettingsPanelComponent } from '../../../shared/components/settings-ui/settings-ui.components';
+import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
+import { DropdownComponent } from '../../../shared/components/dropdown/dropdown.component';
+import { StatusBadgeComponent } from '../../../shared/components/form-standard/form-standard.components';
+import { StateComponent } from '../../../shared/components/settings-ui/settings-ui.components';
+import { SearchToolbarComponent } from '../../../shared/components/settings-ui/settings-ui.components';
+import {
+  MasterDataService,
+  StaffSelectionOption,
+} from '../../../core/services/master-data.service';
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -11,9 +21,9 @@ import { ActionButtonComponent } from '../../../shared/components/action-button/
 import { DialogComponent } from '../../../shared/components/dialog/dialog.component';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
 import { SearchableDropdownComponent } from '../../../shared/components/searchable-dropdown/searchable-dropdown.component';
-import { SubmissionsSearchComponent } from '../../../shared/components/submissions-search/submissions-search.component';
-import { TableActionIconComponent } from '../../../shared/components/table-action-icon/table-action-icon.component';
-import { SkeletonColumn, TableSkeletonComponent } from '../../../shared/components/table-skeleton/table-skeleton.component';
+import {
+  SkeletonColumn,
+} from '../../../shared/components/table-skeleton/table-skeleton.component';
 import {
   AcademicStaffService,
   DepartmentRecord,
@@ -26,6 +36,13 @@ type StatusFilter = 'all' | 'active' | 'inactive';
 @Component({
   selector: 'app-manage-rdig-reviewer',
   imports: [
+    PersonIdentityComponent,
+    SettingsPanelComponent,
+    DataTableComponent,
+    SearchToolbarComponent,
+    StateComponent,
+    StatusBadgeComponent,
+    DropdownComponent,
     AdminSettingsPageHeaderComponent,
     CommonModule,
     FormsModule,
@@ -34,17 +51,21 @@ type StatusFilter = 'all' | 'active' | 'inactive';
     DialogComponent,
     PaginationComponent,
     SearchableDropdownComponent,
-    SubmissionsSearchComponent,
-    TableActionIconComponent,
-    TableSkeletonComponent,
   ],
   templateUrl: './manage-rdig-reviewer.component.html',
-  styleUrls: [
-    '../dropdowns/shared/form-dropdown-options-manager.component.scss',
-    './manage-rdig-reviewer.component.scss',
-  ],
+  styleUrl: './manage-rdig-reviewer.component.scss',
 })
 export class ManageRdigReviewerComponent implements OnInit {
+  standardColumns() {
+    return [
+      { key: 'column0', label: 'No.' },
+      { key: 'column1', label: 'Staff' },
+      { key: 'column2', label: 'Department' },
+      { key: 'column3', label: 'Job Title' },
+      { key: 'column4', label: 'Status' },
+      { key: 'column5', label: 'Actions' },
+    ];
+  }
   private readonly academicStaffService = inject(AcademicStaffService);
   private readonly masterData = inject(MasterDataService);
   private readonly rdigReviewerService = inject(RdigReviewerService);
@@ -84,9 +105,12 @@ export class ManageRdigReviewerComponent implements OnInit {
   readonly modalActiveControl = new FormControl<boolean>(true, { nonNullable: true });
 
   readonly existingStaffIds = computed(
-    () => new Set(this.reviewers()
-      .map(reviewer => reviewer.staff_id != null ? String(reviewer.staff_id) : null)
-      .filter((username): username is string => !!username)),
+    () =>
+      new Set(
+        this.reviewers()
+          .map((reviewer) => (reviewer.staff_id != null ? String(reviewer.staff_id) : null))
+          .filter((username): username is string => !!username),
+      ),
   );
 
   readonly modalStaffOptions = computed(() => {
@@ -106,7 +130,6 @@ export class ManageRdigReviewerComponent implements OnInit {
     return this.selectedStaffControl.value.length;
   }
 
-
   loadInitialOptions(): void {
     this.isLoading.set(true);
     this.loadFailed.set(false);
@@ -118,7 +141,11 @@ export class ManageRdigReviewerComponent implements OnInit {
       next: ({ academic, departments }) => {
         if (academic.success) {
           this.academicOptions.set(academic.data ?? []);
-          this.staffOptions.set((academic.data ?? []).filter(staff => !!staff.username?.trim()).map((staff) => this.toStaffOption(staff)));
+          this.staffOptions.set(
+            (academic.data ?? [])
+              .filter((staff) => !!staff.username?.trim())
+              .map((staff) => this.toStaffOption(staff)),
+          );
         }
         if (departments.success) {
           this.departments.set(departments.data ?? []);
@@ -260,7 +287,9 @@ export class ManageRdigReviewerComponent implements OnInit {
           this.toast.error(response.message || 'Unable to update reviewer status.');
           return;
         }
-        this.toast.success(`${this.displayStaffName(row)} ${row.is_active ? 'deactivated' : 'activated'}.`);
+        this.toast.success(
+          `${this.displayStaffName(row)} ${row.is_active ? 'deactivated' : 'activated'}.`,
+        );
         this.loadReviewers();
       },
       error: (err) => {
@@ -301,12 +330,14 @@ export class ManageRdigReviewerComponent implements OnInit {
 
   getInitials(row: RdigReviewerRecord): string {
     const value = this.displayStaffName(row);
-    return value
-      .split(/\s+/)
-      .filter(Boolean)
-      .slice(0, 2)
-      .map((part) => part[0]?.toUpperCase() ?? '')
-      .join('') || '--';
+    return (
+      value
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase() ?? '')
+        .join('') || '--'
+    );
   }
 
   private toStaffOption(staff: StaffSelectionOption): DropdownOption<string> {

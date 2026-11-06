@@ -1,9 +1,7 @@
+import { provideRouter } from '@angular/router';
 import '@angular/compiler';
 import { provideHttpClient } from '@angular/common/http';
-import {
-  HttpTestingController,
-  provideHttpClientTesting,
-} from '@angular/common/http/testing';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
@@ -16,7 +14,7 @@ describe('ManageRdigReviewerComponent', () => {
   let http: HttpTestingController;
 
   const apiUrl = environment.apiUrl;
-  const academicOptionsUrl = `${apiUrl}/academic-staff`;
+  const academicOptionsUrl = `${apiUrl}/master-data/staff-options`;
   const departmentsUrl = `${apiUrl}/master-data/departments`;
   const reviewersUrl = `${apiUrl}/admin-settings/rdig-reviewers`;
 
@@ -26,6 +24,7 @@ describe('ManageRdigReviewerComponent', () => {
     data: [
       {
         id: 101,
+        staff_id: 101,
         username: 'jdoe',
         fullname: 'Jane Doe',
         email: 'jdoe@uni.edu',
@@ -33,6 +32,7 @@ describe('ManageRdigReviewerComponent', () => {
       },
       {
         id: 102,
+        staff_id: 102,
         username: 'asmith',
         fullname: 'Alan Smith',
         email: 'asmith@uni.edu',
@@ -55,6 +55,7 @@ describe('ManageRdigReviewerComponent', () => {
         {
           id: 55,
           academic_staff_id: 102,
+          staff_id: 102,
           is_active: true,
           staff_username: 'asmith',
           staff_fullname: 'Alan Smith',
@@ -83,7 +84,7 @@ describe('ManageRdigReviewerComponent', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [ManageRdigReviewerComponent],
-      providers: [provideHttpClient(), provideHttpClientTesting()],
+      providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting()],
     });
 
     fixture = TestBed.createComponent(ManageRdigReviewerComponent);
@@ -99,7 +100,7 @@ describe('ManageRdigReviewerComponent', () => {
   });
 
   it('loads academic options and department options before loading reviewers', () => {
-    expect(component.staffOptions().map((option) => option.value)).toEqual([101, 102]);
+    expect(component.staffOptions().map((option) => option.value)).toEqual(['101', '102']);
     expect(component.departmentOptions()).toEqual([{ value: 7, label: 'Engineering' }]);
     expect(component.reviewers().length).toBe(1);
     expect(component.reviewers()[0].staff_username).toBe('asmith');
@@ -119,7 +120,7 @@ describe('ManageRdigReviewerComponent', () => {
 
   it('adds selected academic staff as reviewers with the chosen status', () => {
     component.openAddModal();
-    component.selectedStaffControl.setValue([101, 102]);
+    component.selectedStaffControl.setValue(['101', '102']);
     component.modalActiveControl.setValue(false);
     component.saveReviewers();
 
@@ -128,19 +129,19 @@ describe('ManageRdigReviewerComponent', () => {
 
     const [first, second] = requests;
     expect(first.request.method).toBe('POST');
-    expect(first.request.body).toEqual({ academic_staff_id: 101, is_active: false });
+    expect(first.request.body).toEqual({ staff_id: 101, is_active: false });
     first.flush({
       success: true,
       message: 'created',
-      data: { id: 99, academic_staff_id: 101, is_active: false },
+      data: { id: 99, staff_id: 101, is_active: false },
     });
 
     expect(second.request.method).toBe('POST');
-    expect(second.request.body).toEqual({ academic_staff_id: 102, is_active: false });
+    expect(second.request.body).toEqual({ staff_id: 102, is_active: false });
     second.flush({
       success: true,
       message: 'created',
-      data: { id: 100, academic_staff_id: 102, is_active: false },
+      data: { id: 100, staff_id: 102, is_active: false },
     });
 
     http.expectOne((r) => r.url === reviewersUrl).flush(reviewersResponse);
@@ -172,3 +173,5 @@ describe('ManageRdigReviewerComponent', () => {
     http.expectOne((r) => r.url === reviewersUrl).flush(reviewersResponse);
   });
 });
+
+afterEach(() => TestBed.resetTestingModule());

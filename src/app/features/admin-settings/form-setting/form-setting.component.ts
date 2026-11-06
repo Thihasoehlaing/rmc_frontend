@@ -1,3 +1,9 @@
+import { SettingsPanelComponent } from '../../../shared/components/settings-ui/settings-ui.components';
+import { DropdownComponent } from '../../../shared/components/dropdown/dropdown.component';
+import { StatusBadgeComponent } from '../../../shared/components/form-standard/form-standard.components';
+import { StateComponent } from '../../../shared/components/settings-ui/settings-ui.components';
+import { SearchToolbarComponent } from '../../../shared/components/settings-ui/settings-ui.components';
+import { ActionButtonComponent } from '../../../shared/components/action-button/action-button.component';
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, TrackByFunction, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -8,8 +14,6 @@ import {
   DataTableComponent,
 } from '../../../shared/components/data-table/data-table.component';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
-import { SubmissionsSearchComponent } from '../../../shared/components/submissions-search/submissions-search.component';
-import { TableSkeletonComponent } from '../../../shared/components/table-skeleton/table-skeleton.component';
 import { AdminSettingsPageHeaderComponent } from '../../../shared/components/admin-settings-page-header/admin-settings-page-header.component';
 import { FormSettingItem, FormSettingService } from './form-setting.service';
 
@@ -19,13 +23,17 @@ type StatusFilter = 'all' | 'active' | 'inactive';
   selector: 'app-form-setting',
   standalone: true,
   imports: [
+    SettingsPanelComponent,
+    ActionButtonComponent,
+    SearchToolbarComponent,
+    StateComponent,
+    StatusBadgeComponent,
+    DropdownComponent,
     AdminSettingsPageHeaderComponent,
     CommonModule,
     FormsModule,
     DataTableComponent,
     PaginationComponent,
-    SubmissionsSearchComponent,
-    TableSkeletonComponent,
   ],
   templateUrl: './form-setting.component.html',
   styleUrl: './form-setting.component.scss',

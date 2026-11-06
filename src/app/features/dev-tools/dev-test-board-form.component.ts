@@ -1,8 +1,10 @@
+import { ActionButtonComponent } from '../../shared/components/action-button/action-button.component';
+import { InputDirective } from '../../shared/components/settings-ui/settings-ui.components';
+import { DropdownComponent } from '../../shared/components/dropdown/dropdown.component';
 import { Component, signal, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { CustomHeaderComponent } from '../../shared/components/custom-header/custom-header.component';
-import { SearchableDropdownComponent } from '../../shared/components/searchable-dropdown/searchable-dropdown.component';
 
 export type BlockType = 'text' | 'highlight' | 'heading' | 'warning' | 'info';
 
@@ -90,11 +92,10 @@ const DESIGN_TOKENS = {
 @Component({
   selector: 'app-dev-test-board-form',
   standalone: true,
-  imports: [
+  imports: [ActionButtonComponent,InputDirective,DropdownComponent,
     CommonModule,
     ReactiveFormsModule,
     CustomHeaderComponent,
-    SearchableDropdownComponent,
   ],
   templateUrl: './dev-test-board-form.component.html',
   styleUrl: './dev-test-board-form.component.scss',

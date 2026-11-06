@@ -1,4 +1,20 @@
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import { PersonIdentityComponent } from '../../../shared/components/settings-ui/settings-ui.components';
+import { SettingsPanelComponent } from '../../../shared/components/settings-ui/settings-ui.components';
+import { DropdownComponent } from '../../../shared/components/dropdown/dropdown.component';
+import { StatusBadgeComponent } from '../../../shared/components/form-standard/form-standard.components';
+import { StateComponent } from '../../../shared/components/settings-ui/settings-ui.components';
+import { InputDirective } from '../../../shared/components/settings-ui/settings-ui.components';
+import { FieldComponent } from '../../../shared/components/settings-ui/settings-ui.components';
+import { SearchToolbarComponent } from '../../../shared/components/settings-ui/settings-ui.components';
+import { ActionButtonComponent } from '../../../shared/components/action-button/action-button.component';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
 
@@ -8,15 +24,15 @@ import {
   DataTableComponent,
 } from '../../../shared/components/data-table/data-table.component';
 import { nextTableSortState, SortDirection } from '../../../shared/services/table-sort.service';
-import { TableActionIconComponent } from '../../../shared/components/table-action-icon/table-action-icon.component';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
 import { SkeletonColumn } from '../../../shared/components/table-skeleton/table-skeleton.component';
-import { TableSkeletonComponent } from '../../../shared/components/table-skeleton/table-skeleton.component';
 import { DialogComponent } from '../../../shared/components/dialog/dialog.component';
 import { SearchableDropdownComponent } from '../../../shared/components/searchable-dropdown/searchable-dropdown.component';
-import { SubmissionsSearchComponent } from '../../../shared/components/submissions-search/submissions-search.component';
 import { ToastService } from '../../../core/services/toast.service';
-import { AcademicStaffService, DepartmentRecord } from '../../settings/academic-staff/academic-staff.service';
+import {
+  AcademicStaffService,
+  DepartmentRecord,
+} from '../../settings/academic-staff/academic-staff.service';
 import { StaffAccessRecordApi, StaffAccessService, StaffOption } from './staff-access.service';
 import { AdminSettingsPageHeaderComponent } from '../../../shared/components/admin-settings-page-header/admin-settings-page-header.component';
 import { TableScrollHintComponent } from '../../../shared/components/table-scroll-hint/table-scroll-hint.component';
@@ -44,14 +60,23 @@ interface StaffAccessRecord {
   selector: 'app-staff-access',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    PersonIdentityComponent,
+    SettingsPanelComponent,
+    ActionButtonComponent,
+    SearchToolbarComponent,
+    FieldComponent,
+    InputDirective,
+    StateComponent,
+    StatusBadgeComponent,
+    DropdownComponent,
     AdminSettingsPageHeaderComponent,
     DataTableComponent,
-    TableActionIconComponent,
+
     PaginationComponent,
-    TableSkeletonComponent,
+
     DialogComponent,
     SearchableDropdownComponent,
-    SubmissionsSearchComponent,
+
     TableScrollHintComponent,
     FormsModule,
   ],
@@ -136,12 +161,15 @@ export class StaffAccessComponent implements OnInit {
   }
 
   private loadDepartments(): void {
-    this.academicStaffService.listDepartments().pipe(finalize(() => this.loadStaff())).subscribe({
-      next: (res) => {
-        if (res.success) this.departments.set(res.data ?? []);
-      },
-      error: () => this.departments.set([]),
-    });
+    this.academicStaffService
+      .listDepartments()
+      .pipe(finalize(() => this.loadStaff()))
+      .subscribe({
+        next: (res) => {
+          if (res.success) this.departments.set(res.data ?? []);
+        },
+        error: () => this.departments.set([]),
+      });
   }
 
   loadStaff(): void {
@@ -337,8 +365,8 @@ export class StaffAccessComponent implements OnInit {
     const usernames = this.selectedBlockUsernames();
     if (!usernames.length || this.blockStaffSaving()) return;
 
-    const staffIds = usernames.map(username => this.staffIdsByUsername.get(username));
-    if (staffIds.some(id => id == null)) {
+    const staffIds = usernames.map((username) => this.staffIdsByUsername.get(username));
+    if (staffIds.some((id) => id == null)) {
       this.toast.error('Please refresh the staff list and select the staff again.');
       return;
     }
@@ -353,10 +381,12 @@ export class StaffAccessComponent implements OnInit {
             return;
           }
           const count = res.data.blocked_count || usernames.length;
-          this.toast.success(`${count} staff ${count === 1 ? 'member has' : 'members have'} been blocked.`);
+          this.toast.success(
+            `${count} staff ${count === 1 ? 'member has' : 'members have'} been blocked.`,
+          );
           this.closeBlockStaffDialog(true);
           this.loadStaff();
-              },
+        },
         error: (err) => this.showError(err, 'Could not block selected staff.'),
       });
   }
@@ -376,7 +406,7 @@ export class StaffAccessComponent implements OnInit {
         this.toast.success(`${staff.name}'s access has been blocked.`);
         this.closeBlockDialog();
         this.loadStaff();
-          },
+      },
       error: (err) => {
         this.loadingId.set(null);
         this.showError(err, 'Could not block staff access.');
@@ -398,7 +428,7 @@ export class StaffAccessComponent implements OnInit {
         this.toast.success(`${staff.name}'s access has been restored.`);
         this.closeUnblockDialog();
         this.loadStaff();
-          },
+      },
       error: (err) => {
         this.loadingId.set(null);
         this.showError(err, 'Could not restore staff access.');
@@ -443,8 +473,9 @@ export class StaffAccessComponent implements OnInit {
       .pipe(finalize(() => this.staffOptionsLoading.set(false)))
       .subscribe({
         next: (res) => {
-          const options = res.success ? res.data ?? [] : [];
-          for (const staff of options) this.staffIdsByUsername.set(staff.username, staff.staff_id ?? staff.id);
+          const options = res.success ? (res.data ?? []) : [];
+          for (const staff of options)
+            this.staffIdsByUsername.set(staff.username, staff.staff_id ?? staff.id);
           this.staffOptions.set(options);
         },
         error: () => {
@@ -467,7 +498,9 @@ export class StaffAccessComponent implements OnInit {
   }
 
   removeBlockStaffUsername(username: string): void {
-    this.selectedBlockUsernames.set(this.selectedBlockUsernames().filter((item) => item !== username));
+    this.selectedBlockUsernames.set(
+      this.selectedBlockUsernames().filter((item) => item !== username),
+    );
   }
 
   isBlockStaffSelected(username: string): boolean {
@@ -475,8 +508,12 @@ export class StaffAccessComponent implements OnInit {
   }
 
   selectedBlockStaffLabels(): string[] {
-    const labelByUsername = new Map(this.staffDropdownOptions().map((option) => [option.value, option.label]));
-    return this.selectedBlockUsernames().map((username) => labelByUsername.get(username) ?? username);
+    const labelByUsername = new Map(
+      this.staffDropdownOptions().map((option) => [option.value, option.label]),
+    );
+    return this.selectedBlockUsernames().map(
+      (username) => labelByUsername.get(username) ?? username,
+    );
   }
 
   private toStaffDropdownOption(staff: StaffOption): DropdownOption<string> {
@@ -514,8 +551,3 @@ export class StaffAccessComponent implements OnInit {
     return formatDisplayDate(dateValue, '');
   }
 }
-
-
-
-
-

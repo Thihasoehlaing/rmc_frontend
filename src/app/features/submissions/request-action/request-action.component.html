@@ -34,7 +34,7 @@
         <div class="card__content action-panel">
           <label class="form-field">
             <span class="form-label">Comment</span>
-            <textarea
+            <textarea appInput
               class="input--textarea"
               rows="5"
               [ngModel]="commentText()"
@@ -45,7 +45,7 @@
           @if (hasReviewerSelection()) {
             <label class="form-field">
               <span class="form-label">Reviewer usernames</span>
-              <input
+              <input appInput
                 class="input--text"
                 type="text"
                 placeholder="username.one, username.two"
@@ -57,14 +57,7 @@
 
           <div class="action-buttons">
             @for (action of actions(); track action.action_code) {
-              <button
-                type="button"
-                class="btn btn-primary"
-                [disabled]="saving()"
-                (click)="submitAction(action)"
-              >
-                {{ action.action_name }}
-              </button>
+              <app-action-button [label]="(action.action_name)" type="primary" size="small" [disabled]="saving()" (clicked)="submitAction(action)" buttonType="button" />
             }
           </div>
 

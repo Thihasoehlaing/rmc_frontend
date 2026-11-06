@@ -1,6 +1,6 @@
 <section class="dropdowns-container">
   <div class="dropdowns-shell">
-    <div class="details-view settings-container fade-in">
+    <div class="settings-page">
       <app-admin-settings-page-header
         [title]="title"
         [description]="subtitle"
@@ -18,81 +18,19 @@
       </app-admin-settings-page-header>
 
       @if (loading()) {
-        <div class="page-skeleton">
-          <!-- Tabs skeleton -->
-          <div class="skeleton-tabs-panel">
-            <div class="skeleton-tabs">
-              <div class="skeleton-tab" style="max-width: 110px"></div>
-              <div class="skeleton-tab" style="max-width: 150px"></div>
-              <div class="skeleton-tab" style="max-width: 130px"></div>
-              <div class="skeleton-tab" style="max-width: 160px"></div>
-              <div class="skeleton-tab" style="max-width: 90px"></div>
-            </div>
-          </div>
-
-          <!-- Search + filter row skeleton -->
-          <div class="skeleton-search-panel">
-            <div class="skeleton-search-row">
-              <div class="skeleton-search-input"></div>
-              <div class="skeleton-filter-select"></div>
-              <div class="skeleton-refresh-btn"></div>
-            </div>
-          </div>
-
-          <!-- Table skeleton -->
-          <div class="skeleton-table-panel">
-            <div class="skeleton-table-header">
-              <div class="skeleton-th" style="width: 40px"></div>
-              <div class="skeleton-th" style="width: 28%"></div>
-              <div class="skeleton-th" style="width: 22%"></div>
-              <div class="skeleton-th" style="width: 80px"></div>
-              <div class="skeleton-th" style="width: 100px"></div>
-              <div class="skeleton-th" style="width: 90px"></div>
-            </div>
-            <div class="skeleton-table-body">
-              @for (_ of [1, 2, 3, 4, 5]; track $index) {
-                <div class="skeleton-table-row">
-                  <div class="skeleton-td" style="width: 32px"></div>
-                  <div class="skeleton-td" style="width: 28%; max-width: 220px"></div>
-                  <div class="skeleton-td" style="width: 22%; max-width: 180px"></div>
-                  <div class="skeleton-badge" style="width: 80px"></div>
-                  <div class="skeleton-badge" style="width: 70px"></div>
-                  <div style="display: flex; gap: 6px; margin-left: auto">
-                    <div class="skeleton-action-btn"></div>
-                    <div class="skeleton-action-btn"></div>
-                    <div class="skeleton-action-btn"></div>
-                  </div>
-                </div>
-              }
-            </div>
-          </div>
-
-          <!-- Pagination skeleton -->
-          <div class="skeleton-pagination-panel">
-            <div class="skeleton-pagination-row">
-              <div class="skeleton-pagination-info"></div>
-              <div class="skeleton-pagination-controls">
-                <div class="skeleton-page-btn"></div>
-                <div class="skeleton-page-btn"></div>
-                <div class="skeleton-page-btn"></div>
-                <div class="skeleton-page-btn"></div>
-                <div class="skeleton-page-btn"></div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <app-state title="Loading settings" icon="hourglass_empty" />
       } @else {
         <!-- ── Live panel column ────────────────────────────────────────── -->
-        <div class="dropdown-options-panel">
+        <ng-container>
           <!-- Tabs -->
           <div class="dropdown-tabs-panel">
             <div class="dropdown-category-filter">
-              <div class="category-list" role="tablist" aria-label="Dropdown categories">
+              <div class="settings-tabs" role="tablist" aria-label="Dropdown categories">
                 <button
                   *ngFor="let tab of tabs"
                   type="button"
-                  class="category-chip"
-                  [class.is-active]="selectedTabKey() === tab.key"
+                  class="settings-tab"
+                  [class.settings-tab--active]="selectedTabKey() === tab.key"
                   [disabled]="loading()"
                   (click)="selectTab(tab)"
                   role="tab"
@@ -106,52 +44,39 @@
           </div>
 
           <!-- Search + filter row -->
-          <div class="dropdown-search-panel">
-            <app-submissions-search
+          <ng-container>
+            <app-search-toolbar
+              [query]="searchQuery()"
+              (queryChange)="searchQuery.set($event)"
+              (search)="onSearch(searchQuery())"
+              (reset)="onReset()"
               [placeholder]="'Search option name'"
-              [value]="searchQuery()"
-              (search)="onSearch($event)"
-              (refresh)="onReset()"
             >
-              <label search-filters class="mgr-status-filter">
-                <span class="sr-only">Status</span>
-                <select
-                  class="input--select"
+              <div class="settings-filter">
+                <app-dropdown
+                  [label]="'Status'"
+                  [options]="[
+                    { value: 'all', label: 'All' },
+                    { value: 'active', label: 'Active' },
+                    { value: 'inactive', label: 'Inactive' },
+                  ]"
                   [ngModel]="statusFilter()"
                   (ngModelChange)="onStatusChange($event)"
-                  aria-label="Filter by status"
-                >
-                  <option value="all">All</option>
-                  <option value="active">Active</option>
-                  <option value="inactive">Inactive</option>
-                </select>
-              </label>
-            </app-submissions-search>
-          </div>
+                />
+              </div>
+            </app-search-toolbar>
+          </ng-container>
 
           <!-- Table -->
-          <div class="dropdown-table-panel">
-            <div class="shared-options-table">
-              <table>
-                <thead>
-                  <tr>
-                    <th>No.</th>
-                    <th *ngIf="showCodeColumn()">{{ getCodeLabel() }}</th>
-                    <th>{{ getNameLabel() }}</th>
-                    <th *ngIf="showSharedColumn()">Shared With</th>
-                    <th *ngIf="showRegionColumns()">Percentage</th>
-                    <th *ngIf="showRegionColumns()">Limit Amount (RM)</th>
-                    <th *ngIf="showRegionColumns()">Description</th>
-                    <th>Status</th>
-                    <th *ngIf="showUpdatedColumn()">Last Updated</th>
-                    <th class="actions-heading">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr
-                    *ngFor="let row of rows(); let rowIndex = index"
-                    [class.row--inactive]="row.status === 'Inactive'"
-                  >
+          <app-settings-panel title="Options" [flush]="true">
+            <ng-container>
+              <app-data-table
+                [dense]="true"
+                [embedded]="true"
+                [columns]="standardColumns()"
+                [rows]="rows()"
+                ><ng-template #rowTemplate let-row let-rowIndex="index"
+                  ><tr [class.row--inactive]="row.status === 'Inactive'">
                     <td>{{ (page() - 1) * pageSize() + rowIndex + 1 }}</td>
                     <td *ngIf="showCodeColumn()">{{ row.code }}</td>
                     <td class="option-name-cell">{{ row.name }}</td>
@@ -163,21 +88,20 @@
                         @if (row.sharedWith.length === 0) {
                           <span class="shared-with-empty">-</span>
                         } @else if (row.sharedWith.length > 1) {
-                          <button
-                            type="button"
-                            class="shared-count-badge"
-                            [title]="row.sharedWith.join(', ')"
-                            [attr.aria-label]="
+                          <app-action-button
+                            [label]="row.sharedWith.length"
+                            type="primary"
+                            size="small"
+                            [icon]="'share'"
+                            [ariaLabel]="
                               'Shared with ' +
                               row.sharedWith.length +
                               ' forms: ' +
                               row.sharedWith.join(', ')
                             "
-                            (click)="openSharedForms(row)"
-                          >
-                            <span class="material-icons" aria-hidden="true">share</span>
-                            <span class="count">{{ row.sharedWith.length }}</span>
-                          </button>
+                            [title]="row.sharedWith.join(', ')"
+                            (clicked)="openSharedForms(row)"
+                          />
                         } @else {
                           <span class="shared-with-chip" [title]="row.sharedWith[0]">
                             <span class="material-icons" aria-hidden="true">share</span>
@@ -192,67 +116,69 @@
                       {{ row.description || '-' }}
                     </td>
                     <td>
-                      <span
-                        class="status-chip"
-                        [class.status-chip--active]="row.status === 'Active'"
-                        [class.status-chip--inactive]="row.status === 'Inactive'"
-                      >
+                      <app-status-badge [intent]="row.status === 'Active' ? 'success' : 'warning'">
                         {{ row.status }}
-                      </span>
+                      </app-status-badge>
                     </td>
                     <td *ngIf="showUpdatedColumn()">{{ formatDate(row.updatedAt) }}</td>
                     <td class="actions-cell">
-                      <div class="table-actions">
-                        <button
-                          class="table-action"
-                          type="button"
-                          title="Edit option"
-                          (click)="editRow(row)"
-                        >
-                          <app-table-action-icon action="edit"></app-table-action-icon>
-                        </button>
-                        <button
-                          class="table-action"
-                          [class.table-action--success]="row.status === 'Inactive'"
-                          [class.table-action--warning]="row.status === 'Active'"
-                          type="button"
+                      <div class="settings-actions">
+                        <app-action-button
+                          [label]="'Edit option'"
+                          type="ghost"
+                          size="small"
+                          [icon]="'edit'"
+                          [iconOnly]="true"
+                          [title]="'Edit option'"
+                          (clicked)="editRow(row)"
+                          [ariaLabel]="'Edit option'"
+                        />
+                        <app-action-button
+                          [label]="row.status === 'Inactive' ? 'check_circle' : 'block'"
+                          type="ghost"
+                          size="small"
+                          [icon]="row.status === 'Inactive' ? 'check_circle' : 'block'"
+                          [iconOnly]="true"
                           [title]="
                             row.status === 'Inactive' ? 'Activate option' : 'Deactivate option'
                           "
-                          (click)="toggleStatus(row)"
-                        >
-                          <app-table-action-icon
-                            [action]="row.status === 'Inactive' ? 'activate' : 'deactivate'"
-                          ></app-table-action-icon>
-                        </button>
-                        <button
-                          class="table-action table-action--danger"
-                          type="button"
-                          title="Delete option"
-                          (click)="openDeleteDialog(row)"
-                        >
-                          <app-table-action-icon action="delete"></app-table-action-icon>
-                        </button>
+                          (clicked)="toggleStatus(row)"
+                          [ariaLabel]="
+                            row.status === 'Inactive' ? 'Activate option' : 'Deactivate option'
+                          "
+                        />
+                        <app-action-button
+                          [label]="'Delete option'"
+                          type="danger"
+                          size="small"
+                          [icon]="'delete_outline'"
+                          [iconOnly]="true"
+                          [title]="'Delete option'"
+                          (clicked)="openDeleteDialog(row)"
+                          [ariaLabel]="'Delete option'"
+                        />
                       </div>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+                    </td></tr></ng-template
+                ><ng-template #emptyTemplate
+                  ><app-state
+                    [title]="'No options found'"
+                    description="Adjust the filters or try refreshing." /></ng-template
+              ></app-data-table>
 
-              <div *ngIf="rows().length === 0" class="empty-state">
-                <p>
-                  {{
-                    isEmptyTab()
-                      ? 'No data available.'
-                      : 'No options for this category. Click "Add New" to create one.'
-                  }}
-                </p>
-              </div>
-            </div>
-          </div>
+              <app-state
+                [title]="
+                  isEmptyTab()
+                    ? 'No data available.'
+                    : 'No options for this category. Click &quot;Add New&quot; to create one.'
+                "
+                [description]="''"
+                icon="inbox"
+              ></app-state>
+            </ng-container>
+          </app-settings-panel>
 
           <!-- Pagination — separate card -->
-          <div class="dropdown-pagination-panel">
+          <div class="settings-pagination">
             <app-pagination
               [currentPage]="page()"
               [totalPages]="totalPages()"
@@ -265,7 +191,7 @@
               (pageSizeChange)="onPageSizeChange($event)"
             ></app-pagination>
           </div>
-        </div>
+        </ng-container>
       }
     </div>
   </div>
@@ -290,6 +216,7 @@
 ></app-add-option-modal>
 
 <app-dialog
+  density="compact"
   [isOpen]="rowToDelete() !== null"
   title="Delete Option"
   size="small"
@@ -306,13 +233,19 @@
       </div>
     </div>
   }
-  <div dialog-footer class="dialog-actions">
-    <button type="button" class="btn btn--ghost" (click)="closeDeleteDialog()">Cancel</button>
-    <button type="button" class="btn btn--danger" (click)="confirmDelete()">Delete</button>
+  <div dialog-footer class="settings-actions">
+    <app-action-button
+      [label]="'Cancel'"
+      type="primary"
+      size="small"
+      (clicked)="closeDeleteDialog()"
+    />
+    <app-action-button [label]="'Delete'" type="danger" size="small" (clicked)="confirmDelete()" />
   </div>
 </app-dialog>
 
 <app-dialog
+  density="compact"
   [isOpen]="sharedFormsDialog() !== null"
   title="Shared With"
   size="small"
@@ -333,9 +266,12 @@
       </ul>
     </div>
   }
-  <div dialog-footer class="dialog-actions">
-    <button type="button" class="btn btn-primary" (click)="sharedFormsDialog.set(null)">
-      Close
-    </button>
+  <div dialog-footer class="settings-actions">
+    <app-action-button
+      [label]="'Close'"
+      type="primary"
+      size="small"
+      (clicked)="sharedFormsDialog.set(null)"
+    />
   </div>
 </app-dialog>

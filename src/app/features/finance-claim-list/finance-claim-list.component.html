@@ -4,11 +4,7 @@
 		<!-- ══════════════════════════════════════════════════════════
 			 LIST VIEW
 		══════════════════════════════════════════════════════════════ -->
-		<header class="finance-claim-page__header">
-			<div>
-				<h1>Finance Claim</h1>
-			</div>
-		</header>
+		<app-settings-page-header [title]="'Finance Claim'" [description]="''" eyebrow="Workspace"></app-settings-page-header>
 
 		<section class="finance-claim-approved-section">
 			<div class="forms-table-card__title-row">
@@ -40,7 +36,7 @@
 				<app-table-scroll-hint></app-table-scroll-hint>
 			</div>
 
-			<app-data-table
+			<app-data-table [dense]="true"
 				class="finance-claim-table"
 				[columns]="columns"
 				[rows]="pagedClaims()"
@@ -85,9 +81,7 @@
 						</td>
 						<td class="is-align-center">
 							<div class="table-actions">
-								<button class="btn btn-sm btn-primary finance-claim-claim-button" type="button" (click)="onClaim(row)">
-									Claim
-								</button>
+								<app-action-button [label]="'Claim'" type="primary" size="small" (clicked)="onClaim(row)" buttonType="button" />
 							</div>
 						</td>
 					</tr>
@@ -114,10 +108,7 @@
 		══════════════════════════════════════════════════════════════ -->
 		<div class="finance-claim-detail-container">
 			<header class="finance-claim-detail-header">
-				<button class="btn btn-ghost back-button" type="button" (click)="onBackToList()">
-					<span class="material-icons">arrow_back</span>
-					Back to Finance Claim
-				</button>
+				<app-action-button [label]="'Back to Finance Claim'" type="primary" size="small" [icon]="'arrow_back'" (clicked)="onBackToList()" buttonType="button" />
 
 				<div class="finance-claim-info-card">
 					<div class="finance-claim-info-card__content">

@@ -13,7 +13,7 @@
 						<span class="material-icons form-label__icon">person</span>
 						Applicant Name
 					</label>
-					<input 
+					<input appInput 
 						type="text" 
 						class="input--text input--disabled-readonly" 
 						formControlName="applicantName" 
@@ -26,7 +26,7 @@
 						<span class="material-icons form-label__icon">email</span>
 						Applicant Email
 					</label>
-					<input 
+					<input appInput 
 						type="email" 
 						class="input--text input--disabled-readonly" 
 						formControlName="applicantEmail" 
@@ -39,7 +39,7 @@
 						<span class="material-icons form-label__icon">business</span>
 						School / Department
 					</label>
-					<input 
+					<input appInput 
 						type="text" 
 						class="input--text input--disabled-readonly" 
 						formControlName="schoolDepartment" 
@@ -66,7 +66,7 @@
 							type="radio" 
 							formControlName="paymentMethod" 
 							value="cash"
-							class="payment-card__radio"
+							class="payment-card__radio input--radio"
 						>
 						<div class="payment-card__content">
 							<span class="material-icons payment-card__icon">payments</span>
@@ -79,7 +79,7 @@
 							type="radio" 
 							formControlName="paymentMethod" 
 							value="bank"
-							class="payment-card__radio"
+							class="payment-card__radio input--radio"
 						>
 						<div class="payment-card__content">
 							<span class="material-icons payment-card__icon">account_balance</span>
@@ -100,22 +100,7 @@
 				<div class="bank-transfer-fields">
 					<div class="form-field">
 						<label class="form-label is-required">Bank Name</label>
-						<select 
-							class="input--select" 
-							formControlName="bankName"
-							[class.is-invalid]="claimExpensesForm.get('bankName')?.invalid && claimExpensesForm.get('bankName')?.touched"
-						>
-							<option value="" disabled>Select a bank</option>
-							<option value="maybank">Maybank</option>
-							<option value="cimb">CIMB Bank</option>
-							<option value="public">Public Bank</option>
-							<option value="rhb">RHB Bank</option>
-							<option value="hongleong">Hong Leong Bank</option>
-							<option value="ambank">AmBank</option>
-							<option value="bsn">BSN</option>
-							<option value="alliance">Alliance Bank</option>
-							<option value="other">Other</option>
-						</select>
+						<app-dropdown [options]="standardOptions1()" formControlName="bankName" [class.is-invalid]="claimExpensesForm.get('bankName')?.invalid && claimExpensesForm.get('bankName')?.touched" ariaLabel="Bank name" class="" />
 						<app-validation-message 
 							[control]="claimExpensesForm.get('bankName')"
 							fieldName="Bank Name"
@@ -124,7 +109,7 @@
 
 					<div class="form-field">
 						<label class="form-label is-required">Account Number</label>
-						<input 
+						<input appInput 
 							type="text" 
 							inputmode="numeric"
 							class="input--text" 
@@ -142,7 +127,7 @@
 
 					<div class="form-field">
 						<label class="form-label is-required">Account Holder Name</label>
-						<input 
+						<input appInput 
 							type="text" 
 							class="input--text" 
 							formControlName="accountHolderName"
@@ -181,7 +166,7 @@
 					<app-table-scroll-hint></app-table-scroll-hint>
 					
 					<div class="table-scroll">
-						<app-data-table
+						<app-data-table [dense]="true"
 							[columns]="originalExpenseColumns"
 							[rows]="originalExpenses"
 							[hoverable]="true"
@@ -196,9 +181,7 @@
 									<td class="is-align-center">{{ formatCurrency(row.amount) }}</td>
 									<td class="is-align-center">
 										@if (row.document) {
-											<button class="btn-icon" type="button" title="View document" (click)="viewOriginalExpenseDocument(row.document)">
-												<span class="material-icons">visibility</span>
-											</button>
+											<app-action-button [label]="'View document'" type="primary" size="small" [icon]="'visibility'" [iconOnly]="true" [title]="'View document'" (clicked)="viewOriginalExpenseDocument(row.document)" buttonType="button" />
 										} @else {
 											<span class="text-muted">-</span>
 										}
@@ -223,17 +206,14 @@
 						<h3 class="expense-sub-card__title expense-sub-card__title--blue">Additional Expenses (Post-Event)</h3>
 						<p class="expense-sub-card__subtitle">New expenses incurred after the event, not in the original application.</p>
 					</div>
-					<button class="btn btn-primary btn-sm" type="button" (click)="onAddExpense()">
-						<span class="material-icons">add</span>
-						Add Expense
-					</button>
+					<app-action-button [label]="'Add Expense'" type="primary" size="small" [icon]="'add'" (clicked)="onAddExpense()" buttonType="button" />
 				</div>
 
 				<div class="expense-sub-card__body">
 					<app-table-scroll-hint></app-table-scroll-hint>
 
 					<div class="table-scroll">
-						<app-data-table
+						<app-data-table [dense]="true"
 							[columns]="additionalExpenseColumns"
 							[rows]="additionalExpenses()"
 							[hoverable]="true"
@@ -255,21 +235,15 @@
 									<td class="is-align-center">{{ formatCurrency(row.amount) }}</td>
 									<td class="is-align-center">
 										@if (row.document) {
-											<button class="btn-icon" type="button" title="View document" (click)="viewDocument(row.document)">
-												<span class="material-icons">visibility</span>
-											</button>
+											<app-action-button [label]="'View document'" type="primary" size="small" [icon]="'visibility'" [iconOnly]="true" [title]="'View document'" (clicked)="viewDocument(row.document)" buttonType="button" />
 										} @else {
 											<span class="text-muted">-</span>
 										}
 									</td>
 									<td class="is-align-center">
 										<div class="action-buttons">
-											<button class="btn-icon btn-icon--edit" type="button" title="Edit expense" (click)="onEditExpense(i)">
-												<span class="material-icons">edit</span>
-											</button>
-											<button class="btn-icon btn-icon--delete" type="button" title="Delete expense" (click)="onDeleteExpense(i)">
-												<span class="material-icons">delete</span>
-											</button>
+											<app-action-button [label]="'Edit expense'" type="primary" size="small" [icon]="'edit'" [iconOnly]="true" [title]="'Edit expense'" (clicked)="onEditExpense(i)" buttonType="button" />
+											<app-action-button [label]="'Delete expense'" type="primary" size="small" [icon]="'delete'" [iconOnly]="true" [title]="'Delete expense'" (clicked)="onDeleteExpense(i)" buttonType="button" />
 										</div>
 									</td>
 								</tr>
@@ -383,7 +357,7 @@
 	</section>
 
 	<!-- Add Expense Modal -->
-	<app-dialog
+	<app-dialog density="compact"
 		[isOpen]="isExpenseModalOpen()"
 		[title]="expenseModalTitle"
 		[size]="'medium'"
@@ -395,16 +369,7 @@
 				<!-- Category -->
 				<div class="form-field">
 					<label class="form-label is-required">Category</label>
-					<select 
-						class="input--select" 
-						formControlName="category"
-						[class.is-invalid]="expenseForm.get('category')?.invalid && expenseForm.get('category')?.touched"
-					>
-						<option value="" disabled>Select category</option>
-						@for (category of expenseCategories; track category) {
-							<option [value]="category">{{ category }}</option>
-						}
-					</select>
+					<app-dropdown [options]="standardOptions0()" formControlName="category" [class.is-invalid]="expenseForm.get('category')?.invalid && expenseForm.get('category')?.touched" ariaLabel="Category" class="" />
 					<app-validation-message 
 						[control]="expenseForm.get('category')"
 						fieldName="Category"
@@ -414,7 +379,7 @@
 				<!-- Description -->
 				<div class="form-field">
 					<label class="form-label">Description</label>
-					<input 
+					<input appInput 
 						type="text" 
 						class="input--text" 
 						formControlName="description"
@@ -425,12 +390,7 @@
 				<!-- Date -->
 				<div class="form-field">
 					<label class="form-label is-required">Date</label>
-					<input 
-						type="date" 
-						class="input--text" 
-						formControlName="date"
-						[class.is-invalid]="expenseForm.get('date')?.invalid && expenseForm.get('date')?.touched"
-					/>
+					<app-date-picker formControlName="date" ariaLabel="Date" />
 					<app-validation-message 
 						[control]="expenseForm.get('date')"
 						fieldName="Date"
@@ -440,7 +400,7 @@
 				<!-- Amount -->
 				<div class="form-field">
 					<label class="form-label is-required">Amount (RM)</label>
-					<input 
+					<input appInput 
 						type="text" 
 						inputmode="decimal"
 						class="input--text" 
@@ -497,26 +457,14 @@
 
 			<!-- Footer -->
 			<div dialog-footer class="expense-modal-footer">
-				<button 
-					type="button" 
-					class="btn btn-secondary" 
-					(click)="closeExpenseModal()"
-				>
-					Cancel
-				</button>
-				<button 
-					type="submit" 
-					class="btn btn-primary" 
-					[disabled]="expenseForm.invalid"
-				>
-					Save Expense
-				</button>
+				<app-action-button [label]="'Cancel'" type="secondary" size="small" (clicked)="closeExpenseModal()" buttonType="button" />
+				<app-action-button [label]="'Save Expense'" type="primary" size="small" [disabled]="expenseForm.invalid" buttonType="submit" />
 			</div>
 		</form>
 	</app-dialog>
 
 	<!-- Delete Confirmation Dialog -->
-	<app-dialog
+	<app-dialog density="compact"
 		[isOpen]="isDeleteConfirmOpen()"
 		[title]="'Delete Expense'"
 		[size]="'small'"
@@ -528,20 +476,8 @@
 		</div>
 
 		<div dialog-footer class="delete-confirm-footer">
-			<button 
-				type="button" 
-				class="btn btn-secondary" 
-				(click)="closeDeleteConfirm()"
-			>
-				Cancel
-			</button>
-			<button 
-				type="button" 
-				class="btn btn-danger" 
-				(click)="confirmDelete()"
-			>
-				Delete
-			</button>
+			<app-action-button [label]="'Cancel'" type="secondary" size="small" (clicked)="closeDeleteConfirm()" buttonType="button" />
+			<app-action-button [label]="'Delete'" type="danger" size="small" (clicked)="confirmDelete()" buttonType="button" />
 		</div>
 	</app-dialog>
 

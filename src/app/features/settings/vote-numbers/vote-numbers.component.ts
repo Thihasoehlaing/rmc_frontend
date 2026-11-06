@@ -1,21 +1,30 @@
+import { DialogComponent } from '../../../shared/components/dialog/dialog.component';
+import {
+  FieldComponent,
+  InputDirective,
+  ToggleComponent,
+} from '../../../shared/components/settings-ui/settings-ui.components';
+import {
+  SettingsPageHeaderComponent,
+  SettingsPanelComponent,
+  SearchToolbarComponent,
+  StateComponent,
+} from '../../../shared/components/settings-ui/settings-ui.components';
+import { DropdownComponent } from '../../../shared/components/dropdown/dropdown.component';
+import { StatusBadgeComponent } from '../../../shared/components/form-standard/form-standard.components';
+import { ActionButtonComponent } from '../../../shared/components/action-button/action-button.component';
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, TrackByFunction, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
 
 import { DropdownOption } from '../../../core/interfaces/components.interface';
-import {
-  AddOptionModalComponent,
-  AddOptionPayload,
-} from '../../../shared/components/add-option-modal/add-option-modal.component';
+import { AddOptionPayload } from '../../../shared/components/add-option-modal/add-option-modal.component';
 import {
   DataTableColumn,
   DataTableComponent,
 } from '../../../shared/components/data-table/data-table.component';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
-import { SearchableDropdownComponent } from '../../../shared/components/searchable-dropdown/searchable-dropdown.component';
-import { TableActionIconComponent } from '../../../shared/components/table-action-icon/table-action-icon.component';
-import { TableSkeletonComponent } from '../../../shared/components/table-skeleton/table-skeleton.component';
 import { ToastService } from '../../../core/services/toast.service';
 import {
   FinanceOptionRow,
@@ -35,17 +44,24 @@ interface VoteNumberRow extends FinanceOptionRow {
   selector: 'app-vote-numbers',
   standalone: true,
   imports: [
-    AddOptionModalComponent,
+    DialogComponent,
+    FieldComponent,
+    InputDirective,
+    ToggleComponent,
+    ActionButtonComponent,
+    StatusBadgeComponent,
+    DropdownComponent,
+    SettingsPageHeaderComponent,
+    SettingsPanelComponent,
+    SearchToolbarComponent,
+    StateComponent,
     CommonModule,
     DataTableComponent,
     FormsModule,
     PaginationComponent,
-    SearchableDropdownComponent,
-    TableActionIconComponent,
-    TableSkeletonComponent,
   ],
   templateUrl: './vote-numbers.component.html',
-  styleUrls: ['../forms/forms.component.scss', './vote-numbers.component.scss'],
+  styleUrl: './vote-numbers.component.scss',
 })
 export class VoteNumbersComponent implements OnInit {
   private readonly service = inject(SharedDropdownOptionsService);
@@ -163,7 +179,15 @@ export class VoteNumbersComponent implements OnInit {
     this.loadVoteNumbers();
   }
 
+  editor: AddOptionPayload = { code: '', name: '', status: 'Active', appliesTo: [] };
+
   openEditDialog(row: VoteNumberRow): void {
+    this.editor = {
+      code: row.code,
+      name: row.description ?? '',
+      status: row.statusLabel,
+      appliesTo: [...(row.form_codes ?? [])],
+    };
     this.editingRow.set(row);
     this.showEditor.set(true);
   }
@@ -188,7 +212,14 @@ export class VoteNumbersComponent implements OnInit {
 
   saveModal(payload: AddOptionPayload): void {
     const row = this.editingRow();
-    if (!row || this.isSaving()) return;
+    if (
+      !row ||
+      this.isSaving() ||
+      !payload.code?.trim() ||
+      !payload.name.trim() ||
+      !payload.appliesTo.length
+    )
+      return;
 
     this.isSaving.set(true);
     this.service
@@ -207,6 +238,7 @@ export class VoteNumbersComponent implements OnInit {
           }
 
           this.toast.success('Dropdown option updated.');
+          this.isSaving.set(false);
           this.closeEditor();
           this.loadVoteNumbers();
         },

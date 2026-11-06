@@ -3,9 +3,7 @@
     <section class="error-panel" role="alert">
       <span class="material-icons">error_outline</span>
       <span>{{ error() }}</span>
-      <button type="button" class="btn btn-secondary btn-sm" (click)="loadDashboard()">
-        Try again
-      </button>
+      <app-action-button [label]="'Try again'" type="secondary" size="small" (clicked)="loadDashboard()" buttonType="button" />
     </section>
   </main>
 }

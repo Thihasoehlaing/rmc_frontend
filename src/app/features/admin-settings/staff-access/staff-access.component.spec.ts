@@ -1,9 +1,6 @@
 import { provideRouter } from '@angular/router';
 import { provideHttpClient } from '@angular/common/http';
-import {
-  HttpTestingController,
-  provideHttpClientTesting,
-} from '@angular/common/http/testing';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { environment } from '../../../../environments/environment';
@@ -64,9 +61,16 @@ describe('StaffAccessComponent', () => {
 
   function flushInitialRequests(): void {
     http.expectNone((req) => req.url === staffAccessUrl);
-    http.expectOne((req) => req.url === departmentsUrl).flush({ success: true, message: 'ok', data: [] });
     http
-      .expectOne((req) => req.url === staffAccessUrl && req.params.get('status') === 'blocked' && req.params.get('per_page') === '10')
+      .expectOne((req) => req.url === departmentsUrl)
+      .flush({ success: true, message: 'ok', data: [] });
+    http
+      .expectOne(
+        (req) =>
+          req.url === staffAccessUrl &&
+          req.params.get('status') === 'blocked' &&
+          req.params.get('per_page') === '10',
+      )
       .flush(listResponse);
   }
 
@@ -84,7 +88,11 @@ describe('StaffAccessComponent', () => {
   });
 
   afterEach(() => {
-    try { http.verify(); } finally { TestBed.resetTestingModule(); }
+    try {
+      http.verify();
+    } finally {
+      TestBed.resetTestingModule();
+    }
   });
 
   it('loads staff access records with real pagination params', () => {
@@ -111,7 +119,12 @@ describe('StaffAccessComponent', () => {
     });
 
     http
-      .expectOne((req) => req.url === staffAccessUrl && req.params.get('status') === 'blocked' && req.params.get('per_page') === '10')
+      .expectOne(
+        (req) =>
+          req.url === staffAccessUrl &&
+          req.params.get('status') === 'blocked' &&
+          req.params.get('per_page') === '10',
+      )
       .flush(listResponse);
   });
 
@@ -132,7 +145,12 @@ describe('StaffAccessComponent', () => {
     });
 
     http
-      .expectOne((req) => req.url === staffAccessUrl && req.params.get('status') === 'blocked' && req.params.get('per_page') === '10')
+      .expectOne(
+        (req) =>
+          req.url === staffAccessUrl &&
+          req.params.get('status') === 'blocked' &&
+          req.params.get('per_page') === '10',
+      )
       .flush(listResponse);
   });
 
@@ -145,3 +163,5 @@ describe('StaffAccessComponent', () => {
     req.flush(listResponse);
   });
 });
+
+afterEach(() => TestBed.resetTestingModule());

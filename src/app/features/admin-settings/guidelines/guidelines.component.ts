@@ -1,3 +1,8 @@
+import { SettingsPanelComponent } from '../../../shared/components/settings-ui/settings-ui.components';
+import { DropdownComponent } from '../../../shared/components/dropdown/dropdown.component';
+import { StateComponent } from '../../../shared/components/settings-ui/settings-ui.components';
+import { SearchToolbarComponent } from '../../../shared/components/settings-ui/settings-ui.components';
+import { ActionButtonComponent } from '../../../shared/components/action-button/action-button.component';
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, TrackByFunction, ViewChild, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -18,8 +23,6 @@ import { GuidelinesModalComponent } from '../../../shared/components/guidelines-
 import { nextTableSortState, SortDirection } from '../../../shared/services/table-sort.service';
 import { SvgIconComponent } from '../../../shared/components/svg-icon/svg-icon.component';
 import { SVG_ICON_TRASH } from '../../../shared/icons/svg-icons';
-import { TableActionIconComponent } from '../../../shared/components/table-action-icon/table-action-icon.component';
-import { SubmissionsSearchComponent } from '../../../shared/components/submissions-search/submissions-search.component';
 import { SkeletonColumn } from '../../../shared/components/table-skeleton/table-skeleton.component';
 import { AdminSettingsPageHeaderComponent } from '../../../shared/components/admin-settings-page-header/admin-settings-page-header.component';
 import { formatDisplayDate, getApiDateTimeMs } from '../../../shared/utils/date-time.util';
@@ -42,9 +45,13 @@ type GuidelineSortKey = 'form' | 'title' | 'lastUpdated' | 'createdBy';
   selector: 'app-guidelines',
   standalone: true,
   imports: [
+    SettingsPanelComponent,
+    ActionButtonComponent,
+    SearchToolbarComponent,
+    StateComponent,
+    DropdownComponent,
     AdminSettingsPageHeaderComponent,
-    TableActionIconComponent,
-    SubmissionsSearchComponent,
+
     CommonModule,
     FormsModule,
     AddGuidelineModalComponent,
@@ -382,6 +389,4 @@ export class GuidelinesComponent implements OnInit {
 
     return first[sortKey].localeCompare(second[sortKey]);
   }
-
 }
-

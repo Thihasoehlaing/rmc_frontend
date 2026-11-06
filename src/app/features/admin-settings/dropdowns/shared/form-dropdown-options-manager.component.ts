@@ -1,3 +1,9 @@
+import { SettingsPanelComponent } from '../../../../shared/components/settings-ui/settings-ui.components';
+import { DataTableComponent } from '../../../../shared/components/data-table/data-table.component';
+import { DropdownComponent } from '../../../../shared/components/dropdown/dropdown.component';
+import { StatusBadgeComponent } from '../../../../shared/components/form-standard/form-standard.components';
+import { StateComponent } from '../../../../shared/components/settings-ui/settings-ui.components';
+import { SearchToolbarComponent } from '../../../../shared/components/settings-ui/settings-ui.components';
 import { CommonModule } from '@angular/common';
 import { Component, Input, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -10,9 +16,7 @@ import {
 import { ActionButtonComponent } from '../../../../shared/components/action-button/action-button.component';
 import { DialogComponent } from '../../../../shared/components/dialog/dialog.component';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
-import { SubmissionsSearchComponent } from '../../../../shared/components/submissions-search/submissions-search.component';
 import { SvgIconComponent } from '../../../../shared/components/svg-icon/svg-icon.component';
-import { TableActionIconComponent } from '../../../../shared/components/table-action-icon/table-action-icon.component';
 import { DropdownOption as SelectOption } from '../../../../core/interfaces/components.interface';
 import { ToastService } from '../../../../core/services/toast.service';
 import { SVG_ICON_TRASH } from '../../../../shared/icons/svg-icons';
@@ -66,6 +70,12 @@ interface ViewRow {
   selector: 'app-form-dropdown-options-manager',
   standalone: true,
   imports: [
+    SettingsPanelComponent,
+    DataTableComponent,
+    SearchToolbarComponent,
+    StateComponent,
+    StatusBadgeComponent,
+    DropdownComponent,
     AdminSettingsPageHeaderComponent,
     MyrCurrencyPipe,
     CommonModule,
@@ -75,14 +85,27 @@ interface ViewRow {
     AddOptionModalComponent,
     DialogComponent,
     PaginationComponent,
-    SubmissionsSearchComponent,
+
     SvgIconComponent,
-    TableActionIconComponent,
   ],
   templateUrl: './form-dropdown-options-manager.component.html',
   styleUrls: ['./form-dropdown-options-manager.component.scss'],
 })
 export class FormDropdownOptionsManagerComponent implements OnInit {
+  standardColumns() {
+    return [
+      { key: 'column0', label: 'No.' },
+      ...(this.showCodeColumn() ? [{ key: 'column1', label: this.getCodeLabel() }] : []),
+      { key: 'column2', label: this.getNameLabel() },
+      ...(this.showSharedColumn() ? [{ key: 'column3', label: 'Shared With' }] : []),
+      ...(this.showRegionColumns() ? [{ key: 'column4', label: 'Percentage' }] : []),
+      ...(this.showRegionColumns() ? [{ key: 'column5', label: 'Limit Amount (RM)' }] : []),
+      ...(this.showRegionColumns() ? [{ key: 'column6', label: 'Description' }] : []),
+      { key: 'column7', label: 'Status' },
+      ...(this.showUpdatedColumn() ? [{ key: 'column8', label: 'Last Updated' }] : []),
+      { key: 'column9', label: 'Actions' },
+    ];
+  }
   @Input({ required: true }) title = '';
   @Input({ required: true }) subtitle = '';
   @Input({ required: true }) tabs: FormDropdownTab[] = [];
@@ -120,8 +143,8 @@ export class FormDropdownOptionsManagerComponent implements OnInit {
     { width: '140px' },
   ];
 
-  selectedTab = computed(() =>
-    this.tabs.find((tab) => tab.key === this.selectedTabKey()) ?? this.tabs[0],
+  selectedTab = computed(
+    () => this.tabs.find((tab) => tab.key === this.selectedTabKey()) ?? this.tabs[0],
   );
 
   totalPages = computed(() => Math.max(1, this.pagination()?.total_pages ?? 1));
@@ -132,7 +155,7 @@ export class FormDropdownOptionsManagerComponent implements OnInit {
       const requestedTab = String(params['tab'] ?? this.defaultTab ?? this.tabs[0]?.key ?? '');
       const nextTab = this.tabs.some((tab) => tab.key === requestedTab)
         ? requestedTab
-        : this.tabs[0]?.key ?? '';
+        : (this.tabs[0]?.key ?? '');
 
       if (nextTab && params['tab'] !== nextTab) {
         this.router.navigate([], {
@@ -164,7 +187,6 @@ export class FormDropdownOptionsManagerComponent implements OnInit {
       queryParamsHandling: 'merge',
     });
   }
-
 
   onSearch(value: string): void {
     this.searchQuery.set(value);
@@ -330,7 +352,11 @@ export class FormDropdownOptionsManagerComponent implements OnInit {
   }
 
   allowsFormSharing(): boolean {
-    return this.getTabSource() === 'dropdown' || this.isFinanceTab() || this.getTabSource() === 'account-code';
+    return (
+      this.getTabSource() === 'dropdown' ||
+      this.isFinanceTab() ||
+      this.getTabSource() === 'account-code'
+    );
   }
 
   getCodeLabel(): string {
@@ -338,7 +364,10 @@ export class FormDropdownOptionsManagerComponent implements OnInit {
   }
 
   getNameLabel(): string {
-    return this.selectedTab()?.nameLabel ?? (this.getTabSource() === 'region' ? 'Region Name' : 'Option Name');
+    return (
+      this.selectedTab()?.nameLabel ??
+      (this.getTabSource() === 'region' ? 'Region Name' : 'Option Name')
+    );
   }
 
   getDefaultSelectedForms(): string[] {
@@ -418,9 +447,12 @@ export class FormDropdownOptionsManagerComponent implements OnInit {
     });
   }
 
-  private createListRequest(
-    tab: FormDropdownTab,
-  ): Observable<ApiResponse<{ items: Array<DropdownOptionRow | RegionRow | FinanceOptionRow | AccountCodeRow>; pagination: Pagination }>> {
+  private createListRequest(tab: FormDropdownTab): Observable<
+    ApiResponse<{
+      items: Array<DropdownOptionRow | RegionRow | FinanceOptionRow | AccountCodeRow>;
+      pagination: Pagination;
+    }>
+  > {
     const params = {
       category_code: tab.categoryCode,
       search: this.searchQuery(),
@@ -493,7 +525,9 @@ export class FormDropdownOptionsManagerComponent implements OnInit {
           is_active: isActive,
           form_codes: payload.appliesTo,
         };
-        return row ? this.service.updateVoteNumber(row.id, body) : this.service.createVoteNumber(body);
+        return row
+          ? this.service.updateVoteNumber(row.id, body)
+          : this.service.createVoteNumber(body);
       }
       case 'account-code': {
         const categoryId = payload.parentDomainId ?? row?.categoryId;
@@ -577,7 +611,9 @@ export class FormDropdownOptionsManagerComponent implements OnInit {
     }
   }
 
-  private toViewRow(row: DropdownOptionRow | RegionRow | FinanceOptionRow | AccountCodeRow): ViewRow {
+  private toViewRow(
+    row: DropdownOptionRow | RegionRow | FinanceOptionRow | AccountCodeRow,
+  ): ViewRow {
     if (this.isRegionRow(row)) {
       return {
         id: row.id,
@@ -617,11 +653,15 @@ export class FormDropdownOptionsManagerComponent implements OnInit {
   }
 
   private formNamesForCodes(codes: string[]): string[] {
-    const formOptionByCode = new Map(this.formOptions().map((option) => [option.value, option.label]));
+    const formOptionByCode = new Map(
+      this.formOptions().map((option) => [option.value, option.label]),
+    );
     return codes.map((code) => formOptionByCode.get(code) ?? code);
   }
 
-  private getTabSource(tab: FormDropdownTab | undefined = this.selectedTab()): FormDropdownTabSource {
+  private getTabSource(
+    tab: FormDropdownTab | undefined = this.selectedTab(),
+  ): FormDropdownTabSource {
     return tab?.source ?? 'dropdown';
   }
 
@@ -638,11 +678,15 @@ export class FormDropdownOptionsManagerComponent implements OnInit {
     return 'region_name' in row;
   }
 
-  private isFinanceRow(row: DropdownOptionRow | RegionRow | FinanceOptionRow | AccountCodeRow): row is FinanceOptionRow | AccountCodeRow {
+  private isFinanceRow(
+    row: DropdownOptionRow | RegionRow | FinanceOptionRow | AccountCodeRow,
+  ): row is FinanceOptionRow | AccountCodeRow {
     return 'code' in row;
   }
 
-  private isAccountCodeRow(row: DropdownOptionRow | RegionRow | FinanceOptionRow | AccountCodeRow): row is AccountCodeRow {
+  private isAccountCodeRow(
+    row: DropdownOptionRow | RegionRow | FinanceOptionRow | AccountCodeRow,
+  ): row is AccountCodeRow {
     return 'account_code_category_id' in row;
   }
 }

@@ -1,3 +1,5 @@
+import { InputDirective } from '../../../../shared/components/settings-ui/settings-ui.components';
+import { DropdownComponent } from '../../../../shared/components/dropdown/dropdown.component';
 ﻿import {
   Component,
   OnInit,
@@ -21,7 +23,6 @@ import { Router } from '@angular/router';
 import { AuthService } from '../../../../core/services/auth.service';
 import { JournalWorkflowService } from '../../services/journal-workflow.service';
 import { NoteComponent } from '../../../../shared/components/note/note.component';
-import { SearchableDropdownComponent } from '../../../../shared/components/searchable-dropdown/searchable-dropdown.component';
 import { DialogComponent } from '../../../../shared/components/dialog/dialog.component';
 import { CharacterCounterComponent } from '../../../../shared/components/character-counter/character-counter.component';
 import { CustomHeaderComponent } from '../../../../shared/components/custom-header/custom-header.component';
@@ -42,7 +43,6 @@ import {
   JournalRequestPayload,
 } from '../../services/journal-application-api.service';
 
-import { TableActionIconComponent } from '../../../../shared/components/table-action-icon/table-action-icon.component';
 import { TableScrollHintComponent } from '../../../../shared/components/table-scroll-hint/table-scroll-hint.component';
 import { ActionButtonComponent } from '../../../../shared/components/action-button/action-button.component';
 import { DecimalAmountDirective } from '../../../../shared/directives/decimal-amount.directive';
@@ -58,8 +58,7 @@ export interface JournalCostingSaveItem {
 @Component({
   selector: 'app-journal-details',
   standalone: true,
-  imports: [
-    TableActionIconComponent,
+  imports: [InputDirective,DropdownComponent,
     TableScrollHintComponent,
     ActionButtonComponent,
     CommonModule,
@@ -72,7 +71,6 @@ export interface JournalCostingSaveItem {
     DialogComponent,
     FileUploadComponent,
     NoteComponent,
-    SearchableDropdownComponent,
     ValidationMessageComponent,
     DecimalAmountDirective,
     MyrCurrencyPipe,

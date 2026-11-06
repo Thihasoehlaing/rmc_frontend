@@ -1,0 +1,26 @@
+<main class="settings-page">
+  <app-settings-page-header
+    title="RMC Settings"
+    icon="settings"
+    eyebrow="RMC workspace"
+    description="Configure applicant eligibility and request statuses for RMC forms."
+  >
+    <app-status-badge>{{ cards.length }} modules</app-status-badge>
+  </app-settings-page-header>
+  <app-settings-panel title="Configuration areas" [count]="cards.length">
+    <nav class="settings-module-grid" aria-label="RMC Settings modules">
+      @for (card of cards; track card.route) {
+        <a [routerLink]="card.route" [attr.aria-label]="'Open ' + card.title">
+          <span class="settings-module-icon material-icons" aria-hidden="true">{{
+            card.icon
+          }}</span>
+          <div>
+            <strong>{{ card.title }}</strong>
+            <p>{{ card.description }}</p>
+          </div>
+          <span class="material-icons settings-module-arrow" aria-hidden="true">arrow_forward</span>
+        </a>
+      }
+    </nav>
+  </app-settings-panel>
+</main>

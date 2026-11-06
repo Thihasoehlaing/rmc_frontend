@@ -84,7 +84,8 @@
   background-color: var(--color-surface);
   color: var(--color-text-muted);
   cursor: pointer;
-  transition: background-color var(--transition-fast) var(--ease-default),
+  transition:
+    background-color var(--transition-fast) var(--ease-default),
     border-color var(--transition-fast) var(--ease-default),
     color var(--transition-fast) var(--ease-default);
   display: flex;
@@ -138,63 +139,8 @@
   justify-self: end;
   display: inline-flex;
   align-items: center;
-  min-width: 150px;
+  min-width: var(--size-table-column-amount);
   position: relative;
-}
-
-.pagination-page-size::after {
-  content: '';
-  position: absolute;
-  right: var(--space-4);
-  top: 50%;
-  width: 8px;
-  height: 8px;
-  border-right: 2px solid var(--color-label);
-  border-bottom: 2px solid var(--color-label);
-  pointer-events: none;
-  transform: translateY(-35%) rotate(225deg);
-  transition: transform var(--transition-fast) var(--ease-default),
-    border-color var(--transition-fast) var(--ease-default);
-}
-
-.pagination-page-size:hover::after,
-.pagination-page-size:focus-within::after {
-  border-color: var(--color-primary);
-}
-
-.pagination-page-size:focus-within::after {
-  transform: translateY(-65%) rotate(45deg);
-}
-
-.pagination-page-size select {
-  width: 100%;
-  min-height: 36px;
-  padding: 0 var(--space-10) 0 var(--space-4);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-full);
-  appearance: none;
-  background-color: var(--color-surface);
-  color: var(--color-label);
-  font-size: var(--fs-sm);
-  cursor: pointer;
-  transition: border-color var(--transition-fast) var(--ease-default),
-    box-shadow var(--transition-fast) var(--ease-default),
-    color var(--transition-fast) var(--ease-default);
-}
-
-.pagination-page-size select:hover {
-  border-color: color-mix(in srgb, var(--color-primary) 35%, var(--border-default));
-}
-
-.pagination-page-size select:focus,
-.pagination-page-size select:focus-visible {
-  border-color: var(--color-primary);
-  box-shadow: var(--input-shadow-focus);
-  outline: none;
-}
-
-.pagination-page-size select::-ms-expand {
-  display: none;
 }
 
 @media (max-width: 768px) {
@@ -228,10 +174,6 @@
     width: 100%;
   }
 
-  .pagination-page-size select {
-    width: 100%;
-  }
-
   .pagination-btn {
     min-width: 32px;
     height: 34px;
@@ -243,8 +185,3 @@
     height: 34px;
   }
 }
-
-
-
-
-

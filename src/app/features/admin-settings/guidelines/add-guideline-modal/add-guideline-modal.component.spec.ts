@@ -20,3 +20,5 @@ describe('AddGuidelineModalComponent', () => {
     expect(component).toBeTruthy();
   });
 });
+
+afterEach(() => TestBed.resetTestingModule());

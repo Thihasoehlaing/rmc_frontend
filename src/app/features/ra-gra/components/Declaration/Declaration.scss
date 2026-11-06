@@ -55,23 +55,5 @@
   align-items: flex-start;
   gap: var(--space-3);
   cursor: pointer;
-
-  input[type="checkbox"] {
-    margin-top: 3px;
-    flex-shrink: 0;
-    cursor: pointer;
-  }
-
-  span {
-    color: var(--color-text);
-    font-size: var(--fs-sm);
-    line-height: var(--lh-relaxed);
-    flex: 1;
-  }
-
-  strong {
-    color: var(--color-heading);
-    font-weight: var(--fw-semibold);
-  }
 }
 

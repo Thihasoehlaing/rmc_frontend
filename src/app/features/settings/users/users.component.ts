@@ -1,3 +1,15 @@
+import {
+  SettingsPageHeaderComponent,
+  SettingsPanelComponent,
+  SearchToolbarComponent,
+  FieldComponent,
+  InputDirective,
+  StateComponent,
+  ToggleComponent,
+} from '../../../shared/components/settings-ui/settings-ui.components';
+import { DropdownComponent } from '../../../shared/components/dropdown/dropdown.component';
+import { StatusBadgeComponent } from '../../../shared/components/form-standard/form-standard.components';
+import { ActionButtonComponent } from '../../../shared/components/action-button/action-button.component';
 import { WorkspaceService, WorkspaceAccess } from '../../../core/services/workspace.service';
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, TrackByFunction, inject, signal } from '@angular/core';
@@ -12,8 +24,6 @@ import {
 import { ToastService } from '../../../core/services/toast.service';
 import { DialogComponent } from '../../../shared/components/dialog/dialog.component';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
-import { SearchableDropdownComponent } from '../../../shared/components/searchable-dropdown/searchable-dropdown.component';
-import { TableSkeletonComponent } from '../../../shared/components/table-skeleton/table-skeleton.component';
 import {
   DepartmentRecord,
   RoleOption,
@@ -35,16 +45,24 @@ const EMPTY_FILTERS: UserListFilters = {
   selector: 'app-users',
   standalone: true,
   imports: [
+    ActionButtonComponent,
+    StatusBadgeComponent,
+    DropdownComponent,
+    SettingsPageHeaderComponent,
+    SettingsPanelComponent,
+    SearchToolbarComponent,
+    FieldComponent,
+    InputDirective,
+    StateComponent,
+    ToggleComponent,
     CommonModule,
     FormsModule,
     DataTableComponent,
     DialogComponent,
     PaginationComponent,
-    SearchableDropdownComponent,
-    TableSkeletonComponent,
   ],
   templateUrl: './users.component.html',
-  styleUrls: ['../forms/forms.component.scss', './users.component.scss'],
+  styleUrl: './users.component.scss',
 })
 export class UsersComponent implements OnInit {
   readonly workspaces = inject(WorkspaceService);
@@ -82,17 +100,17 @@ export class UsersComponent implements OnInit {
   readonly isSaving = signal(false);
 
   readonly columns: readonly DataTableColumn[] = [
-    { key: 'number', label: 'No.', width: '72px', align: 'center' },
-    { key: 'user', label: 'User', width: '250px' },
-    { key: 'jobTitle', label: 'Job Title', width: '190px' },
-    { key: 'role', label: 'Platform / RMC Role', width: '170px' },
+    { key: 'number', label: 'No.', width: '56px', align: 'center' },
+    { key: 'user', label: 'User', width: '220px' },
+    { key: 'jobTitle', label: 'Job Title', width: '140px' },
+    { key: 'role', label: 'Platform / RMC Role', width: '160px' },
     { key: 'type', label: 'Account Type', width: '130px', align: 'center' },
-    { key: 'department', label: 'Department', width: '250px' },
-    { key: 'lastLogin', label: 'Last Login', width: '150px' },
+    { key: 'department', label: 'Department', width: '160px' },
+    { key: 'lastLogin', label: 'Last Login', width: '140px' },
     {
       key: 'actions',
       label: 'Actions',
-      width: '120px',
+      width: '104px',
       align: 'center',
       headerAlign: 'center',
     },
@@ -100,6 +118,22 @@ export class UsersComponent implements OnInit {
 
   readonly rowTrackFn: TrackByFunction<unknown> = (_index: number, row: unknown) =>
     (row as UserRecord).id;
+
+  workspaceRoleOptions(row: WorkspaceAccess): DropdownOption<number | null>[] {
+    return [
+      {
+        value: null,
+        label: row.code === 'RMC' ? 'Use existing RMC role' : 'No approval or admin role',
+      },
+      ...this.roles()
+        .filter(
+          (role) =>
+            role.role_code !== 'SYSTEM_ADMIN' &&
+            (row.code === 'RMC' || role.role_code !== 'RMC_ADMIN'),
+        )
+        .map((role) => ({ value: role.id, label: role.role_name })),
+    ];
+  }
 
   ngOnInit(): void {
     this.loadInitialData();
@@ -272,23 +306,29 @@ export class UsersComponent implements OnInit {
     this.workspaceUser.set(user);
     this.workspaceRows.set([]);
     this.workspaceLoading.set(true);
-    this.workspaces.userAccess(user.id).pipe(finalize(() => this.workspaceLoading.set(false))).subscribe({
-      next: response => this.workspaceRows.set(response.data),
-      error: () => this.workspaceUser.set(null),
-    });
+    this.workspaces
+      .userAccess(user.id)
+      .pipe(finalize(() => this.workspaceLoading.set(false)))
+      .subscribe({
+        next: (response) => this.workspaceRows.set(response.data),
+        error: () => this.workspaceUser.set(null),
+      });
   }
 
   saveWorkspace(row: WorkspaceAccess): void {
     const user = this.workspaceUser();
     if (!user || this.isSaving()) return;
     this.isSaving.set(true);
-    this.workspaces.saveAccess(user.id, row).pipe(finalize(() => this.isSaving.set(false))).subscribe({
-      next: response => {
-        this.workspaceRows.set(response.data);
-        this.toastService.success('Workspace access updated');
-        this.workspaces.load(true).subscribe({ error: () => undefined });
-      },
-    });
+    this.workspaces
+      .saveAccess(user.id, row)
+      .pipe(finalize(() => this.isSaving.set(false)))
+      .subscribe({
+        next: (response) => {
+          this.workspaceRows.set(response.data);
+          this.toastService.success('Workspace access updated');
+          this.workspaces.load(true).subscribe({ error: () => undefined });
+        },
+      });
   }
 
   rowNumber(index: number): number {

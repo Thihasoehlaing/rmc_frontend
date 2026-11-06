@@ -60,18 +60,4 @@
   &:hover {
     background: var(--color-surface-hover);
   }
-
-  input[type="checkbox"] {
-    width: 20px;
-    height: 20px;
-    flex-shrink: 0;
-    margin-top: 2px;
-    accent-color: var(--color-primary);
-  }
-
-  span {
-    font-size: var(--fs-base);
-    line-height: var(--lh-relaxed);
-    color: var(--color-text);
-  }
 }

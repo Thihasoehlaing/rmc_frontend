@@ -64,18 +64,4 @@
   &:hover {
     background: var(--color-surface-hover);
   }
-
-  input[type='checkbox'] {
-    width: var(--size-selection-control-large);
-    height: var(--size-selection-control-large);
-    flex-shrink: 0;
-    margin-top: var(--form-space-1);
-    accent-color: var(--color-primary);
-  }
-
-  span {
-    color: var(--color-text);
-    font-size: var(--fs-base);
-    line-height: var(--lh-relaxed);
-  }
 }

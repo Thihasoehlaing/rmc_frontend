@@ -6,7 +6,7 @@
       <div class="row row--2">
         <div class="form-field">
           <label class="form-label is-required">Project Leader Name</label>
-          <input
+          <input appInput
             type="text"
             class="input--text input--disabled-readonly"
             formControlName="leaderName"
@@ -15,7 +15,7 @@
         </div>
         <div class="form-field">
           <label class="form-label is-required">Project Leader's Email</label>
-          <input
+          <input appInput
             type="email"
             class="input--text input--disabled-readonly"
             formControlName="leaderEmail"
@@ -24,7 +24,7 @@
         </div>
         <div class="form-field">
           <label class="form-label is-required">Project Leader's School / Department</label>
-          <input
+          <input appInput
             type="text"
             class="input--text input--disabled-readonly"
             formControlName="department"
@@ -41,13 +41,13 @@
     <div class="card__content section-fields">
       <div class="form-field">
         <label class="form-label is-required">Select Research Cluster</label>
-        <app-searchable-dropdown
+        <app-dropdown
           [options]="clusters()"
           [compareWith]="compareOptionValues"
           [isMulti]="false"
           formControlName="researchCluster"
         >
-        </app-searchable-dropdown>
+        </app-dropdown>
         <app-validation-message class="form-validation-note--error"
           [control]="teamDetails.get('researchCluster')"
           fieldName="Research Cluster"
@@ -56,7 +56,7 @@
 
       <div class="form-field">
         <label class="form-label is-required">Roles of Project Leader</label>
-        <textarea class="input--textarea" formControlName="leaderRoles" [maxlength]="600">
+        <textarea appInput class="input--textarea" formControlName="leaderRoles" [maxlength]="600">
         </textarea>
         <app-character-counter
           [current]="teamDetails.get('leaderRoles')?.value?.length || 0"
@@ -97,7 +97,7 @@
           <p>No internal co-researchers added yet. Add at least 1.</p>
         </div>
       } @else {
-        <app-data-table
+        <app-data-table [dense]="true"
           class="team-table--fit"
           [columns]="internalColumns"
           [rows]="internalResearchers.controls"
@@ -125,24 +125,8 @@
               </td>
               <td>
                 <div class="data-table__actions">
-                  <button
-                    type="button"
-                    class="btn-icon btn-icon--edit"
-                    title="Edit"
-                    [disabled]="workflow.isFormReadOnly()"
-                    (click)="openEditInternalModal(index)"
-                  >
-                    <app-table-action-icon action="edit"></app-table-action-icon>
-                  </button>
-                  <button
-                    type="button"
-                    class="btn-icon btn-icon--delete"
-                    title="Remove"
-                    [disabled]="workflow.isFormReadOnly()"
-                    (click)="removeInternal(index)"
-                  >
-                    <app-table-action-icon action="delete"></app-table-action-icon>
-                  </button>
+                  <app-action-button [label]="'Edit'" type="primary" size="small" [icon]="'edit'" [iconOnly]="true" [disabled]="workflow.isFormReadOnly()" [title]="'Edit'" (clicked)="openEditInternalModal(index)" buttonType="button" />
+                  <app-action-button [label]="'Remove'" type="primary" size="small" [icon]="'delete_outline'" [iconOnly]="true" [disabled]="workflow.isFormReadOnly()" [title]="'Remove'" (clicked)="removeInternal(index)" buttonType="button" />
                 </div>
               </td>
             </tr>
@@ -184,7 +168,7 @@
           <span>Scroll to see all columns</span>
           <span class="material-icons scroll-arrow" aria-hidden="true">arrow_forward</span>
         </p>
-        <app-data-table
+        <app-data-table [dense]="true"
           class="team-table--scroll"
           [columns]="externalColumns"
           [rows]="externalResearchers.controls"
@@ -227,38 +211,15 @@
               </td>
               <td>
                 @if (hasSupportLetter(row.value.supportLetter, row.value.supportLetterAttachmentId)) {
-                  <button
-                    type="button"
-                    class="btn-icon btn-icon--view"
-                    title="View / download support letter"
-                    (click)="openSupportLetter(row.value.supportLetter, row.value.supportLetterAttachmentId)"
-                  >
-                    <app-table-action-icon action="view"></app-table-action-icon>
-                  </button>
+                  <app-action-button [label]="'View / download support letter'" type="primary" size="small" [icon]="'visibility'" [iconOnly]="true" [title]="'View / download support letter'" (clicked)="openSupportLetter(row.value.supportLetter, row.value.supportLetterAttachmentId)" buttonType="button" />
                 } @else {
                   <span class="text-muted">—</span>
                 }
               </td>
               <td>
                 <div class="data-table__actions">
-                  <button
-                    type="button"
-                    class="btn-icon btn-icon--edit"
-                    title="Edit"
-                    [disabled]="workflow.isFormReadOnly()"
-                    (click)="openEditExternalModal(index)"
-                  >
-                    <app-table-action-icon action="edit"></app-table-action-icon>
-                  </button>
-                  <button
-                    type="button"
-                    class="btn-icon btn-icon--delete"
-                    title="Remove"
-                    [disabled]="workflow.isFormReadOnly()"
-                    (click)="removeExternal(index)"
-                  >
-                    <app-table-action-icon action="delete"></app-table-action-icon>
-                  </button>
+                  <app-action-button [label]="'Edit'" type="primary" size="small" [icon]="'edit'" [iconOnly]="true" [disabled]="workflow.isFormReadOnly()" [title]="'Edit'" (clicked)="openEditExternalModal(index)" buttonType="button" />
+                  <app-action-button [label]="'Remove'" type="primary" size="small" [icon]="'delete_outline'" [iconOnly]="true" [disabled]="workflow.isFormReadOnly()" [title]="'Remove'" (clicked)="removeExternal(index)" buttonType="button" />
                 </div>
               </td>
             </tr>
@@ -328,7 +289,7 @@
 <!-- INTERNAL CO-RESEARCHER MODAL                                   -->
 <!-- ══════════════════════════════════════════════════════════════ -->
 @if (showInternalModal()) {
-  <app-dialog
+  <app-dialog density="compact"
     [title]="(editingInternalIdx() !== null ? 'Edit' : 'Add') + ' Internal Co-Researcher'"
     [isOpen]="true"
     (close)="showInternalModal.set(false)"
@@ -347,13 +308,13 @@
         </div>
         <div class="form-field">
           <label class="form-label">School / Department</label>
-          <input type="text" class="input--text" formControlName="department" readonly />
+          <input appInput type="text" class="input--text" formControlName="department" readonly />
         </div>
       </div>
 
       <div class="form-field">
         <label class="form-label is-required">Area of Expertise</label>
-        <textarea class="input--textarea" formControlName="expertise" [maxlength]="200"></textarea>
+        <textarea appInput class="input--textarea" formControlName="expertise" [maxlength]="200"></textarea>
         <app-character-counter
           [current]="internalForm.get('expertise')?.value?.length || 0"
           [max]="200"
@@ -364,7 +325,7 @@
 
       <div class="form-field">
         <label class="form-label is-required">Roles in Project</label>
-        <textarea class="input--textarea" formControlName="roles" [maxlength]="600"> </textarea>
+        <textarea appInput class="input--textarea" formControlName="roles" [maxlength]="600"> </textarea>
         <app-character-counter
           [current]="internalForm.get('roles')?.value?.length || 0"
           [max]="600"
@@ -396,7 +357,7 @@
 <!-- EXTERNAL CO-RESEARCHER MODAL                                   -->
 <!-- ══════════════════════════════════════════════════════════════ -->
 @if (showExternalModal()) {
-  <app-dialog
+  <app-dialog density="compact"
     [title]="(editingExternalIdx() !== null ? 'Edit' : 'Add') + ' External Collaborator'"
     [isOpen]="true"
     width="var(--size-dialog-large)"
@@ -407,17 +368,12 @@
       <div class="section-fields">
         <div class="form-field">
           <label class="form-label is-required">Title</label>
-          <select class="input--select" formControlName="title">
-            <option value="" disabled>Select collaborator title...</option>
-            @for (t of titles; track t.value) {
-              <option [value]="t.value">{{ t.label }}</option>
-            }
-          </select>
+          <app-dropdown [options]="standardOptions1()" formControlName="title" ariaLabel="Title" class="" />
           <app-validation-message class="form-validation-note--error" [control]="externalForm.get('title')" fieldName="Title"></app-validation-message>
         </div>
         <div class="form-field">
           <label class="form-label is-required">Full Name</label>
-          <input
+          <input appInput
             type="text"
             class="input--text"
             formControlName="fullName"
@@ -441,12 +397,12 @@
       <div class="section-fields">
         <div class="form-field">
           <label class="form-label is-required">Email Address</label>
-          <input type="email" class="input--text" formControlName="email" />
+          <input appInput type="email" class="input--text" formControlName="email" />
           <app-validation-message class="form-validation-note--error" [control]="externalForm.get('email')" fieldName="Email Address"></app-validation-message>
         </div>
         <div class="form-field">
           <label class="form-label is-required">Institution / Company</label>
-          <input type="text" class="input--text" formControlName="institution" [maxlength]="100" />
+          <input appInput type="text" class="input--text" formControlName="institution" [maxlength]="100" />
           <app-character-counter
             [current]="externalForm.get('institution')?.value?.length || 0"
             [max]="100"
@@ -463,17 +419,12 @@
       <div class="section-fields">
         <div class="form-field">
           <label class="form-label is-required">Type of Organisation</label>
-          <select class="input--select" formControlName="orgType">
-            <option value="" disabled>Select organisation type...</option>
-            @for (o of orgTypes; track o.value) {
-              <option [value]="o.value">{{ o.label }}</option>
-            }
-          </select>
+          <app-dropdown [options]="standardOptions0()" formControlName="orgType" ariaLabel="Org type" class="" />
           <app-validation-message class="form-validation-note--error" [control]="externalForm.get('orgType')" fieldName="Type of Organisation"></app-validation-message>
         </div>
         <div class="form-field">
           <label class="form-label is-required">Position / Designation</label>
-          <input type="text" class="input--text" formControlName="position" [maxlength]="100" />
+          <input appInput type="text" class="input--text" formControlName="position" [maxlength]="100" />
           <app-character-counter
             [current]="externalForm.get('position')?.value?.length || 0"
             [max]="100"
@@ -487,7 +438,7 @@
       <div class="section-fields">
         <div class="form-field">
           <label class="form-label is-required">School / Department / Faculty</label>
-          <input type="text" class="input--text" formControlName="department" [maxlength]="100" />
+          <input appInput type="text" class="input--text" formControlName="department" [maxlength]="100" />
           <app-character-counter
             [current]="externalForm.get('department')?.value?.length || 0"
             [max]="100"
@@ -500,14 +451,13 @@
         </div>
         <div class="form-field">
           <label class="form-label is-required">Country</label>
-          <app-searchable-dropdown
+          <app-dropdown
             [options]="countryOptions"
             [loading]="countriesLoading"
             [isMulti]="false"
-            valueMode="single"
             formControlName="country"
           >
-          </app-searchable-dropdown>
+          </app-dropdown>
           <app-validation-message class="form-validation-note--error" [control]="externalForm.get('country')" fieldName="Country"></app-validation-message>
         </div>
       </div>
@@ -515,7 +465,7 @@
       <!-- Full width: Matched Funding -->
       <div class="form-field">
         <label class="form-label is-required">Matched Funding (RM equivalent)</label>
-        <input
+        <input appInput
           appDecimalAmount
           type="text"
           inputmode="decimal"
@@ -528,7 +478,7 @@
       <!-- Full width: Roles -->
       <div class="form-field">
         <label class="form-label is-required">Roles of Collaborator</label>
-        <textarea class="input--textarea" formControlName="roles" [maxlength]="600"> </textarea>
+        <textarea appInput class="input--textarea" formControlName="roles" [maxlength]="600"> </textarea>
         <app-character-counter
           [current]="externalForm.get('roles')?.value?.length || 0"
           [max]="600"

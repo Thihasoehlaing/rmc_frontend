@@ -15,41 +15,7 @@
         </div>
       }
 
-      <div class="filters-grid">
-        <div class="form-field">
-          <label class="form-label">Dropdown Category</label>
-          <select
-            class="input--text"
-            #breakdownSelect
-            (change)="onBreakdownTypeChange($event)"
-            [value]="selectedBreakdownType()"
-          >
-            @for (type of breakdownTypeOptions; track type.value) {
-              <option [value]="type.value">{{ type.label }}</option>
-            }
-          </select>
-        </div>
-
-        <div class="form-field">
-          <label class="form-label">Status Filter</label>
-          <select class="input--text" [value]="filterStatus()" (change)="onFilterChange($event)">
-            <option value="All">All</option>
-            <option value="Active">Active</option>
-            <option value="Inactive">Deactivated</option>
-          </select>
-        </div>
-
-        <div class="form-field">
-          <label class="form-label">Search</label>
-          <input
-            type="text"
-            class="input--text"
-            [value]="searchQuery()"
-            (input)="onSearchInput($event)"
-            placeholder="Search option name"
-          />
-        </div>
-      </div>
+      <app-search-toolbar [query]="searchQuery()" (queryChange)="onSearchInput($event)" (search)="onSearchInput(searchQuery())" (reset)="onSearchInput('')" placeholder="Search options"><app-dropdown [options]="standardOptions2()" [ngModel]="selectedBreakdownType()" (ngModelChange)="onBreakdownTypeChange($event)" class="" /><app-dropdown [options]="standardOptions1()" [ngModel]="filterStatus()" (ngModelChange)="onFilterChange($event)" class="" /></app-search-toolbar>
 
       <div class="toolbar-actions">
         <app-action-button type="primary" label="Add Option" icon="add" (clicked)="openAddModal()">
@@ -81,7 +47,7 @@
               <td>
                 <input
                   type="checkbox"
-                  class="row-checkbox"
+                  class="row-checkbox input--checkbox"
                   [checked]="isOptionSelected(row.value)"
                   [attr.aria-label]="'Select ' + row.label"
                   (change)="toggleCheckbox(row.value, $any($event.target).checked)"
@@ -103,23 +69,12 @@
               <td>{{ formatRowDate(row.createdDate) }}</td>
 
               <td class="actions-cell">
-                <button
-                  class="icon-btn icon-btn--edit"
-                  type="button"
-                  title="Edit"
-                  (click)="editOption(row, getFilteredAndSortedOptions().indexOf(row))"
-                >
-                  <app-table-action-icon action="edit"></app-table-action-icon>
-                </button>
+                <app-action-button [label]="'Edit'" type="primary" size="small" [icon]="'edit'" [iconOnly]="true" [title]="'Edit'" (clicked)="editOption(row, getFilteredAndSortedOptions().indexOf(row))" buttonType="button" />
 
                 @if (row.status === 'Inactive') {
-                  <button class="btn-status-activate" type="button" (click)="toggleStatus(row)">
-                    <span class="material-icons">check_circle</span> Activate
-                  </button>
+                  <app-action-button [label]="'Activate'" type="primary" size="small" [icon]="'check_circle'" (clicked)="toggleStatus(row)" buttonType="button" />
                 } @else {
-                  <button class="btn-status-deactivate" type="button" (click)="toggleStatus(row)">
-                    <span class="material-icons">block</span> Deactivate
-                  </button>
+                  <app-action-button [label]="'Deactivate'" type="primary" size="small" [icon]="'block'" (clicked)="toggleStatus(row)" buttonType="button" />
                 }
               </td>
             </tr>
@@ -131,7 +86,7 @@
 </section>
 
 @if (isModalOpen()) {
-  <app-dialog
+  <app-dialog density="compact"
     [isOpen]="true"
     [title]="editingOptionIndex() === null ? 'Add Option' : 'Edit Option'"
     (close)="closeModal()"
@@ -139,7 +94,7 @@
     <form [formGroup]="optionForm" (ngSubmit)="saveOption()" class="modal-form">
       <div class="form-field">
         <label class="form-label is-required">Option Name</label>
-        <input
+        <input appInput
           type="text"
           class="input--text"
           formControlName="label"
@@ -151,10 +106,7 @@
 
       <div class="form-field">
         <label class="form-label">Status</label>
-        <select class="input--text" formControlName="status">
-          <option value="Active">Active</option>
-          <option value="Inactive">Deactivated</option>
-        </select>
+        <app-dropdown [options]="standardOptions0()" formControlName="status" ariaLabel="Status" class="" />
       </div>
 
       <div class="modal-actions">
@@ -163,7 +115,7 @@
           label="Cancel"
           (clicked)="closeModal()"
         ></app-action-button>
-        <button class="btn-primary-pill" type="submit" [disabled]="optionForm.invalid">Save</button>
+        <app-action-button [label]="'Save'" type="primary" size="small" [disabled]="optionForm.invalid" buttonType="submit" />
       </div>
     </form>
   </app-dialog>

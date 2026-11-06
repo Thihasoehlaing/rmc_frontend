@@ -10,7 +10,7 @@
       <!-- Family member disclosure checkbox -->
       <div class="form-field">
         <label class="checkbox-label">
-          <input type="checkbox" formControlName="hasFamilyMember">
+          <input class="input--checkbox" type="checkbox" formControlName="hasFamilyMember">
           <span>
             Do you have any family members or relatives studying at APIIT Education Group?
             If yes, please provide details below.
@@ -21,7 +21,7 @@
       <!-- Conditional details textarea — shown only when checkbox is checked -->
       <div class="form-field" *ngIf="hasFamilyMember">
         <label class="form-label is-required">Family Member / Relative Details</label>
-        <textarea
+        <textarea appInput
           class="input--textarea"
           formControlName="familyMemberDetails"
           rows="4"
@@ -66,7 +66,7 @@
       <!-- Agreement checkbox -->
       <div class="form-field">
         <label class="checkbox-label">
-          <input type="checkbox" formControlName="agreeToDeclaration">
+          <input class="input--checkbox" type="checkbox" formControlName="agreeToDeclaration">
           <span>
             I have read and agree to the terms and conditions outlined in the <strong>Declaration
             and Agreement for RA/GRA Requisition</strong>.

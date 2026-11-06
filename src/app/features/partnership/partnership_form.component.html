@@ -3,27 +3,11 @@
   <!-- DEV TEST START: Application Status Override -->
   <div class="application-form-dev-tools">
     <label class="application-form-dev-tools__label">DEV TEST: Application Status</label>
-    <select
-      [ngModel]="applicationStatus()" 
-      (ngModelChange)="setSimulatedStatus($event)"
-      class="input--select application-form-dev-tools__control">
-      <option value="draft">draft</option>
-      <option value="submitted">submitted</option>
-      <option value="pending_rmc_review">pending_rmc_review</option>
-      <option value="pending_proposer_resubmission_rmc">pending_proposer_resubmission_rmc</option>
-      <option value="pending_legal_review">pending_legal_review</option>
-      <option value="pending_proposer_resubmission_legal">pending_proposer_resubmission_legal</option>
-      <option value="pending_sr_director_review">pending_sr_director_review</option>
-      <option value="pending_proposer_resubmission_sr_director">pending_proposer_resubmission_sr_director</option>
-      <option value="pending_vc_review">pending_vc_review</option>
-      <option value="rejected_vc">rejected_vc</option>
-      <option value="pending_senior_executive_signing">pending_senior_executive_signing</option>
-      <option value="completed">completed</option>
-    </select>
+    <app-dropdown [options]="standardOptions0()" [ngModel]="applicationStatus()" (ngModelChange)="setSimulatedStatus($event)" class="application-form-dev-tools__control" />
     <span>(Live ABAC override for developer testing)</span>
     
     <label class="application-form-dev-tools__option">
-      <input type="checkbox" [ngModel]="isBusiness()" (ngModelChange)="isBusiness.set($event)"> Is Business Route? (Includes Legal)
+      <input class="input--checkbox" type="checkbox" [ngModel]="isBusiness()" (ngModelChange)="isBusiness.set($event)"> Is Business Route? (Includes Legal)
     </label>
   </div>
   <!-- DEV TEST END -->
@@ -73,28 +57,28 @@
         @if (isRmcEditable()) {
           <div class="form-field">
             <label class="form-label">RMC Review</label>
-            <textarea class="input--textarea" rows="4" formControlName="rmcComment" placeholder="Enter your review comments..."></textarea>
+            <textarea appInput class="input--textarea" rows="4" formControlName="rmcComment" placeholder="Enter your review comments..."></textarea>
           </div>
         }
 
         @if (isLegalEditable()) {
           <div class="form-field">
             <label class="form-label">Legal Dept Review</label>
-            <textarea class="input--textarea" rows="4" formControlName="legalComment" placeholder="Enter your review comments..."></textarea>
+            <textarea appInput class="input--textarea" rows="4" formControlName="legalComment" placeholder="Enter your review comments..."></textarea>
           </div>
         }
 
         @if (isSrDirectorEditable()) {
           <div class="form-field">
             <label class="form-label">Sr. Director Review</label>
-            <textarea class="input--textarea" rows="4" formControlName="srDirectorComment" placeholder="Enter your review comments..."></textarea>
+            <textarea appInput class="input--textarea" rows="4" formControlName="srDirectorComment" placeholder="Enter your review comments..."></textarea>
           </div>
         }
 
         @if (isVcEditable()) {
           <div class="form-field">
             <label class="form-label">VC Review</label>
-            <textarea class="input--textarea" rows="4" formControlName="vcComment" placeholder="Enter your review comments..."></textarea>
+            <textarea appInput class="input--textarea" rows="4" formControlName="vcComment" placeholder="Enter your review comments..."></textarea>
           </div>
         }
 

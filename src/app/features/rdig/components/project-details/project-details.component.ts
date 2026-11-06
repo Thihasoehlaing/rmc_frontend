@@ -1,3 +1,6 @@
+import { ActionButtonComponent } from '../../../../shared/components/action-button/action-button.component';
+import { InputDirective } from '../../../../shared/components/settings-ui/settings-ui.components';
+import { DropdownComponent } from '../../../../shared/components/dropdown/dropdown.component';
 import { Component, Input, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import {
     ReactiveFormsModule,
@@ -10,7 +13,6 @@ import { Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { CustomSubheaderComponent } from '../../../../shared/components/custom-subheader/custom-subheader.component';
-import { SearchableDropdownComponent } from '../../../../shared/components/searchable-dropdown/searchable-dropdown.component';
 import { CharacterCounterComponent } from '../../../../shared/components/character-counter/character-counter.component';
 import { ValidationMessageComponent } from '../../../../shared/components/validation-message/validation-message.component';
 import { NoteComponent } from '../../../../shared/components/note/note.component';
@@ -30,11 +32,10 @@ import {
 @Component({
     selector: 'app-project-details',
     standalone: true,
-    imports: [
+    imports: [ActionButtonComponent,InputDirective,DropdownComponent,
         ReactiveFormsModule,
         CustomSubheaderComponent,
-        SearchableDropdownComponent,
-        CharacterCounterComponent,
+            CharacterCounterComponent,
         ValidationMessageComponent,
         NoteComponent,
         DialogComponent,

@@ -1,8 +1,8 @@
 <app-form-page-container>
   @if (accessDenied()) {
-    <app-dialog [isOpen]="true" title="RDIG Access Unavailable" size="small" (close)="returnToDashboard()">
+    <app-dialog density="compact" [isOpen]="true" title="RDIG Access Unavailable" size="small" (close)="returnToDashboard()">
       <p>You don’t have access to apply for RDIG. Please contact RMC for assistance.</p>
-      <div dialog-footer><button type="button" class="btn btn-primary" (click)="returnToDashboard()">OK — Go to Dashboard</button></div>
+      <div dialog-footer><app-action-button [label]="'OK — Go to Dashboard'" type="primary" size="small" (clicked)="returnToDashboard()" buttonType="button" /></div>
     </app-dialog>
   } @else if (accessChecking()) {
     <app-form-page-skeleton [showBatchCard]="true"></app-form-page-skeleton>
@@ -10,7 +10,7 @@
   <div class="rdig-app">
     <!-- �"?�"? CLOSED-WINDOW MODAL (Req 6) �"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"? -->
     @if (showClosedWindowModal()) {
-      <app-dialog
+      <app-dialog density="compact"
         [isOpen]="showClosedWindowModal()"
         title="Submission Window Closed"
         size="small"
@@ -22,9 +22,7 @@
           is opened.
         </p>
         <div dialog-footer>
-          <button type="button" class="btn btn-secondary" (click)="showClosedWindowModal.set(false)">
-            Return to Form
-          </button>
+          <app-action-button [label]="'Return to Form'" type="secondary" size="small" (clicked)="showClosedWindowModal.set(false)" buttonType="button" />
         </div>
       </app-dialog>
     }
@@ -229,9 +227,9 @@
         <form [formGroup]="rdigForm" novalidate>
           <!-- Hidden metadata �?" always present, never visible -->
           <div formGroupName="metadata" hidden aria-hidden="true">
-            <input formControlName="batch" readonly />
-            <input formControlName="applicationVersion" readonly />
-            <input formControlName="reviewers_version" readonly />
+            <input appInput formControlName="batch" readonly />
+            <input appInput formControlName="applicationVersion" readonly />
+            <input appInput formControlName="reviewers_version" readonly />
           </div>
 
           <!-- �"?�"? Form Container �"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"? -->

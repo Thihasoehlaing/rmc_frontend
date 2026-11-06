@@ -1,3 +1,5 @@
+import { ActionButtonComponent } from '../../../shared/components/action-button/action-button.component';
+import { InputDirective } from '../../../shared/components/settings-ui/settings-ui.components';
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -17,7 +19,7 @@ import { ActionLoadingService } from '../../../core/services/action-loading.serv
 @Component({
   selector: 'app-request-action',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [ActionButtonComponent,InputDirective,CommonModule, FormsModule],
   templateUrl: './request-action.component.html',
   styleUrl: './request-action.component.scss',
 })

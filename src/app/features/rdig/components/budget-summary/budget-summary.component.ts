@@ -1,3 +1,4 @@
+import { InputDirective } from '../../../../shared/components/settings-ui/settings-ui.components';
 import { Component, Input, OnInit } from '@angular/core';
 import {
   ReactiveFormsModule,
@@ -23,7 +24,6 @@ import { MyrCurrencyPipe } from '../../../../shared/pipes/myr-currency.pipe';
 import { TableRowCounterComponent } from '../../../../shared/components/table-row-counter/table-row-counter.component';
 import { FileUploadComponent } from '../../../../shared/components/file-upload/file-upload.component';
 
-import { TableActionIconComponent } from '../../../../shared/components/table-action-icon/table-action-icon.component';
 
 type BudgetCategoryKey =
   | 'studentAllowances'
@@ -34,8 +34,7 @@ type BudgetCategoryKey =
 @Component({
   selector: 'app-budget-summary',
   standalone: true,
-  imports: [
-    TableActionIconComponent,
+  imports: [InputDirective,
     ReactiveFormsModule,
     CustomHeaderComponent,
     CustomSubheaderComponent,

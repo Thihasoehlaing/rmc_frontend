@@ -1,10 +1,11 @@
 import { Component, Input } from '@angular/core';
+import { SettingsPageHeaderComponent } from '../settings-ui/settings-ui.components';
 import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-admin-settings-page-header',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, SettingsPageHeaderComponent],
   templateUrl: './admin-settings-page-header.component.html',
   styleUrl: './admin-settings-page-header.component.scss',
 })

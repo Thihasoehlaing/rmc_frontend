@@ -1,57 +1,26 @@
-<main class="admin-settings system-settings">
-  <header class="settings-hero system-settings__hero">
-    <div class="settings-hero__content">
-      <span class="settings-hero__eyebrow">System Administration</span>
-      <h1>Main Settings</h1>
-      <p>Manage shared users, roles, system access, workspaces, staff, departments, monitoring, forms and dropdown categories.</p>
-    </div>
-
-    <div class="settings-hero__summary" aria-label="Available system settings modules">
-      <span class="material-icons">settings</span>
-      <div>
-        <strong>{{ cards.length }}</strong>
-        <span>System modules</span>
-      </div>
-    </div>
-  </header>
-
-  <section class="settings-section" aria-labelledby="system-settings-modules-title">
-    <div class="settings-section__heading">
-      <div>
-        <span class="section-kicker">System Control Centre</span>
-        <h2 id="system-settings-modules-title">Choose a configuration area</h2>
-      </div>
-      <p>These modules are available only to users with the System Admin role.</p>
-    </div>
-
-    <div class="settings-grid">
-      @for (card of cards; track card.route; let index = $index) {
-        <a
-          [routerLink]="card.route"
-          [class]="'settings-card settings-card--' + card.tone"
-          [attr.aria-label]="'Open ' + card.title">
-          <div class="settings-card__top">
-            <span class="settings-card__number">
-              {{ (index + 1).toString().padStart(2, '0') }}
-            </span>
-            <span class="settings-card__category">{{ card.category }}</span>
-          </div>
-
-          <div class="settings-card__icon">
-            <span class="material-icons">{{ card.icon }}</span>
-          </div>
-
-          <div class="settings-card__content">
-            <h3>{{ card.title }}</h3>
+<main class="settings-page">
+  <app-settings-page-header
+    title="Main Settings"
+    icon="settings"
+    eyebrow="Platform administration"
+    description="Manage shared configuration, people, access and application setup."
+  >
+    <app-status-badge>{{ cards.length }} modules</app-status-badge>
+  </app-settings-page-header>
+  <app-settings-panel title="Configuration areas" [count]="cards.length">
+    <nav class="settings-module-grid" aria-label="Main Settings modules">
+      @for (card of cards; track card.route) {
+        <a [routerLink]="card.route" [attr.aria-label]="'Open ' + card.title">
+          <span class="settings-module-icon material-icons" aria-hidden="true">{{
+            card.icon
+          }}</span>
+          <div>
+            <strong>{{ card.title }}</strong>
             <p>{{ card.description }}</p>
           </div>
-
-          <div class="settings-card__action">
-            <span>Open settings</span>
-            <span class="material-icons">arrow_forward</span>
-          </div>
+          <span class="material-icons settings-module-arrow" aria-hidden="true">arrow_forward</span>
         </a>
       }
-    </div>
-  </section>
+    </nav>
+  </app-settings-panel>
 </main>

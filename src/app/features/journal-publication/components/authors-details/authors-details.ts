@@ -1,3 +1,5 @@
+import { InputDirective } from '../../../../shared/components/settings-ui/settings-ui.components';
+import { DropdownComponent } from '../../../../shared/components/dropdown/dropdown.component';
 ﻿import { Component, OnInit, inject, effect, Output, EventEmitter, signal } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { finalize } from 'rxjs/operators';
@@ -28,7 +30,6 @@ import {
   JournalStudentAuthorPayload,
 } from '../../services/journal-application-api.service';
 
-import { TableActionIconComponent } from '../../../../shared/components/table-action-icon/table-action-icon.component';
 import { TableRowCounterComponent } from '../../../../shared/components/table-row-counter/table-row-counter.component';
 import {
   formatCountryForDisplay,
@@ -40,8 +41,7 @@ import {
   templateUrl: './authors-details.html',
   styleUrls: ['./authors-details.scss'],
   standalone: true,
-  imports: [
-    TableActionIconComponent,
+  imports: [InputDirective,DropdownComponent,
     TableRowCounterComponent,
     CommonModule,
     ReactiveFormsModule,

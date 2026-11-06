@@ -1,57 +1,26 @@
-<main class="admin-settings">
-  <header class="settings-hero">
-    <div class="settings-hero__content">
-      <span class="settings-hero__eyebrow">RMC Administration</span>
-      <h1>Admin Settings</h1>
-      <p>Manage RMC forms, submission windows, reviewer access and reference data.</p>
-    </div>
-
-    <div class="settings-hero__summary" aria-label="Available settings modules">
-      <span class="material-icons">admin_panel_settings</span>
-      <div>
-        <strong>{{ cards.length }}</strong>
-        <span>Management modules</span>
-      </div>
-    </div>
-  </header>
-
-  <section class="settings-section" aria-labelledby="settings-modules-title">
-    <div class="settings-section__heading">
-      <div>
-        <span class="section-kicker">Configuration Centre</span>
-        <h2 id="settings-modules-title">Choose a management area</h2>
-      </div>
-    </div>
-
-    <div class="settings-grid">
-      @for (card of cards; track card.route; let index = $index) {
-        <a
-          [routerLink]="card.route"
-          class="settings-card"
-          [class]="'settings-card settings-card--' + card.tone"
-          [attr.aria-label]="'Open ' + card.title">
-          <div class="settings-card__top">
-            <span class="settings-card__number">
-              {{ (index + 1).toString().padStart(2, '0') }}
-            </span>
-            <span class="settings-card__category">{{ card.category }}</span>
-          </div>
-
-          <div class="settings-card__icon">
-            <span class="material-icons">{{ card.icon }}</span>
-          </div>
-
-          <div class="settings-card__content">
-            <h3>{{ card.title }}</h3>
+<main class="settings-page">
+  <app-settings-page-header
+    title="Admin Settings"
+    icon="settings"
+    eyebrow="RMC administration"
+    description="Manage RMC forms, submission windows, reviewer access and reference data."
+  >
+    <app-status-badge>{{ cards.length }} modules</app-status-badge>
+  </app-settings-page-header>
+  <app-settings-panel title="Configuration areas" [count]="cards.length">
+    <nav class="settings-module-grid" aria-label="Admin Settings modules">
+      @for (card of cards; track card.route) {
+        <a [routerLink]="card.route" [attr.aria-label]="'Open ' + card.title">
+          <span class="settings-module-icon material-icons" aria-hidden="true">{{
+            card.icon
+          }}</span>
+          <div>
+            <strong>{{ card.title }}</strong>
             <p>{{ card.description }}</p>
           </div>
-
-          <div class="settings-card__action">
-            <span>Open settings</span>
-            <span class="material-icons">arrow_forward</span>
-          </div>
+          <span class="material-icons settings-module-arrow" aria-hidden="true">arrow_forward</span>
         </a>
       }
-    </div>
-  </section>
+    </nav>
+  </app-settings-panel>
 </main>

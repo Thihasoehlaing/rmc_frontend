@@ -1,3 +1,4 @@
+import { ActionButtonComponent } from '../../../shared/components/action-button/action-button.component';
 import { CommonModule, KeyValue } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
@@ -13,7 +14,7 @@ import { formTypeLabel, STATUS_COLORS } from '../../../core/services/request-dis
 @Component({
   selector: 'app-request-detail',
   standalone: true,
-  imports: [CommonModule],
+  imports: [ActionButtonComponent,CommonModule],
   templateUrl: './request-detail.component.html',
   styleUrl: './request-detail.component.scss',
 })

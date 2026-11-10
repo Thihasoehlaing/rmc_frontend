@@ -1,3 +1,4 @@
+import { DataTableComponent } from '../../shared/components/data-table/data-table.component';
 import { ActionButtonComponent } from '../../shared/components/action-button/action-button.component';
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
@@ -33,7 +34,7 @@ interface DetailField {
 @Component({
   selector: 'app-rdig-detail',
   standalone: true,
-  imports: [ActionButtonComponent,CommonModule, RouterLink],
+  imports: [DataTableComponent, ActionButtonComponent, CommonModule, RouterLink],
   templateUrl: './rdig-detail.component.html',
   styleUrl: './rdig-detail.component.scss',
 })
@@ -71,7 +72,10 @@ export class RdigDetailComponent implements OnInit {
       { label: 'Application Type', value: rdig?.application_type },
       { label: 'Project Category', value: rdig?.project_category },
       { label: 'Track', value: this.formatTrack(rdig?.track) },
-      { label: 'Duration', value: rdig?.project_duration_months ? `${rdig.project_duration_months} months` : null },
+      {
+        label: 'Duration',
+        value: rdig?.project_duration_months ? `${rdig.project_duration_months} months` : null,
+      },
       { label: 'Research Area', value: rdig?.research_area },
       { label: 'Research Cluster', value: rdig?.research_cluster_id },
       { label: 'Research Domain', value: rdig?.research_domain_id },
@@ -84,8 +88,14 @@ export class RdigDetailComponent implements OnInit {
     const rdig = this.rdig();
     return [
       { label: 'Leader Name', value: rdig?.project_leader_name || this.request()?.applicant_name },
-      { label: 'Leader Email', value: rdig?.project_leader_email || this.request()?.applicant_email },
-      { label: 'Department', value: rdig?.project_leader_department || this.request()?.applicant_department },
+      {
+        label: 'Leader Email',
+        value: rdig?.project_leader_email || this.request()?.applicant_email,
+      },
+      {
+        label: 'Department',
+        value: rdig?.project_leader_department || this.request()?.applicant_department,
+      },
       { label: 'Job Position', value: rdig?.project_leader_job_position },
       { label: 'Role in Project', value: rdig?.project_leader_role_in_project },
     ];
@@ -132,8 +142,16 @@ export class RdigDetailComponent implements OnInit {
       { label: 'Indexed Journal', value: rdig?.indexed_journal_selected, type: 'boolean' },
       { label: 'Indexed Journal Quantity', value: rdig?.indexed_journal_quantity },
       { label: 'Conceptual Design', value: rdig?.conceptual_design_selected, type: 'boolean' },
-      { label: 'Knowledge Transfer Programme', value: rdig?.knowledge_transfer_programme_selected, type: 'boolean' },
-      { label: 'External Grant Application', value: rdig?.application_external_grant_selected, type: 'boolean' },
+      {
+        label: 'Knowledge Transfer Programme',
+        value: rdig?.knowledge_transfer_programme_selected,
+        type: 'boolean',
+      },
+      {
+        label: 'External Grant Application',
+        value: rdig?.application_external_grant_selected,
+        type: 'boolean',
+      },
       { label: 'Other Output', value: rdig?.other_output_selected, type: 'boolean' },
       { label: 'Other Output Specification', value: rdig?.other_output_specification },
     ];
@@ -142,8 +160,16 @@ export class RdigDetailComponent implements OnInit {
   readonly declarationFields = computed<DetailField[]>(() => {
     const rdig = this.rdig();
     return [
-      { label: 'No Ongoing RDIG (Self)', value: rdig?.declaration_no_ongoing_rdig_self, type: 'boolean' },
-      { label: 'No Ongoing RDIG (Co-Researchers)', value: rdig?.declaration_no_ongoing_rdig_coresearchers, type: 'boolean' },
+      {
+        label: 'No Ongoing RDIG (Self)',
+        value: rdig?.declaration_no_ongoing_rdig_self,
+        type: 'boolean',
+      },
+      {
+        label: 'No Ongoing RDIG (Co-Researchers)',
+        value: rdig?.declaration_no_ongoing_rdig_coresearchers,
+        type: 'boolean',
+      },
       { label: 'Agreement Accepted', value: rdig?.declaration_agreement_accepted, type: 'boolean' },
     ];
   });
@@ -181,7 +207,9 @@ export class RdigDetailComponent implements OnInit {
         next: ({ form, actions }) => {
           this.form.set(form.data ?? {});
           this.request.set(form.data?.request ?? this.request());
-          this.actions.set(actions.data?.available_actions ?? form.data?.request?.available_actions ?? []);
+          this.actions.set(
+            actions.data?.available_actions ?? form.data?.request?.available_actions ?? [],
+          );
         },
         error: () => this.error.set('Could not load the RDIG detail.'),
       });
@@ -189,7 +217,7 @@ export class RdigDetailComponent implements OnInit {
 
   statusColor(): string {
     const request = this.request();
-    return request ? STATUS_COLORS[request.status_code] ?? '#6b7280' : '#6b7280';
+    return request ? (STATUS_COLORS[request.status_code] ?? '#6b7280') : '#6b7280';
   }
 
   displayValue(field: DetailField): string {
@@ -203,7 +231,9 @@ export class RdigDetailComponent implements OnInit {
 
   budgetItemsFor(sectionId: number | undefined): RdigBudgetItemDto[] {
     if (sectionId == null) return [];
-    return (this.form()?.budget_items ?? []).filter((item) => item.rdig_budget_section_id === sectionId);
+    return (this.form()?.budget_items ?? []).filter(
+      (item) => item.rdig_budget_section_id === sectionId,
+    );
   }
 
   money(value: unknown): string {

@@ -1,3 +1,6 @@
+import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
+import { WorkspaceService } from '../../../core/services/workspace.service';
+import { FieldComponent } from '../../../shared/components/settings-ui/settings-ui.components';
 import { ActionButtonComponent } from '../../../shared/components/action-button/action-button.component';
 import { SettingsPageHeaderComponent } from '../../../shared/components/settings-ui/settings-ui.components';
 import { InputDirective } from '../../../shared/components/settings-ui/settings-ui.components';
@@ -35,7 +38,12 @@ import { formatDisplayDate } from '../../../shared/utils/date-time.util';
 @Component({
   selector: 'app-history',
   standalone: true,
-  imports: [ActionButtonComponent,SettingsPageHeaderComponent,InputDirective,
+  imports: [
+    DataTableComponent,
+    FieldComponent,
+    ActionButtonComponent,
+    SettingsPageHeaderComponent,
+    InputDirective,
     DatePickerComponent,
     NgClass,
     PaginationComponent,
@@ -53,6 +61,7 @@ export class HistoryComponent implements OnInit {
   private readonly requests = inject(WorkflowRequestsService);
   private readonly auth = inject(AuthService);
   private readonly formCache = inject(FormCacheService);
+  private readonly workspace = inject(WorkspaceService);
   private readonly toast = inject(ToastService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -97,6 +106,7 @@ export class HistoryComponent implements OnInit {
   readonly formTabs = computed(() => {
     const includeExternal = this.isAdminHistory();
     const tabs = this.forms()
+      .filter((form) => form.workspace_code?.toUpperCase() === this.workspace.code().toUpperCase())
       .filter((form) => includeExternal || form.form_code.toUpperCase() !== 'EXTERNAL')
       .map((form) => ({
         value: form.form_code.toLowerCase(),
@@ -357,7 +367,8 @@ export class HistoryComponent implements OnInit {
           this.rollbackReason.set('');
           this.loadHistory();
         },
-        error: (err) => this.toast.error(err?.error?.message || 'Could not roll back this request.'),
+        error: (err) =>
+          this.toast.error(err?.error?.message || 'Could not roll back this request.'),
       });
   }
 

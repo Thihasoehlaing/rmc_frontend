@@ -1,10 +1,15 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
+import {
+  TableActionIconComponent,
+  TableActionIcon,
+} from '../table-action-icon/table-action-icon.component';
 
 export type ActionButtonType = 'primary' | 'danger' | 'secondary' | 'ghost' | 'success' | 'warning';
 
 @Component({
   selector: 'app-action-button',
   standalone: true,
+  imports: [TableActionIconComponent],
   template: `
     <button
       [class]="'action-button btn btn-' + type"
@@ -13,7 +18,8 @@ export type ActionButtonType = 'primary' | 'danger' | 'secondary' | 'ghost' | 's
       [attr.aria-label]="ariaLabel || (iconOnly ? label : null)"
       [disabled]="disabled || loading"
       [attr.aria-busy]="loading || null"
-      [attr.title]="title || null"
+      [attr.data-action]="iconOnly ? standardIcon || icon : null"
+      [attr.title]="title || (iconOnly ? ariaLabel || label : null)"
       [type]="buttonType"
       [attr.form]="formId || null"
       (click)="clicked.emit()"
@@ -23,8 +29,16 @@ export type ActionButtonType = 'primary' | 'danger' | 'secondary' | 'ghost' | 's
         [class.action-button__content--hidden]="loading"
         [attr.aria-hidden]="loading || null"
       >
-        @if (icon) {
-          <span class="material-icons" aria-hidden="true">{{ icon }}</span>
+        @if (iconOnly && standardIcon) {
+          <app-table-action-icon [action]="standardIcon!" aria-hidden="true" />
+        } @else if (icon) {
+          <span
+            class="material-icons"
+            [class.material-icons-outlined]="iconOnly"
+            [class.material-icons]="!iconOnly"
+            aria-hidden="true"
+            >{{ icon }}</span
+          >
         }
         @if (!iconOnly) {
           <span class="action-button__label">{{ label }}</span>
@@ -79,7 +93,8 @@ export type ActionButtonType = 'primary' | 'danger' | 'secondary' | 'ghost' | 's
       .action-button__content--hidden {
         visibility: hidden;
       }
-      .material-icons {
+      .material-icons,
+      .material-icons-outlined {
         font-size: var(--size-icon-control);
       }
       .spinning {
@@ -99,6 +114,22 @@ export type ActionButtonType = 'primary' | 'danger' | 'secondary' | 'ghost' | 's
   ],
 })
 export class ActionButtonComponent {
+  get standardIcon(): TableActionIcon | null {
+    const icons: Record<string, TableActionIcon> = {
+      edit: 'edit',
+      delete: 'delete',
+      delete_outline: 'delete',
+      visibility: 'view',
+      print: 'print',
+      check: 'activate',
+      check_circle: 'activate',
+      block: 'deactivate',
+      lock_open: 'unblockUser',
+      mark_email_read: 'markRead',
+    };
+    return icons[this.icon] ?? null;
+  }
+
   @Input() size: 'small' | 'medium' = 'medium';
   @Input() buttonType: 'button' | 'submit' | 'reset' = 'button';
   @Input() formId = '';

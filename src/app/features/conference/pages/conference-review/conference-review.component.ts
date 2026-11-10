@@ -1,3 +1,4 @@
+import { DataTableComponent } from '../../../../shared/components/data-table/data-table.component';
 import { InputDirective } from '../../../../shared/components/settings-ui/settings-ui.components';
 import { Location } from '@angular/common';
 import { AttachmentDownloadService } from '../../../../core/services/attachment-download.service';
@@ -27,10 +28,7 @@ import { ActionLoadingService } from '../../../../core/services/action-loading.s
 import { TextareaAutosizeDirective } from '../../../../shared/directives/textarea-autosize.directive';
 import { DialogComponent } from '../../../../shared/components/dialog/dialog.component';
 import { formatCountryForDisplay } from '../../../../shared/utils/country.util';
-import {
-  formatCurrencyAmount,
-  formatMyrCurrency,
-} from '../../../../shared/utils/currency.util';
+import { formatCurrencyAmount, formatMyrCurrency } from '../../../../shared/utils/currency.util';
 import {
   formatDisplayDate,
   formatMalaysiaDateTime,
@@ -48,7 +46,9 @@ const CONFERENCE_VENUE_LABELS: Readonly<Record<string, string>> = {
 @Component({
   selector: 'app-conference-review',
   standalone: true,
-  imports: [InputDirective,
+  imports: [
+    DataTableComponent,
+    InputDirective,
     ReactiveFormsModule,
     ActionButtonComponent,
     TableScrollHintComponent,
@@ -98,7 +98,9 @@ export class ConferenceReviewComponent implements OnInit {
     supporting_documents: new FormControl('', [Validators.maxLength(COMMENT_MAX_LENGTH)]),
     costing_sponsorship: new FormControl('', [Validators.maxLength(COMMENT_MAX_LENGTH)]),
   };
-  readonly sectionEditCommentControl = new FormControl('', [Validators.maxLength(COMMENT_MAX_LENGTH)]);
+  readonly sectionEditCommentControl = new FormControl('', [
+    Validators.maxLength(COMMENT_MAX_LENGTH),
+  ]);
   readonly actionCommentControl = new FormControl('', [Validators.maxLength(COMMENT_MAX_LENGTH)]);
   readonly rollbackReasonControl = new FormControl('', [Validators.maxLength(COMMENT_MAX_LENGTH)]);
   readonly commentMaxLength = COMMENT_MAX_LENGTH;
@@ -133,8 +135,8 @@ export class ConferenceReviewComponent implements OnInit {
   readonly studentAuthors = computed(() => this.data()?.apu_student_co_authors ?? []);
   readonly nonApuAuthors = computed(() => this.data()?.non_apu_co_authors ?? []);
   readonly costingItems = computed(() => this.data()?.costing_items ?? []);
-  readonly isNonResearchCosting = computed(() =>
-    this.conference()?.project_type?.trim().toLowerCase() === 'non-research',
+  readonly isNonResearchCosting = computed(
+    () => this.conference()?.project_type?.trim().toLowerCase() === 'non-research',
   );
   readonly sponsorshipPercentage = computed(() => {
     const conference = this.conference();
@@ -266,7 +268,9 @@ export class ConferenceReviewComponent implements OnInit {
 
   conferenceVenueLabel(value: string | null | undefined): string {
     const venue = value?.trim().toLowerCase();
-    return venue ? (CONFERENCE_VENUE_LABELS[venue] ?? this.capitalCaseLabel(venue)) : this.val(null);
+    return venue
+      ? (CONFERENCE_VENUE_LABELS[venue] ?? this.capitalCaseLabel(venue))
+      : this.val(null);
   }
 
   researchGrantTypeLabel(value: string | null | undefined): string {
@@ -277,9 +281,11 @@ export class ConferenceReviewComponent implements OnInit {
   }
 
   costingDescription(item: ConferenceCostingItemDto): string {
-    return this.val(this.isNonResearchCosting()
-      ? item.account_code_description_snapshot ?? item.vote_number_description_snapshot
-      : item.vote_number_description_snapshot ?? item.account_code_description_snapshot);
+    return this.val(
+      this.isNonResearchCosting()
+        ? (item.account_code_description_snapshot ?? item.vote_number_description_snapshot)
+        : (item.vote_number_description_snapshot ?? item.account_code_description_snapshot),
+    );
   }
 
   fmtPercentage(value: unknown): string {
@@ -340,8 +346,9 @@ export class ConferenceReviewComponent implements OnInit {
 
   currentActorSectionComment(sectionCode: string): RequestCommentDto | null {
     return (
-      this.commentsForSection(sectionCode).find((comment) => this.canChangeSectionComment(comment)) ??
-      null
+      this.commentsForSection(sectionCode).find((comment) =>
+        this.canChangeSectionComment(comment),
+      ) ?? null
     );
   }
 
@@ -457,7 +464,9 @@ export class ConferenceReviewComponent implements OnInit {
       .filter((time): time is number => time !== null)
       .sort((a, b) => b - a)[0];
     if (statusStart !== undefined) return statusStart;
-    return this.parseTime(this.request()?.submitted_at) ?? this.parseTime(this.request()?.created_at);
+    return (
+      this.parseTime(this.request()?.submitted_at) ?? this.parseTime(this.request()?.created_at)
+    );
   }
 
   private parseTime(value: string | null | undefined): number | null {
@@ -588,7 +597,9 @@ export class ConferenceReviewComponent implements OnInit {
       )
       .subscribe({
         next: () => {
-          this.sectionComments.update((comments) => comments.filter((item) => item.id !== comment.id));
+          this.sectionComments.update((comments) =>
+            comments.filter((item) => item.id !== comment.id),
+          );
           if (this.editingSectionCommentId() === comment.id) {
             this.cancelEditSectionComment(comment.section_code);
           }
@@ -697,7 +708,10 @@ export class ConferenceReviewComponent implements OnInit {
       ? (this.actionCommentControl.value ?? '').trim()
       : null;
     this.requests
-      .actOnRequest(this.requestId, { action_code: action.action_code, comment_text: actionComment })
+      .actOnRequest(this.requestId, {
+        action_code: action.action_code,
+        comment_text: actionComment,
+      })
       .pipe(
         finalize(() => {
           this.acting.set(false);

@@ -40,105 +40,6 @@
   margin: 0;
 }
 
-.dropdown-search-panel {
-  padding: var(--space-4);
-  margin-bottom: var(--space-5);
-  background: var(--color-surface);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
-}
-
-:host ::ng-deep .dropdown-search-panel app-submissions-search {
-  margin: 0;
-  padding: 0;
-  border: none;
-  border-radius: 0;
-  background: transparent;
-  box-shadow: none;
-}
-
-:host ::ng-deep .dropdown-search-panel app-submissions-search .submissions-search-top-row {
-  display: none;
-}
-
-:host ::ng-deep .dropdown-search-panel app-submissions-search .submissions-search-controls {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  flex-wrap: wrap;
-}
-
-:host ::ng-deep .dropdown-search-panel app-submissions-search .submissions-search {
-  width: 300px;
-  max-width: 100%;
-  min-width: 0;
-  flex: 1 1 300px;
-}
-
-:host ::ng-deep .dropdown-search-panel app-submissions-search .submissions-search--focused,
-:host ::ng-deep .dropdown-search-panel app-submissions-search .submissions-search:focus-within {
-  width: min(360px, 100%);
-}
-
-:host ::ng-deep .dropdown-search-panel app-submissions-search .submissions-search-filters {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  flex: 0 1 14rem;
-  margin-left: auto;
-}
-
-:host ::ng-deep .dropdown-search-panel app-submissions-search .submissions-search-filters [search-filters] {
-  width: 13rem;
-  min-width: 13rem;
-}
-
-:host ::ng-deep .dropdown-search-panel app-submissions-search .submissions-search-actions {
-  justify-content: flex-end;
-  margin-left: 0;
-  white-space: nowrap;
-}
-
-.mgr-date-filter {
-  display: block;
-  position: relative;
-
-  .sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip: rect(0 0 0 0);
-    white-space: nowrap;
-  }
-
-  .input--text {
-    width: 100%;
-    height: 38px;
-    min-height: 38px;
-    padding-block: 0;
-    padding-inline: var(--space-4);
-    border: 1px solid var(--border-default);
-    border-radius: var(--radius-full);
-    background-color: var(--color-surface);
-    font-size: var(--fs-sm);
-    line-height: 38px;
-    cursor: pointer;
-
-    &:hover {
-      border-color: color-mix(in srgb, var(--color-primary) 24%, var(--border-default));
-      box-shadow: var(--shadow-sm);
-    }
-
-    &:focus {
-      border-color: var(--color-primary);
-      box-shadow: var(--input-shadow-focus);
-      outline: none;
-    }
-  }
-}
-
 .dropdown-table-panel {
   margin-bottom: var(--space-5);
   padding: 0;
@@ -291,21 +192,6 @@ td:first-child {
   box-shadow: var(--shadow-sm);
 }
 
-@media (max-width: 1180px) {
-  :host ::ng-deep .dropdown-search-panel app-submissions-search .submissions-search {
-    flex-basis: 22rem;
-  }
-
-  :host ::ng-deep .dropdown-search-panel app-submissions-search .submissions-search-filters {
-    margin-left: 0;
-  }
-
-  :host ::ng-deep .dropdown-search-panel app-submissions-search .submissions-search-actions {
-    flex: 1 1 100%;
-    justify-content: flex-end;
-  }
-}
-
 .empty-state {
   padding: var(--space-8) var(--space-4);
   text-align: center;
@@ -363,34 +249,6 @@ td:first-child {
 @media (max-width: 720px) {
   .submissions-page {
     padding: var(--space-4);
-  }
-
-  .dropdown-search-panel {
-    padding: var(--space-3);
-  }
-
-  :host ::ng-deep .dropdown-search-panel app-submissions-search .submissions-search-controls {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
-  :host ::ng-deep .dropdown-search-panel app-submissions-search .submissions-search,
-  :host ::ng-deep .dropdown-search-panel app-submissions-search .submissions-search--focused,
-  :host ::ng-deep .dropdown-search-panel app-submissions-search .submissions-search-filters,
-  :host ::ng-deep .dropdown-search-panel app-submissions-search .submissions-search-filters [search-filters] {
-    width: 100%;
-    min-width: 0;
-    margin-left: 0;
-  }
-
-  :host ::ng-deep .dropdown-search-panel app-submissions-search .submissions-search-actions {
-    margin-left: 0;
-    justify-content: stretch;
-  }
-
-  :host ::ng-deep .dropdown-search-panel app-submissions-search .submissions-search-actions .btn {
-    flex: 1 1 0;
-    justify-content: center;
   }
 
   table {

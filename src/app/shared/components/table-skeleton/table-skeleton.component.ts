@@ -1,3 +1,4 @@
+import { DataTableComponent } from '../data-table/data-table.component';
 import { Component, Input } from '@angular/core';
 
 export interface SkeletonColumn {
@@ -7,6 +8,7 @@ export interface SkeletonColumn {
 @Component({
   selector: 'app-table-skeleton',
   standalone: true,
+  imports: [DataTableComponent],
   templateUrl: './table-skeleton.component.html',
   styleUrl: './table-skeleton.component.scss',
 })

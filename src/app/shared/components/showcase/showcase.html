@@ -629,15 +629,15 @@
         <button class="btn btn-primary" disabled>Disabled</button>
       </div>
 
-      <table class="ref-table">
-        <thead>
+      <app-data-table class="ref-table" [dense]="true" [embedded]="true">
+        <ng-template #tableHeader>
           <tr>
             <th>Class</th>
             <th>Purpose</th>
             <th>Usage</th>
           </tr>
-        </thead>
-        <tbody>
+        </ng-template>
+        <ng-template #tableBody>
           @for (c of globalClasses | slice: 0 : 8; track c.cls) {
             <tr>
               <td>
@@ -649,8 +649,8 @@
               </td>
             </tr>
           }
-        </tbody>
-      </table>
+        </ng-template>
+      </app-data-table>
     </section>
 
     <!-- ══════════════════════════════════════════════════════════════
@@ -717,15 +717,15 @@
         </div>
       </div>
 
-      <table class="ref-table">
-        <thead>
+      <app-data-table class="ref-table" [dense]="true" [embedded]="true">
+        <ng-template #tableHeader>
           <tr>
             <th>Class</th>
             <th>Purpose</th>
             <th>Usage</th>
           </tr>
-        </thead>
-        <tbody>
+        </ng-template>
+        <ng-template #tableBody>
           @for (c of globalClasses | slice: 8 : 20; track c.cls) {
             <tr>
               <td>
@@ -737,18 +737,23 @@
               </td>
             </tr>
           }
-        </tbody>
-      </table>
+        </ng-template>
+      </app-data-table>
 
-      <table class="ref-table" style="margin-top: var(--space-4)">
-        <thead>
+      <app-data-table
+        class="ref-table"
+        style="margin-top: var(--space-4)"
+        [dense]="true"
+        [embedded]="true"
+      >
+        <ng-template #tableHeader>
           <tr>
             <th>Class</th>
             <th>Purpose</th>
             <th>Usage</th>
           </tr>
-        </thead>
-        <tbody>
+        </ng-template>
+        <ng-template #tableBody>
           <tr>
             <td><code>.radio-group</code></td>
             <td>Shared flex wrapper for radio options with responsive spacing.</td>
@@ -769,21 +774,21 @@
               >
             </td>
           </tr>
-        </tbody>
-      </table>
+        </ng-template>
+      </app-data-table>
 
       <div class="subsection-heading" style="margin-top: var(--space-6)">
         Complete Shared Class Registry
       </div>
-      <table class="ref-table">
-        <thead>
+      <app-data-table class="ref-table" [dense]="true" [embedded]="true">
+        <ng-template #tableHeader>
           <tr>
             <th>Class</th>
             <th>Purpose</th>
             <th>Usage</th>
           </tr>
-        </thead>
-        <tbody>
+        </ng-template>
+        <ng-template #tableBody>
           @for (c of globalClasses; track c.cls) {
             <tr>
               <td>
@@ -795,8 +800,8 @@
               </td>
             </tr>
           }
-        </tbody>
-      </table>
+        </ng-template>
+      </app-data-table>
     </section>
 
     <!-- ══════════════════════════════════════════════════════════════
@@ -812,15 +817,15 @@
         <span class="badge badge-info">Under Review</span>
       </div>
 
-      <table class="ref-table">
-        <thead>
+      <app-data-table class="ref-table" [dense]="true" [embedded]="true">
+        <ng-template #tableHeader>
           <tr>
             <th>Class</th>
             <th>Purpose</th>
             <th>Usage</th>
           </tr>
-        </thead>
-        <tbody>
+        </ng-template>
+        <ng-template #tableBody>
           @for (c of globalClasses | slice: 20 : 25; track c.cls) {
             <tr>
               <td>
@@ -832,8 +837,8 @@
               </td>
             </tr>
           }
-        </tbody>
-      </table>
+        </ng-template>
+      </app-data-table>
     </section>
 
     <!-- ══════════════════════════════════════════════════════════════
@@ -854,15 +859,20 @@
         </div>
       </div>
 
-      <table class="ref-table" style="margin-top: var(--space-5)">
-        <thead>
+      <app-data-table
+        class="ref-table"
+        style="margin-top: var(--space-5)"
+        [dense]="true"
+        [embedded]="true"
+      >
+        <ng-template #tableHeader>
           <tr>
             <th>Class</th>
             <th>Purpose</th>
             <th>Usage</th>
           </tr>
-        </thead>
-        <tbody>
+        </ng-template>
+        <ng-template #tableBody>
           @for (c of globalClasses | slice: 25 : 29; track c.cls) {
             <tr>
               <td>
@@ -874,8 +884,8 @@
               </td>
             </tr>
           }
-        </tbody>
-      </table>
+        </ng-template>
+      </app-data-table>
     </section>
 
     <!-- ══════════════════════════════════════════════════════════════
@@ -899,15 +909,20 @@
         <div class="demo-col-box">Column 3</div>
       </div>
 
-      <table class="ref-table" style="margin-top: var(--space-6)">
-        <thead>
+      <app-data-table
+        class="ref-table"
+        style="margin-top: var(--space-6)"
+        [dense]="true"
+        [embedded]="true"
+      >
+        <ng-template #tableHeader>
           <tr>
             <th>Class</th>
             <th>Purpose</th>
             <th>Usage</th>
           </tr>
-        </thead>
-        <tbody>
+        </ng-template>
+        <ng-template #tableBody>
           @for (c of globalClasses | slice: 29; track c.cls) {
             <tr>
               <td>
@@ -919,8 +934,8 @@
               </td>
             </tr>
           }
-        </tbody>
-      </table>
+        </ng-template>
+      </app-data-table>
     </section>
 
     <!-- ══════════════════════════════════════════════════════════════
@@ -947,15 +962,15 @@
             detail="Completed forms"
           />
         </div>
-        <table class="props-table">
-          <thead>
+        <app-data-table class="props-table" [dense]="true" [embedded]="true">
+          <ng-template #tableHeader>
             <tr>
               <th>Input</th>
               <th>Type</th>
               <th>Description</th>
             </tr>
-          </thead>
-          <tbody>
+          </ng-template>
+          <ng-template #tableBody>
             <tr>
               <td><code>visible</code></td>
               <td>boolean</td>
@@ -981,8 +996,8 @@
               <td>string</td>
               <td>Optional chart context.</td>
             </tr>
-          </tbody>
-        </table>
+          </ng-template>
+        </app-data-table>
       </div>
 
       <!-- ── FormMainTitle ─────────────────────────────────────────── -->
@@ -998,15 +1013,15 @@
         <div class="component-block__demo">
           <app-form-main-title title="Example Form Page Title"></app-form-main-title>
         </div>
-        <table class="props-table">
-          <thead>
+        <app-data-table class="props-table" [dense]="true" [embedded]="true">
+          <ng-template #tableHeader>
             <tr>
               <th>Input</th>
               <th>Type</th>
               <th>Description</th>
             </tr>
-          </thead>
-          <tbody>
+          </ng-template>
+          <ng-template #tableBody>
             <tr>
               <td><code>title</code></td>
               <td>string</td>
@@ -1022,8 +1037,8 @@
               <td>string</td>
               <td>API endpoint to fetch guidelines content</td>
             </tr>
-          </tbody>
-        </table>
+          </ng-template>
+        </app-data-table>
       </div>
 
       <!-- ── CustomHeader ──────────────────────────────────────────── -->
@@ -1041,15 +1056,15 @@
             [svgIcon]="beakerIcon"
           ></app-custom-header>
         </div>
-        <table class="props-table">
-          <thead>
+        <app-data-table class="props-table" [dense]="true" [embedded]="true">
+          <ng-template #tableHeader>
             <tr>
               <th>Input</th>
               <th>Type</th>
               <th>Description</th>
             </tr>
-          </thead>
-          <tbody>
+          </ng-template>
+          <ng-template #tableBody>
             <tr>
               <td><code>title</code></td>
               <td>string</td>
@@ -1065,8 +1080,8 @@
               <td>string</td>
               <td>Material Icons name. Optional.</td>
             </tr>
-          </tbody>
-        </table>
+          </ng-template>
+        </app-data-table>
       </div>
 
       <!-- ── CustomSubheader ───────────────────────────────────────── -->
@@ -1086,15 +1101,15 @@
           >
           </app-custom-subheader>
         </div>
-        <table class="props-table">
-          <thead>
+        <app-data-table class="props-table" [dense]="true" [embedded]="true">
+          <ng-template #tableHeader>
             <tr>
               <th>Input</th>
               <th>Type</th>
               <th>Description</th>
             </tr>
-          </thead>
-          <tbody>
+          </ng-template>
+          <ng-template #tableBody>
             <tr>
               <td><code>title</code></td>
               <td>string</td>
@@ -1115,8 +1130,8 @@
               <td>string</td>
               <td>Optional helper text shown beside the heading.</td>
             </tr>
-          </tbody>
-        </table>
+          </ng-template>
+        </app-data-table>
       </div>
 
       <!-- ── FieldNote ──────────────────────────────────────────────── -->
@@ -1139,22 +1154,22 @@
             </app-field-note>
           </div>
         </div>
-        <table class="props-table">
-          <thead>
+        <app-data-table class="props-table" [dense]="true" [embedded]="true">
+          <ng-template #tableHeader>
             <tr>
               <th>Content</th>
               <th>Type</th>
               <th>Description</th>
             </tr>
-          </thead>
-          <tbody>
+          </ng-template>
+          <ng-template #tableBody>
             <tr>
               <td><code>ng-content</code></td>
               <td>string / inline content</td>
               <td>Field-specific note text written between the component tags</td>
             </tr>
-          </tbody>
-        </table>
+          </ng-template>
+        </app-data-table>
       </div>
 
       <!-- ── ValidationMessage ─────────────────────────────────────── -->
@@ -1176,15 +1191,15 @@
             ></app-validation-message>
           </div>
         </div>
-        <table class="props-table">
-          <thead>
+        <app-data-table class="props-table" [dense]="true" [embedded]="true">
+          <ng-template #tableHeader>
             <tr>
               <th>Input</th>
               <th>Type</th>
               <th>Description</th>
             </tr>
-          </thead>
-          <tbody>
+          </ng-template>
+          <ng-template #tableBody>
             <tr>
               <td><code>control</code></td>
               <td>AbstractControl</td>
@@ -1195,8 +1210,8 @@
               <td>string</td>
               <td>Override: display a fixed error message</td>
             </tr>
-          </tbody>
-        </table>
+          </ng-template>
+        </app-data-table>
       </div>
 
       <!-- ── CharacterCounter ──────────────────────────────────────── -->
@@ -1221,15 +1236,15 @@
             <app-character-counter [current]="charCurrent" [max]="charMax"></app-character-counter>
           </div>
         </div>
-        <table class="props-table">
-          <thead>
+        <app-data-table class="props-table" [dense]="true" [embedded]="true">
+          <ng-template #tableHeader>
             <tr>
               <th>Input</th>
               <th>Type</th>
               <th>Description</th>
             </tr>
-          </thead>
-          <tbody>
+          </ng-template>
+          <ng-template #tableBody>
             <tr>
               <td><code>current</code></td>
               <td>number</td>
@@ -1240,8 +1255,8 @@
               <td>number</td>
               <td>Maximum allowed characters</td>
             </tr>
-          </tbody>
-        </table>
+          </ng-template>
+        </app-data-table>
       </div>
 
       <!-- ── TextEditor ────────────────────────────────────────────── -->
@@ -1284,15 +1299,15 @@
             </div>
           </div>
         </div>
-        <table class="props-table">
-          <thead>
+        <app-data-table class="props-table" [dense]="true" [embedded]="true">
+          <ng-template #tableHeader>
             <tr>
               <th>Input</th>
               <th>Type</th>
               <th>Description</th>
             </tr>
-          </thead>
-          <tbody>
+          </ng-template>
+          <ng-template #tableBody>
             <tr>
               <td><code>label</code></td>
               <td>string</td>
@@ -1337,8 +1352,8 @@
               <td>FormControl&lt;string&gt;</td>
               <td>Bind via <code>[formControl]</code> or <code>formControlName</code></td>
             </tr>
-          </tbody>
-        </table>
+          </ng-template>
+        </app-data-table>
       </div>
 
       <!-- ── SearchableDropdown ─────────────────────────────────────── -->
@@ -1375,15 +1390,15 @@
             </div>
           </div>
         </div>
-        <table class="props-table">
-          <thead>
+        <app-data-table class="props-table" [dense]="true" [embedded]="true">
+          <ng-template #tableHeader>
             <tr>
               <th>Input</th>
               <th>Type</th>
               <th>Description</th>
             </tr>
-          </thead>
-          <tbody>
+          </ng-template>
+          <ng-template #tableBody>
             <tr>
               <td><code>options</code></td>
               <td>DropdownOption[]</td>
@@ -1404,8 +1419,8 @@
               <td>boolean</td>
               <td>Enable multi-selection (chip mode). Default: false</td>
             </tr>
-          </tbody>
-        </table>
+          </ng-template>
+        </app-data-table>
       </div>
 
       <!-- ── StepIndicator ─────────────────────────────────────────── -->
@@ -1430,15 +1445,15 @@
             Active: step {{ demoCurrentStep() }} — click a bubble to navigate
           </p>
         </div>
-        <table class="props-table">
-          <thead>
+        <app-data-table class="props-table" [dense]="true" [embedded]="true">
+          <ng-template #tableHeader>
             <tr>
               <th>Input</th>
               <th>Type</th>
               <th>Description</th>
             </tr>
-          </thead>
-          <tbody>
+          </ng-template>
+          <ng-template #tableBody>
             <tr>
               <td><code>steps</code></td>
               <td>WizardStep[]</td>
@@ -1454,22 +1469,27 @@
               <td>StepStatus[]</td>
               <td><code>&#123; visited, valid, missingFields[] &#125;</code></td>
             </tr>
-          </tbody>
-        </table>
-        <table class="props-table" style="margin-top: var(--space-3)">
-          <thead>
+          </ng-template>
+        </app-data-table>
+        <app-data-table
+          class="props-table"
+          style="margin-top: var(--space-3)"
+          [dense]="true"
+          [embedded]="true"
+        >
+          <ng-template #tableHeader>
             <tr>
               <th>Output</th>
               <th>Description</th>
             </tr>
-          </thead>
-          <tbody>
+          </ng-template>
+          <ng-template #tableBody>
             <tr>
               <td><code>stepClick</code></td>
               <td>Emits 1-based step number when user clicks a bubble</td>
             </tr>
-          </tbody>
-        </table>
+          </ng-template>
+        </app-data-table>
       </div>
 
       <!-- ── FormWizardNav ─────────────────────────────────────────── -->
@@ -1498,15 +1518,15 @@
             </p>
           </div>
         </div>
-        <table class="props-table">
-          <thead>
+        <app-data-table class="props-table" [dense]="true" [embedded]="true">
+          <ng-template #tableHeader>
             <tr>
               <th>Input</th>
               <th>Type</th>
               <th>Description</th>
             </tr>
-          </thead>
-          <tbody>
+          </ng-template>
+          <ng-template #tableBody>
             <tr>
               <td><code>currentStep</code></td>
               <td>number</td>
@@ -1527,16 +1547,21 @@
               <td>boolean</td>
               <td>Disables Submit, shows spinner</td>
             </tr>
-          </tbody>
-        </table>
-        <table class="props-table" style="margin-top: var(--space-3)">
-          <thead>
+          </ng-template>
+        </app-data-table>
+        <app-data-table
+          class="props-table"
+          style="margin-top: var(--space-3)"
+          [dense]="true"
+          [embedded]="true"
+        >
+          <ng-template #tableHeader>
             <tr>
               <th>Output</th>
               <th>Description</th>
             </tr>
-          </thead>
-          <tbody>
+          </ng-template>
+          <ng-template #tableBody>
             <tr>
               <td><code>prev</code></td>
               <td>Go to previous step</td>
@@ -1553,8 +1578,8 @@
               <td><code>submitForm</code></td>
               <td>Trigger final submit</td>
             </tr>
-          </tbody>
-        </table>
+          </ng-template>
+        </app-data-table>
       </div>
 
       <!-- ── FormCommentPanel ──────────────────────────────────────── -->
@@ -1570,15 +1595,15 @@
         <div class="component-block__demo">
           <app-form-comment-panel [comments]="demoComments"></app-form-comment-panel>
         </div>
-        <table class="props-table">
-          <thead>
+        <app-data-table class="props-table" [dense]="true" [embedded]="true">
+          <ng-template #tableHeader>
             <tr>
               <th>Input</th>
               <th>Type</th>
               <th>Description</th>
             </tr>
-          </thead>
-          <tbody>
+          </ng-template>
+          <ng-template #tableBody>
             <tr>
               <td><code>comments</code></td>
               <td>CommentItem[]</td>
@@ -1587,8 +1612,8 @@
                 reviewer1_comment, reviewer2_comment, rdig_chair_comment, vc_comment
               </td>
             </tr>
-          </tbody>
-        </table>
+          </ng-template>
+        </app-data-table>
       </div>
 
       <!-- ── FileUpload ─────────────────────────────────────────────── -->
@@ -1633,15 +1658,15 @@
             </p>
           }
         </div>
-        <table class="props-table">
-          <thead>
+        <app-data-table class="props-table" [dense]="true" [embedded]="true">
+          <ng-template #tableHeader>
             <tr>
               <th>Input</th>
               <th>Type</th>
               <th>Description</th>
             </tr>
-          </thead>
-          <tbody>
+          </ng-template>
+          <ng-template #tableBody>
             <tr>
               <td><code>label</code></td>
               <td>string</td>
@@ -1662,22 +1687,27 @@
               <td>string</td>
               <td>Instruction text inside the drop zone</td>
             </tr>
-          </tbody>
-        </table>
-        <table class="props-table" style="margin-top: var(--space-3)">
-          <thead>
+          </ng-template>
+        </app-data-table>
+        <app-data-table
+          class="props-table"
+          style="margin-top: var(--space-3)"
+          [dense]="true"
+          [embedded]="true"
+        >
+          <ng-template #tableHeader>
             <tr>
               <th>Output</th>
               <th>Description</th>
             </tr>
-          </thead>
-          <tbody>
+          </ng-template>
+          <ng-template #tableBody>
             <tr>
               <td><code>fileSelected</code></td>
               <td>Emits the validated <code>File</code> object after type + size checks pass</td>
             </tr>
-          </tbody>
-        </table>
+          </ng-template>
+        </app-data-table>
       </div>
 
       <!-- ── Dialog ─────────────────────────────────────────────────── -->
@@ -1715,15 +1745,15 @@
             </app-dialog>
           }
         </div>
-        <table class="props-table">
-          <thead>
+        <app-data-table class="props-table" [dense]="true" [embedded]="true">
+          <ng-template #tableHeader>
             <tr>
               <th>Input</th>
               <th>Type</th>
               <th>Description</th>
             </tr>
-          </thead>
-          <tbody>
+          </ng-template>
+          <ng-template #tableBody>
             <tr>
               <td><code>title</code></td>
               <td>string</td>
@@ -1741,16 +1771,21 @@
               <td>string</td>
               <td>Optional max-width override, e.g. <code>"900px"</code>. Default: 680px</td>
             </tr>
-          </tbody>
-        </table>
-        <table class="props-table" style="margin-top: var(--space-3)">
-          <thead>
+          </ng-template>
+        </app-data-table>
+        <app-data-table
+          class="props-table"
+          style="margin-top: var(--space-3)"
+          [dense]="true"
+          [embedded]="true"
+        >
+          <ng-template #tableHeader>
             <tr>
               <th>Output / Slot</th>
               <th>Description</th>
             </tr>
-          </thead>
-          <tbody>
+          </ng-template>
+          <ng-template #tableBody>
             <tr>
               <td><code>close</code></td>
               <td>Emitted when the ✕ button or backdrop is clicked</td>
@@ -1763,8 +1798,8 @@
               <td><code>[dialog-footer]</code></td>
               <td>Named slot — projected into the action footer row</td>
             </tr>
-          </tbody>
-        </table>
+          </ng-template>
+        </app-data-table>
       </div>
 
       <!-- ── Pagination ────────────────────────────────────────────── -->
@@ -1792,15 +1827,15 @@
           >
           </app-pagination>
         </div>
-        <table class="props-table">
-          <thead>
+        <app-data-table class="props-table" [dense]="true" [embedded]="true">
+          <ng-template #tableHeader>
             <tr>
               <th>Input</th>
               <th>Type</th>
               <th>Description</th>
             </tr>
-          </thead>
-          <tbody>
+          </ng-template>
+          <ng-template #tableBody>
             <tr>
               <td><code>currentPage</code></td>
               <td>number</td>
@@ -1821,16 +1856,21 @@
               <td>number[]</td>
               <td>Array of page size options for the dropdown. Default: [5, 15, 30, 50]</td>
             </tr>
-          </tbody>
-        </table>
-        <table class="props-table" style="margin-top: var(--space-3)">
-          <thead>
+          </ng-template>
+        </app-data-table>
+        <app-data-table
+          class="props-table"
+          style="margin-top: var(--space-3)"
+          [dense]="true"
+          [embedded]="true"
+        >
+          <ng-template #tableHeader>
             <tr>
               <th>Output</th>
               <th>Description</th>
             </tr>
-          </thead>
-          <tbody>
+          </ng-template>
+          <ng-template #tableBody>
             <tr>
               <td><code>pageChange</code></td>
               <td>Emits the new page number when user navigates</td>
@@ -1839,22 +1879,22 @@
               <td><code>pageSizeChange</code></td>
               <td>Emits the new page size when user changes the dropdown selection</td>
             </tr>
-          </tbody>
-        </table>
+          </ng-template>
+        </app-data-table>
       </div>
 
       <div class="subsection-heading" style="margin-top: var(--space-7)">
         Complete Shared Component Registry
       </div>
-      <table class="ref-table">
-        <thead>
+      <app-data-table class="ref-table" [dense]="true" [embedded]="true">
+        <ng-template #tableHeader>
           <tr>
             <th>Component</th>
             <th>Selector</th>
             <th>Purpose</th>
           </tr>
-        </thead>
-        <tbody>
+        </ng-template>
+        <ng-template #tableBody>
           @for (component of sharedComponentRegistry; track component.selector) {
             <tr>
               <td>{{ component.name }}</td>
@@ -1864,8 +1904,8 @@
               <td>{{ component.purpose }}</td>
             </tr>
           }
-        </tbody>
-      </table>
+        </ng-template>
+      </app-data-table>
     </section>
 
     <!-- ══════════════════════════════════════════════════════════════
@@ -1878,15 +1918,20 @@
         hardcoded values will be flagged in code review.
       </app-field-note>
 
-      <table class="ref-table" style="margin-top: var(--space-5)">
-        <thead>
+      <app-data-table
+        class="ref-table"
+        style="margin-top: var(--space-5)"
+        [dense]="true"
+        [embedded]="true"
+      >
+        <ng-template #tableHeader>
           <tr>
             <th>❌ Forbidden</th>
             <th>✅ Required</th>
             <th>Reason</th>
           </tr>
-        </thead>
-        <tbody>
+        </ng-template>
+        <ng-template #tableBody>
           <tr>
             <td><code>#2A83FF</code>, <code>rgba(...)</code></td>
             <td><code>var(--color-primary)</code></td>
@@ -1927,8 +1972,8 @@
             <td><code>border: 1px solid var(--border-default)</code></td>
             <td>Borders must use the border token scale</td>
           </tr>
-        </tbody>
-      </table>
+        </ng-template>
+      </app-data-table>
     </section>
   </details>
 </div>

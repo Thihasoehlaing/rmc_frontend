@@ -1,3 +1,6 @@
+import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
+import { WorkspaceService } from '../../../core/services/workspace.service';
+import { FieldComponent } from '../../../shared/components/settings-ui/settings-ui.components';
 import { SettingsPageHeaderComponent } from '../../../shared/components/settings-ui/settings-ui.components';
 import { DatePickerComponent } from '../../../shared/components/date-picker/date-picker.component';
 import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
@@ -30,7 +33,10 @@ import { formatDisplayDate } from '../../../shared/utils/date-time.util';
 @Component({
   selector: 'app-pending',
   standalone: true,
-  imports: [SettingsPageHeaderComponent,
+  imports: [
+    DataTableComponent,
+    FieldComponent,
+    SettingsPageHeaderComponent,
     DatePickerComponent,
     PaginationComponent,
     RouterLink,
@@ -45,6 +51,7 @@ import { formatDisplayDate } from '../../../shared/utils/date-time.util';
 export class PendingComponent implements OnInit {
   private readonly requests = inject(WorkflowRequestsService);
   private readonly formCache = inject(FormCacheService);
+  private readonly workspace = inject(WorkspaceService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
@@ -70,6 +77,7 @@ export class PendingComponent implements OnInit {
 
   readonly formTabs = computed(() => {
     const tabs = this.forms()
+      .filter((form) => form.workspace_code?.toUpperCase() === this.workspace.code().toUpperCase())
       .filter((form) => form.form_code.toUpperCase() !== 'EXTERNAL')
       .map((form) => ({
         value: form.form_code.toLowerCase(),
@@ -98,18 +106,18 @@ export class PendingComponent implements OnInit {
     return this.pending().slice(start, start + this.pageSize());
   });
 
-  readonly totalPages = computed(() => Math.max(1, Math.ceil(this.pending().length / this.pageSize())));
+  readonly totalPages = computed(() =>
+    Math.max(1, Math.ceil(this.pending().length / this.pageSize())),
+  );
 
   ngOnInit(): void {
-    this.route.queryParamMap
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((params) => {
-        const tab = (params.get('tab') ?? 'all').toLowerCase();
-        this.selectedType.set(tab);
-        if (!params.has('tab')) {
-          this.setTab(tab);
-        }
-      });
+    this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
+      const tab = (params.get('tab') ?? 'all').toLowerCase();
+      this.selectedType.set(tab);
+      if (!params.has('tab')) {
+        this.setTab(tab);
+      }
+    });
 
     forkJoin({
       requests: this.requests.getPendingRequests({ page: 1, perPage: 100 }),

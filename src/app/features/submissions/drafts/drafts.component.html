@@ -1,5 +1,9 @@
 <div class="submissions-page">
-  <app-settings-page-header [title]="'Drafts'" [description]="'Saved applications that are not submitted yet.'" eyebrow="Workspace"></app-settings-page-header>
+  <app-settings-page-header
+    [title]="'Drafts'"
+    [description]="'Saved applications that are not submitted yet.'"
+    eyebrow="Workspace"
+  ></app-settings-page-header>
 
   @if (loading()) {
     <app-table-skeleton [columns]="skeletonColumns" loadingLabel="Loading drafts">
@@ -14,98 +18,119 @@
   }
 
   @if (!loading() && !error()) {
-    <app-submission-form-tabs
-      [tabs]="formTabs()"
-      [selectedValue]="selectedType()"
-      ariaLabel="Draft form filters"
-      (selectedValueChange)="setTab($event)"
-    />
+    <section class="submissions-panel">
+      <app-submission-form-tabs
+        [tabs]="formTabs()"
+        [selectedValue]="selectedType()"
+        ariaLabel="Draft form filters"
+        (selectedValueChange)="setTab($event)"
+      />
 
-    <section class="dropdown-search-panel" aria-label="Draft search">
       <app-submissions-search
         placeholder="Search by code"
         [value]="searchQuery()"
         (search)="onSearch($event)"
         (refresh)="resetFilters()"
       >
-        <label search-filters class="mgr-date-filter">
-          <span class="sr-only">Created date</span>
+        <app-field search-filters label="Created date" controlId="drafts-created-date">
           <app-date-picker
+            id="drafts-created-date"
             [dateValue]="createdDate()"
             (dateValueChange)="onCreatedDateChange($event)"
             ariaLabel="Filter by created date"
           />
-        </label>
+        </app-field>
       </app-submissions-search>
-    </section>
 
-    <section class="dropdown-table-panel" aria-label="Draft applications">
-      <div class="shared-options-table">
-        <table>
-          <thead>
-            <tr>
-              <th>No.</th>
-              <th>Code</th>
-              <th>Status</th>
-              <th>Created Date</th>
-              <th>
-                <button type="button" class="sort-heading" (click)="toggleLastSavedSort()">
-                  Last Saved
-                  <span class="material-icons" aria-hidden="true">
-                    {{ sortDirection() === 'asc' ? 'arrow_upward' : 'arrow_downward' }}
-                  </span>
-                </button>
-              </th>
-              <th class="actions-heading">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (app of pagedDrafts(); track getCode(app); let index = $index) {
+      <section class="dropdown-table-panel" aria-label="Draft applications">
+        <div class="shared-options-table">
+          <app-data-table [dense]="true" [embedded]="true">
+            <ng-template #tableHeader>
               <tr>
-                <td>{{ getRowNumber(index) }}</td>
-                <td class="draft-code-cell">{{ getCode(app) }}</td>
-                <td>
-                  <span class="status-chip status-chip--draft">{{ getStatus(app) }}</span>
-                </td>
-                <td>{{ formatCreatedDate(app) }}</td>
-                <td>{{ formatDate(app) }}</td>
-                <td class="actions-cell">
-                  <div class="table-actions">
-                    <app-action-button [label]="'Action'" type="ghost" size="small" [iconOnly]="true" [ariaLabel]="getOpenActionLabel()" [title]="getOpenActionLabel()" (clicked)="openDraft(app)" buttonType="button" />
-                    @if (canDeleteDrafts()) {
-                      <app-action-button [label]="'Delete draft'" type="ghost" size="small" [icon]="'delete_outline'" [iconOnly]="true" [disabled]="deletingRequestId() === (app.request_id ?? app.id)" [ariaLabel]="'Delete draft'" [title]="'Delete draft'" (clicked)="deleteDraft(app)" buttonType="button" />
-                    }
-                  </div>
-                </td>
+                <th>No.</th>
+                <th>Code</th>
+                <th>Status</th>
+                <th>Created Date</th>
+                <th>
+                  <button type="button" class="sort-heading" (click)="toggleLastSavedSort()">
+                    Last Saved
+                    <span class="material-icons" aria-hidden="true">
+                      {{ sortDirection() === 'asc' ? 'arrow_upward' : 'arrow_downward' }}
+                    </span>
+                  </button>
+                </th>
+                <th class="actions-heading">Actions</th>
               </tr>
-            }
-          </tbody>
-        </table>
+            </ng-template>
+            <ng-template #tableBody>
+              @for (app of pagedDrafts(); track getCode(app); let index = $index) {
+                <tr>
+                  <td>{{ getRowNumber(index) }}</td>
+                  <td class="draft-code-cell">{{ getCode(app) }}</td>
+                  <td>
+                    <span class="status-chip status-chip--draft">{{ getStatus(app) }}</span>
+                  </td>
+                  <td>{{ formatCreatedDate(app) }}</td>
+                  <td>{{ formatDate(app) }}</td>
+                  <td class="actions-cell">
+                    <div class="table-actions">
+                      <app-action-button
+                        [label]="getOpenActionLabel()"
+                        [icon]="isSystemAdmin() ? 'visibility' : 'edit'"
+                        type="ghost"
+                        size="small"
+                        [iconOnly]="true"
+                        [ariaLabel]="getOpenActionLabel()"
+                        [title]="getOpenActionLabel()"
+                        (clicked)="openDraft(app)"
+                        buttonType="button"
+                      />
+                      @if (canDeleteDrafts()) {
+                        <app-action-button
+                          [label]="'Delete draft'"
+                          type="ghost"
+                          size="small"
+                          [icon]="'delete_outline'"
+                          [iconOnly]="true"
+                          [disabled]="deletingRequestId() === (app.request_id ?? app.id)"
+                          [ariaLabel]="'Delete draft'"
+                          [title]="'Delete draft'"
+                          (clicked)="deleteDraft(app)"
+                          buttonType="button"
+                        />
+                      }
+                    </div>
+                  </td>
+                </tr>
+              }
+            </ng-template>
+          </app-data-table>
 
-        @if (drafts().length === 0) {
-          <div class="empty-state">
-            @if (searchQuery() || createdDate()) {
-              <p>No drafts match the current filters.</p>
-            } @else {
-              <p>No saved drafts found.</p>
-            }
-          </div>
-        }
-      </div>
-    </section>
+          @if (drafts().length === 0) {
+            <div class="empty-state">
+              @if (searchQuery() || createdDate()) {
+                <p>No drafts match the current filters.</p>
+              } @else {
+                <p>No saved drafts found.</p>
+              }
+            </div>
+          }
+        </div>
+      </section>
 
-    <section class="dropdown-pagination-panel" aria-label="Draft pagination">
-      <app-pagination
-        [currentPage]="page()"
-        [totalPages]="totalPages()"
-        [pageSize]="pageSize()"
-        [pageSizeOptions]="pageSizeOptions"
-        [totalItems]="drafts().length"
-        [itemCount]="pagedDrafts().length || null"
-        itemLabel="drafts"
-        (pageChange)="onPageChange($event)"
-        (pageSizeChange)="onPageSizeChange($event)"
-      ></app-pagination>
+      <section class="dropdown-pagination-panel" aria-label="Draft pagination">
+        <app-pagination
+          [currentPage]="page()"
+          [totalPages]="totalPages()"
+          [pageSize]="pageSize()"
+          [pageSizeOptions]="pageSizeOptions"
+          [totalItems]="drafts().length"
+          [itemCount]="pagedDrafts().length || null"
+          itemLabel="drafts"
+          (pageChange)="onPageChange($event)"
+          (pageSizeChange)="onPageSizeChange($event)"
+        ></app-pagination>
+      </section>
     </section>
   }
 </div>

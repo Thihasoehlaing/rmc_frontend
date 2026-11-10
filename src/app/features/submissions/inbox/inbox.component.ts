@@ -1,3 +1,9 @@
+import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
+import { WorkspaceService } from '../../../core/services/workspace.service';
+import {
+  FieldComponent,
+  SearchToolbarComponent,
+} from '../../../shared/components/settings-ui/settings-ui.components';
 import { ActionButtonComponent } from '../../../shared/components/action-button/action-button.component';
 import { SettingsPageHeaderComponent } from '../../../shared/components/settings-ui/settings-ui.components';
 import { InputDirective } from '../../../shared/components/settings-ui/settings-ui.components';
@@ -31,7 +37,13 @@ import { formatDisplayDate } from '../../../shared/utils/date-time.util';
 @Component({
   selector: 'app-inbox',
   standalone: true,
-  imports: [ActionButtonComponent,SettingsPageHeaderComponent,InputDirective,
+  imports: [
+    DataTableComponent,
+    FieldComponent,
+    SearchToolbarComponent,
+    ActionButtonComponent,
+    SettingsPageHeaderComponent,
+    InputDirective,
     DatePickerComponent,
     PaginationComponent,
     TableActionIconComponent,
@@ -45,6 +57,7 @@ import { formatDisplayDate } from '../../../shared/utils/date-time.util';
 export class InboxComponent implements OnInit {
   private readonly requests = inject(WorkflowRequestsService);
   private readonly formCache = inject(FormCacheService);
+  private readonly workspace = inject(WorkspaceService);
   private readonly auth = inject(AuthService);
 
   private allApplications = signal<RequestSummaryDto[]>([]);
@@ -111,7 +124,9 @@ export class InboxComponent implements OnInit {
       .filter((app) => form === 'all' || (app.form_code ?? '').toUpperCase() === form)
       .filter((app) => !codeQuery || this.getCode(app).toLowerCase().includes(codeQuery))
       .filter((app) => !applicantQuery || this.applicantSearchText(app).includes(applicantQuery))
-      .filter((app) => !submissionDate || this.dateInputValue(this.submissionIso(app)) === submissionDate);
+      .filter(
+        (app) => !submissionDate || this.dateInputValue(this.submissionIso(app)) === submissionDate,
+      );
 
     return [...items].sort((first, second) => {
       const diff = this.submittedTs(first) - this.submittedTs(second);
@@ -130,6 +145,7 @@ export class InboxComponent implements OnInit {
 
   readonly formTabs = computed(() => {
     const tabs = this.forms()
+      .filter((form) => form.workspace_code?.toUpperCase() === this.workspace.code().toUpperCase())
       .filter((form) => form.form_code.toUpperCase() !== 'EXTERNAL')
       .map((form) => ({
         value: form.form_code.toUpperCase(),
@@ -284,11 +300,7 @@ export class InboxComponent implements OnInit {
   }
 
   private applicantSearchText(app: RequestSummaryDto): string {
-    return [
-      app.applicant_name,
-      app.applicant_staff_username,
-      app.applicant_email,
-    ]
+    return [app.applicant_name, app.applicant_staff_username, app.applicant_email]
       .filter(Boolean)
       .join(' ')
       .toLowerCase();
@@ -320,7 +332,10 @@ export class InboxComponent implements OnInit {
       next: (response) => {
         const blob = response.body;
         if (!blob) return;
-        const fileName = this.printFileName(response.headers.get('content-disposition'), fallbackCode);
+        const fileName = this.printFileName(
+          response.headers.get('content-disposition'),
+          fallbackCode,
+        );
         const url = URL.createObjectURL(blob);
         const anchor = document.createElement('a');
         anchor.href = url;

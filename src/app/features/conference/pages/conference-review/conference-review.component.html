@@ -222,16 +222,37 @@
                       canChangeSectionComment(comment) && editingSectionCommentId() !== comment.id
                     ) {
                       <div class="section-comment__actions table-actions">
-                        <app-action-button [label]="'Edit comment'" type="ghost" size="small" [icon]="'edit'" [iconOnly]="true" [ariaLabel]="'Edit comment'" [title]="'Edit comment'" (clicked)="startEditSectionComment(comment)" buttonType="button" />
-                        <app-action-button [label]="'delete_outline'" type="danger" size="small" [icon]="'delete_outline'" [iconOnly]="true" [disabled]="deletingSectionCommentId() === comment.id" [ariaLabel]="
+                        <app-action-button
+                          [label]="'Edit comment'"
+                          type="ghost"
+                          size="small"
+                          [icon]="'edit'"
+                          [iconOnly]="true"
+                          [ariaLabel]="'Edit comment'"
+                          [title]="'Edit comment'"
+                          (clicked)="startEditSectionComment(comment)"
+                          buttonType="button"
+                        />
+                        <app-action-button
+                          [label]="'delete_outline'"
+                          type="danger"
+                          size="small"
+                          [icon]="'delete_outline'"
+                          [iconOnly]="true"
+                          [disabled]="deletingSectionCommentId() === comment.id"
+                          [ariaLabel]="
                             deletingSectionCommentId() === comment.id
                               ? 'Deleting comment'
                               : 'Delete comment'
-                          " [title]="
+                          "
+                          [title]="
                             deletingSectionCommentId() === comment.id
                               ? 'Deleting comment'
                               : 'Delete comment'
-                          " (clicked)="deleteSectionComment(comment)" buttonType="button" />
+                          "
+                          (clicked)="deleteSectionComment(comment)"
+                          buttonType="button"
+                        />
                       </div>
                     }
                   </article>
@@ -245,7 +266,8 @@
               (!currentActorSectionComment('conference_details') ||
                 isEditingSectionComment('conference_details'))
             ) {
-              <textarea appInput
+              <textarea
+                appInput
                 class="section-comment-input"
                 appTextareaAutosize
                 [minRows]="3"
@@ -338,16 +360,16 @@
           @if (travelEvents().length) {
             <app-table-scroll-hint></app-table-scroll-hint>
             <div class="modern-table detail-grid--compact">
-              <table>
-                <thead>
+              <app-data-table [dense]="true" [embedded]="true">
+                <ng-template #tableHeader>
                   <tr>
                     <th>Date</th>
                     <th>Start Time</th>
                     <th>End Time</th>
                     <th>Event</th>
                   </tr>
-                </thead>
-                <tbody>
+                </ng-template>
+                <ng-template #tableBody>
                   @for (event of travelEvents(); track event.id ?? $index) {
                     <tr>
                       <td>{{ fmtDateOnly(event.event_date) }}</td>
@@ -356,22 +378,22 @@
                       <td class="table-cell--wrap">{{ val(event.description) }}</td>
                     </tr>
                   }
-                </tbody>
-              </table>
+                </ng-template>
+              </app-data-table>
             </div>
           }
           @if (travellingColleagues().length) {
             <app-table-scroll-hint></app-table-scroll-hint>
             <div class="modern-table detail-grid--compact">
-              <table>
-                <thead>
+              <app-data-table [dense]="true" [embedded]="true">
+                <ng-template #tableHeader>
                   <tr>
                     <th>Staff</th>
                     <th>Username</th>
                     <th>Department</th>
                   </tr>
-                </thead>
-                <tbody>
+                </ng-template>
+                <ng-template #tableBody>
                   @for (colleague of travellingColleagues(); track colleague.id ?? $index) {
                     <tr>
                       <td>{{ val(colleague.staff_name_snapshot) }}</td>
@@ -379,8 +401,8 @@
                       <td>{{ val(colleague.department_name_snapshot) }}</td>
                     </tr>
                   }
-                </tbody>
-              </table>
+                </ng-template>
+              </app-data-table>
             </div>
           }
           <div class="section-comments">
@@ -399,16 +421,37 @@
                       canChangeSectionComment(comment) && editingSectionCommentId() !== comment.id
                     ) {
                       <div class="section-comment__actions table-actions">
-                        <app-action-button [label]="'Edit comment'" type="ghost" size="small" [icon]="'edit'" [iconOnly]="true" [ariaLabel]="'Edit comment'" [title]="'Edit comment'" (clicked)="startEditSectionComment(comment)" buttonType="button" />
-                        <app-action-button [label]="'delete_outline'" type="danger" size="small" [icon]="'delete_outline'" [iconOnly]="true" [disabled]="deletingSectionCommentId() === comment.id" [ariaLabel]="
+                        <app-action-button
+                          [label]="'Edit comment'"
+                          type="ghost"
+                          size="small"
+                          [icon]="'edit'"
+                          [iconOnly]="true"
+                          [ariaLabel]="'Edit comment'"
+                          [title]="'Edit comment'"
+                          (clicked)="startEditSectionComment(comment)"
+                          buttonType="button"
+                        />
+                        <app-action-button
+                          [label]="'delete_outline'"
+                          type="danger"
+                          size="small"
+                          [icon]="'delete_outline'"
+                          [iconOnly]="true"
+                          [disabled]="deletingSectionCommentId() === comment.id"
+                          [ariaLabel]="
                             deletingSectionCommentId() === comment.id
                               ? 'Deleting comment'
                               : 'Delete comment'
-                          " [title]="
+                          "
+                          [title]="
                             deletingSectionCommentId() === comment.id
                               ? 'Deleting comment'
                               : 'Delete comment'
-                          " (clicked)="deleteSectionComment(comment)" buttonType="button" />
+                          "
+                          (clicked)="deleteSectionComment(comment)"
+                          buttonType="button"
+                        />
                       </div>
                     }
                   </article>
@@ -422,7 +465,8 @@
               (!currentActorSectionComment('travel_details') ||
                 isEditingSectionComment('travel_details'))
             ) {
-              <textarea appInput
+              <textarea
+                appInput
                 class="section-comment-input"
                 appTextareaAutosize
                 [minRows]="3"
@@ -481,15 +525,15 @@
             @if (staffAuthors().length) {
               <app-table-scroll-hint></app-table-scroll-hint>
               <div class="modern-table">
-                <table>
-                  <thead>
+                <app-data-table [dense]="true" [embedded]="true">
+                  <ng-template #tableHeader>
                     <tr>
                       <th>Name</th>
                       <th>Department</th>
                       <th>Affiliation</th>
                     </tr>
-                  </thead>
-                  <tbody>
+                  </ng-template>
+                  <ng-template #tableBody>
                     @for (author of staffAuthors(); track author.id ?? $index) {
                       <tr>
                         <td>{{ val(author.staff_name) }}</td>
@@ -497,8 +541,8 @@
                         <td>{{ val(author.affiliation) }}</td>
                       </tr>
                     }
-                  </tbody>
-                </table>
+                  </ng-template>
+                </app-data-table>
               </div>
             } @else {
               <p class="review-empty">No APU staff co-authors.</p>
@@ -509,16 +553,16 @@
             @if (studentAuthors().length) {
               <app-table-scroll-hint></app-table-scroll-hint>
               <div class="modern-table">
-                <table>
-                  <thead>
+                <app-data-table [dense]="true" [embedded]="true">
+                  <ng-template #tableHeader>
                     <tr>
                       <th>TP Number</th>
                       <th>Name</th>
                       <th>School / Department</th>
                       <th>Affiliation</th>
                     </tr>
-                  </thead>
-                  <tbody>
+                  </ng-template>
+                  <ng-template #tableBody>
                     @for (author of studentAuthors(); track author.id ?? $index) {
                       <tr>
                         <td>{{ val(author.tp_number) }}</td>
@@ -527,8 +571,8 @@
                         <td>{{ val(author.affiliation) }}</td>
                       </tr>
                     }
-                  </tbody>
-                </table>
+                  </ng-template>
+                </app-data-table>
               </div>
             } @else {
               <p class="review-empty">No APU student co-authors.</p>
@@ -539,8 +583,8 @@
             @if (nonApuAuthors().length) {
               <app-table-scroll-hint></app-table-scroll-hint>
               <div class="modern-table">
-                <table>
-                  <thead>
+                <app-data-table [dense]="true" [embedded]="true">
+                  <ng-template #tableHeader>
                     <tr>
                       <th>Full Name (as per IC/Passport)</th>
                       <th>Country</th>
@@ -549,8 +593,8 @@
                       <th>School / Department</th>
                       <th>Institution / Company Name</th>
                     </tr>
-                  </thead>
-                  <tbody>
+                  </ng-template>
+                  <ng-template #tableBody>
                     @for (author of nonApuAuthors(); track author.id ?? $index) {
                       <tr>
                         <td>{{ val(author.full_name) }}</td>
@@ -561,8 +605,8 @@
                         <td>{{ val(author.institution_company_name) }}</td>
                       </tr>
                     }
-                  </tbody>
-                </table>
+                  </ng-template>
+                </app-data-table>
               </div>
             } @else {
               <p class="review-empty">No non-APU co-authors.</p>
@@ -584,16 +628,37 @@
                       canChangeSectionComment(comment) && editingSectionCommentId() !== comment.id
                     ) {
                       <div class="section-comment__actions table-actions">
-                        <app-action-button [label]="'Edit comment'" type="ghost" size="small" [icon]="'edit'" [iconOnly]="true" [ariaLabel]="'Edit comment'" [title]="'Edit comment'" (clicked)="startEditSectionComment(comment)" buttonType="button" />
-                        <app-action-button [label]="'delete_outline'" type="danger" size="small" [icon]="'delete_outline'" [iconOnly]="true" [disabled]="deletingSectionCommentId() === comment.id" [ariaLabel]="
+                        <app-action-button
+                          [label]="'Edit comment'"
+                          type="ghost"
+                          size="small"
+                          [icon]="'edit'"
+                          [iconOnly]="true"
+                          [ariaLabel]="'Edit comment'"
+                          [title]="'Edit comment'"
+                          (clicked)="startEditSectionComment(comment)"
+                          buttonType="button"
+                        />
+                        <app-action-button
+                          [label]="'delete_outline'"
+                          type="danger"
+                          size="small"
+                          [icon]="'delete_outline'"
+                          [iconOnly]="true"
+                          [disabled]="deletingSectionCommentId() === comment.id"
+                          [ariaLabel]="
                             deletingSectionCommentId() === comment.id
                               ? 'Deleting comment'
                               : 'Delete comment'
-                          " [title]="
+                          "
+                          [title]="
                             deletingSectionCommentId() === comment.id
                               ? 'Deleting comment'
                               : 'Delete comment'
-                          " (clicked)="deleteSectionComment(comment)" buttonType="button" />
+                          "
+                          (clicked)="deleteSectionComment(comment)"
+                          buttonType="button"
+                        />
                       </div>
                     }
                   </article>
@@ -606,7 +671,8 @@
               canWriteSectionComments() &&
               (!currentActorSectionComment('authors') || isEditingSectionComment('authors'))
             ) {
-              <textarea appInput
+              <textarea
+                appInput
                 class="section-comment-input"
                 appTextareaAutosize
                 [minRows]="3"
@@ -680,7 +746,11 @@
                   >
                     <span class="material-icons" aria-hidden="true">visibility</span> View
                   </button>
-                  <button type="button" class="download-button" [disabled]="downloadingAttachmentId() === file.id" (click)="downloadAttachment(file)"
+                  <button
+                    type="button"
+                    class="download-button"
+                    [disabled]="downloadingAttachmentId() === file.id"
+                    (click)="downloadAttachment(file)"
                   >
                     <span class="material-icons">download</span
                     >{{ downloadingAttachmentId() === file.id ? 'Preparing…' : 'Download' }}
@@ -707,16 +777,37 @@
                       canChangeSectionComment(comment) && editingSectionCommentId() !== comment.id
                     ) {
                       <div class="section-comment__actions table-actions">
-                        <app-action-button [label]="'Edit comment'" type="ghost" size="small" [icon]="'edit'" [iconOnly]="true" [ariaLabel]="'Edit comment'" [title]="'Edit comment'" (clicked)="startEditSectionComment(comment)" buttonType="button" />
-                        <app-action-button [label]="'delete_outline'" type="danger" size="small" [icon]="'delete_outline'" [iconOnly]="true" [disabled]="deletingSectionCommentId() === comment.id" [ariaLabel]="
+                        <app-action-button
+                          [label]="'Edit comment'"
+                          type="ghost"
+                          size="small"
+                          [icon]="'edit'"
+                          [iconOnly]="true"
+                          [ariaLabel]="'Edit comment'"
+                          [title]="'Edit comment'"
+                          (clicked)="startEditSectionComment(comment)"
+                          buttonType="button"
+                        />
+                        <app-action-button
+                          [label]="'delete_outline'"
+                          type="danger"
+                          size="small"
+                          [icon]="'delete_outline'"
+                          [iconOnly]="true"
+                          [disabled]="deletingSectionCommentId() === comment.id"
+                          [ariaLabel]="
                             deletingSectionCommentId() === comment.id
                               ? 'Deleting comment'
                               : 'Delete comment'
-                          " [title]="
+                          "
+                          [title]="
                             deletingSectionCommentId() === comment.id
                               ? 'Deleting comment'
                               : 'Delete comment'
-                          " (clicked)="deleteSectionComment(comment)" buttonType="button" />
+                          "
+                          (clicked)="deleteSectionComment(comment)"
+                          buttonType="button"
+                        />
                       </div>
                     }
                   </article>
@@ -730,7 +821,8 @@
               (!currentActorSectionComment('supporting_documents') ||
                 isEditingSectionComment('supporting_documents'))
             ) {
-              <textarea appInput
+              <textarea
+                appInput
                 class="section-comment-input"
                 appTextareaAutosize
                 [minRows]="3"
@@ -809,33 +901,56 @@
           </dl>
           @if (!isNonResearchCosting()) {
             <dl class="detail-grid detail-grid--compact">
-              <div><dt>Project Account Code</dt><dd>{{ val(conference()?.project_account_code) }}</dd></div>
+              <div>
+                <dt>Project Account Code</dt>
+                <dd>{{ val(conference()?.project_account_code) }}</dd>
+              </div>
             </dl>
           }
           @if (costingItems().length) {
             <app-table-scroll-hint></app-table-scroll-hint>
             <div class="modern-table">
-              <table>
-                <thead>
+              <app-data-table [dense]="true" [embedded]="true">
+                <ng-template #tableHeader>
                   <tr>
                     <th>#</th>
-                    <th>{{ isNonResearchCosting() ? 'Account Code Description' : 'Vote Number Description' }}</th>
+                    <th>
+                      {{
+                        isNonResearchCosting()
+                          ? 'Account Code Description'
+                          : 'Vote Number Description'
+                      }}
+                    </th>
                     <th>Account Code</th>
-                    @if (!isNonResearchCosting()) { <th>Vote Number</th> }
+                    @if (!isNonResearchCosting()) {
+                      <th>Vote Number</th>
+                    }
                     <th>Description</th>
                     <th>Currency</th>
                     <th>Cost (Foreign/MYR)</th>
                     <th>Exchange Rate</th>
                     <th>Cost in RM</th>
                   </tr>
-                </thead>
-                <tbody>
+                </ng-template>
+                <ng-template #tableBody>
                   @for (item of costingItems(); track item.id ?? $index) {
                     <tr>
                       <td>{{ $index + 1 }}</td>
                       <td class="table-cell--wrap">{{ costingDescription(item) }}</td>
-                      <td>{{ val(isNonResearchCosting() ? item.account_code_snapshot ?? item.vote_number_snapshot : item.project_account_code_snapshot || conference()?.project_account_code || item.account_code_snapshot) }}</td>
-                      @if (!isNonResearchCosting()) { <td>{{ val(item.vote_number_snapshot) }}</td> }
+                      <td>
+                        {{
+                          val(
+                            isNonResearchCosting()
+                              ? (item.account_code_snapshot ?? item.vote_number_snapshot)
+                              : item.project_account_code_snapshot ||
+                                  conference()?.project_account_code ||
+                                  item.account_code_snapshot
+                          )
+                        }}
+                      </td>
+                      @if (!isNonResearchCosting()) {
+                        <td>{{ val(item.vote_number_snapshot) }}</td>
+                      }
                       <td class="table-cell--wrap">{{ val(item.description) }}</td>
                       <td>{{ val(item.currency) }}</td>
                       <td>{{ fmtAmount(item.cost_in_foreign_currency) }}</td>
@@ -843,14 +958,17 @@
                       <td>{{ fmtMoney(item.cost_in_rm) }}</td>
                     </tr>
                   }
-                </tbody>
-              </table>
+                </ng-template>
+              </app-data-table>
             </div>
           } @else {
             <p class="review-empty">No costing items.</p>
           }
           <dl class="detail-grid detail-grid--compact">
-            <div><dt>Total BEFORE SUBSIDY (RM)</dt><dd>{{ fmtMoney(totalCostInRm()) }}</dd></div>
+            <div>
+              <dt>Total BEFORE SUBSIDY (RM)</dt>
+              <dd>{{ fmtMoney(totalCostInRm()) }}</dd>
+            </div>
           </dl>
 
           <div class="costing-documents">
@@ -881,7 +999,11 @@
                     >
                       <span class="material-icons" aria-hidden="true">visibility</span> View
                     </button>
-                    <button type="button" class="download-button" [disabled]="downloadingAttachmentId() === file.id" (click)="downloadAttachment(file)"
+                    <button
+                      type="button"
+                      class="download-button"
+                      [disabled]="downloadingAttachmentId() === file.id"
+                      (click)="downloadAttachment(file)"
                     >
                       <span class="material-icons">download</span>
                       {{ downloadingAttachmentId() === file.id ? 'Preparing…' : 'Download' }}
@@ -936,16 +1058,37 @@
                       canChangeSectionComment(comment) && editingSectionCommentId() !== comment.id
                     ) {
                       <div class="section-comment__actions table-actions">
-                        <app-action-button [label]="'Edit comment'" type="ghost" size="small" [icon]="'edit'" [iconOnly]="true" [ariaLabel]="'Edit comment'" [title]="'Edit comment'" (clicked)="startEditSectionComment(comment)" buttonType="button" />
-                        <app-action-button [label]="'delete_outline'" type="danger" size="small" [icon]="'delete_outline'" [iconOnly]="true" [disabled]="deletingSectionCommentId() === comment.id" [ariaLabel]="
+                        <app-action-button
+                          [label]="'Edit comment'"
+                          type="ghost"
+                          size="small"
+                          [icon]="'edit'"
+                          [iconOnly]="true"
+                          [ariaLabel]="'Edit comment'"
+                          [title]="'Edit comment'"
+                          (clicked)="startEditSectionComment(comment)"
+                          buttonType="button"
+                        />
+                        <app-action-button
+                          [label]="'delete_outline'"
+                          type="danger"
+                          size="small"
+                          [icon]="'delete_outline'"
+                          [iconOnly]="true"
+                          [disabled]="deletingSectionCommentId() === comment.id"
+                          [ariaLabel]="
                             deletingSectionCommentId() === comment.id
                               ? 'Deleting comment'
                               : 'Delete comment'
-                          " [title]="
+                          "
+                          [title]="
                             deletingSectionCommentId() === comment.id
                               ? 'Deleting comment'
                               : 'Delete comment'
-                          " (clicked)="deleteSectionComment(comment)" buttonType="button" />
+                          "
+                          (clicked)="deleteSectionComment(comment)"
+                          buttonType="button"
+                        />
                       </div>
                     }
                   </article>
@@ -959,7 +1102,8 @@
               (!currentActorSectionComment('costing_sponsorship') ||
                 isEditingSectionComment('costing_sponsorship'))
             ) {
-              <textarea appInput
+              <textarea
+                appInput
                 class="section-comment-input"
                 appTextareaAutosize
                 [minRows]="3"
@@ -1042,7 +1186,8 @@
             } @else {
               <div class="action-comment-box">
                 <label for="conference-decision-comment">Decision Comment <span>*</span></label>
-                <textarea appInput
+                <textarea
+                  appInput
                   id="conference-decision-comment"
                   class="section-comment-input"
                   appTextareaAutosize
@@ -1113,7 +1258,8 @@
       </aside>
     </div>
 
-    <app-dialog density="compact"
+    <app-dialog
+      density="compact"
       [isOpen]="rollbackDialogOpen()"
       title="Rollback Last Action"
       size="small"
@@ -1131,7 +1277,8 @@
 
         <label class="form-field">
           <span class="form-label">Reason</span>
-          <textarea appInput
+          <textarea
+            appInput
             class="input--textarea"
             rows="4"
             maxlength="1000"
@@ -1140,8 +1287,22 @@
         </label>
       }
 
-      <app-action-button [label]="'Cancel'" type="secondary" size="small" [disabled]="rollbacking()" (clicked)="closeRollbackDialog()" buttonType="button" />
-      <app-action-button [label]="(rollbacking() ? 'Rolling back...' : 'Rollback')" type="danger" size="small" [disabled]="rollbacking() || !rollbackReasonControl.value?.trim()" (clicked)="rollbackLatestAction()" buttonType="button" />
+      <app-action-button
+        [label]="'Cancel'"
+        type="secondary"
+        size="small"
+        [disabled]="rollbacking()"
+        (clicked)="closeRollbackDialog()"
+        buttonType="button"
+      />
+      <app-action-button
+        [label]="rollbacking() ? 'Rolling back...' : 'Rollback'"
+        type="danger"
+        size="small"
+        [disabled]="rollbacking() || !rollbackReasonControl.value?.trim()"
+        (clicked)="rollbackLatestAction()"
+        buttonType="button"
+      />
     </app-dialog>
   }
 </section>

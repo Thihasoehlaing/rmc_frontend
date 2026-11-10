@@ -1,0 +1,124 @@
+// Keep legacy table buttons and shared action buttons on the same visual contract.
+body :is(table, app-data-table) :is(.table-action, .btn.btn-icon, .icon-btn, .btn-icon) {
+  --table-action-color: var(--color-primary);
+  --table-action-bg: var(--color-primary-light);
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: var(--button-size-icon) !important;
+  min-width: var(--button-size-icon) !important;
+  height: var(--button-size-icon) !important;
+  min-height: var(--button-size-icon) !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: var(--radius-md) !important;
+  background: color-mix(in srgb, var(--table-action-color) 8%, var(--color-surface)) !important;
+  color: var(--table-action-color) !important;
+  box-shadow: none !important;
+  text-decoration: none;
+  vertical-align: middle;
+  cursor: pointer;
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast);
+
+  &:hover:not(:disabled):not([aria-disabled='true']) {
+    background: var(--table-action-bg) !important;
+    transform: none !important;
+    box-shadow: none !important;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--table-action-color);
+    outline-offset: 2px;
+  }
+
+  &:disabled,
+  &[aria-disabled='true'] {
+    opacity: var(--disabled-opacity);
+    cursor: not-allowed;
+    transform: none !important;
+  }
+
+  &:is(.btn-danger, .table-action--danger, .btn-icon--delete, .icon-btn--delete) {
+    --table-action-color: var(--color-error);
+    --table-action-bg: var(--color-error-light);
+  }
+
+  &:is(.btn-warning, .table-action--warning, .icon-btn--deactivate) {
+    --table-action-color: var(--color-warning);
+    --table-action-bg: var(--color-warning-light);
+  }
+
+  &:is(.btn-success, .table-action--success, .icon-btn--activate) {
+    --table-action-color: var(--color-success);
+    --table-action-bg: var(--color-success-light);
+  }
+
+  &:is([data-action='edit'], .btn-icon--edit, .icon-btn--edit),
+  &:has(app-table-action-icon[data-action='edit']) {
+    --table-action-color: var(--color-warning-dark);
+    --table-action-bg: var(--color-warning-light);
+  }
+
+  &[data-action='print'],
+  &:has(app-table-action-icon[data-action='print']) {
+    --table-action-color: var(--color-action-print);
+    --table-action-bg: color-mix(in srgb, var(--color-action-print) 16%, var(--color-surface));
+  }
+
+  &:is(
+    [data-action='activate'],
+    [data-action='unblockUser'],
+    [data-action='restore'],
+    [data-action='markRead']
+  ),
+  &:has(
+    app-table-action-icon:is(
+      [data-action='activate'],
+      [data-action='unblockUser'],
+      [data-action='markRead']
+    )
+  ) {
+    --table-action-color: var(--color-success-dark);
+    --table-action-bg: var(--color-success-light);
+  }
+
+  &:is([data-action='deactivate'], [data-action='blockUser']),
+  &:has(app-table-action-icon:is([data-action='deactivate'], [data-action='blockUser'])) {
+    --table-action-color: var(--color-warning-dark);
+    --table-action-bg: var(--color-warning-light);
+  }
+
+  &[data-action='delete'],
+  &:has(app-table-action-icon[data-action='delete']) {
+    --table-action-color: var(--color-error);
+    --table-action-bg: var(--color-error-light);
+  }
+
+  .material-icons,
+  .material-icons-outlined {
+    font-family: 'Material Icons Outlined';
+    font-size: var(--size-icon-control);
+    line-height: 1;
+  }
+}
+
+body :is(table, app-data-table) :is(.table-actions, .data-table__actions, .actions-cell) {
+  gap: var(--space-2);
+}
+
+body :is(table, app-data-table) :is(.table-actions, .data-table__actions) {
+  flex-wrap: nowrap;
+  gap: var(--space-1);
+}
+
+body table td:is(.actions-cell, :has(> app-action-button)) {
+  white-space: nowrap !important;
+  padding-inline: var(--space-2) !important;
+}
+
+body table td > app-action-button + app-action-button {
+  margin-inline-start: var(--space-1);
+}

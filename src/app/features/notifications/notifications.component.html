@@ -14,7 +14,7 @@
 
   @if (!isLoading() && !loadFailed()) {
 <app-search-toolbar [query]="codeDraft()" (queryChange)="codeDraft.set($event)" placeholder="Search request code" (search)="applyFilters()" (reset)="resetFilters()">
-    <div class="settings-filter"><app-dropdown label="Form" [options]="formOptions()" emptyOptionLabel="All forms" [ngModel]="formDraft()" (ngModelChange)="onFormDraftChange($event)" [loading]="formOptionsLoading()" /></div>
+    <div class="settings-filter"><app-dropdown label="Form" [options]="formOptions()" emptyOptionLabel="All forms" placeholder="All forms" [ngModel]="formDraft()" (ngModelChange)="onFormDraftChange($event)" [loading]="formOptionsLoading()" /></div>
     <app-field label="Received date" controlId="notification-date"><app-date-picker id="notification-date" ariaLabel="Received date" [ngModel]="receivedDateDraft()" (ngModelChange)="onReceivedDateDraftChange($event)" /></app-field>
   </app-search-toolbar>
 
@@ -43,15 +43,7 @@
                 </td>
               </tr></ng-template></app-data-table>
 
-        @if (notifications().length === 0) {
-          <div class="empty-state">
-            @if (hasActiveFilters()) {
-              <p>No notifications match the current filters.</p>
-            } @else {
-              <p>No notifications found.</p>
-            }
-          </div>
-        }
+
       </div>
     </app-settings-panel>
 

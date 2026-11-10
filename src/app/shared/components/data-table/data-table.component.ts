@@ -42,13 +42,14 @@ export interface DataTableHeaderContext {
   styleUrl: './data-table.component.scss',
 })
 export class DataTableComponent {
-  @Input({ required: true }) columns: readonly DataTableColumn[] = [];
-  @Input({ required: true }) rows: readonly unknown[] = [];
+  @Input() columns: readonly DataTableColumn[] = [];
+  @Input() rows: readonly unknown[] = [];
   @Input() rowTrackFn: TrackByFunction<unknown> = (index) => index;
   @Input() sortColumn: string | null = null;
   @Input() sortDirection: 'asc' | 'desc' | null = null;
   @Input() showHeader = true;
   @Input() showSortIndicator = true;
+  @Input() minWidth: string | null = null;
   @Input() dense = false;
   @Input() embedded = false;
   @Input() hoverable = true;
@@ -58,6 +59,10 @@ export class DataTableComponent {
   @Input() currentPage: number = 0;
   @Output() sortChange = new EventEmitter<string>();
   @Output() pageChange = new EventEmitter<number>();
+
+  @ContentChild('tableHeader') tableHeader?: TemplateRef<void>;
+  @ContentChild('tableBody') tableBody?: TemplateRef<void>;
+  @ContentChild('tableColumns') tableColumns?: TemplateRef<void>;
 
   @ContentChild('rowTemplate') rowTemplate?: TemplateRef<DataTableRowContext<unknown>>;
   @ContentChild('headerTemplate') headerTemplate?: TemplateRef<DataTableHeaderContext>;

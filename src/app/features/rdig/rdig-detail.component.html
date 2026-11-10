@@ -29,7 +29,14 @@
 
         <div class="detail-actions">
           @if (canPrint()) {
-            <app-action-button [label]="'Print'" type="secondary" size="small" [icon]="'print'" (clicked)="print()" buttonType="button" />
+            <app-action-button
+              [label]="'Print'"
+              type="secondary"
+              size="small"
+              [icon]="'print'"
+              (clicked)="print()"
+              buttonType="button"
+            />
           }
           @for (action of actions(); track action.action_code) {
             <a
@@ -121,8 +128,8 @@
             <h2>APU Co-Researchers</h2>
           </div>
           <div class="table-wrap">
-            <table>
-              <thead>
+            <app-data-table [dense]="true" [embedded]="true">
+              <ng-template #tableHeader>
                 <tr>
                   <th>No.</th>
                   <th>Staff Name</th>
@@ -131,8 +138,8 @@
                   <th>Expertise</th>
                   <th>Role</th>
                 </tr>
-              </thead>
-              <tbody>
+              </ng-template>
+              <ng-template #tableBody>
                 @for (item of form()?.apu_co_researchers ?? []; track item.id; let index = $index) {
                   <tr>
                     <td class="text-muted is-align-center">{{ index + 1 }}</td>
@@ -143,10 +150,12 @@
                     <td>{{ item.role_in_project || '-' }}</td>
                   </tr>
                 } @empty {
-                  <tr><td colspan="6" class="empty-cell">No APU co-researchers.</td></tr>
+                  <tr>
+                    <td colspan="6" class="empty-cell">No APU co-researchers.</td>
+                  </tr>
                 }
-              </tbody>
-            </table>
+              </ng-template>
+            </app-data-table>
           </div>
         </section>
 
@@ -155,8 +164,8 @@
             <h2>External Collaborators</h2>
           </div>
           <div class="table-wrap">
-            <table>
-              <thead>
+            <app-data-table [dense]="true" [embedded]="true">
+              <ng-template #tableHeader>
                 <tr>
                   <th>No.</th>
                   <th>Name</th>
@@ -166,8 +175,8 @@
                   <th>Role</th>
                   <th>Matched Funding</th>
                 </tr>
-              </thead>
-              <tbody>
+              </ng-template>
+              <ng-template #tableBody>
                 @for (item of form()?.collaborators ?? []; track item.id; let index = $index) {
                   <tr>
                     <td class="text-muted is-align-center">{{ index + 1 }}</td>
@@ -179,10 +188,12 @@
                     <td class="amount-cell">{{ money(item.matched_funding_amount) }}</td>
                   </tr>
                 } @empty {
-                  <tr><td colspan="7" class="empty-cell">No external collaborators.</td></tr>
+                  <tr>
+                    <td colspan="7" class="empty-cell">No external collaborators.</td>
+                  </tr>
                 }
-              </tbody>
-            </table>
+              </ng-template>
+            </app-data-table>
           </div>
         </section>
 
@@ -191,8 +202,8 @@
             <h2>Research Activities</h2>
           </div>
           <div class="table-wrap">
-            <table>
-              <thead>
+            <app-data-table [dense]="true" [embedded]="true">
+              <ng-template #tableHeader>
                 <tr>
                   <th>No.</th>
                   <th>Activity</th>
@@ -200,9 +211,13 @@
                   <th>End Month</th>
                   <th>Duration</th>
                 </tr>
-              </thead>
-              <tbody>
-                @for (item of form()?.research_activities ?? []; track item.id; let index = $index) {
+              </ng-template>
+              <ng-template #tableBody>
+                @for (
+                  item of form()?.research_activities ?? [];
+                  track item.id;
+                  let index = $index
+                ) {
                   <tr>
                     <td class="text-muted is-align-center">{{ index + 1 }}</td>
                     <td>{{ item.activity_name || '-' }}</td>
@@ -211,10 +226,12 @@
                     <td>{{ item.duration_months || '-' }}</td>
                   </tr>
                 } @empty {
-                  <tr><td colspan="5" class="empty-cell">No research activities.</td></tr>
+                  <tr>
+                    <td colspan="5" class="empty-cell">No research activities.</td>
+                  </tr>
                 }
-              </tbody>
-            </table>
+              </ng-template>
+            </app-data-table>
           </div>
         </section>
 
@@ -232,16 +249,16 @@
                   </div>
                 </div>
                 <div class="table-wrap">
-                  <table>
-                    <thead>
+                  <app-data-table [dense]="true" [embedded]="true">
+                    <ng-template #tableHeader>
                       <tr>
                         <th>No.</th>
                         <th>Description</th>
                         <th>Remarks</th>
                         <th>Amount</th>
                       </tr>
-                    </thead>
-                    <tbody>
+                    </ng-template>
+                    <ng-template #tableBody>
                       @for (item of budgetItemsFor(section.id); track item.id; let index = $index) {
                         <tr>
                           <td class="text-muted is-align-center">{{ index + 1 }}</td>
@@ -250,10 +267,12 @@
                           <td class="amount-cell">{{ money(item.amount_rm) }}</td>
                         </tr>
                       } @empty {
-                        <tr><td colspan="4" class="empty-cell">No budget items.</td></tr>
+                        <tr>
+                          <td colspan="4" class="empty-cell">No budget items.</td>
+                        </tr>
                       }
-                    </tbody>
-                  </table>
+                    </ng-template>
+                  </app-data-table>
                 </div>
               </article>
             } @empty {
@@ -300,7 +319,7 @@
             @for (attachment of form()?.attachments ?? []; track attachment.id) {
               <div class="attachment-item">
                 <span class="material-icons" aria-hidden="true">attach_file</span>
-                <strong>{{ attachment.file_name || ('Attachment #' + attachment.id) }}</strong>
+                <strong>{{ attachment.file_name || 'Attachment #' + attachment.id }}</strong>
                 <span>{{ attachment.entity_type || 'General' }}</span>
               </div>
             } @empty {

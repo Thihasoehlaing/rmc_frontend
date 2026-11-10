@@ -1,64 +1,89 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
 .form-tabs {
   display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: var(--space-2) var(--space-3);
-  min-height: 0;
+  width: max-content;
+  max-width: 100%;
+  box-sizing: border-box;
+  align-items: stretch;
+  flex-wrap: nowrap;
+  gap: var(--space-1);
+  overflow-x: auto;
+  margin: 0;
   padding: 0;
-  margin-bottom: var(--space-5);
-  background: transparent;
-  border: 0;
-  border-radius: 0;
-  box-shadow: none;
-  overflow: visible;
+  border: 1px solid var(--border-default);
+  border-bottom: 0;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  background: color-mix(in srgb, var(--color-text-secondary) 12%, var(--color-surface));
 }
 
 .form-tab {
+  position: relative;
+  box-sizing: border-box;
+  min-width: calc(var(--space-10) * 2);
+  transform: none;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   flex: 0 0 auto;
-  min-width: 7rem;
-  min-height: 34px;
-  padding: 0 var(--space-5);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-full);
-  background: var(--color-surface);
-  box-shadow: var(--shadow-xs);
+  min-height: var(--space-10);
+  padding: var(--space-3) var(--space-4);
+  border: 0;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  background: transparent;
   color: var(--color-text-secondary);
+  font-family: inherit;
   font-size: var(--fs-sm);
-  font-weight: var(--fw-bold);
-  line-height: 1;
+  font-weight: var(--fw-medium);
   white-space: nowrap;
   cursor: pointer;
   transition:
-    border-color var(--transition-fast) var(--ease-default),
-    background var(--transition-fast) var(--ease-default),
-    color var(--transition-fast) var(--ease-default),
-    box-shadow var(--transition-fast) var(--ease-default);
+    background var(--transition-fast),
+    color var(--transition-fast);
 
   &:hover {
-    border-color: color-mix(in srgb, var(--color-primary) 45%, var(--border-default));
-    background: var(--color-primary-light);
+    transform: none;
+    background: var(--color-surface-hover);
     color: var(--color-primary);
   }
 
   &:focus-visible {
-    outline: none;
-    box-shadow: var(--input-shadow-focus);
+    outline: 2px solid var(--color-primary);
+    outline-offset: -2px;
   }
 }
 
 .form-tab--active {
-  border-color: var(--color-primary);
-  background: var(--color-primary-light);
+  z-index: 1;
+  background: var(--color-surface);
   color: var(--color-primary);
-}
+  font-weight: var(--fw-bold);
 
-@media (max-width: 720px) {
-  .form-tab {
-    flex: 1 1 calc(50% - var(--space-3));
-    min-width: 0;
-    padding-inline: var(--space-3);
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    width: var(--space-3);
+    height: var(--space-3);
+    pointer-events: none;
+  }
+
+  &::before {
+    inset-inline-start: calc(-1 * var(--space-3));
+    background: radial-gradient(circle at top left, transparent 70%, var(--color-surface) 72%);
+  }
+
+  &::after {
+    inset-inline-end: calc(-1 * var(--space-3));
+    background: radial-gradient(circle at top right, transparent 70%, var(--color-surface) 72%);
+  }
+
+  &:hover {
+    background: var(--color-surface);
+    color: var(--color-primary);
   }
 }

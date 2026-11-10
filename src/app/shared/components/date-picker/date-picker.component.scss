@@ -14,10 +14,12 @@
   display: flex;
   align-items: center;
   width: 100%;
-  height: 44px;
-  border: 1px solid var(--border-default);
-  border-radius: 8px;
-  background: var(--color-surface);
+  height: var(--input-height-sm);
+  box-sizing: border-box;
+  overflow: hidden;
+  border: 1px solid var(--input-border-default);
+  border-radius: var(--control-radius);
+  background: var(--input-bg-editable);
   transition:
     border-color 150ms ease,
     box-shadow 150ms ease;
@@ -38,12 +40,16 @@
   flex: 1;
   min-width: 0;
   height: 100%;
-  padding: 0 12px;
+  padding: var(--control-padding-block) var(--control-padding-inline);
+  box-sizing: border-box;
   border: 0;
+  border-radius: var(--control-radius) 0 0 var(--control-radius);
   outline: 0;
   background: transparent;
   color: var(--color-text-primary);
-  font: inherit;
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-control);
   cursor: pointer;
 
   &::placeholder {
@@ -59,10 +65,11 @@
 .date-picker__trigger {
   display: grid;
   place-items: center;
-  width: 42px;
+  width: var(--control-height-compact);
+  flex-shrink: 0;
   height: 100%;
   border: 0;
-  border-radius: 0 7px 7px 0;
+  border-radius: 0 var(--control-radius) var(--control-radius) 0;
   background: transparent;
   color: var(--color-primary);
   cursor: pointer;

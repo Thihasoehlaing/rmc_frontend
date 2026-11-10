@@ -75,7 +75,7 @@
 :where(
   input:not([type='button']):not([type='submit']):not([type='reset']):not([type='checkbox']):not(
       [type='radio']
-    ):not([type='file'])[readonly],
+    ):not([type='file']):not(.date-picker__input)[readonly],
   input:not([type='button']):not([type='submit']):not([type='reset']):not([type='checkbox']):not(
       [type='radio']
     ):not([type='file']):disabled,

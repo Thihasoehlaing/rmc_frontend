@@ -1,8 +1,4 @@
-<div
-  class="table-skeleton"
-  role="status"
-  aria-busy="true"
-  [attr.aria-label]="loadingLabel">
+<div class="table-skeleton" role="status" aria-busy="true" [attr.aria-label]="loadingLabel">
   <span class="sr-only">{{ loadingLabel }}</span>
 
   @if (showSearch || showTypeFilter) {
@@ -17,20 +13,25 @@
   }
 
   <div class="table-skeleton__table-wrapper">
-    <table class="table-skeleton__table" aria-hidden="true" [style.min-width]="minWidth">
-      <colgroup>
-        @for (column of columns; track $index) {
-          <col [style.width]="column.width">
-        }
-      </colgroup>
-      <thead>
+    <app-data-table
+      class="table-skeleton__table"
+      aria-hidden="true"
+      [minWidth]="minWidth"
+      [dense]="true"
+      [embedded]="true"
+    >
+      <ng-template #tableHeader>
         <tr>
           @for (column of columns; track $index) {
             <th><span class="skeleton-block skeleton-block--header"></span></th>
           }
-        </tr>
-      </thead>
-      <tbody>
+        </tr> </ng-template
+      ><ng-template #tableColumns>
+        @for (column of columns; track $index) {
+          <col [style.width]="column.width" />
+        }
+      </ng-template>
+      <ng-template #tableBody>
         @for (row of rowItems; track row) {
           <tr>
             @for (column of columns; track $index) {
@@ -38,7 +39,7 @@
             }
           </tr>
         }
-      </tbody>
-    </table>
+      </ng-template>
+    </app-data-table>
   </div>
 </div>

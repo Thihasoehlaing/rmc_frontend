@@ -40,74 +40,6 @@
   margin: 0;
 }
 
-.dropdown-search-panel {
-  padding: var(--space-4);
-  margin-bottom: var(--space-5);
-  background: var(--color-surface);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
-}
-
-.inbox-filters {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: var(--space-3);
-  align-items: end;
-}
-
-.col-3 {
-  min-width: 0;
-}
-
-.inbox-filter {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-
-  span {
-    color: var(--color-text-secondary);
-    font-size: var(--fs-xs);
-    font-weight: var(--fw-semibold);
-  }
-
-  .input--text {
-    width: 100%;
-    height: 38px;
-    min-height: 38px;
-    padding-block: 0;
-    padding-inline: var(--space-4);
-    border: 1px solid var(--border-default);
-    border-radius: var(--radius-full);
-    background-color: var(--color-surface);
-    font-size: var(--fs-sm);
-    line-height: 38px;
-
-    &:hover {
-      border-color: color-mix(in srgb, var(--color-primary) 24%, var(--border-default));
-      box-shadow: var(--shadow-sm);
-    }
-
-    &:focus {
-      border-color: var(--color-primary);
-      box-shadow: var(--input-shadow-focus);
-      outline: none;
-    }
-  }
-}
-
-.inbox-filter-actions {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: var(--space-2);
-
-  .btn {
-    min-height: 38px;
-    white-space: nowrap;
-  }
-}
-
 .dropdown-table-panel {
   margin-bottom: var(--space-5);
   padding: 0;
@@ -290,12 +222,6 @@ td:first-child {
   }
 }
 
-@media (max-width: 1180px) {
-  .inbox-filters {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
 @media (max-width: 900px) {
   .submissions-page {
     padding: var(--space-4);
@@ -324,23 +250,6 @@ td:first-child {
 @media (max-width: 720px) {
   .submissions-page {
     padding: var(--space-4);
-  }
-
-  .dropdown-search-panel {
-    padding: var(--space-3);
-  }
-
-  .inbox-filters {
-    grid-template-columns: 1fr;
-  }
-
-  .inbox-filter-actions {
-    justify-content: stretch;
-  }
-
-  .inbox-filter-actions .btn {
-    flex: 1 1 0;
-    justify-content: center;
   }
 
   table {

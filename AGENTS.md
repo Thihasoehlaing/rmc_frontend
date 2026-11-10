@@ -260,3 +260,12 @@ Do not add new AI rule files unless explicitly requested.
 If AI behavior rules change, update this file directly.
 
 Normal project documentation may exist separately, but AI agents should treat this file as the primary source of instructions.
+
+## Tables
+
+Use `app-data-table` for every UI table, including lists, detail grids, and reference tables.
+Do not add feature-owned native `<table>` markup. Rich-text document content is separate.
+Use `columns`/`rows` with `rowTemplate` for ordinary lists. Preserve specialized grouped
+rows through `tableHeader` and `tableBody` templates; `tableColumns` supports custom widths.
+Header and body styling belongs in the shared component: blue headers, neutral body rows.
+Keep icon actions on one line with the shared spacing, Material Icons Outlined, and tooltips.

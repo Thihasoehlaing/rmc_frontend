@@ -388,7 +388,11 @@ tbody tr:hover,
 
 :host ::ng-deep .icon-btn--view:hover:not(:disabled),
 :host ::ng-deep .icon-btn--edit:hover:not(:disabled),
-:host ::ng-deep .table-action:not(.table-action--danger):not(.table-action--warning):not(.table-action--success):hover:not(:disabled) {
+:host
+  ::ng-deep
+  .table-action:not(.table-action--danger):not(.table-action--warning):not(
+    .table-action--success
+  ):hover:not(:disabled) {
   background: var(--color-primary-light);
 }
 
@@ -407,18 +411,45 @@ tbody tr:hover,
   background: var(--color-success-light);
 }
 
-.data-table--dense thead th {
-  padding: var(--space-3) var(--space-4);
-  background: var(--color-surface-nested);
-  color: var(--color-text-secondary);
-  font-size: var(--fs-xs);
-  border-color: var(--border-subtle);
-}
 :host ::ng-deep .data-table--dense tbody td {
   padding: var(--space-2) var(--space-4);
   font-size: var(--fs-sm);
   border-color: var(--border-subtle);
   color: var(--color-text-primary);
 }
-.data-table--embedded { border: 0; border-radius: 0; box-shadow: none; }
-.data-table--embedded thead th:first-child, .data-table--embedded thead th:last-child { border-radius: 0; }
+.data-table--embedded {
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+.data-table--embedded thead th:first-child,
+.data-table--embedded thead th:last-child {
+  border-radius: 0;
+}
+
+:host ::ng-deep .data-table.data-table thead th {
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-table-head-bg);
+  color: var(--color-table-head-text);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  border-bottom: 1px solid var(--border-default);
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+:host ::ng-deep .data-table.data-table tbody td {
+  padding: var(--space-3) var(--space-4);
+  color: var(--color-text-primary);
+  font-size: var(--fs-sm);
+  border-bottom: 1px solid var(--border-subtle);
+  vertical-align: middle;
+}
+
+:host ::ng-deep .data-table.data-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+:host ::ng-deep .data-table.data-table thead :is(.sort-heading, .sort-indicator) {
+  color: inherit;
+}

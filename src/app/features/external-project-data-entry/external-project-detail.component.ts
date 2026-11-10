@@ -1,3 +1,4 @@
+import { DataTableComponent } from '../../shared/components/data-table/data-table.component';
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -25,7 +26,7 @@ interface DetailField {
 @Component({
   selector: 'app-external-project-detail',
   standalone: true,
-  imports: [CommonModule],
+  imports: [DataTableComponent, CommonModule],
   templateUrl: './external-project-detail.component.html',
   styleUrl: './external-project-detail.component.scss',
 })
@@ -42,10 +43,14 @@ export class ExternalProjectDetailComponent implements OnInit {
   categories = signal<ExternalGrantCategory[]>([]);
 
   readonly externalProject = computed(() => this.form()?.external_project ?? null);
-  readonly backLabel = signal(this.route.snapshot.queryParamMap.get('returnLabel') || 'Admin History');
+  readonly backLabel = signal(
+    this.route.snapshot.queryParamMap.get('returnLabel') || 'Admin History',
+  );
   readonly categoryName = computed(() => {
     const categoryId = this.externalProject()?.external_grant_category_id;
-    return this.categories().find((category) => category.id === categoryId)?.name ?? categoryId ?? '-';
+    return (
+      this.categories().find((category) => category.id === categoryId)?.name ?? categoryId ?? '-'
+    );
   });
   readonly projectSectionTitle = computed(() =>
     String(this.categoryName()).trim().toLowerCase() === 'consultancy'
@@ -70,7 +75,10 @@ export class ExternalProjectDetailComponent implements OnInit {
     const project = this.externalProject();
     return [
       { label: 'External Grant Category', value: this.categoryName() },
-      { label: 'Project Account Code', value: project?.project_account_code ?? project?.project_code },
+      {
+        label: 'Project Account Code',
+        value: project?.project_account_code ?? project?.project_code,
+      },
       { label: 'Reference Code', value: project?.reference_code ?? project?.account_code },
       { label: 'Description', value: project?.description },
       { label: 'Project Leader/Principle Investigator', value: project?.staff_name },
@@ -142,7 +150,7 @@ export class ExternalProjectDetailComponent implements OnInit {
 
   statusColor(): string {
     const request = this.request();
-    return request ? STATUS_COLORS[request.status_code] ?? '#6b7280' : '#6b7280';
+    return request ? (STATUS_COLORS[request.status_code] ?? '#6b7280') : '#6b7280';
   }
 
   displayValue(field: DetailField): string {
@@ -165,7 +173,8 @@ export class ExternalProjectDetailComponent implements OnInit {
   }
 
   goBack(): void {
-    const returnTo = this.route.snapshot.queryParamMap.get('returnTo') || '/submissions/admin-history';
+    const returnTo =
+      this.route.snapshot.queryParamMap.get('returnTo') || '/submissions/admin-history';
     void this.router.navigateByUrl(returnTo);
   }
 }

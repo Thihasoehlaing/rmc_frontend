@@ -80,6 +80,8 @@
     --color-background-surface: #{colors.$surface-bg};
     --color-background-disabled: #{colors.$input-bg-readonly};
 
+    --color-action-print: #7952b3; // Purple distinguishes print actions from view and edit.
+
     // Table
     --color-table-header: #E1E1E1; // Table header cell background
     --color-table-head-bg: #245A91; // Muted dark blue distinguishes table headers from primary actions

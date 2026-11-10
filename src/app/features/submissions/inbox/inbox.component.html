@@ -1,6 +1,10 @@
 <!-- Submission inbox -->
 <div class="submissions-page">
-  <app-settings-page-header [title]="'Inbox'" [description]="'Applications awaiting your action'" eyebrow="Workspace"></app-settings-page-header>
+  <app-settings-page-header
+    [title]="'Inbox'"
+    [description]="'Applications awaiting your action'"
+    eyebrow="Workspace"
+  ></app-settings-page-header>
 
   <!-- Loading -->
   @if (loading()) {
@@ -17,159 +21,154 @@
   }
 
   @if (!loading() && !error()) {
-    <app-submission-form-tabs
-      [tabs]="formTabs()"
-      [selectedValue]="selectedForm()"
-      ariaLabel="Inbox form filters"
-      (selectedValueChange)="setTab($event)"
-    />
+    <section class="submissions-panel">
+      <app-submission-form-tabs
+        [tabs]="formTabs()"
+        [selectedValue]="selectedForm()"
+        ariaLabel="Inbox form filters"
+        (selectedValueChange)="setTab($event)"
+      />
 
-    <section class="dropdown-search-panel" aria-label="Inbox search">
-      <div class="inbox-filters">
-        <label class="inbox-filter col-3">
-          <span>Search by code</span>
-          <input appInput
-            class="input--text"
-            type="search"
-            placeholder="e.g. JOUR-260001"
-            [value]="codeDraft()"
-            (input)="onCodeDraftChange($event)"
-            (keydown.enter)="applyFilters()"
-          />
-        </label>
-
-        <label class="inbox-filter col-3">
-          <span>Search by applicant</span>
-          <input appInput
-            class="input--text"
+      <app-search-toolbar
+        [query]="codeDraft()"
+        (queryChange)="codeDraft.set($event)"
+        placeholder="Search request code"
+        label="Search request code"
+        (search)="applyFilters()"
+        (reset)="resetFilters()"
+      >
+        <app-field label="Applicant" controlId="inbox-applicant"
+          ><input
+            appInput
+            id="inbox-applicant"
             type="search"
             placeholder="Name, username, or email"
             [value]="applicantDraft()"
             (input)="onApplicantDraftChange($event)"
-            (keydown.enter)="applyFilters()"
-          />
-        </label>
-
-        <label class="inbox-filter col-3">
-          <span>Search by submission date</span>
-          <app-date-picker
+        /></app-field>
+        <app-field label="Submission date" controlId="inbox-date"
+          ><app-date-picker
+            id="inbox-date"
             [dateValue]="submissionDateDraft()"
             (dateValueChange)="onSubmissionDateDraftChange($event)"
-            ariaLabel="Filter by submission date"
-            (keydown.enter)="applyFilters()"
-          />
-        </label>
+            ariaLabel="Submission date"
+        /></app-field>
+      </app-search-toolbar>
 
-        <div class="inbox-filter-actions col-3">
-          <app-action-button [label]="'Search'" type="primary" size="small" [icon]="'search'" (clicked)="applyFilters()" buttonType="button" />
-          <app-action-button [label]="'Reset'" type="secondary" size="small" [icon]="'refresh'" (clicked)="resetFilters()" buttonType="button" />
-        </div>
-      </div>
-    </section>
-
-    <section class="dropdown-table-panel" aria-label="Inbox applications">
-      <div class="shared-options-table">
-        <table>
-          <thead>
-            <tr>
-              <th>No.</th>
-              <th>Code</th>
-              @if (showApplicantInfo()) {
-                <th>Applicant</th>
-              }
-              <th>Status</th>
-              <th>
-                <button type="button" class="sort-heading" (click)="toggleSubmissionDateSort()">
-                  Submission Date
-                  <span class="material-icons" aria-hidden="true">
-                    {{ sortDirection() === 'asc' ? 'arrow_upward' : 'arrow_downward' }}
-                  </span>
-                </button>
-              </th>
-              <th class="actions-heading">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (app of pagedApplications(); track getCode(app); let index = $index) {
+      <section class="dropdown-table-panel" aria-label="Inbox applications">
+        <div class="shared-options-table">
+          <app-data-table [dense]="true" [embedded]="true">
+            <ng-template #tableHeader>
               <tr>
-                <td>{{ getRowNumber(index) }}</td>
-                <td class="inbox-code-cell">{{ getCode(app) }}</td>
+                <th>No.</th>
+                <th>Code</th>
                 @if (showApplicantInfo()) {
-                  <td>
-                    <div class="inbox-applicant">
-                      <strong>{{ app.applicant_name || '—' }}</strong>
-                      <span>{{ app.applicant_email || '—' }}</span>
-                      <span>{{ app.applicant_department || '—' }}</span>
-                    </div>
-                  </td>
+                  <th>Applicant</th>
                 }
-                <td>
-                  <span
-                    class="status-chip"
-                    [style.background]="getStatusColor(app) + '1a'"
-                    [style.color]="getStatusColor(app)"
-                    [style.border-color]="getStatusColor(app) + '55'"
-                  >
-                    {{ getStatus(app) }}
-                  </span>
-                </td>
-                <td>{{ getSubmissionDate(app) }}</td>
-                <td class="actions-cell">
-                  <div class="table-actions">
-                    @if (canEditResubmission(app)) {
+                <th>Status</th>
+                <th>
+                  <button type="button" class="sort-heading" (click)="toggleSubmissionDateSort()">
+                    Submission Date
+                    <span class="material-icons" aria-hidden="true">
+                      {{ sortDirection() === 'asc' ? 'arrow_upward' : 'arrow_downward' }}
+                    </span>
+                  </button>
+                </th>
+                <th class="actions-heading">Actions</th>
+              </tr>
+            </ng-template>
+            <ng-template #tableBody>
+              @for (app of pagedApplications(); track getCode(app); let index = $index) {
+                <tr>
+                  <td>{{ getRowNumber(index) }}</td>
+                  <td class="inbox-code-cell">{{ getCode(app) }}</td>
+                  @if (showApplicantInfo()) {
+                    <td>
+                      <div class="inbox-applicant">
+                        <strong>{{ app.applicant_name || '—' }}</strong>
+                        <span>{{ app.applicant_email || '—' }}</span>
+                        <span>{{ app.applicant_department || '—' }}</span>
+                      </div>
+                    </td>
+                  }
+                  <td>
+                    <span
+                      class="status-chip"
+                      [style.background]="getStatusColor(app) + '1a'"
+                      [style.color]="getStatusColor(app)"
+                      [style.border-color]="getStatusColor(app) + '55'"
+                    >
+                      {{ getStatus(app) }}
+                    </span>
+                  </td>
+                  <td>{{ getSubmissionDate(app) }}</td>
+                  <td class="actions-cell">
+                    <div class="table-actions">
+                      @if (canEditResubmission(app)) {
+                        <a
+                          class="table-action table-action--open"
+                          [routerLink]="[getEditRoute(app)]"
+                          [queryParams]="getEditQueryParams(app)"
+                          aria-label="Edit resubmission for {{ getCode(app) }}"
+                          title="Edit resubmission"
+                        >
+                          <app-table-action-icon action="edit"></app-table-action-icon>
+                        </a>
+                      }
                       <a
                         class="table-action table-action--open"
-                        [routerLink]="[getEditRoute(app)]"
-                        [queryParams]="getEditQueryParams(app)"
-                        aria-label="Edit resubmission for {{ getCode(app) }}"
-                        title="Edit resubmission"
+                        [routerLink]="[getFormRoute(app)]"
+                        [queryParams]="getDetailQueryParams()"
+                        aria-label="View detail for {{ getCode(app) }}"
+                        title="View detail"
                       >
-                        <app-table-action-icon action="edit"></app-table-action-icon>
+                        <app-table-action-icon action="view"></app-table-action-icon>
                       </a>
-                    }
-                    <a
-                      class="table-action table-action--open"
-                      [routerLink]="[getFormRoute(app)]"
-                      [queryParams]="getDetailQueryParams()"
-                      aria-label="View detail for {{ getCode(app) }}"
-                      title="View detail"
-                    >
-                      <app-table-action-icon action="view"></app-table-action-icon>
-                    </a>
-                    @if (canPrint(app)) {
-                      <app-action-button [label]="'Print PDF for ' + (getCode(app))" type="ghost" size="small" [icon]="'print'" [iconOnly]="true" [ariaLabel]="'Print PDF for ' + (getCode(app))" [title]="'Print PDF'" (clicked)="openPrint(app)" buttonType="button" />
-                    }
-                  </div>
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
+                      @if (canPrint(app)) {
+                        <app-action-button
+                          [label]="'Print PDF for ' + getCode(app)"
+                          type="ghost"
+                          size="small"
+                          [icon]="'print'"
+                          [iconOnly]="true"
+                          [ariaLabel]="'Print PDF for ' + getCode(app)"
+                          [title]="'Print PDF'"
+                          (clicked)="openPrint(app)"
+                          buttonType="button"
+                        />
+                      }
+                    </div>
+                  </td>
+                </tr>
+              }
+            </ng-template>
+          </app-data-table>
 
-        @if (applications().length === 0) {
-          <div class="empty-state">
-            @if (hasActiveFilters()) {
-              <p>No inbox applications match the current filters.</p>
-            } @else {
-              <p>No applications are pending your action right now.</p>
-            }
-          </div>
-        }
-      </div>
-    </section>
+          @if (applications().length === 0) {
+            <div class="empty-state">
+              @if (hasActiveFilters()) {
+                <p>No inbox applications match the current filters.</p>
+              } @else {
+                <p>No applications are pending your action right now.</p>
+              }
+            </div>
+          }
+        </div>
+      </section>
 
-    <section class="dropdown-pagination-panel" aria-label="Inbox pagination">
-      <app-pagination
-        [currentPage]="page()"
-        [totalPages]="totalPages()"
-        [pageSize]="pageSize()"
-        [pageSizeOptions]="pageSizeOptions"
-        [totalItems]="applications().length"
-        [itemCount]="pagedApplications().length || null"
-        itemLabel="inbox applications"
-        (pageChange)="onPageChange($event)"
-        (pageSizeChange)="onPageSizeChange($event)"
-      ></app-pagination>
+      <section class="dropdown-pagination-panel" aria-label="Inbox pagination">
+        <app-pagination
+          [currentPage]="page()"
+          [totalPages]="totalPages()"
+          [pageSize]="pageSize()"
+          [pageSizeOptions]="pageSizeOptions"
+          [totalItems]="applications().length"
+          [itemCount]="pagedApplications().length || null"
+          itemLabel="inbox applications"
+          (pageChange)="onPageChange($event)"
+          (pageSizeChange)="onPageSizeChange($event)"
+        ></app-pagination>
+      </section>
     </section>
   }
 </div>

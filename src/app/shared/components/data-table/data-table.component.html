@@ -7,53 +7,63 @@
 >
   <div class="data-table__frame">
     <div class="data-table__scroll">
-      <table>
+      <table [style.min-width]="minWidth">
         <colgroup>
-          @for (column of columns; track column.key) {
-            <col [style.width]="column.width || 'auto'" />
+          @if (tableColumns) {
+            <ng-container [ngTemplateOutlet]="tableColumns" />
+          } @else {
+            @for (column of columns; track column.key) {
+              <col [style.width]="column.width || 'auto'" />
+            }
           }
         </colgroup>
 
         @if (showHeader) {
           <thead>
-            <tr>
-              @for (column of columns; track column.key; let i = $index) {
-                <th
-                  scope="col"
-                  [class.is-align-center]="headerAlign(column) === 'center'"
-                  [class.is-align-right]="headerAlign(column) === 'right'"
-                  [class.is-sortable]="column.sortable"
-                  [class.is-sorted]="sortColumn === column.key"
-                  (click)="onHeaderClick(column)"
-                >
-                  <span class="header-content">
-                    @if (headerTemplate) {
-                      <ng-container
-                        [ngTemplateOutlet]="headerTemplate"
-                        [ngTemplateOutletContext]="{ column: column, index: i }"
-                      >
-                      </ng-container>
-                    } @else {
-                      <span class="header-label">{{ column.label }}</span>
-                    }
-                    @if (column.sortable && showSortIndicator) {
-                      <span
-                        class="material-icons sort-indicator"
-                        [class.is-active]="sortColumn === column.key && !!sortDirection"
-                        aria-hidden="true"
-                      >
-                        {{ sortIcon(column) }}
-                      </span>
-                    }
-                  </span>
-                </th>
-              }
-            </tr>
+            @if (tableHeader) {
+              <ng-container [ngTemplateOutlet]="tableHeader" />
+            } @else {
+              <tr>
+                @for (column of columns; track column.key; let i = $index) {
+                  <th
+                    scope="col"
+                    [class.is-align-center]="headerAlign(column) === 'center'"
+                    [class.is-align-right]="headerAlign(column) === 'right'"
+                    [class.is-sortable]="column.sortable"
+                    [class.is-sorted]="sortColumn === column.key"
+                    (click)="onHeaderClick(column)"
+                  >
+                    <span class="header-content">
+                      @if (headerTemplate) {
+                        <ng-container
+                          [ngTemplateOutlet]="headerTemplate"
+                          [ngTemplateOutletContext]="{ column: column, index: i }"
+                        >
+                        </ng-container>
+                      } @else {
+                        <span class="header-label">{{ column.label }}</span>
+                      }
+                      @if (column.sortable && showSortIndicator) {
+                        <span
+                          class="material-icons sort-indicator"
+                          [class.is-active]="sortColumn === column.key && !!sortDirection"
+                          aria-hidden="true"
+                        >
+                          {{ sortIcon(column) }}
+                        </span>
+                      }
+                    </span>
+                  </th>
+                }
+              </tr>
+            }
           </thead>
         }
 
         <tbody>
-          @if (displayRows.length > 0) {
+          @if (tableBody) {
+            <ng-container [ngTemplateOutlet]="tableBody" />
+          } @else if (displayRows.length > 0) {
             @for (row of displayRows; track trackRow($index, row); let i = $index) {
               @if (rowTemplate) {
                 <ng-container

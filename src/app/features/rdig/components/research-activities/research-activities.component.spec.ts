@@ -9,7 +9,10 @@ describe('RDIG activity month numbering', () => {
     const fb = new FormBuilder();
     const component = new ResearchActivitiesComponent(fb);
     component.parentForm = fb.group({ activities: fb.array([]) });
-    component.workflow = { isFormReadOnly: () => false } as unknown as ResearchActivitiesComponent['workflow'];
+    component.selectedProjectDuration = 12;
+    component.workflow = {
+      isFormReadOnly: () => false,
+    } as unknown as ResearchActivitiesComponent['workflow'];
     return component;
   }
 

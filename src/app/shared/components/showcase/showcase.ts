@@ -532,7 +532,8 @@ export class ShowcaseComponent {
     {
       name: 'DataTable',
       selector: '<app-data-table>',
-      purpose: 'Reusable typed table with optional custom row template.',
+      purpose:
+        'The shared table for all lists and detail grids. Use columns/rows with rowTemplate, or tableHeader/tableBody templates for grouped or specialized content.',
     },
     {
       name: 'Dialog',

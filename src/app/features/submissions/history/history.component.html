@@ -1,5 +1,13 @@
 <div class="submissions-page">
-  <app-settings-page-header [title]="(isAdminHistory() ? 'Admin History' : 'History')" [description]="(isAdminHistory() ? 'Submitted applications across every form, plus External Project drafts.' : 'Applications you submitted or already acted on.')" eyebrow="Workspace"></app-settings-page-header>
+  <app-settings-page-header
+    [title]="isAdminHistory() ? 'Admin History' : 'History'"
+    [description]="
+      isAdminHistory()
+        ? 'Submitted applications across every form, plus External Project drafts.'
+        : 'Applications you submitted or already acted on.'
+    "
+    eyebrow="Workspace"
+  ></app-settings-page-header>
 
   @if (loading()) {
     <app-table-skeleton [columns]="skeletonColumns()" loadingLabel="Loading application history">
@@ -14,149 +22,174 @@
   }
 
   @if (!loading() && !error()) {
-    <app-submission-form-tabs
-      [tabs]="formTabs()"
-      [selectedValue]="selectedType()"
-      ariaLabel="History form filters"
-      (selectedValueChange)="setTab($event)"
-    />
+    <section class="submissions-panel">
+      <app-submission-form-tabs
+        [tabs]="formTabs()"
+        [selectedValue]="selectedType()"
+        ariaLabel="History form filters"
+        (selectedValueChange)="setTab($event)"
+      />
 
-    <section class="dropdown-search-panel" aria-label="History search">
       <app-submissions-search
         [placeholder]="searchPlaceholder()"
         [value]="searchQuery()"
         (search)="onSearch($event)"
         (refresh)="resetFilters()"
       >
-        <label search-filters class="mgr-date-filter">
-          <span class="sr-only">Created date</span>
+        <app-field search-filters label="Created date" controlId="history-created-date">
           <app-date-picker
+            id="history-created-date"
             [dateValue]="createdDate()"
             (dateValueChange)="onCreatedDateChange($event)"
             ariaLabel="Filter by created date"
           />
-        </label>
+        </app-field>
       </app-submissions-search>
-    </section>
 
-    <section class="dropdown-table-panel" aria-label="Application history">
-      <div class="shared-options-table">
-        <table>
-          <thead>
-            <tr>
-              <th>No.</th>
-              <th>Code</th>
-              @if (isAdminHistory() && !showExternalProjectColumns()) {
-                <th>Applicant</th>
-              }
-              @if (showExternalProjectColumns()) {
-                <th>Project Leader</th>
-                <th>Project Account Code</th>
-              }
-              <th>Status</th>
-              <th>Created Date</th>
-              <th class="actions-heading">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (app of pagedHistory(); track getCode(app); let index = $index) {
+      <section class="dropdown-table-panel" aria-label="Application history">
+        <div class="shared-options-table">
+          <app-data-table [dense]="true" [embedded]="true">
+            <ng-template #tableHeader>
               <tr>
-                <td>{{ getRowNumber(index) }}</td>
-                <td class="request-code-cell">
-                  <span class="request-code">{{ getCode(app) }}</span>
-                  <span class="form-type-label">{{ getFormTypeLabel(app) }}</span>
-                </td>
+                <th>No.</th>
+                <th>Code</th>
                 @if (isAdminHistory() && !showExternalProjectColumns()) {
-                  <td class="applicant-cell">
-                    <span class="applicant-name">{{ getApplicantLabel(app) }}</span>
-                    @if (app.applicant_staff_username && app.applicant_staff_username !== app.applicant_name) {
-                      <span class="applicant-username">{{ app.applicant_staff_username }}</span>
-                    }
-                  </td>
+                  <th>Applicant</th>
                 }
                 @if (showExternalProjectColumns()) {
-                  <td class="external-project-cell">{{ getProjectLeader(app) }}</td>
-                  <td class="external-project-cell external-project-account-code">
-                    {{ getProjectAccountCode(app) }}
-                  </td>
+                  <th>Project Leader</th>
+                  <th>Project Account Code</th>
                 }
-                <td>
-                  <span
-                    class="status-chip"
-                    [ngClass]="getActionClass(app)"
-                    [style.background]="getStatusColor(app) + '1a'"
-                    [style.color]="getStatusColor(app)"
-                    [style.border-color]="getStatusColor(app) + '55'"
-                  >
-                    {{ getStatusLabel(app) }}
-                  </span>
-                </td>
-                <td>{{ formatCreatedDate(app) }}</td>
-                <td class="actions-cell">
-                  <div class="data-table__actions">
-                    <a
-                      class="btn-icon btn-icon--view"
-                      [routerLink]="getPrimaryActionRoute(app)"
-                      [queryParams]="getPrimaryActionQueryParams(app)"
-                      [title]="getPrimaryActionTitle(app)"
-                      [attr.aria-label]="getPrimaryActionTitle(app)"
-                    >
-                      <app-table-action-icon
-                        [action]="getPrimaryActionIcon(app)"
-                      ></app-table-action-icon>
-                    </a>
-                    @if (canEditExternalForm(app)) {
-                      <a
-                        class="btn-icon btn-icon--edit"
-                        routerLink="/external-project-data-entry"
-                        [queryParams]="getExternalEditQueryParams(app)"
-                        title="Edit external form"
-                        aria-label="Edit external form"
-                      >
-                        <app-table-action-icon action="edit"></app-table-action-icon>
-                      </a>
-                    }
-                    @if (canPrint(app)) {
-                      <app-action-button [label]="'Print PDF'" type="primary" size="small" [icon]="'print'" [iconOnly]="true" [ariaLabel]="'Print PDF'" [title]="'Print PDF'" (clicked)="openPrint(app)" buttonType="button" />
-                    }
-                    @if (canRollback(app)) {
-                      <app-action-button [label]="'Rollback last action'" type="primary" size="small" [icon]="'undo'" [iconOnly]="true" [disabled]="rollbackRequestId() === (app.id ?? app.request_id)" [ariaLabel]="'Rollback last action'" [title]="'Rollback last action'" (clicked)="openRollbackDialog(app)" buttonType="button" />
-                    }
-                  </div>
-                </td>
+                <th>Status</th>
+                <th>Created Date</th>
+                <th class="actions-heading">Actions</th>
               </tr>
-            }
-          </tbody>
-        </table>
+            </ng-template>
+            <ng-template #tableBody>
+              @for (app of pagedHistory(); track getCode(app); let index = $index) {
+                <tr>
+                  <td>{{ getRowNumber(index) }}</td>
+                  <td class="request-code-cell">
+                    <span class="request-code">{{ getCode(app) }}</span>
+                    <span class="form-type-label">{{ getFormTypeLabel(app) }}</span>
+                  </td>
+                  @if (isAdminHistory() && !showExternalProjectColumns()) {
+                    <td class="applicant-cell">
+                      <span class="applicant-name">{{ getApplicantLabel(app) }}</span>
+                      @if (
+                        app.applicant_staff_username &&
+                        app.applicant_staff_username !== app.applicant_name
+                      ) {
+                        <span class="applicant-username">{{ app.applicant_staff_username }}</span>
+                      }
+                    </td>
+                  }
+                  @if (showExternalProjectColumns()) {
+                    <td class="external-project-cell">{{ getProjectLeader(app) }}</td>
+                    <td class="external-project-cell external-project-account-code">
+                      {{ getProjectAccountCode(app) }}
+                    </td>
+                  }
+                  <td>
+                    <span
+                      class="status-chip"
+                      [ngClass]="getActionClass(app)"
+                      [style.background]="getStatusColor(app) + '1a'"
+                      [style.color]="getStatusColor(app)"
+                      [style.border-color]="getStatusColor(app) + '55'"
+                    >
+                      {{ getStatusLabel(app) }}
+                    </span>
+                  </td>
+                  <td>{{ formatCreatedDate(app) }}</td>
+                  <td class="actions-cell">
+                    <div class="data-table__actions">
+                      <a
+                        class="btn-icon btn-icon--view"
+                        [routerLink]="getPrimaryActionRoute(app)"
+                        [queryParams]="getPrimaryActionQueryParams(app)"
+                        [title]="getPrimaryActionTitle(app)"
+                        [attr.aria-label]="getPrimaryActionTitle(app)"
+                      >
+                        <app-table-action-icon
+                          [action]="getPrimaryActionIcon(app)"
+                        ></app-table-action-icon>
+                      </a>
+                      @if (canEditExternalForm(app)) {
+                        <a
+                          class="btn-icon btn-icon--edit"
+                          routerLink="/external-project-data-entry"
+                          [queryParams]="getExternalEditQueryParams(app)"
+                          title="Edit external form"
+                          aria-label="Edit external form"
+                        >
+                          <app-table-action-icon action="edit"></app-table-action-icon>
+                        </a>
+                      }
+                      @if (canPrint(app)) {
+                        <app-action-button
+                          [label]="'Print PDF'"
+                          type="primary"
+                          size="small"
+                          [icon]="'print'"
+                          [iconOnly]="true"
+                          [ariaLabel]="'Print PDF'"
+                          [title]="'Print PDF'"
+                          (clicked)="openPrint(app)"
+                          buttonType="button"
+                        />
+                      }
+                      @if (canRollback(app)) {
+                        <app-action-button
+                          [label]="'Rollback last action'"
+                          type="primary"
+                          size="small"
+                          [icon]="'undo'"
+                          [iconOnly]="true"
+                          [disabled]="rollbackRequestId() === (app.id ?? app.request_id)"
+                          [ariaLabel]="'Rollback last action'"
+                          [title]="'Rollback last action'"
+                          (clicked)="openRollbackDialog(app)"
+                          buttonType="button"
+                        />
+                      }
+                    </div>
+                  </td>
+                </tr>
+              }
+            </ng-template>
+          </app-data-table>
 
-        @if (history().length === 0) {
-          <div class="empty-state">
-            @if (searchQuery() || createdDate() || selectedType() !== 'all') {
-              <p>No history entries match the current filters.</p>
-            } @else {
-              <p>No history entries found.</p>
-            }
-          </div>
-        }
-      </div>
-    </section>
+          @if (history().length === 0) {
+            <div class="empty-state">
+              @if (searchQuery() || createdDate() || selectedType() !== 'all') {
+                <p>No history entries match the current filters.</p>
+              } @else {
+                <p>No history entries found.</p>
+              }
+            </div>
+          }
+        </div>
+      </section>
 
-    <section class="dropdown-pagination-panel" aria-label="History pagination">
-      <app-pagination
-        [currentPage]="page()"
-        [totalPages]="totalPages()"
-        [pageSize]="pageSize()"
-        [pageSizeOptions]="pageSizeOptions"
-        [totalItems]="history().length"
-        [itemCount]="pagedHistory().length || null"
-        itemLabel="history entries"
-        (pageChange)="onPageChange($event)"
-        (pageSizeChange)="onPageSizeChange($event)"
-      ></app-pagination>
+      <section class="dropdown-pagination-panel" aria-label="History pagination">
+        <app-pagination
+          [currentPage]="page()"
+          [totalPages]="totalPages()"
+          [pageSize]="pageSize()"
+          [pageSizeOptions]="pageSizeOptions"
+          [totalItems]="history().length"
+          [itemCount]="pagedHistory().length || null"
+          itemLabel="history entries"
+          (pageChange)="onPageChange($event)"
+          (pageSizeChange)="onPageSizeChange($event)"
+        ></app-pagination>
+      </section>
     </section>
   }
 
-  <app-dialog density="compact"
+  <app-dialog
+    density="compact"
     [isOpen]="rollbackTarget() !== null"
     title="Rollback Last Action"
     size="small"
@@ -165,13 +198,15 @@
     @if (rollbackTarget(); as target) {
       <div class="rollback-dialog">
         <p>
-          Roll back <strong>{{ getCode(target) }}</strong>
-          from <strong>{{ target.last_action?.to_status_code }}</strong>
-          to <strong>{{ target.last_action?.from_status_code }}</strong>.
+          Roll back <strong>{{ getCode(target) }}</strong> from
+          <strong>{{ target.last_action?.to_status_code }}</strong> to
+          <strong>{{ target.last_action?.from_status_code }}</strong
+          >.
         </p>
         <label class="form-field">
           <span class="form-label">Reason</span>
-          <textarea appInput
+          <textarea
+            appInput
             class="input--textarea"
             rows="4"
             maxlength="1000"
@@ -183,8 +218,22 @@
     }
 
     <div dialog-footer class="form-dialog__footer">
-      <app-action-button [label]="'Cancel'" type="secondary" size="small" [disabled]="rollbackRequestId() !== null" (clicked)="closeRollbackDialog()" buttonType="button" />
-      <app-action-button [label]="(rollbackRequestId() !== null ? 'Rolling back...' : 'Rollback')" type="danger" size="small" [disabled]="rollbackRequestId() !== null || !rollbackReason().trim()" (clicked)="confirmRollback()" buttonType="button" />
+      <app-action-button
+        [label]="'Cancel'"
+        type="secondary"
+        size="small"
+        [disabled]="rollbackRequestId() !== null"
+        (clicked)="closeRollbackDialog()"
+        buttonType="button"
+      />
+      <app-action-button
+        [label]="rollbackRequestId() !== null ? 'Rolling back...' : 'Rollback'"
+        type="danger"
+        size="small"
+        [disabled]="rollbackRequestId() !== null || !rollbackReason().trim()"
+        (clicked)="confirmRollback()"
+        buttonType="button"
+      />
     </div>
   </app-dialog>
 </div>

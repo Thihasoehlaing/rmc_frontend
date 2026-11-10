@@ -16,7 +16,11 @@
             <span class="material-icons" aria-hidden="true">work</span>
             External Project Data Entry Detail
           </div>
-          <h1>{{ request()?.title || request()?.request_code || 'External Project Data Entry Detail' }}</h1>
+          <h1>
+            {{
+              request()?.title || request()?.request_code || 'External Project Data Entry Detail'
+            }}
+          </h1>
           <div class="detail-meta">
             <span class="detail-chip detail-chip--strong">{{ request()?.request_code }}</span>
             <span
@@ -56,7 +60,13 @@
           <span class="material-icons" aria-hidden="true">payments</span>
           <div>
             <p>Total Budget Request (RM)</p>
-            <strong>{{ displayValue({ label: 'Total Budget Request (RM)', value: externalProject()?.total_budget_request, type: 'money' }) }}</strong>
+            <strong>{{
+              displayValue({
+                label: 'Total Budget Request (RM)',
+                value: externalProject()?.total_budget_request,
+                type: 'money',
+              })
+            }}</strong>
           </div>
         </article>
       </div>
@@ -127,26 +137,32 @@
             <h2>Internal Co-Researcher</h2>
           </div>
           <div class="table-wrap">
-            <table>
-              <thead>
+            <app-data-table [dense]="true" [embedded]="true">
+              <ng-template #tableHeader>
                 <tr>
                   <th>No.</th>
                   <th>Staff Name</th>
                   <th>School/Department</th>
                 </tr>
-              </thead>
-              <tbody>
-                @for (item of form()?.internal_co_researchers ?? []; track item.id; let index = $index) {
+              </ng-template>
+              <ng-template #tableBody>
+                @for (
+                  item of form()?.internal_co_researchers ?? [];
+                  track item.id;
+                  let index = $index
+                ) {
                   <tr>
                     <td class="text-muted is-align-center">{{ index + 1 }}</td>
                     <td>{{ item.staff_name || '-' }}</td>
                     <td>{{ item.school_department || '-' }}</td>
                   </tr>
                 } @empty {
-                  <tr><td colspan="3" class="empty-cell">No internal co-researchers.</td></tr>
+                  <tr>
+                    <td colspan="3" class="empty-cell">No internal co-researchers.</td>
+                  </tr>
                 }
-              </tbody>
-            </table>
+              </ng-template>
+            </app-data-table>
           </div>
         </section>
 
@@ -155,26 +171,32 @@
             <h2>External Collaborators</h2>
           </div>
           <div class="table-wrap table-wrap--wrapping">
-            <table class="collaborator-table">
-              <thead>
+            <app-data-table class="collaborator-table" [dense]="true" [embedded]="true">
+              <ng-template #tableHeader>
                 <tr>
                   <th>No.</th>
                   <th>Name</th>
                   <th>Affiliation</th>
                 </tr>
-              </thead>
-              <tbody>
-                @for (item of form()?.external_collaborators ?? []; track item.id; let index = $index) {
+              </ng-template>
+              <ng-template #tableBody>
+                @for (
+                  item of form()?.external_collaborators ?? [];
+                  track item.id;
+                  let index = $index
+                ) {
                   <tr>
                     <td class="text-muted is-align-center">{{ index + 1 }}</td>
                     <td class="collaborator-table__text">{{ item.full_name || '-' }}</td>
                     <td class="collaborator-table__text">{{ item.affiliation || '-' }}</td>
                   </tr>
                 } @empty {
-                  <tr><td colspan="3" class="empty-cell">No external collaborators.</td></tr>
+                  <tr>
+                    <td colspan="3" class="empty-cell">No external collaborators.</td>
+                  </tr>
                 }
-              </tbody>
-            </table>
+              </ng-template>
+            </app-data-table>
           </div>
         </section>
 
@@ -209,15 +231,15 @@
                   <strong>{{ money(section.total_amount_rm) }}</strong>
                 </div>
                 <div class="table-wrap table-wrap--wrapping">
-                  <table class="description-table">
-                    <thead>
+                  <app-data-table class="description-table" [dense]="true" [embedded]="true">
+                    <ng-template #tableHeader>
                       <tr>
                         <th>No.</th>
                         <th>Description</th>
                         <th>Amount (RM)</th>
                       </tr>
-                    </thead>
-                    <tbody>
+                    </ng-template>
+                    <ng-template #tableBody>
                       @for (item of budgetItemsFor(section.id); track item.id; let index = $index) {
                         <tr>
                           <td class="text-muted is-align-center">{{ index + 1 }}</td>
@@ -225,10 +247,12 @@
                           <td class="amount-cell">{{ money(item.amount_rm) }}</td>
                         </tr>
                       } @empty {
-                        <tr><td colspan="3" class="empty-cell">No budget items.</td></tr>
+                        <tr>
+                          <td colspan="3" class="empty-cell">No budget items.</td>
+                        </tr>
                       }
-                    </tbody>
-                  </table>
+                    </ng-template>
+                  </app-data-table>
                 </div>
               </article>
             } @empty {
@@ -249,19 +273,19 @@
               </div>
               <div class="field-item">
                 <span>Billing Date</span>
-                <strong>{{ form()?.billing?.billing_date | date:'dd-MM-yyyy' }}</strong>
+                <strong>{{ form()?.billing?.billing_date | date: 'dd-MM-yyyy' }}</strong>
               </div>
             </div>
             <div class="table-wrap table-wrap--wrapping">
-              <table class="description-table">
-                <thead>
+              <app-data-table class="description-table" [dense]="true" [embedded]="true">
+                <ng-template #tableHeader>
                   <tr>
                     <th>No.</th>
                     <th>Description</th>
                     <th>Amount (RM)</th>
                   </tr>
-                </thead>
-                <tbody>
+                </ng-template>
+                <ng-template #tableBody>
                   @for (item of form()?.billing_items ?? []; track item.id; let index = $index) {
                     <tr>
                       <td class="text-muted is-align-center">{{ index + 1 }}</td>
@@ -269,10 +293,12 @@
                       <td class="amount-cell">{{ money(item.amount_rm) }}</td>
                     </tr>
                   } @empty {
-                    <tr><td colspan="3" class="empty-cell">No billing items.</td></tr>
+                    <tr>
+                      <td colspan="3" class="empty-cell">No billing items.</td>
+                    </tr>
                   }
-                </tbody>
-              </table>
+                </ng-template>
+              </app-data-table>
             </div>
           } @else {
             <p class="empty-text">No billing information.</p>

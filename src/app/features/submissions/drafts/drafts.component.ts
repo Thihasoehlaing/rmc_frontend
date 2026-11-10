@@ -1,3 +1,6 @@
+import { DataTableComponent } from '../../../shared/components/data-table/data-table.component';
+import { WorkspaceService } from '../../../core/services/workspace.service';
+import { FieldComponent } from '../../../shared/components/settings-ui/settings-ui.components';
 import { ActionButtonComponent } from '../../../shared/components/action-button/action-button.component';
 import { SettingsPageHeaderComponent } from '../../../shared/components/settings-ui/settings-ui.components';
 import { DatePickerComponent } from '../../../shared/components/date-picker/date-picker.component';
@@ -28,7 +31,11 @@ const DRAFT_STATUSES = new Set(['draft', 'fill_application', 'normal_application
 @Component({
   selector: 'app-drafts',
   standalone: true,
-  imports: [ActionButtonComponent,SettingsPageHeaderComponent,
+  imports: [
+    DataTableComponent,
+    FieldComponent,
+    ActionButtonComponent,
+    SettingsPageHeaderComponent,
     DatePickerComponent,
     PaginationComponent,
     SubmissionsSearchComponent,
@@ -41,6 +48,7 @@ const DRAFT_STATUSES = new Set(['draft', 'fill_application', 'normal_application
 export class DraftsComponent implements OnInit {
   private readonly requests = inject(WorkflowRequestsService);
   private readonly formCache = inject(FormCacheService);
+  private readonly workspace = inject(WorkspaceService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
@@ -75,6 +83,7 @@ export class DraftsComponent implements OnInit {
 
   readonly formTabs = computed(() => {
     const tabs = this.forms()
+      .filter((form) => form.workspace_code?.toUpperCase() === this.workspace.code().toUpperCase())
       .filter((form) => form.form_code.toUpperCase() !== 'EXTERNAL')
       .map((form) => ({
         value: form.form_code.toLowerCase(),
@@ -107,18 +116,18 @@ export class DraftsComponent implements OnInit {
     return this.drafts().slice(start, start + this.pageSize());
   });
 
-  readonly totalPages = computed(() => Math.max(1, Math.ceil(this.drafts().length / this.pageSize())));
+  readonly totalPages = computed(() =>
+    Math.max(1, Math.ceil(this.drafts().length / this.pageSize())),
+  );
 
   ngOnInit(): void {
-    this.route.queryParamMap
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((params) => {
-        const tab = (params.get('tab') ?? 'all').toLowerCase();
-        this.selectedType.set(tab);
-        if (!params.has('tab')) {
-          this.setTab(tab);
-        }
-      });
+    this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
+      const tab = (params.get('tab') ?? 'all').toLowerCase();
+      this.selectedType.set(tab);
+      if (!params.has('tab')) {
+        this.setTab(tab);
+      }
+    });
 
     forkJoin({
       requests: this.requests.getMyRequests({

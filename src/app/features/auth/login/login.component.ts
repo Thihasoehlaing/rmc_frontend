@@ -1,3 +1,4 @@
+import { environment } from '../../../../environments/environment';
 import { InputDirective } from '../../../shared/components/settings-ui/settings-ui.components';
 import { FormsModule } from '@angular/forms';
 import { DropdownComponent } from '../../../shared/components/dropdown/dropdown.component';
@@ -32,6 +33,8 @@ export class LoginComponent implements OnInit {
   readonly currentYear = new Date().getFullYear();
   readonly showTestingLogin = this.testingLoginService.enabled;
   readonly testingAccounts = signal<TestingLoginAccount[]>([]);
+  readonly demoWorkspaceFilter = signal<'RMC' | 'HR_SERVICES' | 'FINANCE'>('RMC');
+  readonly demoWorkspaceOptions = [{value:'RMC',label:'RMC'},{value:'HR_SERVICES',label:'HR Services'},{value:'FINANCE',label:'Finance'}];
   readonly demoNameFilter = signal('');
   readonly demoRoleFilter = signal('');
   readonly demoRoles = computed(() =>
@@ -49,7 +52,7 @@ export class LoginComponent implements OnInit {
         account.label.toLocaleLowerCase().includes(nameQuery) ||
         account.username.toLocaleLowerCase().includes(nameQuery);
       const matchesRole = !roleQuery || account.roleName === roleQuery;
-      return matchesName && matchesRole;
+      return matchesName && matchesRole && account.workspaceCode === this.demoWorkspaceFilter();
     });
   });
   readonly isLoading = signal(false);
@@ -102,7 +105,22 @@ export class LoginComponent implements OnInit {
     this.authService.startApuLogin(this.returnRoute);
   }
 
-  loginForTesting(username = 'irene.wong'): void {
+  loginForTesting(username = 'irene.wong', workspaceCode: 'RMC' | 'HR_SERVICES' | 'FINANCE' = 'RMC'): void {
+    if (workspaceCode !== 'RMC') {
+      const host = new URL(environment.apiUrl).hostname;
+      if (!['localhost', '127.0.0.1'].includes(host)) {
+        this.loginError.set('Open the HR or Finance workspace login to use its demo accounts.');
+        return;
+      }
+      const destination = new URL(location.origin);
+      destination.port = workspaceCode === 'HR_SERVICES' ? '4201' : '4202';
+      destination.pathname = '/login';
+      destination.search = new URLSearchParams({demo: username}).toString();
+      destination.hash = '';
+      location.assign(destination.href);
+      return;
+    }
+
     this.loginError.set('');
     this.isLoading.set(true);
 

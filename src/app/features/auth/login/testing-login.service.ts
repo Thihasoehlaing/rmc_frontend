@@ -6,6 +6,7 @@ import { environment } from '../../../../environments/environment';
 
 export interface TestingLoginAccount {
   username: string;
+  workspaceCode: 'RMC' | 'HR_SERVICES' | 'FINANCE';
   label: string;
   roleName: string;
   groups: string;
@@ -44,7 +45,8 @@ export class TestingLoginService {
 
     return this.http.get<DevAuthUsersResponse>(`${environment.apiUrl}/auth/dev-users`).pipe(
       map(response =>
-        response.data.users.map(user => ({
+        response.data.users.flatMap(user => (['RMC', 'HR_SERVICES', 'FINANCE'] as const).map(workspaceCode => ({
+          workspaceCode,
           username: user.username,
           label: user.name || user.username,
           roleName: user.role?.name || 'No role assigned',
@@ -53,7 +55,7 @@ export class TestingLoginService {
             user.department,
             user.job_title,
           ].filter(Boolean).join(' / '),
-        })),
+        }))),
       ),
     );
   }

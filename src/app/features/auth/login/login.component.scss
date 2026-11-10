@@ -308,7 +308,7 @@ $error: #b42318;
 
 .demo-user-filters {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 0.8fr);
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1fr) minmax(0, 0.8fr);
   gap: 0.55rem;
 
   label {

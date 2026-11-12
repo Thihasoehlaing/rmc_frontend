@@ -42,7 +42,7 @@
       <button
         type="button"
         class="btn btn-primary btn--submit"
-        [disabled]="isSaving || isSubmitting"
+        [disabled]="isSaving || isSubmitting || submitDisabled"
         (click)="submitForm.emit()">
         <span class="material-icons" aria-hidden="true">send</span>
         @if (isSubmitting) { Submitting... } @else { Submit Application }

@@ -17,6 +17,8 @@ export class FormWizardNavComponent {
   @Input() isSaving = false;
   /** Disable Submit button */
   @Input() isSubmitting = false;
+  /** Disable submission while its application window is unavailable. */
+  @Input() submitDisabled = false;
   /** Hide the submit button until last step */
   @Input() showSubmit = false;
   /** Hide save/submit actions for read-only history views */

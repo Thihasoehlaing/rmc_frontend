@@ -28,6 +28,7 @@ import { SearchableDropdownComponent } from '../../../shared/components/searchab
 import { TableActionIconComponent } from '../../../shared/components/table-action-icon/table-action-icon.component';
 import { formatDisplayDate } from '../../../shared/utils/date-time.util';
 import {
+  AccessDepartmentOption,
   AccessStatus,
   AccessType,
   DecisionFilter,
@@ -68,7 +69,7 @@ const RULE_COLUMNS: readonly DataTableColumn[] = [
   { key: 'number', label: 'No.', width: '72px', align: 'center', headerAlign: 'center' },
   { key: 'rule', label: 'Rule', width: '260px' },
   { key: 'match', label: 'Match', width: '120px', align: 'center', headerAlign: 'center' },
-  { key: 'department', label: 'Department Value', width: '320px' },
+  { key: 'department', label: 'Departments', width: '320px' },
   { key: 'status', label: 'Status', width: '120px', align: 'center', headerAlign: 'center' },
   { key: 'actions', label: 'Actions', width: '120px', align: 'center', headerAlign: 'center' },
 ];
@@ -97,7 +98,7 @@ const TABS: readonly AccessTabConfig[] = [
     key: 'departments',
     label: 'Department Rules',
     title: 'Department Rules',
-    description: 'Department-name access rules such as School of, DLH, I&E, and SRI.',
+    description: 'Allow access through selected departments. Individual user deny rules take priority.',
     createLabel: 'Add Department Rule',
     emptyIcon: 'apartment',
     columns: RULE_COLUMNS,
@@ -175,6 +176,43 @@ export class SystemAccessComponent implements OnInit {
   readonly ruleName = signal('');
   readonly ruleType = signal<MatchType>('EXACT');
   readonly departmentValue = signal('');
+  readonly selectedDepartmentIds = signal<number[]>([]);
+  readonly accessDepartments = signal<AccessDepartmentOption[]>([]);
+  readonly departmentsLoading = signal(false);
+  readonly departmentsFailed = signal(false);
+  private departmentsLoaded = false;
+  readonly coverageColumns: DataTableColumn[] = [
+    {key: 'department', label: 'Department'}, {key: 'access', label: 'Department access'}, {key: 'rules', label: 'Matching active rules'},
+  ];
+
+  departmentOptions(): DropdownOption<number>[] {
+    return this.accessDepartments().map(d => ({value: d.id, label: d.name + ' · ' + d.department_type + (!d.is_active ? ' (inactive)' : ''), disabled: !d.is_active && !this.selectedDepartmentIds().includes(d.id)}));
+  }
+
+  private loadDepartmentOptions(force = false): void {
+    if (this.departmentsLoading() || (this.departmentsLoaded && !force)) return;
+    this.departmentsLoading.set(true);
+    this.departmentsFailed.set(false);
+    this.systemAccessService.getDepartmentOptions().pipe(finalize(() => this.departmentsLoading.set(false))).subscribe({
+      next: response => {
+        this.accessDepartments.set(response.data);
+        this.departmentsLoaded = true;
+        const rule = this.selectedRule();
+        if (rule && rule.match_type !== 'SELECTED' && this.ruleDialogMode() === 'edit' && !this.selectedDepartmentIds().length) this.selectLegacyDepartments(rule);
+      },
+      error: () => { this.departmentsFailed.set(true); this.departmentsLoaded = false; },
+    });
+  }
+
+  private selectLegacyDepartments(rule: SystemAccessDepartmentRule): void {
+    const normalize = (value: string) => value.trim().toLowerCase().replace(/\s+/g, ' ');
+    const value = normalize(rule.department_value);
+    this.selectedDepartmentIds.set(this.accessDepartments().filter(d => d.is_active && (rule.match_type === 'PREFIX' ? normalize(d.name).startsWith(value) : normalize(d.name) === value)).map(d => d.id));
+  }
+
+  ruleDepartmentNames(rule: SystemAccessDepartmentRule): string {
+    return rule.match_type === 'SELECTED' ? (rule.departments || []).map(d => d.name + (!d.is_active ? ' (inactive)' : '')).join(', ') : rule.department_value;
+  }
   readonly ruleActive = signal(true);
 
   readonly auditLogs = signal<SystemAccessAuditLog[]>([]);
@@ -304,6 +342,7 @@ export class SystemAccessComponent implements OnInit {
   }
 
   loadDepartmentRules(): void {
+    this.loadDepartmentOptions();
     this.rulesLoading.set(true);
     this.rulesFailed.set(false);
     this.systemAccessService
@@ -427,8 +466,10 @@ export class SystemAccessComponent implements OnInit {
   openCreateRule(): void {
     this.selectedRule.set(null);
     this.ruleName.set('');
-    this.ruleType.set('EXACT');
+    this.ruleType.set('SELECTED');
     this.departmentValue.set('');
+    this.selectedDepartmentIds.set([]);
+    this.loadDepartmentOptions();
     this.ruleActive.set(true);
     this.ruleDialogMode.set('create');
   }
@@ -438,19 +479,22 @@ export class SystemAccessComponent implements OnInit {
     this.ruleName.set(rule.rule_name);
     this.ruleType.set(rule.match_type);
     this.departmentValue.set(rule.department_value);
+    this.selectedDepartmentIds.set(rule.department_ids || []);
+    if (rule.match_type !== 'SELECTED') this.selectLegacyDepartments(rule);
+    this.loadDepartmentOptions();
     this.ruleActive.set(rule.is_active);
     this.ruleDialogMode.set('edit');
   }
 
   saveRule(): void {
     const mode = this.ruleDialogMode();
-    if (!mode || !this.ruleName().trim() || !this.departmentValue().trim() || this.isSaving())
+    if (!mode || !this.ruleName().trim() || !this.selectedDepartmentIds().length || this.departmentsLoading() || this.departmentsFailed() || this.isSaving())
       return;
 
     const payload: SystemAccessDepartmentRulePayload = {
       rule_name: this.ruleName().trim(),
-      match_type: this.ruleType(),
-      department_value: this.departmentValue().trim(),
+      match_type: 'SELECTED',
+      department_ids: this.selectedDepartmentIds(),
       is_active: this.ruleActive(),
     };
     const request =
@@ -463,6 +507,7 @@ export class SystemAccessComponent implements OnInit {
       next: (response) => {
         this.toastService.success(response.message);
         this.ruleDialogMode.set(null);
+        this.loadDepartmentOptions(true);
         this.loadDepartmentRules();
       },
     });
@@ -495,6 +540,7 @@ export class SystemAccessComponent implements OnInit {
         next: (response) => {
           this.toastService.success(response.message);
           this.ruleToDelete.set(null);
+          this.loadDepartmentOptions(true);
           this.loadDepartmentRules();
         },
       });

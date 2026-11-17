@@ -403,6 +403,7 @@
 
           <!-- �"?�"? Shared wizard navigation footer �"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"? -->
           <app-form-wizard-nav
+    [actionsDisabled]="applicationPermissions.applicationActionsDisabled()"
             [currentStep]="currentStep()"
             [totalSteps]="totalSteps"
             [isSaving]="isSaving()"

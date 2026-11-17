@@ -1,3 +1,4 @@
+import { PermissionService } from '../../../../core/services/permission.service';
 import { Component, signal, computed, effect, inject, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
@@ -287,6 +288,7 @@ import { conferenceScheduleError } from '../../utils/conference-schedule.util';
 
           <!-- Navigation Buttons -->
           <app-form-wizard-nav
+            [actionsDisabled]="applicationPermissions.applicationActionsDisabled()"
             [currentStep]="currentStep()"
             [totalSteps]="wizardSteps.length"
             [isSaving]="isSaving()"
@@ -861,6 +863,7 @@ import { conferenceScheduleError } from '../../utils/conference-schedule.util';
   `,
 })
 export class ConferenceApplication implements OnInit {
+  readonly applicationPermissions = inject(PermissionService);
   workflow = inject(ConferenceWorkflowService);
   private auth = inject(AuthService);
   private route = inject(ActivatedRoute);
@@ -2204,6 +2207,7 @@ export class ConferenceApplication implements OnInit {
   }
 
   saveDraft(): void {
+    if (this.applicationPermissions.applicationActionsDisabled()) return;
     if (this.isAdminReadOnlyDraft()) {
       this.submissionErrorMessage.set('System Admin can view this draft only. Save is disabled.');
       return;
@@ -2228,6 +2232,7 @@ export class ConferenceApplication implements OnInit {
   }
 
   submitForm(): void {
+    if (this.applicationPermissions.applicationActionsDisabled()) return;
     if (this.isAdminReadOnlyDraft()) {
       this.submissionErrorMessage.set('System Admin can view this draft only. Submit is disabled.');
       return;

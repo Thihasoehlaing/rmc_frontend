@@ -1,4 +1,5 @@
 import { inject } from '@angular/core';
+import { map } from 'rxjs';
 import { CanActivateFn, Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 
@@ -11,7 +12,9 @@ export const authGuard: CanActivateFn = (route, state) => {
   const router = inject(Router);
 
   if (authService.isAuthenticated()) {
-    return true;
+    return authService.refreshStoredSession().pipe(
+      map(valid => valid || router.createUrlTree(['/login'], { queryParams: { returnTo: state.url } })),
+    );
   }
 
   // Not authenticated — send the user to the login page.

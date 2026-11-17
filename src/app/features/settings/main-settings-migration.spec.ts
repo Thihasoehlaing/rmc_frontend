@@ -71,7 +71,7 @@ describe('Standardized Main Settings', () => {
         data: [
           { id: 1, role_code: 'SYSTEM_ADMIN', role_name: 'System Admin' },
           { id: 2, role_code: 'RMC_ADMIN', role_name: 'RMC Admin' },
-          { id: 3, role_code: 'ACADEMIC', role_name: 'Academic' },
+          { id: 3, role_code: 'APPLICANT', role_name: 'Applicant' },
         ],
       });
     http.expectOne((req) => req.url.endsWith('/master-data/departments')).flush({ data: [] });

@@ -13,7 +13,7 @@ export const systemOrRmcAdminPermission = {
 } satisfies NavPermission;
 
 export const reportPermission = {
-  anyOf: ['SystemAdmin', 'Admin', 'RMC', 'HR', 'Finance'],
+  anyOf: ['SystemAdmin', 'Admin'],
 } satisfies NavPermission;
 
 export const academicHosChancelloryPermission = {
@@ -31,7 +31,9 @@ export const academicHosChancelloryPermission = {
   ],
 } satisfies NavPermission;
 
-export const fundingApplicationPermission = academicHosChancelloryPermission;
+export const fundingApplicationPermission = {
+  anyCondition: [...academicHosChancelloryPermission.anyCondition, { allOf: ['SystemAdmin'] }],
+} satisfies NavPermission;
 
 export const fundingDetailPermission = {
   anyCondition: [
@@ -48,6 +50,7 @@ export const journalPermission = fundingDetailPermission;
 
 export const submissionsInboxHistoryPermission = {
   anyCondition: [
+    { anyOf: ['Applicant'] },
     ...academicHosChancelloryPermission.anyCondition,
     {
       anyOf: ['VC', 'HR', 'CEO', 'CFO', 'Finance', 'Admin', 'RMC'],
@@ -57,6 +60,7 @@ export const submissionsInboxHistoryPermission = {
 
 export const submissionsDraftPendingPermission = {
   anyCondition: [
+    { anyOf: ['Applicant'] },
     ...academicHosChancelloryPermission.anyCondition,
     {
       anyOf: ['Admin', 'RMC'],
@@ -67,14 +71,17 @@ export const submissionsDraftPendingPermission = {
 export const submissionsAdminOnlyPermission = systemOrRmcAdminPermission;
 
 export const rdigPermission = {
-  anyOf: ['full_time', 'contract'],
-  allOf: ['academic'],
-  excludeGroups: ['Reviewer', 'HOS'],
+  anyCondition: [
+    { anyOf: ['full_time', 'contract'], allOf: ['academic'], excludeGroups: ['Reviewer', 'HOS'] },
+    { allOf: ['SystemAdmin'] },
+  ],
 } satisfies NavPermission;
 
 export const academicApplicantPermission = {
-  anyOf: ['full_time', 'contract'],
-  allOf: ['academic'],
+  anyCondition: [
+    { anyOf: ['full_time', 'contract'], allOf: ['academic'] },
+    { allOf: ['SystemAdmin'] },
+  ],
 } satisfies NavPermission;
 
 export const ragraPermission = academicApplicantPermission;
@@ -92,7 +99,7 @@ export const systemSettingsPermission = {
 } satisfies NavPermission;
 
 export const externalProjectDataEntryPermission = {
-  anyOf: ['RMC'],
+  anyOf: ['RMC', 'SystemAdmin'],
 } satisfies NavPermission;
 
 export const externalProjectDetailPermission = systemOrRmcAdminPermission;

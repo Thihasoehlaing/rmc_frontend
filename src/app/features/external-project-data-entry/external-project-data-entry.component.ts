@@ -1,3 +1,4 @@
+import { PermissionService } from '../../core/services/permission.service';
 import { SettingsPageHeaderComponent } from '../../shared/components/settings-ui/settings-ui.components';
 import { InputDirective } from '../../shared/components/settings-ui/settings-ui.components';
 import {
@@ -126,6 +127,7 @@ interface ExpectedOutcomeRow {
   styleUrls: ['./external-project-data-entry.component.scss'],
 })
 export class ExternalProjectDataEntryComponent {
+  readonly applicationPermissions = inject(PermissionService);
   private readonly fb = inject(FormBuilder);
   private readonly destroyRef = inject(DestroyRef);
   private readonly cdr = inject(ChangeDetectorRef);
@@ -706,6 +708,7 @@ export class ExternalProjectDataEntryComponent {
   }
 
   async saveDraft(): Promise<void> {
+    if (this.applicationPermissions.applicationActionsDisabled()) return;
     if (
       this.isSaving ||
       this.isSubmitting ||
@@ -750,6 +753,7 @@ export class ExternalProjectDataEntryComponent {
   }
 
   async complete(): Promise<void> {
+    if (this.applicationPermissions.applicationActionsDisabled()) return;
     if (this.isSaving || this.isSubmitting || this.isOptionsLoading) {
       return;
     }

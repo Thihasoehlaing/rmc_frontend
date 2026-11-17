@@ -752,7 +752,7 @@
     </div>
 
     <footer class="external-project-form__actions">
-      <app-action-button [label]="(isSaving || isOptionsLoading ? 'Saving...' : isAdminEditMode ? 'Save Changes' : 'Save As Draft')" type="secondary" size="small" [disabled]="
+      <app-action-button [label]="(isSaving || isOptionsLoading ? 'Saving...' : isAdminEditMode ? 'Save Changes' : 'Save As Draft')" type="secondary" size="small" [disabled]="applicationPermissions.applicationActionsDisabled() ||
           isOptionsLoading ||
           isSaving ||
           isSubmitting ||
@@ -760,7 +760,7 @@
           hasProjectAccountCodeConflict()
         " (clicked)="saveDraft()" buttonType="button" />
       @if (!isAdminEditMode) {
-        <app-action-button [label]="(isSubmitting ? 'Submitting...' : 'Complete')" type="primary" size="small" [disabled]="
+        <app-action-button [label]="(isSubmitting ? 'Submitting...' : 'Complete')" type="primary" size="small" [disabled]="applicationPermissions.applicationActionsDisabled() ||
             isOptionsLoading ||
             isSaving ||
             isSubmitting ||

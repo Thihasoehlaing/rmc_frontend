@@ -88,6 +88,7 @@
 
   <!-- ── 3. Step Navigation Footer ───────────────────────────── -->
   <app-form-wizard-nav
+    [actionsDisabled]="applicationPermissions.applicationActionsDisabled()"
     [currentStep]="currentStep()"
     [totalSteps]="totalSteps"
     [isSaving]="isSaving()"

@@ -103,14 +103,14 @@ export class UsersComponent implements OnInit {
     { key: 'number', label: 'No.', width: '56px', align: 'center' },
     { key: 'user', label: 'User', width: '220px' },
     { key: 'jobTitle', label: 'Job Title', width: '140px' },
-    { key: 'role', label: 'Platform / RMC Role', width: '160px' },
+    { key: 'role', label: 'Platform / Workspace Roles', width: '240px' },
     { key: 'type', label: 'Account Type', width: '130px', align: 'center' },
     { key: 'department', label: 'Department', width: '160px' },
     { key: 'lastLogin', label: 'Last Login', width: '140px' },
     {
       key: 'actions',
       label: 'Actions',
-      width: '104px',
+      width: '128px',
       align: 'center',
       headerAlign: 'center',
     },
@@ -133,6 +133,11 @@ export class UsersComponent implements OnInit {
         )
         .map((role) => ({ value: role.id, label: role.role_name })),
     ];
+  }
+
+  userWorkspaceRoles(user: UserRecord) {
+    return user.workspace_roles ?? [{workspace_id: 0, workspace_code: 'RMC', workspace_name: 'RMC', is_active: true,
+      role_source: 'default' as const, role_id: user.role_id, role_code: user.role_code, role_name: user.role_name}];
   }
 
   ngOnInit(): void {
@@ -326,6 +331,7 @@ export class UsersComponent implements OnInit {
         next: (response) => {
           this.workspaceRows.set(response.data);
           this.toastService.success('Workspace access updated');
+          this.loadUsers();
           this.workspaces.load(true).subscribe({ error: () => undefined });
         },
       });

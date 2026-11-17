@@ -20,7 +20,8 @@
       <button
         type="button"
         class="btn btn-ghost btn--action"
-        [disabled]="isSaving || isSubmitting"
+        [disabled]="actionsDisabled || isSaving || isSubmitting"
+        [attr.title]="actionsDisabled ? 'System Admin can view forms but cannot save or submit applications.' : null"
         (click)="saveDraft.emit()">
         <span class="material-icons" aria-hidden="true">save_alt</span>
         @if (isSaving) { Saving... } @else { Save as Draft }
@@ -42,7 +43,8 @@
       <button
         type="button"
         class="btn btn-primary btn--submit"
-        [disabled]="isSaving || isSubmitting"
+        [disabled]="actionsDisabled || isSaving || isSubmitting"
+        [attr.title]="actionsDisabled ? 'System Admin can view forms but cannot save or submit applications.' : null"
         (click)="submitForm.emit()">
         <span class="material-icons" aria-hidden="true">send</span>
         @if (isSubmitting) { Submitting... } @else { Submit Application }

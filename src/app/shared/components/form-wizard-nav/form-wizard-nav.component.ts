@@ -21,6 +21,8 @@ export class FormWizardNavComponent {
   @Input() showSubmit = false;
   /** Hide save/submit actions for read-only history views */
   @Input() readOnly = false;
+  /** Keep preview navigation enabled while disabling application writes. */
+  @Input() actionsDisabled = false;
 
   @Output() prev = new EventEmitter<void>();
   @Output() next = new EventEmitter<void>();

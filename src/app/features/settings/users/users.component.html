@@ -1,7 +1,7 @@
 <main class="settings-page">
   <app-settings-page-header
     [title]="'Users'"
-    [description]="'Find authenticated users and manage RMC role pairing.'"
+    [description]="'Manage authenticated users, platform roles, and workspace role assignments.'"
     icon="manage_accounts"
   >
     <app-action-button
@@ -140,11 +140,24 @@
             </td>
             <td>{{ row.job_title || 'Not specified' }}</td>
             <td>
-              @if (row.role_name) {
-                <app-status-badge [intent]="'info'">{{ row.role_name }}</app-status-badge>
-              } @else {
-                <span class="settings-muted">Unassigned</span>
-              }
+              <div class="user-role-summary">
+                @if (row.platform_role || row.role_code === 'SYSTEM_ADMIN') {
+                  <div class="user-role-summary__item"><small>Platform</small><app-status-badge intent="info">{{row.platform_role?.name || row.role_name || row.role_code}}</app-status-badge></div>
+                }
+                @for (assignment of userWorkspaceRoles(row); track assignment.workspace_id) {
+                  <div class="user-role-summary__item" [title]="assignment.workspace_name + ' · ' + assignment.role_source + ' role'">
+                    <small>{{assignment.workspace_code === 'HR_SERVICES' ? 'HR' : assignment.workspace_code}}</small>
+                    <div>
+                      <app-status-badge [intent]="assignment.is_active ? 'info' : 'warning'">{{assignment.role_name || assignment.role_code || 'No assigned role'}}</app-status-badge>
+                      @if (!assignment.is_active) { <small class="settings-muted">Access disabled</small> }
+                      @else if (assignment.role_source === 'default') { <small class="settings-muted">Default role</small> }
+                    </div>
+                  </div>
+                }
+                @if (row.workflow_groups?.includes('CHANCELLORY')) {
+                  <div class="user-role-summary__item"><small>Group</small><app-status-badge intent="info">Chancellory</app-status-badge></div>
+                }
+              </div>
             </td>
             <td class="is-align-center">
               <app-status-badge [intent]="'info'">
@@ -154,7 +167,7 @@
             <td>{{ row.department || 'Not available' }}</td>
             <td>{{ formatDate(row.last_login_at) }}</td>
             <td class="is-align-center">
-              <div class="settings-actions">
+              <div class="data-table__actions">
                 <app-action-button
                   [label]="'Workspace access'"
                   type="ghost"
@@ -166,13 +179,13 @@
                   (clicked)="openWorkspaces(row)"
                 />
                 <app-action-button
-                  [label]="'Assign user role'"
+                  [label]="'Platform / default RMC role'"
                   type="ghost"
                   size="small"
                   [icon]="'manage_accounts'"
                   [iconOnly]="true"
-                  [ariaLabel]="'Assign user role'"
-                  [title]="'Assign user role'"
+                  [ariaLabel]="'Platform / default RMC role'"
+                  [title]="'Platform / default RMC role'"
                   (clicked)="openAssignRoleDialog(row)"
                 />
               </div>
@@ -263,16 +276,16 @@
     density="compact"
     [closeDisabled]="isSaving()"
     [isOpen]="userForRoleAssignment() !== null"
-    title="Assign User Role"
+    title="Platform / Default RMC Role"
     size="small"
     (close)="closeAssignRoleDialog()"
   >
     @if (userForRoleAssignment(); as user) {
       <div class="role-pairing">
         <p>
-          Manage role and Chancellory membership for
+          Manage the platform/default RMC role and Chancellory membership for
           <strong>{{ user.fullname || user.username }}</strong
-          >.
+          >. Workspace-specific roles are managed through Workspace Access and override the default role for that workspace.
         </p>
 
         <div class="settings-filter">

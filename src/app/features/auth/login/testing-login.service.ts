@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable, map, throwError } from 'rxjs';
+import { Observable, catchError, forkJoin, map, of, throwError } from 'rxjs';
 
 import { environment } from '../../../../environments/environment';
 
@@ -43,9 +43,14 @@ export class TestingLoginService {
       return throwError(() => new Error('Testing login is not available in this environment.'));
     }
 
-    return this.http.get<DevAuthUsersResponse>(`${environment.apiUrl}/auth/dev-users`).pipe(
-      map(response =>
-        response.data.users.flatMap(user => (['RMC', 'HR_SERVICES', 'FINANCE'] as const).map(workspaceCode => ({
+    return forkJoin({
+      rmc: this.http.get<DevAuthUsersResponse>(`${environment.apiUrl}/auth/dev-users`),
+      hr: this.http.get<{ data: { users: { username: string; name: string; role_name: string; department: string; job_title?: string }[] } }>(`${environment.fhHrApiUrl}/auth/dev-users`).pipe(
+        catchError(() => of({ data: { users: [] } })),
+      ),
+    }).pipe(
+      map(({ rmc, hr }) => [
+        ...rmc.data.users.flatMap(user => (['RMC', 'FINANCE'] as const).map(workspaceCode => ({
           workspaceCode,
           username: user.username,
           label: user.name || user.username,
@@ -56,7 +61,14 @@ export class TestingLoginService {
             user.job_title,
           ].filter(Boolean).join(' / '),
         }))),
-      ),
+        ...hr.data.users.map(user => ({
+          workspaceCode: 'HR_SERVICES' as const,
+          username: user.username,
+          label: user.name || user.username,
+          roleName: user.role_name,
+          groups: [user.role_name, user.department, user.job_title].filter(Boolean).join(' / '),
+        })),
+      ]),
     );
   }
 }

@@ -218,6 +218,7 @@
 
   <!-- ── Wizard Navigation Footer ─────────────────────────── -->
   <app-form-wizard-nav
+    [actionsDisabled]="applicationPermissions.applicationActionsDisabled()"
     class="ragra-app__wizard-nav"
     [currentStep]="currentStep"
     [totalSteps]="totalSteps"

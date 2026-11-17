@@ -1,3 +1,4 @@
+import { PermissionService } from '../../core/services/permission.service';
 import { InputDirective } from '../../shared/components/settings-ui/settings-ui.components';
 import { DropdownComponent } from '../../shared/components/dropdown/dropdown.component';
 import { Component, signal, computed, inject } from '@angular/core';
@@ -38,6 +39,7 @@ export type PartnershipStatus =
   styleUrls: ['./partnership_form.component.scss']
 })
 export class PartnershipFormComponent {
+  readonly applicationPermissions = inject(PermissionService);
   standardOptions0() { return [{value: 'draft', label: 'draft'}, {value: 'submitted', label: 'submitted'}, {value: 'pending_rmc_review', label: 'pending_rmc_review'}, {value: 'pending_proposer_resubmission_rmc', label: 'pending_proposer_resubmission_rmc'}, {value: 'pending_legal_review', label: 'pending_legal_review'}, {value: 'pending_proposer_resubmission_legal', label: 'pending_proposer_resubmission_legal'}, {value: 'pending_sr_director_review', label: 'pending_sr_director_review'}, {value: 'pending_proposer_resubmission_sr_director', label: 'pending_proposer_resubmission_sr_director'}, {value: 'pending_vc_review', label: 'pending_vc_review'}, {value: 'rejected_vc', label: 'rejected_vc'}, {value: 'pending_senior_executive_signing', label: 'pending_senior_executive_signing'}, {value: 'completed', label: 'completed'}]; }
   private fb = inject(FormBuilder);
   private route = inject(ActivatedRoute);
@@ -158,11 +160,13 @@ export class PartnershipFormComponent {
   }
 
   onSaveDraft(): void {
+    if (this.applicationPermissions.applicationActionsDisabled()) return;
     this.isSaving.set(true);
     setTimeout(() => this.isSaving.set(false), 1000);
   }
 
   onSubmit(): void {
+    if (this.applicationPermissions.applicationActionsDisabled()) return;
     this.submitAttempted.set(true);
     this.isSubmitting.set(true);
     const isResubmission = this.applicationStatus().includes('resubmission');

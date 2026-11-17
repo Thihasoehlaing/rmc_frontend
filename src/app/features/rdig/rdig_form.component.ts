@@ -1,3 +1,4 @@
+import { PermissionService } from '../../core/services/permission.service';
 import { ActionButtonComponent } from '../../shared/components/action-button/action-button.component';
 import { InputDirective } from '../../shared/components/settings-ui/settings-ui.components';
 import { Component, signal, computed, inject, OnInit, OnDestroy, effect, ViewChild } from '@angular/core';
@@ -122,6 +123,7 @@ export function isApplicantSubmissionWindowOpen(
   styleUrl: './rdig_form.component.scss',
 })
 export class RdigApplicationComponent implements OnInit, OnDestroy {
+  readonly applicationPermissions = inject(PermissionService);
   @ViewChild(StepIndicatorComponent) stepIndicator?: StepIndicatorComponent;
 
   readonly loadingSpinnerIcon = SVG_ICON_LOADING_SPINNER;
@@ -2030,6 +2032,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
   private draftSaveTimer?: ReturnType<typeof setTimeout>;
 
   onSaveDraft(): void {
+    if (this.applicationPermissions.applicationActionsDisabled()) return;
     if (this.isViewOnly()) {
       this.submissionErrorMessage.set(
         this.isApplicantOwner()
@@ -2072,6 +2075,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
   }
 
   onSubmit(): void {
+    if (this.applicationPermissions.applicationActionsDisabled()) return;
     if (this.isSaving() || this.isSubmitting()) return;
     this.submissionErrorMessage.set('');
     this.submitAttempted.set(true);

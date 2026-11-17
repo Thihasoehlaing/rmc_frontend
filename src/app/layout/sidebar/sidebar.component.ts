@@ -78,7 +78,7 @@ export class SidebarComponent implements OnInit {
         .filter(el => !el.route?.startsWith('/settings/') || ['/settings/applicant-rules', '/settings/request-statuses'].includes(el.route))
         .filter(el => this.workspaces.code() === 'RMC' || !['/analysis-dashboard', '/reports', '/admin-settings'].some(path => el.route === path || el.route?.startsWith(path + '/')))
         .filter(el => this.isConfiguredFormActive(el, activeFormCodes))
-        .filter(el => this.isFolder(el) || el.route !== '/rdig/application' || this.rdigAccess())
+        .filter(el => this.isFolder(el) || el.route !== '/rdig/application' || this.rdigAccess() || this.permService.applicationActionsDisabled())
         .filter(el => !restrictToWorkflowSidebar || this.isAllowedRestrictedSidebarElement(el))
         .map(el =>
           this.isFolder(el)

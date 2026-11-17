@@ -854,6 +854,7 @@
 
   <!-- Form Navigation Footer -->
   <app-form-wizard-nav
+    [actionsDisabled]="applicationPermissions.applicationActionsDisabled()"
     class="travel-form-navigation"
     [currentStep]="1"
     [totalSteps]="1"

@@ -264,6 +264,7 @@
   ></app-form-validation-warning-dialog>
 
   <app-form-wizard-nav
+    [actionsDisabled]="applicationPermissions.applicationActionsDisabled()"
     class="journal-app__wizard-nav"
     [currentStep]="currentStep"
     [totalSteps]="totalSteps"

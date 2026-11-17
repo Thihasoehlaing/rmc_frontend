@@ -1,3 +1,4 @@
+import { PermissionService } from '../../core/services/permission.service';
 import { ActionButtonComponent } from '../../shared/components/action-button/action-button.component';
 import { SettingsPageHeaderComponent } from '../../shared/components/settings-ui/settings-ui.components';
 import {
@@ -5,6 +6,7 @@ import {
 	Component,
 	TrackByFunction,
 	computed,
+	inject,
 	effect,
 	signal,
 	ViewChild,
@@ -56,6 +58,7 @@ interface FinanceClaimRow {
 	changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FinanceClaimListComponent {
+  readonly applicationPermissions = inject(PermissionService);
 	@ViewChild(ClaimExpensesComponent) claimExpensesComponent?: ClaimExpensesComponent;
 	@ViewChild(FinanceClaimDeclarationComponent) declarationComponent?: FinanceClaimDeclarationComponent;
 
@@ -235,6 +238,7 @@ export class FinanceClaimListComponent {
 	}
 
 	onSaveDraft(): void {
+    if (this.applicationPermissions.applicationActionsDisabled()) return;
 		this.isSaving.set(true);
 		setTimeout(() => {
 			this.isSaving.set(false);
@@ -243,6 +247,7 @@ export class FinanceClaimListComponent {
 	}
 
 	onSubmit(): void {
+    if (this.applicationPermissions.applicationActionsDisabled()) return;
 		this.submitAttempted.set(true);
 		
 		if (this.claimExpensesComponent?.claimExpensesForm) {

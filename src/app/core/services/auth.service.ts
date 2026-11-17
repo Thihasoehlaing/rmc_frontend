@@ -2,10 +2,11 @@ import { HttpClient, HttpContext, HttpErrorResponse } from '@angular/common/http
 import { DOCUMENT } from '@angular/common';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { Observable, catchError, map, switchMap, tap, throwError } from 'rxjs';
+import { Observable, catchError, finalize, map, of, shareReplay, switchMap, tap, throwError } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
 import { SHOW_API_SUCCESS } from '../interceptors/api-message.interceptor';
+import { mapRoleToGroups } from './auth-role.util';
 import { User, UserGroup } from '../interfaces/user.interface';
 import { WorkspaceService } from './workspace.service';
 import { FormCacheService } from './form-cache.service';
@@ -36,6 +37,7 @@ interface AuthCheckResponse {
       } | null;
       username: string;
       workflow_groups?: string[];
+      academic_eligible?: boolean;
     };
   };
   message: string;
@@ -53,6 +55,8 @@ export class AuthService {
   private readonly workspaces = inject(WorkspaceService);
   private readonly document = inject(DOCUMENT);
   private logoutInProgress = false;
+  private storedSessionNeedsRefresh = false;
+  private sessionRefresh: Observable<boolean> | null = null;
   private readonly TOKEN_KEY = 'token';
   private readonly USER_KEY = 'user';
   private readonly LEGACY_SESSION_KEY = 'rmc_session_user';
@@ -66,6 +70,7 @@ export class AuthService {
 
     const storedUser = this.readStoredUser();
     if (storedUser && this.getAccessToken()) {
+      this.storedSessionNeedsRefresh = typeof storedUser.academic_eligible !== 'boolean';
       this._currentUser.set(this.mapCheckedUser(storedUser));
     }
   }
@@ -80,7 +85,7 @@ export class AuthService {
     if (!user || !workspace || user.groups.includes('SystemAdmin')) return user;
     const role = workspace.role;
     return { ...user, role: role ? { id: role.id ?? user.role?.id ?? 0, code: role.code, name: role.name } : undefined,
-      groups: [...new Set([...this.mapRoleToGroups(role?.code),
+      groups: [...new Set([...this.mapRoleToGroups(role?.code, user.isAcademicEligible === true),
         ...user.groups.filter(group => group === 'Chancellory')])] };
   });
 
@@ -157,6 +162,31 @@ export class AuthService {
           return throwError(() => error);
         }),
       );
+  }
+
+  /** Upgrade sessions saved before academic eligibility became a separate API field. */
+  refreshStoredSession(): Observable<boolean> {
+    if (!this.storedSessionNeedsRefresh) return of(this.isAuthenticated());
+    if (this.sessionRefresh) return this.sessionRefresh;
+
+    const refresh = this.checkAuthentication().pipe(
+      tap(response => {
+        localStorage.setItem(this.USER_KEY, JSON.stringify(response.data.user));
+        this._currentUser.set(this.mapCheckedUser(response.data.user));
+        this.storedSessionNeedsRefresh = false;
+      }),
+      map(() => true),
+      catchError(error => {
+        if (error instanceof HttpErrorResponse && [401, 403].includes(error.status)) {
+          this.clearStoredSession();
+        }
+        return of(false);
+      }),
+      finalize(() => { this.sessionRefresh = null; }),
+      shareReplay({ bufferSize: 1, refCount: true }),
+    );
+    this.sessionRefresh = refresh;
+    return refresh;
   }
 
   loadProfile(): Observable<User> {
@@ -311,36 +341,14 @@ export class AuthService {
       distinguishedName: checkedUser.distinguished_name,
       photoUrl: checkedUser.photo_url ?? undefined,
       role,
-      groups: [...new Set([...this.mapRoleToGroups(role?.code),
+      isAcademicEligible: checkedUser.academic_eligible === true,
+      groups: [...new Set([...this.mapRoleToGroups(role?.code, checkedUser.academic_eligible === true),
         ...(checkedUser.workflow_groups?.includes('CHANCELLORY') ? ['Chancellory' as const] : [])])],
     };
   }
 
-  mapRoleToGroups(roleCode: string | null | undefined): UserGroup[] {
-    if (!roleCode) return [];
-
-    const roleGroups: Record<string, UserGroup[]> = {
-      SYSTEM_ADMIN: ['Admin', 'SystemAdmin'],
-      RMC_ADMIN: ['RMC', 'Admin'],
-      RMC_STAFF: ['RMC'],
-      RMC: ['RMC'],
-      REVIEWER: ['Reviewer'],
-      ACADEMIC: ['full_time', 'academic'],
-      LECTURER: ['full_time', 'academic'],
-      HEAD_OF_SCHOOL: ['full_time', 'academic', 'HOS'],
-      HEAD_OF_DEPARTMENT: ['full_time', 'academic', 'HOS'],
-      HOS: ['HOS'],
-      HOD: ['HOS'],
-      VICE_CHANCELLOR: ['VC'],
-      VC: ['VC'],
-      HUMAN_RESOURCE: ['HR'],
-      CEO: ['CEO'],
-      CFO: ['CFO'],
-      FINANCE: ['Finance'],
-      RDIG_CHAIR: ['RDIG_Chair'],
-    };
-
-    return roleGroups[roleCode.trim().toUpperCase()] ?? [];
+  mapRoleToGroups(roleCode: string | null | undefined, academicEligible = false): UserGroup[] {
+    return mapRoleToGroups(roleCode, academicEligible);
   }
 
   private readStoredUser(): AuthCheckResponse['data']['user'] | null {

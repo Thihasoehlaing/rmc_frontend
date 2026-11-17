@@ -1,3 +1,4 @@
+import { PermissionService } from '../../../../core/services/permission.service';
 import { ActionButtonComponent } from '../../../../shared/components/action-button/action-button.component';
 import { InputDirective } from '../../../../shared/components/settings-ui/settings-ui.components';
 import { DatePickerComponent } from '../../../../shared/components/date-picker/date-picker.component';
@@ -71,6 +72,7 @@ interface FunctionalAreaOption {
   styleUrl: './travel-authorization-application.component.scss',
 })
 export class TravelAuthorizationApplicationComponent implements OnInit {
+  readonly applicationPermissions = inject(PermissionService);
   private fb = inject(FormBuilder);
   private route = inject(ActivatedRoute);
   private readonly staffDirectoryService = inject(StaffDirectoryService, { optional: true });
@@ -982,6 +984,7 @@ export class TravelAuthorizationApplicationComponent implements OnInit {
   }
 
   onSubmitForm(): void {
+    if (this.applicationPermissions.applicationActionsDisabled()) return;
     if (this.travelAuthForm.valid) {
       this.isSubmitting.set(true);
       const loadingId = this.actionLoading.begin('Submitting travel authorization application');

@@ -118,5 +118,5 @@ export function actionRoute(app: {
 
 export function showInboxApplicantInfo(roleCode: string | null | undefined): boolean {
   const code = roleCode?.trim().toUpperCase();
-  return code !== 'ACADEMIC' && code !== 'LECTURER';
+  return code !== 'APPLICANT' && code !== 'ACADEMIC' && code !== 'LECTURER';
 }

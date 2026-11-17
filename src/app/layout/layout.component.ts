@@ -14,5 +14,4 @@ import { SidebarService } from '../core/services/sidebar.service';
 })
 export class LayoutComponent {
   sidebarService = inject(SidebarService);
-  currentYear = new Date().getFullYear();
 }

@@ -23,6 +23,7 @@ export type UserGroup =
   | 'full_time'
   | 'contract'
   | 'academic'
+  | 'Applicant'
   | 'HOS'
   | 'VC'
   | 'group_ra_gra_hos_pass'
@@ -61,6 +62,8 @@ export interface User {
    */
   password?: string;
   role?: UserRole;
+  /** Academic eligibility supplied by the backend, independent of the role. */
+  isAcademicEligible?: boolean;
   /** All groups this user belongs to — drives every permission decision. */
   groups: UserGroup[];
 }

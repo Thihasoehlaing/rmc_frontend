@@ -1,3 +1,4 @@
+import { PermissionService } from '../../core/services/permission.service';
 import { Component, inject, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
@@ -65,6 +66,7 @@ import { formatDisplayDateTime } from '../../shared/utils/date-time.util';
   styleUrl: './journal-publication-form.component.scss',
 })
 export class JournalPublicationFormComponent {
+  readonly applicationPermissions = inject(PermissionService);
   workflow = inject(JournalWorkflowService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
@@ -645,6 +647,7 @@ export class JournalPublicationFormComponent {
   }
 
   async onSaveDraft() {
+    if (this.applicationPermissions.applicationActionsDisabled()) return;
     if (this.isAdminReadOnlyDraft()) {
       this.actionError.set('System Admin can view this draft only. Save is disabled.');
       return;
@@ -670,6 +673,7 @@ export class JournalPublicationFormComponent {
   }
 
   async onSubmit() {
+    if (this.applicationPermissions.applicationActionsDisabled()) return;
     if (this.isAdminReadOnlyDraft()) {
       this.actionError.set('System Admin can view this draft only. Submit is disabled.');
       return;

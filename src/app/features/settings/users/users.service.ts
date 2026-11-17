@@ -19,6 +19,17 @@ export interface ApiPagination {
   has_prev: boolean;
 }
 
+export interface UserWorkspaceRole {
+  workspace_id: number;
+  workspace_code: string;
+  workspace_name: string;
+  is_active: boolean;
+  role_source: 'platform' | 'workspace' | 'default' | 'none';
+  role_id: number | null;
+  role_code: string | null;
+  role_name: string | null;
+}
+
 export interface UserRecord {
   id: number;
   username: string;
@@ -30,6 +41,8 @@ export interface UserRecord {
   role_code: string | null;
   role_name: string | null;
   workflow_groups?: string[];
+  platform_role?: {id: number; code: string; name: string} | null;
+  workspace_roles?: UserWorkspaceRole[];
   job_title: string | null;
   photo_url: string | null;
   is_student: boolean;

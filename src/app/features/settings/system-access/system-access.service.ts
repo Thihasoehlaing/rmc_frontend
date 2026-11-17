@@ -25,7 +25,7 @@ export interface PaginatedData<T> {
 }
 
 export type AccessType = 'ALLOW' | 'DENY';
-export type MatchType = 'EXACT' | 'PREFIX';
+export type MatchType = 'EXACT' | 'PREFIX' | 'SELECTED';
 export type AccessStatus = '' | 'Active' | 'Inactive';
 export type DecisionFilter = '' | 'ALLOWED' | 'DENIED';
 
@@ -61,11 +61,21 @@ export interface StaffOption {
   is_active?: boolean;
 }
 
+export interface AccessDepartmentOption {
+  id: number;
+  name: string;
+  department_type: string;
+  is_active: boolean;
+  matched_rules: string[];
+}
+
 export interface SystemAccessDepartmentRule {
   id: number;
   rule_name: string;
   match_type: MatchType;
   department_value: string;
+  department_ids?: number[];
+  departments?: {id: number; name: string; is_active: boolean}[];
   is_active: boolean;
   created_by: string | null;
   updated_by: string | null;
@@ -76,7 +86,8 @@ export interface SystemAccessDepartmentRule {
 export interface SystemAccessDepartmentRulePayload {
   rule_name: string;
   match_type: MatchType;
-  department_value: string;
+  department_value?: string;
+  department_ids?: number[];
   is_active: boolean;
 }
 
@@ -148,6 +159,10 @@ export class SystemAccessService {
       `${this.baseUrl}/department-rules`,
       { params: httpParams },
     );
+  }
+
+  getDepartmentOptions(): Observable<ApiResponse<AccessDepartmentOption[]>> {
+    return this.http.get<ApiResponse<AccessDepartmentOption[]>>(`${this.baseUrl}/department-options`);
   }
 
   getDepartmentRule(id: number): Observable<ApiResponse<SystemAccessDepartmentRule>> {

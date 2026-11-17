@@ -1,3 +1,4 @@
+import { PermissionService } from '../../core/services/permission.service';
 import { Component, inject, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AbstractControl, FormArray, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -39,6 +40,7 @@ interface DocumentConfig {
   styleUrl: './RA-GRA_form.component.scss'
 })
 export class RagraFormComponent {
+  readonly applicationPermissions = inject(PermissionService);
   private route = inject(ActivatedRoute);
   private actionLoading = inject(ActionLoadingService);
   readonly guidelineContext: GuidelineContext =
@@ -385,6 +387,7 @@ export class RagraFormComponent {
   }
 
   onSaveDraft(): void {
+    if (this.applicationPermissions.applicationActionsDisabled()) return;
     this.isSaving = true;
     setTimeout(() => {
       this.isSaving = false;
@@ -394,6 +397,7 @@ export class RagraFormComponent {
   }
 
   onSubmit(): void {
+    if (this.applicationPermissions.applicationActionsDisabled()) return;
     this.submitAttempted = true;
     this.validateCurrentStep(true);
 

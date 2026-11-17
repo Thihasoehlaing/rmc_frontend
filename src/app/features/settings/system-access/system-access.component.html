@@ -184,8 +184,9 @@
           [label]="'Match'"
           [options]="[
             { value: '', label: 'All' },
-            { value: 'EXACT', label: 'Exact' },
-            { value: 'PREFIX', label: 'Prefix' },
+            { value: 'SELECTED', label: 'Selected departments' },
+            { value: 'EXACT', label: 'Legacy exact' },
+            { value: 'PREFIX', label: 'Legacy prefix' },
           ]"
           [ngModel]="ruleMatchType()"
           (ngModelChange)="ruleMatchType.set($event)"
@@ -253,10 +254,10 @@
                 <span class="settings-cell">{{ row.rule_name }}</span>
               </td>
               <td class="is-align-center">
-                <app-status-badge [intent]="'info'">{{ row.match_type }}</app-status-badge>
+                <app-status-badge [intent]="'info'">{{ row.match_type === 'SELECTED' ? 'Selected' : 'Legacy ' + row.match_type.toLowerCase() }}</app-status-badge>
               </td>
               <td>
-                <span class="settings-cell">{{ row.department_value }}</span>
+                <span class="settings-cell">{{ ruleDepartmentNames(row) }}</span>
               </td>
               <td class="is-align-center">
                 <app-status-badge [intent]="!row.is_active ? 'warning' : 'success'">
@@ -306,6 +307,20 @@
             (pageSizeChange)="rulePageSize.set($event); rulePage.set(1); loadDepartmentRules()"
           ></app-pagination>
         </div>
+      }
+    </app-settings-panel>
+  }
+
+  @if (activeTab() === 'departments') {
+    <app-settings-panel title="Department access coverage">
+      <p class="form-hint">This shows department-rule coverage, not each person's final access. Individual Allow/Deny rules and account status still apply.</p>
+      @if (departmentsFailed()) { <app-state title="Unable to load department coverage" description="Refresh this page to try again." icon="error_outline" /> }
+      @else {
+        <app-data-table [columns]="coverageColumns" [rows]="accessDepartments()" [dense]="true" [embedded]="true">
+          <ng-template #rowTemplate let-row>
+            <tr><td>{{row.name}} <small class="settings-muted">{{row.department_type}}</small></td><td><app-status-badge [intent]="row.is_active && row.matched_rules.length ? 'success' : 'warning'">{{!row.is_active ? 'Inactive department' : row.matched_rules.length ? 'Allowed by department rule' : 'No department rule'}}</app-status-badge></td><td>{{row.matched_rules.join(', ') || '—'}}</td></tr>
+          </ng-template>
+        </app-data-table>
       }
     </app-settings-panel>
   }
@@ -520,27 +535,14 @@
           id="system-access-field-2"
           [ngModel]="ruleName()"
           (ngModelChange)="ruleName.set($event)"
-          placeholder="School prefix"
+          placeholder="For example, Academic departments"
       /></app-field>
-      <div class="settings-filter">
-        <app-dropdown
-          [label]="'Match Type'"
-          [options]="[
-            { value: 'EXACT', label: 'Exact' },
-            { value: 'PREFIX', label: 'Prefix' },
-          ]"
-          [ngModel]="ruleType()"
-          (ngModelChange)="ruleType.set($event)"
-        />
-      </div>
-      <app-field [label]="'Department Value'" controlId="system-access-field-1"
-        ><input
-          appInput
-          id="system-access-field-1"
-          [ngModel]="departmentValue()"
-          (ngModelChange)="departmentValue.set($event)"
-          placeholder="School of"
-      /></app-field>
+      @if (selectedRule() && selectedRule()!.match_type !== 'SELECTED') {
+        <p class="form-hint">Legacy {{ selectedRule()!.match_type.toLowerCase() }} rule: {{ selectedRule()!.department_value }}. Saving replaces this text rule with only the departments selected below. Future departments will not be included automatically.</p>
+      }
+      <app-dropdown label="Departments" ariaLabel="Departments allowed by this rule" placeholder="Select departments" [options]="departmentOptions()" [isMulti]="true" [loading]="departmentsLoading()" [ngModel]="selectedDepartmentIds()" (ngModelChange)="selectedDepartmentIds.set($event)" />
+      @if (departmentsFailed()) { <p class="form-error-msg">Unable to load departments. Close and reopen this dialog to retry.</p> }
+      <p class="form-hint">Select one or more departments. Individual user deny rules still take priority.</p>
       <app-toggle
         [label]="'Active'"
         [checked]="ruleActive()"
@@ -559,7 +561,7 @@
         [label]="isSaving() ? 'Saving...' : 'Save Rule'"
         type="primary"
         size="small"
-        [disabled]="isSaving() || !ruleName().trim() || !departmentValue().trim()"
+        [disabled]="isSaving() || departmentsLoading() || departmentsFailed() || !ruleName().trim() || !selectedDepartmentIds().length"
         (clicked)="saveRule()"
         [loading]="isSaving()"
         loadingLabel="Saving…"

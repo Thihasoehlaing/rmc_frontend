@@ -1,5 +1,5 @@
 import { WorkspaceService } from './workspace.service';
-import { Injectable, inject } from '@angular/core';
+import { Injectable, computed, inject } from '@angular/core';
 import { AuthService } from './auth.service';
 import { NavPermission, PermissionCondition } from '../interfaces/permission.interface';
 import { UserGroup } from '../interfaces/user.interface';
@@ -24,15 +24,25 @@ import { UserGroup } from '../interfaces/user.interface';
 export class PermissionService {
   private authService = inject(AuthService);
   private workspaces = inject(WorkspaceService);
+  readonly applicationActionsDisabled = computed(() => {
+    const user = this.authService.currentUser();
+    return user?.role?.code?.toUpperCase() === 'SYSTEM_ADMIN' || Boolean(user?.groups.includes('SystemAdmin'));
+  });
 
   // ─── Internal helpers ──────────────────────────────────────────────────────
 
   /** Returns the current user's group list, or [] if not authenticated. */
   private userGroups(): UserGroup[] {
     const user = this.authService.currentUser();
-    if (user?.groups.includes('SystemAdmin')) return user.groups;
+    if (!user) return [];
+    if (user.groups.includes('SystemAdmin')) return user.groups;
     const workspace = this.workspaces.current();
-    return workspace ? this.authService.mapRoleToGroups(workspace.role?.code) : user?.groups ?? [];
+    if (!workspace) return user.groups;
+    return [...new Set([
+      ...this.authService.mapRoleToGroups(workspace.role?.code, user.isAcademicEligible === true),
+      // Chancellory is a group membership, not a role replaced by the workspace role.
+      ...user.groups.filter(group => group === 'Chancellory'),
+    ])];
   }
 
   // ─── Core evaluation ───────────────────────────────────────────────────────

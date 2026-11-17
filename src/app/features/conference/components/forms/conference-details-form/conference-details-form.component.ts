@@ -866,10 +866,6 @@ export class ConferenceDetailsFormComponent implements OnInit, OnDestroy {
     });
   }
 
-  onColleagueSearch(search: string): void {
-    this.loadColleagueOptions(search);
-  }
-
   private loadColleagueOptions(search = ''): void {
     this.colleaguesLoading.set(true);
     this.masterData.searchStaff(search).subscribe({

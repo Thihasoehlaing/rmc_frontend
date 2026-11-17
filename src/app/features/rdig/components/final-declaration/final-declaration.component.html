@@ -121,7 +121,7 @@
           icon="verified"
           [visible]="workflow.isRmcApprovalVisible()"
           [readonly]="!workflow.isRmcEditable()"
-          [options]="workflow.rmcApprovalOptions"
+          [options]="workflow.rmcStageApprovalOptions"
           data-missing-field-target="approvals.rmcStatus" [control]="ac('rmcStatus')">
         </app-approval-card>
 

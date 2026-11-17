@@ -398,7 +398,6 @@
           placeholder="Search staff..."
           [ngModel]="userUsername()"
           (ngModelChange)="userUsername.set($event || '')"
-          (searchChange)="loadStaffOptions($event)"
         ></app-searchable-dropdown>
       </label>
       <label class="forms-filter"><span>Access Type</span><select class="input--select" [ngModel]="userType()" (ngModelChange)="userType.set($event)"><option value="ALLOW">Allow</option><option value="DENY">Deny</option></select></label>

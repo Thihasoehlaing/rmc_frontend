@@ -120,7 +120,7 @@ export class FormCorrectionComponent {
     this.affiliation.set(author.affiliation || 'Asia Pacific University');
     this.displayOrder.set(author.display_order);
     this.correctionReason.set('');
-    this.loadAcademicStaffOptions(author.staff_name || '');
+    this.loadAcademicStaffOptions();
   }
 
   closeEditor(): void {
@@ -128,10 +128,6 @@ export class FormCorrectionComponent {
     this.dialogMode.set(null);
     this.editingAuthor.set(null);
     this.resetEditor();
-  }
-
-  onStaffSearch(search: string): void {
-    this.loadAcademicStaffOptions(search);
   }
 
   onStaffSelected(username: string | null): void {

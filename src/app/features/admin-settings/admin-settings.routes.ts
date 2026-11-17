@@ -77,6 +77,12 @@ export const adminSettingsRoutes: Routes = [
       import('./batch-sitting/batch-sitting.component').then((m) => m.BatchSittingComponent),
   },
   {
+    path: 'rdig-presentations',
+    canActivate: [permissionGuard],
+    data: { permission: adminOnlySettingsChildPermission satisfies NavPermission },
+    loadComponent: () => import('./rdig-presentations/rdig-presentations.component').then(m => m.RdigPresentationsComponent),
+  },
+  {
     path: 'rdig-blocked-list',
     loadComponent: () =>
       import('./staff-access/staff-access.component').then((m) => m.StaffAccessComponent),

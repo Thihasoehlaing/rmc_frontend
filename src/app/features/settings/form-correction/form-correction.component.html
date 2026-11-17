@@ -150,7 +150,6 @@
           placeholder="Search Academic Staff"
           [ngModel]="selectedStaffUsername()"
           (ngModelChange)="onStaffSelected($event)"
-          (searchChange)="onStaffSearch($event)"
           [loading]="staffOptionsLoading()"
         >
         </app-searchable-dropdown>

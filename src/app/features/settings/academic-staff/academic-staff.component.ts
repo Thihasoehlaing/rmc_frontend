@@ -254,11 +254,6 @@ export class AcademicStaffComponent implements OnInit {
     this.loadStaffOptionsForSearch(this.staffSearch());
   }
 
-  onStaffSearchChange(search: string): void {
-    this.staffSearch.set(search);
-    this.loadStaffOptionsForSearch(search);
-  }
-
   loadStaffOptionsForSearch(search: string): void {
     this.isStaffLoading.set(true);
     this.staffLoadFailed.set(false);

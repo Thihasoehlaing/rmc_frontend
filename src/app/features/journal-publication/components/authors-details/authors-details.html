@@ -289,7 +289,6 @@
             [optionListCount]="staffOptions().length"
             placeholder="Search staff..."
             formControlName="staffName"
-            (searchChange)="loadAcademicStaffOptions($event)"
           >
           </app-searchable-dropdown>
           @if (staffOptionsLoadFailed()) {

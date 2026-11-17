@@ -12,6 +12,7 @@ export type WorkflowStageKey =
   | 'hos_review_again'
   | 'rmc'
   | 'reviewers'
+  | 'presentation_period'
   | 'rmc_again'
   | 'rdig_chair'
   | 'vc'
@@ -56,6 +57,7 @@ export const WORKFLOW_STAGE_META: WorkflowStageMeta[] = [
   { key: 'applicant_resubmission_rmc', label: 'Applicant Resubmission — RMC Requested', description: 'Applicant revises and resubmits after RMC requests changes.', rdigStatuses: ['pending_applicant_resubmission_rmc'] },
   { key: 'reviewers',              label: 'Reviewers',               description: 'Assigned reviewers evaluate the application.',                    rdigStatuses: ['pending_reviewers'] },
   { key: 'applicant_resubmission_reviewers', label: 'Applicant Resubmission — Reviewers Requested', description: 'Applicant revises and resubmits after reviewers request changes.', rdigStatuses: ['pending_applicant_resubmission_reviewers'] },
+  { key: 'presentation_period', label: 'Presentation Period', description: 'Applicants present their RDIG proposals during this period.', rdigStatuses: [] },
   { key: 'rmc_again',             label: 'RMC (Again)',              description: 'RMC conducts final review after reviewers.',                      rdigStatuses: ['pending_rmc_review'] },
   { key: 'rdig_chair',             label: 'RDIG Chair',              description: 'RDIG Chair reviews and approves.',                               rdigStatuses: ['pending_rdig_chair'] },
   { key: 'vc',                     label: 'Vice Chancellor (VC)',     description: 'VC approves the research application.',                          rdigStatuses: ['pending_vc'] },

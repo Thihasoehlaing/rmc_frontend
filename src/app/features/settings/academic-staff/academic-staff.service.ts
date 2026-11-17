@@ -1,6 +1,6 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, forkJoin, map, of, switchMap } from 'rxjs';
 
 import { environment } from '../../../../environments/environment';
 
@@ -238,9 +238,18 @@ export class AcademicStaffService {
       params = params.set('department_id', filters.departmentId);
     }
 
-    return this.http.get<ApiResponse<PaginatedData<StaffRecord>>>(
-      this.staffUrl,
-      { params },
+    const loadPage = (page: number) => this.http.get<ApiResponse<PaginatedData<StaffRecord>>>(
+      this.staffUrl, { params: params.set('page', page) },
     );
+    return loadPage(1).pipe(switchMap(first => {
+      const pages = first.data.pagination.total_pages;
+      if (pages <= 1) return of(first);
+      return forkJoin(Array.from({ length: pages - 1 }, (_, index) => loadPage(index + 2))).pipe(
+        map(rest => ({
+          ...first,
+          data: { ...first.data, items: [first, ...rest].flatMap(page => page.data.items) },
+        })),
+      );
+    }));
   }
 }

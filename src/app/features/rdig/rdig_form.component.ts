@@ -216,6 +216,22 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
   );
 
 
+  private readonly submissionClock = signal(Date.now());
+  private submissionClockTimer?: ReturnType<typeof setInterval>;
+
+  readonly submissionWindowAvailable = computed(() => {
+    const now = this.submissionClock();
+    const status = this.workflow.status();
+    // Returned applications follow their own batch stage, checked by the backend.
+    if (status.startsWith('pending_applicant_resubmission_')) {
+      return this.workflow.currentUserCanAct();
+    }
+    return isApplicantSubmissionWindowOpen(
+      !!this.activeBatch(), this.activeBatch()?.status,
+      this.submissionOpenIso(), this.submissionCloseIso(), now,
+    );
+  });
+
   /** Formats an ISO date/datetime for display in the batch banner. */
   fmtWindow(iso: string | null): string {
     return formatMalaysiaScheduleDateTime(iso, iso || '\u2014');
@@ -1014,6 +1030,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
 
   // ── Sync ABAC attributes to workflow ───────────────────────────
   ngOnInit(): void {
+    this.submissionClockTimer = setInterval(() => this.submissionClock.set(Date.now()), 1000);
     this.rdigApi.getMyAccess().subscribe({
       next: (res) => {
         this.accessDenied.set(!res.data.can_apply);
@@ -1105,6 +1122,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     clearTimeout(this.draftSaveTimer);
+    clearInterval(this.submissionClockTimer);
   }
 
   /**
@@ -2091,30 +2109,13 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // ── Batch constraint check ───────────────────────────────────────────────
+    // Recheck the clock at click time as well as while the form is open.
+    this.submissionClock.set(Date.now());
     const batch = this.activeBatch();
-    const bypassBatchValidation = this.batchValidationDisabled();
-    if (!this.hasActiveApplicantWindow() && !bypassBatchValidation) {
+    if (!this.submissionWindowAvailable()) {
       this.showClosedWindowModal.set(true);
       return;
     }
-    if (this.hasActiveApplicantWindow() && batch && !bypassBatchValidation) {
-      const now = Date.now();
-      // Applicant users are gated on the "Applicant" stage window — its start is
-      // when submissions open for them — not the overall batch window (see
-      // submissionOpenIso/submissionCloseIso, sourced only from the Applicant stage).
-      const openIso = this.submissionOpenIso();
-      const closeIso = this.submissionCloseIso();
-      const openTime = getMalaysiaScheduleDateTimeMs(openIso);
-      const beforeOpen = openTime !== null && now < openTime;
-      const closeTime = getMalaysiaScheduleDateTimeMs(closeIso);
-      const afterClose = closeTime !== null && now > closeTime;
-      if (beforeOpen || afterClose) {
-        this.showClosedWindowModal.set(true);
-        return;
-      }
-    }
-    // ── End batch constraint check ───────────────────────────────────────────
 
     const applicantSections = [
       'teamDetails',
@@ -2144,7 +2145,7 @@ export class RdigApplicationComponent implements OnInit, OnDestroy {
     }
     this.submissionState.set('LOADING');
 
-    // Auto-assign the active batch id unless dev batch validation is disabled.
+    // The backend assigns the active batch on first submission.
     this.rdigForm.get('metadata.batch')?.setValue(batch?.id ?? null, { emitEvent: false });
 
     // Stamp applicant's userId on first submit so downstream reviewers can target notifications back to them.

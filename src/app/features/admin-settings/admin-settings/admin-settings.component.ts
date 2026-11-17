@@ -83,6 +83,12 @@ export class AdminSettingsComponent {
       tone: 'blue',
     },
     {
+      title: 'RDIG Presentations',
+      description: 'Organise presentation slots, attendees and invitations for approved RDIG applications.',
+      icon: 'event_available', category: 'Scheduling',
+      route: '/admin-settings/rdig-presentations', tone: 'blue',
+    },
+    {
       title: 'Batches',
       description: 'Control submission periods, active batches, and application grouping.',
       icon: 'calendar_month',

@@ -207,7 +207,6 @@
             [optionListCount]="staffOptions.length"
             placeholder="Search staff..."
             formControlName="staffId"
-            (searchChange)="loadAcademicStaffOptions($event)"
           >
           </app-searchable-dropdown>
           @if (editingIndex !== null && !editForm.get('staffId')?.value) {

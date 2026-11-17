@@ -1,0 +1,86 @@
+<section class="presentation-page">
+  <app-admin-settings-page-header title="RDIG Presentations" description="Organise presentation slots and invite approved application teams to book.">
+    @if (tab() === 'slots') {
+      <button header-action class="btn btn-primary" type="button" (click)="openSlot()" [disabled]="loading() || !batchId"><span class="material-icons" aria-hidden="true">add</span>New Slot</button>
+    } @else {
+      <button header-action class="btn btn-secondary" type="button" (click)="mailDialog.set(true)"><span class="material-icons" aria-hidden="true">mail_outline</span>Preview Invitation</button>
+    }
+  </app-admin-settings-page-header>
+
+  <p class="preview-note" role="note"><span class="material-icons" aria-hidden="true">info</span>Invitations are sent to applicants and internal co-researchers after both reviewers approve. Applicant self-booking will be available separately.</p>
+  @if (error()) { <p class="form-error-msg" role="alert">{{error()}} <button type="button" class="btn btn-ghost btn-sm" (click)="loadBatches()">Retry</button></p> }
+  @if(saveSuccess()) { <p class="form-hint" role="status">{{saveSuccess()}}</p> }
+  <section class="card batch-context">
+    <div class="form-field"><label class="form-label" for="presentation-batch">RDIG Batch</label>
+      <select id="presentation-batch" class="input--select" [(ngModel)]="batchId" (ngModelChange)="loadSlots()" [disabled]="loading() || sending()">
+        @if (!batches().length) { <option value="">{{loading() ? 'Loading batches…' : 'No batches available'}}</option> }
+        @for (batch of batches(); track batch.id) { <option [value]="batch.id">{{batch.batchName}}</option> }
+      </select>
+    </div>
+    <div class="period"><span class="form-label">Presentation Period</span><strong>{{period(selectedBatch()?.stages?.presentation_period?.startDate)}} <span aria-hidden="true">→</span> {{period(selectedBatch()?.stages?.presentation_period?.endDate)}}</strong><span class="form-hint">Malaysia time (MYT, UTC+8)</span></div>
+    <a routerLink="/admin-settings/batches" class="btn btn-ghost btn-sm">Manage Batch</a>
+  </section>
+
+  <nav class="tabs" aria-label="Presentation management">
+    <button type="button" [class.active]="tab() === 'slots'" [attr.aria-current]="tab() === 'slots' ? 'page' : null" (click)="tab.set('slots')"><span class="material-icons" aria-hidden="true">event_available</span>Presentation Slots</button>
+    <button type="button" [class.active]="tab() === 'invitations'" [attr.aria-current]="tab() === 'invitations' ? 'page' : null" (click)="tab.set('invitations')"><span class="material-icons" aria-hidden="true">outgoing_mail</span>Send Invitations</button>
+  </nav>
+  <section class="card">
+    <header class="card__header"><div><h2 class="card__title">{{tab() === 'slots' ? 'Presentation Slots' : 'Applications Ready for Presentation'}}</h2><p class="form-hint">{{tab() === 'slots' ? 'Set the date, time, duration, venue and attendees for each presentation.' : 'Invite applicants and internal co-researchers after both assigned reviewers approve.'}}</p></div></header>
+    <div class="card__content">
+      @if(tab() === 'invitations' && invitationsError()) { <p class="form-error-msg" role="alert">{{invitationsError()}} <button class="btn btn-ghost btn-sm" type="button" (click)="loadSlots()" [disabled]="sending()">Refresh</button></p> }
+      @if(tab() === 'invitations' && invitationMessage()) { <p role="status">{{invitationMessage()}}</p> }
+      <div class="toolbar"><label class="search"><span class="material-icons" aria-hidden="true">search</span><input class="input--text" [(ngModel)]="search" [placeholder]="tab() === 'slots' ? 'Search venue or attendee' : 'Search request code or applicant'" aria-label="Search presentations"></label>
+        @if(tab() === 'slots') { <select class="input--select status-filter" [(ngModel)]="slotStatus" aria-label="Slot status"><option value="all">All statuses</option><option value="OPEN">Open</option><option value="CANCELLED">Cancelled</option><option value="COMPLETED">Completed</option></select> }
+        @else { <button type="button" class="btn btn-primary" [disabled]="sending() || applicationsLoading() || !selectedApplications().length" (click)="sendInvitations()"><span class="material-icons" aria-hidden="true">send</span>{{sending() ? 'Sending…' : 'Send Invitations'}} ({{selectedApplications().length}})</button> }
+      </div>
+      <div class="table-scroll"><table>
+        <thead>@if(tab() === 'slots') { <tr><th>Date &amp; Time</th><th>Duration</th><th>Venue</th><th>Attendees</th><th>Application / Team</th><th>Status</th><th>Actions</th></tr> }
+          @else { <tr><th><input type="checkbox" aria-label="Select all applications" [checked]="allSelected()" [disabled]="sending() || applicationsLoading()" (change)="toggleAll()"></th><th>Request Code</th><th>Project / Applicant</th><th>Internal Co-Researchers</th><th>Review Outcome</th><th>Invitation</th></tr> }</thead>
+        <tbody>
+          @if(tab() === 'slots') {
+            @for(slot of visibleSlots(); track slot.id) {
+              <tr><td>{{period(slot.start_at)}}</td><td>{{slot.duration_minutes}} minutes</td><td>{{slot.venue}}</td>
+                <td>@for(staff of slot.attendees; track staff.id) { <div>{{staff.fullname || staff.username}}</div> }</td>
+                <td>—</td><td>{{slot.status}}</td><td>—</td></tr>
+            } @empty {
+              <tr><td colspan="7"><div class="empty-state"><h3>{{slotsLoading() ? 'Loading slots…' : slotsError() ? 'Unable to load slots' : 'No presentation slots found'}}</h3><p>{{slotsError() || 'Create a presentation slot for this batch.'}}</p>@if(slotsError()) { <button type="button" class="btn btn-secondary" (click)="loadSlots()">Retry</button> }</div></td></tr>
+            }
+          } @else {
+            @for(item of visibleApplications(); track item.id) {
+              <tr><td><input type="checkbox" [attr.aria-label]="'Select ' + item.request_code" [checked]="selectedApplications().includes(item.id)" [disabled]="sending() || item.invitation_status === 'SENT'" (change)="toggleApplication(item.id)"></td><td>{{item.request_code}}</td><td><strong>{{item.project_title}}</strong><div>{{item.applicant_name}}</div></td><td>{{internalTeam(item)}}</td><td>Both reviewers approved</td><td>{{item.invitation_status === 'NOT_SENT' ? 'Not sent' : item.invitation_status === 'PARTIAL' ? 'Partially sent' : 'Sent'}}</td></tr>
+            } @empty {
+              <tr><td colspan="6"><div class="empty-state"><h3>{{applicationsLoading() ? 'Loading applications…' : 'No eligible applications found'}}</h3><p>Applications must be awaiting RMC final review with approval from both assigned reviewers.</p></div></td></tr>
+            }
+          }
+        </tbody>
+      </table></div>
+    </div>
+  </section>
+</section>
+
+<app-dialog [isOpen]="slotDialog()" title="New Presentation Slot" size="large" (close)="closeSlot()">
+  <form [formGroup]="form" class="section-fields" (ngSubmit)="saveSlot()">
+    @if(saveError()) { <p class="form-error-msg" role="alert">{{saveError()}}</p> }
+    <p class="form-hint">{{selectedBatch()?.batchName}} · Malaysia time (MYT, UTC+8)</p>
+    <div class="row--2"><div class="form-field"><label class="form-label is-required">Presentation Date</label><app-date-picker formControlName="date" ariaLabel="Presentation Date" placeholder="Select date"/><app-validation-message [control]="form.controls.date" fieldName="Presentation Date"/></div>
+      <div class="form-field"><label class="form-label is-required" for="slot-time">Start Time</label><input id="slot-time" type="time" class="input--text" formControlName="time"/></div></div>
+    <div class="row--2"><div class="form-field"><label class="form-label is-required" for="slot-duration">Duration (minutes)</label><input id="slot-duration" type="number" min="1" max="1440" class="input--text" formControlName="duration"/><p class="form-hint">Adjust the duration for this presentation.</p></div>
+      <div class="form-field"><label class="form-label is-required" for="slot-venue">Venue</label><input id="slot-venue" class="input--text" formControlName="venue" maxlength="500" placeholder="Room or meeting location"/></div></div>
+    <div class="form-field"><label class="form-label is-required">Attendees</label>
+      <app-searchable-dropdown [options]="staffOptions()" [isMulti]="true" valueMode="array" [ngModel]="attendeeIds" [ngModelOptions]="{standalone: true}" (ngModelChange)="selectAttendees($event)" placeholder="Search staff by name or username"/>
+      @if(staffError()) { <p class="form-error-msg" role="alert">{{staffError()}}</p> }
+      @for(staff of selectedAttendees(); track staff.id) {
+        <div class="attendee-row"><div class="attendee-info"><strong>{{staff.fullname || staff.username}}</strong><span>{{staff.email}}</span></div><button type="button" class="btn btn-ghost btn-sm" (click)="removeAttendee(staff.id)" [attr.aria-label]="'Remove ' + staff.fullname"><span class="material-icons" aria-hidden="true">close</span></button></div>
+      }
+      <app-validation-message [control]="form.controls.attendees" fieldName="Attendees"/>
+    </div>
+    <p class="form-hint">Applicants and internal co-researchers are attached when their team books the slot.</p>
+  </form>
+  <div dialog-footer><button type="button" class="btn btn-secondary" (click)="closeSlot()" [disabled]="saving()">Close</button><button type="button" class="btn btn-primary" [disabled]="saving() || form.invalid" (click)="saveSlot()">{{saving() ? 'Saving…' : 'Save Slot'}}</button></div>
+</app-dialog>
+<app-dialog [isOpen]="mailDialog()" title="Presentation Invitation Preview" size="large" (close)="mailDialog.set(false)">
+  <dl class="mail-meta"><dt>To</dt><dd>Applicant and internal co-researchers of each selected RDIG application</dd><dt>Subject</dt><dd>RDIG presentation — Select your booking slot</dd></dl>
+  <article class="mail-preview"><p>Dear Applicant and Co-Researchers,</p><p>Both reviewers have approved your RDIG application. The next step is your presentation.</p><p>Please prepare for the presentation and contact RMC Admin to arrange a presentation slot for your team. One booking is needed per application.</p><p>For further information, please contact RMC Admin. The invitation will include the configured RMC Admin email addresses.</p><p>Regards,<br>Research Management Centre</p></article>
+  <div dialog-footer><button type="button" class="btn btn-secondary" (click)="mailDialog.set(false)">Close</button></div>
+</app-dialog>

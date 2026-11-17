@@ -243,7 +243,6 @@
               placeholder="Select a staff member"
               [ngModel]="selectedStaffId()"
               (ngModelChange)="selectedStaffId.set($event)"
-              (searchChange)="onStaffSearchChange($event)"
               [loading]="isStaffLoading()"
             >
             </app-searchable-dropdown>

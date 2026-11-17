@@ -205,6 +205,11 @@ export const NAVIGATION_DATA: NavGroup[] = [
             permission: adminOnlySettingsChildPermission,
           },
           {
+            label: 'RDIG Presentations', icon: 'event_available',
+            route: '/admin-settings/rdig-presentations',
+            permission: adminOnlySettingsChildPermission,
+          },
+          {
             label: 'RDIG Blocked List',
             icon: 'person_add',
             route: '/admin-settings/rdig-blocked-list',

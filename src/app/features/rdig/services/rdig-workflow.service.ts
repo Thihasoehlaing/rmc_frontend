@@ -174,6 +174,12 @@ export const RDIG_WORKFLOW_CONFIG: Record<RdigStatus, WorkflowStageConfig> = {
         decisionValue: 'approve',
       },
       {
+        action: 'resubmit',
+        nextStatus: 'pending_applicant_resubmission_rmc',
+        decisionField: 'rmcStatus',
+        decisionValue: 'resubmission',
+      },
+      {
         action: 'reject',
         nextStatus: 'rejected_rmc',
         decisionField: 'rmcStatus',
@@ -583,6 +589,12 @@ export class RdigWorkflowService {
     { label: 'Approve', value: 'approve' },
     { label: 'Reject', value: 'reject' },
   ];
+
+  get rmcStageApprovalOptions() {
+    return this.status() === 'pending_rmc_review'
+      ? [...this.rmcApprovalOptions, { label: 'Request Resubmission', value: 'resubmission' }]
+      : this.rmcApprovalOptions;
+  }
 
   reviewer1DecisionOptions(totalScore: number) {
     if (totalScore >= 70) {

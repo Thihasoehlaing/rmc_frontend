@@ -16,10 +16,10 @@
         size="small"
         (close)="showClosedWindowModal.set(false)"
       >
-        <p>There is no active batch at the moment. Submission is not available right now.</p>
+        <p>The applicable RDIG applicant stage is not currently open. Submission is unavailable.</p>
         <p>
-          Please <strong>Save as Draft</strong> to keep your progress, then submit once a batch
-          is opened.
+          Please <strong>Save as Draft</strong> to keep your progress, then submit once the applicable applicant stage
+          opens.
         </p>
         <div dialog-footer>
           <app-action-button [label]="'Return to Form'" type="secondary" size="small" (clicked)="showClosedWindowModal.set(false)" buttonType="button" />
@@ -402,12 +402,16 @@
         </div>
 
           <!-- �"?�"? Shared wizard navigation footer �"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"?�"? -->
+          @if (!isViewOnly() && !submissionWindowAvailable()) {
+            <p class="form-hint" role="status">Submission is unavailable because the applicable RDIG applicant stage is not open. You can save your progress as a draft.</p>
+          }
           <app-form-wizard-nav
     [actionsDisabled]="applicationPermissions.applicationActionsDisabled()"
             [currentStep]="currentStep()"
             [totalSteps]="totalSteps"
             [isSaving]="isSaving()"
             [isSubmitting]="isSubmitting()"
+            [submitDisabled]="!submissionWindowAvailable()"
             [readOnly]="isViewOnly()"
             (prev)="onPrev()"
             (next)="onNext()"

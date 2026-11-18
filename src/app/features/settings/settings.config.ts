@@ -209,4 +209,5 @@ export const SETTINGS_MODULES: SettingsModuleConfig[] = [
 export const SHARED_SETTINGS_MODULES = [
   'users', 'roles', 'groups', 'system-access', 'workspaces', 'staff-directory',
   'departments', 'monitoring', 'forms', 'dropdown-categories',
+  'account-code-categories', 'account-codes', 'vote-numbers',
 ].map(key => SETTINGS_MODULES.find(module => module.key === key)!);

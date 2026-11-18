@@ -20,6 +20,7 @@ export class PlatformSettingsLayoutComponent {
     { label: 'Access & permissions', keys: ['users', 'roles', 'groups', 'system-access'] },
     { label: 'Organization', keys: ['workspaces', 'staff-directory', 'departments'] },
     { label: 'Forms & configuration', keys: ['forms', 'dropdown-categories'] },
+    { label: 'Finance setup', keys: ['account-code-categories', 'account-codes', 'vote-numbers'] },
     { label: 'Operations', keys: ['monitoring'] },
   ].map((group) => ({
     ...group,
